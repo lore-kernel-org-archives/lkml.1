@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932488AbXCPIwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932507AbXCPIxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932488AbXCPIwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 04:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932458AbXCPIwM
+	id S932507AbXCPIxa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 04:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbXCPIww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 04:52:12 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:34691 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S932253AbXCPIwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 04:52:01 -0400
-Message-ID: <374035060.44909@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070316085053.339604000@mail.ustc.edu.cn>
-References: <20070316084856.687942000@mail.ustc.edu.cn>
-User-Agent: quilt/0.45-1
-Date: Fri, 16 Mar 2007 16:49:08 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/14] readahead: account I/O block times for stock readahead
-Content-Disposition: inline; filename=readahead-account-io-block-times-for-stock-readahead.patch
+	Fri, 16 Mar 2007 04:52:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46670 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932507AbXCPIw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 04:52:29 -0400
+Date: Fri, 16 Mar 2007 09:51:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Subject: Re: [patch 23/26] Xen-paravirt_ops: Add Xen grant table support
+Message-ID: <20070316085107.GC23174@elte.hu>
+References: <20070301232443.195603797@goop.org> <20070301232529.139074125@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301232529.139074125@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Account I/O block times for the stock readahead, too.
 
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
----
- mm/readahead.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> Add Xen 'grant table' driver which allows granting of access to 
+> selected local memory pages by other virtual machines and, 
+> symmetrically, the mapping of remote memory pages which other virtual 
+> machines have granted access to.
+> 
+> This driver is a prerequisite for many of the Xen virtual device 
+> drivers, which grant the 'device driver domain' restricted and 
+> temporary access to only those memory pages that are currently 
+> involved in I/O operations.
 
---- linux-2.6.21-rc3-mm2.orig/mm/readahead.c
-+++ linux-2.6.21-rc3-mm2/mm/readahead.c
-@@ -1756,15 +1756,15 @@ EXPORT_SYMBOL_GPL(page_cache_readahead_a
-  */
- void readahead_cache_hit(struct file_ra_state *ra, struct page *page)
- {
--	if (!prefer_adaptive_readahead())
--		return;
--
- 	if (PageActive(page) || PageReferenced(page))
- 		return;
- 
- 	if (!PageUptodate(page))
- 		ra_account(ra, RA_EVENT_IO_BLOCK, 1);
- 
-+	if (!prefer_adaptive_readahead())
-+		return;
-+
- 	if (!ra_has_index(ra, page->index))
- 		return;
- 
+> +
+> +#ifndef __ia64__
+> +	{
 
---
+introduce a proper arch method instead.
+
+> +	unsigned long flags;
+> +	int ref;
+> +	grant_ref_t head;
+> +	spin_lock_irqsave(&gnttab_list_lock, flags);
+
+> +	unsigned long flags;
+> +	spin_lock_irqsave(&gnttab_list_lock, flags);
+
+> +	unsigned long flags;
+> +	int count = 1;
+> +	if (head == GNTTAB_LIST_END)
+
+> +	grant_ref_t g = *private_head;
+> +	if (unlikely(g == GNTTAB_LIST_END))
+
+coding style problems.
+
+	Ingo
