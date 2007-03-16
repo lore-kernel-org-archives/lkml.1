@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965801AbXCPRz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965805AbXCPR5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965801AbXCPRz2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 13:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965804AbXCPRz1
+	id S965805AbXCPR5Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 13:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965810AbXCPR5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 13:55:27 -0400
-Received: from mx2.suse.de ([195.135.220.15]:37583 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965801AbXCPRz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 13:55:27 -0400
-Date: Fri, 16 Mar 2007 10:53:16 -0700
-From: Greg KH <greg@kroah.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [patch 24/26] Xen-paravirt_ops: Add the Xenbus sysfs and virtual device hotplug driver.
-Message-ID: <20070316175316.GA17091@kroah.com>
-References: <20070301232443.195603797@goop.org> <20070301232529.271605211@goop.org> <20070316084704.GB23174@elte.hu> <20070316161804.GH10574@sequoia.sous-sol.org> <20070316161948.GE9413@elte.hu> <20070316164023.GJ10574@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070316164023.GJ10574@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 16 Mar 2007 13:57:25 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:58036 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965805AbXCPR5Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 13:57:24 -0400
+Subject: [PATCH] fix process crash caused by randomisation and 64k pages
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain
+Date: Fri, 16 Mar 2007 12:57:18 -0500
+Message-Id: <1174067838.3519.26.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 16, 2007 at 09:40:23AM -0700, Chris Wright wrote:
-> * Ingo Molnar (mingo@elte.hu) wrote:
-> > please indicate any such review feedback (and approval) via 
-> > signed-off-by lines done by that person.
-> 
-> Certainly, Greg didn't sign off, he simply gave review feedback.
+This bug was seen on ppc64, but it could have occurred on any
+architecture with a page size of 64k or above.  The problem is that
+fs/binfmt_elf.c:randomize_stack_top() randomizes the stack to within
+0x7ff pages.  On 4k page machines, this is 8MB; on 64k page boxes, this
+is 128MB.  The problem is that the new binary layout (selected in
+arch_pick_mmap_layout) places the mapping segment 128MB or the stack
+rlimit away from the top of the process memory, whichever is larger.  If
+you chose an rlimit of less than 128MB (most defaults are in the 8Mb
+range) then you can end up having your entire stack randomized away.
 
-Yeah, I did that a while ago, but I don't want to give my acked-by or
-signed-off for this code.  While I can not find anything specfically
-wrong with it, it seems a bit "odd", but that might just be because I
-really don't understand what they are doing here, or why.
+The fix is to make randomize_stack_top() only steal at most 8MB, which
+this patch does.  However, I have to point out that even with this, your
+stack rlimit might not be exactly what you get if it's > 128MB, because
+you're still losing the random offset of up to 8MB.
 
-And no, I really don't want to understand it either at the moment due to
-being busy with other things :)
+The true fix should be to leave an explicit gap for the randomization
+plus a buffer when determining mmap_base, but that would involve fixing
+all the architectures.
 
-thanks,
+James
 
-greg k-h
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 51db118..187f151 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -507,7 +507,7 @@ out:
+ #define INTERPRETER_ELF 2
+ 
+ #ifndef STACK_RND_MASK
+-#define STACK_RND_MASK 0x7ff		/* with 4K pages 8MB of VA */
++#define STACK_RND_MASK 0x7ff0000	/* 8MB of VA */
+ #endif
+ 
+ static unsigned long randomize_stack_top(unsigned long stack_top)
+@@ -515,14 +515,12 @@ static unsigned long randomize_stack_top(unsigned long stack_top)
+ 	unsigned int random_variable = 0;
+ 
+ 	if ((current->flags & PF_RANDOMIZE) &&
+-		!(current->personality & ADDR_NO_RANDOMIZE)) {
++		!(current->personality & ADDR_NO_RANDOMIZE))
+ 		random_variable = get_random_int() & STACK_RND_MASK;
+-		random_variable <<= PAGE_SHIFT;
+-	}
+ #ifdef CONFIG_STACK_GROWSUP
+-	return PAGE_ALIGN(stack_top) + random_variable;
++	return PAGE_ALIGN(stack_top + random_variable);
+ #else
+-	return PAGE_ALIGN(stack_top) - random_variable;
++	return PAGE_ALIGN(stack_top - random_variable);
+ #endif
+ }
+ 
+
+
