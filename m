@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933281AbXCPLgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933567AbXCPLhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933281AbXCPLgA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 07:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933567AbXCPLgA
+	id S933567AbXCPLhu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 07:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbXCPLht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 07:36:00 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44666 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933281AbXCPLf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 07:35:58 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ian Kent <raven@themaw.net>
-Cc: sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, Herbert Poetzl <herbert@13thfloor.at>,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
-References: <20070313045100.GC8993@us.ibm.com>
-	<Pine.LNX.4.64.0703161300520.4188@raven.themaw.net>
-Date: Fri, 16 Mar 2007 05:32:28 -0600
-In-Reply-To: <Pine.LNX.4.64.0703161300520.4188@raven.themaw.net> (Ian Kent's
-	message of "Fri, 16 Mar 2007 13:04:52 +0900 (WST)")
-Message-ID: <m1ird1o243.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 16 Mar 2007 07:37:49 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:53209 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933567AbXCPLht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 07:37:49 -0400
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Pavel Emelianov <xemul@sw.ru>
+Subject: Re: [RFC] kernel/pid.c pid allocation wierdness
+Date: Fri, 16 Mar 2007 12:37:47 +0100
+User-Agent: KMail/1.9.5
+Cc: Oleg Nesterov <oleg@tv-sign.ru>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>
+References: <45F7A4B3.5040005@sw.ru> <20070314153341.GA770@tv-sign.ru> <45FA7823.2040104@sw.ru>
+In-Reply-To: <45FA7823.2040104@sw.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703161237.48014.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent <raven@themaw.net> writes:
-
-> On Mon, 12 Mar 2007, sukadev@us.ibm.com wrote:
+On Friday 16 March 2007 11:57, Pavel Emelianov wrote:
+> Oleg Nesterov wrote:
+> > On 03/14, Eric W. Biederman wrote:
+> >> Pavel Emelianov <xemul@sw.ru> writes:
+> >>> Hi.
+> >>>
+> >>> I'm looking at how alloc_pid() works and can't understand
+> >>> one (simple/stupid) thing.
+> >>>
+> >>> It first kmem_cache_alloc()-s a strct pid, then calls
+> >>> alloc_pidmap() and at the end it taks a global pidmap_lock()
+> >>> to add new pid to hash.
+> >
+> > We need some global lock. pidmap_lock is already here, and it is
+> > only used to protect pidmap->page allocation. Iow, it is almost
+> > unused. So it was very natural to re-use it while implementing
+> > pidrefs.
+> >
+> >>> The question is - why does alloc_pidmap() use at least
+> >>> two atomic ops and potentially loop to find a zero bit
+> >>> in pidmap? Why not call alloc_pidmap() under pidmap_lock
+> >>> and find zero pid in pidmap w/o any loops and atomics?
+> >
+> > Currently we search for zero bit lockless, why do you want
+> > to do it under spin_lock ?
 >
->> 
->> From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
->> Subject: [PATCH 2/2] Replace pid_t in autofs with struct pid reference.
->> 
->> Make autofs container-friendly by caching struct pid reference rather
->> than pid_t and using pid_nr() to retreive a task's pid_t.
->> 
->> ChangeLog:
->> 	- Fix Eric Biederman's comments - Use find_get_pid() to hold a
->> 	  reference to oz_pgrp and release while unmounting; separate out
->> 	  changes to autofs and autofs4.
+> Search isn't lockless. Look:
 >
-> What changes to autofs4?
-> Do you intend this change to be made for autofs4 also?
-> Perhaps you expected me to do them, in which case you probably should 
-> ask me to do the patch.
+> while (1) {
+>    if (!test_and_set_bit(...)) {
+>        atomic_dec(&nr_free);
+>        return pid;
+>    }
+>    ...
+> }
+>
+> we use two atomic operations to find and set a bit in a map.
 
-The review history goes something like this.
-- That's a big patch why are you touching autofs and autofs4 at the
-  same time?
-<split>
-- Hmm.  That change in the autofs4 patch looks fishy.
-<patch postponed until the issue was addressed>
+The finding of the zero bit is done without lock. (Search/lookup)
 
-autofs4 uses pids more extensively than autofs and so the change is
-correspondingly larger.
+Then , the reservation of the found bit (test_and_set_bit) is done, and 
+decrement of nr_free. It may fail because the search was done lockless.
 
-If you would like to look at what it would take to get autofs4 to only
-store values as struct pid * instead of storing pid_t that would be great.
-But for the most part I this is a massive global change that those of us
-pushing it are responsible for changing as fixing up as much of the code
-as we can, as is usual kernel practice.
+Finding a zero bit in a 4096 bytes array may consume about 6000 cycles on 
+modern hardware. Much more on SMP/NUMA machines, or on machines where 
+PAGE_SIZE is 64K instead of 4K :)
 
-Eric
+You don't want to hold pidmad_lock for so long period.
+
