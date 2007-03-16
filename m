@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbXCPIdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbXCPIim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752053AbXCPIdd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 04:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXCPIdd
+	id S1753099AbXCPIim (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 04:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbXCPIil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 04:33:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47983 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752053AbXCPIdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 04:33:32 -0400
-Date: Fri, 16 Mar 2007 09:32:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       linux-kernel@vger.kernel.org, eranian@hpl.hp.com, rdunlap@xenotime.net,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH] i386: Simplify smp_call_function*() by using common implementation
-Message-ID: <20070316083252.GA21418@elte.hu>
-References: <45F5FA97.8070705@goop.org> <20070315110805.262e1fa3.akpm@linux-foundation.org> <45F9D5DD.8040909@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F9D5DD.8040909@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 16 Mar 2007 04:38:41 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:59966 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752109AbXCPIil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 04:38:41 -0400
+Message-ID: <45FA57AF.9080100@drzeus.cx>
+Date: Fri, 16 Mar 2007 09:39:11 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Pavel Pisa <ppisa4lists@pikron.com>
+CC: Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: i.MX/MX1 SDHC fix/workaround of SD card recognition problems
+References: <200703080000.41101.ppisa@pikron.com> <45F49297.9090309@drzeus.cx> <200703120333.27581.ppisa4lists@pikron.com>
+In-Reply-To: <200703120333.27581.ppisa4lists@pikron.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Pisa wrote:
+> this should go to 2.6.21, I have hold this for some
+> months and I have discussed it in the thread
+> "Re: CRC Errors with SD cards in 4bits mode (on i.MXl)"
+> You have been CCed. This is not solution for seen data CRC
+> problem, but solves problems with recognition of cards
+> which has been timing sensitive sometimes.
+>   
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+I'll push it to Linus and see if he swallows ;)
 
-> Subject: Simplify smp_call_function*() by using common implementation
-> 
-> smp_call_function and smp_call_function_single are almost complete 
-> duplicates of the same logic.  This patch combines them by 
-> implementing them in terms of the more general 
-> smp_call_function_mask().
+> I have sent it into Russell's patch queue with my others
+> MX1 fixes I have intended to be included in 2.6.21.
+> It was probably mistake for this one, because it should
+> go through your tree. If you send it to mainline
+> yourself, I would discard patch from patch daemon.
+>
+>   
 
-> +	/* Send a message to other CPUs */
-> +	if (cpus_equal(mask, allbutself))
-> +		send_IPI_allbutself(CALL_FUNCTION_VECTOR);
-> +	else
-> +		send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
+For Russell's sake, things should probably go through my tree. Otherwise
+he'll have to deal with all sorts of merge problems because of the
+things I do.
 
-this is a bit ugly, but i guess we cannot do much about it - the 
-hardware side handles this in a bit assymetric way too.
+> We have spoken about MX1 SDHC maintainership.
+> I am attaching my subscription.
+> I am not sure about mailing list field there.
+> Do you suggest this one, ALKML or other?
+>
+>   
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+sdhci is outright wrong. That list is only for the sdhci driver. I
+suggest LAK or LKML, preferably the one with the most MX1 users and/or
+developers.
 
-	Ingo
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
