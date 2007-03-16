@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965850AbXCPS7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965844AbXCPTDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965850AbXCPS7k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 14:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965871AbXCPS7k
+	id S965844AbXCPTDg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 15:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965854AbXCPTDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 14:59:40 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34482 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965850AbXCPS7j (ORCPT
+	Fri, 16 Mar 2007 15:03:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:24320 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965844AbXCPTDf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 14:59:39 -0400
-Date: Fri, 16 Mar 2007 18:59:23 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 00/26] Xen-paravirt_ops: Xen guest implementation for paravirt_ops interface
-Message-ID: <20070316185923.GA15209@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-	Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-	xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-	Zachary Amsden <zach@vmware.com>,
-	Rusty Russell <rusty@rustcorp.com.au>
-References: <20070301232443.195603797@goop.org> <20070316092137.GL23174@elte.hu> <45FAD35F.8040404@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Mar 2007 15:03:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lYNsPsbW/c/U/00tj/0+6x3a/HKjPTpeFWfXpz81K5xKfupIV4D7UZaq4rD1S+D72QJRM5YExJgC64gzvrD6Ax0jJ8WG2m+o6vcN6ytlm7Ato9l85CApdj9C/rAhUxM8TFdIx4VB6Fs/podEUEKO+/zqWL7csuvIgQhdNgpi4G8=
+Message-ID: <6bffcb0e0703161203v699d9b21x8fa6bf5175916441@mail.gmail.com>
+Date: Fri, 16 Mar 2007 20:03:29 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: Linux 2.6.21-rc4
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <s5hbqitj9xi.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45FAD35F.8040404@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <45FAD77A.1070709@googlemail.com> <s5hbqitj9xi.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 16, 2007 at 10:26:55AM -0700, Jeremy Fitzhardinge wrote:
-> +#ifdef CONFIG_HIGHPTE
-> +	.kmap_atomic_pte = native_kmap_atomic_pte,
-> +#else
-> +	.kmap_atomic_pte = paravirt_nop,
-> +#endif
+On 16/03/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Fri, 16 Mar 2007 18:44:26 +0100,
+> Michal Piotrowski wrote:
+> >
+> > Takashi, unfortunately this bug isn't fixed
+> > http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/index.html#1684
+>
+> The patch wasn't merged to rc4.
 
-This is ifdefing is quite ugly.  Shouldn't native_kmap_atomic_pte
-just be a noop in the !CONFIG_HIGHPTE case?
+I know. I use patched 2.6.21-rc3-git4 for crashdump.
 
-> -void *kmap_atomic(struct page *page, enum km_type type)
-> +void *_kmap_atomic(struct page *page, enum km_type type, pgprot_t prot)
+> Or, do you mean the bug is still present even with the patch?
 
-We normally call our "secial" function __foo, not _foo.  But in this
-case it really should have a more meaningfull name like
-kmap_atomic_prot anyway.
+This patch doesn't fix the problem.
+http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/3080.html
 
-> +void *kmap_atomic(struct page *page, enum km_type type)
-> +{
-> +	return _kmap_atomic(page, type, kmap_prot);
+Tomorrow, I'll try to provide more info about this problem.
 
-And this one should probably be an inline.
+>
+>
+> Takashi
+>
 
-> +static inline void *native_kmap_atomic_pte(struct page *page, enum km_type type)
-> +{
-> +	return kmap_atomic(page, type);
-> +}
-> +
-> +#ifndef CONFIG_PARAVIRT
-> +#define kmap_atomic_pte(page, type)	kmap_atomic(page, type)
-> +#endif
+Regards,
+Michal
 
-This is all getting rather ugly just for your pagetable hackery.
-
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
