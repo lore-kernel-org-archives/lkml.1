@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965459AbXCPQSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965464AbXCPQSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965459AbXCPQSm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 12:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965461AbXCPQSm
+	id S965464AbXCPQSp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 12:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965469AbXCPQSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 16 Mar 2007 12:18:45 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:64070 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965464AbXCPQSm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Mar 2007 12:18:42 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:36851 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965459AbXCPQSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 12:18:41 -0400
-Date: Fri, 16 Mar 2007 09:18:04 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [patch 24/26] Xen-paravirt_ops: Add the Xenbus sysfs and virtual device hotplug driver.
-Message-ID: <20070316161804.GH10574@sequoia.sous-sol.org>
-References: <20070301232443.195603797@goop.org> <20070301232529.271605211@goop.org> <20070316084704.GB23174@elte.hu>
-Mime-Version: 1.0
+Date: Fri, 16 Mar 2007 17:17:04 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
+       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC][PATCH] sys_fallocate() system call
+Message-ID: <20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070316084704.GB23174@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070316143101.GA10152@amitarora.in.ibm.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+> on s390, and thus the delay. While I try to get it right on s390(x), we
+> thought of posting this patch, so that we can save some time. Parallely
+> we will work on getting the patch work on s390, and probably it will
+> come as a separate patch.
 > 
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > This communicates with the machine control software via a registry 
-> > residing in a controlling virtual machine. This allows dynamic 
-> > creation, destruction and modification of virtual device 
-> > configurations (network devices, block devices and CPUS, to name some 
-> > examples).
-> 
-> should be reviewed by the driver-core folks too i guess?
+> +asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
+> +{
 
-Greg has gone through it a couple times.  Any more feedback would
-be useful.
+There is something here that will not work on s390 (31bit): the arguments
+would end up in:
+fd -> r2
+mode -> r3
+offset -> r4 + r5
+len -> r6 + second halve on stack
 
-> > +//#include <asm/maddr.h>
-> 
-> > +//#include <xen/xen_proc.h>
-> > +//#include <xen/evtchn.h>
-> 
-> > +//#include <xen/hvm.h>
-> 
-> > +//		.shutdown = xenbus_dev_shutdown,
-> 
-> hm?
+But the s390 ABI says that a long long will be put into two consecutive
+registers if the first register is smaller than 6, or it will be put
+completely on the stack. So both 32 bit parts of len will end up on the
+stack. That would make it a syscall with seven arguments which we currently
+don't support on s390. There is no way to access the second half of len
+from kernel space and that is why it is not working for you.
+So you either rearrange the parameters or convert the loff_t's to pointers.
 
-fixing that up, not sure where that snuck in.
+e.g.
+
+asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len, int mode)
+
+would work even on s390 ;)
