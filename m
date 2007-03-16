@@ -1,84 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964888AbXCPLoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964873AbXCPLvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964888AbXCPLoj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 07:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964873AbXCPLoj
+	id S964873AbXCPLvk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 07:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964923AbXCPLvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 07:44:39 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42133 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964802AbXCPLoi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 07:44:38 -0400
-Date: Fri, 16 Mar 2007 13:44:27 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/5] revoke: core code
-In-Reply-To: <20070316032624.c6db84fc.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703161331580.21300@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0703111330100.765@sbz-30.cs.Helsinki.FI>
- <20070315173438.efadd514.akpm@linux-foundation.org>
- <84144f020703152344u588da670ge14c1ec5797c2b86@mail.gmail.com>
- <20070316032624.c6db84fc.akpm@linux-foundation.org>
+	Fri, 16 Mar 2007 07:51:40 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42951 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964873AbXCPLvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 07:51:39 -0400
+Date: Fri, 16 Mar 2007 03:50:30 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org, devel@openvz.org,
+       adobriyan@gmail.com
+Subject: Re: [PATCH v5] Fix rmmod/read/write races in /proc entries
+Message-Id: <20070316035030.92b647d0.akpm@linux-foundation.org>
+In-Reply-To: <20070316091613.GA6810@localhost.sw.ru>
+References: <20070311170456.GA6808@localhost.sw.ru>
+	<20070315175304.55b3486a.akpm@linux-foundation.org>
+	<20070316091613.GA6810@localhost.sw.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007, Andrew Morton wrote:
-> I assume that any future callers to sys_read() will reliably do the right
-> thing at this stage, so we are concerned with threads which are presently
-> partway through a read from this inode?
+On Fri, 16 Mar 2007 12:16:13 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
 
-Yes. We first revoke the file descriptors under tasklist_lock after which 
-any new operations on the revoked inode descriptors fail.
+> On Thu, Mar 15, 2007 at 05:53:04PM -0800, Andrew Morton wrote:
+> > My, what a lot of code you have here.  I note that nobody can be assed even
+> > reviewing it.  Now why is that?
+> 
+> I hope, Al could find some time again.
+> 
+> > On Sun, 11 Mar 2007 20:04:56 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
+> > > Fix following races:
+> > > ===========================================
+> > > 1. Write via ->write_proc sleeps in copy_from_user(). Module disappears
+> > >    meanwhile. Or, more generically, system call done on /proc file, method
+> > >    supplied by module is called, module dissapeares meanwhile.
+> > >
+> > >    pde = create_proc_entry()
+> > >    if (!pde)
+> > > 	return -ENOMEM;
+> > >    pde->write_proc = ...
+> > > 				open
+> > > 				write
+> > > 				copy_from_user
+> > >    pde = create_proc_entry();
+> > >    if (!pde) {
+> > > 	remove_proc_entry();
+> > > 	return -ENOMEM;
+> > > 	/* module unloaded */
+> > >    }
+> >
+> > We usually fix that race by pinning the module: make whoever registered the
+> > proc entries also register their THIS_MODULE, do a try_module_get() on it
+> > before we start to play with data structures which the module owns.
+> >
+> > Can we do that here?
+> 
+> We can, but it will be unreliable:
+> 
+> Typical proc entry creation sequence is
+> 
+> 	pde = create_proc_entry(...);
+> 	if (pde)
+> 		pde->owner = THIS_MODULE;
+> 
+> Right after create_proc_entry() ->owner is NULL, so try_module_get()
+> won't do anything, but proc_delete_inode() could put module which was
+> never getted.
+> 
+> This should fixable by always setting ->owner before proc entry is
+> glued to proc entries tree. Something like this:
+> 
+> 	#define create_proc_entry(...) __create_proc_entry(..., THIS_MODULE)
 
-On Fri, 16 Mar 2007, Andrew Morton wrote:
-> If it _is_ accurate then hm, tricky.  It all rather depends upon how the
-> relevant filesystem implements reading (and writing?).  Which is why you
-> made it a file_operation, fair enough.
+Yes, I was thinking of something like that.
 
-Yeah, filesystem dependent. Writes are not a problem as do_sync() will 
-wait until the writers are done. For that part, generic_file_revoke() 
-should be fine although suboptimal for most filesystems.
+> However, I think it's not enough: delete_module(2) first waits for
+> refcount becoming zero, only then calls modules's exit function which
+> starts removing proc entries. In between, proc entries are accessible
+> and fully-functional, so try_module_get() can again get module and
+> module_put(pde->owner) can happen AFTER module dissapears.
+> What will it put?
+> 
+> And how can you fix that? The only way I know is to REMOVE ->owner
+> completely, once we agree on this pde_users/pde_unload_lock stuff.
 
-On Fri, 16 Mar 2007, Andrew Morton wrote:
-> But even for ext2 and ext3 (please keep ext4 in sync with ext3 changes,
-> btw), if some process is partway through a big page_cache_readahead()
-> operation then a concurrent invalidate_inode_pages2() call won't worry it
-> at all: the pagecache will be reinstantiated and do_generic_mapping_read()
-> will proceed to copy that pagecache out to the user after the revoke() has
-> returned.  I think.
+I think the rmmod code will take care of that.
 
-That's bad. Can we perhaps wait until readers are done?
+Once delete_module() has called try_stop_module(), no following
+try_module_get() will succeed.  And see that wait_for_zero_refcount() call
+in there which waits for any present users of the module to go away.
 
-On Fri, 16 Mar 2007, Andrew Morton wrote: 
-> I'm afraid I havent paid any attention to this revoke proposal before, I
-> don't understand the usecases nor the implementation details so things
-> which are implicitly-obvious-to-you must be explained to me.  But others
-> will benefit from that explanation too ;)  What, exactly, are we trying to do
-> with the already-opened files and the currently-in-progress syscalls?
 
-You use revoke() (with chown, for example) to gain exclusive access to 
-an inode that might be in use by other processes. This means that we must 
-mke sure that:
-
-  - operations on opened file descriptors pointing to that inode fail
-  - there are no shared mappings visible to other processes
-  - in-progress system calls are either completed (writes) or abort 
-    (reads)
-
-After revoke() system call returns, you are guaranteed to have revoked 
-access to an inode for any processes that had access to it when you 
-started the operation. The caller is responsible for blocking any future 
-open(2) calls that might occur while revoke() takes care of fork(2) and 
-dup(2) during the operation.
-
-On Fri, 16 Mar 2007, Andrew Morton wrote: 
-> (A concurrent direct-io read might be a problem too?)
-
-Good point. We would need to take down those too.
-
-			Pekka
