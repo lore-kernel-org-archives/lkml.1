@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbXCPKcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753465AbXCPKga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbXCPKcE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 06:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbXCPKcD
+	id S1753465AbXCPKga (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 06:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXCPKga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 06:32:03 -0400
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:5834 "EHLO
-	rpc.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753465AbXCPKcC (ORCPT
+	Fri, 16 Mar 2007 06:36:30 -0400
+Received: from amsfep17-int.chello.nl ([62.179.120.12]:30966 "EHLO
+	amsfep17-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753465AbXCPKg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 06:32:02 -0400
-User-Agent: Microsoft-Entourage/11.2.5.060620
-Date: Fri, 16 Mar 2007 10:31:49 +0000
-Subject: Re: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc
- console infrastructure for Xen console
-From: Keir Fraser <keir@xensource.com>
-To: Ingo Molnar <mingo@elte.hu>, Keir Fraser <Keir.Fraser@xensource.com>
-CC: <virtualization@lists.osdl.org>, <xen-devel@lists.xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-Message-ID: <C2202295.BA49%keir@xensource.com>
-Thread-Topic: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc
- console infrastructure for Xen console
-Thread-Index: Acdntk3HjC0cjtOpEduhtwAX8io7RQ==
-In-Reply-To: <20070316095851.GB301@elte.hu>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Fri, 16 Mar 2007 06:36:29 -0400
+Subject: Re: [PATCH 0/3] FUTEX : new PRIVATE futexes, SMP and NUMA
+	improvements
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ulrich Drepper <drepper@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
+       pravin b shelar <pravin.shelar@calsoftinc.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200703161130.06669.dada1@cosmosbay.com>
+References: <20060808070708.GA3931@localhost.localdomain>
+	 <200703161030.17597.dada1@cosmosbay.com> <1174039813.7124.25.camel@twins>
+	 <200703161130.06669.dada1@cosmosbay.com>
+Content-Type: text/plain
+Date: Fri, 16 Mar 2007 11:36:26 +0100
+Message-Id: <1174041386.7124.31.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/3/07 09:58, "Ingo Molnar" <mingo@elte.hu> wrote:
-
->> These mb()'s are pretty standard for lock-free producer/consumer
->> rings. Write descriptor /then/ write the updated producer. Read the
->> producer /then/ read any descriptors revealed by this new producer
->> value.
+On Fri, 2007-03-16 at 11:30 +0100, Eric Dumazet wrote:
+> On Friday 16 March 2007 11:10, Peter Zijlstra wrote:
 > 
-> then use rmb()/wmb(). Rarely does a ring protocol truly need mb().
+> > http://programming.kicks-ass.net/kernel-patches/futex-vma-cache/vma_cache.p
+> >atch
+> 
+> Oh thanks
+> 
+> >
+> > > But if it has to walk the vmas (and take mmap_sem), you already loose the
+> > > PRIVATE benefit.
+> >
+> > It doesn't take mmap_sem, I am aware of the problems.
+> 
+> Yes but the vma_anon() -> vma_cache_find() needs to read 3 cache lines on 
+> x86_64 (sizeof(struct vma_cache) = 136)
+> and dirty one bit, so it might be more expensive than the mmap_sem ...
 
-It's needed for writing data /after/ reading the consumer index that shows
-you have space to write. Looking through xenbus_comms.c I think all the
-barriers are correct except there is a spurious extra mb() in xb_read(),
-where there is a later rmb() which is sufficient by itself. All the others
-have a purpose.
-
- -- Keir
+I though the cacheline was 128 bytes, but point taken.
 
