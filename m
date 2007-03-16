@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965689AbXCPRDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965703AbXCPREO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965689AbXCPRDI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 13:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965693AbXCPRDI
+	id S965703AbXCPREO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 13:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965693AbXCPREO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 13:03:08 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52831 "EHLO smtp.osdl.org"
+	Fri, 16 Mar 2007 13:04:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:55996 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965689AbXCPRDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 13:03:05 -0400
-Date: Fri, 16 Mar 2007 09:59:32 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Thomas Glanzmann <thomas@glanzmann.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andreas =?UTF-8?B?QWxsZ8O2d2Vy?= <andreas.allgoewer@web.de>,
-       Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>
-Subject: Re: sky2 PHY setup
-Message-ID: <20070316095932.5e920222@freekitty>
-In-Reply-To: <20070316002912.GB17594@cip.informatik.uni-erlangen.de>
-References: <20070202102705.3cf028a6@freekitty>
-	<20070202210934.GM1693@cip.informatik.uni-erlangen.de>
-	<20070202151601.677ec5d9@freekitty>
-	<20070203073012.GO1693@cip.informatik.uni-erlangen.de>
-	<20070205090429.31d7bd32@freekitty>
-	<20070222193611.GR20035@cip.informatik.uni-erlangen.de>
-	<20070316002912.GB17594@cip.informatik.uni-erlangen.de>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S965680AbXCPREN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 13:04:13 -0400
+Message-ID: <45FACE0D.4010108@goop.org>
+Date: Fri, 16 Mar 2007 10:04:13 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 18/26] Xen-paravirt_ops: Add XEN config options
+References: <20070301232443.195603797@goop.org> <20070301232528.462923016@goop.org> <20070316091454.GG23174@elte.hu>
+In-Reply-To: <20070316091454.GG23174@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007 01:29:12 +0100
-Thomas Glanzmann <thomas@glanzmann.de> wrote:
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> Xen is currently incompatible with:
+>> - PREEMPT
+>>     
+>
+> why? That should be fixed.
 
-> Hello Stephen,
-> 
-> > yesterday I pulled from Linus tree because I saw the sky2 updated and I
-> > tried to break it but it seems that my problems are gone. I let you know
-> > if anything pops up in the future.
-> 
-> bad news. I today tried the sky2 driver which is in Linus Kernel Tree
-> (HEAD) on a machine with very high network load and it stopped working
-> without any kernel messages after doing a flawless job under high load
-> for 5 hours. My watchdog rebooted the machine after 500 seconds. ;-(
-> 
->         Thomas
+Actually I don't think that's true any more.  We'll need to work out how
+to deal with preempt and suspend/resume, but the process freezer seems
+like the way to do that.
 
-I have run for 2+ days under load without problems. It is hard to
-reproduce or do much about your problem without more info.
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+    J
