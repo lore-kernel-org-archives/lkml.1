@@ -1,93 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbXCPQnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965515AbXCPQo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbXCPQnQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 12:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965585AbXCPQnQ
+	id S965515AbXCPQo0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 12:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbXCPQo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 12:43:16 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3729 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753574AbXCPQnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 12:43:15 -0400
-Date: Fri, 16 Mar 2007 16:42:45 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Message-ID: <20070316164245.GC3951@ucw.cz>
-References: <200703111457.17624.kernel@kolivas.org> <200703130549.47058.kernel@kolivas.org> <1173730314.6431.30.camel@Homer.simpson.net> <200703130738.19034.kernel@kolivas.org> <1173732344.6431.54.camel@Homer.simpson.net> <8cd998d50703121551u44ea3d85g2541503373f461f4@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8cd998d50703121551u44ea3d85g2541503373f461f4@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	Fri, 16 Mar 2007 12:44:26 -0400
+Received: from gw.goop.org ([64.81.55.164]:42083 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753578AbXCPQoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 12:44:25 -0400
+Message-ID: <45FAC969.6070006@goop.org>
+Date: Fri, 16 Mar 2007 09:44:25 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Adrian Bunk <bunk@stusta.de>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 20/26] Xen-paravirt_ops: Core Xen implementation
+References: <20070301232443.195603797@goop.org> <20070301232528.812011702@goop.org> <20070316091411.GF23174@elte.hu> <20070316163338.GI10574@sequoia.sous-sol.org>
+In-Reply-To: <20070316163338.GI10574@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Chris Wright wrote:
+> * Ingo Molnar (mingo@elte.hu) wrote:
+>   
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>>     
+>>> Core Xen Implementation
+>>>
+>>> This patch is a rollup of all the core pieces of the Xen 
+>>> implementation, including booting, memory management, interrupts, time 
+>>> and so on.
+>>>       
+>>> --- a/arch/i386/kernel/head.S
+>>> +++ b/arch/i386/kernel/head.S
+>>> @@ -535,6 +535,10 @@ unhandled_paravirt:
+>>>  	ud2
+>>>  #endif
+>>>  
+>>> +#ifdef CONFIG_XEN
+>>> +#include "../xen/xen-head.S"
+>>> +#endif
+>>>       
+>> i'd suggest to remove the #ifdef and push it into xen-head.S.
+>>     
+>
+> That's been fixed, the two are built as seperate objects now.
+>   
 
-> >> > Killing the known corner case starvation scenarios 
-> >is wonderful, but
-> >> > let's not just pretend that interactive tasks don't 
-> >have any special
-> >> > requirements.
-> >>
-> >> Now you're really making a stretch of things. Where 
-> >on earth did I say that
-> >> interactive tasks don't have special requirements? 
-> >It's a fundamental feature
-> >> of this scheduler that I go to great pains to get 
-> >them as low latency as
-> >> possible and their fair share of cpu despite having a 
-> >completely fair cpu
-> >> distribution.
-> >
-> >As soon as your cpu is fully utilized, fairness looses 
-> >or interactivity
-> >loses.  Pick one.
-> 
-> That's not true unless you refuse to prioritise your 
-> tasks
-> accordingly. Let's take this discussion in a different 
-> direction. You
-> already nice your lame processes. Why? You already have 
-> the concept
-> that you are prioritising things to normal or background 
-> tasks. You
-> say so yourself that lame is a background task. Stating 
-> the bleedingly
-> obvious, the unix way of prioritising things is via 
-> nice. You already
-> do that. So moving on from that...
-> 
-> Your test case you ask "how can I maximise cpu usage". 
-> Well you know
-> the answer already. You run two threads. I won't dispute 
-> that.
-> 
-> The debate seems to be centered on whether two tasks 
-> that are niced +5
-> or to a higher value is background. In my opinion, nice 
-> 5 is not
-> background, but relatively less cpu. You already are 
-> savvy enough to
-> be using two threads and nicing them. All I ask you to 
-> do when using
-> RSDL is to change your expectations slightly and your 
-> settings from
-> nice 5 to nice 10 or 15 or even 19. Why is that so 
-> offensive to you?
-> nice 5 is 75% the cpu of nice 0. nice 10 is 50%, nice 15 
-> is 25%, nice
+Actually, we tried it but it causes bad kernel images with some
+binutils, so it has to be included for now.
 
-Hmm, I'd certainly expect nice to be stronger. nice 5 should be 50% or
-less of nice 0... You'll not even notice nice 2 if that is 90%...
+>>> @@ -437,9 +437,9 @@ static unsigned long native_store_tr(voi
+>>>  
+>>>  static void native_load_tls(struct thread_struct *t, unsigned int cpu)
+>>>  {
+>>> -#define C(i) get_cpu_gdt_table(cpu)[GDT_ENTRY_TLS_MIN + i] = t->tls_array[i]
+>>> -	C(0); C(1); C(2);
+>>> -#undef C
+>>> +	get_cpu_gdt_table(cpu)[GDT_ENTRY_TLS_MIN + 0] = t->tls_array[0];
+>>> +	get_cpu_gdt_table(cpu)[GDT_ENTRY_TLS_MIN + 1] = t->tls_array[1];
+>>> +	get_cpu_gdt_table(cpu)[GDT_ENTRY_TLS_MIN + 2] = t->tls_array[2];
+>>>  }
+>>>       
+>> this is a cleanup unrelated to the purpose of the patch.
+>>     
+>
+> Sure, will split out.
+>   
 
-And I guess it nicely solves problem in this thread, too...
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Already done in Rusty's cleanup patch.
+
+    J
