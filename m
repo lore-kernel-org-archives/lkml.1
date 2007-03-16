@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965992AbXCPWaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965995AbXCPWf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965992AbXCPWaW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 18:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965994AbXCPWaW
+	id S965995AbXCPWf3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 18:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965999AbXCPWf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 18:30:22 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57436 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965992AbXCPWaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 18:30:22 -0400
-X-Provags-ID: V01U2FsdGVkX18Pd9ZB1jQP98w5FRCnoisP3M8OuHdj7nKSb77X4m
-	189GXfgYSKE5kL
-Subject: Re: RSDL v0.31
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
-       Al Boldi <a1426z@gawab.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200703170813.32594.kernel@kolivas.org>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703170040.48316.kernel@kolivas.org>
-	 <1174059299.7886.25.camel@Homer.simpson.net>
-	 <200703170813.32594.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Fri, 16 Mar 2007 23:30:07 +0100
-Message-Id: <1174084207.7009.9.camel@Homer.simpson.net>
+	Fri, 16 Mar 2007 18:35:29 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52945 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965995AbXCPWf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 18:35:29 -0400
+Date: Fri, 16 Mar 2007 23:36:08 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cleanpatch: a script to clean up stealth whitespace added by a patch
+Message-ID: <20070316223608.GA23123@uranus.ravnborg.org>
+References: <200703162146.l2GLkV26012863@tazenda.hos.anvin.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703162146.l2GLkV26012863@tazenda.hos.anvin.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-17 at 08:13 +1100, Con Kolivas wrote:
-> On Saturday 17 March 2007 02:34, Mike Galbraith wrote:
-> > On Sat, 2007-03-17 at 00:40 +1100, Con Kolivas wrote:
-> > > Here are full patches for rsdl 0.31 for various base kernels. A full
-> > > announce with a fresh -mm series will follow...
-> > >
-> > > http://ck.kolivas.org/patches/staircase-deadline/2.6.20.3-rsdl-0.31.patch
-> > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-sched-rsdl-0.
-> > >31.patch
-> > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0.31
-> > >.patch
-> >
-> > It still has trouble with the x/gforce vs two niced encoders scenario.
-> > The previously reported choppiness is still present.
-> >
-> > I suspect that x/gforce landing in the expired array is the trouble, and
-> > that this will never be smooth without some kind of exemption.  I added
-> > some targeted unfairness to .30, and it didn't help much at all.
-> >
-> > Priorities going all the way to 1 were a surprise.
+On Fri, Mar 16, 2007 at 02:45:06PM -0700, H. Peter Anvin wrote:
+> This script is a companion to the "cleanfile" script.  This cleans
+> up a patch in unified diff format *before* it is applied.  Note that
+> the empty lines at the end of file detection *requires* that the diff was
+> taken with at least one line of context around each hunk, or bad things
+> will happen.
 > 
-> It wasn't going to change that case without renicing X.
+> This script cleans up various classes of stealth whitespace.  In
+> particular, it cleans up:
+> 
+> - Whitespace (spaces or tabs)before newline;
+> - DOS line endings (CR before LF);
+> - Space before tab (spaces are deleted or converted to tabs);
+> - Empty lines at end of file.
+> 
+> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
-Con.  You are trying to wedge a fair scheduler into an environment where
-totally fair simply can not possibly function.
+This and the companion "cleanfile" has been applied to kbuild.git.
 
-If this is your final answer to the problem space, I am done testing,
-and as far as _I_ am concerned, your scheduler is an utter failure.
-
-	-Mike
-
+	Sam
