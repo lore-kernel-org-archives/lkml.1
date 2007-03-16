@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964828AbXCPOEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXCPOH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964828AbXCPOEI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 10:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964815AbXCPOEI
+	id S964810AbXCPOH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 10:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964812AbXCPOH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 10:04:08 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51570 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964807AbXCPOEG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 10:04:06 -0400
-Date: Fri, 16 Mar 2007 15:07:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Howells <dhowells@redhat.com>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org,
-       dhowells@redhat.com
-Subject: Re: [PATCH 3/5] AF_RXRPC: Make it possible to merely try to cancel
- timers and delayed work [try #2]
-Message-ID: <20070316150705.0b2fbeb0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070316125026.3740.56876.stgit@warthog.cambridge.redhat.com>
-References: <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com>
-	<20070316125026.3740.56876.stgit@warthog.cambridge.redhat.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Fri, 16 Mar 2007 10:07:28 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54604 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S964810AbXCPOH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 10:07:27 -0400
+X-Provags-ID: V01U2FsdGVkX19Es0ohlZNEk2xH9xsjBIFjBkuTBEqx59+EGa3KF7
+	GoryLDtnRFfWch
+Subject: Re: RSDL development plans
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
+       Al Boldi <a1426z@gawab.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200703170059.54320.kernel@kolivas.org>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703162325.05691.kernel@kolivas.org>
+	 <1174052523.8039.7.camel@Homer.simpson.net>
+	 <200703170059.54320.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Fri, 16 Mar 2007 15:07:18 +0100
+Message-Id: <1174054038.14632.0.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/**
-> + * try_to_cancel_delayed_work - Try to kill pending scheduled, delayed work
-> + * @work: the work to cancel
-> + *
-> + * Try to kill off a pending schedule_delayed_work().
-> + * - The timer may still be running afterwards, and if so, the work may still
-> + *   be pending
-> + * - Returns -1 if timer still active, 1 if timer removed, 0 if not scheduled
-> + * - Can be called from the work routine; if it's still pending, just return
-> + *   and it'll be called again.
-> + */
-> +static inline int try_to_cancel_delayed_work(struct delayed_work *work)
-> +{
-> +	int ret;
+On Sat, 2007-03-17 at 00:59 +1100, Con Kolivas wrote:
+> On Saturday 17 March 2007 00:42, Mike Galbraith wrote:
+> > On Fri, 2007-03-16 at 23:25 +1100, Con Kolivas wrote:
+> > > The good news is that in order to stay sane I've found ways of optimising
+> > > my computing position and could work for short stints on the rsdl code.
+> > > So I'll be releasing a new version shortly.
+> >
+> > Can you please make an incremental diff as well?  That will make it
+> > easier to see what changes have taken place, and make it easier to
+> > integrate those into hacked-upon trees.
+> 
+> They're already there in the subdirs.
+> ie
+> http://ck.kolivas.org/patches/staircase-deadline/2.6.20.3/2.6.20.3-rsdl-0.30-0.31.patch
+> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3/2.6.21-rc3-rsdl-0.30-0.31.patch
+> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2/2.6.21-rc3-mm2-rsdl-0.30-0.31.patch
 
-This expands to a fair bit of code and IMHO isn't an inline candidate.
+Ah, got it.  Thanks.
+
+	-Mike
 
