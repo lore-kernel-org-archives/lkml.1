@@ -1,93 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbXCPI6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXCPJJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753445AbXCPI6x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 04:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXCPI6w
+	id S932458AbXCPJJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 05:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXCPJJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 04:58:52 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:32291 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753445AbXCPI6v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 04:58:51 -0400
-Subject: Re: Stolen and degraded time and schedulers
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Dan Hecht <dhecht@vmware.com>
-Cc: Rik van Riel <riel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       dwalker@mvista.com, cpufreq@lists.linux.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, paulus@au1.ibm.com,
-       Zachary Amsden <zach@vmware.com>
-In-Reply-To: <45F9AE1D.7080203@vmware.com>
-References: <45F6D1D0.6080905@goop.org>
-	 <1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org>
-	 <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org>
-	 <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org>
-	 <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org>
-	 <45F85A62.8050001@vmware.com> <45F85BBB.70707@goop.org>
-	 <45F85F43.9030803@vmware.com> <45F866AF.9060609@goop.org>
-	 <45F999D4.6080602@vmware.com> <45F9A42D.7090205@goop.org>
-	 <45F9A788.1010008@vmware.com> <45F9A93A.2030400@redhat.com>
-	 <45F9AE1D.7080203@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Fri, 16 Mar 2007 09:59:01 +0100
-Message-Id: <1174035541.2811.13.camel@localhost>
+	Fri, 16 Mar 2007 05:09:36 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:31397 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753136AbXCPJJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 05:09:35 -0400
+Date: Fri, 16 Mar 2007 12:16:13 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org, devel@openvz.org,
+       adobriyan@gmail.com
+Subject: Re: [PATCH v5] Fix rmmod/read/write races in /proc entries
+Message-ID: <20070316091613.GA6810@localhost.sw.ru>
+References: <20070311170456.GA6808@localhost.sw.ru> <20070315175304.55b3486a.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070315175304.55b3486a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-15 at 13:35 -0700, Dan Hecht wrote:
-> >> Yes, the part in the "i.e." above is describing available time.  So, 
-> >> it is essentially is the same definition of stolen time VMI uses:
-> > 
-> >> stolen time     == ready to run but not running
-> >> available time  == running or not ready to run
-> > 
-> > S390 too.  We were quite careful to make sure that steal time
-> > means the same on the different platforms when the code was
-> > introduced.
-> > 
-> 
-> The S390 folks should correct me if I'm mistaken, but I think S390 works 
-> a bit differently.  I don't think their "steal clock" will differentiate 
-> between idle time and stolen time (since it's implemented as a hardware 
-> clock that counts the time a particular vcpu context is executing on the 
-> pcpu).  So they need the kernel to differentiate between really stolen 
-> time and just idle time.  At least, I assume this is why 
-> account_steal_time() can then sometimes account steal time towards idle, 
-> and looking at arch/s390/kernel/vtime.c seems to indicate this.
-> idle period.
+On Thu, Mar 15, 2007 at 05:53:04PM -0800, Andrew Morton wrote:
+> My, what a lot of code you have here.  I note that nobody can be assed even
+> reviewing it.  Now why is that?
 
-For s390 we have: stolen time == wanted to run but the hypervisor didn't
-let us. The way this is implemented is by using the cpu timer. This is a
-per-cpu register that is fully virtualized. It runs at the same rate as
-the clock, but only if the virtual cpu is scheduled to run. If the real
-cpu falls out of the guest context the guest cpu timer just stops. The
-wall clock (TOD) keeps ticking. The calculation to find the amount of
-stolen time is now simple: TOD clock - guest cpu timer.
-For idle there is a little pitfall. If the guest cpu is a dedicated cpu
-under LPAR loading a wait psw does not cause the guest cpu fall out of
-the guest context. The guest cpu timer will continue ticking. In this
-case the time spent in idle is accounted via system_time. If the guest
-cpu is a shared cpu then loading a wait psw will cause the cpu to fall
-out of guest context and the guest cpu timer will be stopped. In this
-case the idle time will be accounted via steal_time. 
+I hope, Al could find some time again.
 
--- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
+> On Sun, 11 Mar 2007 20:04:56 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
+> > Fix following races:
+> > ===========================================
+> > 1. Write via ->write_proc sleeps in copy_from_user(). Module disappears
+> >    meanwhile. Or, more generically, system call done on /proc file, method
+> >    supplied by module is called, module dissapeares meanwhile.
+> >
+> >    pde = create_proc_entry()
+> >    if (!pde)
+> > 	return -ENOMEM;
+> >    pde->write_proc = ...
+> > 				open
+> > 				write
+> > 				copy_from_user
+> >    pde = create_proc_entry();
+> >    if (!pde) {
+> > 	remove_proc_entry();
+> > 	return -ENOMEM;
+> > 	/* module unloaded */
+> >    }
+>
+> We usually fix that race by pinning the module: make whoever registered the
+> proc entries also register their THIS_MODULE, do a try_module_get() on it
+> before we start to play with data structures which the module owns.
+>
+> Can we do that here?
 
-"Reality continues to ruin my life." - Calvin.
+We can, but it will be unreliable:
 
+Typical proc entry creation sequence is
+
+	pde = create_proc_entry(...);
+	if (pde)
+		pde->owner = THIS_MODULE;
+
+Right after create_proc_entry() ->owner is NULL, so try_module_get()
+won't do anything, but proc_delete_inode() could put module which was
+never getted.
+
+This should fixable by always setting ->owner before proc entry is
+glued to proc entries tree. Something like this:
+
+	#define create_proc_entry(...) __create_proc_entry(..., THIS_MODULE)
+
+However, I think it's not enough: delete_module(2) first waits for
+refcount becoming zero, only then calls modules's exit function which
+starts removing proc entries. In between, proc entries are accessible
+and fully-functional, so try_module_get() can again get module and
+module_put(pde->owner) can happen AFTER module dissapears.
+What will it put?
+
+And how can you fix that? The only way I know is to REMOVE ->owner
+completely, once we agree on this pde_users/pde_unload_lock stuff.
+
+> And is the above race fix related to the below one in any fashion?
+> > ==========================================
+> > 2. bogo-revoke aka proc_kill_inodes()
+> >
+> >   remove_proc_entry		vfs_read
+> >   proc_kill_inodes		[check ->f_op validness]
+> > 				[check ->f_op->read validness]
+> > 				[verify_area, security permissions checks]
+> > 	->f_op = NULL;
+> > 				if (file->f_op->read)
+> > 					/* ->f_op dereference, boom */
+>
+> So you fixed this via sort-of-refcounting on pde->pde_users.
+>
+> hmm.
+
+Probably, you're right and they are independently fixable. It's all
+about following 3 lines after all. My turn to hmm...
+
+> > -		proc_kill_inodes(de);
+> > +		if (!S_ISREG(de->mode))
+> > +			proc_kill_inodes(de);
+
+
+
+> > +	spin_lock(&pde->pde_unload_lock);
+> > +	pde->pde_users--;
+> > +	if (pde->pde_unload_completion && pde->pde_users == 0)
+> > +		complete(pde->pde_unload_completion);
+> > +out_unlock:
+> > +	spin_unlock(&pde->pde_unload_lock);
+>
+> The above six lines happen rather a lot - perhaps it could be placed in a
+> helper funtion?
+
+OK. Should I send incremental updates or full patch again?
 
