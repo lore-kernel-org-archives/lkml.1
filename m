@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030321AbXCPXh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030201AbXCPXo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030321AbXCPXh4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 19:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030333AbXCPXh4
+	id S1030201AbXCPXo6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 19:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030333AbXCPXo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 19:37:56 -0400
-Received: from www.osadl.org ([213.239.205.134]:36948 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030321AbXCPXhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 19:37:54 -0400
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
-	far
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Arjan van de Ven <arjan@infradead.org>, Len Brown <lenb@kernel.org>
-In-Reply-To: <200703161230.03712.maximlevitsky@gmail.com>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-Content-Type: text/plain
-Date: Sat, 17 Mar 2007 00:44:46 +0100
-Message-Id: <1174088686.13341.347.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Mar 2007 19:44:58 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:25883 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030201AbXCPXo5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 19:44:57 -0400
+Date: Fri, 16 Mar 2007 17:44:25 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SATA problems in 2.6.20.3
+In-reply-to: <fa.lqWgqhKIlhgG3TXcvhBc/T7bPFE@ifi.uio.no>
+To: Charles Shannon Hendrix <shannon@widomaker.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <45FB2BD9.2070803@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.lqWgqhKIlhgG3TXcvhBc/T7bPFE@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim,
-
-On Fri, 2007-03-16 at 12:30 +0200, Maxim Levitsky wrote:
-> 3) Sometimes I get this (once in three boots or so)
+Charles Shannon Hendrix wrote:
+> I normally run a modified 2.6.19 kernel and it works great.
 > 
-> [   36.217405] ENABLING IO-APIC IRQs
-> [   36.217587] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-> [   36.433917] APIC timer disabled due to verification failure.
+> I recently tried 2.6.20 and had severe SATA problems with it.
 > 
-> And NO_HZ is disabled due to that (I get 1000/s timer's interrupts)
-> I haven't investigated that yet.
-> It looks like another new test that my hardware fails to perform... 
+> Yesterday I tried 2.6.20.3, and the problems are still there.
 
-Yes, this is probably caused by SMM code trying to emulate a PS/2
-keyboard from a (maybe connected or not) USB keyboard. Unfortunately we
-have no way to disable this BIOS misfeature in the early boot process. 
-Arjan, Len ?????
+Can you try 2.6.21-rc and see if the problem is fixed in those kernels?
 
-I built in this test to rule out bogus LAPIC timer calibration values
-which are sometimes off by factor 2-10.
-
-But I also built in a calibration against the PM-Timer, which turned out
-to be quite reliable and I think the additional verification step is
-only necessary for sytems without PM-Timer.
-
-That was a bit over cautious from my side. I send a patch to avoid this
-when PM-Timer is available in a separate mail.
-
-	tglx
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
