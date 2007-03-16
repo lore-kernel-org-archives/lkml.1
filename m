@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbXCPC2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752389AbXCPCf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752604AbXCPC2M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 22:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbXCPC2M
+	id S1752389AbXCPCf6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 22:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbXCPCf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 22:28:12 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36067 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751234AbXCPC2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 22:28:10 -0400
-Date: Fri, 16 Mar 2007 07:57:39 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Ian Campbell <Ian.Campbell@xensource.com>
-Cc: Horms <horms@verge.net.au>, hbabu@us.ibm.com, fastboot@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>,
-       Morton Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
-Message-ID: <20070316022739.GA10515@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <1173891609.8591.41.camel@localhost.localdomain> <20070315014635.GC28396@verge.net.au> <20070315045536.GA6766@in.ibm.com> <20070315050754.GB22329@verge.net.au> <20070315054726.GC6766@in.ibm.com> <1173961378.8591.63.camel@localhost.localdomain> <20070315132616.GH6766@in.ibm.com> <1173966159.8591.82.camel@localhost.localdomain>
+	Thu, 15 Mar 2007 22:35:58 -0400
+Received: from xenotime.net ([66.160.160.81]:59404 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751234AbXCPCf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 22:35:57 -0400
+Date: Thu, 15 Mar 2007 18:34:21 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@muc.de>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       arjan@infradead.org
+Subject: Re: CONFIG_REORDER Kconfig help strange sentence.
+Message-Id: <20070315183421.5b1cf51b.rdunlap@xenotime.net>
+In-Reply-To: <1173767855.10618.46.camel@localhost.localdomain>
+References: <1173741484.10618.25.camel@localhost.localdomain>
+	<20070312235605.GA14444@muc.de>
+	<1173767855.10618.46.camel@localhost.localdomain>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173966159.8591.82.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 01:42:39PM +0000, Ian Campbell wrote:
-> On Thu, 2007-03-15 at 18:56 +0530, Vivek Goyal wrote:
+On Tue, 13 Mar 2007 17:37:35 +1100 Rusty Russell wrote:
+
+> On Tue, 2007-03-13 at 00:56 +0100, Andi Kleen wrote:
+> > On Tue, Mar 13, 2007 at 10:18:03AM +1100, Rusty Russell wrote:
+> > > OK, this confused me:
+> > > 
+> > >         Function reordering (REORDER) [N/y/?] (NEW) ?
+> > >         
+> > >         This option enables the toolchain to reorder functions for a more 
+> > >         optimal TLB usage. If you have pretty much any version of binutils, 
+> > >         this can increase your kernel build time by roughly one minute.
+> > >         
+> > > "If you have pretty much any version of binutils"?  Huh?
+> > > 
+> > > You mean "This will slow your kernel build by about a minute"?
 > > 
-> > Ideal place for this probably should have been arch dependent
-> > crash_dump.h file. But we don't have one and no point introducing one
-> > just for this  macro.
+> > Yes. Lots of sections seem to trigger some quadratic behaviour in ld.
+> > 
+> > It might be fixed in some unreleased CVS version though (not 100% sure) 
+> > 
+> > -Andi
 > 
-> Agreed.
+> OK, well here is a patch for the moment.
 > 
-> > This change looks good to me. 
+> ==
+> Clarify CONFIG_REORDER explanation
 > 
-> Is there a kdump tree which you'll apply to or shall I resend CCing
-> apkm? (I'll add an Acked-by if that's ok).
+> if (1 && X) => if (X).
 > 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff -r de5618b5e562 arch/x86_64/Kconfig
+> --- a/arch/x86_64/Kconfig	Tue Mar 13 11:41:55 2007 +1100
+> +++ b/arch/x86_64/Kconfig	Tue Mar 13 17:27:05 2007 +1100
+> @@ -632,8 +632,8 @@ config REORDER
+>  	default n
+>  	help
+>           This option enables the toolchain to reorder functions for a more 
+> -         optimal TLB usage. If you have pretty much any version of binutils, 
+> -	 this can increase your kernel build time by roughly one minute.
+> +         optimal TLB usage.  This will slow your kernel build by
+> +	 roughly one minute.
 
-There is no separate kdump tree. Generally Andrew picks up these changes.
-I guess just resend it copying Andrew. Yes you can add Acked-by me.
+Please consistently use <tab><space><space> for help text.
+Yes, it was already mucked up.
 
-Thanks
-Vivek
+>  config K8_NB
+>  	def_bool y
+
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
