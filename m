@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965975AbXCPVxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965979AbXCPVxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965975AbXCPVxJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 17:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965970AbXCPVxJ
+	id S965979AbXCPVxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 17:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965977AbXCPVxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 17:53:09 -0400
-Received: from [212.12.190.214] ([212.12.190.214]:32939 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965975AbXCPVxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 17:53:07 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org
-Subject: Re: RSDL v0.31
-Date: Sat, 17 Mar 2007 00:55:30 +0300
-User-Agent: KMail/1.5
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200703042335.26785.a1426z@gawab.com> <200703162325.05691.kernel@kolivas.org> <200703170040.48316.kernel@kolivas.org>
-In-Reply-To: <200703170040.48316.kernel@kolivas.org>
+	Fri, 16 Mar 2007 17:53:51 -0400
+Received: from static-195-162-201-231.customer.tvd.be ([195.162.201.231]:47006
+	"EHLO postino.comnet.be" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S965979AbXCPVxt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 17:53:49 -0400
+X-Greylist: delayed 1211 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Mar 2007 17:53:49 EDT
+Message-ID: <63140.87.244.133.121.1174080813.squirrel@postino>
+Date: Fri, 16 Mar 2007 22:33:33 +0100 (CET)
+Subject: New kernel mouse recognition problem
+From: "Victor Fernandes" <Victor.Fernandes@comnet.be>
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703170055.30747.a1426z@gawab.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> Here are full patches for rsdl 0.31 for various base kernels. A full
-> announce with a fresh -mm series will follow...
->
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.20.3-rsdl-0.31.patch
+Dear kernel gurus,
 
-Thanks!  It looks much better now.
+I have a long experience with linux but not at the kernel level, so my
+apologies if this post is not appropriate for the list, but it seemed to
+me to be the only possible one to post my question.
 
-With X nice'd at -10, and 11 hogs loading the cpu, interactivity looks good 
-until the default timeslice/quota is exhausted and slows down.  Maybe 
-adjusting this according to nice could help.
+Obviously I've also tried to find the solution on the archives (and more)
+but found nothing appropriate.
 
-It may also be advisable to fix latencies according to nice, and adjust 
-timeslices instead.  This may help scaleability a lot, as there are some 
-timing sensitive apps that may crash under high load.
+Problem: It appears that the new kernels, I've actually kernel 2.6.17-5
+(Mandriva 2007) installed, and tested others on the 2.6.x range, do not
+recognition my "Track Point" mouse anymore. I have on the boot logs
+(syslog) the following message: "logips2pp: Detected unknown logitech
+mouse model 0".
 
+The same system with a kernel 2.6.12-12 (Mandriva 10.1) worked properly.
 
-Thanks!
+Is my mouse too old? Is this a bug? Are there any possibilities to solve
+the problem?
 
---
-Al
+Please Cc me directly on your replies because I'm not subscribe to the
+list, I hope this is OK. Obviously I'm more then happy to provide any
+required information.
+
+Thank you,
+
+Victor Fernandes
+
 
