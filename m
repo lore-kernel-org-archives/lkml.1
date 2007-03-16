@@ -1,81 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752448AbXCPCva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbXCPDUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752448AbXCPCva (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 22:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXCPCva
+	id S1752878AbXCPDUu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 23:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbXCPDUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 22:51:30 -0400
-Received: from xenotime.net ([66.160.160.81]:32961 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752448AbXCPCv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 22:51:29 -0400
-Date: Thu, 15 Mar 2007 18:49:54 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Artem Bityutskiy <dedekind@infradead.org>, linux-kernel@vger.kernel.org,
-       haver@vnet.ibm.com, hch@infradead.org, dwmw2@infradead.org
-Subject: Re: [PATCH 10/22 take 3] UBI: EBA unit
-Message-Id: <20070315184954.d3e44243.rdunlap@xenotime.net>
-In-Reply-To: <20070315232951.GA29295@crusty.rchland.ibm.com>
-References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-	<20070314152024.1112.15655.sendpatchset@localhost.localdomain>
-	<20070315110703.1c2dcce4.akpm@linux-foundation.org>
-	<20070315142410.371adbf0.rdunlap@xenotime.net>
-	<20070315232951.GA29295@crusty.rchland.ibm.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 15 Mar 2007 23:20:50 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:51466 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752878AbXCPDUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 23:20:49 -0400
+Date: Thu, 15 Mar 2007 19:20:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/3] Lumpy Reclaim V5
+Message-Id: <20070315192038.82933a2f.akpm@linux-foundation.org>
+In-Reply-To: <exportbomb.1173723760@pinky>
+References: <exportbomb.1173723760@pinky>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007 18:29:51 -0500 Josh Boyer wrote:
+On Mon, 12 Mar 2007 18:22:45 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
 
-> On Thu, Mar 15, 2007 at 02:24:10PM -0700, Randy Dunlap wrote:
-> > On Thu, 15 Mar 2007 11:07:03 -0800 Andrew Morton wrote:
-> > 
-> > > 
-> > > There's way too much code here to expect it to get decently reviewed, alas.
-> > 
-> > Yes.
-> > 
-> > /me repeats wish that Not Everything Should Be Sent to lkml.  :(
-> 
-> Just curious, but where would you suggest this be sent to for review then?
+> Following this email are three patches which represent the
+> current state of the lumpy reclaim patches; collectively lumpy V5.
 
-Valid question.  I should have chosen some other more appropriate
-patch to make that comment.
+So where do we stand with this now?    Does it make anything get better?
 
-I don't see a better list for UBI patches, so lkml is OK IMO.
-
-
-Here is a summary of my thinking on Linux-related mailing lists.
-
-1.  Bug reports can go to lkml or focused mailing lists.
-
-2.  Development (like patches) should go to focused mailing lists
-if there is such a list and they have enough usage.
-
-Development areas that qualify for this IMO are:
-- ACPI
-- ATA
-- file systems
-- frame buffer
-- ieee1394
-- MM/VM
-- multimedia
-- networking
-- PCI
-- power management, suspend/resume
-- SCSI
-- sound
-- USB
-- virtualization
-
-
-(not that I expect anything close to concensus on this)
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+I (continue to) think that if this is to be truly useful, we need some way
+of using it from kswapd to keep a certain minimum number of order-1,
+order-2, etc pages in the freelists.
