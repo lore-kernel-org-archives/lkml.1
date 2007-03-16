@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933567AbXCPLhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXCPLiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933567AbXCPLhu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 07:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbXCPLht
+	id S933585AbXCPLiQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 07:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933586AbXCPLiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 07:37:49 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:53209 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933567AbXCPLht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 07:37:49 -0400
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Pavel Emelianov <xemul@sw.ru>
-Subject: Re: [RFC] kernel/pid.c pid allocation wierdness
-Date: Fri, 16 Mar 2007 12:37:47 +0100
-User-Agent: KMail/1.9.5
-Cc: Oleg Nesterov <oleg@tv-sign.ru>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>
-References: <45F7A4B3.5040005@sw.ru> <20070314153341.GA770@tv-sign.ru> <45FA7823.2040104@sw.ru>
-In-Reply-To: <45FA7823.2040104@sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Mar 2007 07:38:15 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:42610 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933583AbXCPLiN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 07:38:13 -0400
+Date: Fri, 16 Mar 2007 17:08:01 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: Ian Campbell <Ian.Campbell@xensource.com>, Horms <horms@verge.net.au>,
+       fastboot@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [Fastboot] [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
+Message-ID: <20070316113801.GC5642@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <1173961378.8591.63.camel@localhost.localdomain> <20070315132616.GH6766@in.ibm.com> <20070315234807.GB10861@verge.net.au> <aec7e5c30703151940x7447abbey80cb6e47250cca58@mail.gmail.com> <1174030097.28658.37.camel@localhost.localdomain> <aec7e5c30703160059u108d984dt6bfb831603a887c5@mail.gmail.com> <1174035001.28658.61.camel@localhost.localdomain> <aec7e5c30703160220i3e8a03cbh431622975acbe72d@mail.gmail.com> <20070316093542.GB5642@in.ibm.com> <aec7e5c30703160305p5d91af41h147e3a6c2687bcd9@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703161237.48014.dada1@cosmosbay.com>
+In-Reply-To: <aec7e5c30703160305p5d91af41h147e3a6c2687bcd9@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 March 2007 11:57, Pavel Emelianov wrote:
-> Oleg Nesterov wrote:
-> > On 03/14, Eric W. Biederman wrote:
-> >> Pavel Emelianov <xemul@sw.ru> writes:
-> >>> Hi.
-> >>>
-> >>> I'm looking at how alloc_pid() works and can't understand
-> >>> one (simple/stupid) thing.
-> >>>
-> >>> It first kmem_cache_alloc()-s a strct pid, then calls
-> >>> alloc_pidmap() and at the end it taks a global pidmap_lock()
-> >>> to add new pid to hash.
-> >
-> > We need some global lock. pidmap_lock is already here, and it is
-> > only used to protect pidmap->page allocation. Iow, it is almost
-> > unused. So it was very natural to re-use it while implementing
-> > pidrefs.
-> >
-> >>> The question is - why does alloc_pidmap() use at least
-> >>> two atomic ops and potentially loop to find a zero bit
-> >>> in pidmap? Why not call alloc_pidmap() under pidmap_lock
-> >>> and find zero pid in pidmap w/o any loops and atomics?
-> >
-> > Currently we search for zero bit lockless, why do you want
-> > to do it under spin_lock ?
->
-> Search isn't lockless. Look:
->
-> while (1) {
->    if (!test_and_set_bit(...)) {
->        atomic_dec(&nr_free);
->        return pid;
->    }
->    ...
-> }
->
-> we use two atomic operations to find and set a bit in a map.
+On Fri, Mar 16, 2007 at 07:05:30PM +0900, Magnus Damm wrote:
+> On 3/16/07, Vivek Goyal <vgoyal@in.ibm.com> wrote:
+> >Got a question. When running 32bit dom0 on 64bit hypervisor, which
+> >kexec-tools elf loader will kick in? 32bit or 64bit? Looks like in this
+> >case 64bit one. But shouldn't it be 32bit as 32bit OS is running and we
+> >must be using the kexec-tools binary compiled for 32bit OS? And if 32bit
+> >loader kicks in we will not be passing any acpi parameters.
+> 
+> There is no check to see if the hypervisor is 32 or 64 bits present
+> today. So the 32-bit version of kexec-tools will support loading
+> images like any other 32-bit kexec-tools.
+> 
 
-The finding of the zero bit is done without lock. (Search/lookup)
+If that is the case then in prepared elf headers, machine type should
+be EM_386 or similar and not EM_X86_64 and Ian shouldn't have run into
+the problem at all with vmcore. Am I missing something?
 
-Then , the reservation of the found bit (test_and_set_bit) is done, and 
-decrement of nr_free. It may fail because the search was done lockless.
-
-Finding a zero bit in a 4096 bytes array may consume about 6000 cycles on 
-modern hardware. Much more on SMP/NUMA machines, or on machines where 
-PAGE_SIZE is 64K instead of 4K :)
-
-You don't want to hold pidmad_lock for so long period.
-
+Thanks
+Vivek
