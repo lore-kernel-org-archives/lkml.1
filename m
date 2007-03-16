@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbXCPSgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbXCPSh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751605AbXCPSgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 14:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbXCPSgV
+	id S1753243AbXCPSh5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 14:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbXCPSh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 14:36:21 -0400
-Received: from mx1.suse.de ([195.135.220.2]:45446 "EHLO mx1.suse.de"
+	Fri, 16 Mar 2007 14:37:57 -0400
+Received: from mga01.intel.com ([192.55.52.88]:23922 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751605AbXCPSgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 14:36:20 -0400
-Message-ID: <5920992.1174070178992.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
-Date: Fri, 16 Mar 2007 19:36:18 +0100 (CET)
-From: Andreas Kleen <ak@suse.de>
-To: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH] Add an offset in the cyc2ns computation to fix	sched_clock jumps
-Cc: Guillaume Chazarain <guichaz@gmail.com>, john stultz <johnstul@us.ibm.com>,
-       mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org
-In-Reply-To: <1174069846.3101.113.camel@imap.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	id S1751613AbXCPSh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 14:37:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,293,1170662400"; 
+   d="scan'208"; a="213938417:sNHT21956543"
+Message-ID: <45FAE3F3.1070807@intel.com>
+Date: Fri, 16 Mar 2007 11:37:39 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.10 (X11/20070311)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
+References: <20070313040828.GA17893@redhat.com> <m1wt1ltveu.fsf@ebiederm.dsl.xmission.com> <20070316162117.GA3951@ucw.cz>
+In-Reply-To: <20070316162117.GA3951@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (normal)
-X-Mailer: SuSE Linux Openexchange Server 4 - WebMail (Build 2.4160)
-X-Operating-System: Linux 2.4.21-314-smp i386 (JVM 1.3.1_19)
-Organization: SuSE Linux AG
-References: <3d8471ca0703161114o7ad654car60c1a6b801401149@mail.gmail.com> <1174069846.3101.113.camel@imap.mvista.com>
+X-OriginalArrivalTime: 16 Mar 2007 18:37:40.0519 (UTC) FILETIME=[2D70A370:01C767FA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Fr 16.03.2007 19:30 schrieb Daniel Walker <dwalker@mvista.com>:
+Pavel Machek wrote:
+> Hi!
+> 
+>>> Seeing a couple of MSI changes in there, on a hunch I booted latest tree with
+>>> pci=nomsi, and it resumed again.
+>>>
+>>> Any ideas how to further debug this?
+>>> I'll try backing out individual changes from that merge tomorrow.
+>> Thanks.  
+>>
+>> Of those msi patches you have identified I don't see anything really
+>> obvious.  And you actually marked them as good in your bisect so
+>> I don't expect it is core problem.
+>>
+>> We do have a known e1000 regression, with msi and suspend/resume.
 
-> On Fri, 2007-03-16 at 19:14 +0100, Guillaume Chazarain wrote:
-> > Hello,
-> >
-> > The scheduling problems I reported in the thread:
-> > http://lkml.org/lkml/2007/3/3/128
-> > are caused by the set_cyc2ns_scale() function called when the CPU
-> > speed changes.
-> > Changing the scale causes a warp in the value returned by
-> > sched_clock().
-> >
->
-> Did you explain what the "werirdnes" was exactly? If not, could you?
+still? I tested this against rc3 and it's mostly just fine. even with msi enabled.
 
-I fixed this in my own version of the change by marking it unstable
-during the transition
-(concept stolen from Jiri's patch). Basically watch the notifiers for
-before/after
-and while the transition is in progress always ask for that underlying
-monotonic ktime.
+>> So it is possible the nomsi avoided a driver problem.  Especially
+>> as we have a number of driver changes on the on Linus's side of
+>> that merge.
+>>
+>> I also know we have some known issues with pci_save_state and
+>> pci_restore_state that require them to be paired for correct
+>> operation.  For suspend and resume that is not generally a problem.
+>>
+>> I have fixes for the pci_save_state and pci_restore_state in the -mm
+>> and gregkh tree's.  Since they also happen to fix the e1000 driver as
+>> a side effect they are worth looking at, at least if you have an
+>> e1000.
 
--Andi
+hey, please include me on those!
 
+>> I don't have a clue which hardware the x60 has so I don't know which
+>> drivers it would be using.
+> 
+> x60 indeed has e1000.
 
+yup.
+
+Auke
