@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965716AbXCPRIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965748AbXCPRJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965716AbXCPRIt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 13:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965712AbXCPRIt
+	id S965748AbXCPRJn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 13:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965712AbXCPRJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 13:08:49 -0400
-Received: from gw.goop.org ([64.81.55.164]:33616 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965716AbXCPRIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 13:08:48 -0400
-Message-ID: <45FACF1B.5010709@goop.org>
-Date: Fri, 16 Mar 2007 10:08:43 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch 15/26] Xen-paravirt_ops: Add apply_to_page_range() which
- applies a function to a pte range.
-References: <20070301232443.195603797@goop.org> <20070301232528.155002121@goop.org> <20070316091940.GJ23174@elte.hu>
-In-Reply-To: <20070316091940.GJ23174@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 Mar 2007 13:09:42 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:21497
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965748AbXCPRJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 13:09:42 -0400
+Message-Id: <45FADD70.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Fri, 16 Mar 2007 17:09:52 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Virtualization Mailing List" <virtualization@lists.osdl.org>,
+       "Andrew Morton" <akpm@osdl.org>, "Linus Torvalds" <torvalds@osdl.org>,
+       "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Chris Wright" <chrisw@sous-sol.org>, "Andi Kleen" <ak@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Zachary Amsden" <zach@vmware.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [RFC, PATCH] Fixup COMPAT_VDSO to work
+	with	CONFIG_PARAVIRT
+References: <45FA054F.6020107@vmware.com> <45FA0D13.6080601@goop.org>
+ <45FA16FE.7010805@vmware.com> <45FA26DA.7020109@goop.org>
+ <45FA5E7B.76E4.0078.0@novell.com> <45FAC9FB.6070800@goop.org>
+In-Reply-To: <45FAC9FB.6070800@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> nice one! I suspect we could simplify some of the less 
-> performance-critical open-coded pagetable walker loops in the kernel 
-> with this? (i'm not even sure it's all that much of a performance loss 
-> to pass a function pointer around - would be nice to convert say 
-> mprotect() to this and see the performance difference?)
->   
+>>> Jeremy Fitzhardinge <jeremy@goop.org> 16.03.07 17:46 >>>
+>Jan Beulich wrote:
+>> I have one, too (which is one reasone why I created the original Xen patch).
+>>   
+>
+>It's some version of SuSE 9, right?  What glibc version?
 
-apply_page_to_range has the side-effect of allocating all the pagetable
-levels for the address range it walks.  Xen uses this to populate
-pagetables (for example, build out the pagetable, and let the hypervisor
-plug a mapping into the pte page).
+Yes. 2.3.2.
 
-If that's OK for the other uses, then it should be good.
-
-    J
+Jan
