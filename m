@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965979AbXCPVxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965966AbXCPV4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965979AbXCPVxv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 17:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965977AbXCPVxv
+	id S965966AbXCPV4c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 17:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965980AbXCPV4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 17:53:51 -0400
-Received: from static-195-162-201-231.customer.tvd.be ([195.162.201.231]:47006
-	"EHLO postino.comnet.be" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S965979AbXCPVxt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 17:53:49 -0400
-X-Greylist: delayed 1211 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Mar 2007 17:53:49 EDT
-Message-ID: <63140.87.244.133.121.1174080813.squirrel@postino>
-Date: Fri, 16 Mar 2007 22:33:33 +0100 (CET)
-Subject: New kernel mouse recognition problem
-From: "Victor Fernandes" <Victor.Fernandes@comnet.be>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.4
+	Fri, 16 Mar 2007 17:56:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:53098 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965966AbXCPV4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 17:56:31 -0400
+Message-ID: <45FB1288.5080909@goop.org>
+Date: Fri, 16 Mar 2007 14:56:24 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Roland McGrath <roland@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [patch 17/26] Xen-paravirt_ops: Add nosegneg capability to the
+ vsyscall page notes
+References: <20070316212655.B6C6B1801C5@magilla.sf.frob.com>
+In-Reply-To: <20070316212655.B6C6B1801C5@magilla.sf.frob.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear kernel gurus,
+Roland McGrath wrote:
+> This should be:
+>
+> NOTE_KERNELCAP_BEGIN(1, 1)
+> NOTE_KERNELCAP(0, "nosegneg")
+> NOTE_KERNELCAP_END
+>
+> i.e. 1->0 in the "bit" member.  (Note the ld.so.conf.d file must have the
+> matching bit number for ldconfig-based lookups to do the right thing.)
+> Or else:
+>
+> NOTE_KERNELCAP_BEGIN(1, 2)
+> NOTE_KERNELCAP(0, "nosegneg")
+> NOTE_KERNELCAP_END
+>
+> i.e. 1->2 in the "mask" member.  (The mask value should be 1<<bit.)
+>   
 
-I have a long experience with linux but not at the kernel level, so my
-apologies if this post is not appropriate for the list, but it seemed to
-me to be the only possible one to post my question.
+Thanks Roland.  I've never really understood this stuff, and I just
+copied this cargo-cultishly.
 
-Obviously I've also tried to find the solution on the archives (and more)
-but found nothing appropriate.
+I'm not quite sure what you're suggesting here though.  Do you mean one of:
 
-Problem: It appears that the new kernels, I've actually kernel 2.6.17-5
-(Mandriva 2007) installed, and tested others on the 2.6.x range, do not
-recognition my "Track Point" mouse anymore. I have on the boot logs
-(syslog) the following message: "logips2pp: Detected unknown logitech
-mouse model 0".
+NOTE_KERNELCAP_BEGIN(1, 1)
+NOTE_KERNELCAP(0, "nosegneg")
+NOTE_KERNELCAP_END
 
-The same system with a kernel 2.6.12-12 (Mandriva 10.1) worked properly.
+or
 
-Is my mouse too old? Is this a bug? Are there any possibilities to solve
-the problem?
+NOTE_KERNELCAP_BEGIN(1, 2)
+NOTE_KERNELCAP(1, "nosegneg")
+NOTE_KERNELCAP_END
 
-Please Cc me directly on your replies because I'm not subscribe to the
-list, I hope this is OK. Obviously I'm more then happy to provide any
-required information.
+is the correct thing to use?
 
-Thank you,
+> Some pre-release glibc's (before 2.4) had a bug in the code that parses
+> this, and would crash parsing the correct note.  Using the wrong bit value
+> with nonmatching mask worked around this.  IIRC, no glibc release ever
+> included the buggy version of the code.  In nonbuggy glibc, the mismatched
+> value causes the "nosegneg" to be omitted from the directory search (under
+> LD_LIBRARY_PATH and default directories), though ldconfig-based lookups
+> will work (the most common case).
+>   
 
-Victor Fernandes
+Are you saying that one of the corrected forms might cause old glibcs to
+crash, or just ignore nosegneg?
 
+    J
 
