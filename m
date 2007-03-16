@@ -1,109 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbXCPJOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbXCPJPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbXCPJOF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 05:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXCPJOF
+	id S932471AbXCPJPb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 05:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932444AbXCPJPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 05:14:05 -0400
-Received: from max.feld.cvut.cz ([147.32.192.36]:35750 "EHLO max.feld.cvut.cz"
+	Fri, 16 Mar 2007 05:15:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37564 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753136AbXCPJOB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 05:14:01 -0400
-From: CIJOML <cijoml@volny.cz>
-To: Oliver Neukum <oneukum@suse.de>
-Subject: Re: kernel OOPSes when changing DVB-T adapter in 2.6.21-rc3
-Date: Fri, 16 Mar 2007 10:13:36 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-dvb@linuxtv.org,
-       linux-kernel@vger.kernel.org
-References: <200703091641.54249.cijoml@volny.cz> <200703151226.42316.cijoml@volny.cz> <200703151502.32161.oneukum@suse.de>
-In-Reply-To: <200703151502.32161.oneukum@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+	id S932471AbXCPJP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 05:15:29 -0400
+Date: Fri, 16 Mar 2007 10:14:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Adrian Bunk <bunk@stusta.de>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 20/26] Xen-paravirt_ops: Core Xen implementation
+Message-ID: <20070316091411.GF23174@elte.hu>
+References: <20070301232443.195603797@goop.org> <20070301232528.812011702@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703161013.37312.cijoml@volny.cz>
+In-Reply-To: <20070301232528.812011702@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-looks like more general problem with 2.6.21-rc3. This happens when I remove my 
-PCMCIA USB2.0/IEEE1384 adapter from slot:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-BUG: unable to handle kernel NULL pointer dereference at virtual address 
-00000094
- printing eip:
-c023e817
-*pde = 00000000
-Oops: 0000 [#1]
-PREEMPT
-Modules linked in: bnep rfcomm hidp l2cap lp wlan_tkip fuse eeprom hci_usb 
-bluetooth eth1394 usbhid 8250_pci 8250 serial_core wlan_scan_sta 
-ath_rate_sample snd_intel8x0 snd_intel8x0m ath_pci nsc_ircc snd_ac97_codec 
-wlan irda ide_cd ac97_bus parport_pc 8139too mii ohci1394 ieee1394 ath_hal(P) 
-crc_ccitt iTCO_wdt iTCO_vendor_support psmouse pcspkr rtc cdrom ohci_hcd 
-snd_pcm snd_timer snd snd_page_alloc parport i2c_i801 uhci_hcd ehci_hcd
-CPU:    0
-EIP:    0060:[<c023e817>]    Tainted: P       VLI
-EFLAGS: 00010246   (2.6.21-rc3 #2)
-EIP is at class_device_remove_attrs+0xa/0x30
-eax: f7b37b18   ebx: 00000000   ecx: f896f244   edx: 00000000
-esi: 00000000   edi: f7b37b18   ebp: 00000000   esp: c1b99e4c
-ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
-Process pccardd (pid: 788, ti=c1b98000 task=c1b7ea70 task.ti=c1b98000)
-Stack: f7b37b18 f7b37b20 00000000 c023e8e1 00000000 f7b37b18 f7b379c4 f895eccf
-       00000000 c023e917 f7b37990 f895ecb6 f8964381 66241c89 0000000d 00000303
-       fcb2c05f 00000000 00000000 f78f2000 f895ecd7 c023c2ec f78f20a4 f78f20a4
-Call Trace:
- [<c023e8e1>] class_device_del+0xa4/0xd2
- [<f895eccf>] __nodemgr_remove_host_dev+0x0/0xb [ieee1394]
- [<c023e917>] class_device_unregister+0x8/0x10
- [<f895ecb6>] nodemgr_remove_ne+0x61/0x7a [ieee1394]
- [<fcb2c05f>] ether1394_mac_addr+0x0/0x12 [eth1394]
- [<f895ecd7>] __nodemgr_remove_host_dev+0x8/0xb [ieee1394]
- [<c023c2ec>] device_for_each_child+0x1a/0x3c
- [<f895eff6>] nodemgr_remove_host+0x30/0x90 [ieee1394]
- [<f895c538>] __unregister_host+0x1a/0xa6 [ieee1394]
- [<c0125dd1>] flush_cpu_workqueue+0x94/0xb1
- [<f895c74f>] highlevel_remove_host+0x21/0x42 [ieee1394]
- [<f895c2c9>] hpsb_remove_host+0x37/0x56 [ieee1394]
- [<f895120c>] ohci1394_pci_remove+0x44/0x1c7 [ohci1394]
- [<c01de144>] pci_device_remove+0x16/0x35
- [<c023e037>] __device_release_driver+0x6e/0x8b
- [<c023e421>] device_release_driver+0x1d/0x32
- [<c023dadb>] bus_remove_device+0x5b/0x69
- [<c023c612>] device_del+0xfa/0x152
- [<c023c672>] device_unregister+0x8/0x10
- [<c01db65c>] pci_stop_dev+0x20/0x4e
- [<c01db745>] pci_remove_bus_device+0x26/0x8c
- [<c01db7c5>] pci_remove_behind_bridge+0x1a/0x2d
- [<c0254d3a>] socket_shutdown+0x6d/0xb3
- [<c0254d9c>] socket_remove+0x1c/0x26
- [<c0255391>] pccardd+0x138/0x1f3
- [<c011602c>] default_wake_function+0x0/0xc
- [<c0255259>] pccardd+0x0/0x1f3
- [<c0128750>] kthread+0xa0/0xc8
- [<c01286b0>] kthread+0x0/0xc8
- [<c0104823>] kernel_thread_helper+0x7/0x10
- =======================
-Code: ff c3 85 c0 74 08 83 c0 08 e9 05 fe f4 ff b8 ea ff ff ff c3 85 c0 74 08 
-83 c0 08 e9 98 e1 f4 ff c3 57 56 53 89 c7 8b 70 44 31 db <83> be 94 00 00 00 
-00 75 09 eb 17 89 f8 e8 d7 ff ff ff 89 da 03
-EIP: [<c023e817>] class_device_remove_attrs+0xa/0x30 SS:ESP 0068:c1b99e4c
+> Core Xen Implementation
+> 
+> This patch is a rollup of all the core pieces of the Xen 
+> implementation, including booting, memory management, interrupts, time 
+> and so on.
 
+> --- a/arch/i386/kernel/head.S
+> +++ b/arch/i386/kernel/head.S
+> @@ -535,6 +535,10 @@ unhandled_paravirt:
+>  	ud2
+>  #endif
+>  
+> +#ifdef CONFIG_XEN
+> +#include "../xen/xen-head.S"
+> +#endif
 
-Dne ètvrtek 15 bøezen 2007 15:02 Oliver Neukum napsal(a):
-> Am Donnerstag, 15. März 2007 12:26 schrieb CIJOML:
-> > Hi,
-> >
-> > 2.6.20 is fine
-> >
-> > Michal
->
-> Could you narrow it down a bit? Does rc2 work?
->
-> 	Regards
-> 		Oliver
+i'd suggest to remove the #ifdef and push it into xen-head.S.
+
+>  /*
+>   * BSS section
+>   */
+> -.section ".bss.page_aligned","w"
+> +.section ".bss.page_aligned","wa"
+
+why is this done?
+
+>  ENTRY(swapper_pg_dir)
+> +	.align PAGE_SIZE_asm
+>  	.fill 1024,4,0
+
+does the native kernel lose memory here?
+
+> @@ -437,9 +437,9 @@ static unsigned long native_store_tr(voi
+>  
+>  static void native_load_tls(struct thread_struct *t, unsigned int cpu)
+>  {
+> -#define C(i) get_cpu_gdt_table(cpu)[GDT_ENTRY_TLS_MIN + i] = t->tls_array[i]
+> -	C(0); C(1); C(2);
+> -#undef C
+> +	get_cpu_gdt_table(cpu)[GDT_ENTRY_TLS_MIN + 0] = t->tls_array[0];
+> +	get_cpu_gdt_table(cpu)[GDT_ENTRY_TLS_MIN + 1] = t->tls_array[1];
+> +	get_cpu_gdt_table(cpu)[GDT_ENTRY_TLS_MIN + 2] = t->tls_array[2];
+>  }
+
+this is a cleanup unrelated to the purpose of the patch.
+
+> +static void xen_safe_halt(void)
+> +{
+> +	stop_hz_timer();
+> +	/* Blocking includes an implicit local_irq_enable(). */
+> +	if (HYPERVISOR_sched_op(SCHEDOP_block, 0) != 0)
+> +		BUG();
+> +	start_hz_timer();
+> +}
+
+change this to tick_nohz_stop_sched_tick()/restart_sched_tick() instead.
+
+> +static void xen_halt(void)
+> +{
+> +#if 0
+> +	if (irqs_disabled())
+> +		HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL);
+> +#endif
+
+hm?
+
+> +		op->arg1.linear_addr = arbitrary_virt_to_machine((unsigned long)addr).maddr;
+
+80+ chars line. (there are more instances of this throughout the patch)
+
+> +	for (va = dtr->address, f = 0;
+> +	     va < dtr->address + size;
+> +	     va += PAGE_SIZE, f++) {
+> +		frames[f] = virt_to_mfn(va);
+> +		make_lowmem_page_readonly((void *)va);
+> +	}
+
+coding style.
+
+> +	/* This is used very early, so we can't rely on per-cpu data
+> +	   being set up, so no multicalls */
+
+comment coding style. (there are instances of this throughout the patch)
+
+> +	spin_lock(&lock);
+> +	for(in = out = 0; in < count; in++) {
+
+missing whitespace.
+
+> +		if (HYPERVISOR_update_descriptor(virt_to_machine(dt + entry*8).maddr,
+
+80+ chars.
+
+> +static void xen_set_iopl_mask(unsigned mask)
+> +{
+> +#if 0
+> +	struct physdev_set_iopl set_iopl;
+> +
+> +	/* Force the change at ring 0. */
+> +	set_iopl.iopl = (mask == 0) ? 1 : (mask >> 12) & 3;
+> +	HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl);
+> +#endif
+
+hm?
+
+> +	}
+> +
+> +	write_pda(xen.cr3, cr3);
+> +
+> +
+> +	{
+
+unnecessary newline.
+
+> +static struct irq_chip xen_dynamic_chip __read_mostly = {
+> +	.name		= "xen-virq",
+> +	.mask		= disable_dynirq,
+> +	.unmask		= enable_dynirq,
+> +	.ack		= ack_dynirq,
+> +	.set_affinity	= set_affinity_irq,
+> +	.retrigger	= retrigger_dynirq,
+> +};
+
+nicely done! :-)
+
+> +void xen_set_pte(pte_t *ptep, pte_t pte)
+> +{
+> +#if 1
+> +	struct mmu_update u;
+> +
+> +	u.ptr = virt_to_machine(ptep).maddr;
+> +	u.val = pte_val_ma(pte);
+> +	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
+> +		BUG();
+> +#else
+> +	ptep->pte_high = pte.pte_high;
+> +	smp_wmb();
+> +	ptep->pte_low = pte.pte_low;
+> +#endif
+
+hm?
+
+> +	pgd = swapper_pg_dir + pgd_index(vaddr);
+> +	if (pgd_none(*pgd)) {
+> +		BUG();
+> +		return;
+
+hm?
+
+> +void xen_pte_clear(struct mm_struct *mm, unsigned long addr,pte_t *ptep)
+> +{
+> +#if 1
+> +	ptep->pte_low = 0;
+> +	smp_wmb();
+> +	ptep->pte_high = 0;
+> +#else
+> +	set_64bit((u64 *)ptep, 0);
+> +#endif
+
+hm?
+
+> +unsigned long xen_pmd_val(pmd_t pmd)
+> +{
+> +	BUG();
+> +	return 0;
+> +}
+
+make it noret.
+
+> +pmd_t xen_make_pmd(unsigned long pmd)
+> +{
+> +	BUG();
+> +	return __pmd(0);
+> +}
+
+ditto.
+
+> +static void xen_timer_interrupt_hook(void)
+> +{
+
+> +				runstate->time[RUNSTATE_offline] -
+> +				__get_cpu_var(processed_stolen_time);
+
+NACK for now, for the reasons outlined in the 'stolen time' thread. 
+Stolen time accounting is a concept only related to the scheduler tick, 
+it's not a concept that should leak into normal timer interrupt 
+concepts.
+
+> +	/* System-wide jiffy work. */
+> +	ticks = 0;
+> +	while(delta > NS_PER_TICK) {
+> +		delta -= NS_PER_TICK;
+> +		processed_system_time += NS_PER_TICK;
+> +		ticks++;
+> +	}
+> +	do_timer(ticks);
+
+that should be updated to clockevents. (i suspect it already is?)
+
+> +
+> +#if 0
+> +	if (unlikely((mfn >> machine_to_phys_order) != 0))
+> +		return max_mapnr;
+> +#endif
+
+hm?
+
+	Ingo
