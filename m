@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbXCPI4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932348AbXCPI5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbXCPI4a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 04:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbXCPI43
+	id S932348AbXCPI5A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 04:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbXCPI4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 04:56:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36465 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753029AbXCPI4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 04:56:16 -0400
-Date: Fri, 16 Mar 2007 09:54:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 21/26] Xen-paravirt_ops: Use the hvc console infrastructure for Xen console
-Message-ID: <20070316085451.GE23174@elte.hu>
-References: <20070301232443.195603797@goop.org> <20070301232528.926984984@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301232528.926984984@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 16 Mar 2007 04:56:34 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:34643 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S932471AbXCPIvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 04:51:08 -0400
+Message-ID: <374035059.35424@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Message-Id: <20070316085052.550263000@mail.ustc.edu.cn>
+References: <20070316084856.687942000@mail.ustc.edu.cn>
+User-Agent: quilt/0.45-1
+Date: Fri, 16 Mar 2007 16:49:03 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 07/14] readahead: call scheme: catch thrashing on lookahead time
+Content-Disposition: inline; filename=readahead-call-scheme-catch-thrashing-on-lookahead-time.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Move the call to thrashing_recovery_readahead() before state_based_readahead().
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+That catches the rare case where thrashing happened on the time we are to read
+the page at ra->lookahead_index. Obviously this case should be handled by
+thrashing_recovery_readahead() instead of state_based_readahead().
 
-> Implement a Xen back-end for hvc console.
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ mm/readahead.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-> +	cons = intf->out_cons;
-> +	prod = intf->out_prod;
-> +	mb();
-> +	BUG_ON((prod - cons) > sizeof(intf->out));
-> +
-> +	while ((sent < len) && ((prod - cons) < sizeof(intf->out)))
-> +		intf->out[MASK_XENCONS_IDX(prod++, intf->out)] = data[sent++];
-> +
-> +	wmb();
-> +	intf->out_prod = prod;
+--- linux-2.6.21-rc3-mm2.orig/mm/readahead.c
++++ linux-2.6.21-rc3-mm2/mm/readahead.c
+@@ -1638,6 +1638,13 @@ page_cache_readahead_adaptive(struct add
+ 		return initial_readahead(mapping, filp, ra, req_size);
+ 
+ 	/*
++	 * Recover from possible thrashing.
++	 */
++	if (!page && offset - ra->prev_page <= 1 && ra_has_index(ra, offset))
++		return thrashing_recovery_readahead(mapping, filp, ra,
++								offset, ra_max);
++
++	/*
+ 	 * State based sequential read-ahead.
+ 	 */
+ 	if (offset == ra->prev_page + 1 &&
+@@ -1647,13 +1654,6 @@ page_cache_readahead_adaptive(struct add
+ 						offset, req_size, ra_max);
+ 
+ 	/*
+-	 * Recover from possible thrashing.
+-	 */
+-	if (!page && offset - ra->prev_page <= 1 && ra_has_index(ra, offset))
+-		return thrashing_recovery_readahead(mapping, filp, ra,
+-								offset, ra_max);
+-
+-	/*
+ 	 * Backward read-ahead.
+ 	 */
+ 	if (!page && try_backward_prefetching(ra, offset, req_size, ra_max))
 
-> +	prod = intf->in_prod;
-> +	mb();
-> +	BUG_ON((prod - cons) > sizeof(intf->in));
-
-such mb()'s are typically a sign of "i have no clear idea what SMP 
-serialization rules apply here, but something is needed because 
-otherwise it breaks" ?
-
-	Ingo
+--
