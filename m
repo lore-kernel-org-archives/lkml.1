@@ -1,121 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbXCPPZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbXCPP3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526AbXCPPZc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 11:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXCPPZc
+	id S1753537AbXCPP3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 11:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbXCPP3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 11:25:32 -0400
-Received: from rnd-off.balt.net ([195.14.167.137]:23911 "EHLO barclay.balt.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753526AbXCPPZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 11:25:30 -0400
-X-Greylist: delayed 1802 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Mar 2007 11:25:30 EDT
-Subject: LOCKDEP warning if CONFIG_DETECT_SOFTLOCKUP=y
-From: Zilvinas Valinskas <zilvinas@wilibox.com>
-Reply-To: zilvinas@wilibox.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 16 Mar 2007 16:55:25 +0200
-Message-Id: <1174056925.17967.15.camel@zv.wilibox.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Fri, 16 Mar 2007 11:29:12 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:47528 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbXCPP3L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 11:29:11 -0400
+Message-ID: <45FAB6C5.8050302@student.ltu.se>
+Date: Fri, 16 Mar 2007 16:24:53 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+CC: Kernel Janitors List <kernel-janitors@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: [RFC] A need for "yesno"-function? (and "cleanup" of kernel.h) (was:
+ Re: [KJ] [RFC] A need for a "yesno"-function?)
+References: <45F95351.60308@student.ltu.se> <39e6f6c70703152036m778ea054gf32723d0eda2be68@mail.gmail.com>
+In-Reply-To: <39e6f6c70703152036m778ea054gf32723d0eda2be68@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello lkml, 
+Added LKML to the Cc: to see if there is someone there who also have any 
+comments...
 
-Booting ixp4xx/ARM/BE  with lockdep enabled to test my code, I got a
-lockdep warning (see below). Does it mean that soft-lockup detector is
-started too early ?  Any advice how to approach and fix the problem are
-appreciated very much. If CONFIG_DETECT_SOFTLOCKUP=n, lockdep does not
-complain.
+Arnaldo Carvalho de Melo wrote:
+> On 3/15/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
+>> Hi
+>>
+>> Was just checking up the 'sparse' when I saw something like "abc"[value]
+>> and thought: what about the (statement) ? "yes" : "no" I have seen in
+>> the kernel.
+>>
+>> Ran:
+>> grep -Enr "\?.*y.*\:.*n" *
+>> and to my surprise, it was not so false-positive-prone and there are
+>> many who does it. (Piping it to "grep yes" resulted in 153 hits) So I
+>> thought, if we could standardize this and eliminate some jmp-commands
+>> while doing it (the compiler should make the functions below inline), it
+>> might be interesting.
+>>
+>> char yesno_chr(const bool value)
+>> {
+>>         return "ny"[value];
+>> }
+>>
+>> char *yesno_str(const bool value)
+>> {
+>>         return &"no\0yes"[3 * value];
+>> }
+>>
+>>
+>> (there may be better names for them)
+>> I believe this should be slightly faster. I wrote two programs (one for
+>> each approach) and used 'time' while running them, and in a loop of
+>> 1000,000 I found the above to be slightly faster, but the variations
+>> between runs were larger.
+>> So maybe it is as well to write: return value ? "yes" : "no"; but i
+>> think there is a need for this kind of functions at least.
+>>
+>> Thoughts?
+>
+> The function makes sense, how you implement it? Something simple as
+> this is hardly on a fast path 8)
+True, but every cycled wasted... ;)
+But a (condition) ? "yes" : "no" is preferable here, I guess (as it is 
+more readable). The big problem is, where to put it? Seems wrong to put 
+in <linux/string.h> since it appear to be a replica of userspace's 
+<string.h> (otherwise, why put mem*-functions in there?).
+A new file? What would it be then, "string_generic.h" maybe, and perhaps 
+put in the pr_(info/debug), KERN_(WARN/...) and v?printk() (well, all 
+those functions) in there. This means it will have to be included by 
+<linux/kernel.h> but I think it would be a good thing to split out a few 
+functions from it.
 
-Kernel is vanilla 2.6.21-rc4 + lockdep-stacktrace.diff from
-http://svn.wantstofly.org/kernel/ repository.
+Just putting some ideas out there, any suggestions?
 
-
-[    0.000000] Linux version 2.6.21-rc4 (zilvinas@zv) (gcc version 4.2.0 20070207 (prerelease) (http://www.wilibox.com)) #12 Fri Mar 16 16:05:39 EET 2007
-[    0.000000] CPU: XScale-IXP42x Family [690541f1] revision 1 (ARMv5TE), cr=000039ff
-[    0.000000] Machine: Intel IXDP425 Development Platform
-[    0.000000] Memory policy: ECC disabled, Data cache writeback
-...
-
-[    0.000000] Built 1 zonelists.  Total pages: 16256
-[    0.000000] Kernel command line: initcall_debug loglevel=8 i2c_debug=9 root=/dev/mtdblock2 console=ttyS0,115200 ro init=/linuxrc
-[    0.000000] PID hash table entries: 256 (order: 8, 1024 bytes)
-[    0.000000] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-[    0.000000] ... MAX_LOCKDEP_SUBCLASSES:    8
-[    0.000000] ... MAX_LOCK_DEPTH:          30
-[    0.000000] ... MAX_LOCKDEP_KEYS:        2048
-[    0.000000] ... CLASSHASH_SIZE:           1024
-[    0.000000] ... MAX_LOCKDEP_ENTRIES:     8192
-[    0.000000] ... MAX_LOCKDEP_CHAINS:      16384
-[    0.000000] ... CHAINHASH_SIZE:          8192
-[    0.000000]  memory used by lock dependency info: 1096 kB
-[    0.000000]  per task-struct memory footprint: 1200 bytes
-[    0.000000] ------------------------
-[    0.000000] | Locking API testsuite:
-
-... <skiped> ...
-
-[    0.590000] -------------------------------------------------------
-[    0.590000] Good, all 218 testcases passed! |
-[    0.590000] ---------------------------------
-[    0.590000] Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-[    0.600000] Calibrating delay loop... 265.42 BogoMIPS (lpj=1327104)
-[    0.840000] Mount-cache hash table entries: 512
-[    0.840000] CPU: Testing write buffer coherency: ok
-[    0.840000] INFO: trying to register non-static key.
-[    0.840000] the code is fine but needs lockdep annotation.
-[    0.840000] turning off the locking correctness validator.
-
-Don't know how to fix that.
-
-[    0.840000] [<c0021018>] (dump_stack+0x0/0x14) from [<c0052ccc>] (__lock_acquire+0x640/0x1110)
-[    0.840000] [<c005268c>] (__lock_acquire+0x0/0x1110) from [<c0053820>] (lock_acquire+0x84/0x98)
-[    0.840000] [<c005379c>] (lock_acquire+0x0/0x98) from [<c01858b4>] (_spin_lock_irqsave+0x48/0x5c)
-[    0.840000] [<c018586c>] (_spin_lock_irqsave+0x0/0x5c) from [<c002f358>] (sched_setscheduler+0xd4/0x2a8)
-[    0.840000]  r6 = C04D6000  r5 = C04D1820  r4 = 00000001 
-[    0.840000] [<c002f284>] (sched_setscheduler+0x0/0x2a8) from [<c0058848>] (watchdog+0x30/0x6c)
-[    0.840000] [<c0058818>] (watchdog+0x0/0x6c) from [<c00494ec>] (kthread+0x108/0x118)
-[    0.840000]  r4 = 00000000 
-[    0.840000] [<c00493e4>] (kthread+0x0/0x118) from [<c0036098>] (do_exit+0x0/0x894)
-[    0.840000]  r7 = 00000000  r6 = 00000000  r5 = 00000000  r4 = 00000000
-[    0.840000] Calling initcall 0xc0009980: ptrace_break_init+0x0/0x2c()
-
-With gdb it points to *__task_rq_lock(struct task_struct *p)
-
-(gdb) l *sched_setscheduler+0xd4
-0x1644 is in sched_setscheduler (kernel/sched.c:395).
-390     {
-391             struct rq *rq;
-392
-393     repeat_lock_task:
-394             rq = task_rq(p);
-395             spin_lock(&rq->lock);
-396             if (unlikely(rq != task_rq(p))) {
-397                     spin_unlock(&rq->lock);
-398                     goto repeat_lock_task;
-399             }
-(gdb) 
-
-I think it is really about ->pi_lock, on line 4134, that lockdep doesn't know 
-anything about.
-
-4130         /*
-4131          * make sure no PI-waiters arrive (or leave) while we are
-4132          * changing the priority of the task:
-4133          */
-4134         spin_lock_irqsave(&p->pi_lock, flags);
-4135         /*
-4136          * To be able to change p->policy safely, the apropriate
-4137          * runqueue lock must be held.
-4138          */
-4139         rq = __task_rq_lock(p);
-
-
-Best regards,
-Žilvinas Valinskas
+Richard Knutsson
 
