@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbXCPApq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbXCPAyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933932AbXCPApq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 20:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933941AbXCPApq
+	id S1752346AbXCPAyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 20:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbXCPAyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 20:45:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:44584 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933932AbXCPApp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 20:45:45 -0400
-Subject: Re: [PATCH take3 00/20] Make common x86 arch area for i386 and
-	x86_64 - Take 3
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
-In-Reply-To: <20070315051337.488091591@goodmis.org>
-References: <20070315051337.488091591@goodmis.org>
-Content-Type: text/plain
-Date: Thu, 15 Mar 2007 17:37:39 +1100
-Message-Id: <1173940659.19022.79.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Mar 2007 20:54:22 -0400
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:61710 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752346AbXCPAyV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 20:54:21 -0400
+X-Greylist: delayed 1507 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Mar 2007 20:54:21 EDT
+Date: Fri, 16 Mar 2007 01:29:12 +0100
+From: Thomas Glanzmann <thomas@glanzmann.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Andreas =?iso-8859-1?Q?Allg=F6wer?= <andreas.allgoewer@web.de>,
+       Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>
+Subject: Re: sky2 PHY setup
+Message-ID: <20070316002912.GB17594@cip.informatik.uni-erlangen.de>
+Mail-Followup-To: Thomas Glanzmann <thomas@glanzmann.de>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andreas =?iso-8859-1?Q?Allg=F6wer?= <andreas.allgoewer@web.de>,
+	Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>
+References: <20070202102705.3cf028a6@freekitty> <20070202210934.GM1693@cip.informatik.uni-erlangen.de> <20070202151601.677ec5d9@freekitty> <20070203073012.GO1693@cip.informatik.uni-erlangen.de> <20070205090429.31d7bd32@freekitty> <20070222193611.GR20035@cip.informatik.uni-erlangen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070222193611.GR20035@cip.informatik.uni-erlangen.de>
+User-Agent: Mutt/1.5.14 (2007-02-23)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-15 at 01:13 -0400, Steven Rostedt wrote:
-> Once again here's an attempt to put the shared files of x86_64 and i386
-> into a separate directory.
+Hello Stephen,
 
-OK, that's fine, but the next step is to have "make ARCH=x86" compile,
-with a config option as to whether to build 32 or 64 bit.  This will
-involve a fair amount of Makefile hair, but if you can get Andi to buy
-into that then the rest is a simple matter of code churn.  For most
-kernel hackers, this would be the flag day.
+> yesterday I pulled from Linus tree because I saw the sky2 updated and I
+> tried to break it but it seems that my problems are gone. I let you know
+> if anything pops up in the future.
 
-Moving the rest of the files across to xxx_32.c, xxx_64.h etc is going
-to involve a great deal of untangling and code cleanup.  It's also going
-to completely screw a whole heap of my cleanup patches.  Oh well.
+bad news. I today tried the sky2 driver which is in Linus Kernel Tree
+(HEAD) on a machine with very high network load and it stopped working
+without any kernel messages after doing a flawless job under high load
+for 5 hours. My watchdog rebooted the machine after 500 seconds. ;-(
 
-(Still hoping for an executive summary from the PPC folks).
-
-Cheers!
-Rusty.
-
-
+        Thomas
