@@ -1,100 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964873AbXCPLvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965083AbXCPLw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964873AbXCPLvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 07:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964923AbXCPLvk
+	id S965083AbXCPLw1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 07:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXCPLw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 07:51:40 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:42951 "EHLO smtp.osdl.org"
+	Fri, 16 Mar 2007 07:52:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52343 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964873AbXCPLvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 07:51:39 -0400
-Date: Fri, 16 Mar 2007 03:50:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	id S965083AbXCPLw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 07:52:26 -0400
+Date: Fri, 16 Mar 2007 12:51:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
 To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org, devel@openvz.org,
-       adobriyan@gmail.com
-Subject: Re: [PATCH v5] Fix rmmod/read/write races in /proc entries
-Message-Id: <20070316035030.92b647d0.akpm@linux-foundation.org>
-In-Reply-To: <20070316091613.GA6810@localhost.sw.ru>
-References: <20070311170456.GA6808@localhost.sw.ru>
-	<20070315175304.55b3486a.akpm@linux-foundation.org>
-	<20070316091613.GA6810@localhost.sw.ru>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
+       tglx@linutronix.de, viro@zeniv.linux.org.uk, rusty@rustcorp.com.au,
+       pmarques@grupopie.com
+Subject: Re: [PATCH RESEND 2/2] Fix some kallsyms_lookup() vs rmmod races
+Message-ID: <20070316115154.GC30195@elte.hu>
+References: <20070316114458.GB6817@localhost.sw.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070316114458.GB6817@localhost.sw.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007 12:16:13 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
 
-> On Thu, Mar 15, 2007 at 05:53:04PM -0800, Andrew Morton wrote:
-> > My, what a lot of code you have here.  I note that nobody can be assed even
-> > reviewing it.  Now why is that?
-> 
-> I hope, Al could find some time again.
-> 
-> > On Sun, 11 Mar 2007 20:04:56 +0300 Alexey Dobriyan <adobriyan@sw.ru> wrote:
-> > > Fix following races:
-> > > ===========================================
-> > > 1. Write via ->write_proc sleeps in copy_from_user(). Module disappears
-> > >    meanwhile. Or, more generically, system call done on /proc file, method
-> > >    supplied by module is called, module dissapeares meanwhile.
-> > >
-> > >    pde = create_proc_entry()
-> > >    if (!pde)
-> > > 	return -ENOMEM;
-> > >    pde->write_proc = ...
-> > > 				open
-> > > 				write
-> > > 				copy_from_user
-> > >    pde = create_proc_entry();
-> > >    if (!pde) {
-> > > 	remove_proc_entry();
-> > > 	return -ENOMEM;
-> > > 	/* module unloaded */
-> > >    }
-> >
-> > We usually fix that race by pinning the module: make whoever registered the
-> > proc entries also register their THIS_MODULE, do a try_module_get() on it
-> > before we start to play with data structures which the module owns.
-> >
-> > Can we do that here?
-> 
-> We can, but it will be unreliable:
-> 
-> Typical proc entry creation sequence is
-> 
-> 	pde = create_proc_entry(...);
-> 	if (pde)
-> 		pde->owner = THIS_MODULE;
-> 
-> Right after create_proc_entry() ->owner is NULL, so try_module_get()
-> won't do anything, but proc_delete_inode() could put module which was
-> never getted.
-> 
-> This should fixable by always setting ->owner before proc entry is
-> glued to proc entries tree. Something like this:
-> 
-> 	#define create_proc_entry(...) __create_proc_entry(..., THIS_MODULE)
+* Alexey Dobriyan <adobriyan@sw.ru> wrote:
 
-Yes, I was thinking of something like that.
-
-> However, I think it's not enough: delete_module(2) first waits for
-> refcount becoming zero, only then calls modules's exit function which
-> starts removing proc entries. In between, proc entries are accessible
-> and fully-functional, so try_module_get() can again get module and
-> module_put(pde->owner) can happen AFTER module dissapears.
-> What will it put?
+> [cc'ing folks whose proc files are affected]
 > 
-> And how can you fix that? The only way I know is to REMOVE ->owner
-> completely, once we agree on this pde_users/pde_unload_lock stuff.
+> kallsyms_lookup() can call module_address_lookup() which iterates over 
+> modules list without module_mutex taken. Comment at the top of 
+> module_address_lookup() says it's for oops resolution so races are 
+> irrelevant, but in some cases it's reachable from regular code:
 
-I think the rmmod code will take care of that.
+looking at the problem from another angle: wouldnt this be something 
+that would benefit from freeze_processes()/unfreeze_processes(), and 
+hence no locking would be required?
 
-Once delete_module() has called try_stop_module(), no following
-try_module_get() will succeed.  And see that wait_for_zero_refcount() call
-in there which waits for any present users of the module to go away.
-
-
+	Ingo
