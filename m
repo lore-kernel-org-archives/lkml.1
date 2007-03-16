@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbXCPPIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965379AbXCPPOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbXCPPIE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 11:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbXCPPIE
+	id S965379AbXCPPOo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 11:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965381AbXCPPOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 11:08:04 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:46082 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753229AbXCPPID (ORCPT
+	Fri, 16 Mar 2007 11:14:44 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:40693 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965379AbXCPPOo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 11:08:03 -0400
-Date: Fri, 16 Mar 2007 16:06:22 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 08/15] KVM: Add method to check for backwards-compatible API extensions
-Message-ID: <20070316150622.GC8525@osiris.boeblingen.de.ibm.com>
-References: <11736212072915-git-send-email-avi@qumranet.com> <1173621207256-git-send-email-avi@qumranet.com>
+	Fri, 16 Mar 2007 11:14:44 -0400
+Message-ID: <45FAB458.2080304@nortel.com>
+Date: Fri, 16 Mar 2007 09:14:32 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173621207256-git-send-email-avi@qumranet.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+To: Con Kolivas <kernel@kolivas.org>
+CC: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][RSDL-mm 4/6] sched: dont renice kernel threads
+References: <200703170054.08641.kernel@kolivas.org>
+In-Reply-To: <200703170054.08641.kernel@kolivas.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Mar 2007 15:14:35.0901 (UTC) FILETIME=[CED77AD0:01C767DD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-> index 747966e..376538c 100644
-> --- a/drivers/kvm/kvm_main.c
-> +++ b/drivers/kvm/kvm_main.c
-> @@ -2416,6 +2416,12 @@ static long kvm_dev_ioctl(struct file *filp,
->  		r = 0;
->  		break;
->  	}
-> +	case KVM_CHECK_EXTENSION:
-> +		/*
-> +		 * No extensions defined at present.
-> +		 */
-> +		r = 0;
-> +		break;
->  	default:
+Con Kolivas wrote:
+> The practice of renicing kernel threads to negative nice values is of
+> questionable benefit at best, and at worst leads to larger latencies when
+> kernel threads are busy on behalf of other tasks.
 
-What exactly is this good for?
+What about the priority implications of the renicing?  It seems a bit 
+iffy letting kernel threads compete for cpu time on an equal basis with 
+your default shell.
+
+Chris
