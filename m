@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbXCPKM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXCPKOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753153AbXCPKM6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 06:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbXCPKM6
+	id S1753180AbXCPKOM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 06:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbXCPKOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 06:12:58 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48468 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753153AbXCPKM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 06:12:57 -0400
-Date: Fri, 16 Mar 2007 11:12:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pratap Subrahmanyam <pratap@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Daniel Hecht <dhecht@vmware.com>, Daniel Arai <arai@vmware.com>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: hardwired VMI crap
-Message-ID: <20070316101239.GB1821@elf.ucw.cz>
-References: <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <20070308091019.GA19460@elte.hu> <45EFE010.7080108@vmware.com> <1173352154.24738.1023.camel@localhost.localdomain> <45F0761C.6060107@vmware.com> <20070308211306.GA20934@elte.hu> <45F08B71.50606@vmware.com> <20070308223317.GC30113@elte.hu> <45F09093.6070302@vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F09093.6070302@vmware.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Fri, 16 Mar 2007 06:14:12 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:7133 "EHLO
+	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753164AbXCPKOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 06:14:10 -0400
+Subject: Re: [PATCH 2.6.21-rc3-mm2 3/4] futex_requeue_pi optimization
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Pierre.Peiffer@bull.net
+Cc: akpm@linux-foundation.org, mingo@elte.hu, drepper@redhat.com,
+       linux-kernel@vger.kernel.org, jean-pierre.dion@bull.net
+In-Reply-To: <20070313095548.003786249@bull.net>
+References: <20070313095203.154246923@bull.net>
+	 <20070313095548.003786249@bull.net>
+Content-Type: text/plain
+Date: Fri, 16 Mar 2007 11:14:06 +0100
+Message-Id: <1174040046.7124.27.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-03-08 14:39:15, Zachary Amsden wrote:
-> Ingo Molnar wrote:
-> >* Zachary Amsden <zach@vmware.com> wrote:
-> >
-> >  
-> >>Ingo, either you or Thomas have vetoed every attempt we have made to 
-> >>make our code operate with clockevents. [...]
-> >>    
-> >
-> >this is news to me - do you have any proof of such a veto?
-> >  
+On Tue, 2007-03-13 at 10:52 +0100, Pierre.Peiffer@bull.net wrote:
+> plain text document attachment (futex-requeue-pi.diff)
+> This patch provides the futex_requeue_pi functionality.
 > 
-> Yes, your refusal to discuss any technical details when asked point 
-> blank which solution you prefer, and your continued whining and 
-> threatening to unmerge our code.
+> This provides an optimization, already used for (normal) futexes, to be used for
+> PI-futexes.
+> 
+> This optimization is currently used by the glibc in pthread_broadcast, when
+> using "normal" mutexes. With futex_requeue_pi, it can be used with PRIO_INHERIT
+> mutexes too.
+> 
+> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+> 
+> ---
 
-Failing to answer a question is hardly a veto.
+>  /*
+> + * Retrieve the original address used to compute this key
+> + */
+> +static void *get_futex_address(union futex_key *key)
+> +{
+> +	void *uaddr;
+> +
+> +	if (key->both.offset & 1) {
+> +		/* shared mapping */
+> +		uaddr = (void*)((key->shared.pgoff << PAGE_SHIFT)
+> +				+ key->shared.offset - 1);
+> +	} else {
+> +		/* private mapping */
+> +		uaddr = (void*)(key->private.address + key->private.offset);
+> +	}
+> +
+> +	return uaddr;
+> +}
 
-> And I ask again for your feedback on which approach you think is correct:
+This will not work for nonlinear vmas, granted, not a lot of ppl stick
+futexes in nonlinear vmas, but the futex_key stuff handles it, this
+doesn't.
 
-> 1) Rewrite the interrupt subsystem of our hypervisor, making it 
-> incompatible with full virtualization, so that we can support an 
-> abstract interrupt controller with a "clean" interface
-> 2) Reuse the same method that HPET, PIT and other time clients in i386 
-> use - the global_clock_event pointer which allows you to wrest control 
-> back from the APIC and reuse the lapic_events local clockevents.
-...
 
-Do all of them then decide which code is nicest. I mean... this looks
-like trap question for Ingo. He tells you 2, you'll do crappy
-implementation of 2, and then claim Ingo can't object.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
