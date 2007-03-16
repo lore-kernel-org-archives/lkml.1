@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965823AbXCPS2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751229AbXCPSbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965823AbXCPS2f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 14:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965826AbXCPS2f
+	id S1751229AbXCPSbX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 14:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbXCPSbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 14:28:35 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37007 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965823AbXCPS2e (ORCPT
+	Fri, 16 Mar 2007 14:31:23 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:9090 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbXCPSbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 14:28:34 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
-References: <20070316170255.GA194@tv-sign.ru>
-Date: Fri, 16 Mar 2007 12:27:15 -0600
-In-Reply-To: <20070316170255.GA194@tv-sign.ru> (Oleg Nesterov's message of
-	"Fri, 16 Mar 2007 20:02:55 +0300")
-Message-ID: <m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 16 Mar 2007 14:31:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s25ub4WfsXOMTBQV+ZRPfri7k1coQjWkjEA3G5V5y7njUiDb90+rVkA4UYPNF5j0t5ZIhQarPq7DHdBkpoN7GAGnjCGSJEB7EY85AO7zuUYp+pD9APWKvdqroJ+5/zKf5YwfVsS6f1qc+oqricsbHhWOsB9OgYYDmBmJchtCrVg=
+Message-ID: <5d6222a80703161131x48ff3548o8990abe5bb84da5@mail.gmail.com>
+Date: Fri, 16 Mar 2007 15:31:20 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] Clean up ELF note generation
+Cc: "Andi Kleen" <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <45F8E272.2030903@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45F8E272.2030903@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+> -       note PT_NOTE FLAGS(4);  /* R__ */
+> +       note PT_NOTE FLAGS(0);  /* ___ */
+>  }
 
-> Sukadev Bhattiprolu wrote:
->
-> This means that idle threads (except "swapper") are visible to
-> for_each_process()
-> and do_each_thread(). Looks dangerous and somewhat strange to me.
->
-> Could you explain this change?
+This seems to happen in at least 3 more architectures. Worth a broader cleanup?
 
-Good catch.  I've been so busy pounding reviewing this patches into
-something that made sense that I missed the fact that we care about
-this for more than just the NULL pointer that would occur if we didn't
-do this.
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
 
-Still it would be good if we could find a way to remove this rare
-special case.
-
-Any chance we can undo what we don't want done for_idle, or create
-a factor of copy_process that only does as much as fork_idle should do,
-and make copy_process a wrapper that does the rest.
-
-I doubt it is significant anywhere but it would be nice to remove a
-branch that except at boot up never happens.
-
-Eric
+"The less confident you are, the more serious you have to act."
