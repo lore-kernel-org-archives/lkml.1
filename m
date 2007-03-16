@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965890AbXCPU0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965888AbXCPU0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965890AbXCPU0E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965891AbXCPU0E
+	id S965888AbXCPU0x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965904AbXCPU0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:26:04 -0400
-Received: from dvhart.com ([64.146.134.43]:49826 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965890AbXCPU0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:26:01 -0400
-Message-ID: <45FAFD57.90601@mbligh.org>
-Date: Fri, 16 Mar 2007 13:25:59 -0700
-From: Martin Bligh <mbligh@mbligh.org>
+	Fri, 16 Mar 2007 16:26:53 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:12679 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965888AbXCPU0w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:26:52 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=dnqskufF/c/jMcf02/XVQKH+DwJ7CuI4w5TR7mkiHjklSYA+4et58XkMi0LxrQaF7
+	qXHFQB4HAkpaE/All2kPA==
+Message-ID: <45FAFD79.9080001@google.com>
+Date: Fri, 16 Mar 2007 13:26:33 -0700
+From: Ethan Solomita <solo@google.com>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org> <45F96B57.10206@mbligh.org> <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org> <20070315160648.GA11812@one.firstfloor.org> <1173977264.7922.24.camel@localhost.localdomain> <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com> <20070316114415.GA26403@one.firstfloor.org> <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <ak@suse.de>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 1/1] mm: Inconsistent use of node IDs
+References: <45F5D974.2050702@google.com> <200703130019.30953.ak@suse.de> <45F5E84B.9010901@google.com>
+In-Reply-To: <45F5E84B.9010901@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Fri, 16 Mar 2007, Andi Kleen wrote:
-> 
->>> x86_64 is going to acquire more functionality that will not be available 
->>> for i386. We plan f.e. to add virtual memmap support for x86_64. Virtual 
->> What advantage would that have over the current setup?
->> We already should handle holes between nodes reasonably efficiently
->> and with nonlinear memory even holes inside nodes shouldn't be a problem.
-> 
-> It is primarily a performance improvement since the sparsemem table 
-> lookups would no longer be necessary and it also streamlines other 
-> frequent cacheline uses. These page -> page_struct and vice versa 
-> operations are key to the performance of various subsystem among them 
-> the slab allocator.
+    Ping!
+    -- Ethan
 
-cc: apw
+Ethan Solomita wrote:
+> Andi Kleen wrote:
+>   
+>> On Monday 12 March 2007 23:51, Ethan Solomita wrote:
+>>     
+>>> This patch corrects inconsistent use of node numbers (variously "nid" or
+>>> "node") in the presence of fake NUMA.
+>>>       
+>> I think it's very consistent -- your patch would make it inconsistent though.
+>>     
+>
+> 	It's consistent to call node_online() with a physical node ID when the 
+> online node mask is composed of fake nodes?
+>
+>   
+>> Sorry, but when you ask for NUMA emulation you will get it. I don't see
+>> any point in a "half way only for some subsystems I like" NUMA emulation. 
+>> It's unlikely that your ideas of where it is useful and where is not
+>> matches other NUMA emulation user's ideas too.
+>>     
+>
+> 	I don't understand your comments. My code is intended to work for all 
+> systems. If the system is non-NUMA by nature, then all CPUs map to fake 
+> node 0.
+>
+> 	As an example, on a two chip dual-core AMD opteron system, there are 4 
+> "cpus" where CPUs 0 and 1 are close to the first half of memory, and 
+> CPUs 2 and 3 are close to the second half. Without this change CPUs 2 
+> and 3 are mapped to fake node 1. This results in awful performance. With 
+> this change, CPUs 2 and 3 are mapped to (roughly) 1/2 the fake node 
+> count. Their zonelists[] are ordered to do allocations preferentially 
+> from zones that are local to CPUs 2 and 3.
+>
+> 	Can you tell me the scenario where my code makes things worse?
+>
+>   
+>> Besides adding such a secondary node space would be likely a huge long term 
+>> mainteance issue. I just can it see breaking with every non trivial change.
+>>     
+>
+> 	I'm adding no data structures to do this. The current code already has 
+> get_phys_node. My changes use the existing information about node 
+> layout, both the physical and fake, and defines a mapping. The current 
+> mapping just takes a physical node and says "it's the fake node too".
+>
+>   
+>> NACK.
+>>     
+>
+> 	I wish you would include some specifics as to why you think what you 
+> do. You're suggesting we leave in place a system that destroys NUMA 
+> locality when using fake numa, and passes around physical node ids as an 
+> index into nodes[] whihc is indexed by fake nodes. My change has no 
+> effect without fake numa, and harms no one with fake numa.
+> 	-- Ethan
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
 
-You have to do some sort of lookup anyway, and Andy seemed to have them
-all folded into one.
-
-Or are you trying to avoid this by going to back to the crud we had
-in 2.4 where we pretend mem_map is one big array, indexed by pfn with
-huge sparsely mapped holes in it?
-
-Would be nice to work out (and document somewhere) what the pros and
-cons of virtual memmap vs sparsemem were - ISTR one of the arguments
-was extremely sparsely layed out machines, and you needed sparsemem
-for that. But right now we have 3 solutions, which is not a good
-situation.
