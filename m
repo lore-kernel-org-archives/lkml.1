@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964801AbXCPODR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964828AbXCPOEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964801AbXCPODR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 10:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964796AbXCPODR
+	id S964828AbXCPOEI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 10:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964815AbXCPOEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 10:03:17 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:45366 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964789AbXCPODQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 10:03:16 -0400
-Message-ID: <45FAA39C.9050705@us.ibm.com>
-Date: Fri, 16 Mar 2007 09:03:08 -0500
-From: Anthony Liguori <aliguori@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 0/15] KVM userspace interface updates
-References: <11736212072915-git-send-email-avi@qumranet.com> <20070316083650.GA8525@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20070316083650.GA8525@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 16 Mar 2007 10:04:08 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51570 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964807AbXCPOEG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 10:04:06 -0400
+Date: Fri, 16 Mar 2007 15:07:05 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org,
+       dhowells@redhat.com
+Subject: Re: [PATCH 3/5] AF_RXRPC: Make it possible to merely try to cancel
+ timers and delayed work [try #2]
+Message-ID: <20070316150705.0b2fbeb0@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070316125026.3740.56876.stgit@warthog.cambridge.redhat.com>
+References: <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com>
+	<20070316125026.3740.56876.stgit@warthog.cambridge.redhat.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens wrote:
-> On Sun, Mar 11, 2007 at 03:53:12PM +0200, Avi Kivity wrote:
->   
->> This patchset updates the kvm userspace interface to what I hope will
->> be the long-term stable interface.  Provisions are included for extending
->> the interface later.  The patches address performance and cleanliness
->> concerns.
->>     
->
-> Searching the mailing list I figured that as soons as the interface seems
-> to be stable, kvm should/would switch to a system call based interface.
-> I assume the userspace interface might still change a lot, especially if
-> kvm is ported to new architectures.
-> But the general question is: do you still plan to switch to a syscall
-> interface?
->   
+> +/**
+> + * try_to_cancel_delayed_work - Try to kill pending scheduled, delayed work
+> + * @work: the work to cancel
+> + *
+> + * Try to kill off a pending schedule_delayed_work().
+> + * - The timer may still be running afterwards, and if so, the work may still
+> + *   be pending
+> + * - Returns -1 if timer still active, 1 if timer removed, 0 if not scheduled
+> + * - Can be called from the work routine; if it's still pending, just return
+> + *   and it'll be called again.
+> + */
+> +static inline int try_to_cancel_delayed_work(struct delayed_work *work)
+> +{
+> +	int ret;
 
-What benefit would a syscall interface have?
-
-Regards,
-
-Anthony Liguori
-
-> -------------------------------------------------------------------------
-> Take Surveys. Earn Cash. Influence the Future of IT
-> Join SourceForge.net's Techsay panel and you'll get the chance to share your
-> opinions on IT & business topics through brief surveys-and earn cash
-> http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
-> _______________________________________________
-> kvm-devel mailing list
-> kvm-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/kvm-devel
->
->   
+This expands to a fair bit of code and IMHO isn't an inline candidate.
 
