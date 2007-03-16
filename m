@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965741AbXCPUIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbXCPUM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965741AbXCPUIz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965735AbXCPUIz
+	id S933227AbXCPUM6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933304AbXCPUM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:08:55 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38484 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965719AbXCPUIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:08:54 -0400
-Date: Fri, 16 Mar 2007 21:09:27 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: Kconfig style question
-Message-ID: <20070316200927.GB22200@uranus.ravnborg.org>
-References: <7Z7fc-4ZL-21@gated-at.bofh.it> <E1HS7G6-0001Cr-19@be1.lrz>
+	Fri, 16 Mar 2007 16:12:58 -0400
+Received: from mailbigip.dreamhost.com ([208.97.132.5]:52885 "EHLO
+	swarthymail-a2.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933227AbXCPUM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:12:57 -0400
+X-Greylist: delayed 5118 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Mar 2007 16:12:57 EDT
+Date: Fri, 16 Mar 2007 17:12:53 -0300
+From: John Coppens <john@jcoppens.com>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Conflict between ide and usb?
+Message-Id: <20070316171253.2014deaf.john@jcoppens.com>
+In-Reply-To: <75b66ecd0703161252l60dcbd81s3c9beb7cb91b6c14@mail.gmail.com>
+References: <20070316154735.6de11eca.john@jcoppens.com>
+	<75b66ecd0703161252l60dcbd81s3c9beb7cb91b6c14@mail.gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HS7G6-0001Cr-19@be1.lrz>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 16, 2007 at 08:53:53AM +0100, Bodo Eggert wrote:
-> Kumar Gala <galak@kernel.crashing.org> wrote:
+On Fri, 16 Mar 2007 15:52:12 -0400
+"Lee Revell" <rlrevell@joe-job.com> wrote:
+
+> On 3/16/07, John Coppens <john@jcoppens.com> wrote:
+> > The problem I have, is that when I copy a file from a DVD to harddisk,
+> > the internet connection almost dies (it slows down terribly, so much
+> > so that established connections actually disconnect, ping looses
+> > packets, DNS lookup fails, etc). After copy ends, all returns to
+> > normal.
 > 
-> > For source lines I've seen both:
-> > 
-> > source "arch/powerpc/platforms/52xx/Kconfig"
-> > 
-> > and
-> > 
-> > source arch/powerpc/platforms/85xx/Kconfig
-> > 
-> > Is there a preferred style?  Quotes or not?
-> 
-> $ find . -name Kconfig -exec grep ^source '{}' \;|grep \"|wc -l
->     732
-> $ find . -name Kconfig -exec grep ^source '{}' \;|grep -v \"|wc -l
->      44
+> Sounds like DMA starvation, it's been seen in the past with some SATA
+> controllers.  Presumably vendors do it to improve benchmark scores.
 
-Which is somewaht funny.
-source is defined like this:
-"source" <prompt>
+Hi Lee.
 
-Where <prompt> may be a single string without spaces or
-a quoted string with spaces.
-So kconfig allow you to use spaces in the path/filename. But
-then most users uses "" despite it is not needed since we obviously
-do not use spaces in path/filename in the kernel due to
-make limitations (and good taste).
+In this case SATA isn't used, as the copy is from IDE to IDE. But I
+doubt bandwidth has anything to do with it. The DVD transfer rate rarely 
+reaches 3.3 MB/s - which by itself isn't normal.
 
-	Sam
+> You can confirm it by forcing the hard drive and/or DVD drive to a
+> lower speed if your BIOS allows it.
+
+No... I didn't find any way to lower the speed.
+
+Thanks
+John
