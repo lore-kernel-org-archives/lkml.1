@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965929AbXCPU7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965925AbXCPVAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965929AbXCPU7z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965930AbXCPU7y
+	id S965925AbXCPVAJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 17:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965926AbXCPVAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:59:54 -0400
-Received: from dvhart.com ([64.146.134.43]:50412 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965926AbXCPU7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:59:53 -0400
-Message-ID: <45FB0548.5070909@mbligh.org>
-Date: Fri, 16 Mar 2007 13:59:52 -0700
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
-MIME-Version: 1.0
+	Fri, 16 Mar 2007 17:00:08 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:41283 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965930AbXCPVAF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 17:00:05 -0400
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+	Take 2
+From: Dave Hansen <hansendc@us.ibm.com>
 To: Christoph Lameter <clameter@sgi.com>
 Cc: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
+       Martin Bligh <mbligh@mbligh.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Chris Wright <chrisw@sous-sol.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
        Glauber de Oliveira Costa <glommer@gmail.com>,
        Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org> <45F96B57.10206@mbligh.org> <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org> <20070315160648.GA11812@one.firstfloor.org> <1173977264.7922.24.camel@localhost.localdomain> <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com> <20070316114415.GA26403@one.firstfloor.org> <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com> <45FAFD57.90601@mbligh.org> <Pine.LNX.4.64.0703161346060.6204@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0703161346060.6204@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
+References: <20070314050819.536207642@goodmis.org>
+	 <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu>
+	 <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
+	 <45F96B57.10206@mbligh.org>
+	 <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org>
+	 <20070315160648.GA11812@one.firstfloor.org>
+	 <1173977264.7922.24.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com>
+	 <20070316114415.GA26403@one.firstfloor.org>
+	 <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Fri, 16 Mar 2007 13:59:50 -0700
+Message-Id: <1174078790.26166.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Fri, 16 Mar 2007, Martin Bligh wrote:
+On Fri, 2007-03-16 at 13:15 -0700, Christoph Lameter wrote:
+> On Fri, 16 Mar 2007, Andi Kleen wrote:
+> > > x86_64 is going to acquire more functionality that will not be available 
+> > > for i386. We plan f.e. to add virtual memmap support for x86_64. Virtual 
+> > 
+> > What advantage would that have over the current setup?
+> > We already should handle holes between nodes reasonably efficiently
+> > and with nonlinear memory even holes inside nodes shouldn't be a problem.
 > 
->> You have to do some sort of lookup anyway, and Andy seemed to have them
->> all folded into one.
-> 
-> What lookup would you need to do? On x86_64 even the TLB use is 
-> hidden by the existing 2M entries for 1-1 mappings.
-> 
->> Or are you trying to avoid this by going to back to the crud we had
->> in 2.4 where we pretend mem_map is one big array, indexed by pfn with
->> huge sparsely mapped holes in it?
-> 
-> Yes that the advanced way of doing it rather than adding useless custom 
-> lookups.
+> It is primarily a performance improvement since the sparsemem table 
+> lookups would no longer be necessary and it also streamlines other 
+> frequent cacheline uses. These page -> page_struct and vice versa 
+> operations are key to the performance of various subsystem among them 
+> the slab allocator.
 
-For starters, you can't do that sparse a mapping on a 32 bit system.
-I'll let Andy explain the rest of it.
+Hi Christoph,
 
->> Would be nice to work out (and document somewhere) what the pros and
->> cons of virtual memmap vs sparsemem were - ISTR one of the arguments
->> was extremely sparsely layed out machines, and you needed sparsemem
->> for that. But right now we have 3 solutions, which is not a good
->> situation.
-> 
-> Please read my posts to linux-mm on that subject. We discussed it last 
-> year in detail and the agreement was that the sparsemem crud needs to be 
-> taken out. Kame-san posted patches to do that.
+Yeah, those are horribly common operations.  But, have we actually
+quantified how sparsemem hurts here?  I know that it look on the surface
+like those lookups should kill you but, as far as I can tell, we've
+never been able to show that they actually do.  We were worried on the
+NUMAQ that we would see some performance regressions, but it somehow
+slightly outperformed discontigmem.
 
-"the agreement"? So Andy agreed to taking it out? Or you and Kame did?
+Do you have any hard data that shows vmemmap killing sparsemem on some
+of your workloads?  I'd love to try and fix some of the issues if we can
+dig them up.
 
-M.
+One of the reasons I really like sparsemem is that ports to new
+architectures are something like 100 lines of code, including all of the
+#defines.  It's really ridiculously easy to do.  One of the things that
+I really worry about for vmemmap implementations is how complicated they
+get to implement.  The fact that we can't easily do it for both i386 and
+x86_64 at the same time speaks to this a bit.
 
+-- Dave
 
