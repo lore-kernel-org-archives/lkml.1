@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbXCPEJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbXCPE2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751769AbXCPEJz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 00:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXCPEJz
+	id S1753406AbXCPE2a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 00:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbXCPE2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 00:09:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43265 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751699AbXCPEJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 00:09:54 -0400
-Message-ID: <45FA1864.9010909@redhat.com>
-Date: Fri, 16 Mar 2007 00:09:08 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Fri, 16 Mar 2007 00:28:30 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48666 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753406AbXCPE23 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 00:28:29 -0400
+Date: Thu, 15 Mar 2007 21:28:24 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Bligh <mbligh@mbligh.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+ Take 2
+In-Reply-To: <1173977264.7922.24.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com>
+References: <20070314050819.536207642@goodmis.org>  <p73slc8863r.fsf@bingen.suse.de>
+ <20070314125330.GA13168@elte.hu>  <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
+  <45F96B57.10206@mbligh.org>  <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org>
+  <20070315160648.GA11812@one.firstfloor.org> <1173977264.7922.24.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andreas Mohr <andi@rhlx01.fht-esslingen.de>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173905741.8763.36.camel@kleikamp.austin.ibm.com> <20070314213317.GA22234@rhlx01.hs-esslingen.de> <200703151737.l2FHb81d001600@turing-police.cc.vt.edu>            <45F991E5.1060001@redhat.com> <200703160351.l2G3p3GJ020217@turing-police.cc.vt.edu>
-In-Reply-To: <200703160351.l2G3p3GJ020217@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
+On Thu, 15 Mar 2007, Steven Rostedt wrote:
 
-> On the other hand, Andreas suggested only marking it once every 32 calls,
-> but that required a helper variable.  Statistically, jiffies%32 should
-> end up about the same as a helper variable %32.
+> On Thu, 2007-03-15 at 17:06 +0100, Andi Kleen wrote:
 > 
-> This of course, if just calling mark_page_accessed() is actually expensive
-> enough that we don't want to do it unconditionally.
+> > Well I just see a lot of pain from these patches but I doubt 
+> > they will avoid any bugs. If people don't compile test both
+> > archs they will always likely break on another. There are lots
+> > of subtle dependencies that are not expressed in the pathname
+> > even after this intrusive operation (e.g. in the includes).
+> > 
+> > That's just how it is.
+> 
+> Or that's just how you see it.
 
-Not caching a needed page and having to wait for a disk seek
-to complete will be *way* more expensive than any call to
-mark_page_accessed().
+In the future it is likely that x86_64 will significantly deviate from 
+i386. i386 is going to be gradually abandoned because it does not support 
+the ever larger memory sizes and be mainly used for embedded devices. 
+x86_64 is going to acquire more functionality that will not be available 
+for i386. We plan f.e. to add virtual memmap support for x86_64. Virtual 
+memmap support may require a large chunk of virtual memory space that is 
+not available on i386. Its not good to have to deal with i386 issues when 
+doing x86_64 arch development.
 
-A modern CPU can do somewhere on the order of 50 million
-instructions in the time it takes to bring one page in from
-disk.
-
-However, this does not mean we should unconditionally call
-mark_page_accessed(), since that could cause use to push
-wanted data out of the cache because of one program that
-does its streaming accesses in a strange way...
-
-This is a situation where getting it right almost certainly
-matters.
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
