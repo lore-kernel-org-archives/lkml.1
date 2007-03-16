@@ -1,132 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbXCPLb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932987AbXCPLfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932696AbXCPLb7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 07:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932987AbXCPLb7
+	id S932987AbXCPLfo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 07:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933029AbXCPLfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 07:31:59 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:51091 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932696AbXCPLb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 07:31:58 -0400
-Date: Fri, 16 Mar 2007 12:36:15 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Richard Hughes <hughsient@gmail.com>, Philippe Elie <phil.el@wanadoo.fr>,
-       oprofile-list@lists.sourceforge.net
-Subject: [PATCH] Re: Fwd: oprofile lockdep warning on rc1
-Message-ID: <20070316113614.GA5877@ff.dom.local>
+	Fri, 16 Mar 2007 07:35:44 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:18650 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932987AbXCPLfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 07:35:43 -0400
+Date: Fri, 16 Mar 2007 14:42:45 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org, pmarques@grupopie.com
+Subject: [PATCH RESEND 1/2] Race between cat /proc/kallsyms and rmmod
+Message-ID: <20070316114245.GA6817@localhost.sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070228004641.GC12600@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28-02-2007 01:46, Dave Jones wrote:
-> This happened on a 2.6.21rc1 kernel.
-...
-> Richard Hughes <hughsient@gmail.com>
-> Date:
-> Tue, 27 Feb 2007 21:59:07 +0000
-> To:
-> Development discussions related to Fedora Core 
-> <fedora-devel-list@redhat.com>
-...
-> But also I get this (!!!):
-> 
-> oprofile: using NMI interrupt.
-> 
-> =================================
-> [ INFO: inconsistent lock state ]
-> 2.6.20-1.2949.fc7 #1
-> ---------------------------------
-> inconsistent {hardirq-on-W} -> {in-hardirq-W} usage.
-> swapper/0 [HC1[1]:SC0[0]:HE0:SE1] takes:
->  (oprofilefs_lock){+-..}, at: [<f8c6db5e>] nmi_cpu_setup+0x15/0x4f
-> [oprofile]
-> {hardirq-on-W} state was registered at:
->   [<c0442440>] __lock_acquire+0x448/0xba4
->   [<c0442f8e>] lock_acquire+0x56/0x6f
->   [<c0614949>] _spin_lock+0x2b/0x38
->   [<f8c6d33c>] oprofilefs_ulong_from_user+0x4e/0x74 [oprofile]
->   [<f8c6d38c>] ulong_write_file+0x2a/0x38 [oprofile]
->   [<c047e20b>] vfs_write+0xaf/0x163
->   [<c047e859>] sys_write+0x3d/0x61
->   [<c0405134>] syscall_call+0x7/0xb
->   [<ffffffff>] 0xffffffff
-> irq event stamp: 23424902
-> hardirqs last  enabled at (23424901): [<c0614d4d>]
-> _spin_unlock_irqrestore+0x36/0x3c
-> hardirqs last disabled at (23424902): [<c0405bb5>]
-> call_function_interrupt+0x29/0x38
-> softirqs last  enabled at (23424892): [<c042c0d8>] __do_softirq
-> +0xdc/0xe2
-> softirqs last disabled at (23424885): [<c04074dc>] do_softirq+0x61/0xd0
-> 
-> other info that might help us debug this:
-> no locks held by swapper/0.
-> 
-> stack backtrace:
->  [<c04062a5>] show_trace_log_lvl+0x1a/0x2f
->  [<c0406869>] show_trace+0x12/0x14
->  [<c04068ed>] dump_stack+0x16/0x18
->  [<c0440f67>] print_usage_bug+0x141/0x14b
->  [<c0441620>] mark_lock+0xa2/0x419
->  [<c04423b1>] __lock_acquire+0x3b9/0xba4
->  [<c0442f8e>] lock_acquire+0x56/0x6f
->  [<c0614949>] _spin_lock+0x2b/0x38
->  [<f8c6db5e>] nmi_cpu_setup+0x15/0x4f [oprofile]
->  [<c0417e6a>] smp_call_function_interrupt+0x3f/0x5b
->  [<c0405bbf>] call_function_interrupt+0x33/0x38
->  [<c0614896>] _spin_unlock+0x16/0x20
->  [<c043ded6>] clockevents_notify+0x3e/0x42
->  [<c0532f67>] acpi_state_timer_broadcast+0x2e/0x31
->  [<c05338e8>] acpi_processor_idle+0x285/0x419
->  [<c040348e>] cpu_idle+0xb7/0xdd
->  [<c0418eef>] start_secondary+0x330/0x338
->  [<00000000>] 0x0
->  =======================
-> 
-> Why do the simplest bugs always turn into the most complicated ones ;-)
-> 
-> Richard.
+CONFIG_MODULES=n case fixed, We're still discussing if making
+module_mutex global is OK, though.
+-----------------------------------------------------
+[PATCH 1/2] Race between cat /proc/kallsyms and rmmod
 
-Here is my patch proposal for testing.
+Iterating code of /proc/kallsyms calls module_get_kallsym() which grabs
+and drops module_mutex internally and returns "struct module *",
+module is removed, aforementioned "struct module *" is used in non-trivial
+way.
 
-Regards,
-Jarek P.
+So, grab module_mutex for entire operation like /proc/modules does.
 
-lockdep found oprofilefs_lock is taken both in process
-context (oprofilefs_ulong_from_user()) and from hardirq
-(nmi_cpu_setup()), so the lockup is possible.
+Steps to reproduce:
+	while true; do modprobe xfs; rmmod xfs; done
+		vs
+	while true; do cat /proc/kallsyms >/dev/null; done
 
-Reported-by: Richard Hughes <hughsient@gmail.com>
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+[where xfs could be any module, I haven't tried]
 
+BUG: unable to handle kernel paging request at virtual address e19f808c
+ printing eip:
+c01dc361
+*pde = 1ff5f067
+*pte = 00000000
+Oops: 0000 [#1]
+PREEMPT
+Modules linked in:
+CPU:    0
+EIP:    0060:[<c01dc361>]    Not tainted VLI
+EFLAGS: 00010297   (2.6.21-rc3-8b9909ded6922c33c221b105b26917780cfa497d #2)
+EIP is at vsnprintf+0x2af/0x48c
+eax: e19f808c   ebx: ffffffff   ecx: e19f808c   edx: fffffffe
+esi: dbe7aa84   edi: dbe2bf3c   ebp: ffffffff   esp: dbe2bec4
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process cat (pid: 7242, ti=dbe2b000 task=df5790b0 task.ti=dbe2b000)
+Stack: e19d6fde 00000000 00000010 00000008 ffffffff 00000001 00000598 dbe7aa68
+       0002f362 00000010 dbe7b000 00000000 ffffffff c034bbe0 dbe7aa68 dfd31880
+       dfa31e80 00001000 c01586b0 dbe2bf2c dbe2bf2c dfd31880 dfd31880 c01289f6
+Call Trace:
+ [<c01586b0>] seq_printf+0x2e/0x4b
+ [<c01289f6>] s_show+0x4b/0x7f
+ [<c0158c6e>] seq_read+0x196/0x278
+ [<c0158ad8>] seq_read+0x0/0x278
+ [<c0143c35>] vfs_read+0x72/0x93
+ [<c0143f1c>] sys_read+0x41/0x67
+ [<c0102486>] sysenter_past_esp+0x5f/0x85
+=======================
+Code: 74 24 28 73 03 c6 06 20 46 4d 85 ed 7f f1 e9 b9 00 00 00 8b 0f 81 f9 ff 0f 00 00 b8 ea 45 36 c0 0f 46 c8 8b 54 24 30 89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 89 c3 89 e8 f6 44 24
+EIP: [<c01dc361>] vsnprintf+0x2af/0x48c SS:ESP 0068:dbe2bec4
+
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
 ---
 
-diff -Nurp linux-2.6.21-rc1-/drivers/oprofile/oprofilefs.c linux-2.6.21-rc1/drivers/oprofile/oprofilefs.c
---- linux-2.6.21-rc1-/drivers/oprofile/oprofilefs.c	2007-02-27 10:47:38.000000000 +0100
-+++ linux-2.6.21-rc1/drivers/oprofile/oprofilefs.c	2007-03-16 11:36:30.000000000 +0100
-@@ -65,6 +65,7 @@ ssize_t oprofilefs_ulong_to_user(unsigne
- int oprofilefs_ulong_from_user(unsigned long * val, char const __user * buf, size_t count)
+ include/linux/module.h |   14 ++++++++++++++
+ kernel/kallsyms.c      |    2 ++
+ kernel/module.c        |   15 +++++++++++----
+ 3 files changed, 27 insertions(+), 4 deletions(-)
+
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -16,10 +16,24 @@ #include <linux/elf.h>
+ #include <linux/stringify.h>
+ #include <linux/kobject.h>
+ #include <linux/moduleparam.h>
++#include <linux/mutex.h>
+ #include <asm/local.h>
+ 
+ #include <asm/module.h>
+ 
++extern struct mutex module_mutex;
++#ifdef CONFIG_MODULES
++void module_mutex_lock(void);
++void module_mutex_unlock(void);
++#else
++static inline void module_mutex_lock(void)
++{
++}
++static inline void module_mutex_unlock(void)
++{
++}
++#endif
++
+ /* Not Yet Implemented */
+ #define MODULE_SUPPORTED_DEVICE(name)
+ 
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -369,6 +369,7 @@ static void *s_next(struct seq_file *m, 
+ 
+ static void *s_start(struct seq_file *m, loff_t *pos)
  {
- 	char tmpbuf[TMPBUFSIZE];
-+	unsigned long flags;
++	module_mutex_lock();
+ 	if (!update_iter(m->private, *pos))
+ 		return NULL;
+ 	return m->private;
+@@ -376,6 +377,7 @@ static void *s_start(struct seq_file *m,
  
- 	if (!count)
- 		return 0;
-@@ -77,9 +78,9 @@ int oprofilefs_ulong_from_user(unsigned 
- 	if (copy_from_user(tmpbuf, buf, count))
- 		return -EFAULT;
- 
--	spin_lock(&oprofilefs_lock);
-+	spin_lock_irqsave(&oprofilefs_lock, flags);
- 	*val = simple_strtoul(tmpbuf, NULL, 0);
--	spin_unlock(&oprofilefs_lock);
-+	spin_unlock_irqrestore(&oprofilefs_lock, flags);
- 	return 0;
+ static void s_stop(struct seq_file *m, void *p)
+ {
++	module_mutex_unlock();
  }
  
+ static int s_show(struct seq_file *m, void *p)
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -62,9 +62,19 @@ #define INIT_OFFSET_MASK (1UL << (BITS_P
+ static DEFINE_SPINLOCK(modlist_lock);
+ 
+ /* List of modules, protected by module_mutex AND modlist_lock */
+-static DEFINE_MUTEX(module_mutex);
++DEFINE_MUTEX(module_mutex);
+ static LIST_HEAD(modules);
+ 
++void module_mutex_lock(void)
++{
++	mutex_lock(&module_mutex);
++}
++
++void module_mutex_unlock(void)
++{
++	mutex_unlock(&module_mutex);
++}
++
+ static BLOCKING_NOTIFIER_HEAD(module_notify_list);
+ 
+ int register_module_notifier(struct notifier_block * nb)
+@@ -2124,19 +2134,16 @@ struct module *module_get_kallsym(unsign
+ {
+ 	struct module *mod;
+ 
+-	mutex_lock(&module_mutex);
+ 	list_for_each_entry(mod, &modules, list) {
+ 		if (symnum < mod->num_symtab) {
+ 			*value = mod->symtab[symnum].st_value;
+ 			*type = mod->symtab[symnum].st_info;
+ 			strlcpy(name, mod->strtab + mod->symtab[symnum].st_name,
+ 				namelen);
+-			mutex_unlock(&module_mutex);
+ 			return mod;
+ 		}
+ 		symnum -= mod->num_symtab;
+ 	}
+-	mutex_unlock(&module_mutex);
+ 	return NULL;
+ }
+ 
+
