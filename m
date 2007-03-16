@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933629AbXCPNmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbXCPNtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933629AbXCPNmN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 09:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933636AbXCPNmN
+	id S933751AbXCPNtT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 09:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933757AbXCPNtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 09:42:13 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56461 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933629AbXCPNmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 09:42:12 -0400
-X-Provags-ID: V01U2FsdGVkX1+rCr97uROrqpyZ5kGdDAq3rJBwM9oKRVpLQVRT9g
-	db1oGx7U4xjaWO
-Subject: Re: RSDL development plans
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
-       Al Boldi <a1426z@gawab.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200703162325.05691.kernel@kolivas.org>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703140758.30079.kernel@kolivas.org>
-	 <200703141008.39516.kernel@kolivas.org>
-	 <200703162325.05691.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Fri, 16 Mar 2007 14:42:03 +0100
-Message-Id: <1174052523.8039.7.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Fri, 16 Mar 2007 09:49:18 -0400
+Received: from mail31.syd.optusnet.com.au ([211.29.132.102]:48181 "EHLO
+	mail31.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933751AbXCPNtS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 09:49:18 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH][RSDL-mm 0/6] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Date: Sat, 17 Mar 2007 00:50:28 +1100
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 1914
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Message-Id: <200703170050.28510.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-16 at 23:25 +1100, Con Kolivas wrote:
+What follows is a patch series for the updated version of the Rotating 
+Staircase DeadLine cpu scheduler.
 
-> The good news is that in order to stay sane I've found ways of optimising my 
-> computing position and could work for short stints on the rsdl code. So I'll 
-> be releasing a new version shortly.
+The dropping of one patch in the series and modest rewrite of certain 
+components means a fresh patch series is most appropriate, apologies for any 
+inconvenience.
 
-Can you please make an incremental diff as well?  That will make it
-easier to see what changes have taken place, and make it easier to
-integrate those into hacked-upon trees.
 
-	-Mike
+Changes
 
+- Implemented the dithered priority slot bitmap which makes latencies between 
+differential nice levels much smaller, allowing X to be run nice -n -10 for 
+example.
+
+- Dropped back to 140 bit bitmap. The expired bitmap became a necessity with 
+the more complex priority matrix.
+
+- Removed the static priority accounting. It wasn't being used for anything.
+
+- Simplified the preempt check to correspond with the changed priority system.
+
+- Made the rr interval slightly larger at 8ms, and to scale gently with rise 
+in number of cpus. At 8ms it will round up to 10ms on 250HZ, whereas 
+selecting 1000HZ by the user implies latency is more relevant and they will 
+get the 8ms. The larger rr interval should decrease context switches and 
+cache trashing. It would be quite easy to simply make this a meaningful 
+tunable in /proc.
+
+- Fixed a bug that was resetting priority in normal_prio() on wakeup
+
+- Fixed a problem whereby new quota was not being set on reniced tasks until 
+they had slept.
+
+- Updated the documentation to match changed design.
+
+- Lots of painkillers and rest
+
+-- 
+-ck
