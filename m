@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965083AbXCPLw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbXCPL6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965083AbXCPLw1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 07:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXCPLw0
+	id S932875AbXCPL6J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 07:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932891AbXCPL6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 07:52:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52343 "EHLO mx2.mail.elte.hu"
+	Fri, 16 Mar 2007 07:58:09 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:13538 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965083AbXCPLw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 07:52:26 -0400
-Date: Fri, 16 Mar 2007 12:51:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
-       tglx@linutronix.de, viro@zeniv.linux.org.uk, rusty@rustcorp.com.au,
-       pmarques@grupopie.com
-Subject: Re: [PATCH RESEND 2/2] Fix some kallsyms_lookup() vs rmmod races
-Message-ID: <20070316115154.GC30195@elte.hu>
-References: <20070316114458.GB6817@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070316114458.GB6817@localhost.sw.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S932875AbXCPL6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 07:58:07 -0400
+Message-ID: <45FA8681.2030801@sw.ru>
+Date: Fri, 16 Mar 2007 14:58:57 +0300
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Oleg Nesterov <oleg@tv-sign.ru>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [RFC] kernel/pid.c pid allocation wierdness
+References: <45F7A4B3.5040005@sw.ru> <20070314153341.GA770@tv-sign.ru> <45FA7823.2040104@sw.ru> <200703161237.48014.dada1@cosmosbay.com>
+In-Reply-To: <200703161237.48014.dada1@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alexey Dobriyan <adobriyan@sw.ru> wrote:
-
-> [cc'ing folks whose proc files are affected]
+Eric Dumazet wrote:
+> On Friday 16 March 2007 11:57, Pavel Emelianov wrote:
+>> Oleg Nesterov wrote:
+>>> On 03/14, Eric W. Biederman wrote:
+>>>> Pavel Emelianov <xemul@sw.ru> writes:
+>>>>> Hi.
+>>>>>
+>>>>> I'm looking at how alloc_pid() works and can't understand
+>>>>> one (simple/stupid) thing.
+>>>>>
+>>>>> It first kmem_cache_alloc()-s a strct pid, then calls
+>>>>> alloc_pidmap() and at the end it taks a global pidmap_lock()
+>>>>> to add new pid to hash.
+>>> We need some global lock. pidmap_lock is already here, and it is
+>>> only used to protect pidmap->page allocation. Iow, it is almost
+>>> unused. So it was very natural to re-use it while implementing
+>>> pidrefs.
+>>>
+>>>>> The question is - why does alloc_pidmap() use at least
+>>>>> two atomic ops and potentially loop to find a zero bit
+>>>>> in pidmap? Why not call alloc_pidmap() under pidmap_lock
+>>>>> and find zero pid in pidmap w/o any loops and atomics?
+>>> Currently we search for zero bit lockless, why do you want
+>>> to do it under spin_lock ?
+>> Search isn't lockless. Look:
+>>
+>> while (1) {
+>>    if (!test_and_set_bit(...)) {
+>>        atomic_dec(&nr_free);
+>>        return pid;
+>>    }
+>>    ...
+>> }
+>>
+>> we use two atomic operations to find and set a bit in a map.
 > 
-> kallsyms_lookup() can call module_address_lookup() which iterates over 
-> modules list without module_mutex taken. Comment at the top of 
-> module_address_lookup() says it's for oops resolution so races are 
-> irrelevant, but in some cases it's reachable from regular code:
+> The finding of the zero bit is done without lock. (Search/lookup)
+> 
+> Then , the reservation of the found bit (test_and_set_bit) is done, and 
+> decrement of nr_free. It may fail because the search was done lockless.
 
-looking at the problem from another angle: wouldnt this be something 
-that would benefit from freeze_processes()/unfreeze_processes(), and 
-hence no locking would be required?
+:\ I do understand how this algorithm works. What I don't
+understand is why it is done so, if we take a global lock anyway.
 
-	Ingo
+> Finding a zero bit in a 4096 bytes array may consume about 6000 cycles on 
+> modern hardware. Much more on SMP/NUMA machines, or on machines where 
+> PAGE_SIZE is 64K instead of 4K :)
+> 
+> You don't want to hold pidmad_lock for so long period.
+
+OK, thanks. That's explanations looks good.
+
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
