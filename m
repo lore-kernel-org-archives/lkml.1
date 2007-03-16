@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbXCPUvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965911AbXCPUwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbXCPUvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbXCPUvk
+	id S965911AbXCPUwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965912AbXCPUwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:51:40 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:50460 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753655AbXCPUvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:51:39 -0400
-Date: Fri, 16 Mar 2007 21:49:46 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, jeff@garzik.org
-Subject: [RFT] r8169 changes against 2.6.21-rc4
-Message-ID: <20070316204946.GA17436@electric-eye.fr.zoreil.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Fri, 16 Mar 2007 16:52:22 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50487 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965911AbXCPUwV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:52:21 -0400
+Date: Fri, 16 Mar 2007 13:52:18 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: andi@firstfloor.org, rostedt@goodmis.org, torvalds@linux-foundation.org,
+       mbligh@mbligh.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, chrisw@sous-sol.org, rusty@rustcorp.com.au,
+       glommer@gmail.com
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+ Take 2
+In-Reply-To: <20070316.134718.95058720.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0703161350260.6204@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com>
+ <20070316114415.GA26403@one.firstfloor.org> <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
+ <20070316.134718.95058720.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boring week-end in sight ?
+On Fri, 16 Mar 2007, David Miller wrote:
 
-The new serie of r8169 changes is available at:
-http://www.fr.zoreil.com/people/francois/misc/20070316-2.6.21-rc4-r8169-test.patch
+> > It is primarily a performance improvement since the sparsemem table 
+> > lookups would no longer be necessary and it also streamlines other 
+> > frequent cacheline uses. These page -> page_struct and vice versa 
+> > operations are key to the performance of various subsystem among them 
+> > the slab allocator.
+> 
+> If you set the bit range small enough and don't use sparsemem-extreme,
+> the cost is extremely low considering the flexibility you obtain.
 
-or:
-http://www.fr.zoreil.com/linux/kernel/2.6.x/2.6.21-rc4/r8169-20070316
+What flexibility? 
+ 
+> There are always going to be holes on large systems, there isn't
+> really a way to avoid this given how addressing is done on those
+> machines.
 
-or (rebase happy branch):
-git://electric-eye.fr.zoreil.com/home/romieu/linux-2.6.git#r8169
+Virtual mmap allows holes in the same way as page tables do. These 
+structures were designed for sparseness. I really do not think we should 
+rediscuss the material here that was discussed on linux-mm. The outcome of 
+that was that we will introduce virtual memmap to reduce sparsemem 
+overhead and to increase flexibility.
 
-Please do not clone your whole git kernel tree from here, thanks.
 
 
-Changes (most recent first):
-- mac address change support
-- align the IP header when there is no DMA constraint
-- add bit description for the TxPoll register
-- MSI support
-- cleanup
-- remove the media option
-- small 8101 comment
-- confusion between hardware and IP header alignment
-- merge with version 8.001.00 of Realtek's r8168 driver
-- merge with version 6.001.00 of Realtek's r8169 driver
-- add per-device hw_start handler (2/2)
-- add per-device hw_start handler (1/2)
-- fix suspend/resume for down interface
-
--- 
-Ueimor
