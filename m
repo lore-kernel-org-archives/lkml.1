@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965919AbXCPUyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965920AbXCPUzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965919AbXCPUyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965924AbXCPUyh
+	id S965920AbXCPUzs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965921AbXCPUzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:54:37 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:35588 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965920AbXCPUyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:54:36 -0400
-Date: Fri, 16 Mar 2007 12:54:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 2/5] revoke: core code
-Message-Id: <20070316125421.ea2ae3bd.akpm@linux-foundation.org>
-In-Reply-To: <84144f020703161337o3a6519cfn34d4b2620062264d@mail.gmail.com>
-References: <Pine.LNX.4.64.0703111330100.765@sbz-30.cs.Helsinki.FI>
-	<20070315173438.efadd514.akpm@linux-foundation.org>
-	<84144f020703152344u588da670ge14c1ec5797c2b86@mail.gmail.com>
-	<20070316032624.c6db84fc.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703161331580.21300@sbz-30.cs.Helsinki.FI>
-	<20070316042600.3e1bd424.akpm@linux-foundation.org>
-	<84144f020703161337o3a6519cfn34d4b2620062264d@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 16 Mar 2007 16:55:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44873
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965920AbXCPUzr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:55:47 -0400
+Date: Fri, 16 Mar 2007 13:55:45 -0700 (PDT)
+Message-Id: <20070316.135545.119242282.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: andi@firstfloor.org, rostedt@goodmis.org, torvalds@linux-foundation.org,
+       mbligh@mbligh.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, chrisw@sous-sol.org, rusty@rustcorp.com.au,
+       glommer@gmail.com
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+ Take 2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0703161350260.6204@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
+	<20070316.134718.95058720.davem@davemloft.net>
+	<Pine.LNX.4.64.0703161350260.6204@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007 22:37:57 +0200 "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+From: Christoph Lameter <clameter@sgi.com>
+Date: Fri, 16 Mar 2007 13:52:18 -0700 (PDT)
 
-> What we could do is add a "I am revoked" flag to struct file which
-> blocks any future ->readpage, ->readpages, and ->direct_IO on the
-> file. Alternatively, we could change the ->f_mapping to point to an
-> address space that has "revoked address space" operations. Hmm.
+> Virtual mmap allows holes in the same way as page tables do.
 
-iirc, that was part of the rationale for the introduction of f_mapping.
+I don't want to take expensive TLB misses to lookup a page.
 
-I'll cc he-who-never-replies, who did that work.
+Don't force a virtual mapping solution down my throat if that
+is not what I believe as a platform maintainer works best
+for me.
+
+TLB misses are extremely expensive on some platforms, that's why
+I try to make all the critical structures go through the 4MB
+locked TLB entry for the kernel image, or failing that the
+4MB linear mappings at PAGE_OFFSET on sparc64.
