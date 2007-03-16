@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbXCPTX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbXCPT0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbXCPTX2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 15:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXCPTX2
+	id S1753597AbXCPT0h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 15:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbXCPT0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 15:23:28 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57009 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753595AbXCPTX1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 15:23:27 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ian Kent <raven@themaw.net>
-Cc: Cedric Le Goater <clg@fr.ibm.com>, sukadev@us.ibm.com,
-       Andrew Morton <akpm@osdl.org>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, Herbert Poetzl <herbert@13thfloor.at>,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
-References: <20070313045100.GC8993@us.ibm.com>
-	<Pine.LNX.4.64.0703161300520.4188@raven.themaw.net>
-	<m1ird1o243.fsf@ebiederm.dsl.xmission.com>
-	<1174055467.3397.17.camel@raven.themaw.net>
-	<45FAAD4F.4000204@fr.ibm.com>
-	<1174063618.3397.58.camel@raven.themaw.net>
-Date: Fri, 16 Mar 2007 13:21:51 -0600
-In-Reply-To: <1174063618.3397.58.camel@raven.themaw.net> (Ian Kent's message
-	of "Sat, 17 Mar 2007 01:46:58 +0900")
-Message-ID: <m1hcslm1tc.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 16 Mar 2007 15:26:37 -0400
+Received: from gw.goop.org ([64.81.55.164]:59703 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753595AbXCPT0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 15:26:36 -0400
+Message-ID: <45FAEF63.5080308@goop.org>
+Date: Fri, 16 Mar 2007 12:26:27 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 00/26] Xen-paravirt_ops: Xen guest implementation for
+ paravirt_ops interface
+References: <20070301232443.195603797@goop.org> <20070316092137.GL23174@elte.hu> <45FAD35F.8040404@goop.org> <20070316185923.GA15209@infradead.org>
+In-Reply-To: <20070316185923.GA15209@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent <raven@themaw.net> writes:
-
-> On Fri, 2007-03-16 at 15:44 +0100, Cedric Le Goater wrote:
->> > How about you send over the autofs4 bit and I'll have a look (the autofs
->> > patch looked fine). That would save me a bit of time and if there are
->> > any changes needed I can send an updated patch for you guys to review. I
->> > don't think autofs4 uses pids differently, in principle, than autofs so
->> > it "should" be straight forward.
->> 
->> Here's the latest.
+Christoph Hellwig wrote:
+> On Fri, Mar 16, 2007 at 10:26:55AM -0700, Jeremy Fitzhardinge wrote:
+>   
+>> +#ifdef CONFIG_HIGHPTE
+>> +	.kmap_atomic_pte = native_kmap_atomic_pte,
+>> +#else
+>> +	.kmap_atomic_pte = paravirt_nop,
+>> +#endif
+>>     
 >
-> That looks OK to me, assuming the "find_get_pid" and friends do what
-> they suggest, but I'll give it a closer look tomorrow.
+> This is ifdefing is quite ugly.  Shouldn't native_kmap_atomic_pte
+> just be a noop in the !CONFIG_HIGHPTE case?
+>   
+
+Yes, but the trouble is that asm/highmem.h simply isn't included in the
+!HIGHMEM case, so I can't put anything in there, and putting anything
+pv_ops related into linux/highmem.h isn't appropriate either.
+
+>> -void *kmap_atomic(struct page *page, enum km_type type)
+>> +void *_kmap_atomic(struct page *page, enum km_type type, pgprot_t prot)
+>>     
 >
-> A ref count is used here, what affect does that have on a thread (or
-> process) that may go away (or be summarily killed) without umounting the
-> mount?
+> We normally call our "secial" function __foo, not _foo.  But in this
+> case it really should have a more meaningfull name like
+> kmap_atomic_prot anyway.
+>   
 
-Nothing.  
+OK.
 
-The primary advantage is that you are pid wrap around safe as the struct
-pid will never point to another process after one of those events occurs.
+>> +void *kmap_atomic(struct page *page, enum km_type type)
+>> +{
+>> +	return _kmap_atomic(page, type, kmap_prot);
+>>     
+>
+> And this one should probably be an inline.
+>   
 
-struct pid is a very small structure so not freeing it when the process
-it originally referred to goes away is no big deal.  Although not leaking
-when you stop using it is still important.
+OK, if you think it makes a difference.
 
-The other big use of struct pid is that to get the user space pid value
-you call pid_nr().  Depending on the pid namespace of the caller the return
-value of pid_nr() can be different.  So when you store a pid or pass a pid
-between processes that should be done by passing a struct pid because those
-processes could be in different pid namespaces.
+>> +static inline void *native_kmap_atomic_pte(struct page *page, enum km_type type)
+>> +{
+>> +	return kmap_atomic(page, type);
+>> +}
+>> +
+>> +#ifndef CONFIG_PARAVIRT
+>> +#define kmap_atomic_pte(page, type)	kmap_atomic(page, type)
+>> +#endif
+>>     
+>
+> This is all getting rather ugly just for your pagetable hackery.
+>   
 
->> Index: 2.6.20/fs/autofs4/waitq.c
->> ===================================================================
->> --- 2.6.20.orig/fs/autofs4/waitq.c
->> +++ 2.6.20/fs/autofs4/waitq.c
->> @@ -292,8 +292,8 @@ int autofs4_wait(struct autofs_sb_info *
->>  		wq->ino = autofs4_get_ino(sbi);
->>  		wq->uid = current->uid;
->>  		wq->gid = current->gid;
->> -		wq->pid = current->pid;
->> -		wq->tgid = current->tgid;
->> +		wq->pid = pid_nr(task_pid(current));
->> +		wq->tgid = pid_nr(task_tgid(current));
->>  		wq->status = -EINTR; /* Status return if interrupted */
->>  		atomic_set(&wq->wait_ctr, 2);
->>  		mutex_unlock(&sbi->wq_mutex);
+Well, I could promote kmap_atomic_pte to a first-class interface, but it
+seems like overkill.
 
-I have a concern with this bit as I my quick review said the wait queue
-persists, and if so we should be cache the struct pid pointer, not the
-pid_t value.  Heck the whol pid_nr(task_xxx(current)) idiom I find very
-suspicious.
-
-Eric
-
+    J
