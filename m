@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933934AbXCPA3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbXCPA07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933934AbXCPA3T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 20:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992450AbXCPA3H
+	id S1753480AbXCPA07 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 20:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbXCPA0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 20:29:07 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57191 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933934AbXCPA2x (ORCPT
+	Thu, 15 Mar 2007 20:26:38 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:47070 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbXCPA0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 20:28:53 -0400
-Date: Fri, 16 Mar 2007 01:31:44 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dan Aloni <da-x@monatomic.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: thread stacks and strict vm overcommit accounting
-Message-ID: <20070316013144.0d81c72d@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0703152258530.9602@blonde.wat.veritas.com>
-References: <20070313163320.GA28104@localdomain>
-	<20070315110621.9a9defaf.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703152021130.21129@blonde.wat.veritas.com>
-	<20070315233343.662b019c@lxorguk.ukuu.org.uk>
-	<20070315153613.3d2eaf10.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703152258530.9602@blonde.wat.veritas.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Mar 2007 20:26:31 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Date: Thu, 15 Mar 2007 17:22:15 -0700
+Subject: [patch 7/13] signal/timer/event fds v6 - timerfd wire up i386 arch ...
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.9367.1174004539.7>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > With a typical size as a fuzz factor preaccounted in later kernels.
-> > 
-> > Where's that done?
-> 
-> I don't know what Alan is referring to there.
+This patch wire the timerfd system call to the i386 architecture.
 
-fs/exec.c - we add 20 pages to the stack vma size initially.
 
-> We've no more committed to providing each instance with 8MB of stack,
-> than we've committed to providing each instance with RLIMIT_AS of
-> address space.  The rlimits are limits, not commitments, surely?
 
-Yes, its just that the C programming language is utterly and
-mindbogglingly broken when it comes to resource exhaustion for the stack.
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-Alan
+
+- Davide
+
+
+
+Index: linux-2.6.21-rc3.quilt/arch/i386/kernel/syscall_table.S
+===================================================================
+--- linux-2.6.21-rc3.quilt.orig/arch/i386/kernel/syscall_table.S	2007-03-15 15:53:15.000000000 -0700
++++ linux-2.6.21-rc3.quilt/arch/i386/kernel/syscall_table.S	2007-03-15 16:11:47.000000000 -0700
+@@ -320,3 +320,4 @@
+ 	.long sys_getcpu
+ 	.long sys_epoll_pwait
+ 	.long sys_signalfd		/* 320 */
++	.long sys_timerfd
+Index: linux-2.6.21-rc3.quilt/include/asm-i386/unistd.h
+===================================================================
+--- linux-2.6.21-rc3.quilt.orig/include/asm-i386/unistd.h	2007-03-15 15:53:15.000000000 -0700
++++ linux-2.6.21-rc3.quilt/include/asm-i386/unistd.h	2007-03-15 16:11:47.000000000 -0700
+@@ -326,10 +326,11 @@
+ #define __NR_getcpu		318
+ #define __NR_epoll_pwait	319
+ #define __NR_signalfd		320
++#define __NR_timerfd		321
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 321
++#define NR_syscalls 322
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+
