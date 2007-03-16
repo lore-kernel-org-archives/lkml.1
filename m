@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbXCPIpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbXCPIrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996AbXCPIpj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 04:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbXCPIpj
+	id S1753027AbXCPIrx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 04:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbXCPIrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 04:45:39 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:51386 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752996AbXCPIpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 04:45:38 -0400
-Message-ID: <45FA5951.2050902@drzeus.cx>
-Date: Fri, 16 Mar 2007 09:46:09 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Philip Langdale <philipl@overt.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Carlos Aguiar <carlos.aguiar@indt.org.br>, juha.yrjola@solidboot.com
-Subject: Re: [PATCH] MMC: Fix handling of low-voltage cards
-References: <45F49BE9.6070803@overt.org>
-In-Reply-To: <45F49BE9.6070803@overt.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Mar 2007 04:47:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35628 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753000AbXCPIrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 04:47:52 -0400
+Date: Fri, 16 Mar 2007 09:47:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [patch 24/26] Xen-paravirt_ops: Add the Xenbus sysfs and virtual device hotplug driver.
+Message-ID: <20070316084704.GB23174@elte.hu>
+References: <20070301232443.195603797@goop.org> <20070301232529.271605211@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301232529.271605211@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philip Langdale wrote:
-> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> index c87ce56..74ebd97 100644
-> --- a/drivers/mmc/core/core.c
-> +++ b/drivers/mmc/core/core.c
-> @@ -317,6 +317,24 @@ static u32 mmc_select_voltage(struct mmc
->   
 
-The idea with the new structure is to keep a bare minimum of protocol
-information in core.c. So stick these tests into mmc.c and sd.c.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> +	if (ocr & 0x7F) {
-> +		printk("%s: card claims to support voltages below "
->   
+> This communicates with the machine control software via a registry 
+> residing in a controlling virtual machine. This allows dynamic 
+> creation, destruction and modification of virtual device 
+> configurations (network devices, block devices and CPUS, to name some 
+> examples).
 
-Please include a level with the printk().
+should be reviewed by the driver-core folks too i guess?
 
-> +	if (host->mode == MMC_MODE_SD && (ocr & MMC_VDD_165_195)) {
->   
+> +//#include <asm/maddr.h>
 
-Ooops. host->mode should have been removed by now.
+> +//#include <xen/xen_proc.h>
+> +//#include <xen/evtchn.h>
 
+> +//#include <xen/hvm.h>
 
-Otherwise the patch looks good. Just fix these points and I'll include it.
+> +//		.shutdown = xenbus_dev_shutdown,
 
-Rgds
+hm?
 
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
-
+	Ingo
