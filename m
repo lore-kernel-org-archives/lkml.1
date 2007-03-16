@@ -1,102 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbXCPGfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbXCPGlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbXCPGfn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 02:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbXCPGfn
+	id S1752548AbXCPGlS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 02:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXCPGlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 02:35:43 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:48416 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbXCPGfm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 02:35:42 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 15 Mar 2007 23:31:35 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ulrich Drepper <drepper@gmail.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/4] signalfd v1 - signalfd core ...
-In-Reply-To: <a36005b50703152216s6c2fce0ck71d41a124940265f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0703152256490.12136@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703061639370.3661@alien.or.mcafeemobile.com> 
- <Pine.LNX.4.64.0703070854280.5963@woody.linux-foundation.org> 
- <Pine.LNX.4.64.0703070943180.12283@alien.or.mcafeemobile.com> 
- <45EF20F7.1050307@goop.org>  <Pine.LNX.4.64.0703071241590.12756@alien.or.mcafeemobile.com>
-  <45EF2DFF.4060209@goop.org>  <Pine.LNX.4.64.0703071329080.12756@alien.or.mcafeemobile.com>
-  <Pine.LNX.4.64.0703071347380.5963@woody.linux-foundation.org> 
- <a36005b50703071401m2b166832rb06f4cf73224f45e@mail.gmail.com> 
- <Pine.LNX.4.64.0703071406100.12756@alien.or.mcafeemobile.com>
- <a36005b50703152216s6c2fce0ck71d41a124940265f@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Fri, 16 Mar 2007 02:41:18 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3622 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752548AbXCPGlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 02:41:17 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Mel Gorman <mel@skynet.ie>
+Subject: Re: 2.6.21-rc3-mm1
+Date: Fri, 16 Mar 2007 07:43:51 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070307201839.6f45735b.akpm@linux-foundation.org> <200703151637.14558.m.kozlowski@tuxland.pl> <20070315195932.GB6236@skynet.ie>
+In-Reply-To: <20070315195932.GB6236@skynet.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703160743.52204.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, Ulrich Drepper wrote:
+Hello Mel,
 
-> On 3/7/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > Let's do this. How about you throw this way one of the case that would
-> > possibly break, and I test it?
+> > > > > 	Today after +- 24h of uptime I found some more page allocation
+> > > > > failures ('eth1: Can't allocate skb for Rx'). You'll find more here:
+> > > > > 
+> > > > > http://tuxland.pl/misc/2.6.21-rc3-mm1-page-allocation-failure.txt
+> > > > > 
+> > > > > System wasn't doing anything unusual, as usual ;-) X, some p2p 
+> > > > > software, firefox+flash playing music.
+> > > > 
+> > > > Do other kernels do this, or is 2.6.21-rc3-mm1 worse?
+> > > > 
+> > > > It is of course a non-fatal problem and will inevitably happen sometimes,
+> > > > but we would like the VM to be able to minimise the occurrence of this
+> > > > problem.
+> > > 
+> > > Mariusz, I would be interested in finding out if this problem still occurs when
+> > > you set min_free_kbytes to 16384 via /proc/sys/vm/min_free_kbytes. I understand
+> > > that the problem is not easily reproduced and requiring configuration changes
+> > > is far from ideal but it'd allow me to find out if options 2 or 3 below make
+> > > sense in advance.
+> > 
+> > After a few hours I can confirm that this happens with 
+> > 
+> > $ cat /proc/sys/vm/min_free_kbytes 
+> > 16384
+> > 
+> > as well. See the syslog output below. Feel free to mail me to do some more tests.
 > 
-> Since you make such claims I assume your signalfd() implementation
-> considers a signal delivered once it is reported to an epoll() caller.
-> Right?
+> Ok, great. Well, not great because it's broken, but I know what's going
+> on. I was able to reproduce the problem based on your report on my desktop
+> and put together a fix for it. Full regression tests are still running but
+> it should be in good enough state for you to test.
+> 
+> Without this patch, I got allocation failures within 15 minutes by stressing
+> the machine. With the patch below, it's been up an hour and 15 minutes and
+> I'm seeing no problems so far. Will keep the machine running a few days to
+> see what happens.
+> 
 
-The wakeup phase in epoll does not mean the signal is delivered. That 
-happens when the caller does a read(2) on the signalfd. The read(2) on the 
-signalfd ends up in calling dequeue_signal(), the same function use by the 
-kernel to spill out signals to deliver (they peek from the same queue).
+[...]
+ 
+> Mariusz, please try the following patch. It should not be necessary to
+> adjust your min_free_kbytes again but if you see a failure, please try
+> with min_free_kbytes set to 16384. Thanks a lot.
 
+Works for me. min_free_kbytes was left at default 2791. I left the laptop with
+X + aMule + azureus + firefox&flash (playing music) + kernel compilation so
+the box was pushed a bit. Uptime close to 9 hours and no page allocation
+failures. I leave it running some more. If anything pops out you'll know it :-)
 
+Thanks,
 
-> This is not what you really want, at least not in all cases.  A signal
-> might be something you want to react on right away.  Unless
-> pthread_kill() is used it is delivered to the _process_ and not a
-> specific thread.  But this means if epoll() reports two events to one
-> thread calling epoll() (one of them being a signal) and this thread is
-> then stuck processing the other request, the signal is not handled
-> even though there might be a second or third thread available to
-> receive the signal.  Those threads have the same right to receive the
-> signal and the current implementation always looks for the
-> best/fastest way to deliver the signal.
-
-The behaviour depends on the sigmask you pass to signalfd(). You can 
-select signals that you want to handle in a standard way, and the ones 
-that you want to handle with signalfd.
-Typically programs using signalfd() do not want the asyncronous behaviour 
-of signals at all (with all the limits you have in the handler), and the 
-event dispatch loop never blocks by definition (otherwise you have more 
-serious problems than a signal not delivered). They are also very likely 
-to be single threaded.
-
-
-
-> This means to me that reporting the signal in epoll() does _not_ mark
-> the signal as handled.  Somehow (probably using the signalfd()
-> descriptor) the thread must explicitly request the signal to be
-> delivered.  But if you do this the epoll() handling is fantastically
-> racy if the signal is not blocked.
-
-As I said, when a signal hits send_signal (or the queued versions), a 
-wakeup is done on the wait queue head poll (or select/epoll) is sleeping 
-on. This ends up delivring a POLLIN, but the signal is not fetched (by the 
-mean of dequeue_signal) until a read(2) on the signalfd is done.
-Since both standard delivery and signalfd's read(2) fish from the same 
-queue, you have to block the signals that you want to have the guarantee 
-to be able to fetch with a read(2) (signalfd supports O_NONBLOCK also).
-If you do not block the signal, you get a wakeup, but you may not find a 
-signal to dequeue at the next read(2), because a standard delivery might 
-have stole the signal by preceeding you in dequeue_signal.
-
-
-
-- Davide
-
-
+	Mariusz Kozlowski
