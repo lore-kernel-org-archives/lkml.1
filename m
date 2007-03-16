@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXCPJcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXCPJdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbXCPJcO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 05:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932932AbXCPJcN
+	id S932908AbXCPJdf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 05:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbXCPJde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 05:32:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46087 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932840AbXCPJcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 05:32:12 -0400
-Date: Fri, 16 Mar 2007 10:31:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+	Fri, 16 Mar 2007 05:33:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50466
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932908AbXCPJdd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 05:33:33 -0400
+Date: Fri, 16 Mar 2007 02:33:31 -0700 (PDT)
+Message-Id: <20070316.023331.59468179.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: jeremy@goop.org, ak@muc.de, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [patch 07/26] Xen-paravirt_ops: Allow paravirt backend to choose kernel PMD sharing
-Message-ID: <20070316093119.GQ23174@elte.hu>
-References: <20070301232443.195603797@goop.org> <20070301232526.832915500@goop.org>
+       xen-devel@lists.xensource.com, chrisw@sous-sol.org, zach@vmware.com,
+       rusty@rustcorp.com.au, anthony@codemonkey.ws,
+       torvalds@linux-foundation.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070316092445.GM23174@elte.hu>
+References: <20070301232443.195603797@goop.org>
+	<20070301232527.956565107@goop.org>
+	<20070316092445.GM23174@elte.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301232526.832915500@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 16 Mar 2007 10:24:45 +0100
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> ugh. This is beyond ugly! Why dont we just compile two images, one for 
+> Xen and one for native, do two passes to get those two images and 
+> 'merge' them into a single vmlinuz (so that we still have a 'single' 
+> kernel unit to deal with on the distro side). This way we avoid all this 
+> crazy, limited, fragile patchery business...
 
-> Normally when running in PAE mode, the 4th PMD maps the kernel address 
-> space, which can be shared among all processes (since they all need 
-> the same kernel mappings.
-> 
-> Xen, however, does not allow guests to have the kernel pmd shared 
-> between page tables, so parameterize pgtable.c to allow both modes of 
-> operation.
+Perhaps the problem can be dealt with using ELF relocations.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+There is another case, discussed yesterday on netdev, where run-time
+resolution of ELF relocations would be useful (for
+very-very-very-read-only variables) so if it can solve this problem
+too it would be nice to have a generic infrastructure for it.
