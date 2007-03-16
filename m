@@ -1,79 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933580AbXCPLkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933591AbXCPLkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933580AbXCPLkK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 07:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933586AbXCPLkJ
+	id S933591AbXCPLkh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 07:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933593AbXCPLkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 07:40:09 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:42156 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933580AbXCPLkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 07:40:07 -0400
-Date: Fri, 16 Mar 2007 03:39:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>
-Subject: Re: [2.6.20] BUG: workqueue leaked lock
-Message-Id: <20070316033912.8780a9cd.akpm@linux-foundation.org>
-In-Reply-To: <1174034480.7124.16.camel@twins>
-References: <20070313165014.GE31960@vanheusden.com>
-	<20070315110628.8bd2c07b.akpm@linux-foundation.org>
-	<1174034480.7124.16.camel@twins>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 Mar 2007 07:40:37 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:26276 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933594AbXCPLkf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 07:40:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WMwg8G1/YSwB5+Z/hf/DguMol87sbKzoF6WDEgFVaVG/VkJBxyKghiv+3jJ0q4VeOu2kzyNrwpKEBIvzqJn53osRQL5MaYMYdOMoQQi3UQXXiLbFsmpIiA5Bk1OdiJoqB51u78Q0C3dV+qzatDmk+zKxAHAcn2bk7/rBKaGG0b4=
+Message-ID: <b647ffbd0703160440sd678cedsc8406ef2b1f030c0@mail.gmail.com>
+Date: Fri, 16 Mar 2007 12:40:33 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Pavel Emelianov" <xemul@sw.ru>
+Subject: Re: [RFC] kernel/pid.c pid allocation wierdness
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <45FA7823.2040104@sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45F7A4B3.5040005@sw.ru> <m16493rk18.fsf@ebiederm.dsl.xmission.com>
+	 <20070314153341.GA770@tv-sign.ru> <45FA7823.2040104@sw.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007 09:41:20 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On 16/03/07, Pavel Emelianov <xemul@sw.ru> wrote:
+> Oleg Nesterov wrote:
+> > On 03/14, Eric W. Biederman wrote:
+> >> Pavel Emelianov <xemul@sw.ru> writes:
+> >>
+> >>> Hi.
+> >>>
+> >>> I'm looking at how alloc_pid() works and can't understand
+> >>> one (simple/stupid) thing.
+> >>>
+> >>> It first kmem_cache_alloc()-s a strct pid, then calls
+> >>> alloc_pidmap() and at the end it taks a global pidmap_lock()
+> >>> to add new pid to hash.
+> >
+> > We need some global lock. pidmap_lock is already here, and it is
+> > only used to protect pidmap->page allocation. Iow, it is almost
+> > unused. So it was very natural to re-use it while implementing
+> > pidrefs.
+> >
+> >>> The question is - why does alloc_pidmap() use at least
+> >>> two atomic ops and potentially loop to find a zero bit
+> >>> in pidmap? Why not call alloc_pidmap() under pidmap_lock
+> >>> and find zero pid in pidmap w/o any loops and atomics?
+> >
+> > Currently we search for zero bit lockless, why do you want
+> > to do it under spin_lock ?
+>
+> Search isn't lockless. Look:
+>
+> while (1) {
+>    if (!test_and_set_bit(...)) {
+>        atomic_dec(&nr_free);
+>        return pid;
+>    }
+> we use two atomic operations to find and set a bit in a map.
 
-> On Thu, 2007-03-15 at 11:06 -0800, Andrew Morton wrote:
-> > > On Tue, 13 Mar 2007 17:50:14 +0100 Folkert van Heusden <folkert@vanheusden.com> wrote:
-> > > ...
-> > > [ 1756.728209] BUG: workqueue leaked lock or atomic: nfsd4/0x00000000/3577
-> > > [ 1756.728271]     last function: laundromat_main+0x0/0x69 [nfsd]
-> > > [ 1756.728392] 2 locks held by nfsd4/3577:
-> > > [ 1756.728435]  #0:  (client_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
-> > > [ 1756.728679]  #1:  (&inode->i_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
-> > > [ 1756.728923]  [<c1003d57>] show_trace_log_lvl+0x1a/0x30
-> > > [ 1756.729015]  [<c1003d7f>] show_trace+0x12/0x14
-> > > [ 1756.729103]  [<c1003e79>] dump_stack+0x16/0x18
-> > > [ 1756.729187]  [<c102c2e8>] run_workqueue+0x167/0x170
-> > > [ 1756.729276]  [<c102c437>] worker_thread+0x146/0x165
-> > > [ 1756.729368]  [<c102f797>] kthread+0x97/0xc4
-> > > [ 1756.729456]  [<c1003bdb>] kernel_thread_helper+0x7/0x10
-> > > [ 1756.729547]  =======================
-> > > [ 1792.436492] svc: unknown version (0 for prog 100003, nfsd)
-> > > [ 1846.683648] BUG: workqueue leaked lock or atomic: nfsd4/0x00000000/3577
-> > > [ 1846.683701]     last function: laundromat_main+0x0/0x69 [nfsd]
-> > > [ 1846.683832] 2 locks held by nfsd4/3577:
-> > > [ 1846.683885]  #0:  (client_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
-> > > [ 1846.683980]  #1:  (&inode->i_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
-> > > [ 1846.683988]  [<c1003d57>] show_trace_log_lvl+0x1a/0x30
-> > > [ 1846.683994]  [<c1003d7f>] show_trace+0x12/0x14
-> > > [ 1846.683997]  [<c1003e79>] dump_stack+0x16/0x18
-> > > [ 1846.684001]  [<c102c2e8>] run_workqueue+0x167/0x170
-> > > [ 1846.684006]  [<c102c437>] worker_thread+0x146/0x165
-> > > [ 1846.684012]  [<c102f797>] kthread+0x97/0xc4
-> > > [ 1846.684023]  [<c1003bdb>] kernel_thread_helper+0x7/0x10
-> > 
-> > Oleg, that's a fairly incomprehensible message we have in there.  Can you
-> > please explain what it means?
-> 
-> I think I'm responsible for this message (commit
-> d5abe669172f20a4129a711de0f250a4e07db298); what is says is that the
-> function executed by the workqueue (here laundromat_main) leaked an
-> atomic context or is still holding locks (2 locks in this case).
-> 
+While you may have a few concurrent threads competing for the same
+"offset" and "pid" in the loop - e.g. at point [1] (see below), only
+one will succeed with "registering" it due to the atomicity of
+test_and_set_bit() and so only this one will get at point [2] with the
+"pid".
 
-OK.  That's not necessarily a bug: one could envisage a (weird) piece of
-code which takes a lock then releases it on a later workqueue invokation. 
-But I'm not sure that nfs4_laundromat() is actually supposed to be doing
-anything like that.
+The rest of the "unlucky" threads will either
 
-Then again, maybe it is: it seems to be waddling through a directory under
-the control of a little state machine, with timeouts.
+(i) compete for another "offset" -> "pid" (as described above);
+(ii) leave the loop when one of the conditions of while() becomes
+"false" -> e.g. there are no more free slots in this map.
 
-Neil: help?
+                if (likely(atomic_read(&map->nr_free))) {
+                        do {
+                                // [1]
+                                if (!test_and_set_bit(offset, map->page)) {
+                                // [2]
+                                        atomic_dec(&map->nr_free);
+                                        pid_ns->last_pid = pid;
+                                        return pid;
+                                }
+                                offset = find_next_offset(map, offset);
+                                pid = mk_pid(pid_ns, map, offset);
+                        /*
+                         * find_next_offset() found a bit, the pid from it
+                         * is in-bounds, and if we fell back to the last
+                         * bitmap block and the final block was the same
+                         * as the starting point, pid is before last_pid.
+                         */
+                        } while (offset < BITS_PER_PAGE && pid < pid_max &&
+                                        (i != max_scan || pid < last ||
+                                            !((last+1) & BITS_PER_PAGE_MASK)));
+                }
+
+>    ...
+
+>
+> > Oleg.
+> >
+> >
+
+-- 
+Best regards,
+Dmitry Adamushko
