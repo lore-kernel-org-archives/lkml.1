@@ -1,69 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbXCPIim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbXCPIin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753099AbXCPIim (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 04:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbXCPIil
+	id S1752109AbXCPIin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 04:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbXCPIin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 04:38:41 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:59966 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbXCPIil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 04:38:41 -0400
-Message-ID: <45FA57AF.9080100@drzeus.cx>
-Date: Fri, 16 Mar 2007 09:39:11 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 16 Mar 2007 04:38:43 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:1303 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753096AbXCPIim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 04:38:42 -0400
+Date: Fri, 16 Mar 2007 09:36:50 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 0/15] KVM userspace interface updates
+Message-ID: <20070316083650.GA8525@osiris.boeblingen.de.ibm.com>
+References: <11736212072915-git-send-email-avi@qumranet.com>
 MIME-Version: 1.0
-To: Pavel Pisa <ppisa4lists@pikron.com>
-CC: Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: i.MX/MX1 SDHC fix/workaround of SD card recognition problems
-References: <200703080000.41101.ppisa@pikron.com> <45F49297.9090309@drzeus.cx> <200703120333.27581.ppisa4lists@pikron.com>
-In-Reply-To: <200703120333.27581.ppisa4lists@pikron.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11736212072915-git-send-email-avi@qumranet.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Pisa wrote:
-> this should go to 2.6.21, I have hold this for some
-> months and I have discussed it in the thread
-> "Re: CRC Errors with SD cards in 4bits mode (on i.MXl)"
-> You have been CCed. This is not solution for seen data CRC
-> problem, but solves problems with recognition of cards
-> which has been timing sensitive sometimes.
->   
+On Sun, Mar 11, 2007 at 03:53:12PM +0200, Avi Kivity wrote:
+> This patchset updates the kvm userspace interface to what I hope will
+> be the long-term stable interface.  Provisions are included for extending
+> the interface later.  The patches address performance and cleanliness
+> concerns.
 
-I'll push it to Linus and see if he swallows ;)
-
-> I have sent it into Russell's patch queue with my others
-> MX1 fixes I have intended to be included in 2.6.21.
-> It was probably mistake for this one, because it should
-> go through your tree. If you send it to mainline
-> yourself, I would discard patch from patch daemon.
->
->   
-
-For Russell's sake, things should probably go through my tree. Otherwise
-he'll have to deal with all sorts of merge problems because of the
-things I do.
-
-> We have spoken about MX1 SDHC maintainership.
-> I am attaching my subscription.
-> I am not sure about mailing list field there.
-> Do you suggest this one, ALKML or other?
->
->   
-
-sdhci is outright wrong. That list is only for the sdhci driver. I
-suggest LAK or LKML, preferably the one with the most MX1 users and/or
-developers.
-
-Rgds
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
-
+Searching the mailing list I figured that as soons as the interface seems
+to be stable, kvm should/would switch to a system call based interface.
+I assume the userspace interface might still change a lot, especially if
+kvm is ported to new architectures.
+But the general question is: do you still plan to switch to a syscall
+interface?
