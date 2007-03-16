@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbXCPTwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbXCPT7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753628AbXCPTwP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 15:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbXCPTwO
+	id S1753637AbXCPT7V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 15:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbXCPT7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 15:52:14 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:37224 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753621AbXCPTwN (ORCPT
+	Fri, 16 Mar 2007 15:59:21 -0400
+Received: from mx.neterion.com ([72.1.205.142]:2379 "EHLO owa.neterion.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753629AbXCPT7U convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 15:52:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=oeAc2e7qYp5QTA6j0IEZzHfqo/LRNCNbtTjeLpiAkHwXQWpGOlCt0bIAHTz+unv6Ft8TZD1LqiEwPHU40Mv01ArozM0DIvrMcJ+Ks9Ki4G/x5rvzR+ArrIDhPJ8onQ864xK/nxj4eMif+5YDY06j3Slq6GxXxu9nOB6+dD1pGZI=
-Message-ID: <75b66ecd0703161252l60dcbd81s3c9beb7cb91b6c14@mail.gmail.com>
-Date: Fri, 16 Mar 2007 15:52:12 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "John Coppens" <john@jcoppens.com>
-Subject: Re: Conflict between ide and usb?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070316154735.6de11eca.john@jcoppens.com>
+	Fri, 16 Mar 2007 15:59:20 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070316154735.6de11eca.john@jcoppens.com>
-X-Google-Sender-Auth: dbefb52cea7ba5ba
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] s2io: add PCI error recovery support
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Date: Fri, 16 Mar 2007 15:58:52 -0400
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77015A97DD@nekter>
+In-Reply-To: <20070316194941.GP5151@austin.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] s2io: add PCI error recovery support
+Thread-Index: AcdoBEjwlMfHbb1MTomrbDNKsLOe/wAAF4vA
+From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+To: "Linas Vepstas" <linas@austin.ibm.com>
+Cc: "Wen Xiong" <wenxiong@us.ibm.com>, <linux-kernel@vger.kernel.org>,
+       <linux-pci@atrey.karlin.mff.cuni.cz>, <netdev@vger.kernel.org>,
+       "Jeff Garzik" <jgarzik@pobox.com>, "Andrew Morton" <akpm@osdl.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/16/07, John Coppens <john@jcoppens.com> wrote:
-> The problem I have, is that when I copy a file from a DVD to harddisk,
-> the internet connection almost dies (it slows down terribly, so much so
-> that established connections actually disconnect, ping looses packets,
-> DNS lookup fails, etc). After copy ends, all returns to normal.
+> > Ideally s2io_reset should
+> > return a failure in this case (return is void now)
+> 
+> Would you care to provide a patch that did this? I could
+> experiment a bit, and try to do this myself; but I really
+> don't know this hardware, or this driver, that well.
+[Ram] Yes, I can submit a patch to address this.
 
-Sounds like DMA starvation, it's been seen in the past with some SATA
-controllers.  Presumably vendors do it to improve benchmark scores.
+Ram
+> 
+> --linas
+> 
 
-You can confirm it by forcing the hard drive and/or DVD drive to a
-lower speed if your BIOS allows it.
-
-Lee
