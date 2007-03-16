@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965900AbXCPU2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965893AbXCPU2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965900AbXCPU2K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965895AbXCPU2K
+	id S965893AbXCPU2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965896AbXCPU2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:28:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:56999 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965900AbXCPU2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:28:08 -0400
-Message-ID: <45FAFDD3.6080400@goop.org>
-Date: Fri, 16 Mar 2007 13:28:03 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 16 Mar 2007 16:28:31 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:5911 "EHLO
+	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965894AbXCPU22 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:28:28 -0400
+X-BigFish: VP
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: [PATCH] Fix typo in sync_constant_test_bit()'s name.
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: RE: System hang on athlon64 cpufreq change
+Date: Fri, 16 Mar 2007 15:28:11 -0500
+Message-ID: <1449F58C868D8D4E9C72945771150BDFD96725@SAUSEXMB1.amd.com>
+In-Reply-To: <c43b2e150703161151i3bf45074v54208542ca2212d3@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: System hang on athlon64 cpufreq change
+Thread-Index: Acdn/Dp6XfQAgim7QFS8tNMMJd7zbwADQEnQ
+References: <c43b2e150703161151i3bf45074v54208542ca2212d3@mail.gmail.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "wixor" <wixorpeek@gmail.com>, linux-kernel@vger.kernel.org
+X-OriginalArrivalTime: 16 Mar 2007 20:28:11.0120 (UTC)
+ FILETIME=[9D960F00:01C76809]
+X-WSS-ID: 69E422512EW1274736-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix typo in sync_constant_test_bit()'s name, so sync_bitops.h is consistent with bitops.h
+> My kernel boots up with performance cpufreq governor, thus setting
+> frequency to 2hgz. Then I change it to powersave governor, thus
+> setting frequency to 1ghz just like that:
+> 
+> echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> 
+> Everything works well. Then I launch mplayer and in 1/4 - 1/5 cases
+> system hangs (I mean nothing works, including numlock and sysrq key).
+> I suspect it's something with video card driver, and here comes my
+> problem. I use ati's proprietary fglrx driver (i guess they may be
+> calibrating they own delay loop, or something, and cputfreq change
+> ruins it), so kernel is tainted, so you are unable to track the
+> problem down.... eh.... well, but i hope there is some tiny chance
+> there is something wrong i do, or maybe cpu doesn't like so drastic
+> freq changes... well, if anybody has some idea, or just experience
+> like mine, I ask for help. Thanks in advance.
 
-[ Linus, please apply.  Thanks -J ]
+The processor is not changing frequency in response to your
+launch of mplayer.  The powersave governor forces it to the
+lowest frequency regardless of system load.  You really want
+to use ondemand for dynamic frequency scaling.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Can you use a serial or network console to capture any messages
+the kernel is sending when mplayer starts?
 
----
- include/asm-i386/sync_bitops.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-===================================================================
---- a/include/asm-i386/sync_bitops.h
-+++ b/include/asm-i386/sync_bitops.h
-@@ -130,7 +130,7 @@ static inline int sync_test_and_change_b
- 	return oldbit;
- }
- 
--static __always_inline int sync_const_test_bit(int nr, const volatile unsigned long *addr)
-+static __always_inline int sync_constant_test_bit(int nr, const volatile unsigned long *addr)
- {
- 	return ((1UL << (nr & 31)) &
- 		(((const volatile unsigned int *)addr)[nr >> 5])) != 0;
+-Mark Langsdorf
+AMD, Inc.
 
 
