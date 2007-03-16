@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569AbXCPXXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbXCPX0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569AbXCPXXO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 19:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbXCPXXO
+	id S1753666AbXCPX0U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 19:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbXCPX0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 19:23:14 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:42202 "EHLO tmailer.gwdg.de"
+	Fri, 16 Mar 2007 19:26:20 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:43266 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752569AbXCPXXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 19:23:13 -0400
-Date: Sat, 17 Mar 2007 00:20:37 +0100 (MET)
+	id S1752580AbXCPX0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 19:26:19 -0400
+Date: Sat, 17 Mar 2007 00:09:19 +0100 (MET)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] A need for "yesno"-function? (and "cleanup" of kernel.h)
- (was: Re: [KJ] [RFC] A need for a "yesno"-function?)
-In-Reply-To: <45FAB6C5.8050302@student.ltu.se>
-Message-ID: <Pine.LNX.4.61.0703170019010.23117@yvahk01.tjqt.qr>
-References: <45F95351.60308@student.ltu.se> <39e6f6c70703152036m778ea054gf32723d0eda2be68@mail.gmail.com>
- <45FAB6C5.8050302@student.ltu.se>
+To: Zachary Amsden <zach@vmware.com>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [RFC, PATCH] Fixup COMPAT_VDSO to work with CONFIG_PARAVIRT
+In-Reply-To: <45FA16FE.7010805@vmware.com>
+Message-ID: <Pine.LNX.4.61.0703170008380.23117@yvahk01.tjqt.qr>
+References: <45FA054F.6020107@vmware.com> <45FA0D13.6080601@goop.org>
+ <45FA16FE.7010805@vmware.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Spam-Report: Content analysis: 0.0 points, 6.0 required
@@ -29,27 +33,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mar 16 2007 16:24, Richard Knutsson wrote:
->> > 
->> > char yesno_chr(const bool value)
->> > {
->> >        return "ny"[value];
->> > }
->> > 
->> > char *yesno_str(const bool value)
->> > {
->> >        return &"no\0yes"[3 * value];
->> > }
+On Mar 15 2007 20:03, Zachary Amsden wrote:
+> Well testing that is not so fun.  I installed SUSE Pro 9.0, and strings on
+> ld.so contains the magic at_sysinfo assert!  But it doesn't install TLS
+> libraries, so I'll have to install them by hand.
 
-static/extern const char *const yesno[] = {"no", "yes"};
-static inline const char *yesno_str(bool value)
-{
-	return yesno[value];
-}
-#or
-#define yesno_str(value) yesno[!!(value)]
-
->> > Thoughts?
+9.0 is kinda old. And if you want some TLS libs, install the _i686_ glibc
+package (not done by default).
 
 
 Jan
