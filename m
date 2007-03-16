@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbXCPSjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965828AbXCPSm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753581AbXCPSjy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 14:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbXCPSjy
+	id S965828AbXCPSm0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 14:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbXCPSm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 14:39:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:56937 "EHLO mail.goop.org"
+	Fri, 16 Mar 2007 14:42:26 -0400
+Received: from gw.goop.org ([64.81.55.164]:50441 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753579AbXCPSjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 14:39:53 -0400
-Message-ID: <45FAE46F.7080009@goop.org>
-Date: Fri, 16 Mar 2007 11:39:43 -0700
+	id S1753592AbXCPSmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 14:42:25 -0400
+Message-ID: <45FAE50B.7030004@goop.org>
+Date: Fri, 16 Mar 2007 11:42:19 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
@@ -18,35 +18,57 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
        xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [patch 05/26] Xen-paravirt_ops: paravirt_ops: hooks to set up
- initial pagetable
-References: <20070301232443.195603797@goop.org> <20070301232526.611972133@goop.org> <20070316093348.GS23174@elte.hu>
-In-Reply-To: <20070316093348.GS23174@elte.hu>
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 04/26] Xen-paravirt_ops: Add pagetable accessors to pack
+ and unpack pagetable entries
+References: <20070301232443.195603797@goop.org> <20070301232526.502172500@goop.org> <20070316093844.GT23174@elte.hu>
+In-Reply-To: <20070316093844.GT23174@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Ingo Molnar wrote:
->> +	/* Make sure kernel address space is empty so that a pagetable
->> +	   will be allocated for it. */
+>> +static inline pmd_t native_make_pmd(unsigned long long val)
+>> +{
+>> +	return (pmd_t) { val };
+>> +}
+>> +static inline pte_t native_make_pte(unsigned long long val)
+>> +{
+>> +	return (pte_t) { .pte_low = val, .pte_high = (val >> 32) } ;
+>> +}
 >>     
 >
-> comment style.
+> missing newlines between inline functions.
 >   
 
-As you've noticed its a comment style I use quite often.  I use it for
-what's essentially a little local comment, rather than a block comment
-which really needs to draw attention to itself.  In this case, I think using
+OK.
 
-/*
- * Make sure kernel address space is empty so that a pagetable
- * will be allocated for it.
- */
+>> +#ifndef CONFIG_PARAVIRT
+>> +#define pmd_val(x)	native_pmd_val(x)
+>> +#define __pmd(x)	native_make_pmd(x)
+>> +#endif	/* !CONFIG_PARAVIRT */
+>>     
+>
+> no need for the closing !CONFIG_PARAVIRT comment: this define is 2 lines 
+> long so it's not that hard to find the start of the block. We typically 
+> do the /* !CONFIG_XX */ comment only for larger blocks, and when 
+> multiple #endif's intermix.
+>   
 
-is just too loud for what its trying to say.  If // comments were deemed
-acceptable, I'd probably use them here instead.
+Yeah, I tend to put them there reflexively.  Its so easy for an #endif
+to drift away over time, and suddenly you have no idea what's going on. 
+I agree its overkill in this case.
+
+>>  #define HPAGE_SHIFT	22
+>>  #include <asm-generic/pgtable-nopmd.h>
+>> -#endif
+>> +#endif	/* CONFIG_X86_PAE */
+>>     
+>
+> (for example here the #endif comment is justified.)
+>   
+
+Yeah, and it probably started life much closer to the #ifdef...
 
     J
