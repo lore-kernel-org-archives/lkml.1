@@ -1,66 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbXCPUAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbXCPUBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbXCPUAO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXCPUAN
+	id S1753643AbXCPUBG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbXCPUBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:00:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35701 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753638AbXCPUAL (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:00:11 -0400
-Date: Sat, 17 Mar 2007 06:59:51 +1100
-From: David Chinner <dgc@sgi.com>
-To: Marco Berizzi <pupilla@hotmail.com>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c.  Caller 0xc01b00bd
-Message-ID: <20070316195951.GB5743@melbourne.sgi.com>
-References: <BAY103-DAV1066400DF0615AD677EA1B2730@phx.gbl> <20070316012520.GN5743@melbourne.sgi.com> <BAY103-DAV13EC09E9BCB3E8C9D5EEA2B2710@phx.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BAY103-DAV13EC09E9BCB3E8C9D5EEA2B2710@phx.gbl>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 16 Mar 2007 16:01:06 -0400
+Received: from gw.goop.org ([64.81.55.164]:40801 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753642AbXCPUBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:01:04 -0400
+Message-ID: <45FAF77A.8010607@goop.org>
+Date: Fri, 16 Mar 2007 13:00:58 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 03/26] Xen-paravirt_ops: use paravirt_nop to consistently
+ mark no-op operations
+References: <20070301232443.195603797@goop.org> <20070301232526.261284776@goop.org> <20070316094432.GU23174@elte.hu> <45FAE560.10401@goop.org> <20070316194904.GO10574@sequoia.sous-sol.org>
+In-Reply-To: <20070316194904.GO10574@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 16, 2007 at 12:05:33PM +0100, Marco Berizzi wrote:
-> David Chinner wrote:
-> 
-> > can
-> > you post a url to the commit?
-> 
-> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.19.y.git;a=commit;h=7fbbb01dca7704d52ace6f45a805c98a5b0362f9
+Chris Wright wrote:
+> how about __paravirt_nop_start < func < __paravirt_nop_end  and preserve
+> the types?
+>   
 
-Ok, so an ipsec change. And I see from the history below it
-really has nothing to do with this problem. it seems the problem
-has something to do with changes between 2.6.19.1 and 2.6.19.2.
+Er?  The reason for the (void *) cast is to stop gcc complaining about
+mismatched pointer types.
 
-There were no changes to XFS between 2.6.19.1 and 2.6.19.2,
-so I'm thinking that your problems are related to something
-other than XFS. Can you do a git bisect to determine what the
-bad patch is?
-
-> > Can you run xfs_repair on that filesystem and see if reports
-> > (and fixes) any problems?
-> 
-> I don't need to run xfs_repair to fix the problem,
-
-Except that the trigger might be on-disk corruption so we
-need to rule that out first.
-
-> I only unplug the power cable and reboot the system,
-> xfs filesystem are correctly mounted.
-> However tell me if I must run xfs_repair to check
-> the filesystem.
-
-Yes, you need to run xfs_repair.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+    J
