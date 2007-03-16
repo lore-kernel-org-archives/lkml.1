@@ -1,78 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbXCPDvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751451AbXCPEDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbXCPDvj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 23:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbXCPDvj
+	id S1751451AbXCPEDM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 00:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbXCPEDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 23:51:39 -0400
-Received: from h80ad2777.async.vt.edu ([128.173.39.119]:51391 "EHLO
-	h80ad2777.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751572AbXCPDvi (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 23:51:38 -0400
-Message-Id: <200703160351.l2G3p3GJ020217@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Rik van Riel <riel@redhat.com>
-Cc: Andreas Mohr <andi@rhlx01.fht-esslingen.de>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-In-Reply-To: Your message of "Thu, 15 Mar 2007 14:35:17 EDT."
-             <45F991E5.1060001@redhat.com>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173905741.8763.36.camel@kleikamp.austin.ibm.com> <20070314213317.GA22234@rhlx01.hs-esslingen.de> <200703151737.l2FHb81d001600@turing-police.cc.vt.edu>
-            <45F991E5.1060001@redhat.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1174017063_1561P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 16 Mar 2007 00:03:12 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:57578 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750696AbXCPEDL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 00:03:11 -0400
+Message-ID: <45FA16FE.7010805@vmware.com>
+Date: Thu, 15 Mar 2007 20:03:10 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [RFC, PATCH] Fixup COMPAT_VDSO to work with CONFIG_PARAVIRT
+References: <45FA054F.6020107@vmware.com> <45FA0D13.6080601@goop.org>
+In-Reply-To: <45FA0D13.6080601@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Thu, 15 Mar 2007 23:51:03 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1174017063_1561P
-Content-Type: text/plain; charset=us-ascii
+Jeremy Fitzhardinge wrote:
+> Zachary Amsden wrote:
+>   
+>> Invoke black magic to relocate the VDSO even when COMPAT_VDSO is enabled
+>> by fixing up the ELF object.
+>>   
+>>     
+>
+> So does it actually work?  Can you boot the broken distros with this in
+> place?
+>   
 
-On Thu, 15 Mar 2007 14:35:17 EDT, Rik van Riel said:
-> Valdis.Kletnieks@vt.edu wrote:
-> > On Wed, 14 Mar 2007 22:33:17 BST, Andreas Mohr said:
-> > 
-> >> it'd seem we need some kind of state management here to figure out good
-> >> intervals of when to call mark_page_accessed() *again* for this page. E.g.
-> >> despite non-changing access patterns you could still call mark_page_accessed()
-> >> every 32 calls or so to avoid expiry, but this would need extra helper
-> >> variables.
-> > 
-> > What if you did something like
-> > 
-> > 	if (jiffies%32) {...
-> > 
-> > (Possibly scaling it so the low-order bits change).  No need to lock it, as
-> > "right most of the time" is close enough.
-> 
-> Bad idea.  That way you would only count page accesses if the
-> phase of the moon^Wjiffie is just right.
+Well testing that is not so fun.  I installed SUSE Pro 9.0, and strings 
+on ld.so contains the magic at_sysinfo assert!  But it doesn't install 
+TLS libraries, so I'll have to install them by hand.
 
-On the other hand, Andreas suggested only marking it once every 32 calls,
-but that required a helper variable.  Statistically, jiffies%32 should
-end up about the same as a helper variable %32.
+In works - in theory.  Look, a puppy!
 
-This of course, if just calling mark_page_accessed() is actually expensive
-enough that we don't want to do it unconditionally.
+Scratchbox is rumored to produce the fabled assertion even on modern 
+distros by installing its own toolchain which includes the dreaded glibc.
 
+> Using sections is wrong; you should be going through the phdrs, and
+> looking for PT_DYNAMIC for relocation.
+>   
 
---==_Exmh_1174017063_1561P
-Content-Type: application/pgp-signature
+Will do.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+> Does anyone expect the symbolic info to be correct?  It might be better
+> to just stomp it so nobody gets any ideas.
+>
+> On the other hand, we don't want to break compatibility with anything...
+>   
 
-iD8DBQFF+hQncC3lWbTT17ARAgv6AKCXLpBf4us71IBVrMARlvAeBwOXLQCg66hV
-v+Hvy/9LDhPZFr9yT8zEcTw=
-=9M8W
------END PGP SIGNATURE-----
+I'm playing safe.  Binary identical relocation to 0xffffe000 was my goal.
 
---==_Exmh_1174017063_1561P--
+>> +		} else if (strcmp(secstrings+sechdrs[i].sh_name, ".dynamic") == 0) {
+>> +			Elf32_Dyn *dyn = (void *)hdr + sechdrs[i].sh_offset;
+>> +			int tag;
+>> +			while ((tag = (++dyn)->d_tag) != DT_NULL)
+>>   
+>>     
+>
+> Um, no.
+>   
+
+Walk based on size instead?
+
+>> +		} else if (strcmp(secstrings+sechdrs[i].sh_name, ".useless") == 0) {
+>> +			/* This is demonic; see vsyscall.lds.S; it puts the
+>> +			 * .got in a section named .useless */
+>> +			uint32_t *got = (void *)hdr + sechdrs[i].sh_offset;
+>> +			*got += VDSO_HIGH_BASE;
+>> +		}
+>>   
+>>     
+>
+> This won't get relocated with one of the other relocations?  It's in the
+> text phdr.
+>   
+
+Hmm, I can try that.  Thanks for the suggestions / fixes.
+
+Zach
