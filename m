@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbXCPTtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbXCPTtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753620AbXCPTtL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 15:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbXCPTtL
+	id S1753630AbXCPTtp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 15:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbXCPTtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 15:49:11 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33407 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753620AbXCPTtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 15:49:09 -0400
-Date: Fri, 16 Mar 2007 12:49:04 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 03/26] Xen-paravirt_ops: use paravirt_nop to consistently mark no-op operations
-Message-ID: <20070316194904.GO10574@sequoia.sous-sol.org>
-References: <20070301232443.195603797@goop.org> <20070301232526.261284776@goop.org> <20070316094432.GU23174@elte.hu> <45FAE560.10401@goop.org>
-Mime-Version: 1.0
+	Fri, 16 Mar 2007 15:49:45 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:41865 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753630AbXCPTto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 15:49:44 -0400
+Date: Fri, 16 Mar 2007 14:49:41 -0500
+To: Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>
+Cc: Wen Xiong <wenxiong@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, netdev@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] s2io: add PCI error recovery support
+Message-ID: <20070316194941.GP5151@austin.ibm.com>
+References: <78C9135A3D2ECE4B8162EBDCE82CAD7701481EE3@nekter>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45FAE560.10401@goop.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD7701481EE3@nekter>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Ingo Molnar wrote:
-> > but only as a cleanup of the current open-coded (void *) casts. My 
-> > problem with this is that it loses the types. Not that there is much to 
-> > check for, but still, this adds some assumptions about how function 
-> > calls look like.
+On Mon, Mar 05, 2007 at 05:33:39PM -0500, Ramkrishna Vepa wrote:
+> Comments on this patch -
 > 
-> I agree.  I don't generally like this kind of hack, but having a single
-> test for "func == paravirt_nop" to look for nop pv_ops in the patcher is
-> what tipped the balance.
+> 1. device_close_flag is unused and is not required.
 
-how about __paravirt_nop_start < func < __paravirt_nop_end  and preserve
-the types?
+I'll submit a patch to strip this out sometime next week.
 
-thanks,
--chris
+> 2. s2io_reset can fail to reset the device. 
+
+I thought I'd seen this occasionally, and its on my to-do list
+to look into this further.
+
+> Ideally s2io_reset should
+> return a failure in this case (return is void now) 
+
+Would you care to provide a patch that did this? I could 
+experiment a bit, and try to do this myself; but I really
+don't know this hardware, or this driver, that well.
+
+--linas
+
+
