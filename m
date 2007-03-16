@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbXCPIn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbXCPIpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbXCPIn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 04:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbXCPIn4
+	id S1752996AbXCPIpj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 04:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbXCPIpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 04:43:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41169 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994AbXCPInz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 04:43:55 -0400
-Date: Fri, 16 Mar 2007 09:42:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [patch 00/26] Xen-paravirt_ops: Xen guest implementation for paravirt_ops interface
-Message-ID: <20070316084251.GA23174@elte.hu>
-References: <20070301232443.195603797@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301232443.195603797@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 16 Mar 2007 04:45:39 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:51386 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752996AbXCPIpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 04:45:38 -0400
+Message-ID: <45FA5951.2050902@drzeus.cx>
+Date: Fri, 16 Mar 2007 09:46:09 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Philip Langdale <philipl@overt.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Carlos Aguiar <carlos.aguiar@indt.org.br>, juha.yrjola@solidboot.com
+Subject: Re: [PATCH] MMC: Fix handling of low-voltage cards
+References: <45F49BE9.6070803@overt.org>
+In-Reply-To: <45F49BE9.6070803@overt.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Philip Langdale wrote:
+> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+> index c87ce56..74ebd97 100644
+> --- a/drivers/mmc/core/core.c
+> +++ b/drivers/mmc/core/core.c
+> @@ -317,6 +317,24 @@ static u32 mmc_select_voltage(struct mmc
+>   
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+The idea with the new structure is to keep a bare minimum of protocol
+information in core.c. So stick these tests into mmc.c and sd.c.
 
->  * virtual block device (blockfront)
->  * virtual network device (netfront)
+> +	if (ocr & 0x7F) {
+> +		printk("%s: card claims to support voltages below "
+>   
 
-note, these drivers should be submitted through the proper block drivers 
-and network drivers review process - not via the x86_64 tree.
+Please include a level with the printk().
 
-	Ingo
+> +	if (host->mode == MMC_MODE_SD && (ocr & MMC_VDD_165_195)) {
+>   
+
+Ooops. host->mode should have been removed by now.
+
+
+Otherwise the patch looks good. Just fix these points and I'll include it.
+
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
