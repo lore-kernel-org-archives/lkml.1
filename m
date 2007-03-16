@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933814AbXCPN6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbXCPN6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933814AbXCPN6J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 09:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933916AbXCPN6J
+	id S933860AbXCPN6X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 09:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933916AbXCPN6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 09:58:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46900 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933814AbXCPN6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 09:58:07 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070316133238.GA2173@infradead.org> 
-References: <20070316133238.GA2173@infradead.org>  <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <20070316125016.3740.96837.stgit@warthog.cambridge.redhat.com> 
-To: Christoph Hellwig <hch@infradead.org>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 1/5] AF_RXRPC: Add blkcipher accessors for using kernel data directly [try #2] 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Fri, 16 Mar 2007 13:57:45 +0000
-Message-ID: <25094.1174053465@redhat.com>
+	Fri, 16 Mar 2007 09:58:23 -0400
+Received: from mail28.syd.optusnet.com.au ([211.29.133.169]:36218 "EHLO
+	mail28.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933860AbXCPN6W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 09:58:22 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: RSDL development plans
+Date: Sat, 17 Mar 2007 00:59:54 +1100
+User-Agent: KMail/1.9.5
+Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
+       Al Boldi <a1426z@gawab.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703162325.05691.kernel@kolivas.org> <1174052523.8039.7.camel@Homer.simpson.net>
+In-Reply-To: <1174052523.8039.7.camel@Homer.simpson.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703170059.54320.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> wrote:
+On Saturday 17 March 2007 00:42, Mike Galbraith wrote:
+> On Fri, 2007-03-16 at 23:25 +1100, Con Kolivas wrote:
+> > The good news is that in order to stay sane I've found ways of optimising
+> > my computing position and could work for short stints on the rsdl code.
+> > So I'll be releasing a new version shortly.
+>
+> Can you please make an incremental diff as well?  That will make it
+> easier to see what changes have taken place, and make it easier to
+> integrate those into hacked-upon trees.
 
-> I don't quite understand all these indirections.  What's the problem
-> with just having a helper that builds the scatterlist for you?
+They're already there in the subdirs.
+ie
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20.3/2.6.20.3-rsdl-0.30-0.31.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3/2.6.21-rc3-rsdl-0.30-0.31.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2/2.6.21-rc3-mm2-rsdl-0.30-0.31.patch
 
-I was trying to avoid building a scatterlist completely.  There's not much
-point because the scatterlist approach involves finding out the page struct and
-then kmapping it just so that the FCrypt algorithm can read 8 or 16 bytes of
-data from kernel space.  Why do that if we can avoid it?  It's a waste of
-processing time, and has to be done on every secure packet.
+> 	-Mike
 
-> We allow dma access to arbitary pieces of _dynamically_ allocated kernel
-> memory, and I think using the crypto subsystem on the stack is not allowed
-> at all.
-
-FCrypt is only available in software as far as I know.  For producing and
-checking packet signatures, using hardware support would be a waste of time as
-the size of the crunched data is so small (a single 8-byte fragment per
-packet).
-
-> But the even bigger question is, how does this relate to rxrpc?
-
-RxRPC has security features, up to and including full packet content encryption
-if you select it.
-
-> very odd line split
-
-It's not really odd.  The "static" and "inline" don't actually add anything to
-the function template.  They're merely scope limiters / optimisation
-controllers, and so make a lot of sense placed on their own line.
-
-David
+-- 
+-ck
