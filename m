@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965945AbXCPVLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965940AbXCPVPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965945AbXCPVLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 17:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965949AbXCPVLf
+	id S965940AbXCPVPa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 17:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965951AbXCPVPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 17:11:35 -0400
-Received: from fallback-mx.in-berlin.de ([192.109.42.17]:49618 "EHLO
-	fallback-mx.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965945AbXCPVLe (ORCPT
+	Fri, 16 Mar 2007 17:15:30 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:11820 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965940AbXCPVP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 17:11:34 -0400
-X-Greylist: delayed 5020 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Mar 2007 17:11:34 EDT
-X-Envelope-From: sr@arcgraph.de
-Message-ID: <45FAF429.3040108@arcgraph.de>
-Date: Fri, 16 Mar 2007 20:46:49 +0100
-From: Stefan Richter <sr@arcgraph.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070303 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>
-CC: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
-Subject: Re: oops in __nodemgr_remove_host_dev (was Re: Ooops with suspend
- to RAM)
-References: <200703140642.28390.ismail@pardus.org.tr> <200703150051.29945.ismail@pardus.org.tr> <45F88E8B.90403@s5r6.in-berlin.de> <200703150249.04169.ismail@pardus.org.tr>
-In-Reply-To: <200703150249.04169.ismail@pardus.org.tr>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 16 Mar 2007 17:15:29 -0400
+Date: Fri, 16 Mar 2007 14:11:21 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ralf@linux-mips.org
+Subject: Re: Linux 2.6.21-rc4
+Message-Id: <20070316141121.82ba7cb8.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ismail Dönmez wrote:
-> On Thursday 15 March 2007 02:08:43 Stefan Richter wrote:
-> [...]
->> Ismail, if you have the opportunity, the next thing you could test would
->> be to unload eth1394 explicitly before ohci1394 on 2.6.21-rc3. This
->> would _not_ oops according to my observation.
+On Fri, 16 Mar 2007 09:33:54 -0700 (PDT) Linus Torvalds wrote:
+
 > 
-> On a clean reboot it works as expected ;
-> 
-> southpark cartman # rmmod eth1394
-> southpark cartman # rmmod ohci1394
-> southpark cartman #
-> 
-> No oops.
+> I pushed out the -git trees yesterday, but then got distracted, so the 
+> patches and tar-balls and the announcement got delayed until this morning. 
+> Oops. I'm a scatter-brain.
 
-I now tested 2.6.20-rc4 with the following two commits reverted:
+allmodconfig on i386:
 
-43cb76d91ee85f579a69d42bc8efc08bac560278
-"Network: convert network devices to use struct device instead of
-class_device"
+WARNING: "default_idle" [arch/i386/kernel/apm.ko] undefined!
+WARNING: "machine_real_restart" [arch/i386/kernel/apm.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-40cf67c5fcc513406558c01b91129280208e57bf
-"Driver core: remove class_device_rename"
 
-I can now unload ohci1394 again while eth1394 is loaded. The reverting
-patch is available at
-http://me.in-berlin.de/~s5r6/linux1394/work-in-progress/revert-network-convert-network-devices-to-use-struct-device-instead-of-class_device.patch
-(The server may be briefly down tonight and sometime during tomorrow.)
-
-Next thing to do: Find a minimal fix which keeps Greg's net conversions.
--- 
-Stefan Richter
--=====-=-=== --== =----
-http://arcgraph.de/sr/
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
