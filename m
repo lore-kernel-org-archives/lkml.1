@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965336AbXCPOuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965363AbXCPPD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965336AbXCPOuo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 10:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965351AbXCPOuo
+	id S965363AbXCPPD0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 11:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965356AbXCPPD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 10:50:44 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:41336 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965336AbXCPOun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 10:50:43 -0400
-Date: Fri, 16 Mar 2007 20:27:49 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, pj@sgi.com,
-       ebiederm@xmission.com, winget@google.com, containers@lists.osdl.org,
-       akpm@linux-foundation.org
-Subject: Re: Summary of resource management discussion
-Message-ID: <20070316145749.GA4760@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070312124226.GD17151@in.ibm.com> <6599ad830703150424t3478cd55mf9d2699f3669c9f0@mail.gmail.com> <20070315170435.GA28692@in.ibm.com> <20070316141915.GA6572@MAIL.13thfloor.at>
-Mime-Version: 1.0
+	Fri, 16 Mar 2007 11:03:26 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:42579 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965363AbXCPPD0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 11:03:26 -0400
+Date: Fri, 16 Mar 2007 16:01:45 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Anthony Liguori <aliguori@us.ibm.com>
+Cc: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 0/15] KVM userspace interface updates
+Message-ID: <20070316150145.GB8525@osiris.boeblingen.de.ibm.com>
+References: <11736212072915-git-send-email-avi@qumranet.com> <20070316083650.GA8525@osiris.boeblingen.de.ibm.com> <45FAA39C.9050705@us.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070316141915.GA6572@MAIL.13thfloor.at>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <45FAA39C.9050705@us.ibm.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 16, 2007 at 03:19:16PM +0100, Herbert Poetzl wrote:
-> > Do you see any drawbacks of doing like this? What will break if we do
-> > this?
+On Fri, Mar 16, 2007 at 09:03:08AM -0500, Anthony Liguori wrote:
+> Heiko Carstens wrote:
+> >On Sun, Mar 11, 2007 at 03:53:12PM +0200, Avi Kivity wrote:
+> >  
+> >>This patchset updates the kvm userspace interface to what I hope will
+> >>be the long-term stable interface.  Provisions are included for extending
+> >>the interface later.  The patches address performance and cleanliness
+> >>concerns.
+> >>    
+> >
+> >Searching the mailing list I figured that as soons as the interface seems
+> >to be stable, kvm should/would switch to a system call based interface.
+> >I assume the userspace interface might still change a lot, especially if
+> >kvm is ported to new architectures.
+> >But the general question is: do you still plan to switch to a syscall
+> >interface?
+> >  
 > 
-> looks good to me, except for the potential issue with
-> the double indirection introducing too much overhear
+> What benefit would a syscall interface have?
 
-Sure. I plan to get some numbers with and without the indirection in
-nsproxy.
+First of all: it's faster and doesn't burn a bunch of additional cpu
+cycles like sys_ioctl and the large switch statements do.
 
-I was planning to get these numbers with a prelimnary CPU controller I wrote a 
-while back (http://lkml.org/lkml/2006/9/28/236 and 
-http://lkml.org/lkml/2007/1/26/12). Do you have plans to publish any CPU 
-controller in the short term as well?
+Another thing is that this patch set already introduces a way to pass a
+sigset. Passing a sigset to a device node is sort of strange.
 
--- 
-Regards,
-vatsa
+In addition, if we would port kvm to s390, then we would need to
+make sure that each virtual cpu only gets executed from the thread
+that created it. That is simply because the upper half of our page
+tables contain information about the guest page states. This is yet
+another thing that would be strange to do via an ioctl based interface.
+
+Of course everthing can be done via an iotcl interface too, but IMHO
+that's just the wrong interface.
