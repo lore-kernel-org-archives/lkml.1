@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965640AbXCPQzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965648AbXCPQ51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965640AbXCPQzm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 12:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965641AbXCPQzm
+	id S965648AbXCPQ51 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 12:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965652AbXCPQ51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 12:55:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:36749 "EHLO mail.goop.org"
+	Fri, 16 Mar 2007 12:57:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:36802 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965640AbXCPQzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 12:55:41 -0400
-Message-ID: <45FACC0D.3050103@goop.org>
-Date: Fri, 16 Mar 2007 09:55:41 -0700
+	id S965648AbXCPQ50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 12:57:26 -0400
+Message-ID: <45FACC76.1020902@goop.org>
+Date: Fri, 16 Mar 2007 09:57:26 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
@@ -19,11 +19,13 @@ CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
        xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
        Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [patch 00/26] Xen-paravirt_ops: Xen guest implementation for
- paravirt_ops interface
-References: <20070301232443.195603797@goop.org> <20070316084251.GA23174@elte.hu>
-In-Reply-To: <20070316084251.GA23174@elte.hu>
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [patch 24/26] Xen-paravirt_ops: Add the Xenbus sysfs and virtual
+ device hotplug driver.
+References: <20070301232443.195603797@goop.org> <20070301232529.271605211@goop.org> <20070316084704.GB23174@elte.hu>
+In-Reply-To: <20070316084704.GB23174@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,19 +35,35 @@ Ingo Molnar wrote:
 > * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >
 >   
->>  * virtual block device (blockfront)
->>  * virtual network device (netfront)
+>> This communicates with the machine control software via a registry 
+>> residing in a controlling virtual machine. This allows dynamic 
+>> creation, destruction and modification of virtual device 
+>> configurations (network devices, block devices and CPUS, to name some 
+>> examples).
 >>     
 >
-> note, these drivers should be submitted through the proper block drivers 
-> and network drivers review process - not via the x86_64 tree.
+> should be reviewed by the driver-core folks too i guess?
+>
+>   
+>> +//#include <asm/maddr.h>
+>>     
+>
+>   
+>> +//#include <xen/xen_proc.h>
+>> +//#include <xen/evtchn.h>
+>>     
+>
+>   
+>> +//#include <xen/hvm.h>
+>>     
+>
+>   
+>> +//		.shutdown = xenbus_dev_shutdown,
+>>     
+>
+> hm?
 >   
 
-Yes; who should look at them?  I posted netfront to net-dev, and Stephen
-Hemminger commented on it on the last repost, but I'd love them to get
-more scrutiny.
-
-Obviously they're not actually useful without Xen (and vice-versa), so
-there's not much point in committing them separately.
+Yeah, gunk.  I'll clean that out.
 
     J
