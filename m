@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbXCPJaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbXCPJas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932798AbXCPJaV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 05:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932753AbXCPJaV
+	id S932963AbXCPJas (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 05:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932932AbXCPJar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 05:30:21 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:51309 "EHLO pfx2.jmh.fr"
+	Fri, 16 Mar 2007 05:30:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45978 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932798AbXCPJaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 05:30:19 -0400
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 0/3] FUTEX : new PRIVATE futexes, SMP and NUMA improvements
-Date: Fri, 16 Mar 2007 10:30:17 +0100
-User-Agent: KMail/1.9.5
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ulrich Drepper <drepper@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       pravin b shelar <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org
-References: <20060808070708.GA3931@localhost.localdomain> <200703152010.35614.dada1@cosmosbay.com> <1174032341.7124.9.camel@twins>
-In-Reply-To: <1174032341.7124.9.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S932753AbXCPJag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 05:30:36 -0400
+Date: Fri, 16 Mar 2007 10:30:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch 08/26] Xen-paravirt_ops: add hooks to intercept mm creation and destruction
+Message-ID: <20070316093016.GP23174@elte.hu>
+References: <20070301232443.195603797@goop.org> <20070301232527.110592372@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703161030.17597.dada1@cosmosbay.com>
+In-Reply-To: <20070301232527.110592372@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 March 2007 09:05, Peter Zijlstra wrote:
-> On Thu, 2007-03-15 at 20:10 +0100, Eric Dumazet wrote:
-> > Hi
-> >
-> > I'm pleased to present these patches which improve linux futex
-> > performance and scalability, on both UP, SMP and NUMA configs.
-> >
-> > I had this idea last year but I was not understood, probably because I
-> > gave not enough explanations. Sorry if this mail is really long...
->
-> I started playing with it after your last reference to it, I have some
-> code here (against -rt):
->   http://programming.kicks-ass.net/kernel-patches/futex-vma-cache/
->
-> Which I will post once I have the found what keeps pthread_join() from
-> completing :-(
->
-> It basically adds a per task vma lookup cache which can also activate
-> the private logic without explicit use of the new interface.
 
-Hi Peter
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-I dont think yet another cache will help in the general case.
-A typical program uses many vmas at once...
+> Add hooks to allow a paravirt implementation to track the lifetime of 
+> an mm.
 
-glibc has internal futexes, on a different vma than futexes declared in your 
-program. Each shared library is going to have its own vma for its data (and 
-futexes)
+(i guess this one should be merged with the ARCH-define cleanup patch)
 
-(244 vmas on one kmail program for example)
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-About your guess_futex_shared() thing, I miss the vma_anon() definition.
-But if it has to walk the vmas (and take mmap_sem), you already loose the 
-PRIVATE benefit.
+	Ingo
