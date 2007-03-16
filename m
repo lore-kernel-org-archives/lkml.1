@@ -1,114 +1,297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbXCPADQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbXCPA0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753444AbXCPADQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 20:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbXCPADQ
+	id S1753469AbXCPA0b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 20:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbXCPA0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 20:03:16 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:44331 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753444AbXCPADP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 20:03:15 -0400
-Date: Fri, 16 Mar 2007 08:48:08 +0900
-From: Horms <horms@verge.net.au>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Ian Campbell <Ian.Campbell@xensource.com>, hbabu@us.ibm.com,
-       fastboot@lists.osdl.org, linux-kernel@vger.kernel.org,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
-Message-ID: <20070315234807.GB10861@verge.net.au>
-References: <1173891609.8591.41.camel@localhost.localdomain> <20070315014635.GC28396@verge.net.au> <20070315045536.GA6766@in.ibm.com> <20070315050754.GB22329@verge.net.au> <20070315054726.GC6766@in.ibm.com> <1173961378.8591.63.camel@localhost.localdomain> <20070315132616.GH6766@in.ibm.com>
+	Thu, 15 Mar 2007 20:26:30 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:47053 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753469AbXCPA03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 20:26:29 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
+Date: Thu, 15 Mar 2007 17:22:15 -0700
+Subject: [patch 1/13] signal/timer/event fds v6 - anonymous inode source ...
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070315132616.GH6766@in.ibm.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.9367.1174004535.1>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 06:56:16PM +0530, Vivek Goyal wrote:
-> On Thu, Mar 15, 2007 at 12:22:57PM +0000, Ian Campbell wrote:
-> > On Thu, 2007-03-15 at 11:17 +0530, Vivek Goyal wrote:
-> > > > > But I think changing this macro might run into issues. It is
-> > > > > being used at few places in kernel, for example while loading
-> > > > > module. This will essentially mean that we allow loading 64bit
-> > > > > x86_64 modules on 32bit i386 systems?
-> > 
-> > Yes, not sure how I missed that fact...
-> > 
-> > > Kexec will also not allow loading an x86_64 kernel on a 32bit machine.
-> > 
-> > For crash kernel only or for regular kexec too?
-> > 
-> 
-> I think for both. One of the possible reasons I think is that one never
-> knows is underlying machine has got 64bit extensions or not. So even if
-> we load the kernel it will never boot. Secondly, we might not be able to
-> handle 64bit address in 32bit kernel/user space?
+This patch add an anonymous inode source, to be used for files that need 
+and inode only in order to create a file*. We do not care of having an 
+inode for each file, and we do not even care of having different names in 
+the associated dentries (dentry names will be same for classes of file*).
+This allow code reuse, and will be used by epoll, signalfd and timerfd 
+(and whatever else there'll be).
 
-Perhaps I am miss-understanding what you are saying, but I do
-recally kexecing from 32->64 and 64->32 bit kernels on x86_64 hardware.
-I can run these checks again if it helps.
 
-> > > So how about something like vmcore_elf_allowed_cross_arch()? Vmcore
-> > > code can continue to check elf_check_arch() and if that fails it can
-> > > invoke vmcore_elf_allowed_cross_arch() to find out what cross arch are
-> > > allowed for vmcore. 
-> > 
-> > Something like this?
-> > 
-> > Ian.
-> > 
-> > ---  
-> > 
-> > Allow i386 crash kernels to handle x86_64 dumps.
-> > 
-> > The specific case I am encountering is kdump under Xen with a 64 bit
-> > hypervisor and 32 bit kernel/userspace. The dump created is a 64 bit
-> > due to the hypervisor but the dump kernel is 32 bit in for maximum
-> > compatibility.
-> > 
-> > It's possibly less likely to be useful in a purely native scenario but
-> > I see no reason to disallow it.
-> > 
-> > Signed-off-by: Ian Campbell <ian.campbell@xensource.com>
-> > 
-> > diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
-> > index d960507..523e109 100644
-> > --- a/fs/proc/vmcore.c
-> > +++ b/fs/proc/vmcore.c
-> > @@ -514,7 +514,7 @@ static int __init parse_crash_elf64_headers(void)
-> >  	/* Do some basic Verification. */
-> >  	if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0 ||
-> >  		(ehdr.e_type != ET_CORE) ||
-> > -		!elf_check_arch(&ehdr) ||
-> > +		!vmcore_elf_check_arch(&ehdr) ||
-> >  		ehdr.e_ident[EI_CLASS] != ELFCLASS64 ||
-> >  		ehdr.e_ident[EI_VERSION] != EV_CURRENT ||
-> >  		ehdr.e_version != EV_CURRENT ||
-> > diff --git a/include/asm-i386/kexec.h b/include/asm-i386/kexec.h
-> > index 4dfc9f5..c76737e 100644
-> > --- a/include/asm-i386/kexec.h
-> > +++ b/include/asm-i386/kexec.h
-> > @@ -47,6 +47,9 @@
-> >  /* The native architecture */
-> >  #define KEXEC_ARCH KEXEC_ARCH_386
-> > 
-> > +/* We can also handle crash dumps from 64 bit kernel. */
-> > +#define vmcore_elf_check_arch_cross(x) ((x)->e_machine == EM_X86_64)
-> > +
-> 
-> Ideal place for this probably should have been arch dependent crash_dump.h
-> file. But we don't have one and no point introducing one just for this 
-> macro.
-> 
-> This change looks good to me.
 
-Won't the above change break non i386 archtectures as
-vmcore_elf_check_arch_cross isn't defined for them?
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+
+
+- Davide
+
+
+
+Index: linux-2.6.21-rc3.quilt/fs/anon_inodes.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc3.quilt/fs/anon_inodes.c	2007-03-15 15:32:33.000000000 -0700
+@@ -0,0 +1,203 @@
++/*
++ *  fs/anon_inodes.c
++ *
++ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
++ *
++ */
++
++#include <linux/file.h>
++#include <linux/poll.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/fs.h>
++#include <linux/mount.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/magic.h>
++#include <linux/anon_inodes.h>
++
++#include <asm/uaccess.h>
++
++
++
++static int ainofs_delete_dentry(struct dentry *dentry);
++static struct inode *aino_getinode(void);
++static struct inode *aino_mkinode(void);
++static int ainofs_get_sb(struct file_system_type *fs_type, int flags,
++			 const char *dev_name, void *data, struct vfsmount *mnt);
++
++
++
++static struct vfsmount *aino_mnt __read_mostly;
++static struct inode *aino_inode;
++static struct file_operations aino_fops = { };
++static struct file_system_type aino_fs_type = {
++	.name		= "ainofs",
++	.get_sb		= ainofs_get_sb,
++	.kill_sb	= kill_anon_super,
++};
++static struct dentry_operations ainofs_dentry_operations = {
++	.d_delete	= ainofs_delete_dentry,
++};
++
++
++
++int aino_getfd(int *pfd, struct inode **pinode, struct file **pfile,
++	       char const *name, const struct file_operations *fops, void *priv)
++{
++	struct qstr this;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct file *file;
++	int error, fd;
++
++	error = -ENFILE;
++	file = get_empty_filp();
++	if (!file)
++		goto eexit_1;
++
++	inode = aino_getinode();
++	if (IS_ERR(inode)) {
++		error = PTR_ERR(inode);
++		goto eexit_2;
++	}
++
++	error = get_unused_fd();
++	if (error < 0)
++		goto eexit_3;
++	fd = error;
++
++	/*
++	 * Link the inode to a directory entry by creating a unique name
++	 * using the inode sequence number.
++	 */
++	error = -ENOMEM;
++	this.name = name;
++	this.len = strlen(name);
++	this.hash = 0;
++	dentry = d_alloc(aino_mnt->mnt_sb->s_root, &this);
++	if (!dentry)
++		goto eexit_4;
++	dentry->d_op = &ainofs_dentry_operations;
++	/* Do not publish this dentry inside the global dentry hash table */
++	dentry->d_flags &= ~DCACHE_UNHASHED;
++	d_instantiate(dentry, inode);
++
++	file->f_path.mnt = mntget(aino_mnt);
++	file->f_path.dentry = dentry;
++	file->f_mapping = inode->i_mapping;
++
++	file->f_pos = 0;
++	file->f_flags = O_RDWR;
++	file->f_op = fops;
++	file->f_mode = FMODE_READ | FMODE_WRITE;
++	file->f_version = 0;
++	file->private_data = priv;
++
++	fd_install(fd, file);
++
++	*pfd = fd;
++	*pinode = inode;
++	*pfile = file;
++	return 0;
++
++eexit_4:
++	put_unused_fd(fd);
++eexit_3:
++	iput(inode);
++eexit_2:
++	put_filp(file);
++eexit_1:
++	return error;
++}
++
++
++static int ainofs_delete_dentry(struct dentry *dentry)
++{
++	/*
++	 * We faked vfs to believe the dentry was hashed when we created it.
++	 * Now we restore the flag so that dput() will work correctly.
++	 */
++	dentry->d_flags |= DCACHE_UNHASHED;
++	return 1;
++}
++
++
++static struct inode *aino_getinode(void)
++{
++	return igrab(aino_inode);
++}
++
++
++/*
++ * A single inode exist for all aino files. On the contrary of pipes,
++ * aino inodes has no per-instance data associated, so we can avoid
++ * the allocation of multiple of them.
++ */
++static struct inode *aino_mkinode(void)
++{
++	int error = -ENOMEM;
++	struct inode *inode = new_inode(aino_mnt->mnt_sb);
++
++	if (!inode)
++		goto eexit_1;
++
++	inode->i_fop = &aino_fops;
++
++	/*
++	 * Mark the inode dirty from the very beginning,
++	 * that way it will never be moved to the dirty
++	 * list because mark_inode_dirty() will think
++	 * that it already _is_ on the dirty list.
++	 */
++	inode->i_state = I_DIRTY;
++	inode->i_mode = S_IRUSR | S_IWUSR;
++	inode->i_uid = current->fsuid;
++	inode->i_gid = current->fsgid;
++	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
++	return inode;
++
++eexit_1:
++	return ERR_PTR(error);
++}
++
++
++static int ainofs_get_sb(struct file_system_type *fs_type, int flags,
++			 const char *dev_name, void *data, struct vfsmount *mnt)
++{
++	return get_sb_pseudo(fs_type, "aino:", NULL, AINOFS_MAGIC, mnt);
++}
++
++
++static int __init aino_init(void)
++{
++
++	if (register_filesystem(&aino_fs_type))
++		goto epanic;
++
++	aino_mnt = kern_mount(&aino_fs_type);
++	if (IS_ERR(aino_mnt))
++		goto epanic;
++
++	aino_inode = aino_mkinode();
++	if (IS_ERR(aino_inode))
++		goto epanic;
++
++	return 0;
++
++epanic:
++	panic("aino_init() failed\n");
++}
++
++
++static void __exit aino_exit(void)
++{
++	iput(aino_inode);
++	unregister_filesystem(&aino_fs_type);
++	mntput(aino_mnt);
++}
++
++module_init(aino_init);
++module_exit(aino_exit);
++
++MODULE_LICENSE("GPL");
+Index: linux-2.6.21-rc3.quilt/include/linux/anon_inodes.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc3.quilt/include/linux/anon_inodes.h	2007-03-15 15:32:33.000000000 -0700
+@@ -0,0 +1,15 @@
++/*
++ *  include/linux/anon_inodes.h
++ *
++ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
++ *
++ */
++
++#ifndef _LINUX_ANON_INODES_H
++#define _LINUX_ANON_INODES_H
++
++int aino_getfd(int *pfd, struct inode **pinode, struct file **pfile,
++	       char const *name, const struct file_operations *fops, void *priv);
++
++#endif /* _LINUX_ANON_INODES_H */
++
+Index: linux-2.6.21-rc3.quilt/fs/Makefile
+===================================================================
+--- linux-2.6.21-rc3.quilt.orig/fs/Makefile	2007-03-15 15:19:22.000000000 -0700
++++ linux-2.6.21-rc3.quilt/fs/Makefile	2007-03-15 15:32:33.000000000 -0700
+@@ -11,7 +11,7 @@
+ 		attr.o bad_inode.o file.o filesystems.o namespace.o aio.o \
+ 		seq_file.o xattr.o libfs.o fs-writeback.o \
+ 		pnode.o drop_caches.o splice.o sync.o utimes.o \
+-		stack.o
++		stack.o anon_inodes.o
+ 
+ ifeq ($(CONFIG_BLOCK),y)
+ obj-y +=	buffer.o bio.o block_dev.o direct-io.o mpage.o ioprio.o
+Index: linux-2.6.21-rc3.quilt/include/linux/magic.h
+===================================================================
+--- linux-2.6.21-rc3.quilt.orig/include/linux/magic.h	2007-03-15 15:19:22.000000000 -0700
++++ linux-2.6.21-rc3.quilt/include/linux/magic.h	2007-03-15 15:33:16.000000000 -0700
+@@ -14,6 +14,7 @@
+ #define ISOFS_SUPER_MAGIC	0x9660
+ #define JFFS2_SUPER_MAGIC	0x72b6
+ #define KVMFS_SUPER_MAGIC	0x19700426
++#define AINOFS_MAGIC		0x09041934
+ 
+ #define MINIX_SUPER_MAGIC	0x137F		/* original minix fs */
+ #define MINIX_SUPER_MAGIC2	0x138F		/* minix fs, 30 char names */
 
