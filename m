@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbXCPHUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbXCPHWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752962AbXCPHUV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 03:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbXCPHUV
+	id S1752984AbXCPHWB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 03:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXCPHWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 03:20:21 -0400
-Received: from betty.cbit.net.au ([202.55.154.10]:42825 "EHLO mail.cbit.net.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752962AbXCPHUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 03:20:19 -0400
-Date: Fri, 16 Mar 2007 18:20:10 +1100
-From: Paul TBBle Hampson <Paul.Hampson@Pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <michael@ellerman.id.au>,
-       David Woodhouse <dwmw2@infradead.org>,
-       john stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org
-Subject: Re: Make sure we populate the initroot filesystem late enough
-Message-ID: <20070316072010.GB30892@keitarou>
-References: <1172448057.3971.9.camel@shinybook.infradead.org> <1172518068.15970.6.camel@localhost> <20070226222724.GA13182@keitarou> <1172558897.11949.43.camel@localhost.localdomain> <3ac1a55a11baddefb903f24b988566fe@kernel.crashing.org> <1172644987.11949.90.camel@localhost.localdomain> <1172657584.3452.51.camel@pmac.infradead.org> <1172709056.5852.6.camel@concordia.ozlabs.ibm.com> <20070312230137.GA8304@keitarou> <1173769429.24454.61.camel@localhost.localdomain>
+	Fri, 16 Mar 2007 03:22:01 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:23774 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752984AbXCPHWA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 03:22:00 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=EgduLFMeUyFLlKxAt56vBYZmFZUlIYICvnYxuMyrQ5MY8J9lbDs79V0B/owUGadQ0H6kyQ2JtBqFG+SwE3cV0nJhpG/vNO60VlWBQPhHTgOxl/9/zY0rc7pwMg11n5/3r/DGqO++84Nxkrb+CtGDUL48GqRh5vHNLNo+GW5EXMg=  ;
+X-YMail-OSG: z_acJGkVM1kvsdwSzjaH1ptlAibZhOQZxVRz4bjbTgRhjCnjtrzy8yy9o8cEKU7bivVXvx51ug0jFAJDa4YsW_q56HngaSFysP71rIFDkIxctn24st7dBWWFzfcYOG2GaYHH2mJQj1Zg1e4-
+Message-ID: <45FA458C.8050605@yahoo.com.au>
+Date: Fri, 16 Mar 2007 18:21:48 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UHN/qo2QbUvPLonB"
-Content-Disposition: inline
-In-Reply-To: <1173769429.24454.61.camel@localhost.localdomain>
-User-Agent: mutt-ng/devel-r804 (Debian)
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] revoke: misc fixes
+References: <Pine.LNX.4.64.0703160916430.14651@sbz-30.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0703160916430.14651@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pekka J Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> This is a rollup patch of the following fixes to address some of Andrew's
+> review comments:
+> 
+>   - Fix return value type of system calls to long
+>   - Add comment for vma->vm_flag barrier
+>   - No need for GFP_NOFS for inode allocation, use GFP_KERNEL instead
+>   - Remove unnecessary line break before EXPORT_SYMBOL
+> 
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  fs/revoke.c              |    9 +++++----
+>  include/linux/syscalls.h |    4 ++--
+>  2 files changed, 7 insertions(+), 6 deletions(-)
+> 
+> Index: uml-2.6/fs/revoke.c
+> ===================================================================
+> --- uml-2.6.orig/fs/revoke.c	2007-03-16 08:58:31.000000000 +0200
+> +++ uml-2.6/fs/revoke.c	2007-03-16 09:00:37.000000000 +0200
+> @@ -167,7 +167,9 @@ static int revoke_vma(struct vm_area_str
+>  	end_addr = vma->vm_end;
+>  
+>  	/*
+> - 	 * Not holding ->mmap_sem here.
+> + 	 * Not holding ->mmap_sem here but we must watch out for page
+> + 	 * faults and after the shared mappings have been taken down
+> + 	 * and sys_mmap() trying to remap the revoked range.
+>  	 */
+>  	vma->vm_flags |= VM_REVOKED;
+>  	smp_mb();
+> @@ -455,7 +457,7 @@ 	int err = 0;
 
---UHN/qo2QbUvPLonB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You're still modifying vm_flags without down_write mmap_sem, so this will
+corrupt vm_flags.
 
-On Tue, Mar 13, 2007 at 08:03:49AM +0100, Benjamin Herrenschmidt wrote:
-
->> Hmm. The crash came back after I booted into Mac OS X and back. It was h=
-owever
->> a different crash, I believe it was coming from the USB modules (as it w=
-ould
->> keep going when it happened, and get another crash, which tended to scro=
-ll away
->> too fast for me to capture) but I believe it was still getting down into=
- the
->> slab code and actually dying there.
-
-> Have you tried, instead, to apply
-> 38f3323037de22bb0089d08be27be01196e7148b ? (That is revert
-> 39d61db0edb34d60b83c5e0d62d0e906578cc707).
-
-That's working fine at the moment, and has even survived a trip to Mac
-OS X and back.
-
-Thankyou.
-
---=20
------------------------------------------------------------
-Paul "TBBle" Hampson, B.Sc, LPI, MCSE
-On-hiatus Asian Studies student, ANU
-The Boss, Bubblesworth Pty Ltd (ABN: 51 095 284 361)
-Paul.Hampson@Pobox.Com
-
-Of course Pacman didn't influence us as kids. If it did,
-we'd be running around in darkened rooms, popping pills and
-listening to repetitive music.
- -- Kristian Wilson, Nintendo, Inc, 1989
-
-License: http://creativecommons.org/licenses/by/2.1/au/
------------------------------------------------------------
-
---UHN/qo2QbUvPLonB
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFF+kUqexDuohKLFuARAkOhAJ96GHCCINsGMm2uNjnHnYevyj9sOQCfaX0A
-4v0y+0rBJ4ipO5PqzR3LOqI=
-=Wn4+
------END PGP SIGNATURE-----
-
---UHN/qo2QbUvPLonB--
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
