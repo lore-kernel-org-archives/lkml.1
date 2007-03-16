@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933587AbXCPL6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932891AbXCPL6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933587AbXCPL6d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 07:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933584AbXCPL6c
+	id S932891AbXCPL6x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 07:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933589AbXCPL6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 07:58:32 -0400
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:7068 "EHLO
-	rpc.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933587AbXCPL6c (ORCPT
+	Fri, 16 Mar 2007 07:58:52 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48278 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932891AbXCPL6v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 07:58:32 -0400
-User-Agent: Microsoft-Entourage/11.2.5.060620
-Date: Fri, 16 Mar 2007 11:58:19 +0000
-Subject: Re: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc
- console infrastructure for Xen console
-From: Keir Fraser <keir@xensource.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Keir Fraser <keir@xensource.com>
-CC: Wright <chrisw@sous-sol.org>, <virtualization@lists.osdl.org>,
-       <xen-devel@lists.xensource.com>, Andi Kleen <ak@muc.de>,
-       <Chris@smtp.osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       <linux-kernel@vger.kernel.org>, Keir Fraser <Keir.Fraser@xensource.com>
-Message-ID: <C22036DB.BA67%keir@xensource.com>
-Thread-Topic: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc
- console infrastructure for Xen console
-Thread-Index: AcdnwmNCoft8fNO1EduhtwAX8io7RQ==
-In-Reply-To: <20070316034123.9de92632.akpm@linux-foundation.org>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Fri, 16 Mar 2007 07:58:51 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Zachary Amsden <zach@vmware.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [RFC, PATCH] Fixup COMPAT_VDSO to work with CONFIG_PARAVIRT
+References: <45FA054F.6020107@vmware.com>
+Date: Fri, 16 Mar 2007 05:56:00 -0600
+In-Reply-To: <45FA054F.6020107@vmware.com> (Zachary Amsden's message of "Thu,
+	15 Mar 2007 18:47:43 -0800")
+Message-ID: <m17itho10v.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/3/07 11:41, "Andrew Morton" <akpm@linux-foundation.org> wrote:
+Zachary Amsden <zach@vmware.com> writes:
 
->> It's needed for writing data /after/ reading the consumer index that shows
->> you have space to write. Looking through xenbus_comms.c I think all the
->> barriers are correct except there is a spurious extra mb() in xb_read(),
->> where there is a later rmb() which is sufficient by itself. All the others
->> have a purpose.
->> 
-> 
-> If Ingo couldn't work this out from reading the code then nobody else can,
-> and we have a maintainability problem which can only be solved with
-> adequate commenting.
+> Paravirt-ops guests which move the fixmap also end up moving the syscall VDSO.
+> This fails if it is prelinked at a fixed address, which is why COMPAT_VDSO is
+> broken under CONFIG_VMI (and also under CONFIG_XEN).  Several options are
+> available to try to address this.  Jan had cooked up a patch for Xen that used
+> build magic to find the parts of the VDSO that need relocation.  I don't like
+> the idea of having auto-generated relocations, as someday something could change
+> between two linked objects (timestamp, elf notes perhaps) that is not a
+> relocation.  So I prefer human supervision over the relocation and explicitly
+> fixing everything by hand.  I'm not necessarily advocating one solution over the
+> other; my way is more code to maintain if the VDSO linkage changes.  I'm looking
+> for feedback about which way is best.
+>
+> Also, it appears that COMPAT_VDSO could disappear entirely.  Since this approach
+> should work with older broken ld.so (2.3.2 is the version, I believe), we should
+> be able to switch over completely to using the gate vma style of linking the
+> vdso.  One can even get the address randomization benefits by simply running
+> fixup on the vdso if you are prepared to take the cost of allocating an extra
+> page per process.  Or you could randomize just once at boot, which makes the
+> randomization per-machine, still sufficient to slow network based worm attacks
+> which might rely on a fixed VDSO address.
+>
+> Clearly this patch needs more testing and feedback, which I'm sure it will
+> get...
+>
+> <zach ducks>
+>
+> Zach
+>
+> P.S. - Eric, I've copied you as you appear to be an ELF expert, or at least have
+> a greater grasp of Elven Magic than me, and I'm hoping I got all the dynamic
+> tags which need relocation right.
+> Invoke black magic to relocate the VDSO even when COMPAT_VDSO is enabled
+> by fixing up the ELF object.
 
-Agreed. I've fixed up the commenting, removed the spurious mb(), and I just
-need Jeremy to merge that change into the Xen pv_ops patchset. :-)
+I'm not quite familiar with the context.  And I'm to lazy to look right now.
+What is the difference with COMPAT_VDSO that it doesn't do relocation?
+What are we preserving?
 
- -- Keir
+The practical question here is if we already have all of the relocation logic
+for the VDSO why do we need to add more?
 
+I'm tempted to rant on the pure insanity of address space randomization but
+that is a whole other issue...
+
+Eric
