@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751555AbXCPEJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbXCPEJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751555AbXCPEJY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 00:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbXCPEJY
+	id S1751769AbXCPEJz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 00:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXCPEJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 00:09:24 -0400
-Received: from pqueueb.post.tele.dk ([193.162.153.10]:59434 "EHLO
-	pqueueb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbXCPEJX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 00:09:23 -0400
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
-	Take 2
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-In-Reply-To: <20070314050819.536207642@goodmis.org>
-References: <20070314050819.536207642@goodmis.org>
-Content-Type: text/plain
-Date: Fri, 16 Mar 2007 05:07:52 +0100
-Message-Id: <1174018072.20200.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+	Fri, 16 Mar 2007 00:09:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43265 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751699AbXCPEJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 00:09:54 -0400
+Message-ID: <45FA1864.9010909@redhat.com>
+Date: Fri, 16 Mar 2007 00:09:08 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Andreas Mohr <andi@rhlx01.fht-esslingen.de>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173905741.8763.36.camel@kleikamp.austin.ibm.com> <20070314213317.GA22234@rhlx01.hs-esslingen.de> <200703151737.l2FHb81d001600@turing-police.cc.vt.edu>            <45F991E5.1060001@redhat.com> <200703160351.l2G3p3GJ020217@turing-police.cc.vt.edu>
+In-Reply-To: <200703160351.l2G3p3GJ020217@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-14 at 01:08 -0400, Steven Rostedt wrote:
-> [Hopefully fixed email client to make it to the list this time]
-> [This series has changed by using git-diff -M]
-<snip>
-> Seems appropriate, but I really don't care what it's called.  One thing about
-> this name, is that typing arch/x86<Tab> doesn't tab complete x86_64 anymore.
-> But if you can think of something better, I'd be happy to apply it.
-> 
-sorry for being so late, but about what it could be called, well, what
-about common_x86 or common/x86 or something?
+Valdis.Kletnieks@vt.edu wrote:
 
-<snip>
+> On the other hand, Andreas suggested only marking it once every 32 calls,
+> but that required a helper variable.  Statistically, jiffies%32 should
+> end up about the same as a helper variable %32.
 > 
-> -- Steve
-> 
-> PS. Sorry for the spam. I need to figure out how to tame quilt mail!
-> 
-> 
-> --
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> This of course, if just calling mark_page_accessed() is actually expensive
+> enough that we don't want to do it unconditionally.
 
+Not caching a needed page and having to wait for a disk seek
+to complete will be *way* more expensive than any call to
+mark_page_accessed().
+
+A modern CPU can do somewhere on the order of 50 million
+instructions in the time it takes to bring one page in from
+disk.
+
+However, this does not mean we should unconditionally call
+mark_page_accessed(), since that could cause use to push
+wanted data out of the cache because of one program that
+does its streaming accesses in a strange way...
+
+This is a situation where getting it right almost certainly
+matters.
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
