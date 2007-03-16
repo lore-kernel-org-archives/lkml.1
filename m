@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965996AbXCPWXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965992AbXCPWaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965996AbXCPWXi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 18:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965995AbXCPWXi
+	id S965992AbXCPWaW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 18:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965994AbXCPWaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 18:23:38 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:60758 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965990AbXCPWXh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 18:23:37 -0400
-Subject: Re: [PATCH] scsi: megaraid_sas - throttle io if cmds are in risk
-	of being timed-out
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Sumant Patro <sumant.patro@lsi.com>
-Cc: akpm@osdl.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       neela.kolli@lsi.com, bo.yang@lsi.com
-In-Reply-To: <1172784593.19842.21.camel@dumbo>
-References: <1172784593.19842.21.camel@dumbo>
+	Fri, 16 Mar 2007 18:30:22 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57436 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965992AbXCPWaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 18:30:22 -0400
+X-Provags-ID: V01U2FsdGVkX18Pd9ZB1jQP98w5FRCnoisP3M8OuHdj7nKSb77X4m
+	189GXfgYSKE5kL
+Subject: Re: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
+       Al Boldi <a1426z@gawab.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200703170813.32594.kernel@kolivas.org>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703170040.48316.kernel@kolivas.org>
+	 <1174059299.7886.25.camel@Homer.simpson.net>
+	 <200703170813.32594.kernel@kolivas.org>
 Content-Type: text/plain
-Date: Fri, 16 Mar 2007 17:22:55 -0500
-Message-Id: <1174083775.3519.54.camel@mulgrave.il.steeleye.com>
+Date: Fri, 16 Mar 2007 23:30:07 +0100
+Message-Id: <1174084207.7009.9.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-01 at 13:29 -0800, Sumant Patro wrote:
-> Driver to throttle IO to reduce risk of OS timing out cmds.
+On Sat, 2007-03-17 at 08:13 +1100, Con Kolivas wrote:
+> On Saturday 17 March 2007 02:34, Mike Galbraith wrote:
+> > On Sat, 2007-03-17 at 00:40 +1100, Con Kolivas wrote:
+> > > Here are full patches for rsdl 0.31 for various base kernels. A full
+> > > announce with a fresh -mm series will follow...
+> > >
+> > > http://ck.kolivas.org/patches/staircase-deadline/2.6.20.3-rsdl-0.31.patch
+> > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-sched-rsdl-0.
+> > >31.patch
+> > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0.31
+> > >.patch
+> >
+> > It still has trouble with the x/gforce vs two niced encoders scenario.
+> > The previously reported choppiness is still present.
+> >
+> > I suspect that x/gforce landing in the expired array is the trouble, and
+> > that this will never be smooth without some kind of exemption.  I added
+> > some targeted unfairness to .30, and it didn't help much at all.
+> >
+> > Priorities going all the way to 1 were a surprise.
 > 
-> Implemented a circular queue to keep track of pending OS cmds in FW. 
-> This queue is periodically (every 10 sec) checked by a timer routine.
-> If there is any cmd that is in risk of getting timed-out by the OS, 
-> the host->can_queue is reduced to 16 and MEGASAS_FW_BUSY flag is set. 
-> The host->can_queue will be restored to default value when the following 
-> two conditions are met : 5 secs has elapsed and the # of outstanding cmds
-> in FW is less than 17.
-> Also increased the per cmd timeout to 120*HZ from 90*HZ.
+> It wasn't going to change that case without renicing X.
 
-OK, this is still not nice.  What you need to be doing is intercepting
-the timeout before it fires (and quiesces the machine).  Currently the
-eh_timed_out() callback is only exposed to transport classes, I'll put
-it back into the host template and then you can use it.
+Con.  You are trying to wedge a fair scheduler into an environment where
+totally fair simply can not possibly function.
 
-James
+If this is your final answer to the problem space, I am done testing,
+and as far as _I_ am concerned, your scheduler is an utter failure.
 
+	-Mike
 
