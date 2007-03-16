@@ -1,104 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbXCPIxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbXCPIxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753089AbXCPIxb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 04:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbXCPIvl
+	id S932253AbXCPIxa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 04:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbXCPIvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 04:51:41 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:34676 "HELO ustc.edu.cn"
+	Fri, 16 Mar 2007 04:51:43 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:34706 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S932488AbXCPIvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 04:51:33 -0400
-Message-ID: <374035060.55839@ustc.edu.cn>
+	id S932511AbXCPIvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 04:51:22 -0400
+Message-ID: <374035060.24367@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070316085053.155226000@mail.ustc.edu.cn>
+Message-Id: <20070316085053.642868000@mail.ustc.edu.cn>
 References: <20070316084856.687942000@mail.ustc.edu.cn>
 User-Agent: quilt/0.45-1
-Date: Fri, 16 Mar 2007 16:49:07 +0800
+Date: Fri, 16 Mar 2007 16:49:10 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 11/14] readahead: rename state_based_readahead() to clock_based_readahead()
-Content-Disposition: inline; filename=readahead-rename-state_based_readahead-to-clock_based_readahead.patch
+Subject: [PATCH 14/14] readahead: remove noaction/shrink events
+Content-Disposition: inline; filename=readahead-remove-noaction-shrink-events.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename state_based_readahead() to clock_based_readahead().
-It better reflects the property of that readahead method.
+Tear down the following ra_account(NULL, ...) calls:
+
+	ra_account(RA_EVENT_LOOKAHEAD_NOACTION)
+	ra_account(RA_EVENT_READAHEAD_SHRINK)
+
+The two events are not as useful and do not have clear meanings.
 
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+
 ---
- mm/readahead.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ mm/readahead.c |   20 +++-----------------
+ 1 file changed, 3 insertions(+), 17 deletions(-)
 
 --- linux-2.6.21-rc3-mm2.orig/mm/readahead.c
 +++ linux-2.6.21-rc3-mm2/mm/readahead.c
-@@ -66,7 +66,7 @@ int readahead_hit_rate = 1;
- enum ra_class {
- 	RA_CLASS_ALL,
- 	RA_CLASS_INITIAL,
--	RA_CLASS_STATE,
-+	RA_CLASS_CLOCK,
- 	RA_CLASS_CONTEXT,
- 	RA_CLASS_CONTEXT_AGGRESSIVE,
- 	RA_CLASS_BACKWARD,
-@@ -101,7 +101,7 @@ enum ra_event {
+@@ -87,10 +87,8 @@ enum ra_event {
+ 	RA_EVENT_READAHEAD_HIT,		/* read-ahead page hit */
+ 	RA_EVENT_LOOKAHEAD,		/* look-ahead issued */
+ 	RA_EVENT_LOOKAHEAD_HIT,		/* look-ahead mark hit */
+-	RA_EVENT_LOOKAHEAD_NOACTION,	/* look-ahead mark ignored */
+ 	RA_EVENT_READAHEAD_MMAP,	/* read-ahead for mmap access */
+ 	RA_EVENT_READAHEAD_EOF,		/* read-ahead reaches EOF */
+-	RA_EVENT_READAHEAD_SHRINK,	/* ra_size falls under previous la_size */
+ 	RA_EVENT_READAHEAD_THRASHING,	/* read-ahead thrashing happened */
+ 	RA_EVENT_READAHEAD_MUTILATE,	/* read-ahead mutilated by imbalanced aging */
+ 	RA_EVENT_READAHEAD_RESCUE,	/* read-ahead rescued */
+@@ -452,8 +450,6 @@ int force_page_cache_readahead(struct ad
+ 		nr_to_read -= this_chunk;
+ 	}
  
- #ifdef CONFIG_DEBUG_READAHEAD
- static u32 readahead_debug_level = 1;
--static u32 disable_stateful_method;
-+static u32 disable_clock_readahead;
- static const char * const ra_class_name[];
- static void ra_account(struct file_ra_state *ra, enum ra_event e, int pages);
- #  define debug_inc(var)		do { var++; } while (0)
-@@ -1115,7 +1115,7 @@ static unsigned long compute_thrashing_t
-  * Main function for file_ra_state based read-ahead.
-  */
- static unsigned long
--state_based_readahead(struct address_space *mapping, struct file *filp,
-+clock_based_readahead(struct address_space *mapping, struct file *filp,
- 			struct file_ra_state *ra,
- 			struct page *page, pgoff_t offset,
- 			unsigned long req_size, unsigned long ra_max)
-@@ -1157,7 +1157,7 @@ state_based_readahead(struct address_spa
- 	if (page && ra_old + ra_old / 8 >= ra_size)
- 		update_ra_thrash_bytes(mapping->backing_dev_info, ra_size);
- 
--	ra_set_class(ra, RA_CLASS_STATE);
-+	ra_set_class(ra, RA_CLASS_CLOCK);
- 	ra_set_index(ra, offset, ra->readahead_index);
- 	ra_set_size(ra, ra_size, la_size);
- 
-@@ -1687,8 +1687,8 @@ page_cache_readahead_adaptive(struct add
- 	 */
- 	if (offset == ra->prev_page + 1 &&
- 	    offset == ra->lookahead_index &&
--					!debug_option(disable_stateful_method))
--		return state_based_readahead(mapping, filp, ra, page,
-+					!debug_option(disable_clock_readahead))
-+		return clock_based_readahead(mapping, filp, ra, page,
- 						offset, req_size, ra_max);
- 
- 	/*
-@@ -1788,7 +1788,7 @@ void readahead_cache_hit(struct file_ra_
- static const char * const ra_class_name[] = {
- 	"total",
- 	"initial",
--	"state",
-+	"clock",
- 	"context",
- 	"contexta",
- 	"backward",
-@@ -1970,8 +1970,8 @@ static int __init readahead_init(void)
- 	debugfs_create_file("events", 0644, root, NULL, &ra_events_fops);
- 
- 	debugfs_create_u32("debug_level", 0644, root, &readahead_debug_level);
--	debugfs_create_bool("disable_stateful_method", 0644, root,
--			    &disable_stateful_method);
-+	debugfs_create_bool("disable_clock_readahead", 0644, root,
-+			    &disable_clock_readahead);
- 
- 	return 0;
+-	ra_account(NULL, RA_EVENT_READAHEAD, ret);
+-
+ 	return ret;
  }
+ 
+@@ -496,8 +492,6 @@ int do_page_cache_readahead(struct addre
+ 
+ 	ret = __do_page_cache_readahead(mapping, filp, offset, nr_to_read, 0);
+ 
+-	ra_account(NULL, RA_EVENT_READAHEAD, ret);
+-
+ 	return ret;
+ }
+ 
+@@ -520,7 +514,6 @@ blockable_page_cache_readahead(struct ad
+ 
+ 	actual = __do_page_cache_readahead(mapping, filp, offset, nr_to_read, 0);
+ 
+-	ra_account(NULL, RA_EVENT_READAHEAD, actual);
+ 	dprintk("blockable-readahead(ino=%lu, ra=%lu+%lu) = %d\n",
+ 			mapping->host->i_ino, offset, nr_to_read, actual);
+ 
+@@ -1007,7 +1000,6 @@ static int adjust_rala(unsigned long *ra
+ 	 * if there is a major upsurge of load, or fall of this stream's speed.
+ 	 */
+ 	if (*ra_size <= *la_size * 2) {
+-		ra_account(NULL, RA_EVENT_READAHEAD_SHRINK, *ra_size);
+ 		return 0;
+ 	}
+ 
+@@ -1710,8 +1702,6 @@ page_cache_readahead_adaptive(struct add
+ 
+ 	/* No action on look-ahead time? */
+ 	if (page) {
+-		ra_account(ra, RA_EVENT_LOOKAHEAD_NOACTION,
+-						ra->readahead_index - offset);
+ 		return 0;
+ 	}
+ 
+@@ -1807,10 +1797,8 @@ static const char * const ra_event_name[
+ 	"readahead_hit",
+ 	"lookahead",
+ 	"lookahead_hit",
+-	"lookahead_ignore",
+ 	"readahead_mmap",
+ 	"readahead_eof",
+-	"readahead_shrink",
+ 	"readahead_thrash",
+ 	"readahead_mutilt",
+ 	"readahead_rescue"
+@@ -1825,13 +1813,11 @@ static void ra_account(struct file_ra_st
+ 	if (!readahead_debug_level)
+ 		return;
+ 
+-	if (e == RA_EVENT_READAHEAD_HIT && pages < 0) {
+-		c = ra_class_old(ra);
++	if (pages < 0) {
+ 		pages = -pages;
+-	} else if (ra)
++		c = ra_class_old(ra);
++	} else
+ 		c = ra_class_new(ra);
+-	else
+-		c = RA_CLASS_NONE;
+ 
+ 	if (!c)
+ 		c = RA_CLASS_NONE;
 
 --
