@@ -1,57 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbXCPUrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753652AbXCPUsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753649AbXCPUrV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXCPUrV
+	id S1753652AbXCPUsO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbXCPUsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:47:21 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40926
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753639AbXCPUrU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:47:20 -0400
-Date: Fri, 16 Mar 2007 13:47:18 -0700 (PDT)
-Message-Id: <20070316.134718.95058720.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: andi@firstfloor.org, rostedt@goodmis.org, torvalds@linux-foundation.org,
-       mbligh@mbligh.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, chrisw@sous-sol.org, rusty@rustcorp.com.au,
-       glommer@gmail.com
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com>
-	<20070316114415.GA26403@one.firstfloor.org>
-	<Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 16 Mar 2007 16:48:14 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:35344 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753650AbXCPUsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:48:13 -0400
+Date: Fri, 16 Mar 2007 12:43:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tglx@linutronix.de
+Cc: Chuck Ebbert <cebbert@redhat.com>, Johannes Bauer <JohannesBauer@gmx.de>,
+       linux-kernel@vger.kernel.org, schwab@suse.de,
+       Stable Kernel Team <stable@kernel.org>, Greg KH <greg@kroah.com>,
+       Adrian Bunk <bunk@stusta.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] hrtimer: prevent overrun DoS in hrtimer_forward()
+Message-Id: <20070316124313.9f0afc05.akpm@linux-foundation.org>
+In-Reply-To: <1173866413.13341.154.camel@localhost.localdomain>
+References: <45F6F3A6.9060405@gmx.de>
+	<45F7033B.2030204@redhat.com>
+	<1173817985.13341.120.camel@localhost.localdomain>
+	<1173866413.13341.154.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
-Date: Fri, 16 Mar 2007 13:15:38 -0700 (PDT)
+On Wed, 14 Mar 2007 11:00:12 +0100 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> On Fri, 16 Mar 2007, Andi Kleen wrote:
+> rtimer_forward() does not check for the possible overflow of
+> timer->expires. This can happen on 64 bit machines with large interval
+> values and results currently in an endless loop in the softirq because
+> the expiry value becomes negative and therefor the timer is expired all
+> the time.
 > 
-> > > x86_64 is going to acquire more functionality that will not be available 
-> > > for i386. We plan f.e. to add virtual memmap support for x86_64. Virtual 
-> > 
-> > What advantage would that have over the current setup?
-> > We already should handle holes between nodes reasonably efficiently
-> > and with nonlinear memory even holes inside nodes shouldn't be a problem.
+> Check for this condition and set the expiry value to the max. expiry
+> time in the future.
 > 
-> It is primarily a performance improvement since the sparsemem table 
-> lookups would no longer be necessary and it also streamlines other 
-> frequent cacheline uses. These page -> page_struct and vice versa 
-> operations are key to the performance of various subsystem among them 
-> the slab allocator.
+> The fix should be applied to stable kernel series as well.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix,de>
+> 
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index ec4cb9f..5e7122d 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -644,6 +644,12 @@ hrtimer_forward(struct hrtimer *timer, k
+>  		orun++;
+>  	}
+>  	timer->expires = ktime_add(timer->expires, interval);
+> +	/*
+> +	 * Make sure, that the result did not wrap with a very large
+> +	 * interval.
+> +	 */
+> +	if (timer->expires.tv64 < 0)
+> +		timer->expires = ktime_set(KTIME_SEC_MAX, 0);
+>  
+>  	return orun;
+>  }
 
-If you set the bit range small enough and don't use sparsemem-extreme,
-the cost is extremely low considering the flexibility you obtain.
+kernel/hrtimer.c: In function 'hrtimer_forward':
+kernel/hrtimer.c:652: warning: overflow in implicit constant conversion
 
-There are always going to be holes on large systems, there isn't
-really a way to avoid this given how addressing is done on those
-machines.
+problem is, KTIME_SEC_MAX is 9,223,372,036 and ktime_set() takes a `long'.
+
+
+This?
+
+--- a/include/linux/ktime.h~ktime_set-fix-arg-type
++++ a/include/linux/ktime.h
+@@ -72,13 +72,13 @@ typedef union {
+  *
+  * Return the ktime_t representation of the value
+  */
+-static inline ktime_t ktime_set(const long secs, const unsigned long nsecs)
++static inline ktime_t ktime_set(const s64 secs, const unsigned long nsecs)
+ {
+ #if (BITS_PER_LONG == 64)
+ 	if (unlikely(secs >= KTIME_SEC_MAX))
+ 		return (ktime_t){ .tv64 = KTIME_MAX };
+ #endif
+-	return (ktime_t) { .tv64 = (s64)secs * NSEC_PER_SEC + (s64)nsecs };
++	return (ktime_t) { .tv64 = secs * NSEC_PER_SEC + (s64)nsecs };
+ }
+ 
+ /* Subtract two ktime_t variables. rem = lhs -rhs: */
+_
+
+I worry about that `secs >= KTIME_SEC_MAX' comparison in there, too.  Both
+operands are signed.
+
+
