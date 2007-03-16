@@ -1,109 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbXCPCsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752448AbXCPCva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752313AbXCPCsn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 22:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbXCPCsn
+	id S1752448AbXCPCva (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 22:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXCPCva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 22:48:43 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34255 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752313AbXCPCsm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 22:48:42 -0400
-Date: Fri, 16 Mar 2007 11:48:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-ia64@vger.kernel.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, dmosberger@gmail.com
-Subject: Re: [BUGFIX][PATCH] fixing placement of register stack under ulimit
- -s
-Message-Id: <20070316114824.a1b3f715.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070315171743.e85b8405.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070315171743.e85b8405.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Thu, 15 Mar 2007 22:51:30 -0400
+Received: from xenotime.net ([66.160.160.81]:32961 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752448AbXCPCv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 22:51:29 -0400
+Date: Thu, 15 Mar 2007 18:49:54 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, linux-kernel@vger.kernel.org,
+       haver@vnet.ibm.com, hch@infradead.org, dwmw2@infradead.org
+Subject: Re: [PATCH 10/22 take 3] UBI: EBA unit
+Message-Id: <20070315184954.d3e44243.rdunlap@xenotime.net>
+In-Reply-To: <20070315232951.GA29295@crusty.rchland.ibm.com>
+References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
+	<20070314152024.1112.15655.sendpatchset@localhost.localdomain>
+	<20070315110703.1c2dcce4.akpm@linux-foundation.org>
+	<20070315142410.371adbf0.rdunlap@xenotime.net>
+	<20070315232951.GA29295@crusty.rchland.ibm.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-plz allow me to explain more.
+On Thu, 15 Mar 2007 18:29:51 -0500 Josh Boyer wrote:
 
-"Why register-stack/memory-stack upside down is bad" is a bit complicated.
-So...this is a test and result for explaining bug. 
+> On Thu, Mar 15, 2007 at 02:24:10PM -0700, Randy Dunlap wrote:
+> > On Thu, 15 Mar 2007 11:07:03 -0800 Andrew Morton wrote:
+> > 
+> > > 
+> > > There's way too much code here to expect it to get decently reviewed, alas.
+> > 
+> > Yes.
+> > 
+> > /me repeats wish that Not Everything Should Be Sent to lkml.  :(
+> 
+> Just curious, but where would you suggest this be sent to for review then?
 
-This is a sample code and its result on 2.6.21-rc3.
-Note: base address of memory'stack can be randomly change.
+Valid question.  I should have chosen some other more appropriate
+patch to make that comment.
 
-== sample code ==
-[kamezawa@drpq ~]$ cat sample.c
-#include <stdio.h>
-
-void do_print(int num)
-{
-        if (num == 0)
-                return;
-        printf("%d\n",num);
-        do_print(num - 1);
-}
-
-int main(int argc, char *argv[])
-{
-        do_print(10000);
-        return 0;
-}
-
-== before ulimit ==
-[kamezawa@drpq ~]$ uname -a
-Linux drpq 2.6.21-rc3 #3 SMP Fri Mar 16 11:57:47 JST 2007 ia64 ia64 ia64 GNU/Linux
-[kamezawa@drpq ~]$ ulimit -s
-8192
-[kamezawa@drpq ~]$ ulimit -s -H
-unlimited
-[kamezawa@drpq ~]$ ./sample
-10000
-9999
-....<snip>
-1
-[kamezawa@drpq ~]$
-== after ulimit -s 8192 ==
-
-[kamezawa@drpq ~]$ ulimit -s
-8192
-[kamezawa@drpq ~]$ ulimit -s -H
-8192
-[kamezawa@drpq ~]$ ./sample  
-10000
-9999
-....<snip>
-
-9612
-9611
-9610
-9609
-9608
-Segmentation fault
-
-[kamezawa@drpq ~]$ ./sample   (when I'm lucky)
-10000
-9999
-....<snip>
-1
-[kamezawa@drpq ~]$
-=====================================
-
-This number 9608 is too short to use up all stack. The reason of this is 
-"ulimit -s + memory stack randomization + register-stack-expansion" is buggy.
-The program can only use one page for register stack if unlucky.
-My patch will fix this case.
-
--Kame
+I don't see a better list for UBI patches, so lkml is OK IMO.
 
 
+Here is a summary of my thinking on Linux-related mailing lists.
+
+1.  Bug reports can go to lkml or focused mailing lists.
+
+2.  Development (like patches) should go to focused mailing lists
+if there is such a list and they have enough usage.
+
+Development areas that qualify for this IMO are:
+- ACPI
+- ATA
+- file systems
+- frame buffer
+- ieee1394
+- MM/VM
+- multimedia
+- networking
+- PCI
+- power management, suspend/resume
+- SCSI
+- sound
+- USB
+- virtualization
 
 
-
-
-
-
+(not that I expect anything close to concensus on this)
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
