@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbXCPNcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbXCPNec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbXCPNcm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 09:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbXCPNcm
+	id S1753511AbXCPNec (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 09:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXCPNec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 09:32:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35418 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753508AbXCPNcl (ORCPT
+	Fri, 16 Mar 2007 09:34:32 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44280 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753511AbXCPNeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 09:32:41 -0400
-Date: Fri, 16 Mar 2007 13:32:38 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: David Howells <dhowells@redhat.com>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org
-Subject: Re: [PATCH 1/5] AF_RXRPC: Add blkcipher accessors for using kernel data directly [try #2]
-Message-ID: <20070316133238.GA2173@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	David Howells <dhowells@redhat.com>, davem@davemloft.net,
-	netdev@vger.kernel.org, herbert.xu@redhat.com,
-	linux-kernel@vger.kernel.org, arjan@infradead.org
-References: <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <20070316125016.3740.96837.stgit@warthog.cambridge.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070316125016.3740.96837.stgit@warthog.cambridge.redhat.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 16 Mar 2007 09:34:31 -0400
+Date: Fri, 16 Mar 2007 09:34:29 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: stable@kernel.org
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] EHCI: add delay to bus_resume before accessing ports
+Message-ID: <Pine.LNX.4.44L0.0703160928380.3039-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 16, 2007 at 12:50:16PM +0000, David Howells wrote:
-> Add blkcipher accessors for using kernel data directly without the use of
-> scatter lists.
+This patch (as870) adds a delay to ehci-hcd's bus_resume routine.
+Apparently there are controllers and/or BIOSes out there which need
+such a delay to get the ports back into their correct state.  This
+fixes Bugzilla #8190.
 
-I don't quite understand all these indirections.  What's the problem
-with just having a helper that builds the scatterlist for you?
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-> Also add a CRYPTO_ALG_DMA algorithm capability flag to permit or deny the use
-> of DMA and hardware accelerators.  A hardware accelerator may not be used to
-> access any arbitrary piece of kernel memory lest it not be in a DMA'able
-> region.  Only software algorithms may do that.
+---
 
-We allow dma access to arbitary pieces of _dynamically_ allocated kernel
-memory, and I think using the crypto subsystem on the stack is not allowed
-at all.
+This is for 2.6.20-stable.  Earlier kernels aren't so eager to suspend 
+EHCI buses and so don't need this fix.
 
 
-But the even bigger question is, how does this relate to rxrpc?
-
-> +static inline
-> +void crypto_blkcipher_decrypt_kernel_iv(struct blkcipher_desc *desc,
-
-very odd line split, please put the function name on the same line
-as the qualifiers, or everything including the void on a line of it's
-own.  The first option seems to be the preffered style in this file.
+Index: 2.6.20/drivers/usb/host/ehci-hub.c
+===================================================================
+--- 2.6.20.orig/drivers/usb/host/ehci-hub.c
++++ 2.6.20/drivers/usb/host/ehci-hub.c
+@@ -134,6 +134,10 @@ static int ehci_bus_resume (struct usb_h
+ 	/* restore CMD_RUN, framelist size, and irq threshold */
+ 	writel (ehci->command, &ehci->regs->command);
+ 
++	/* Some controller/firmware combinations need a delay during which
++	 * they set up the port statuses.  See Bugzilla #8190. */
++	mdelay(8);
++
+ 	/* manually resume the ports we suspended during bus_suspend() */
+ 	i = HCS_N_PORTS (ehci->hcs_params);
+ 	while (i--) {
 
