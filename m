@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbXCPX0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbXCPX0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbXCPX0U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 19:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbXCPX0U
+	id S1752580AbXCPX0Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 19:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbXCPX0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 19:26:20 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:43266 "EHLO tmailer.gwdg.de"
+	Fri, 16 Mar 2007 19:26:25 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:43294 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbXCPX0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 19:26:19 -0400
-Date: Sat, 17 Mar 2007 00:09:19 +0100 (MET)
+	id S1752580AbXCPX0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 19:26:23 -0400
+Date: Sat, 17 Mar 2007 00:23:32 +0100 (MET)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Zachary Amsden <zach@vmware.com>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: [RFC, PATCH] Fixup COMPAT_VDSO to work with CONFIG_PARAVIRT
-In-Reply-To: <45FA16FE.7010805@vmware.com>
-Message-ID: <Pine.LNX.4.61.0703170008380.23117@yvahk01.tjqt.qr>
-References: <45FA054F.6020107@vmware.com> <45FA0D13.6080601@goop.org>
- <45FA16FE.7010805@vmware.com>
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: Linux 2.6.21-rc4
+In-Reply-To: <6bffcb0e0703161155o1e153725jd3f4a01fb5fa0d55@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0703170022200.23117@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> 
+ <45FAD77A.1070709@googlemail.com>  <20070316102650.267e2c55.akpm@linux-foundation.org>
+ <6bffcb0e0703161155o1e153725jd3f4a01fb5fa0d55@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Spam-Report: Content analysis: 0.0 points, 6.0 required
@@ -33,13 +30,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mar 15 2007 20:03, Zachary Amsden wrote:
-> Well testing that is not so fun.  I installed SUSE Pro 9.0, and strings on
-> ld.so contains the magic at_sysinfo assert!  But it doesn't install TLS
-> libraries, so I'll have to install them by hand.
+On Mar 16 2007 19:55, Michal Piotrowski wrote:
+>> > I've got *bad* news. Bug described here
+>> > http: //www.ussg.iu.edu/hypermail/linux/kernel/0703.0/index.html#0889
+>> > http: //www.ussg.iu.edu/hypermail/linux/kernel/0703.0/index.html#1165
+>> > probably leaked into mainline.
+>> > 
+>> > Fsck!
+>> 
+>> fsck indeed.  I don't even understand what's happening with that one - it
+>> seems like the kernel schedules a user process, but never deschedules it
+>> again.
+>> 
+>
+> Tomorrow, I'll try to find out how to reproduce this bug.
 
-9.0 is kinda old. And if you want some TLS libs, install the _i686_ glibc
-package (not done by default).
+>From #0889:
+
+ "I have noticed some strange system behavior. When i try to build a
+ kernel (medium load) - X, keyboard, mouse and sound hangs."
+
+Note that ping is handled in interrupt or softirq context. So something has
+locked up. Try without X? Or perhaps attack a serial console/netconsole, and
+when it hangs, use Sysrq to dump the process' states.
 
 
 Jan
