@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbXCPT0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbXCPTfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbXCPT0h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 15:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbXCPT0h
+	id S1753602AbXCPTfA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 15:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbXCPTfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 15:26:37 -0400
-Received: from gw.goop.org ([64.81.55.164]:59703 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753595AbXCPT0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 15:26:36 -0400
-Message-ID: <45FAEF63.5080308@goop.org>
-Date: Fri, 16 Mar 2007 12:26:27 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 16 Mar 2007 15:35:00 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33429 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753601AbXCPTe7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 15:34:59 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [RFC, PATCH] Fixup COMPAT_VDSO to work with CONFIG_PARAVIRT
+References: <45FA054F.6020107@vmware.com>
+	<m17itho10v.fsf@ebiederm.dsl.xmission.com> <45FAC4EF.4060305@goop.org>
+	<20070316163118.GA12999@elte.hu> <45FAC6E6.5090000@goop.org>
+Date: Fri, 16 Mar 2007 13:06:46 -0600
+In-Reply-To: <45FAC6E6.5090000@goop.org> (Jeremy Fitzhardinge's message of
+	"Fri, 16 Mar 2007 09:33:42 -0700")
+Message-ID: <m1ps79m2ih.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 00/26] Xen-paravirt_ops: Xen guest implementation for
- paravirt_ops interface
-References: <20070301232443.195603797@goop.org> <20070316092137.GL23174@elte.hu> <45FAD35F.8040404@goop.org> <20070316185923.GA15209@infradead.org>
-In-Reply-To: <20070316185923.GA15209@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Fri, Mar 16, 2007 at 10:26:55AM -0700, Jeremy Fitzhardinge wrote:
->   
->> +#ifdef CONFIG_HIGHPTE
->> +	.kmap_atomic_pte = native_kmap_atomic_pte,
->> +#else
->> +	.kmap_atomic_pte = paravirt_nop,
->> +#endif
->>     
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
+
+> Ingo Molnar wrote:
+>> that's what is the case right now, but much of the intention behind the 
+>> vma based vDSO is to enable per-process randomized vdso locations, and 
+>> various distributions do that. So the 'modern' vDSO concept is very much 
+>> relocatable.
 >
-> This is ifdefing is quite ugly.  Shouldn't native_kmap_atomic_pte
-> just be a noop in the !CONFIG_HIGHPTE case?
->   
+> No, the point is that it never needs relocating.  The kernel can map it
+> anywhere and userspace can cope.  Its only the broken glibcs which
+> require relocation.
 
-Yes, but the trouble is that asm/highmem.h simply isn't included in the
-!HIGHMEM case, so I can't put anything in there, and putting anything
-pv_ops related into linux/highmem.h isn't appropriate either.
+Ok.  So to summarize.
+There are three ways of finding the VDSO.
+- AT_SYSINFO
+- AT_SYSINFO_EHDR
+- known fixed address (see x86_64)
 
->> -void *kmap_atomic(struct page *page, enum km_type type)
->> +void *_kmap_atomic(struct page *page, enum km_type type, pgprot_t prot)
->>     
->
-> We normally call our "secial" function __foo, not _foo.  But in this
-> case it really should have a more meaningfull name like
-> kmap_atomic_prot anyway.
->   
+Currently it doesn't sound like you need to deal with the known fixed
+address case but COMPAT_VDSO also provides that.
 
-OK.
+If userspace uses AT_SYSINFO the premise is that it is not expecting
+not to need to perform any relocation processing.
 
->> +void *kmap_atomic(struct page *page, enum km_type type)
->> +{
->> +	return _kmap_atomic(page, type, kmap_prot);
->>     
->
-> And this one should probably be an inline.
->   
+If userspace uses AT_SYSINFO_EHDR it expects it needs to perform
+relocation processing and fixes up whatever needs fixing up.
 
-OK, if you think it makes a difference.
+With the module code we have shown the kernel is capable of performing
+relocation processing at times and it works.
 
->> +static inline void *native_kmap_atomic_pte(struct page *page, enum km_type type)
->> +{
->> +	return kmap_atomic(page, type);
->> +}
->> +
->> +#ifndef CONFIG_PARAVIRT
->> +#define kmap_atomic_pte(page, type)	kmap_atomic(page, type)
->> +#endif
->>     
->
-> This is all getting rather ugly just for your pagetable hackery.
->   
+So is it possible to simply relocate the normal vdso and fixup
+it's program header so it shows that relocation is not necessary.
+If you can do that and still export AT_SYSINFO so the problem user
+space still runs you are good.  (If you can relocate the vdso
+you should be able to relocate it anywhere).
 
-Well, I could promote kmap_atomic_pte to a first-class interface, but it
-seems like overkill.
+Otherwise it probably just make sense to simply not export a VDSO
+on those systems.
 
-    J
+This would leave COMPAT_VDSO for the case where you must use one magic
+fixed address, and if user space does not require that it means
+COMPAT_VDSO could be completely removed.
+
+Eric
