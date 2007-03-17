@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbXCQSzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbXCQS4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752859AbXCQSzZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 14:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXCQSzY
+	id S1752876AbXCQS4S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 14:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbXCQS4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 14:55:24 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35822 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752869AbXCQSzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 14:55:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
-References: <20070316170255.GA194@tv-sign.ru>
-	<m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com>
-	<20070317130216.GA78@tv-sign.ru>
-	<m1k5xgklun.fsf@ebiederm.dsl.xmission.com>
-	<20070317150949.GA302@tv-sign.ru> <20070317152437.GA365@tv-sign.ru>
-	<m1fy83ls75.fsf@ebiederm.dsl.xmission.com>
-	<20070317171747.GA134@tv-sign.ru>
-Date: Sat, 17 Mar 2007 12:54:11 -0600
-In-Reply-To: <20070317171747.GA134@tv-sign.ru> (Oleg Nesterov's message of
-	"Sat, 17 Mar 2007 20:17:47 +0300")
-Message-ID: <m1bqirlmzw.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Sat, 17 Mar 2007 14:56:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43730 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752875AbXCQS4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 14:56:16 -0400
+Date: Sat, 17 Mar 2007 14:56:07 -0400
+From: Alan Cox <alan@redhat.com>
+To: Paul Rolland <rol@as2917.net>
+Cc: "'Tejun Heo'" <htejun@gmail.com>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Jeff Garzik'" <jeff@garzik.org>, "'Alan Cox'" <alan@redhat.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       linux-ide@vger.kernel.org, "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'Eric D. Mudama'" <edmudama@gmail.com>
+Subject: Re: [git patches] libata fixes
+Message-ID: <20070317185607.GC18870@devserv.devel.redhat.com>
+References: <00a701c768bd$f8abe130$2101a8c0@donald> <00ae01c768c4$a673e3c0$2101a8c0@donald>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <00ae01c768c4$a673e3c0$2101a8c0@donald>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Sat, Mar 17, 2007 at 07:47:01PM +0100, Paul Rolland wrote:
+> Hello,
+> 
+> Here is a patch to avoid these pesky messages for the Maxtor disk :
+> 
 
-> Yes! I meant we should change INIT_SIGNALS(), currently it does
->
-> 	#define INIT_SIGNALS(sig) {
-> 		...
-> 		.pgrp           = 1,
-> 		{ .__session      = 1},
->
-> and this confuses (I think) set_special_pids(1,1) above. Because
-> __set_special_pids() still deals with pid_t, not "struct pid".
->
-> Unless I missed something, we should kill these 2 initializations
-> above.
+Please match the firmware version as well for the Maxtor drives
 
-Got it.  I agree we should initialize those fields to 0.
+> --- linux-2.6.21-rc4/drivers/ata/libata-core.c  2007-03-17 19:29:45.000000000
+> +0100
+> +++ linux-2.6.21-rc4-Maxtor/drivers/ata/libata-core.c   2007-03-17
+> 19:37:28.000000000 +0100
+> @@ -3359,6 +3359,8 @@
+>          { "WDC WD740ADFD-00",   NULL,          ATA_HORKAGE_NONCQ },
+>         /* http://thread.gmane.org/gmane.linux.ide/14907 */
+>         { "FUJITSU MHT2060BH",  NULL,           ATA_HORKAGE_NONCQ },
+> +       /* NCQ is broken */
+> +       { "Maxtor 6L250S0",     NULL,           ATA_HORKAGE_NONCQ }, 
+>  
+>         /* Devices with NCQ limits */
+>  
+> 
+> Signed-off-by: Paul Rolland <rol@as2917.net>
 
-Sukadev you want to get that?
-
-Eric
+NAK - but add the firmware to the match and you can have an Ack 8)
