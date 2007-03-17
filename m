@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965069AbXCQH41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965111AbXCQIFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965069AbXCQH41 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 03:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965105AbXCQH41
+	id S965111AbXCQIFu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 04:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965105AbXCQIFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 03:56:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47386 "EHLO mx2.mail.elte.hu"
+	Sat, 17 Mar 2007 04:05:49 -0400
+Received: from hot.fatooh.org ([63.99.9.127]:56321 "EHLO hot.fatooh.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965069AbXCQH40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 03:56:26 -0400
-Date: Sat, 17 Mar 2007 08:56:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nicholas Miell <nmiell@comcast.net>
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: RSDL v0.31
-Message-ID: <20070317075615.GC13685@elte.hu>
-References: <200703042335.26785.a1426z@gawab.com> <200703170040.48316.kernel@kolivas.org> <1174059299.7886.25.camel@Homer.simpson.net> <200703170813.32594.kernel@kolivas.org> <1174084207.7009.9.camel@Homer.simpson.net> <1174105443.3144.4.camel@entropy> <1174110965.7911.44.camel@Homer.simpson.net> <1174112768.3144.8.camel@entropy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1174112768.3144.8.camel@entropy>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S965111AbXCQIE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 04:04:56 -0400
+Message-ID: <45FBA12A.1000103@fatooh.org>
+Date: Sat, 17 Mar 2007 01:04:58 -0700
+From: Corey Hickey <bugfood-ml@fatooh.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20.1: reproducible hard lockup (with some configurations)
+References: <45EA3159.4020508@fatooh.org>
+In-Reply-To: <45EA3159.4020508@fatooh.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nicholas Miell <nmiell@comcast.net> wrote:
-
-> > I'm saying that the current scheduler adjusts for interactive loads, 
-> > this new one doesn't.  I'm seeing interactivity regressions, and 
-> > they are not fixed with nice unless nice is used to maximum effect.  
-> > I'm saying yes, I can lower my expectations, but no I don't want to.
+Corey Hickey wrote:
+> Hello,
 > 
-> Uh, no. Essentially, the current scheduler works around X's 
-> brokenness, in an often unpredictable manner.
+> I am experiencing a hard lockup with 2.6.20.1. Whenever the system locks
+> up, it locks up hard: nothing is printed to the console and the magic
+> SysRQ key has no effect--the only thing I can do is poke the reset
+> button. I have reasonable faith in the stability of my hardware: I can
+> run memtest86+ for hours without problems; likewise with burnK7,
+> mencoder, and various other programs that stress the CPU. I've never had
+> this problem (or any similar one) with 2.6.19 and earlier.
+> 
+> The problem originally manifested whenever I initiated a RAID-5 resync.
+> I reported the problem to linux-raid, but Neil Brown wasn't able to
+> reproduce it and he suggested I was having trouble with a lower-level
+> driver. I've messed around for many hours with many different kernel
+> configurations, but all I've been able to find out is that, with some
+> configurations, the RAID resync doesn't immediately cause a lockup, but
+> a lockup happens later (sometimes hours later) nonetheless. Since the
+> late lockup isn't as easily reproducible, I'll concentrate the rest of
+> this report on conditions that lead to immediate lockup.
+> 
+> When the lockup is triggered by a resync, it is very easy to reproduce:
+> 1. Boot with 'init=/bin/bash'.
+> 2. Run 'mdadm -A /dev/md2 -U resync'.
+> 3. Wait about 1 second. The system will lock up.
+> 
+> System information:
+> Athlon64 3400+
+> 64-bit Linux 2.6.20.1 compiled with GCC 4.1.2
+> 64-bit Debian Sid
+> RAID-5 of 5 devices:
+>    /dev/hda   (IDE hard drive)
+>    /dev/sda6  (partition on SATA hard drive)
+>    /dev/sdb   (SATA hard drive)
+>    /dev/sdc6  (partition on SATA hard drive)
+>    /dev/sdd   (SATA hard drive)
+> SATA and IDE drives mounted to onboard nVidia controllers
+> I'm using the libata SATA driver and the old IDE driver
+> 
+> My full kernel .config is here:
+> http://fatooh.org/files/tmp/config-2.6.20.1
+> ...and the output of 'lspci -v' is here:
+> http://fatooh.org/files/tmp/lspci-v
+> 
+> If anybody has any suggestions, I would be very grateful. I'd also be
+> happy to run further tests or provide any other information that may be
+> useful.
 
-No. The two schedulers simply use different heuristics. RSDL uses _less_ 
-heuristics, and thus gets some workloads right that the heuristics in 
-the current scheduler got wrong. But it also gets some other workloads 
-wrong.
+Just in case this is helpful for somebody:
 
-so basically, the current scheduler has a built-in "auto-nice" feature, 
-while RSDL relies more on manual assignment of nice values.
+After I sent the last message, I kept trying to find a solution;
+eventually I tried compiling without CONFIG_CC_OPTIMIZE_FOR_SIZE, and
+that seems to have fixed the problem. Uptime is 12 days so far, without
+any issues.
 
-if you want no heuristics at all you can do it in the current scheduler: 
-use SCHED_BATCH on your shell and start up X with that. I'd not mind 
-tweaking SCHED_BATCH with an RSDL-alike timeslice quota system.
-
-so it is not at all clear to me that RSDL is indeed an improvement, if 
-it does not have comparable auto-nice properties.
-
-	Ingo
+-Corey
