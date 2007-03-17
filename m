@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbXCQUCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXCQUFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753848AbXCQUCM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 16:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbXCQUCM
+	id S1753859AbXCQUFa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 16:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbXCQUF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 16:02:12 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:23216 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbXCQUCK (ORCPT
+	Sat, 17 Mar 2007 16:05:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56313 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753859AbXCQUF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 16:02:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=e208sbIgZuadwVqlvQ3guzLlshOre7Bhv7cqkvtcNizP+SwLTu9/TfFKrm/PGcdNMRwoqa7nyp3cuay6mMSke8f9mGSkyoQO+4wUnser/sNplWrykzjY9UfnIO8jtycuMfoUXk/P8Lb2Z8vy39rEh40zrHdRRVEnfmnhgPWKdDc=
-Message-ID: <45FC493D.1060006@gmail.com>
-Date: Sun, 18 Mar 2007 05:02:05 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: rol@as2917.net
-CC: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Jeff Garzik'" <jeff@garzik.org>, "'Alan Cox'" <alan@redhat.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       linux-ide@vger.kernel.org, "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Eric D. Mudama'" <edmudama@gmail.com>
-Subject: Re: [git patches] libata fixes
-References: <00b801c768cd$172dcb50$2101a8c0@donald>
-In-Reply-To: <00b801c768cd$172dcb50$2101a8c0@donald>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Mar 2007 16:05:29 -0400
+Subject: Re: Porting V4L2 drivers to 2.6.20
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Laurent Pinchart <laurent.pinchart@skynet.be>
+Cc: Maximus <john.maximus@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703131108.03090.laurent.pinchart@skynet.be>
+References: <3634de740703130300j12928fbeob860c067e46badbf@mail.gmail.com>
+	 <200703131108.03090.laurent.pinchart@skynet.be>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 17 Mar 2007 18:05:21 -0200
+Message-Id: <1174161921.4419.15.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0-1mdv2007.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Rolland wrote:
->> If you leave it alone, does libata turn off NCQ and boot continues?
+Em Ter, 2007-03-13 às 11:08 +0100, Laurent Pinchart escreveu:
+> > Hey,
+> >          am porting V4L2 drivers from 2.6.13 to 2.6.20.
+> >
+> >      The driver is using a  structure 'video_device' which exists in
+> > include/linux/videodev.h.
+> >
+> >      However, The linux kernel in 2.6.20 doesnot have that structure?.
+> >
+> >       Has the architecture changed between 2.6.13 to 2.6.20 for V4L2?.
 > 
-> boot continues, but I can't tell anything about libata turning of NCQ...
-> I've had a bunch of them at some while while compiling some kernel, so it
-> was quite some time after booting.
+> The structure has been moved to include/media/v4l2-dev.h
+
+Yes.
+
+You should notice that, if you want to send those drivers to kernel
+mainstream, they should also be ported to V4L2 API (since V4L1 API is
+obsolete). So, you shouldn't include linux/videodev.h, but, instead,
+linux/videodev2.h for v4l2 API (and v4l2-dev.h for the internal V4L2
+structures). Also, please c/c me on v4l kernel patches submission, since
+I'm the V4L maintainer.
+
+Cheers,
+Mauro.
 > 
-> Is there a message I can check for that would indicate NCQ being turned
-> off ?
-
-The kernel says that NCQ is turned off due to excessive errors.  If your
-HSM violation is intermittent, it might not trigger tho.
-
+> Best regards,
+> 
+> Laurent Pinchart
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 -- 
-tejun
+Cheers,
+Mauro
+
