@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbXCQROK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbXCQRTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752443AbXCQROK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 13:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXCQROK
+	id S1752540AbXCQRTf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 13:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXCQRTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 13:14:10 -0400
-Received: from mail.screens.ru ([213.234.233.54]:32817 "EHLO mail.screens.ru"
+	Sat, 17 Mar 2007 13:19:35 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54005 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752443AbXCQROI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 13:14:08 -0400
-Date: Sat, 17 Mar 2007 20:17:47 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
-Message-ID: <20070317171747.GA134@tv-sign.ru>
-References: <20070316170255.GA194@tv-sign.ru> <m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com> <20070317130216.GA78@tv-sign.ru> <m1k5xgklun.fsf@ebiederm.dsl.xmission.com> <20070317150949.GA302@tv-sign.ru> <20070317152437.GA365@tv-sign.ru> <m1fy83ls75.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1fy83ls75.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	id S1752540AbXCQRTe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 13:19:34 -0400
+To: =?iso-8859-2?q?Tomasz_Noi=F1ski?= <noix@sphere.pl>
+Cc: linux-kernel@vger.kernel.org, timm@kip.uni-heidelberg.de,
+       arne.wiebalck@kip.uni-heidelberg.de
+Subject: Re: more precise CPU time accounting for x86
+References: <20070317164722.1fed2b27.noix@sphere.pl>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 17 Mar 2007 19:18:38 +0100
+In-Reply-To: <20070317164722.1fed2b27.noix@sphere.pl>
+Message-ID: <p73bqir7myp.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/17, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> writes:
+Tomasz Noiñski <noix@sphere.pl> writes:
+
+> Hi,
 > 
-> > On 03/17, Oleg Nesterov wrote:
-> >>
-> >> > Well the initial kernel process does not have a struct pid so when
-> >> > it's children start doing:
-> >> > 	attach_pid(p, PIDTYPE_PGID, task_group(p));
-> >> > 	attach_pid(p, PIDTYPE_SID, task_session(p));
-> >> > We will get an oops.
-> >> 
-> >> So far this is the only reason to have init_struct_pid. Because the
-> >> boot CPU (swapper) forks, right?
-> >
-> > Damn. I am afraid I was not clear again :) Not init_struct_pid, but
-> >
-> > 	+ .pids = { \
-> > 	+ [PIDTYPE_PID] = INIT_PID_LINK(PIDTYPE_PID), \
-> > 	+ [PIDTYPE_PGID] = INIT_PID_LINK(PIDTYPE_PGID), \
-> > 	+ [PIDTYPE_SID] = INIT_PID_LINK(PIDTYPE_SID), \
-> > 	+ }, \
-> >
-> > for INIT_TASK().
-> >
-> >> > So a dummy unhashed struct pid was added for the idle threads.
-> >> > Allowing several special cases in the code to be removed.
-> >> > 
-> >> > With that chance the previous special case to force the idle thread
-> >> > init session 1 pgrp 1 no longer works because attach_pid no longer
-> >> > looks at the pid value but instead at the struct pid pointers.
-> >> > 
-> >> > So we had to add the __set_special_pids() to continue to keep init
-> >> > in session 1 pgrp 1.  Since /sbin/init calls setsid() that our setting
-> >> > the sid and the pgrp may not be strictly necessary.  Still is better
-> >> > to not take any chances.
-> >> 
-> >> Yes, yes, I see. But my (very unclear, sorry) question was: shouldn't we
-> >> change INIT_SIGNALS then? /sbin/init inherits ->pgrp == ->_session == 1,
-> >> in that case __set_special_pids(1,1) does nothing.
-> >
-> > ... and thus /sbin/init remains attached to the .pids above, no?
+> I've written a small patch for more precise process CPU time accounting
+> for processors with TSC.
 > 
-> The problem is that we dynamically allocate the struct pid for 
-> pid_t == 1 when we fork init.
-> 
-> Which means we don't have access to it at compile time so we can
-> no longer make INIT_SIGNALS set ->gprp == ->session == 1.
+> Currently, accounting is sample-based and it can be fooled by, for
+> example, a process that always gives away the rest of it's timeslice.
 
-Yes! I meant we should change INIT_SIGNALS(), currently it does
+RDTSC is unfortunately quite slow on some CPUs.
 
-	#define INIT_SIGNALS(sig) {
-		...
-		.pgrp           = 1,
-		{ .__session      = 1},
+But we already use it in schedule for sched_clock(). I think
+an interesting approach would be to use this information
+and just sum it up in the task_struct. This would still not
+account for interrupts and system time separately, but should
+be relatively cheap and give more accurate time. Drawback would
+be that user tools would need to be updated to read a "sys+user"
+count.
 
-and this confuses (I think) set_special_pids(1,1) above. Because
-__set_special_pids() still deals with pid_t, not "struct pid".
+BTW perfctrs on most x86 CPUs can count user/kernel separately,
+unfortunately it is hard to find a performance counter that
+matches real time well enough and they couldn't easily
+separate interrupts vs systime belonging to the process.
 
-Unless I missed something, we should kill these 2 initializations
-above.
-
-Oleg.
-
+-Andi
