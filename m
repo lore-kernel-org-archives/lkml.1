@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbXCQHpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965069AbXCQH41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964896AbXCQHpy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 03:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965069AbXCQHpy
+	id S965069AbXCQH41 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 03:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965105AbXCQH41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 03:45:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40666 "EHLO mx2.mail.elte.hu"
+	Sat, 17 Mar 2007 03:56:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47386 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964896AbXCQHpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 03:45:53 -0400
-Date: Sat, 17 Mar 2007 08:45:06 +0100
+	id S965069AbXCQH40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 03:56:26 -0400
+Date: Sat, 17 Mar 2007 08:56:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Nicholas Miell <nmiell@comcast.net>
 Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
@@ -18,7 +18,7 @@ Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: RSDL v0.31
-Message-ID: <20070317074506.GA13685@elte.hu>
+Message-ID: <20070317075615.GC13685@elte.hu>
 References: <200703042335.26785.a1426z@gawab.com> <200703170040.48316.kernel@kolivas.org> <1174059299.7886.25.camel@Homer.simpson.net> <200703170813.32594.kernel@kolivas.org> <1174084207.7009.9.camel@Homer.simpson.net> <1174105443.3144.4.camel@entropy> <1174110965.7911.44.camel@Homer.simpson.net> <1174112768.3144.8.camel@entropy>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,23 +39,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Nicholas Miell <nmiell@comcast.net> wrote:
 
-> The X people have plans for how to go about fixing this, [...]
+> > I'm saying that the current scheduler adjusts for interactive loads, 
+> > this new one doesn't.  I'm seeing interactivity regressions, and 
+> > they are not fixed with nice unless nice is used to maximum effect.  
+> > I'm saying yes, I can lower my expectations, but no I don't want to.
+> 
+> Uh, no. Essentially, the current scheduler works around X's 
+> brokenness, in an often unpredictable manner.
 
-then we'll first have wait for those X changes to at least be done in a 
-minimal manner so that they can be tested for real with RSDL. (is it 
-_really_ due to that? Or will X regress forever once we switch to RSDL?) 
-We cannot regress the scheduling of a workload as important as "X mixed 
-with CPU-intense tasks". And "in theory this should be fixed if X is 
-fixed" does not cut it. X is pretty much _the_ most important thing to 
-optimize the interactive behavior of a Linux scheduler for. Also, 
-paradoxically, it is precisely the improvement of _X_ workloads that 
-RSDL argues with.
+No. The two schedulers simply use different heuristics. RSDL uses _less_ 
+heuristics, and thus gets some workloads right that the heuristics in 
+the current scheduler got wrong. But it also gets some other workloads 
+wrong.
 
-this regression has to be fixed before RSDL can be merged, simply 
-because it is a pretty negative effect that goes beyond any of the 
-visible positive improvements that RSDL brings over the current 
-scheduler. If it is better to fix X, then X has to be fixed _first_, at 
-least in form of a prototype patch that can be _tested_, and then the 
-result has to be validated against RSDL.
+so basically, the current scheduler has a built-in "auto-nice" feature, 
+while RSDL relies more on manual assignment of nice values.
+
+if you want no heuristics at all you can do it in the current scheduler: 
+use SCHED_BATCH on your shell and start up X with that. I'd not mind 
+tweaking SCHED_BATCH with an RSDL-alike timeslice quota system.
+
+so it is not at all clear to me that RSDL is indeed an improvement, if 
+it does not have comparable auto-nice properties.
 
 	Ingo
