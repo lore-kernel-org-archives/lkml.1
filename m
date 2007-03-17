@@ -1,196 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbXCQWuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751071AbXCQXAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751143AbXCQWuG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 18:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbXCQWuG
+	id S1751071AbXCQXAM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 19:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbXCQXAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 18:50:06 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:43408 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751143AbXCQWuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 18:50:04 -0400
-Message-ID: <45FC70A3.7060705@gmail.com>
-Date: Sat, 17 Mar 2007 23:50:11 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Sat, 17 Mar 2007 19:00:12 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:20508 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbXCQXAJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 19:00:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=nhKKf08EHQblpiENtNfOdLcFnJuq/JIbcV/DC+8RlgthHHOCKkNNeWtdVixB0uMSktD+nrJq8+zI6JZKDB3Cw7+NaUHP2d+yzKpPnuIFm4cIN8VCX/7epGgY0oQUTkRs9kgc/Roa+kwWy1OOMqAkEL6vNSJDAeu9B4tNyyyBIjA=
+From: Maxim <maximlevitsky@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far
+Date: Sun, 18 Mar 2007 01:00:01 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <200703161230.03712.maximlevitsky@gmail.com> <200703161919.44458.lenb@kernel.org>
+In-Reply-To: <200703161919.44458.lenb@kernel.org>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
-References: <Pine.LNX.4.44L0.0703151556420.2482-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0703151556420.2482-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703180100.01889.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern napsal(a):
-> On Tue, 13 Mar 2007, Jiri Slaby wrote:
+On Saturday 17 March 2007 01:19:44 Len Brown wrote:
+> On Friday 16 March 2007 06:30, Maxim Levitsky wrote:
+> > 
+> > Good day, 
+> > 
+> > I want to report regressions I have with 2.6.21-rc3 kernel.
+> > I use CONFIG_NO_HZ.
 > 
->> So, do you mean rmmod uhci_hcd, unplug the keyboard, modprobe
->> uhci_hcd, start usbmon, plug the keyboard, press numlock, stop usbmon,
->> post it?
+> Do any of these issues go away with CONFIG_NO_HZ=n (or boot with nohz=n)
+> or are they all independent of it?
+> 
+> thanks,
+> -Len
+> 
+> > 1) Both suspend to disk and suspend to RAM are completely broken:
+> > On vanilla 2.6.20 suspend to disk works perfectly and suspend to ram works _almost_ perfectly (I will tell about that later).
+> > On 2.6.21-rc1 and later system hangs even before suspend begins (suspend to disk hangs before image write , and after suspend to ram , 
+> > some devices are powered down (disk,power leds) , and some and not(fans, power) , and system hangs).
+> > 
+> > I did a git-bisect and I found which commit caused that:
+> > 	e3c7db621bed4afb8e231cb005057f2feb5db557 - [PATCH] [PATCH] PM: Change code ordering in main.c (breaks  S3)
+> > 	ed746e3b18f4df18afa3763155972c5835f284c5 - [PATCH] [PATCH] swsusp: Change code ordering in disk.c (breaks swsusp, I don't use it, but I tested it)
+> >         259130526c267550bc365d3015917d90667732f1 - [PATCH] [PATCH] swsusp: Change code ordering in user.c (breaks uswsusp, that I use)
+> > 
+> > I reverted those commits and now system suspends correctly to disk, but suspend to ram showed some more regressions.
+> > 
+> > 
+> > 2) ) After suspend to ram I get this 
+> > 
+> > Mar 14 00:22:23 MAIN kernel: [    2.072875] caller is check_tsc_sync_source+0x1d/0x100
+> > Mar 14 00:22:23 MAIN kernel: [    2.072878]  [show_trace_log_lvl+26/48] show_trace_log_lvl+0x1a/0x30
+> > Mar 14 00:22:23 MAIN kernel: [    2.072881]  [show_trace+18/32] show_trace+0x12/0x20
+> > Mar 14 00:22:23 MAIN kernel: [    2.072884]  [dump_stack+22/32] dump_stack+0x16/0x20
+> > Mar 14 00:22:23 MAIN kernel: [    2.072887]  [debug_smp_processor_id+173/176] debug_smp_processor_id+0xad/0xb0
+> > Mar 14 00:22:23 MAIN kernel: [    2.072891]  [check_tsc_sync_source+29/256] check_tsc_sync_source+0x1d/0x100
+> > Mar 14 00:22:23 MAIN kernel: [    2.072894]  [__cpu_up+80/384] __cpu_up+0x50/0x180
+> > Mar 14 00:22:23 MAIN kernel: [    2.072897]  [_cpu_up+98/208] _cpu_up+0x62/0xd0
+> > Mar 14 00:22:23 MAIN kernel: [    2.072901]  [cpu_up+46/80] cpu_up+0x2e/0x50
+> > Mar 14 00:22:23 MAIN kernel: [    2.072903]  [enable_nonboot_cpus+110/160] enable_nonboot_cpus+0x6e/0xa0
+> > Mar 14 00:22:23 MAIN kernel: [    2.072906]  [enter_state+326/496] enter_state+0x146/0x1f0
+> > Mar 14 00:22:23 MAIN kernel: [    2.072909]  [state_store+174/192] state_store+0xae/0xc0
+> > Mar 14 00:22:23 MAIN kernel: [    2.072912]  [subsys_attr_store+43/64] subsys_attr_store+0x2b/0x40
+> > Mar 14 00:22:23 MAIN kernel: [    2.072917]  [sysfs_write_file+186/272] sysfs_write_file+0xba/0x110
+> > Mar 14 00:22:23 MAIN kernel: [    2.072920]  [vfs_write+150/352] vfs_write+0x96/0x160
+> > Mar 14 00:22:23 MAIN kernel: [    2.072923]  [sys_write+61/112] sys_write+0x3d/0x70
+> > Mar 14 00:22:23 MAIN kernel: [    2.072926]  [sysenter_past_esp+93/153] sysenter_past_esp+0x5d/0x99
+> > Mar 14 00:22:23 MAIN kernel: [    2.072929]  =======================
+> > Mar 14 00:22:23 MAIN kernel: [    2.072931] checking TSC synchronization [CPU#0 -> CPU#1]:
+> > Mar 14 00:22:23 MAIN kernel: [    2.092922] Measured 72051818872 cycles TSC warp between CPUs, turning off
+> > 
+> > It looks clear that preempt is enabled all the way in second cpu initialization, ( I think that at least in check_tsc_sync_source, it should be disabled,
+> > shouldn't it ? )
+> > 
+> > Then I did add preempt_disable() / preempt_enable()  to this function , and  I still got this:
+> > 
+> > Mar 14 00:22:23 MAIN kernel: [    2.072931] checking TSC synchronization [CPU#0 -> CPU#1]:
+> > Mar 14 00:22:23 MAIN kernel: [    2.092922] Measured 72051818872 cycles TSC warp between CPUs, turning off
+> > 
+> > It happens after second CPU is brought back on-line.
+> > 
+> > Now I understand that this is TSC sync problem and I tried to do some tests:
+> > 
+> >  I tried to disable/enable second CPU by hand, eg I did number of times,
+> > 
+> > echo "0" > /sys/devices/system/cpu/cpu1/online
+> > echo "1" > /sys/devices/system/cpu/cpu1/online
+> > 
+> > and TSC sync was ok.
+> > 
+> > Then I disabled 2nd CPU, have suspended system to RAM , resumed it  , and then enabled 2nd CPU and got same error message.
+> > Then I disabled cpufreq , and did above tests, and got same results.
+> > I think that maybe this error is false, that there is some difference in TSC clock, but this difference is constant, and can be fixed
+> > 
+> > 3) Sometimes I get this (once in three boots or so)
+> > 
+> > [   36.217405] ENABLING IO-APIC IRQs
+> > [   36.217587] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+> > [   36.433917] APIC timer disabled due to verification failure.
+> > 
+> > And NO_HZ is disabled due to that (I get 1000/s timer's interrupts)
+> > I haven't investigated that yet.
+> > It looks like another new test that my hardware fails to perform... 
+> > 
+> > 
+> > And now I want to tell you about that _almost_ working suspend to ram I got in 2.6.20:
+> > To put it simply sometimes system wakes from resume, and sometimes not (about 1 in 5 times)
+> > When it does it works perfectly. 
+> > 
+> > This is quite common problem but ironically my case is very different and harder to solve.
+> > 
+> > The fact is that I found thanks to RTC tricks , similar to PM_TRACE that system hangs in exactly three places (in one of them of course)
+> > 
+> > I put between instructions, code like that to save a position in RTC alarm which is not cleared on reboot
+> > Note that this code uses ax, but I checked every time I put it that ax can be used (eg, it is loaded in next instruction)
+> > 
+> > #define TRACE(val) 			 \
+> > 	movb	$0x01, %al		; \
+> > 	outb	%al, $0x70 		; \
+> > 	movb	$ ## val, %al 		; \
+> > 	outb	%al, $0x71
+> > 
+> > It hangs very early in asm code, and those are places:
+> > 
+> > 1) /home/maxim/software/kernel/linux-2.6.20-mod/arch/i386/kernel/acpi/wakeup.S:wakeup_start:
+> > 	ljmpl	$__KERNEL_CS,$wakeup_pmode_return
+> > As I see that is first time wakeup low page is addressing kernel memory by jumping to it.
+> > 
+> > 2)  /home/maxim/software/kernel/linux-2.6.20-mod/arch/i386/kernel/acpi/wakeup.S:do_suspend_lowlevel
+> > 	call	restore_registers 
+> > It hangs exacly on that instruction, I can only see that this is first time protected stack is accessed
+> > 
+> > 3) /home/maxim/software/kernel/linux-2.6.20-mod/arch/i386/power/cpu.c :__restore_processor_state(struct saved_context *ctxt)
+> > 	mtrr_ap_init();
+> > 
+> > It hangs somewhere inside this function, and because is is long I haven't found where exactly, it is easier to disable MTRR all together.
+> > 
+> > Note that all three places have different external behavier:
+> > 
+> > in first case, system powers on -> off -> on -> hangs
+> > I did put test in RTC to see whenever BIOS call kernel twice but I know from this test for sure that it calls it only once,
+> > It actualy makes sense, because exception occures before IDT is loaded, so system has no choice but to power down
+> > 
+> > in second case I see blinking leds -> almost sure a oops
+> > 
+> > in third case system just hangs
+> > 
+> > That's all, I will continue to dig those problems out
+> > 
+> > Thanks for attention,
+> > 	Maxim Levitsky
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> 
 
-Here you are:
-f78666c0 1992239699 C Ii:001:01 -2 0
-f74d7b40 1996231756 S Ci:001:00 s 80 00 0000 0000 0002 2 <
-f74d7b40 1996231762 C Ci:001:00 0 2 = 0300
-f78666c0 1996271682 S Ii:001:01 -115 2 <
-f74d7b40 1996271689 S Ci:001:00 s a3 00 0000 0001 0004 4 <
-f74d7b40 1996271694 C Ci:001:00 0 4 = 00010000
-f74d7b40 1996271698 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f74d7b40 1996271708 C Ci:001:00 0 4 = 01010100
-f74d7b40 1996271710 S Co:001:00 s 23 01 0010 0002 0000 0
-f74d7b40 1996271713 C Co:001:00 0 0
-f74d7b40 1996271719 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f74d7b40 1996271722 C Ci:001:00 0 4 = 01010000
-f74d7b40 1996303687 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f74d7b40 1996303693 C Ci:001:00 0 4 = 01010000
-f74d7b40 1996335682 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f74d7b40 1996335689 C Ci:001:00 0 4 = 01010000
-f74d7b40 1996367681 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f74d7b40 1996367686 C Ci:001:00 0 4 = 01010000
-f74d7b40 1996399686 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f74d7b40 1996399692 C Ci:001:00 0 4 = 01010000
-f74d7b40 1996399709 S Co:001:00 s 23 03 0004 0002 0000 0
-f74d7b40 1996399712 C Co:001:00 0 0
-f74d7b40 1996455682 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f74d7b40 1996455703 C Ci:001:00 0 4 = 03010000
-f74d7b40 1996514453 S Co:001:00 s 23 01 0014 0002 0000 0
-f74d7b40 1996514456 C Co:001:00 0 0
-f74d7b40 1996514468 S Ci:000:00 s 80 06 0100 0000 0040 64 <
-f74d7b40 1996518652 C Ci:000:00 0 8 = 12011001 09000008
-f74d7b40 1996518660 S Co:001:00 s 23 03 0004 0002 0000 0
-f74d7b40 1996518663 C Co:001:00 0 0
-f78666c0 1996527684 C Ii:001:01 0 1 = 04
-f78666c0 1996527687 S Ii:001:01 -115 2 <
-f74d7b40 1996571683 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f74d7b40 1996571702 C Ci:001:00 0 4 = 03010000
-f74d7b40 1996627687 S Co:001:00 s 23 01 0014 0002 0000 0
-f74d7b40 1996627691 C Co:001:00 0 0
-f74d7b40 1996627694 S Co:000:00 s 00 05 0002 0000 0000 0
-f74d7b40 1996630633 C Co:000:00 0 0
-f74d7b40 1996647688 S Ci:002:00 s 80 06 0100 0000 0012 18 <
-f74d7b40 1996653630 C Ci:002:00 0 18 = 12011001 09000008 b4045020 01000102 0001
-f74d7b40 1996653639 S Ci:002:00 s 80 06 0200 0000 0009 9 <
-f74d7b40 1996658627 C Ci:002:00 0 9 = 09021900 010100e0 32
-f74d7b40 1996658634 S Ci:002:00 s 80 06 0200 0000 0019 25 <
-f74d7b40 1996665626 C Ci:002:00 0 25 = 09021900 010100e0 32090400 00010900 
-00000705 81030100 ff
-f74d7b40 1996665640 S Ci:002:00 s 80 06 0300 0000 00ff 255 <
-f74d7b40 1996670625 C Ci:002:00 0 4 = 04030904
-f74d7b40 1996670635 S Ci:002:00 s 80 06 0302 0409 00ff 255 <
-f74d7b40 1996682623 C Ci:002:00 0 62 = 3e034700 42006500 6c006c00 61002000 
-43006f00 72007000 6f007200 61007400
-f74d7b40 1996682631 S Ci:002:00 s 80 06 0301 0409 00ff 255 <
-f74d7b40 1996691621 C Ci:002:00 0 36 = 24034200 65006c00 6c006100 20004300 
-6f007200 70006f00 72006100 74006900
-f74d7b40 1996691781 S Co:002:00 s 00 09 0001 0000 0000 0
-f74d7b40 1996694627 C Co:002:00 0 0
-f74d7b40 1996694717 S Ci:002:00 s a0 06 2900 0000 000f 15 <
-f74d7b40 1996697629 C Ci:002:00 0 9 = 0929030d 00321902 ff
-f74d7b40 1996697664 S Ci:002:00 s 80 00 0000 0000 0002 2 <
-f74d7b40 1996698633 C Ci:002:00 0 2 = 0000
-f74d7b40 1996698663 S Ci:002:00 s a0 00 0000 0000 0004 4 <
-f74d7b40 1996699629 C Ci:002:00 0 4 = 00000000
-f7ab7d40 1996699658 S Co:002:00 s 23 03 0008 0001 0000 0
-f7ab7d40 1996700627 C Co:002:00 0 0
-f7ab7d40 1996700645 S Co:002:00 s 23 03 0008 0002 0000 0
-f7ab7d40 1996701629 C Co:002:00 0 0
-f7ab7d40 1996701644 S Co:002:00 s 23 03 0008 0003 0000 0
-f7ab7d40 1996702624 C Co:002:00 0 0
-f74d7b40 1996806484 S Ii:002:01 -115 1 <
-f75d02c0 1996806621 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-f75d02c0 1996806626 C Ci:001:00 0 4 = 03010000
-f75d02c0 1996806634 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d02c0 1996808610 C Ci:002:00 0 4 = 01010100
-f75d02c0 1996808628 S Co:002:00 s 23 01 0010 0001 0000 0
-f75d02c0 1996809607 C Co:002:00 0 0
-f75d02c0 1996809628 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d02c0 1996810605 C Ci:002:00 0 4 = 01010000
-f75d02c0 1996842478 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d02c0 1996843599 C Ci:002:00 0 4 = 01010000
-f75d02c0 1996871682 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d02c0 1996873590 C Ci:002:00 0 4 = 01010000
-f75d02c0 1996903686 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d02c0 1996905586 C Ci:002:00 0 4 = 01010000
-f75d02c0 1996938484 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d02c0 1996939582 C Ci:002:00 0 4 = 01010000
-f75d02c0 1996939601 S Co:002:00 s 23 03 0004 0001 0000 0
-f75d02c0 1996940581 C Co:002:00 0 0
-f75d02c0 1996955681 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d02c0 1996957576 C Ci:002:00 0 4 = 03011000
-f74d7b40 1997003567 C Ii:002:01 0 1 = 02
-f74d7b40 1997003570 S Ii:002:01 -115 1 <
-f75d02c0 1997011687 S Co:002:00 s 23 01 0014 0001 0000 0
-f75d02c0 1997013566 C Co:002:00 0 0
-f75d02c0 1997013579 S Ci:000:00 s 80 06 0100 0000 0040 64 <
-f75d02c0 1997018565 C Ci:000:00 0 8 = 12011001 00000008
-f75d02c0 1997018572 S Co:002:00 s 23 03 0004 0001 0000 0
-f75d02c0 1997019565 C Co:002:00 0 0
-f75d02c0 1997034490 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d02c0 1997035562 C Ci:002:00 0 4 = 03011000
-f75d02c0 1997087683 S Co:002:00 s 23 01 0014 0001 0000 0
-f75d02c0 1997089554 C Co:002:00 0 0
-f75d02c0 1997089561 S Co:000:00 s 00 05 0003 0000 0000 0
-f75d02c0 1997092552 C Co:000:00 0 0
-f75d02c0 1997107692 S Ci:003:00 s 80 06 0100 0000 0012 18 <
-f75d02c0 1997113550 C Ci:003:00 0 18 = 12011001 00000008 58044c00 01010102 0001
-f75d02c0 1997113560 S Ci:003:00 s 80 06 0200 0000 0009 9 <
-f75d02c0 1997118547 C Ci:003:00 0 9 = 09023b00 020100e0 19
-f75d02c0 1997118554 S Ci:003:00 s 80 06 0200 0000 003b 59 <
-f75d02c0 1997129547 C Ci:003:00 0 59 = 09023b00 020100e0 19090400 00010301 
-01000921 10010001 22410007 05810308
-f75d02c0 1997129567 S Ci:003:00 s 80 06 0300 0000 00ff 255 <
-f75d02c0 1997134543 C Ci:003:00 0 4 = 04030904
-f75d02c0 1997134553 S Ci:003:00 s 80 06 0302 0409 00ff 255 <
-f75d02c0 1997142542 C Ci:003:00 0 26 = 1a035500 53004200 20004b00 65007900 
-62006f00 61007200 6400
-f75d02c0 1997142549 S Ci:003:00 s 80 06 0301 0409 00ff 255 <
-f75d02c0 1997149542 C Ci:003:00 0 16 = 10034100 42004200 48004f00 4d004500
-f75d02c0 1997149690 S Co:003:00 s 00 09 0001 0000 0000 0
-f75d02c0 1997152547 C Co:003:00 0 0
-d6228840 1997152648 S Co:003:00 s 21 0a 0000 0000 0000 0
-d6228840 1997154552 C Co:003:00 0 0
-d6228840 1997154570 S Ci:003:00 s 81 06 2200 0000 0041 65 <
-d6228840 1997155558 C Ci:003:00 0 65 = 05010906 a1010507 19e029e7 15002501 
-95087501 81029508 75018101 05081901
-f75d02c0 1997156057 S Ii:003:01 -115 8 <
-f75d0540 1997156246 S Co:003:00 s 21 0a 0000 0001 0000 0
-f75d0540 1997156551 C Co:003:00 0 0
-f75d0540 1997156587 S Ci:003:00 s 81 06 2200 0001 0068 104 <
-f75d0540 1997158547 C Ci:003:00 0 104 = 05010902 a1018504 0901a100 05091901 
-29031500 25019503 75018102 95017505
-d62287c0 1997159188 S Ii:003:02 -115 5 <
-f75d0f40 1997159379 S Ci:002:00 s a3 00 0000 0002 0004 4 <
-f75d0f40 1997159547 C Ci:002:00 0 4 = 00010000
-f75d0f40 1997159562 S Ci:002:00 s a3 00 0000 0003 0004 4 <
-f75d0f40 1997160546 C Ci:002:00 0 4 = 00010000
-f75d0f40 1997160572 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-f75d0f40 1997161546 C Ci:002:00 0 4 = 03010000
-f75d02c0 1999351157 C Ii:003:01 0 8 = 00005300 00000000
-f75d02c0 1999351176 S Ii:003:01 -115 8 <
-f7ab7d40 1999351194 S Co:003:00 s 21 09 0200 0000 0001 1 = 01
-f7ab7d40 1999353157 C Co:003:00 0 1 >
+Issues that are caused by those
 
-(Remind: there is a hub inside the keyboard)
+        e3c7db621bed4afb8e231cb005057f2feb5db557 - [PATCH] [PATCH] PM: Change code ordering in main.c (breaks  S3)
+        ed746e3b18f4df18afa3763155972c5835f284c5 - [PATCH] [PATCH] swsusp: Change code ordering in disk.c (breaks swsusp, I don't use it, but I tested it)
+        259130526c267550bc365d3015917d90667732f1 - [PATCH] [PATCH] swsusp: Change code ordering in user.c (breaks uswsusp, that I use)
 
->  static void uhci_free_td(struct uhci_hcd *uhci, struct uhci_td *td)
->  {
-> -	if (!list_empty(&td->list))
-> +	if (!list_empty(&td->list)) {
->  		dev_warn(uhci_dev(uhci), "td %p still in list!\n", td);
-> +		WARN_ON(1);
+doesn't go away, even worse, I tested latest Linus's git tree, and same hang both is suspend to disk and suspend to ram (before suspending)
 
-Nothing new in dmesg.
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+>Mar 14 00:22:23 MAIN kernel: [    2.072875] caller is check_tsc_sync_source+0x1d/0x100
+>Mar 14 00:22:23 MAIN kernel: [    2.072878]  [show_trace_log_lvl+26/48] show_trace_log_lvl+0x1a/0x30
+>Mar 14 00:22:23 MAIN kernel: [    2.072881]  [show_trace+18/32] show_trace+0x12/0x20
+>Mar 14 00:22:23 MAIN kernel: [    2.072884]  [dump_stack+22/32] dump_stack+0x16/0x20
+>Mar 14 00:22:23 MAIN kernel: [    2.072887]  [debug_smp_processor_id+173/176] debug_smp_processor_id+0xad/0x
+
+
+^ This thing is fixed (sorry for bothering you)
+
+
+>Mar 14 00:22:23 MAIN kernel: [    2.072931] checking TSC synchronization [CPU#0 -> CPU#1]:
+>Mar 14 00:22:23 MAIN kernel: [    2.092922] Measured 72051818872 cycles TSC warp between CPUs, turning off
+
+^ This one I don't think is related to NO_HZ, maybe it is hardware problem, but it exist without NO_HZ
+
+
+>[   36.217405] ENABLING IO-APIC IRQs
+>[   36.217587] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+>[   36.433917] APIC timer disabled due to verification failure.
+
+This one is now discussed, I will look at it and it is not related to NO_HZ
+
+And hangs with S3 as I said occur even in 2.6.20
+
+
+And I forgot to tell about another problem with (now I know ,hi-resolution timers)
+That before suspend to ram APIC timer is used and HPET is not used :
+
+root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered
+lapic                F:0007 M:3(periodic) C: 1
+hpet                 F:0003 M:1(shutdown) C: 0
+lapic                F:0007 M:3(periodic) C: 0
+root@MAIN:/home/maxim#   
+
+
+But after suspend to ram HPET is 'woken'
+
+root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered
+lapic                F:0007 M:3(one shoot) C: 1
+hpet                 F:0003 M:3(one shoot) C: 0
+lapic                F:0007 M:3(one shoot) C: 0
+
+Note that I added those (one shoot), (periodic) descriptions, would be nice to have them in kernel, can I send a patch ?  ;-)
+
+and I see average of 18 IRQs/sec on IRQ 0
+
+
+Best regards,
+	Maxim Levitsky
+
