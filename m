@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751123AbXCQG0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750945AbXCQGg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751123AbXCQG0N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 02:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXCQG0M
+	id S1750945AbXCQGg6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 02:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbXCQGg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 02:26:12 -0400
-Received: from rwcrmhc11.comcast.net ([204.127.192.81]:53390 "EHLO
-	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbXCQG0L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 02:26:11 -0400
-Subject: Re: RSDL v0.31
-From: Nicholas Miell <nmiell@comcast.net>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <1174110965.7911.44.camel@Homer.simpson.net>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703170040.48316.kernel@kolivas.org>
-	 <1174059299.7886.25.camel@Homer.simpson.net>
-	 <200703170813.32594.kernel@kolivas.org>
-	 <1174084207.7009.9.camel@Homer.simpson.net>
-	 <1174105443.3144.4.camel@entropy>
-	 <1174110965.7911.44.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Fri, 16 Mar 2007 23:26:08 -0700
-Message-Id: <1174112768.3144.8.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.0.njm.1) 
+	Sat, 17 Mar 2007 02:36:58 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57617 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750945AbXCQGg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 02:36:57 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Andrew Morton <akpm@linux-foundation.org>, zippel@linux-m68k.org
+Subject: [patch] dont use obsolete index() function in lxdialog
+Date: Sat, 17 Mar 2007 02:37:07 -0400
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703170237.07934.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-17 at 06:56 +0100, Mike Galbraith wrote:
-> On Fri, 2007-03-16 at 21:24 -0700, Nicholas Miell wrote:
-> 
-> > Sorry, I haven't really been following this thread and now I'm confused.
-> > 
-> > You're saying that it's somehow the scheduler's fault that X isn't
-> > running with a high enough priority?
-> 
-> I'm saying that the current scheduler adjusts for interactive loads,
-> this new one doesn't.  I'm seeing interactivity regressions, and they
-> are not fixed with nice unless nice is used to maximum effect.  I'm
-> saying yes, I can lower my expectations, but no I don't want to.
-> 
-> A four line summary is as short as I can make it.
-> 
-> 	-Mike
+The index() function is obsolete, use strchr() instead.
 
-Uh, no. Essentially, the current scheduler works around X's brokenness,
-in an often unpredictable manner.
-
-RSDL appears to be completely deterministic, which is a very strong
-virtue.
-
-The X people have plans for how to go about fixing this, but until then,
-there's no reason to hold up kernel development.
-
--- 
-Nicholas Miell <nmiell@comcast.net>
-
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+--- a/scripts/kconfig/lxdialog/util.c
++++ b/scripts/kconfig/lxdialog/util.c
+@@ -336,7 +336,7 @@
+ 		newl = 1;
+ 		word = tempstr;
+ 		while (word && *word) {
+-			sp = index(word, ' ');
++			sp = strchr(word, ' ');
+ 			if (sp)
+ 				*sp++ = 0;
+ 
+@@ -348,7 +348,7 @@
+ 			if (wlen > room ||
+ 			    (newl && wlen < 4 && sp
+ 			     && wlen + 1 + strlen(sp) > room
+-			     && (!(sp2 = index(sp, ' '))
++			     && (!(sp2 = strchr(sp, ' '))
+ 				 || wlen + 1 + (sp2 - sp) > room))) {
+ 				cur_y++;
+ 				cur_x = x;
