@@ -1,70 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbXCQPUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXCQPkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750893AbXCQPUz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 11:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXCQPUz
+	id S1750719AbXCQPkJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 11:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXCQPkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 11:20:55 -0400
-Received: from mail.screens.ru ([213.234.233.54]:33005 "EHLO mail.screens.ru"
+	Sat, 17 Mar 2007 11:40:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35465 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbXCQPUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 11:20:54 -0400
-Date: Sat, 17 Mar 2007 18:24:37 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
+	id S1750719AbXCQPkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 11:40:07 -0400
+Date: Sat, 17 Mar 2007 16:39:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rik van Riel <riel@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Al Boldi <a1426z@gawab.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
-Message-ID: <20070317152437.GA365@tv-sign.ru>
-References: <20070316170255.GA194@tv-sign.ru> <m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com> <20070317130216.GA78@tv-sign.ru> <m1k5xgklun.fsf@ebiederm.dsl.xmission.com> <20070317150949.GA302@tv-sign.ru>
+Subject: Re: RSDL v0.31
+Message-ID: <20070317153908.GA26036@elte.hu>
+References: <200703042335.26785.a1426z@gawab.com> <200703170040.48316.kernel@kolivas.org> <1174059299.7886.25.camel@Homer.simpson.net> <200703170813.32594.kernel@kolivas.org> <1174084207.7009.9.camel@Homer.simpson.net> <45FBFC18.8060700@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="45Z9DzgjV8m4Oswq"
 Content-Disposition: inline
-In-Reply-To: <20070317150949.GA302@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <45FBFC18.8060700@redhat.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/17, Oleg Nesterov wrote:
->
-> > Well the initial kernel process does not have a struct pid so when
-> > it's children start doing:
-> > 	attach_pid(p, PIDTYPE_PGID, task_group(p));
-> > 	attach_pid(p, PIDTYPE_SID, task_session(p));
-> > We will get an oops.
+
+--45Z9DzgjV8m4Oswq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+
+* Rik van Riel <riel@redhat.com> wrote:
+
+> The increased AIM7 throughput (and the other benchmark results) looked 
+> very promising to me.
 > 
-> So far this is the only reason to have init_struct_pid. Because the
-> boot CPU (swapper) forks, right?
+> I wonder what we're doing wrong in the normal scheduler...
 
-Damn. I am afraid I was not clear again :) Not init_struct_pid, but
+there's a relatively easy way to figure out whether it's related to the 
+interactivity code: try AIM7 with SCHED_BATCH as well, to take most of 
+the 'interactivity effects' out of the picture.
 
-	+       .pids = {                                                       \
-	+               [PIDTYPE_PID]  = INIT_PID_LINK(PIDTYPE_PID),            \
-	+               [PIDTYPE_PGID] = INIT_PID_LINK(PIDTYPE_PGID),           \
-	+               [PIDTYPE_SID]  = INIT_PID_LINK(PIDTYPE_SID),            \
-	+       },                                                              \
+build the attached setbatch.c code and do "./setbatch $$" to change the 
+shell to SCHED_BATCH (and all its future children will be SCHED_BATCH 
+too).
 
-for INIT_TASK().
+	Ingo
 
-> > So a dummy unhashed struct pid was added for the idle threads.
-> > Allowing several special cases in the code to be removed.
-> > 
-> > With that chance the previous special case to force the idle thread
-> > init session 1 pgrp 1 no longer works because attach_pid no longer
-> > looks at the pid value but instead at the struct pid pointers.
-> > 
-> > So we had to add the __set_special_pids() to continue to keep init
-> > in session 1 pgrp 1.  Since /sbin/init calls setsid() that our setting
-> > the sid and the pgrp may not be strictly necessary.  Still is better
-> > to not take any chances.
-> 
-> Yes, yes, I see. But my (very unclear, sorry) question was: shouldn't we
-> change INIT_SIGNALS then? /sbin/init inherits ->pgrp == ->_session == 1,
-> in that case __set_special_pids(1,1) does nothing.
+--45Z9DzgjV8m4Oswq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="setbatch.c"
 
-... and thus /sbin/init remains attached to the .pids above, no?
 
-Oleg.
+/*
+ * Set a given PID to be a SCHED_BATCH process.
+ * 
+ * Copyright (C) 2002 Ingo Molnar
+ */
+#include <time.h>
+#include <stdio.h>
+#include <sched.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <linux/unistd.h>
 
+int main (int argc, char **argv)
+{
+	int pid, ret;
+	struct sched_param p;
+
+	p.sched_priority = 0;
+
+	if (argc != 2) {
+		printf("usage: setbatch <pid>\n");
+		exit(-1);
+	}
+	pid = atol(argv[1]);
+
+	ret = sched_setscheduler(pid, 3, &p);
+
+	if (ret) {
+		printf("could not set pid %d to SCHED_BATCH: err %d.\n", pid, ret);
+		return -1;
+	}
+	printf("pid %d is SCHED_BATCH from now on.\n", pid);
+	return 0;
+}
+
+--45Z9DzgjV8m4Oswq--
