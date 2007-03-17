@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933593AbXCQCAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbXCQC3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933593AbXCQCAL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 22:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbXCQCAK
+	id S1753570AbXCQC3S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 22:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbXCQC3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 22:00:10 -0400
-Received: from wilma.widomaker.com ([204.17.220.5]:2330 "EHLO
-	wilma.widomaker.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933593AbXCQCAJ (ORCPT
+	Fri, 16 Mar 2007 22:29:18 -0400
+Received: from mail26.syd.optusnet.com.au ([211.29.133.167]:57772 "EHLO
+	mail26.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753563AbXCQC3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 22:00:09 -0400
-Date: Fri, 16 Mar 2007 22:00:06 -0400
-From: Charles Shannon Hendrix <shannon@widomaker.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: SATA problems in 2.6.20.3
-Message-ID: <20070316220006.52288001@daydream.goid.lan>
-In-Reply-To: <45FB2BD9.2070803@shaw.ca>
-References: <fa.lqWgqhKIlhgG3TXcvhBc/T7bPFE@ifi.uio.no>
-	<45FB2BD9.2070803@shaw.ca>
-Organization: Big Endian
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-slackware-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 Mar 2007 22:29:17 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: RSDL v0.31
+Date: Sat, 17 Mar 2007 13:51:47 +1100
+User-Agent: KMail/1.9.5
+Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703170040.48316.kernel@kolivas.org> <200703170055.30747.a1426z@gawab.com>
+In-Reply-To: <200703170055.30747.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703171351.47399.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007 17:44:25 -0600
-Robert Hancock <hancockr@shaw.ca> wrote:
+On Saturday 17 March 2007 08:55, Al Boldi wrote:
+> Con Kolivas wrote:
+> > Here are full patches for rsdl 0.31 for various base kernels. A full
+> > announce with a fresh -mm series will follow...
+> >
+> > http://ck.kolivas.org/patches/staircase-deadline/2.6.20.3-rsdl-0.31.patch
+>
+> Thanks!  It looks much better now.
 
-> Charles Shannon Hendrix wrote:
-> > I normally run a modified 2.6.19 kernel and it works great.
-> > 
-> > I recently tried 2.6.20 and had severe SATA problems with it.
-> > 
-> > Yesterday I tried 2.6.20.3, and the problems are still there.
-> 
-> Can you try 2.6.21-rc and see if the problem is fixed in those kernels?
+Thank you. You should find most of your latency concerns you brought up have 
+been addressed by this change.
 
-OK.
+> With X nice'd at -10, and 11 hogs loading the cpu, interactivity looks good
+> until the default timeslice/quota is exhausted and slows down.  Maybe
+> adjusting this according to nice could help.
 
-sata_nv.adma=0 let's me run 2.6.20.3 for now.
+Not sure what you mean by that. It's still a fair distribution system, it's 
+just that nice -10 has quite a bit more cpu allocated than nice 0. Eventually 
+if you throw enough load at it it will slow down too.
 
-I'll test 2.6.21-rc<whatever> tomorrow some time.
+> It may also be advisable to fix latencies according to nice, and adjust
+> timeslices instead.  This may help scaleability a lot, as there are some
+> timing sensitive apps that may crash under high load.
 
+You will find that is the case already with this version. Even under heavy 
+load if you were to be running one server niced (say httpd nice 19 in the 
+presence of mysql nice 0) the latencies would be drastically reduced compared 
+to mainline behaviour. I am aware this becomes an issue for some heavily 
+loaded servers because some servers run multithreaded while others do not, 
+forcing the admins to nice their multithreaded ones. 
 
-
+> Thanks!
+>
+> --
+> Al
 
 -- 
-shannon           | Work for something because it is good, not just because 
-                  | it stands a chance to succeed. 
-                  |        -- Vaclav Havel
+-ck
