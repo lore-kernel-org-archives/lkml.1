@@ -1,120 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbXCQRWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbXCQRcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbXCQRWL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 13:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbXCQRWL
+	id S1752685AbXCQRcS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 13:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXCQRcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 13:22:11 -0400
-Received: from smtpout06-04.prod.mesa1.secureserver.net ([64.202.165.227]:58102
-	"HELO smtpout06.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1752550AbXCQRWK (ORCPT
+	Sat, 17 Mar 2007 13:32:18 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3956 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752685AbXCQRcR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 13:22:10 -0400
-Message-ID: <45FC23C0.5070903@seclark.us>
-Date: Sat, 17 Mar 2007 13:22:08 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Sat, 17 Mar 2007 13:32:17 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: [ck] Re: is RSDL an "unfair" scheduler too?
+Date: Sat, 17 Mar 2007 10:31:43 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKIEFPCFAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Mark Hahn <hahn@mcmaster.ca>
-CC: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: RSDL v0.31
-References: <200703042335.26785.a1426z@gawab.com> <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <Pine.LNX.4.64.0703171105270.16125@coffee.psychology.mcmaster.ca>
-In-Reply-To: <Pine.LNX.4.64.0703171105270.16125@coffee.psychology.mcmaster.ca>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+In-reply-to: <200703171323.44517.jos@mijnkamer.nl>
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sat, 17 Mar 2007 09:31:59 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sat, 17 Mar 2007 09:32:01 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Hahn wrote:
 
->>So in an attempt to summarise the situation, what are the advantages of RSDL
->>over mainline.
->>
->>Fairness
->>    
->>
->
->why do you think fairness is good, especially always good?
->
->  
->
->>Starvation free
->>    
->>
->
->even starvation is sometimes a good thing - there's a place for processes
->that only use the CPU if it is otherwise idle.  that is, they are
->deliberately starved all the rest of the time.
->
->  
->
->>Much lower and bound latencies
->>    
->>
->
->in an average sense?  also, under what circumstances does this actually
->matter?  (please don't offer something like RT audio on an overloaded machine-
->that's operator error, not something to design for.)
->
->  
->
->>Deterministic
->>    
->>
->
->not a bad thing, but how does this make itself apparent and of value 
->to the user?  I think everyone is extremely comfortable with non-determinism
->(stemming from networks, caches, interleaved workloads, etc)
->
->  
->
->>Better interactivity for the majority of cases.
->>    
->>
->
->how is this measured?  is this statement really just a reiteration of 
->the latency claim?
->
->  
->
->>Now concentrating on the very last aspect since that seems to be the sticking
->>point.
->>    
->>
->
->nah, I think the fairness and latency claims are the real issues.
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->  
->
-I guess I wonder what is wrong with the current scheduler? I am running 
-2.6.20.2 on a whitebook
-laptop with a core 2 duo 1.86ghz 2gb of mem with an intel 945 shared 
-memory graphics processor.
-I am currently running X with beryl have vncserver connected to my main 
-system, which I am
-using to write this email, I am running also firefox and both of ingo 
-test programs. I also am running
-a make -j4 on a kernel rebuild without having any pauses or any problem 
-doing anything interactively.
 
-So again what does this new scheduler fix?
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org
+> [mailto:linux-kernel-owner@vger.kernel.org]On Behalf Of jos poortvliet
+> Sent: Saturday, March 17, 2007 5:24 AM
+> To: ck@vds.kolivas.org
+> Cc: Con Kolivas; Ingo Molnar; Al Boldi; Mike Galbraith;
+> linux-kernel@vger.kernel.org; Nicholas Miell; Linus Torvalds; Andrew
+> Morton
+> Subject: Re: [ck] Re: is RSDL an "unfair" scheduler too?
+>
+>
+> Op Saturday 17 March 2007, schreef Con Kolivas:
+> > On Saturday 17 March 2007 22:49, Ingo Molnar wrote:
+> > > * Con Kolivas <kernel@kolivas.org> wrote:
+> > > > Despite the claims to the contrary, RSDL does not have _less_
+> > > > heuristics, it does not have _any_. It's purely entitlement based.
+> > >
+> > > RSDL still has heuristics very much, but this time it's hardcoded into
+> > > the design! Let me demonstrate this via a simple experiment.
+> > >
+> > > in the vanilla scheduler, the heuristics are ontop of a fairly basic
+> > > (and fast) scheduler, they are plain visible and thus 'optional'. In
+> > > RSDL, the heuristics are still present but more hidden and more
+> > > engrained into the design.
+> > >
+> > > But it's easy to demonstrate this under RSDL: consider the
+> following two
+> > > scenarios, which implement precisely the same fundamental computing
+> > > workload (everything running on the same, default nice 0 level):
+> > >
+> > > 1) a single task runs almost all the time and sleeps about 1
+> msec every
+> > >    100 msecs.
+> > >
+> > >    [ run "while N=1; do N=1; done &" under bash to create such a
+> > >      workload. ]
+> > >
+> > > 2) tasks are in a 'ring' where each runs for 100 msec, sleeps for 1
+> > >    msec and passes the 'token' around to the next task in the
+> ring. (in
+> > >    essence every task will sleep 9900 msecs before getting
+> another run)
+> > >
+> > >    [ run http://redhat.com/~mingo/scheduler-patches/ring-test.c to
+> > >      create this workload. If the 100 tasks default is too
+> much for you
+> > >      then you can run "./ring-test 10" - that will show
+> similar effects.
+> > >    ]
 
-Steve
+> Well, re-reading his post, he has a point - one WOULD expect each
+> of these 2
+> tasks to have an equal share of CPU, and if RSDL doesn't
+> currently take this
+> pipe-thing into account, it might need some fixing. call it
+> heuristics or not
+> (after all, how could one NOT say a scheduler uses heuristics of
+> some kind?).
 
--- 
+I can't get myself to expect that no matter how hard I try. The scheduler
+is, by design, fair to *tasks*. So why would one expect two different
+approaches that do the same thing, but with different numbers of tasks, to
+each get the same amount of CPU if they compete with each other? One would
+expect the approach that uses the most tasks to get more CPU.
 
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
-
+DS
 
 
