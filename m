@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751156AbXCQQKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751259AbXCQQKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751156AbXCQQKR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 12:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXCQQKR
+	id S1751259AbXCQQKt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 12:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbXCQQKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 12:10:17 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39533 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751156AbXCQQKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 12:10:16 -0400
-Message-ID: <45FC12E4.6010204@garzik.org>
-Date: Sat, 17 Mar 2007 12:10:12 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 17 Mar 2007 12:10:49 -0400
+Received: from [212.12.190.46] ([212.12.190.46]:32853 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751222AbXCQQKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 12:10:48 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Con Kolivas <kernel@kolivas.org>
+Subject: Re: RSDL v0.31
+Date: Sat, 17 Mar 2007 19:12:43 +0300
+User-Agent: KMail/1.5
+Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703170740.07530.a1426z@gawab.com> <200703171557.53700.kernel@kolivas.org>
+In-Reply-To: <200703171557.53700.kernel@kolivas.org>
 MIME-Version: 1.0
-To: Komuro <komurojun-mbn@nifty.com>
-CC: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [BUG]  PATA_PCMCIA  cmd port
-References: <20061217212752.d93816b4.komurojun-mbn@nifty.com>	<20061217040222.GD17561@ftp.linux.org.uk>	<20070211101537.e40fa309.komurojun-mbn@nifty.com> <20070317220050.380d9f51.komurojun-mbn@nifty.com>
-In-Reply-To: <20070317220050.380d9f51.komurojun-mbn@nifty.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Message-Id: <200703171912.43776.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Komuro wrote:
-> The pata_pcmcia driver reports the cmd port is 0x00010100,
-> but actually the cmd port is 0x0100.
-> 
-> Is this corect?
-> 
->> ata1: PATA max PIO0 cmd 0x00010100 ctl 0x0001010e bmdma 0x00000000 irq 3
->                                ^^^^^^^^^^^^^      ^^^^^^^^^^^^^
+Con Kolivas wrote:
+> DEF_TIMESLICE is a value used for smp balancing and has no effect on quota
+> so I doubt you mean that value. The quota you're describing of not
+> resetting is something like the sleep average idea of current systems
+> where you accumulate bonus points by sleeping when you would be running
+> and redeem them later. This is exactly the system I'm avoiding using in
+> rsdl as you'd have to decide just how much sleep time it could accumulate,
+> and over how long it would run out, and so on. ie that's the interactivity
+> estimator. This is the system that destroys any guarantee of cpu
+> percentage, and ends up leading to periods of relative starvation, is open
+> to tuning that can either be too short or too long depending on the values
+> you chose and so on.
 
-It's printing out the post-iomap numbers.  Just a cosmetic problem. 
-Patches welcome though :)
+Ok, but I can clearly see an expiration happening for sleeping tasks, like X.  
+It looks like it's climbing a ladder halfway, then it sleeps, and when it 
+wakes up, it continues to complete the ladder to expiration.  Couldn't this 
+sleep be taken into account, and reset the ladder position accordingly?
 
-	Jeff
+> > The thing is, latencies are currently dependent on the number of tasks
+> > in the run-queue; i.e. more rq-tasks means higher latencies, yet fixed
+> > timeslices according to nice.  Just switching this the other way around,
+> > by fixing latencies according to nice, and adjusting the timeslices
+> > depending on rq-load, may yield a much more scalable system.
+>
+> That is not really feasible to implement. How can you guarantee latencies
+> when the system is overloaded? If you have 1000 tasks all trying to get
+> scheduled in say 10ms you end up running for only 10 microseconds at a
+> time. That will achieve the exact opposite whereby as the load increases
+> the runtime gets shorter and shorter till cpu cache trashing and no real
+> work occurs.
 
+Most of the time we only run a small number of tasks.  And for the case of 
+1000's of tasks, you could put in some lower threshold, that would trigger 
+an increase of latency, if the timeslice became ridiculously small.
+
+
+Thanks!
+
+--
+Al
 
