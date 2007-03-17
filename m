@@ -1,46 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965539AbXCQNte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965549AbXCQNum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965539AbXCQNte (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 09:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965548AbXCQNte
+	id S965549AbXCQNum (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 09:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965540AbXCQNum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 09:49:34 -0400
-Received: from sd-green-bigip-145.dreamhost.com ([208.97.132.145]:42040 "EHLO
-	swarthymail-a2.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965539AbXCQNtd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 09:49:33 -0400
-Date: Sat, 17 Mar 2007 10:49:28 -0300
-From: John Coppens <john@jcoppens.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Conflict between ide and usb?
-Message-Id: <20070317104928.db4185f3.john@jcoppens.com>
-In-Reply-To: <20070316203415.GK22466@csclub.uwaterloo.ca>
-References: <20070316154735.6de11eca.john@jcoppens.com>
-	<75b66ecd0703161252l60dcbd81s3c9beb7cb91b6c14@mail.gmail.com>
-	<20070316171253.2014deaf.john@jcoppens.com>
-	<20070316203415.GK22466@csclub.uwaterloo.ca>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 17 Mar 2007 09:50:42 -0400
+Received: from aeimail.aei.ca ([206.123.6.84]:51788 "EHLO aeimail.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965549AbXCQNul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 09:50:41 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: Con Kolivas <kernel@kolivas.org>
+Subject: Re: RSDL v0.31
+Date: Sat, 17 Mar 2007 09:50:22 -0400
+User-Agent: KMail/1.9.5
+Cc: Al Boldi <a1426z@gawab.com>, ck@vds.kolivas.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703170740.07530.a1426z@gawab.com> <200703171557.53700.kernel@kolivas.org>
+In-Reply-To: <200703171557.53700.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703170950.23256.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007 16:34:15 -0400
-lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+On Saturday 17 March 2007 00:57, Con Kolivas wrote:
+> On Saturday 17 March 2007 15:40, Al Boldi wrote:
+> > Con Kolivas wrote:
+> > > On Saturday 17 March 2007 08:55, Al Boldi wrote:
+> > > > With X nice'd at -10, and 11 hogs loading the cpu, interactivity looks
+> > > > good until the default timeslice/quota is exhausted and slows down.
+> > > > Maybe adjusting this according to nice could help.
+> > >
+> > > Not sure what you mean by that. It's still a fair distribution system,
+> > > it's just that nice -10 has quite a bit more cpu allocated than nice 0.
+> > > Eventually if you throw enough load at it it will slow down too.
+> >
+> > I mean #DEF_TIMESLICE seems like an initial quota, which gets reset with
+> > each major rotation.  Increasing this according to nice may give it more
+> > room for an interactivity boost, before being expired.  Alternatively, you
+> > may just reset the rotation, if the task didn't use it's quota within one
+> > full major rotation, effectively skipping the expiry toll.
+> 
+> DEF_TIMESLICE is a value used for smp balancing and has no effect on quota so 
+> I doubt you mean that value. The quota you're describing of not resetting is 
+> something like the sleep average idea of current systems where you accumulate 
+> bonus points by sleeping when you would be running and redeem them later. 
+> This is exactly the system I'm avoiding using in rsdl as you'd have to decide 
+> just how much sleep time it could accumulate, and over how long it would run 
+> out, and so on. ie that's the interactivity estimator. This is the system 
+> that destroys any guarantee of cpu percentage, and ends up leading to periods 
+> of relative starvation, is open to tuning that can either be too short or too 
+> long depending on the values you chose and so on.
+> 
+> > > > It may also be advisable to fix latencies according to nice, and adjust
+> > > > timeslices instead.  This may help scaleability a lot, as there are
+> > > > some timing sensitive apps that may crash under high load.
+> > >
+> > > You will find that is the case already with this version. Even under
+> > > heavy load if you were to be running one server niced (say httpd nice 19
+> > > in the presence of mysql nice 0) the latencies would be drastically
+> > > reduced compared to mainline behaviour. I am aware this becomes an issue
+> > > for some heavily loaded servers because some servers run multithreaded
+> > > while others do not, forcing the admins to nice their multithreaded ones.
+> >
+> > The thing is, latencies are currently dependent on the number of tasks in
+> > the run-queue; i.e. more rq-tasks means higher latencies, yet fixed
+> > timeslices according to nice.  Just switching this the other way around, by
+> > fixing latencies according to nice, and adjusting the timeslices depending
+> > on rq-load, may yield a much more scalable system.
+> 
+> That is not really feasible to implement. How can you guarantee latencies when 
+> the system is overloaded? If you have 1000 tasks all trying to get scheduled 
+> in say 10ms you end up running for only 10 microseconds at a time. That will 
+> achieve the exact opposite whereby as the load increases the runtime gets 
+> shorter and shorter till cpu cache trashing and no real work occurs.
 
-> I also have noticed that many fast
-> (16x) DVD writers must have an 80 wire cable or they won't work
-> correctly and do nasty things to the system.
+Con
 
-That was the problem! This is the first machine I bought assembled, 
-and I hadn't noticed that the CD/DVD cables were the old 40 wire
-cables. I do hope this is the last of the problems.
+Think that Al may have a point.  Yes there are cases where it not work well.  How about
+reversing the idea?  Set the initial timeslice so it will give good latency with a fairly high 
+load.  Increase the timeslice when the load is lower than the load we attempt to guarantee
+good latency for.  Idea being to reduce the number of context switches while retaining a
+fixed latency.
 
-Thanks guys! Changed the cable, and speed went up from 3.3 to 19MB/s
-(probably limited by the older harddrive too)... Thas was spectacular!
-Of course, now DMA didn't switch off either.
-
-Cheers,
-John
+Ed Tomlinson
