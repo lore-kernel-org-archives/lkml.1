@@ -1,54 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbXCQRTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbXCQRWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbXCQRTf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 13:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXCQRTf
+	id S1752550AbXCQRWL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 13:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbXCQRWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 13:19:35 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54005 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752540AbXCQRTe convert rfc822-to-8bit (ORCPT
+	Sat, 17 Mar 2007 13:22:11 -0400
+Received: from smtpout06-04.prod.mesa1.secureserver.net ([64.202.165.227]:58102
+	"HELO smtpout06.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1752550AbXCQRWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 13:19:34 -0400
-To: =?iso-8859-2?q?Tomasz_Noi=F1ski?= <noix@sphere.pl>
-Cc: linux-kernel@vger.kernel.org, timm@kip.uni-heidelberg.de,
-       arne.wiebalck@kip.uni-heidelberg.de
-Subject: Re: more precise CPU time accounting for x86
-References: <20070317164722.1fed2b27.noix@sphere.pl>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 17 Mar 2007 19:18:38 +0100
-In-Reply-To: <20070317164722.1fed2b27.noix@sphere.pl>
-Message-ID: <p73bqir7myp.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Sat, 17 Mar 2007 13:22:10 -0400
+Message-ID: <45FC23C0.5070903@seclark.us>
+Date: Sat, 17 Mar 2007 13:22:08 -0400
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8BIT
+To: Mark Hahn <hahn@mcmaster.ca>
+CC: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: RSDL v0.31
+References: <200703042335.26785.a1426z@gawab.com> <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <Pine.LNX.4.64.0703171105270.16125@coffee.psychology.mcmaster.ca>
+In-Reply-To: <Pine.LNX.4.64.0703171105270.16125@coffee.psychology.mcmaster.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomasz Noiñski <noix@sphere.pl> writes:
+Mark Hahn wrote:
 
-> Hi,
-> 
-> I've written a small patch for more precise process CPU time accounting
-> for processors with TSC.
-> 
-> Currently, accounting is sample-based and it can be fooled by, for
-> example, a process that always gives away the rest of it's timeslice.
+>>So in an attempt to summarise the situation, what are the advantages of RSDL
+>>over mainline.
+>>
+>>Fairness
+>>    
+>>
+>
+>why do you think fairness is good, especially always good?
+>
+>  
+>
+>>Starvation free
+>>    
+>>
+>
+>even starvation is sometimes a good thing - there's a place for processes
+>that only use the CPU if it is otherwise idle.  that is, they are
+>deliberately starved all the rest of the time.
+>
+>  
+>
+>>Much lower and bound latencies
+>>    
+>>
+>
+>in an average sense?  also, under what circumstances does this actually
+>matter?  (please don't offer something like RT audio on an overloaded machine-
+>that's operator error, not something to design for.)
+>
+>  
+>
+>>Deterministic
+>>    
+>>
+>
+>not a bad thing, but how does this make itself apparent and of value 
+>to the user?  I think everyone is extremely comfortable with non-determinism
+>(stemming from networks, caches, interleaved workloads, etc)
+>
+>  
+>
+>>Better interactivity for the majority of cases.
+>>    
+>>
+>
+>how is this measured?  is this statement really just a reiteration of 
+>the latency claim?
+>
+>  
+>
+>>Now concentrating on the very last aspect since that seems to be the sticking
+>>point.
+>>    
+>>
+>
+>nah, I think the fairness and latency claims are the real issues.
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
+>  
+>
+I guess I wonder what is wrong with the current scheduler? I am running 
+2.6.20.2 on a whitebook
+laptop with a core 2 duo 1.86ghz 2gb of mem with an intel 945 shared 
+memory graphics processor.
+I am currently running X with beryl have vncserver connected to my main 
+system, which I am
+using to write this email, I am running also firefox and both of ingo 
+test programs. I also am running
+a make -j4 on a kernel rebuild without having any pauses or any problem 
+doing anything interactively.
 
-RDTSC is unfortunately quite slow on some CPUs.
+So again what does this new scheduler fix?
 
-But we already use it in schedule for sched_clock(). I think
-an interesting approach would be to use this information
-and just sum it up in the task_struct. This would still not
-account for interrupts and system time separately, but should
-be relatively cheap and give more accurate time. Drawback would
-be that user tools would need to be updated to read a "sys+user"
-count.
+Steve
 
-BTW perfctrs on most x86 CPUs can count user/kernel separately,
-unfortunately it is hard to find a performance counter that
-matches real time well enough and they couldn't easily
-separate interrupts vs systime belonging to the process.
+-- 
 
--Andi
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
+
+
