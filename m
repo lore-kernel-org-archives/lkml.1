@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932817AbXCQM1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965157AbXCQM3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932817AbXCQM1t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 08:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933691AbXCQM1t
+	id S965157AbXCQM3P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 08:29:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933706AbXCQM3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 08:27:49 -0400
-Received: from ns2.suse.de ([195.135.220.15]:58568 "EHLO mx2.suse.de"
+	Sat, 17 Mar 2007 08:29:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56696 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932817AbXCQM1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 08:27:48 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Len Brown <lenb@kernel.org>, tglx@linutronix.de,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	<1174088686.13341.347.camel@localhost.localdomain>
-	<200703162132.53906.lenb@kernel.org>
-	<1174127539.3538.207.camel@laptopd505.fenrus.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 17 Mar 2007 14:26:57 +0100
-In-Reply-To: <1174127539.3538.207.camel@laptopd505.fenrus.org>
-Message-ID: <p73k5xg6lwe.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
+	id S933691AbXCQM3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 08:29:14 -0400
+Date: Sat, 17 Mar 2007 13:28:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: is RSDL an "unfair" scheduler too?
+Message-ID: <20070317122831.GA28429@elte.hu>
+References: <200703042335.26785.a1426z@gawab.com> <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu> <200703172302.10819.kernel@kolivas.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703172302.10819.kernel@kolivas.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
-> 
-> well we can do the handshake to take ownership like we do much later in
-> boot, but that requires PCI to be there and fully discovered, which we
-> don't have this early.
 
-That's not true - we do early pci discovery. Doing USB handsoff
-there would be quite possible.
+* Con Kolivas <kernel@kolivas.org> wrote:
 
--Andi
+> We're obviously disagreeing on what heuristics are [...]
 
+that could very well be so - it would be helpful if you could provide 
+your own rough definition for the term, so that we can agree on how to 
+call things?
+
+[ in any case, there's no rush here, please reply at your own pace, as
+  your condition allows. I wish you a speedy recovery! ]
+
+> You're simply cashing in on the deep pipes that do kernel work for 
+> other tasks. You know very well that I dropped the TASK_NONINTERACTIVE 
+> flag from rsdl which checks that tasks are waiting on pipes and you're 
+> exploiting it.
+
+Con, i am not 'cashing in' on anything and i'm not 'exploiting' 
+anything. The TASK_NONINTERACTIVE flag is totally irrelevant to my 
+argument because i was not testing the vanilla scheduler, i was testing 
+RSDL. I could have written this test using plain sockets, because i was 
+testing RSDL's claim of not having heuristics, i was not testing the 
+vanilla scheduler.
+
+I have simply replied to this claim of yours:
+
+> > Despite the claims to the contrary, RSDL does not have _less_ 
+> > heuristics, it does not have _any_. [...]
+
+and i showed you a workload under _RSDL_ that clearly shows that RSDL is 
+an unfair scheduler too.
+
+my whole point was to counter the myth of 'RSDL has no heuristics'. Of 
+course it has heuristics, which results in unfairness. (If it didnt have 
+any heuristics that tilt the balance of scheduling towards sleep-intense 
+tasks then a default Linux desktop would not be usable at all.)
+
+so the decision is _not_ a puristic "do we want to have heuristics or 
+not", the question is a more practical "which heuristics are simpler, 
+which heuristics are more flexible, which heuristics result in better 
+behavior".
+
+	Ingo
