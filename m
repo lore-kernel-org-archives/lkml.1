@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965625AbXCQOiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965646AbXCQOim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965625AbXCQOiF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 10:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965639AbXCQOiF
+	id S965646AbXCQOim (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 10:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965647AbXCQOim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 10:38:05 -0400
-Received: from squawk.glines.org ([72.36.206.66]:54230 "EHLO squawk.glines.org"
+	Sat, 17 Mar 2007 10:38:42 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48986 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965636AbXCQOiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 10:38:04 -0400
-X-Greylist: delayed 1731 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 Mar 2007 10:38:04 EDT
-Date: Sat, 17 Mar 2007 07:09:06 -0700
-From: Mark Glines <mark-ck@glines.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: David Lang <david.lang@digitalinsight.com>, Al Boldi <a1426z@gawab.com>,
-       linux-kernel@vger.kernel.org, ck@vds.kolivas.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nicholas Miell <nmiell@comcast.net>
-Subject: Re: [ck] Re: RSDL v0.31
-Message-ID: <20070317070906.1b84318c@chirp>
-In-Reply-To: <1174121187.8647.20.camel@Homer.simpson.net>
-References: <200703042335.26785.a1426z@gawab.com>
-	<200703170040.48316.kernel@kolivas.org>
-	<1174059299.7886.25.camel@Homer.simpson.net>
-	<200703170813.32594.kernel@kolivas.org>
-	<1174084207.7009.9.camel@Homer.simpson.net>
-	<1174105443.3144.4.camel@entropy>
-	<1174110965.7911.44.camel@Homer.simpson.net>
-	<1174112768.3144.8.camel@entropy>
-	<20070317074506.GA13685@elte.hu>
-	<Pine.LNX.4.63.0703162326020.6015@qynat.qvtvafvgr.pbz>
-	<1174121187.8647.20.camel@Homer.simpson.net>
-Organization: Glines.org
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.10.11; i686-pc-linux-gnu)
-X-Useless-Header: yay!
+	id S965646AbXCQOik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 10:38:40 -0400
+Date: Sun, 18 Mar 2007 01:38:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Paul Mackerras <paulus@samba.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
+       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC][PATCH] sys_fallocate() system call
+Message-Id: <20070318013838.d00d420e.sfr@canb.auug.org.au>
+In-Reply-To: <20070317143043.GA8577@osiris.ibm.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com>
+	<20070225022326.137b4875.akpm@linux-foundation.org>
+	<20070301183445.GA7911@amitarora.in.ibm.com>
+	<20070316143101.GA10152@amitarora.in.ibm.com>
+	<20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
+	<17915.48105.70494.958220@cargo.ozlabs.ibm.com>
+	<20070317110706.GB29931@parisc-linux.org>
+	<20070317143043.GA8577@osiris.ibm.com>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__18_Mar_2007_01_38_38_+1100_GAQF/_Zvfh5SpWYk"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Mar 2007 09:46:27 +0100
-Mike Galbraith <efault@gmx.de> wrote:
+--Signature=_Sun__18_Mar_2007_01_38_38_+1100_GAQF/_Zvfh5SpWYk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-> On Fri, 2007-03-16 at 23:44 -0800, David Lang wrote:
-> 
-> > why isn't niceing X to -10 an acceptable option?
-> 
-> Xorg's priority is only part of the problem.  Every client that needs
-> a substantial quantity of cpu while a hog is running will also need
-> to be negative nice, no?
+On Sat, 17 Mar 2007 15:30:43 +0100 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+>
+> sys_sync_file_range(int fd, loff_t offset, loff_t nbytes, unsigned int flags)
+>
+> But from what I read, it's currently not possible for 32-bit powerpc to
+> wire up the already present sync_file_range system call.
 
-I don't suppose you can be a bit more specific, and define how much CPU
-constitutes a "substantial quantity"?  It looks to me like X already got
-about half of a CPU.
+32bit native is fine (as the ABI in user mode is the same as that in the
+kernel).  For 32bit on a 64bit kernel you need the arch specific comapt
+routine that I used in the patch I posteda little while ago,
 
->  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  P COMMAND
-> 6599 root      26   0  174m  30m 8028 R   51  3.1   7:08.70 0 Xorg
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Sun__18_Mar_2007_01_38_38_+1100_GAQF/_Zvfh5SpWYk
+Content-Type: application/pgp-signature
 
-I'm hoping that actually quantifying this issue will result in a better
-understanding of the issue...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Thanks,
+iD8DBQFF+/10FdBgD/zoJvwRAhZ2AJ41njj68tFPjdgD3BIaJ9BJUMMl6ACdHnHT
+1gtx0s+ho29+CsAiNUBHOns=
+=y+RJ
+-----END PGP SIGNATURE-----
 
-Mark
+--Signature=_Sun__18_Mar_2007_01_38_38_+1100_GAQF/_Zvfh5SpWYk--
