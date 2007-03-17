@@ -1,147 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbXCQRGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbXCQROK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbXCQRGZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 13:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXCQRGZ
+	id S1752443AbXCQROK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 13:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXCQROK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 13:06:25 -0400
-Received: from static-195-162-201-231.customer.tvd.be ([195.162.201.231]:47172
-	"EHLO postino.comnet.be" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbXCQRGY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 13:06:24 -0400
-Message-ID: <39605.87.244.133.121.1174151177.squirrel@postino>
-In-Reply-To: <63140.87.244.133.121.1174080814.squirrel@postino>
-References: <63140.87.244.133.121.1174080814.squirrel@postino>
-Date: Sat, 17 Mar 2007 18:06:17 +0100 (CET)
-Subject: Re: New kernel mouse recognition problem
-From: "Victor Fernandes" <Victor.Fernandes@comnet.be>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Sat, 17 Mar 2007 13:14:10 -0400
+Received: from mail.screens.ru ([213.234.233.54]:32817 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752443AbXCQROI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 13:14:08 -0400
+Date: Sat, 17 Mar 2007 20:17:47 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
+Message-ID: <20070317171747.GA134@tv-sign.ru>
+References: <20070316170255.GA194@tv-sign.ru> <m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com> <20070317130216.GA78@tv-sign.ru> <m1k5xgklun.fsf@ebiederm.dsl.xmission.com> <20070317150949.GA302@tv-sign.ru> <20070317152437.GA365@tv-sign.ru> <m1fy83ls75.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1fy83ls75.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry,
-
-Thanks for you feedback, sorry for the delay on my reply but because
-I'm not subscribe to the list, only now I saw your message. I hope you
-will be able to see that this message is a follow up on the previous ones.
-If you do not mind can you please Cc directly to me.
-
-Now to answer your questions.
-The mouse do not works properly, I mean with this that I have the mouse
-pointer on the screen, with gpm and X, but it jumps randomly when used.
-
-I include below the output from the cat /proc/bus/input/devices, on my
-actual kernel, 2.6.17-5, I can not include the one from the previous
-kernel because I've reinstalled the system and I don't have at the moment
-the possibility to run that previous kernel on the system. If necessary I
-can try to install it again.
-
-If you prefer that I subscribe to the list to make you followup's easyer
-just let me know.
-
-Thanks
-
-Victor Fernandes
-Output from cat /proc/bus/input/devices:
-I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
-N: Name="AT Translated Set 2 keyboard"
-P: Phys=isa0060/serio0/input0
-S: Sysfs=/class/input/input0
-H: Handlers=kbd event0
-B: EV=120013
-B: KEY=4 2000000 2b803878 f840d001 f2ffffdf ffefffff ffffffff fffffffe
-B: MSC=10
-B: LED=7
-
-I: Bus=0011 Vendor=0002 Product=0001 Version=0000
-N: Name="PS/2 Logitech Mouse"
-P: Phys=isa0060/serio2/input0
-S: Sysfs=/class/input/input1
-H: Handlers=mouse0 ts0 event1
-B: EV=7
-B: KEY=70000 0 0 0 0 0 0 0 0
-B: REL=3
-
-
-
-to reply
-From	Dmitry Torokhov <>
-Subject	Re: New kernel mouse recognition problem
-Date	Fri, 16 Mar 2007 21:24:49 -0400
-Digg This
-
-Hi Victor,
-
-On Friday 16 March 2007 17:33, Victor Fernandes wrote:
-> Dear kernel gurus,
+On 03/17, Eric W. Biederman wrote:
 >
-> I have a long experience with linux but not at the kernel level, so my
-> apologies if this post is not appropriate for the list, but it seemed to
-> me to be the only possible one to post my question.
->
-> Obviously I've also tried to find the solution on the archives (and more)
-> but found nothing appropriate.
->
-> Problem: It appears that the new kernels, I've actually kernel 2.6.17-5
-> (Mandriva 2007) installed, and tested others on the 2.6.x range, do not
-> recognition my "Track Point" mouse anymore. I have on the boot logs
-> (syslog) the following message: "logips2pp: Detected unknown logitech
-> mouse model 0".
->
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
+> 
+> > On 03/17, Oleg Nesterov wrote:
+> >>
+> >> > Well the initial kernel process does not have a struct pid so when
+> >> > it's children start doing:
+> >> > 	attach_pid(p, PIDTYPE_PGID, task_group(p));
+> >> > 	attach_pid(p, PIDTYPE_SID, task_session(p));
+> >> > We will get an oops.
+> >> 
+> >> So far this is the only reason to have init_struct_pid. Because the
+> >> boot CPU (swapper) forks, right?
+> >
+> > Damn. I am afraid I was not clear again :) Not init_struct_pid, but
+> >
+> > 	+ .pids = { \
+> > 	+ [PIDTYPE_PID] = INIT_PID_LINK(PIDTYPE_PID), \
+> > 	+ [PIDTYPE_PGID] = INIT_PID_LINK(PIDTYPE_PGID), \
+> > 	+ [PIDTYPE_SID] = INIT_PID_LINK(PIDTYPE_SID), \
+> > 	+ }, \
+> >
+> > for INIT_TASK().
+> >
+> >> > So a dummy unhashed struct pid was added for the idle threads.
+> >> > Allowing several special cases in the code to be removed.
+> >> > 
+> >> > With that chance the previous special case to force the idle thread
+> >> > init session 1 pgrp 1 no longer works because attach_pid no longer
+> >> > looks at the pid value but instead at the struct pid pointers.
+> >> > 
+> >> > So we had to add the __set_special_pids() to continue to keep init
+> >> > in session 1 pgrp 1.  Since /sbin/init calls setsid() that our setting
+> >> > the sid and the pgrp may not be strictly necessary.  Still is better
+> >> > to not take any chances.
+> >> 
+> >> Yes, yes, I see. But my (very unclear, sorry) question was: shouldn't we
+> >> change INIT_SIGNALS then? /sbin/init inherits ->pgrp == ->_session == 1,
+> >> in that case __set_special_pids(1,1) does nothing.
+> >
+> > ... and thus /sbin/init remains attached to the .pids above, no?
+> 
+> The problem is that we dynamically allocate the struct pid for 
+> pid_t == 1 when we fork init.
+> 
+> Which means we don't have access to it at compile time so we can
+> no longer make INIT_SIGNALS set ->gprp == ->session == 1.
 
-Does the mouse still work despite this message?
+Yes! I meant we should change INIT_SIGNALS(), currently it does
 
-> The same system with a kernel 2.6.12-12 (Mandriva 10.1) worked properly.
->
+	#define INIT_SIGNALS(sig) {
+		...
+		.pgrp           = 1,
+		{ .__session      = 1},
 
-How was it identified by 2.6.12? Could you please send me output of
-cat /proc/bus/input/devices on 2.6.12 and 2.6.17?
+and this confuses (I think) set_special_pids(1,1) above. Because
+__set_special_pids() still deals with pid_t, not "struct pid".
 
--- 
-Dmitry
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Unless I missed something, we should kill these 2 initializations
+above.
 
-
-Victor Fernandes said:
-> Dear kernel gurus,
->
-> I have a long experience with linux but not at the kernel level, so my
-> apologies if this post is not appropriate for the list, but it seemed to
-> me to be the only possible one to post my question.
->
-> Obviously I've also tried to find the solution on the archives (and more)
-> but found nothing appropriate.
->
-> Problem: It appears that the new kernels, I've actually kernel 2.6.17-5
-> (Mandriva 2007) installed, and tested others on the 2.6.x range, do not
-> recognition my "Track Point" mouse anymore. I have on the boot logs
-> (syslog) the following message: "logips2pp: Detected unknown logitech
-> mouse model 0".
->
-> The same system with a kernel 2.6.12-12 (Mandriva 10.1) worked properly.
->
-> Is my mouse too old? Is this a bug? Are there any possibilities to solve
-> the problem?
->
-> Please Cc me directly on your replies because I'm not subscribe to the
-> list, I hope this is OK. Obviously I'm more then happy to provide any
-> required information.
->
-> Thank you,
->
-> Victor Fernandes
->
->
-
+Oleg.
 
