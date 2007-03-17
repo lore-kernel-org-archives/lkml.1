@@ -1,62 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734AbXCQPA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbXCQPGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753734AbXCQPA3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 11:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbXCQPA3
+	id S1753736AbXCQPGw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 11:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbXCQPGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 11:00:29 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:18702 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753154AbXCQPA2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 11:00:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=IlBsry/uJhllUoWCm+i3/ZcvTw1DDfe+yzOsfYz+JdxPNDw97cKOLae/T1K0WFD7awBaTg8z0lElQA03Ajwgc2qC7YIgciCkU5owz9I0NSVAYrvz/dgZg41wByZf+apSlNycvRJahIIbSnUahKWdUf96oSC43Pc7SQwLBpxGs48=
-Date: Sat, 17 Mar 2007 17:00:21 +0200
-To: hannes-kernel@saeurebad.de
-Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [PATCH 2.6.21-rc4] kernel/exit: Fix a comment and code contradiction
-Message-ID: <20070317150021.GA3618@Ahmed>
-References: <20070317062132.GA11326@Ahmed>
-MIME-Version: 1.0
+	Sat, 17 Mar 2007 11:06:52 -0400
+Received: from mail.screens.ru ([213.234.233.54]:38002 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753735AbXCQPGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 11:06:50 -0400
+Date: Sat, 17 Mar 2007 18:09:49 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
+Message-ID: <20070317150949.GA302@tv-sign.ru>
+References: <20070316170255.GA194@tv-sign.ru> <m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com> <20070317130216.GA78@tv-sign.ru> <m1k5xgklun.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070317093856.GB32496@leiferikson>
+In-Reply-To: <m1k5xgklun.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Johannes please use replay-to-all to notify all readers]
-
-On 2007-03-17 9:45:36 Johannes Weiner wrote:
-> On Sat, Mar 17, 2007 at 08:21:32AM +0200, Ahmed S. Darwish wrote:
-> > Comment in release_task() claims that group leader's parent process 
-> > is signalled only if it desires so, which is not true.
+On 03/17, Eric W. Biederman wrote:
 >
-> AFAIS, `if it wants notification' means, it does not ignore its children
-> via SIG_IGN als handler for SIGCHLD.
->
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
+> 
+> > 	 --- a/init/main.c~explicitly-set-pgid-and-sid-of-init-process
+> > 	 +++ a/init/main.c
+> > 	 @@ -783,6 +783,7 @@ static int __init init(void * unused)
+> > 		  */
+> > 		 init_pid_ns.child_reaper = current;
+> >
+> > 	 +       __set_special_pids(1, 1);
+> > 		 cad_pid = task_pid(current);
+> >
+> > 		 smp_prepare_cpus(max_cpus);
+> >
+> > Nice changelog :)
+> >
+> > The patch looks good, except __set_special_pids(1, 1) should be no-op.
+> > This is a child forked by swapper. copy_process() was changed by
+> > 	use-task_pgrp-task_session-in-copy_process.patch
+> > , but signal->{pgrp,_session} get its value from INIT_SIGNALS ?
+> >
+> > Could you explain this as well? Some other changes I missed?
+> 
+> As I recall the patch series started with modifying attach_pid
+> to take a struct pid pointer instead of a pid_t value.  It means
+> fewer hash table looks ups and it should help in implementing the pid
+> namespace.
+> 
+> Well the initial kernel process does not have a struct pid so when
+> it's children start doing:
+> 	attach_pid(p, PIDTYPE_PGID, task_group(p));
+> 	attach_pid(p, PIDTYPE_SID, task_session(p));
+> We will get an oops.
 
-AFAIK, exit_signal = -1 means that the parent don't want to be signalled,
-like what happenes when using CLONE_THREAD. 
+So far this is the only reason to have init_struct_pid. Because the
+boot CPU (swapper) forks, right?
 
-But it's even signalled in that case (after issuing a BUG):
-   BUG_ON(leader->exit_signal == -1);
-   do_notify_parent(leader, leader->exit_signal);
+> So a dummy unhashed struct pid was added for the idle threads.
+> Allowing several special cases in the code to be removed.
+> 
+> With that chance the previous special case to force the idle thread
+> init session 1 pgrp 1 no longer works because attach_pid no longer
+> looks at the pid value but instead at the struct pid pointers.
+> 
+> So we had to add the __set_special_pids() to continue to keep init
+> in session 1 pgrp 1.  Since /sbin/init calls setsid() that our setting
+> the sid and the pgrp may not be strictly necessary.  Still is better
+> to not take any chances.
 
-> do_notify_parent() checks if the parent wants to get informed about the
-> child states.
->
+Yes, yes, I see. But my (very unclear, sorry) question was: shouldn't we
+change INIT_SIGNALS then? /sbin/init inherits ->pgrp == ->_session == 1,
+in that case __set_special_pids(1,1) does nothing.
 
-Yes it does the check but it notifies the given task_struct anyway:
+> Anyway the point of removing the likely(pid) check was that it didn't
+> look necessary any longer. But as you have correctly pointed putting
+> it on the task list and incrementing the process count for the idle
+> threads is probably still a problem.
 
-	BUG_ON(sig == -1);
-	[ Continue parent notification normally ]
--- 
-Ahmed S. Darwish
-http://darwish.07.googlepages.com
+Yes. Note also that the parent doing fork_idle() is not always swapper,
+it is just wrong to do attach_pid(PIDTYPE_PGID/PIDTYPE_SID) in this case.
+example: arch/x86_64/kernel/smpboot.c:do_boot_cpu()
+
+>                                       So while we are much better we
+> still have some use for the if (likely(p->pid)) special case.
+
+Yes, I think this change should be dropped for now.
+
+> Is that enough to bring you up to speed?
+
+Thanks for your explanations!
+
+Oleg.
 
