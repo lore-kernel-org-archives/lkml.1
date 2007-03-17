@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965111AbXCQIFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965105AbXCQIJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965111AbXCQIFu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 04:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965105AbXCQIFt
+	id S965105AbXCQIJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 04:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965171AbXCQIJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 04:05:49 -0400
-Received: from hot.fatooh.org ([63.99.9.127]:56321 "EHLO hot.fatooh.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965111AbXCQIE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 04:04:56 -0400
-Message-ID: <45FBA12A.1000103@fatooh.org>
-Date: Sat, 17 Mar 2007 01:04:58 -0700
-From: Corey Hickey <bugfood-ml@fatooh.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Sat, 17 Mar 2007 04:09:20 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:55519 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S965105AbXCQIJS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 04:09:18 -0400
+Date: Fri, 16 Mar 2007 23:44:17 -0800 (PST)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Nicholas Miell <nmiell@comcast.net>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
+       Al Boldi <a1426z@gawab.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: RSDL v0.31
+In-Reply-To: <20070317074506.GA13685@elte.hu>
+Message-ID: <Pine.LNX.4.63.0703162326020.6015@qynat.qvtvafvgr.pbz>
+References: <200703042335.26785.a1426z@gawab.com>  <200703170040.48316.kernel@kolivas.org>
+  <1174059299.7886.25.camel@Homer.simpson.net>  <200703170813.32594.kernel@kolivas.org>
+  <1174084207.7009.9.camel@Homer.simpson.net>  <1174105443.3144.4.camel@entropy>
+  <1174110965.7911.44.camel@Homer.simpson.net>  <1174112768.3144.8.camel@entropy>
+ <20070317074506.GA13685@elte.hu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20.1: reproducible hard lockup (with some configurations)
-References: <45EA3159.4020508@fatooh.org>
-In-Reply-To: <45EA3159.4020508@fatooh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corey Hickey wrote:
-> Hello,
-> 
-> I am experiencing a hard lockup with 2.6.20.1. Whenever the system locks
-> up, it locks up hard: nothing is printed to the console and the magic
-> SysRQ key has no effect--the only thing I can do is poke the reset
-> button. I have reasonable faith in the stability of my hardware: I can
-> run memtest86+ for hours without problems; likewise with burnK7,
-> mencoder, and various other programs that stress the CPU. I've never had
-> this problem (or any similar one) with 2.6.19 and earlier.
-> 
-> The problem originally manifested whenever I initiated a RAID-5 resync.
-> I reported the problem to linux-raid, but Neil Brown wasn't able to
-> reproduce it and he suggested I was having trouble with a lower-level
-> driver. I've messed around for many hours with many different kernel
-> configurations, but all I've been able to find out is that, with some
-> configurations, the RAID resync doesn't immediately cause a lockup, but
-> a lockup happens later (sometimes hours later) nonetheless. Since the
-> late lockup isn't as easily reproducible, I'll concentrate the rest of
-> this report on conditions that lead to immediate lockup.
-> 
-> When the lockup is triggered by a resync, it is very easy to reproduce:
-> 1. Boot with 'init=/bin/bash'.
-> 2. Run 'mdadm -A /dev/md2 -U resync'.
-> 3. Wait about 1 second. The system will lock up.
-> 
-> System information:
-> Athlon64 3400+
-> 64-bit Linux 2.6.20.1 compiled with GCC 4.1.2
-> 64-bit Debian Sid
-> RAID-5 of 5 devices:
->    /dev/hda   (IDE hard drive)
->    /dev/sda6  (partition on SATA hard drive)
->    /dev/sdb   (SATA hard drive)
->    /dev/sdc6  (partition on SATA hard drive)
->    /dev/sdd   (SATA hard drive)
-> SATA and IDE drives mounted to onboard nVidia controllers
-> I'm using the libata SATA driver and the old IDE driver
-> 
-> My full kernel .config is here:
-> http://fatooh.org/files/tmp/config-2.6.20.1
-> ...and the output of 'lspci -v' is here:
-> http://fatooh.org/files/tmp/lspci-v
-> 
-> If anybody has any suggestions, I would be very grateful. I'd also be
-> happy to run further tests or provide any other information that may be
-> useful.
+On Sat, 17 Mar 2007, Ingo Molnar wrote:
 
-Just in case this is helpful for somebody:
+> * Nicholas Miell <nmiell@comcast.net> wrote:
+>
+>> The X people have plans for how to go about fixing this, [...]
+>
+> then we'll first have wait for those X changes to at least be done in a
+> minimal manner so that they can be tested for real with RSDL. (is it
+> _really_ due to that? Or will X regress forever once we switch to RSDL?)
+> We cannot regress the scheduling of a workload as important as "X mixed
+> with CPU-intense tasks". And "in theory this should be fixed if X is
+> fixed" does not cut it. X is pretty much _the_ most important thing to
+> optimize the interactive behavior of a Linux scheduler for. Also,
+> paradoxically, it is precisely the improvement of _X_ workloads that
+> RSDL argues with.
+>
+> this regression has to be fixed before RSDL can be merged, simply
+> because it is a pretty negative effect that goes beyond any of the
+> visible positive improvements that RSDL brings over the current
+> scheduler. If it is better to fix X, then X has to be fixed _first_, at
+> least in form of a prototype patch that can be _tested_, and then the
+> result has to be validated against RSDL.
 
-After I sent the last message, I kept trying to find a solution;
-eventually I tried compiling without CONFIG_CC_OPTIMIZE_FOR_SIZE, and
-that seems to have fixed the problem. Uptime is 12 days so far, without
-any issues.
+why isn't niceing X to -10 an acceptable option?
 
--Corey
+if you overload the box enough things slow down, what scheduler avoids that?
+
+where RSDL 'regresses' is with multiple CPU hog running at once (more then the 
+number of real CPU's you have available) at the same priority, with one of them 
+being the X server process.
+
+the initial report was that with X + 2 cpu hogs on 1.5 cpu's there's more of a 
+slowdown (even with a nice difference of 5 between X and the other processes)
+
+the latest report is that with X and 11 cpu hogs and a nice difference of 10 
+things slow down (I don't remember the number of cpu's from this report)
+
+how much of an overload should the scheduler adjust for? a load of 3xcpu's? 
+10x cpu's? what would be deemed acceptable?
+
+if the key factor in a scheduler is to be able to run multiple CPU hogs at the 
+same time as the X process, why not just check the name of the process running, 
+and if it's X give it a nice boost?
+
+while that would be easy to abuse, it would at least be predictable.
+
+if the nice levels don't have enough of an effect, how much of an effect should 
+a given nice level have? (con has asked this several times, I haven't seen an 
+answer from anyone)
+
+David Lang
