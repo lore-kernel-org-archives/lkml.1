@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965585AbXCQOcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965606AbXCQOdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965585AbXCQOcm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 10:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965618AbXCQOcl
+	id S965606AbXCQOdc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 10:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965565AbXCQOdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 10:32:41 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:3674 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965585AbXCQOck (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 10:32:40 -0400
-Date: Sat, 17 Mar 2007 15:30:43 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Paul Mackerras <paulus@samba.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
-       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC][PATCH] sys_fallocate() system call
-Message-ID: <20070317143043.GA8577@osiris.ibm.com>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <17915.48105.70494.958220@cargo.ozlabs.ibm.com> <20070317110706.GB29931@parisc-linux.org>
+	Sat, 17 Mar 2007 10:33:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42656 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965606AbXCQOdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 10:33:31 -0400
+Message-ID: <45FBFC18.8060700@redhat.com>
+Date: Sat, 17 Mar 2007 10:32:56 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070317110706.GB29931@parisc-linux.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+To: Mike Galbraith <efault@gmx.de>
+CC: Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
+       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: RSDL v0.31
+References: <200703042335.26785.a1426z@gawab.com>	 <200703170040.48316.kernel@kolivas.org>	 <1174059299.7886.25.camel@Homer.simpson.net>	 <200703170813.32594.kernel@kolivas.org> <1174084207.7009.9.camel@Homer.simpson.net>
+In-Reply-To: <1174084207.7009.9.camel@Homer.simpson.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 17, 2007 at 05:07:06AM -0600, Matthew Wilcox wrote:
-> On Sat, Mar 17, 2007 at 08:59:05PM +1100, Paul Mackerras wrote:
-> > ... but wouldn't work on 32-bit powerpc. :(  We would end up with a
-> > pad argument between fd and offset, giving 7 arguments in all
-> > (counting the loff_t's as 2), but we only support 6.
-> 
-> Ditto mips and parisc.
+Mike Galbraith wrote:
 
-Can't be. Or: mips supports 7 arguments and parisc doesn't pad.
-Otherwise they couldn't have wired up
+> If this is your final answer to the problem space, I am done testing,
+> and as far as _I_ am concerned, your scheduler is an utter failure.
 
-sys_sync_file_range(int fd, loff_t offset, loff_t nbytes, unsigned int flags)
+The increased AIM7 throughput (and the other benchmark results)
+looked very promising to me.
 
-But from what I read, it's currently not possible for 32-bit powerpc to
-wire up the already present sync_file_range system call.
+I wonder what we're doing wrong in the normal scheduler...
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
