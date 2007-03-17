@@ -1,108 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933807AbXCQM6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965217AbXCQNBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933807AbXCQM6t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 08:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933826AbXCQM6t
+	id S965217AbXCQNBU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 09:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933826AbXCQNBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 08:58:49 -0400
-Received: from mail.screens.ru ([213.234.233.54]:51117 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933807AbXCQM6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 08:58:48 -0400
-Date: Sat, 17 Mar 2007 16:02:17 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
-Message-ID: <20070317130216.GA78@tv-sign.ru>
-References: <20070316170255.GA194@tv-sign.ru> <m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	Sat, 17 Mar 2007 09:01:20 -0400
+Received: from bay0-omc3-s38.bay0.hotmail.com ([65.54.246.238]:37780 "EHLO
+	bay0-omc3-s38.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933823AbXCQNBT convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 09:01:19 -0400
+Message-ID: <BAY103-DAV1484A3797D5368C28969CBB2700@phx.gbl>
+X-Originating-IP: [85.41.109.158]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "David Chinner" <dgc@sgi.com>
+Cc: "David Chinner" <dgc@sgi.com>, <linux-kernel@vger.kernel.org>,
+       <xfs@oss.sgi.com>
+References: <BAY103-DAV1066400DF0615AD677EA1B2730@phx.gbl> <20070316012520.GN5743@melbourne.sgi.com> <BAY103-DAV13EC09E9BCB3E8C9D5EEA2B2710@phx.gbl> <20070316195951.GB5743@melbourne.sgi.com>
+Subject: Re: XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c.  Caller 0xc01b00bd
+Date: Sat, 17 Mar 2007 14:00:30 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2180
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
+X-OriginalArrivalTime: 17 Mar 2007 13:01:19.0230 (UTC) FILETIME=[5ADE11E0:01C76894]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/16, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> writes:
+David Chinner wrote:
+
+> Ok, so an ipsec change. And I see from the history below it
+> really has nothing to do with this problem. it seems the problem
+> has something to do with changes between 2.6.19.1 and 2.6.19.2.
+
+indeed. Yesterday at 13:00 I have switched from 2.6.19.1 to 2.6.19.2
+(without the ipsec fix) and at about 17:30 linux has crashed again.
+I have recompiled 2.6.19.2 with all kernel debugging options enabled
+and rebooted. Now I'm waiting for the crash...
+
+> There were no changes to XFS between 2.6.19.1 and 2.6.19.2,
+> so I'm thinking that your problems are related to something
+> other than XFS. Can you do a git bisect to determine what the
+> bad patch is?
+
+Ok, monday morning I will try to do a git bisect. I just want tell you
+that this machine is a firewall (3 nic) + ipsec gateway (openswan) +
+http proxy (squid). I think that the problem is related to the networking.
+I have other 2.6.19/2.6.20 linux boxes acting as proftpd/samba/sendmail
+without any problem.
+
+>> > Can you run xfs_repair on that filesystem and see if reports
+>> > (and fixes) any problems?
+>> 
+>> I don't need to run xfs_repair to fix the problem,
 > 
-> > Sukadev Bhattiprolu wrote:
-> >
-> > This means that idle threads (except "swapper") are visible to
-> > for_each_process()
-> > and do_each_thread(). Looks dangerous and somewhat strange to me.
-> >
-> > Could you explain this change?
+> Except that the trigger might be on-disk corruption so we
+> need to rule that out first.
+
+Ok I will run xfs_repair and post results.
+
+>> I only unplug the power cable and reboot the system,
+>> xfs filesystem are correctly mounted.
+>> However tell me if I must run xfs_repair to check
+>> the filesystem.
 > 
-> Good catch.  I've been so busy pounding reviewing this patches into
-> something that made sense that I missed the fact that we care about
-> this for more than just the NULL pointer that would occur if we didn't
-> do this.
+> Yes, you need to run xfs_repair.
 
-Why it is bad to have a NULL pointer for idle thread? (Sorry for stupid
-question, I can't track the code changes these days).
+ok , thanks a lot for the feedback.
 
-> Still it would be good if we could find a way to remove this rare
-> special case.
-> 
-> Any chance we can undo what we don't want done for_idle, or create
-> a factor of copy_process that only does as much as fork_idle should do,
-> and make copy_process a wrapper that does the rest.
-> 
-> I doubt it is significant anywhere but it would be nice to remove a
-> branch that except at boot up never happens.
-
-... or at cpu-hotplug. Probably you are right, but I am not sure.
-
-The "if (p->pid)" check in essence implements CLONE_UNHASHED flag,
-it may be useful.
-
-Btw. Looking at http://marc.theaimsgroup.com/?l=linux-mm-commits,
-
-	 Subject: Explicitly set pgid and sid of init process
-	 From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-
-	 Explicitly set pgid and sid of init process to 1.
-
-	 Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-	 Cc: Cedric Le Goater <clg@fr.ibm.com>
-	 Cc: Dave Hansen <haveblue@us.ibm.com>
-	 Cc: Serge Hallyn <serue@us.ibm.com>
-	 Cc: Eric Biederman <ebiederm@xmission.com>
-	 Cc: Herbert Poetzl <herbert@13thfloor.at>
-	 Cc: <containers@lists.osdl.org>
-	 Acked-by: Eric W. Biederman <ebiederm@xmission.com>
-	 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-	 ---
-
-	  init/main.c |    1 +
-	  1 file changed, 1 insertion(+)
-
-	 diff -puN init/main.c~explicitly-set-pgid-and-sid-of-init-process init/main.c
-	 --- a/init/main.c~explicitly-set-pgid-and-sid-of-init-process
-	 +++ a/init/main.c
-	 @@ -783,6 +783,7 @@ static int __init init(void * unused)
-		  */
-		 init_pid_ns.child_reaper = current;
-
-	 +       __set_special_pids(1, 1);
-		 cad_pid = task_pid(current);
-
-		 smp_prepare_cpus(max_cpus);
-
-Nice changelog :)
-
-The patch looks good, except __set_special_pids(1, 1) should be no-op.
-This is a child forked by swapper. copy_process() was changed by
-	use-task_pgrp-task_session-in-copy_process.patch
-, but signal->{pgrp,_session} get its value from INIT_SIGNALS ?
-
-Could you explain this as well? Some other changes I missed?
-
-Oleg.
-
+PS: I'm running slackware 11 with xfsprogs-2.8.10. Are they fine
+or should I upgrade?
