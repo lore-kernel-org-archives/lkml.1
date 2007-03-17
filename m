@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbXCQSoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbXCQSpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752852AbXCQSoT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 14:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXCQSoT
+	id S1752860AbXCQSpL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 14:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbXCQSpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 14:44:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40367 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752856AbXCQSoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 14:44:18 -0400
-Date: Sat, 17 Mar 2007 14:44:09 -0400
-From: Alan Cox <alan@redhat.com>
-To: Paul Rolland <rol@as2917.net>
-Cc: "'Tejun Heo'" <htejun@gmail.com>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Jeff Garzik'" <jeff@garzik.org>, "'Alan Cox'" <alan@redhat.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       linux-ide@vger.kernel.org, "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Eric D. Mudama'" <edmudama@gmail.com>
-Subject: Re: [git patches] libata fixes
-Message-ID: <20070317184409.GA18870@devserv.devel.redhat.com>
-References: <45F509A7.8030705@gmail.com> <00a701c768bd$f8abe130$2101a8c0@donald>
+	Sat, 17 Mar 2007 14:45:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45309 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752863AbXCQSpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 14:45:09 -0400
+X-Provags-ID: V01U2FsdGVkX1/HJnca7qLHzoFndqD0vvx/534Cknz1YOjhXCAixF
+	N2sYmXx7cJFD1N
+Subject: Re: [ck] Re: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: Kacper Wysocki <kacperw@online.no>
+Cc: Gene Heskett <gene.heskett@gmail.com>, Al Boldi <a1426z@gawab.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ck@vds.kolivas.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicholas Miell <nmiell@comcast.net>
+In-Reply-To: <367a23780703171123r142644baib0466ce6449d7c60@mail.gmail.com>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703170805.59619.gene.heskett@gmail.com>
+	 <1174138590.7614.6.camel@Homer.simpson.net>
+	 <200703171303.42795.gene.heskett@gmail.com>
+	 <1174153022.7332.1.camel@Homer.simpson.net>
+	 <367a23780703171123r142644baib0466ce6449d7c60@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 17 Mar 2007 19:45:01 +0100
+Message-Id: <1174157101.7667.12.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <00a701c768bd$f8abe130$2101a8c0@donald>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 17, 2007 at 06:59:12PM +0100, Paul Rolland wrote:
-> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata1.00: ATA-7: Maxtor 6L250S0, BANC1G10, max UDMA/133
+On Sat, 2007-03-17 at 19:23 +0100, Kacper Wysocki wrote:
 
-That drive isn't in our current block list for NCQ but some close
-relatives are in the one I've compiled so far (7B250S0). If you add it to 
-the blacklist it behave ?
+> And for Mark and others who are as confused as I was, this is the
+> thread that Mike meant to reference:
+> http://thread.gmane.org/gmane.linux.kernel/503455/focus=6614
 
-Also what controller ?
+Nope, with all the back and forth (and noise), I lost track of which
+thread was which.  Thanks. 
+
+	-Mike
 
