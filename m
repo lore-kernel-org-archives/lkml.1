@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933334AbXCQE6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933339AbXCQFQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933334AbXCQE6R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 00:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933312AbXCQE6R
+	id S933339AbXCQFQQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 01:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933342AbXCQFQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 00:58:17 -0400
-Received: from mail25.syd.optusnet.com.au ([211.29.133.166]:56313 "EHLO
-	mail25.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933334AbXCQE6Q (ORCPT
+	Sat, 17 Mar 2007 01:16:16 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:45750 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933339AbXCQFQQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 00:58:16 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Al Boldi <a1426z@gawab.com>
+	Sat, 17 Mar 2007 01:16:16 -0400
+Date: Sat, 17 Mar 2007 01:15:41 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
 Subject: Re: RSDL v0.31
-Date: Sat, 17 Mar 2007 15:57:53 +1100
-User-Agent: KMail/1.9.5
-Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200703042335.26785.a1426z@gawab.com> <200703171351.47399.kernel@kolivas.org> <200703170740.07530.a1426z@gawab.com>
-In-Reply-To: <200703170740.07530.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703171557.53700.kernel@kolivas.org>
+In-reply-to: <200703171557.53700.kernel@kolivas.org>
+To: linux-kernel@vger.kernel.org
+Cc: Con Kolivas <kernel@kolivas.org>, Al Boldi <a1426z@gawab.com>,
+       ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <200703170115.43210.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703042335.26785.a1426z@gawab.com>
+ <200703170740.07530.a1426z@gawab.com> <200703171557.53700.kernel@kolivas.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 17 March 2007 15:40, Al Boldi wrote:
-> Con Kolivas wrote:
-> > On Saturday 17 March 2007 08:55, Al Boldi wrote:
-> > > With X nice'd at -10, and 11 hogs loading the cpu, interactivity looks
-> > > good until the default timeslice/quota is exhausted and slows down.
-> > > Maybe adjusting this according to nice could help.
-> >
-> > Not sure what you mean by that. It's still a fair distribution system,
-> > it's just that nice -10 has quite a bit more cpu allocated than nice 0.
-> > Eventually if you throw enough load at it it will slow down too.
->
-> I mean #DEF_TIMESLICE seems like an initial quota, which gets reset with
-> each major rotation.  Increasing this according to nice may give it more
-> room for an interactivity boost, before being expired.  Alternatively, you
-> may just reset the rotation, if the task didn't use it's quota within one
-> full major rotation, effectively skipping the expiry toll.
+Greetings Con & company;
 
-DEF_TIMESLICE is a value used for smp balancing and has no effect on quota so 
-I doubt you mean that value. The quota you're describing of not resetting is 
-something like the sleep average idea of current systems where you accumulate 
-bonus points by sleeping when you would be running and redeem them later. 
-This is exactly the system I'm avoiding using in rsdl as you'd have to decide 
-just how much sleep time it could accumulate, and over how long it would run 
-out, and so on. ie that's the interactivity estimator. This is the system 
-that destroys any guarantee of cpu percentage, and ends up leading to periods 
-of relative starvation, is open to tuning that can either be too short or too 
-long depending on the values you chose and so on.
+I built and rebooted to 2.6.20.3-rdsl-0.31 earlier this evening, but 
+purposely waited till amanda was well underway to make a report.
 
-> > > It may also be advisable to fix latencies according to nice, and adjust
-> > > timeslices instead.  This may help scaleability a lot, as there are
-> > > some timing sensitive apps that may crash under high load.
-> >
-> > You will find that is the case already with this version. Even under
-> > heavy load if you were to be running one server niced (say httpd nice 19
-> > in the presence of mysql nice 0) the latencies would be drastically
-> > reduced compared to mainline behaviour. I am aware this becomes an issue
-> > for some heavily loaded servers because some servers run multithreaded
-> > while others do not, forcing the admins to nice their multithreaded ones.
->
-> The thing is, latencies are currently dependent on the number of tasks in
-> the run-queue; i.e. more rq-tasks means higher latencies, yet fixed
-> timeslices according to nice.  Just switching this the other way around, by
-> fixing latencies according to nice, and adjusting the timeslices depending
-> on rq-load, may yield a much more scalable system.
+The report is that I really really have to work hard to tell that amanda 
+is running even though the cpu according to gkrellm is running between 97 
+and 99%.
 
-That is not really feasible to implement. How can you guarantee latencies when 
-the system is overloaded? If you have 1000 tasks all trying to get scheduled 
-in say 10ms you end up running for only 10 microseconds at a time. That will 
-achieve the exact opposite whereby as the load increases the runtime gets 
-shorter and shorter till cpu cache trashing and no real work occurs.
+For my loading then, this is as much an improvement over the -ck1 patch as 
+it was over the un-patched but same version of the kernel.  FWIW, I'd 
+also built a 2.6.20.3-rdsl-0.30 and ran it for a day but it was nearly as 
+spastic as no patch.
 
-> Thanks!
->
-> --
-> Al
+Did I say I like this yet? :)
+
+Now I'm waiting for 2.6.21-rc4 to make the mirrors & see if tar is still 
+broken.  Based on the clues I've been able to find, I bz'd the tar since 
+that's a fedora supplied rpm install.  Humm, I just now recalled that I 
+have a tarball built tar-1.15.1 on another drive, I was using it when I 
+was running FC2, so that might be something else to bisect against, and I 
+will, bet on it.
+
+Many thanks Con, this is very nice.  I've only seen one split second when 
+the screen was about 2 chars behind my typing.  This is great. :-)
 
 -- 
--ck
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+When a cow laughs, does milk come out of its nose?
