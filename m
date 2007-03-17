@@ -1,126 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbXCQMMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933761AbXCQMRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932406AbXCQMMt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 08:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933040AbXCQMMt
+	id S933761AbXCQMRJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 08:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933724AbXCQMRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 08:12:49 -0400
-Received: from smtp15.wxs.nl ([195.121.247.6]:44225 "EHLO smtp15.wxs.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932406AbXCQMMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 08:12:48 -0400
-Date: Sat, 17 Mar 2007 13:15:55 +0100
-From: jos poortvliet <jos@mijnkamer.nl>
-X-Face: $0>4o"Xx2u2q(Tx!D+6~yPc{ZhEfnQnu:/nthh%Kr%f$aiATk$xjx^X4admsd*)=?utf-8?q?IZz=3A=5FkT=0A=09=7CurITP!=2E?=)L`*)Vw@4\@6>#r;3xSPW`,~C9vb`W/s]}Gq]b!o_/+(lJ:b)=?utf-8?q?T0=26KCLMGvG=7CS=5E=0A=09z=7B=5C=2E7EtehxhFQE=27eYSsir/=7CtQ?=
- =?utf-8?q?j=23rWQe4o?=>WC>_R<vO,d]czmqWYkq[v~iB.e_GuxB'")
- =?utf-8?q?p3=0A=09jGdrhlY4=5E!vd=3F=3AegW?=)xn&fP4!FV<.
-Subject: Re: [ck] Re: is RSDL an "unfair" scheduler too?
-In-reply-to: <20070317114903.GA20673@elte.hu>
-To: ck@vds.kolivas.org
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-id: <200703171315.59143.jos@mijnkamer.nl>
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart3560359.k8W3YnNb3v
-Content-transfer-encoding: 7bit
-User-Agent: KMail/1.9.6
-References: <200703042335.26785.a1426z@gawab.com>
- <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu>
+	Sat, 17 Mar 2007 08:17:09 -0400
+Received: from smtp005.mail.ukl.yahoo.com ([217.12.11.36]:20709 "HELO
+	smtp005.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933761AbXCQMRH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 08:17:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=oTv7cmGNXoMq3qVAZqj6mOAtG14doXZTg36026CM66G/WM01BTXBzWS4zBP3Wy+5PuCUADBUFh9JzLPIhOJjvYwYS0PhwtTAgBHoA9A5D/xtXqlQbnnrx7N6D+PuLXDeXE8P64Dgd6oTPC8YXgmi8jZRpoHL7u1CmHFMJw0mBY8=  ;
+X-YMail-OSG: s0H_ToMVM1mcGJ_QipoIw7C_7b7WXKHa1WkBVzp_o5yLu9BBbX7L8idrMn1me354N8zCXc21omi6htFMAZVgaZEYc1GAXYx1PDAsT5V8OnQIGPbWpsTmk7vnnR29HH9GZ96wfSK5pjG8
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+Date: Sat, 17 Mar 2007 13:17:00 +0100
+User-Agent: KMail/1.9.5
+Cc: Bill Irwin <bill.irwin@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20070221023735.6306.83373.sendpatchset@linux.site> <200703130001.13467.blaisorblade@yahoo.it> <20070313011904.GA2746@wotan.suse.de>
+In-Reply-To: <20070313011904.GA2746@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703171317.01074.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3560359.k8W3YnNb3v
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Op Saturday 17 March 2007, schreef Ingo Molnar:
-> * Con Kolivas <kernel@kolivas.org> wrote:
-> > Despite the claims to the contrary, RSDL does not have _less_
-> > heuristics, it does not have _any_. It's purely entitlement based.
+On Tuesday 13 March 2007 02:19, Nick Piggin wrote:
+> On Tue, Mar 13, 2007 at 12:01:13AM +0100, Blaisorblade wrote:
+> > On Wednesday 07 March 2007 11:02, Nick Piggin wrote:
+> > > > Yeah, tmpfs/shm segs are what I was thinking about. If UML can live
+> > > > with that as well, then I think it might be a good option.
+> > >
+> > > Oh, hmm.... if you can truncate these things then you still need to
+> > > force unmap so you still need i_mmap_nonlinear.
+> >
+> > Well, we don't need truncate(), but MADV_REMOVE for memory hotunplug,
+> > which is way similar I guess.
+> >
+> > About the restriction to tmpfs, I have just discovered
+> > '[PATCH] mm: tracking shared dirty pages' (commit
+> > d08b3851da41d0ee60851f2c75b118e1f7a5fc89), which already partially
+> > conflicts with remap_file_pages for file-based mmaps (and that's fully
+> > fine, for now).
+> >
+> > Even if UML does not need it, till now if there is a VMA protection and a
+> > page hasn't been remapped with remap_file_pages, the VMA protection is
+> > used (just because it makes sense).
+> >
+> > However, it is only used when the PTE is first created - we can never
+> > change protections on a VMA  - so it vma_wants_writenotify() is true (on
+> > all file-based and on no shmfs based mapping, right?), and we
+> > write-protect the VMA, it will always be write-protected.
 >
-> RSDL still has heuristics very much, but this time it's hardcoded into
-> the design! Let me demonstrate this via a simple experiment.
->
-> in the vanilla scheduler, the heuristics are ontop of a fairly basic
-> (and fast) scheduler, they are plain visible and thus 'optional'. In
-> RSDL, the heuristics are still present but more hidden and more
-> engrained into the design.
->
-> But it's easy to demonstrate this under RSDL: consider the following two
-> scenarios, which implement precisely the same fundamental computing
-> workload (everything running on the same, default nice 0 level):
->
-> 1) a single task runs almost all the time and sleeps about 1 msec every
->    100 msecs.
->
->    [ run "while N=3D1; do N=3D1; done &" under bash to create such a
->      workload. ]
->
-> 2) tasks are in a 'ring' where each runs for 100 msec, sleeps for 1
->    msec and passes the 'token' around to the next task in the ring. (in
->    essence every task will sleep 9900 msecs before getting another run)
->
->    [ run http://redhat.com/~mingo/scheduler-patches/ring-test.c to
->      create this workload. If the 100 tasks default is too much for you
->      then you can run "./ring-test 10" - that will show similar effects.
->    ]
->
-> Workload #1 uses 100% of CPU time. Workload #2 uses 99% of CPU time.
-> They both do in essence the same thing.
->
-> if RSDL had no heuristics at all then if i mixed #1 with #2, both
-> workloads would get roughly 50%/50% of the CPU, right? (as happens if i
-> mix #1 with #1 - both CPU-intense workloads get half of the CPU)
+> Yes, I believe that is the case, however I wonder if that is going to be
+> a problem for you to distinguish between write faults for clean writable
+> ptes, and write faults for readonly ptes?
+I wouldn't be able to distinguish them, but am I going to get write faults for 
+clean ptes when vma_wants_writenotify() is false (as seems to be for tmpfs)? 
+I guess not.
 
-Isn't RSDL fair to each task? So each of the 101 tasks (1 and 2) gets an eq=
-ual=20
-share... That doesn't sound unfair to me. if the current scheduler manages =
-to=20
-give the single task 10 times more cpu to task one, that wouldn't be fair.=
-=20
-Unless you want to be fair to a single process, no matter how many threads.
+For tmpfs pages, clean writable PTEs are mapped as writable so they won't give 
+any problem, since vma_wants_writenotify() is false for tmpfs. Correct?
 
-> in reality, in the 'ring workload' case, RSDL will only give about _5%_
-> of CPU time to the #1 CPU-intense task, and will give 95% of CPU time to
-> the #2 'ring' of tasks. So the distribution of timeslices is
-> significantly unfair!
+> > Also, I'm curious. Since my patches are already changing
+> > remap_file_pages() code, should they be absolutely merged after yours?
 >
-> Why? Because RSDL still has heuristics, just elsewhere and more hidden:
-> in the "straightforward CPU intense task" case RSDL will 'penalize' the
-> task by depleting its quota for running nearly all the time, in the
-> "ring of tasks" case the 100 tasks will each run near their priority
-> maximum, fed by 'major epoch' events of RSDL, thus they get 'rewarded'
-> for seemingly sleeping alot and spreading things out. So RSDL has
-> fundamental unfairness built in as well - it's just different from the
-> vanilla scheduler.
-
-I don't see RSDL having heuristics here - it just gives each task an equal=
-=20
-share of CPU. The single task gets 1/101th of cpu, equal to all others...
-
-> 	Ingo
-
-I guess I just don't get it, would the current kernel give 50% cpu to the=20
-single thread, and 0,5% to each of the 100 other threads?!? How would it do=
-=20
-that? Does it schedule a process with several threads equal to a process=20
-having 1 thread, so each gets an equal share of cpu?
-
---nextPart3560359.k8W3YnNb3v
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBF+9v7+wgQ1AD35iwRAuzyAJ9erzPX4S2Rvc0CP2gr4nfvNF7ENwCgruRH
-MhZgkdalxsrpxJwcmM8EU1I=
-=E/LZ
------END PGP SIGNATURE-----
-
---nextPart3560359.k8W3YnNb3v--
+> Is there a big clash? I don't think I did a great deal to fremap.c (mainly
+> just removing stuff)...
+Hopefully, we just both modify sys_remap_file_pages(), I'll see soon.
+-- 
+Inform me of my mistakes, so I can add them to my list!
+Paolo Giarrusso, aka Blaisorblade
+http://www.user-mode-linux.org/~blaisorblade
+Chiacchiera con i tuoi amici in tempo reale! 
+ http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
