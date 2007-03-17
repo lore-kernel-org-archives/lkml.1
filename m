@@ -1,100 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXCQPkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750895AbXCQPqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750719AbXCQPkJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 11:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXCQPkJ
+	id S1750895AbXCQPqM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 11:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXCQPqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 11:40:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35465 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbXCQPkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 11:40:07 -0400
-Date: Sat, 17 Mar 2007 16:39:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rik van Riel <riel@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Sat, 17 Mar 2007 11:46:12 -0400
+Received: from sigma957.CIS.McMaster.CA ([130.113.64.83]:36588 "EHLO
+	sigma957.cis.mcmaster.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbXCQPqL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 11:46:11 -0400
+X-Greylist: delayed 1896 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 Mar 2007 11:46:11 EDT
+Date: Sat, 17 Mar 2007 11:13:26 -0400 (EDT)
+From: Mark Hahn <hahn@mcmaster.ca>
+X-X-Sender: hahn@coffee.psychology.mcmaster.ca
+To: Con Kolivas <kernel@kolivas.org>
+cc: linux-kernel@vger.kernel.org
 Subject: Re: RSDL v0.31
-Message-ID: <20070317153908.GA26036@elte.hu>
-References: <200703042335.26785.a1426z@gawab.com> <200703170040.48316.kernel@kolivas.org> <1174059299.7886.25.camel@Homer.simpson.net> <200703170813.32594.kernel@kolivas.org> <1174084207.7009.9.camel@Homer.simpson.net> <45FBFC18.8060700@redhat.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
-In-Reply-To: <45FBFC18.8060700@redhat.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200703172048.46267.kernel@kolivas.org>
+Message-ID: <Pine.LNX.4.64.0703171105270.16125@coffee.psychology.mcmaster.ca>
+References: <200703042335.26785.a1426z@gawab.com> <20070317074506.GA13685@elte.hu>
+ <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-PMX-Version-Mac: 4.7.1.128075, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.3.17.75433
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='__CT 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> So in an attempt to summarise the situation, what are the advantages of RSDL
+> over mainline.
+>
+> Fairness
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+why do you think fairness is good, especially always good?
 
+> Starvation free
 
-* Rik van Riel <riel@redhat.com> wrote:
+even starvation is sometimes a good thing - there's a place for processes
+that only use the CPU if it is otherwise idle.  that is, they are
+deliberately starved all the rest of the time.
 
-> The increased AIM7 throughput (and the other benchmark results) looked 
-> very promising to me.
-> 
-> I wonder what we're doing wrong in the normal scheduler...
+> Much lower and bound latencies
 
-there's a relatively easy way to figure out whether it's related to the 
-interactivity code: try AIM7 with SCHED_BATCH as well, to take most of 
-the 'interactivity effects' out of the picture.
+in an average sense?  also, under what circumstances does this actually
+matter?  (please don't offer something like RT audio on an overloaded machine-
+that's operator error, not something to design for.)
 
-build the attached setbatch.c code and do "./setbatch $$" to change the 
-shell to SCHED_BATCH (and all its future children will be SCHED_BATCH 
-too).
+> Deterministic
 
-	Ingo
+not a bad thing, but how does this make itself apparent and of value 
+to the user?  I think everyone is extremely comfortable with non-determinism
+(stemming from networks, caches, interleaved workloads, etc)
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="setbatch.c"
+> Better interactivity for the majority of cases.
 
+how is this measured?  is this statement really just a reiteration of 
+the latency claim?
 
-/*
- * Set a given PID to be a SCHED_BATCH process.
- * 
- * Copyright (C) 2002 Ingo Molnar
- */
-#include <time.h>
-#include <stdio.h>
-#include <sched.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <linux/unistd.h>
+> Now concentrating on the very last aspect since that seems to be the sticking
+> point.
 
-int main (int argc, char **argv)
-{
-	int pid, ret;
-	struct sched_param p;
-
-	p.sched_priority = 0;
-
-	if (argc != 2) {
-		printf("usage: setbatch <pid>\n");
-		exit(-1);
-	}
-	pid = atol(argv[1]);
-
-	ret = sched_setscheduler(pid, 3, &p);
-
-	if (ret) {
-		printf("could not set pid %d to SCHED_BATCH: err %d.\n", pid, ret);
-		return -1;
-	}
-	printf("pid %d is SCHED_BATCH from now on.\n", pid);
-	return 0;
-}
-
---45Z9DzgjV8m4Oswq--
+nah, I think the fairness and latency claims are the real issues.
