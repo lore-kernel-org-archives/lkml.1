@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbXCQBCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966005AbXCQBQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbXCQBCX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 21:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXCQBCX
+	id S966005AbXCQBQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 21:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966009AbXCQBQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 21:02:23 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:57383 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752617AbXCQBCW (ORCPT
+	Fri, 16 Mar 2007 21:16:26 -0400
+Received: from smtp.bulldogdsl.com ([212.158.248.8]:3104 "EHLO
+	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966005AbXCQBQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 21:02:22 -0400
-Message-ID: <45FB3D74.2040907@student.ltu.se>
-Date: Sat, 17 Mar 2007 01:59:32 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 16 Mar 2007 21:16:25 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SATA problems in 2.6.20.3
+Date: Sat, 17 Mar 2007 01:16:18 +0000
+User-Agent: KMail/1.9.5
+Cc: Charles Shannon Hendrix <shannon@widomaker.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <fa.lqWgqhKIlhgG3TXcvhBc/T7bPFE@ifi.uio.no> <45FB2BD9.2070803@shaw.ca>
+In-Reply-To: <45FB2BD9.2070803@shaw.ca>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] A need for "yesno"-function? (and "cleanup" of kernel.h)
-References: <45F95351.60308@student.ltu.se> <39e6f6c70703152036m778ea054gf32723d0eda2be68@mail.gmail.com> <45FAB6C5.8050302@student.ltu.se> <Pine.LNX.4.61.0703170019010.23117@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0703170019010.23117@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703170116.18177.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Mar 16 2007 16:24, Richard Knutsson wrote:
->   
->>>> char yesno_chr(const bool value)
->>>> {
->>>>        return "ny"[value];
->>>> }
->>>>
->>>> char *yesno_str(const bool value)
->>>> {
->>>>        return &"no\0yes"[3 * value];
->>>> }
->>>>         
+On Friday 16 March 2007 23:44, you wrote:
+> Charles Shannon Hendrix wrote:
+> > I normally run a modified 2.6.19 kernel and it works great.
+> >
+> > I recently tried 2.6.20 and had severe SATA problems with it.
+> >
+> > Yesterday I tried 2.6.20.3, and the problems are still there.
 >
-> static/extern const char *const yesno[] = {"no", "yes"};
-> static inline const char *yesno_str(bool value)
->   
-Should we use "inline"? Isn't it better to leave that to the compiler?
-Why the "const"?
-> {
-> 	return yesno[value];
-> }
->   
-That's better :)
-But I think a simple
+> Can you try 2.6.21-rc and see if the problem is fixed in those kernels?
 
-static char *yesno_str(bool value)
-{
-	return value ? "yes" : "no";
-}
-is to prefer, don't you? It is simpler and we don't need to deal with an unnecessary array (unless it may be used by itself, that is. Then I would go for your implementation).
+-rc4 specifically, it's the first one that's worked for me (possibly related).
 
-> #or
-> #define yesno_str(value) yesno[!!(value)]
->   
-Why not "(bool)value" instead? We cast all the other times we want a 
-something to be of a different kind.
+(BTW Robert, the sata_nv shadow registers patch has been fine here with a 
+patched -rc3 for just over a week now.)
 
-Any thoughts where to put a function like this?
+-- 
+Cheers,
+Alistair.
 
-Richard Knutsson
-
-
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
