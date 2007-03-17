@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965580AbXCQO2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965585AbXCQOcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965580AbXCQO2D (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 10:28:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965583AbXCQO2D
+	id S965585AbXCQOcm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 10:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965618AbXCQOcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 10:28:03 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:50203 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965580AbXCQO2B (ORCPT
+	Sat, 17 Mar 2007 10:32:41 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:3674 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965585AbXCQOck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 10:28:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
-        b=urQF4CjSXHGuTZ8MiOlnV4pHM+WTmPGAawEiROO4g6bgmir5eUP3TlRq51LTE6OO8SUttI18vFEiHDqAbqU1Ae2XmcfBTcEwMO93VUfPVWMtChztmcecunauu9WsPKE3/fDPbx3YmZhvsD0J8VCCojPjk/9rAyzknK1Y1nx3OjM=
-Date: Sat, 17 Mar 2007 16:27:51 +0200 (EET)
-From: Szonyi Calin <caszonyi@gmail.com>
-X-X-Sender: sony@grinch.ro
-Reply-To: Calin Szonyi <caszonyi@gmail.com>
-To: Con Kolivas <kernel@kolivas.org>
-cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-Subject: Re: RSDL v0.30 cpu scheduler for mainline kernels
-In-Reply-To: <200703121058.11966.kernel@kolivas.org>
-Message-ID: <Pine.LNX.4.64.0703171530520.1796@grinch.ro>
-References: <200703121058.11966.kernel@kolivas.org>
+	Sat, 17 Mar 2007 10:32:40 -0400
+Date: Sat, 17 Mar 2007 15:30:43 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Paul Mackerras <paulus@samba.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
+       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC][PATCH] sys_fallocate() system call
+Message-ID: <20070317143043.GA8577@osiris.ibm.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <17915.48105.70494.958220@cargo.ozlabs.ibm.com> <20070317110706.GB29931@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070317110706.GB29931@parisc-linux.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Mar 2007, Con Kolivas wrote:
+On Sat, Mar 17, 2007 at 05:07:06AM -0600, Matthew Wilcox wrote:
+> On Sat, Mar 17, 2007 at 08:59:05PM +1100, Paul Mackerras wrote:
+> > ... but wouldn't work on 32-bit powerpc. :(  We would end up with a
+> > pad argument between fd and offset, giving 7 arguments in all
+> > (counting the loff_t's as 2), but we only support 6.
+> 
+> Ditto mips and parisc.
 
-> There are updated patches for 2.6.20, 2.6.20.2, 2.6.21-rc3 and 2.6.21-rc3-mm2
-> to bring RSDL up to version 0.30 for download here:
->
-> Full patches:
->
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.20-sched-rsdl-0.30.patch
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.20.2-rsdl-0.30.patch
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-sched-rsdl-0.30.patch
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0.30.patch
->
+Can't be. Or: mips supports 7 arguments and parisc doesn't pad.
+Otherwise they couldn't have wired up
 
-Works fine here. Better than mainline. I can listen music from a video dvd 
-while browsing with opera and amule running. In mainline (CFQ scheduler) i 
-cannot do this because the sound skips badly. With RSDL there are very few 
-skips, they are shorter and related on a particular event - in this case 
-clicking a link in Opera browser.
+sys_sync_file_range(int fd, loff_t offset, loff_t nbytes, unsigned int flags)
 
-Now system info:
-CPU:  AMD Duron 700 MHz, MB chipset VIAKT133 (UDMA 66), memory 384172 kB 
-(reported by /proc/meminfo).
-
-Kernel is 2.6.21-rc3 #3 PREEMPT with RSDL 0.30 patches.
-
-Thanks
-
-Bye
-Calin
-
-
-P.S. As a side note: in mainline the cpu was distributed almost equally 
-between different tasks which favoured the big cpu hogs (amule and opera). 
-Now, in RSDL the mplayer gets a bigger stake
-
---
-
-"frate, trezeste-te, aici nu-i razboiul stelelor"
- 				Radu R. pe offtopic at lug.ro
-
+But from what I read, it's currently not possible for 32-bit powerpc to
+wire up the already present sync_file_range system call.
