@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbXCQQpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbXCQRDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752403AbXCQQpa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 12:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXCQQpa
+	id S1752234AbXCQRDG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 13:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbXCQRDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 12:45:30 -0400
-Received: from www.osadl.org ([213.239.205.134]:49760 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751286AbXCQQp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 12:45:29 -0400
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
-	far
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Len Brown <lenb@kernel.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <1174125404.13341.396.camel@localhost.localdomain>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	 <1174088686.13341.347.camel@localhost.localdomain>
-	 <200703162132.53906.lenb@kernel.org>
-	 <1174125404.13341.396.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 17 Mar 2007 17:52:23 +0100
-Message-Id: <1174150344.13341.430.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Mar 2007 13:03:06 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57984 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbXCQRDE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 13:03:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
+References: <20070316170255.GA194@tv-sign.ru>
+	<m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com>
+	<20070317130216.GA78@tv-sign.ru>
+	<m1k5xgklun.fsf@ebiederm.dsl.xmission.com>
+	<20070317150949.GA302@tv-sign.ru> <20070317152437.GA365@tv-sign.ru>
+Date: Sat, 17 Mar 2007 11:01:50 -0600
+In-Reply-To: <20070317152437.GA365@tv-sign.ru> (Oleg Nesterov's message of
+	"Sat, 17 Mar 2007 18:24:37 +0300")
+Message-ID: <m1fy83ls75.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-17 at 10:56 +0100, Thomas Gleixner wrote:
-> > Maybe I could follow the new logic in apic.c if I saw the "apic=debug"
-> > output for this box.
-> 
-> calibrating APIC timer ...
-> ... lapic delta = 2426884
-> ... PM timer delta = 833908
-> APIC calibration PIT not consistent with PM Timer: 232ms instead of 100ms
-> APIC delta adjusted to PM-Timer: 1041737 (2426884)
-> ..... delta 1041737
-> ..... mult: 44749065
-> ..... calibration result: 166677
-> ..... CPU clock speed is 4659.0624 MHz.
-> ..... host bus clock speed is 166.0677 MHz.
-> 
-> This box is off by factor 2.3 and using the PM-Timer instead of the
-> PIT/jiffies values gives me a correct result.
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-I instrumented the lapic calibration on this box:
+> On 03/17, Oleg Nesterov wrote:
+>>
+>> > Well the initial kernel process does not have a struct pid so when
+>> > it's children start doing:
+>> > 	attach_pid(p, PIDTYPE_PGID, task_group(p));
+>> > 	attach_pid(p, PIDTYPE_SID, task_session(p));
+>> > We will get an oops.
+>> 
+>> So far this is the only reason to have init_struct_pid. Because the
+>> boot CPU (swapper) forks, right?
+>
+> Damn. I am afraid I was not clear again :) Not init_struct_pid, but
+>
+> 	+ .pids = { \
+> 	+ [PIDTYPE_PID] = INIT_PID_LINK(PIDTYPE_PID), \
+> 	+ [PIDTYPE_PGID] = INIT_PID_LINK(PIDTYPE_PGID), \
+> 	+ [PIDTYPE_SID] = INIT_PID_LINK(PIDTYPE_SID), \
+> 	+ }, \
+>
+> for INIT_TASK().
+>
+>> > So a dummy unhashed struct pid was added for the idle threads.
+>> > Allowing several special cases in the code to be removed.
+>> > 
+>> > With that chance the previous special case to force the idle thread
+>> > init session 1 pgrp 1 no longer works because attach_pid no longer
+>> > looks at the pid value but instead at the struct pid pointers.
+>> > 
+>> > So we had to add the __set_special_pids() to continue to keep init
+>> > in session 1 pgrp 1.  Since /sbin/init calls setsid() that our setting
+>> > the sid and the pgrp may not be strictly necessary.  Still is better
+>> > to not take any chances.
+>> 
+>> Yes, yes, I see. But my (very unclear, sorry) question was: shouldn't we
+>> change INIT_SIGNALS then? /sbin/init inherits ->pgrp == ->_session == 1,
+>> in that case __set_special_pids(1,1) does nothing.
+>
+> ... and thus /sbin/init remains attached to the .pids above, no?
 
-I1:     999 us total:    999 us
-I2:     999 us total:   1998 us
-...
-I28:    999 us total:  27980 us
-I29: 135097 us total: 163077 us  <--------------------
-I30:    881 us total: 163958 us
-...
-I98:   1000 us total: 231918 us
-I99:    999 us total: 232917 us
+The problem is that we dynamically allocate the struct pid for 
+pid_t == 1 when we fork init.
 
-So it vanishes away for 132 ms, which is exactly the error above. This
-happens in random places and sometimes I'm lucky that it does not happen
-at all.
+Which means we don't have access to it at compile time so we can
+no longer make INIT_SIGNALS set ->gprp == ->session == 1.
 
-	tglx
-
-
+Eric
