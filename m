@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965662AbXCQOmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbXCQOm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965662AbXCQOmN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 10:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965647AbXCQOmN
+	id S1752608AbXCQOm0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 10:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXCQOm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 10:42:13 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49083 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965662AbXCQOmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 10:42:11 -0400
-Date: Sun, 18 Mar 2007 01:42:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Paul Mackerras <paulus@samba.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
-       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC][PATCH] sys_fallocate() system call
-Message-Id: <20070318014214.bd7ce48a.sfr@canb.auug.org.au>
-In-Reply-To: <20070318013838.d00d420e.sfr@canb.auug.org.au>
-References: <20070117094658.GA17390@amitarora.in.ibm.com>
-	<20070225022326.137b4875.akpm@linux-foundation.org>
-	<20070301183445.GA7911@amitarora.in.ibm.com>
-	<20070316143101.GA10152@amitarora.in.ibm.com>
-	<20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
-	<17915.48105.70494.958220@cargo.ozlabs.ibm.com>
-	<20070317110706.GB29931@parisc-linux.org>
-	<20070317143043.GA8577@osiris.ibm.com>
-	<20070318013838.d00d420e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__18_Mar_2007_01_42_14_+1100_F1IKO8d_lae5GUnw"
+	Sat, 17 Mar 2007 10:42:26 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:1035 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752608AbXCQOmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 10:42:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=uaz2ZjQpJBAzda+U8S9lK9lc+8Z7RshPXBnWCQs/lBfMPNDg6aU4PqsZVF1W4UDvhIy7ZQ8E7DkXbt9r5JcUbZP3Mo+NF05CyWtE4uIRyXldX8/ed4U5lXWu5hmZSTmHnVUbyGyFazpHtxngdXMbJjU0CfvqEtijpAlBLPK8yoQ=
+Date: Sat, 17 Mar 2007 17:38:44 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
+Message-ID: <20070317143844.GA10920@cvg>
+References: <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr> <20070310194617.2aef1006@localhost> <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr> <20070310175058.GA19878@cvg> <Pine.LNX.4.61.0703101906070.8799@yvahk01.tjqt.qr> <20070310212730.GA2577@uranus.ravnborg.org> <Pine.LNX.4.61.0703102234210.26332@yvahk01.tjqt.qr> <20070310224534.GA3150@uranus.ravnborg.org> <20070311100723.GA10359@cvg> <20070311195033.GA3302@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070311195033.GA3302@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__18_Mar_2007_01_42_14_+1100_F1IKO8d_lae5GUnw
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+[Sam Ravnborg - Sun, Mar 11, 2007 at 08:50:33PM +0100]
+| On Sun, Mar 11, 2007 at 01:07:23PM +0300, Cyrill Gorcunov wrote:
+| > [Sam Ravnborg - Sat, Mar 10, 2007 at 11:45:34PM +0100]
+| > | On Sat, Mar 10, 2007 at 10:34:41PM +0100, Jan Engelhardt wrote:
+| > | > 
+| > | > On Mar 10 2007 22:27, Sam Ravnborg wrote:
+| > | > >On Sat, Mar 10, 2007 at 07:23:41PM +0100, Jan Engelhardt wrote:
+| > | > >> 
+| > | > >> Whether the 'working config file path' should change when you do
+| > | > >> 'Save as Alternate' or not, is a menuconfig axiom. Ask Sam Ravnborg
+| > | > >> if you want it changed :-)
+| > | > >
+| > | > >Current behaviour is not logical but on the other hand I do not
+| > | > >see a big need to make it so.
+| > | > >It seems that people very seldom uses "save alternate" anyway.
+| > | > >
+| > | > >But patches are welcome.
+| > | > 
+| > | > ^_^ The patch has already been posted, has not it?
+| > | No.
+| > | Either we keep current behaviour or we change to the "normal"
+| > | behaviour with a "Save as..." as know from all other programs.
+| > | 
+| > | 	Sam
+| > | 
+| > 
+| > Hi Sam,
+| > 
+| > here is a patch for menuconfig that shows current configuration
+| > file. So I think menuconfig does its work well but the only
+| > thing we need is to show location of an _active_ configuration.
+| > 
+| > Any comments are welcome (and you may swear at me too :)
+| I would rather avoid adding the extra lines. In the
+| 'office-suite' fashion I have cooked up a patch that specify
+| the filename as part of the windows title.
+| 
+| To make the conversion we should consider renaming from
+| current "Load alternate" to "Open config file..."
+| and likewise "Save alternate" to "Save config file as..."
+| 
+| Comments?
+| 
+| 	Sam
 
-On Sun, 18 Mar 2007 01:38:38 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> On Sat, 17 Mar 2007 15:30:43 +0100 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> >
-> > sys_sync_file_range(int fd, loff_t offset, loff_t nbytes, unsigned int flags)
-> >
-> > But from what I read, it's currently not possible for 32-bit powerpc to
-> > wire up the already present sync_file_range system call.
->
-> 32bit native is fine (as the ABI in user mode is the same as that in the
+[... snip ...]
 
-Sorry, I take that back ...
+Hi Sam,
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+maybe my prev letter was lost, so let me repeat - I think your patch
+is pretty good to be merged into kernel. Did you send any patch to
+Andrew? Btw I think we may leave "Load Alternate..." and "Save
+Alternate..." as is - the user always may know what the config he is
+using on the main dialog title :)
 
---Signature=_Sun__18_Mar_2007_01_42_14_+1100_F1IKO8d_lae5GUnw
-Content-Type: application/pgp-signature
+		Cyrill
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFF+/5MFdBgD/zoJvwRAqmAAJ4l3dpzjhJtieFkiWyo6Ert8Ua8EQCfR2cF
-cGgls4pRiPxNQNH1AgKchbU=
-=mGuz
------END PGP SIGNATURE-----
-
---Signature=_Sun__18_Mar_2007_01_42_14_+1100_F1IKO8d_lae5GUnw--
