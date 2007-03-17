@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965538AbXCQLKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbXCQLsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965538AbXCQLKk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 07:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965536AbXCQLKj
+	id S1752323AbXCQLsL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 07:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbXCQLsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 07:10:39 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:35708 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965533AbXCQLKi (ORCPT
+	Sat, 17 Mar 2007 07:48:11 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:58401 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbXCQLsK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 07:10:38 -0400
-Date: Sat, 17 Mar 2007 05:10:37 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>,
-       suparna@in.ibm.com, cmm@us.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com
-Subject: Re: [RFC][PATCH] sys_fallocate() system call
-Message-ID: <20070317111036.GC29931@parisc-linux.org>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 17 Mar 2007 07:48:10 -0400
+Date: Sat, 17 Mar 2007 07:48:08 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: RSDL v0.31
+In-reply-to: <1174115517.7911.66.camel@Homer.simpson.net>
+To: linux-kernel@vger.kernel.org
+Cc: Mike Galbraith <efault@gmx.de>, Nicholas Miell <nmiell@comcast.net>,
+       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
+       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <200703170748.08495.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703042335.26785.a1426z@gawab.com>
+ <1174112768.3144.8.camel@entropy> <1174115517.7911.66.camel@Homer.simpson.net>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 16, 2007 at 05:17:04PM +0100, Heiko Carstens wrote:
-> > +asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
-> 
-> e.g.
-> 
-> asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len, int mode)
-> 
-> would work even on s390 ;)
+On Saturday 17 March 2007, Mike Galbraith wrote:
+>On Fri, 2007-03-16 at 23:26 -0700, Nicholas Miell wrote:
+>> RSDL appears to be completely deterministic, which is a very strong
+>> virtue.
+>
+>Yes.  That's why RSDL aroused my curiosity big time.
+>
+>> The X people have plans for how to go about fixing this, but until
+>> then, there's no reason to hold up kernel development.
+>
+>I'm not in a position to hold up development.
+>
+>On a side note, I wonder how long it's going to take to fix all the
+>X/client combinations out there.
 
-How about:
+And on yet another side note Mike, I just did a make -j8 for all make 
+options in my makeit script, something I don't normally do, and while 
+running 2.6.20.3-rdsl-0.31, building 2.6.21-rc4, the machine remained 
+100% responsive, worst case keyboard lag that I observed might have been 
+200 or 300 milliseconds.  The machine remained usable, which to me is the 
+bottom line.  And no, I wasn't running xmms at the time or watching 
+tvtime else I'd have awakened the missus.
 
-asmlinkage long sys_fallocate(int fd, int mode, u32 off_low, u32 off_high,
-				u32 len_low, u32 len_high);
+I'm having a hard time justifying your continual fussing as its obviously 
+a huge improvement to me.  What makes your system and loading so much 
+different from mine I wonder...
 
-That way we all suffer equally ...
+In the meantime I'm a very happy camper about this patch.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+I prefer rogues to imbeciles because they sometimes take a rest.
+		-- Alexandre Dumas, fils
