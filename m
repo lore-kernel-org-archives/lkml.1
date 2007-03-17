@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992489AbXCQBYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbXCQBfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992489AbXCQBYv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 21:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966014AbXCQBYv
+	id S932332AbXCQBfS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 21:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933059AbXCQBfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 21:24:51 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:29356 "EHLO
-	asav03.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966011AbXCQBYu (ORCPT
+	Fri, 16 Mar 2007 21:35:18 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:27521 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932332AbXCQBfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 21:24:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AusRAIbg+kVKhRO4UGdsb2JhbACBZ4VMiCABASo
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Victor Fernandes <Victor.Fernandes@comnet.be>
-Subject: Re: New kernel mouse recognition problem
-Date: Fri, 16 Mar 2007 21:24:49 -0400
-User-Agent: KMail/1.9.3
-Cc: linux-kernel@vger.kernel.org
-References: <63140.87.244.133.121.1174080813.squirrel@postino>
-In-Reply-To: <63140.87.244.133.121.1174080813.squirrel@postino>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 16 Mar 2007 21:35:17 -0400
+Date: Fri, 16 Mar 2007 18:34:36 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] kprobes: fix sparse NULL warning
+Message-Id: <20070316183436.eb25034e.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703162124.49789.dtor@insightbb.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Victor,
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-On Friday 16 March 2007 17:33, Victor Fernandes wrote:
-> Dear kernel gurus,
-> 
-> I have a long experience with linux but not at the kernel level, so my
-> apologies if this post is not appropriate for the list, but it seemed to
-> me to be the only possible one to post my question.
-> 
-> Obviously I've also tried to find the solution on the archives (and more)
-> but found nothing appropriate.
-> 
-> Problem: It appears that the new kernels, I've actually kernel 2.6.17-5
-> (Mandriva 2007) installed, and tested others on the 2.6.x range, do not
-> recognition my "Track Point" mouse anymore. I have on the boot logs
-> (syslog) the following message: "logips2pp: Detected unknown logitech
-> mouse model 0".
-> 
+Fix sparse NULL warnings:
+kernel/kprobes.c:915:49: warning: Using plain integer as NULL pointer
 
-Does the mouse still work despite this message?
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ kernel/kprobes.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> The same system with a kernel 2.6.12-12 (Mandriva 10.1) worked properly.
-> 
-
-How was it identified by 2.6.12? Could you please send me output of
-cat /proc/bus/input/devices on 2.6.12 and 2.6.17?
-
--- 
-Dmitry
+--- linux-2621-rc4.orig/kernel/kprobes.c
++++ linux-2621-rc4/kernel/kprobes.c
+@@ -35,6 +35,7 @@
+ #include <linux/hash.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
++#include <linux/stddef.h>
+ #include <linux/module.h>
+ #include <linux/moduleloader.h>
+ #include <linux/kallsyms.h>
+@@ -912,7 +913,7 @@ static int __kprobes debugfs_kprobe_init
+ 	if (!dir)
+ 		return -ENOMEM;
+ 
+-	file = debugfs_create_file("list", 0444, dir , 0 ,
++	file = debugfs_create_file("list", 0444, dir, NULL,
+ 				&debugfs_kprobes_operations);
+ 	if (!file) {
+ 		debugfs_remove(dir);
