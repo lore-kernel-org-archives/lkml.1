@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933855AbXCQN2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXCQNgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933855AbXCQN2L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 09:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933874AbXCQN2L
+	id S965521AbXCQNgl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 09:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965527AbXCQNgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 09:28:11 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2111 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933855AbXCQN2J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 09:28:09 -0400
-Message-ID: <45FBECCF.6020106@shadowen.org>
-Date: Sat, 17 Mar 2007 13:27:43 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/3] Lumpy Reclaim V5
-References: <exportbomb.1173723760@pinky> <20070315192038.82933a2f.akpm@linux-foundation.org>
-In-Reply-To: <20070315192038.82933a2f.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 17 Mar 2007 09:36:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55036 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965521AbXCQNgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 09:36:40 -0400
+X-Provags-ID: V01U2FsdGVkX19gWJhLMrVgTFFPdqxGQlzPV8QkSHCrOFimJppYRj
+	YhPh2z/9RT9ihA
+Subject: Re: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200703170805.59619.gene.heskett@gmail.com>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <1174125534.7734.2.camel@Homer.simpson.net>
+	 <1174128564.7996.9.camel@Homer.simpson.net>
+	 <200703170805.59619.gene.heskett@gmail.com>
+Content-Type: text/plain
+Date: Sat, 17 Mar 2007 14:36:30 +0100
+Message-Id: <1174138590.7614.6.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 12 Mar 2007 18:22:45 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
+On Sat, 2007-03-17 at 08:05 -0400, Gene Heskett wrote:
+> >
+> >top - 11:35:50 up 57 min, 12 users,  load average: 5.20, 4.30, 2.57
+> >
+> >  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  P COMMAND
+> > 6599 root      26   0  174m  30m 8028 R   51  3.1   7:08.70 0 Xorg
+> > 7991 root      29   0 18196  14m 5188 R   47  1.4   0:55.70 0
+> > amarok_libvisua 7995 root      37   5  3720 2444  976 R   44  0.2  
+> > 0:27.53 1 lame 7993 root      37   5  3720 2448  976 R   40  0.2  
+> > 0:46.60 1 lame
 > 
->> Following this email are three patches which represent the
->> current state of the lumpy reclaim patches; collectively lumpy V5.
-> 
-> So where do we stand with this now?    Does it make anything get better?
+> What X driver are you using Mike?  Are you on a builtin video chipset 
+> using mobo shared memory?  I'm running the nvidia 9755 driver here with a 
+> jaton nvidia 6200-256 card here, and YES I KNOW that taints the kernel, 
+> but x is using on average, 1.3% of the cpu.
 
-I am still working to fairly compare the various combinations.  One of
-the problems is that if you push any reclaim algorithm to its physical
-limits you will get the same overall success rates.
+Xorg is using 50% cpu because I'm asking it to.
 
-I think there is still some work to do refining lumpy, and reclaim in
-general.  But I feel what we have now is pretty solid base for that.
+	-Mike
 
-> I (continue to) think that if this is to be truly useful, we need some way
-> of using it from kswapd to keep a certain minimum number of order-1,
-> order-2, etc pages in the freelists.
-
-I think this is a key component of the mix and am just starting to play
-with this.  I hope that this can provide improvements in the
-instantaneous availability of these higher orders and improve average
-latency.
-
--apw
