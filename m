@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbXCQOnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750760AbXCQOyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbXCQOnm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 10:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXCQOnm
+	id S1750760AbXCQOyK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 10:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbXCQOyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 10:43:42 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45192 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752678AbXCQOnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 10:43:41 -0400
-X-Provags-ID: V01U2FsdGVkX19VZ3hIK7xVg7bsckPBXZLIItH3V89odU/fAHZFyL
-	QI3gjjlnrzmqWp
-Subject: Re: RSDL v0.31
-From: Mike Galbraith <efault@gmx.de>
-To: Rik van Riel <riel@redhat.com>
-Cc: Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <45FBFC18.8060700@redhat.com>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703170040.48316.kernel@kolivas.org>
-	 <1174059299.7886.25.camel@Homer.simpson.net>
-	 <200703170813.32594.kernel@kolivas.org>
-	 <1174084207.7009.9.camel@Homer.simpson.net>  <45FBFC18.8060700@redhat.com>
-Content-Type: text/plain
-Date: Sat, 17 Mar 2007 15:43:29 +0100
-Message-Id: <1174142609.7614.18.camel@Homer.simpson.net>
+	Sat, 17 Mar 2007 10:54:09 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2328 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbXCQOyH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 10:54:07 -0400
+Date: Sat, 17 Mar 2007 14:53:48 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
+       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC][PATCH] sys_fallocate() system call
+Message-ID: <20070317145348.GA32278@flint.arm.linux.org.uk>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+	Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
+	cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070316143101.GA10152@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-17 at 10:32 -0400, Rik van Riel wrote:
-> Mike Galbraith wrote:
-> 
-> > If this is your final answer to the problem space, I am done testing,
-> > and as far as _I_ am concerned, your scheduler is an utter failure.
-> 
-> The increased AIM7 throughput (and the other benchmark results)
-> looked very promising to me.
-> 
-> I wonder what we're doing wrong in the normal scheduler...
+On Fri, Mar 16, 2007 at 08:01:01PM +0530, Amit K. Arora wrote:
+> Attached below is the patch which implements this system call. It has
+> been currently implemented and tested on i386, ppc64 and x86_64
+> architectures. I am facing some problems while trying to implement this
+> on s390, and thus the delay. While I try to get it right on s390(x), we
+> thought of posting this patch, so that we can save some time. Parallely
+> we will work on getting the patch work on s390, and probably it will
+> come as a separate patch.
 
-Yeah, I tried AIM7 with both schedulers, but apparently you need size
-mondo hardware.  My poor little box produced identical results.
+I suggest reading the very end of arch/arm/kernel/sys_arm.c; I'd rather
+avoid adding more and more hacks like that to the kernel if at all
+possible.
 
-(I only noticed one other benchmark result, and IIRC it showed a ~5%
-drop in throughput, which was attributed to higher context switch rate)
+One solution (already mentioned elsewhere) is that we start avoiding
+passing 64-bit arguments and instead pass two 32-bit instead.  This
+nicely avoids the alignment restrictions for 64-bit args in ABIs.
 
-	-Mike
+(The issue for ARM is that with anything other than the "fd, mode,
+offset, len" layout we will have to deal with different ABI argument
+layouts, or implement our own wrapper function as done for
+sys_arm_sync_file_range.)
 
+I think the problem comes down to "what is the argument layout which
+causes the least amount of problems for the complete set of architectures."
+For ARM, that's the "fd, mode, offset, len" layout.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
