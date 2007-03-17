@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753725AbXCQEGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753732AbXCQEYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753725AbXCQEGz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 00:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbXCQEGz
+	id S1753732AbXCQEYI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 00:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbXCQEYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 00:06:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:37894 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753725AbXCQEGy (ORCPT
+	Sat, 17 Mar 2007 00:24:08 -0400
+Received: from rwcrmhc11.comcast.net ([216.148.227.151]:63105 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753732AbXCQEYG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 00:06:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Ke6QLrvbUutmCvy2OCeXFMiEyAhRUXv8gsiEuWxBmYNnQ5THAxfsk9nH6HhrHzjKXOihfDDVTOdqd95cOHgSYX+yGhC4k6WTpFQO+HdXycJtzw83Z5t62B/Y6aawTJJUZhsNl0D9ksSNTRxma1g3jvGABoBUMGnd4ohL25hexZg=
-Message-ID: <170fa0d20703162106v47dc13e1u1ae5381576f372ed@mail.gmail.com>
-Date: Fri, 16 Mar 2007 23:06:52 -0500
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: forced umount?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 17 Mar 2007 00:24:06 -0400
+Subject: Re: RSDL v0.31
+From: Nicholas Miell <nmiell@comcast.net>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
+       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1174084207.7009.9.camel@Homer.simpson.net>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703170040.48316.kernel@kolivas.org>
+	 <1174059299.7886.25.camel@Homer.simpson.net>
+	 <200703170813.32594.kernel@kolivas.org>
+	 <1174084207.7009.9.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Fri, 16 Mar 2007 21:24:03 -0700
+Message-Id: <1174105443.3144.4.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.0.njm.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm interested in understanding the state of Linux with regard to
-_really_ forcing a filesystem to unmount.
+On Fri, 2007-03-16 at 23:30 +0100, Mike Galbraith wrote:
+> On Sat, 2007-03-17 at 08:13 +1100, Con Kolivas wrote:
+> > On Saturday 17 March 2007 02:34, Mike Galbraith wrote:
+> > > On Sat, 2007-03-17 at 00:40 +1100, Con Kolivas wrote:
+> > > > Here are full patches for rsdl 0.31 for various base kernels. A full
+> > > > announce with a fresh -mm series will follow...
+> > > >
+> > > > http://ck.kolivas.org/patches/staircase-deadline/2.6.20.3-rsdl-0.31.patch
+> > > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-sched-rsdl-0.
+> > > >31.patch
+> > > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0.31
+> > > >.patch
+> > >
+> > > It still has trouble with the x/gforce vs two niced encoders scenario.
+> > > The previously reported choppiness is still present.
+> > >
+> > > I suspect that x/gforce landing in the expired array is the trouble, and
+> > > that this will never be smooth without some kind of exemption.  I added
+> > > some targeted unfairness to .30, and it didn't help much at all.
+> > >
+> > > Priorities going all the way to 1 were a surprise.
+> > 
+> > It wasn't going to change that case without renicing X.
+> 
+> Con.  You are trying to wedge a fair scheduler into an environment where
+> totally fair simply can not possibly function.
+> 
+> If this is your final answer to the problem space, I am done testing,
+> and as far as _I_ am concerned, your scheduler is an utter failure.
+> 
 
-There is a (stale) project at OSDL that has various implementations:
-http://developer.osdl.org/dev/fumount/
+Sorry, I haven't really been following this thread and now I'm confused.
 
-Its fairly clear that these efforts (e.g. badfs patches) haven't been
-given serious consideration for upstream inclusion.  Do others see
-value in the ability to _reliably_ force a umount by having Linux
-discard all IOs, open files, dirty inode buffers, etc of a "bad"
-blockdevice?  The goal is to not impact the availability or integrity
-of Linux while doing so.
+You're saying that it's somehow the scheduler's fault that X isn't
+running with a high enough priority?
 
-Is this forced umount work even considered worthwhile by the greater
-Linux community?  Is anyone actively working on this?
+-- 
+Nicholas Miell <nmiell@comcast.net>
 
-Mike
