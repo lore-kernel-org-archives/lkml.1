@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbXCQBkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933193AbXCQBvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752379AbXCQBkx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 21:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933193AbXCQBkx
+	id S933193AbXCQBvf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 21:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbXCQBvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 21:40:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36481 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752379AbXCQBkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 21:40:52 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: tglx@linutronix.de
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far
-Date: Fri, 16 Mar 2007 21:32:53 -0400
-User-Agent: KMail/1.9.5
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Arjan van de Ven <arjan@infradead.org>
-References: <200703161230.03712.maximlevitsky@gmail.com> <1174088686.13341.347.camel@localhost.localdomain>
-In-Reply-To: <1174088686.13341.347.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 16 Mar 2007 21:51:35 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:30232 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933193AbXCQBvb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 21:51:31 -0400
+Date: Fri, 16 Mar 2007 18:49:55 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: isdn4linux@listserv.isdn4linux.de, lkml <linux-kernel@vger.kernel.org>
+Cc: kkeil@suse.de, kai.germaschewski@gmx.de
+Subject: is SpellCaster ISDN still used?
+Message-Id: <20070316184955.71ff1e3b.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703162132.53906.lenb@kernel.org>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 March 2007 19:44, Thomas Gleixner wrote:
-> Maxim,
-> 
-> On Fri, 2007-03-16 at 12:30 +0200, Maxim Levitsky wrote:
-> > 3) Sometimes I get this (once in three boots or so)
-> > 
-> > [   36.217405] ENABLING IO-APIC IRQs
-> > [   36.217587] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-> > [   36.433917] APIC timer disabled due to verification failure.
-> > 
-> > And NO_HZ is disabled due to that (I get 1000/s timer's interrupts)
-> > I haven't investigated that yet.
-> > It looks like another new test that my hardware fails to perform... 
-> 
-> Yes, this is probably caused by SMM code trying to emulate a PS/2
-> keyboard from a (maybe connected or not) USB keyboard. Unfortunately we
-> have no way to disable this BIOS misfeature in the early boot process. 
-> Arjan, Len ?????
 
-Nope.  By definition, SMM is invisible to the OS -- we don't even
-get a bit that said it occurred (though we'd like one -- it would
-be really helpful to diagnose issues like this one)
+There is an API argument mismatch in it:
 
-So go into BIOS SETUP and see if there is a USB Legacy Emulation
-feature that you can disable.  Sometimes there is not, but disabling
-onboard USB altogether may help at least prove the issue is in that area.
+drivers/isdn/sc/init.c:281: warning: assignment from incompatible pointer type
 
-> I built in this test to rule out bogus LAPIC timer calibration values
-> which are sometimes off by factor 2-10.
-> 
-> But I also built in a calibration against the PM-Timer, which turned out
-> to be quite reliable and I think the additional verification step is
-> only necessary for sytems without PM-Timer.
-> 
-> That was a bit over cautious from my side. I send a patch to avoid this
-> when PM-Timer is available in a separate mail.
+		interface->writebuf_skb = sndpkt;
 
-PM-Timer was invented to work-around the issue that the TSC became unreliable
-in the face of power management on laptops.  In particular, to be able
-to time duration of OS idle where TSC stopped.
+where:
 
-While it is not fine grain, and it is not low-latency, is should
-be very reliable.  My understanding is that it is implemented as
-a simple divider right off the system 14MHz clock -- the signal
-which most motherboard clocks are PLL multiplied up from --
-including the 100MHz front-side bus which drives the LAPIC timer.
+int sndpkt(int devId, int channel, struct sk_buff *data)
+{
+...
+}
 
-But that said, I don't understand why calibrating the LAPIC timer
-using the PM-timer is going to be more reliable -- exactly how
-and why did the previous calibration scheme fail?
-Maybe I could follow the new logic in apic.c if I saw the "apic=debug"
-output for this box.
+should look like this:
 
-cheers,
--Len
+  /*
+   * Send data using sk_buff's
+   * Parameters:
+   *             int                    driverId
+   *             int                    local channel-number (0...)
+   *             int                    Flag: Need ACK for this packet.
+   *             struct sk_buff *skb    Data to send
+   */
+  int (*writebuf_skb) (int, int, int, struct sk_buff *);
 
 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
