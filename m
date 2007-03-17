@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933339AbXCQFQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXCQFYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933339AbXCQFQQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 01:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933342AbXCQFQQ
+	id S933365AbXCQFYx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 01:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbXCQFYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 01:16:16 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:45750 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933339AbXCQFQQ (ORCPT
+	Sat, 17 Mar 2007 01:24:53 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:57162 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933342AbXCQFYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 01:16:16 -0400
-Date: Sat, 17 Mar 2007 01:15:41 -0400
+	Sat, 17 Mar 2007 01:24:52 -0400
+Date: Sat, 17 Mar 2007 01:24:40 -0400
 From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: RSDL v0.31
-In-reply-to: <200703171557.53700.kernel@kolivas.org>
+Subject: Re: forced umount?
+In-reply-to: <170fa0d20703162106v47dc13e1u1ae5381576f372ed@mail.gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Con Kolivas <kernel@kolivas.org>, Al Boldi <a1426z@gawab.com>,
-       ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-id: <200703170115.43210.gene.heskett@gmail.com>
+Cc: "Mike Snitzer" <snitzer@gmail.com>, linux-fsdevel@vger.kernel.org
+Message-id: <200703170124.42956.gene.heskett@gmail.com>
 Organization: Organization? very little
 MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Content-type: text/plain; charset=iso-8859-1
 Content-transfer-encoding: 7bit
 Content-disposition: inline
-References: <200703042335.26785.a1426z@gawab.com>
- <200703170740.07530.a1426z@gawab.com> <200703171557.53700.kernel@kolivas.org>
+References: <170fa0d20703162106v47dc13e1u1ae5381576f372ed@mail.gmail.com>
 User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings Con & company;
+On Saturday 17 March 2007, Mike Snitzer wrote:
+>I'm interested in understanding the state of Linux with regard to
+>_really_ forcing a filesystem to unmount.
+>
+>There is a (stale) project at OSDL that has various implementations:
+>http://developer.osdl.org/dev/fumount/
+>
+>Its fairly clear that these efforts (e.g. badfs patches) haven't been
+>given serious consideration for upstream inclusion.  Do others see
+>value in the ability to _reliably_ force a umount by having Linux
+>discard all IOs, open files, dirty inode buffers, etc of a "bad"
+>blockdevice?  The goal is to not impact the availability or integrity
+>of Linux while doing so.
+>
+>Is this forced umount work even considered worthwhile by the greater
+>Linux community?  Is anyone actively working on this?
 
-I built and rebooted to 2.6.20.3-rdsl-0.31 earlier this evening, but 
-purposely waited till amanda was well underway to make a report.
+Having been 'caught out' on this subject more than a few times, usually by 
+shutting down a remotely located box that was mounted via smb or cifs, 
+and found the only way to get sanity back to the rest of the system was a 
+hard reset of every other box that was also sharing that mount, I would 
+think this is a worthwhile project.
 
-The report is that I really really have to work hard to tell that amanda 
-is running even though the cpu according to gkrellm is running between 97 
-and 99%.
+Take that as a yes vote, from somebody who isn't franchised to vote on it 
+in the first place, I'm just a user, usually playing the part of the 
+canary in the coal mine.
 
-For my loading then, this is as much an improvement over the -ck1 patch as 
-it was over the un-patched but same version of the kernel.  FWIW, I'd 
-also built a 2.6.20.3-rdsl-0.30 and ran it for a day but it was nearly as 
-spastic as no patch.
-
-Did I say I like this yet? :)
-
-Now I'm waiting for 2.6.21-rc4 to make the mirrors & see if tar is still 
-broken.  Based on the clues I've been able to find, I bz'd the tar since 
-that's a fedora supplied rpm install.  Humm, I just now recalled that I 
-have a tarball built tar-1.15.1 on another drive, I was using it when I 
-was running FC2, so that might be something else to bisect against, and I 
-will, bet on it.
-
-Many thanks Con, this is very nice.  I've only seen one split second when 
-the screen was about 2 chars behind my typing.  This is great. :-)
+>Mike
 
 -- 
 Cheers, Gene
 "There are four boxes to be used in defense of liberty:
  soap, ballot, jury, and ammo. Please use in that order."
 -Ed Howdershelt (Author)
-When a cow laughs, does milk come out of its nose?
+QOTD:
+	"There may be no excuse for laziness, but I'm sure looking."
