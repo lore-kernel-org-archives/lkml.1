@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750945AbXCQGg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751853AbXCQGnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750945AbXCQGg6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 02:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbXCQGg6
+	id S1751853AbXCQGnI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 02:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbXCQGnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 02:36:58 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:57617 "EHLO smtp.gentoo.org"
+	Sat, 17 Mar 2007 02:43:08 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:58219 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbXCQGg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 02:36:57 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Andrew Morton <akpm@linux-foundation.org>, zippel@linux-m68k.org
-Subject: [patch] dont use obsolete index() function in lxdialog
-Date: Sat, 17 Mar 2007 02:37:07 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1751853AbXCQGnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 02:43:07 -0400
+Date: Sat, 17 Mar 2007 07:43:40 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.21-rc4
+Message-ID: <20070317064340.GB26842@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070316141121.82ba7cb8.randy.dunlap@oracle.com> <20070316153957.232cf648.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703170237.07934.vapier@gentoo.org>
+In-Reply-To: <20070316153957.232cf648.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The index() function is obsolete, use strchr() instead.
+On Fri, Mar 16, 2007 at 03:39:57PM -0700, Randy Dunlap wrote:
+> On Fri, 16 Mar 2007 14:11:21 -0700 Randy Dunlap wrote:
+> 
+> > On Fri, 16 Mar 2007 09:33:54 -0700 (PDT) Linus Torvalds wrote:
+> > 
+> > > 
+> > > I pushed out the -git trees yesterday, but then got distracted, so the 
+> > > patches and tar-balls and the announcement got delayed until this morning. 
+> > > Oops. I'm a scatter-brain.
+> > 
+> > allmodconfig on i386:
+> > 
+> > WARNING: "default_idle" [arch/i386/kernel/apm.ko] undefined!
+> > WARNING: "machine_real_restart" [arch/i386/kernel/apm.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > make: *** [modules] Error 2
+> 
+> Please ignore.
+> 
+> I think that this was the result of doing 'make allyesconfig && make all'
+> followed by 'make allmodconfig && make all' without doing a 'make clean'
+> between them.
+But then we have a dependency error somewhere we need to track down.
+I will try to test here.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
---- a/scripts/kconfig/lxdialog/util.c
-+++ b/scripts/kconfig/lxdialog/util.c
-@@ -336,7 +336,7 @@
- 		newl = 1;
- 		word = tempstr;
- 		while (word && *word) {
--			sp = index(word, ' ');
-+			sp = strchr(word, ' ');
- 			if (sp)
- 				*sp++ = 0;
- 
-@@ -348,7 +348,7 @@
- 			if (wlen > room ||
- 			    (newl && wlen < 4 && sp
- 			     && wlen + 1 + strlen(sp) > room
--			     && (!(sp2 = index(sp, ' '))
-+			     && (!(sp2 = strchr(sp, ' '))
- 				 || wlen + 1 + (sp2 - sp) > room))) {
- 				cur_y++;
- 				cur_x = x;
+	Sam
