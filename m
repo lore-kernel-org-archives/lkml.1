@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbXCQRDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbXCQRD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752234AbXCQRDG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 13:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbXCQRDG
+	id S1752440AbXCQRD5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 13:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXCQRD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 13:03:06 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57984 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbXCQRDE (ORCPT
+	Sat, 17 Mar 2007 13:03:57 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:60484 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752440AbXCQRD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 13:03:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, containers@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + remove-the-likelypid-check-in-copy_process.patch added to -mm tree
-References: <20070316170255.GA194@tv-sign.ru>
-	<m1y7lxm4cc.fsf@ebiederm.dsl.xmission.com>
-	<20070317130216.GA78@tv-sign.ru>
-	<m1k5xgklun.fsf@ebiederm.dsl.xmission.com>
-	<20070317150949.GA302@tv-sign.ru> <20070317152437.GA365@tv-sign.ru>
-Date: Sat, 17 Mar 2007 11:01:50 -0600
-In-Reply-To: <20070317152437.GA365@tv-sign.ru> (Oleg Nesterov's message of
-	"Sat, 17 Mar 2007 18:24:37 +0300")
-Message-ID: <m1fy83ls75.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 17 Mar 2007 13:03:56 -0400
+Date: Sat, 17 Mar 2007 13:03:42 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: RSDL v0.31
+In-reply-to: <1174138590.7614.6.camel@Homer.simpson.net>
+To: linux-kernel@vger.kernel.org
+Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <200703171303.42795.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703042335.26785.a1426z@gawab.com>
+ <200703170805.59619.gene.heskett@gmail.com>
+ <1174138590.7614.6.camel@Homer.simpson.net>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Saturday 17 March 2007, Mike Galbraith wrote:
+[...]
+>Xorg is using 50% cpu because I'm asking it to.
 
-> On 03/17, Oleg Nesterov wrote:
->>
->> > Well the initial kernel process does not have a struct pid so when
->> > it's children start doing:
->> > 	attach_pid(p, PIDTYPE_PGID, task_group(p));
->> > 	attach_pid(p, PIDTYPE_SID, task_session(p));
->> > We will get an oops.
->> 
->> So far this is the only reason to have init_struct_pid. Because the
->> boot CPU (swapper) forks, right?
->
-> Damn. I am afraid I was not clear again :) Not init_struct_pid, but
->
-> 	+ .pids = { \
-> 	+ [PIDTYPE_PID] = INIT_PID_LINK(PIDTYPE_PID), \
-> 	+ [PIDTYPE_PGID] = INIT_PID_LINK(PIDTYPE_PGID), \
-> 	+ [PIDTYPE_SID] = INIT_PID_LINK(PIDTYPE_SID), \
-> 	+ }, \
->
-> for INIT_TASK().
->
->> > So a dummy unhashed struct pid was added for the idle threads.
->> > Allowing several special cases in the code to be removed.
->> > 
->> > With that chance the previous special case to force the idle thread
->> > init session 1 pgrp 1 no longer works because attach_pid no longer
->> > looks at the pid value but instead at the struct pid pointers.
->> > 
->> > So we had to add the __set_special_pids() to continue to keep init
->> > in session 1 pgrp 1.  Since /sbin/init calls setsid() that our setting
->> > the sid and the pgrp may not be strictly necessary.  Still is better
->> > to not take any chances.
->> 
->> Yes, yes, I see. But my (very unclear, sorry) question was: shouldn't we
->> change INIT_SIGNALS then? /sbin/init inherits ->pgrp == ->_session == 1,
->> in that case __set_special_pids(1,1) does nothing.
->
-> ... and thus /sbin/init remains attached to the .pids above, no?
+What advantage is that giving you?
 
-The problem is that we dynamically allocate the struct pid for 
-pid_t == 1 when we fork init.
+>	-Mike
 
-Which means we don't have access to it at compile time so we can
-no longer make INIT_SIGNALS set ->gprp == ->session == 1.
-
-Eric
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Once upon a time, four AMPHIBIOUS HOG CALLERS attacked a family of
+DEFENSELESS, SENSITIVE COIN COLLECTORS and brought DOWN their PROPERTY
+VALUES!!
