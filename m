@@ -1,102 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbXCQWpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbXCQWuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752095AbXCQWpd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 18:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbXCQWpd
+	id S1751143AbXCQWuG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 18:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbXCQWuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 18:45:33 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:4891 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbXCQWpZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 18:45:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=nUanre3QA7YdUk8QGiaq2p3w5qY5wIKQFn4EbMjtuGjbilf7IaPNkPGoRiAYy21RfXpM07qXTSbvnvV2OxaeoNOpeb62VgDZsx7/wFrPmNpCcLqp+UUpsd/c1Si0G972HzhIFpcCiYEurDhJsBrCHqjpGBkhNAvw35yhFcCy+lY=
-From: Maxim <maximlevitsky@gmail.com>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far
-Date: Sun, 18 Mar 2007 00:45:18 +0200
-User-Agent: KMail/1.9.6
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Arjan van de Ven <arjan@infradead.org>
-References: <200703161230.03712.maximlevitsky@gmail.com> <1174088686.13341.347.camel@localhost.localdomain> <200703162132.53906.lenb@kernel.org>
-In-Reply-To: <200703162132.53906.lenb@kernel.org>
+	Sat, 17 Mar 2007 18:50:06 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:43408 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751143AbXCQWuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 18:50:04 -0400
+Message-ID: <45FC70A3.7060705@gmail.com>
+Date: Sat, 17 Mar 2007 23:50:11 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
+References: <Pine.LNX.4.44L0.0703151556420.2482-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0703151556420.2482-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703180045.18490.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 17 March 2007 03:32:53 Len Brown wrote:
-> On Friday 16 March 2007 19:44, Thomas Gleixner wrote:
-> > Maxim,
-> > 
-> > On Fri, 2007-03-16 at 12:30 +0200, Maxim Levitsky wrote:
-> > > 3) Sometimes I get this (once in three boots or so)
-> > > 
-> > > [   36.217405] ENABLING IO-APIC IRQs
-> > > [   36.217587] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-> > > [   36.433917] APIC timer disabled due to verification failure.
-> > > 
-> > > And NO_HZ is disabled due to that (I get 1000/s timer's interrupts)
-> > > I haven't investigated that yet.
-> > > It looks like another new test that my hardware fails to perform... 
-> > 
-> > Yes, this is probably caused by SMM code trying to emulate a PS/2
-> > keyboard from a (maybe connected or not) USB keyboard. Unfortunately we
-> > have no way to disable this BIOS misfeature in the early boot process. 
-> > Arjan, Len ?????
+Alan Stern napsal(a):
+> On Tue, 13 Mar 2007, Jiri Slaby wrote:
 > 
-> Nope.  By definition, SMM is invisible to the OS -- we don't even
-> get a bit that said it occurred (though we'd like one -- it would
-> be really helpful to diagnose issues like this one)
-> 
-> So go into BIOS SETUP and see if there is a USB Legacy Emulation
-> feature that you can disable.  Sometimes there is not, but disabling
-> onboard USB altogether may help at least prove the issue is in that area.
-> 
-> > I built in this test to rule out bogus LAPIC timer calibration values
-> > which are sometimes off by factor 2-10.
-> > 
-> > But I also built in a calibration against the PM-Timer, which turned out
-> > to be quite reliable and I think the additional verification step is
-> > only necessary for sytems without PM-Timer.
-> > 
-> > That was a bit over cautious from my side. I send a patch to avoid this
-> > when PM-Timer is available in a separate mail.
-> 
-> PM-Timer was invented to work-around the issue that the TSC became unreliable
-> in the face of power management on laptops.  In particular, to be able
-> to time duration of OS idle where TSC stopped.
-> 
-> While it is not fine grain, and it is not low-latency, is should
-> be very reliable.  My understanding is that it is implemented as
-> a simple divider right off the system 14MHz clock -- the signal
-> which most motherboard clocks are PLL multiplied up from --
-> including the 100MHz front-side bus which drives the LAPIC timer.
-> 
-> But that said, I don't understand why calibrating the LAPIC timer
-> using the PM-timer is going to be more reliable -- exactly how
-> and why did the previous calibration scheme fail?
-> Maybe I could follow the new logic in apic.c if I saw the "apic=debug"
-> output for this box.
-> 
-> cheers,
-> -Len
-> 
-> 
-> 
+>> So, do you mean rmmod uhci_hcd, unplug the keyboard, modprobe
+>> uhci_hcd, start usbmon, plug the keyboard, press numlock, stop usbmon,
+>> post it?
 
-Hi,
+Here you are:
+f78666c0 1992239699 C Ii:001:01 -2 0
+f74d7b40 1996231756 S Ci:001:00 s 80 00 0000 0000 0002 2 <
+f74d7b40 1996231762 C Ci:001:00 0 2 = 0300
+f78666c0 1996271682 S Ii:001:01 -115 2 <
+f74d7b40 1996271689 S Ci:001:00 s a3 00 0000 0001 0004 4 <
+f74d7b40 1996271694 C Ci:001:00 0 4 = 00010000
+f74d7b40 1996271698 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f74d7b40 1996271708 C Ci:001:00 0 4 = 01010100
+f74d7b40 1996271710 S Co:001:00 s 23 01 0010 0002 0000 0
+f74d7b40 1996271713 C Co:001:00 0 0
+f74d7b40 1996271719 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f74d7b40 1996271722 C Ci:001:00 0 4 = 01010000
+f74d7b40 1996303687 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f74d7b40 1996303693 C Ci:001:00 0 4 = 01010000
+f74d7b40 1996335682 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f74d7b40 1996335689 C Ci:001:00 0 4 = 01010000
+f74d7b40 1996367681 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f74d7b40 1996367686 C Ci:001:00 0 4 = 01010000
+f74d7b40 1996399686 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f74d7b40 1996399692 C Ci:001:00 0 4 = 01010000
+f74d7b40 1996399709 S Co:001:00 s 23 03 0004 0002 0000 0
+f74d7b40 1996399712 C Co:001:00 0 0
+f74d7b40 1996455682 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f74d7b40 1996455703 C Ci:001:00 0 4 = 03010000
+f74d7b40 1996514453 S Co:001:00 s 23 01 0014 0002 0000 0
+f74d7b40 1996514456 C Co:001:00 0 0
+f74d7b40 1996514468 S Ci:000:00 s 80 06 0100 0000 0040 64 <
+f74d7b40 1996518652 C Ci:000:00 0 8 = 12011001 09000008
+f74d7b40 1996518660 S Co:001:00 s 23 03 0004 0002 0000 0
+f74d7b40 1996518663 C Co:001:00 0 0
+f78666c0 1996527684 C Ii:001:01 0 1 = 04
+f78666c0 1996527687 S Ii:001:01 -115 2 <
+f74d7b40 1996571683 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f74d7b40 1996571702 C Ci:001:00 0 4 = 03010000
+f74d7b40 1996627687 S Co:001:00 s 23 01 0014 0002 0000 0
+f74d7b40 1996627691 C Co:001:00 0 0
+f74d7b40 1996627694 S Co:000:00 s 00 05 0002 0000 0000 0
+f74d7b40 1996630633 C Co:000:00 0 0
+f74d7b40 1996647688 S Ci:002:00 s 80 06 0100 0000 0012 18 <
+f74d7b40 1996653630 C Ci:002:00 0 18 = 12011001 09000008 b4045020 01000102 0001
+f74d7b40 1996653639 S Ci:002:00 s 80 06 0200 0000 0009 9 <
+f74d7b40 1996658627 C Ci:002:00 0 9 = 09021900 010100e0 32
+f74d7b40 1996658634 S Ci:002:00 s 80 06 0200 0000 0019 25 <
+f74d7b40 1996665626 C Ci:002:00 0 25 = 09021900 010100e0 32090400 00010900 
+00000705 81030100 ff
+f74d7b40 1996665640 S Ci:002:00 s 80 06 0300 0000 00ff 255 <
+f74d7b40 1996670625 C Ci:002:00 0 4 = 04030904
+f74d7b40 1996670635 S Ci:002:00 s 80 06 0302 0409 00ff 255 <
+f74d7b40 1996682623 C Ci:002:00 0 62 = 3e034700 42006500 6c006c00 61002000 
+43006f00 72007000 6f007200 61007400
+f74d7b40 1996682631 S Ci:002:00 s 80 06 0301 0409 00ff 255 <
+f74d7b40 1996691621 C Ci:002:00 0 36 = 24034200 65006c00 6c006100 20004300 
+6f007200 70006f00 72006100 74006900
+f74d7b40 1996691781 S Co:002:00 s 00 09 0001 0000 0000 0
+f74d7b40 1996694627 C Co:002:00 0 0
+f74d7b40 1996694717 S Ci:002:00 s a0 06 2900 0000 000f 15 <
+f74d7b40 1996697629 C Ci:002:00 0 9 = 0929030d 00321902 ff
+f74d7b40 1996697664 S Ci:002:00 s 80 00 0000 0000 0002 2 <
+f74d7b40 1996698633 C Ci:002:00 0 2 = 0000
+f74d7b40 1996698663 S Ci:002:00 s a0 00 0000 0000 0004 4 <
+f74d7b40 1996699629 C Ci:002:00 0 4 = 00000000
+f7ab7d40 1996699658 S Co:002:00 s 23 03 0008 0001 0000 0
+f7ab7d40 1996700627 C Co:002:00 0 0
+f7ab7d40 1996700645 S Co:002:00 s 23 03 0008 0002 0000 0
+f7ab7d40 1996701629 C Co:002:00 0 0
+f7ab7d40 1996701644 S Co:002:00 s 23 03 0008 0003 0000 0
+f7ab7d40 1996702624 C Co:002:00 0 0
+f74d7b40 1996806484 S Ii:002:01 -115 1 <
+f75d02c0 1996806621 S Ci:001:00 s a3 00 0000 0002 0004 4 <
+f75d02c0 1996806626 C Ci:001:00 0 4 = 03010000
+f75d02c0 1996806634 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d02c0 1996808610 C Ci:002:00 0 4 = 01010100
+f75d02c0 1996808628 S Co:002:00 s 23 01 0010 0001 0000 0
+f75d02c0 1996809607 C Co:002:00 0 0
+f75d02c0 1996809628 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d02c0 1996810605 C Ci:002:00 0 4 = 01010000
+f75d02c0 1996842478 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d02c0 1996843599 C Ci:002:00 0 4 = 01010000
+f75d02c0 1996871682 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d02c0 1996873590 C Ci:002:00 0 4 = 01010000
+f75d02c0 1996903686 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d02c0 1996905586 C Ci:002:00 0 4 = 01010000
+f75d02c0 1996938484 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d02c0 1996939582 C Ci:002:00 0 4 = 01010000
+f75d02c0 1996939601 S Co:002:00 s 23 03 0004 0001 0000 0
+f75d02c0 1996940581 C Co:002:00 0 0
+f75d02c0 1996955681 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d02c0 1996957576 C Ci:002:00 0 4 = 03011000
+f74d7b40 1997003567 C Ii:002:01 0 1 = 02
+f74d7b40 1997003570 S Ii:002:01 -115 1 <
+f75d02c0 1997011687 S Co:002:00 s 23 01 0014 0001 0000 0
+f75d02c0 1997013566 C Co:002:00 0 0
+f75d02c0 1997013579 S Ci:000:00 s 80 06 0100 0000 0040 64 <
+f75d02c0 1997018565 C Ci:000:00 0 8 = 12011001 00000008
+f75d02c0 1997018572 S Co:002:00 s 23 03 0004 0001 0000 0
+f75d02c0 1997019565 C Co:002:00 0 0
+f75d02c0 1997034490 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d02c0 1997035562 C Ci:002:00 0 4 = 03011000
+f75d02c0 1997087683 S Co:002:00 s 23 01 0014 0001 0000 0
+f75d02c0 1997089554 C Co:002:00 0 0
+f75d02c0 1997089561 S Co:000:00 s 00 05 0003 0000 0000 0
+f75d02c0 1997092552 C Co:000:00 0 0
+f75d02c0 1997107692 S Ci:003:00 s 80 06 0100 0000 0012 18 <
+f75d02c0 1997113550 C Ci:003:00 0 18 = 12011001 00000008 58044c00 01010102 0001
+f75d02c0 1997113560 S Ci:003:00 s 80 06 0200 0000 0009 9 <
+f75d02c0 1997118547 C Ci:003:00 0 9 = 09023b00 020100e0 19
+f75d02c0 1997118554 S Ci:003:00 s 80 06 0200 0000 003b 59 <
+f75d02c0 1997129547 C Ci:003:00 0 59 = 09023b00 020100e0 19090400 00010301 
+01000921 10010001 22410007 05810308
+f75d02c0 1997129567 S Ci:003:00 s 80 06 0300 0000 00ff 255 <
+f75d02c0 1997134543 C Ci:003:00 0 4 = 04030904
+f75d02c0 1997134553 S Ci:003:00 s 80 06 0302 0409 00ff 255 <
+f75d02c0 1997142542 C Ci:003:00 0 26 = 1a035500 53004200 20004b00 65007900 
+62006f00 61007200 6400
+f75d02c0 1997142549 S Ci:003:00 s 80 06 0301 0409 00ff 255 <
+f75d02c0 1997149542 C Ci:003:00 0 16 = 10034100 42004200 48004f00 4d004500
+f75d02c0 1997149690 S Co:003:00 s 00 09 0001 0000 0000 0
+f75d02c0 1997152547 C Co:003:00 0 0
+d6228840 1997152648 S Co:003:00 s 21 0a 0000 0000 0000 0
+d6228840 1997154552 C Co:003:00 0 0
+d6228840 1997154570 S Ci:003:00 s 81 06 2200 0000 0041 65 <
+d6228840 1997155558 C Ci:003:00 0 65 = 05010906 a1010507 19e029e7 15002501 
+95087501 81029508 75018101 05081901
+f75d02c0 1997156057 S Ii:003:01 -115 8 <
+f75d0540 1997156246 S Co:003:00 s 21 0a 0000 0001 0000 0
+f75d0540 1997156551 C Co:003:00 0 0
+f75d0540 1997156587 S Ci:003:00 s 81 06 2200 0001 0068 104 <
+f75d0540 1997158547 C Ci:003:00 0 104 = 05010902 a1018504 0901a100 05091901 
+29031500 25019503 75018102 95017505
+d62287c0 1997159188 S Ii:003:02 -115 5 <
+f75d0f40 1997159379 S Ci:002:00 s a3 00 0000 0002 0004 4 <
+f75d0f40 1997159547 C Ci:002:00 0 4 = 00010000
+f75d0f40 1997159562 S Ci:002:00 s a3 00 0000 0003 0004 4 <
+f75d0f40 1997160546 C Ci:002:00 0 4 = 00010000
+f75d0f40 1997160572 S Ci:002:00 s a3 00 0000 0001 0004 4 <
+f75d0f40 1997161546 C Ci:002:00 0 4 = 03010000
+f75d02c0 1999351157 C Ii:003:01 0 8 = 00005300 00000000
+f75d02c0 1999351176 S Ii:003:01 -115 8 <
+f7ab7d40 1999351194 S Co:003:00 s 21 09 0200 0000 0001 1 = 01
+f7ab7d40 1999353157 C Co:003:00 0 1 >
 
-	Yes, usb emulation is enabled, but I need it. I will test without usb emulation, but since it shows only sometimes, 
-	I don't know yet whenever usb legacy affects it.
+(Remind: there is a hub inside the keyboard)
 
-	Regards, 
-		Maxim Levitsky
+>  static void uhci_free_td(struct uhci_hcd *uhci, struct uhci_td *td)
+>  {
+> -	if (!list_empty(&td->list))
+> +	if (!list_empty(&td->list)) {
+>  		dev_warn(uhci_dev(uhci), "td %p still in list!\n", td);
+> +		WARN_ON(1);
+
+Nothing new in dmesg.
+
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
