@@ -1,94 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbXCQX0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751915AbXCQXdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751924AbXCQX0B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 19:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbXCQX0B
+	id S1751915AbXCQXdz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 19:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbXCQXdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 19:26:01 -0400
-Received: from www.osadl.org ([213.239.205.134]:38866 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751924AbXCQX0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 19:26:00 -0400
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
-	far
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Maxim <maximlevitsky@gmail.com>
-Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <200703180100.01889.maximlevitsky@gmail.com>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	 <200703161919.44458.lenb@kernel.org>
-	 <200703180100.01889.maximlevitsky@gmail.com>
-Content-Type: text/plain
-Date: Sun, 18 Mar 2007 00:32:54 +0100
-Message-Id: <1174174374.13341.448.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Mar 2007 19:33:54 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33838 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751696AbXCQXdy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 19:33:54 -0400
+Date: Sun, 18 Mar 2007 00:33:56 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: fake config option w/kbuild?
+Message-ID: <20070317233356.GL752@stusta.de>
+References: <C6F49569-655E-4B17-B9DA-9644C8B3668D@kernel.crashing.org> <20070315191258.GA752@stusta.de> <88F9283D-B8FD-46F9-8A94-CB824630C232@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <88F9283D-B8FD-46F9-8A94-CB824630C232@kernel.crashing.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim,
-
-On Sun, 2007-03-18 at 01:00 +0200, Maxim wrote:
-> >Mar 14 00:22:23 MAIN kernel: [    2.072931] checking TSC synchronization [CPU#0 -> CPU#1]:
-> >Mar 14 00:22:23 MAIN kernel: [    2.092922] Measured 72051818872 cycles TSC warp between CPUs, turning off
+On Thu, Mar 15, 2007 at 03:08:47PM -0500, Kumar Gala wrote:
 > 
-> ^ This one I don't think is related to NO_HZ, maybe it is hardware
-> problem, but it exist without NO_HZ
-
-The TSC is checked for synchronization between the CPUs. It's nothing to
-worry about. We switch off the TSC and use a different clocksource.
-
-Is this after resume ? If yes, then something (probably BIOS) is
-fiddling with the TSC of one CPU when the resume happens.
-
-> >[   36.217405] ENABLING IO-APIC IRQs
-> >[   36.217587] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-> >[   36.433917] APIC timer disabled due to verification failure.
+> On Mar 15, 2007, at 2:12 PM, Adrian Bunk wrote:
 > 
-> This one is now discussed, I will look at it and it is not related to NO_HZ
-
-I sent a patch for this yesterday:
-
-http://marc.info/?l=linux-kernel&m=117408952322631&w=2
-
-> And I forgot to tell about another problem with (now I know ,hi-resolution timers)
-> That before suspend to ram APIC timer is used and HPET is not used :
+> >On Thu, Mar 15, 2007 at 10:19:03AM -0500, Kumar Gala wrote:
+> >>...
+> >>My initial question is that I don't want anyone using CONFIG_QE_83xx
+> >>or CONFIG_QE_85xx in code, the second part is if there is a way to
+> >>remove duplicating the QE_83xx/QE_85xx options down in platform/8 
+> >>{3,5}
+> >>xx/Kconfig.
+> >
+> >
+> >What about the following solution:
+> >
+> >
+> >arch/powerpc/Kconfig.qe:
+> >
+> ><--  snip  -->
+> >
+> >config MACH_SUPPORTS_QE
+> >	bool
+> >
+> >config QE
+> >	bool "QUICC Engine Support"
+> >	depends on MACH_SUPPORTS_QE
+> >	help
+> >	  ...
+> >
+> ><--  snip  -->
+> >
+> >
+> >arch/powerpc/platforms/83xx/Kconfig:
+> >
+> ><--  snip  -->
+> >
+> >...
+> >source arch/powerpc/Kconfig.qe
+> >
+> >config PPC_MPC836x
+> >        bool
+> >	select MACH_SUPPORTS_QE
+> >	...
+> >....
+> >
+> ><--  snip  -->
 > 
-> root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered
-> lapic                F:0007 M:3(periodic) C: 1
-> hpet                 F:0003 M:1(shutdown) C: 0
-> lapic                F:0007 M:3(periodic) C: 0
-> root@MAIN:/home/maxim#   
-> 
-> But after suspend to ram HPET is 'woken'
-> 
-> root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered
-> lapic                F:0007 M:3(one shoot) C: 1
-> hpet                 F:0003 M:3(one shoot) C: 0
-> lapic                F:0007 M:3(one shoot) C: 0
+> Not sure this helps since I end up having to source arch/powerpc/ 
+> Kconfig.qe from both arch/powerpc/platforms/83xx/Kconfig & arch/ 
+> powerpc/platforms/85xx/Kconfig and then mconf grips about having  
+> already scanned Kconfig.qe.
 
-This is unrelated to suspend / resume. The local apic timers stop
-(hardware madness), when the CPU enters C3 power state. In this case we
-switch to HPET (or PIT when HPET is not available) and broadcast the
-events via Inter Processor Interrupts. This is nothing to worry about. 
 
-I'm a bit surprised though, that your system was in periodic mode before
-suspend and switched to one shot mode on resume.
+Sorry, my fault that I didn't test it myself before suggesting it.
 
-Is this reproducible ? If yes, can you please provide the dmesg output
-from boot to resume ?
+It seems there is no solution for both not duplicating the options and 
+getting them in the desired menu.
 
-> Note that I added those (one shoot), (periodic) descriptions, would be
-> nice to have them in kernel, can I send a patch ?  ;-)
 
-Sure, just s/shoot/shot/ :)
+> - k
 
-> and I see average of 18 IRQs/sec on IRQ 0
+cu
+Adrian
 
-So dynticks are working as expected.
+-- 
 
-	tglx
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
