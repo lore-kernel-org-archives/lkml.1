@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbXCQRhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbXCQR5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590AbXCQRhO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 13:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXCQRhO
+	id S1752833AbXCQR5K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 13:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXCQR5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 13:37:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51991 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752590AbXCQRhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 13:37:12 -0400
-X-Provags-ID: V01U2FsdGVkX19R0IhnXVRRfGYt2pDz3viJEGCxx1WM9rcFqfoNWi
-	O+3RVH/95crSZm
-Subject: Re: RSDL v0.31
-From: Mike Galbraith <efault@gmx.de>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703171303.42795.gene.heskett@gmail.com>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703170805.59619.gene.heskett@gmail.com>
-	 <1174138590.7614.6.camel@Homer.simpson.net>
-	 <200703171303.42795.gene.heskett@gmail.com>
-Content-Type: text/plain
-Date: Sat, 17 Mar 2007 18:37:02 +0100
-Message-Id: <1174153022.7332.1.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Sat, 17 Mar 2007 13:57:10 -0400
+Received: from tag.witbe.net ([81.88.96.48]:47947 "EHLO tag.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752833AbXCQR5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 13:57:08 -0400
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: "'Linus Torvalds'" <torvalds@linux-foundation.org>
+Cc: "'Tejun Heo'" <htejun@gmail.com>, "'Jeff Garzik'" <jeff@garzik.org>,
+       "'Alan Cox'" <alan@redhat.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       <linux-ide@vger.kernel.org>, "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'Eric D. Mudama'" <edmudama@gmail.com>
+Subject: RE: [git patches] libata fixes
+Date: Sat, 17 Mar 2007 18:56:37 +0100
+Organization: AS2917.net
+Message-ID: <00a601c768bd$9c897430$2101a8c0@donald>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+In-Reply-To: <Pine.LNX.4.64.0703111750010.9690@woody.linux-foundation.org>
+Thread-Index: AcdkQdJ24V8QGlAHRniFBAWimouVswEe5Aig
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-17 at 13:03 -0400, Gene Heskett wrote:
-> On Saturday 17 March 2007, Mike Galbraith wrote:
-> [...]
-> >Xorg is using 50% cpu because I'm asking it to.
+
+> > PS : I'd like to try 2.6.21-rc3, but it seems that this is 
+> breaking my
+> > config : disk naming is no more the same, and I end up with a panic
+> > Warning: unable to open an initial console
+> > though i've been compiling with the same .config I was 
+> using for 2.6.21-rc2
 > 
-> What advantage is that giving you?
+> Gaah. Can you get a log through serial console or netconsole 
+> to see what changed?
+> 
 
-It's a test scenario.  Read the thread please, I really don't want to
-repeat myself endlessly.
+Sorry, I've had no time this week for that.
+I've just switch to 2.6.21-rc4, and carefully restored config from 2.6.21-rc2,
+and boot is Ok...
 
-	-Mike
+So, I must have done something bad when building 2.6.21-rc3, sorry for the
+noise.
+
+Regards,
+Paul
 
