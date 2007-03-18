@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932837AbXCRSx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbXCRS56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932837AbXCRSx3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 14:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932878AbXCRSx3
+	id S932627AbXCRS56 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 14:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXCRS56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 14:53:29 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33877 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932837AbXCRSx2 (ORCPT
+	Sun, 18 Mar 2007 14:57:58 -0400
+Received: from dxa01.wellsfargo.com ([151.151.65.117]:57359 "EHLO
+	dxa01.wellsfargo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932627AbXCRS55 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 14:53:28 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Catalin Marinas" <catalin.marinas@gmail.com>
-Subject: [PATCH 0/4] tty: small fixes and cleanups.
-References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
-	<m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
-	<m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
-	<m1veh5q6s7.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703140259p773b0eb8p9c142d33934e64ff@mail.gmail.com>
-	<m1wt1jq45w.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703141008o4d6cb243r7bc328d79cccfa2e@mail.gmail.com>
-	<m1slc4luf5.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703161544h2961670dh8f5e499fd2dc0ce5@mail.gmail.com>
-	<m1vegyjspz.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Sun, 18 Mar 2007 12:52:24 -0600
-In-Reply-To: <m1vegyjspz.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Sun, 18 Mar 2007 12:45:44 -0600")
-Message-ID: <m1r6rmjsev.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 18 Mar 2007 14:57:57 -0400
+X-Greylist: delayed 395 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Mar 2007 14:57:57 EDT
+content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
+Subject: 1000xf bus problem
+Date: Sun, 18 Mar 2007 13:51:08 -0500
+Message-ID: <E8C008223DD5F64485DFBDF6D4B7F71D0289EDB4@msgswbmnmsp25.wellsfargo.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 1000xf bus problem
+Thread-Index: AcdpjmNe9fp9JYNFQY2Rp1epCP8JUw==
+From: <Greg.Chandler@wellsfargo.com>
+To: <e1000-devel@lists.sourceforge.net>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Mar 2007 18:51:11.0578 (UTC) FILETIME=[65B1EBA0:01C7698E]
+X-WFMX: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Andrew the following tty fixes turned up while I was reviewing the
-code to see if I was fixing the pid leaks properly.  I don't think
-they are critical so at this point so they are probably not 2.6.21
-material.
+I'm running a e1000xf adapter in a 64-bit/100Mhz PCI slot.  The intel
+site shows this is a supported config for the card, but linux is pulling
+this info:
 
-The do appear to be changes worth making though.
+ed:02.0 Ethernet controller: Intel Corporation 82544EI Gigabit Ethernet
+Controller (Fiber) (rev 02)
+	Subsystem: Intel Corporation PRO/1000 XF Server Adapter
+	Flags: bus master, 66Mhz, medium devsel, latency 64, IRQ 18
+	Memory at f7fe0000 (64-bit, non-prefetchable) [size=128K]
+      Memory at f7fc0000 (64-bit, non-prefetchable) [size=128K]
+      I/O ports at 7000 [size=32]
+      [virtual] Expansion ROM at f10a0000 [disabled] [size=128K]
+      Capabilities: [dc] Power Management version 2
+      Capabilities: [e4] PCI-X non-bridge device
+      Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0
+Enable-
 
-Eric
+My thoughput tests show it is definitely not running at the 100Mhz bus
+rate is should be capable of.
+Any ideas on how to make it work at full speed?
