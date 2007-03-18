@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXCRSld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932830AbXCRSqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932780AbXCRSld (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 14:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932800AbXCRSld
+	id S932830AbXCRSqY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 14:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXCRSqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 14:41:33 -0400
-Received: from styx.suse.cz ([82.119.242.94]:60064 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932780AbXCRSlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 14:41:32 -0400
-Date: Sun, 18 Mar 2007 19:45:06 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Soeren Sonnenburg <kernel@nn7.de>, Sergey Vlasov <vsu@altlinux.ru>,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: appletouch quirk doesn't run at resume
-In-Reply-To: <20070318004240.GO752@stusta.de>
-Message-ID: <Pine.LNX.4.64.0703181934530.4195@jikos.suse.cz>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
- <200703162134.14265.rjw@sisk.pl> <1174078066.13341.279.camel@localhost.localdomain>
- <1174087552.13341.332.camel@localhost.localdomain> <45FBBDEA.9060708@m3y3r.de>
- <20070318004240.GO752@stusta.de>
+	Sun, 18 Mar 2007 14:46:23 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49329 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932830AbXCRSqX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 14:46:23 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Catalin Marinas" <catalin.marinas@gmail.com>
+Subject: [PATCH] tty: Fix two reported pid leaks
+References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
+	<m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
+	<m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
+	<m1veh5q6s7.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703140259p773b0eb8p9c142d33934e64ff@mail.gmail.com>
+	<m1wt1jq45w.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703141008o4d6cb243r7bc328d79cccfa2e@mail.gmail.com>
+	<m1slc4luf5.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703161544h2961670dh8f5e499fd2dc0ce5@mail.gmail.com>
+Date: Sun, 18 Mar 2007 12:45:44 -0600
+In-Reply-To: <b0943d9e0703161544h2961670dh8f5e499fd2dc0ce5@mail.gmail.com>
+	(Catalin Marinas's message of "Fri, 16 Mar 2007 22:44:14 +0000")
+Message-ID: <m1vegyjspz.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Mar 2007, Adrian Bunk wrote:
 
-> > 1.) The quirk added in commit a417a21e10831bca695b4ba9c74f4ddf5a95ac06 
-> >     for the appletouch driver doesn't seem to work after resume.
-> Not a regression, but still a bug. Appropriate people added to the Cc.
+These leaks were reported by: Catalin Marinas <catalin.marians@gmail.com>
+and I have been able to very by inspection they are possible.
 
-(trimmed CC a little bit)
+When converting tty_io.c to store pids as struct pid pointers instead
+of pid_t values it appears I overlooked two places where we stop using
+the pid value.  The very obvious one is in do_tty_hangup, and the one
+the less obvious one in __proc_set_tty.
 
-Thomas, could you please provide more information? Did it ever work for 
-you after suspend/resume cycle and it just broke at some point in the 
-past, or you are not sure whether it ever worked?
+When looking into the code __proc_set_tty only has pids that need to
+be put because of failures of other parts of the code to properly
+perform hangup processing.   Fixing the leak here in __proc_set_tty
+is easy and obviously correct so I am doing that first.
 
-Also, what exactly does it mean that it doesn't work? Are both the 
-interfaces after resume bound to usbhid driver (you can check this in 
-/sys)? When the quirk works correctly, only the keyboard interface should 
-be bound to usbhid driver. Please check the binding both before and after 
-suspend/resume cycle, and let me know.
+Fixing the places that should be performing hangup processing is much
+less obviously correct.  So those I'm aiming those patches at -mm.
+for now, so the can age a while before they are merged.
 
-Thanks,
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ drivers/char/tty_io.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index e453268..7a32df5 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1376,6 +1376,8 @@ static void do_tty_hangup(struct work_struct *work)
+ 	read_unlock(&tasklist_lock);
+ 
+ 	tty->flags = 0;
++	put_pid(tty->session);
++	put_pid(tty->pgrp);
+ 	tty->session = NULL;
+ 	tty->pgrp = NULL;
+ 	tty->ctrl_status = 0;
+@@ -3841,6 +3843,9 @@ static struct pid *__proc_set_tty(struct task_struct *tsk, struct tty_struct *tt
+ {
+ 	struct pid *old_pgrp;
+ 	if (tty) {
++		/* We should not have a session or pgrp to here but.... */
++		put_pid(tty->session);
++		put_pid(tty->pgrp);
+ 		tty->session = get_pid(task_session(tsk));
+ 		tty->pgrp = get_pid(task_pgrp(tsk));
+ 	}
 -- 
-Jiri Kosina
+1.5.0.g53756
+
