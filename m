@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbXCRWpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933214AbXCRW6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933367AbXCRWpq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 18:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933388AbXCRWpq
+	id S933214AbXCRW6j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 18:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXCRW6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 18:45:46 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:63343 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933367AbXCRWpo (ORCPT
+	Sun, 18 Mar 2007 18:58:39 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:9142 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933214AbXCRW6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 18:45:44 -0400
+	Sun, 18 Mar 2007 18:58:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
-        b=ZJbjurum45HJ+bLr0xLVXWTWOnI8nx26xuKarnviCN7ow5EnSCIgPMyMVBsBrKmvf0iPI0fBj5hqkIK+IAx2Wgg72IlLxbYBkm+GkVL/Gycu+KX8XuSu74W+BphecUfIAyxA1BHoc9QAQrTdbSxX5xxcgRDkjOT35MM4fJxs44s=
-Date: Mon, 19 Mar 2007 00:45:30 +0200 (EET)
-From: Szonyi Calin <caszonyi@gmail.com>
-X-X-Sender: sony@grinch.ro
-Reply-To: Calin Szonyi <caszonyi@gmail.com>
-To: Lee Revell <rlrevell@joe-job.com>
-cc: Mike Galbraith <efault@gmx.de>, Nicholas Miell <nmiell@comcast.net>,
-       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Ingo Molnar <mingo@elte.hu>, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: RSDL v0.31
-In-Reply-To: <75b66ecd0703181237j45f2d14oddde8be2e0e2a739@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0703190035380.3794@grinch.ro>
-References: <200703042335.26785.a1426z@gawab.com>  <200703170040.48316.kernel@kolivas.org>
-  <1174059299.7886.25.camel@Homer.simpson.net>  <200703170813.32594.kernel@kolivas.org>
-  <1174084207.7009.9.camel@Homer.simpson.net>  <1174105443.3144.4.camel@entropy>
-  <1174110965.7911.44.camel@Homer.simpson.net>  <1174111737.7911.50.camel@Homer.simpson.net>
- <75b66ecd0703181237j45f2d14oddde8be2e0e2a739@mail.gmail.com>
+        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=MSjdjpWTDLiBZZLw4fHMIIkxV5WscYhaFb2128nOid4O9rGvygdLlgBh4JcPdDFqItQGx0637nX/yKZ1YHpVpfJmBv2vD/RbFCQrJn/MiMpHeeafzMEaIhILVkMaui3PWKugQD6BujGfMsa9o9hJwrKJyTNfunnqwr+OTa+cfhY=
+Date: Mon, 19 Mar 2007 00:58:31 +0200
+To: linux-kernel@vger.kernel.org
+Subject: i386: Why putting __USER_DS in kernel threads stack initialization?
+Message-ID: <20070318225831.GB3802@Ahmed>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Mar 2007, Lee Revell wrote:
+Hi list,
 
-> On 3/17/07, Mike Galbraith <efault@gmx.de> wrote:
->> P.S.  "utter failure" was too harsh.  What sticks in my craw is that the
->> world has to adjust to fit this new scheduler.
->
-> I have never seen X run nearly as smooth as our favorite proprietary
-> OS on similar spec hardware with ANY scheduler.
->
+Reading the kernel threads initialization code I see:
 
-i have never seen Windows (or were you talking about Mac OSX ?) run 
-smooth. Win2k (scheduler) is almost usable if your computer is very fast 
-but on common hardware every version of windows for me was a joke. or
-maybe you have a special version ;) [1]
+int kernel_thread(...) {
 
-I don't run KDE or Gnome in linux so ... maybe that's the problem ;)
+	struct pt_regs regs;
+	memset(&regs, 0, sizeof(regs));
+	[...]
+**	regs.xds = __USER_DS;
+**	regs.xes = __USER_DS;
+	[...]
+	/* Ok, create the new process.. */
+	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, \
+	       	       0, NULL, NULL);
+
+Continuing with the code, the threads stack (beginning from %esp) is
+initialized with the passed *regs from do_fork:
+
+int copy_thread(..., struct task_struct *p, struct pt_regs *regs) {
+
+	struct pt_regs * childregs;
+	struct task_struct *tsk;
+ 	childregs = task_pt_regs(p);
+**	*childregs = *regs;
+	[...]
+** 	p->thread.esp = (unsigned long) childregs;
 
 
-[1] And no, i don't consider waiting 2-5-20-50 seconds for a program to 
-start a feature. YMMV
+So the question is what will a _kernel_ thread do with the Usermode Segment
+address ?
 
---
+Thanks,
 
-"frate, trezeste-te, aici nu-i razboiul stelelor"
- 				Radu R. pe offtopic at lug.ro
+P.S. I've tried commenting out both lines which led to a non functional init,
+Also setting them to __USER_DS made init start but stopped issuing the error:
+`Panic: Segment violation at 0x8049798 - Sleeping for 30 seconds'
+
+-- 
+Ahmed S. Darwish
+http://darwish.07.googlepages.com
 
