@@ -1,225 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750998AbXCRIqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbXCRI53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750998AbXCRIqh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 04:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbXCRIqh
+	id S1753200AbXCRI53 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 04:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXCRI53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 04:46:37 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:55070 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750998AbXCRIqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 04:46:36 -0400
-Message-ID: <45FCFC74.2020407@gmail.com>
-Date: Sun, 18 Mar 2007 09:46:44 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
-References: <Pine.LNX.4.44L0.0703172226330.16306-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0703172226330.16306-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Mar 2007 04:57:29 -0400
+Received: from il.qumranet.com ([82.166.9.18]:48688 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753200AbXCRI52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 04:57:28 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [GIT PULL][RESEND] KVM updates for Linux 2.6.21-rc4
+Date: Sun, 18 Mar 2007 10:57:26 +0200
+Message-Id: <11742082461490-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.0.3.355.g2f176
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern napsal(a):
-> Nothing in the log stands out.  Can you collect an equivalent log using a
-> version of uhci-hcd with the "eliminate skeleton QHs" patch reverted?  
-> Perhaps there will be a significant difference.  Although I doubt it...
+Linus,
 
-f74d8f40 3949330898 C Ii:001:01 0 1 = 04
-f74d8f40 3949330911 S Ii:001:01 -115 2 <
-d61f5c40 3949386740 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-d61f5c40 3949386751 C Ci:001:00 0 4 = 01010100
-d61f5c40 3949386753 S Co:001:00 s 23 01 0010 0002 0000 0
-d61f5c40 3949386756 C Co:001:00 0 0
-d61f5c40 3949386763 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-d61f5c40 3949386766 C Ci:001:00 0 4 = 01010000
-d61f5c40 3949418677 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-d61f5c40 3949418683 C Ci:001:00 0 4 = 01010000
-d61f5c40 3949450679 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-d61f5c40 3949450685 C Ci:001:00 0 4 = 01010000
-d61f5c40 3949482684 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-d61f5c40 3949482691 C Ci:001:00 0 4 = 01010000
-d61f5c40 3949514679 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-d61f5c40 3949514684 C Ci:001:00 0 4 = 01010000
-d61f5c40 3949514700 S Co:001:00 s 23 03 0004 0002 0000 0
-d61f5c40 3949514703 C Co:001:00 0 0
-d61f5c40 3949570683 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-d61f5c40 3949570704 C Ci:001:00 0 4 = 03010000
-d61f5c40 3949626685 S Co:001:00 s 23 01 0014 0002 0000 0
-d61f5c40 3949626688 C Co:001:00 0 0
-d61f5c40 3949626700 S Ci:000:00 s 80 06 0100 0000 0040 64 <
-d61f5c40 3949630848 C Ci:000:00 0 8 = 12011001 09000008
-d61f5c40 3949630855 S Co:001:00 s 23 03 0004 0002 0000 0
-d61f5c40 3949630859 C Co:001:00 0 0
-d61f5c40 3949686687 S Ci:001:00 s a3 00 0000 0002 0004 4 <
-d61f5c40 3949686708 C Ci:001:00 0 4 = 03010000
-d61f5c40 3949742688 S Co:001:00 s 23 01 0014 0002 0000 0
-d61f5c40 3949742691 C Co:001:00 0 0
-d61f5c40 3949742695 S Co:000:00 s 00 05 0002 0000 0000 0
-d61f5c40 3949744829 C Co:000:00 0 0
-d61f5c40 3949762695 S Ci:002:00 s 80 06 0100 0000 0012 18 <
-d61f5c40 3949767826 C Ci:002:00 0 18 = 12011001 09000008 b4045020 01000102 0001
-d61f5c40 3949767836 S Ci:002:00 s 80 06 0200 0000 0009 9 <
-d61f5c40 3949772823 C Ci:002:00 0 9 = 09021900 010100e0 32
-d61f5c40 3949772828 S Ci:002:00 s 80 06 0200 0000 0019 25 <
-d61f5c40 3949779822 C Ci:002:00 0 25 = 09021900 010100e0 32090400 00010900 
-00000705 81030100 ff
-d61f5c40 3949779831 S Ci:002:00 s 80 06 0300 0000 00ff 255 <
-d61f5c40 3949784821 C Ci:002:00 0 4 = 04030904
-d61f5c40 3949784829 S Ci:002:00 s 80 06 0302 0409 00ff 255 <
-d61f5c40 3949796819 C Ci:002:00 0 62 = 3e034700 42006500 6c006c00 61002000 
-43006f00 72007000 6f007200 61007400
-d61f5c40 3949796825 S Ci:002:00 s 80 06 0301 0409 00ff 255 <
-d61f5c40 3949805817 C Ci:002:00 0 36 = 24034200 65006c00 6c006100 20004300 
-6f007200 70006f00 72006100 74006900
-d61f5c40 3949805967 S Co:002:00 s 00 09 0001 0000 0000 0
-d61f5c40 3949808826 C Co:002:00 0 0
-d61f5c40 3949808930 S Ci:002:00 s a0 06 2900 0000 000f 15 <
-d61f5c40 3949811830 C Ci:002:00 0 9 = 0929030d 00321902 ff
-d61f5c40 3949811866 S Ci:002:00 s 80 00 0000 0000 0002 2 <
-d61f5c40 3949812824 C Ci:002:00 0 2 = 0000
-d61f5c40 3949812849 S Ci:002:00 s a0 00 0000 0000 0004 4 <
-d61f5c40 3949813825 C Ci:002:00 0 4 = 00000000
-c19df340 3949813854 S Co:002:00 s 23 03 0008 0001 0000 0
-c19df340 3949814819 C Co:002:00 0 0
-c19df340 3949814828 S Co:002:00 s 23 03 0008 0002 0000 0
-c19df340 3949815821 C Co:002:00 0 0
-c19df340 3949815836 S Co:002:00 s 23 03 0008 0003 0000 0
-c19df340 3949816821 C Co:002:00 0 0
-d61f5c40 3949918710 S Ii:002:01 -115 1 <
-c19df340 3949918843 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-c19df340 3949920805 C Ci:002:00 0 4 = 01010100
-c19df340 3949920821 S Co:002:00 s 23 01 0010 0001 0000 0
-c19df340 3949921803 C Co:002:00 0 0
-c19df340 3949921824 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-c19df340 3949922799 C Ci:002:00 0 4 = 01010000
-c19df340 3949954701 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-c19df340 3949955795 C Ci:002:00 0 4 = 01010000
-c19df340 3949986696 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-c19df340 3949987785 C Ci:002:00 0 4 = 01010000
-c19df340 3950018699 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-c19df340 3950019781 C Ci:002:00 0 4 = 01010000
-c19df340 3950050704 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-c19df340 3950051778 C Ci:002:00 0 4 = 01010000
-c19df340 3950051800 S Co:002:00 s 23 03 0004 0001 0000 0
-c19df340 3950052775 C Co:002:00 0 0
-c19df340 3950066701 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-c19df340 3950067771 C Ci:002:00 0 4 = 03011000
-d61f5c40 3950080768 C Ii:002:01 0 1 = 02
-d61f5c40 3950080770 S Ii:002:01 -115 1 <
-c19df340 3950122703 S Co:002:00 s 23 01 0014 0001 0000 0
-c19df340 3950123761 C Co:002:00 0 0
-c19df340 3950123774 S Ci:000:00 s 80 06 0100 0000 0040 64 <
-c19df340 3950128760 C Ci:000:00 0 8 = 12011001 00000008
-c19df340 3950128766 S Co:002:00 s 23 03 0004 0001 0000 0
-c19df340 3950129760 C Co:002:00 0 0
-c19df340 3950142704 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-c19df340 3950143759 C Ci:002:00 0 4 = 03011000
-c19df340 3950198708 S Co:002:00 s 23 01 0014 0001 0000 0
-c19df340 3950199750 C Co:002:00 0 0
-c19df340 3950199757 S Co:000:00 s 00 05 0003 0000 0000 0
-c19df340 3950202746 C Co:000:00 0 0
-c19df340 3950218712 S Ci:003:00 s 80 06 0100 0000 0012 18 <
-c19df340 3950223745 C Ci:003:00 0 18 = 12011001 00000008 58044c00 01010102 0001
-c19df340 3950223753 S Ci:003:00 s 80 06 0200 0000 0009 9 <
-c19df340 3950228743 C Ci:003:00 0 9 = 09023b00 020100e0 19
-c19df340 3950228749 S Ci:003:00 s 80 06 0200 0000 003b 59 <
-c19df340 3950239745 C Ci:003:00 0 59 = 09023b00 020100e0 19090400 00010301 
-01000921 10010001 22410007 05810308
-c19df340 3950239765 S Ci:003:00 s 80 06 0300 0000 00ff 255 <
-c19df340 3950244739 C Ci:003:00 0 4 = 04030904
-c19df340 3950244749 S Ci:003:00 s 80 06 0302 0409 00ff 255 <
-c19df340 3950252738 C Ci:003:00 0 26 = 1a035500 53004200 20004b00 65007900 
-62006f00 61007200 6400
-c19df340 3950252744 S Ci:003:00 s 80 06 0301 0409 00ff 255 <
-c19df340 3950259737 C Ci:003:00 0 16 = 10034100 42004200 48004f00 4d004500
-c19df340 3950259879 S Co:003:00 s 00 09 0001 0000 0000 0
-c19df340 3950262742 C Co:003:00 0 0
-dc622dc0 3950262842 S Co:003:00 s 21 0a 0000 0000 0000 0
-dc622dc0 3950264745 C Co:003:00 0 0
-dc622dc0 3950264763 S Ci:003:00 s 81 06 2200 0000 0041 65 <
-dc622dc0 3950265753 C Ci:003:00 0 65 = 05010906 a1010507 19e029e7 15002501 
-95087501 81029508 75018101 05081901
-c19df340 3950266246 S Ii:003:01 -115 8 <
-f7f9f540 3950266436 S Co:003:00 s 21 0a 0000 0001 0000 0
-f7f9f540 3950266742 C Co:003:00 0 0
-f7f9f540 3950266786 S Ci:003:00 s 81 06 2200 0001 0068 104 <
-f7f9f540 3950268745 C Ci:003:00 0 104 = 05010902 a1018504 0901a100 05091901 
-29031500 25019503 75018102 95017505
-f7b30540 3950269366 S Ii:003:02 -115 5 <
-d61f5440 3950269562 S Ci:002:00 s a3 00 0000 0002 0004 4 <
-d61f5440 3950269745 C Ci:002:00 0 4 = 00010000
-d61f5440 3950269765 S Ci:002:00 s a3 00 0000 0003 0004 4 <
-d61f5440 3950270743 C Ci:002:00 0 4 = 00010000
-d61f5440 3950270781 S Ci:002:00 s a3 00 0000 0001 0004 4 <
-d61f5440 3950271743 C Ci:002:00 0 4 = 03010000
-c19df340 3951308554 C Ii:003:01 0 8 = 00005300 00000000
-c19df340 3951308575 S Ii:003:01 -115 8 <
-f7f9f3c0 3951308594 S Co:003:00 s 21 09 0200 0000 0001 1 = 01
-f7f9f3c0 3951310552 C Co:003:00 0 1 >
-c19df340 3951364542 C Ii:003:01 0 8 = 00000000 00000000
-c19df340 3951364554 S Ii:003:01 -115 8 <
+Please pull from the 'linus' branch of the git repository at
 
-The diff after trimming address and timestamps is:
-@@ -1,9 +1,5 @@
--C Ii:001:01 -2 0
--S Ci:001:00 s 80 00 0000 0000 0002 2 <
--C Ci:001:00 0 2 = 0300
-+C Ii:001:01 0 1 = 04
-  S Ii:001:01 -115 2 <
--S Ci:001:00 s a3 00 0000 0001 0004 4 <
--C Ci:001:00 0 4 = 00010000
-  S Ci:001:00 s a3 00 0000 0002 0004 4 <
-  C Ci:001:00 0 4 = 01010100
-  S Co:001:00 s 23 01 0010 0002 0000 0
-@@ -28,8 +24,6 @@
-  C Ci:000:00 0 8 = 12011001 09000008
-  S Co:001:00 s 23 03 0004 0002 0000 0
-  C Co:001:00 0 0
--C Ii:001:01 0 1 = 04
--S Ii:001:01 -115 2 <
-  S Ci:001:00 s a3 00 0000 0002 0004 4 <
-  C Ci:001:00 0 4 = 03010000
-  S Co:001:00 s 23 01 0014 0002 0000 0
-@@ -63,8 +57,6 @@
-  S Co:002:00 s 23 03 0008 0003 0000 0
-  C Co:002:00 0 0
-  S Ii:002:01 -115 1 <
--S Ci:001:00 s a3 00 0000 0002 0004 4 <
--C Ci:001:00 0 4 = 03010000
-  S Ci:002:00 s a3 00 0000 0001 0004 4 <
-  C Ci:002:00 0 4 = 01010100
-  S Co:002:00 s 23 01 0010 0001 0000 0
-@@ -131,3 +123,5 @@
-  S Ii:003:01 -115 8 <
-  S Co:003:00 s 21 09 0200 0000 0001 1 = 01
-  C Co:003:00 0 1 >
-+C Ii:003:01 0 8 = 00000000 00000000
-+S Ii:003:01 -115 8 <
+  git://kvm.qumranet.com/home/avi/kvm.git
 
-> I'm running out of ideas.  I tried doing exactly the same thing with a USB
-> keyboard+hub on my system, and it worked perfectly.  This suggests that
-> you might be seeing some weird hardware flaw that is somehow exposed by
-> the patch.
-> 
-> Can you borrow a different USB keyboard and see if it behaves the same 
-> way?  Or can you try using your keyboard on a different computer (one with 
-> UHCI)?
+containing the following kvm stability and correctness fixes:
 
-I'll try my best, but I doubt so, there is neither other linux running around 
-with uhci nor another USB keyboard :(, AFAIK.
+Avi Kivity (4):
+      KVM: Unset kvm_arch_ops if arch module loading failed
+      KVM: Fix guest sysenter on vmx
+      KVM: MMU: Fix guest writes to nonpae pde
+      KVM: MMU: Fix host memory corruption on i386 with >= 4GB ram
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+ drivers/kvm/kvm_main.c |    4 ++-
+ drivers/kvm/mmu.c      |   52 ++++++++++++++++++++++++++++++++++-------------
+ drivers/kvm/vmx.c      |    8 +++---
+ 3 files changed, 44 insertions(+), 20 deletions(-)
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index a163bca..dc7a8c7 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -2464,7 +2464,7 @@ int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
+ 
+ 	r = kvm_arch_ops->hardware_setup();
+ 	if (r < 0)
+-	    return r;
++		goto out;
+ 
+ 	on_each_cpu(kvm_arch_ops->hardware_enable, NULL, 0, 1);
+ 	r = register_cpu_notifier(&kvm_cpu_notifier);
+@@ -2500,6 +2500,8 @@ out_free_2:
+ out_free_1:
+ 	on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
+ 	kvm_arch_ops->hardware_unsetup();
++out:
++	kvm_arch_ops = NULL;
+ 	return r;
+ }
+ 
+diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
+index a1a9336..e85b4c7 100644
+--- a/drivers/kvm/mmu.c
++++ b/drivers/kvm/mmu.c
+@@ -131,7 +131,7 @@ static int dbg = 1;
+ 	(((address) >> PT32_LEVEL_SHIFT(level)) & ((1 << PT32_LEVEL_BITS) - 1))
+ 
+ 
+-#define PT64_BASE_ADDR_MASK (((1ULL << 52) - 1) & PAGE_MASK)
++#define PT64_BASE_ADDR_MASK (((1ULL << 52) - 1) & ~(u64)(PAGE_SIZE-1))
+ #define PT64_DIR_BASE_ADDR_MASK \
+ 	(PT64_BASE_ADDR_MASK & ~((1ULL << (PAGE_SHIFT + PT64_LEVEL_BITS)) - 1))
+ 
+@@ -406,8 +406,8 @@ static void rmap_write_protect(struct kvm_vcpu *vcpu, u64 gfn)
+ 			spte = desc->shadow_ptes[0];
+ 		}
+ 		BUG_ON(!spte);
+-		BUG_ON((*spte & PT64_BASE_ADDR_MASK) !=
+-		       page_to_pfn(page) << PAGE_SHIFT);
++		BUG_ON((*spte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT
++		       != page_to_pfn(page));
+ 		BUG_ON(!(*spte & PT_PRESENT_MASK));
+ 		BUG_ON(!(*spte & PT_WRITABLE_MASK));
+ 		rmap_printk("rmap_write_protect: spte %p %llx\n", spte, *spte);
+@@ -1093,22 +1093,40 @@ out:
+ 	return r;
+ }
+ 
++static void mmu_pre_write_zap_pte(struct kvm_vcpu *vcpu,
++				  struct kvm_mmu_page *page,
++				  u64 *spte)
++{
++	u64 pte;
++	struct kvm_mmu_page *child;
++
++	pte = *spte;
++	if (is_present_pte(pte)) {
++		if (page->role.level == PT_PAGE_TABLE_LEVEL)
++			rmap_remove(vcpu, spte);
++		else {
++			child = page_header(pte & PT64_BASE_ADDR_MASK);
++			mmu_page_remove_parent_pte(vcpu, child, spte);
++		}
++	}
++	*spte = 0;
++}
++
+ void kvm_mmu_pre_write(struct kvm_vcpu *vcpu, gpa_t gpa, int bytes)
+ {
+ 	gfn_t gfn = gpa >> PAGE_SHIFT;
+ 	struct kvm_mmu_page *page;
+-	struct kvm_mmu_page *child;
+ 	struct hlist_node *node, *n;
+ 	struct hlist_head *bucket;
+ 	unsigned index;
+ 	u64 *spte;
+-	u64 pte;
+ 	unsigned offset = offset_in_page(gpa);
+ 	unsigned pte_size;
+ 	unsigned page_offset;
+ 	unsigned misaligned;
+ 	int level;
+ 	int flooded = 0;
++	int npte;
+ 
+ 	pgprintk("%s: gpa %llx bytes %d\n", __FUNCTION__, gpa, bytes);
+ 	if (gfn == vcpu->last_pt_write_gfn) {
+@@ -1144,22 +1162,26 @@ void kvm_mmu_pre_write(struct kvm_vcpu *vcpu, gpa_t gpa, int bytes)
+ 		}
+ 		page_offset = offset;
+ 		level = page->role.level;
++		npte = 1;
+ 		if (page->role.glevels == PT32_ROOT_LEVEL) {
+-			page_offset <<= 1;          /* 32->64 */
++			page_offset <<= 1;	/* 32->64 */
++			/*
++			 * A 32-bit pde maps 4MB while the shadow pdes map
++			 * only 2MB.  So we need to double the offset again
++			 * and zap two pdes instead of one.
++			 */
++			if (level == PT32_ROOT_LEVEL) {
++				page_offset <<= 1;
++				npte = 2;
++			}
+ 			page_offset &= ~PAGE_MASK;
+ 		}
+ 		spte = __va(page->page_hpa);
+ 		spte += page_offset / sizeof(*spte);
+-		pte = *spte;
+-		if (is_present_pte(pte)) {
+-			if (level == PT_PAGE_TABLE_LEVEL)
+-				rmap_remove(vcpu, spte);
+-			else {
+-				child = page_header(pte & PT64_BASE_ADDR_MASK);
+-				mmu_page_remove_parent_pte(vcpu, child, spte);
+-			}
++		while (npte--) {
++			mmu_pre_write_zap_pte(vcpu, page, spte);
++			++spte;
+ 		}
+-		*spte = 0;
+ 	}
+ }
+ 
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index c07178e..bfa0ce4 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -371,10 +371,10 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
+ 		data = vmcs_read32(GUEST_SYSENTER_CS);
+ 		break;
+ 	case MSR_IA32_SYSENTER_EIP:
+-		data = vmcs_read32(GUEST_SYSENTER_EIP);
++		data = vmcs_readl(GUEST_SYSENTER_EIP);
+ 		break;
+ 	case MSR_IA32_SYSENTER_ESP:
+-		data = vmcs_read32(GUEST_SYSENTER_ESP);
++		data = vmcs_readl(GUEST_SYSENTER_ESP);
+ 		break;
+ 	default:
+ 		msr = find_msr_entry(vcpu, msr_index);
+@@ -412,10 +412,10 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
+ 		vmcs_write32(GUEST_SYSENTER_CS, data);
+ 		break;
+ 	case MSR_IA32_SYSENTER_EIP:
+-		vmcs_write32(GUEST_SYSENTER_EIP, data);
++		vmcs_writel(GUEST_SYSENTER_EIP, data);
+ 		break;
+ 	case MSR_IA32_SYSENTER_ESP:
+-		vmcs_write32(GUEST_SYSENTER_ESP, data);
++		vmcs_writel(GUEST_SYSENTER_ESP, data);
+ 		break;
+ 	case MSR_IA32_TIME_STAMP_COUNTER:
+ 		guest_write_tsc(data);
