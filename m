@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXCRAhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbXCRAmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbXCRAhl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 20:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbXCRAhl
+	id S1752716AbXCRAmi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 20:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbXCRAmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 20:37:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:1761 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbXCRAhk (ORCPT
+	Sat, 17 Mar 2007 20:42:38 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33874 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752716AbXCRAmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 20:37:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Y6NSZaA+l51oCmYxQhdDdHsTBu9r96T0Ybz+Nk8lwhBrVoeCrQWKjAOP+4bIsLvnkAe+bzQC4itkHB3iZiRTATPiW/6FOdoAlfGrU7OqG64svLPHY3oAtlRa7wBFSB/mKHsZ2QtLUpk4wzvCoElqIfwpwsbXp0svo+KkFHUkppM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git patches] IDE fixes
-Date: Sun, 18 Mar 2007 01:44:58 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200703172207.52352.bzolnier@gmail.com> <Pine.LNX.4.64.0703171702060.4964@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703171702060.4964@woody.linux-foundation.org>
+	Sat, 17 Mar 2007 20:42:37 -0400
+Date: Sun, 18 Mar 2007 01:42:40 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: tglx@linutronix.de, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Soeren Sonnenburg <kernel@nn7.de>, Sergey Vlasov <vsu@altlinux.ru>,
+       Jiri Kosina <jkosina@suse.cz>, linux-input@atrey.karlin.mff.cuni.cz
+Subject: appletouch quirk doesn't run at resume
+Message-ID: <20070318004240.GO752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703162134.14265.rjw@sisk.pl> <1174078066.13341.279.camel@localhost.localdomain> <1174087552.13341.332.camel@localhost.localdomain> <45FBBDEA.9060708@m3y3r.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200703180144.58509.bzolnier@gmail.com>
+In-Reply-To: <45FBBDEA.9060708@m3y3r.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 17, 2007 at 11:07:38AM +0100, Thomas Meyer wrote:
+> Thomas Gleixner schrieb:
+> > I finally found a dual core box, which survives suspend/resume without
+> > crashing in the middle of nowhere. Sigh, I never figured out from the
+> > code and the bug reports what's going on.
+> >
+> > The observed hangs are caused by a stale state transition of the clock
+> > event devices, which keeps the RCU synchronization away from completion,
+> > when the non boot CPU is brought back up.
+> >
+> > The suspend/resume in oneshot mode needs the similar care as the
+> > periodic mode during suspend to RAM. My assumption that the state
+> > transitions during the different shutdown/bringups of s2disk would go
+> > through the periodic boot phase and then switch over to highres resp.
+> > nohz mode were simply wrong.
+> >
+> > Add the appropriate suspend / resume handling for the non periodic
+> > modes.
+> >
+> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> >   
+> 
+> Excellent work. Now suspend to disk is working again. But:
+> 
+> 1.) The quirk added in commit a417a21e10831bca695b4ba9c74f4ddf5a95ac06
+> for the appletouch driver doesn't seem to work after resume.
+>...
 
-On Sunday 18 March 2007, Linus Torvalds wrote:
-> 
-> On Sat, 17 Mar 2007, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > to receive the following updates:
-> > 
-> >  b/drivers/ide/Kconfig                       |   48 -
-> >  b/drivers/ide/Makefile                      |    1 
-> >  b/drivers/ide/arm/icside.c                  |   13 
-> >  b/drivers/ide/ide-dma.c                     |    2 
-> >  b/drivers/ide/ide.c                         |    4 
-> >  b/drivers/ide/mips/au1xxx-ide.c             |    3 
-> >  b/drivers/ide/pci/Makefile                  |    1 
-> >  b/drivers/ide/pci/cmd64x.c                  |   45 -
-> >  b/drivers/ide/pci/jmicron.c                 |   29 
-> >  b/drivers/ide/pci/scc_pata.c                |  858 ++++++++++++++++++++++++++++
-> >  b/drivers/ide/setup-pci.c                   |    5 
-> >  b/include/asm-mips/mach-au1x00/au1xxx_ide.h |   34 -
-> >  drivers/ide/ppc/scc_pata.c                  |  858 ----------------------------
-> >  13 files changed, 915 insertions(+), 986 deletions(-)
-> 
-> Please use
-> 
-> 	git diff -M --stat --summary 
-> 
-> to generate the diffstat (where the "-M" is the important part). Your 
-> "scc_pata.c" change was a pure rename, but because you didn't ask for 
-> rename detection, it got shown as a file create/delete pair. It *should* 
-> have looked like this:
-> 
->  drivers/ide/Kconfig                       |   48 +++++------------------------
->  drivers/ide/Makefile                      |    1 -
->  drivers/ide/arm/icside.c                  |   13 +-------
->  drivers/ide/ide-dma.c                     |    2 +-
->  drivers/ide/ide.c                         |    4 --
->  drivers/ide/mips/au1xxx-ide.c             |    3 +-
->  drivers/ide/pci/Makefile                  |    1 +
->  drivers/ide/pci/cmd64x.c                  |   45 ++++++++++++---------------
->  drivers/ide/pci/jmicron.c                 |   29 ++++++++++++++---
->  drivers/ide/{ppc => pci}/scc_pata.c       |    0
->  drivers/ide/setup-pci.c                   |    5 ---
->  include/asm-mips/mach-au1x00/au1xxx_ide.h |   34 --------------------
->  12 files changed, 57 insertions(+), 128 deletions(-)
->  rename drivers/ide/{ppc => pci}/scc_pata.c (100%)
-> 
-> which is a lot more accurate than what you get by feeding a diff through 
-> "diffstat" that has no clue about renames (look at the summary for number 
-> of lines changed ;)
+Not a regression, but still a bug.
+Appropriate people added to the Cc.
 
-Thanks, I updated my scripts and also a git version installed while at it.
+cu
+Adrian
 
-[ I was feeling that I was missing something but these options were
-  undocumented in git-1.4.4.2, no longer a case in git-1.5.0.3. :-) ]
+-- 
 
-Bart
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
