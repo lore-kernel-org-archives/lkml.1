@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbXCRHdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbXCRHf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753116AbXCRHdL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 03:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbXCRHdL
+	id S1753123AbXCRHf0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 03:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbXCRHf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 03:33:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35299
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753108AbXCRHdJ (ORCPT
+	Sun, 18 Mar 2007 03:35:26 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:58369
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753123AbXCRHfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 03:33:09 -0400
-Date: Sun, 18 Mar 2007 00:33:09 -0700 (PDT)
-Message-Id: <20070318.003309.71088169.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: jeremy@goop.org, mingo@elte.hu, ak@muc.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, chrisw@sous-sol.org, zach@vmware.com,
-       anthony@codemonkey.ws, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1174127638.8897.75.camel@localhost.localdomain>
-References: <20070316.023331.59468179.davem@davemloft.net>
-	<45FB005D.9060809@goop.org>
-	<1174127638.8897.75.camel@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Mar 2007 03:35:25 -0400
+Date: Sun, 18 Mar 2007 00:35:00 -0700
+To: Mike Galbraith <efault@gmx.de>
+Cc: Willy Tarreau <w@1wt.eu>, Linus Torvalds <torvalds@linux-foundation.org>,
+       William Lee Irwin III <wli@holomorphy.com>, Avi Kivity <avi@argo.co.il>,
+       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org,
+       Nicholas Miell <nmiell@comcast.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: is RSDL an "unfair" scheduler too?
+Message-ID: <20070318073500.GA14330@gnuppy.monkey.org>
+References: <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu> <45FC525D.5000708@argo.co.il> <20070318012533.GB2986@holomorphy.com> <Pine.LNX.4.64.0703171830130.4964@woody.linux-foundation.org> <20070318052439.GT943@1wt.eu> <20070318060949.GA13583@gnuppy.monkey.org> <1174199822.8543.5.camel@Homer.simpson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174199822.8543.5.camel@Homer.simpson.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Sat, 17 Mar 2007 21:33:58 +1100
-
-> On Fri, 2007-03-16 at 13:38 -0700, Jeremy Fitzhardinge wrote:
-> > David Miller wrote:
-> > > Perhaps the problem can be dealt with using ELF relocations.
-> > >
-> > > There is another case, discussed yesterday on netdev, where run-time
-> > > resolution of ELF relocations would be useful (for
-> > > very-very-very-read-only variables) so if it can solve this problem
-> > > too it would be nice to have a generic infrastructure for it.
-> > 
-> > That's an interesting idea.  Have you or anyone else looked at what it
-> > would take to code up?
-> > 
-> > For this case, I guess you'd walk the relocs looking for references into
-> > the paravirt_ops structure.  You'd need to check that was a reference
-> > from an indirect jump or call instruction, which would identify a
-> > patchable callsite.  The offset into the pv_ops structure would identify
-> > which operation is involved.
+On Sun, Mar 18, 2007 at 07:37:02AM +0100, Mike Galbraith wrote:
+> On Sat, 2007-03-17 at 23:09 -0700, Bill Huey wrote:
 > 
-> I wrote a whole email on ways to do this, BUT...
-
-The idea is _NOT_ that you go look for references to the paravirt_ops
-members structure, that would be stupid and you wouldn't be able to
-use the most efficient addressing mode on a given cpu, you'd be
-patching up indirect calls and crap like that.  Just say no...
-
-Instead you get rid of paravirt ops completely, and you call functions
-whose symbol name will not resolve in the initial kernel link.
-
-You do an initial link of the kernel, look for the unresolved symbols
-in the ELF relocation tables (just like the linker does), and put
-those references into a table that is use to patch things up and you
-can use standard ELF relocation code to handle this, exactly like code
-we already have for module loading in the kernel already.
-
-This idea is about 15 years old, sparc32 has been doing exactly this
-via something called "btfixup" to handle the page table, TLB, and
-cache differences of 15 different cpu+cache type combinations.
-
-> #define pv_patch(call, args...) \
-> 	asm volatile("8888:"); 
-> 	call(args);
-> 	asm volatile("8889:"
-> 	 [ stuff to put 8889, 8888 and call in fixup section ]
-
-Please, use ELF and it's powerful and clean existing way to
-do this please. :-)
-
-> > What are the netdev requirements?
+> > Like I've said in a previous email, SGI schedulers have an interactive
+> > term in addition to the normal "nice" values. If RSDL ends up being too
+> > rigid for desktop use, then this might be a good idea to explore in
+> > addition to priority manipulation.
 > 
-> Reading Ben LaHaise's (very cool!) patch, it's not clear that using
-> reloc postprocessing is going to be clearer than open-coding it as he
-> has done.
+> I've done that already (ain't perfect yet, maybe never be).  The hard
+> part is making it automatic, and not ruining the good side of RSDL in
+> the process.
 
-Ben's case can be handled in the same way.  Just do not define the
-symbols, pre-link, look for the references in the relocation tables,
-and run through that when you do the set_very_readonly() or
-install_paravirt_ops() thing.
+I can't fully qualify what aspects of the X server that's creating this
+problem. More experimentation is needed (various display drivers, etc...)
+should be played with to see what kind of problematic situations arise.
+It's a bit too new with too few users to know what are the specific
+problems just yet. Your case is too sparse for it to be an completely
+exhaustive exploration of what's failing with this scheduler.
+
+There's a policy decision that needs to be made of whether adding another
+term to the scheduler calcuation is blessed or not. My opinion is that
+is should be. Meanwhile, we should experiment more with different
+configurations.
+
+bill
+
