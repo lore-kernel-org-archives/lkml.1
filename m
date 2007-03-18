@@ -1,143 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbXCRDTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbXCRDVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753020AbXCRDTk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 23:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbXCRDTk
+	id S1753012AbXCRDVT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 23:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXCRDVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 23:19:40 -0400
-Received: from mail.tmr.com ([64.65.253.246]:42049 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753004AbXCRDTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 23:19:38 -0400
-Message-ID: <45FCB0A4.8070205@tmr.com>
-Date: Sat, 17 Mar 2007 22:23:16 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Con Kolivas <kernel@kolivas.org>,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, vishpat@gmail.com
+	Sat, 17 Mar 2007 23:21:19 -0400
+Received: from pfepc.post.tele.dk ([195.41.46.237]:40687 "EHLO
+	pfepc.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753004AbXCRDVS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 23:21:18 -0400
+X-Greylist: delayed 169976 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 Mar 2007 23:21:17 EDT
 Subject: Re: is RSDL an "unfair" scheduler too?
-References: <200703042335.26785.a1426z@gawab.com> <200703172302.10819.kernel@kolivas.org> <20070317122831.GA28429@elte.hu> <200703172343.53480.kernel@kolivas.org> <20070317163434.GB30162@elte.hu>
-In-Reply-To: <20070317163434.GB30162@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, ck@vds.kolivas.org,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <45FCA051.2080008@tmr.com>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703172302.10819.kernel@kolivas.org>	<20070317122831.GA28429@elte.hu>
+	 <200703172343.53480.kernel@kolivas.org>  <45FCA051.2080008@tmr.com>
+Content-Type: text/plain
+Date: Sun, 18 Mar 2007 04:20:56 +0100
+Message-Id: <1174188056.10498.20.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-
-> * Con Kolivas <kernel@kolivas.org> wrote:
+On Sat, 2007-03-17 at 21:13 -0500, Bill Davidsen wrote:
+> Con Kolivas wrote:
+<snip>
 > 
->> Ok but please look at how it appears from my end (illness aside).
+> Now for something constructive... by any chance is Mike running KDE 
+> instead of GNOME? I only had a short time to play because I had to look 
+> at another problem in 2.6.21-rc3 (nbd not working), so the test machine 
+> is in use. But it looked as if behavior was not as smooth with KDE. May 
+> that thought be useful.
+
+Now i must say here, i use KDE, and have been testing 0.31, and i have
+been observing all the effects, in contrast with vanilla and staircase.
+this is on 2.6.20
+
+I do not notice kde being slower, in fact i notice various interactivity
+"speedups" compared to mainline.
+
+first one i noticed(because i deliberately tested) was kicker. Kickers
+hide function was very very smooth during boot, and still is under load.
+It is not entirely as smooth under vanilla during boot(i suspect IO
+issue), under staircase it is, however under huge loads, it even is not
+smooth under staircase.
+
+then i started my konsole, and the one thing i immediately noticed was
+that zsh started instantly, usually i can see/(feel) zsh starting, as in
+it takes like 0.2 before my prompt comes. This is simply gone now with
+rsdl, behavior used to be the same in vanilla/rsdl.
+
+But the most interresting, and dare i say, completely unexpected things
+are much more important.
+
+I have for a long time had issues with tvtime, if i did stuff like move
+windows, tvtime would drop frames, or simply hovering javascript stuff
+on sites in konqueror, (this seemed to be introduced in 2.6.~5+), cause
+in EARLY 2.6 i did not have this problem, but it was the same in
+staircase and vanilla. But this is gone completely, tvtime no longer
+drops any frames when doing this.
+
+Another thing i noticed, which almost blew my mind as badly as with
+tvtime, was with wine, and world of warcraft(and nvidia blob driver, but
+this IS what many "desktop" users runs). While loading a level, the
+sound no longer skipped. This problem afaik, EVERYBODY which runs wine
++wow has(unless they change the buffer size to ridicoulesly high which
+annoys gameplay).
+
+And more playing wow has shown me that rsdl seems to be doing an
+extremely good job of not letting other tasks interfere. For example i
+have spamasassin going quite very often (every minute, for lots of
+accounts), and this usually kills all sorts of high performance opengl
+stuff, causing severe stuttering, but with RSDL i only noticed my
+framerate dropping, but no strange stuttering as i usually experience,
+only lowered fps, which to me is quite natural, as spamasassin now has
+to use cpu.
+
+the last of my immediate observations are ktorrent. my ktorrent has LOTS
+of open fd's (in fact like ~5-6k), and the application tends to be very
+sluggish, but that is not so anymore.
+
+
+And now for the side effects i have observed.
+
+The only down right "regression" (which i wouldnt even call it, cause
+its a NATURAL thing when other stuff uses cpu) is that when i play a
+movie in kaffeine, and move the kaffeine window insanely fast all over
+the desktop, the audio skipped once, the strange thing is, even if i
+keep moving it, it does not skip any more, only the one time when you
+start to move it. But 720p h264 does take SOME cpu to decode, so i dont
+feel that this is unfair.
+
+i have however with X observed that under high load(720p h264 video
+playback, while doing video encoding, ktorrent running, and make
+running) that windows take longer time to redraw in X, if i move windows
+over each other, but not really a problem.
+
+another effect i have observed is that stuff does not stutter as much
+when under load, it simply gets slower.(but i suppose thats what i said
+when describing the good effects i have noticed)
+
+it should be noted that i have not reniced a single thing, and this is a
+singlecore amd64 2ghz with 1.5gb ram.
+
+
+
 > 
-> ( i really think we should continue this debate after you get better. 
->   Everything looks much darker when you are ill! )
-> 
->> You initially said you were pleased with this design.
-> 
-> I said that 2 years ago about the staircase scheduler and i am still 
-> saying this about RSDL today. That doesnt make my position automatically 
-> correct though :-) For example i wrote and maintained the 4g:4g patchset 
-> for over 2 years and still that was no guarantee of it making sense 
-> upstream ;) And it was a hell of a lot of work (much uglier and nastier 
-> work than any scheduler hacking and tuning, believe me), and it was 
-> thrown away as a cute but unnecessary complication we dont need. So 
-> what? To me what matters is the path you walk, not the destination you 
-> reach.
-> 
-> in terms of RSDL design, i like it, still i'm kind of asking myself 
-> 'couldnt something in this direction be done in a much simpler and less 
-> revolutionary way'? For example couldnt we introduce per-priority level 
-> timeslice quotas in the current scheme as well, instead of the very 
-> simplistic and crude STARVATION_LIMIT approach? Furthermore, couldnt we 
-> make the timeslices become smaller as the runqueue length increases, to 
-> make starvation less of a problem? It seems like the problem cases with 
-> the current scheduler arent so much centered around the interactivity 
-> estimator, it is more that timeslices get distributed too coarsely, 
-> while RSDL distributes timeslices in a more finegrained way and is thus 
-> less suspect to starvation under certain workloads.
 
-Yes. The "doorknob scheduler" was a scheduler which worked as follows: 
-the runnable processes in the system were put in a priority sorted list 
-and counted. Then the length of one cycle (turn) was divided by the 
-number of processes and that was the timeslice. In the next version 
-upper and lower limits were put on the length of a timeslice, so the 
-system didn't get eaten by context switches under load or be jerky under 
-light load. That worked fairly well.
-
-Then people got into creating unfairness to address what they thought 
-were corner cases, the code turned into a plumber's nightmare, and 
-occasional jackpot cases created occasional (non-reproducible) hangs.
-
-Finally management noted that the peripherals cost three times as much 
-as the CPU, so jobs doing i/o should run first. That made batch run like 
-the clappers of hell, and actually didn't do all the bad things you 
-might expect. User input was waitio, disk was waitio, response was about 
-as good as it could be for that hardware.
-
-===> it might be useful to give high priority to a process going from 
-waitio to runable state, once only.
-
-The "doorknob" term came from "everybody gets a turn" and the year was 1970.
-
-Avi Kivity wrote:
-> Well, the heuristic here is that process == job. I'm not sure
-> heuristic is the right name for it, but it does point out a
-> deficieny.
- >
-> A cpu-bound process with many threads will overwhelm a cpu-bound
-> single threaded threaded process.
- >
- > A job with many processes will overwhelm a job with a single process.
- >
- > A user with many jobs can starve a user with a single job.
- >
-> I don't think the problem here is heuristics, rather that the 
-> scheduler's manages cpu quotas at the task level rather than at the
-> user visible level. If scheduling were managed at all three
-> hierarchies I mentioned ('job' is a bit artificial, but process and
-> user are not) then:
- >
-> - if N users are contending for the cpu on a multiuser machine, each 
-> should get just 1/N of available cpu power. As it is, a user can run
-> a few of your #1 workloads (or a make -j 20) and slow every other
-> user down - your example would work perfectly (if we can communicate
-> to the kernel what a job is)
- >
- > - multi-threaded processes would not get an unfair advantage
-
-If we wanted to do this, a job would be defined as all children or 
-threads of the oldest parent process with a PPID of one. So if I logged 
-on  and did
-   make -j4
-on a kernel, and someone else did:
-   find /var -type f | xargs grep -l zumblegarfe
-and someone else was doing:
-   foo & mumble & barfe
-
-We would all be equal. That's good! And there would be some recursive 
-scheduler which would pick a "job" and then a process, and run it. That 
-too is good!
-
-But we have a mail server, and there are 671 threads with a socket and 
-POP3 user on each one, and they only get 1/N of a job worth of CPU 
-between them, and that sucks rocks off the bottom of the ocean. So 
-pretty soon the code gets some "fixes" to make POP3 work, and X work, 
-and the code once again becomes plumber's nightmare... Then you start 
-playing with process groups to address some of this, and address exec() 
-corner cases, and complexity goes way up again. This is NOT an easy problem!
-
-I think Con has done a good job, I think in most cases (heresy) the 
-current mainline scheduler does a pretty good job. I'm in favor of 
-having several schedulers, because I don't believe any one can match the 
-behavior goals of all users.
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
