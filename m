@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbXCSJzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbXCSJ5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753770AbXCSJzI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 05:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbXCSJzH
+	id S1753774AbXCSJ5s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 05:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbXCSJ5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 05:55:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:26592 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbXCSJzG (ORCPT
+	Mon, 19 Mar 2007 05:57:48 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47181 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753774AbXCSJ5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 05:55:06 -0400
-Date: Mon, 19 Mar 2007 11:55:45 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, general@lists.openfabrics.org,
-       Roland Dreier <rolandd@cisco.com>, David Miller <davem@davemloft.net>
-Subject: Re: dst_ifdown breaks infiniband?
-Message-ID: <20070319095545.GF8386@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070318155532.GG7958@mellanox.co.il>
-	<20070318191238.GA20518@ms2.inr.ac.ru>
-	<20070318195355.GB11078@mellanox.co.il>
-	<20070318201826.GB27004@ms2.inr.ac.ru>
-	<20070319093632.GB8386@mellanox.co.il>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070319093632.GB8386@mellanox.co.il>
-User-Agent: Mutt/1.5.11
+	Mon, 19 Mar 2007 05:57:47 -0400
+Date: Sun, 18 Mar 2007 20:55:23 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Catalin Marinas" <catalin.marinas@gmail.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH 3/4] tty: Introduce no_tty and use it in selinux
+Message-ID: <20070318205523.39473bd0@lxorguk.ukuu.org.uk>
+In-Reply-To: <m1bqiqjrnx.fsf_-_@ebiederm.dsl.xmission.com>
+References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
+	<m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
+	<m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
+	<m1veh5q6s7.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703140259p773b0eb8p9c142d33934e64ff@mail.gmail.com>
+	<m1wt1jq45w.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703141008o4d6cb243r7bc328d79cccfa2e@mail.gmail.com>
+	<m1slc4luf5.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703161544h2961670dh8f5e499fd2dc0ce5@mail.gmail.com>
+	<m1vegyjspz.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1r6rmjsev.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1mz2ajs6g.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1fy82jrwz.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1bqiqjrnx.fsf_-_@ebiederm.dsl.xmission.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
-> Subject: Re: dst_ifdown breaks infiniband?
-> 
-> > > Any simpler ideas?
-> > 
-> > Well, if inifiniband destructor really needs to take that lock... no.
-> > Right now I do not see.
-> 
-> OK, this is actually not hard to fix - for infiniband, we can just look at
-> neighbour->dev->type or compare neighbour->dev and
-> neighbour->parms->dev - if they are different, device is being unregistered,
-> so we do not need to do anything in the destructor.
-> 
-> I'll send a patch to openfabrics, shortly.
-> 
-> However, after implementing this fix, I hit what could be use after
-> free at module unloading. Dave, Alexey, Roland, could you take a look at
-> the following please?
-> 
-> Works fine for me (survived a couple of hours of crazy device
-> loading/unloading/up/down/hotplug + link data and state activity)
-> and seems to fix the issue.
-> 
-> ---------
-> 
-> If a device driver sets neigh_destructor in neigh_params, this could
-> get called after the device has been unregistered and the driver module
-> removed.
-> 
-> This is an old bug, but apparently, started to get triggered more infiniband
-> after recent multicast and connected mode changes.
-> 
-> Fix this by delaying dev_put until the neigh_params object is removed.
-> 
-> Signed-off-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
+On Sun, 18 Mar 2007 13:08:34 -0600
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-The problem seems real enough but the fix seems no good -
-device unregister gets blocked with
-	unregister_netdevice: waiting for ib0 to become free. Usage count = 1
+> 
+> While researching the tty layer pid leaks I found a weird case in
+> selinux when we drop a controlling tty because of inadequate
+> permissions we don't do the normal hangup processing.  Which is a
+> problem if it happens the session  leader has exec'd something that
+> can no longer access the tty.
 
-It seems the parms object can survive indefinitely after device is removed.
-
-How about creating a new parms object in dst_ifdown, and pointing neighbour
-to this?
-
-Would that work?
-The advantage of this approach is that neigh->parms is already protected
-by RCU.
-
--- 
-MST
+Acked-by: Alan Cox <alan@redhat.com>
