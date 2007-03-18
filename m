@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbXCRHWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbXCRHdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110AbXCRHWG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 03:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXCRHWG
+	id S1753116AbXCRHdL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 03:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbXCRHdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 03:22:06 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:17282 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753110AbXCRHWF (ORCPT
+	Sun, 18 Mar 2007 03:33:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35299
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753108AbXCRHdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 03:22:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mPqHbFOD2rGd7ejqb1/6L5/bM+0subq3mcKgAZL8b8oGSFYWYI3ipEjEGGE85SrAnOClqL5f1Tp0X6Mu8xLq/PwKcRRwgvi3uHGkgWS4JWY5EBNg5QTlDtAeDQcxG4CddiwcfyD2GvLZF4SKOLoaoqhPBrLUdwTjEljmIi3JMr4=
-Message-ID: <f44c5fdf0703180022n44b2ca61o62602e54aaab3334@mail.gmail.com>
-Date: Sun, 18 Mar 2007 08:22:02 +0100
-From: "Radoslaw Szkodzinski" <astralstorm@gmail.com>
-To: "Mike Galbraith" <efault@gmx.de>
-Subject: Re: [ck] Re: RSDL v0.31
-Cc: "Kasper Sandberg" <lkml@metanurb.dk>, "Al Boldi" <a1426z@gawab.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ck@vds.kolivas.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Nicholas Miell" <nmiell@comcast.net>
-In-Reply-To: <1174201726.8732.6.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 18 Mar 2007 03:33:09 -0400
+Date: Sun, 18 Mar 2007 00:33:09 -0700 (PDT)
+Message-Id: <20070318.003309.71088169.davem@davemloft.net>
+To: rusty@rustcorp.com.au
+Cc: jeremy@goop.org, mingo@elte.hu, ak@muc.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, chrisw@sous-sol.org, zach@vmware.com,
+       anthony@codemonkey.ws, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1174127638.8897.75.camel@localhost.localdomain>
+References: <20070316.023331.59468179.davem@davemloft.net>
+	<45FB005D.9060809@goop.org>
+	<1174127638.8897.75.camel@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172048.46267.kernel@kolivas.org>
-	 <1174125534.7734.2.camel@Homer.simpson.net>
-	 <200703172355.30989.a1426z@gawab.com>
-	 <1174198651.8199.44.camel@Homer.simpson.net>
-	 <1174200463.10498.23.camel@localhost>
-	 <1174201726.8732.6.camel@Homer.simpson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/18/07, Mike Galbraith <efault@gmx.de> wrote:
-> On Sun, 2007-03-18 at 07:47 +0100, Kasper Sandberg wrote:
->
-> > > So neither does a good job with this load.
-> > that sorely depends on what you mean by good job.
-> >
-> > It seems like what you call a good job is preserving the speed of the
-> > gui(X + apps which uses it) at _ALL_ costs to other stuff.
->
-> Wrong.  I call a good job giving a _preference_ to the desktop.  I call
-> rigid fairness impractical for the desktop, and a denial of reality.
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Sat, 17 Mar 2007 21:33:58 +1100
 
-My sound programs (audacity, non-RT) and mplayer disaggree with you. :-)
-Not to mention some more mundane stuff like Gajim. (no stall with its
-slow PyGTK UI on RSDL)
+> On Fri, 2007-03-16 at 13:38 -0700, Jeremy Fitzhardinge wrote:
+> > David Miller wrote:
+> > > Perhaps the problem can be dealt with using ELF relocations.
+> > >
+> > > There is another case, discussed yesterday on netdev, where run-time
+> > > resolution of ELF relocations would be useful (for
+> > > very-very-very-read-only variables) so if it can solve this problem
+> > > too it would be nice to have a generic infrastructure for it.
+> > 
+> > That's an interesting idea.  Have you or anyone else looked at what it
+> > would take to code up?
+> > 
+> > For this case, I guess you'd walk the relocs looking for references into
+> > the paravirt_ops structure.  You'd need to check that was a reference
+> > from an indirect jump or call instruction, which would identify a
+> > patchable callsite.  The offset into the pv_ops structure would identify
+> > which operation is involved.
+> 
+> I wrote a whole email on ways to do this, BUT...
 
-(Hint: I'm using Xfce, not KDE)
+The idea is _NOT_ that you go look for references to the paravirt_ops
+members structure, that would be stupid and you wouldn't be able to
+use the most efficient addressing mode on a given cpu, you'd be
+patching up indirect calls and crap like that.  Just say no...
 
-I'd recon KDE regresses because of kioslaves waiting on a pipe
-(communication with the app they're doing IO for) and then expiring.
-That's why splitting IO from an app isn't exactly smart. It should at
-least be ran in an another thread.
+Instead you get rid of paravirt ops completely, and you call functions
+whose symbol name will not resolve in the initial kernel link.
 
-A much better approach would be running IO in the context of the app,
-but using a common shared library.
+You do an initial link of the kernel, look for the unresolved symbols
+in the ELF relocation tables (just like the linker does), and put
+those references into a table that is use to patch things up and you
+can use standard ELF relocation code to handle this, exactly like code
+we already have for module loading in the kernel already.
 
-Also, Beryl works better with RSDL too.
-(blur doesn't "disable" itself sometimes - which is the result of a lag)
+This idea is about 15 years old, sparc32 has been doing exactly this
+via something called "btfixup" to handle the page table, TLB, and
+cache differences of 15 different cpu+cache type combinations.
+
+> #define pv_patch(call, args...) \
+> 	asm volatile("8888:"); 
+> 	call(args);
+> 	asm volatile("8889:"
+> 	 [ stuff to put 8889, 8888 and call in fixup section ]
+
+Please, use ELF and it's powerful and clean existing way to
+do this please. :-)
+
+> > What are the netdev requirements?
+> 
+> Reading Ben LaHaise's (very cool!) patch, it's not clear that using
+> reloc postprocessing is going to be clearer than open-coding it as he
+> has done.
+
+Ben's case can be handled in the same way.  Just do not define the
+symbols, pre-link, look for the references in the relocation tables,
+and run through that when you do the set_very_readonly() or
+install_paravirt_ops() thing.
