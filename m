@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbXCRB3C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbXCRB3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752978AbXCRB3C (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 21:29:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbXCRB2i
+	id S1752943AbXCRB3E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 21:29:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXCRB2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 21:28:38 -0400
-Received: from holomorphy.com ([66.93.40.71]:60829 "EHLO holomorphy.com"
+	Sat, 17 Mar 2007 21:28:40 -0400
+Received: from mail.tmr.com ([64.65.253.246]:41968 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753035AbXCRBZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 21:25:55 -0400
-Date: Sat, 17 Mar 2007 18:25:33 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Avi Kivity <avi@argo.co.il>
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: is RSDL an "unfair" scheduler too?
-Message-ID: <20070318012533.GB2986@holomorphy.com>
-References: <200703042335.26785.a1426z@gawab.com> <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu> <45FC525D.5000708@argo.co.il>
+	id S1753049AbXCRB0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 21:26:22 -0400
+Message-ID: <45FC9624.5080905@tmr.com>
+Date: Sat, 17 Mar 2007 20:30:12 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45FC525D.5000708@argo.co.il>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Newsgroups: gmane.linux.kernel,gmane.linux.kernel.ck
+To: Con Kolivas <kernel@kolivas.org>
+CC: Al Boldi <a1426z@gawab.com>, ck list <ck@vds.kolivas.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+ scheduler
+References: <200703042335.26785.a1426z@gawab.com> <200703121553.30462.kernel@kolivas.org> <200703121426.00854.a1426z@gawab.com> <200703122352.51257.kernel@kolivas.org>
+In-Reply-To: <200703122352.51257.kernel@kolivas.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 17, 2007 at 10:41:01PM +0200, Avi Kivity wrote:
-> Well, the heuristic here is that process == job.  I'm not sure heuristic 
-> is the right name for it, but it does point out a deficieny.
-> A cpu-bound process with many threads will overwhelm a cpu-bound single 
-> threaded threaded process.
-> A job with many processes will overwhelm a job with a single process.
-> A user with many jobs can starve a user with a single job.
-> I don't think the problem here is heuristics, rather that the 
-> scheduler's manages cpu quotas at the task level rather than at the user 
-> visible level.  If scheduling were managed at all three hierarchies I 
-> mentioned ('job' is a bit artificial, but process and user are not) then:
-> - if N users are contending for the cpu on a multiuser machine, each 
-> should get just 1/N of available cpu power.  As it is, a user can run a 
-> few of your #1 workloads (or a make -j 20) and slow every other user down
-> - your example would work perfectly (if we can communicate to the kernel 
-> what a job is)
-> - multi-threaded processes would not get an unfair advantage
+Con Kolivas wrote:
+> On Monday 12 March 2007 22:26, Al Boldi wrote:
+>> Con Kolivas wrote:
+>>> On Monday 12 March 2007 15:42, Al Boldi wrote:
+>>>> Con Kolivas wrote:
+>>>>> On Monday 12 March 2007 08:52, Con Kolivas wrote:
+>>>>>> And thank you! I think I know what's going on now. I think each
+>>>>>> rotation is followed by another rotation before the higher priority
+>>>>>> task is getting a look in in schedule() to even get quota and add
+>>>>>> it to the runqueue quota. I'll try a simple change to see if that
+>>>>>> helps. Patch coming up shortly.
+>>>>> Can you try the following patch and see if it helps. There's also one
+>>>>> minor preemption logic fix in there that I'm planning on including.
+>>>>> Thanks!
+>>>> Applied on top of v0.28 mainline, and there is no difference.
+>>>>
+>>>> What's it look like on your machine?
+>>> The higher priority one always get 6-7ms whereas the lower priority one
+>>> runs 6-7ms and then one larger perfectly bound expiration amount.
+>>> Basically exactly as I'd expect. The higher priority task gets precisely
+>>> RR_INTERVAL maximum latency whereas the lower priority task gets
+>>> RR_INTERVAL min and full expiration (according to the virtual deadline)
+>>> as a maximum. That's exactly how I intend it to work. Yes I realise that
+>>> the max latency ends up being longer intermittently on the niced task but
+>>> that's -in my opinion- perfectly fine as a compromise to ensure the nice
+>>> 0 one always gets low latency.
+>> I think, it should be possible to spread this max expiration latency across
+>> the rotation, should it not?
+> 
+> There is a way that I toyed with of creating maps of slots to use for each 
+> different priority, but it broke the O(1) nature of the virtual deadline 
+> management. Minimising algorithmic complexity seemed more important to 
+> maintain than getting slightly better latency spreads for niced tasks. It 
+> also appeared to be less cache friendly in design. I could certainly try and 
+> implement it but how much importance are we to place on latency of niced 
+> tasks? Are you aware of any usage scenario where latency sensitive tasks are 
+> ever significantly niced in the real world?
+> 
+It depends on how you reconcile "completely fair" and "order of 
+magnitude blips in latency." It looks (from the results, not the code) 
+as if nice is implemented by round-robin scheduling followed by once in 
+a while just not giving the CPU to the nice task for a while. Given the 
+smooth nature of the performance otherwise, it's more obvious than if 
+you weren't doing such a good job most of the time.
 
-I like this notion very much. I should probably mention pgrp's' typical
-association with the notion of "job," at least as far as shells go.
+Ugly stands out more on something beautiful!
 
-One issue this raises is prioritizing users on a system, threads within
-processes, jobs within users, etc. Maybe sessions would make sense, too,
-and classes of users, and maybe whatever they call the affairs that pid
-namespaces are a part of (someone will doubtless choke on the hierarchy
-depth implied here but it doesn't bother me in the least). It's not a
-deep or difficult issue. There just needs to be some user API to set the
-relative scheduling priorities of all these affairs within the next higher
-level of hierarchy, regardless of how many levels of hierarchy (aleph_0?).
-
-
--- wli
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
