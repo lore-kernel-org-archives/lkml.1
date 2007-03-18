@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbXCRQkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbXCRQuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbXCRQkB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 12:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbXCRQkB
+	id S1753250AbXCRQuF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 12:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbXCRQuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 12:40:01 -0400
-Received: from waste.org ([66.93.16.53]:45129 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753245AbXCRQkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 12:40:00 -0400
-Date: Sun, 18 Mar 2007 11:27:20 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Artem Bityutskiy <dedekind@infradead.org>
+	Sun, 18 Mar 2007 12:50:05 -0400
+Received: from smtp.nokia.com ([131.228.20.173]:46069 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbXCRQuE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 12:50:04 -0400
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Matt Mackall <mpm@selenic.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
        Christoph Hellwig <hch@infradead.org>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-Message-ID: <20070318162720.GI10459@waste.org>
+In-Reply-To: <20070318162720.GI10459@waste.org>
 References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
+	 <20070318162720.GI10459@waste.org>
+Content-Type: text/plain; charset=utf-8
+Date: Sun, 18 Mar 2007 18:49:39 +0200
+Message-Id: <1174236579.17249.6.camel@sauron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 18 Mar 2007 16:49:39.0912 (UTC) FILETIME=[6B85FC80:01C7697D]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070318184941-21168BB0-4D105701/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 05:19:34PM +0200, Artem Bityutskiy wrote:
-> Hello,
-> 
-> This patch-set contains UBI, which stands for Unsorted Block Images. This
-> is closely related to the memory technology devices Linux subsystem (MTD),
-> so this new piece of software is from drivers/mtd/ubi.
-> 
-> In short, UBI is kind of LVM layer but for flash (MTD) devices. It makes
-> it possible to dynamically create, delete and re-size volumes. But the
-> analogy is not full. UBI also takes care of wear-leveling and bad
-> eraseblocks handling, so UBI completely hides 2 aspects of flash chips
-> which make them very difficult to work with:
-> 
-> 1. wear of eraseblocks;
-> 2. bad eraseblocks.
+On Sun, 2007-03-18 at 11:27 -0500, Matt Mackall wrote:
+> Forgive my ignorance, but why did you not implement the two features
+> above as device mapper layers instead? A device mapper can arbitrarily
+> transform I/O addresses and contents and has direct access to the
+> mapped device's ioctl interfaces, etc.
 
-Forgive my ignorance, but why did you not implement the two features
-above as device mapper layers instead? A device mapper can arbitrarily
-transform I/O addresses and contents and has direct access to the
-mapped device's ioctl interfaces, etc. 
+Just because UBI is designed for flash devices, not block devices. Note,
+UBI is not for MMC/USB stick/SC/etc flashes, which are used as block
+devices, but for _bare_ flashes.
 
-Writing a mapper that's driven by out of band data on the underlying
-device can be done in a couple hundred lines of code. I've done it to
-implement an MD5 integrity checking layer. In this case, all the I/Os
-were simply remapped to be above the on-disk MD5 table and expanded to
-be at least the hashed cluster size.
+Please, glance here to find more information about the different between
+flashes and block devices:
 
-Even if the device mapper API is not completely up to the task (which
-I strongly suspect it is), it would seem simpler to extend it than to
-add 14000 lines of parallel subsystem.
+http://www.linux-mtd.infradead.org/faq/general.html#L_mtd_vs_hdd
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
