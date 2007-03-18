@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbXCREwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXCRE4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbXCREwO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 00:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXCREwN
+	id S1753025AbXCRE4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 00:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbXCRE4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 00:52:13 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:27518 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314AbXCREwM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 00:52:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=bqi7fwPTUPhoc5tRtSY4F7Cmu+IUg37lgCYr/JR2uJja89xv3I0zo5HyPv8A7FNwKM+QpPTsgAWfr+tEx5I+QbSrLV72kh2YGdIIz5WQG+2VcSWRTTldjF8ceoTfFUUomphf+bJUkCjQGy17IyKZ68TuBRPq7Dl1csW/AH8i3Qs=
-Message-ID: <45FCC575.4080902@gmail.com>
-Date: Sun, 18 Mar 2007 13:52:05 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: rol@as2917.net
-CC: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Jeff Garzik'" <jeff@garzik.org>, "'Alan Cox'" <alan@redhat.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       linux-ide@vger.kernel.org, "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Eric D. Mudama'" <edmudama@gmail.com>
-Subject: Re: [git patches] libata fixes
-References: <00b901c768cf$fc359f00$2101a8c0@donald>
-In-Reply-To: <00b901c768cf$fc359f00$2101a8c0@donald>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Mar 2007 00:56:16 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43187 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752314AbXCRE4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 00:56:15 -0400
+Date: Sun, 18 Mar 2007 15:56:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
+Message-Id: <20070318155615.e2504034.sfr@canb.auug.org.au>
+In-Reply-To: <200703172235.09227.arnd@arndb.de>
+References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
+	<200703172235.09227.arnd@arndb.de>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__18_Mar_2007_15_56_15_+1100_DRtzn=Up1fR4EoQc"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Rolland wrote:
-> Hello,
-> 
->> The kernel says that NCQ is turned off due to excessive 
->> errors.  If your
->> HSM violation is intermittent, it might not trigger tho.
-> 
-> I've just grep'ed thru all my messages, and I can't find anything 
-> stating that NCQ is being turned off...
+--Signature=_Sun__18_Mar_2007_15_56_15_+1100_DRtzn=Up1fR4EoQc
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Can you put the harddisk under high load and see what happens?  How
-often do those errors occur?  Care to post full dmesg?
+On Sat, 17 Mar 2007 22:35:08 +0100 Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> sizeof(sigset_t) may be different for native and 32-bit compat code.
+> It would be good if you could handle sizemask==4 && sizeof(sigset_t)==8
+> in this code, so that there is no need for an extra compat_sys_signalfd
+> function.
 
--- 
-tejun
+We still need a compat function to get the bit layout and the wordlayout
+correct in the sigset.
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__18_Mar_2007_15_56_15_+1100_DRtzn=Up1fR4EoQc
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF/MZ1FdBgD/zoJvwRAlXgAKCHEqwh/qQCiOmSymaFjvhLePW8wwCfegFe
+WTQ68x9bWv2GJb/Sa63IIQc=
+=kPTj
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__18_Mar_2007_15_56_15_+1100_DRtzn=Up1fR4EoQc--
