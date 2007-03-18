@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXCRTiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932901AbXCRTlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbXCRTiA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 15:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932901AbXCRTiA
+	id S932901AbXCRTlL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 15:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbXCRTlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 15:38:00 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:29659 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933006AbXCRTh7 (ORCPT
+	Sun, 18 Mar 2007 15:41:11 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:33494 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933020AbXCRTlK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 15:37:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=GvzVV5b1BzrZAup5xbL+s7qbwaW71OYaTgmBE4JxAWVRZrx1f/ZE6J+HJINwfYFacbLw0DCd9mW9hJ47RfEapaSsufFUUj22osPJyOyE4zHs88+CuCVdARrynCT1okHJM+V8ryRM2E9pzQSadW0iY1ylljPapsn5IexuvpIbyQI=
-Message-ID: <75b66ecd0703181237j45f2d14oddde8be2e0e2a739@mail.gmail.com>
-Date: Sun, 18 Mar 2007 15:37:56 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Mike Galbraith" <efault@gmx.de>
-Subject: Re: RSDL v0.31
-Cc: "Nicholas Miell" <nmiell@comcast.net>, "Con Kolivas" <kernel@kolivas.org>,
-       ck@vds.kolivas.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Al Boldi" <a1426z@gawab.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1174111737.7911.50.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703170040.48316.kernel@kolivas.org>
-	 <1174059299.7886.25.camel@Homer.simpson.net>
-	 <200703170813.32594.kernel@kolivas.org>
-	 <1174084207.7009.9.camel@Homer.simpson.net>
-	 <1174105443.3144.4.camel@entropy>
-	 <1174110965.7911.44.camel@Homer.simpson.net>
-	 <1174111737.7911.50.camel@Homer.simpson.net>
-X-Google-Sender-Auth: fbbb8471fa5e9bcd
+	Sun, 18 Mar 2007 15:41:10 -0400
+Date: Sun, 18 Mar 2007 13:41:01 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: 1000xf bus problem
+In-reply-to: <fa.wDPF1lWlqGQpxbyWee64Z3t4BVM@ifi.uio.no>
+To: Greg.Chandler@wellsfargo.com, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: e1000-devel@lists.sourceforge.net
+Message-id: <45FD95CD.2030403@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.wDPF1lWlqGQpxbyWee64Z3t4BVM@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/17/07, Mike Galbraith <efault@gmx.de> wrote:
-> P.S.  "utter failure" was too harsh.  What sticks in my craw is that the
-> world has to adjust to fit this new scheduler.
+Greg.Chandler@wellsfargo.com wrote:
+> I'm running a e1000xf adapter in a 64-bit/100Mhz PCI slot.  The intel
+> site shows this is a supported config for the card, but linux is pulling
+> this info:
+> 
+> ed:02.0 Ethernet controller: Intel Corporation 82544EI Gigabit Ethernet
+> Controller (Fiber) (rev 02)
+> 	Subsystem: Intel Corporation PRO/1000 XF Server Adapter
+> 	Flags: bus master, 66Mhz, medium devsel, latency 64, IRQ 18
+> 	Memory at f7fe0000 (64-bit, non-prefetchable) [size=128K]
+>       Memory at f7fc0000 (64-bit, non-prefetchable) [size=128K]
+>       I/O ports at 7000 [size=32]
+>       [virtual] Expansion ROM at f10a0000 [disabled] [size=128K]
+>       Capabilities: [dc] Power Management version 2
+>       Capabilities: [e4] PCI-X non-bridge device
+>       Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0
+> Enable-
+> 
+> My thoughput tests show it is definitely not running at the 100Mhz bus
+> rate is should be capable of.
 
-I have never seen X run nearly as smooth as our favorite proprietary
-OS on similar spec hardware with ANY scheduler.
+How are you determining this?
 
-Lee
+ > Any ideas on how to make it work at full speed?
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
