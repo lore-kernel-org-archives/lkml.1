@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbXCRIia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbXCRIpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752318AbXCRIia (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 04:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbXCRIia
+	id S1752769AbXCRIpa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 04:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbXCRIpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 04:38:30 -0400
-Received: from www.osadl.org ([213.239.205.134]:34543 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752318AbXCRIi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 04:38:29 -0400
-Subject: Re: [PATCH] i386: trust the PM-Timer calibration of the local APIC
-	timer
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@stusta.de>,
-       Arjan van de Ven <arjan@infradead.org>, Len Brown <lenb@kernel.org>
-In-Reply-To: <20070318001235.f388f551.akpm@linux-foundation.org>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	 <1174088686.13341.347.camel@localhost.localdomain>
-	 <1174089896.13341.362.camel@localhost.localdomain>
-	 <20070318001235.f388f551.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 18 Mar 2007 09:45:26 +0100
-Message-Id: <1174207526.13341.465.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Sun, 18 Mar 2007 04:45:30 -0400
+Received: from il.qumranet.com ([82.166.9.18]:36995 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752769AbXCRIpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 04:45:30 -0400
+Message-ID: <45FCFC28.6030701@argo.co.il>
+Date: Sun, 18 Mar 2007 10:45:28 +0200
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: Radoslaw Szkodzinski <astralstorm@gmail.com>, linux-kernel@vger.kernel.org,
+       Al Boldi <a1426z@gawab.com>, Andrew Morton <akpm@linux-foundation.org>,
+       William Lee Irwin III <wli@holomorphy.com>, ck@vds.kolivas.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicholas Miell <nmiell@comcast.net>
+Subject: Re: [ck] Re: is RSDL an "unfair" scheduler too?
+References: <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu> <45FC525D.5000708@argo.co.il> <20070318012533.GB2986@holomorphy.com> <Pine.LNX.4.64.0703171830130.4964@woody.linux-foundation.org> <20070318052439.GT943@1wt.eu> <1174199171.8543.1.camel@Homer.simpson.net> <f44c5fdf0703172354o935e140p8a3e64411d3ffa0a@mail.gmail.com> <20070318075807.GA3760@1wt.eu>
+In-Reply-To: <20070318075807.GA3760@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-18 at 00:12 -0800, Andrew Morton wrote:
-> On Sat, 17 Mar 2007 01:04:56 +0100 Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > When PM-Timer is available for local APIC timer calibration we can skip
-> > the verification of the calibrated time value. The resulting error is
-> > quite small on a bunch of evaluated platforms and is less harming than
-> > the observed false positives.
-> > 
-> > We need to keep the verification on systems, which have no PM-Timer to
-> > avoid bogus local APIC timer calibrations in the range of factor 2-10,
-> > which can be observed when swicthing off the PM-timer support in the
-> > kernel configuration.
-> > 
-> > The wrong calibration values are probably caused by SMM code trying to
-> > emulate a PS/2 keyboard from a (maybe connected or not) USB keyboard.
-> > This prohibits the accurate delivery of PIT interrupts, which are used
-> > to calibrate the local APIC timer. Unfortunately we have no way to
-> > disable this BIOS misfeature in the early boot process.
-> > 
-> > Add also the dropped cpu_relax() back to the wait loops.
-> 
-> Is this a for-2.6.21 thing?
+Willy Tarreau wrote:
+>> The per-user system would also be nice for servers, provided there are
+>> CPU/disc IO/swapper/... quotas or priorities at least.
+>>     
+>
+> This is too hard to adjust. Imagine what would happen to your hundreds of
+> apache processes when the "backup" user will start the rsync or tar+gzip,
+> or when user "root" will start rotating and compressing the logs. Being
+> able to group processes may be useful on servers, but it should be enabled
+> on purpose by the admin.
+>   
 
-Yes please. The false positives of the original calibration are
-annoying.
+Sure, if implemented, it should default to the old behavior to avoid 
+surprises.  Maintenance jobs may have to be niced to avoid getting too 
+much cpu.  But it should also make hosting different applications on the 
+the server much more predictable and easier (think of your hundreds of 
+apache processes swamping an unrelated load when slashdotted).
 
-	tglx
-
+-- 
+error compiling committee.c: too many arguments to function
 
