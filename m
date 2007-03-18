@@ -1,101 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbXCRUDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbXCRUIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933051AbXCRUDP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 16:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933064AbXCRUDP
+	id S933064AbXCRUIx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 16:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933068AbXCRUIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 16:03:15 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:28007 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933051AbXCRUDO convert rfc822-to-8bit (ORCPT
+	Sun, 18 Mar 2007 16:08:53 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:36786 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933064AbXCRUIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 16:03:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=juaMvAnedxmsVhxJZnP8P8aclCjkvzTiNffDWLULbgH5uPCUrRYjPM2K6IXbBaET748L6Bh2NcC0UoDRh3MCMhLb6Tkc6jiIBdvsrgSrhbt1ywW1nC2cTMPuIKb6X0ptY07jpGajduzZLZCFRt+CvE2yBegCAPmAfN94r2ceAKA=
-From: Maxim <maximlevitsky@gmail.com>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [5/6] 2.6.21-rc4: known regressions
-Date: Sun, 18 Mar 2007 22:03:05 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stephane Casset <sept@logidee.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Emil Karlson <jkarlson@cc.hut.fi>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070318192219.GA752@stusta.de> <200703182159.42628.maximlevitsky@gmail.com>
-In-Reply-To: <200703182159.42628.maximlevitsky@gmail.com>
+	Sun, 18 Mar 2007 16:08:51 -0400
+Date: Sun, 18 Mar 2007 20:08:49 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Bias the location of pages freed for min_free_kbytes in
+ the same MAX_ORDER_NR_PAGES blocks
+In-Reply-To: <20070318112820.90be0449.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703181941160.648@skynet.skynet.ie>
+References: <20070307201839.6f45735b.akpm@linux-foundation.org>
+ <200703142006.04547.m.kozlowski@tuxland.pl> <20070314170738.d5d35c06.akpm@linux-foundation.org>
+ <20070317182641.GA19447@skynet.ie> <20070318002244.606cfe08.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703181104140.29429@skynet.skynet.ie>
+ <20070318101259.f6e524f2.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703181822110.648@skynet.skynet.ie>
+ <20070318112820.90be0449.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703182203.05723.maximlevitsky@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 18 March 2007 21:59:42 Maxim wrote:
-> On Sunday 18 March 2007 21:22:19 Adrian Bunk wrote:
-> > On Sun, Mar 18, 2007 at 09:07:01PM +0200, Maxim wrote:
-> > > > Subject    : i386: APIC timer disabled due to verification failure
-> > > >              (once in three boots or so)
-> > > > References : http://lkml.org/lkml/2007/3/16/126
-> > > > Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
-> > > > Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> > > > Patch      : http://lkml.org/lkml/2007/3/16/420
-> > > > Status     : patch available
-> > > 
-> > > Hello,
-> > > 
-> > > This one is a small issue, I got bigger ones: as I said change in code order in suspend code broke both suspend to ram and disk
-> > > 
-> > > Those are commits.
-> > >         e3c7db621bed4afb8e231cb005057f2feb5db557 - [PATCH] [PATCH] PM: Change code ordering in main.c (breaks  S3)
-> > >         ed746e3b18f4df18afa3763155972c5835f284c5 - [PATCH] [PATCH] swsusp: Change code ordering in disk.c (breaks swsusp, I don't use it, but I tested it)
-> > >         259130526c267550bc365d3015917d90667732f1 - [PATCH] [PATCH] swsusp: Change code ordering in user.c (breaks uswsusp, that I use)
-> > > 
-> > > System freezes before suspend with those commits, even before suspend to disk.
-> > 
-> > This was in my list as
-> > 
-> > Subject    : suspend to disk hangs
-> > References : http://lkml.org/lkml/2007/3/16/126
-> > Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
-> > Status     : unknown
-> > 
-> > But I should add your bisecting information there.
-> > 
-> > > I think that is is not so good idea to tell about all bugs in single letter ;-)
-> 
-> You didn't understand me, I wanted to say that I sent a email with subject line 
-> "[BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far"
-> 
-> And I think now that I did wrong that I put all regressions and bugs I found here, but not in separate emails
-> Anyway it is not a problem
-> 
-> And by the way suspend to ram also hangs and hangs before suspend (Disk powers down, screen too, but fans are on, and etc...)
-> Reverting those fixes it.
-> 
-> > 
-> > These were 6 emails.
-> > 
-> > And they should give an overview as complete as possible of all 
-> > currently known regressions.
-> > 
-> > > Regards,
-> > > 	Maxim Levitsky
-> > 
-> > cu
-> > Adrian
-> > 
-> 
-> 
-> 
+On Sun, 18 Mar 2007, Andrew Morton wrote:
 
-oops, ;-)
+> On Sun, 18 Mar 2007 19:05:41 +0000 (GMT) Mel Gorman <mel@csn.ul.ie> wrote:
+>
+>>> How much additional memory consumption are we expecting here?
+>>>
+>>
+>> Short answer, about 1.5KB on a 1GB system of which 1.3KB is statically
+>> defined in the 3 struct zones on a 1 node x86 system.
+>>
+>> Longer answer that I hopefully have not made any mistakes in - There is
+>> the zone overhead which is statically sized and a runtime overhead which
+>> depends on the amount of memory in the system. The additional zone
+>> overhead is the overhead for additional freelists (larger struct
+>> free_area) and is as follows;
+>>
+>> (MIGRATE_TYPES-1) * sizeof(list_head) * (MAX_ORDER-1)
+>>
+>> so, on 32 bit in general, thats
+>>
+>> 4 * 8 * 10 = 320 bytes per zone (would be 240 bytes if MIGRATE_RESERVE is
+>>  				sufficient for higher order allocations
+>>  				instead of MIGRATE_HIGHALLOC)
+>>
+>> on x86 with DMA, Normal and HighMem, thats 1280 bytes. On a NUMA system,
+>> it's 1280 bytes per node. On 64 bit, it would be double because of the
+>> larger pointer size. At worst, I guess you are looking at 3KB per node.
+>
+> That a very modest overhead - not worth the config option, IMO.
+>
+> The runtime overhead might be a concern - is it possible to quantify
+> it?
+>
 
-Regards,
-	Maxim Levitsky
+Do you mean performance wise or memory wise?
+
+Memory-wise,  something like
+
+===
+FLATMEM Case
+bits = 0;
+for_each_zone(zone) {
+ 	bits += (zone->spanned_pages >> (MAX_ORDER-1)) * NR_PAGEBLOCK_BITS);
+}
+bytes_consumed = bits / 8;
+
+=== SPARSEMEM Case, a rough approximation is
+((vm_total_pages * PAGE_SIZE) >> SECTION_SIZE_BITS) * 8
+
+The consumption could be stored in a zone variable similar to 
+zone->present_pages and visible through /proc/zoneinfo. Would that be 
+useful?
+
+Performance wise is harder to quantify. There are three places where 
+issues can show up. The first is with allocation fallbacks where 
+__rmqueue_fallback() is called. Fallbacks are expensive but fallbacks are 
+rare except when the zone is too small which is why I probably should be 
+catching that case explicitly. I used to have a counters patch for 
+fallbacks. I could bring it up to date to use __count_vm_events() to 
+quantify fallbacks if you think it would be useful?
+
+The second hotpoint is where the per-cpu lists are searched for a page of 
+the suitable migrate type. An instruction-level profile on x86 when I 
+looked at this on x86 showed about 2-4% of the time spent in 
+get_page_from_freelist() was searching the per-cpu lists for a page of a 
+suitable type. IIRC, something like 85% of the time there was clearing the 
+pages although I'd need to double check this to be 100% sure.
+
+The last potential performance hotpoint is where the pageblock flags are 
+read on every free in get_pageblock_flags_group(). There is probably room 
+for optimisation there. I haven't an exact quantification available at the 
+moment but I remember seeing it far down the list of functions time was 
+spent when I was last looking at this.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
