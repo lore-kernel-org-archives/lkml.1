@@ -1,68 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933217AbXCRWkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933233AbXCRWlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933217AbXCRWkT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 18:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933233AbXCRWkS
+	id S933233AbXCRWlz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 18:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXCRWlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 18:40:18 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:51456 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933217AbXCRWkR (ORCPT
+	Sun, 18 Mar 2007 18:41:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:2726 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933233AbXCRWlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 18:40:17 -0400
-Date: Mon, 19 Mar 2007 00:40:10 +0200
-From: Dan Aloni <da-x@monatomic.org>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp_sendpage(): fix broken page iteration
-Message-ID: <20070318224009.GA15407@localdomain>
-References: <20070318124346.GA6396@localdomain> <20070318.144927.78708843.davem@davemloft.net>
+	Sun, 18 Mar 2007 18:41:53 -0400
+Date: Mon, 19 Mar 2007 00:42:34 +0200
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: "Eric W. Biederman" <ebiederman@lnxi.com>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
+Message-ID: <20070318224234.GP11078@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <20070318155532.GG7958@mellanox.co.il>
+	<20070318191238.GA20518@ms2.inr.ac.ru>
+	<20070318202559.GD11078@mellanox.co.il>
+	<m3tzwi8a20.fsf@maxwell.lnxi.com>
+	<20070318223653.GO11078@mellanox.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070318.144927.78708843.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-PopBeforeSMTPSenders: da-x@monatomic.org
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+In-Reply-To: <20070318223653.GO11078@mellanox.co.il>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 18, 2007 at 02:49:27PM -0700, David Miller wrote:
-> From: Dan Aloni <da-x@monatomic.org>
-> Date: Sun, 18 Mar 2007 14:43:46 +0200
+> Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
+> Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
 > 
-> > do_tcp_sendpages() should not iterate 'pages' as an array since 
-> > it is not an array of 'struct page *', but a pointer to a single 
-> > entity of 'struct page *' passed on the stack as a parameter to 
-> > tcp_send_page() (hence it would crash if poffset + psize > PAGE_SIZE,
-> > because pages[1] and beyond most probably not constitutes a valid 
-> > 'struct page *').
+> > Quoting Eric W. Biederman <ebiederman@lnxi.com>:
+> > Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
+> > 
+> > "Michael S. Tsirkin" <mst@dev.mellanox.co.il> writes:
+> > 
+> > >> > Why is neighbour->dev changed here?
+> > >> 
+> > >> It holds reference to device and prevents its destruction.
+> > >> If dst is held somewhere, we cannot destroy the device and deadlock
+> > >> while unregister.
+> > >
+> > > BTW, can this ever happen for the loopback device itself?
+> > > Is it ever unregistered?
+> > 
+> > Well I don't think the loopback device is currently but as soon
+> > as we get network namespace support we will have multiple loopback
+> > devices and they will get unregistered when we remove the network
+> > namespace.
 > 
-> do_tcp_sendpages() should never get passed poffset+psize>PAGE_SIZE,
-> that would be a bug.
+> Hmm. Then the code moving dst->dev to point to the loopback
+> device will have to be fixed too. I'll post a patch a bit later.
 
-Oh, then the name of that function was quite misleading...
+Does this look sane (untested)?
 
-Anyway, I thought it would make a valid case for a situation where
-you have a kmalloc'ed buffer that happens to cross a page boundery 
-and you want to call ->sendpage() to send it over using network
-DMA. 
+Signed-off-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
 
-As I see it, with this constraint you either call sendpage twice or
-you use kernel_sendmsg(), I am not sure which would me more 
-efficient - I guess it depends on psize. I wish there was a better
-interface than sendpage that would have factored it in...
 
-Thanks anyway for the heads up.
+diff --git a/net/core/dst.c b/net/core/dst.c
+index 764bccb..8283158 100644
+--- a/net/core/dst.c
++++ b/net/core/dst.c
+@@ -235,6 +236,8 @@ again:
+ static inline void dst_ifdown(struct dst_entry *dst, struct net_device *dev,
+ 			      int unregister)
+ {
++	struct neighbour *neigh;
++
+ 	if (dst->ops->ifdown)
+ 		dst->ops->ifdown(dst, dev, unregister);
+ 
+@@ -245,14 +248,13 @@ static inline void dst_ifdown(struct dst_entry *dst, struct net_device *dev,
+ 		dst->input = dst_discard_in;
+ 		dst->output = dst_discard_out;
+ 	} else {
+-		dst->dev = &loopback_dev;
+-		dev_hold(&loopback_dev);
+-		dev_put(dev);
+-		if (dst->neighbour && dst->neighbour->dev == dev) {
+-			dst->neighbour->dev = &loopback_dev;
+-			dev_put(dev);
+-			dev_hold(&loopback_dev);
++		neigh = dst->neighbour;
++		if (neigh && neigh->dev == dev) {
++			dst->neighbour = NULL;
++			neigh_release(neigh);
+ 		}
++		dst->dev = NULL;
++		dev_put(dev);
+ 	}
+ }
+ 
 
 -- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+MST
