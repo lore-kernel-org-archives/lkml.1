@@ -1,68 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933058AbXCRTAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932878AbXCRTEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933058AbXCRTAw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 15:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933068AbXCRTAw
+	id S932878AbXCRTEG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 15:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932991AbXCRTEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 15:00:52 -0400
-Received: from www17.your-server.de ([213.133.104.17]:3482 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933058AbXCRTAv (ORCPT
+	Sun, 18 Mar 2007 15:04:05 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36904 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932878AbXCRTEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 15:00:51 -0400
-Message-ID: <45FD8CA3.10405@m3y3r.de>
-Date: Sun, 18 Mar 2007 20:01:55 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sun, 18 Mar 2007 15:04:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Catalin Marinas" <catalin.marinas@gmail.com>
+Subject: [PATCH 2/4] tty: Simplify calling of put_pid.
+References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
+	<m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
+	<m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
+	<m1veh5q6s7.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703140259p773b0eb8p9c142d33934e64ff@mail.gmail.com>
+	<m1wt1jq45w.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703141008o4d6cb243r7bc328d79cccfa2e@mail.gmail.com>
+	<m1slc4luf5.fsf@ebiederm.dsl.xmission.com>
+	<b0943d9e0703161544h2961670dh8f5e499fd2dc0ce5@mail.gmail.com>
+	<m1vegyjspz.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1r6rmjsev.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1mz2ajs6g.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Sun, 18 Mar 2007 13:03:08 -0600
+In-Reply-To: <m1mz2ajs6g.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Sun, 18 Mar 2007 12:57:27 -0600")
+Message-ID: <m1fy82jrwz.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Soeren Sonnenburg <kernel@nn7.de>, Sergey Vlasov <vsu@altlinux.ru>,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: appletouch quirk doesn't run at resume
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703162134.14265.rjw@sisk.pl> <1174078066.13341.279.camel@localhost.localdomain> <1174087552.13341.332.camel@localhost.localdomain> <45FBBDEA.9060708@m3y3r.de> <20070318004240.GO752@stusta.de> <Pine.LNX.4.64.0703181934530.4195@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0703181934530.4195@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina schrieb:
-> On Sun, 18 Mar 2007, Adrian Bunk wrote:
->
->   
-> Thomas, could you please provide more information? Did it ever work for 
-> you after suspend/resume cycle and it just broke at some point in the 
-> past, or you are not sure whether it ever worked?
->   
-I'm not sure whether this ever worked.
-> Also, what exactly does it mean that it doesn't work? Are both the 
-> interfaces after resume bound to usbhid driver (you can check this in 
-> /sys)? When the quirk works correctly, only the keyboard interface should 
-> be bound to usbhid driver. Please check the binding both before and after 
-> suspend/resume cycle, and let me know.
->   
-Appletouch is bound to the device:
 
-T:  Bus=01 Lev=01 Prnt=01 Port=01 Cnt=01 Dev#=  7 Spd=12  MxCh= 0
-D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
-P:  Vendor=05ac ProdID=0218 Rev= 0.60
-S:  Manufacturer=Apple Computer
-S:  Product=Apple Internal Keyboard / Trackpad
-C:* #Ifs= 3 Cfg#= 1 Atr=a0 MxPwr= 40mA
-I:* If#= 0 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=01 Prot=01 Driver=usbhid
-E:  Ad=83(I) Atr=03(Int.) MxPS=   8 Ivl=8ms
-I:* If#= 1 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=01 Prot=02 Driver=appletouch
-E:  Ad=81(I) Atr=03(Int.) MxPS=  64 Ivl=8ms
-I:* If#= 2 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=00 Prot=00 Driver=usbhid
-E:  Ad=84(I) Atr=03(Int.) MxPS=   1 Ivl=8ms
+This patch should contain no functional changes.
 
+At somepoint I got confused and thought put_pid could not
+be called while a spin lock was held.  While it may be nice
+to avoid that to reduce lock hold times put_pid can be safely
+called while we hold a spin lock.
 
-But the X server touchpad driver doesn't work anymore, that means i
-can't emulte a right click by tapping with 3 fingers on the mouse pad.
-after restarting x the mouse driver works again. So i think this is
-maybe a problem in X?
+This patch removes all of the complications from the code
+introduced by my misunderstanding, making the code a little
+more readable.
 
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ drivers/char/tty_io.c |   23 ++++++-----------------
+ 1 files changed, 6 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 583730f..01fcfaf 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -155,8 +155,7 @@ int tty_ioctl(struct inode * inode, struct file * file,
+ 	      unsigned int cmd, unsigned long arg);
+ static int tty_fasync(int fd, struct file * filp, int on);
+ static void release_tty(struct tty_struct *tty, int idx);
+-static struct pid *__proc_set_tty(struct task_struct *tsk,
+-				struct tty_struct *tty);
++static void __proc_set_tty(struct task_struct *tsk, struct tty_struct *tty);
+ 
+ /**
+  *	alloc_tty_struct	-	allocate a tty object
+@@ -1534,10 +1533,9 @@ void disassociate_ctty(int on_exit)
+ 	}
+ 
+ 	spin_lock_irq(&current->sighand->siglock);
+-	tty_pgrp = current->signal->tty_old_pgrp;
++	put_pid(current->signal->tty_old_pgrp);
+ 	current->signal->tty_old_pgrp = NULL;
+ 	spin_unlock_irq(&current->sighand->siglock);
+-	put_pid(tty_pgrp);
+ 
+ 	mutex_lock(&tty_mutex);
+ 	/* It is possible that do_tty_hangup has free'd this tty */
+@@ -2508,7 +2506,6 @@ static int tty_open(struct inode * inode, struct file * filp)
+ 	int index;
+ 	dev_t device = inode->i_rdev;
+ 	unsigned short saved_flags = filp->f_flags;
+-	struct pid *old_pgrp;
+ 
+ 	nonseekable_open(inode, filp);
+ 	
+@@ -2602,17 +2599,15 @@ got_driver:
+ 		goto retry_open;
+ 	}
+ 
+-	old_pgrp = NULL;
+ 	mutex_lock(&tty_mutex);
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	if (!noctty &&
+ 	    current->signal->leader &&
+ 	    !current->signal->tty &&
+ 	    tty->session == NULL)
+-		old_pgrp = __proc_set_tty(current, tty);
++		__proc_set_tty(current, tty);
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	mutex_unlock(&tty_mutex);
+-	put_pid(old_pgrp);
+ 	return 0;
+ }
+ 
+@@ -3838,9 +3833,8 @@ void proc_clear_tty(struct task_struct *p)
+ 	spin_unlock_irq(&p->sighand->siglock);
+ }
+ 
+-static struct pid *__proc_set_tty(struct task_struct *tsk, struct tty_struct *tty)
++static void __proc_set_tty(struct task_struct *tsk, struct tty_struct *tty)
+ {
+-	struct pid *old_pgrp;
+ 	if (tty) {
+ 		/* We should not have a session or pgrp to here but.... */
+ 		put_pid(tty->session);
+@@ -3848,21 +3842,16 @@ static struct pid *__proc_set_tty(struct task_struct *tsk, struct tty_struct *tt
+ 		tty->session = get_pid(task_session(tsk));
+ 		tty->pgrp = get_pid(task_pgrp(tsk));
+ 	}
+-	old_pgrp = tsk->signal->tty_old_pgrp;
++	put_pid(tsk->signal->tty_old_pgrp);
+ 	tsk->signal->tty = tty;
+ 	tsk->signal->tty_old_pgrp = NULL;
+-	return old_pgrp;
+ }
+ 
+ void proc_set_tty(struct task_struct *tsk, struct tty_struct *tty)
+ {
+-	struct pid *old_pgrp;
+-
+ 	spin_lock_irq(&tsk->sighand->siglock);
+-	old_pgrp = __proc_set_tty(tsk, tty);
++	__proc_set_tty(tsk, tty);
+ 	spin_unlock_irq(&tsk->sighand->siglock);
+-
+-	put_pid(old_pgrp);
+ }
+ 
+ struct tty_struct *get_current_tty(void)
+-- 
+1.5.0.g53756
 
