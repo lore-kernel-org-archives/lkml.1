@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751608AbXCRMjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbXCRMnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751608AbXCRMjL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 08:39:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXCRMjL
+	id S1752414AbXCRMnQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 08:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXCRMnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 08:39:11 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45375 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751608AbXCRMjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 08:39:10 -0400
-Date: Sun, 18 Mar 2007 13:39:45 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.21-rc4
-Message-ID: <20070318123945.GA23953@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070316141121.82ba7cb8.randy.dunlap@oracle.com> <20070316153957.232cf648.randy.dunlap@oracle.com> <20070317064340.GB26842@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 18 Mar 2007 08:43:16 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:16417 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752414AbXCRMnP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 08:43:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DoIx8+SKQ9t6tnujl/W1Oj7oU94+CHdk3obdPZm9+DRkDt50no+8dDf41jhztKcNWV8IYP+WiY3fq5WTmklh6WOMWmeQsTWqRlNCMiXw4bDlqEu4pqCzoqZXCfnYO9o38qkoQOq3A6y1oaUb5iRQbkjGHG8+qOy/P/mf1qle8ZI=
+Message-ID: <bd87e7590703180543p75c46b8fk44a0df061d21a17@mail.gmail.com>
+Date: Sun, 18 Mar 2007 13:43:13 +0100
+From: "Kevin Baradon" <kevin.baradon@gmail.com>
+To: "Patrick McHardy" <kaber@trash.net>
+Subject: Re : [2.6.21-rc{3,4} problem]: missing dependency on NF_NAT
+Cc: linux-kernel@vger.kernel.org,
+       "Netfilter Development Mailinglist" 
+	<netfilter-devel@lists.netfilter.org>
+In-Reply-To: <45FC0226.2010305@trash.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070317064340.GB26842@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+References: <bd87e7590703170738q2363274fx120630d5d4e3279@mail.gmail.com>
+	 <45FC0226.2010305@trash.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 17, 2007 at 07:43:40AM +0100, Sam Ravnborg wrote:
-> On Fri, Mar 16, 2007 at 03:39:57PM -0700, Randy Dunlap wrote:
-> > On Fri, 16 Mar 2007 14:11:21 -0700 Randy Dunlap wrote:
-> > 
-> > > On Fri, 16 Mar 2007 09:33:54 -0700 (PDT) Linus Torvalds wrote:
-> > > 
-> > > > 
-> > > > I pushed out the -git trees yesterday, but then got distracted, so the 
-> > > > patches and tar-balls and the announcement got delayed until this morning. 
-> > > > Oops. I'm a scatter-brain.
-> > > 
-> > > allmodconfig on i386:
-> > > 
-> > > WARNING: "default_idle" [arch/i386/kernel/apm.ko] undefined!
-> > > WARNING: "machine_real_restart" [arch/i386/kernel/apm.ko] undefined!
-> > > make[1]: *** [__modpost] Error 1
-> > > make: *** [modules] Error 2
-> > 
-> > Please ignore.
-> > 
-> > I think that this was the result of doing 'make allyesconfig && make all'
-> > followed by 'make allmodconfig && make all' without doing a 'make clean'
-> > between them.
-> But then we have a dependency error somewhere we need to track down.
-> I will try to test here.
+2007/3/17, Patrick McHardy <kaber@trash.net>:
+> Kevin Baradon wrote:
+> > Compiling kernel 2.6.21-rc3 gives me the following errors :
+> >
+> >  LD      .tmp_vmlinux1
+> > net/built-in.o: dans la fonction « nfnetlink_parse_nat_proto »:
+> > nf_conntrack_netlink.c:(.text+0x28db9): référence indéfinie vers «
+> > nf_nat_proto_find_get »
+> > [...]
+> >
+> > Also occurs with 2.6.21-rc4.
+> > Setting CONFIG_NF_NAT to 'y' fixes problem.
+>
+>
+> Thanks, I queued this patch, which should fix it.
 
-So far no luck in reproducing this.
-I will await additional reports before looking more into this one.
+Yes, it works for me.
+Thanks.
 
-	Sam
+>
