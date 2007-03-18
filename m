@@ -1,56 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXCRUdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbXCRUeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933103AbXCRUdG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 16:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933196AbXCRUdF
+	id S933190AbXCRUeJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 16:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933215AbXCRUeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 16:33:05 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:23331 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933103AbXCRUdE (ORCPT
+	Sun, 18 Mar 2007 16:34:09 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:50601 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933190AbXCRUeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 16:33:04 -0400
-Date: Sun, 18 Mar 2007 22:33:45 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, general@lists.openfabrics.org,
-       Roland Dreier <rolandd@cisco.com>
-Subject: Re: dst_ifdown breaks infiniband?
-Message-ID: <20070318203345.GF11078@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070318155532.GG7958@mellanox.co.il>
-	<20070318191238.GA20518@ms2.inr.ac.ru>
+	Sun, 18 Mar 2007 16:34:07 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 18 Mar 2007 13:31:54 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
+In-Reply-To: <200703172235.09227.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0703181313460.5482@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
+ <200703172235.09227.arnd@arndb.de>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070318191238.GA20518@ms2.inr.ac.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
-Subject: Re: dst_ifdown breaks infiniband?
-> > Can dst->neighbour be changed to point to NULL instead, and the neighbour
-> > released?
-> 
-> It should be cleared and we should be sure it will not be destroyed
-> before quiescent state.
-> 
-> Seems, this is the only correct solution, but to do this we have
-> to audit all the places where dst->neighbour is dereferenced for
-> RCU safety.
-> 
-> Actually, it is very good you caught this eventually, the bug was
-> so _disgusting_ that it was "forgotten" all the time, waiting for
-> someone who will point out that the king is naked. :-)
+On Sat, 17 Mar 2007, Arnd Bergmann wrote:
 
-Actually that might not be too bad:
-$grep -rIi 'dst->neighbour' net/ | wc -l
-36
+> > +asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t
+> > sizemask) +{
+> > +	int error;
+> > +	unsigned long flags;
+> > +	sigset_t sigmask;
+> > +	struct signalfd_ctx *ctx;
+> > +	struct sighand_struct *sighand;
+> > +	struct file *file;
+> > +	struct inode *inode;
+> > +
+> > +	error = -EINVAL;
+> > +	if (sizemask != sizeof(sigset_t) ||
+> > +	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
+> > +		goto err_exit;
+> 
+> sizeof(sigset_t) may be different for native and 32-bit compat code.
+> It would be good if you could handle sizemask==4 && sizeof(sigset_t)==8
+> in this code, so that there is no need for an extra compat_sys_signalfd
+> function.
 
-I'll try to do it.
+As Stephen reported, we do need the compat in any case. Better keep all 
+the compat adjustments under CONFIG_COMPAT, so archs that don't need it 
+don't need to link to it.
 
--- 
-MST
+
+
+> > +	if ((sighand = signalfd_get_sighand(ctx, &flags)) != NULL) {
+> > +		if (next_signal(&ctx->tsk->pending, &ctx->sigmask) > 0 ||
+> > +		    next_signal(&ctx->tsk->signal->shared_pending,
+> > +				&ctx->sigmask) > 0)
+> > +			events |= POLLIN;
+> > +		signalfd_put_sighand(ctx, sighand, &flags);
+> > +	} else
+> > +		events |= POLLIN;
+> > +
+> > +	return events;
+> > +}
+> 
+> I never really understood the events mask, but other subsystems often
+> use (POLLIN | POLLRDNORM) instead of just POLLIN. Is there a reason
+> for not returning POLLRDNORM here?
+
+I don't think those fds will have to deal with the concept of bands and 
+priorities. I believe POLLIN is fine here.
+
+
+
+> > +static int signalfd_copyinfo(struct signalfd_siginfo __user *uinfo,
+> > +			     siginfo_t const *kinfo)
+> > +{
+> > +	long err;
+> > +
+> > +	err = __clear_user(uinfo, sizeof(*uinfo));
+> > +
+> > +	/*
+> > +	 * If you change siginfo_t structure, please be sure
+> > +	 * this code is fixed accordingly.
+> > +	 */
+> > +	err |= __put_user(kinfo->si_signo, &uinfo->signo);
+> > +	err |= __put_user(kinfo->si_errno, &uinfo->err);
+> > +	err |= __put_user((short)kinfo->si_code, &uinfo->code);
+> > +	switch (kinfo->si_code & __SI_MASK) {
+> > +	case __SI_KILL:
+> > +		err |= __put_user(kinfo->si_pid, &uinfo->pid);
+> > +		err |= __put_user(kinfo->si_uid, &uinfo->uid);
+> > +		break;
+> > +	case __SI_TIMER:
+> > +		 err |= __put_user(kinfo->si_tid, &uinfo->tid);
+> > +		 err |= __put_user(kinfo->si_overrun, &uinfo->overrun);
+> > +		 err |= __put_user(kinfo->si_ptr, &uinfo->svptr);
+> > +		break;
+> > +	case __SI_POLL:
+> > +		err |= __put_user(kinfo->si_band, &uinfo->band);
+> > +		err |= __put_user(kinfo->si_fd, &uinfo->fd);
+> > +		break;
+> > +	case __SI_FAULT:
+> > +		err |= __put_user(kinfo->si_addr, &uinfo->addr);
+> > +#ifdef __ARCH_SI_TRAPNO
+> > +		err |= __put_user(kinfo->si_trapno, &uinfo->trapno);
+> > +#endif
+> > +		break;
+> > +	case __SI_CHLD:
+> > +		err |= __put_user(kinfo->si_pid, &uinfo->pid);
+> > +		err |= __put_user(kinfo->si_uid, &uinfo->uid);
+> > +		err |= __put_user(kinfo->si_status, &uinfo->status);
+> > +		err |= __put_user(kinfo->si_utime, &uinfo->utime);
+> > +		err |= __put_user(kinfo->si_stime, &uinfo->stime);
+> > +		break;
+> > +	case __SI_RT: /* This is not generated by the kernel as of now. */
+> > +	case __SI_MESGQ: /* But this is */
+> > +		err |= __put_user(kinfo->si_pid, &uinfo->pid);
+> > +		err |= __put_user(kinfo->si_uid, &uinfo->uid);
+> > +		err |= __put_user(kinfo->si_ptr, &uinfo->svptr);
+> > +		break;
+> > +	default: /* this is just in case for now ... */
+> > +		err |= __put_user(kinfo->si_pid, &uinfo->pid);
+> > +		err |= __put_user(kinfo->si_uid, &uinfo->uid);
+> > +		break;
+> > +	}
+> > +
+> > +	return err ? -EFAULT: sizeof(*uinfo);
+> > +}
+> 
+> Doing it this way looks rather inefficient to me. I think it's
+> better to just prepare the signalfd_siginfo on the stack and
+> do a single copy_to_user.
+
+bah, __put_user is basically a move, so I don't think that efficency would 
+be that different (assuming that it'd matter in this case). The only thing 
+many __put_user do, is increase the exception table sizes.
+
+
+
+> Also, what's the reasoning behind defining a new structure
+> instead of just returning siginfo_t? Sure siginfo_t is ugly
+> but it is a well-defined structure and users already deal
+> with the problems it causes.
+
+Compat on sys_read() would be insane ;)
+
+
+
+> 
+> > +static void __exit signalfd_exit(void)
+> > +{
+> > +	kmem_cache_destroy(signalfd_ctx_cachep);
+> > +}
+> > +
+> > +module_init(signalfd_init);
+> > +module_exit(signalfd_exit);
+> > +
+> > +MODULE_LICENSE("GPL");
+> 
+> Since this file defines a syscall, it can't be a module, so why bother
+> with this?
+
+Agreed, remove exit function and using fs_initcall.
+
+
+
+> 
+> > +
+> > +struct signalfd_siginfo {
+> > +	__u32 signo;
+> > +	__s32 err;
+> > +	__s32 code;
+> > +	__u32 pid;
+> > +	__u32 uid;
+> > +	__s32 fd;
+> > +	__u32 tid;
+> > +	__u32 band;
+> > +	__u32 overrun;
+> > +	__u32 trapno;
+> > +	__s32 status;
+> > +	__s32 svint;
+> > +	__u64 svptr;
+> > +	__u64 utime;
+> > +	__u64 stime;
+> > +	__u64 addr;
+> > +};
+> > +
+> 
+> Since you define the structure using __u32 etc types, I assume
+> you mean it to be included from libc or other user space, right?
+> In this case it needs to be listed in include/linux/Kbuild for
+> make headers_install to work.
+
+Ack!
+
+
+
+> 
+> > +void signalfd_deliver(struct task_struct *tsk, int sig);
+> > +
+> > +/*
+> > + * No need to fall inside signalfd_deliver() if no signal listeners are
+> > available. + */
+> > +static inline void signalfd_notify(struct task_struct *tsk, int sig)
+> > +{
+> > +	if (unlikely(!list_empty(&tsk->sighand->sfdlist)))
+> > +		signalfd_deliver(tsk, sig);
+> > +}
+> > +
+> > +static inline void signalfd_detach_locked(struct task_struct *tsk)
+> > +{
+> > +	if (unlikely(!list_empty(&tsk->sighand->sfdlist)))
+> > +		signalfd_deliver(tsk, -1);
+> > +}
+> > +
+> > +static inline void signalfd_detach(struct task_struct *tsk)
+> > +{
+> > +	struct sighand_struct *sighand = tsk->sighand;
+> > +
+> > +	if (unlikely(!list_empty(&sighand->sfdlist))) {
+> > +		spin_lock_irq(&sighand->siglock);
+> > +		signalfd_deliver(tsk, -1);
+> > +		spin_unlock_irq(&sighand->siglock);
+> > +	}
+> > +}
+> > +
+> 
+> And all of these need to be surrounded by #ifdef __KERNEL__ so
+> they don't bleed out to the user space visible parts.
+
+Ack!
+
+
+
+- Davide
+
+
