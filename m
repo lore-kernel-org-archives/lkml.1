@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbXCRH7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbXCRIEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbXCRH7H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 03:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbXCRH7G
+	id S1753134AbXCRIEO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 04:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbXCRIEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 03:59:06 -0400
-Received: from gw.goop.org ([64.81.55.164]:53943 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753149AbXCRH7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 03:59:04 -0400
-Message-ID: <45FCF147.30409@goop.org>
-Date: Sun, 18 Mar 2007 00:59:03 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: rusty@rustcorp.com.au, mingo@elte.hu, ak@muc.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, chrisw@sous-sol.org, zach@vmware.com,
-       anthony@codemonkey.ws, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <20070316.023331.59468179.davem@davemloft.net>	<45FB005D.9060809@goop.org>	<1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net>
-In-Reply-To: <20070318.003309.71088169.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 18 Mar 2007 04:04:13 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53600 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753134AbXCRIEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 04:04:11 -0400
+X-Provags-ID: V01U2FsdGVkX18BKqQSbHMByuRWwLHymA6wxmc9Bnb/plx0hV/fmS
+	pRX3871vTN8luy
+Subject: Re: [ck] Re: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: Radoslaw Szkodzinski <astralstorm@gmail.com>
+Cc: Kasper Sandberg <lkml@metanurb.dk>, Al Boldi <a1426z@gawab.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ck@vds.kolivas.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicholas Miell <nmiell@comcast.net>
+In-Reply-To: <1174203482.8855.8.camel@Homer.simpson.net>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703172048.46267.kernel@kolivas.org>
+	 <1174125534.7734.2.camel@Homer.simpson.net>
+	 <200703172355.30989.a1426z@gawab.com>
+	 <1174198651.8199.44.camel@Homer.simpson.net>
+	 <1174200463.10498.23.camel@localhost>
+	 <1174201726.8732.6.camel@Homer.simpson.net>
+	 <f44c5fdf0703180022n44b2ca61o62602e54aaab3334@mail.gmail.com>
+	 <1174203482.8855.8.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Sun, 18 Mar 2007 09:04:10 +0100
+Message-Id: <1174205050.8855.12.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> The idea is _NOT_ that you go look for references to the paravirt_ops
-> members structure, that would be stupid and you wouldn't be able to
-> use the most efficient addressing mode on a given cpu, you'd be
-> patching up indirect calls and crap like that.  Just say no...
->
-> Instead you get rid of paravirt ops completely, and you call functions
-> whose symbol name will not resolve in the initial kernel link.
->   
+On Sun, 2007-03-18 at 08:38 +0100, Mike Galbraith wrote:
+> On Sun, 2007-03-18 at 08:22 +0100, Radoslaw Szkodzinski wrote:
+> 
+> > I'd recon KDE regresses because of kioslaves waiting on a pipe
+> > (communication with the app they're doing IO for) and then expiring.
+> > That's why splitting IO from an app isn't exactly smart. It should at
+> > least be ran in an another thread.
+> 
+> Hm.  Sounds rather a lot like the...
+> X sucks, fix X and RSDL will rock your world.  RSDL is perfect.
+> ...that I've been getting.
 
-Yeah, I came to that conclusion after thinking about it for a while. 
-Thanks for the pointer to the sparc stuff; it looks very interesting.
+P.S.  For those folks who appear to think that I'm in love with mainline
+behavior and blissfully ignorant of it's shortcomings.
 
-    J
+http://lwn.net/Articles/176635/
+
