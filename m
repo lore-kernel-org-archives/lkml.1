@@ -1,261 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbXCREcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbXCREwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751906AbXCREcZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 00:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXCREcZ
+	id S1752795AbXCREwO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 00:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXCREwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 00:32:25 -0400
-Received: from xenotime.net ([66.160.160.81]:51362 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751906AbXCREcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 00:32:24 -0400
-Date: Sat, 17 Mar 2007 21:32:44 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andi Kleen <ak@muc.de>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       arjan@infradead.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: CONFIG_REORDER Kconfig help strange sentence.
-Message-Id: <20070317213244.44648101.rdunlap@xenotime.net>
-In-Reply-To: <1174121670.8897.11.camel@localhost.localdomain>
-References: <1173741484.10618.25.camel@localhost.localdomain>
-	<20070312235605.GA14444@muc.de>
-	<1173767855.10618.46.camel@localhost.localdomain>
-	<20070315183421.5b1cf51b.rdunlap@xenotime.net>
-	<1174121670.8897.11.camel@localhost.localdomain>
-Organization: YPO4
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 18 Mar 2007 00:52:13 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:27518 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314AbXCREwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 00:52:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=bqi7fwPTUPhoc5tRtSY4F7Cmu+IUg37lgCYr/JR2uJja89xv3I0zo5HyPv8A7FNwKM+QpPTsgAWfr+tEx5I+QbSrLV72kh2YGdIIz5WQG+2VcSWRTTldjF8ceoTfFUUomphf+bJUkCjQGy17IyKZ68TuBRPq7Dl1csW/AH8i3Qs=
+Message-ID: <45FCC575.4080902@gmail.com>
+Date: Sun, 18 Mar 2007 13:52:05 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: rol@as2917.net
+CC: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Jeff Garzik'" <jeff@garzik.org>, "'Alan Cox'" <alan@redhat.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       linux-ide@vger.kernel.org, "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'Eric D. Mudama'" <edmudama@gmail.com>
+Subject: Re: [git patches] libata fixes
+References: <00b901c768cf$fc359f00$2101a8c0@donald>
+In-Reply-To: <00b901c768cf$fc359f00$2101a8c0@donald>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Mar 2007 19:54:30 +1100 Rusty Russell wrote:
-
-> On Thu, 2007-03-15 at 18:34 -0700, Randy Dunlap wrote:
-> > On Tue, 13 Mar 2007 17:37:35 +1100 Rusty Russell wrote:
-> > > diff -r de5618b5e562 arch/x86_64/Kconfig
-> > > --- a/arch/x86_64/Kconfig	Tue Mar 13 11:41:55 2007 +1100
-> > > +++ b/arch/x86_64/Kconfig	Tue Mar 13 17:27:05 2007 +1100
-> > > @@ -632,8 +632,8 @@ config REORDER
-> > >  	default n
-> > >  	help
-> > >           This option enables the toolchain to reorder functions for a more 
-> > > -         optimal TLB usage. If you have pretty much any version of binutils, 
-> > > -	 this can increase your kernel build time by roughly one minute.
-> > > +         optimal TLB usage.  This will slow your kernel build by
-> > > +	 roughly one minute.
-> > 
-> > Please consistently use <tab><space><space> for help text.
-> > Yes, it was already mucked up.
+Paul Rolland wrote:
+> Hello,
 > 
-> Erm, OK, this applies after previous patch if it's wanted.
+>> The kernel says that NCQ is turned off due to excessive 
+>> errors.  If your
+>> HSM violation is intermittent, it might not trigger tho.
 > 
-> After Randy spotted an errant TAB, this is a cleanup of
-> arch/x86_64/Kconfig.
-> 
-> 1) clean up all the trailing whitespace,
-> 2) make sure we use tabs instead of spaces,
-> 3) ensure all help messages use tab & two spaces,
-> 4) make sure all help messages are < 80 cols.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> I've just grep'ed thru all my messages, and I can't find anything 
+> stating that NCQ is being turned off...
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Can you put the harddisk under high load and see what happens?  How
+often do those errors occur?  Care to post full dmesg?
 
-Thanks for doing this, Rusty.
-
-> diff -r af971625bda6 arch/x86_64/Kconfig
-> --- a/arch/x86_64/Kconfig	Sat Mar 17 19:50:28 2007 +1100
-> +++ b/arch/x86_64/Kconfig	Sat Mar 17 19:51:01 2007 +1100
-> @@ -138,10 +138,10 @@ config X86_VSMP
->  config X86_VSMP
->  	bool "Support for ScaleMP vSMP"
->  	depends on PCI
-> -	 help
-> +	help
->  	  Support for ScaleMP vSMP systems.  Say 'Y' here if this kernel is
-> -	  supposed to run on these EM64T-based machines.  Only choose this option
-> -	  if you have one of these machines.
-> +	  supposed to run on these EM64T-based machines.  Only choose this
-> +	  option if you have one of these machines.
->  
->  endchoice
->  
-> @@ -155,13 +155,13 @@ config MK8
->  	  Optimize for AMD Opteron/Athlon64/Hammer/K8 CPUs.
->  
->  config MPSC
-> -       bool "Intel P4 / older Netburst based Xeon"
-> -       help
-> +	bool "Intel P4 / older Netburst based Xeon"
-> +	help
->  	  Optimize for Intel Pentium 4 and older Nocona/Dempsey Xeon CPUs
->  	  with Intel Extended Memory 64 Technology(EM64T). For details see
->  	  <http://www.intel.com/technology/64bitextensions/>.
->  	  Note that the latest Xeons (Xeon 51xx and 53xx) are not based on the
-> -          Netburst core and shouldn't use this option. You can distinguish them
-> +	  Netburst core and shouldn't use this option. You can distinguish them
->  	  using the cpu family field
->  	  in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a newer one
->  	  (this rule only applies to systems that support EM64T)
-> @@ -333,26 +333,26 @@ source "kernel/Kconfig.preempt"
->  source "kernel/Kconfig.preempt"
->  
->  config NUMA
-> -       bool "Non Uniform Memory Access (NUMA) Support"
-> -       depends on SMP
-> -       help
-> -	 Enable NUMA (Non Uniform Memory Access) support. The kernel 
-> -	 will try to allocate memory used by a CPU on the local memory 
-> -	 controller of the CPU and add some more NUMA awareness to the kernel.
-> -	 This code is recommended on all multiprocessor Opteron systems.
-> -	 If the system is EM64T, you should say N unless your system is EM64T 
-> -	 NUMA. 
-> +	bool "Non Uniform Memory Access (NUMA) Support"
-> +	depends on SMP
-> +	help
-> +	  Enable NUMA (Non Uniform Memory Access) support. The kernel
-> +	  will try to allocate memory used by a CPU on the local memory
-> +	  controller of the CPU and add some more NUMA awareness to the kernel.
-> +	  This code is recommended on all multiprocessor Opteron systems.
-> +	  If the system is EM64T, you should say N unless your system is EM64T
-> +	  NUMA.
->  
->  config K8_NUMA
-> -       bool "Old style AMD Opteron NUMA detection"
-> -       depends on NUMA && PCI
-> -       default y
-> -       help
-> -	 Enable K8 NUMA node topology detection.  You should say Y here if
-> -	 you have a multi processor AMD K8 system. This uses an old
-> -	 method to read the NUMA configuration directly from the builtin
-> -	 Northbridge of Opteron. It is recommended to use X86_64_ACPI_NUMA
-> -	 instead, which also takes priority if both are compiled in.   
-> +	bool "Old style AMD Opteron NUMA detection"
-> +	depends on NUMA && PCI
-> +	default y
-> +	help
-> +	  Enable K8 NUMA node topology detection.  You should say Y here if
-> +	  you have a multi processor AMD K8 system. This uses an old
-> +	  method to read the NUMA configuration directly from the builtin
-> +	  Northbridge of Opteron. It is recommended to use X86_64_ACPI_NUMA
-> +	  instead, which also takes priority if both are compiled in.
->  
->  config NODES_SHIFT
->  	int
-> @@ -362,14 +362,14 @@ config NODES_SHIFT
->  # Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
->  
->  config X86_64_ACPI_NUMA
-> -       bool "ACPI NUMA detection"
-> -       depends on NUMA
-> -       select ACPI 
-> +	bool "ACPI NUMA detection"
-> +	depends on NUMA
-> +	select ACPI
->  	select PCI
-> -       select ACPI_NUMA
-> -       default y
-> -       help
-> -	 Enable ACPI SRAT based node topology detection.
-> +	select ACPI_NUMA
-> +	default y
-> +	help
-> +	  Enable ACPI SRAT based node topology detection.
->  
->  config NUMA_EMU
->  	bool "NUMA emulation"
-> @@ -380,9 +380,9 @@ config NUMA_EMU
->  	  number of nodes. This is only useful for debugging.
->  
->  config ARCH_DISCONTIGMEM_ENABLE
-> -       bool
-> -       depends on NUMA
-> -       default y
-> +	bool
-> +	depends on NUMA
-> +	default y
->  
->  config ARCH_DISCONTIGMEM_DEFAULT
->  	def_bool y
-> @@ -556,14 +556,14 @@ config CRASH_DUMP
->  	bool "kernel crash dumps (EXPERIMENTAL)"
->  	depends on EXPERIMENTAL
->  	help
-> -          Generate crash dump after being started by kexec.
-> -          This should be normally only set in special crash dump kernels
-> -          which are loaded in the main kernel with kexec-tools into
-> -          a specially reserved region and then later executed after
-> -          a crash by kdump/kexec. The crash dump kernel must be compiled
-> +	  Generate crash dump after being started by kexec.
-> +	  This should be normally only set in special crash dump kernels
-> +	  which are loaded in the main kernel with kexec-tools into
-> +	  a specially reserved region and then later executed after
-> +	  a crash by kdump/kexec. The crash dump kernel must be compiled
->  	  to a memory address not used by the main kernel or BIOS using
->  	  PHYSICAL_START.
-> -          For more details see Documentation/kdump/kdump.txt
-> +	  For more details see Documentation/kdump/kdump.txt
->  
->  config PHYSICAL_START
->  	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
-> @@ -605,7 +605,7 @@ config CC_STACKPROTECTOR
->  	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
->  	depends on EXPERIMENTAL
->  	help
-> -         This option turns on the -fstack-protector GCC feature. This
-> +	  This option turns on the -fstack-protector GCC feature. This
->  	  feature puts, at the beginning of critical functions, a canary
->  	  value on the stack just before the return address, and validates
->  	  the value just before actually returning.  Stack based buffer
-> @@ -631,9 +631,9 @@ config REORDER
->  	bool "Function reordering"
->  	default n
->  	help
-> -         This option enables the toolchain to reorder functions for a more 
-> -         optimal TLB usage.  This will slow your kernel build by
-> -	 roughly one minute.
-> +	  This option enables the toolchain to reorder functions for a more
-> +	  optimal TLB usage.  This will slow your kernel build by
-> +	  roughly one minute.
->  
->  config K8_NB
->  	def_bool y
-> @@ -705,15 +705,15 @@ config IA32_EMULATION
->  config IA32_EMULATION
->  	bool "IA32 Emulation"
->  	help
-> -	  Include code to run 32-bit programs under a 64-bit kernel. You should likely
-> -	  turn this on, unless you're 100% sure that you don't have any 32-bit programs
-> -	  left.
-> +	  Include code to run 32-bit programs under a 64-bit kernel. You
-> +	  should likely turn this on, unless you're 100% sure that you don't
-> +	  have any 32-bit programs left.
->  
->  config IA32_AOUT
-> -       tristate "IA32 a.out support"
-> -       depends on IA32_EMULATION
-> -       help
-> -         Support old a.out binaries in the 32bit emulation.
-> +	tristate "IA32 a.out support"
-> +	depends on IA32_EMULATION
-> +	help
-> +	  Support old a.out binaries in the 32bit emulation.
->  
->  config COMPAT
->  	bool
-> @@ -736,7 +736,7 @@ source fs/Kconfig
->  source fs/Kconfig
->  
->  menu "Instrumentation Support"
-> -        depends on EXPERIMENTAL
-> +	depends on EXPERIMENTAL
->  
->  source "arch/x86_64/oprofile/Kconfig"
->  
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+tejun
