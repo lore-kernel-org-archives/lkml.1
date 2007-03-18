@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbXCRIEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbXCRIIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753134AbXCRIEO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 04:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbXCRIEN
+	id S1753023AbXCRIIp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 04:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbXCRIIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 04:04:13 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53600 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753134AbXCRIEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 04:04:11 -0400
-X-Provags-ID: V01U2FsdGVkX18BKqQSbHMByuRWwLHymA6wxmc9Bnb/plx0hV/fmS
-	pRX3871vTN8luy
-Subject: Re: [ck] Re: RSDL v0.31
-From: Mike Galbraith <efault@gmx.de>
-To: Radoslaw Szkodzinski <astralstorm@gmail.com>
-Cc: Kasper Sandberg <lkml@metanurb.dk>, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Nicholas Miell <nmiell@comcast.net>
-In-Reply-To: <1174203482.8855.8.camel@Homer.simpson.net>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172048.46267.kernel@kolivas.org>
-	 <1174125534.7734.2.camel@Homer.simpson.net>
-	 <200703172355.30989.a1426z@gawab.com>
-	 <1174198651.8199.44.camel@Homer.simpson.net>
-	 <1174200463.10498.23.camel@localhost>
-	 <1174201726.8732.6.camel@Homer.simpson.net>
-	 <f44c5fdf0703180022n44b2ca61o62602e54aaab3334@mail.gmail.com>
-	 <1174203482.8855.8.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Sun, 18 Mar 2007 09:04:10 +0100
-Message-Id: <1174205050.8855.12.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Sun, 18 Mar 2007 04:08:45 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:3925 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753023AbXCRIIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 04:08:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=tqgGTv9rurJvVIbK+hYiogu5ckh8vrO/H019v8/wPxWfdK8lqbj81o+vNVo9DcrS7RwYwDXy4sOl0zomqwvUSJ7EwRor4rcDcg+U8TCmOtQ16pJEfYFLPgbhL6PEePZKlQiUnKPZm2XLC4iOUwWy1F56XB8x3QBOAn38U5N4kbQ=
+Message-ID: <b965e8580703180108t6bc50b0eg895c5464463ab09@mail.gmail.com>
+Date: Sun, 18 Mar 2007 16:08:43 +0800
+From: "Ying Chu" <xjtuychu@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: sysenter cause a segmentation fault.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+X-Google-Sender-Auth: f602dd49422e4115
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-18 at 08:38 +0100, Mike Galbraith wrote:
-> On Sun, 2007-03-18 at 08:22 +0100, Radoslaw Szkodzinski wrote:
-> 
-> > I'd recon KDE regresses because of kioslaves waiting on a pipe
-> > (communication with the app they're doing IO for) and then expiring.
-> > That's why splitting IO from an app isn't exactly smart. It should at
-> > least be ran in an another thread.
-> 
-> Hm.  Sounds rather a lot like the...
-> X sucks, fix X and RSDL will rock your world.  RSDL is perfect.
-> ...that I've been getting.
+A simple code running on PIII 800,kernel 2.6.20 with SEP enabled
+causes  a  segmentation fault.
+The slice is as following.
 
-P.S.  For those folks who appear to think that I'm in love with mainline
-behavior and blissfully ignorant of it's shortcomings.
+#include <stdio.h>
+#include <sys/syacall.h>
 
-http://lwn.net/Articles/176635/
+int main()
+{
+    unsigned long ret=0;
+    __asm__ __volatile__ ("movl %1,%%eax\n\tpushl %%ecx\n\t"
+     "pushl %%edx\n\tpush %%ebp\n\t"
+     "movl %%esp,%%ebp\n\t"     "sysenter\n\t"
+     "movl %%eax,%0"
+     :"=m"(ret)
+     :"b"(SYS_getuid));
+   printf("%d\n",ret);
+   return 0;
+}
 
+More, when i enabled Kdb and set "bp sysenter_entry",it went with a
+catastrophic error errupted.
