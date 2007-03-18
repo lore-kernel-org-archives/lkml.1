@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbXCRUeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXCRUox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933190AbXCRUeJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 16:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933215AbXCRUeJ
+	id S933232AbXCRUox (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 16:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933242AbXCRUov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 16:34:09 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:50601 "EHLO
+	Sun, 18 Mar 2007 16:44:51 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:50606 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933190AbXCRUeH (ORCPT
+	with ESMTP id S933232AbXCRUou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 16:34:07 -0400
+	Sun, 18 Mar 2007 16:44:50 -0400
 X-AuthUser: davidel@xmailserver.org
-Date: Sun, 18 Mar 2007 13:31:54 -0700 (PDT)
+Date: Sun, 18 Mar 2007 13:42:42 -0700 (PDT)
 From: Davide Libenzi <davidel@xmailserver.org>
 X-X-Sender: davide@alien.or.mcafeemobile.com
 To: Arnd Bergmann <arnd@arndb.de>
@@ -19,228 +19,68 @@ cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
-In-Reply-To: <200703172235.09227.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.64.0703181313460.5482@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
- <200703172235.09227.arnd@arndb.de>
+Subject: Re: [patch 5/13] signal/timer/event fds v6 - signalfd compat code
+ ...
+In-Reply-To: <200703172247.51602.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0703181340020.5482@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.9367.1174004538.5>
+ <200703172247.51602.arnd@arndb.de>
 X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
 X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="1795850513-2115032942-1174250562=:5482"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--1795850513-2115032942-1174250562=:5482
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
 On Sat, 17 Mar 2007, Arnd Bergmann wrote:
 
-> > +asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t
-> > sizemask) +{
-> > +	int error;
-> > +	unsigned long flags;
-> > +	sigset_t sigmask;
-> > +	struct signalfd_ctx *ctx;
-> > +	struct sighand_struct *sighand;
-> > +	struct file *file;
-> > +	struct inode *inode;
-> > +
-> > +	error = -EINVAL;
-> > +	if (sizemask != sizeof(sigset_t) ||
-> > +	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
-> > +		goto err_exit;
-> 
-> sizeof(sigset_t) may be different for native and 32-bit compat code.
-> It would be good if you could handle sizemask==4 && sizeof(sigset_t)==8
-> in this code, so that there is no need for an extra compat_sys_signalfd
-> function.
-
-As Stephen reported, we do need the compat in any case. Better keep all 
-the compat adjustments under CONFIG_COMPAT, so archs that don't need it 
-don't need to link to it.
-
-
-
-> > +	if ((sighand = signalfd_get_sighand(ctx, &flags)) != NULL) {
-> > +		if (next_signal(&ctx->tsk->pending, &ctx->sigmask) > 0 ||
-> > +		    next_signal(&ctx->tsk->signal->shared_pending,
-> > +				&ctx->sigmask) > 0)
-> > +			events |= POLLIN;
-> > +		signalfd_put_sighand(ctx, sighand, &flags);
-> > +	} else
-> > +		events |= POLLIN;
-> > +
-> > +	return events;
-> > +}
-> 
-> I never really understood the events mask, but other subsystems often
-> use (POLLIN | POLLRDNORM) instead of just POLLIN. Is there a reason
-> for not returning POLLRDNORM here?
-
-I don't think those fds will have to deal with the concept of bands and 
-priorities. I believe POLLIN is fine here.
-
-
-
-> > +static int signalfd_copyinfo(struct signalfd_siginfo __user *uinfo,
-> > +			     siginfo_t const *kinfo)
+> On Friday 16 March 2007 01:22:15 Davide Libenzi wrote:
+> > +asmlinkage long compat_sys_signalfd(int ufd,
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =A0const compat_sigset_t __user *sigmask,
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =A0compat_size_t sigsetsize)
 > > +{
-> > +	long err;
+> > +=A0=A0=A0=A0=A0=A0=A0compat_sigset_t ss32;
+> > +=A0=A0=A0=A0=A0=A0=A0sigset_t tmp;
+> > +=A0=A0=A0=A0=A0=A0=A0sigset_t __user *ksigmask;
 > > +
-> > +	err = __clear_user(uinfo, sizeof(*uinfo));
+> > +=A0=A0=A0=A0=A0=A0=A0if (sigsetsize !=3D sizeof(compat_sigset_t))
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -EINVAL;
+> > +=A0=A0=A0=A0=A0=A0=A0if (copy_from_user(&ss32, sigmask, sizeof(ss32)))
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -EFAULT;
+> > +=A0=A0=A0=A0=A0=A0=A0sigset_from_compat(&tmp, &ss32);
+> > +=A0=A0=A0=A0=A0=A0=A0ksigmask =3D compat_alloc_user_space(sizeof(sigse=
+t_t));
+> > +=A0=A0=A0=A0=A0=A0=A0if (copy_to_user(ksigmask, &tmp, sizeof(sigset_t)=
+))
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -EFAULT;
 > > +
-> > +	/*
-> > +	 * If you change siginfo_t structure, please be sure
-> > +	 * this code is fixed accordingly.
-> > +	 */
-> > +	err |= __put_user(kinfo->si_signo, &uinfo->signo);
-> > +	err |= __put_user(kinfo->si_errno, &uinfo->err);
-> > +	err |= __put_user((short)kinfo->si_code, &uinfo->code);
-> > +	switch (kinfo->si_code & __SI_MASK) {
-> > +	case __SI_KILL:
-> > +		err |= __put_user(kinfo->si_pid, &uinfo->pid);
-> > +		err |= __put_user(kinfo->si_uid, &uinfo->uid);
-> > +		break;
-> > +	case __SI_TIMER:
-> > +		 err |= __put_user(kinfo->si_tid, &uinfo->tid);
-> > +		 err |= __put_user(kinfo->si_overrun, &uinfo->overrun);
-> > +		 err |= __put_user(kinfo->si_ptr, &uinfo->svptr);
-> > +		break;
-> > +	case __SI_POLL:
-> > +		err |= __put_user(kinfo->si_band, &uinfo->band);
-> > +		err |= __put_user(kinfo->si_fd, &uinfo->fd);
-> > +		break;
-> > +	case __SI_FAULT:
-> > +		err |= __put_user(kinfo->si_addr, &uinfo->addr);
-> > +#ifdef __ARCH_SI_TRAPNO
-> > +		err |= __put_user(kinfo->si_trapno, &uinfo->trapno);
-> > +#endif
-> > +		break;
-> > +	case __SI_CHLD:
-> > +		err |= __put_user(kinfo->si_pid, &uinfo->pid);
-> > +		err |= __put_user(kinfo->si_uid, &uinfo->uid);
-> > +		err |= __put_user(kinfo->si_status, &uinfo->status);
-> > +		err |= __put_user(kinfo->si_utime, &uinfo->utime);
-> > +		err |= __put_user(kinfo->si_stime, &uinfo->stime);
-> > +		break;
-> > +	case __SI_RT: /* This is not generated by the kernel as of now. */
-> > +	case __SI_MESGQ: /* But this is */
-> > +		err |= __put_user(kinfo->si_pid, &uinfo->pid);
-> > +		err |= __put_user(kinfo->si_uid, &uinfo->uid);
-> > +		err |= __put_user(kinfo->si_ptr, &uinfo->svptr);
-> > +		break;
-> > +	default: /* this is just in case for now ... */
-> > +		err |= __put_user(kinfo->si_pid, &uinfo->pid);
-> > +		err |= __put_user(kinfo->si_uid, &uinfo->uid);
-> > +		break;
-> > +	}
-> > +
-> > +	return err ? -EFAULT: sizeof(*uinfo);
+> > +=A0=A0=A0=A0=A0=A0=A0return sys_signalfd(ufd, ksigmask, sizeof(sigset_=
+t));
 > > +}
-> 
-> Doing it this way looks rather inefficient to me. I think it's
-> better to just prepare the signalfd_siginfo on the stack and
-> do a single copy_to_user.
+>=20
+> Doing the compat_alloc_user_space() magic obviously makes the 32 bit
+> emulation code less efficient. How about having a
+>=20
+> long do_signalfd(int ufd, const sigset_t *sigmask, size_t sigsetsize);
+>=20
+> that is called directly by both sys_signalfd and compat_sys_signalfd?
+> Same obviously applies also to do_timerfd.
 
-bah, __put_user is basically a move, so I don't think that efficency would 
-be that different (assuming that it'd matter in this case). The only thing 
-many __put_user do, is increase the exception table sizes.
-
-
-
-> Also, what's the reasoning behind defining a new structure
-> instead of just returning siginfo_t? Sure siginfo_t is ugly
-> but it is a well-defined structure and users already deal
-> with the problems it causes.
-
-Compat on sys_read() would be insane ;)
-
-
-
-> 
-> > +static void __exit signalfd_exit(void)
-> > +{
-> > +	kmem_cache_destroy(signalfd_ctx_cachep);
-> > +}
-> > +
-> > +module_init(signalfd_init);
-> > +module_exit(signalfd_exit);
-> > +
-> > +MODULE_LICENSE("GPL");
-> 
-> Since this file defines a syscall, it can't be a module, so why bother
-> with this?
-
-Agreed, remove exit function and using fs_initcall.
-
-
-
-> 
-> > +
-> > +struct signalfd_siginfo {
-> > +	__u32 signo;
-> > +	__s32 err;
-> > +	__s32 code;
-> > +	__u32 pid;
-> > +	__u32 uid;
-> > +	__s32 fd;
-> > +	__u32 tid;
-> > +	__u32 band;
-> > +	__u32 overrun;
-> > +	__u32 trapno;
-> > +	__s32 status;
-> > +	__s32 svint;
-> > +	__u64 svptr;
-> > +	__u64 utime;
-> > +	__u64 stime;
-> > +	__u64 addr;
-> > +};
-> > +
-> 
-> Since you define the structure using __u32 etc types, I assume
-> you mean it to be included from libc or other user space, right?
-> In this case it needs to be listed in include/linux/Kbuild for
-> make headers_install to work.
-
-Ack!
-
-
-
-> 
-> > +void signalfd_deliver(struct task_struct *tsk, int sig);
-> > +
-> > +/*
-> > + * No need to fall inside signalfd_deliver() if no signal listeners are
-> > available. + */
-> > +static inline void signalfd_notify(struct task_struct *tsk, int sig)
-> > +{
-> > +	if (unlikely(!list_empty(&tsk->sighand->sfdlist)))
-> > +		signalfd_deliver(tsk, sig);
-> > +}
-> > +
-> > +static inline void signalfd_detach_locked(struct task_struct *tsk)
-> > +{
-> > +	if (unlikely(!list_empty(&tsk->sighand->sfdlist)))
-> > +		signalfd_deliver(tsk, -1);
-> > +}
-> > +
-> > +static inline void signalfd_detach(struct task_struct *tsk)
-> > +{
-> > +	struct sighand_struct *sighand = tsk->sighand;
-> > +
-> > +	if (unlikely(!list_empty(&sighand->sfdlist))) {
-> > +		spin_lock_irq(&sighand->siglock);
-> > +		signalfd_deliver(tsk, -1);
-> > +		spin_unlock_irq(&sighand->siglock);
-> > +	}
-> > +}
-> > +
-> 
-> And all of these need to be surrounded by #ifdef __KERNEL__ so
-> they don't bleed out to the user space visible parts.
-
-Ack!
+Hmm,  copy_*_user (one or two moves) and compat_alloc_user_space are=20
+pretty fast...
 
 
 
 - Davide
 
 
+--1795850513-2115032942-1174250562=:5482--
