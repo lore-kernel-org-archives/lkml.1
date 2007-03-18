@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750874AbXCRFAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751027AbXCRFBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750874AbXCRFAz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 01:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbXCRFAz
+	id S1751027AbXCRFBY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 01:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbXCRFBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 01:00:55 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26503 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbXCRFAy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 01:00:54 -0400
-Date: Sat, 17 Mar 2007 21:59:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Matt LaPlante <kernel1@cyberdogtech.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH 21-rc4]  misc doc and kconfig typos
-Message-Id: <20070317215903.7fc0da46.randy.dunlap@oracle.com>
-In-Reply-To: <20070317144451.6c83cf3b.kernel1@cyberdogtech.com>
-References: <20070317144451.6c83cf3b.kernel1@cyberdogtech.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sun, 18 Mar 2007 01:01:24 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43694 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751027AbXCRFBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 01:01:14 -0400
+Date: Sun, 18 Mar 2007 16:01:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tomasz =?UTF-8?Q?Noi=C5=84ski?= <noix@sphere.pl>
+Cc: linux-kernel@vger.kernel.org, timm@kip.uni-heidelberg.de,
+       arne.wiebalck@kip.uni-heidelberg.de
+Subject: Re: more precise CPU time accounting for x86
+Message-Id: <20070318160115.f07cf7a9.sfr@canb.auug.org.au>
+In-Reply-To: <20070317164722.1fed2b27.noix@sphere.pl>
+References: <20070317164722.1fed2b27.noix@sphere.pl>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__18_Mar_2007_16_01_15_+1100_7ymPY/BS.4wBs20S"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Mar 2007 14:44:51 -0400 Matt LaPlante wrote:
+--Signature=_Sun__18_Mar_2007_16_01_15_+1100_7ymPY/BS.4wBs20S
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-> Fix various typos in kernel docs and Kconfigs, 2.6.21-rc4.
-> 
-> Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
+Hi Tomasz,
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+On Sat, 17 Mar 2007 16:47:22 +0100 Tomasz Noiński <noix@sphere.pl> wrote:
+>
+> I've written a small patch for more precise process CPU time accounting
+> for processors with TSC.
 
-Thanks, Matt.
+You should have a look at the CONFIG_VIRT_CPU_ACCOUNTING on s390 and
+powerpc.
 
-BTW, I would prefer to see doc and kconfig patches in separate
-files.  Anyone else pro or con on that?
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+--Signature=_Sun__18_Mar_2007_16_01_15_+1100_7ymPY/BS.4wBs20S
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF/MegFdBgD/zoJvwRAkROAJ99j9IHlFZdGADv2pi616aFE95W1QCfTFPh
+8vGA8KuCJ80CJAZuRDIoV48=
+=jdq9
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__18_Mar_2007_16_01_15_+1100_7ymPY/BS.4wBs20S--
