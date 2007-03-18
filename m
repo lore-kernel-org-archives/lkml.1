@@ -1,122 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbXCRUqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933245AbXCRUxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933258AbXCRUqG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 16:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933256AbXCRUqG
+	id S933245AbXCRUxP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 16:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933256AbXCRUxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 16:46:06 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:53567 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933258AbXCRUqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 16:46:04 -0400
-Date: Sun, 18 Mar 2007 12:45:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Bias the location of pages freed for min_free_kbytes in
- the same MAX_ORDER_NR_PAGES blocks
-Message-Id: <20070318124547.c46b0e69.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703181941160.648@skynet.skynet.ie>
-References: <20070307201839.6f45735b.akpm@linux-foundation.org>
-	<200703142006.04547.m.kozlowski@tuxland.pl>
-	<20070314170738.d5d35c06.akpm@linux-foundation.org>
-	<20070317182641.GA19447@skynet.ie>
-	<20070318002244.606cfe08.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703181104140.29429@skynet.skynet.ie>
-	<20070318101259.f6e524f2.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703181822110.648@skynet.skynet.ie>
-	<20070318112820.90be0449.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703181941160.648@skynet.skynet.ie>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Mar 2007 16:53:15 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:37378 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933245AbXCRUxO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 16:53:14 -0400
+Date: Sun, 18 Mar 2007 13:51:52 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: 1000xf bus problem
+In-reply-to: <45FD95CD.2030403@shaw.ca>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Greg.Chandler@wellsfargo.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net
+Message-id: <45FDA668.1090202@intel.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.wDPF1lWlqGQpxbyWee64Z3t4BVM@ifi.uio.no>
+ <45FD95CD.2030403@shaw.ca>
+User-Agent: Mail/News 1.5.0.10 (X11/20070311)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Mar 2007 20:08:49 +0000 (GMT) Mel Gorman <mel@csn.ul.ie> wrote:
+Robert Hancock wrote:
+> Greg.Chandler@wellsfargo.com wrote:
+>> I'm running a e1000xf adapter in a 64-bit/100Mhz PCI slot.  The intel
+>> site shows this is a supported config for the card, but linux is pulling
+>> this info:
+>>
+>> ed:02.0 Ethernet controller: Intel Corporation 82544EI Gigabit Ethernet
+>> Controller (Fiber) (rev 02)
+>> 	Subsystem: Intel Corporation PRO/1000 XF Server Adapter
+>> 	Flags: bus master, 66Mhz, medium devsel, latency 64, IRQ 18
+>> 	Memory at f7fe0000 (64-bit, non-prefetchable) [size=128K]
+>>       Memory at f7fc0000 (64-bit, non-prefetchable) [size=128K]
+>>       I/O ports at 7000 [size=32]
+>>       [virtual] Expansion ROM at f10a0000 [disabled] [size=128K]
+>>       Capabilities: [dc] Power Management version 2
+>>       Capabilities: [e4] PCI-X non-bridge device
+>>       Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0
+>> Enable-
+>>
+>> My thoughput tests show it is definitely not running at the 100Mhz bus
+>> rate is should be capable of.
+> 
+> How are you determining this?
+> 
+>  > Any ideas on how to make it work at full speed?
 
-> On Sun, 18 Mar 2007, Andrew Morton wrote:
-> 
-> > On Sun, 18 Mar 2007 19:05:41 +0000 (GMT) Mel Gorman <mel@csn.ul.ie> wrote:
-> >
-> >>> How much additional memory consumption are we expecting here?
-> >>>
-> >>
-> >> Short answer, about 1.5KB on a 1GB system of which 1.3KB is statically
-> >> defined in the 3 struct zones on a 1 node x86 system.
-> >>
-> >> Longer answer that I hopefully have not made any mistakes in - There is
-> >> the zone overhead which is statically sized and a runtime overhead which
-> >> depends on the amount of memory in the system. The additional zone
-> >> overhead is the overhead for additional freelists (larger struct
-> >> free_area) and is as follows;
-> >>
-> >> (MIGRATE_TYPES-1) * sizeof(list_head) * (MAX_ORDER-1)
-> >>
-> >> so, on 32 bit in general, thats
-> >>
-> >> 4 * 8 * 10 = 320 bytes per zone (would be 240 bytes if MIGRATE_RESERVE is
-> >>  				sufficient for higher order allocations
-> >>  				instead of MIGRATE_HIGHALLOC)
-> >>
-> >> on x86 with DMA, Normal and HighMem, thats 1280 bytes. On a NUMA system,
-> >> it's 1280 bytes per node. On 64 bit, it would be double because of the
-> >> larger pointer size. At worst, I guess you are looking at 3KB per node.
-> >
-> > That a very modest overhead - not worth the config option, IMO.
-> >
-> > The runtime overhead might be a concern - is it possible to quantify
-> > it?
-> >
-> 
-> Do you mean performance wise or memory wise?
+what is the dmesh output of e1000 ? it should show you what the card itself 
+detects (at least the newer drivers since 7.0.x all do). This may provide some 
+clues as to what the card has detected.
 
-CPU load.  From your earlier email I'd decided memory consumption was a
-non-issue ;)
-
-> Memory-wise,  something like
-> 
-> ===
-> FLATMEM Case
-> bits = 0;
-> for_each_zone(zone) {
->  	bits += (zone->spanned_pages >> (MAX_ORDER-1)) * NR_PAGEBLOCK_BITS);
-> }
-> bytes_consumed = bits / 8;
-> 
-> === SPARSEMEM Case, a rough approximation is
-> ((vm_total_pages * PAGE_SIZE) >> SECTION_SIZE_BITS) * 8
-> 
-> The consumption could be stored in a zone variable similar to 
-> zone->present_pages and visible through /proc/zoneinfo. Would that be 
-> useful?
-> 
-> Performance wise is harder to quantify. There are three places where 
-> issues can show up. The first is with allocation fallbacks where 
-> __rmqueue_fallback() is called. Fallbacks are expensive but fallbacks are 
-> rare except when the zone is too small which is why I probably should be 
-> catching that case explicitly. I used to have a counters patch for 
-> fallbacks. I could bring it up to date to use __count_vm_events() to 
-> quantify fallbacks if you think it would be useful?
-> 
-> The second hotpoint is where the per-cpu lists are searched for a page of 
-> the suitable migrate type. An instruction-level profile on x86 when I 
-> looked at this on x86 showed about 2-4% of the time spent in 
-> get_page_from_freelist() was searching the per-cpu lists for a page of a 
-> suitable type. IIRC, something like 85% of the time there was clearing the 
-> pages although I'd need to double check this to be 100% sure.
-> 
-> The last potential performance hotpoint is where the pageblock flags are 
-> read on every free in get_pageblock_flags_group(). There is probably room 
-> for optimisation there. I haven't an exact quantification available at the 
-> moment but I remember seeing it far down the list of functions time was 
-> spent when I was last looking at this.
-
-hm, well.  It'd be good to drill down, quantify and, where needed, fix
-these things.  Because the existence of that config option is quite
-undesirabe.
-
-
+Auke
