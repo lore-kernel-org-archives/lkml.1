@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbXCRTOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbXCRTSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbXCRTOm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 15:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbXCRTOm
+	id S1753281AbXCRTSA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 15:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXCRTSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 15:14:42 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36706 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753266AbXCRTOl (ORCPT
+	Sun, 18 Mar 2007 15:18:00 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38770 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753276AbXCRTR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 15:14:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Catalin Marinas" <catalin.marinas@gmail.com>
-Subject: [PATCH 4/4] tty: In tiocsctty when we steal a tty hang it up.
-References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
-	<m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
-	<m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
-	<m1veh5q6s7.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703140259p773b0eb8p9c142d33934e64ff@mail.gmail.com>
-	<m1wt1jq45w.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703141008o4d6cb243r7bc328d79cccfa2e@mail.gmail.com>
-	<m1slc4luf5.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703161544h2961670dh8f5e499fd2dc0ce5@mail.gmail.com>
-	<m1vegyjspz.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6rmjsev.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1mz2ajs6g.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1fy82jrwz.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bqiqjrnx.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Sun, 18 Mar 2007 13:13:37 -0600
-In-Reply-To: <m1bqiqjrnx.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Sun, 18 Mar 2007 13:08:34 -0600")
-Message-ID: <m17itejrfi.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 18 Mar 2007 15:17:59 -0400
+Subject: Re: forced umount?
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <170fa0d20703162106v47dc13e1u1ae5381576f372ed@mail.gmail.com>
+References: <170fa0d20703162106v47dc13e1u1ae5381576f372ed@mail.gmail.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 18 Mar 2007 20:16:19 +0100
+Message-Id: <1174245379.3538.252.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-03-16 at 23:06 -0500, Mike Snitzer wrote:
+> I'm interested in understanding the state of Linux with regard to
+> _really_ forcing a filesystem to unmount.
+> 
+> There is a (stale) project at OSDL that has various implementations:
+> http://developer.osdl.org/dev/fumount/
 
-The linux implementation of TIOCSCTTY includes an extention
-that provides for making a tty that is already the controlling
-tty of another session our controlling tty.  To do this it must
-steal the tty away from the previous group that used it as a
-controlling tty.
 
-The way we are currently stealing the controlling tty away is
-weird.   In general there is a well defined process for loosing
-the controlling tty.  TTY hangup processing.  However the linux
-extension that steals the tty from another process group does
-not invoke that.  And instead just forgets the controlling
-tty of the processes that were part of the session.
+the problem with the people who say they want forced umount is.. that
+most of the time they either want
+1) get rid of the namespace entry
+or
+2) want to stop any and all IO to a certain device/partition 
 
-I can not imagine how our current behaviour of stealling a tty
-is correct or how a set of processes could deal with it reasonably.
-So this patch modifies the tty stealing to call tty_vhangup
-so we get full hanup processing when we steal a tty.
+1) is already supported with lazy umount (umount -l)
+for 2), it's not forced umount that they want, it's really an IO
+disconnect (which scsi supports btw in 2.6 kernels).
 
-I did a quick survey of user space the only application I found using
-this extended behaviour is sysvinit.  I perform a limited  amount of
-testing and nothing appears to have broken with this change.  And I
-did see sysvinit pass through this piece of code.
+So.. depending on which of the 2 you are, it's there. Just it's not
+called "forced umount".....
 
-In terms of the tty leaks that started this patch series this fix
-should remove the last path into proc_clear_tty that has a session
-or a process group.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/char/tty_io.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 0843fcb..0f5a781 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -2982,9 +2982,7 @@ static int tiocsctty(struct tty_struct *tty, int arg)
- 			/*
- 			 * Steal it away
- 			 */
--			read_lock(&tasklist_lock);
--			session_clear_tty(tty->session);
--			read_unlock(&tasklist_lock);
-+			tty_vhangup(tty);
- 		} else {
- 			ret = -EPERM;
- 			goto unlock;
--- 
-1.5.0.g53756
 
