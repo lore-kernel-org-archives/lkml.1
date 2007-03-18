@@ -1,90 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbXCRTgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXCRTiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933015AbXCRTgM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 15:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932901AbXCRTgL
+	id S933006AbXCRTiA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 15:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932901AbXCRTiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 15:36:11 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:18079 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933015AbXCRTgJ (ORCPT
+	Sun, 18 Mar 2007 15:38:00 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:29659 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933006AbXCRTh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 15:36:09 -0400
+	Sun, 18 Mar 2007 15:37:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fmLPkS72k4n5muc3UY01tvSiFB6zUWqsjTi7MCYpM++3jSIc0x/RixTnXo6Uuxmt9hIRpn1k0Sb+qfoBDOJJjiTNb3uggN6+7mt8GFmzbx665neK3CKPMXhm+nXrpU2IOTIfCFdZwyOVoPJn7E0bMogbNyQ/wbUjpvZZYdaLAFo=
-Message-ID: <2e59e6970703181236l3f92f105je522f2966ffb0a39@mail.gmail.com>
-Date: Sun, 18 Mar 2007 14:36:08 -0500
-From: "richardvoigt@gmail.com" <richardvoigt@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Rudolf Marek" <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-In-Reply-To: <20070303105316.d51e032d.khali@linux-fr.org>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GvzVV5b1BzrZAup5xbL+s7qbwaW71OYaTgmBE4JxAWVRZrx1f/ZE6J+HJINwfYFacbLw0DCd9mW9hJ47RfEapaSsufFUUj22osPJyOyE4zHs88+CuCVdARrynCT1okHJM+V8ryRM2E9pzQSadW0iY1ylljPapsn5IexuvpIbyQI=
+Message-ID: <75b66ecd0703181237j45f2d14oddde8be2e0e2a739@mail.gmail.com>
+Date: Sun, 18 Mar 2007 15:37:56 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Mike Galbraith" <efault@gmx.de>
+Subject: Re: RSDL v0.31
+Cc: "Nicholas Miell" <nmiell@comcast.net>, "Con Kolivas" <kernel@kolivas.org>,
+       ck@vds.kolivas.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Al Boldi" <a1426z@gawab.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1174111737.7911.50.camel@Homer.simpson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <45D6DDCE.5050803@assembler.cz> <20070228213803.GA4877@ucw.cz>
-	 <20070301152655.f232db64.khali@linux-fr.org>
-	 <20070302114023.GD2163@elf.ucw.cz>
-	 <20070302114747.GB1212@srcf.ucam.org>
-	 <20070302151055.d2665d66.khali@linux-fr.org>
-	 <20070302141840.GA3441@srcf.ucam.org>
-	 <20070302220454.a0c66d04.khali@linux-fr.org>
-	 <20070302211251.GA10035@srcf.ucam.org>
-	 <20070303105316.d51e032d.khali@linux-fr.org>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703170040.48316.kernel@kolivas.org>
+	 <1174059299.7886.25.camel@Homer.simpson.net>
+	 <200703170813.32594.kernel@kolivas.org>
+	 <1174084207.7009.9.camel@Homer.simpson.net>
+	 <1174105443.3144.4.camel@entropy>
+	 <1174110965.7911.44.camel@Homer.simpson.net>
+	 <1174111737.7911.50.camel@Homer.simpson.net>
+X-Google-Sender-Auth: fbbb8471fa5e9bcd
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/3/07, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi Matthew,
->
-> On Fri, 2 Mar 2007 21:12:51 +0000, Matthew Garrett wrote:
-> > On Fri, Mar 02, 2007 at 10:04:54PM +0100, Jean Delvare wrote:
-> > > It might be more elegant but it won't work. We don't want to prevent
-> > > ACPI from accessing these I/O ports. If we need to choose only one
-> > > "driver" accessing the I/O port, it must be acpi, at leat for now,
-> > > despite the fact that acpi provides very weak hardware monitoring
-> > > capabilities compared to the specific drivers.
-> >
-> > Assuming arbitration of access, what's the problem with having two
-> > drivers accessing the same hardware? Do these chips generally have any
-> > significant internal state other than trip points and the like?
->
-> The "assuming arbitration of access" is the key part of your
-> sentence ;) The problem is that currently no arbitration is done. If it
-> was done, then state would probably not be a problem. Most hardware
-> monitoring drivers don't assume any state is preserved between
-> accesses, and those which do can easily be changed not to. The ACPI
-> side is another story though, I guess we can't assume anything about
-> the AML code's assumption on states, as it differs from one machine to
-> the next. But we can try to be cooperative and restore the sensible
-> registers (e.g. bank selector) in the same state we found them.
+On 3/17/07, Mike Galbraith <efault@gmx.de> wrote:
+> P.S.  "utter failure" was too harsh.  What sticks in my craw is that the
+> world has to adjust to fit this new scheduler.
 
-I recall that one of the stated drawbacks of a lock was that no ACPI
-code could execute while the hwmon driver was doing its fairly lengthy
-conversation with the hardware.
+I have never seen X run nearly as smooth as our favorite proprietary
+OS on similar spec hardware with ANY scheduler.
 
-It seems that using transactional concepts here would solve that
-problem.  For example, the hwmon driver issues a start transaction
-request.  The first write request to any given location (bank register
-for example) causes the previous memory value to be saved.  Then,
-instead of locking AML out, AML is allowed to execute, but any access
-to the memory/port ranges reserved by the driver (when the transaction
-is set up) cause the hwmon transaction to be rolled back so the AML
-sees the expected state.  Then AML proceeds as usual.  When hwmon
-tries additional operations, they fail with some "transaction
-interrupted" error message, indicating to the hwmon driver to start
-over.
-
-The only issue with this that I can see, is that if AML isn['t
-executed atomically wrt hwmon, then knowing when it is safe for hwmon
-to retry is going to be difficult.
-
-This probably requires changes to every hwmon driver, but they can be
-updated piecemeal, starting with the ones most commonly found in
-notebooks, where ACPI is most important.
+Lee
