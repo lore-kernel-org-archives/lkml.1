@@ -1,91 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbXCRMum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbXCRNBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbXCRMum (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 08:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbXCRMum
+	id S1752549AbXCRNBO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 09:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbXCRNBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 08:50:42 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:34890 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752324AbXCRMul (ORCPT
+	Sun, 18 Mar 2007 09:01:14 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:57397 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbXCRNBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 08:50:41 -0400
-Date: Sun, 18 Mar 2007 14:50:29 +0200
-From: Dan Aloni <da-x@monatomic.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Cc: netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp_sendpage(): fix broken page iteration
-Message-ID: <20070318125029.GA6617@localdomain>
-References: <20070318124346.GA6396@localdomain>
-MIME-Version: 1.0
+	Sun, 18 Mar 2007 09:01:13 -0400
+Date: Sun, 18 Mar 2007 12:58:08 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix build error due to not including <linux/errno.h>
+Message-ID: <20070318125808.GA25840@linux-mips.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070318124346.GA6396@localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-PopBeforeSMTPSenders: da-x@monatomic.org
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 18, 2007 at 02:43:46PM +0200, Dan Aloni wrote:
-> do_tcp_sendpages() should not iterate 'pages' as an array since 
-> it is not an array of 'struct page *', but a pointer to a single 
-> entity of 'struct page *' passed on the stack as a parameter to 
-> tcp_send_page() (hence it would crash if poffset + psize > PAGE_SIZE,
-> because pages[1] and beyond most probably not constitutes a valid 
-> 'struct page *').
-> 
-> Since 'page' points to an array of 'struct page', the obvious fix 
-> is to iterate that array instead, and that's what the function
-> should have done in the first place.
-> 
-> Applies to 2.6.21-rc4 and above.
+Since d9a9cdfb078d755e648d53ec25b7370f84ee5729 <linux/sysfs.h> is using
+ENOSYS without including <linux/errno.h> if CONFIG_SYSFS is disabled.
 
-Oops, forgot the obligtory signed-off:
+Fixed by including <linux/errno.h>.
 
-Signed-off-by: Dan Aloni <da-x@monatomic.org>
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 3834b10..4881c8d 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -501,7 +501,7 @@ static inline void tcp_push(struct sock *sk, struct tcp_sock *tp, int flags,
- 	}
- }
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 0544edd..fea9a6b 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -11,6 +11,7 @@
+ #define _SYSFS_H_
  
--static ssize_t do_tcp_sendpages(struct sock *sk, struct page **pages, int poffset,
-+static ssize_t do_tcp_sendpages(struct sock *sk, struct page *pages, int poffset,
- 			 size_t psize, int flags)
- {
- 	struct tcp_sock *tp = tcp_sk(sk);
-@@ -527,7 +527,7 @@ static ssize_t do_tcp_sendpages(struct sock *sk, struct page **pages, int poffse
+ #include <linux/compiler.h>
++#include <linux/errno.h>
+ #include <linux/list.h>
+ #include <asm/atomic.h>
  
- 	while (psize > 0) {
- 		struct sk_buff *skb = sk->sk_write_queue.prev;
--		struct page *page = pages[poffset / PAGE_SIZE];
-+		struct page *page = &pages[poffset / PAGE_SIZE];
- 		int copy, i, can_coalesce;
- 		int offset = poffset % PAGE_SIZE;
- 		int size = min_t(size_t, psize, PAGE_SIZE - offset);
-@@ -630,7 +630,7 @@ ssize_t tcp_sendpage(struct socket *sock, struct page *page, int offset,
- 
- 	lock_sock(sk);
- 	TCP_CHECK_TIMER(sk);
--	res = do_tcp_sendpages(sk, &page, offset, size, flags);
-+	res = do_tcp_sendpages(sk, page, offset, size, flags);
- 	TCP_CHECK_TIMER(sk);
- 	release_sock(sk);
- 	return res;
-
-
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
