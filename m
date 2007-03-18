@@ -1,70 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbXCRDkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbXCREcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932098AbXCRDkg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 23:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXCRDkf
+	id S1751906AbXCREcZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 00:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXCREcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 23:40:35 -0400
-Received: from mail.tmr.com ([64.65.253.246]:42066 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932098AbXCRDkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 23:40:35 -0400
-Message-ID: <45FCB5A1.2020702@tmr.com>
-Date: Sat, 17 Mar 2007 22:44:33 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: David Lang <david.lang@digitalinsight.com>
-CC: Al Boldi <a1426z@gawab.com>, William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Pluggable Schedulers (was: [ANNOUNCE] RSDL completely fair  
-  starvation free interactive cpu scheduler)
-References: <200703091625.55361.a1426z@gawab.com>  <20070309135751.GE2986@holomorphy.com> <200703092343.46276.a1426z@gawab.com> <Pine.LNX.4.63.0703091604180.31392@qynat.qvtvafvgr.pbz>
-In-Reply-To: <Pine.LNX.4.63.0703091604180.31392@qynat.qvtvafvgr.pbz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 18 Mar 2007 00:32:25 -0400
+Received: from xenotime.net ([66.160.160.81]:51362 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751906AbXCREcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 00:32:24 -0400
+Date: Sat, 17 Mar 2007 21:32:44 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@muc.de>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       arjan@infradead.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: CONFIG_REORDER Kconfig help strange sentence.
+Message-Id: <20070317213244.44648101.rdunlap@xenotime.net>
+In-Reply-To: <1174121670.8897.11.camel@localhost.localdomain>
+References: <1173741484.10618.25.camel@localhost.localdomain>
+	<20070312235605.GA14444@muc.de>
+	<1173767855.10618.46.camel@localhost.localdomain>
+	<20070315183421.5b1cf51b.rdunlap@xenotime.net>
+	<1174121670.8897.11.camel@localhost.localdomain>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Lang wrote:
-> On Fri, 9 Mar 2007, Al Boldi wrote:
-> 
->>
->>> My preferred sphere of operation is the Manichean domain of faster vs.
->>> slower, functionality vs. non-functionality, and the like. For me, such
->>> design concerns are like the need for a kernel to format pagetables so
->>> the x86 MMU decodes what was intended, or for a compiler to emit valid
->>> assembly instructions, or for a programmer to write C the compiler
->>> won't reject with parse errors.
->>
->> Sure, but I think, even from a technical point of view, competition is 
->> a good
->> thing to have.  Pluggable schedulers give us this kind of competition, 
->> that
->> forces each scheduler to refine or become obsolete.  Think evolution.
-> 
-> The point Linus is makeing is that with pluggable schedulers there isn't 
-> competition between them, the various developer teams would go off in 
-> their own direction and any drawbacks to their scheduler could be 
-> answered with "that's not what we are good at, use a different 
-> scheduler", with the very real possibility that a person could get this 
-> answer from ALL schedulers, leaving them with nothing good to use.
-> 
-Have you noticed that currently that is exactly what happens? If the 
-default scheduler doesn't handle your load well you have the option of 
-rewriting it and maintaining it, or doing without, or tying to fix your 
-case without breaking others, or patching in some other, non-mainline, 
-scheduler.
+On Sat, 17 Mar 2007 19:54:30 +1100 Rusty Russell wrote:
 
-The default scheduler has been around long enough that I don't see it 
-being tuned for any A without making some B perform worse. Thus multiple 
-schedulers are a possible solution.
+> On Thu, 2007-03-15 at 18:34 -0700, Randy Dunlap wrote:
+> > On Tue, 13 Mar 2007 17:37:35 +1100 Rusty Russell wrote:
+> > > diff -r de5618b5e562 arch/x86_64/Kconfig
+> > > --- a/arch/x86_64/Kconfig	Tue Mar 13 11:41:55 2007 +1100
+> > > +++ b/arch/x86_64/Kconfig	Tue Mar 13 17:27:05 2007 +1100
+> > > @@ -632,8 +632,8 @@ config REORDER
+> > >  	default n
+> > >  	help
+> > >           This option enables the toolchain to reorder functions for a more 
+> > > -         optimal TLB usage. If you have pretty much any version of binutils, 
+> > > -	 this can increase your kernel build time by roughly one minute.
+> > > +         optimal TLB usage.  This will slow your kernel build by
+> > > +	 roughly one minute.
+> > 
+> > Please consistently use <tab><space><space> for help text.
+> > Yes, it was already mucked up.
+> 
+> Erm, OK, this applies after previous patch if it's wanted.
+> 
+> After Randy spotted an errant TAB, this is a cleanup of
+> arch/x86_64/Kconfig.
+> 
+> 1) clean up all the trailing whitespace,
+> 2) make sure we use tabs instead of spaces,
+> 3) ensure all help messages use tab & two spaces,
+> 4) make sure all help messages are < 80 cols.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-They don't need to be available as runtime choices, boot time selection 
-would still allow reasonable testing. I can see myself using a compile 
-time option and building multiple kernels, but not the average user.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Thanks for doing this, Rusty.
+
+> diff -r af971625bda6 arch/x86_64/Kconfig
+> --- a/arch/x86_64/Kconfig	Sat Mar 17 19:50:28 2007 +1100
+> +++ b/arch/x86_64/Kconfig	Sat Mar 17 19:51:01 2007 +1100
+> @@ -138,10 +138,10 @@ config X86_VSMP
+>  config X86_VSMP
+>  	bool "Support for ScaleMP vSMP"
+>  	depends on PCI
+> -	 help
+> +	help
+>  	  Support for ScaleMP vSMP systems.  Say 'Y' here if this kernel is
+> -	  supposed to run on these EM64T-based machines.  Only choose this option
+> -	  if you have one of these machines.
+> +	  supposed to run on these EM64T-based machines.  Only choose this
+> +	  option if you have one of these machines.
+>  
+>  endchoice
+>  
+> @@ -155,13 +155,13 @@ config MK8
+>  	  Optimize for AMD Opteron/Athlon64/Hammer/K8 CPUs.
+>  
+>  config MPSC
+> -       bool "Intel P4 / older Netburst based Xeon"
+> -       help
+> +	bool "Intel P4 / older Netburst based Xeon"
+> +	help
+>  	  Optimize for Intel Pentium 4 and older Nocona/Dempsey Xeon CPUs
+>  	  with Intel Extended Memory 64 Technology(EM64T). For details see
+>  	  <http://www.intel.com/technology/64bitextensions/>.
+>  	  Note that the latest Xeons (Xeon 51xx and 53xx) are not based on the
+> -          Netburst core and shouldn't use this option. You can distinguish them
+> +	  Netburst core and shouldn't use this option. You can distinguish them
+>  	  using the cpu family field
+>  	  in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a newer one
+>  	  (this rule only applies to systems that support EM64T)
+> @@ -333,26 +333,26 @@ source "kernel/Kconfig.preempt"
+>  source "kernel/Kconfig.preempt"
+>  
+>  config NUMA
+> -       bool "Non Uniform Memory Access (NUMA) Support"
+> -       depends on SMP
+> -       help
+> -	 Enable NUMA (Non Uniform Memory Access) support. The kernel 
+> -	 will try to allocate memory used by a CPU on the local memory 
+> -	 controller of the CPU and add some more NUMA awareness to the kernel.
+> -	 This code is recommended on all multiprocessor Opteron systems.
+> -	 If the system is EM64T, you should say N unless your system is EM64T 
+> -	 NUMA. 
+> +	bool "Non Uniform Memory Access (NUMA) Support"
+> +	depends on SMP
+> +	help
+> +	  Enable NUMA (Non Uniform Memory Access) support. The kernel
+> +	  will try to allocate memory used by a CPU on the local memory
+> +	  controller of the CPU and add some more NUMA awareness to the kernel.
+> +	  This code is recommended on all multiprocessor Opteron systems.
+> +	  If the system is EM64T, you should say N unless your system is EM64T
+> +	  NUMA.
+>  
+>  config K8_NUMA
+> -       bool "Old style AMD Opteron NUMA detection"
+> -       depends on NUMA && PCI
+> -       default y
+> -       help
+> -	 Enable K8 NUMA node topology detection.  You should say Y here if
+> -	 you have a multi processor AMD K8 system. This uses an old
+> -	 method to read the NUMA configuration directly from the builtin
+> -	 Northbridge of Opteron. It is recommended to use X86_64_ACPI_NUMA
+> -	 instead, which also takes priority if both are compiled in.   
+> +	bool "Old style AMD Opteron NUMA detection"
+> +	depends on NUMA && PCI
+> +	default y
+> +	help
+> +	  Enable K8 NUMA node topology detection.  You should say Y here if
+> +	  you have a multi processor AMD K8 system. This uses an old
+> +	  method to read the NUMA configuration directly from the builtin
+> +	  Northbridge of Opteron. It is recommended to use X86_64_ACPI_NUMA
+> +	  instead, which also takes priority if both are compiled in.
+>  
+>  config NODES_SHIFT
+>  	int
+> @@ -362,14 +362,14 @@ config NODES_SHIFT
+>  # Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
+>  
+>  config X86_64_ACPI_NUMA
+> -       bool "ACPI NUMA detection"
+> -       depends on NUMA
+> -       select ACPI 
+> +	bool "ACPI NUMA detection"
+> +	depends on NUMA
+> +	select ACPI
+>  	select PCI
+> -       select ACPI_NUMA
+> -       default y
+> -       help
+> -	 Enable ACPI SRAT based node topology detection.
+> +	select ACPI_NUMA
+> +	default y
+> +	help
+> +	  Enable ACPI SRAT based node topology detection.
+>  
+>  config NUMA_EMU
+>  	bool "NUMA emulation"
+> @@ -380,9 +380,9 @@ config NUMA_EMU
+>  	  number of nodes. This is only useful for debugging.
+>  
+>  config ARCH_DISCONTIGMEM_ENABLE
+> -       bool
+> -       depends on NUMA
+> -       default y
+> +	bool
+> +	depends on NUMA
+> +	default y
+>  
+>  config ARCH_DISCONTIGMEM_DEFAULT
+>  	def_bool y
+> @@ -556,14 +556,14 @@ config CRASH_DUMP
+>  	bool "kernel crash dumps (EXPERIMENTAL)"
+>  	depends on EXPERIMENTAL
+>  	help
+> -          Generate crash dump after being started by kexec.
+> -          This should be normally only set in special crash dump kernels
+> -          which are loaded in the main kernel with kexec-tools into
+> -          a specially reserved region and then later executed after
+> -          a crash by kdump/kexec. The crash dump kernel must be compiled
+> +	  Generate crash dump after being started by kexec.
+> +	  This should be normally only set in special crash dump kernels
+> +	  which are loaded in the main kernel with kexec-tools into
+> +	  a specially reserved region and then later executed after
+> +	  a crash by kdump/kexec. The crash dump kernel must be compiled
+>  	  to a memory address not used by the main kernel or BIOS using
+>  	  PHYSICAL_START.
+> -          For more details see Documentation/kdump/kdump.txt
+> +	  For more details see Documentation/kdump/kdump.txt
+>  
+>  config PHYSICAL_START
+>  	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
+> @@ -605,7 +605,7 @@ config CC_STACKPROTECTOR
+>  	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
+>  	depends on EXPERIMENTAL
+>  	help
+> -         This option turns on the -fstack-protector GCC feature. This
+> +	  This option turns on the -fstack-protector GCC feature. This
+>  	  feature puts, at the beginning of critical functions, a canary
+>  	  value on the stack just before the return address, and validates
+>  	  the value just before actually returning.  Stack based buffer
+> @@ -631,9 +631,9 @@ config REORDER
+>  	bool "Function reordering"
+>  	default n
+>  	help
+> -         This option enables the toolchain to reorder functions for a more 
+> -         optimal TLB usage.  This will slow your kernel build by
+> -	 roughly one minute.
+> +	  This option enables the toolchain to reorder functions for a more
+> +	  optimal TLB usage.  This will slow your kernel build by
+> +	  roughly one minute.
+>  
+>  config K8_NB
+>  	def_bool y
+> @@ -705,15 +705,15 @@ config IA32_EMULATION
+>  config IA32_EMULATION
+>  	bool "IA32 Emulation"
+>  	help
+> -	  Include code to run 32-bit programs under a 64-bit kernel. You should likely
+> -	  turn this on, unless you're 100% sure that you don't have any 32-bit programs
+> -	  left.
+> +	  Include code to run 32-bit programs under a 64-bit kernel. You
+> +	  should likely turn this on, unless you're 100% sure that you don't
+> +	  have any 32-bit programs left.
+>  
+>  config IA32_AOUT
+> -       tristate "IA32 a.out support"
+> -       depends on IA32_EMULATION
+> -       help
+> -         Support old a.out binaries in the 32bit emulation.
+> +	tristate "IA32 a.out support"
+> +	depends on IA32_EMULATION
+> +	help
+> +	  Support old a.out binaries in the 32bit emulation.
+>  
+>  config COMPAT
+>  	bool
+> @@ -736,7 +736,7 @@ source fs/Kconfig
+>  source fs/Kconfig
+>  
+>  menu "Instrumentation Support"
+> -        depends on EXPERIMENTAL
+> +	depends on EXPERIMENTAL
+>  
+>  source "arch/x86_64/oprofile/Kconfig"
+>  
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
