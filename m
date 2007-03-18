@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752965AbXCRBc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbXCRBzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752965AbXCRBc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Mar 2007 21:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbXCRBc6
+	id S1752883AbXCRBzY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Mar 2007 21:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbXCRBzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Mar 2007 21:32:58 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51950 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752935AbXCRBc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Mar 2007 21:32:57 -0400
-Date: Sat, 17 Mar 2007 18:32:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: Avi Kivity <avi@argo.co.il>, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: is RSDL an "unfair" scheduler too?
-In-Reply-To: <20070318012533.GB2986@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0703171830130.4964@woody.linux-foundation.org>
-References: <200703042335.26785.a1426z@gawab.com> <20070317074506.GA13685@elte.hu>
- <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org>
- <20070317114903.GA20673@elte.hu> <45FC525D.5000708@argo.co.il>
- <20070318012533.GB2986@holomorphy.com>
+	Sat, 17 Mar 2007 21:55:24 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:41771 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883AbXCRBzX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Mar 2007 21:55:23 -0400
+Message-ID: <45FC9B54.4080209@student.ltu.se>
+Date: Sun, 18 Mar 2007 02:52:20 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Joe Perches <joe@perches.com>
+CC: akpm@linux-foundation.org, davej@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/char/agp: Convert to generic boolean
+References: <20070317234303.14375.43303.sendpatchset@thinktank.campus.ltu.se> <1174178837.15270.13.camel@localhost>
+In-Reply-To: <1174178837.15270.13.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please use "Reply All"
 
+Joe Perches wrote:
+> On Sun, 2007-03-18 at 00:45 +0100, Richard Knutsson wrote:
+>   
+>> diff --git a/drivers/char/agp/amd-k7-agp.c b/drivers/char/agp/amd-k7-agp.c
+>> index e6c534e..3d57e9f 100644
+>> --- a/drivers/char/agp/amd-k7-agp.c
+>> +++ b/drivers/char/agp/amd-k7-agp.c
+>> @@ -308,9 +308,9 @@ static int amd_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
+>>  		j++;
+>>  	}
+>>  
+>> -	if (mem->is_flushed == FALSE) {
+>> +	if (!mem->is_flushed) {
+>>  		global_cache_flush();
+>> -		mem->is_flushed = TRUE;
+>> +		mem->is_flushed = true;
+>>  	}
+>>     
+>
+> perhaps a generic.c / agp.h function?
+>   
+Sound like a good idea (not in a boolean cleanup-patch thou)
+Would you mind making that patch?
 
-On Sat, 17 Mar 2007, William Lee Irwin III wrote:
-> 
-> One issue this raises is prioritizing users on a system, threads within
-> processes, jobs within users, etc.
+Richard Knutsson
 
-Doing some "classing" even by just euid might be a good idea. It would 
-actually catch X automatically most of the time, because the euid of the X 
-server is likely to be root, so even for the "trivial" desktop example, it 
-would kind of automatically mean that X would get about 50% of CPU time 
-even if you have a hundred user clients, just because that's "fair" by 
-euid.
-
-Dunno. I guess a lot of people would like to then manage the classes, 
-which would be painful as hell. 
-
-		Linus
