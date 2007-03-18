@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933214AbXCRW6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751216AbXCRXLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933214AbXCRW6j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 18:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXCRW6j
+	id S1751216AbXCRXLt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 19:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933388AbXCRXLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 18:58:39 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:9142 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933214AbXCRW6i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 18:58:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=MSjdjpWTDLiBZZLw4fHMIIkxV5WscYhaFb2128nOid4O9rGvygdLlgBh4JcPdDFqItQGx0637nX/yKZ1YHpVpfJmBv2vD/RbFCQrJn/MiMpHeeafzMEaIhILVkMaui3PWKugQD6BujGfMsa9o9hJwrKJyTNfunnqwr+OTa+cfhY=
-Date: Mon, 19 Mar 2007 00:58:31 +0200
-To: linux-kernel@vger.kernel.org
-Subject: i386: Why putting __USER_DS in kernel threads stack initialization?
-Message-ID: <20070318225831.GB3802@Ahmed>
+	Sun, 18 Mar 2007 19:11:49 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:58668 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751722AbXCRXLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 19:11:48 -0400
+Date: Sun, 18 Mar 2007 16:10:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Christoph Lameter <clameter@sgi.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Martin Bligh <mbligh@mbligh.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+ Take 2
+In-Reply-To: <20070316114415.GA26403@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0703181608320.6730@woody.linux-foundation.org>
+References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de>
+ <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
+ <45F96B57.10206@mbligh.org> <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org>
+ <20070315160648.GA11812@one.firstfloor.org> <1173977264.7922.24.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com>
+ <20070316114415.GA26403@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
-
-Reading the kernel threads initialization code I see:
-
-int kernel_thread(...) {
-
-	struct pt_regs regs;
-	memset(&regs, 0, sizeof(regs));
-	[...]
-**	regs.xds = __USER_DS;
-**	regs.xes = __USER_DS;
-	[...]
-	/* Ok, create the new process.. */
-	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, \
-	       	       0, NULL, NULL);
-
-Continuing with the code, the threads stack (beginning from %esp) is
-initialized with the passed *regs from do_fork:
-
-int copy_thread(..., struct task_struct *p, struct pt_regs *regs) {
-
-	struct pt_regs * childregs;
-	struct task_struct *tsk;
- 	childregs = task_pt_regs(p);
-**	*childregs = *regs;
-	[...]
-** 	p->thread.esp = (unsigned long) childregs;
 
 
-So the question is what will a _kernel_ thread do with the Usermode Segment
-address ?
+On Fri, 16 Mar 2007, Andi Kleen wrote:
 
-Thanks,
+> > In the future it is likely that x86_64 will significantly deviate from 
+> 
+> It already is in some cases. And I agree more will happen.
 
-P.S. I've tried commenting out both lines which led to a non functional init,
-Also setting them to __USER_DS made init start but stopped issuing the error:
-`Panic: Segment violation at 0x8049798 - Sleeping for 30 seconds'
+This is a *totally* bogus and idiotic argument.
 
--- 
-Ahmed S. Darwish
-http://darwish.07.googlepages.com
+x86-64 will get new capabilities, BUT IT WILL CONTINUE TO SUPPORT OLD 
+x86-64 machines.
 
+And those machines are basically identical to perfectly regular i386 
+platforms.
+
+So the whole argument that it would "diverge" is total crap. It obviously 
+won't diverge, simply because the support for old setups is needed on 
+x86-64 *regardless* of whether 32-bit support exists on the same platform 
+or not.
+
+There's a huge difference between divergence and "more capabilities".
+
+		Linus
