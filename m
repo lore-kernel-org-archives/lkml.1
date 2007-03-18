@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbXCRQNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbXCRQNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752652AbXCRQNG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 12:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXCRQNG
+	id S1753235AbXCRQNM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 12:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbXCRQNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 12:13:06 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:37194 "EHLO scrub.xs4all.nl"
+	Sun, 18 Mar 2007 12:13:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46998 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752652AbXCRQNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 12:13:05 -0400
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-Date: Sun, 18 Mar 2007 17:12:38 +0100
-User-Agent: KMail/1.9.5
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-References: <20070310160614.GB10230@cvg> <20070311100723.GA10359@cvg> <20070311195033.GA3302@uranus.ravnborg.org>
-In-Reply-To: <20070311195033.GA3302@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1753227AbXCRQNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 12:13:10 -0400
+Date: Sun, 18 Mar 2007 17:07:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, linux-pm@lists.osdl.org,
+       lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Message-ID: <20070318160707.GC12673@elte.hu>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org> <20070309111957.GA3928@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703181712.39698.zippel@linux-m68k.org>
+In-Reply-To: <20070309111957.GA3928@elf.ucw.cz>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Sunday 11 March 2007 20:50, Sam Ravnborg wrote:
+* Pavel Machek <pavel@ucw.cz> wrote:
 
-> +	sym = sym_lookup("KERNELVERSION", 0);
-> +	sym_calc_value(sym);
-> +	size = snprintf(menu_backtitle, sizeof(menu_backtitle),
-> +	                _("%s - Linux Kernel v%s Configuration"),
-> +		        config_filename, sym_get_string_value(sym));
+> > Some day we may have modesetting support in the kernel for some 
+> > graphics hw, right now it's pretty damn spotty.
+> 
+> Yep, that's the way to go.
 
-An alternative might to only show the filename, only if explicitly set.
+hey, i wildly supported this approach ever since 1996, when GGI came up
+:-/
 
-> +	set_config_filename(".config");
-
-Please don't hardcode the filename, use conf_get_configname() instead.
-
-bye, Roman
+	Ingo
