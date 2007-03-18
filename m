@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXCSAYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965044AbXCSAZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964934AbXCSAYy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 20:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964959AbXCSAYy
+	id S965044AbXCSAZl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 20:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965034AbXCSAZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 20:24:54 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:50630 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964934AbXCSAYy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 20:24:54 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 18 Mar 2007 17:22:48 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
-In-Reply-To: <200703190045.24605.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.64.0703181720410.5482@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
- <200703172235.09227.arnd@arndb.de> <Pine.LNX.4.64.0703181313460.5482@alien.or.mcafeemobile.com>
- <200703190045.24605.arnd@arndb.de>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 18 Mar 2007 20:25:41 -0400
+Received: from zoot.lnxi.com ([63.145.151.20]:44862 "EHLO zoot.lnxi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964974AbXCSAZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 20:25:39 -0400
+X-Greylist: delayed 7267 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Mar 2007 20:25:39 EDT
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
+References: <20070318155532.GG7958@mellanox.co.il>
+	<20070318191238.GA20518@ms2.inr.ac.ru>
+	<20070318202559.GD11078@mellanox.co.il>
+From: ebiederman@lnxi.com (Eric W. Biederman)
+Date: Sun, 18 Mar 2007 16:24:23 -0600
+In-Reply-To: <20070318202559.GD11078@mellanox.co.il> (Michael S. Tsirkin's
+ message of "Sun, 18 Mar 2007 22:25:59 +0200")
+Message-ID: <m3tzwi8a20.fsf@maxwell.lnxi.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007, Arnd Bergmann wrote:
+"Michael S. Tsirkin" <mst@dev.mellanox.co.il> writes:
 
-> On Sunday 18 March 2007, Davide Libenzi wrote:
-> > bah, __put_user is basically a move, so I don't think that efficency would 
-> > be that different (assuming that it'd matter in this case). The only thing 
-> > many __put_user do, is increase the exception table sizes.
-> 
-> The cost of user access functions varies a lot depending on the
-> architectures. Those platforms with a 4G/4G split e.g. need to do more
-> than a simple move, and for s390 it may even come down to an indirect
-> function call, which incurs significant register pressure.
+>> > Why is neighbour->dev changed here?
+>> 
+>> It holds reference to device and prevents its destruction.
+>> If dst is held somewhere, we cannot destroy the device and deadlock
+>> while unregister.
+>
+> BTW, can this ever happen for the loopback device itself?
+> Is it ever unregistered?
 
-Heh, I'd like ppl to agree on this, because I clearly remember in having 
-an argoument with Andrew for the same thing, where I was doing stack setup 
-plus copy_to_user() ;)
+Well I don't think the loopback device is currently but as soon
+as we get network namespace support we will have multiple loopback
+devices and they will get unregistered when we remove the network
+namespace.
 
-
-
-- Davide
-
-
+Eric
