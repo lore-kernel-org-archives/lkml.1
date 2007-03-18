@@ -1,121 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964813AbXCRLGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbXCRLfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964813AbXCRLGx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 07:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964800AbXCRLGx
+	id S932386AbXCRLfl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 07:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932411AbXCRLfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 07:06:53 -0400
-Received: from tag.witbe.net ([81.88.96.48]:36406 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964788AbXCRLGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 07:06:52 -0400
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: <rol@as2917.net>, "'Tejun Heo'" <htejun@gmail.com>
-Cc: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Jeff Garzik'" <jeff@garzik.org>, "'Alan Cox'" <alan@redhat.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       <linux-ide@vger.kernel.org>, "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Eric D. Mudama'" <edmudama@gmail.com>
-Subject: RE: [git patches] libata fixes
-Date: Sun, 18 Mar 2007 12:06:40 +0100
-Organization: AS2917.net
-Message-ID: <00f401c7694d$81a80920$2101a8c0@donald>
+	Sun, 18 Mar 2007 07:35:41 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:60419 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932386AbXCRLfk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 07:35:40 -0400
+Date: Sun, 18 Mar 2007 11:35:36 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Bias the location of pages freed for min_free_kbytes in
+ the same MAX_ORDER_NR_PAGES blocks
+In-Reply-To: <20070318002244.606cfe08.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703181104140.29429@skynet.skynet.ie>
+References: <20070307201839.6f45735b.akpm@linux-foundation.org>
+ <200703142006.04547.m.kozlowski@tuxland.pl> <20070314170738.d5d35c06.akpm@linux-foundation.org>
+ <20070317182641.GA19447@skynet.ie> <20070318002244.606cfe08.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <00ee01c7694b$382b6460$2101a8c0@donald>
-Thread-Index: AcdpSbmOVLxRdgqUQZiO4C+v/kDnmwAAPRKAAABge/A=
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Doh ! Got that :
+On Sun, 18 Mar 2007, Andrew Morton wrote:
 
-....
-ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 23 (level, low) -> IRQ 23
-ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 4 ports 3 Gbps 0xf impl SATA mode
-ahci 0000:00:1f.2: flags: 64bit ncq led clo pio slum part 
-ata1: SATA max UDMA/133 cmd 0xffffc2000008e900 ctl 0x0000000000000000 bmdma
-0x0000000000000000 irq 504
-ata2: SATA max UDMA/133 cmd 0xffffc2000008e980 ctl 0x0000000000000000 bmdma
-0x0000000000000000 irq 504
-ata3: SATA max UDMA/133 cmd 0xffffc2000008ea00 ctl 0x0000000000000000 bmdma
-0x0000000000000000 irq 504
-ata4: SATA max UDMA/133 cmd 0xffffc2000008ea80 ctl 0x0000000000000000 bmdma
-0x0000000000000000 irq 504
-scsi0 : ahci
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: ATA-7: Maxtor 6L250S0, BANC1G10, max UDMA/133
-ata1.00: 490234752 sectors, multi 0: LBA48 NCQ (not used)
-ata1.00: configured for UDMA/133
-scsi1 : ahci
-ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata2.00: ATA-6: External Disk 0, RGL10364, max UDMA/133
-ata2.00: 1 sectors, multi 1: LBA48 
-ata2.00: configured for UDMA/133
-scsi2 : ahci
-ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata3.00: ATA-7: Maxtor 6L250S0, BANC1G10, max UDMA/133
-ata3.00: 490234752 sectors, multi 0: LBA48 NCQ (not used)
-ata3.00: configured for UDMA/133
-scsi3 : ahci
-ata4: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata4.00: ATA-7: ST3500641AS, 3.AAB, max UDMA/133
-ata4.00: 976773168 sectors, multi 16: LBA48 NCQ (depth 31/32)
-ata4.00: configured for UDMA/133
-scsi 0:0:0:0: Direct-Access     ATA      Maxtor 6L250S0   BANC PQ: 0 ANSI: 5
-SCSI device sda: 490234752 512-byte hdwr sectors (251000 MB)
-sda: Write Protect is off
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't support
-DPO or FUA
-SCSI device sda: 490234752 512-byte hdwr sectors (251000 MB)
-sda: Write Protect is off
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't support
-DPO or FUA
- sda: sda1 sda2 sda3
-sd 0:0:0:0: Attached scsi disk sda
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-scsi 1:0:0:0: Direct-Access     ATA      External Disk 0  RGL1 PQ: 0 ANSI: 5
-SCSI device sdb: 1 512-byte hdwr sectors (0 MB)
-sdb: Write Protect is off
-SCSI device sdb: write cache: enabled, read cache: enabled, doesn't support
-DPO or FUA
-SCSI device sdb: 1 512-byte hdwr sectors (0 MB)
-sdb: Write Protect is off
-SCSI device sdb: write cache: enabled, read cache: enabled, doesn't support
-DPO or FUA
- sdb:<3>irq 504: nobody cared (try booting with the "irqpoll" option)
+> On Sat, 17 Mar 2007 18:26:41 +0000 mel@skynet.ie (Mel Gorman) wrote:
+>>
+>
+> I still haven't got onto reviewing all your mm patches :(
 
-Call Trace:
- <IRQ>  [<ffffffff802b0245>] __report_bad_irq+0x35/0x90
- [<ffffffff802b04ba>] note_interrupt+0x21a/0x270
- [<ffffffff802b128f>] handle_edge_irq+0x10f/0x150
- [<ffffffff8026f3eb>] do_IRQ+0x7b/0xf0
- [<ffffffff80259e70>] mwait_idle+0x0/0x50
- [<ffffffff802612d1>] ret_from_intr+0x0/0xa
- <EOI>  [<ffffffff8042bff0>] vgacon_cursor+0x0/0x1d0
- [<ffffffff80259eb6>] mwait_idle+0x46/0x50
- [<ffffffff8024aebc>] cpu_idle+0x5c/0xa0
- [<ffffffff808b984a>] start_kernel+0x2aa/0x2c0
- [<ffffffff808b9176>] _sinittext+0x176/0x180
+There are a lot them admittadly.
 
-handlers:
-[<ffffffff804e1c90>] (ahci_interrupt+0x0/0x590)
-Disabling IRQ #504
- unknown partition table
-sd 1:0:0:0: Attached scsi disk sdb
-sd 1:0:0:0: Attached scsi generic sg1 type 0
-scsi 2:0:0:0: Direct-Access     ATA      Maxtor 6L250S0   BANC PQ: 0 ANSI: 5
-SCSI device sdc: 490234752 512-byte hdwr sectors (251000 MB)
-sdc: Write Protect is off
+> Nor has anyone else, afaik.
+>
 
+They have been reviewed at various points in their development and most of 
+the feedback was fed back in. Marcelo Tosatti commented on version 19 for 
+example. Joel Schopp commented heavily on earlier versions around the 
+v15-v19 mark as well as Dave Hansen around the same time. Christoph 
+Lameter has commented on recent versions but I'm not sure how detailed his 
+review was of if the comments were based on the patch description. There 
+have been comments from various other people as well, mainly around the 
+v19-v20 mark. Andy Whitcroft has reviewed most versions of the patches 
+including the most recent ones.
 
-and though it said :
- sdb:<3>irq 504: nobody cared (try booting with the "irqpoll" option)
-I _am_ booting with the irqpoll option !
+I suspect there may not have been detailed review recently because so many 
+versions have been released.
 
-Paul
+> But let me leap ahead of myself.
+>
+>> CONFIG_PAGE_GROUP_BY_MOBILITY
+>
+> Why does this config item exist?  It's not good to have some mysterious
+> knob which affects mm behaviour at compile time.  We need to make up our
+> minds and stick with it.
+>
 
+The configuration item exists because there were concerns over the memory 
+footprint and cache line footprint. It was introduced to address that 
+concern and also so that it would be possible to compare the performance 
+behavior of anti-fragmentation. Your comment rang a bell though so I 
+searched the archives to see this comment from Andi Kleen;
+
+===
+If anything this should be a boot time option or perhaps sysctl, not a 
+config. In general CONFIGs that change runtime behaviour are evil - just 
+makes changing the option more painful, causes problems for distribution 
+users, doesn't make much sense, etc.etc.
+
+Also #ifdef as a documentation device is a really really scary concept.
+Yuck.
+===
+
+A sysctl would avoid any cache line footprint but not the memory overhead 
+because the freelists in struct zone as those freelists would still exist. 
+I could make the option depend on CONFIG_EMBEDDED for the zone overhead. 
+Would that make sense or would it be preferable to ditch the option 
+altogether?
+
+I'll start looking at doing a sysctl so it can be disabled at runtime if 
+necessary. I strongly suspect that it cannot be enabled again once 
+disabled but I don't see that as a problem as such.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
