@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbXCRG3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbXCRGdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbXCRG3A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 02:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbXCRG27
+	id S1753081AbXCRGdM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 02:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbXCRGdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 02:28:59 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:1421 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbXCRG26 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 02:28:58 -0400
-Message-ID: <45FCDBFA.702@jonmasters.org>
-Date: Sun, 18 Mar 2007 02:28:10 -0400
-From: Jon Masters <jonathan@jonmasters.org>
-Organization: World Organi[sz]ation Of Broken Dreams
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       Conke Hu <conke.hu@gmail.com>
-Subject: Re: Loading both the pata_atiixp and the ahci driver causes problems
-References: <45F9C3F5.4070906@redhat.com> <45F9F5F0.3090508@jonmasters.org> <45FCD0FB.70507@gmail.com>
-In-Reply-To: <45FCD0FB.70507@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 18 Mar 2007 02:33:11 -0400
+Received: from smtpout.mac.com ([17.250.248.177]:60816 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753080AbXCRGdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 02:33:10 -0400
+In-Reply-To: <20070316171141.7a4de504@lxorguk.ukuu.org.uk>
+References: <20070316153408.3a9a244a@lxorguk.ukuu.org.uk> <20070316151305.04cbc352@lxorguk.ukuu.org.uk> <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <25571.1174054993@redhat.com> <26525.1174058071@redhat.com> <20070316171141.7a4de504@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <076F1B35-BE08-41B4-8294-581EDAFF4ACC@mac.com>
+Cc: David Howells <dhowells@redhat.com>, davem@davemloft.net,
+       netdev@vger.kernel.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try #2]
+Date: Sat, 17 Mar 2007 23:32:17 -0700
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Jon Masters wrote:
->> Chuck Ebbert wrote:
+On Mar 16, 2007, at 10:11:41, Alan Cox wrote:
+>> I know what they are; and I don't think that what's available  
+>> covers it.
 >>
->>> If you try to load both the pata_atiixp and the ahci driver
->>> (for the same ATI SB600 adapter), very strange things happen.
->>> The AHCI driver churns for three minutes or so, spewing
->>> messages like this, then nothing works:
->>>
->>> <6>ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->>> <4>ata3.00: qc timeout (cmd 0xec)
->>> <4>ata3.00: failed to IDENTIFY (I/O error, err_mask=0x104)
->>> Shouldn't it be able to tell the device has already been
->>> claimed by some other driver?
->> One would assume it'd fail to grab the PCI IO ranges twice? I haven't
->> looked at the code but I have seen this bug mentioned elsewhere so I
->> might well end up having to do that yet :-)
-> 
-> Dunno much about sb600 but ahci and pata_atiixp are probably using
-> separate IO regions && separate PCI functions.
+>>> and use a proper standard socket type.
+>>
+>> Assuming that that list is exhaustive...
+>
+> SOCK_RDM seems to match perfectly well here. The point isn't to  
+> enumerate everything in the universe the point is to find "works  
+> like" parallels good enough to avoid more special casing.
 
-Yeah. I actually thought about this whole issue a bit more recently - 
-things like SATA/PATA interference when you've got a part that emulates 
-legacy functionality so can appear as two different kinds of device - 
-since I don't think my brain was really bothering to listen before. 
-Words were going in, but it chose to ignore what was being said.
+IMHO the problem with classifying RxRPC as a "reliable datagram"  
+socket is that even an atomic unidirectional communication isn't a  
+single datagram, it's at least 3; there is shared connection state  
+and security context on both sides which pertains to a collection of  
+independent and possibly simultaneous RxRPC calls.  From the digging  
+around that I did in the kernel socket code a while ago I don't see a  
+cleaner way of implementing it than a new SOCK_RXRPC.
 
-Only thing that comes to mind is in-driver logic/driver loading ordering 
-hack combinations. At least if you've got loadable modules, you've got a 
-fighting chance of fixing this kind of situation - built-in and you need 
-to fight with whatever ordering exists in the array of init functions.
-
-Jon.
-
-P.S. Guess this means I need to admit I was wrong and apologize to 
-Zaitcev sometime too in relation to another discussion...bah :P
+Cheers,
+Kyle Moffett
 
