@@ -1,35 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751243AbXCRU5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932625AbXCRVFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751243AbXCRU5v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 16:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbXCRU5u
+	id S932625AbXCRVFi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 17:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbXCRVFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 16:57:50 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:48220 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751260AbXCRU5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 16:57:49 -0400
-Date: Sun, 18 Mar 2007 21:57:18 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: whence CONFIG_PROVE_SPIN_LOCKING?
-In-Reply-To: <Pine.LNX.4.64.0703181619540.19832@CPE00045a9c397f-CM001225dbafb6>
-Message-ID: <Pine.LNX.4.64.0703182156550.12394@twin.jikos.cz>
-References: <Pine.LNX.4.64.0703181619540.19832@CPE00045a9c397f-CM001225dbafb6>
+	Sun, 18 Mar 2007 17:05:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:50712 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751316AbXCRVFh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 17:05:37 -0400
+Date: Sun, 18 Mar 2007 23:06:17 +0200
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, general@lists.openfabrics.org,
+       Roland Dreier <rolandd@cisco.com>
+Subject: Re: dst_ifdown breaks infiniband?
+Message-ID: <20070318210616.GG11078@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <20070318155532.GG7958@mellanox.co.il>
+	<20070318191238.GA20518@ms2.inr.ac.ru>
+	<20070318203345.GF11078@mellanox.co.il>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070318203345.GF11078@mellanox.co.il>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Mar 2007, Robert P. J. Day wrote:
+> Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
+> Subject: Re: dst_ifdown breaks infiniband?
+> 
+> Quoting Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
+> Subject: Re: dst_ifdown breaks infiniband?
+> > > Can dst->neighbour be changed to point to NULL instead, and the neighbour
+> > > released?
+> > 
+> > It should be cleared and we should be sure it will not be destroyed
+> > before quiescent state.
+> > 
+> > Seems, this is the only correct solution, but to do this we have
+> > to audit all the places where dst->neighbour is dereferenced for
+> > RCU safety.
+> > 
+> > Actually, it is very good you caught this eventually, the bug was
+> > so _disgusting_ that it was "forgotten" all the time, waiting for
+> > someone who will point out that the king is naked. :-)
+> 
+> Actually that might not be too bad:
+> $grep -rIi 'dst->neighbour' net/ | wc -l
+> 36
+> 
+> I'll try to do it.
 
-> $ grep -r PROVE_SPIN_LOCKING *
-> Documentation/irqflags-tracing.txt:CONFIG_TRACE_IRQFLAGS_SUPPORT is needed for CONFIG_PROVE_SPIN_LOCKING
-> kernel/spinlock.c:#ifdef CONFIG_PROVE_SPIN_LOCKING
+Here's the list. Looks OK to me. What do you think?
 
-This should almost certainly be CONFIG_PROVE_LOCKING ... ?
+$grep rIi 'dst->neighbour' net/
+
+./atm/clip.c:395:       if (!skb->dst->neighbour) {
+./atm/clip.c:397:               skb->dst->neighbour = clip_find_neighbour(skb->dst, 1);
+./atm/clip.c:398:               if (!skb->dst->neighbour) {
+./atm/clip.c:409:       entry = NEIGH2ENTRY(skb->dst->neighbour);
+./atm/clip.c:426:       DPRINTK("using neighbour %p, vcc %p\n", skb->dst->neighbour, vcc);
+
+The above are all in hard_start_xmit - output routine
+so should be OK (atomic) wrt RCU
+
+./core/dst.c:186:       neigh = dst->neighbour;
+./core/dst.c:195:               dst->neighbour = NULL;
+
+Looks OK.
+
+./core/dst.c:252:               if (dst->neighbour && dst->neighbour->dev == dev) {
+./core/dst.c:253:                       dst->neighbour->dev = &loopback_dev;
+
+This is our boy.
+
+./core/neighbour.c:1045:                        /* On shaper/eql skb->dst->neighbour != neigh :( */
+./core/neighbour.c:1046:                        if (skb->dst && skb->dst->neighbour)
+./core/neighbour.c:1047:                                n1 = skb->dst->neighbour;
+
+neigh_update - seems to be always called after neigh_lookup
+so there is a reference to neighbour.
+
+./core/neighbour.c:1144:        if (!dst || !(neigh = dst->neighbour))
+
+neigh_resolve_output - looks safe
+
+./core/neighbour.c:1174:                      dst, dst ? dst->neighbour : NULL);
+
+merely prints a pointer
+
+./core/neighbour.c:1187:        struct neighbour *neigh = dst->neighbour;
+
+neigh_connected_output - looks safe
+
+./decnet/dn_neigh.c:208:        struct neighbour *neigh = dst->neighbour;
+./decnet/dn_neigh.c:226:        struct neighbour *neigh = dst->neighbour;
+./decnet/dn_neigh.c:272:        struct neighbour *neigh = dst->neighbour;
+./decnet/dn_neigh.c:315:        struct neighbour *neigh = dst->neighbour;
+./decnet/dn_route.c:228:        struct dn_dev *dn = dst->neighbour ?
+./decnet/dn_route.c:229:                            (struct dn_dev *)dst->neighbour->dev->dn_ptr : NULL;
+./decnet/dn_route.c:693:        if ((neigh = dst->neighbour) == NULL)
+./decnet/dn_route.c:727:        struct neighbour *neigh = dst->neighbour;
+
+output routines, except
+line 228 is dn_dst_update_pmtu, which looks OK as well.
+
+./ipv4/arp.c:445: *     It is very UGLY routine: it DOES NOT use skb->dst->neighbour,
+./ipv4/arp.c:508:       struct neighbour *n = dst->neighbour;
+./ipv4/arp.c:523:               dst->neighbour = n;
+
+Looks safe.
+
+./ipv4/ip_gre.c:714:                    struct neighbour *neigh = skb->dst->neighbour;
+./ipv4/ip_output.c:186: else if (dst->neighbour)
+./ipv4/ip_output.c:187:         return dst->neighbour->output(skb);
+./ipv6/ip6_output.c:79: else if (dst->neighbour)
+./ipv6/ip6_output.c:80:         return dst->neighbour->output(skb);
+./ipv6/ip6_output.c:431:        if (skb->dev == dst->dev && dst->neighbour && opt->srcrt == 0) {
+./ipv6/ip6_output.c:434:                struct neighbour *n = dst->neighbour;
+./ipv6/sit.c:459:                       neigh = skb->dst->neighbour;
+
+These are all output routines
+
+./sched/sch_teql.c:235: struct neighbour *mn = skb->dst->neighbour;
+
+Looks ok - takes reference on the neighbour.
+
+./sched/sch_teql.c:269:     skb->dst->neighbour == NULL)
+
+Looks ok.
 
 -- 
-Jiri Kosina
+MST
