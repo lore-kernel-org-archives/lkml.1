@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750967AbXCRT2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbXCRTad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750967AbXCRT2j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 15:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbXCRT2j
+	id S932929AbXCRTad (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 15:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbXCRTad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 15:28:39 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:50503 "EHLO smtp.osdl.org"
+	Sun, 18 Mar 2007 15:30:33 -0400
+Received: from colin.muc.de ([193.149.48.1]:2552 "EHLO mail.muc.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbXCRT2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 15:28:38 -0400
-Date: Sun, 18 Mar 2007 11:28:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Bias the location of pages freed for min_free_kbytes in
- the same MAX_ORDER_NR_PAGES blocks
-Message-Id: <20070318112820.90be0449.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703181822110.648@skynet.skynet.ie>
-References: <20070307201839.6f45735b.akpm@linux-foundation.org>
-	<200703142006.04547.m.kozlowski@tuxland.pl>
-	<20070314170738.d5d35c06.akpm@linux-foundation.org>
-	<20070317182641.GA19447@skynet.ie>
-	<20070318002244.606cfe08.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703181104140.29429@skynet.skynet.ie>
-	<20070318101259.f6e524f2.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703181822110.648@skynet.skynet.ie>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1750767AbXCRTac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 15:30:32 -0400
+Date: 18 Mar 2007 20:30:30 +0100
+Date: Sun, 18 Mar 2007 20:30:30 +0100
+From: Andi Kleen <ak@muc.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Miller <davem@davemloft.net>, rusty@rustcorp.com.au, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, zach@vmware.com, anthony@codemonkey.ws,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
+Message-ID: <20070318193030.GB71548@muc.de>
+References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <45FD619D.6030402@goop.org> <20070318170414.GB45869@muc.de> <45FD76E6.4060907@goop.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45FD76E6.4060907@goop.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Mar 2007 19:05:41 +0000 (GMT) Mel Gorman <mel@csn.ul.ie> wrote:
+On Sun, Mar 18, 2007 at 10:29:10AM -0700, Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> > You could use the dwarf2 unwind tables. They have exact information
+> > what register has what. But it would likely get complicated.
+> 
+> Yes.  And would they be accurate for hand-written asm, which is where we
+> have this problem?
 
-> > How much additional memory consumption are we expecting here?
-> >
-> 
-> Short answer, about 1.5KB on a 1GB system of which 1.3KB is statically 
-> defined in the 3 struct zones on a 1 node x86 system.
-> 
-> Longer answer that I hopefully have not made any mistakes in - There is 
-> the zone overhead which is statically sized and a runtime overhead which 
-> depends on the amount of memory in the system. The additional zone 
-> overhead is the overhead for additional freelists (larger struct 
-> free_area) and is as follows;
-> 
-> (MIGRATE_TYPES-1) * sizeof(list_head) * (MAX_ORDER-1)
-> 
-> so, on 32 bit in general, thats
-> 
-> 4 * 8 * 10 = 320 bytes per zone (would be 240 bytes if MIGRATE_RESERVE is
->  				sufficient for higher order allocations
->  				instead of MIGRATE_HIGHALLOC)
-> 
-> on x86 with DMA, Normal and HighMem, thats 1280 bytes. On a NUMA system, 
-> it's 1280 bytes per node. On 64 bit, it would be double because of the 
-> larger pointer size. At worst, I guess you are looking at 3KB per node.
+Yes. All inline assembly tells gcc what registers are clobbered
+and it fills in the tables. Hand clobbering in inline assembly cannot
+be expressed with the current toolchain, so we moved all those
+out of line.
 
-That a very modest overhead - not worth the config option, IMO.
+But again I'm not sure it will work anyways. For once you would
+need large padding around the calls anyways for inline replacement --
+how would you generate that? I expect you would need to put the calls
+into asm() again and with that a custom annotiation format looks reasonable.
 
-The runtime overhead might be a concern - is it possible to quantify
-it?
+-Andi
