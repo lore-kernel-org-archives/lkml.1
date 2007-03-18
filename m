@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbXCROwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbXCRO4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbXCROwS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 10:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbXCROwS
+	id S1753206AbXCRO4h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 10:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbXCRO4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 10:52:18 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:43586 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203AbXCROwR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 10:52:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ElgfNv9TqoJdTyyoVbNTQLVEi858wwC8OdqPn360iI345DaeJIZ1+qdYzvkuWUYzBSLTd5ZgpTD7TiZLteqmOItIyTNYuyuSXzoU2txcfRbBxnxHJP007UZFSNtUAcmib+dXc1aPdUJ7apoaSJinoWDPbugfUVAzx+5kCl/zD1M=
-Message-ID: <3877989d0703180752k1cc55557kade3071f00a95e97@mail.gmail.com>
-Date: Sun, 18 Mar 2007 22:52:16 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: linux-kernel@vger.kernel.org, lenb@kernel.org
-Subject: Re: ACPI initialization failure with v2.6.21-rc4
-In-Reply-To: <20070318102532.GB27142@leiferikson>
+	Sun, 18 Mar 2007 10:56:36 -0400
+Received: from mail.tmr.com ([64.65.253.246]:42350 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753206AbXCRO4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 10:56:36 -0400
+Message-ID: <45FD53DB.5000207@tmr.com>
+Date: Sun, 18 Mar 2007 09:59:39 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>,
+       linux-kernel@vger.kernel.org, yumiko.sugita.yf@hitachi.com,
+       masami.hiramatsu.pt@hitachi.com, hidehiro.kawai.ez@hitachi.com,
+       yuji.kakutani.uw@hitachi.com, soshima@redhat.com, haoki@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com, nikita@clusterfs.com,
+       leroy.vanlogchem@wldelft.nl
+Subject: Re: [PATCH 0/3] VM throttling: avoid blocking occasional writers
+References: <45F7EDC6.5090303@hitachi.com> <20070315110745.af867b10.akpm@linux-foundation.org>
+In-Reply-To: <20070315110745.af867b10.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070318102532.GB27142@leiferikson>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do you recall which acpi enabled kernel works for you?
-If never, I guess your system don't support ACPI .
-If yes, this should be resolved. Please enter a acpi bug into
-bugzilla.kernel.org with sufficient info : dmesg,lspci -vvx,
-/proc/ioports, acpidump output... w/ acpi=off.
+Andrew Morton wrote:
+>> On Wed, 14 Mar 2007 21:42:46 +0900 Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com> wrote:
+>>
+>> ...
+>>
+>>
+>> -Solution:
+>>
+>> I consider that all of the dirty pages for the disk have been written
+>> back and that the disk is clean if a process cannot write 'write_chunk'
+>> pages in balance_dirty_pages().
+>>
+>> To avoid using up the free memory with dirty pages by passing blocking,
+>> this patchset adds a new threshold named vm.dirty_limit_ratio to sysctl.
+>>
+>> It modifies balance_dirty_pages() not to block when the amount of
+>> Dirty+Writeback is less than vm.dirty_limit_ratio percent of the memory.
+>> In the other cases, writers are throttled as current Linux does.
+>>
+>>
+>> In this patchset, vm.dirty_limit_ratio, instead of vm.dirty_ratio, is
+>> used as the clamping level of Dirty+Writeback. And, vm.dirty_ratio is
+>> used as the level at which a writers will itself start writeback of the
+>> dirty pages.
+> 
+> Might be a reasonable solution - let's see what Peter comes up with too.
+> 
+> Comments on the patch:
+> 
+> - Please don't VM_DIRTY_LIMIT_RATIO: just use CTL_UNNUMBERED and leave
+>   sysctl.h alone.
+> 
+> - The 40% default is already too high.  Let's set this new upper limit to
+>   40% and decrease he non-blocking ratio.
+> 
+> - Please update the procfs documentation in ./Docmentation/
+> 
+> - I wonder if dirty_limit_ratio is the best name we could choose. 
+>   vm_dirty_blocking_ratio, perhaps?  Dunno.
+> 
+I don't like it, but I dislike it less than "dirty_limit_ratio" I guess. 
+It would probably break things to change it now, including my 
+sysctl.conf on a number of systems :-(
 
-On 3/18/07, Johannes Weiner <hannes-kernel@saeurebad.de> wrote:
-> [resend due to wrong mail headers last time]
->
-> Hi,
->
-> The kernel version mentioned in the subject won't boot because the ACPI
-> system does not get initialized; the system freezes on an outb() in
-> acpi_os_write_port() i.e. it does not do anything anymore and just hangs.
->
-> Here is the `stack trace' I managed to extract via debugging output:
->
->         -- acpi_os_write_port(0xb2, 240, 8)
->         -- acpi_hw_set_mode(ACPI_SYS_MODE_ACPI)
->         -- acpi_enable()
->         -- acpi_enable_subsystem(~ACPI_NO_ACPI_ENABLE)
->         -- acpi_early_init()
->         ...
->
-> Notes:
->         * acpi_os_write_port(): I printk'd the arguments; the port
->           formatted with %#x and the value with %u.
->
->         * acpi_enable_subsystem(): I removed ACPI_NO_HARDWARE_INIT
->           from the arguments because it is not used anymore.
->           In this context I want to mention that it probably can be
->           removed from include/acpi/actypes.h generally.
->
-> Random question:
->
->         I noticed that acpi_gbl_FADT is declared in
->         include/acpi/acglobal.h but where is it actually defined and
->         initialized?
->
-> HTH,
-> Hannes
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
