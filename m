@@ -1,125 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbXCRUNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933156AbXCRUOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933127AbXCRUNZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 16:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933114AbXCRUNZ
+	id S933156AbXCRUOG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 16:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbXCRUOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 16:13:25 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:50593 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933127AbXCRUNX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 16:13:23 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 18 Mar 2007 13:11:10 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch 1/13] signal/timer/event fds v6 - anonymous inode source
- ...
-In-Reply-To: <200703172158.46252.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.64.0703181303440.5482@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.9367.1174004535.1>
- <200703172158.46252.arnd@arndb.de>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 18 Mar 2007 16:14:06 -0400
+Received: from minus.inr.ac.ru ([194.67.69.97]:43811 "HELO ms2.inr.ac.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S933168AbXCRUOC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 16:14:02 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ms2.inr.ac.ru;
+  b=AMPD3Sx77cyeyw1IZcY/r8sDmKA2/kP+H7gZMBNj0l/uPtiYBCh82felAQM4WLvNgK2SsSLE7kJz+GDqAn/ei3OFLLizAEv8uw3FZh6Mg3Ec+AzBYvPb0iZVLEj3WTN9UT9y69Oc4yZcocVRIl6WskUV6ZLJZTuZ+BGCv59UZNI=;
+Date: Sun, 18 Mar 2007 22:12:38 +0300
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, general@lists.openfabrics.org,
+       Roland Dreier <rolandd@cisco.com>
+Subject: Re: dst_ifdown breaks infiniband?
+Message-ID: <20070318191238.GA20518@ms2.inr.ac.ru>
+References: <20070318155532.GG7958@mellanox.co.il>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070318155532.GG7958@mellanox.co.il>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Mar 2007, Arnd Bergmann wrote:
+Hello!
 
-> On Friday 16 March 2007 01:22:15 Davide Libenzi wrote:
-> 
-> > +
-> > +static int ainofs_delete_dentry(struct dentry *dentry);
-> > +static struct inode *aino_getinode(void);
-> > +static struct inode *aino_mkinode(void);
-> > +static int ainofs_get_sb(struct file_system_type *fs_type, int flags,
-> > +			 const char *dev_name, void *data, struct vfsmount *mnt);
-> > +
-> 
-> In general, it would be good if you could just reorder your functions
-> so that you don't need any forward declarations like these. It makes
-> reviewing from bottom to top a little easier and it becomes obvious
-> that there are no recursions in the code.
+> This is not new code, and should have triggered long time ago,
+> so I am not sure how come we are triggering this only now,
+> but somehow this did not lead to crashes in 2.6.20
 
-I personally prefer to have them always on top so I don't have to figure 
-out where to place a new function, or to re-arrange the order of the 
-functions if the implementation changes. Plus I like to keep all the data 
-declarations on top, and this would still require some of the 
-static functions declarations to preceed it in any case. I really don't 
-want to waste time with counter-argouments that are most definitely a
-personal taste, so if lots of ppl feel raw about that, and it goes in the 
-coding standard, I'll be happily change it.
+I see. I guess this was plain luck.
 
 
+> Why is neighbour->dev changed here?
 
-> > +static struct vfsmount *aino_mnt __read_mostly;
-> > +static struct inode *aino_inode;
-> > +static struct file_operations aino_fops = { };
-> 
-> Iirc, file_operations should be const.
+It holds reference to device and prevents its destruction.
+If dst is held somewhere, we cannot destroy the device and deadlock
+while unregister.
 
-Ack! It should, yes.
-
-
-> > +int aino_getfd(int *pfd, struct inode **pinode, struct file **pfile,
-> > +	       char const *name, const struct file_operations *fops, void *priv)
-> > +{
-> 
-> Since this is meant to be a generic interface that can be used
-> from other subsystems, a kerneldoc style comment would be nice
-
-Done!
+We could not invalidate dst->neighbour but it looked safe to invalidate
+neigh->dev after quiescent state. Obviosuly, it is not and it never was safe.
+Was supposed to be repaired asap, but this did not happen. :-(
 
 
+> Can dst->neighbour be changed to point to NULL instead, and the neighbour
+> released?
 
-> > +static int __init aino_init(void)
-> > +{
-> > +
-> > +	if (register_filesystem(&aino_fs_type))
-> > +		goto epanic;
-> > +
-> > +	aino_mnt = kern_mount(&aino_fs_type);
-> > +	if (IS_ERR(aino_mnt))
-> > +		goto epanic;
-> > +
-> > +	aino_inode = aino_mkinode();
-> > +	if (IS_ERR(aino_inode))
-> > +		goto epanic;
-> > +
-> > +	return 0;
-> > +
-> > +epanic:
-> > +	panic("aino_init() failed\n");
-> > +}
-> 
-> panic() is a little harsh from a loadable module. If you mean
-> the aino support to be used as a module, this should probably
-> just return an error.
-> 
-> > +static void __exit aino_exit(void)
-> > +{
-> > +	iput(aino_inode);
-> > +	unregister_filesystem(&aino_fs_type);
-> > +	mntput(aino_mnt);
-> > +}
-> 
-> but since the Makefile always has it as built-in, maybe you should
-> instead just kill the exit function and use fs_initcall instead
-> of init_module().
+It should be cleared and we should be sure it will not be destroyed
+before quiescent state.
 
-Indeed, it can't be a module, so no exit function and fs_initcall.
-Thx!
+Seems, this is the only correct solution, but to do this we have
+to audit all the places where dst->neighbour is dereferenced for
+RCU safety.
 
+Actually, it is very good you caught this eventually, the bug was
+so _disgusting_ that it was "forgotten" all the time, waiting for
+someone who will point out that the king is naked. :-)
 
-
-- Davide
-
-
+Alexey
