@@ -1,139 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932625AbXCRVFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487AbXCRVIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932625AbXCRVFi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 17:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbXCRVFi
+	id S1751487AbXCRVIZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 17:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbXCRVIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 17:05:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:50712 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbXCRVFh (ORCPT
+	Sun, 18 Mar 2007 17:08:25 -0400
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:62529 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751487AbXCRVIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 17:05:37 -0400
-Date: Sun, 18 Mar 2007 23:06:17 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, general@lists.openfabrics.org,
-       Roland Dreier <rolandd@cisco.com>
-Subject: Re: dst_ifdown breaks infiniband?
-Message-ID: <20070318210616.GG11078@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070318155532.GG7958@mellanox.co.il>
-	<20070318191238.GA20518@ms2.inr.ac.ru>
-	<20070318203345.GF11078@mellanox.co.il>
-MIME-Version: 1.0
+	Sun, 18 Mar 2007 17:08:23 -0400
+Date: Sun, 18 Mar 2007 17:08:19 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Guillaume Chazarain <guichaz@gmail.com>
+Cc: Andi Kleen <ak@suse.de>, john stultz <johnstul@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add an offset in the cyc2ns computation to fix sched_clock jumps
+Message-ID: <20070318210819.GB19818@Krystal>
+References: <3d8471ca0703161114o7ad654car60c1a6b801401149@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070318203345.GF11078@mellanox.co.il>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <3d8471ca0703161114o7ad654car60c1a6b801401149@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 16:33:33 up 44 days, 10:41,  4 users,  load average: 1.04, 1.22, 1.36
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
-> Subject: Re: dst_ifdown breaks infiniband?
+Hi Guillaume,
+
+I understand your need for a working system, but the impression I get
+is that this looks too much like yet another level of band-aid over a
+broken architecture : AMD 7th and 8th generations, which does not give a
+synchronized TSC.
+
+The patch you suggest may work for scheduler purposes, but I wonder if
+other parts of the kernel suffers from those TSC inconsistencies and
+therefore would need to have this problem addressed differently that
+smoothing the per-cpu frequency changes.
+
+The approach you use implies hooking in the frequency change callback,
+but it does not deal with frequency scaling due to temperature related
+events, and does not, as I recall, deal with frequency scaling in halt
+mode. It may also have problems with the values in the period of time
+close to the frequency change.
+
+For what it's worth, I would be tempted to use a "simple" approach for
+these broken architectures, which would give a monotonic clock source.
+Either :
+
+- Use HPET or PM, as suggested by AMD. http://lkml.org/lkml/2005/11/4/173
+  For some reasons, x86_64 does not use it for sched_clock, because it
+  takes too long to access and is not enabled before the scheduler. I
+  don't disagree about optimizing for broken hardware, except when it
+  implies multiple layers of band-aids.
+
+- I am currently developing a completely monotonic clock source for
+  tracing purposes on those AMD systems. It uses LOCKed atomic operation
+  to update the "global" last_tsc value to the count of the CPU with
+  highest TSC value at each TSC read and increments this global TSC
+  count of the amount of cycles necessary to read the TSC by the other
+  CPUs to generate a logical clock. I also plan to update this global
+  last_tsc every timer tick to give a higher bound to time accuracy.
+  This is a workaround that :
+  - Does not scale perfectly (uses locked atomic operation, shares a
+    variable between the CPUs, therefore causes contention)
+  - Takes about 225 cycles per TSC read instead of 181.
+  - Requires an IPI every timer tick.
+  - Give a worse case time precision of 1/HZ (1ms to 10ms).
+  - Can get a much better time precision by sending an IPI to each CPU
+    in a special read operation if necessary, but this is awfully slow.
+  - Gives the time in cycles since boot, but does not match perfectly a
+    conversion from cycles to ns, since the scaling value is inaccurate.
+
+Therefore, depending on your needs (accuracy vs granularity), I would be
+tempted to use either the HPET or my monotonic TSC workaround.
+
+Regards,
+
+Mathieu
+
+* Guillaume Chazarain (guichaz@gmail.com) wrote:
+> Hello,
 > 
-> Quoting Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
-> Subject: Re: dst_ifdown breaks infiniband?
-> > > Can dst->neighbour be changed to point to NULL instead, and the neighbour
-> > > released?
-> > 
-> > It should be cleared and we should be sure it will not be destroyed
-> > before quiescent state.
-> > 
-> > Seems, this is the only correct solution, but to do this we have
-> > to audit all the places where dst->neighbour is dereferenced for
-> > RCU safety.
-> > 
-> > Actually, it is very good you caught this eventually, the bug was
-> > so _disgusting_ that it was "forgotten" all the time, waiting for
-> > someone who will point out that the king is naked. :-)
+> The scheduling problems I reported in the thread:
+> http://lkml.org/lkml/2007/3/3/128
+> are caused by the set_cyc2ns_scale() function called when the CPU speed 
+> changes.
+> Changing the scale causes a warp in the value returned by sched_clock().
 > 
-> Actually that might not be too bad:
-> $grep -rIi 'dst->neighbour' net/ | wc -l
-> 36
+> The attached patch fixes the problem by adding an offset to the cyc2ns code 
+> to
+> smooth CPU frequency transitions. It also makes the cyc2ns parameters
+> per-CPU as cpufreq seems to support SMP but I don't have the hardware
+> to test. If you want
+> a version without the per-CPU or irqsave stuff, just ask.
 > 
-> I'll try to do it.
-
-Here's the list. Looks OK to me. What do you think?
-
-$grep rIi 'dst->neighbour' net/
-
-./atm/clip.c:395:       if (!skb->dst->neighbour) {
-./atm/clip.c:397:               skb->dst->neighbour = clip_find_neighbour(skb->dst, 1);
-./atm/clip.c:398:               if (!skb->dst->neighbour) {
-./atm/clip.c:409:       entry = NEIGH2ENTRY(skb->dst->neighbour);
-./atm/clip.c:426:       DPRINTK("using neighbour %p, vcc %p\n", skb->dst->neighbour, vcc);
-
-The above are all in hard_start_xmit - output routine
-so should be OK (atomic) wrt RCU
-
-./core/dst.c:186:       neigh = dst->neighbour;
-./core/dst.c:195:               dst->neighbour = NULL;
-
-Looks OK.
-
-./core/dst.c:252:               if (dst->neighbour && dst->neighbour->dev == dev) {
-./core/dst.c:253:                       dst->neighbour->dev = &loopback_dev;
-
-This is our boy.
-
-./core/neighbour.c:1045:                        /* On shaper/eql skb->dst->neighbour != neigh :( */
-./core/neighbour.c:1046:                        if (skb->dst && skb->dst->neighbour)
-./core/neighbour.c:1047:                                n1 = skb->dst->neighbour;
-
-neigh_update - seems to be always called after neigh_lookup
-so there is a reference to neighbour.
-
-./core/neighbour.c:1144:        if (!dst || !(neigh = dst->neighbour))
-
-neigh_resolve_output - looks safe
-
-./core/neighbour.c:1174:                      dst, dst ? dst->neighbour : NULL);
-
-merely prints a pointer
-
-./core/neighbour.c:1187:        struct neighbour *neigh = dst->neighbour;
-
-neigh_connected_output - looks safe
-
-./decnet/dn_neigh.c:208:        struct neighbour *neigh = dst->neighbour;
-./decnet/dn_neigh.c:226:        struct neighbour *neigh = dst->neighbour;
-./decnet/dn_neigh.c:272:        struct neighbour *neigh = dst->neighbour;
-./decnet/dn_neigh.c:315:        struct neighbour *neigh = dst->neighbour;
-./decnet/dn_route.c:228:        struct dn_dev *dn = dst->neighbour ?
-./decnet/dn_route.c:229:                            (struct dn_dev *)dst->neighbour->dev->dn_ptr : NULL;
-./decnet/dn_route.c:693:        if ((neigh = dst->neighbour) == NULL)
-./decnet/dn_route.c:727:        struct neighbour *neigh = dst->neighbour;
-
-output routines, except
-line 228 is dn_dst_update_pmtu, which looks OK as well.
-
-./ipv4/arp.c:445: *     It is very UGLY routine: it DOES NOT use skb->dst->neighbour,
-./ipv4/arp.c:508:       struct neighbour *n = dst->neighbour;
-./ipv4/arp.c:523:               dst->neighbour = n;
-
-Looks safe.
-
-./ipv4/ip_gre.c:714:                    struct neighbour *neigh = skb->dst->neighbour;
-./ipv4/ip_output.c:186: else if (dst->neighbour)
-./ipv4/ip_output.c:187:         return dst->neighbour->output(skb);
-./ipv6/ip6_output.c:79: else if (dst->neighbour)
-./ipv6/ip6_output.c:80:         return dst->neighbour->output(skb);
-./ipv6/ip6_output.c:431:        if (skb->dev == dst->dev && dst->neighbour && opt->srcrt == 0) {
-./ipv6/ip6_output.c:434:                struct neighbour *n = dst->neighbour;
-./ipv6/sit.c:459:                       neigh = skb->dst->neighbour;
-
-These are all output routines
-
-./sched/sch_teql.c:235: struct neighbour *mn = skb->dst->neighbour;
-
-Looks ok - takes reference on the neighbour.
-
-./sched/sch_teql.c:269:     skb->dst->neighbour == NULL)
-
-Looks ok.
+> Although it solved all my scheduler issues, it may not be fully satisfactory
+> as for example my TSC can run at a frequency as low as 350 MHz when the CPU 
+> is
+> idle and slowed down to the max at 798 MHz by ondemand. So in this case,
+> sched_clock() does not return nanoseconds as it thinks it does. Hopefully 
+> this
+> is a non-issue as the scheduler is not stressed when the CPU is idle.
+> 
+> For me, this is needed in 2.6.21 if I want to be able to listen to music 
+> while
+> compiling a kernel using the ondemand governor.
+> 
+> Thanks.
+> 
+> Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+> ---
+> 
+> diff -r fb83e6d92a4c arch/i386/kernel/tsc.c
+> --- a/arch/i386/kernel/tsc.c
+> +++ b/arch/i386/kernel/tsc.c
+> @@ -10,6 +10,7 @@
+> #include <linux/jiffies.h>
+> #include <linux/init.h>
+> #include <linux/dmi.h>
+> +#include <linux/percpu.h>
+> 
+> #include <asm/delay.h>
+> #include <asm/tsc.h>
+> @@ -79,20 +80,57 @@ static inline int check_tsc_unstable(voi
+>  *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
+>  *  (mathieu.desnoyers@polymtl.ca)
+>  *
+> + *  ns += offset to avoid sched_clock jumps with cpufreq (guichaz@yahoo.fr)
+> + *
+>  *			-johnstul@us.ibm.com "math is hard, lets go 
+>  shopping!"
+>  */
+> -static unsigned long cyc2ns_scale __read_mostly;
+> -
+> #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+> 
+> -static inline void set_cyc2ns_scale(unsigned long cpu_khz)
+> -{
+> -	cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
+> +struct cyc2ns_params {
+> +	unsigned long scale;
+> +	unsigned long long offset;
+> +};
+> +DEFINE_PER_CPU(struct cyc2ns_params, cyc2ns) __read_mostly;
+> +
+> +static inline unsigned long long __cycles_2_ns(struct cyc2ns_params 
+> *params,
+> +					       unsigned long long cyc)
+> +{
+> +	return ((cyc * params->scale) >> CYC2NS_SCALE_FACTOR) + 
+> params->offset;
+> }
+> 
+> static inline unsigned long long cycles_2_ns(unsigned long long cyc)
+> {
+> -	return (cyc * cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
+> +	struct cyc2ns_params *params;
+> +	unsigned long flags;
+> +	unsigned long long ns;
+> +
+> +	params = &get_cpu_var(cyc2ns);
+> +
+> +	local_irq_save(flags);
+> +	ns = __cycles_2_ns(params, cyc);
+> +	local_irq_restore(flags);
+> +
+> +	put_cpu_var(cyc2ns);
+> +	return ns;
+> +}
+> +
+> +static void set_cyc2ns_scale(unsigned long cpu_khz)
+> +{
+> +	struct cyc2ns_params *params;
+> +	unsigned long flags;
+> +	unsigned long long tsc_now, ns_now;
+> +
+> +	get_scheduled_cycles(tsc_now);
+> +	params = &get_cpu_var(cyc2ns);
+> +
+> +	local_irq_save(flags);
+> +	ns_now = __cycles_2_ns(params, tsc_now);
+> +
+> +	params->scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
+> +	params->offset += ns_now - __cycles_2_ns(params, tsc_now);
+> +	local_irq_restore(flags);
+> +
+> +	put_cpu_var(cyc2ns);
+> }
+> 
+> /*
+> 
+> 
+> -- 
+> Guillaume
 
 -- 
-MST
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
