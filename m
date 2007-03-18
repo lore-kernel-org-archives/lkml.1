@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbXCRPod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbXCRPpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932411AbXCRPod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 11:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXCRPod
+	id S932424AbXCRPpu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 11:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932425AbXCRPpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 11:44:33 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:24307 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932356AbXCRPoc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 11:44:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UxyTgT9Ku+zcnH+Nmyj4slbbBAD4/ZlkIsCHmuzl1efzWccRsnfXPWvrHGz2r5XRUVSiqKqmDiBuk8eCSEz8jgP1gQzmKlJVkPETXqDvM8+g/ee5tAhAmplQaN2T8UE8PRPUv790TNzzA1yPhDFl7a8e1FW/ntrsLyYvu7nb9fQ=
-Message-ID: <f44c5fdf0703180844w33f4ae20gcccdccf6a7ba3e03@mail.gmail.com>
-Date: Sun, 18 Mar 2007 16:44:31 +0100
-From: "Radoslaw Szkodzinski" <astralstorm@gmail.com>
-To: "Mike Galbraith" <efault@gmx.de>
-Subject: Re: [ck] Re: RSDL v0.31
-Cc: "Kasper Sandberg" <lkml@metanurb.dk>, "Al Boldi" <a1426z@gawab.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ck@vds.kolivas.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Nicholas Miell" <nmiell@comcast.net>
-In-Reply-To: <1174203482.8855.8.camel@Homer.simpson.net>
+	Sun, 18 Mar 2007 11:45:49 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:54589 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932424AbXCRPpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 11:45:49 -0400
+Message-ID: <45FD5EA1.6040706@gmail.com>
+Date: Sun, 18 Mar 2007 16:45:37 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
+References: <Pine.LNX.4.44L0.0703181134020.19508-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0703181134020.19508-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172048.46267.kernel@kolivas.org>
-	 <1174125534.7734.2.camel@Homer.simpson.net>
-	 <200703172355.30989.a1426z@gawab.com>
-	 <1174198651.8199.44.camel@Homer.simpson.net>
-	 <1174200463.10498.23.camel@localhost>
-	 <1174201726.8732.6.camel@Homer.simpson.net>
-	 <f44c5fdf0703180022n44b2ca61o62602e54aaab3334@mail.gmail.com>
-	 <1174203482.8855.8.camel@Homer.simpson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/18/07, Mike Galbraith <efault@gmx.de> wrote:
-> Hm.  Sounds rather a lot like the...
-> X sucks, fix X and RSDL will rock your world.  RSDL is perfect.
-> ...that I've been getting.
+Alan Stern napsal(a):
+> On Sun, 18 Mar 2007, Jiri Slaby wrote:
+> 
+>> Alan Stern napsal(a):
+>>> In drivers/usb/host/uhci-q.c, near the start is a function named
+>>> uhci_fsbr_on().  Put a "return" statement right at its beginning so that
+>>> the function doesn't do anything.  Does that make any difference?
+>> Yes, it works.
+> 
+> Okay.  Take out that extra "return" statement and revert the WARN_ON, and
+> try this patch.  I don't like it because it adds extra PCI bus overhead to
+> the driver, but if some systems need it then there's no choice.
 
-Blah. Nothing's perfect. Especially not computer programs.
+Yes, I'm proud to let you know, that it solves the problem :).
 
-Still, it's not a smart decision on KDE's part.
-It will break a lot of scheduling decisions, esp. you can't use IO priorities.
+thanks a lot,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
