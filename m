@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbXCRV5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbXCRWBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933295AbXCRV5s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 17:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933317AbXCRV5s
+	id S933326AbXCRWBo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 18:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933330AbXCRWBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 17:57:48 -0400
-Received: from www.osadl.org ([213.239.205.134]:34423 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933295AbXCRV5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 17:57:47 -0400
-Subject: Re: [PATCH] hrtimer: prevent overrun DoS in hrtimer_forward()
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Bauer <JohannesBauer@gmx.de>, linux-kernel@vger.kernel.org,
-       schwab@suse.de, Stable Kernel Team <stable@kernel.org>,
-       Greg KH <greg@kroah.com>, Adrian Bunk <bunk@stusta.de>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <45FDB4C9.5030103@redhat.com>
-References: <45F6F3A6.9060405@gmx.de> <45F7033B.2030204@redhat.com>
-	 <1173817985.13341.120.camel@localhost.localdomain>
-	 <1173866413.13341.154.camel@localhost.localdomain>
-	 <20070316124313.9f0afc05.akpm@linux-foundation.org>
-	 <1174079120.13341.286.camel@localhost.localdomain>
-	 <45FDAC3B.6000202@redhat.com>
-	 <1174253579.13341.477.camel@localhost.localdomain>
-	 <45FDB4C9.5030103@redhat.com>
-Content-Type: text/plain
-Date: Sun, 18 Mar 2007 23:04:47 +0100
-Message-Id: <1174255487.13341.480.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Mar 2007 18:01:44 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:1834 "EHLO parknet.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933326AbXCRWBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 18:01:43 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Sanitize filesystem NLS handling
+References: <45FD6EF5.1030706@ums.usu.ru>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Mon, 19 Mar 2007 07:01:28 +0900
+In-Reply-To: <45FD6EF5.1030706@ums.usu.ru> (Alexander E. Patrakov's message of "Sun\, 18 Mar 2007 21\:55\:17 +0500")
+Message-ID: <87hcsius7b.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-18 at 17:53 -0400, Chuck Ebbert wrote:
-> >> Just to be clear: this replaces the earlier patch, right?
-> > 
-> > This replaces the fix Andrew did.
-> > 
-> > http://marc.info/?l=linux-kernel&m=117407812411997&w=2
-> > 
-> 
-> Right, but is the original "Prevent DOS" patch from you still needed?
-> Or did Andrew's patch replace that one, and now this replaces his?
+"Alexander E. Patrakov" <patrakov@ums.usu.ru> writes:
 
-The original patch is still needed - it handles the problem in the first
-place.
+>  * Removes CONFIG_FAT_DEFAULT_IOCHARSET, now CONFIG_NLS_DEFAULT is used 
+> for this purpose. This is because the correct setting of both must match 
+> the user's locale
 
-I missed to compile it for 32bit and Andrew did a fix, which I replaced.
+The some filesystems want to use utf-8, and others don't want to use
+utf-8, no?  And is it also true about some devices using vfat?
 
-	tglx
+>  * Merges the two CONFIG_SMB_NLS_REMOTE and CONFIG_FAT_DEFAULT_CODEPAGE 
+> options into one, named CONFIG_CODEPAGE_DEFAULT. This is because the 
+> correct setting of both must match the code page used by MS-DOS in the 
+> user's country. For the same reason, CONFIG_SMB_NLS_DEFAULT is removed 
+> (the only sane choice is "y")
 
+No. Unfortunately the real is not simple like it in some case.
 
+>  * Makes the FAT filesystem accept both the old-style "codepage=866" 
+> mount option (which is inconsistent with other filesystems requiring a 
+> codepage option) and the new-style "codepage=cp866" option. This is 
+> necessary because CONFIG_CODEPAGE_DEFAULT must work for all filesystems 
+> that use it
+
+You allow to set any nls to codepage? If so, it is not good.
+
+>  * Downgrades the UTF-8 FAT warning to a note, because, while using the 
+> utf8 iocharset produces a case-sensitive FAT filesystem, other 
+> iocharsets simply produce wrong characters, which is much worse
+
+No, utf-8 makes completely wrong entry. It's more wrong than other nls.
+
+>  * Makes CONFIG_NLS_DEFAULT and CONFIG_CODEPAGE_DEFAULT adjustable at 
+> runtime via the following mechanisms:
+
+The configurable sounds sane, and it may help some case. But, it should
+not be system global. At least, I think the default would be per-filesystem,
+otherwise some configs seems to be needed for other filesystem after all.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
