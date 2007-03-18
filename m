@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbXCRQYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbXCRQkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753233AbXCRQYl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 12:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbXCRQYl
+	id S1753242AbXCRQkB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 12:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbXCRQkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 12:24:41 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:37217 "EHLO scrub.xs4all.nl"
+	Sun, 18 Mar 2007 12:40:01 -0400
+Received: from waste.org ([66.93.16.53]:45129 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753233AbXCRQYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 12:24:40 -0400
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: fake config option w/kbuild?
-Date: Sun, 18 Mar 2007 17:24:30 +0100
-User-Agent: KMail/1.9.5
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <C6F49569-655E-4B17-B9DA-9644C8B3668D@kernel.crashing.org>
-In-Reply-To: <C6F49569-655E-4B17-B9DA-9644C8B3668D@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1753245AbXCRQkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 12:40:00 -0400
+Date: Sun, 18 Mar 2007 11:27:20 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+Message-ID: <20070318162720.GI10459@waste.org>
+References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703181724.32182.zippel@linux-m68k.org>
+In-Reply-To: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Mar 14, 2007 at 05:19:34PM +0200, Artem Bityutskiy wrote:
+> Hello,
+> 
+> This patch-set contains UBI, which stands for Unsorted Block Images. This
+> is closely related to the memory technology devices Linux subsystem (MTD),
+> so this new piece of software is from drivers/mtd/ubi.
+> 
+> In short, UBI is kind of LVM layer but for flash (MTD) devices. It makes
+> it possible to dynamically create, delete and re-size volumes. But the
+> analogy is not full. UBI also takes care of wear-leveling and bad
+> eraseblocks handling, so UBI completely hides 2 aspects of flash chips
+> which make them very difficult to work with:
+> 
+> 1. wear of eraseblocks;
+> 2. bad eraseblocks.
 
-On Thursday 15 March 2007 16:19, Kumar Gala wrote:
+Forgive my ignorance, but why did you not implement the two features
+above as device mapper layers instead? A device mapper can arbitrarily
+transform I/O addresses and contents and has direct access to the
+mapped device's ioctl interfaces, etc. 
 
-> Guys, I was wondering if there was a way to have a fake config
-> option, one that acts just like a normal config option, but doesn't
-> get a #define CONFIG_<FOOBAR> .. for it and thus can't be used in code.
->
-> I explain my problem, and maybe there is a better solution.
->
-> I have a config option call QE that exists on two flavor's of
-> powerpc.  For PPC, we have one top level menu to select the processor
-> (in this case 83xx or 85xx).  We than have a second top level menu to
-> select the platform (which board).  The platform menu is where I want
-> the 'QE' option to exist.  Each flavor (83xx, 85xx) has its own
-> Kconfig that defines what's in the platform menu.  However, the QE
-> config choice is common between them.
->
-> So for now we are doing something like:
->
-> arch/powerpc/Kconfig:
->
-> config QE
-> 	bool
-> 	default n
->
-> arch/powerpc/platform/83xx/Kconfig:
->
-> config QE_83xx
-> 	bool "QUICC Engine Support"
->          select QE
->          depends on PPC_MPC836x || PPC_MPC832x
->          default y
->          ---help---
->            The QUICC Engine (QE) is a new generation of communications
->            coprocessors on Freescale embedded CPUs (akin to CPM in
-> older chips).
->
-> arch/powerpc/platform/85xx/Kconfig:
->
-> config QE_85xx
-> 	bool "QUICC Engine Support"
->          select QE
->          depends on PPC_MPC8568
->          default y
->          ---help---
->            The QUICC Engine (QE) is a new generation of communications
->            coprocessors on Freescale embedded CPUs (akin to CPM in
-> older chips).
->
-> My initial question is that I don't want anyone using CONFIG_QE_83xx
-> or CONFIG_QE_85xx in code, the second part is if there is a way to
-> remove duplicating the QE_83xx/QE_85xx options down in platform/8{3,5}
-> xx/Kconfig.
+Writing a mapper that's driven by out of band data on the underlying
+device can be done in a couple hundred lines of code. I've done it to
+implement an MD5 integrity checking layer. In this case, all the I/Os
+were simply remapped to be above the on-disk MD5 table and expanded to
+be at least the hashed cluster size.
 
-The duplication is maybe difficult to avoid without moving it, but a symbol 
-can have multiple prompts so you can just replace QE_8[35]xx with QE 
-(although a little more verbose name wouldn't hurt either).
+Even if the device mapper API is not completely up to the task (which
+I strongly suspect it is), it would seem simpler to extend it than to
+add 14000 lines of parallel subsystem.
 
-bye, Roman
+-- 
+Mathematics is the supreme nostalgia of our time.
