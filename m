@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbXCRVU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbXCRVWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbXCRVU2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 17:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbXCRVU2
+	id S1753285AbXCRVWh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 17:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbXCRVWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 17:20:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47817 "EHLO mx1.redhat.com"
+	Sun, 18 Mar 2007 17:22:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48537 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274AbXCRVU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 17:20:26 -0400
-Message-ID: <45FDAC3B.6000202@redhat.com>
-Date: Sun, 18 Mar 2007 17:16:43 -0400
+	id S1753280AbXCRVWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 17:22:35 -0400
+Message-ID: <45FDAD74.9010402@redhat.com>
+Date: Sun, 18 Mar 2007 17:21:56 -0400
 From: Chuck Ebbert <cebbert@redhat.com>
 Organization: Red Hat
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Bauer <JohannesBauer@gmx.de>, linux-kernel@vger.kernel.org,
-       schwab@suse.de, Stable Kernel Team <stable@kernel.org>,
-       Greg KH <greg@kroah.com>, Adrian Bunk <bunk@stusta.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] hrtimer: prevent overrun DoS in hrtimer_forward()
-References: <45F6F3A6.9060405@gmx.de> <45F7033B.2030204@redhat.com>	 <1173817985.13341.120.camel@localhost.localdomain>	 <1173866413.13341.154.camel@localhost.localdomain>	 <20070316124313.9f0afc05.akpm@linux-foundation.org> <1174079120.13341.286.camel@localhost.localdomain>
-In-Reply-To: <1174079120.13341.286.camel@localhost.localdomain>
+To: Tejun Heo <htejun@gmail.com>
+CC: Jon Masters <jonathan@jonmasters.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       Conke Hu <conke.hu@gmail.com>
+Subject: Re: Loading both the pata_atiixp and the ahci driver causes problems
+References: <45F9C3F5.4070906@redhat.com> <45F9F5F0.3090508@jonmasters.org> <45FCD0FB.70507@gmail.com>
+In-Reply-To: <45FCD0FB.70507@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
+Tejun Heo wrote:
+> Jon Masters wrote:
+>> Chuck Ebbert wrote:
+>>
+>>> If you try to load both the pata_atiixp and the ahci driver
+>>> (for the same ATI SB600 adapter), very strange things happen.
+>>> The AHCI driver churns for three minutes or so, spewing
+>>> messages like this, then nothing works:
+>>>
+>>> <6>ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>>> <4>ata3.00: qc timeout (cmd 0xec)
+>>> <4>ata3.00: failed to IDENTIFY (I/O error, err_mask=0x104)
+>>> Shouldn't it be able to tell the device has already been
+>>> claimed by some other driver?
+>> One would assume it'd fail to grab the PCI IO ranges twice? I haven't
+>> looked at the code but I have seen this bug mentioned elsewhere so I
+>> might well end up having to do that yet :-)
 > 
-> I'd prefer this one: The maximum seconds value we can handle on 32bit is
-> LONG_MAX.
+> Dunno much about sb600 but ahci and pata_atiixp are probably using
+> separate IO regions && separate PCI functions.
 > 
-> diff --git a/include/linux/ktime.h b/include/linux/ktime.h
-> index c68c7ac..248305b 100644
-> --- a/include/linux/ktime.h
-> +++ b/include/linux/ktime.h
-> @@ -57,7 +57,11 @@ typedef union {
->  } ktime_t;
->  
->  #define KTIME_MAX			((s64)~((u64)1 << 63))
-> -#define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
-> +#if (BITS_PER_LONG == 64)
-> +# define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
-> +#else
-> +# define KTIME_SEC_MAX			LONG_MAX
-> +#endif
->  
->  /*
->   * ktime_t definitions when using the 64-bit scalar representation:
+> Conke, care to educate us a bit here?
 > 
 
-Just to be clear: this replaces the earlier patch, right?
+The really funny part is that it works for some if they use:
 
-
+  pci=noacpi,irqpoll
 
 
