@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbXCRFzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751545AbXCRGKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbXCRFzZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 01:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbXCRFzZ
+	id S1751545AbXCRGKU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 02:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXCRGKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 01:55:25 -0400
-Received: from mtaout2.012.net.il ([84.95.2.4]:59696 "EHLO mtaout2.012.net.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753061AbXCRFzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 01:55:24 -0400
-Date: Sun, 18 Mar 2007 07:55:21 +0200
-From: Avi Kivity <avi@argo.co.il>
-Subject: Re: is RSDL an "unfair" scheduler too?
-In-reply-to: <20070318052439.GT943@1wt.eu>
+	Sun, 18 Mar 2007 02:10:20 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:51673
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbXCRGKS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 02:10:18 -0400
+Date: Sat, 17 Mar 2007 23:09:49 -0700
 To: Willy Tarreau <w@1wt.eu>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       William Lee Irwin III <wli@holomorphy.com>, Avi Kivity <avi@argo.co.il>,
+       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
        Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
        linux-kernel@vger.kernel.org, Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-id: <45FCD449.60303@argo.co.il>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-X-Greylist: Sender IP whitelisted,
- not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Sun,
- 18 Mar 2007 07:55:22 +0200 (IST)
-References: <200703042335.26785.a1426z@gawab.com>
- <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru>
- <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu>
- <45FC525D.5000708@argo.co.il> <20070318012533.GB2986@holomorphy.com>
- <Pine.LNX.4.64.0703171830130.4964@woody.linux-foundation.org>
- <20070318052439.GT943@1wt.eu>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: is RSDL an "unfair" scheduler too?
+Message-ID: <20070318060949.GA13583@gnuppy.monkey.org>
+References: <200703042335.26785.a1426z@gawab.com> <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu> <45FC525D.5000708@argo.co.il> <20070318012533.GB2986@holomorphy.com> <Pine.LNX.4.64.0703171830130.4964@woody.linux-foundation.org> <20070318052439.GT943@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070318052439.GT943@1wt.eu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> On Sat, Mar 17, 2007 at 06:32:29PM -0700, Linus Torvalds wrote:
->   
->> On Sat, 17 Mar 2007, William Lee Irwin III wrote:
->>     
->>> One issue this raises is prioritizing users on a system, threads within
->>> processes, jobs within users, etc.
->>>       
->> Doing some "classing" even by just euid might be a good idea. It would 
->> actually catch X automatically most of the time, because the euid of the X 
->> server is likely to be root, so even for the "trivial" desktop example, it 
->> would kind of automatically mean that X would get about 50% of CPU time 
->> even if you have a hundred user clients, just because that's "fair" by 
->> euid.
->>     
->
-> Warning: all these ideas seem interesting for desktop, but are definitely
-> not for servers. I found RSDL to be excellent on servers, compared to
-> mainline in which some services are starving under load. I can understand
-> that on the desktop people want some unfairness, and I like the pgrp idea
-> for instance. But this one will certainly fail on servers, or make the
-> admins get grey hair very soon.
->   
+On Sun, Mar 18, 2007 at 06:24:40AM +0100, Willy Tarreau wrote:
+> > Dunno. I guess a lot of people would like to then manage the classes, 
+> > which would be painful as hell. 
+> 
+> Sure ! I wouldn't like people to point the finger on Linux saying "hey
+> look, they can't write a good scheduler so you have to adjust the knobs
+> yourself!". I keep in mind that Solaris' scheduler is very good, both
+> fair and interactive. FreeBSD was good (I haven't tested for a long time).
+> We should manage to get something good for most usages, and optimize
+> later for specific uses.
 
-I didn't suggest adding any unfairness!  I suggested being fair by 
-user/job/process instead of being fair by thread (which is actually 
-unfair as it favors multi threaded processes over single threaded 
-processes).
+Like I've said in a previous email, SGI schedulers have an interactive
+term in addition to the normal "nice" values. If RSDL ends up being too
+rigid for desktop use, then this might be a good idea to explore in
+addition to priority manipulation.
 
-> Maybe we're all discussing the problem because we have reached the point
-> where we need two types of schedulers : one for the desktop and one for
-> the servers. After all, this is already what is proposed with preempt,
-> it would make sense provided they share the same core and avoid ifdefs
-> or unused structure members. Maybe adding OPTIONAL unfairness to RSDL
-> would help some scenarios, but in any case it is important to retain
-> the default fairness it provides.
->   
+However, it hasn't been completely proven that RSDL can't handle desktop
+loads and that needs to be completely explored first. It certain seems
+like, from the .jpgs that were posted earlier in the thread regarding mysql
+performance, that RSDL seems to have improved performance for those set
+ups so it's not universally the case that it sucks for server loads. The
+cause of this performance difference has yet to be pinpointed.
 
-I hope not.  I think that reducing the timeslice base, combined with 
-renicing X all the way to hell should suffice.
+Also, bandwidth scheduler like this are a new critical development for
+things like the -rt patch. It would benefit greatly if the RSDL basic
+mechanisms (RR and deadlines) were to somehow slip into that patch and
+be used for a more strict -rt based scheduling class. It would be the basis
+for first-class control over process resource usage and would be a first
+in Linux or any mainstream kernel.
 
+This would be a powerful addition to Linux as a whole and RSDL should
+not be dismissed without these considerations. If it can somehow be
+integrated into the kernel with interactivity concerns addressed, then
+it would be an all out win for the kernel in both these areas.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+bill
 
