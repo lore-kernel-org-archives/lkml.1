@@ -1,149 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932878AbXCRTEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXCRTFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932878AbXCRTEG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 15:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932991AbXCRTEF
+	id S933012AbXCRTFp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 15:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXCRTFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 15:04:05 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36904 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932878AbXCRTEE (ORCPT
+	Sun, 18 Mar 2007 15:05:45 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:36333 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932991AbXCRTFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 15:04:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
+	Sun, 18 Mar 2007 15:05:44 -0400
+Date: Sun, 18 Mar 2007 19:05:41 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Catalin Marinas" <catalin.marinas@gmail.com>
-Subject: [PATCH 2/4] tty: Simplify calling of put_pid.
-References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
-	<m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
-	<m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
-	<m1veh5q6s7.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703140259p773b0eb8p9c142d33934e64ff@mail.gmail.com>
-	<m1wt1jq45w.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703141008o4d6cb243r7bc328d79cccfa2e@mail.gmail.com>
-	<m1slc4luf5.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703161544h2961670dh8f5e499fd2dc0ce5@mail.gmail.com>
-	<m1vegyjspz.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6rmjsev.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1mz2ajs6g.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Sun, 18 Mar 2007 13:03:08 -0600
-In-Reply-To: <m1mz2ajs6g.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Sun, 18 Mar 2007 12:57:27 -0600")
-Message-ID: <m1fy82jrwz.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Bias the location of pages freed for min_free_kbytes in
+ the same MAX_ORDER_NR_PAGES blocks
+In-Reply-To: <20070318101259.f6e524f2.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703181822110.648@skynet.skynet.ie>
+References: <20070307201839.6f45735b.akpm@linux-foundation.org>
+ <200703142006.04547.m.kozlowski@tuxland.pl> <20070314170738.d5d35c06.akpm@linux-foundation.org>
+ <20070317182641.GA19447@skynet.ie> <20070318002244.606cfe08.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703181104140.29429@skynet.skynet.ie>
+ <20070318101259.f6e524f2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 18 Mar 2007, Andrew Morton wrote:
 
-This patch should contain no functional changes.
+> On Sun, 18 Mar 2007 11:35:36 +0000 (GMT) Mel Gorman <mel@csn.ul.ie> wrote:
+>
+>>> But let me leap ahead of myself.
+>>>
+>>>> CONFIG_PAGE_GROUP_BY_MOBILITY
+>>>
+>>> Why does this config item exist?  It's not good to have some mysterious
+>>> knob which affects mm behaviour at compile time.  We need to make up our
+>>> minds and stick with it.
+>>>
+>>
+>> The configuration item exists because there were concerns over the memory
+>> footprint and cache line footprint. It was introduced to address that
+>> concern and also so that it would be possible to compare the performance
+>> behavior of anti-fragmentation. Your comment rang a bell though so I
+>> searched the archives to see this comment from Andi Kleen;
+>>
+>> ===
+>> If anything this should be a boot time option or perhaps sysctl, not a
+>> config. In general CONFIGs that change runtime behaviour are evil - just
+>> makes changing the option more painful, causes problems for distribution
+>> users, doesn't make much sense, etc.etc.
+>>
+>> Also #ifdef as a documentation device is a really really scary concept.
+>> Yuck.
+>> ===
+>>
+>> A sysctl would avoid any cache line footprint but not the memory overhead
+>> because the freelists in struct zone as those freelists would still exist.
+>> I could make the option depend on CONFIG_EMBEDDED for the zone overhead.
+>> Would that make sense or would it be preferable to ditch the option
+>> altogether?
+>>
+>> I'll start looking at doing a sysctl so it can be disabled at runtime if
+>> necessary. I strongly suspect that it cannot be enabled again once
+>> disabled but I don't see that as a problem as such.
+>
+> How much additional memory consumption are we expecting here?
+>
 
-At somepoint I got confused and thought put_pid could not
-be called while a spin lock was held.  While it may be nice
-to avoid that to reduce lock hold times put_pid can be safely
-called while we hold a spin lock.
+Short answer, about 1.5KB on a 1GB system of which 1.3KB is statically 
+defined in the 3 struct zones on a 1 node x86 system.
 
-This patch removes all of the complications from the code
-introduced by my misunderstanding, making the code a little
-more readable.
+Longer answer that I hopefully have not made any mistakes in - There is 
+the zone overhead which is statically sized and a runtime overhead which 
+depends on the amount of memory in the system. The additional zone 
+overhead is the overhead for additional freelists (larger struct 
+free_area) and is as follows;
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/char/tty_io.c |   23 ++++++-----------------
- 1 files changed, 6 insertions(+), 17 deletions(-)
+(MIGRATE_TYPES-1) * sizeof(list_head) * (MAX_ORDER-1)
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 583730f..01fcfaf 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -155,8 +155,7 @@ int tty_ioctl(struct inode * inode, struct file * file,
- 	      unsigned int cmd, unsigned long arg);
- static int tty_fasync(int fd, struct file * filp, int on);
- static void release_tty(struct tty_struct *tty, int idx);
--static struct pid *__proc_set_tty(struct task_struct *tsk,
--				struct tty_struct *tty);
-+static void __proc_set_tty(struct task_struct *tsk, struct tty_struct *tty);
- 
- /**
-  *	alloc_tty_struct	-	allocate a tty object
-@@ -1534,10 +1533,9 @@ void disassociate_ctty(int on_exit)
- 	}
- 
- 	spin_lock_irq(&current->sighand->siglock);
--	tty_pgrp = current->signal->tty_old_pgrp;
-+	put_pid(current->signal->tty_old_pgrp);
- 	current->signal->tty_old_pgrp = NULL;
- 	spin_unlock_irq(&current->sighand->siglock);
--	put_pid(tty_pgrp);
- 
- 	mutex_lock(&tty_mutex);
- 	/* It is possible that do_tty_hangup has free'd this tty */
-@@ -2508,7 +2506,6 @@ static int tty_open(struct inode * inode, struct file * filp)
- 	int index;
- 	dev_t device = inode->i_rdev;
- 	unsigned short saved_flags = filp->f_flags;
--	struct pid *old_pgrp;
- 
- 	nonseekable_open(inode, filp);
- 	
-@@ -2602,17 +2599,15 @@ got_driver:
- 		goto retry_open;
- 	}
- 
--	old_pgrp = NULL;
- 	mutex_lock(&tty_mutex);
- 	spin_lock_irq(&current->sighand->siglock);
- 	if (!noctty &&
- 	    current->signal->leader &&
- 	    !current->signal->tty &&
- 	    tty->session == NULL)
--		old_pgrp = __proc_set_tty(current, tty);
-+		__proc_set_tty(current, tty);
- 	spin_unlock_irq(&current->sighand->siglock);
- 	mutex_unlock(&tty_mutex);
--	put_pid(old_pgrp);
- 	return 0;
- }
- 
-@@ -3838,9 +3833,8 @@ void proc_clear_tty(struct task_struct *p)
- 	spin_unlock_irq(&p->sighand->siglock);
- }
- 
--static struct pid *__proc_set_tty(struct task_struct *tsk, struct tty_struct *tty)
-+static void __proc_set_tty(struct task_struct *tsk, struct tty_struct *tty)
- {
--	struct pid *old_pgrp;
- 	if (tty) {
- 		/* We should not have a session or pgrp to here but.... */
- 		put_pid(tty->session);
-@@ -3848,21 +3842,16 @@ static struct pid *__proc_set_tty(struct task_struct *tsk, struct tty_struct *tt
- 		tty->session = get_pid(task_session(tsk));
- 		tty->pgrp = get_pid(task_pgrp(tsk));
- 	}
--	old_pgrp = tsk->signal->tty_old_pgrp;
-+	put_pid(tsk->signal->tty_old_pgrp);
- 	tsk->signal->tty = tty;
- 	tsk->signal->tty_old_pgrp = NULL;
--	return old_pgrp;
- }
- 
- void proc_set_tty(struct task_struct *tsk, struct tty_struct *tty)
- {
--	struct pid *old_pgrp;
--
- 	spin_lock_irq(&tsk->sighand->siglock);
--	old_pgrp = __proc_set_tty(tsk, tty);
-+	__proc_set_tty(tsk, tty);
- 	spin_unlock_irq(&tsk->sighand->siglock);
--
--	put_pid(old_pgrp);
- }
- 
- struct tty_struct *get_current_tty(void)
+so, on 32 bit in general, thats
+
+4 * 8 * 10 = 320 bytes per zone (would be 240 bytes if MIGRATE_RESERVE is
+ 				sufficient for higher order allocations
+ 				instead of MIGRATE_HIGHALLOC)
+
+on x86 with DMA, Normal and HighMem, thats 1280 bytes. On a NUMA system, 
+it's 1280 bytes per node. On 64 bit, it would be double because of the 
+larger pointer size. At worst, I guess you are looking at 3KB per node.
+
+The size of the bitmap for the flags depends on the amount of memory. On 
+FLATMEM and DISCONTIG, it's 3 bits per MAX_ORDER_NR_PAGES spanned by the 
+zones (note spanned, not present). On a 1GiB system without holes on an 
+x86 with MAX_ORDER of 11, that would be 96 bytes. The calculation is more 
+complex for sparsemem but will be at least 4 bytes per active section for 
+a pointer and another 4 bytes for most bitmaps. I have a patch that uses 
+the pointer itself when the bitmap is small enough to be contained in 4 
+bytes (which is usually is) so it could be just 4 bytes per active section 
+(4 bytes per 16MB on powerpc for example).
+
+> Whether it's runtime or compile-time, the optionality is not good.
+>
+
+The main situation where I think it would be desirable to disable 
+anti-fragmentation is for zones that are smaller than 
+MIGRATE_TYPES*MAX_ORDER_NR_PAGES and this is for performance reasons to 
+avoid regularly entering __rmqueue_fallback(). However, that situation 
+could be automatically detected and handled by having 
+allocflags_to_migratetype() always return MIGRATE_UNMOVABLE for small 
+zones and similar for get_pageblock_migratetype(). There would be no need 
+for a sysctl.
+
+If a sysctl was available for cases where profiles showed a problem with 
+the bitmap for example, it would work by having 
+allocflags_to_migratetype() and get_pageblock_migratetype() always return 
+MIGRATE_UNMOVABLE so it would not be totally different code paths that are 
+being executed in the enabled/disabled cases.
+
 -- 
-1.5.0.g53756
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
