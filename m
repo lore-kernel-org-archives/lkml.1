@@ -1,32 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbXCRStp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932953AbXCRSuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932879AbXCRStp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 14:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXCRStj
+	id S932953AbXCRSuZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 14:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXCRStq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 14:49:39 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34359 "EHLO
+	Sun, 18 Mar 2007 14:49:46 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34380 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932873AbXCRStV (ORCPT
+	with ESMTP id S932893AbXCRStl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 14:49:21 -0400
-Date: Sun, 18 Mar 2007 19:49:23 +0100
+	Sun, 18 Mar 2007 14:49:41 -0400
+Date: Sun, 18 Mar 2007 19:49:38 +0100
 From: Adrian Bunk <bunk@stusta.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tomas Janousek <tomi@nomi.cz>, Thomas Meyer <thomas@m3y3r.de>,
-       Milan Broz <mbroz@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       pavel@suse.cz, linux-pm@lists.osdl.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
-       Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [4/6] 2.6.21-rc4: known regressions
-Message-ID: <20070318184923.GX752@stusta.de>
+       CIJOML <cijoml@volny.cz>, v4l-dvb-maintainer@linuxtv.org,
+       Len Brown <lenb@kernel.org>, davem@davemloft.net,
+       netdev@vger.kernel.org, Albert Hopkins <kernel@marduk.letterboxes.org>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, jgarzik@pobox.com,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Takashi Iwai <tiwai@suse.de>, perex@suse.cz,
+       alsa-devel@alsa-project.org,
+       Randy Cushman <rcushman_linux@earthlink.net>,
+       Ismail =?utf-8?Q?D=C3=B6nmez?= <ismail@pardus.org.tr>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Thomas Meyer <thomas@m3y3r.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       bcollins@debian.org, linux1394-devel@lists.sourceforge.net,
+       Mark Lord <lkml@rtr.ca>, Jim Radford <radford@blackbean.org>,
+       Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
+       Catalin Marinas <catalin.marinas@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [6/6] 2.6.21-rc4: known regressions
+Message-ID: <20070318184938.GZ752@stusta.de>
 References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,39 +53,70 @@ possibly involved with one or more of these issues.
 Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-Subject    : suspend/resume hangs (until keypress)  (CONFIG_NO_HZ)
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8181
-             http://lkml.org/lkml/2007/3/11/112
-Submitter  : Tomas Janousek <tomi@nomi.cz>
-             Thomas Meyer <thomas@m3y3r.de>
-             Milan Broz <mbroz@redhat.com>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-Patch      : http://lkml.org/lkml/2007/3/16/406
+Subject    : Oops when changing DVB-T adapter
+References : http://lkml.org/lkml/2007/3/9/212
+Submitter  : CIJOML <cijoml@volny.cz>
+Status     : unknown
+
+
+Subject    : ipv6 crash
+References : http://lkml.org/lkml/2007/3/10/2
+Submitter  : Len Brown <lenb@kernel.org>
+Status     : unknown
+
+
+Subject    : forcedeth: skb_over_panic
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
+Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
+Handled-By : Ayaz Abdulla <aabdulla@nvidia.com>
+Status     : submitter was asked to test a patch
+
+
+Subject    : snd_intel8x0: divide error: 0000
+References : http://lkml.org/lkml/2007/3/5/252
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Handled-By : Takashi Iwai <tiwai@suse.de>
+Status     : problem is being debugged
+
+
+Subject    : snd-intel8x0: no 3d surround sound
+References : http://lkml.org/lkml/2007/3/5/164
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Caused-By  : Randy Cushman <rcushman_linux@earthlink.net>
+             commit 831466f4ad2b5fe23dff77edbe6a7c244435e973
+Handled-By : Takashi Iwai <tiwai@suse.de>
 Status     : patch available
 
 
-Subject    : system doesn't come out of suspend  (CONFIG_NO_HZ)
-References : http://lkml.org/lkml/2007/2/22/391
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-             Soeren Sonnenburg <kernel@nn7.de>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-             Ingo Molnar <mingo@elte.hu>
-             Tejun Heo <htejun@gmail.com>
-             Rafael J. Wysocki <rjw@sisk.pl>
+Subject    : Oops in __nodemgr_remove_host_dev
+References : http://lkml.org/lkml/2007/3/14/4
+             http://lkml.org/lkml/2007/3/18/87
+Submitter  : Ismail Dönmez <ismail@pardus.org.tr>
+             Stefan Richter <stefanr@s5r6.in-berlin.de>
+             Thomas Meyer <thomas@m3y3r.de>
+Caused-By  : Greg Kroah-Hartman <gregkh@suse.de>
+             commit 43cb76d91ee85f579a69d42bc8efc08bac560278
+             commit 40cf67c5fcc513406558c01b91129280208e57bf
+Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>
 Status     : problem is being debugged
 
 
-Subject    : first disk access after resume takes several minutes
-             ('date' does not advance after resume from RAM, CONFIG_NO_HZ=n)
-References : http://lkml.org/lkml/2007/3/8/117
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-             Ingo Molnar <mingo@elte.hu>
+Subject    : USB: Oops when connecting USB 1.1 docks
+References : http://lkml.org/lkml/2007/3/4/266
+Submitter  : Mark Lord <lkml@rtr.ca>
+Caused-By  : Jim Radford <radford@blackbean.org>
+             commit d9a7ecacac5f8274d2afce09aadcf37bdb42b93a
+Handled-By : Oliver Neukum <oneukum@suse.de>
+             Jim Radford <radford@blackbean.org>
+Patch      : http://lkml.org/lkml/2007/3/13/217
+Status     : patch available
+
+
+Subject    : Possible "struct pid" leak from tty_io.c
+References : http://lkml.org/lkml/2007/3/8/222
+Submitter  : Catalin Marinas <catalin.marinas@gmail.com>
+Caused-By  : Eric W. Biederman <ebiederm@xmission.com>
+             commit ab521dc0f8e117fd808d3e425216864d60390500
+Handled-By : Eric W. Biederman <ebiederm@xmission.com>
 Status     : problem is being debugged
-
-
-Subject    : after resume: X hangs after drawing a couple of windows
-References : http://lkml.org/lkml/2007/3/8/117
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-Status     : unknown
 
