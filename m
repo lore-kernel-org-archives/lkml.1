@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbXCRFhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbXCRFlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbXCRFhW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 01:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXCRFhW
+	id S1753026AbXCRFlX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 01:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXCRFlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 01:37:22 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48909 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751593AbXCRFhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 01:37:22 -0400
-X-Provags-ID: V01U2FsdGVkX19fX58GLwNfY8XmS8rGjvhvFanfeXVpcZbJ+5zSAv
-	fsR61PvR2qSt0m
-Subject: Re: is RSDL an "unfair" scheduler too?
-From: Mike Galbraith <efault@gmx.de>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org, Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <45FCA051.2080008@tmr.com>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172302.10819.kernel@kolivas.org>	<20070317122831.GA28429@elte.hu>
-	 <200703172343.53480.kernel@kolivas.org>  <45FCA051.2080008@tmr.com>
-Content-Type: text/plain
-Date: Sun, 18 Mar 2007 06:37:13 +0100
-Message-Id: <1174196233.8199.20.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Sun, 18 Mar 2007 01:41:23 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:33288 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842AbXCRFlV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 01:41:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=lALqM4TpVcblsiP50ixhM/Qb+zAyoJxRd5HM9R6cw6U0WW8qWoLF1XLCgEV+1PWTDKG7e5CF18bQYhTRYsZmcm3F5Vx+3WRdM+rSVC2M5fkHaUsOJ3WIDMViqV9OgFxwNqyI0xZf0oSMPuSEZLGjpoY5VM6KvvAbzJJx8OkrWNs=
+Message-ID: <45FCD0FB.70507@gmail.com>
+Date: Sun, 18 Mar 2007 14:41:15 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Jon Masters <jonathan@jonmasters.org>
+CC: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       Conke Hu <conke.hu@gmail.com>
+Subject: Re: Loading both the pata_atiixp and the ahci driver causes problems
+References: <45F9C3F5.4070906@redhat.com> <45F9F5F0.3090508@jonmasters.org>
+In-Reply-To: <45F9F5F0.3090508@jonmasters.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-17 at 21:13 -0500, Bill Davidsen wrote:
+Jon Masters wrote:
+> Chuck Ebbert wrote:
+> 
+>> If you try to load both the pata_atiixp and the ahci driver
+>> (for the same ATI SB600 adapter), very strange things happen.
+>> The AHCI driver churns for three minutes or so, spewing
+>> messages like this, then nothing works:
+>>
+>> <6>ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>> <4>ata3.00: qc timeout (cmd 0xec)
+>> <4>ata3.00: failed to IDENTIFY (I/O error, err_mask=0x104)
+> 
+>> Shouldn't it be able to tell the device has already been
+>> claimed by some other driver?
+> 
+> One would assume it'd fail to grab the PCI IO ranges twice? I haven't
+> looked at the code but I have seen this bug mentioned elsewhere so I
+> might well end up having to do that yet :-)
 
-> Now for something constructive... by any chance is Mike running KDE 
-> instead of GNOME?
+Dunno much about sb600 but ahci and pata_atiixp are probably using
+separate IO regions && separate PCI functions.
 
-Yes.
+Conke, care to educate us a bit here?
 
-	-Mike
-
+-- 
+tejun
