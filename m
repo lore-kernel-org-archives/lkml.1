@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933143AbXCRUKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933131AbXCRUKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933143AbXCRUKP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 16:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933131AbXCRUKP
+	id S933131AbXCRUKu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 16:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933114AbXCRUKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 16:10:15 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:28131 "EHLO
+	Sun, 18 Mar 2007 16:10:48 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:30692 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933120AbXCRUKJ (ORCPT
+	with ESMTP id S933145AbXCRUKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 16:10:09 -0400
+	Sun, 18 Mar 2007 16:10:22 -0400
 From: divy@chelsio.com
-Subject: [PATCH 2.6.21 2/4] cxgb3 - Auto-load FW if mismatch detected
+Subject: [PATCH 2.6.21 4/4] cxgb3 - T3B2 pcie config space
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Sun, 18 Mar 2007 13:10:06 -0700
-Message-ID: <20070318201006.16292.12877.stgit@localhost.localdomain>
+Date: Sun, 18 Mar 2007 13:10:17 -0700
+Message-ID: <20070318201017.16328.26563.stgit@localhost.localdomain>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,99 +26,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-The driver attempts to upgrade the FW if the card has the wrong version.
+T3B2 does not lose its pcie config space on reset.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 ---
 
- drivers/net/Kconfig            |    1 +
- drivers/net/cxgb3/cxgb3_main.c |   25 +++++++++++++++++++++++++
- drivers/net/cxgb3/t3_hw.c      |    5 +++--
- 3 files changed, 29 insertions(+), 2 deletions(-)
+ drivers/net/cxgb3/t3_hw.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 5ff0922..1b6459b 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2374,6 +2374,7 @@ config CHELSIO_T1_NAPI
- config CHELSIO_T3
-         tristate "Chelsio Communications T3 10Gb Ethernet support"
-         depends on PCI
-+	select FW_LOADER
-         help
-           This driver supports Chelsio T3-based gigabit and 10Gb Ethernet
-           adapters.
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index eb0a4e0..b9bcda8 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -42,6 +42,7 @@
- #include <linux/workqueue.h>
- #include <linux/proc_fs.h>
- #include <linux/rtnetlink.h>
-+#include <linux/firmware.h>
- #include <asm/uaccess.h>
- 
- #include "common.h"
-@@ -707,6 +708,28 @@ static void bind_qsets(struct adapter *a
- 	}
- }
- 
-+#define FW_FNAME "t3fw-%d.%d.bin"
-+
-+static int upgrade_fw(struct adapter *adap)
-+{
-+	int ret;
-+	char buf[64];
-+	const struct firmware *fw;
-+	struct device *dev = &adap->pdev->dev;
-+
-+	snprintf(buf, sizeof(buf), FW_FNAME, FW_VERSION_MAJOR,
-+		 FW_VERSION_MINOR);
-+	ret = request_firmware(&fw, buf, dev);
-+	if (ret < 0) {
-+		dev_err(dev, "could not upgrade firmware: unable to load %s\n",
-+			buf);
-+		return ret;
-+	}
-+	ret = t3_load_fw(adap, fw->data, fw->size);
-+	release_firmware(fw);
-+	return ret;
-+}
-+
- /**
-  *	cxgb_up - enable the adapter
-  *	@adapter: adapter being enabled
-@@ -723,6 +746,8 @@ static int cxgb_up(struct adapter *adap)
- 
- 	if (!(adap->flags & FULL_INIT_DONE)) {
- 		err = t3_check_fw_version(adap);
-+		if (err == -EINVAL)
-+			err = upgrade_fw(adap);
- 		if (err)
- 			goto out;
- 
 diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index eaa7a2e..983ee81 100644
+index 983ee81..791ed6d 100644
 --- a/drivers/net/cxgb3/t3_hw.c
 +++ b/drivers/net/cxgb3/t3_hw.c
-@@ -681,7 +681,8 @@ enum {
- 	SF_ERASE_SECTOR = 0xd8,	/* erase sector */
+@@ -3244,15 +3244,17 @@ void early_hw_init(struct adapter *adapt
+ }
  
- 	FW_FLASH_BOOT_ADDR = 0x70000,	/* start address of FW in flash */
--	FW_VERS_ADDR = 0x77ffc	/* flash address holding FW version */
-+	FW_VERS_ADDR = 0x77ffc,    /* flash address holding FW version */
-+	FW_MIN_SIZE = 8            /* at least version and csum */
- };
+ /*
+- * Reset the adapter.  PCIe cards lose their config space during reset, PCI-X
++ * Reset the adapter. 
++ * Older PCIe cards lose their config space during reset, PCI-X
+  * ones don't.
+  */
+ int t3_reset_adapter(struct adapter *adapter)
+ {
+-	int i;
++	int i, save_and_restore_pcie = 
++	    adapter->params.rev < T3_REV_B2 && is_pcie(adapter);
+ 	uint16_t devid = 0;
  
- /**
-@@ -935,7 +936,7 @@ int t3_load_fw(struct adapter *adapter,
- 	const u32 *p = (const u32 *)fw_data;
- 	int ret, addr, fw_sector = FW_FLASH_BOOT_ADDR >> 16;
+-	if (is_pcie(adapter))
++	if (save_and_restore_pcie)
+ 		pci_save_state(adapter->pdev);
+ 	t3_write_reg(adapter, A_PL_RST, F_CRSTWRM | F_CRSTWRMMODE);
  
--	if (size & 3)
-+	if ((size & 3) || size < FW_MIN_SIZE)
- 		return -EINVAL;
- 	if (size > FW_VERS_ADDR + 8 - FW_FLASH_BOOT_ADDR)
- 		return -EFBIG;
+@@ -3270,7 +3272,7 @@ int t3_reset_adapter(struct adapter *ada
+ 	if (devid != 0x1425)
+ 		return -1;
+ 
+-	if (is_pcie(adapter))
++	if (save_and_restore_pcie)
+ 		pci_restore_state(adapter->pdev);
+ 	return 0;
+ }
