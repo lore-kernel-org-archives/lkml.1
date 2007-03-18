@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbXCRMnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbXCRMn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752414AbXCRMnQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 08:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXCRMnQ
+	id S1752142AbXCRMn4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 08:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXCRMn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 08:43:16 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:16417 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752414AbXCRMnP convert rfc822-to-8bit (ORCPT
+	Sun, 18 Mar 2007 08:43:56 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:34468 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752142AbXCRMnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 08:43:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DoIx8+SKQ9t6tnujl/W1Oj7oU94+CHdk3obdPZm9+DRkDt50no+8dDf41jhztKcNWV8IYP+WiY3fq5WTmklh6WOMWmeQsTWqRlNCMiXw4bDlqEu4pqCzoqZXCfnYO9o38qkoQOq3A6y1oaUb5iRQbkjGHG8+qOy/P/mf1qle8ZI=
-Message-ID: <bd87e7590703180543p75c46b8fk44a0df061d21a17@mail.gmail.com>
-Date: Sun, 18 Mar 2007 13:43:13 +0100
-From: "Kevin Baradon" <kevin.baradon@gmail.com>
-To: "Patrick McHardy" <kaber@trash.net>
-Subject: Re : [2.6.21-rc{3,4} problem]: missing dependency on NF_NAT
-Cc: linux-kernel@vger.kernel.org,
-       "Netfilter Development Mailinglist" 
-	<netfilter-devel@lists.netfilter.org>
-In-Reply-To: <45FC0226.2010305@trash.net>
+	Sun, 18 Mar 2007 08:43:55 -0400
+Date: Sun, 18 Mar 2007 14:43:46 +0200
+From: Dan Aloni <da-x@monatomic.org>
+To: Linux Kernel List <linux-kernel@vger.kernel.org>
+Cc: netdev@vger.kernel.org
+Subject: [PATCH] tcp_sendpage(): fix broken page iteration
+Message-ID: <20070318124346.GA6396@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <bd87e7590703170738q2363274fx120630d5d4e3279@mail.gmail.com>
-	 <45FC0226.2010305@trash.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-PopBeforeSMTPSenders: da-x@monatomic.org
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/3/17, Patrick McHardy <kaber@trash.net>:
-> Kevin Baradon wrote:
-> > Compiling kernel 2.6.21-rc3 gives me the following errors :
-> >
-> >  LD      .tmp_vmlinux1
-> > net/built-in.o: dans la fonction « nfnetlink_parse_nat_proto »:
-> > nf_conntrack_netlink.c:(.text+0x28db9): référence indéfinie vers «
-> > nf_nat_proto_find_get »
-> > [...]
-> >
-> > Also occurs with 2.6.21-rc4.
-> > Setting CONFIG_NF_NAT to 'y' fixes problem.
->
->
-> Thanks, I queued this patch, which should fix it.
+do_tcp_sendpages() should not iterate 'pages' as an array since 
+it is not an array of 'struct page *', but a pointer to a single 
+entity of 'struct page *' passed on the stack as a parameter to 
+tcp_send_page() (hence it would crash if poffset + psize > PAGE_SIZE,
+because pages[1] and beyond most probably not constitutes a valid 
+'struct page *').
 
-Yes, it works for me.
-Thanks.
+Since 'page' points to an array of 'struct page', the obvious fix 
+is to iterate that array instead, and that's what the function
+should have done in the first place.
 
->
+Applies to 2.6.21-rc4 and above.
+
+
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index 3834b10..4881c8d 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -501,7 +501,7 @@ static inline void tcp_push(struct sock *sk, struct tcp_sock *tp, int flags,
+ 	}
+ }
+ 
+-static ssize_t do_tcp_sendpages(struct sock *sk, struct page **pages, int poffset,
++static ssize_t do_tcp_sendpages(struct sock *sk, struct page *pages, int poffset,
+ 			 size_t psize, int flags)
+ {
+ 	struct tcp_sock *tp = tcp_sk(sk);
+@@ -527,7 +527,7 @@ static ssize_t do_tcp_sendpages(struct sock *sk, struct page **pages, int poffse
+ 
+ 	while (psize > 0) {
+ 		struct sk_buff *skb = sk->sk_write_queue.prev;
+-		struct page *page = pages[poffset / PAGE_SIZE];
++		struct page *page = &pages[poffset / PAGE_SIZE];
+ 		int copy, i, can_coalesce;
+ 		int offset = poffset % PAGE_SIZE;
+ 		int size = min_t(size_t, psize, PAGE_SIZE - offset);
+@@ -630,7 +630,7 @@ ssize_t tcp_sendpage(struct socket *sock, struct page *page, int offset,
+ 
+ 	lock_sock(sk);
+ 	TCP_CHECK_TIMER(sk);
+-	res = do_tcp_sendpages(sk, &page, offset, size, flags);
++	res = do_tcp_sendpages(sk, page, offset, size, flags);
+ 	TCP_CHECK_TIMER(sk);
+ 	release_sock(sk);
+ 	return res;
+
+
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
