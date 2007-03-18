@@ -1,113 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932634AbXCRShJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXCRSld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932634AbXCRShJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 14:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932074AbXCRShJ
+	id S932780AbXCRSld (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 14:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932800AbXCRSld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 14:37:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:55047 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932634AbXCRShH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 14:37:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=cZVaTsb8+6c1j4hKDvJjI6sXF1pdZJUqp5ELz3NhyqvH24NrGL+J3iwO9NT/l6eTFJa/AnGJ2jjizhk3OPSIVZWYiOg1LXSTpQkKaHKmTXzZG6H9xmwF4UvAce9KxzINFt1fuNALdweF3TzMtNqqKsZHSvqk29x489w1tKHyeEc=
-Message-ID: <45FD8684.4030501@googlemail.com>
-Date: Sun, 18 Mar 2007 19:35:48 +0100
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sun, 18 Mar 2007 14:41:33 -0400
+Received: from styx.suse.cz ([82.119.242.94]:60064 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932780AbXCRSlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 14:41:32 -0400
+Date: Sun, 18 Mar 2007 19:45:06 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Soeren Sonnenburg <kernel@nn7.de>, Sergey Vlasov <vsu@altlinux.ru>,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: appletouch quirk doesn't run at resume
+In-Reply-To: <20070318004240.GO752@stusta.de>
+Message-ID: <Pine.LNX.4.64.0703181934530.4195@jikos.suse.cz>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+ <200703162134.14265.rjw@sisk.pl> <1174078066.13341.279.camel@localhost.localdomain>
+ <1174087552.13341.332.camel@localhost.localdomain> <45FBBDEA.9060708@m3y3r.de>
+ <20070318004240.GO752@stusta.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
-References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
-In-Reply-To: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org napisa³(a):
-> The mm snapshot broken-out-2007-03-18-02-44.tar.gz has been uploaded to
-> 
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-03-18-02-44.tar.gz
-> 
-> It contains the following patches against 2.6.21-rc4:
-> 
+On Sun, 18 Mar 2007, Adrian Bunk wrote:
 
-Interesting
+> > 1.) The quirk added in commit a417a21e10831bca695b4ba9c74f4ddf5a95ac06 
+> >     for the appletouch driver doesn't seem to work after resume.
+> Not a regression, but still a bug. Appropriate people added to the Cc.
 
-Freeing unused kernel memory: 204k freed
-Write protecting the kernel read-only data: 917k
-PM: Adding info for No Bus:vcs1
-PM: Adding info for No Bus:vcsa1
-Failed to execute /init
-Kernel panic - not syncing: No init found.  Try passing init= option to kernel.
+(trimmed CC a little bit)
 
-It's not a new-kernel-pkg (Fedora initrd generator) related issue, 2.6.21-rc4-git2
-boots fine.
+Thomas, could you please provide more information? Did it ever work for 
+you after suspend/resume cycle and it just broke at some point in the 
+past, or you are not sure whether it ever worked?
 
-  LD      .tmp_vmlinux1
-  KSYM    .tmp_kallsyms1.S
-  AS      .tmp_kallsyms1.o
-  LD      .tmp_vmlinux2
-  KSYM    .tmp_kallsyms2.S
-  AS      .tmp_kallsyms2.o
-  LD      vmlinux
-  SYSMAP  System.map
-  SYSMAP  .tmp_System.map
-  MODPOST vmlinux
-WARNING: could not find versions for .tmp_versions/head.mod
-WARNING: could not find versions for .tmp_versions/init_task.mod
-WARNING: init/built-in.o - Section mismatch: reference to .init.text: from .text between 'rest_init' (at offset 0x101) and 'try_name'
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:irqbalance_disable from .text between 'quirk_intel_irqbalance' (at offset 0x82ef) and 'i8237A_suspend'
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:sysenter_setup from .text between 'identify_cpu' (at offset 0x97a0) and 'display_cacheinfo'
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:mtrr_bp_init from .text between 'identify_cpu' (at offset 0x97aa) and 'display_cacheinfo'
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .text between 'set_up_list3s' (at offset 0x1c77f) and 's_start'
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-WARNING: could not find versions for .tmp_versions/built-in.mod
-  AS      arch/i386/boot/setup.o
-  LD      arch/i386/boot/setup
-  OBJCOPY arch/i386/boot/compressed/vmlinux.bin
-  GZIP    arch/i386/boot/compressed/vmlinux.bin.gz
-  LD      arch/i386/boot/compressed/piggy.o
-  LD      arch/i386/boot/compressed/vmlinux
-  OBJCOPY arch/i386/boot/vmlinux.bin
-  BUILD   arch/i386/boot/bzImage
-Root device is (8, 1)
-Boot sector 512 bytes.
-Setup is 7025 bytes.
-System is 1823 kB
-Kernel: arch/i386/boot/bzImage is ready  (#3)
+Also, what exactly does it mean that it doesn't work? Are both the 
+interfaces after resume bound to usbhid driver (you can check this in 
+/sys)? When the quirk works correctly, only the keyboard interface should 
+be bound to usbhid driver. Please check the binding both before and after 
+suspend/resume cycle, and let me know.
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-03-18-02-44/mm-config
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-03-18-02-44/mm-console.log
-
-Regards,
-Michal
+Thanks,
 
 -- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+Jiri Kosina
