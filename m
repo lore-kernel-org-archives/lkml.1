@@ -1,522 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbXCRQzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbXCRRAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753246AbXCRQzF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 12:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbXCRQzF
+	id S1753245AbXCRRAR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 13:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXCRRAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 12:55:05 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:52785 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753246AbXCRQzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 12:55:00 -0400
-Message-ID: <45FD6EF5.1030706@ums.usu.ru>
-Date: Sun, 18 Mar 2007 21:55:17 +0500
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.9 (X11/20061220)
+	Sun, 18 Mar 2007 13:00:17 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60271 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753245AbXCRRAP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 13:00:15 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Dave Hansen <hansendc@us.ibm.com>
+Cc: Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       menage@google.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, xemul@sw.ru
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>
+	<20070306140036.4e85bd2f.akpm@linux-foundation.org>
+	<45F3F581.9030503@sw.ru>
+	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
+	<20070312010039.GC21861@MAIL.13thfloor.at>
+	<1173724979.11945.103.camel@localhost.localdomain>
+	<20070312224129.GC21258@MAIL.13thfloor.at>
+	<1173740528.11945.184.camel@localhost.localdomain>
+Date: Sun, 18 Mar 2007 10:58:06 -0600
+In-Reply-To: <1173740528.11945.184.camel@localhost.localdomain> (Dave Hansen's
+	message of "Mon, 12 Mar 2007 16:02:08 -0700")
+Message-ID: <m17itelc9t.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, agalakhov@ifmlrs.uran.ru,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH] Sanitize filesystem NLS handling
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let me quote from the current description of CONFIG_FAT_DEFAULT_CODEPAGE:
+Dave Hansen <hansendc@us.ibm.com> writes:
 
-> This option should be set to the codepage of your FAT filesystems.
+> On Mon, 2007-03-12 at 23:41 +0100, Herbert Poetzl wrote:
+>> 
+>> let me give a real world example here:
+>> 
+>>  - typical guest with 600MB disk space
+>>  - about 100MB guest specific data (not shared)
+>>  - assumed that 80% of the libs/tools are used
+>
+> I get the general idea here, but I just don't think those numbers are
+> very accurate.  My laptop has a bunch of gunk open (xterm, evolution,
+> firefox, xchat, etc...).  I ran this command:
+>
+> lsof | egrep '/(usr/|lib.*\.so)' | awk '{print $9}' | sort | uniq | xargs du
+> -Dcs
+>
+> and got:
+>
+> 113840  total
+>
+> On a web/database server that I have (ps aux | wc -l == 128), I just ran
+> the same:
+>
+> 39168   total
+>
+> That's assuming that all of the libraries are fully read in and
+> populated, just by their on-disk sizes. Is that not a reasonable measure
+> of the kinds of things that we can expect to be shared in a vserver?  If
+> so, it's a long way from 400MB.
+>
+> Could you try a similar measurement on some of your machines?  Perhaps
+> mine are just weird.
 
-Do you see the word "your"? Compile-time settings with the word "your" 
-in their description are always a design bug.
+Think shell scripts and the like.  From what I have seen I would agree
+that is typical for application code not to dominate application memory usage.
+However on the flip side it is non uncommon for application code to dominate
+disk usage.  Some of us have giant music, video or code databases that consume
+a lot of disk space but in many instances servers don't have enormous chunks
+of private files, and even when they do they share the files from the distribution.
 
-As documented, this can be changed on per-mount basis with the 
-"codepage=..." mount option, and this works in /etc/fstab. The same 
-consideration (including the "works in /etc/fstab" note) applies to the 
-iocharset parameter. However, this becomes a big problem with HAL-based 
-automounting, because many agents (e.g., pmount and exo_mount from 
-xfce-4.4.0) have NO means of changing the mount options. This makes it 
-completely impossible to use non-English filenames with HAL-based 
-automounting and distro kernels. There are a lot of threads about this 
-in Russian forums, and the solution usually recommended is to uninstall HAL.
+The result of this is that there are a lot of unmapped pages cached in the page
+cache for rarely run executables, that are cached just in case we need them.
 
-One could say that every backend must add the iocharset and codepage 
-mount option by itself, but code duplication between such backends is 
-never a good thing. The solution is to make the default iocharset and 
-codepage adjustable at runtime on the global basis, so that no explicit 
-mount options are needed. That's what the appended patch does.
+So while Herbert's numbers may be a little off the general principle of the entire
+system doing better if you can share the page cache is very real.
 
-More details on what the patch does:
+That the page cache isn't accounted for here isn't terribly important we still
+get the global benefit.
 
- * Rewords the description of CONFIG_NLS_DEFAULT, because at some point 
-in the past it confused some people
- * Removes CONFIG_FAT_DEFAULT_IOCHARSET, now CONFIG_NLS_DEFAULT is used 
-for this purpose. This is because the correct setting of both must match 
-the user's locale
- * Merges the two CONFIG_SMB_NLS_REMOTE and CONFIG_FAT_DEFAULT_CODEPAGE 
-options into one, named CONFIG_CODEPAGE_DEFAULT. This is because the 
-correct setting of both must match the code page used by MS-DOS in the 
-user's country. For the same reason, CONFIG_SMB_NLS_DEFAULT is removed 
-(the only sane choice is "y")
- * Makes the FAT filesystem accept both the old-style "codepage=866" 
-mount option (which is inconsistent with other filesystems requiring a 
-codepage option) and the new-style "codepage=cp866" option. This is 
-necessary because CONFIG_CODEPAGE_DEFAULT must work for all filesystems 
-that use it
- * Downgrades the UTF-8 FAT warning to a note, because, while using the 
-utf8 iocharset produces a case-sensitive FAT filesystem, other 
-iocharsets simply produce wrong characters, which is much worse
- * Renames SMB_NLS_MAXNAMELEN to NLS_MAXNAMELEN, because it is also 
-useful outside smbfs
- * Makes smbfs always output iocharset and codepage in /proc/mounts, as 
-FAT does
- * Makes CONFIG_NLS_DEFAULT and CONFIG_CODEPAGE_DEFAULT adjustable at 
-runtime via the following mechanisms:
+> I don't doubt this, but doing this two-level page-out thing for
+> containers/vservers over their limits is surely something that we should
+> consider farther down the road, right?
 
-   * If the nls_base.ko module is really a module, it is sufficient to 
-write in modprobe.conf something like this:
+It is what the current VM of linux does.  There is removing a page from
+processes and then there is writing it out to disk.  I think the normal
+term is second chance replacement.  The idea is that once you remove
+a page from being mapped you let it age a little before it is paged
+back in.  This allows pages in high demand to avoid being written
+to disk, all they incur are minor not major fault costs.
 
-options nls_base iocharset=koi8-r codepage=cp866
+> It's important to you, but you're obviously not doing any of the
+> mainline coding, right?
 
-   * If it is not a module, add this to the kernel command line in GRUB:
+Tread carefully here.  Herbert may not be doing a lot of mainline coding
+or extremely careful review of potential patches but he does seem to have
+a decent grasp of the basic issues.   In addition to a reasonable amount
+of experience so it is worth listening to what he says.
 
-nls_base.iocharset=koi8-r nls_base.codepage=cp866
+In addition Herbert does seem to be doing some testing of the mainline
+code as we get it going.  So he is contributing.
 
-   * In both cases, writing into sysfs also works:
+>> > What are the consequences if this isn't done?  Doesn't 
+>> > a loaded system eventually have all of its pages used 
+>> > anyway, so won't this always be a temporary situation?
+>> 
+>> let's consider a quite limited guest (or several
+>> of them) which have a 'RAM' limit of 64MB and 
+>> additional 64MB of 'virtual swap' assigned ...
+>> 
+>> if they use roughly 96MB (memory footprint) then
+>> having this 'fluffy' optimization will keep them
+>> running without any effect on the host side, but
+>> without, they will continously swap in and out
+>> which will affect not only the host, but also the
+>> other guests ...
 
-echo -n koi8-r >/sys/module/nls_base/parameters/iocharset
-echo -n cp866 >/sys/module/nls_base/parameters/codepage
+Ugh.  You really want swap > RAM here.  Because there are real
+cases when you are swapping when all of your pages in RAM can
+be cached in the page cache.  96MB with 64MB RSS and 64MB swap is
+almost a sure way to hit your swap page limit and die.
 
-Target: 2.6.22
-Signed-off-by: Alexander E. Patrakov
+> All workloads that use $limit+1 pages of memory will always pay the
+> price, right?  :)
 
-After applying, fix the defconfigs by removing 
-CONFIG_FAT_DEFAULT_IOCHARSET, CONFIG_FAT_DEFAULT_CODEPAGE, 
-CONFIG_SMB_NLS_REMOTE, CONFIG_SMB_NLS_DEFAULT, and adding 
-CONFIG_CODEPAGE_DEFAULT="cp437" (except for defconfig.m32104ut, where 
-this should be cp932). Also make sure that CONFIG_NLS_CODEPAGE_437 is 
-not disabled.
+They should.  When you remove an anonymous page from the pages tables it
+needs to be allocated and placed in the swap cache.  Once you do that
+it can sit in the page cache like any file backed page.  So the
+container that hits $limit+1 should get the paging pressure and a lot
+more minor faults.  However we still want to globally write thing to
+disk and optimize that as we do right now.
 
-diff -ur linux-2.6.20.1/include/linux/msdos_fs.h linux-2.6.20.1.new/include/linux/msdos_fs.h
---- linux-2.6.20.1/include/linux/msdos_fs.h	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/include/linux/msdos_fs.h	2007-03-15 20:58:37.000000000 +0500
-@@ -191,7 +191,7 @@
- 	gid_t fs_gid;
- 	unsigned short fs_fmask;
- 	unsigned short fs_dmask;
--	unsigned short codepage;  /* Codepage for shortname conversions */
-+	char *codepage;           /* Codepage for shortname conversions */
- 	char *iocharset;          /* Charset used for filename input/display */
- 	unsigned short shortname; /* flags for shortname display/create rule */
- 	unsigned char name_check; /* r = relaxed, n = normal, s = strict */
-diff -ur linux-2.6.20.1/include/linux/nls.h linux-2.6.20.1.new/include/linux/nls.h
---- linux-2.6.20.1/include/linux/nls.h	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/include/linux/nls.h	2007-03-15 19:44:40.000000000 +0500
-@@ -3,6 +3,11 @@
- 
- #include <linux/init.h>
- 
-+#define NLS_MAXNAMELEN 20
-+
-+extern char default_iocharset[NLS_MAXNAMELEN];
-+extern char default_codepage[NLS_MAXNAMELEN];
-+
- /* unicode character */
- typedef __u16 wchar_t;
- 
-diff -ur linux-2.6.20.1/include/linux/smb.h linux-2.6.20.1.new/include/linux/smb.h
---- linux-2.6.20.1/include/linux/smb.h	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/include/linux/smb.h	2007-03-15 19:44:16.000000000 +0500
-@@ -11,6 +11,7 @@
- 
- #include <linux/types.h>
- #include <linux/magic.h>
-+#include <linux/nls.h>
- 
- enum smb_protocol { 
- 	SMB_PROTOCOL_NONE, 
-@@ -63,10 +64,9 @@
- 
- #ifdef __KERNEL__
- 
--#define SMB_NLS_MAXNAMELEN 20
- struct smb_nls_codepage {
--	char local_name[SMB_NLS_MAXNAMELEN];
--	char remote_name[SMB_NLS_MAXNAMELEN];
-+	char local_name[NLS_MAXNAMELEN];
-+	char remote_name[NLS_MAXNAMELEN];
- };
- 
- 
-diff -ur linux-2.6.20.1/fs/fat/inode.c linux-2.6.20.1.new/fs/fat/inode.c
---- linux-2.6.20.1/fs/fat/inode.c	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/fs/fat/inode.c	2007-03-15 21:49:09.000000000 +0500
-@@ -27,15 +27,6 @@
- #include <linux/writeback.h>
- #include <asm/unaligned.h>
- 
--#ifndef CONFIG_FAT_DEFAULT_IOCHARSET
--/* if user don't select VFAT, this is undefined. */
--#define CONFIG_FAT_DEFAULT_IOCHARSET	""
--#endif
--
--static int fat_default_codepage = CONFIG_FAT_DEFAULT_CODEPAGE;
--static char fat_default_iocharset[] = CONFIG_FAT_DEFAULT_IOCHARSET;
--
--
- static int fat_add_cluster(struct inode *inode)
- {
- 	int err, cluster;
-@@ -462,15 +453,18 @@
- 	if (sbi->nls_disk) {
- 		unload_nls(sbi->nls_disk);
- 		sbi->nls_disk = NULL;
--		sbi->options.codepage = fat_default_codepage;
- 	}
- 	if (sbi->nls_io) {
- 		unload_nls(sbi->nls_io);
- 		sbi->nls_io = NULL;
- 	}
--	if (sbi->options.iocharset != fat_default_iocharset) {
-+	if (sbi->options.iocharset != default_iocharset) {
- 		kfree(sbi->options.iocharset);
--		sbi->options.iocharset = fat_default_iocharset;
-+		sbi->options.iocharset = default_iocharset;
-+	}
-+	if (sbi->options.codepage != default_codepage) {
-+		kfree(sbi->options.codepage);
-+		sbi->options.codepage = default_codepage;
- 	}
- 
- 	sb->s_fs_info = NULL;
-@@ -869,7 +863,7 @@
- 	{Opt_umask, "umask=%o"},
- 	{Opt_dmask, "dmask=%o"},
- 	{Opt_fmask, "fmask=%o"},
--	{Opt_codepage, "codepage=%u"},
-+	{Opt_codepage, "codepage=%s"},
- 	{Opt_nocase, "nocase"},
- 	{Opt_quiet, "quiet"},
- 	{Opt_showexec, "showexec"},
-@@ -933,14 +927,15 @@
- 	substring_t args[MAX_OPT_ARGS];
- 	int option;
- 	char *iocharset;
-+	char *codepage;
- 
- 	opts->isvfat = is_vfat;
- 
- 	opts->fs_uid = current->uid;
- 	opts->fs_gid = current->gid;
- 	opts->fs_fmask = opts->fs_dmask = current->fs->umask;
--	opts->codepage = fat_default_codepage;
--	opts->iocharset = fat_default_iocharset;
-+	opts->codepage = default_codepage;
-+	opts->iocharset = default_iocharset;
- 	if (is_vfat)
- 		opts->shortname = VFAT_SFN_DISPLAY_LOWER|VFAT_SFN_CREATE_WIN95;
- 	else
-@@ -1024,9 +1019,12 @@
- 			opts->fs_fmask = option;
- 			break;
- 		case Opt_codepage:
--			if (match_int(&args[0], &option))
--				return 0;
--			opts->codepage = option;
-+			if (opts->codepage != default_codepage)
-+				kfree(opts->codepage);
-+			codepage = match_strdup(&args[0]);
-+			if (!codepage)
-+				return -ENOMEM;
-+			opts->codepage = codepage;
- 			break;
- 		case Opt_flush:
- 			opts->flush = 1;
-@@ -1042,7 +1040,7 @@
- 
- 		/* vfat specific */
- 		case Opt_charset:
--			if (opts->iocharset != fat_default_iocharset)
-+			if (opts->iocharset != default_iocharset)
- 				kfree(opts->iocharset);
- 			iocharset = match_strdup(&args[0]);
- 			if (!iocharset)
-@@ -1101,8 +1099,8 @@
- 	}
- 	/* UTF-8 doesn't provide FAT semantics */
- 	if (!strcmp(opts->iocharset, "utf8")) {
--		printk(KERN_ERR "FAT: utf8 is not a recommended IO charset"
--		       " for FAT filesystems, filesystem will be case sensitive!\n");
-+		printk(KERN_INFO "FAT: utf8 IO charset"
-+		       " is used, filesystem will be case sensitive!\n");
- 	}
- 
- 	if (opts->unicode_xlate)
-@@ -1162,7 +1160,6 @@
- 	int debug;
- 	unsigned int media;
- 	long error;
--	char buf[50];
- 
- 	sbi = kzalloc(sizeof(struct msdos_sb_info), GFP_KERNEL);
- 	if (!sbi)
-@@ -1372,10 +1369,18 @@
- 	 */
- 
- 	error = -EINVAL;
--	sprintf(buf, "cp%d", sbi->options.codepage);
--	sbi->nls_disk = load_nls(buf);
-+	
-+	sbi->nls_disk = load_nls(sbi->options.codepage);
-+	if (!sbi->nls_disk) {
-+		/* Maybe the old non-standard codepage specification is used */
-+		char buf[NLS_MAXNAMELEN];
-+		snprintf(buf, sizeof(buf), "cp%s", sbi->options.codepage);
-+		buf[sizeof(buf) - 1] = 0;
-+		sbi->nls_disk = load_nls(buf);
-+	}
-+
- 	if (!sbi->nls_disk) {
--		printk(KERN_ERR "FAT: codepage %s not found\n", buf);
-+		printk(KERN_ERR "FAT: codepage %s not found\n", sbi->options.codepage);
- 		goto out_fail;
- 	}
- 
-@@ -1421,8 +1426,10 @@
- 		unload_nls(sbi->nls_io);
- 	if (sbi->nls_disk)
- 		unload_nls(sbi->nls_disk);
--	if (sbi->options.iocharset != fat_default_iocharset)
-+	if (sbi->options.iocharset != default_iocharset)
- 		kfree(sbi->options.iocharset);
-+	if (sbi->options.codepage != default_codepage)
-+		kfree(sbi->options.codepage);
- 	sb->s_fs_info = NULL;
- 	kfree(sbi);
- 	return error;
-diff -ur linux-2.6.20.1/fs/isofs/inode.c linux-2.6.20.1.new/fs/isofs/inode.c
---- linux-2.6.20.1/fs/isofs/inode.c	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/fs/isofs/inode.c	2007-03-15 19:34:11.000000000 +0500
-@@ -773,7 +773,7 @@
- 
- #ifdef CONFIG_JOLIET
- 	if (joliet_level && opt.utf8 == 0) {
--		char * p = opt.iocharset ? opt.iocharset : CONFIG_NLS_DEFAULT;
-+		char * p = opt.iocharset ? opt.iocharset : default_iocharset;
- 		sbi->s_nls_iocharset = load_nls(p);
- 		if (! sbi->s_nls_iocharset) {
- 			/* Fail only if explicit charset specified */
-diff -ur linux-2.6.20.1/fs/Kconfig linux-2.6.20.1.new/fs/Kconfig
---- linux-2.6.20.1/fs/Kconfig	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/fs/Kconfig	2007-03-16 14:03:57.000000000 +0500
-@@ -785,28 +785,6 @@
- 	  To compile this as a module, choose M here: the module will be called
- 	  vfat.
- 
--config FAT_DEFAULT_CODEPAGE
--	int "Default codepage for FAT"
--	depends on MSDOS_FS || VFAT_FS
--	default 437
--	help
--	  This option should be set to the codepage of your FAT filesystems.
--	  It can be overridden with the "codepage" mount option.
--	  See <file:Documentation/filesystems/vfat.txt> for more information.
--
--config FAT_DEFAULT_IOCHARSET
--	string "Default iocharset for FAT"
--	depends on VFAT_FS
--	default "iso8859-1"
--	help
--	  Set this to the default input/output character set you'd
--	  like FAT to use. It should probably match the character set
--	  that most of your FAT filesystems use, and can be overridden
--	  with the "iocharset" mount option for FAT filesystems.
--	  Note that "utf8" is not recommended for FAT filesystems.
--	  If unsure, you shouldn't set "utf8" here.
--	  See <file:Documentation/filesystems/vfat.txt> for more information.
--
- config NTFS_FS
- 	tristate "NTFS file system support"
- 	select NLS
-@@ -1830,35 +1808,6 @@
- 	  To compile the SMB support as a module, choose M here: the module will
- 	  be called smbfs.  Most people say N, however.
- 
--config SMB_NLS_DEFAULT
--	bool "Use a default NLS"
--	depends on SMB_FS
--	help
--	  Enabling this will make smbfs use nls translations by default. You
--	  need to specify the local charset (CONFIG_NLS_DEFAULT) in the nls
--	  settings and you need to give the default nls for the SMB server as
--	  CONFIG_SMB_NLS_REMOTE.
--
--	  The nls settings can be changed at mount time, if your smbmount
--	  supports that, using the codepage and iocharset parameters.
--
--	  smbmount from samba 2.2.0 or later supports this.
--
--config SMB_NLS_REMOTE
--	string "Default Remote NLS Option"
--	depends on SMB_NLS_DEFAULT
--	default "cp437"
--	help
--	  This setting allows you to specify a default value for which
--	  codepage the server uses. If this field is left blank no
--	  translations will be done by default. The local codepage/charset
--	  default to CONFIG_NLS_DEFAULT.
--
--	  The nls settings can be changed at mount time, if your smbmount
--	  supports that, using the codepage and iocharset parameters.
--
--	  smbmount from samba 2.2.0 or later supports this.
--
- config CIFS
- 	tristate "CIFS support (advanced network filesystem for Samba, Window and other CIFS compliant servers)"
- 	depends on INET
-diff -ur linux-2.6.20.1/fs/nls/Kconfig linux-2.6.20.1.new/fs/nls/Kconfig
---- linux-2.6.20.1/fs/nls/Kconfig	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/fs/nls/Kconfig	2007-03-15 20:04:38.000000000 +0500
-@@ -18,13 +18,13 @@
- 	  will be called nls_base.
- 
- config NLS_DEFAULT
--	string "Default NLS Option"
-+	string "Default UNIX NLS Option"
- 	depends on NLS
- 	default "iso8859-1"
- 	---help---
--	  The default NLS used when mounting file system. Note, that this is
--	  the NLS used by your console, not the NLS used by a specific file
--	  system (if different) to store data (filenames) on a disk.
-+	  The default UNIX NLS used when mounting file system. Note, that
-+	  this is the NLS expected by the "ls" command, ot the NLS used
-+	  internally by a specific file system to store filenames on a disk.
- 	  Currently, the valid values are:
- 	  big5, cp437, cp737, cp775, cp850, cp852, cp855, cp857, cp860, cp861,
- 	  cp862, cp863, cp864, cp865, cp866, cp869, cp874, cp932, cp936,
-@@ -37,6 +37,26 @@
- 
- 	  If unsure, specify it as "iso8859-1".
- 
-+config CODEPAGE_DEFAULT
-+	string "Default MS-DOS NLS Option"
-+	depends on NLS
-+	default "cp437"
-+	---help---
-+	  The default MS-DOS NLS used when mounting file systems with MS-DOS
-+	  origin. Note, that this is the NLS used internally by these file
-+	  systems to store filenames on a disk or for transmission over a
-+	  network, not the NLS expected by the "ls"  command.
-+	  Currently, the valid values are:
-+	  big5, cp437, cp737, cp775, cp850, cp852, cp855, cp857, cp860, cp861,
-+	  cp862, cp863, cp864, cp865, cp866, cp869, cp874, cp932, cp936,
-+	  cp949, cp950, cp1251, cp1255, euc-jp, euc-kr, gb2312, iso8859-1,
-+	  iso8859-2, iso8859-3, iso8859-4, iso8859-5, iso8859-6, iso8859-7,
-+	  iso8859-8, iso8859-9, iso8859-13, iso8859-14, iso8859-15,
-+	  koi8-r, koi8-ru, koi8-u, sjis, tis-620, utf8.
-+	  If you specify a wrong value, mounting will fail.
-+
-+	  If unsure, specify it as "cp437".
-+
- config NLS_CODEPAGE_437
- 	tristate "Codepage 437 (United States, Canada)"
- 	depends on NLS
-diff -ur linux-2.6.20.1/fs/nls/nls_base.c linux-2.6.20.1.new/fs/nls/nls_base.c
---- linux-2.6.20.1/fs/nls/nls_base.c	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/fs/nls/nls_base.c	2007-03-15 19:45:59.000000000 +0500
-@@ -18,6 +18,9 @@
- #endif
- #include <linux/spinlock.h>
- 
-+char default_iocharset[NLS_MAXNAMELEN] = CONFIG_NLS_DEFAULT;
-+char default_codepage[NLS_MAXNAMELEN] = CONFIG_CODEPAGE_DEFAULT;
-+
- static struct nls_table default_table;
- static struct nls_table *tables = &default_table;
- static DEFINE_SPINLOCK(nls_lock);
-@@ -474,7 +477,7 @@
- {
- 	struct nls_table *default_nls;
- 	
--	default_nls = load_nls(CONFIG_NLS_DEFAULT);
-+	default_nls = load_nls(default_iocharset);
- 	if (default_nls != NULL)
- 		return default_nls;
- 	else
-@@ -490,5 +507,13 @@
- EXPORT_SYMBOL(utf8_mbstowcs);
- EXPORT_SYMBOL(utf8_wctomb);
- EXPORT_SYMBOL(utf8_wcstombs);
-+EXPORT_SYMBOL(default_iocharset);
-+EXPORT_SYMBOL(default_codepage);
-+
-+module_param_string(iocharset, default_iocharset, NLS_MAXNAMELEN, 0644);
-+MODULE_PARM_DESC(iocharset, "Default UNIX filename charset");
-+
-+module_param_string(codepage, default_codepage, NLS_MAXNAMELEN, 0644);
-+MODULE_PARM_DESC(codepage, "Default MS-DOS filename charset");
- 
- MODULE_LICENSE("Dual BSD/GPL");
-diff -ur linux-2.6.20.1/fs/smbfs/inode.c linux-2.6.20.1.new/fs/smbfs/inode.c
---- linux-2.6.20.1/fs/smbfs/inode.c	2007-02-20 11:34:32.000000000 +0500
-+++ linux-2.6.20.1.new/fs/smbfs/inode.c	2007-03-15 19:57:42.000000000 +0500
-@@ -36,13 +36,6 @@
- #include "getopt.h"
- #include "proto.h"
- 
--/* Always pick a default string */
--#ifdef CONFIG_SMB_NLS_REMOTE
--#define SMB_NLS_REMOTE CONFIG_SMB_NLS_REMOTE
--#else
--#define SMB_NLS_REMOTE ""
--#endif
--
- #define SMB_TTL_DEFAULT 1000
- 
- static void smb_delete_inode(struct inode *);
-@@ -396,11 +389,11 @@
- 			break;
- 		case 'i':
- 			strlcpy(mnt->codepage.local_name, optarg, 
--				SMB_NLS_MAXNAMELEN);
-+				NLS_MAXNAMELEN);
- 			break;
- 		case 'c':
- 			strlcpy(mnt->codepage.remote_name, optarg,
--				SMB_NLS_MAXNAMELEN);
-+				NLS_MAXNAMELEN);
- 			break;
- 		case 't':
- 			mnt->ttl = value;
-@@ -446,10 +439,8 @@
- 	if (mnt->flags & SMB_MOUNT_DMODE)
- 		seq_printf(s, ",dir_mode=%04o", mnt->dir_mode & S_IRWXUGO);
- 
--	if (strcmp(mnt->codepage.local_name, CONFIG_NLS_DEFAULT))
--		seq_printf(s, ",iocharset=%s", mnt->codepage.local_name);
--	if (strcmp(mnt->codepage.remote_name, SMB_NLS_REMOTE))
--		seq_printf(s, ",codepage=%s", mnt->codepage.remote_name);
-+	seq_printf(s, ",iocharset=%s", mnt->codepage.local_name);
-+	seq_printf(s, ",codepage=%s", mnt->codepage.remote_name);
- 
- 	if (mnt->ttl != SMB_TTL_DEFAULT)
- 		seq_printf(s, ",ttl=%d", mnt->ttl);
-@@ -555,10 +546,10 @@
- 	mnt = server->mnt;
- 
- 	memset(mnt, 0, sizeof(struct smb_mount_data_kernel));
--	strlcpy(mnt->codepage.local_name, CONFIG_NLS_DEFAULT,
--		SMB_NLS_MAXNAMELEN);
--	strlcpy(mnt->codepage.remote_name, SMB_NLS_REMOTE,
--		SMB_NLS_MAXNAMELEN);
-+	strlcpy(mnt->codepage.local_name, default_iocharset,
-+		NLS_MAXNAMELEN);
-+	strlcpy(mnt->codepage.remote_name, default_codepage,
-+		NLS_MAXNAMELEN);
- 
- 	mnt->ttl = SMB_TTL_DEFAULT;
- 	if (ver == SMB_MOUNT_OLDVERSION) {
-
-
+Eric
