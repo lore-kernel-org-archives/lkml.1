@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbXCRHiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXCRH6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127AbXCRHiK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 03:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbXCRHiK
+	id S1752599AbXCRH6i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 03:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbXCRH6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 03:38:10 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40122 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753127AbXCRHiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 03:38:09 -0400
-X-Provags-ID: V01U2FsdGVkX19SFpk2VU5SSkydfRTRyySD4CqFch5jqXdpVRU4oP
-	fV89k+83L5n+cW
-Subject: Re: [ck] Re: RSDL v0.31
-From: Mike Galbraith <efault@gmx.de>
+	Sun, 18 Mar 2007 03:58:37 -0400
+Received: from 1wt.eu ([62.212.114.60]:1249 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752599AbXCRH6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 03:58:37 -0400
+Date: Sun, 18 Mar 2007 08:58:07 +0100
+From: Willy Tarreau <w@1wt.eu>
 To: Radoslaw Szkodzinski <astralstorm@gmail.com>
-Cc: Kasper Sandberg <lkml@metanurb.dk>, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org, Linus Torvalds <torvalds@linux-foundation.org>,
+Cc: linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       William Lee Irwin III <wli@holomorphy.com>, ck@vds.kolivas.org,
+       Avi Kivity <avi@argo.co.il>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Nicholas Miell <nmiell@comcast.net>
-In-Reply-To: <f44c5fdf0703180022n44b2ca61o62602e54aaab3334@mail.gmail.com>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172048.46267.kernel@kolivas.org>
-	 <1174125534.7734.2.camel@Homer.simpson.net>
-	 <200703172355.30989.a1426z@gawab.com>
-	 <1174198651.8199.44.camel@Homer.simpson.net>
-	 <1174200463.10498.23.camel@localhost>
-	 <1174201726.8732.6.camel@Homer.simpson.net>
-	 <f44c5fdf0703180022n44b2ca61o62602e54aaab3334@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 18 Mar 2007 08:38:02 +0100
-Message-Id: <1174203482.8855.8.camel@Homer.simpson.net>
+Subject: Re: [ck] Re: is RSDL an "unfair" scheduler too?
+Message-ID: <20070318075807.GA3760@1wt.eu>
+References: <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu> <45FC525D.5000708@argo.co.il> <20070318012533.GB2986@holomorphy.com> <Pine.LNX.4.64.0703171830130.4964@woody.linux-foundation.org> <20070318052439.GT943@1wt.eu> <1174199171.8543.1.camel@Homer.simpson.net> <f44c5fdf0703172354o935e140p8a3e64411d3ffa0a@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f44c5fdf0703172354o935e140p8a3e64411d3ffa0a@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-18 at 08:22 +0100, Radoslaw Szkodzinski wrote:
+On Sun, Mar 18, 2007 at 07:54:20AM +0100, Radoslaw Szkodzinski wrote:
+> On 3/18/07, Mike Galbraith <efault@gmx.de> wrote:
+> >On Sun, 2007-03-18 at 06:24 +0100, Willy Tarreau wrote:
+> >
+> >> Maybe we're all discussing the problem because we have reached the point
+> >> where we need two types of schedulers : one for the desktop and one for
+> >> the servers. After all, this is already what is proposed with preempt,
+> >> it would make sense provided they share the same core and avoid ifdefs
+> >> or unused structure members. Maybe adding OPTIONAL unfairness to RSDL
+> >> would help some scenarios, but in any case it is important to retain
+> >> the default fairness it provides.
+> >
+> >Bingo.
+> >
+> 
+> Sounds like Staircase's interactive mode switch, except this actually
+> requires writing additional code.
+> 
+> The per-user system would also be nice for servers, provided there are
+> CPU/disc IO/swapper/... quotas or priorities at least.
 
-> I'd recon KDE regresses because of kioslaves waiting on a pipe
-> (communication with the app they're doing IO for) and then expiring.
-> That's why splitting IO from an app isn't exactly smart. It should at
-> least be ran in an another thread.
+This is too hard to adjust. Imagine what would happen to your hundreds of
+apache processes when the "backup" user will start the rsync or tar+gzip,
+or when user "root" will start rotating and compressing the logs. Being
+able to group processes may be useful on servers, but it should be enabled
+on purpose by the admin.
 
-Hm.  Sounds rather a lot like the...
-X sucks, fix X and RSDL will rock your world.  RSDL is perfect.
-...that I've been getting.
-
-	-Mike
+Willy
 
