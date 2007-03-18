@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbXCRWBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933325AbXCRWJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbXCRWBo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 18:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933330AbXCRWBo
+	id S933325AbXCRWJP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 18:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933330AbXCRWJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 18:01:44 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:1834 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933326AbXCRWBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 18:01:43 -0400
-X-AuthUser: hirofumi@parknet.jp
-To: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] Sanitize filesystem NLS handling
-References: <45FD6EF5.1030706@ums.usu.ru>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Mon, 19 Mar 2007 07:01:28 +0900
-In-Reply-To: <45FD6EF5.1030706@ums.usu.ru> (Alexander E. Patrakov's message of "Sun\, 18 Mar 2007 21\:55\:17 +0500")
-Message-ID: <87hcsius7b.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
+	Sun, 18 Mar 2007 18:09:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:39989 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933325AbXCRWJO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 18:09:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ns8TUjiaarlwHF4zmx7lIuZWEw00MqGVXw8PzLMnxGmUkGP/VxR7Hn5XaFwsVknaPBTq2D3v5OxVnhm2/M23y/Hk82awqtpRHjD9UwYwKeMOR63wz5Xe6N7s7LGWXQS4PkVoEvlzrn3WSEWUgFwm/S4q6tROgXTeumTXyqdtjg0=
+Message-ID: <3d8471ca0703181509j11485441ybfae3631894c2a66@mail.gmail.com>
+Date: Sun, 18 Mar 2007 23:09:11 +0100
+From: "Guillaume Chazarain" <guichaz@gmail.com>
+To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] Add an offset in the cyc2ns computation to fix sched_clock jumps
+Cc: "Andi Kleen" <ak@suse.de>, "john stultz" <johnstul@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070318210819.GB19818@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3d8471ca0703161114o7ad654car60c1a6b801401149@mail.gmail.com>
+	 <20070318210819.GB19818@Krystal>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Alexander E. Patrakov" <patrakov@ums.usu.ru> writes:
+2007/3/18, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>:
+> Hi Guillaume,
 
->  * Removes CONFIG_FAT_DEFAULT_IOCHARSET, now CONFIG_NLS_DEFAULT is used 
-> for this purpose. This is because the correct setting of both must match 
-> the user's locale
+Hi Mathieu, thanks for your extensive reply.
 
-The some filesystems want to use utf-8, and others don't want to use
-utf-8, no?  And is it also true about some devices using vfat?
+> yet another level of band-aid over a
 
->  * Merges the two CONFIG_SMB_NLS_REMOTE and CONFIG_FAT_DEFAULT_CODEPAGE 
-> options into one, named CONFIG_CODEPAGE_DEFAULT. This is because the 
-> correct setting of both must match the code page used by MS-DOS in the 
-> user's country. For the same reason, CONFIG_SMB_NLS_DEFAULT is removed 
-> (the only sane choice is "y")
+I don't agree it's a band-aid, changing the scaling coefficient
+without adjusting an offset is a bug.
 
-No. Unfortunately the real is not simple like it in some case.
+> broken architecture : AMD 7th and 8th generations
 
->  * Makes the FAT filesystem accept both the old-style "codepage=866" 
-> mount option (which is inconsistent with other filesystems requiring a 
-> codepage option) and the new-style "codepage=cp866" option. This is 
-> necessary because CONFIG_CODEPAGE_DEFAULT must work for all filesystems 
-> that use it
+Actually in my case it's Intel Pentium M Dothan.
 
-You allow to set any nls to codepage? If so, it is not good.
+> other parts of the kernel suffers from those TSC inconsistencies
 
->  * Downgrades the UTF-8 FAT warning to a note, because, while using the 
-> utf8 iocharset produces a case-sensitive FAT filesystem, other 
-> iocharsets simply produce wrong characters, which is much worse
+These other parts should not use sched_clock() but the clocksource
+mechanism which in my case rightly avoids the TSC and uses the
+ACPI timer. And I hope it will stay that way as the TSC definitely is
+not a reliable time source in my case for the reasons you gave.
 
-No, utf-8 makes completely wrong entry. It's more wrong than other nls.
+> it does not deal with frequency scaling due to temperature related
+> events, and does not, as I recall, deal with frequency scaling in halt
+> mode.
 
->  * Makes CONFIG_NLS_DEFAULT and CONFIG_CODEPAGE_DEFAULT adjustable at 
-> runtime via the following mechanisms:
+Yep, I saw this, that's why I said in this case sched_clock() does not
+return nanoseconds as it thinks it does. Thankfully, the scheduler is
+not stressed when the CPU is idle. Anyway, spilling on another thread,
+this is a bonus point for the RSDL scheduler as it does not account
+the sleeping time of tasks.
 
-The configurable sounds sane, and it may help some case. But, it should
-not be system global. At least, I think the default would be per-filesystem,
-otherwise some configs seems to be needed for other filesystem after all.
+> I also plan to update this global last_tsc every timer tick to give a
+> higher bound to time accuracy.
+
+Then I don't see how this is significantly better than the ACPI timer
+except for the increased precision in short durations. For example,
+my CPU can lower its frequency down to 798 MHz and the TSC
+down to 350 MHz or so (measured). So your clock will think the
+TSC runs at 798 MHz  when it runs at 350MHz, and every tick the
+clock will make a half tick jump to catch up with its delay.
+
+The best solution seems to buy a new computer with a reliable
+TSC ;-)
+
+Thanks.
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Guillaume
