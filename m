@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752013AbXCST4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbXCST5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752013AbXCST4p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 15:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXCST4p
+	id S1753114AbXCST5F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 15:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbXCST5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 15:56:45 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:41886 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752013AbXCST4o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 15:56:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VoYw0hKPCrpW8VKXY7ZXhk+kW28s7bSU5viYXnKXtAf52xbf+QvqQpgAeQYH3K/f1PT2u4BTFmSNepHXB8OZ43YkMQk+RqD14AsZyGLNo+wAIMJFViCnCH3sjhtjzSwIrglF5ovocU1jUav8CHQyWIE6ylHEPoisaofmES1qifI=
-Message-ID: <6bffcb0e0703191256r56eca01eufe7368a43967fb5c@mail.gmail.com>
-Date: Mon, 19 Mar 2007 20:56:43 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Mar 2007 15:57:05 -0400
+Received: from www.osadl.org ([213.239.205.134]:45730 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753114AbXCST5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 15:57:03 -0400
+Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Stefan Prechtel <stefan.prechtel@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, Len Brown <lenb@kernel.org>,
+       Andi Kleen <ak@suse.de>, john stultz <johnstul@us.ibm.com>
+In-Reply-To: <b93822910703191249i40a70418ka8165da52070ae82@mail.gmail.com>
+References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
+	 <1174325803.13341.515.camel@localhost.localdomain>
+	 <1174326499.13341.517.camel@localhost.localdomain>
+	 <b93822910703191153x20249f00vb604a0eda075a23a@mail.gmail.com>
+	 <1174332477.13341.561.camel@localhost.localdomain>
+	 <b93822910703191249i40a70418ka8165da52070ae82@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 19 Mar 2007 21:04:06 +0100
+Message-Id: <1174334646.13341.577.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Mon, 2007-03-19 at 20:49 +0100, Stefan Prechtel wrote:
+> > Can you please boot with 2.6.20 or earlier and check the output
+> > of /proc/interrupts ?
+> >
+> > IRQ#0 and the LOC (local APIC timer) Interrupts should increment in the
+> > same frequency.
+> >
+> >         tglx
+> 
+> Here is the output of /proc/interrupts on 2.6.20:
+>            CPU0       CPU1
+>   0:       7089          0  local-APIC-edge-fasteio   timer
+> ....
 
-On 18/03/07, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-> The mm snapshot broken-out-2007-03-18-02-44.tar.gz has been uploaded to
->
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-03-18-02-44.tar.gz
->
-> It contains the following patches against 2.6.21-rc4:
+Can you provide the numbers for LOC too ?
+  0:   29801420   29793520    IO-APIC-edge  timer
+...
+LOC:  119180305  119180039
 
-I reported this a few days ago.
+And please do a sleep 10; between two reads, so I can see the deltas.
 
-  BUG: at kernel/lockdep.c:2428 check_flags()
- [<c0105256>] show_trace_log_lvl+0x1a/0x2f
- [<c010597b>] show_trace+0x12/0x14
- [<c0105a3d>] dump_stack+0x16/0x18
- [<c013e1b5>] check_flags+0xb7/0x187
- [<c01413ea>] lock_acquire+0x3a/0x93
- [<c033ef57>] _spin_lock+0x35/0x42
- [<c014a957>] refrigerator+0x14/0xb5
- [<c012efe6>] get_signal_to_deliver+0x42/0x709
- [<c0103786>] do_notify_resume+0x94/0x778
- [<c0104339>] work_notifysig+0x13/0x1a
- =======================
-irq event stamp: 178563
-hardirqs last  enabled at (178563): [<c0104391>] syscall_exit_work+0x11/0x26
-hardirqs last disabled at (178562): [<c010427d>] syscall_exit+0x9/0x1a
-softirqs last  enabled at (178170): [<c0128e58>] __do_softirq+0xe4/0xea
-softirqs last disabled at (178163): [<c0128e97>] do_softirq+0x39/0x55
-hardirqs last  enabled at (2825): [<c033f525>] _spin_unlock_irqrestore+0x36/0x69
-hardirqs last disabled at (2826): [<c033f1a7>] _spin_lock_irqsave+0x12/0x4e
-softirqs last  enabled at (2808): [<c0128e58>] __do_softirq+0xe4/0xea
-softirqs last disabled at (2801): [<c0128e97>] do_softirq+0x39/0x55
+> and this on 2.6.21-rc*:
+>            CPU0       CPU1
+>   0:        255          0  local-APIC-edge-fasteoi   timer
+> ....
+> 
+> on 2.6.21-rc* the number "255" doesn't change.
 
-cpu-hotplug test hangs on this
+Yes. I know. We rely on the local APIC, if the ACPI code does us not
+tell to use the PIT broadcast, sigh.
 
-CPU 1 is now offline
-lockdep: not fixing up alternatives.
-BUG: at kernel/lockdep.c:2430 check_flags()
+> But if it is ACPI relevant, shouldn't it boot with acpi=off?
+> I've tried with acpi=off and noapic but only with nolapic it started.
+> 
+> And the content of /proc/acpi/processor/C000/power shows only one
+> c-state; shouldn't it show more C-states? (please correct me if I'm
+> wrong)
+> 
+>  # cat /proc/acpi/processor/C000/power
+> active state:            C1
+> max_cstate:              C8
+> bus master activity:     00000000
+> maximum allowed latency: 2000 usec
+> states:
+>    *C1:                  type[C1] promotion[--] demotion[--]
+> latency[000] usage[00000000] duration[00000000000000000000]
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-03-18-02-44/mm-config
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-03-18-02-44/mm-console3-swsusp-and-cpu-hotplug.log
+Yup. It should.
 
-Regards,
-Michal
+Thanks,
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+	tglx
+
+
