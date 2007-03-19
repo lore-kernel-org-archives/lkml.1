@@ -1,49 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbXCSNEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933863AbXCSNIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933853AbXCSNEb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 09:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933861AbXCSNEa
+	id S933863AbXCSNIi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 09:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933870AbXCSNIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 09:04:30 -0400
-Received: from minus.inr.ac.ru ([194.67.69.97]:60456 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S933853AbXCSNE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 09:04:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=dGZcTCc7LSWdYHdrRgNexhypWTp/lU1f5BB6RSb+aKLQysOBIDOEpc8xqLah7R2hfshrHduApwo7fN9Shl8M9gKJwlqAqH3BAHQr549z4nsQ7gP3tMSvOXdXtSwJ+OumFGCHeU9Ob5CxjSNoyMQuPaS+/tXJ4F6CyTleOatCUNk=;
-Date: Mon, 19 Mar 2007 15:59:19 +0300
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, general@lists.openfabrics.org,
-       Roland Dreier <rolandd@cisco.com>, David Miller <davem@davemloft.net>
-Subject: Re: dst_ifdown breaks infiniband?
-Message-ID: <20070319125919.GA4239@ms2.inr.ac.ru>
-References: <20070318155532.GG7958@mellanox.co.il> <20070318191238.GA20518@ms2.inr.ac.ru> <20070318195355.GB11078@mellanox.co.il> <20070318201826.GB27004@ms2.inr.ac.ru> <20070319093632.GB8386@mellanox.co.il> <20070319120534.GA28187@ms2.inr.ac.ru> <20070319121248.GD18497@mellanox.co.il>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Mar 2007 09:08:37 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34969 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933863AbXCSNIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 09:08:37 -0400
+Date: Mon, 19 Mar 2007 14:08:39 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Clement Guedez <klem.dev@gmail.com>, Jaroslav Kysela <perex@suse.cz>,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6.21 patch] fix sound/pci/ice1712/wtm.c:wtm_init()
+Message-ID: <20070319130839.GT752@stusta.de>
+References: <20070319092438.GL752@stusta.de> <s5htzwhjzo7.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070319121248.GD18497@mellanox.co.il>
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <s5htzwhjzo7.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Mon, Mar 19, 2007 at 11:27:52AM +0100, Takashi Iwai wrote:
+> At Mon, 19 Mar 2007 10:24:38 +0100,
+> Adrian Bunk wrote:
+> > 
+> > The Coverity checker spotted this bogus for() loop that produces an 
+> > array overrun.
+> 
+> Hmm, I'm dense now before a caffee, but how can it overrun...?
 
-> infiniband sets parm->neigh_destructor, and I search for a way to prevent
-> this destructor from being called after the module has been unloaded.
-> Ideas?
+Looking again, it seems I'm the one who should have drunken more tea 
+before looking at this.  :-(
 
-It must be called in any case to update/release internal ipoib structures.
+> > It seems what actually should be done is quite simple?
+> 
+> Yes... unless someone wants to add more register initializations
+> there.
+> 
+> 
+> Takashi
+> 
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > 
+> > ---
+> > 
+> >  sound/pci/ice1712/wtm.c |   14 +++-----------
+> >  1 file changed, 3 insertions(+), 11 deletions(-)
+> > 
+> > --- linux-2.6.21-rc3-mm2/sound/pci/ice1712/wtm.c.old	2007-03-19 01:29:23.000000000 +0100
+> > +++ linux-2.6.21-rc3-mm2/sound/pci/ice1712/wtm.c	2007-03-19 01:33:06.000000000 +0100
+> > @@ -489,23 +489,15 @@
+> >  
+> >  static int __devinit wtm_init(struct snd_ice1712 *ice)
+> >  {
+> > -	static unsigned short stac_inits_prodigy[] = {
+> > -		STAC946X_RESET, 0,
+> > -		(unsigned short)-1
+> > -	};
+> > -	unsigned short *p;
+> > -		
+> >  	/*WTM 192M*/
+> >  	ice->num_total_dacs = 8;
+> >  	ice->num_total_adcs = 4;
+> >  	ice->force_rdma1 = 1;
+> >  
+> >  	/*initialize codec*/
+> > -	p = stac_inits_prodigy;
+> > -	for (; *p != (unsigned short)-1; p += 2) {
+> > -		stac9460_put(ice, p[0], p[1]);
+> > -		stac9460_2_put(ice, p[0], p[1]);
+> > -	}
+> > +	stac9460_put(ice, STAC946X_RESET, 0);
+> > +	stac9460_2_put(ice, STAC946X_RESET, 0);
+> > +
+> >  	return 0;
+> >  }
+> >  
+> > 
 
-The idea is to move call of parm->neigh_destructor from neighbour destructor
-to the moment when it is unhashed, right after n->dead is set.
+cu
+Adrian
 
-infiniband is the only user (atm clip uses it too, but that use is obviously
-dummy), so that nobody will be harmed.
+-- 
 
-But ipoib will have to check for validity of skb->dst->neighbour before
-attempt to reinitialize private data on dead (n->dead != 0) neighbour.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Alexey
