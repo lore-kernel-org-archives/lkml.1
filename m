@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751949AbXCSI1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbXCSIcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751949AbXCSI1V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 04:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXCSI1V
+	id S1752280AbXCSIcG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 04:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbXCSIcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 04:27:21 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:41010 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751949AbXCSI1U (ORCPT
+	Mon, 19 Mar 2007 04:32:06 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:28438 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbXCSIcE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 04:27:20 -0400
-Date: Mon, 19 Mar 2007 10:27:18 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: ast@domdv.de, clameter@sgi.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-Message-ID: <Pine.LNX.4.64.0703191022310.8671@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Mar 2007 04:32:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=s1vLIlteKfnk0J9/FGJKEYemddAQX34YUhJPBxYf1A551M2u4nf4q2MCH/73vU3HjphSBuq/PpzQlhGV1UO1/nY/N+Jd0LxHAliU8N0kinuzXhrbHH41Ks8DrMcOAPF0CfKZnOBRDCiTsiqkez/gb4DjS5UsWrz7cmlrhj0WBPE=
+Message-ID: <84144f020703190132w4596a810k23f3423f36a52630@mail.gmail.com>
+Date: Mon, 19 Mar 2007 10:32:00 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.20.3: kernel BUG at mm/slab.c:597 try#2
+Cc: "Andreas Steinmetz" <ast@domdv.de>,
+       "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <84144f020703190100j5becc9dka2eba58456ab95f3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45FDDA8E.8030100@domdv.de>
+	 <20070318220006.7230fd58.akpm@linux-foundation.org>
+	 <84144f020703190100j5becc9dka2eba58456ab95f3@mail.gmail.com>
+X-Google-Sender-Auth: f467299eed55115f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On 3/19/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> EIP is at kmem_cache_free+0x29/0x5a
+> eax: c1800000   ebx: f0ae12c0   ecx: c18f73c0   edx: c1800000
+> esi: c1919de0   edi: 00000000   ebp: 00001000   esp: f1fe7e14
+> ds: 007b   es: 007b   ss: 0068
+>
+> But somehow eax and edx have the same value 0xc1800000 here. Hmm?
 
-This changes kmem_cache_free() to deal with NULL objects passed to it. The 
-current behavior is inconsistent with kfree() so there are callers 
-passing NULL to kmem_cache_free().
+Aah, but if you look at contents of the stack:
 
-Andreas, can you please confirm this fixes the oops you reported on 
-linux-scsi?
+Stack: f0ae12c0 c1919de0 ffffffea c0137f97 00000000 f0ae12c0 c1919e20 c0168d45
+       f0ae12c0 00001000 c0168fb9 c02a77e3 00001000 00000000 00000000 00000000
+       00000000 c17bb6e0 00001000 00000000 f1b38be8 00000003 f54ac050 c1b9d6e8
+Call Trace:
+ [<c0137f97>] mempool_free+0x48/0x4c
+ [<c0168d45>] bio_free+0x21/0x2c
+ [<c0168fb9>] bio_put+0x22/0x23
 
-Cc: Andreas Steinmetz <ast@domdv.de>
-Cc: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/slab.c |    5 +++++
- 1 file changed, 5 insertions(+)
+You can see that mempool_free is passing a NULL pointer to
+kmem_cache_free() which doesn't handle it properly. The NULL pointer
+comes from bio_free() where ->bi_io_vec is  NULL because nr_iovecs
+passed to bio_alloc_bioset() was zero.
 
-Index: 2.6/mm/slab.c
-===================================================================
---- 2.6.orig/mm/slab.c	2007-03-19 10:18:52.000000000 +0200
-+++ 2.6/mm/slab.c	2007-03-19 10:19:42.000000000 +0200
-@@ -3741,6 +3741,8 @@ EXPORT_SYMBOL(__kmalloc);
-  * @cachep: The cache the allocation was from.
-  * @objp: The previously allocated object.
-  *
-+ * If @objp is NULL, no operation is performed.
-+ *
-  * Free an object which was previously allocated from this
-  * cache.
-  */
-@@ -3748,6 +3750,9 @@ void kmem_cache_free(struct kmem_cache *
- {
- 	unsigned long flags;
- 
-+	if (unlikely(!objp))
-+		return;
-+
- 	BUG_ON(virt_to_cache(objp) != cachep);
- 
- 	local_irq_save(flags);
+The question is, why is nr_pages zero in scsi_req_map_sg()?
