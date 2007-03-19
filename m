@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030651AbXCSVwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbXCSVwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030651AbXCSVwF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030586AbXCSVlq
+	id S1753508AbXCSVwx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030587AbXCSVka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:41:46 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59317 "EHLO mx2.suse.de"
+	Mon, 19 Mar 2007 17:40:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48919 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965122AbXCSVlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:41:39 -0400
-Date: Mon, 19 Mar 2007 14:39:50 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Joy Latten <latten@austin.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 18/31] Fix extraneous IPSEC larval SA creation
-Message-ID: <20070319213950.GT9261@kroah.com>
-References: <20070319213047.710101653@mini.kroah.org>
+	id S965042AbXCSVk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:40:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tobias Doerffel <tobias.doerffel@gmail.com>
+Subject: Re: Suspend to RAM doesn't work anymore in 2.6.21
+Date: Mon, 19 Mar 2007 22:43:20 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200703191350.44105.tobias.doerffel@gmail.com>
+In-Reply-To: <200703191350.44105.tobias.doerffel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-extraneous-ipsec-larval-sa-creation.patch"
-In-Reply-To: <20070319213647.GB9261@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703192243.20836.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+Hi,
 
-------------------
+On Monday, 19 March 2007 13:50, Tobias Doerffel wrote:
+> Hi,
+> 
+> Suspend to RAM used to work fine on my computer (Intel Core Duo, 1 GB RAM, 
+> Intel 82801G (ICH7-chipset) mainboard, NVIDIA-gfx-card, tg3-ethernet) up to 
+> 2.6.20.3. But no matter which rc of 2.6.21 I use, suspend to RAM doesn't work 
+> anymore. Up to rc3 even suspending stopped at "suspending console" which 
+> appearently seems to be fixed in rc4. I tried rc4-git4 with minimal config 
+> (no dyndicks, no HRT, no MSI, no sound, no bluetooth, no PCMCIA, no WLAN, no 
+> USB, no cpufreq) but still I can't resume properly. Caps works and I can 
+> login through SSH. Back to a more complete config (sound, MMC, WLAN, PCMCIA - 
+> still no dynticks or HRT - see attachment "config") I get exactly the same 
+> behaviour.
+> 
+> When logged in through SSH after resume I saved output of dmesg (which 
+> includes full power management debug messages), see 
+> attachement "dmesg-resume". The system basically seems to be back but lot of 
+> things do not work such as loading/unloading e.g. my WLAN-driver (ipw3945), 
+> running "top" or "dstat" etc.   "uptime" always returns 0 min, even with 
+> power management debug disabled.
+> 
+> Kernel:
+> Linux version 2.6.21-rc4 (gcc version 4.1.2 20061115 (prerelease) (Debian 
+> 4.1.1-21)) #23 SMP PREEMPT Mon Mar 19 12:27:56 CET 2007
 
-From: Joy Latten <latten@austin.ibm.com>
+Can you please do
 
-[XFRM]: Fix missing protocol comparison of larval SAs.
+# echo test > /sys/power/disk
+# echo disk > /sys/power/state
 
-I noticed that in xfrm_state_add we look for the larval SA in a few
-places without checking for protocol match. So when using both
-AH and ESP, whichever one gets added first, deletes the larval SA.
-It seems AH always gets added first and ESP is always the larval
-SA's protocol since the xfrm->tmpl has it first. Thus causing the
-additional km_query()
+(the system should freeze tasks, suspend devices, disable nonboot CPUs,
+wait for 5 seconds, enable nonboot CPUs, resume devices, thaw tasks and return
+to your command prompt) and see if you can reproduce the problem?
 
-Adding the check eliminates accidental double SA creation.
+Greetings,
+Rafael
 
-Signed-off-by: Joy Latten <latten@austin.ibm.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- net/xfrm/xfrm_state.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
---- a/net/xfrm/xfrm_state.c
-+++ b/net/xfrm/xfrm_state.c
-@@ -707,7 +707,8 @@ static struct xfrm_state *__find_acq_cor
- 		    x->props.mode   != mode ||
- 		    x->props.family != family ||
- 		    x->km.state     != XFRM_STATE_ACQ ||
--		    x->id.spi       != 0)
-+		    x->id.spi       != 0 ||
-+		    x->id.proto	    != proto)
- 			continue;
- 
- 		switch (family) {
-@@ -804,7 +805,8 @@ int xfrm_state_add(struct xfrm_state *x)
- 
- 	if (use_spi && x->km.seq) {
- 		x1 = __xfrm_find_acq_byseq(x->km.seq);
--		if (x1 && xfrm_addr_cmp(&x1->id.daddr, &x->id.daddr, family)) {
-+		if (x1 && ((x1->id.proto != x->id.proto) ||
-+		    xfrm_addr_cmp(&x1->id.daddr, &x->id.daddr, family))) {
- 			xfrm_state_put(x1);
- 			x1 = NULL;
- 		}
 
 -- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
