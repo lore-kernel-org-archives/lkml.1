@@ -1,68 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933950AbXCSOAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933949AbXCSOFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933950AbXCSOAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 10:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933946AbXCSOAs
+	id S933949AbXCSOFe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 10:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933951AbXCSOFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 10:00:48 -0400
-Received: from ns1.suse.de ([195.135.220.2]:51945 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933917AbXCSOAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 10:00:47 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [S390] minor fault path optimization.
-Date: Mon, 19 Mar 2007 15:00:34 +0100
-User-Agent: KMail/1.9.5
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20070319133149.GA5781@infradead.org>
-In-Reply-To: <20070319133149.GA5781@infradead.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200703191500.34563.ak@suse.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 19 Mar 2007 10:05:34 -0400
+Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:54101 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933949AbXCSOFd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 10:05:33 -0400
+Subject: Re: drivers/infiniband/hw/cxgb3/iwch_provider.c: uninitialized
+	variable used
+From: Steve Wise <swise@opengridcomputing.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Roland Dreier <rolandd@cisco.com>, mshefty@ichips.intel.com,
+       halr@voltaire.com, openib-general@openib.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070319092655.GR752@stusta.de>
+References: <20070319092655.GR752@stusta.de>
+Content-Type: text/plain
+Date: Mon, 19 Mar 2007 09:05:32 -0500
+Message-Id: <1174313132.8747.0.camel@stevo-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 March 2007 14:31, Christoph Hellwig wrote:
-> On Mon, Mar 19, 2007 at 02:02:06PM +0100, Martin Schwidefsky wrote:
-> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > 
-> > [S390] minor fault path optimization.
-> > 
-> > The minor fault path has grown a lot in terms of cycles. In particular
-> > the kprobes hook is very costly. Optimize the path to save a couple of
-> > cycles. If kprobes is enabled more than 300 cycles can be avoided if 
-> > kprobes_running() is false.
+
+Thanks Adrian,
+
+I'll address this...
+
+Steve.
+
+
+On Mon, 2007-03-19 at 10:26 +0100, Adrian Bunk wrote:
+> The Coverity checker spotted that "npages" will be used uninitialized in 
+> the following code if !(mr_rereg_mask & IB_MR_REREG_TRANS):
 > 
-> Actually there is a lot more fishy here.  This code is duplicated over
-> every single architecture.  It uses a notifier chain that only ever has
-> one actual uaesr.  It exports interfaces that are potential harmful.
+> <--  snip  -->
+> 
+> ...
+> static int iwch_reregister_phys_mem(struct ib_mr *mr,
+>                                      int mr_rereg_mask,
+>                                      struct ib_pd *pd,
+>                                      struct ib_phys_buf *buffer_list,
+>                                      int num_phys_buf,
+>                                      int acc, u64 * iova_start)
+> {
+> 
+>         struct iwch_mr mh, *mhp;
+>         struct iwch_pd *php;
+>         struct iwch_dev *rhp;
+>         __be64 *page_list = NULL;
+>         int shift = 0;
+>         u64 total_size;
+>         int npages;
+>         int ret;
+> 
+>         PDBG("%s ib_mr %p ib_pd %p\n", __FUNCTION__, mr, pd);
+> 
+>         /* There can be no memory windows */
+>         if (atomic_read(&mr->usecnt))
+>                 return -EINVAL;
+> 
+>         mhp = to_iwch_mr(mr);
+>         rhp = mhp->rhp;
+>         php = to_iwch_pd(mr->pd);
+> 
+>         /* make sure we are on the same adapter */
+>         if (rhp != php->rhp)
+>                 return -EINVAL;
+> 
+>         memcpy(&mh, mhp, sizeof *mhp);
+> 
+>         if (mr_rereg_mask & IB_MR_REREG_PD)
+>                 php = to_iwch_pd(pd);
+>         if (mr_rereg_mask & IB_MR_REREG_ACCESS)
+>                 mh.attr.perms = iwch_ib_to_tpt_access(acc);
+>         if (mr_rereg_mask & IB_MR_REREG_TRANS)
+>                 ret = build_phys_page_list(buffer_list, num_phys_buf,
+>                                            iova_start,
+>                                            &total_size, &npages,
+>                                            &shift, &page_list);
+> 
+>         ret = iwch_reregister_mem(rhp, php, &mh, shift, page_list, npages);
+> ...
+> 
+> <--  snip  -->
+> 
+> Looking at the code, it also seems some orignally planned error handling 
+> code for the build_phys_page_list() call was forgotten ("ret" is never 
+> checked before it's overwritten again).
+> 
+> cu
+> Adrian
+> 
 
-Agreed, it should be fixed generically.
-
-I think the right fix would be to make the notifier call an inline
-that checks the call chain in the caller. That would be cheap enough,
-except for the cache line that might need to be referenced.
-
-For the cache line the short term fix would be to find some other
-global cache line that is referenced in the fault path anyways and put
-it on the same (e.g. by just putting the variable next to it or
-using a shared structure) 
-
-Longer term might be something like Ben LaHaise's patch that can patch
-code inline for rarely-read globals.
-
-> Please do the right thing to optimize this instead and rip out the brandead
-> notifier chain mechanisms and directly call into the krobes handler if
-> kprobes are active, 
-
-No, we should keep the debugger hooks here. Otherwise there will be a zillion
-external patches patches code in at these places for the various debuggers,
-resulting in a merge nightmare for lots of people.
-
--Andi
