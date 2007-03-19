@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965667AbXCSGIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965678AbXCSGNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965667AbXCSGIc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 02:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965671AbXCSGIc
+	id S965678AbXCSGNR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 02:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965673AbXCSGNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 02:08:32 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50061 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965667AbXCSGIb (ORCPT
+	Mon, 19 Mar 2007 02:13:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60084
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965671AbXCSGNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 02:08:31 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <45FE28B6.7040200@s5r6.in-berlin.de>
-Date: Mon, 19 Mar 2007 07:07:50 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070303 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ieee1394: remove usage of skb_queue as packet queue
-References: <tkrat.be8814c580bba408@s5r6.in-berlin.de> <59ad55d30703181934o1442ab44rcc11fbeac62ca7c0@mail.gmail.com>
-In-Reply-To: <59ad55d30703181934o1442ab44rcc11fbeac62ca7c0@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 19 Mar 2007 02:13:16 -0400
+Date: Sun, 18 Mar 2007 23:13:16 -0700 (PDT)
+Message-Id: <20070318.231316.59470365.davem@davemloft.net>
+To: ebiederman@lnxi.com
+Cc: mst@dev.mellanox.co.il, kuznet@ms2.inr.ac.ru, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <m3aby94x6o.fsf@maxwell.lnxi.com>
+References: <20070318224234.GP11078@mellanox.co.il>
+	<20070318.171337.112622504.davem@davemloft.net>
+	<m3aby94x6o.fsf@maxwell.lnxi.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristian Høgsberg wrote:
-> But the question is, is it worth it?  One of the primary reasons for
-> me to write an alternative stack was to be able to leave linux1394
-> in maintenence mode.
+From: ebiederman@lnxi.com (Eric W. Biederman)
+Date: Sun, 18 Mar 2007 23:30:39 -0600
 
-I have been asking this myself on nearly every one of my patches since
-you announced the new stack. :-)
+> Sure.  In the network namespace case I think the careful ordering of the
+> shutdown handles that case.   Even with per network namespace lo
+> unregistered it still existed until the network namespace actually
+> exited.  And it only happened on exit.  
+> 
+> So while there may be a tiny race there it hasn't been an issue yet
+> in practice.
 
-The skb change here, which I wanted to do for some time, was prompted by
-/a/ trouble with skb lock annotations when lockdep went mainline and /b/
-a very recent bug report http://bugzilla.kernel.org/show_bug.cgi?id=8216
-which first read like -ENOBUG but then motivated me to clean up
-hpsb_packet a bit and also pointed me to a raw1394 bug.  (Besides, most
-of the cleanup patches which I came up with were meant to pave the way
-for actual bug fixes.  I'm just extremely slow with following up with
-the latter.)
--- 
-Stefan Richter
--=====-=-=== --== =--==
-http://arcgraph.de/sr/
+I think the thing to do is to just leave the loopback references
+in place, try to unregister the per-namespace loopback device,
+and that will safely wait for all the references to go away.
+
+If you do it that way, you should need absolutely no changes to
+the other code in this area.
+
+As per Herbert, I think he works on Xen rather than vserver :-)
+Perhaps you're thinking of Alexey Kuznetsov or another one of the
+vserver guys.
