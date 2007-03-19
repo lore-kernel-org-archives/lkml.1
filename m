@@ -1,76 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030746AbXCSXnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965271AbXCSXq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030746AbXCSXnP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030753AbXCSXnP
+	id S965271AbXCSXq5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 19:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965291AbXCSXq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:43:15 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:60779 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030756AbXCSXnN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:43:13 -0400
-Date: Mon, 19 Mar 2007 16:41:23 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <greg@kroah.com>
-Cc: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Tejun Heo <htejun@gmail.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
-Subject: Re: kref refcounting breakage in mainline
-Message-Id: <20070319164123.756b43a7.randy.dunlap@oracle.com>
-In-Reply-To: <20070315145414.GA18542@kroah.com>
-References: <20070302005833.949be737.akpm@linux-foundation.org>
-	<20070306002521.GA12164@kroah.com>
-	<1173159802.6955.6.camel@Homer.simpson.net>
-	<20070306210445.GB29164@kroah.com>
-	<1173245937.6613.26.camel@Homer.simpson.net>
-	<1173541446.6561.32.camel@Homer.simpson.net>
-	<20070315052724.GA12576@kroah.com>
-	<1173945187.6624.14.camel@Homer.simpson.net>
-	<20070315080639.GA14641@kroah.com>
-	<1173953960.6624.45.camel@Homer.simpson.net>
-	<20070315145414.GA18542@kroah.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 19 Mar 2007 19:46:57 -0400
+Received: from hermes.domdv.de ([193.102.202.1]:3039 "EHLO hermes.domdv.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965271AbXCSXq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 19:46:56 -0400
+Message-ID: <45FF20E1.90106@domdv.de>
+Date: Tue, 20 Mar 2007 00:46:41 +0100
+From: Andreas Steinmetz <ast@domdv.de>
+User-Agent: Mail/News 1.5.0.7 (X11/20060915)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Kai Makisara <Kai.Makisara@kolumbus.fi>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.20.3: kernel BUG at mm/slab.c:597 try#2
+References: <45FDDA8E.8030100@domdv.de>	<45FECD45.20705@cs.wisc.edu>	<1174328987.3512.37.camel@mulgrave.il.steeleye.com>	<45FEDF23.1060801@cs.wisc.edu>	<45FEFCD1.6070109@cs.wisc.edu>	<45FF1BCE.8050204@domdv.de> <20070319164029.292bb1c0.akpm@linux-foundation.org>
+In-Reply-To: <20070319164029.292bb1c0.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007 07:54:14 -0700 Greg KH wrote:
-
-> On Thu, Mar 15, 2007 at 11:19:20AM +0100, Mike Galbraith wrote:
-> > On Thu, 2007-03-15 at 01:06 -0700, Greg KH wrote:
-> > 
-> > > That's good.  But why don't we have a module name for this driver?
-> > > 
-> > > And if we don't have a module name, why would there be a symlink to
-> > > remove?  That's what is keeping your module from unloading, right?
-> > 
-> > You keep saying "module", and that's making me a bit nervous ;-)
-> > 
-> > Just to be sure we're not talking past each other, when you say module,
-> > don't mean the modprobe kind... i hope.  This "module" as in driver is
-> > compiled in.  (said that before, but you may have missed it)
+Andrew Morton wrote:
+> On Tue, 20 Mar 2007 00:25:02 +0100
+> Andreas Steinmetz <ast@domdv.de> wrote:
 > 
-> Ahh, that changes everything here, thanks for letting me know, I had
-> missed this.
+>> Mike Christie wrote:
+>>> Mike Christie wrote:
+>>>> James Bottomley wrote:
+>>>>> On Mon, 2007-03-19 at 12:49 -0500, Mike Christie wrote:
+>>>>>>> I can't even say if the tapes are written correctly as I can't read them
+>>>>>>> (one does not reboot production machines back to 2.4.x just to try to
+>>>>>>> read a backup tape - I don't have 2.6.x older than 2.6.20 on these
+>>>>>>> machines).
+>>>>>> Could you try this patch
+>>>>>> http://marc.info/?l=linux-scsi&m=116464965414878&w=2
+>>>>>> I thought st was modified to not send offsets in the last elements but
+>>>>>> it looks like it wasn't.
+>>>>> Actually, there are two patches in the email referred to.  If the
+>>>>> analysis that we're passing NULL to mempool_free is correct, it should
+>>>>> be the second one that fixes the problem (the one that checks
+>>>>> bio->bi_io_vec before freeing it).  Which would mean we have a
+>>>>> nr_vecs==0 bio generated by the tar somehow.
+>>>>>
+>>>> I think we might only need the first patch if the problem is similar to
+>>>> what the lsi guys were seeing. I thought the problem is that we are not
+>>>> estimating how large the transfer is correctly because we do not take
+>>>> into account offsets at the end. This results in nr_vecs being zero when
+>>>> it should be a valid value. I thought Kai's patch:
+>>>> http://bugzilla.kernel.org/show_bug.cgi?id=7919
+>>>> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=9abe16c670bd3d4ab5519257514f9f291383d104
+>>>> fixed the problem on st's side,
+>>> Oh, I noticed that the subject for the mail references 2.6.30.3 and the
+>>> patch for st in the bugzilla did not make into 2.6.20 and is not in .3.
+>>> Could we try the st patch in the bugzilla first?
+>> Ok, the st patch from bugzilla solves the problem (tested on both
+>> affected machines).
 > 
-> The problem is that the module_init() is failing, yet this isn't really
-> a module, it's built into the kernel.  So some of the module teardown
-> logic is dieing when it thinks that we really have a full module
-> structure here (owner and such).
+> 
+> If you're referring to the below patch then it's already in mainline, and
+> has been for a month.
+> 
 
-Urgh, it's not a "loadable" module, but it's still a logical module.
+Yes, that's the patch I'm referring to.
 
-> I'll look at this further tomorrow, as I'm travelling pretty much all
-> day today, sorry.
+> Have you tested 2.6.21-rc4?  If not, please do so.
+> 
+
+Sorry, this is not possible on these machines. They are production
+servers and every problem on them that cannot be easily solved via
+remote access is a 40km (one way) drive in the middle of the night.
+
+> Perhaps we should merge this into 2.6.20.x?
+> 
+
+I would suggest so.
+
+> 
+> 
+> commit 9abe16c670bd3d4ab5519257514f9f291383d104
+> Author: Kai Makisara <Kai.Makisara@kolumbus.fi>
+> Date:   Sat Feb 3 13:21:29 2007 +0200
+> 
+>     [SCSI] st: fix Tape dies if wrong block size used, bug 7919
+>     
+>     On Thu, 1 Feb 2007, Andrew Morton wrote:
+>     > On Thu, 1 Feb 2007 15:34:29 -0800
+>     > bugme-daemon@bugzilla.kernel.org wrote:
+>     >
+>     > > http://bugzilla.kernel.org/show_bug.cgi?id=7919
+>     > >
+>     > >            Summary: Tape dies if wrong block size used
+>     > >     Kernel Version: 2.6.20-rc5
+>     > >             Status: NEW
+>     > >           Severity: normal
+>     > >              Owner: scsi_drivers-other@kernel-bugs.osdl.org
+>     > >          Submitter: dmartin@sccd.ctc.edu
+>     > >
+>     > >
+>     > > Most recent kernel where this bug did *NOT* occur: 2.6.17.14
+>     > >
+>     > > Other Kernels Tested and Results:
+>     > >
+>     > >     OK 2.6.15.7
+>     > >     OK 2.6.16.37
+>     > >     OK 2.6.17.14
+>     > >     BAD 2.6.18.6
+>     > >     BAD 2.6.18-1.2869.fc6
+>     > >     BAD 2.6.19.2 +
+>     > >     BAD 2.6.20-rc5
+>     > >
+>     > > NOTE: 2.6.18-1.2869.fc6 is a Fedora modified kernel, all others are from kernel.org
+>     > >
+>     ...
+>     > > Steps to reproduce:
+>     > > Get a Adaptec AHA-2940U/UW/D / AIC-7881U card and a tape drive,
+>     > > install a recent kernel
+>     > > set the tape block size - mt setblk 4096
+>     > > read from or write to tape using wrong block size - tar -b 7 -cvf /dev/tape foo
+>     > >
+>     Write does not trigger this bug because the driver refuses in fixed block
+>     mode writes that are not a multiple of the block size. Read does trigger
+>     it in my system.
+>     
+>     The bug is not associated with any specific HBA. st tries to do direct i/o
+>     in fixed block mode with reads that are not a multiple of tape block size.
+>     
+>     The patch in this message fixes the st problem by switching to using the
+>     driver buffer up to the next close of the device file in fixed block mode
+>     if the user asks for a read like this.
+>     
+>     I don't know why the bug has surfaced only after 2.6.17 although the st
+>     problem is old. There may be another bug in the block subsystem and this
+>     patch works around it. However, the patch fixes a problem in st and in
+>     this way it is a valid fix.
+>     
+>     This patch may also fix the bug 7900.
+>     
+>     The patch compiles and is lightly tested.
+>     
+>     Signed-off-by: Kai Makisara <kai.makisara@kolumbus.fi>
+>     Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+> 
+> diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
+> index e016e09..fba8b20 100644
+> --- a/drivers/scsi/st.c
+> +++ b/drivers/scsi/st.c
+> @@ -9,7 +9,7 @@
+>     Steve Hirsch, Andreas Koppenh"ofer, Michael Leodolter, Eyal Lebedinsky,
+>     Michael Schaefer, J"org Weule, and Eric Youngdale.
+>  
+> -   Copyright 1992 - 2006 Kai Makisara
+> +   Copyright 1992 - 2007 Kai Makisara
+>     email Kai.Makisara@kolumbus.fi
+>  
+>     Some small formal changes - aeb, 950809
+> @@ -17,7 +17,7 @@
+>     Last modified: 18-JAN-1998 Richard Gooch <rgooch@atnf.csiro.au> Devfs support
+>   */
+>  
+> -static const char *verstr = "20061107";
+> +static const char *verstr = "20070203";
+>  
+>  #include <linux/module.h>
+>  
+> @@ -1168,6 +1168,7 @@ static int st_open(struct inode *inode, 
+>  		STps = &(STp->ps[i]);
+>  		STps->rw = ST_IDLE;
+>  	}
+> +	STp->try_dio_now = STp->try_dio;
+>  	STp->recover_count = 0;
+>  	DEB( STp->nbr_waits = STp->nbr_finished = 0;
+>  	     STp->nbr_requests = STp->nbr_dio = STp->nbr_pages = STp->nbr_combinable = 0; )
+> @@ -1400,9 +1401,9 @@ static int setup_buffering(struct scsi_t
+>  	struct st_buffer *STbp = STp->buffer;
+>  
+>  	if (is_read)
+> -		i = STp->try_dio && try_rdio;
+> +		i = STp->try_dio_now && try_rdio;
+>  	else
+> -		i = STp->try_dio && try_wdio;
+> +		i = STp->try_dio_now && try_wdio;
+>  
+>  	if (i && ((unsigned long)buf & queue_dma_alignment(
+>  					STp->device->request_queue)) == 0) {
+> @@ -1599,7 +1600,7 @@ st_write(struct file *filp, const char _
+>  			STm->do_async_writes && STps->eof < ST_EOM_OK;
+>  
+>  		if (STp->block_size != 0 && STm->do_buffer_writes &&
+> -		    !(STp->try_dio && try_wdio) && STps->eof < ST_EOM_OK &&
+> +		    !(STp->try_dio_now && try_wdio) && STps->eof < ST_EOM_OK &&
+>  		    STbp->buffer_bytes < STbp->buffer_size) {
+>  			STp->dirty = 1;
+>  			/* Don't write a buffer that is not full enough. */
+> @@ -1769,7 +1770,7 @@ static long read_tape(struct scsi_tape *
+>  	if (STp->block_size == 0)
+>  		blks = bytes = count;
+>  	else {
+> -		if (!(STp->try_dio && try_rdio) && STm->do_read_ahead) {
+> +		if (!(STp->try_dio_now && try_rdio) && STm->do_read_ahead) {
+>  			blks = (STp->buffer)->buffer_blocks;
+>  			bytes = blks * STp->block_size;
+>  		} else {
+> @@ -1948,10 +1949,12 @@ st_read(struct file *filp, char __user *
+>  		goto out;
+>  
+>  	STm = &(STp->modes[STp->current_mode]);
+> -	if (!(STm->do_read_ahead) && STp->block_size != 0 &&
+> -	    (count % STp->block_size) != 0) {
+> -		retval = (-EINVAL);	/* Read must be integral number of blocks */
+> -		goto out;
+> +	if (STp->block_size != 0 && (count % STp->block_size) != 0) {
+> +		if (!STm->do_read_ahead) {
+> +			retval = (-EINVAL);	/* Read must be integral number of blocks */
+> +			goto out;
+> +		}
+> +		STp->try_dio_now = 0;  /* Direct i/o can't handle split blocks */
+>  	}
+>  
+>  	STps = &(STp->ps[STp->partition]);
+> diff --git a/drivers/scsi/st.h b/drivers/scsi/st.h
+> index 05a5cae..50f3deb 100644
+> --- a/drivers/scsi/st.h
+> +++ b/drivers/scsi/st.h
+> @@ -117,7 +117,8 @@ struct scsi_tape {
+>  	unsigned char cln_sense_value;
+>  	unsigned char cln_sense_mask;
+>  	unsigned char use_pf;			/* Set Page Format bit in all mode selects? */
+> -	unsigned char try_dio;			/* try direct i/o? */
+> +	unsigned char try_dio;			/* try direct i/o in general? */
+> +	unsigned char try_dio_now;		/* try direct i/o before next close? */
+>  	unsigned char c_algo;			/* compression algorithm */
+>  	unsigned char pos_unknown;			/* after reset position unknown */
+>  	int tape_type;
+> 
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+Andreas Steinmetz                       SPAMmers use robotrap@domdv.de
