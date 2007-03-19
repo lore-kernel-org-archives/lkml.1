@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933789AbXCSDR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965084AbXCSDjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933789AbXCSDR1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 23:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933788AbXCSDR1
+	id S965084AbXCSDjp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 23:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXCSDjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 23:17:27 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:52759 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933780AbXCSDRZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 23:17:25 -0400
-From: eiichiro.oiwa.nm@hitachi.com
-Message-Type: Multiple Part
+	Sun, 18 Mar 2007 23:39:45 -0400
+Received: from mga02.intel.com ([134.134.136.20]:5014 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965084AbXCSDjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 23:39:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,298,1170662400"; 
+   d="scan'208"; a="211799731:sNHT23379965"
+Message-ID: <45FE05FE.80009@intel.com>
+Date: Sun, 18 Mar 2007 20:39:42 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.10 (X11/20070311)
 MIME-Version: 1.0
-Message-ID: <XNM1$9$0$4$$3$3$7$A$9002870U45fdffb3@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
-To: "Jesse Barnes" <jesse.barnes@intel.com>
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>, <akpm@osdl.org>,
-       <tony.luck@intel.com>, <greg@kroah.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, <linux-ia64@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Date: Mon, 19 Mar 2007 12:12:55 +0900
-References: <XNM1$9$0$4$$3$3$7$A$9002686U451b55cd@hitachi.com> 
-    <200609280936.02098.jesse.barnes@intel.com> 
-    <200703161120.46123.bjorn.helgaas@hp.com> 
-    <200703161142.39854.jesse.barnes@intel.com>
-Importance: normal
-Subject: Re: [PATCH 2.6.18] PCI: Turn pci_fixup_video into generic for
-    embedded VGA
-X400-Content-Identifier: X45FDFFB300000M
-X400-MTS-Identifier: [/C=JP/ADMD=HITNET/PRMD=HITACHI/;gmml160703191212518I8]
+To: Greg.Chandler@wellsfargo.com
+CC: auke-jan.h.kok@intel.com, hancockr@shaw.ca, linux-kernel@vger.kernel.org,
+       e1000-devel@lists.sourceforge.net
+Subject: Re: 1000xf bus problem
+References: <fa.wDPF1lWlqGQpxbyWee64Z3t4BVM@ifi.uio.no> <45FD95CD.2030403@shaw.ca> <45FDA668.1090202@intel.com> <E8C008223DD5F64485DFBDF6D4B7F71D0289EDC1@msgswbmnmsp25.wellsfargo.com>
+In-Reply-To: <E8C008223DD5F64485DFBDF6D4B7F71D0289EDC1@msgswbmnmsp25.wellsfargo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On Friday, March 16, 2007 10:20 am Bjorn Helgaas wrote:
->> Are there really ia64 machines where we need to use the option ROM
->> copy at 0xC0000?  If so, is this documented somewhere?  I couldn't
->> find any mention in DIG64, EFI, or internal HP architecture specs.
->>
->> If we do need to use it, ia64 has a bit of a problem because on some
->> boxes, the 0xC0000 memory supports only cacheable access, the VGA
->> frame buffer at 0xA0000 supports only uncacheable access, and the
->> usual ia64 ioremap mapping is a 16MB page that covers both.
->
->Apparently Eichiro's machine needs it, and of course there are i386 and 
->x86_64 machines that need it to, so it makes sense that it be generic.
->
->Jesse
->
+Greg.Chandler@wellsfargo.com wrote:
+> If you mean dmesg it says this:
+> e1000: 0000:0d:02.0: e1000_probe: (PCI-X:100MHz:64-bit)  {macaddress}
+> 
+> That's weird... dmesg shows one thing, lspci shows another, and my data
+> transfers seem to point to the lspci info...
+> 
+> Any idea which I should trust?
 
-Yes, our machine need it.
 
->> Are there really ia64 machines where we need to use the option ROM
->> copy at 0xC0000?  If so, is this documented somewhere?  I couldn't
->> find any mention in DIG64, EFI, or internal HP architecture specs.
+Both, the e1000 driver asks the card what it sees from it's side of the 
+connection, and lspci tells you what the cpu side of it is connected to.
 
-"System Abstraction Layer Specification" describes it in section 2.6.
+Since stuff like pci bridges exist, both could very well be correct!
 
-Eiichiro
+I highly suspect that that is exactly the case.
 
+
+Auke
