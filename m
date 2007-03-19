@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbXCSMnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933273AbXCSMw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbXCSMnP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 08:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbXCSMnP
+	id S933273AbXCSMw7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 08:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933845AbXCSMw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 08:43:15 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:4571 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752522AbXCSMnO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 08:43:14 -0400
-X-Greylist: delayed 1121 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 08:43:14 EDT
-Message-ID: <45FE80FD.9090109@linux-kernel.at>
-Date: Mon, 19 Mar 2007 13:24:29 +0100
-From: Oliver Falk <oliver@linux-kernel.at>
-Organization: Linux kernel Austria
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: axp question 'bout uname voodoo
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.399, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60)
-X-MailScanner-From: oliver@linux-kernel.at
+	Mon, 19 Mar 2007 08:52:59 -0400
+Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4]:50444 "EHLO
+	smtp1.kolej.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933273AbXCSMw6 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 08:52:58 -0400
+X-Envelope-From: zajio1am@artax.karlin.mff.cuni.cz
+Date: Mon, 19 Mar 2007 13:32:50 +0100
+From: Ondrej Zajicek <santiago@crfreenet.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>,
+       James Simmons <jsimmons@infradead.org>, adaplas@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/video/s3fb.c: fix a use-before-check
+Message-ID: <20070319123250.GA4152@localhost.localdomain>
+References: <20070319092552.GP752@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070319092552.GP752@stusta.de>
+X-Operating-System: Debian GNU/Linux 3.1 (Sarge)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Mar 19, 2007 at 10:25:52AM +0100, Adrian Bunk wrote:
+> NULL checks should be before the first dereference.
+> 
+> Spotted by the Coverity checker.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-We have a discussion on alpha mailinglist at the moment, because of 
-uname -mpi.
+Acked-by: Ondrej Zajicek <santiago@crfreenet.org>
 
-AFAIK, uname -m should do some glibc call, which calls kernel, right?
+-- 
+Elen sila lumenn' omentielvo
 
-However, I have two machines:
-
-AS1000A:
-[root@tyskie ~]# uname -mpi && cat /proc/cpuinfo | grep model
-alpha alpha alpha
-cpu model               : EV56
-
-DS10:
-[root@gosa ~]# uname -mpi && cat /proc/cpuinfo |grep model
-alpha alpha alpha
-cpu model               : EV67
-
-Shouldn't uname rport alphaev67 and alphaev56? Maybe it's just a .config 
-problem. Maybe the kernel needs to be compiled for the different 
-sub-arches!?
-
-Any help would be great.
-
-Thx,
-  Oliver
-
+Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
