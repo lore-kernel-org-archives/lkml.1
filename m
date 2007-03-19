@@ -1,49 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933510AbXCSBHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751743AbXCSBY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933510AbXCSBHU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 21:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964919AbXCSBHU
+	id S1751743AbXCSBY3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 21:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXCSBY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 21:07:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54862 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933510AbXCSBHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 21:07:18 -0400
-Message-ID: <45FDE202.80807@redhat.com>
-Date: Sun, 18 Mar 2007 21:06:10 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sun, 18 Mar 2007 21:24:29 -0400
+Received: from fed1rmmtao101.cox.net ([68.230.241.45]:58089 "EHLO
+	fed1rmmtao101.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751738AbXCSBY1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 21:24:27 -0400
+From: Junio C Hamano <junkio@cox.net>
+To: git@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.0.5
+References: <7vwt2ec32p.fsf@assigned-by-dhcp.cox.net>
+	<7vabz0j7td.fsf@assigned-by-dhcp.cox.net>
+	<7vlkic2xc8.fsf_-_@assigned-by-dhcp.cox.net>
+Date: Sun, 18 Mar 2007 18:19:24 -0700
+In-Reply-To: <7vlkic2xc8.fsf_-_@assigned-by-dhcp.cox.net> (Junio C. Hamano's
+	message of "Sun, 04 Mar 2007 19:17:11 -0800")
+Message-ID: <7vvegym3mr.fsf_-_@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH take3 00/20] Make common x86 arch area for i386 and x86_64
- - Take 3
-References: <20070315051337.488091591@goodmis.org> <20070316102933.GB4185@elte.hu>
-In-Reply-To: <20070316102933.GB4185@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
->> Once again here's an attempt to put the shared files of x86_64 and 
->> i386 into a separate directory.
-> 
-> what do you think about the idea i suggested: to do an x32_/x64_ prefix 
-> (or _32/_64 postfix), in a brute-force way, _right away_. I.e. do not 
-> have any overlap of having both arch/i386/ and arch/x86_64/ and 
-> arch/x86/ - move everything to arch/x86/ right now.
+The latest maintenance release GIT 1.5.0.5 is available at the
+usual places:
 
-No, no, please don't do that. It would make backporting patches
-for stable kernels a real pain.  Moving only the common files 
-is the right way to go for a first cut...
+  http://www.kernel.org/pub/software/scm/git/
+
+  git-1.5.0.5.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.0.5.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.0.5.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.0.5-1.$arch.rpm	(RPM)
+
+I didn't send announcements for 1.5.0.4 for workload and time
+constraints, but Santi found and fixed a rather embarrasing
+regression in 1.5.0.4 soon after it was tagged anyway, so here
+it is.  The changelog below is relative to 1.5.0.3.
+
+----------------------------------------------------------------
+
+Changes since v1.5.0.3 are as follows:
+
+Alexandre Julliard (2):
+      git.el: Avoid appending a signoff line that is already present.
+      git.el: Retrieve commit log information from .dotest directory.
+
+Avi Kivity (1):
+      git-send-email: Document configuration options
+
+Brian Gernhardt (1):
+      Fix diff-options references in git-diff and git-format-patch
+
+Frank Lichtenheld (1):
+      cvsserver: asciidoc formatting changes
+
+J. Bruce Fields (7):
+      glossary: fix overoptimistic automatic linking of defined terms
+      user-manual: fix inconsistent example
+      user-manual: fix inconsistent use of pull and merge
+      user-manual: fix missing colon in git-show example
+      user-manual: fix rendering of history diagrams
+      user-manual: install user manual stylesheet with other web documents
+      git-merge: warn when -m provided on a fast forward
+
+Jeff King (2):
+      Documentation: s/seperator/separator/
+      fast-import: grow tree storage more aggressively
+
+Johannes Schindelin (2):
+      Begin SubmittingPatches with a check list
+      make t8001 work on Mac OS X again
+
+Junio C Hamano (4):
+      git-commit: cd to top before showing the final stat
+      git-checkout: fix "eval" used for merge labelling.
+      GIT 1.5.0.4
+      GIT 1.5.0.5
+
+Matthias Kestenholz (1):
+      Adjust reflog filemode in shared repository
+
+Matthias Lederhofer (1):
+      setup_git_directory_gently: fix off-by-one error
+
+Santi Béjar (1):
+      git-merge: finish when git-read-tree fails
+
+Shawn O. Pearce (13):
+      git-gui: Relocate the menu/transport menu code.
+      git-gui: Add Reset to the Branch menu.
+      git-gui: Don't create empty (same tree as parent) commits.
+      git-gui: Remove unnecessary /dev/null redirection.
+      fast-import: Avoid infinite loop after reset
+      fast-import: Fail if a non-existant commit is used for merge
+      git-gui: Make 'make' quieter by default
+      Catch write_ref_sha1 failure in receive-pack
+      git-gui: Allow committing empty merges
+      git-gui: Revert "Don't modify CREDITS-FILE if it hasn't changed."
+      git-gui: Revert "git-gui: Display all authors of git-gui."
+      git-gui: Allow 'git gui version' outside of a repository
+      Don't package the git-gui credits file anymore
+
+Theodore Ts'o (1):
+      Add definition of <commit-ish> to the main git man page.
+
+Yann Dirson (1):
+      Clarify doc for git-config --unset-all.
+
 
