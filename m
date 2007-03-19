@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbXCSJWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbXCSJWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbXCSJWM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 05:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbXCSJWL
+	id S1753055AbXCSJWi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 05:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbXCSJWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 05:22:11 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:34813 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752917AbXCSJWH (ORCPT
+	Mon, 19 Mar 2007 05:22:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41031 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752920AbXCSJWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 05:22:07 -0400
-Date: Mon, 19 Mar 2007 10:22:11 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: sysfs_drop_dentry(): possible NULL dereference
-Message-ID: <20070319092211.GG752@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 19 Mar 2007 05:22:24 -0400
+Date: Mon, 19 Mar 2007 09:22:22 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
+Message-ID: <20070319092222.GA1720@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+	linux-mm <linux-mm@kvack.org>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	nickpiggin@yahoo.com.au
+References: <20070318233008.GA32597093@melbourne.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070318233008.GA32597093@melbourne.sgi.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted the following incorrect part of
-commit 94bebf4d1b8e7719f0f3944c037a21cfd99a4af7:
+On Mon, Mar 19, 2007 at 10:30:08AM +1100, David Chinner wrote:
+> 
+> Generic page_mkwrite functionality.
+> 
+> Filesystems that make use of the VM ->page_mkwrite() callout will generally use
+> the same core code to implement it. There are several tricky truncate-related
+> issues that we need to deal with here as we cannot take the i_mutex as we
+> normally would for these paths.  These issues are not documented anywhere yet
+> so block_page_mkwrite() seems like the best place to start.
 
-<--  snip  -->
+This will need some updates when ->fault replaces ->page_mkwrite.
 
-...
- void sysfs_drop_dentry(struct sysfs_dirent * sd, struct dentry * parent)
- {
-        struct dentry * dentry = sd->s_dentry;
-+       struct inode *inode;
- 
-        if (dentry) {
-                spin_lock(&dcache_lock);
-                spin_lock(&dentry->d_lock);
-                if (!(d_unhashed(dentry) && dentry->d_inode)) {
-+                       inode = dentry->d_inode;
-+                       spin_lock(&inode->i_lock);
-...
-
-<--  snip  -->
-
-If (!dentry->d_inode), then it's a NULL dereference.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Nich, what's the plan for merging ->fault?
 
