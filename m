@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965658AbXCSGUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965673AbXCSGVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965658AbXCSGUM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 02:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXCSGUM
+	id S965673AbXCSGVz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 02:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXCSGVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 02:20:12 -0400
-Received: from quail.cita.utoronto.ca ([128.100.76.6]:44307 "EHLO
-	quail.cita.utoronto.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965658AbXCSGUK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 02:20:10 -0400
-X-Greylist: delayed 1224 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 02:20:10 EDT
-Date: Mon, 19 Mar 2007 01:59:32 -0400
-From: Robin Humble <rjh+e1000@cita.utoronto.ca>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Robert Hancock <hancockr@shaw.ca>, e1000-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Greg.Chandler@wellsfargo.com
-Subject: Re: [E1000-devel] 1000xf bus problem
-Message-ID: <20070319055932.GA17345@lemming.cita.utoronto.ca>
-References: <fa.wDPF1lWlqGQpxbyWee64Z3t4BVM@ifi.uio.no> <45FD95CD.2030403@shaw.ca> <E8C008223DD5F64485DFBDF6D4B7F71D0289EDBF@msgswbmnmsp25.wellsfargo.com> <45FE1D89.6020303@shaw.ca> <20070319053151.GU943@1wt.eu>
+	Mon, 19 Mar 2007 02:21:55 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41962 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965673AbXCSGVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 02:21:55 -0400
+X-Provags-ID: V01U2FsdGVkX1+H2HgGlACHyFcs/mlo8VcLAnNHBsAWEtJpvnLTX1
+	fp6v3/6+jcTISJ
+Subject: RE: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: davids@webmaster.com
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEMBCFAC.davids@webmaster.com>
+References: <MDEHLPKNGKAHNMBLJOLKIEMBCFAC.davids@webmaster.com>
+Content-Type: text/plain
+Date: Mon, 19 Mar 2007 07:21:47 +0100
+Message-Id: <1174285307.7498.15.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070319053151.GU943@1wt.eu>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 06:31:51AM +0100, Willy Tarreau wrote:
->On Sun, Mar 18, 2007 at 11:20:09PM -0600, Robert Hancock wrote:
->> Greg.Chandler@wellsfargo.com wrote:
->> >lspci -v shows the message below, and I am moving files between systems,
->> >{from RAMdisk to RAMdisk} on idle machines.
->> >The transfer rate is concurrent with just under the max throughput
->> >capable on a 64-bit/66Mhz PCI socket.
->> 
->> I think you miscalculate, that bus can transfer 532 MB/sec, Gigabit 
->> Ethernet tops out at 125 MB/sec at absolute maximum and it's difficult 
->> to achieve that in practice.
->
->On TCP payload, you should achieve 118.66 * 10^6 bytes/s ~= 113 MB/s.
+On Sun, 2007-03-18 at 19:27 -0700, David Schwartz wrote:
 
-times 2 for full duplex.
-so a 32bit/33MHz bus = 132MB/s isn't enough for fdx, but anything more
-(64bit or 66MHz or both) should be fine.
+> > Wrong.  I call a good job giving a _preference_ to the desktop.  I call
+> > rigid fairness impractical for the desktop, and a denial of reality.
+> 
+> Assuming you *want* that. It's possible that the desktop may not be
+> particularly important and the machine may be doing much more important
+> server work with critical latency issues. So if you want that, you have to
+> ask for it.
 
-cheers,
-robin
+Amusing argument ;-) I doubt that there are many admins ripping and
+encoding CDs on their employers critical production servers.
 
->This is what you should observe with FTP or netcat for instance. On
->local networks, it is perfectly attainable, I do this every day. If you
->are far from this, check both sides link status with ethtool, and ensure
->that you do not have wiring problems. It is usually very easy to fill the
->wire with an e1000.
->
->Also, it would be interesting to check the other side. What card does it
->have, what bus, what driver ? And what software or tests are you using
->to conclude that you're limited by the bus ?
->
->Regards,
->Willy
->
->
->-------------------------------------------------------------------------
->Take Surveys. Earn Cash. Influence the Future of IT
->Join SourceForge.net's Techsay panel and you'll get the chance to share your
->opinions on IT & business topics through brief surveys-and earn cash
->http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
->_______________________________________________
->E1000-devel mailing list
->E1000-devel@lists.sourceforge.net
->https://lists.sourceforge.net/lists/listinfo/e1000-devel
+> Again, your complaint is that the other server gave you what you wanted even
+> when you didn't ask for it. That's great for you but totally sucks for the
+> majority of other people who want something else.
+
+I don't presume to speak for the majority...
+
+	-Mike
+
