@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030650AbXCSVm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030626AbXCSVm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030650AbXCSVm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030626AbXCSVlx
+	id S1030626AbXCSVm3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030619AbXCSVlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:41:53 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55711 "EHLO mx1.suse.de"
+	Mon, 19 Mar 2007 17:41:51 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:57900 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965028AbXCSVlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:41:16 -0400
-Date: Mon, 19 Mar 2007 14:39:27 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, mingo@elte.hu,
-       tglx@linutronix.de
-Subject: [patch 15/31] fix MTIME_SEC_MAX on 32-bit
-Message-ID: <20070319213927.GQ9261@kroah.com>
-References: <20070319213047.710101653@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-mtime_sec_max-on-32-bit.patch"
-In-Reply-To: <20070319213647.GB9261@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S965059AbXCSVlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:41:17 -0400
+Date: Mon, 19 Mar 2007 14:41:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: mpm@selenic.com, "Christoph Lameter" <clameter@sgi.com>,
+       "ast@domdv.de" <ast@domdv.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
+Message-Id: <20070319144100.8a87f288.akpm@linux-foundation.org>
+In-Reply-To: <az5Ytbv5.1174339536.7416370.penberg@cs.helsinki.fi>
+References: <20070319141038.212d4ac9.akpm@linux-foundation.org>
+	<az5Ytbv5.1174339536.7416370.penberg@cs.helsinki.fi>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+On Mon, 19 Mar 2007 23:25:36 +0200 (EET)
+"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
 
-------------------
+> 
+> On 3/19/2007, "Andrew Morton" <akpm@linux-foundation.org> wrote:
+> > Would prefer to do:
+> > 
+> > static inline void kmem_cache_free_if_not_null(struct kmem_cache *cachep,
+> > 						void *objp)
+> > {
+> > 	if (objp)
+> > 		kmem_cache_free(cachep, objp);
+> > }
+> > 
+> > so that we don't add extra overhead to all the thousands of existing,
+> > well-behaved callsites.
+> 
+> That bloats kernel text all the same
 
-From: Thomas Gleixner <tglx@linutronix.de>
+But only for those callsites which choose to use it!  We avoid adding a
+test-and-branch to those thousands of callsite which don't need it.
 
-The maximum seconds value we can handle on 32bit is LONG_MAX.
+This is a super-hot path.
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> so it's much cleaner to just make
+> the callers explicitly check for NULL then. That said, I'm sorry but I
+> just don't buy the "overhead" part of your argument since it's one
+> branch and no extra data cache pressure especially as we're already
+> doing the BUG_ON and page flag checking.
 
----
- include/linux/ktime.h |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+The BUG_ON (at least) should probably be moved into CONFIG_DEBUG_SLAB.
 
---- a/include/linux/ktime.h
-+++ b/include/linux/ktime.h
-@@ -57,7 +57,11 @@ typedef union {
- } ktime_t;
- 
- #define KTIME_MAX			((s64)~((u64)1 << 63))
--#define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
-+#if (BITS_PER_LONG == 64)
-+# define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
-+#else
-+# define KTIME_SEC_MAX			LONG_MAX
-+#endif
- 
- /*
-  * ktime_t definitions when using the 64-bit scalar representation:
+> But, since you're NAKing my patch, we need to get the mempool for from
+> the original thread in to fix the oops.
 
--- 
+We need to fix scsi rather than working around it in slab or in mempool -
+it appears that it's getting its sg lists tangled up, and the problem has
+been known since November (at least).
