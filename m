@@ -1,217 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030473AbXCSSNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbXCSSQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030473AbXCSSNl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 14:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbXCSSNk
+	id S932293AbXCSSQn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 14:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCSSQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 14:13:40 -0400
-Received: from mx1.suse.de ([195.135.220.2]:40435 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932517AbXCSSNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 14:13:38 -0400
-Date: Mon, 19 Mar 2007 19:13:36 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: linux-ia64@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, fastboot@lists.osdl.org
-Subject: [PATCH] [REVIEW] Fix irqpoll on IA64 (timer interrupt != 0)
-Message-ID: <20070319181336.GC12628@strauss.suse.de>
-Mail-Followup-To: linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, fastboot@lists.osdl.org
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yLVHuoLXiP9kZBkt"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 19 Mar 2007 14:16:43 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:53475 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932293AbXCSSQk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 14:16:40 -0400
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070319170838.GP4892@waste.org>
+References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
+	 <20070318162720.GI10459@waste.org> <1174236579.17249.6.camel@sauron>
+	 <20070318191812.GM4892@waste.org>
+	 <20070318203149.GC29295@crusty.rchland.ibm.com>
+	 <20070319170838.GP4892@waste.org>
+Content-Type: text/plain
+Date: Mon, 19 Mar 2007 13:16:28 -0500
+Message-Id: <1174328188.30079.46.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 (2.10.0-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-03-19 at 12:08 -0500, Matt Mackall wrote:
+> 
+> > > If the end goal is to end up with something that looks like a block
+> > > device (which seems to be implied by adding transparent wear leveling
+> > 
+> > Nope, not the end goal.  It's more about wear-leveling across the entire
+> > flash chip than it is presenting a "block like" device.
+> 
+> It seems to be about spanning devices and repartitioning as well.
+> Hence the analogy with LVM.
 
---yLVHuoLXiP9kZBkt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, it can span multiple MTDs which spreads the wear-leveling even
+more.  Yes, it can create/resize/remove volumes.  It does that
+differently than LVM, but the ideas are related.  I don't see the issue
+here I guess.
 
-On IA64, the timer interrupt is not (always?) zero as it is on x86 platform=
-s.
-Also, the timer interrupt is CPU-local. Two things need to be changed to ma=
-ke
-the irqpoll option make also working on IA64:
+(UBI also has static volumes which LVM doesn't but that is an aside.)
 
-  o Call note_interrupt() also on CPU-local interrupts in __do_IRQ().
-  o Set a variable timer_irq to the value of the timer interrupt
-    after the timer interrupt has been registered and assigned.
+> > > and bad block remapping), then I don't see any reason it can't be done
+> > > in device mapper. The 'smarts' of mtdblock could in fact be pulled up
+> > 
+> > There is nothing smart about mtdblock.  And mtdblock has nothing to do
+> > with UBI.
+> 
+> Note the scare quotes. Device mapper runs on top of a block device.
+> And mtdblock is currently the block interface that MTD exports. And it
+> has 'smarts' that hide handling of sub-eraseblock I/O. I'm clearly
+> talking about an approach that doesn't involve UBI at all.
 
-That requires changes in Linux-generic files. The default of timer_irq is 0=
-, so
-the patch doesn't break i386/x86_64. However, other platforms also may also
-have a timer interrupt non-equal to zero, so they can also use the new
-set_timer_interrupt() function.
+Ok, but what I'm saying is that using device mapper on top of mtdblock
+is not a good solution.  mtdblock caches writes within an eraseblock to
+a DRAM buffer of eraseblock size.  If you get a power failure before
+that is flushed out, you lose an entire eraseblock's worth of data.
+Oops.  And if you constantly flush the buffer, there's no point in
+having it in the first place because it doesn't help or hide anything
+then.  UBI doesn't have this problem.
 
-The patch is against 2.6.21-rc4. Please give me your input how to improve
-the way it's done if you don't like the way I did the change. irqpoll is
-required to work with kdump in some situations and that's why I discovered
-that kdump doesn't work on that platform (HP rx2660).
+That's why I suggested fixing the MTD layers that present block devices
+first in the part of my reply that you cut off.  It seems to me that
+you're really after getting flash to look like a block device, which
+would enable device mapper to be used for something similar to UBI.
+That's fine, but until someone does that work UBI fills a need, has
+users, and has an existing implementation.
 
+josh
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- arch/ia64/kernel/irq_ia64.c |    6 +++++-
- arch/ia64/kernel/time.c     |    6 +++++-
- include/asm-ia64/hw_irq.h   |    2 +-
- include/linux/irq.h         |    3 +++
- kernel/irq/handle.c         |    2 ++
- kernel/irq/spurious.c       |   10 +++++++++-
- 6 files changed, 25 insertions(+), 4 deletions(-)
-
-Index: mainline-msi-init/arch/ia64/kernel/irq_ia64.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- mainline-msi-init.orig/arch/ia64/kernel/irq_ia64.c
-+++ mainline-msi-init/arch/ia64/kernel/irq_ia64.c
-@@ -280,11 +280,12 @@ static struct irqaction resched_irqactio
- };
- #endif
-=20
--void
-+int
- register_percpu_irq (ia64_vector vec, struct irqaction *action)
- {
- 	irq_desc_t *desc;
- 	unsigned int irq;
-+	int first_match =3D -1;
-=20
- 	for (irq =3D 0; irq < NR_IRQS; ++irq)
- 		if (irq_to_vector(irq) =3D=3D vec) {
-@@ -293,7 +294,10 @@ register_percpu_irq (ia64_vector vec, st
- 			desc->chip =3D &irq_type_ia64_lsapic;
- 			if (action)
- 				setup_irq(irq, action);
-+			first_match =3D irq;
- 		}
-+
-+	return first_match;
- }
-=20
- void __init
-Index: mainline-msi-init/arch/ia64/kernel/time.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- mainline-msi-init.orig/arch/ia64/kernel/time.c
-+++ mainline-msi-init/arch/ia64/kernel/time.c
-@@ -247,7 +247,11 @@ void __devinit ia64_disable_timer(void)
- void __init
- time_init (void)
- {
--	register_percpu_irq(IA64_TIMER_VECTOR, &timer_irqaction);
-+	int timer_irq;
-+
-+	timer_irq =3D register_percpu_irq(IA64_TIMER_VECTOR, &timer_irqaction);
-+	set_timer_interrupt(timer_irq);
-+
- 	efi_gettimeofday(&xtime);
- 	ia64_init_itm();
-=20
-Index: mainline-msi-init/include/linux/irq.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- mainline-msi-init.orig/include/linux/irq.h
-+++ mainline-msi-init/include/linux/irq.h
-@@ -272,6 +272,9 @@ static inline int irq_balancing_disabled
- /* Handle irq action chains: */
- extern int handle_IRQ_event(unsigned int irq, struct irqaction *action);
-=20
-+/* sets the timer interrupt number for irqpoll handling (kernel/irq/spurio=
-us.c) */
-+extern void set_timer_interrupt(unsigned int irq);
-+
- /*
-  * Built-in IRQ handlers for various IRQ types,
-  * callable via desc->chip->handle_irq()
-Index: mainline-msi-init/kernel/irq/spurious.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- mainline-msi-init.orig/kernel/irq/spurious.c
-+++ mainline-msi-init/kernel/irq/spurious.c
-@@ -12,6 +12,7 @@
- #include <linux/interrupt.h>
-=20
- static int irqfixup __read_mostly;
-+static unsigned int timer_irq __read_mostly;
-=20
- /*
-  * Recovery handler for misrouted interrupts.
-@@ -146,7 +147,7 @@ void note_interrupt(unsigned int irq, st
-=20
- 	if (unlikely(irqfixup)) {
- 		/* Don't punish working computers */
--		if ((irqfixup =3D=3D 2 && irq =3D=3D 0) || action_ret =3D=3D IRQ_NONE) {
-+		if ((irqfixup =3D=3D 2 && irq =3D=3D timer_irq) || action_ret =3D=3D IRQ=
-_NONE) {
- 			int ok =3D misrouted_irq(irq);
- 			if (action_ret =3D=3D IRQ_NONE)
- 				desc->irqs_unhandled -=3D ok;
-@@ -174,6 +175,13 @@ void note_interrupt(unsigned int irq, st
- 	desc->irqs_unhandled =3D 0;
- }
-=20
-+
-+void set_timer_interrupt(unsigned int irq)
-+{
-+	timer_irq =3D irq;
-+}
-+EXPORT_SYMBOL_GPL(set_timer_interrupt);
-+
- int noirqdebug __read_mostly;
-=20
- int noirqdebug_setup(char *str)
-Index: mainline-msi-init/include/asm-ia64/hw_irq.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- mainline-msi-init.orig/include/asm-ia64/hw_irq.h
-+++ mainline-msi-init/include/asm-ia64/hw_irq.h
-@@ -95,7 +95,7 @@ extern int assign_irq_vector (int irq);=09
- extern void free_irq_vector (int vector);
- extern int reserve_irq_vector (int vector);
- extern void ia64_send_ipi (int cpu, int vector, int delivery_mode, int red=
-irect);
--extern void register_percpu_irq (ia64_vector vec, struct irqaction *action=
-);
-+extern int register_percpu_irq (ia64_vector vec, struct irqaction *action);
-=20
- static inline void ia64_resend_irq(unsigned int vector)
- {
-Index: mainline-msi-init/kernel/irq/handle.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- mainline-msi-init.orig/kernel/irq/handle.c
-+++ mainline-msi-init/kernel/irq/handle.c
-@@ -180,6 +180,8 @@ fastcall unsigned int __do_IRQ(unsigned=20
- 		if (desc->chip->ack)
- 			desc->chip->ack(irq);
- 		action_ret =3D handle_IRQ_event(irq, desc->action);
-+		if (!noirqdebug)
-+			note_interrupt(irq, desc, action_ret);
- 		desc->chip->end(irq);
- 		return 1;
- 	}
-
---yLVHuoLXiP9kZBkt
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFF/tLQiGU2lt2vZFQRAtw0AKCy4AYaeryew+jLatA9fza7DZ4EBQCcDH3l
-m+VHnQ3m6ZG3CtmbjqPbq7I=
-=Xgmu
------END PGP SIGNATURE-----
-
---yLVHuoLXiP9kZBkt--
