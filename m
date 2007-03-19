@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030357AbXCSQgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030363AbXCSQhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030357AbXCSQgL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 12:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030361AbXCSQgK
+	id S1030363AbXCSQhi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 12:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030368AbXCSQhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 12:36:10 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:1557 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030357AbXCSQgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 12:36:09 -0400
-Message-ID: <45FEBBF5.9060002@rtr.ca>
-Date: Mon, 19 Mar 2007 12:36:05 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Mon, 19 Mar 2007 12:37:38 -0400
+Received: from il.qumranet.com ([82.166.9.18]:60163 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030363AbXCSQhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 12:37:38 -0400
+Message-ID: <45FEBC51.6060707@argo.co.il>
+Date: Mon, 19 Mar 2007 18:37:37 +0200
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: RSDL v0.31
-References: <200703042335.26785.a1426z@gawab.com>	 <200703172048.46267.kernel@kolivas.org>	 <1174125534.7734.2.camel@Homer.simpson.net>	 <200703172355.30989.a1426z@gawab.com>  <45FEB54A.3040602@rtr.ca> <1174321617.30876.69.camel@frg-rhel40-em64t-04>
-In-Reply-To: <1174321617.30876.69.camel@frg-rhel40-em64t-04>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+CC: davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: is RSDL an "unfair" scheduler too?
+References: <MDEHLPKNGKAHNMBLJOLKGEMBCFAC.davids@webmaster.com> <45FEAB60.7090704@argo.co.il> <45FEB50E.2040104@aitel.hist.no>
+In-Reply-To: <45FEB50E.2040104@aitel.hist.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xavier Bestel wrote:
-> On Mon, 2007-03-19 at 12:07 -0400, Mark Lord wrote:
->> Dell notebook, single P-M-2GHz, ATI X300, open source X.org:
->> (1) build a kernel in one window with "make -j$((NUMBER_OF_CPUS + 1))".
->> (2) try to read email and/or surf in Firefox/Thunderbird.
+Helge Hafting wrote:
+> Avi Kivity wrote:
 >>
->> Stock scheduler wins easily, no contest.
-> 
-> What happens when you renice X ?
+>> A fairly contrived example, but I see your point.  Of course any 
+>> system can be broken.  I think that user-level scheduling is good for 
+>> real multi user systems, where 'user' means a person, not an 
+>> artificial entity.  It's also good for a multi application server, 
+>> where typically each service runs (or can be made to run) as a 
+>> separate user.
+> For a not so contrived example, look at email delivery.  Some 
+> mailservers do
+> all work as root (or some fixed email user)
+>
+> Some servers will switch to the UID of the user receiving the message, 
+> limiting the
+> damage in case of buffer overflow etc. A fair amount of work is then done
+> as that user - running the message through virus/spam-checks and
+> then perhaps procmail.
+>
 
-Dunno -- not necessary with the stock scheduler.
-Nicing the "make" helped with RSDL, though.
-But again, the stock scheduler "just works" in that regard.
+Actually that makes some sense with user level scheduling - delivering 
+email is charged to the recipient instead of to the system.  But I agree 
+it's a surprising side effect and if this is ever implemented it should 
+be optional.
 
-I agree with Ingo -- the auto-renice feature is something
-very useful for desktops, and is missing from RSDL.
+-- 
+error compiling committee.c: too many arguments to function
 
-Cheers
