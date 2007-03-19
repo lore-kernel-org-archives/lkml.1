@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965883AbXCSPUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966019AbXCSPUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965883AbXCSPUH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 11:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965884AbXCSPUG
+	id S966019AbXCSPUr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 11:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966017AbXCSPUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 11:20:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35361 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965883AbXCSPUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 11:20:04 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: [PATCH][5/5][resend] floppy.c: Fix device_create_file() warning
-Date: Mon, 19 Mar 2007 16:20:00 +0100
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Trent Waddington" <trent.waddington@gmail.com>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-References: <200703191611.13849.jesper.juhl@gmail.com> <200703191613.04223.ak@suse.de> <9a8748490703190816w2f4bc4b5je8d5c17d232f15c9@mail.gmail.com>
-In-Reply-To: <9a8748490703190816w2f4bc4b5je8d5c17d232f15c9@mail.gmail.com>
+	Mon, 19 Mar 2007 11:20:46 -0400
+Received: from 195-13-16-24.net.novis.pt ([195.23.16.24]:42677 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S966014AbXCSPUp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 11:20:45 -0400
+Message-ID: <45FEAA4B.4030302@grupopie.com>
+Date: Mon, 19 Mar 2007 15:20:43 +0000
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200703191620.00179.ak@suse.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alexey Dobriyan <adobriyan@sw.ru>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH v3] Race between cat /proc/kallsyms and rmmod
+References: <20070316114245.GA6817@localhost.sw.ru> <20070319143317.GB6805@localhost.sw.ru>
+In-Reply-To: <20070319143317.GB6805@localhost.sw.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 March 2007 16:16, Jesper Juhl wrote:
-> On 19/03/07, Andi Kleen <ak@suse.de> wrote:
-> >
-> > >
-> > > -             device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
-> > > +             err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
-> > > +             if (err)
-> > > +                     printk(KERN_WARNING "Unable to create sysfs attribute "
-> > > +                             "file for floppy device: %s\n",
-> > > +                             floppy_device[drive].name);
-> >
-> > That change looks pretty useless. Either the error should be handled correctly
-> > by bailing out or the warn_unused_results should be dropped.
-> >
-> At least letting the user know that something failed is better than
-> the current situation of just failing silently I'd say.
+Alexey Dobriyan wrote:
+> Iterating code of /proc/kallsyms calls module_get_kallsym() which grabs
+> and drops module_mutex internally and returns "struct module *",
+> module is removed, aforementioned "struct module *" is used in non-trivial
+> way.
+> 
+> Steps to reproduce:
+> 
+> 	modprobe/rmmod loop
+> 	cat /proc/kallsyms >/dev/null loop
+> 
+> Copy all needed info under module_mutex.
+> 
+> NOTE: this patch keeps module_mutex static.
 
-I don't think so. That's just bloat.
+Yes, this patch fixes the "cat /proc/kallsyms" race without changing any 
+"external" interfaces, so I think it should go into mainline in any case.
 
--Andi
+Acked-by: Paulo Marques <pmarques@grupopie.com>
+
+-- 
+Paulo Marques - www.grupopie.com
+
+"All I ask is a chance to prove that money can't make me happy."
