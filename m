@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbXCSVj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965054AbXCSVjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbXCSVj3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbXCSVjU
+	id S965054AbXCSVjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030586AbXCSVjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:39:20 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59092 "EHLO mx2.suse.de"
+	Mon, 19 Mar 2007 17:39:49 -0400
+Received: from mail.suse.de ([195.135.220.2]:55512 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753508AbXCSVjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:39:17 -0400
-Date: Mon, 19 Mar 2007 14:37:29 -0700
+	id S964944AbXCSVji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:39:38 -0400
+Date: Mon, 19 Mar 2007 14:37:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,15 +19,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Chris Wright <chrisw@sous-sol.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 03/31] Fix user copy length in ipv6_sockglue.c
-Message-ID: <20070319213729.GE9261@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Joerg Dorchain <joerg@dorchain.net>,
+       Achim Leubner <Achim_Leubner@adaptec.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: [patch 04/31] gdth: fix oops in gdth_copy_cmd()
+Message-ID: <20070319213736.GF9261@kroah.com>
 References: <20070319213047.710101653@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-user-copy-length-in-ipv6_sockglue.c.patch"
+Content-Disposition: inline; filename="SCSI-gdth-fix-oops-in-gdth_copy_cmd.patch"
 In-Reply-To: <20070319213647.GB9261@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,31 +37,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Chris Wright <chrisw@sous-sol.org>
+Recent alterations to the gdth_fill_raw_cmd() path no longer set the
+sg_ranz field for zero transfer commands. However, this field is used
+lower down in the function to initialise ha->cmd_len to the size of
+the firmware packet.  If this uninitialised field contains a bogus
+value, ha->cmd_len can become much larger than the actual firmware
+packet and end up oopsing in gdth_copy_cmd() as it tries to copy this
+huge packet to the device (usually because it runs into an unallocated
+page).
 
-[IPV6] fix ipv6_getsockopt_sticky copy_to_user leak
+The fix is to initialise the sg_ranz field to zero at the start of
+gdth_fill_raw_cmd().
 
-User supplied len < 0 can cause leak of kernel memory.
-Use unsigned compare instead.
-
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Joerg Dorchain <joerg@dorchain.net>
+Acked-by: "Achim Leubner" <Achim_Leubner@adaptec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/ipv6_sockglue.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/gdth.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/net/ipv6/ipv6_sockglue.c
-+++ b/net/ipv6/ipv6_sockglue.c
-@@ -805,7 +805,7 @@ static int ipv6_getsockopt_sticky(struct
- 		return 0;
- 	hdr = opt->hopopt;
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -3092,6 +3092,7 @@ static int gdth_fill_raw_cmd(int hanum,S
+             cmdp->u.raw64.direction  = 
+                 gdth_direction_tab[scp->cmnd[0]]==DOU ? GDTH_DATA_OUT:GDTH_DATA_IN;
+             memcpy(cmdp->u.raw64.cmd,scp->cmnd,16);
++            cmdp->u.raw64.sg_ranz    = 0;
+         } else {
+             cmdp->u.raw.reserved   = 0;
+             cmdp->u.raw.mdisc_time = 0;
+@@ -3108,6 +3109,7 @@ static int gdth_fill_raw_cmd(int hanum,S
+             cmdp->u.raw.direction  = 
+                 gdth_direction_tab[scp->cmnd[0]]==DOU ? GDTH_DATA_OUT:GDTH_DATA_IN;
+             memcpy(cmdp->u.raw.cmd,scp->cmnd,12);
++            cmdp->u.raw.sg_ranz    = 0;
+         }
  
--	len = min_t(int, len, ipv6_optlen(hdr));
-+	len = min_t(unsigned int, len, ipv6_optlen(hdr));
- 	if (copy_to_user(optval, hdr, ipv6_optlen(hdr)))
- 		return -EFAULT;
- 	return len;
+         if (scp->use_sg) {
 
 -- 
