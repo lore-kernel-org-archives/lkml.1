@@ -1,175 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965427AbXCSXLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030729AbXCSXU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965427AbXCSXLn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965570AbXCSXLn
+	id S1030729AbXCSXU5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 19:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030734AbXCSXU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:11:43 -0400
-Received: from waste.org ([66.93.16.53]:46890 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965427AbXCSXLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:11:42 -0400
-Date: Mon, 19 Mar 2007 17:58:59 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Tasos Parisinos <t.parisinos@sciensis.com>
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel version 2.6.20.1)
-Message-ID: <20070319225858.GK10459@waste.org>
-References: <45FEB8B7.7020200@sciensis.com>
+	Mon, 19 Mar 2007 19:20:57 -0400
+Received: from minus.inr.ac.ru ([194.67.69.97]:49995 "HELO ms2.inr.ac.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1030725AbXCSXU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 19:20:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ms2.inr.ac.ru;
+  b=q8mcnF5dM2sTWQUQOtY2bWqJp+C2tbSV6ooSqwcasbP8mhyZJB8W/Vpk2OqAKAp8bqeoXO1qFfa4YiXlJ4ECae1GFLPA6VIrNNtnY5lB8cY7giOfD7DwNXc9UgqA3NgzW6hhsAPQV/zyqpqEAGRxrkeDl0Z7r35btQc4PFY7+D8=;
+Date: Tue, 20 Mar 2007 02:20:43 +0300
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, general@lists.openfabrics.org,
+       Roland Dreier <rolandd@cisco.com>, David Miller <davem@davemloft.net>
+Subject: Re: dst_ifdown breaks infiniband?
+Message-ID: <20070319232043.GA23359@ms2.inr.ac.ru>
+References: <20070318155532.GG7958@mellanox.co.il> <20070318191238.GA20518@ms2.inr.ac.ru> <20070318195355.GB11078@mellanox.co.il> <20070318201826.GB27004@ms2.inr.ac.ru> <20070319093632.GB8386@mellanox.co.il> <20070319120534.GA28187@ms2.inr.ac.ru> <20070319121248.GD18497@mellanox.co.il> <20070319125919.GA4239@ms2.inr.ac.ru> <20070319151336.GA24225@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45FEB8B7.7020200@sciensis.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070319151336.GA24225@mellanox.co.il>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 06:22:15PM +0200, Tasos Parisinos wrote:
-> +static inline _i32 rsa_max(_i32 x, _i32 y)
-> +{
-> +    return (x > y)? x: y;
-> +}
+Hello!
 
-We've got a max() already. Use tabs.
+> This might work. Could you post a patch to better show what you mean to do?
 
-> +
-> +/*
-> + * Module loading callback function
-> + *
-> + * Returns 0 on success or a negative value indicating error
-> + */
+Here it is.
 
-This comment is not very useful.
+->neigh_destructor() is killed (not used), replaced with ->neigh_cleanup(),
+which is called when neighbor entry goes to dead state. At this point
+everything is still valid: neigh->dev, neigh->parms etc.
 
-> +static _err __init rsa_load(void)
-> +{
-> +    _u32 i;
+The device should guarantee that dead neighbor entries (neigh->dead != 0)
+do not get private part initialized, otherwise nobody will cleanup it.
 
-Can we use int and u32 instead of _err and _u32, please?
+I think this is enough for ipoib which is the only user of this thing.
+Initialization private part of neighbor entries happens in ipib
+start_xmit routine, which is not reached when device is down.
+But it would be better to add explicit test for neigh->dead
+in any case.
 
-> +    _err retval = RSA_NO_ERR;
 
-And 0.
-
-> +    /* Pre-allocate some auxilliary mpis */
-> +    rsa_echo("Preallocating %lu bytes for auxilliary operands\n",
-> +         RSA_AUX_SIZE * RSA_AUX_COUNT * sizeof(_u32));
-
-And printk.
-
-> +    memset(&aux, 0, sizeof(aux));
-> +    for(i = 0; i < RSA_AUX_COUNT; i++) {
-> +        retval = rsa_mpi_alloc(&aux[i], RSA_AUX_SIZE);
-
-kmalloc, please? RSA_AUX_SIZE appears to be in bytes.
-
-> +        if(retval < 0)
-
-We use "for (" and "if (" so they don't look like function calls.
-
-> +            goto rollback;
-> +    }
-> +           
-> +    rsa_echo("RSA cipher algorithm module initialized\n");
-> +    return RSA_NO_ERR;
-> +
-> +/* Free all allocated resources if any errors occur */
-> +rollback:
-> +    for(i = 0; i < RSA_AUX_COUNT; i++)
-> +        rsa_mpi_free(aux[i]);
-
-kfree()
-
-> +/*
-> + * Preallocate an mpi. The allocated mpi will be all-zeroed and not
-> + * canonicalized.
-> + *
-> + * Returns 0 on success or a negative value indicating error
-> + *
-> + * @n:       pointer pointer to the allocated mpi
-> + * @limbs: number of allocated limbs (32 bit digits)
-> + */
-> +static _err rsa_mpi_alloc(mpi ** n, _i32 limbs)
-
-Kerneldoc style is "function_name - short description". We write
-pointers as "mpi **n". These things probably all want to be named
-mpi_* rather than rsa_mpi_*, as they're not specific to the RSA algorithm.
-
-> +{
-> +    mpi * handle;
-
-And here.
-
-> +        rsa_debug("%s: kzalloc failed\n", __FUNCTION__);
-
-printk.
-
-> +static _err rsa_mpi_init(mpi **    n, _u8 * str, _u32 size, _u32 xtra)
-
-If str is an actual string, use char *str.
-
-> +    /* Allocate space for the mpi and its data */
-> +    s = (size / 4) + ((size % 4)? 1: 0);
-
-Uhhh.. (size + 1) / 4?
-
-> +    retval = rsa_mpi_alloc(n, s + xtra);
-
-Is this not in bytes?
-
-> +    /* Copy the data */
-> +    for(i = size - 1, j = 0; i >= 0; i--, j++)
-> +        buf[j / 4] |= ((_u32)str[i] << ((j % 4) * 8));
-
-Ew.
-
-> +        /* Zero the xtra limbs */
-> +        else if(size < handle->size)
-> +            for(i = size; i < s; i++)
-> +                buf[i] = 0;
-
-memset?
-
-> +        return RSA_ERR_INVARG;
-
--EINVAL
-
-> +    buf = (*n)->data;
-> +    for(i = size - 1, j = 0; i >= 0; i--, j++)
-> +        buf[j / 4] |= ((_u32)str[i] << ((j % 4) * 8));
-
-That mess looks familiar.
-
-> +#define RSA_AUX_COUNT         CONFIG_RSA_AUXCOUNT
-> +#define RSA_AUX_SIZE         CONFIG_RSA_AUXSIZE
-
-Just use the config value.
-
-> +#define RSA_MAX_U32        0xFFFFFFFF
-
-I'm sure we've got this somewhere.
-
-> +#define RSA_NO_ERR        0
-> +#define RSA_ERR_INVARG        -1
-> +#define RSA_ERR_NOMEM        -2
-
-0, -EINVAL, -ENOMEM.
-
-> +#define true            0x01
-> +#define false            0x00
-
-Ew.
-
-> +/* Mpi utility functions */
-> +static _err        rsa_mpi_alloc(mpi **, _i32);
-> +static void         rsa_mpi_free(mpi *);
-> +static _err         rsa_mpi_init(mpi **, _u8 *, _u32, _u32);
-> +static _err         rsa_mpi_resize(mpi **, _i32, _u8);
-> +static _err         rsa_mpi_set(mpi **, _u8 *, _u32);
-> +static inline _err     rsa_mpi_copy(mpi **, mpi *);
-> +static void         rsa_mpi_print(mpi *, _u8);
-
-Why are you declaring a bunch of static functions in a header file?
-
--- 
-Mathematics is the supreme nostalgia of our time.
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
+index f9dbc6f..2b5c297 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
+@@ -814,7 +814,7 @@ static void ipoib_set_mcast_list(struct 
+ 	queue_work(ipoib_workqueue, &priv->restart_task);
+ }
+ 
+-static void ipoib_neigh_destructor(struct neighbour *n)
++static void ipoib_neigh_cleanup(struct neighbour *n)
+ {
+ 	struct ipoib_neigh *neigh;
+ 	struct ipoib_dev_priv *priv = netdev_priv(n->dev);
+@@ -822,7 +822,7 @@ static void ipoib_neigh_destructor(struc
+ 	struct ipoib_ah *ah = NULL;
+ 
+ 	ipoib_dbg(priv,
+-		  "neigh_destructor for %06x " IPOIB_GID_FMT "\n",
++		  "neigh_cleanup for %06x " IPOIB_GID_FMT "\n",
+ 		  IPOIB_QPN(n->ha),
+ 		  IPOIB_GID_RAW_ARG(n->ha + 4));
+ 
+@@ -874,7 +874,7 @@ void ipoib_neigh_free(struct net_device 
+ 
+ static int ipoib_neigh_setup_dev(struct net_device *dev, struct neigh_parms *parms)
+ {
+-	parms->neigh_destructor = ipoib_neigh_destructor;
++	parms->neigh_cleanup = ipoib_neigh_cleanup;
+ 
+ 	return 0;
+ }
+diff --git a/include/net/neighbour.h b/include/net/neighbour.h
+index 3725b93..ad7fe11 100644
+--- a/include/net/neighbour.h
++++ b/include/net/neighbour.h
+@@ -36,7 +36,7 @@ struct neigh_parms
+ 	struct net_device *dev;
+ 	struct neigh_parms *next;
+ 	int	(*neigh_setup)(struct neighbour *);
+-	void	(*neigh_destructor)(struct neighbour *);
++	void	(*neigh_cleanup)(struct neighbour *);
+ 	struct neigh_table *tbl;
+ 
+ 	void	*sysctl_table;
+diff --git a/net/atm/clip.c b/net/atm/clip.c
+index ebb5d0c..8c38258 100644
+--- a/net/atm/clip.c
++++ b/net/atm/clip.c
+@@ -261,14 +261,6 @@ static void clip_pop(struct atm_vcc *vcc
+ 	spin_unlock_irqrestore(&PRIV(dev)->xoff_lock, flags);
+ }
+ 
+-static void clip_neigh_destroy(struct neighbour *neigh)
+-{
+-	DPRINTK("clip_neigh_destroy (neigh %p)\n", neigh);
+-	if (NEIGH2ENTRY(neigh)->vccs)
+-		printk(KERN_CRIT "clip_neigh_destroy: vccs != NULL !!!\n");
+-	NEIGH2ENTRY(neigh)->vccs = (void *) NEIGHBOR_DEAD;
+-}
+-
+ static void clip_neigh_solicit(struct neighbour *neigh, struct sk_buff *skb)
+ {
+ 	DPRINTK("clip_neigh_solicit (neigh %p, skb %p)\n", neigh, skb);
+@@ -342,7 +334,6 @@ static struct neigh_table clip_tbl = {
+ 	/* parameters are copied from ARP ... */
+ 	.parms = {
+ 		.tbl 			= &clip_tbl,
+-		.neigh_destructor	= clip_neigh_destroy,
+ 		.base_reachable_time 	= 30 * HZ,
+ 		.retrans_time 		= 1 * HZ,
+ 		.gc_staletime 		= 60 * HZ,
+diff --git a/net/core/neighbour.c b/net/core/neighbour.c
+index 3183142..cfc6001 100644
+--- a/net/core/neighbour.c
++++ b/net/core/neighbour.c
+@@ -140,6 +140,8 @@ static int neigh_forced_gc(struct neigh_
+ 				n->dead = 1;
+ 				shrunk	= 1;
+ 				write_unlock(&n->lock);
++				if (n->parms->neigh_cleanup)
++					n->parms->neigh_cleanup(n);
+ 				neigh_release(n);
+ 				continue;
+ 			}
+@@ -211,6 +213,8 @@ static void neigh_flush_dev(struct neigh
+ 				NEIGH_PRINTK2("neigh %p is stray.\n", n);
+ 			}
+ 			write_unlock(&n->lock);
++			if (n->parms->neigh_cleanup)
++				n->parms->neigh_cleanup(n);
+ 			neigh_release(n);
+ 		}
+ 	}
+@@ -582,9 +586,6 @@ void neigh_destroy(struct neighbour *nei
+ 			kfree(hh);
+ 	}
+ 
+-	if (neigh->parms->neigh_destructor)
+-		(neigh->parms->neigh_destructor)(neigh);
+-
+ 	skb_queue_purge(&neigh->arp_queue);
+ 
+ 	dev_put(neigh->dev);
+@@ -675,6 +676,8 @@ static void neigh_periodic_timer(unsigne
+ 			*np = n->next;
+ 			n->dead = 1;
+ 			write_unlock(&n->lock);
++			if (n->parms->neigh_cleanup)
++				n->parms->neigh_cleanup(n);
+ 			neigh_release(n);
+ 			continue;
+ 		}
+@@ -2088,8 +2091,11 @@ void __neigh_for_each_release(struct nei
+ 			} else
+ 				np = &n->next;
+ 			write_unlock(&n->lock);
+-			if (release)
++			if (release) {
++				if (n->parms->neigh_cleanup)
++					n->parms->neigh_cleanup(n);
+ 				neigh_release(n);
++			}
+ 		}
+ 	}
+ }
