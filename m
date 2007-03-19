@@ -1,62 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752129AbXCSTJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbXCSTJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752129AbXCSTJS (ORCPT <rfc822;w@1wt.eu>);
+	id S1752197AbXCSTJS (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 19 Mar 2007 15:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXCSTJS
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXCSTJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 15:09:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49314 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923AbXCSTJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 15:09:16 -0400
-Date: Mon, 19 Mar 2007 12:08:07 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: jg@laptop.org
-Cc: zaitcev@redhat.com, linux-kernel@vger.kernel.org
-Subject: BSOD (was: [2/6] 2.6.21-rc2: known regressions)
-Message-Id: <20070319120807.af36ef5d.zaitcev@redhat.com>
-In-Reply-To: <1174236045.6832.9.camel@localhost>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	<20070305015034.GG3441@stusta.de>
-	<20070308123143.GF5149@mellanox.co.il>
-	<Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
-	<20070308192554.GA2999@elte.hu>
-	<20070308230705.GA4611@elte.hu>
-	<Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
-	<20070309111957.GA3928@elf.ucw.cz>
-	<20070318160707.GC12673@elte.hu>
-	<1174236045.6832.9.camel@localhost>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Mar 2007 15:09:17 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57571 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbXCSTJP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 15:09:15 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
+References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
+	<m1mz29xi8g.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0703191112500.2101@alien.or.mcafeemobile.com>
+Date: Mon, 19 Mar 2007 13:08:26 -0600
+In-Reply-To: <Pine.LNX.4.64.0703191112500.2101@alien.or.mcafeemobile.com>
+	(Davide Libenzi's message of "Mon, 19 Mar 2007 11:53:02 -0700 (PDT)")
+Message-ID: <m11wjlxd91.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Mar 2007 12:40:45 -0400, Jim Gettys <jg@laptop.org> wrote:
+Davide Libenzi <davidel@xmailserver.org> writes:
 
-> Also more seriously, a somewhat hybrid approach is in order for mode
-> setting: simple mode setting isn't much code and is required for sane
-> behavior on crash (it is nice to get oopses onto a screen); but the full
-> blown mode setting/configuration problem is so large that on some
-> hardware, it is likely left best left to a helper process (not the X
-> server).
+> On Mon, 19 Mar 2007, Eric W. Biederman wrote:
+>
+>> Davide Libenzi <davidel@xmailserver.org> writes:
+>> 
+>> > struct signalfd_siginfo {
+>> > 	__u32 signo;	/* si_signo */
+>> > 	__s32 err;	/* si_errno */
+>> > 	__s32 code;	/* si_code */
+>> > 	__u32 pid;	/* si_pid */
+>> > 	__u32 uid;	/* si_uid */
+>> > 	__s32 fd;	/* si_fd */
+>> > 	__u32 tid;	/* si_fd */  
+>> > 	__u32 band;	/* si_band */
+>> > 	__u32 overrun;	/* si_overrun */
+>> > 	__u32 trapno;	/* si_trapno */
+>> > 	__s32 status;	/* si_status */
+>> > 	__s32 svint;	/* si_int */
+>> > 	__u64 svptr;	/* si_ptr */
+>> > 	__u64 utime;	/* si_utime */
+>> > 	__u64 stime;	/* si_stime */
+>> > 	__u64 addr;	/* si_addr */
+>> > };
+>> 
+>> Shouldn't we pad this to 128 bytes like we do siginfo in case there are
+>> more fields we need to include, or we need to extend the size of some
+>> field?
+>
+> Yes, I guess we can.
 
-Jim, I doubt that a mode switch on oops is a good idea. Maybe I'm unlucky,
-but in my experience, it often is the case that systems fail to switch
-to text mode for shutdown. What is amazing, the very same systems switch
-to text mode on <Alt>F1 just fine, and then back to <Alt>F7!
-I would hazard a guess that this happens because nobody cares
-about shutdown modes to fix them. But then the same is true for
-crashes.
+I'm just a little paranoid about ABI's.  There is always something
+that crops up.  And while we can probably cope by simply having another
+version of the signalfd or whatever your syscall is, but having to do
+that at the first sign of trouble sucks.  Especially since we would have
+to maintain two versions indefinitely.
 
-I understand that you have your own experience, but thought to note
-this all the same.
+>> > +
+>> > +struct signalfd_ctx {
+>> > +	struct list_head lnk;
+>> > +	wait_queue_head_t wqh;
+>> > +	sigset_t sigmask;
+>> > +	struct task_struct *tsk;
+>> > +};
+>> 
+>> I think you want to use a struct pid *pid instead of a pointer to the
+>> task struct here.  It is slightly less efficient (one more
+>> dereference) but it means that we won't pin the task struct in memory
+>> indefinitely.  Pinning the task_struct like this makes for a very
+>> interesting way to get around the limits on the number of processes a
+>> user can have.
+>
+> Hmm, when the task is detached from the sighand, we get a notify, so I 
+> could do a put from there. This would avoid the extra de-reference. I need 
+> to verify locking though ...
 
->From the constructive angle, I think that a crash should render into
-existing mode, into the currently mapped frame buffer. This is the
-only way how it can be made to work reliably.
+Ok.  That sounds more efficient than playing with struct pid pointers,
+if it works.
 
-Yours,
--- Pete
+Eric
