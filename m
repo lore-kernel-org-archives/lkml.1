@@ -1,53 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964978AbXCSV1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030582AbXCSV2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964978AbXCSV1b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964988AbXCSV1a
+	id S1030582AbXCSV2J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030584AbXCSV2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:27:30 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:20346 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964978AbXCSV13 (ORCPT
+	Mon, 19 Mar 2007 17:28:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.225]:24003 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030582AbXCSV2H convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:27:29 -0400
-To: "Bryan O'Sullivan" <bos@pathscale.com>
-Cc: openib-general@openfabrics.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14 of 33] IB/ipath - fix port sharing on powerpc
-X-Message-Flag: Warning: May contain useful information
-References: <62da2fb770b66310ac06.1173995098@iqa-25.internal.keyresearch.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 19 Mar 2007 14:27:28 -0700
-In-Reply-To: <62da2fb770b66310ac06.1173995098@iqa-25.internal.keyresearch.com> (Bryan O'Sullivan's message of "Thu, 15 Mar 2007 14:44:58 -0700")
-Message-ID: <adaejnkncu7.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Mon, 19 Mar 2007 17:28:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iyZfLE6qNEQoL5zD2LYna/LVYWiXmYoTHEd7i8nDP4xXV3ZbtaCQ4GEFXPoNyzANsZekmDjmZPDbc7cD8kR645WpdwrEKCi8JzcWnaYCWM1TcbB858yCBnS0edezC/NJmvJBjJjqkfcgYMYVjrARoC+y3w6LUaWoweZvuQI+uek=
+Message-ID: <d120d5000703191428t11f2df22w5f28d49d2ecfcd52@mail.gmail.com>
+Date: Mon, 19 Mar 2007 17:28:06 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "=?ISO-8859-1?Q?=C9ric_Piel?=" <Eric.Piel@tremplin-utc.net>
+Subject: Re: [PATCH 0/2] wistron_btns: More keymaps
+Cc: "Vojtech Pavlik" <vojtech@suse.cz>, mitr@volny.cz, otauber@web.de,
+       linux-kernel@vger.kernel.org,
+       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <45F91F73.8040200@tremplin-utc.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Mar 2007 21:27:28.0883 (UTC) FILETIME=[656ADC30:01C76A6D]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <45ECA23A.5010503@tremplin-utc.net>
+	 <d120d5000703060536k7743ece9hb20fa4d1f7ad7ad7@mail.gmail.com>
+	 <45ED8809.70309@tremplin-utc.net> <45F72D37.6090004@tremplin-utc.net>
+	 <d120d5000703140654y4d8cb0a3oafd49c48a045bd77@mail.gmail.com>
+	 <20070314182559.GC5264@suse.cz>
+	 <d120d5000703141158t4d02b8b7pc4ab967722dac@mail.gmail.com>
+	 <20070314190254.GA5843@suse.cz> <45F91F73.8040200@tremplin-utc.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > The port sharing feature mixed kernel virtual addresses as well as
- > physical addresses for the offset used to describe the mmap address to map
- > the InfiniPath hardware into user space.  This had a conflict on powerpc.
- > The new scheme converts it to a physical address so it doesn't conflict
- > with chip addresses and yet still fits in 40/44 bits so it isn't truncated
- > by 32-bit applications calling mmap64().
+On 3/15/07, Éric Piel <Eric.Piel@tremplin-utc.net> wrote:
+> 03/14/2007 08:02 PM, Vojtech Pavlik wrote/a écrit:
+> > On Wed, Mar 14, 2007 at 02:58:49PM -0400, Dmitry Torokhov wrote:
+> >
+> >>>> 2. I also have a concern about using KEY_SCREEN to signal toggling
+> >>>> display on and off. I am CCing Vojtech - he must know what the
+> >>>> original intent of this key code was. BTW, when user presses
+> >>>> corresponding button - does the display actually goes off? Maybe we
+> >>>> need another switch.
+> >>> Sorry, Dmitry, I probably should have documented it back then, I don't
+> >>> have the slightest idea anymore.
+> >>>
+> >> That's what I was afraid of ;) Well, maybe we should just use it to
+> >> indicate display switch and add a comment to that effect to input.h...
+> >
+> > Digging somewhat deeper into my memory, I think it just so happened that
+> > there was a keyboard with a key with a pictogram of a computer screen on
+> > it with no really defined purpose. Since at that time there was only a
+> > limited number of different extended keyboard types, it was added.
+> >
+> > I think it'd make sense to use it eg. for the key that switches between
+> > internal and external output on laptops, if the laptop generates a
+> > keycode for the key at all. But maybe that function is already taken by
+> > KEY_SWITCHVIDEOMODE ...
+>
+> Ok, so let me summarize:
+>
+> There are two kinds of keys on those laptops (for which we are not sure
+> about the keycode that it should generate):
+> * Laptop screen on/off
+> * Display output selection (for instance: laptop/external/both)
+>
+> The possible keycodes that we could assign to them:
+> KEY_SCREEN
+> KEY_MEDIA
+> KEY_MODE
+> KEY_VIDEO
+> KEY_SWITCHVIDEOMODE
+> KEY_COMPUTER
+> KEY_PC
+>
+>  From the discussion, I had the feeling this association would be the
+> less incorrect:
+> Screen on/off : KEY_SCREEN
 
- > +/*
- > + * Convert kernel virtual addresses to physical addresses so they don't
- > + * potentially conflict with the chip addresses used as mmap offsets.
- > + * It doesn't really matter what mmap offset we use as long as we can
- > + * interpret it correctly. 
- > + */
+It looks like DVB folks chose to ise KEY_SCREEN and KEY_WINDOW to
+switch applications between full screen and windowed modes so we'll
+have to invent our own keycode. KEY_DISPLAYTOGGLE anyone?
 
- > +		paddr = page_to_pfn(page) << PAGE_SHIFT;
- > +
- > +	return paddr;
+> Display selection : KEY_SWITCHVIDEOMODE
+>
 
-what guarantee is there that physical addresses fit into any number
-of bits?  Couldn't I have a NUMA system or something that puts
-physical memory starting at an offset of 1 << 48 or whatever?
+I agree here.
 
- - R.
+-- 
+Dmitry
