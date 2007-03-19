@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030666AbXCSVr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030657AbXCSVsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030666AbXCSVr6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030591AbXCSVrf
+	id S1030657AbXCSVsW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030678AbXCSVsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:47:35 -0400
-Received: from mail.suse.de ([195.135.220.2]:55968 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030651AbXCSVm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:42:28 -0400
-Date: Mon, 19 Mar 2007 14:40:40 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 25/31] Input: i8042 - really suppress ACK/NAK during panic blink
-Message-ID: <20070319214040.GA9261@kroah.com>
-References: <20070319213047.710101653@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-i8042-really-suppress-ack-nak-during-panic-blink.patch"
-In-Reply-To: <20070319213647.GB9261@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 19 Mar 2007 17:48:19 -0400
+Received: from ganymede.vroon.org ([195.66.242.11]:55971 "EHLO
+	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030657AbXCSVsO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:48:14 -0400
+From: Tony Vroon <chainsaw@gentoo.org>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: <htejun@gmail.com>, <alan@lxorguk.ukuu.org.uk>,
+       <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2.6.22 1/3] Add LED trigger to libata core
+Message-Id: <20070319214805.41D0A5B80F1@ganymede.vroon.org>
+Date: Mon, 19 Mar 2007 21:48:05 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+This adds an optional wrapper around ata_ac_issue_prot that triggers the LED layer.
+I plan to use this by allowing PMU LED control on G5 towers. My test platform 
+is a PowerMac 7,3 (Dual G5 2.0GHz, June 2004) with a K2 (sata_svw) controller.
+Respin of an earlier patch, based on comments by Tejun Heo & Alan Cox.
 
-------------------
+Signed-off-by: Tony Vroon <chainsaw@gentoo.org>
 
-From: Dmitry Torokhov <dtor@insightbb.com>
-
-Input: i8042 - really suppress ACK/NAK during panic blink
-
-On some boxes panic blink procedure manages to send both bytes
-to keyboard contoller before getting first ACK so we need to
-make i8042_suppress_kbd_ack a counter instead of boolean.
-
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-
----
- drivers/input/serio/i8042.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
---- a/drivers/input/serio/i8042.c
-+++ b/drivers/input/serio/i8042.c
-@@ -371,7 +371,7 @@ static irqreturn_t i8042_interrupt(int i
- 	if (unlikely(i8042_suppress_kbd_ack))
- 		if (port_no == I8042_KBD_PORT_NO &&
- 		    (data == 0xfa || data == 0xfe)) {
--			i8042_suppress_kbd_ack = 0;
-+			i8042_suppress_kbd_ack--;
- 			goto out;
- 		}
+--- linux-2.6/drivers/ata/libata-core.c.orig	2007-03-19 20:03:07.000000000 +0000
++++ linux-2.6/drivers/ata/libata-core.c	2007-03-19 21:05:50.000000000 +0000
+@@ -49,6 +49,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/jiffies.h>
+ #include <linux/scatterlist.h>
++#include <linux/leds.h>
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_cmnd.h>
+ #include <scsi/scsi_host.h>
+@@ -5050,6 +5051,25 @@
+ }
  
-@@ -838,13 +838,14 @@ static long i8042_panic_blink(long count
- 	led ^= 0x01 | 0x04;
- 	while (i8042_read_status() & I8042_STR_IBF)
- 		DELAY;
--	i8042_suppress_kbd_ack = 1;
-+	dbg("%02x -> i8042 (panic blink)", 0xed);
-+	i8042_suppress_kbd_ack = 2;
- 	i8042_write_data(0xed); /* set leds */
- 	DELAY;
- 	while (i8042_read_status() & I8042_STR_IBF)
- 		DELAY;
- 	DELAY;
--	i8042_suppress_kbd_ack = 1;
-+	dbg("%02x -> i8042 (panic blink)", led);
- 	i8042_write_data(led);
- 	DELAY;
- 	last_blink = count;
-
--- 
+ /**
++ *	ata_qc_issue_prot_with_ledtrigger - trigger LED core
++ *	@qc: command to issue to device
++ *
++ *	This triggers the LED core and then calls the
++ *	regular ata_qc_issue_prot function.
++ *
++ *	LOCKING:
++ *	spin_lock_irqsave(host lock)
++ *
++ *	RETURNS:
++ *	Zero on success, AC_ERR_* mask on failure
++ */
++unsigned int ata_qc_issue_prot_with_ledtrigger(struct ata_queued_cmd *qc)
++{
++	ledtrig_ide_activity();	
++	return ata_qc_issue_prot(qc);
++}
++
++/**
+  *	ata_host_intr - Handle host interrupt for given (port, task)
+  *	@ap: Port on which interrupt arrived (possibly...)
+  *	@qc: Taskfile currently active in engine
+@@ -6316,6 +6336,7 @@
+ EXPORT_SYMBOL_GPL(ata_qc_complete);
+ EXPORT_SYMBOL_GPL(ata_qc_complete_multiple);
+ EXPORT_SYMBOL_GPL(ata_qc_issue_prot);
++EXPORT_SYMBOL_GPL(ata_qc_issue_prot_with_ledtrigger);
+ EXPORT_SYMBOL_GPL(ata_tf_load);
+ EXPORT_SYMBOL_GPL(ata_tf_read);
+ EXPORT_SYMBOL_GPL(ata_noop_dev_select);
