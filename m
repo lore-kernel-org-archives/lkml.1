@@ -1,184 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbXCSJYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbXCSJYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbXCSJYE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 05:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXCSJYD
+	id S1753354AbXCSJYZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 05:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbXCSJYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 05:24:03 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34829 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753306AbXCSJYA (ORCPT
+	Mon, 19 Mar 2007 05:24:19 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:45350 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753306AbXCSJYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 05:24:00 -0400
-Date: Mon, 19 Mar 2007 10:24:03 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Hendry <andrew.hendry@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [2.6 patch] x25_forward_call(): fix NULL dereferences
-Message-ID: <20070319092403.GK752@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 19 Mar 2007 05:24:15 -0400
+Date: Mon, 19 Mar 2007 14:54:04 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
+       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC][PATCH] sys_fallocate() system call
+Message-ID: <20070319092404.GA12092@amitarora.in.ibm.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316152103.GD8525@osiris.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070316152103.GD8525@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes two NULL dereferences spotted by the Coverity checker.
+On Fri, Mar 16, 2007 at 04:21:03PM +0100, Heiko Carstens wrote:
+> On Fri, Mar 16, 2007 at 08:01:01PM +0530, Amit K. Arora wrote:
+> > First of all, thanks for the overwhelming response!
+> > 
+> > Based on the suggestions received, I have added a new parameter to the
+> > sys_fallocate() system call - an interger called "mode", just after the
+> > "fd". Now the system call looks like this:
+> > 
+> >  asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
+> > 
+> > Currently we have two modes FA_ALLOCATE and FA_DEALLOCATE, for
+> > preallocation and deallocation of preallocated blocks respectively. More
+> > modes can be added, when required. And these modes can be renamed, since
+> > I am sure these are no way the best ones ! :)
+> > 
+> > Attached below is the patch which implements this system call. It has
+> > been currently implemented and tested on i386, ppc64 and x86_64
+> > architectures. I am facing some problems while trying to implement this
+> > on s390, and thus the delay. While I try to get it right on s390(x), we
+> > thought of posting this patch, so that we can save some time. Parallely
+> > we will work on getting the patch work on s390, and probably it will
+> > come as a separate patch.
+> 
+> What's the problem you face on s390? If it's just the compat wrapper, you
+> may look at sys_sync_file_range_wrapper. Or I will send a patch if needed.
 
-For a better understanding, the "diff -uwp" output (that ignores the 
-indentation changes) is:
+Hi Heiko,
 
---- linux-2.6.21-rc3-mm2/net/x25/x25_forward.c.old	2007-03-19 02:28:34.000000000 +0100
-+++ linux-2.6.21-rc3-mm2/net/x25/x25_forward.c	2007-03-19 02:31:45.000000000 +0100
-@@ -25,9 +25,10 @@ int x25_forward_call(struct x25_address 
- 	struct sk_buff *skbn;
- 	short same_lci = 0;
- 	int rc = 0;
- 
--	if ((rt = x25_get_route(dest_addr)) != NULL) {
-+	if ((rt = x25_get_route(dest_addr)) == NULL)
-+		goto out_no_route;
- 
- 		if ((neigh_new = x25_get_neigh(rt->dev)) == NULL) {
- 			/* This shouldnt happen, if it occurs somehow
- 			 * do something sensible
-@@ -75,16 +76,17 @@ int x25_forward_call(struct x25_address 
- 			goto out_put_nb;
- 		}
- 		x25_transmit_link(skbn, neigh_new);
- 		rc = 1;
--	}
- 
- 
- out_put_nb:
- 	x25_neigh_put(neigh_new);
- 
- out_put_route:
- 	x25_route_put(rt);
-+
-+out_no_route:
- 	return rc;
- }
- 
+Yes, the problem was adding compat wrapper for this. I will appreciate
+your help in writing it. Only thing is that we might have to wait till
+the order of the arguments is decided upon. Thanks!
 
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
-
- net/x25/x25_forward.c |   86 +++++++++++++++++++++---------------------
- 1 file changed, 44 insertions(+), 42 deletions(-)
-
---- linux-2.6.21-rc3-mm2/net/x25/x25_forward.c.old	2007-03-19 02:28:34.000000000 +0100
-+++ linux-2.6.21-rc3-mm2/net/x25/x25_forward.c	2007-03-19 02:31:45.000000000 +0100
-@@ -26,64 +26,66 @@ int x25_forward_call(struct x25_address 
- 	short same_lci = 0;
- 	int rc = 0;
- 
--	if ((rt = x25_get_route(dest_addr)) != NULL) {
-+	if ((rt = x25_get_route(dest_addr)) == NULL)
-+		goto out_no_route;
- 
--		if ((neigh_new = x25_get_neigh(rt->dev)) == NULL) {
--			/* This shouldnt happen, if it occurs somehow
--			 * do something sensible
--			 */
--			goto out_put_route;
--		}
--
--		/* Avoid a loop. This is the normal exit path for a
--		 * system with only one x.25 iface and default route
-+	if ((neigh_new = x25_get_neigh(rt->dev)) == NULL) {
-+		/* This shouldnt happen, if it occurs somehow
-+		 * do something sensible
- 		 */
--		if (rt->dev == from->dev) {
--			goto out_put_nb;
--		}
-+		goto out_put_route;
-+	}
- 
--		/* Remote end sending a call request on an already
--		 * established LCI? It shouldnt happen, just in case..
--		 */
--		read_lock_bh(&x25_forward_list_lock);
--		list_for_each(entry, &x25_forward_list) {
--			x25_frwd = list_entry(entry, struct x25_forward, node);
--			if (x25_frwd->lci == lci) {
--				printk(KERN_WARNING "X.25: call request for lci which is already registered!, transmitting but not registering new pair\n");
--				same_lci = 1;
--			}
--		}
--		read_unlock_bh(&x25_forward_list_lock);
-+	/* Avoid a loop. This is the normal exit path for a
-+	 * system with only one x.25 iface and default route
-+	 */
-+	if (rt->dev == from->dev) {
-+		goto out_put_nb;
-+	}
- 
--		/* Save the forwarding details for future traffic */
--		if (!same_lci){
--			if ((new_frwd = kmalloc(sizeof(struct x25_forward),
--							GFP_ATOMIC)) == NULL){
--				rc = -ENOMEM;
--				goto out_put_nb;
--			}
--			new_frwd->lci = lci;
--			new_frwd->dev1 = rt->dev;
--			new_frwd->dev2 = from->dev;
--			write_lock_bh(&x25_forward_list_lock);
--			list_add(&new_frwd->node, &x25_forward_list);
--			write_unlock_bh(&x25_forward_list_lock);
-+	/* Remote end sending a call request on an already
-+	 * established LCI? It shouldnt happen, just in case..
-+	 */
-+	read_lock_bh(&x25_forward_list_lock);
-+	list_for_each(entry, &x25_forward_list) {
-+		x25_frwd = list_entry(entry, struct x25_forward, node);
-+		if (x25_frwd->lci == lci) {
-+			printk(KERN_WARNING "X.25: call request for lci which is already registered!, transmitting but not registering new pair\n");
-+			same_lci = 1;
- 		}
-+	}
-+	read_unlock_bh(&x25_forward_list_lock);
- 
--		/* Forward the call request */
--		if ( (skbn = skb_clone(skb, GFP_ATOMIC)) == NULL){
-+	/* Save the forwarding details for future traffic */
-+	if (!same_lci){
-+		if ((new_frwd = kmalloc(sizeof(struct x25_forward),
-+						GFP_ATOMIC)) == NULL){
-+			rc = -ENOMEM;
- 			goto out_put_nb;
- 		}
--		x25_transmit_link(skbn, neigh_new);
--		rc = 1;
-+		new_frwd->lci = lci;
-+		new_frwd->dev1 = rt->dev;
-+		new_frwd->dev2 = from->dev;
-+		write_lock_bh(&x25_forward_list_lock);
-+		list_add(&new_frwd->node, &x25_forward_list);
-+		write_unlock_bh(&x25_forward_list_lock);
- 	}
- 
-+	/* Forward the call request */
-+	if ( (skbn = skb_clone(skb, GFP_ATOMIC)) == NULL){
-+		goto out_put_nb;
-+	}
-+	x25_transmit_link(skbn, neigh_new);
-+	rc = 1;
-+
- 
- out_put_nb:
- 	x25_neigh_put(neigh_new);
- 
- out_put_route:
- 	x25_route_put(rt);
-+
-+out_no_route:
- 	return rc;
- }
- 
-
+--
+Regards,
+Amit Arora
