@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbXCSUzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbXCSU7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269AbXCSUzL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 16:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbXCSUzL
+	id S1753319AbXCSU7z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 16:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXCSU7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 16:55:11 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55479 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753269AbXCSUzJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 16:55:09 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Avi Kivity <avi@argo.co.il>
-Cc: Bill Irwin <bill.irwin@oracle.com>, Arjan van de Ven <arjan@infradead.org>,
-       Hugh Dickins <hugh@veritas.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Wanted: simple, safe x86 stack overflow detection
-References: <45E5913D.3080505@redhat.com>
-	<20070228204144.GA32316@one.firstfloor.org>
-	<20070304015031.GA4224@holomorphy.com> <45EDBA1B.8050007@redhat.com>
-	<Pine.LNX.4.64.0703061937450.19813@blonde.wat.veritas.com>
-	<20070306203432.GD18774@holomorphy.com>
-	<1173241715.3236.16.camel@laptopd505.fenrus.org>
-	<20070307064423.GH18774@holomorphy.com>
-	<1173270892.3176.4.camel@laptopd505.fenrus.org>
-	<20070307144816.GQ18774@holomorphy.com> <45EFBEB3.20708@argo.co.il>
-Date: Mon, 19 Mar 2007 14:53:22 -0600
-In-Reply-To: <45EFBEB3.20708@argo.co.il> (Avi Kivity's message of "Thu, 08 Mar
-	2007 09:43:47 +0200")
-Message-ID: <m1k5xdvttp.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 19 Mar 2007 16:59:55 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52640 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753319AbXCSU7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 16:59:54 -0400
+From: Andi Kleen <ak@suse.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
+Date: Mon, 19 Mar 2007 21:59:42 +0100
+User-Agent: KMail/1.9.5
+Cc: virtualization@lists.linux-foundation.org, jbeulich@novell.com,
+       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       virtualization@lists.osdl.org, anthony@codemonkey.ws,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu
+References: <20070318193030.GB71548@muc.de> <200703191157.29780.ak@suse.de> <20070319.120854.30182994.davem@davemloft.net>
+In-Reply-To: <20070319.120854.30182994.davem@davemloft.net>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200703192159.42396.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity <avi@argo.co.il> writes:
 
-> I don't understand why interrupt latency suffers.  Sure, the interrupt that's
-> being masked is delayed, but on the other hand the interrupt that's doing the
-> masking is not.  We're moving the latency from the first interrupt to the
-> second, probably with a slight gain in overall throughput.
->
-> It *does* matter if the interrupts have meaningful priorities.  Is that the case
-> here?
+> It's inability to handle sequences like the above sounds to me like
+> a very good argument to _not_ merge the unwinder back into the tree.
 
-No.
+The unwinder can handle it fine, it is just that gcc right now cannot
+be taught to generate correct unwind tables for it. If paravirt ops
+is widely used i guess it would be possible to find some workaround
+for that though.
+ 
+There is one case it truly cannot handle (it would be possible by switching 
+to dwarf3), but that was relatively easily eliminated and wasn't a problem
+imho.
 
-I'll queue this in my irq things to think about...
+> To me, that unwinder is nothing but trouble, it severly limits what
+> cases you can use special calling conventions via inline asm (and we
+> have done that on several occaisions) and even ignoring that the
+> unwinder only works half the time.
 
-Eric
+Initially we had some bugs that accounted for near all failures, but they 
+were all fixed in the latest version.
+ 
+> Please don't subject us to another couple months of hair-pulling only
+> to have Linus yank the thing out again, there are certainly more
+> useful things to spend time on :-)
+
+I think better backtraces are a good use of my time. Sorry if you
+disagree on that.
+
+-Andi
