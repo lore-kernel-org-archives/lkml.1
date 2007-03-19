@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965743AbXCSG7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965731AbXCSG7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965743AbXCSG7o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 02:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965731AbXCSG7o
+	id S965731AbXCSG7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 02:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965751AbXCSG7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 02:59:44 -0400
-Received: from 1wt.eu ([62.212.114.60]:1261 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965743AbXCSG7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 02:59:43 -0400
-Date: Mon, 19 Mar 2007 07:59:39 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: RSDL v0.31
-Message-ID: <20070319065938.GV943@1wt.eu>
-References: <MDEHLPKNGKAHNMBLJOLKIEMBCFAC.davids@webmaster.com> <1174285307.7498.15.camel@Homer.simpson.net>
+	Mon, 19 Mar 2007 02:59:53 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34814 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965731AbXCSG7w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 02:59:52 -0400
+Date: Mon, 19 Mar 2007 08:59:50 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] revoke: misc fixes
+In-Reply-To: <45FE2189.80709@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0703190859320.6597@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0703160916430.14651@sbz-30.cs.Helsinki.FI> 
+ <45FA458C.8050605@yahoo.com.au>  <Pine.LNX.4.64.0703160927240.14902@sbz-30.cs.Helsinki.FI>
+  <45FA4984.9000506@yahoo.com.au>  <Pine.LNX.4.64.0703160943460.15253@sbz-30.cs.Helsinki.FI>
+  <45FA4C59.1000908@yahoo.com.au> <84144f020703160152h61439b28i9e438238567a4ba0@mail.gmail.com>
+ <45FE2189.80709@yahoo.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1174285307.7498.15.camel@Homer.simpson.net>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 07:21:47AM +0100, Mike Galbraith wrote:
-> On Sun, 2007-03-18 at 19:27 -0700, David Schwartz wrote:
-> 
-> > > Wrong.  I call a good job giving a _preference_ to the desktop.  I call
-> > > rigid fairness impractical for the desktop, and a denial of reality.
-> > 
-> > Assuming you *want* that. It's possible that the desktop may not be
-> > particularly important and the machine may be doing much more important
-> > server work with critical latency issues. So if you want that, you have to
-> > ask for it.
-> 
-> Amusing argument ;-) I doubt that there are many admins ripping and
-> encoding CDs on their employers critical production servers.
+On Mon, 19 Mar 2007, Nick Piggin wrote:
+> So you could just attempt a trylock, and if it works, then you
+> could revoke the vma right then and there. OTOH, the patch you
+> subsequently posted looks fine, so unless this is performance
+> critical then I wouldn't bother ;)
 
-I've known one at least, he said he was ensuring the shiny new dual athlons
-were stable enough for production ;-) But that does not make a rule.
+The patch in -mm uses trylock.
 
-Cheers,
-Willy
-
+			Pekka
