@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbXCSH1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbXCSHdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752048AbXCSH1s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 03:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965717AbXCSH1r
+	id S1752262AbXCSHdf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 03:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXCSHdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 03:27:47 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34735 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752048AbXCSH1r (ORCPT
+	Mon, 19 Mar 2007 03:33:35 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:42968 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752277AbXCSHde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 03:27:47 -0400
-Date: Mon, 19 Mar 2007 08:27:49 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc4: pl2303 disconnect oops
-Message-ID: <20070319072749.GD752@stusta.de>
-References: <Pine.SOC.4.64.0703190835280.28512@math>
+	Mon, 19 Mar 2007 03:33:34 -0400
+Message-ID: <45FE38C3.1010201@freemail.hu>
+Date: Mon, 19 Mar 2007 08:16:19 +0100
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; hu-HU; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0703190835280.28512@math>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org, Trivial Patch Monkey <trivial@kernel.org>
+Subject: [PATCH] platform: small typo in doc
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 08:41:33AM +0200, Meelis Roos wrote:
-> I was using my laptop as the serial console of another computer with 
-> pl2303 usb-to-serial cable. minicom was running but I do not remember 
-> whether the other end was connected or was already disconnected. Anyway, 
-> I unplugged the usb cable and got a couple of oopses from pl2303. Kernel 
-> 2.6.21-rc4 on a thinkpad X20.
->...
+From: Márton Németh <nm127@freemail.hu>
 
-This looks like one of the known regressions.
+Typo: iwithout -> without.
 
-Does the patch in [1] help?
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
 
-> Meelis Roos
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2007/3/13/217
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--- linux-2.6.21-rc4.orig/drivers/base/platform.c	2007-03-16 01:20:01.000000000 +0100
++++ linux-2.6.21-rc4/drivers/base/platform.c	2007-03-19 08:08:33.000000000 +0100
+@@ -347,7 +347,7 @@ EXPORT_SYMBOL_GPL(platform_device_unregi
+   *	This function creates a simple platform device that requires minimal
+   *	resource and memory management. Canned release function freeing
+   *	memory allocated for the device allows drivers using such devices
+- *	to be unloaded iwithout waiting for the last reference to the device
++ *	to be unloaded without waiting for the last reference to the device
+   *	to be dropped.
+   */
+  struct platform_device *platform_device_register_simple(char *name, unsigned int id,
