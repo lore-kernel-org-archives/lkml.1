@@ -1,100 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965672AbXCSGYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965701AbXCSGhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965672AbXCSGYv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 02:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965691AbXCSGYv
+	id S965701AbXCSGhL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 02:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXCSGhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 02:24:51 -0400
-Received: from mail.suse.de ([195.135.220.2]:54246 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965672AbXCSGYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 02:24:50 -0400
-From: Neil Brown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 19 Mar 2007 17:24:28 +1100
+	Mon, 19 Mar 2007 02:37:10 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:33335 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965696AbXCSGhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 02:37:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=I9sjubiI7j/8Su8LTIpt5p4LQ/pWS6990zjFumsIBJ5c6viyV61Ia7I+k4wM+33duNWEKY41mlUkE31lIm/21zt0fMxJDocirEpd3882HsWcS4Xwn8BTb86zk6AUGZo8lk8zTtEWJ6G5wWxrzDo7LkTueXQZqNN4J219tsua0bE=  ;
+X-YMail-OSG: aLthSDMVM1md0HKkcvl1WUD0RNg.NqAVLovQX3x5a.SdHZufI7wZLp7eksAIY.lgPpRL1bmh7gRGZDUO96rgPIKDiMcWtw1ZmFgDEn0sq.z_SOboBJJ0coJOAniTF_SYJdTbod1SDCqWXsD4CQvqbFouMQ--
+Message-ID: <45FE2F8F.6010603@yahoo.com.au>
+Date: Mon, 19 Mar 2007 17:37:03 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: David Chinner <dgc@sgi.com>
+CC: lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
+References: <20070318233008.GA32597093@melbourne.sgi.com>
+In-Reply-To: <20070318233008.GA32597093@melbourne.sgi.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <17918.11420.155569.991473@notabene.brown>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: [2.6.20] BUG: workqueue leaked lock
-In-Reply-To: message from Andrew Morton on Friday March 16
-References: <20070313165014.GE31960@vanheusden.com>
-	<20070315110628.8bd2c07b.akpm@linux-foundation.org>
-	<1174034480.7124.16.camel@twins>
-	<20070316033912.8780a9cd.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday March 16, akpm@linux-foundation.org wrote:
+David Chinner wrote:
+> Generic page_mkwrite functionality.
 > 
-> OK.  That's not necessarily a bug: one could envisage a (weird) piece of
-> code which takes a lock then releases it on a later workqueue invokation. 
-> But I'm not sure that nfs4_laundromat() is actually supposed to be doing
-> anything like that.
+> Filesystems that make use of the VM ->page_mkwrite() callout will generally use
+> the same core code to implement it. There are several tricky truncate-related
+> issues that we need to deal with here as we cannot take the i_mutex as we
+> normally would for these paths.  These issues are not documented anywhere yet
+> so block_page_mkwrite() seems like the best place to start.
+
+
+
 > 
-> Then again, maybe it is: it seems to be waddling through a directory under
-> the control of a little state machine, with timeouts.
+> Version 2:
 > 
-> Neil: help?
-
-I'm quite certain that laundromat_main does *not* leave client_mutex
-locked as the last thing it does is call nfs4_unlock_state which is
-	mutex_unlock(&client_mutex);
-To me, that raises some doubt about whether the lock leak check is
-working properly...
-It is somewhat harder to track locking of i_mutex, but it seems to me
-that every time it is taken, it is released again shortly afterwards.
-
-So I think this must be a problem with leak detection, not with NFSd.
-
-NeilBrown
-
-
-> On Fri, 16 Mar 2007 09:41:20 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> - read inode size only once
+> - more comments explaining implementation restrictions
 > 
-> > On Thu, 2007-03-15 at 11:06 -0800, Andrew Morton wrote:
-> > > > On Tue, 13 Mar 2007 17:50:14 +0100 Folkert van Heusden <folkert@vanheusden.com> wrote:
-> > > > ...
-> > > > [ 1756.728209] BUG: workqueue leaked lock or atomic: nfsd4/0x00000000/3577
-> > > > [ 1756.728271]     last function: laundromat_main+0x0/0x69 [nfsd]
-> > > > [ 1756.728392] 2 locks held by nfsd4/3577:
-> > > > [ 1756.728435]  #0:  (client_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
-> > > > [ 1756.728679]  #1:  (&inode->i_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
-> > > > [ 1756.728923]  [<c1003d57>] show_trace_log_lvl+0x1a/0x30
-> > > > [ 1756.729015]  [<c1003d7f>] show_trace+0x12/0x14
-> > > > [ 1756.729103]  [<c1003e79>] dump_stack+0x16/0x18
-> > > > [ 1756.729187]  [<c102c2e8>] run_workqueue+0x167/0x170
-> > > > [ 1756.729276]  [<c102c437>] worker_thread+0x146/0x165
-> > > > [ 1756.729368]  [<c102f797>] kthread+0x97/0xc4
-> > > > [ 1756.729456]  [<c1003bdb>] kernel_thread_helper+0x7/0x10
-> > > > [ 1756.729547]  =======================
-> > > > [ 1792.436492] svc: unknown version (0 for prog 100003, nfsd)
-> > > > [ 1846.683648] BUG: workqueue leaked lock or atomic: nfsd4/0x00000000/3577
-> > > > [ 1846.683701]     last function: laundromat_main+0x0/0x69 [nfsd]
-> > > > [ 1846.683832] 2 locks held by nfsd4/3577:
-> > > > [ 1846.683885]  #0:  (client_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
-> > > > [ 1846.683980]  #1:  (&inode->i_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
-> > > > [ 1846.683988]  [<c1003d57>] show_trace_log_lvl+0x1a/0x30
-> > > > [ 1846.683994]  [<c1003d7f>] show_trace+0x12/0x14
-> > > > [ 1846.683997]  [<c1003e79>] dump_stack+0x16/0x18
-> > > > [ 1846.684001]  [<c102c2e8>] run_workqueue+0x167/0x170
-> > > > [ 1846.684006]  [<c102c437>] worker_thread+0x146/0x165
-> > > > [ 1846.684012]  [<c102f797>] kthread+0x97/0xc4
-> > > > [ 1846.684023]  [<c1003bdb>] kernel_thread_helper+0x7/0x10
-> > > 
-> > > Oleg, that's a fairly incomprehensible message we have in there.  Can you
-> > > please explain what it means?
-> > 
-> > I think I'm responsible for this message (commit
-> > d5abe669172f20a4129a711de0f250a4e07db298); what is says is that the
-> > function executed by the workqueue (here laundromat_main) leaked an
-> > atomic context or is still holding locks (2 locks in this case).
-> > 
+> Signed-Off-By: Dave Chinner <dgc@sgi.com>
+> 
+> ---
+>  fs/buffer.c                 |   47 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/buffer_head.h |    2 +
+>  2 files changed, 49 insertions(+)
+> 
+> Index: 2.6.x-xfs-new/fs/buffer.c
+> ===================================================================
+> --- 2.6.x-xfs-new.orig/fs/buffer.c	2007-03-17 10:55:32.291414968 +1100
+> +++ 2.6.x-xfs-new/fs/buffer.c	2007-03-19 08:13:54.519909087 +1100
+> @@ -2194,6 +2194,52 @@ int generic_commit_write(struct file *fi
+>  	return 0;
+>  }
+>  
+> +/*
+> + * block_page_mkwrite() is not allowed to change the file size as it gets
+> + * called from a page fault handler when a page is first dirtied. Hence we must
+> + * be careful to check for EOF conditions here. We set the page up correctly
+> + * for a written page which means we get ENOSPC checking when writing into
+> + * holes and correct delalloc and unwritten extent mapping on filesystems that
+> + * support these features.
+> + *
+> + * We are not allowed to take the i_mutex here so we have to play games to
+> + * protect against truncate races as the page could now be beyond EOF.  Because
+> + * vmtruncate() writes the inode size before removing pages, once we have the
+> + * page lock we can determine safely if the page is beyond EOF. If it is not
+> + * beyond EOF, then the page is guaranteed safe against truncation until we
+> + * unlock the page.
+> + */
+> +int
+> +block_page_mkwrite(struct vm_area_struct *vma, struct page *page,
+> +		   get_block_t get_block)
+> +{
+> +	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+> +	unsigned long end;
+> +	loff_t size;
+> +	int ret = -EINVAL;
+> +
+> +	lock_page(page);
+> +	size = i_size_read(inode);
+> +	if ((page->mapping != inode->i_mapping) ||
+> +	    ((page->index << PAGE_CACHE_SHIFT) > size)) {
+> +		/* page got truncated out from underneath us */
+> +		goto out_unlock;
+> +	}
+
+I see your explanation above, but I still don't see why this can't
+just follow the conventional if (!page->mapping) check for truncation.
+If the test happens to be performed after truncate concurrently
+decreases i_size, then the blocks are going to get truncated by the
+truncate afterwards anyway.
+
+> +
+> +	/* page is wholly or partially inside EOF */
+> +	if (((page->index + 1) << PAGE_CACHE_SHIFT) > size)
+> +		end = size & ~PAGE_CACHE_MASK;
+> +	else
+> +		end = PAGE_CACHE_SIZE;
+> +
+> +	ret = block_prepare_write(page, 0, end, get_block);
+> +	if (!ret)
+> +		ret = block_commit_write(page, 0, end);
+> +
+> +out_unlock:
+> +	unlock_page(page);
+> +	return ret;
+> +}
+
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
