@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965858AbXCSPLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965865AbXCSPL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965858AbXCSPLu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 11:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965861AbXCSPLt
+	id S965865AbXCSPL5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 11:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965872AbXCSPL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 11:11:49 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:39115 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965858AbXCSPLW (ORCPT
+	Mon, 19 Mar 2007 11:11:57 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47092 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965861AbXCSPLw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 11:11:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=rOKk7EAIsn6MOMGPrq8N+g78x0dRFCJ5kA3q6nM8eYom9NLYAzwLb2UmcVqNW2SG33teS7g/B58Qa7l+Q7KRj/VTk0N6TI+AHluWI9KaNN/yJY79Tfi1Vss2DLSFORSnHaWR9kCIulJ03CjvJdrGvcXzgLwJObc4gYY/BwpCdSU=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH][5/5][resend] floppy.c: Fix device_create_file() warning
-Date: Mon, 19 Mar 2007 16:11:13 +0100
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Trent Waddington <trent.waddington@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Mon, 19 Mar 2007 11:11:52 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: David Miller <davem@davemloft.net>
+Cc: mst@dev.mellanox.co.il, kuznet@ms2.inr.ac.ru, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
+References: <20070318224234.GP11078@mellanox.co.il>
+	<20070318.171337.112622504.davem@davemloft.net>
+	<m3aby94x6o.fsf@maxwell.lnxi.com>
+	<20070318.231316.59470365.davem@davemloft.net>
+Date: Mon, 19 Mar 2007 09:10:16 -0600
+In-Reply-To: <20070318.231316.59470365.davem@davemloft.net> (David Miller's
+	message of "Sun, 18 Mar 2007 23:13:16 -0700 (PDT)")
+Message-ID: <m1r6rlxo9z.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200703191611.13849.jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller <davem@davemloft.net> writes:
 
-    This fixes the warning
-      warning: ignoring return value of `device_create_file', declared with attribute warn_unused_result in function `floppy_init'.
-    It does this by checking the return value and printing a warning message in case of no success.
-    
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-Acked-by: Alan Cox <alan@redhat.com>
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
 
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 577c621..9d543f3 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -4302,7 +4302,12 @@ static int __init floppy_init(void)
- 		if (err)
- 			goto out_flush_work;
- 
--		device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
-+		err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
-+		if (err)
-+			printk(KERN_WARNING "Unable to create sysfs attribute "
-+				"file for floppy device: %s\n", 
-+				floppy_device[drive].name);
-+
- 		/* to be cleaned up... */
- 		disks[drive]->private_data = (void *)(long)drive;
- 		disks[drive]->queue = floppy_queue;
+> I think the thing to do is to just leave the loopback references
+> in place, try to unregister the per-namespace loopback device,
+> and that will safely wait for all the references to go away.
+
+Right.  The only thing I have found that needs to be changed so
+far in this area is specifying which loopback device I want
+to replace it with.
+
+> If you do it that way, you should need absolutely no changes to
+> the other code in this area.
+>
+> As per Herbert, I think he works on Xen rather than vserver :-)
+> Perhaps you're thinking of Alexey Kuznetsov or another one of the
+> vserver guys.
+
+I think you are thinking of a different Herbert.  I was thinking of
+Herbert Poetzl the vserver maintainer.  Alexey works on OpenVZ.
+
+Until we get the basic architecture merged they are rival projects.
+
+Eric
