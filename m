@@ -1,36 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbXCSSus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXCSSxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751597AbXCSSus (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 14:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXCSSus
+	id S1751724AbXCSSxR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 14:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXCSSxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 14:50:48 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:48508 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751199AbXCSSur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 14:50:47 -0400
-Date: Mon, 19 Mar 2007 10:50:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-kernel@vger.kernel.org, Alex Tomas <alex@clusterfs.com>
-Subject: Re: 2.6.21-rc3-mm2: PG_booked and PG_readahead
-Message-Id: <20070319105009.58c99280.akpm@linux-foundation.org>
-In-Reply-To: <45FEC5F4.8090906@shadowen.org>
-References: <45FEC5F4.8090906@shadowen.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 19 Mar 2007 14:53:17 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:57680 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbXCSSxQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 14:53:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pO4yOketrSXPXAjOEnNpUYsH86Ji3NOstKZPS/eqDRFkYqmXArOvBybbfwZpzpak9ZdXdaGlIs/ddkD/l269dUC3UiQjtkaenC+PJHJP2MFCI0C/7Q0/n+cEAitMRYJS3Ko6KLC7AaO7kGedk9vvf5TPdgWSlaVCSWCHB2LwaUc=
+Message-ID: <b93822910703191153x20249f00vb604a0eda075a23a@mail.gmail.com>
+Date: Mon, 19 Mar 2007 19:53:15 +0100
+From: "Stefan Prechtel" <stefan.prechtel@googlemail.com>
+To: tglx@linutronix.de
+Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <1174326499.13341.517.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
+	 <1174325803.13341.515.camel@localhost.localdomain>
+	 <1174326499.13341.517.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 17:18:44 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
+You can find the files here:
+http://bugzilla.kernel.org/show_bug.cgi?id=8235
 
-> [applogies in advance if this has already been asked]
-> 
-> I note that PG_booked and PG_readahead are both using bit 20 in
-> 2.6.21-rc3-mm2.  Is this intentional or perhaps a miss-merge.  They do
-> not sound obviously non-overlapping to my mind.
-> 
+Regards,
+Stefan Prechtel
 
-Yes, that's a merging problem - I'll fix it up.  Thanks.
+
+2007/3/19, Thomas Gleixner <tglx@linutronix.de>:
+> On Mon, 2007-03-19 at 18:36 +0100, Thomas Gleixner wrote:
+> Oh, a bootlog with ac plugged in would be great too.
+>
+> Also can you please enable CONFIG_SYSRQ and hit SysRq-Q once, when the
+> slowness kicks in.
+>
+> Thanks,
+>
+>         tglx
