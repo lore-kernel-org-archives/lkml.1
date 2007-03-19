@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030737AbXCSX23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030732AbXCSXaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030737AbXCSX23 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030735AbXCSX23
+	id S1030732AbXCSXaE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 19:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030735AbXCSXaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:28:29 -0400
-Received: from mail.screens.ru ([213.234.233.54]:44148 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030732AbXCSX22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:28:28 -0400
-Date: Tue, 20 Mar 2007 02:28:42 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
-Message-ID: <20070319232842.GB258@tv-sign.ru>
-References: <send-serie.davidel@xmailserver.org.9367.1174004536.2> <m1mz29xi8g.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191112500.2101@alien.or.mcafeemobile.com> <20070319203615.GA83@tv-sign.ru> <Pine.LNX.4.64.0703191530270.2101@alien.or.mcafeemobile.com> <20070319225305.GA258@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070319225305.GA258@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	Mon, 19 Mar 2007 19:30:03 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:45762 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030732AbXCSXaB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 19:30:01 -0400
+Date: Mon, 19 Mar 2007 19:29:41 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: 2.6.20.3: kernel BUG at mm/slab.c:597 try#2
+In-reply-to: <1174342017.3512.58.camel@mulgrave.il.steeleye.com>
+To: linux-kernel@vger.kernel.org
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>, Andreas Steinmetz <ast@domdv.de>,
+       linux-scsi@vger.kernel.org, akpm@linux-foundation.org
+Message-id: <200703191929.41268.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <45FDDA8E.8030100@domdv.de>
+ <200703191747.48826.gene.heskett@gmail.com>
+ <1174342017.3512.58.camel@mulgrave.il.steeleye.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/20, Oleg Nesterov wrote:
+On Monday 19 March 2007, James Bottomley wrote:
+>On Mon, 2007-03-19 at 17:47 -0400, Gene Heskett wrote:
+>> James, could this also be the cause of a tar based backup going crazy
+>> and thinking all data is new under any 2.6.21-rc* kernel I've tested
+>> so far with amanda, which in my case uses tar?  I've tried the fedora
+>> patched tar-1.15-1, and one I hand built right after 1.15-1 came out
+>> over a year ago, and they both do it, but only when booted to a
+>> 2.6.21-rc* kernel.
+>>
+>> This obviously will be a show-stopper, either for amanda (and by
+>> inference, any app that uses tar), or for the migration of an amanda
+>> users machinery to a 2.6.21 kernel.
 >
-> On 03/19, Davide Libenzi wrote:
-> >
-> > I'd need a get_task_struct in any case in order to safely call 
-> > unlock_task_sighand(). At that point I'd prefer to just pass through the 
-> > struct pid*. I'll be posting the new version for review as soon as I 
-> > complete a few tests ...
-> 
-> If signalfd_get_sighand()->lock_task_sighand() succeeds, it is safe to
-> dereference ctx->tsk. The task can't be freed and ctx->tsk can't be cleared
-> while we are holding siglock.
-> 
-> However, I was wrong, we still need a re-check after lock_task_sighand().
-> We should check ctx->tsk != NULL.
+>Er, I don't think so .. that sounds like mtime miscompare, which is
+>either a problem with the filesystem or a problem with the way mtime is
+>stored in the tar archive.
+>
+>James
 
-IOW, we can (afaics) do
+Well, since the times reported by ls -l --full-time are sane
+[root@coyote pix]# ls -l --full-time
+total 924784
+-rw-r--r-- 1 root   root     985324 2002-06-09 18:14:54.000000000 -0400 
+0203.jpg
+[... the rest of a 100k listing, booted to 2.6.20.3-rdsl-0.31]
 
-	static struct sighand_struct *signalfd_get_sighand(struct signalfd_ctx *ctx,
-							   unsigned long *flags)
-	{
-		struct sighand_struct *sighand = NULL;
-		struct tsak_struct *tsk;
+And:
+[root@coyote pix]# ls -l --full-time
+total 924784
+-rw-r--r-- 1 root   root     985324 2002-06-09 18:14:54.000000000 -0400 
+0203.jpg
 
-		rcu_read_lock();
-		tsk = rcu_dereference(ctx->tsk);  // not needed, just a documentation
-		if (tsk != NULL)
-			sighand = lock_task_sighand(tsk, flags);
-		rcu_read_unlock();
+booted to 2.6.21-rc4
 
-		if (sighand && !ctx->tsk)) {
-			unlock_task_sighand(tsk, flags);
-			sighand = NULL;
-		}
+allthough the fractional second is a string of .000000000, even when 
+booted to a tar-unfriendly kernel, then it would tend to point at tar, 
+but two differently built versions of tar have been confirmed as 
+miss-behaving in the presence of a kernel in the 2.6.21 series so far, 
+all of them.
 
-		return sighand;
-	}
+I'm going to reboot twice more tonight, once to verify that the output of 
+an ls -l --full-time is as I said above, I'll save this and do that again 
+and clip it in after a reboot to 2.6.21-rc4, and once to 2.6.20.4-rc1 to 
+see if by chance one of those patches is the guilty party.  I'll leave 
+the latter running tonight for the amanda run & see what falls out.
 
-If signalfd_get_sighand() succeeds, ctx->tsk is pinned.
-
-Oleg.
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Try to relax and enjoy the crisis.
+		-- Ashleigh Brilliant
