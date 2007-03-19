@@ -1,85 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933850AbXCSM7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbXCSNBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933850AbXCSM7l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 08:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933853AbXCSM7l
+	id S933869AbXCSNBO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 09:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXCSNBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 08:59:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43579 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933850AbXCSM7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 08:59:40 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070319130428.4b645207@lxorguk.ukuu.org.uk> 
-References: <20070319130428.4b645207@lxorguk.ukuu.org.uk>  <20070318142315.6f881ec8@lxorguk.ukuu.org.uk> <20070316153408.3a9a244a@lxorguk.ukuu.org.uk> <20070316151305.04cbc352@lxorguk.ukuu.org.uk> <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <25571.1174054993@redhat.com> <26525.1174058071@redhat.com> <20070316171141.7a4de504@lxorguk.ukuu.org.uk> <076F1B35-BE08-41B4-8294-581EDAFF4ACC@mac.com> <2578.1174305403@redhat.com> 
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, davem@davemloft.net,
-       netdev@vger.kernel.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org
-Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try #2] 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Mon, 19 Mar 2007 12:59:14 +0000
-Message-ID: <3728.1174309154@redhat.com>
+	Mon, 19 Mar 2007 09:01:14 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:42412 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933853AbXCSNBL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 09:01:11 -0400
+Date: Mon, 19 Mar 2007 14:01:23 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: rwuerthn@de.ibm.com
+Subject: [S390] zcrypt: fix possible dead lock in AP bus module
+Message-ID: <20070319130123.GA1292@skybase>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+From: Ralph Wuerthner <rwuerthn@de.ibm.com>
 
-> > message transmission.  You yourself defined RDM to be a datagram service.
-> > RxRPC is not, in my opinion, a datagram service, and neither is it a stream
-> > service.
-> 
-> Message is what I should have said.
+[S390] zcrypt: fix possible dead lock in AP bus module
 
-socket(2) also says datagram...
+AP bus module uses bus_for_each_dev() in software interrupt context to
+poll for completed requests which might cause dead locks. Solution: use
+private AP device list for polling in software interrupt context.
 
-> Which is just fine, does it need to be one or the other. SOCK_DGRAM an be
-> both connection oriented or connectionless.
+Signed-off-by: Ralph Wuerthner <rwuerthn@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-Is SOCK_DGRAM ever connection-oriented?  Over an AF_INET socket it isn't really
-so.  Yes, you can use connect() to point a UDP socket at a particular target,
-but you haven't really made a connection.
+ drivers/s390/crypto/ap_bus.c |   30 +++++++++++++++++++++++-------
+ drivers/s390/crypto/ap_bus.h |    1 +
+ 2 files changed, 24 insertions(+), 7 deletions(-)
 
-> > Well, I suggest SOCK_RPC, not SOCK_RXRPC.  There's no particular reason
-> > such a flow type has to be limited to RxRPC.
-> 
-> Other RPC types use normal socket types.
-
-They do?  Examples please.  I didn't think Linux, at least, has any other RPC
-socket families, though I could be wrong as I haven't made a thorough study of
-them.
-
-> > I'd say that that precludes applicability on two points: firstly, RxRPC is
-> > not a datagram layer by the definition I provided in a previous email; and
-> > secondly, RxRPC *does* provide some ordering guarantees.
-> 
-> So you want SOCK_SEQPACKET perhaps then ?
-
-Perhaps; but I think that's wrong also.  You yourself defined SEQPACKET to be a
-datagram service, and FC6 socket(2) agrees.  The POSIX definition, however
-disagrees[*]: it claims that SEQPACKET is a stream-based service that permits
-record markers to be embedded in the stream.  I can see how the two can be two
-views of the same thing, but it looks like in either case the two flows are
-independent at the socket level - which is not so for RxRPC as requests,
-replies and ACKs are obviously not independent.
-
-Furthermore:
-
- (1) The message flow in RxRPC is not completely ordered as seems to be
-     required in SEQPACKET: packets going into the Tx socket need not come out
-     of the Rx socket in the same order.  The only ordering is over the packets
-     of a particular operation (as labelled by the control data).
-
- (2) The RxRPC sockets don't actually require a formal connection.  Even at the
-     protocol level, there is no connection negotiation and no disconnection.
-     A virtual connection more or less springs up spontaneously when the first
-     data packet on it arrives.  Virtual connections are really only ways of
-     avoiding having to set up the security for every call.
-
-     I have made my client sockets use connect(), but that's just a convenience
-     and I need to make it possible to avoid doing that to make it useful to
-     the kernel.  It's similar to SOCK_DGRAM sockets in this respect.
-
-David
-
-[*] There has been discussion on this.
+diff -urpN linux-2.6/drivers/s390/crypto/ap_bus.c linux-2.6-patched/drivers/s390/crypto/ap_bus.c
+--- linux-2.6/drivers/s390/crypto/ap_bus.c	2007-03-19 13:09:04.000000000 +0100
++++ linux-2.6-patched/drivers/s390/crypto/ap_bus.c	2007-03-19 13:09:26.000000000 +0100
+@@ -65,6 +65,8 @@ module_param_named(poll_thread, ap_threa
+ MODULE_PARM_DESC(poll_thread, "Turn on/off poll thread, default is 1 (on).");
+ 
+ static struct device *ap_root_device = NULL;
++static DEFINE_SPINLOCK(ap_device_lock);
++static LIST_HEAD(ap_device_list);
+ 
+ /**
+  * Workqueue & timer for bus rescan.
+@@ -457,6 +459,9 @@ static int ap_device_probe(struct device
+ 	int rc;
+ 
+ 	ap_dev->drv = ap_drv;
++	spin_lock_bh(&ap_device_lock);
++	list_add(&ap_dev->list, &ap_device_list);
++	spin_unlock_bh(&ap_device_lock);
+ 	rc = ap_drv->probe ? ap_drv->probe(ap_dev) : -ENODEV;
+ 	return rc;
+ }
+@@ -497,6 +502,9 @@ static int ap_device_remove(struct devic
+ 	ap_flush_queue(ap_dev);
+ 	if (ap_drv->remove)
+ 		ap_drv->remove(ap_dev);
++	spin_lock_bh(&ap_device_lock);
++	list_del_init(&ap_dev->list);
++	spin_unlock_bh(&ap_device_lock);
+ 	return 0;
+ }
+ 
+@@ -772,6 +780,7 @@ static void ap_scan_bus(struct work_stru
+ 		spin_lock_init(&ap_dev->lock);
+ 		INIT_LIST_HEAD(&ap_dev->pendingq);
+ 		INIT_LIST_HEAD(&ap_dev->requestq);
++		INIT_LIST_HEAD(&ap_dev->list);
+ 		if (device_type == 0)
+ 			ap_probe_device_type(ap_dev);
+ 		else
+@@ -1033,14 +1042,13 @@ static void ap_poll_timeout(unsigned lon
+  * polling until bit 2^0 of the control flags is not set. If bit 2^1
+  * of the control flags has been set arm the poll timer.
+  */
+-static int __ap_poll_all(struct device *dev, void *data)
++static int __ap_poll_all(struct ap_device *ap_dev, unsigned long *flags)
+ {
+-	struct ap_device *ap_dev = to_ap_dev(dev);
+ 	int rc;
+ 
+ 	spin_lock(&ap_dev->lock);
+ 	if (!ap_dev->unregistered) {
+-		rc = ap_poll_queue(to_ap_dev(dev), (unsigned long *) data);
++		rc = ap_poll_queue(ap_dev, flags);
+ 		if (rc)
+ 			ap_dev->unregistered = 1;
+ 	} else
+@@ -1054,10 +1062,15 @@ static int __ap_poll_all(struct device *
+ static void ap_poll_all(unsigned long dummy)
+ {
+ 	unsigned long flags;
++	struct ap_device *ap_dev;
+ 
+ 	do {
+ 		flags = 0;
+-		bus_for_each_dev(&ap_bus_type, NULL, &flags, __ap_poll_all);
++		spin_lock(&ap_device_lock);
++		list_for_each_entry(ap_dev, &ap_device_list, list) {
++			__ap_poll_all(ap_dev, &flags);
++		}
++		spin_unlock(&ap_device_lock);
+ 	} while (flags & 1);
+ 	if (flags & 2)
+ 		ap_schedule_poll_timer();
+@@ -1075,6 +1088,7 @@ static int ap_poll_thread(void *data)
+ 	DECLARE_WAITQUEUE(wait, current);
+ 	unsigned long flags;
+ 	int requests;
++	struct ap_device *ap_dev;
+ 
+ 	set_user_nice(current, 19);
+ 	while (1) {
+@@ -1092,10 +1106,12 @@ static int ap_poll_thread(void *data)
+ 		set_current_state(TASK_RUNNING);
+ 		remove_wait_queue(&ap_poll_wait, &wait);
+ 
+-		local_bh_disable();
+ 		flags = 0;
+-		bus_for_each_dev(&ap_bus_type, NULL, &flags, __ap_poll_all);
+-		local_bh_enable();
++		spin_lock_bh(&ap_device_lock);
++		list_for_each_entry(ap_dev, &ap_device_list, list) {
++			__ap_poll_all(ap_dev, &flags);
++		}
++		spin_unlock_bh(&ap_device_lock);
+ 	}
+ 	set_current_state(TASK_RUNNING);
+ 	remove_wait_queue(&ap_poll_wait, &wait);
+diff -urpN linux-2.6/drivers/s390/crypto/ap_bus.h linux-2.6-patched/drivers/s390/crypto/ap_bus.h
+--- linux-2.6/drivers/s390/crypto/ap_bus.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/drivers/s390/crypto/ap_bus.h	2007-03-19 13:09:26.000000000 +0100
+@@ -106,6 +106,7 @@ struct ap_device {
+ 	struct device device;
+ 	struct ap_driver *drv;		/* Pointer to AP device driver. */
+ 	spinlock_t lock;		/* Per device lock. */
++	struct list_head list;		/* private list of all AP devices. */
+ 
+ 	ap_qid_t qid;			/* AP queue id. */
+ 	int queue_depth;		/* AP queue depth.*/
