@@ -1,31 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbXCSVYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964862AbXCSVZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752240AbXCSVYy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbXCSVYy
+	id S964862AbXCSVZj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbXCSVZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:24:54 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:8318 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752240AbXCSVYx (ORCPT
+	Mon, 19 Mar 2007 17:25:39 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48420 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbXCSVZi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:24:53 -0400
-To: "Bryan O'Sullivan" <bos@pathscale.com>
-Cc: openib-general@openfabrics.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12 of 33] IB/ipath - fix bad argument to clear_bit that trashed memory and/or crashed
-X-Message-Flag: Warning: May contain useful information
-References: <84a9691cf7ff54ce76de.1173995096@iqa-25.internal.keyresearch.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 19 Mar 2007 14:24:50 -0700
-In-Reply-To: <84a9691cf7ff54ce76de.1173995096@iqa-25.internal.keyresearch.com> (Bryan O'Sullivan's message of "Thu, 15 Mar 2007 14:44:56 -0700")
-Message-ID: <adaircxlye5.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Mon, 19 Mar 2007 17:25:38 -0400
+To: akpm@linux-foundation.org, mpm@selenic.com
+Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
+X-IlohaMail-Blah: penberg@cs.helsinki.fi
+X-IlohaMail-Method: mail() [mem]
+X-IlohaMail-Dummy: moo
+X-Mailer: IlohaMail/0.8.12+pk-11 (On: iloha.cs.Helsinki.FI)
+In-Reply-To: <20070319141038.212d4ac9.akpm@linux-foundation.org>
+Message-ID: <az5Ytbv5.1174339536.7416370.penberg@cs.helsinki.fi>
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+CC: "Christoph Lameter" <clameter@sgi.com>,
+       "Pekka J Enberg" <penberg@cs.helsinki.fi>,
+       "ast@domdv.de" <ast@domdv.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Mar 2007 21:24:50.0461 (UTC) FILETIME=[06FD94D0:01C76A6D]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Date: Mon, 19 Mar 2007 23:25:36 +0200 (EET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Similarly -- shouldn't an obvious memory corruption fix be in 2.6.21?
+
+On 3/19/2007, "Andrew Morton" <akpm@linux-foundation.org> wrote:
+> Would prefer to do:
+> 
+> static inline void kmem_cache_free_if_not_null(struct kmem_cache *cachep,
+> 						void *objp)
+> {
+> 	if (objp)
+> 		kmem_cache_free(cachep, objp);
+> }
+> 
+> so that we don't add extra overhead to all the thousands of existing,
+> well-behaved callsites.
+
+That bloats kernel text all the same so it's much cleaner to just make
+the callers explicitly check for NULL then. That said, I'm sorry but I
+just don't buy the "overhead" part of your argument since it's one
+branch and no extra data cache pressure especially as we're already
+doing the BUG_ON and page flag checking.
+
+But, since you're NAKing my patch, we need to get the mempool for from
+the original thread in to fix the oops.
+
+                                     Pekka
