@@ -1,176 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030729AbXCSXU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXCSXV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030729AbXCSXU5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030734AbXCSXU5
+	id S965461AbXCSXV7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 19:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965573AbXCSXV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:20:57 -0400
-Received: from minus.inr.ac.ru ([194.67.69.97]:49995 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1030725AbXCSXU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:20:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=q8mcnF5dM2sTWQUQOtY2bWqJp+C2tbSV6ooSqwcasbP8mhyZJB8W/Vpk2OqAKAp8bqeoXO1qFfa4YiXlJ4ECae1GFLPA6VIrNNtnY5lB8cY7giOfD7DwNXc9UgqA3NgzW6hhsAPQV/zyqpqEAGRxrkeDl0Z7r35btQc4PFY7+D8=;
-Date: Tue, 20 Mar 2007 02:20:43 +0300
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, general@lists.openfabrics.org,
-       Roland Dreier <rolandd@cisco.com>, David Miller <davem@davemloft.net>
-Subject: Re: dst_ifdown breaks infiniband?
-Message-ID: <20070319232043.GA23359@ms2.inr.ac.ru>
-References: <20070318155532.GG7958@mellanox.co.il> <20070318191238.GA20518@ms2.inr.ac.ru> <20070318195355.GB11078@mellanox.co.il> <20070318201826.GB27004@ms2.inr.ac.ru> <20070319093632.GB8386@mellanox.co.il> <20070319120534.GA28187@ms2.inr.ac.ru> <20070319121248.GD18497@mellanox.co.il> <20070319125919.GA4239@ms2.inr.ac.ru> <20070319151336.GA24225@mellanox.co.il>
+	Mon, 19 Mar 2007 19:21:58 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:36217 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965461AbXCSXV6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 19:21:58 -0400
+X-Greylist: delayed 1229 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 19:21:57 EDT
+Subject: Re: 2.6.21-rc3-mm2
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       gregkh <greg@kroah.com>
+In-Reply-To: <20070319125558.235b3992.akpm@linux-foundation.org>
+References: <20070307201915.4d579113.akpm@linux-foundation.org>
+	 <20070319121724.2360a610.randy.dunlap@oracle.com>
+	 <20070319125558.235b3992.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 00:01:33 +0100
+Message-Id: <1174345293.3581.12.camel@lov.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070319151336.GA24225@mellanox.co.il>
-User-Agent: Mutt/1.5.6i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Mon, 2007-03-19 at 12:55 -0700, Andrew Morton wrote:
+> On Mon, 19 Mar 2007 12:17:24 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > On Wed, 7 Mar 2007 20:19:15 -0800 Andrew Morton wrote:
+> > 
+> > > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm2/
+> > > 
+> > > - This is the same as 2.6.21-rc3-mm1, except Con's CPU scheduler changes
+> > >   were dropped.
+> > > 
+> > >   This is for A/B comparison purposes, and because those changes crashed on
+> > >   one test setup.
+> > 
+> > x86_64, with CONFIG_HOTPLUG disabled:
+> > 
+> > drivers/base/bus.c: In function 'store_drivers_probe':
+> > drivers/base/bus.c:747: error: 'driver_helper' undeclared (first use in this function)
+> > drivers/base/bus.c:747: error: (Each undeclared identifier is reported only once
+> > drivers/base/bus.c:747: error: for each function it appears in.)
+> > make[2]: *** [drivers/base/bus.o] Error 1
+> > make[1]: *** [drivers/base] Error 2
+> > make: *** [drivers] Error 2
+> > 
+> 
+> Due to Kay's
+> gregkh-driver-driver-core-udev-triggered-device-driver-binding.patch
 
-> This might work. Could you post a patch to better show what you mean to do?
+I sent an updated patch, that compiles without CONFIG_HOTPLUG to Greg.
 
-Here it is.
+Thanks,
+Kay
 
-->neigh_destructor() is killed (not used), replaced with ->neigh_cleanup(),
-which is called when neighbor entry goes to dead state. At this point
-everything is still valid: neigh->dev, neigh->parms etc.
-
-The device should guarantee that dead neighbor entries (neigh->dead != 0)
-do not get private part initialized, otherwise nobody will cleanup it.
-
-I think this is enough for ipoib which is the only user of this thing.
-Initialization private part of neighbor entries happens in ipib
-start_xmit routine, which is not reached when device is down.
-But it would be better to add explicit test for neigh->dead
-in any case.
-
-
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-index f9dbc6f..2b5c297 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
-+++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-@@ -814,7 +814,7 @@ static void ipoib_set_mcast_list(struct 
- 	queue_work(ipoib_workqueue, &priv->restart_task);
- }
- 
--static void ipoib_neigh_destructor(struct neighbour *n)
-+static void ipoib_neigh_cleanup(struct neighbour *n)
- {
- 	struct ipoib_neigh *neigh;
- 	struct ipoib_dev_priv *priv = netdev_priv(n->dev);
-@@ -822,7 +822,7 @@ static void ipoib_neigh_destructor(struc
- 	struct ipoib_ah *ah = NULL;
- 
- 	ipoib_dbg(priv,
--		  "neigh_destructor for %06x " IPOIB_GID_FMT "\n",
-+		  "neigh_cleanup for %06x " IPOIB_GID_FMT "\n",
- 		  IPOIB_QPN(n->ha),
- 		  IPOIB_GID_RAW_ARG(n->ha + 4));
- 
-@@ -874,7 +874,7 @@ void ipoib_neigh_free(struct net_device 
- 
- static int ipoib_neigh_setup_dev(struct net_device *dev, struct neigh_parms *parms)
- {
--	parms->neigh_destructor = ipoib_neigh_destructor;
-+	parms->neigh_cleanup = ipoib_neigh_cleanup;
- 
- 	return 0;
- }
-diff --git a/include/net/neighbour.h b/include/net/neighbour.h
-index 3725b93..ad7fe11 100644
---- a/include/net/neighbour.h
-+++ b/include/net/neighbour.h
-@@ -36,7 +36,7 @@ struct neigh_parms
- 	struct net_device *dev;
- 	struct neigh_parms *next;
- 	int	(*neigh_setup)(struct neighbour *);
--	void	(*neigh_destructor)(struct neighbour *);
-+	void	(*neigh_cleanup)(struct neighbour *);
- 	struct neigh_table *tbl;
- 
- 	void	*sysctl_table;
-diff --git a/net/atm/clip.c b/net/atm/clip.c
-index ebb5d0c..8c38258 100644
---- a/net/atm/clip.c
-+++ b/net/atm/clip.c
-@@ -261,14 +261,6 @@ static void clip_pop(struct atm_vcc *vcc
- 	spin_unlock_irqrestore(&PRIV(dev)->xoff_lock, flags);
- }
- 
--static void clip_neigh_destroy(struct neighbour *neigh)
--{
--	DPRINTK("clip_neigh_destroy (neigh %p)\n", neigh);
--	if (NEIGH2ENTRY(neigh)->vccs)
--		printk(KERN_CRIT "clip_neigh_destroy: vccs != NULL !!!\n");
--	NEIGH2ENTRY(neigh)->vccs = (void *) NEIGHBOR_DEAD;
--}
--
- static void clip_neigh_solicit(struct neighbour *neigh, struct sk_buff *skb)
- {
- 	DPRINTK("clip_neigh_solicit (neigh %p, skb %p)\n", neigh, skb);
-@@ -342,7 +334,6 @@ static struct neigh_table clip_tbl = {
- 	/* parameters are copied from ARP ... */
- 	.parms = {
- 		.tbl 			= &clip_tbl,
--		.neigh_destructor	= clip_neigh_destroy,
- 		.base_reachable_time 	= 30 * HZ,
- 		.retrans_time 		= 1 * HZ,
- 		.gc_staletime 		= 60 * HZ,
-diff --git a/net/core/neighbour.c b/net/core/neighbour.c
-index 3183142..cfc6001 100644
---- a/net/core/neighbour.c
-+++ b/net/core/neighbour.c
-@@ -140,6 +140,8 @@ static int neigh_forced_gc(struct neigh_
- 				n->dead = 1;
- 				shrunk	= 1;
- 				write_unlock(&n->lock);
-+				if (n->parms->neigh_cleanup)
-+					n->parms->neigh_cleanup(n);
- 				neigh_release(n);
- 				continue;
- 			}
-@@ -211,6 +213,8 @@ static void neigh_flush_dev(struct neigh
- 				NEIGH_PRINTK2("neigh %p is stray.\n", n);
- 			}
- 			write_unlock(&n->lock);
-+			if (n->parms->neigh_cleanup)
-+				n->parms->neigh_cleanup(n);
- 			neigh_release(n);
- 		}
- 	}
-@@ -582,9 +586,6 @@ void neigh_destroy(struct neighbour *nei
- 			kfree(hh);
- 	}
- 
--	if (neigh->parms->neigh_destructor)
--		(neigh->parms->neigh_destructor)(neigh);
--
- 	skb_queue_purge(&neigh->arp_queue);
- 
- 	dev_put(neigh->dev);
-@@ -675,6 +676,8 @@ static void neigh_periodic_timer(unsigne
- 			*np = n->next;
- 			n->dead = 1;
- 			write_unlock(&n->lock);
-+			if (n->parms->neigh_cleanup)
-+				n->parms->neigh_cleanup(n);
- 			neigh_release(n);
- 			continue;
- 		}
-@@ -2088,8 +2091,11 @@ void __neigh_for_each_release(struct nei
- 			} else
- 				np = &n->next;
- 			write_unlock(&n->lock);
--			if (release)
-+			if (release) {
-+				if (n->parms->neigh_cleanup)
-+					n->parms->neigh_cleanup(n);
- 				neigh_release(n);
-+			}
- 		}
- 	}
- }
