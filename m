@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030301AbXCSQKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030279AbXCSQKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030301AbXCSQKL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 12:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030332AbXCSQKL
+	id S1030279AbXCSQKc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 12:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030309AbXCSQKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 12:10:11 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:44791 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030317AbXCSQKK (ORCPT
+	Mon, 19 Mar 2007 12:10:31 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:22412 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030299AbXCSQKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 12:10:10 -0400
-Message-ID: <45FEB50E.2040104@aitel.hist.no>
-Date: Mon, 19 Mar 2007 17:06:38 +0100
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Mon, 19 Mar 2007 12:10:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=D/GlL9s8JAnI2qpfVSzswV3Sog5UURbVdDFI6nbSozBqHU7p+YRquwph3i+2P7PmHtkG/VEih/A/Uz+yX/ge6/DstWFeJ9nkbIUWr0BcI5mEFkrS+b5dedMLBlg+sKwqMuwo6+1uBtvyyx/K8VaXthY0hogXZbAhp4bGI4QnHnE=
+Message-ID: <2625b9520703190910o20b5d0ccw57159240af9f07f9@mail.gmail.com>
+Date: Mon, 19 Mar 2007 08:10:28 -0800
+From: "Thushara Wijeratna" <thushw@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: how core dump (core size) works
 MIME-Version: 1.0
-To: Avi Kivity <avi@argo.co.il>
-CC: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: is RSDL an "unfair" scheduler too?
-References: <MDEHLPKNGKAHNMBLJOLKGEMBCFAC.davids@webmaster.com> <45FEAB60.7090704@argo.co.il>
-In-Reply-To: <45FEAB60.7090704@argo.co.il>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
->
-> A fairly contrived example, but I see your point.  Of course any 
-> system can be broken.  I think that user-level scheduling is good for 
-> real multi user systems, where 'user' means a person, not an 
-> artificial entity.  It's also good for a multi application server, 
-> where typically each service runs (or can be made to run) as a 
-> separate user.
-For a not so contrived example, look at email delivery.  Some mailservers do
-all work as root (or some fixed email user)
+Hi All,
 
-Some servers will switch to the UID of the user receiving the message, 
-limiting the
-damage in case of buffer overflow etc. A fair amount of work is then done
-as that user - running the message through virus/spam-checks and
-then perhaps procmail.
+I have a large process (~ 2G address space) and I want to get a core
+if this crashes in production. I haven't been able to get the core
+file size to a low enough value so that this doesn't end up eating a
+lot of disk space on small partitions.
+In general, if I decrease the ulimit -c param, I've noticed that a
+core is not dumped at all.
 
-Helge Hafting
+I'm sorry if this is not appropriate for this alias, I've searched
+around a lot of forums and couldn't find an answer.
+
+Thanks,
+thushara
