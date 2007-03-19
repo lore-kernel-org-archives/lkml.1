@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966034AbXCSRb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966043AbXCSRgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966034AbXCSRb2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 13:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030384AbXCSRb2
+	id S966043AbXCSRgh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 13:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966047AbXCSRgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 13:31:28 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43659 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966034AbXCSRb1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 13:31:27 -0400
-Date: Mon, 19 Mar 2007 19:31:26 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <clameter@sgi.com>
-cc: akpm@linux-foundation.org, ast@domdv.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-In-Reply-To: <Pine.LNX.4.64.0703191007230.23929@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0703191915380.24129@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0703191022310.8671@sbz-30.cs.Helsinki.FI>
- <Pine.LNX.4.64.0703191007230.23929@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	Mon, 19 Mar 2007 13:36:37 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:2227 "EHLO parknet.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966043AbXCSRgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 13:36:36 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Sanitize filesystem NLS handling
+References: <45FD6EF5.1030706@ums.usu.ru> <87hcsius7b.fsf@duaron.myhome.or.jp>
+	<45FDFC69.6020605@ums.usu.ru> <87d535vqrz.fsf@duaron.myhome.or.jp>
+	<45FE13B9.8000203@ums.usu.ru> <87vegxdc8i.fsf@duaron.myhome.or.jp>
+	<45FE2483.4060706@ums.usu.ru> <878xdtux71.fsf@duaron.myhome.or.jp>
+	<45FEA7C9.1090305@ums.usu.ru>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Tue, 20 Mar 2007 02:36:30 +0900
+In-Reply-To: <45FEA7C9.1090305@ums.usu.ru> (Alexander E. Patrakov's message of "Mon\, 19 Mar 2007 20\:10\:01 +0500")
+Message-ID: <87wt1dnnj5.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007, Christoph Lameter wrote:
-> Hmmm.. kmem_cache_free is significantly different. One also needs to 
-> specify the slab cache.
+"Alexander E. Patrakov" <patrakov@ums.usu.ru> writes:
 
-No, it really isn't. Why would we want kfree() to be special? It's only 
-going to confuse people which results in bugs.
+> Note that you can still achieve this insane result by specifying iocharset 
+> manually for each mount. Only the defaults are changed, but many distros set 
+> the default iocharset to either iso8859-1 or utf8, both of which are wrong 
+> for you. So you won't notice any regressions after my patch :)
 
-On Mon, 19 Mar 2007, Christoph Lameter wrote:
-> Could we fix the BUG instead?
-
-Yes, it should be fixed. But we still have a problem with block layer 
-(and probably others) passing NULL to mempool_free. But where should we 
-fix it if not slab? Is the problem ih bio_alloc_bioset() in fs/bio.c as 
-it's leaving a ->bi_io_vec NULL? Or is it in bio_free() forgetting to 
-check for NULL? Or maybe in mempool_free() in mm/mempool.c? It gets messy 
-real quick because you do need to be able to say "this data is optional." 
-Furthemore, the NULL sematics of kfree() are also useful for error 
-handling.
-
-It's much safer to deal with this at slab level so why leave it out?
-
-			Pekka
+Nope. In fedora, it uses NLS_DEFAULT="utf8" and FAT_DEFAULT_IOCHARSET="ascii".
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
