@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966038AbXCSRVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966039AbXCSRV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966038AbXCSRVq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 13:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966040AbXCSRVq
+	id S966039AbXCSRV6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 13:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966040AbXCSRV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 13:21:46 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52526 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966038AbXCSRVp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 13:21:45 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
-References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
-Date: Mon, 19 Mar 2007 11:20:47 -0600
-In-Reply-To: <send-serie.davidel@xmailserver.org.9367.1174004536.2> (Davide
-	Libenzi's message of "Thu, 15 Mar 2007 17:22:15 -0700")
-Message-ID: <m1mz29xi8g.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 19 Mar 2007 13:21:57 -0400
+Received: from waste.org ([66.93.16.53]:36512 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966039AbXCSRV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 13:21:56 -0400
+Date: Mon, 19 Mar 2007 12:08:38 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+Message-ID: <20070319170838.GP4892@waste.org>
+References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain> <20070318162720.GI10459@waste.org> <1174236579.17249.6.camel@sauron> <20070318191812.GM4892@waste.org> <20070318203149.GC29295@crusty.rchland.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070318203149.GC29295@crusty.rchland.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi <davidel@xmailserver.org> writes:
+On Sun, Mar 18, 2007 at 03:31:50PM -0500, Josh Boyer wrote:
+> On Sun, Mar 18, 2007 at 02:18:12PM -0500, Matt Mackall wrote:
+> > 
+> > I'm well aware of all that. I wrote a NAND driver just last month.
+> > Let's consider this table:
+> > 
+> > HARD drives                          MTD device
+> > Consists of sectors                  Consists of eraseblocks
+> > Sectors are small (512, 1024 bytes)  Eraseblocks are larger (32KiB, 128KiB)
+> > read sector and write sector         read, write, and erase block
+> > Bad sectors are re-mapped            Bad eraseblocks are not hidden
+> > HDD sectors don't wear out	     Eraseblocks get worn-out
+>  N/A                                   NAND flash addressed in pages
+>  N/A                                   NAND flash has OOB areas
+>  N/A (?)                               NAND flash requires ECC
 
-> struct signalfd_siginfo {
-> 	__u32 signo;	/* si_signo */
-> 	__s32 err;	/* si_errno */
-> 	__s32 code;	/* si_code */
-> 	__u32 pid;	/* si_pid */
-> 	__u32 uid;	/* si_uid */
-> 	__s32 fd;	/* si_fd */
-> 	__u32 tid;	/* si_fd */  
-> 	__u32 band;	/* si_band */
-> 	__u32 overrun;	/* si_overrun */
-> 	__u32 trapno;	/* si_trapno */
-> 	__s32 status;	/* si_status */
-> 	__s32 svint;	/* si_int */
-> 	__u64 svptr;	/* si_ptr */
-> 	__u64 utime;	/* si_utime */
-> 	__u64 stime;	/* si_stime */
-> 	__u64 addr;	/* si_addr */
-> };
+Disks have OOB areas with ECC, it's just nicely hidden inside the
+drive. They also typically have physical sectors bigger than 512
+bytes, again hidden.
 
-Shouldn't we pad this to 128 bytes like we do siginfo in case there are
-more fields we need to include, or we need to extend the size of some
-field?
+> > If the end goal is to end up with something that looks like a block
+> > device (which seems to be implied by adding transparent wear leveling
+> 
+> Nope, not the end goal.  It's more about wear-leveling across the entire
+> flash chip than it is presenting a "block like" device.
 
-I'm tempted to suggest we have a per arch function that tests current
-to see if we are in a compat process or not so we can just use
-siginfo.  But that is probably overkill.
+It seems to be about spanning devices and repartitioning as well.
+Hence the analogy with LVM.
 
-> +
-> +
-> +struct signalfd_ctx {
-> +	struct list_head lnk;
-> +	wait_queue_head_t wqh;
-> +	sigset_t sigmask;
-> +	struct task_struct *tsk;
-> +};
+> > and bad block remapping), then I don't see any reason it can't be done
+> > in device mapper. The 'smarts' of mtdblock could in fact be pulled up
+> 
+> There is nothing smart about mtdblock.  And mtdblock has nothing to do
+> with UBI.
 
-I think you want to use a struct pid *pid instead of a pointer to the
-task struct here.  It is slightly less efficient (one more
-dereference) but it means that we won't pin the task struct in memory
-indefinitely.  Pinning the task_struct like this makes for a very
-interesting way to get around the limits on the number of processes a
-user can have.
+Note the scare quotes. Device mapper runs on top of a block device.
+And mtdblock is currently the block interface that MTD exports. And it
+has 'smarts' that hide handling of sub-eraseblock I/O. I'm clearly
+talking about an approach that doesn't involve UBI at all.
 
-Eric
+> > In the end, a block device is something which does random access
+> > block-oriented I/O. Disk and NAND both fit that description.
+> 
+> NAND very much doesn't fit the "random access" part of that.  For writes
+> you have to write in incrementing pages within eraseblocks.
+
+And? You can't do I/O smaller than a sector on a disk.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
