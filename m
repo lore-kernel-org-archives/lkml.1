@@ -1,124 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658AbXCSTKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbXCSTM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751658AbXCSTKT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 15:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbXCSTKT
+	id S1751917AbXCSTM2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 15:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXCSTM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 15:10:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:44528 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbXCSTKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 15:10:15 -0400
-Message-ID: <45FEE010.1050103@goop.org>
-Date: Mon, 19 Mar 2007 12:10:08 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
+	Mon, 19 Mar 2007 15:12:28 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:50844 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbXCSTM2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 15:12:28 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 19 Mar 2007 12:11:01 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, zach@vmware.com, anthony@codemonkey.ws,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <20070316.023331.59468179.davem@davemloft.net>	<45FB005D.9060809@goop.org>	<1174127638.8897.75.camel@localhost.localdomain>	<20070318.003309.71088169.davem@davemloft.net>	<20070318120814.GA45869@muc.de>	<1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1648xxf93.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
+In-Reply-To: <m11wjlxd91.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <Pine.LNX.4.64.0703191209100.2101@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
+ <m1mz29xi8g.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191112500.2101@alien.or.mcafeemobile.com>
+ <m11wjlxd91.fsf@ebiederm.dsl.xmission.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Rusty Russell <rusty@rustcorp.com.au> writes:
->
->   
->> On Sun, 2007-03-18 at 13:08 +0100, Andi Kleen wrote:
->>     
->>>> The idea is _NOT_ that you go look for references to the paravirt_ops
->>>> members structure, that would be stupid and you wouldn't be able to
->>>> use the most efficient addressing mode on a given cpu, you'd be
->>>> patching up indirect calls and crap like that.  Just say no...
->>>>         
->>> That wouldn't handle inlines though. At least some of the current
->>> paravirtops like cli/sti are critical enough to require inlining.
->>>       
->> Well, we'd patch the inline over the call if we have room.
->>
->> Magic patching would be neat, but the downsides are that (1) we can't
->> expand the patching room and (2) there's no way of attaching clobber
->> info to the call site (doing register liveness analysis is not
->> appealing).
->>     
->
-> True.  You can use all of the call clobbered registers.
->   
+On Mon, 19 Mar 2007, Eric W. Biederman wrote:
 
-The trouble is that there are places where we want to intercept things
-like sti/cli in entry.S in a context where all the registers are in use,
-so we can't generally make the assumption that caller-saved regs are
-clobberable.  For any call-site in compiler-generated code we can make
-that assumption, of course.
+> Davide Libenzi <davidel@xmailserver.org> writes:
+> 
+> > On Mon, 19 Mar 2007, Eric W. Biederman wrote:
+> >
+> >> Davide Libenzi <davidel@xmailserver.org> writes:
+> >> 
+> >> > struct signalfd_siginfo {
+> >> > 	__u32 signo;	/* si_signo */
+> >> > 	__s32 err;	/* si_errno */
+> >> > 	__s32 code;	/* si_code */
+> >> > 	__u32 pid;	/* si_pid */
+> >> > 	__u32 uid;	/* si_uid */
+> >> > 	__s32 fd;	/* si_fd */
+> >> > 	__u32 tid;	/* si_fd */  
+> >> > 	__u32 band;	/* si_band */
+> >> > 	__u32 overrun;	/* si_overrun */
+> >> > 	__u32 trapno;	/* si_trapno */
+> >> > 	__s32 status;	/* si_status */
+> >> > 	__s32 svint;	/* si_int */
+> >> > 	__u64 svptr;	/* si_ptr */
+> >> > 	__u64 utime;	/* si_utime */
+> >> > 	__u64 stime;	/* si_stime */
+> >> > 	__u64 addr;	/* si_addr */
+> >> > };
+> >> 
+> >> Shouldn't we pad this to 128 bytes like we do siginfo in case there are
+> >> more fields we need to include, or we need to extend the size of some
+> >> field?
+> >
+> > Yes, I guess we can.
+> 
+> I'm just a little paranoid about ABI's.  There is always something
+> that crops up.  And while we can probably cope by simply having another
+> version of the signalfd or whatever your syscall is, but having to do
+> that at the first sign of trouble sucks.  Especially since we would have
+> to maintain two versions indefinitely.
 
->> Now, this may not be fatal.  5 bytes is enough for all the native ops to
->> be patched inline.   For lguest this covers popf and pushf, but not cli
->> and sti (10 bytes): they'd have to be calls.
->>
->> As for clobber info, it turns out that almost all of the calls can
->> clobber %eax, which is probably enough.  We just need to mark the
->> handful of asm ones where this isn't true.
->>     
->
-> I guess if the code is larger than a function call I'm failing to see
-> the disadvantage in making it a direct function call.  Any modern
-> processor ought to be able to predict it perfectly, and processors
-> like the P4 may even optimize the call out of their L1 instruction
-> cache.
->   
-
-For current processors, I think i-cache pollution is really the only
-downside to a call.  But maybe you could put multiple pv-op functions
-into a cacheline if they're used in close proximity
-(cli/sti/save_fl/restore_fl would all fit into a single cacheline).
-
-> If what David is suggesting works, making all of these direct calls
-> looks easy and very maintainable.   At which point patching
-> instructions inline is quite possibly overkill.
->   
-
-I spent some time looking at what it would take to get this going.  It
-would probably look something like:
-
-   1. make CONFIG_PARAVIRT select CONFIG_RELOCATABLE
-   2. generate vmlinux
-   3. extract relocs, and process the references to paravirt symbols
-      into a table
-   4. compile and link that table into the kernel again (like the ksyms
-      dance)
-   5. at boot time, use that table to redirect calls/references into the
-      paravirt backend to the appropriate one
-
-I think if we store the reloc references as section-relative, and the
-reloc table itself is linked into its own section, then there's no need
-for multipass linking to combine the reloc table into the kernel image,
-since adding that table won't affect any existing reloc.
-
-All this is doable; I'd probably end up hacking boot/compressed/relocs.c
-to generate the appropriate reloc table.  My main concern is hacking the
-kernel build process itself; I'm unsure of what it would actually take
-to implement all this.
-
-> Is it truly critical to inline any of these instructions?
->   
-
-Possibly not, but I'd like to be able to say with confidence that
-running a PARAVIRT kernel on bare hardware has no performance loss
-compared to running a !PARAVIRT kernel.  There's the case of small
-instruction sequences which have been replaced with calls (such as
-sti/cli/push;popf/etc), and also the case of hooks which are noops on
-native (like make_pte/pte_val, etc).  In those cases it would be nice to
-patch in a replacement, either a real instruction or just nops.
+Ok, I added the padding to 128 bytes to the struct.
 
 
-    J
+
+> >> I think you want to use a struct pid *pid instead of a pointer to the
+> >> task struct here.  It is slightly less efficient (one more
+> >> dereference) but it means that we won't pin the task struct in memory
+> >> indefinitely.  Pinning the task_struct like this makes for a very
+> >> interesting way to get around the limits on the number of processes a
+> >> user can have.
+> >
+> > Hmm, when the task is detached from the sighand, we get a notify, so I 
+> > could do a put from there. This would avoid the extra de-reference. I need 
+> > to verify locking though ...
+> 
+> Ok.  That sounds more efficient than playing with struct pid pointers,
+> if it works.
+
+I'm looking into this right now ...
+
+
+
+- Davide
+
+
