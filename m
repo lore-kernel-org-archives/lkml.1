@@ -1,79 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751235AbXCSO15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751477AbXCSObN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751235AbXCSO15 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 10:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbXCSO15
+	id S1751477AbXCSObN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 10:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXCSObN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 10:27:57 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3402 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbXCSO14 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 10:27:56 -0400
-Message-ID: <45FE9DB8.8090801@shadowen.org>
-Date: Mon, 19 Mar 2007 14:27:04 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Mon, 19 Mar 2007 10:31:13 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:2123 "EHLO parknet.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751443AbXCSObL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 10:31:11 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: Paul Collins <paul@briny.ondioline.org>
+Cc: linux-kernel@vger.kernel.org, Hiroyuki_Machida@hq.scei.sony.co.jp
+Subject: Re: [PATCH] fat/vfat: optionally ignore system timezone offset when reading/writing timestamps
+References: <87k5xdfotp.fsf@briny.internal.ondioline.org>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Mon, 19 Mar 2007 23:31:06 +0900
+In-Reply-To: <87k5xdfotp.fsf@briny.internal.ondioline.org> (Paul Collins's message of "Mon\, 19 Mar 2007 23\:35\:46 +1200")
+Message-ID: <87r6rltidx.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
 MIME-Version: 1.0
-To: Martin Bligh <mbligh@mbligh.org>
-CC: Christoph Lameter <clameter@sgi.com>, Andi Kleen <andi@firstfloor.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org> <45F96B57.10206@mbligh.org> <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org> <20070315160648.GA11812@one.firstfloor.org> <1173977264.7922.24.camel@localhost.localdomain> <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com> <20070316114415.GA26403@one.firstfloor.org> <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com> <45FAFD57.90601@mbligh.org> <Pine.LNX.4.64.0703161346060.6204@schroedinger.engr.sgi.com> <45FB0548.5070909@mbligh.org>
-In-Reply-To: <45FB0548.5070909@mbligh.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Bligh wrote:
-> Christoph Lameter wrote:
->> On Fri, 16 Mar 2007, Martin Bligh wrote:
->>
->>> You have to do some sort of lookup anyway, and Andy seemed to have them
->>> all folded into one.
->>
->> What lookup would you need to do? On x86_64 even the TLB use is hidden
->> by the existing 2M entries for 1-1 mappings.
->>
->>> Or are you trying to avoid this by going to back to the crud we had
->>> in 2.4 where we pretend mem_map is one big array, indexed by pfn with
->>> huge sparsely mapped holes in it?
->>
->> Yes that the advanced way of doing it rather than adding useless
->> custom lookups.
-> 
-> For starters, you can't do that sparse a mapping on a 32 bit system.
-> I'll let Andy explain the rest of it.
-> 
->>> Would be nice to work out (and document somewhere) what the pros and
->>> cons of virtual memmap vs sparsemem were - ISTR one of the arguments
->>> was extremely sparsely layed out machines, and you needed sparsemem
->>> for that. But right now we have 3 solutions, which is not a good
->>> situation.
->>
->> Please read my posts to linux-mm on that subject. We discussed it last
->> year in detail and the agreement was that the sparsemem crud needs to
->> be taken out. Kame-san posted patches to do that.
-> 
-> "the agreement"? So Andy agreed to taking it out? Or you and Kame did?
+Paul Collins <paul@briny.ondioline.org> writes:
 
-The discussions centred around some patches from Kame which introduced a
-SPARSMEM sub-model with a virtual memory map.  That was a supprisingly
-clean change which if followed through to its logical conclusion would
-remove a significant chunk of architecture specific vmemmap
-implementation from ia64, and (as I understand it) was likely to allow
-the same to be reused in s390x as well.
+> Hello,
 
-SPARSEMEM would still have its useful modes for smaller memory systems.
+Hello,
 
--apw
+> Here is a patch that adds a mount option named "posixtime" that, when
+> enabled, causes the fat/vfat code to not adjust timestamps as they are
+> read/written to/from disk.  The intent of the adjustment as performed
+> by the existing code appears to be to present correct timestamps to
+> Windows and friends, which treat the timestamp values as local time.
+>
+> However, the systems that I use to update my FAT32 filesystems are all
+> running Linux, and as such will process POSIX timestamps correctly.
+> (The filesystems are on disks in digital audio players, which do not
+> process timestamps except to check if they have changed.)  Due to the
+> aforementioned adjustment on read/write, after a Daylight Savings
+> transition I must update the file timestamps on the filesystems so
+> that rsync does not needlessly re-copy files.
+>
+> Please review and consider applying this patch.
+
+Thanks. Looks good to me as start. IIRC, Machida-san did this few
+years ago. Machida-san, do you have any comment?
+
+> diff --git a/fs/fat/dir.c b/fs/fat/dir.c
+> index c16af24..d6c0a7f 100644
+> --- a/fs/fat/dir.c
+> +++ b/fs/fat/dir.c
+> @@ -1064,7 +1064,7 @@ int fat_alloc_new_dir(struct inode *dir, struct timespec *ts)
+>  		goto error_free;
+>  	}
+>  
+> -	fat_date_unix2dos(ts->tv_sec, &time, &date);
+> +	fat_date_unix2dos(ts->tv_sec, &time, &date, sbi->options.adjust);
+>  
+>  	de = (struct msdos_dir_entry *)bhs[0]->b_data;
+>  	/* filling the new directory slots ("." and ".." entries) */
+> diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+> index a9e4688..02d9225 100644
+> --- a/fs/fat/inode.c
+> +++ b/fs/fat/inode.c
+> @@ -374,17 +374,20 @@ static int fat_fill_inode(struct inode *inode, struct msdos_dir_entry *de)
+>  	inode->i_blocks = ((inode->i_size + (sbi->cluster_size - 1))
+>  			   & ~((loff_t)sbi->cluster_size - 1)) >> 9;
+>  	inode->i_mtime.tv_sec =
+> -		date_dos2unix(le16_to_cpu(de->time), le16_to_cpu(de->date));
+> +		date_dos2unix(le16_to_cpu(de->time), le16_to_cpu(de->date),
+> +			      sbi->options.adjust);
+>  	inode->i_mtime.tv_nsec = 0;
+>  	if (sbi->options.isvfat) {
+>  		int secs = de->ctime_cs / 100;
+>  		int csecs = de->ctime_cs % 100;
+>  		inode->i_ctime.tv_sec  =
+>  			date_dos2unix(le16_to_cpu(de->ctime),
+> -				      le16_to_cpu(de->cdate)) + secs;
+> +				      le16_to_cpu(de->cdate),
+> +				      sbi->options.adjust) + secs;
+>  		inode->i_ctime.tv_nsec = csecs * 10000000;
+>  		inode->i_atime.tv_sec =
+> -			date_dos2unix(0, le16_to_cpu(de->adate));
+> +			date_dos2unix(0, le16_to_cpu(de->adate),
+> +				      sbi->options.adjust);
+>  		inode->i_atime.tv_nsec = 0;
+>  	} else
+>  		inode->i_ctime = inode->i_atime = inode->i_mtime;
+> @@ -592,11 +595,14 @@ retry:
+>  	raw_entry->attr = fat_attr(inode);
+>  	raw_entry->start = cpu_to_le16(MSDOS_I(inode)->i_logstart);
+>  	raw_entry->starthi = cpu_to_le16(MSDOS_I(inode)->i_logstart >> 16);
+> -	fat_date_unix2dos(inode->i_mtime.tv_sec, &raw_entry->time, &raw_entry->date);
+> +	fat_date_unix2dos(inode->i_mtime.tv_sec, &raw_entry->time, &raw_entry->date,
+> +			  sbi->options.adjust);
+>  	if (sbi->options.isvfat) {
+>  		__le16 atime;
+> -		fat_date_unix2dos(inode->i_ctime.tv_sec,&raw_entry->ctime,&raw_entry->cdate);
+> -		fat_date_unix2dos(inode->i_atime.tv_sec,&atime,&raw_entry->adate);
+> +		fat_date_unix2dos(inode->i_ctime.tv_sec,&raw_entry->ctime,&raw_entry->cdate,
+> +				  sbi->options.adjust);
+> +		fat_date_unix2dos(inode->i_atime.tv_sec,&atime,&raw_entry->adate,
+> +				  sbi->options.adjust);
+>  		raw_entry->ctime_cs = (inode->i_ctime.tv_sec & 1) * 100 +
+>  			inode->i_ctime.tv_nsec / 10000000;
+>  	}
+> @@ -854,7 +860,7 @@ enum {
+>  	Opt_charset, Opt_shortname_lower, Opt_shortname_win95,
+>  	Opt_shortname_winnt, Opt_shortname_mixed, Opt_utf8_no, Opt_utf8_yes,
+>  	Opt_uni_xl_no, Opt_uni_xl_yes, Opt_nonumtail_no, Opt_nonumtail_yes,
+> -	Opt_obsolate, Opt_flush, Opt_err,
+> +	Opt_obsolate, Opt_flush, Opt_posixtime, Opt_err,
+>  };
+>  
+>  static match_table_t fat_tokens = {
+> @@ -887,6 +893,7 @@ static match_table_t fat_tokens = {
+>  	{Opt_obsolate, "cvf_options=%100s"},
+>  	{Opt_obsolate, "posix"},
+>  	{Opt_flush, "flush"},
+> +	{Opt_posixtime, "posixtime"},
+>  	{Opt_err, NULL},
+>  };
+>  static match_table_t msdos_tokens = {
+> @@ -950,6 +957,7 @@ static int parse_options(char *options, int is_vfat, int silent, int *debug,
+>  	opts->utf8 = opts->unicode_xlate = 0;
+>  	opts->numtail = 1;
+>  	opts->nocase = 0;
+> +	opts->adjust = 1;
+>  	*debug = 0;
+>  
+>  	if (!options)
+> @@ -1032,6 +1040,10 @@ static int parse_options(char *options, int is_vfat, int silent, int *debug,
+>  			opts->flush = 1;
+>  			break;
+>  
+> +		case Opt_posixtime:
+> +			opts->adjust = 0;
+> +			break;
+> +
+>  		/* msdos specific */
+>  		case Opt_dots:
+>  			opts->dotsOK = 1;
+> diff --git a/fs/fat/misc.c b/fs/fat/misc.c
+> index 308f2b6..72a1a29 100644
+> --- a/fs/fat/misc.c
+> +++ b/fs/fat/misc.c
+> @@ -143,7 +143,7 @@ static int day_n[] = {
+>  };
+>  
+>  /* Convert a MS-DOS time/date pair to a UNIX date (seconds since 1 1 70). */
+> -int date_dos2unix(unsigned short time, unsigned short date)
+> +int date_dos2unix(unsigned short time, unsigned short date, int adjust)
+>  {
+>  	int month, year, secs;
+>  
+> @@ -157,16 +157,18 @@ int date_dos2unix(unsigned short time, unsigned short date)
+>  	    ((date & 31)-1+day_n[month]+(year/4)+year*365-((year & 3) == 0 &&
+>  	    month < 2 ? 1 : 0)+3653);
+>  			/* days since 1.1.70 plus 80's leap day */
+> -	secs += sys_tz.tz_minuteswest*60;
+> +	if (adjust)
+> +		secs += sys_tz.tz_minuteswest*60;
+>  	return secs;
+>  }
+>  
+>  /* Convert linear UNIX date to a MS-DOS time/date pair. */
+> -void fat_date_unix2dos(int unix_date, __le16 *time, __le16 *date)
+> +void fat_date_unix2dos(int unix_date, __le16 *time, __le16 *date, int adjust)
+>  {
+>  	int day, year, nl_day, month;
+>  
+> -	unix_date -= sys_tz.tz_minuteswest*60;
+> +	if (adjust)
+> +		unix_date -= sys_tz.tz_minuteswest*60;
+>  
+>  	/* Jan 1 GMT 00:00:00 1980. But what about another time zone? */
+>  	if (unix_date < 315532800)
+> diff --git a/fs/vfat/namei.c b/fs/vfat/namei.c
+> index 0afd745..7e5487b 100644
+> --- a/fs/vfat/namei.c
+> +++ b/fs/vfat/namei.c
+> @@ -626,7 +626,7 @@ shortname:
+>  	memcpy(de->name, msdos_name, MSDOS_NAME);
+>  	de->attr = is_dir ? ATTR_DIR : ATTR_ARCH;
+>  	de->lcase = lcase;
+> -	fat_date_unix2dos(ts->tv_sec, &time, &date);
+> +	fat_date_unix2dos(ts->tv_sec, &time, &date, sbi->options.adjust);
+>  	de->time = de->ctime = time;
+>  	de->date = de->cdate = de->adate = date;
+>  	de->ctime_cs = 0;
+> diff --git a/include/linux/msdos_fs.h b/include/linux/msdos_fs.h
+> index 24a9ef1..b3eeec8 100644
+> --- a/include/linux/msdos_fs.h
+> +++ b/include/linux/msdos_fs.h
+> @@ -205,7 +205,8 @@ struct fat_mount_options {
+>  		 numtail:1,       /* Does first alias have a numeric '~1' type tail? */
+>  		 atari:1,         /* Use Atari GEMDOS variation of MS-DOS fs */
+>  		 flush:1,	  /* write things quickly */
+> -		 nocase:1;	  /* Does this need case conversion? 0=need case conversion*/
+> +		 nocase:1,	  /* Does this need case conversion? 0=need case conversion*/
+> +		 adjust:1;	  /* Adjust time and date based on sys_tz?*/
+>  };
+>  
+>  #define FAT_HASH_BITS	8
+> @@ -421,8 +422,8 @@ extern int fat_flush_inodes(struct super_block *sb, struct inode *i1,
+>  extern void fat_fs_panic(struct super_block *s, const char *fmt, ...);
+>  extern void fat_clusters_flush(struct super_block *sb);
+>  extern int fat_chain_add(struct inode *inode, int new_dclus, int nr_cluster);
+> -extern int date_dos2unix(unsigned short time, unsigned short date);
+> -extern void fat_date_unix2dos(int unix_date, __le16 *time, __le16 *date);
+> +extern int date_dos2unix(unsigned short time, unsigned short date, int adjust);
+> +extern void fat_date_unix2dos(int unix_date, __le16 *time, __le16 *date, int adjust);
+>  extern int fat_sync_bhs(struct buffer_head **bhs, int nr_bhs);
+>  
+>  int fat_cache_init(void);
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
