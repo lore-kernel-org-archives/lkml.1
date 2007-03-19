@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030779AbXCTAHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030780AbXCTAHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030779AbXCTAHt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 20:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030780AbXCTAHt
+	id S1030780AbXCTAHz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 20:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030781AbXCTAHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 20:07:49 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:35653 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030779AbXCTAHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 20:07:48 -0400
-Date: Mon, 19 Mar 2007 17:07:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V3
-Message-Id: <20070319170741.5a24af4c.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703191655190.13879@schroedinger.engr.sgi.com>
-References: <20070319233716.13775.45569.sendpatchset@schroedinger.engr.sgi.com>
-	<20070319165329.b5830789.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703191655190.13879@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Mar 2007 20:07:55 -0400
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:45910 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030780AbXCTAHy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 20:07:54 -0400
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 20:07:54 EDT
+Date: Tue, 20 Mar 2007 00:52:41 +0100
+From: Till Maas <opensource@till.name>
+Subject: unify encoding of files in Documentation
+To: linux-kernel@vger.kernel.org
+Message-id: <200703200052.49607.opensource@till.name>
+MIME-version: 1.0
+Content-type: multipart/signed; boundary=nextPart5472264.ica1RRm8TC;
+ protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-transfer-encoding: 7bit
+X-Spam-Report: * -2.8 ALL_TRUSTED Did not pass through any untrusted hosts
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 16:57:55 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+--nextPart5472264.ica1RRm8TC
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On Mon, 19 Mar 2007, Andrew Morton wrote:
-> 
-> > Has it been proven that quicklists are superior to simply going direct to the
-> > page allocator for these pages?
-> 
-> Yes.
+Hiyas,
 
-Sigh.
+at the moment, some file in Documentation are utf-8 encoded and some are=20
+latin1 encoded. Therefore I propose to change the default encoding to utf-8=
+,=20
+because this is the encoding that may current linux distributions use.
 
-Please provide proof that quicklists are superior to simply going direct to
-the page allocator for these pages.
+I can send a patch, if required. If you want to change the encoding of a fi=
+le=20
+from latin1 to utf-8 you can use recode:
 
-> > Would it provide a superior solution if we were to a) stop zeroing out the
-> > pte's when doing a fullmm==1 teardown and b) go direct to the page allocator
-> > for these pages?
-> 
-> I doubt it. The zeroing is a by product of our way of serializing pte 
-> handling. Its going to be difficult to change that.
+recode latin1..utf-8 file.txt
 
-Nick didn't think so, and I don't see the problem either.
+This changes the encoding in place.
 
-We'll save on some bus traffic by avoiding the writeback, but how much
-effect that will have we don't know.  Presumably little.
+Regards,
+Till
+
+
+
+
+--nextPart5472264.ica1RRm8TC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBF/yJJ36qIRnusQIMRAlpLAJwMZSwfuzGevcMoGqkkWKAIKJYq0QCfUlCK
+hPNTZiruqGWyrZ8CghRsUCU=
+=19gz
+-----END PGP SIGNATURE-----
+
+--nextPart5472264.ica1RRm8TC--
+
 
