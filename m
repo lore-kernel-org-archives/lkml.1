@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965813AbXCSIoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642AbXCSJU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965813AbXCSIoz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 04:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965827AbXCSIoy
+	id S1752642AbXCSJU0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 05:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXCSJU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 04:44:54 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:40019 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965813AbXCSIoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 04:44:54 -0400
-Message-ID: <45FE4D58.2000303@free.fr>
-Date: Mon, 19 Mar 2007 09:44:08 +0100
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: johnstul@us.ibm.com, mingo@elte.hu, zippel@linux-m68k.org,
-       tglx@timesys.com, linux.kernel@free.fr
-Subject: Re: 2.6.20-rt8 patch tweaked for 2.6.20.3
-References: <45F82CF3.3050904@free.fr>
-In-Reply-To: <45F82CF3.3050904@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Mar 2007 05:20:26 -0400
+Received: from minus.inr.ac.ru ([194.67.69.97]:54253 "HELO ms2.inr.ac.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752423AbXCSJUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 05:20:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ms2.inr.ac.ru;
+  b=j57md+G99+Bj5dZ/zvy/PmS95Qo8D52OEczeic4cdtXQmJp8ZOLXMJZ4IxvmNrOPGtc2grbD5Zk/iCLfuWKqVgQQqb/w54Sgqj6rGVE9EczQg/a00ZaN1chOTa6H9BBQN9kdK6R44psd49hpQcQGpLf5MrdQSHvskqApxtPgh1w=;
+Date: Mon, 19 Mar 2007 12:20:09 +0300
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+To: "Eric W. Biederman" <ebiederman@lnxi.com>
+Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
+Message-ID: <20070319092009.GA9387@ms2.inr.ac.ru>
+References: <20070318155532.GG7958@mellanox.co.il> <20070318191238.GA20518@ms2.inr.ac.ru> <20070318202559.GD11078@mellanox.co.il> <m3tzwi8a20.fsf@maxwell.lnxi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3tzwi8a20.fsf@maxwell.lnxi.com>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John wrote:
+Hello!
 
-> I've tweaked patch-2.6.20-rt8 so that it applies to 2.6.20.3
-> 
-> The unified diff is attached to this message.
-> 
-> I'd be happy to hear comments on what I've done wrong!
+> Well I don't think the loopback device is currently but as soon
+> as we get network namespace support we will have multiple loopback
+> devices and they will get unregistered when we remove the network
+> namespace.
 
-Would anybody care to comment on the patch? :-)
+There is no logical difference. At the moment when namespace is gone
+there is nobody who can hold unrevokable references to this loopback.
 
-I made 4 simple edits.
-
-linux/Makefile
-   trivial fix for EXTRAVERSION
-
-linux/drivers/kvm/kvm_main.c
-   remove a patch that has already been applied (?) to 2.6.20.3
-
-linux/kernel/time/clocksource.c
-   add one line, remove another, to make patch happy
-
-linux/net/xfrm/xfrm_user.c
-   remove a patch that has already been applied (?) to 2.6.20.3
-
-Regards.
+Alexey
