@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbXCSJcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbXCSJdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbXCSJcg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 05:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbXCSJcg
+	id S1751330AbXCSJdk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 05:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbXCSJdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 05:32:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:59392 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620AbXCSJce (ORCPT
+	Mon, 19 Mar 2007 05:33:40 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34863 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751330AbXCSJdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 05:32:34 -0400
-Date: Mon, 19 Mar 2007 11:33:15 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       "Eric W. Biederman" <ebiederman@lnxi.com>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-Message-ID: <20070319093315.GA15909@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070318155532.GG7958@mellanox.co.il>
-	<20070318191238.GA20518@ms2.inr.ac.ru>
-	<20070318202559.GD11078@mellanox.co.il>
-	<m3tzwi8a20.fsf@maxwell.lnxi.com>
-	<20070318223653.GO11078@mellanox.co.il>
-	<20070318224234.GP11078@mellanox.co.il>
-	<20070319092422.GB9387@ms2.inr.ac.ru>
+	Mon, 19 Mar 2007 05:33:39 -0400
+Date: Mon, 19 Mar 2007 10:33:42 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Neil Brown <neilb@suse.de>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [2.6.21 patch] net/sunrpc/svcsock.c: fix a check
+Message-ID: <20070319093341.GS752@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070319092422.GB9387@ms2.inr.ac.ru>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
-> Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-> 
-> > Does this look sane (untested)?
-> 
-> It does not, unfortunately.
-> 
-> Instead of regular crash in infiniband you will get numerous
-> random NULL pointer dereferences both due to dst->neighbour
-> and due to dst->dev.
+The return value of kernel_recvmsg() should be assigned to "err", not 
+compared with the random value of a never initialized "err"
+(and the "< 0" check wrongly always returned false since == comparisons 
+never have a result < 0).
 
-Right, I saw this clearly in the morning. Thanks.
+Spotted by the Coverity checker.
 
--- 
-MST
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+--- linux-2.6.21-rc3-mm2/net/sunrpc/svcsock.c.old	2007-03-19 09:44:40.000000000 +0100
++++ linux-2.6.21-rc3-mm2/net/sunrpc/svcsock.c	2007-03-19 09:45:18.000000000 +0100
+@@ -779,8 +779,8 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
+ 	}
+ 
+ 	clear_bit(SK_DATA, &svsk->sk_flags);
+-	while ((err == kernel_recvmsg(svsk->sk_sock, &msg, NULL,
+-				      0, 0, MSG_PEEK | MSG_DONTWAIT)) < 0 ||
++	while ((err = kernel_recvmsg(svsk->sk_sock, &msg, NULL,
++				     0, 0, MSG_PEEK | MSG_DONTWAIT)) < 0 ||
+ 	       (skb = skb_recv_datagram(svsk->sk_sk, 0, 1, &err)) == NULL) {
+ 		if (err == -EAGAIN) {
+ 			svc_sock_received(svsk);
+
