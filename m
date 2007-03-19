@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbXCSJ2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbXCSJaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753417AbXCSJ2c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 05:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbXCSJ2c
+	id S1753424AbXCSJaR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 05:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbXCSJaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 05:28:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48209 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753307AbXCSJ2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 05:28:30 -0400
-Date: Mon, 19 Mar 2007 09:28:28 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Dmitriy Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-ntfs-dev@lists.sourceforge.net, xfs@oss.sgi.com, devel@openvz.org
-Subject: Re: [PATCH 1/2] fs: remove duplicated iovec checking code v8
-Message-ID: <20070319092828.GA3364@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Dmitriy Monakhov <dmonakhov@openvz.org>,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	linux-ntfs-dev@lists.sourceforge.net, xfs@oss.sgi.com,
-	devel@openvz.org
-References: <87slc18yhe.fsf@sw.ru>
+	Mon, 19 Mar 2007 05:30:16 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51410 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753396AbXCSJaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 05:30:13 -0400
+Date: Mon, 19 Mar 2007 15:00:06 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
+       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC][PATCH] sys_fallocate() system call
+Message-ID: <20070319093006.GB12092@amitarora.in.ibm.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070317163350.6b676c26.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87slc18yhe.fsf@sw.ru>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070317163350.6b676c26.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 10:49:01AM +0300, Dmitriy Monakhov wrote:
+On Sat, Mar 17, 2007 at 04:33:50PM +1100, Stephen Rothwell wrote:
+> On Fri, 16 Mar 2007 20:01:01 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+> >
 > 
-> Where are several places where the same code used for iovec checks.
-> This patch just move this code to separate helper function, and replace
-> duplicated code with it. IMHO it is better because these are checks that
-> we want for all filesystems/drivers that use vectored I/O.
+> > +asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
+> >
+> > --- linux-2.6.20.1.orig/include/asm-powerpc/systbl.h
+> > +++ linux-2.6.20.1/include/asm-powerpc/systbl.h
+> > @@ -305,3 +305,4 @@ SYSCALL_SPU(faccessat)
+> >  COMPAT_SYS_SPU(get_robust_list)
+> >  COMPAT_SYS_SPU(set_robust_list)
+> >  COMPAT_SYS(move_pages)
+> > +SYSCALL(fallocate)
+> 
+> It is going to need to be a COMPAT_SYS call in powerpc because 32 bit
+> powerpc will pass the two loff_t's in pairs of registers while
+> 64bit passes them in one register each.
 
-Please move this into the common code path, so it's checked before
-entering the filesystem.  This won't cover the calculating count
-until we have an iodesc/uio strcuture to pass it down, so feel free
-to add a tiny helper for that temporaily.
+Ok. Will make that change, unless it is decided to pass each loff_t
+argument as two "u32"s. Thanks!
 
+--
+Regards,
+Amit Arora
