@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966044AbXCSR0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966045AbXCSR2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966044AbXCSR0P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 13:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966046AbXCSR0O
+	id S966045AbXCSR2p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 13:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966043AbXCSR2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 13:26:14 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:2200 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966044AbXCSR0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 13:26:14 -0400
-X-AuthUser: hirofumi@parknet.jp
-To: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] Sanitize filesystem NLS handling
-References: <45FD6EF5.1030706@ums.usu.ru> <87hcsius7b.fsf@duaron.myhome.or.jp>
-	<45FDFC69.6020605@ums.usu.ru> <87d535vqrz.fsf@duaron.myhome.or.jp>
-	<45FE13B9.8000203@ums.usu.ru> <87vegxdc8i.fsf@duaron.myhome.or.jp>
-	<45FE2483.4060706@ums.usu.ru> <878xdtux71.fsf@duaron.myhome.or.jp>
-	<45FEA669.1060301@ums.usu.ru>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Tue, 20 Mar 2007 02:26:03 +0900
-In-Reply-To: <45FEA669.1060301@ums.usu.ru> (Alexander E. Patrakov's message of "Mon\, 19 Mar 2007 20\:04\:09 +0500")
-Message-ID: <871wjlp2l0.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
+	Mon, 19 Mar 2007 13:28:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:21484 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966040AbXCSR2o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 13:28:44 -0400
+Message-ID: <45FEC36D.4060106@oracle.com>
+Date: Mon, 19 Mar 2007 10:07:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [2/6] 2.6.21-rc4: known regressions
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070318184915.GV752@stusta.de> <20070319090657.3142b8a8.randy.dunlap@oracle.com> <20070319161504.GU752@stusta.de>
+In-Reply-To: <20070319161504.GU752@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Alexander E. Patrakov" <patrakov@ums.usu.ru> writes:
+Adrian Bunk wrote:
+> On Mon, Mar 19, 2007 at 09:06:57AM -0700, Randy Dunlap wrote:
+>> On Sun, 18 Mar 2007 19:49:15 +0100 Adrian Bunk wrote:
+>>
+>>> This email lists some known regressions in Linus' tree compared to 2.6.20.
+>>>
+>>> If you find your name in the Cc header, you are either submitter of one
+>>> of the bugs, maintainer of an affectected subsystem or driver, a patch
+>>> of you caused a breakage or I'm considering you in any other way
+>>> possibly involved with one or more of these issues.
+>>>
+>>> Due to the huge amount of recipients, please trim the Cc when answering.
+>>>
+>>>
+>>> Subject    : x86_64: boot hangs unless CONFIG_PCIEPORTBUS=n and acpi=off
+>>> References : http://bugzilla.kernel.org/show_bug.cgi?id=8162
+>>> Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
+>>> Status     : unknown
+>> Bug is rejected due to user error.
+>> This seems to be a netconsole hang, not ACPI.
+> 
+> Thanks for this information.
+> 
+> Is the netconsole hang a regression?
 
-> But, anyway, this is a separate issue that my patch doesn't attempt to 
-> correct. The conclusion so far is that we disagree, and that there are 
-> situations where using utf8 iocharset is the least of all evils, so the 
-> warning is not justified enough. Reproducible testcase:
+I have to do more debugging to find out what is going on.  It may be
+PCIEPORTBUS-related, but 2.6.20 or later now boot for me without
+netconsole and hang when using netconsole.  The ending lines in the console
+log are:
 
-Again, I don't care about read at all. And why don't you use "utf8"
-option, instead of "iocharset=utf8". "iocharset=utf8" is warned until
-it is fixed. The "utf8" also doesn't work correctly in some case though.
+[   17.946918] PCI: Setting latency timer of device 0000:00:02.0 to 64
+[   17.953211] assign_interrupt_mode Found MSI capability
+[   17.958388] Allocate Port Service[0000:00:02.0:pcie00]
+[   17.963565] Allocate Port Service[0000:00:02.0:pcie01]
+[   17.968736] Allocate Port Service[0000:00:02.0:pcie02]
+[   17.973903] Allocate Port Service[0000:00:02.0:pcie03]
+[   17.979134] PCI: Setting latency timer of device 0000:00:03.0 to 64
+[   17.985430] assign_interrupt_mode Found MSI capability
+[   17.990565] Losing some ticks... checking if CPU frequency changed.
+[   17.996857] Allocate Port Service[0000:00:03.0:pcie00]
+[   18.002013] Allocate Port Service[0000:00:03.0:pcie01]
+[   18.007175] Allocate Port Service[0000:00:03.0:pcie02]
+[   18.012336] Allocate Port Service[0000:00:03.0:pcie03]
+[   18.017552] PCI: Setting latency timer of device 0000:00:03.1 to 64
+[   18.023848] assign_interrupt_mode Found MSI capability
+[   18.029012] Allocate Port Service[0000:00:03.1:pcie00]
 
->> I'm talking about two filesystems on a system here, not two encoding
->> on one filesystem.
->
-> I am also talking about this. Mounting two filesystems with different 
-> iocharsets is insane, because this will result in one of the following outcomes:
->
-> 1) "ls" will show wrong characters in filenames on one of the filesystems
-> 2) one of the two filesystems will contain wrong on-disk data for filenames, 
-> that, when misinterpreted by mounting with wrong iocharset, results in 
-> seemingly-correct output, but is misunderstood by the properly set up 
-> reference implementation (that's what is likely to happen with jfs in your 
-> example).
 
-Because you didn't change the locale. And it is your policy, right?
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
