@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751755AbXCSTIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752129AbXCSTJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751755AbXCSTIz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 15:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXCSTIz
+	id S1752129AbXCSTJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 15:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXCSTJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 15:08:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57183
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751755AbXCSTIy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 15:08:54 -0400
-Date: Mon, 19 Mar 2007 12:08:54 -0700 (PDT)
-Message-Id: <20070319.120854.30182994.davem@davemloft.net>
-To: ak@suse.de
-Cc: virtualization@lists.linux-foundation.org, jbeulich@novell.com,
-       jeremy@goop.org, ak@muc.de, xen-devel@lists.xensource.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       chrisw@sous-sol.org, virtualization@lists.osdl.org,
-       anthony@codemonkey.ws, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200703191157.29780.ak@suse.de>
-References: <20070318193030.GB71548@muc.de>
-	<45FDCF52.4000805@goop.org>
-	<200703191157.29780.ak@suse.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 19 Mar 2007 15:09:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49314 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751923AbXCSTJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 15:09:16 -0400
+Date: Mon, 19 Mar 2007 12:08:07 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: jg@laptop.org
+Cc: zaitcev@redhat.com, linux-kernel@vger.kernel.org
+Subject: BSOD (was: [2/6] 2.6.21-rc2: known regressions)
+Message-Id: <20070319120807.af36ef5d.zaitcev@redhat.com>
+In-Reply-To: <1174236045.6832.9.camel@localhost>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	<20070305015034.GG3441@stusta.de>
+	<20070308123143.GF5149@mellanox.co.il>
+	<Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+	<20070308192554.GA2999@elte.hu>
+	<20070308230705.GA4611@elte.hu>
+	<Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
+	<20070309111957.GA3928@elf.ucw.cz>
+	<20070318160707.GC12673@elte.hu>
+	<1174236045.6832.9.camel@localhost>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@suse.de>
-Date: Mon, 19 Mar 2007 11:57:28 +0100
+On Sun, 18 Mar 2007 12:40:45 -0400, Jim Gettys <jg@laptop.org> wrote:
 
-> On Monday 19 March 2007 00:46, Jeremy Fitzhardinge wrote:
-> > Andi Kleen wrote:
-> > For example, say we wanted to put a general call for sti into entry.S,
-> > where its expected it won't touch any registers.  In that case, we'd
-> > have a sequence like:
-> >
-> >     push %eax
-> >     push %ecx
-> >     push %edx
-> >     call paravirt_cli
-> >     pop %edx
-> >     pop %ecx
-> >     pop %eax
-> 
-> This cannot right now be expressed as inline assembly in the unwinder at all 
-> because there is no way to inject the push/pops into the compiler generated
-> ehframe tables.
-> 
-> [BTW I plan to resubmit the unwinder with some changes]
+> Also more seriously, a somewhat hybrid approach is in order for mode
+> setting: simple mode setting isn't much code and is required for sane
+> behavior on crash (it is nice to get oopses onto a screen); but the full
+> blown mode setting/configuration problem is so large that on some
+> hardware, it is likely left best left to a helper process (not the X
+> server).
 
-It's inability to handle sequences like the above sounds to me like
-a very good argument to _not_ merge the unwinder back into the tree.
+Jim, I doubt that a mode switch on oops is a good idea. Maybe I'm unlucky,
+but in my experience, it often is the case that systems fail to switch
+to text mode for shutdown. What is amazing, the very same systems switch
+to text mode on <Alt>F1 just fine, and then back to <Alt>F7!
+I would hazard a guess that this happens because nobody cares
+about shutdown modes to fix them. But then the same is true for
+crashes.
 
-To me, that unwinder is nothing but trouble, it severly limits what
-cases you can use special calling conventions via inline asm (and we
-have done that on several occaisions) and even ignoring that the
-unwinder only works half the time.
+I understand that you have your own experience, but thought to note
+this all the same.
 
-Please don't subject us to another couple months of hair-pulling only
-to have Linus yank the thing out again, there are certainly more
-useful things to spend time on :-)
+>From the constructive angle, I think that a crash should render into
+existing mode, into the currently mapped frame buffer. This is the
+only way how it can be made to work reliably.
+
+Yours,
+-- Pete
