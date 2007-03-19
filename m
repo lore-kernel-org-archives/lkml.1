@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965122AbXCSVnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965075AbXCSVnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965122AbXCSVnF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbXCSVmh
+	id S965075AbXCSVnH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965145AbXCSVnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:42:37 -0400
-Received: from mail.suse.de ([195.135.220.2]:55830 "EHLO mx1.suse.de"
+	Mon, 19 Mar 2007 17:43:05 -0400
+Received: from mx1.suse.de ([195.135.220.2]:56103 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030628AbXCSVly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:41:54 -0400
-Date: Mon, 19 Mar 2007 14:39:57 -0700
+	id S965075AbXCSVm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:42:57 -0400
+Date: Mon, 19 Mar 2007 14:41:08 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -19,16 +19,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Robert Olsson <robert.olsson@its.uu.se>,
-       Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 19/31] : Fix GFP_KERNEL with preemption disabled in fib_trie
-Message-ID: <20070319213957.GU9261@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 29/31] Input: i8042 - fix AUX IRQ delivery check
+Message-ID: <20070319214108.GE9261@kroah.com>
 References: <20070319213047.710101653@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-gfp_kernel-with-preemption-disabled-in-fib_trie.patch"
+Content-Disposition: inline; filename="input-i8042-fix-aux-irq-delivery-check.patch"
 In-Reply-To: <20070319213647.GB9261@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,50 +35,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Robert Olsson <robert.olsson@its.uu.se>
+From: Dmitry Torokhov <dtor@insightbb.com>
 
-[IPV4]: Do not disable preemption in trie_leaf_remove().
+Input: i8042 - fix AUX IRQ delivery check
 
-Hello, Just discussed this Patrick...
+On boxes that do not implement AUX LOOP command we can not
+verify AUX IRQ delivery and must assume that it is wired
+properly.
 
-We have two users of trie_leaf_remove, fn_trie_flush and fn_trie_delete
-both are holding RTNL. So there shouldn't be need for this preempt stuff.
-This is assumed to a leftover from an older RCU-take.
-
-> Mhh .. I think I just remembered something - me incorrectly suggesting
-> to add it there while we were talking about this at OLS :) IIRC the
-> idea was to make sure tnode_free (which at that time didn't use
-> call_rcu) wouldn't free memory while still in use in a rcu read-side
-> critical section. It should have been synchronize_rcu of course,
-> but with tnode_free using call_rcu it seems to be completely
-> unnecessary. So I guess we can simply remove it.
-
-Signed-off-by: Robert Olsson <robert.olsson@its.uu.se>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/fib_trie.c |    2 --
- 1 file changed, 2 deletions(-)
+ drivers/input/serio/i8042.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/net/ipv4/fib_trie.c
-+++ b/net/ipv4/fib_trie.c
-@@ -1528,7 +1528,6 @@ static int trie_leaf_remove(struct trie 
- 	t->revision++;
- 	t->size--;
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -543,6 +543,7 @@ static int __devinit i8042_check_aux(voi
+ {
+ 	int retval = -1;
+ 	int irq_registered = 0;
++	int aux_loop_broken = 0;
+ 	unsigned long flags;
+ 	unsigned char param;
  
--	preempt_disable();
- 	tp = NODE_PARENT(n);
- 	tnode_free((struct tnode *) n);
+@@ -572,6 +573,8 @@ static int __devinit i8042_check_aux(voi
+ 		if (i8042_command(&param, I8042_CMD_AUX_TEST) ||
+ 		    (param && param != 0xfa && param != 0xff))
+ 			return -1;
++
++		aux_loop_broken = 1;
+ 	}
  
-@@ -1538,7 +1537,6 @@ static int trie_leaf_remove(struct trie 
- 		rcu_assign_pointer(t->trie, trie_rebalance(t, tp));
- 	} else
- 		rcu_assign_pointer(t->trie, NULL);
--	preempt_enable();
+ /*
+@@ -595,7 +598,7 @@ static int __devinit i8042_check_aux(voi
+  * used it for a PCI card or somethig else.
+  */
  
- 	return 1;
- }
+-	if (i8042_noloop) {
++	if (i8042_noloop || aux_loop_broken) {
+ /*
+  * Without LOOP command we can't test AUX IRQ delivery. Assume the port
+  * is working and hope we are right.
 
 -- 
