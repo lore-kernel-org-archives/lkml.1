@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030762AbXCSXtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965263AbXCSXvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030762AbXCSXtg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966059AbXCSXtR
+	id S965263AbXCSXvq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 19:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966056AbXCSXtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:49:17 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:50933 "EHLO
+	Mon, 19 Mar 2007 19:49:14 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:50919 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965661AbXCSXtL (ORCPT
+	with ESMTP id S965574AbXCSXtK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:49:11 -0400
+	Mon, 19 Mar 2007 19:49:10 -0400
 X-AuthUser: davidel@xmailserver.org
 From: Davide Libenzi <davidel@xmailserver.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
+       Oleg Nesterov <oleg@tv-sign.ru>
 Date: Mon, 19 Mar 2007 16:47:51 -0700
-Subject: [patch 7/13] signal/timer/event fds v7 - timerfd wire up i386 arch ...
+Subject: [patch 5/13] signal/timer/event fds v7 - signalfd compat code ...
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.15249.1174348074.7>
+Message-ID: <send-serie.davidel@xmailserver.org.15249.1174348073.5>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch wire the timerfd system call to the i386 architecture.
-
+This patch implement the necessary compat code for the signalfd system call.
 
 
 Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
@@ -35,30 +34,41 @@ Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
 
-Index: linux-2.6.21-rc3.quilt/arch/i386/kernel/syscall_table.S
+Index: linux-2.6.21-rc3.quilt/fs/compat.c
 ===================================================================
---- linux-2.6.21-rc3.quilt.orig/arch/i386/kernel/syscall_table.S	2007-03-19 16:41:29.000000000 -0700
-+++ linux-2.6.21-rc3.quilt/arch/i386/kernel/syscall_table.S	2007-03-19 16:41:35.000000000 -0700
-@@ -320,3 +320,4 @@
- 	.long sys_getcpu
- 	.long sys_epoll_pwait
- 	.long sys_signalfd		/* 320 */
-+	.long sys_timerfd
-Index: linux-2.6.21-rc3.quilt/include/asm-i386/unistd.h
-===================================================================
---- linux-2.6.21-rc3.quilt.orig/include/asm-i386/unistd.h	2007-03-19 16:41:29.000000000 -0700
-+++ linux-2.6.21-rc3.quilt/include/asm-i386/unistd.h	2007-03-19 16:41:35.000000000 -0700
-@@ -326,10 +326,11 @@
- #define __NR_getcpu		318
- #define __NR_epoll_pwait	319
- #define __NR_signalfd		320
-+#define __NR_timerfd		321
+--- linux-2.6.21-rc3.quilt.orig/fs/compat.c	2007-03-19 16:03:26.000000000 -0700
++++ linux-2.6.21-rc3.quilt/fs/compat.c	2007-03-19 16:41:32.000000000 -0700
+@@ -46,6 +46,7 @@
+ #include <linux/rwsem.h>
+ #include <linux/tsacct_kern.h>
+ #include <linux/highmem.h>
++#include <linux/signal.h>
+ #include <linux/poll.h>
+ #include <linux/mm.h>
  
- #ifdef __KERNEL__
- 
--#define NR_syscalls 321
-+#define NR_syscalls 322
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
+@@ -2235,3 +2236,24 @@
+ 	return sys_ni_syscall();
+ }
+ #endif
++
++asmlinkage long compat_sys_signalfd(int ufd,
++				    const compat_sigset_t __user *sigmask,
++				    compat_size_t sigsetsize)
++{
++	compat_sigset_t ss32;
++	sigset_t tmp;
++	sigset_t __user *ksigmask;
++
++	if (sigsetsize != sizeof(compat_sigset_t))
++		return -EINVAL;
++	if (copy_from_user(&ss32, sigmask, sizeof(ss32)))
++		return -EFAULT;
++	sigset_from_compat(&tmp, &ss32);
++	ksigmask = compat_alloc_user_space(sizeof(sigset_t));
++	if (copy_to_user(ksigmask, &tmp, sizeof(sigset_t)))
++		return -EFAULT;
++
++	return sys_signalfd(ufd, ksigmask, sizeof(sigset_t));
++}
++
 
