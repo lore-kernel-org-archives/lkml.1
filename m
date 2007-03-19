@@ -1,55 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030363AbXCSQhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030376AbXCSQiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030363AbXCSQhi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 12:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030368AbXCSQhi
+	id S1030376AbXCSQiW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 12:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030370AbXCSQiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 12:37:38 -0400
-Received: from il.qumranet.com ([82.166.9.18]:60163 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030363AbXCSQhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 12:37:38 -0400
-Message-ID: <45FEBC51.6060707@argo.co.il>
-Date: Mon, 19 Mar 2007 18:37:37 +0200
-From: Avi Kivity <avi@argo.co.il>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-CC: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: is RSDL an "unfair" scheduler too?
-References: <MDEHLPKNGKAHNMBLJOLKGEMBCFAC.davids@webmaster.com> <45FEAB60.7090704@argo.co.il> <45FEB50E.2040104@aitel.hist.no>
-In-Reply-To: <45FEB50E.2040104@aitel.hist.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 19 Mar 2007 12:38:22 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42777 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030376AbXCSQiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 12:38:21 -0400
+Date: Mon, 19 Mar 2007 18:38:19 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
+In-Reply-To: <6bffcb0e0703190929rd118b16u21552da0c81b9f04@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0703191836370.22180@sbz-30.cs.Helsinki.FI>
+References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net> 
+ <45FD8684.4030501@googlemail.com>  <6bffcb0e0703190845s6bdc1a65p71937d1dffbf6d9e@mail.gmail.com>
+  <Pine.LNX.4.64.0703191751560.21196@sbz-30.cs.Helsinki.FI>
+ <6bffcb0e0703190929rd118b16u21552da0c81b9f04@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Helge Hafting wrote:
-> Avi Kivity wrote:
->>
->> A fairly contrived example, but I see your point.  Of course any 
->> system can be broken.  I think that user-level scheduling is good for 
->> real multi user systems, where 'user' means a person, not an 
->> artificial entity.  It's also good for a multi application server, 
->> where typically each service runs (or can be made to run) as a 
->> separate user.
-> For a not so contrived example, look at email delivery.  Some 
-> mailservers do
-> all work as root (or some fixed email user)
->
-> Some servers will switch to the UID of the user receiving the message, 
-> limiting the
-> damage in case of buffer overflow etc. A fair amount of work is then done
-> as that user - running the message through virus/spam-checks and
-> then perhaps procmail.
->
+On Mon, 19 Mar 2007, Michal Piotrowski wrote:
+> Yes, revoke-special-mmap-handling.patch is bad.
 
-Actually that makes some sense with user level scheduling - delivering 
-email is charged to the recipient instead of to the system.  But I agree 
-it's a surprising side effect and if this is ever implemented it should 
-be optional.
+Aah, the VM_REVOKED flag stomps on VM_CAN_INVALIDATE in -mm. Changing 
+VM_REVOKED to 0x10000000 should fix it. I don't have access to kernel tree 
+right now so I'll send a patch tomorrow unless someone else beats me to 
+it.
 
--- 
-error compiling committee.c: too many arguments to function
-
+				Pekka
