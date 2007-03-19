@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbXCSPHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbXCSPIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932280AbXCSPHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 11:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbXCSPHF
+	id S932325AbXCSPIV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 11:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCSPIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 11:07:05 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:55984 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932280AbXCSPHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 11:07:03 -0400
-Message-ID: <45FEA6FC.6020503@nortel.com>
-Date: Mon, 19 Mar 2007 09:06:36 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 19 Mar 2007 11:08:21 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40490 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932325AbXCSPIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 11:08:20 -0400
+Date: Mon, 19 Mar 2007 16:07:53 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Tim Gardner <tim.gardner@canonical.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Suspend to RAM fault in VT when resuming
+Message-ID: <20070319150753.GC1915@elf.ucw.cz>
+References: <45F709F2.80504@canonical.com> <20070313212457.GD12370@elf.ucw.cz> <45F752EF.6030701@canonical.com>
 MIME-Version: 1.0
-To: Mark Hahn <hahn@mcmaster.ca>
-CC: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: RSDL v0.31
-References: <200703042335.26785.a1426z@gawab.com> <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <Pine.LNX.4.64.0703171105270.16125@coffee.psychology.mcmaster.ca>
-In-Reply-To: <Pine.LNX.4.64.0703171105270.16125@coffee.psychology.mcmaster.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Mar 2007 15:06:40.0406 (UTC) FILETIME=[32A9F360:01C76A38]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F752EF.6030701@canonical.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 2007-03-13 19:42:07, Tim Gardner wrote:
+> Pavel Machek wrote:
+> > Hi1
+> > 
+> >> I've chased one of the 'Suspend to RAM' resume problems to a specific
+> >> line in drivers/char/vt.c, see attached 2.6.21-rc3 diff with
+> > 
+> > Has suspend/resume ever worked on that hardware?
+> > 
+> >> TRACE_RESUME() instrumentation. The macro scr_writew resolves to '*addr
+> >> = val', which appears to be causing the problem. I've verified that the
+> >> pointer is not NULL, but don't know if its really valid. Its pretty
+> >> tough to tell what is happening, but on a Dell XPS it just hangs. A Dell
+> >> Precision blinks the keyboard lights.
+> > 
+> > It is possible that video is not initialized at that point, and that
+> > hardware goes seriously unhappy when you access non-existing vga. Does
+> > it resume ok when you completely disable video support? 
+> 
+> Resume works on the Dell XPS with the Ubuntu Edgy release
+> Ubuntu-2.6.17-10.25 (2.6.17 plus a zillion fixes). Ubuntu's git tree is
+> rsync://rsync.kernel.org/pub/scm/linux/kernel/git/bcollins/ubuntu-2.6.git.
+> Ubuntu-2.6.17-8.21 is the first version where resume works, but there
+> are a boatload of changes in ACPI and SW suspend between that and the
+> previous tag Ubuntu-2.6.17-7.20. I don't know what made SW suspend work,
+> but even knowing that won't tell me what broke it again.
+> 
+> I've been avoiding the bisect process because it is quite time consuming
+> on my slow machine, there is much branch weirdness, and I'm not that
+> good with git. I thought if I narrowed the failure down to a small chunk
+> of code in 2.6.21-rc3, then the answer might be obvious. No such luck, huh?
+> 
+> This crash behaves like the video memory space has become unmapped. Is
+> that possible?
 
-Just so you know the context, I'm coming at this from the point of view 
-of an embedded call server designer.
+That seems improbable. It is physical ram, we do not unmap that..
 
-Mark Hahn wrote:
-> why do you think fairness is good, especially always good?
-
-Fairness is good because it promotes predictability.  See the 
-"deterministic" section below.
-
-> even starvation is sometimes a good thing - there's a place for processes
-> that only use the CPU if it is otherwise idle.  that is, they are
-> deliberately starved all the rest of the time.
-
-If you have nice 19 be sufficiently low priority, then the difference 
-between "using cpu if otherwise idle" and "gets a little bit of cpu even 
-if not totally idle" is unimportant.
-
-Starvation is a very *bad* thing when you don't want it.
-
-
->> Much lower and bound latencies
-
-> in an average sense?  also, under what circumstances does this actually
-> matter?  (please don't offer something like RT audio on an overloaded 
-> machine- that's operator error, not something to design for.)
-
-In my environment, latency *matters*.  If a packet doesn't get processed 
-in time, you drop it.  With mainline it can be quite tricky to tune the 
-latency, especially when you don't want to resort to soft realtime 
-because you don't entirely trust the code thats running (because it came 
-from a third party vendor).
-
-
->> Deterministic
-
-> not a bad thing, but how does this make itself apparent and of value to 
-> the user?  I think everyone is extremely comfortable with non-determinism
-> (stemming from networks, caches, interleaved workloads, etc)
-
-Determinism is really important.  It almost doesn't matter what the 
-behaviour is, as long as we can predict it.  We model the system to 
-determine how to tweak the system (niceness, sched policy, etc.), as 
-well as what performance numbers we can advertise.  If the system is 
-non-deterministic, it makes this modelling extremely difficult--you end 
-up having to give up significant performance due to worst-case spikes.
-
-If the system is deterministic, it makes it much easier to predict its 
-actions.
-
-Chris
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
