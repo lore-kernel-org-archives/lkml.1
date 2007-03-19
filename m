@@ -1,116 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbXCSTdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbXCSThm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbXCSTdM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 15:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbXCSTdM
+	id S1752713AbXCSThm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 15:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXCSThm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 15:33:12 -0400
-Received: from gw.goop.org ([64.81.55.164]:33109 "EHLO mail.goop.org"
+	Mon, 19 Mar 2007 15:37:42 -0400
+Received: from saeurebad.de ([85.214.36.134]:54021 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752245AbXCSTdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 15:33:10 -0400
-Message-ID: <45FEE571.9060302@goop.org>
-Date: Mon, 19 Mar 2007 12:33:05 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1752713AbXCSThl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 15:37:41 -0400
+Date: Mon, 19 Mar 2007 20:33:02 +0100
+From: Johannes Weiner <hannes-kernel@saeurebad.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] dmaenginge.c: class_device_register() return value
+Message-ID: <20070319193301.GA11921@leiferikson>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, zach@vmware.com, anthony@codemonkey.ws,
-       netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="VbJkn9YxBvnuCH5J"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Mon, 19 Mar 2007, Eric W. Biederman wrote:
->   
->> True.  You can use all of the call clobbered registers.
->>     
->
-> Quite often, the biggest single win of inlining is not so much the code 
-> size (although if done right, that will be smaller too), but the fact that 
-> inlining DOES NOT CLOBBER AS MANY REGISTERS!
->   
 
-Yes, that's something that we've been conscious of when designing the
-pv_ops patching mechanism.  As it stands, each time you emit a call to a
-pv-ops operation, it not only stores the start and end of the patchable
-area, but also which registers are available for clobbering at that
-callsite by the patched-in code.  For things like sti/cli, where the
-surrounding code expects nothing to be clobbered, we make sure that the
-regs are preserved on the pv-ops side, even though there's a call to a
-normal C function in the middle.  That gives in the pvops backend the
-flexibility to patch over that site with either some inline code or a
-call out to some function which doesn't necessarily clobber the full
-caller-save set (or even any registers).
+--VbJkn9YxBvnuCH5J
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> In short: people here seem to think that inlining is about avoiding the 
-> call/ret sequence. Not so. The real advantages of inlining are elsewhere.
->   
+Hi,
 
-Yes.  Probably the biggest win of inlining is constant propagation into
-the inline function, but register-use flexibility is good small-scale
-win (vs the micro-scale call/ret elimination).
+this patch makes dma_async_device_register() in drivers/dma/dmaengine.c
+handle a failing class_device_register().  Patched against Linus' git
+tree, compile-tested.
 
-> Side note, you can certainly fix things like this at least in theory, but 
-> it requires:
->
->  - the "call" instruction that is used instead of the inlining should 
->    basically have no callee-clobbers. Any paravirt_ops called this way
->    should have a special calling sequence where they simple save and 
->    restore all the registers they use.
->
->    This is usually not that bad. Just create a per-architecture wrapper 
->    function that saves/restores anything that the C calling convention on 
->    that architecture says is clobbered by calls.
->   
+I also thought about calling dma_async_device_unregister on failure, but
+I was not quite sure if this would work.  And I noticed that memory is
+allocated for chan->local in dma_async_device_register() but I couldn't
+find where it is released again.
 
-Most of the places we intercept are normal C calls anyway, so this isn't
-a big issue.  Its mainly the places where we replace single instructions
-that this will have a big effect.
-
-The trouble with this is that we're back to having to have special
-wrappers around each call to hide the normal C calling convention from
-the compiler, so that it knows that it has more registers to play with. 
-This was the main complaint about the original version of the patch,
-because it all looks very ugly.
-
->  - if the function has arguments, and the inlined sequence can take the 
->    arguments in arbitrary registers, you are going to penalize the inlined 
->    sequence anyway (by forcing some fixed arbitrary register allocation 
->    policy).This thing is largely unfixable without some really extreme 
->    compiler games (like post-processing the assembler output and having 
->    different entry-points depending on where the arguments are..)
->   
-
-Yeah, that doesn't sound like much fun.  I think using the normal
-regparm calling convention will be OK.  Aside from some slightly longer
-instruction encodings, all the registers are more or less
-interchangeable anyway.
-
-> .. it will obviously depend on how thngs are done whether these things are 
-> useful or not. But it does mean that it's always a good idea to just have 
-> a config option of "turn off all the paravirt crap, because it *does* add 
-> overhead, and replacing instructions on the fly doesn't make that 
-> overhead go away".
-
-Yes, there's a big switch to turn all this off.  It would be nice if we
-could get things to the point that it isn't necessary to have (ie,
-running on bare hardware really is indistinguishable either way), but
-we're a fair way from being able to prove that.  In the meantime, the
-goal is to try to keep the source-level changes a local as possible so
-that maintaining the CONFIG_PARAVIRT vs non-PARAVIRT distinction is
-straightforward.
+I am quite new to this all, please give me feedback!
 
 
-    J
+Signed-off-by: Johannes Weiner <hannes-kernel@saeurebad.de>
+
+--VbJkn9YxBvnuCH5J
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="dmaengine_class_device_register_retval.patch"
+
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 322ee29..5560e39 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -316,8 +316,8 @@ EXPORT_SYMBOL(dma_async_client_chan_request);
+ int dma_async_device_register(struct dma_device *device)
+ {
+ 	static int id;
+-	int chancnt = 0;
+-	struct dma_chan* chan;
++	int chancnt, err;
++	struct dma_chan *chan, *last;
+ 
+ 	if (!device)
+ 		return -ENODEV;
+@@ -326,9 +326,13 @@ int dma_async_device_register(struct dma_device *device)
+ 	kref_init(&device->refcount);
+ 	device->dev_id = id++;
+ 
++	err = chancnt = 0;
++
+ 	/* represent channels in sysfs. Probably want devs too */
+ 	list_for_each_entry(chan, &device->channels, device_node) {
+ 		chan->local = alloc_percpu(typeof(*chan->local));
++
++		/* Should this be handled less relaxed? */
+ 		if (chan->local == NULL)
+ 			continue;
+ 
+@@ -339,7 +343,11 @@ int dma_async_device_register(struct dma_device *device)
+ 		         device->dev_id, chan->chan_id);
+ 
+ 		kref_get(&device->refcount);
+-		class_device_register(&chan->class_dev);
++		err = class_device_register(&chan->class_dev);
++		if (err) {
++			last = chan;
++			goto err_dev_reg;
++		}
+ 	}
+ 
+ 	mutex_lock(&dma_list_mutex);
+@@ -349,6 +357,22 @@ int dma_async_device_register(struct dma_device *device)
+ 	dma_chans_rebalance();
+ 
+ 	return 0;
++
++err_dev_reg:
++	list_for_each_entry(chan, &device->channels, device_node) {
++		kref_put(&device->refcount, dma_async_device_cleanup);
++
++		if (chan->local)
++			free_percpu(chan->local);
++
++		if (chan == last)
++			break;
++
++		class_device_unregister(&chan->class_dev);
++	}
++	wait_for_completion(&device->done);
++	device->dev_id = 0;
++	return err;
+ }
+ EXPORT_SYMBOL(dma_async_device_register);
+ 
+diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
+index 8e87261..c25f548 100644
+--- a/drivers/dma/ioatdma.c
++++ b/drivers/dma/ioatdma.c
+@@ -768,10 +768,13 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		goto err_self_test;
+ 
+-	dma_async_device_register(&device->common);
++	err = dma_async_device_register(&device->common)
++	if (err)
++		goto err_dev_reg;
+ 
+ 	return 0;
+ 
++err_dev_reg:
+ err_self_test:
+ err_irq:
+ 	pci_pool_destroy(device->completion_pool);
+
+--VbJkn9YxBvnuCH5J--
