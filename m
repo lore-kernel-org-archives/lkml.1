@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030299AbXCSQrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750992AbXCSQ7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030299AbXCSQrJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 12:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030391AbXCSQrJ
+	id S1750992AbXCSQ7d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 12:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964802AbXCSQ7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 12:47:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52808 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030387AbXCSQrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 12:47:07 -0400
-Message-Id: <20070319164319.915668869@programming.kicks-ass.net>
-References: <20070319155737.653325176@programming.kicks-ass.net>
-User-Agent: quilt/0.45-1
-Date: Mon, 19 Mar 2007 16:57:39 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl
-Subject: [RFC][PATCH 2/6] mm: count dirty pages per BDI
-Content-Disposition: inline; filename=bdi_stat_dirty.patch
+	Mon, 19 Mar 2007 12:59:33 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:16306 "EHLO
+	asav06.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbXCSQ7c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 12:59:32 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AusRAG9e/kVKhRO4UGdsb2JhbACBZ4VLh2kBASo
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Victor Fernandes <Victor.Fernandes@comnet.be>
+Subject: Re: New kernel mouse recognition problem
+Date: Mon, 19 Mar 2007 12:59:30 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org
+References: <63140.87.244.133.121.1174080814.squirrel@postino> <39605.87.244.133.121.1174151177.squirrel@postino>
+In-Reply-To: <39605.87.244.133.121.1174151177.squirrel@postino>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703191259.31104.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Count per BDI dirty pages.
+Hi Victor,
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/buffer.c                 |    1 +
- include/linux/backing-dev.h |    1 +
- mm/page-writeback.c         |    2 ++
- mm/truncate.c               |    1 +
- 4 files changed, 5 insertions(+)
+On Saturday 17 March 2007 13:06, Victor Fernandes wrote:
+> Dmitry,
+> 
+> Thanks for you feedback, sorry for the delay on my reply but because
+> I'm not subscribe to the list, only now I saw your message. I hope you
+> will be able to see that this message is a follow up on the previous ones.
+> If you do not mind can you please Cc directly to me.
+> 
 
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c
-+++ linux-2.6/fs/buffer.c
-@@ -732,6 +732,7 @@ int __set_page_dirty_buffers(struct page
- 	if (page->mapping) {	/* Race with truncate? */
- 		if (mapping_cap_account_dirty(mapping)) {
- 			__inc_zone_page_state(page, NR_FILE_DIRTY);
-+			__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
- 			task_io_account_write(PAGE_CACHE_SIZE);
- 		}
- 		radix_tree_tag_set(&mapping->page_tree,
-Index: linux-2.6/mm/page-writeback.c
-===================================================================
---- linux-2.6.orig/mm/page-writeback.c
-+++ linux-2.6/mm/page-writeback.c
-@@ -766,6 +766,7 @@ int __set_page_dirty_nobuffers(struct pa
- 			BUG_ON(mapping2 != mapping);
- 			if (mapping_cap_account_dirty(mapping)) {
- 				__inc_zone_page_state(page, NR_FILE_DIRTY);
-+				__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
- 				task_io_account_write(PAGE_CACHE_SIZE);
- 			}
- 			radix_tree_tag_set(&mapping->page_tree,
-@@ -892,6 +893,7 @@ int clear_page_dirty_for_io(struct page 
- 			set_page_dirty(page);
- 		if (TestClearPageDirty(page)) {
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
-+			dec_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
- 			return 1;
- 		}
- 		return 0;
-Index: linux-2.6/mm/truncate.c
-===================================================================
---- linux-2.6.orig/mm/truncate.c
-+++ linux-2.6/mm/truncate.c
-@@ -71,6 +71,7 @@ void cancel_dirty_page(struct page *page
- 		struct address_space *mapping = page->mapping;
- 		if (mapping && mapping_cap_account_dirty(mapping)) {
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
-+			dec_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
- 			if (account_size)
- 				task_io_account_cancelled_write(account_size);
- 		}
-Index: linux-2.6/include/linux/backing-dev.h
-===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h
-+++ linux-2.6/include/linux/backing-dev.h
-@@ -23,6 +23,7 @@ enum bdi_state {
- };
+I did CC you on my reply but unfortunaltely your mail server did
+not like me. Let's see if this one goes through.
+
+> Now to answer your questions.
+> The mouse do not works properly, I mean with this that I have the mouse
+> pointer on the screen, with gpm and X, but it jumps randomly when used.
+> 
+
+Does it help if you boot with "psmouse.proto=exps"? (Is psmouse a built-in
+or a module)?
  
- enum bdi_stat_item {
-+	BDI_DIRTY,
- 	NR_BDI_STAT_ITEMS
- };
- 
-
---
-
+-- 
+Dmitry
