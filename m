@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965866AbXCSPM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964770AbXCSPNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965866AbXCSPM4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 11:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965860AbXCSPM4
+	id S964770AbXCSPNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 11:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965862AbXCSPNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 11:12:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:42110 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965862AbXCSPMy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 11:12:54 -0400
-Date: Mon, 19 Mar 2007 17:13:36 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, general@lists.openfabrics.org,
-       Roland Dreier <rolandd@cisco.com>, David Miller <davem@davemloft.net>
-Subject: Re: dst_ifdown breaks infiniband?
-Message-ID: <20070319151336.GA24225@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070318155532.GG7958@mellanox.co.il>
-	<20070318191238.GA20518@ms2.inr.ac.ru>
-	<20070318195355.GB11078@mellanox.co.il>
-	<20070318201826.GB27004@ms2.inr.ac.ru>
-	<20070319093632.GB8386@mellanox.co.il>
-	<20070319120534.GA28187@ms2.inr.ac.ru>
-	<20070319121248.GD18497@mellanox.co.il>
-	<20070319125919.GA4239@ms2.inr.ac.ru>
+	Mon, 19 Mar 2007 11:13:19 -0400
+Received: from mail.suse.de ([195.135.220.2]:56579 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964770AbXCSPNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 11:13:18 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Subject: Re: [PATCH][5/5][resend] floppy.c: Fix device_create_file() warning
+Date: Mon, 19 Mar 2007 16:13:04 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Trent Waddington <trent.waddington@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200703191611.13849.jesper.juhl@gmail.com>
+In-Reply-To: <200703191611.13849.jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070319125919.GA4239@ms2.inr.ac.ru>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703191613.04223.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
-> Subject: Re: dst_ifdown breaks infiniband?
-> 
-> Hello!
-> 
-> > infiniband sets parm->neigh_destructor, and I search for a way to prevent
-> > this destructor from being called after the module has been unloaded.
-> > Ideas?
-> 
-> It must be called in any case to update/release internal ipoib structures.
 
-I don't think there's a problem.
-All we do in destructor is release the ipoib_neigh resource.
-And on device unregister we release all resources anyway.
+>  
+> -		device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
+> +		err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
+> +		if (err)
+> +			printk(KERN_WARNING "Unable to create sysfs attribute "
+> +				"file for floppy device: %s\n", 
+> +				floppy_device[drive].name);
 
-> The idea is to move call of parm->neigh_destructor from neighbour destructor
-> to the moment when it is unhashed, right after n->dead is set.
->
-> infiniband is the only user (atm clip uses it too, but that use is obviously
-> dummy), so that nobody will be harmed.
+That change looks pretty useless. Either the error should be handled correctly
+by bailing out or the warn_unused_results should be dropped.
 
-This might work. Could you post a patch to better show what you mean to do?
-
-> But ipoib will have to check for validity of skb->dst->neighbour before
-> attempt to reinitialize private data on dead (n->dead != 0) neighbour.
-
-We set a flag before unregister_netdev and test it in start_xmit so
-that's covered I think.
-
--- 
-MST
+-Andi
