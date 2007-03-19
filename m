@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbXCSUgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964789AbXCSUiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932704AbXCSUgF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 16:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932869AbXCSUgF
+	id S964789AbXCSUiG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 16:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964796AbXCSUiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 16:36:05 -0400
-Received: from mail.screens.ru ([213.234.233.54]:47550 "EHLO mail.screens.ru"
+	Mon, 19 Mar 2007 16:38:05 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:54990 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932705AbXCSUgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 16:36:02 -0400
-Date: Mon, 19 Mar 2007 23:36:15 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
-Message-ID: <20070319203615.GA83@tv-sign.ru>
-References: <send-serie.davidel@xmailserver.org.9367.1174004536.2> <m1mz29xi8g.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191112500.2101@alien.or.mcafeemobile.com>
+	id S964789AbXCSUiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 16:38:02 -0400
+Date: Mon, 19 Mar 2007 13:36:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "J.H." <warthog9@kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysctl: vfs_cache_divisor
+Message-Id: <20070319133613.9f4881db.akpm@linux-foundation.org>
+In-Reply-To: <20070319122740.286f602e.randy.dunlap@oracle.com>
+References: <20061214223718.GA3816@elf.ucw.cz>
+	<20061216094421.416a271e.randy.dunlap@oracle.com>
+	<20061216095702.3e6f1d1f.akpm@osdl.org>
+	<458434B0.4090506@oracle.com>
+	<1166297434.26330.34.camel@localhost.localdomain>
+	<20061219063413.GI24090@1wt.eu>
+	<1166511171.26330.120.camel@localhost.localdomain>
+	<20070106103331.48150aed.randy.dunlap@oracle.com>
+	<459FF60D.7080901@zytor.com>
+	<1168112266.2821.2.camel@entropy>
+	<20070106121301.d07de0c9.akpm@osdl.org>
+	<45A0041F.4060903@zytor.com>
+	<20070319122740.286f602e.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703191112500.2101@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/19, Davide Libenzi wrote:
->
-> On Mon, 19 Mar 2007, Eric W. Biederman wrote:
-> 
-> > > +struct signalfd_ctx {
-> > > +	struct list_head lnk;
-> > > +	wait_queue_head_t wqh;
-> > > +	sigset_t sigmask;
-> > > +	struct task_struct *tsk;
-> > > +};
-> > 
-> > I think you want to use a struct pid *pid instead of a pointer to the
-> > task struct here.  It is slightly less efficient (one more
-> > dereference) but it means that we won't pin the task struct in memory
-> > indefinitely.  Pinning the task_struct like this makes for a very
-> > interesting way to get around the limits on the number of processes a
-> > user can have.
-> 
-> Hmm, when the task is detached from the sighand, we get a notify, so I 
-> could do a put from there. This would avoid the extra de-reference. I need 
-> to verify locking though ...
+On Mon, 19 Mar 2007 12:27:40 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-In that case (if I understand you correctly) we don't need {get,put}_task_struct()
-at all.
+> +The default vfs_cache_divisor value is 100 (like percent).  However, for
+> +extremely large systems where a value of vfs_cache_pressure of less than
+> +1 percent is desirable, using a larger vfs_cache_divisor enables this wanted
+> +characteristic.
 
-signalfd_deliver(-1) sets ctx->tsk = NULL, signalfd_get_sighand() reads ->tsk
-under rcu_read_lock(). The code becomes even simpler, we don't need to check
-list_empty(&ctx->lnk).
+The one-percent-granularity problem also applies to /proc/sys/vm/*dirty*
+and possibly other things.  So any fix we do should be applicable to those
+as well.
 
-Oleg.
+And I'm not really sure how we should do this.  I do think that we should
+change the kernel so these knobs are internally higher-resolution.  So, for
+example, we switch all the logic so that instead of these variables
+representing 1/100th, they instead represent 1/1000000th, for example.
 
+Then, we change the top-level /proc handler to do the 1/100th <-> 1/1000000th
+conversion.  So the rest of the kernel doesn't have to know about it.
+
+The we duplicate all the relevant /proc knobs:
+
+cat /proc/sys/vm/dirty_ratio
+30
+cat /proc/sys/vm/hires-dirty_ratio/
+300000
+
+Or we do something else ;)
