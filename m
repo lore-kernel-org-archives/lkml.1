@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751834AbXCSKLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750911AbXCSKOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751834AbXCSKLg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 06:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXCSKLg
+	id S1750911AbXCSKOf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 06:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbXCSKOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 06:11:36 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:35044 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751197AbXCSKLf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 06:11:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=MfCB5uzrUYw5h16/9LliWcOPx2cKaTEsot5YZVEDQ9/JZR3Mr1qZ+6IbsG5YAGG7m4TnGSHtLiw6CIG+SOC0XSe8sTo+KY0B7W3SqprnNohoqp/g+VO6Rsnu8TC5n1xKxb/qANma2GmY/cjCFz1Cyfo7cIE+NNKakEe0OH2/VoE=  ;
-X-YMail-OSG: UDvgxcAVM1ltqQH_ZQxknV1xrcZCY.gNFQXU4EAoQWwUSYI05H5PDcy9_fRfuvcPzSGBcZDK.2UIl0MdA2uSNjK4ZXr.mC4MBHMlONbozTdpdOE1lF.qLIQHDWPpP.OWzqcNpJrZq0eZr0Q-
-Message-ID: <45FE61D3.90105@yahoo.com.au>
-Date: Mon, 19 Mar 2007 21:11:31 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
-References: <20070318233008.GA32597093@melbourne.sgi.com> <20070319092222.GA1720@infradead.org>
-In-Reply-To: <20070319092222.GA1720@infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Mar 2007 06:14:35 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:15963 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750911AbXCSKOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 06:14:35 -0400
+Date: Mon, 19 Mar 2007 13:21:07 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       devel@openvz.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       pmarques@grupopie.com
+Subject: Re: [PATCH RESEND 2/2] Fix some kallsyms_lookup() vs rmmod races
+Message-ID: <20070319102107.GA6811@localhost.sw.ru>
+References: <20070316114458.GB6817@localhost.sw.ru> <20070316115154.GC30195@elte.hu> <1174124239.8897.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174124239.8897.41.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Mon, Mar 19, 2007 at 10:30:08AM +1100, David Chinner wrote:
-> 
->>Generic page_mkwrite functionality.
->>
->>Filesystems that make use of the VM ->page_mkwrite() callout will generally use
->>the same core code to implement it. There are several tricky truncate-related
->>issues that we need to deal with here as we cannot take the i_mutex as we
->>normally would for these paths.  These issues are not documented anywhere yet
->>so block_page_mkwrite() seems like the best place to start.
-> 
-> 
-> This will need some updates when ->fault replaces ->page_mkwrite.
-> 
-> Nich, what's the plan for merging ->fault?
+On Sat, Mar 17, 2007 at 08:37:18PM +1100, Rusty Russell wrote:
+> On Fri, 2007-03-16 at 12:51 +0100, Ingo Molnar wrote:
+> > * Alexey Dobriyan <adobriyan@sw.ru> wrote:
+> >
+> > > [cc'ing folks whose proc files are affected]
+> > >
+> > > kallsyms_lookup() can call module_address_lookup() which iterates over
+> > > modules list without module_mutex taken. Comment at the top of
+> > > module_address_lookup() says it's for oops resolution so races are
+> > > irrelevant, but in some cases it's reachable from regular code:
+> >
+> > looking at the problem from another angle: wouldnt this be something
+> > that would benefit from freeze_processes()/unfreeze_processes(), and
+> > hence no locking would be required?
+>
+> Actually, the list manipulation is done with stop_machine for this
+> reason.
 
-I've got the patches in -mm now. I hope they will get merged when the
-the next window opens.
+mmm, my changelog is slightly narrow than it should be.
 
-I didn't submit the ->page_mkwrite conversion yet, because I didn't
-have any callers to look at. It is is slightly less trivial than for
-nopage and nopfn, so having David's block_page_mkwrite is helpful.
+	Non-emergency code is traversing modules list.
+	It finds "struct module *".
+	module is removed.
+	"struct module *" is now meaningless, but still dereferenced.
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+How would all this refrigerator stuff would help? It wouldn't,
+
+	Non-emergency code is traversing modules list.
+	It finds "struct module *".
+	Everything is freezed.
+	Module is removed.
+	Everything is unfreezed.
+	"struct module *" is now meaningless, but still dereferenced.
+
+> Alexey, is preempt enabled in your kernel?
+
+Yes. FWIW,
+
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_BKL=y
+CONFIG_DEBUG_PREEMPT=y
+
+I very much agree with proto-patch which _copies_ all relevant
+information into caller-supplied structure, keeping module_mutex private.
+Time to split it sanely.
+
