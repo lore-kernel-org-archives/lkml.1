@@ -1,103 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030649AbXCSVvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030651AbXCSVwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030649AbXCSVvb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030720AbXCSVva
+	id S1030651AbXCSVwF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:52:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030586AbXCSVlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:51:30 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:39781 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030649AbXCSVvV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:51:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hkw9O1MFjbmpbQjmqs2s7tiibVyXfKYV0M9Hp9mYoKEYOV1bjURbNUjAOHRWQEa1kDR1s4J6oCoI6OjyIjn2Xa7CZQegHOAlOGBe9q42nZu95+0Vc2E9YjgKlL939oMg3xZuhDZeOd2SPpZeP4GW5dGVMBbfR0iYERtk/UIQetM=
-Message-ID: <b93822910703191451o216a8931v9023b174fdef750@mail.gmail.com>
-Date: Mon, 19 Mar 2007 22:51:19 +0100
-From: "Stefan Prechtel" <stefan.prechtel@googlemail.com>
-To: tglx@linutronix.de
-Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, "Len Brown" <lenb@kernel.org>,
-       "Andi Kleen" <ak@suse.de>, "john stultz" <johnstul@us.ibm.com>
-In-Reply-To: <1174337777.13341.621.camel@localhost.localdomain>
+	Mon, 19 Mar 2007 17:41:46 -0400
+Received: from mx2.suse.de ([195.135.220.15]:59317 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965122AbXCSVlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:41:39 -0400
+Date: Mon, 19 Mar 2007 14:39:50 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       Joy Latten <latten@austin.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 18/31] Fix extraneous IPSEC larval SA creation
+Message-ID: <20070319213950.GT9261@kroah.com>
+References: <20070319213047.710101653@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
-	 <1174325803.13341.515.camel@localhost.localdomain>
-	 <1174326499.13341.517.camel@localhost.localdomain>
-	 <b93822910703191153x20249f00vb604a0eda075a23a@mail.gmail.com>
-	 <1174332477.13341.561.camel@localhost.localdomain>
-	 <b93822910703191249i40a70418ka8165da52070ae82@mail.gmail.com>
-	 <1174334646.13341.577.camel@localhost.localdomain>
-	 <b93822910703191335i236cdc4av59cc9fd0685537ec@mail.gmail.com>
-	 <1174337777.13341.621.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="fix-extraneous-ipsec-larval-sa-creation.patch"
+In-Reply-To: <20070319213647.GB9261@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/3/19, Thomas Gleixner <tglx@linutronix.de>:
-> On Mon, 2007-03-19 at 21:35 +0100, Stefan Prechtel wrote:
-> >            CPU0       CPU1
-> >  0:      28289          0  local-APIC-edge-fasteio   timer
-> > ...
-> > LOC:      28237      28236
-> >
-> > after a read: (I hope that is this what you want :-)
-> >            CPU0       CPU1
-> >   0:      30344          0  local-APIC-edge-fasteio   timer
-> > ...
-> > LOC:      30292      30291
->
-> Is this with AC plugged in ? If yes, please provide the same numbers for
-> battery mode.
+-stable review patch.  If anyone has any objections, please let us know.
 
-Yes. And here is the output for battery mode (2.6.20):
-           CPU0       CPU1
-  0:     292153          0  local-APIC-edge-fasteio   timer
-LOC:     292114     292113
+------------------
 
-           CPU0       CPU1
-  0:     293263          0  local-APIC-edge-fasteio   timer
-LOC:     293224     293223
+From: Joy Latten <latten@austin.ibm.com>
 
+[XFRM]: Fix missing protocol comparison of larval SAs.
 
+I noticed that in xfrm_state_add we look for the larval SA in a few
+places without checking for protocol match. So when using both
+AH and ESP, whichever one gets added first, deletes the larval SA.
+It seems AH always gets added first and ESP is always the larval
+SA's protocol since the xfrm->tmpl has it first. Thus causing the
+additional km_query()
 
-> What's the output of
-> cat /proc/acpi/processor/C000/power
->
-> for 2.6.20 and 2.6.21-rc4-latest-git with and w/o AC ?
+Adding the check eliminates accidental double SA creation.
 
-2.6.20 / 2.6.21: (both the same)
-battery / ac (both the same)
-# cat /proc/acpi/processor/C000/power
-active state:            C1
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 2000 usec
-states:
-   *C1:                  type[C1] promotion[--] demotion[--] latency[000] usage[
-00000000] duration[00000000000000000000]
-# cat /proc/acpi/processor/C001/power
-active state:            C1
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 2000 usec
-states:
-   *C1:                  type[C1] promotion[--] demotion[--] latency[000] usage[
-00000000] duration[00000000000000000000]
+Signed-off-by: Joy Latten <latten@austin.ibm.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+---
+ net/xfrm/xfrm_state.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
+--- a/net/xfrm/xfrm_state.c
++++ b/net/xfrm/xfrm_state.c
+@@ -707,7 +707,8 @@ static struct xfrm_state *__find_acq_cor
+ 		    x->props.mode   != mode ||
+ 		    x->props.family != family ||
+ 		    x->km.state     != XFRM_STATE_ACQ ||
+-		    x->id.spi       != 0)
++		    x->id.spi       != 0 ||
++		    x->id.proto	    != proto)
+ 			continue;
+ 
+ 		switch (family) {
+@@ -804,7 +805,8 @@ int xfrm_state_add(struct xfrm_state *x)
+ 
+ 	if (use_spi && x->km.seq) {
+ 		x1 = __xfrm_find_acq_byseq(x->km.seq);
+-		if (x1 && xfrm_addr_cmp(&x1->id.daddr, &x->id.daddr, family)) {
++		if (x1 && ((x1->id.proto != x->id.proto) ||
++		    xfrm_addr_cmp(&x1->id.daddr, &x->id.daddr, family))) {
+ 			xfrm_state_put(x1);
+ 			x1 = NULL;
+ 		}
 
-> Can you also please upload a bootlog with and without AC of 2.6.20 to
-> bugzilla ?
-Yes, one moment please. I will upload files..
-
-> Thanks,
->
->         tglx
-
-Thanks too ;)
-- Stefan Prechtel
+-- 
