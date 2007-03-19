@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXCSXV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965578AbXCSXXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965461AbXCSXV7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965573AbXCSXV6
+	id S965578AbXCSXXa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 19:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965573AbXCSXXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:21:58 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:36217 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965461AbXCSXV6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:21:58 -0400
-X-Greylist: delayed 1229 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 19:21:57 EDT
-Subject: Re: 2.6.21-rc3-mm2
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       gregkh <greg@kroah.com>
-In-Reply-To: <20070319125558.235b3992.akpm@linux-foundation.org>
-References: <20070307201915.4d579113.akpm@linux-foundation.org>
-	 <20070319121724.2360a610.randy.dunlap@oracle.com>
-	 <20070319125558.235b3992.akpm@linux-foundation.org>
+	Mon, 19 Mar 2007 19:23:30 -0400
+Received: from ozlabs.org ([203.10.76.45]:46464 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965584AbXCSXX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 19:23:29 -0400
+Subject: Re: [PATCH RESEND 2/2] Fix some kallsyms_lookup() vs rmmod races
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       devel@openvz.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       pmarques@grupopie.com
+In-Reply-To: <20070319102107.GA6811@localhost.sw.ru>
+References: <20070316114458.GB6817@localhost.sw.ru>
+	 <20070316115154.GC30195@elte.hu>
+	 <1174124239.8897.41.camel@localhost.localdomain>
+	 <20070319102107.GA6811@localhost.sw.ru>
 Content-Type: text/plain
-Date: Tue, 20 Mar 2007 00:01:33 +0100
-Message-Id: <1174345293.3581.12.camel@lov.localdomain>
+Date: Tue, 20 Mar 2007 10:23:07 +1100
+Message-Id: <1174346587.11680.28.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-19 at 12:55 -0700, Andrew Morton wrote:
-> On Mon, 19 Mar 2007 12:17:24 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > On Wed, 7 Mar 2007 20:19:15 -0800 Andrew Morton wrote:
-> > 
-> > > 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm2/
-> > > 
-> > > - This is the same as 2.6.21-rc3-mm1, except Con's CPU scheduler changes
-> > >   were dropped.
-> > > 
-> > >   This is for A/B comparison purposes, and because those changes crashed on
-> > >   one test setup.
-> > 
-> > x86_64, with CONFIG_HOTPLUG disabled:
-> > 
-> > drivers/base/bus.c: In function 'store_drivers_probe':
-> > drivers/base/bus.c:747: error: 'driver_helper' undeclared (first use in this function)
-> > drivers/base/bus.c:747: error: (Each undeclared identifier is reported only once
-> > drivers/base/bus.c:747: error: for each function it appears in.)
-> > make[2]: *** [drivers/base/bus.o] Error 1
-> > make[1]: *** [drivers/base] Error 2
-> > make: *** [drivers] Error 2
-> > 
-> 
-> Due to Kay's
-> gregkh-driver-driver-core-udev-triggered-device-driver-binding.patch
+On Mon, 2007-03-19 at 13:21 +0300, Alexey Dobriyan wrote:
+> I very much agree with proto-patch which _copies_ all relevant
+> information into caller-supplied structure, keeping module_mutex private.
+> Time to split it sanely.
 
-I sent an updated patch, that compiles without CONFIG_HOTPLUG to Greg.
+Indeed.  The current interface needs to be ripped apart and put together
+sanely.
 
-Thanks,
-Kay
+Thanks!
+Rusty.
 
