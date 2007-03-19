@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932481AbXCSUa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbXCSUfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932481AbXCSUa7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 16:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932501AbXCSUa7
+	id S932560AbXCSUfy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 16:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932705AbXCSUfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 16:30:59 -0400
-Received: from sccrmhc12.comcast.net ([204.127.200.82]:48440 "EHLO
-	sccrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932481AbXCSUa6 (ORCPT
+	Mon, 19 Mar 2007 16:35:53 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:2634 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932560AbXCSUfw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 16:30:58 -0400
-X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 16:30:58 EDT
-Subject: Re: BSOD
-From: Jim Gettys <jg@laptop.org>
-Reply-To: jg@laptop.org
-To: David Miller <davem@davemloft.net>
-Cc: jesse.barnes@intel.com, zaitcev@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070319.130544.115907938.davem@davemloft.net>
-References: <20070319120807.af36ef5d.zaitcev@redhat.com>
-	 <20070319.123836.39155546.davem@davemloft.net>
-	 <200703191254.36373.jesse.barnes@intel.com>
-	 <20070319.130544.115907938.davem@davemloft.net>
-Content-Type: text/plain
-Organization: OLPC
-Date: Mon, 19 Mar 2007 16:20:50 -0400
-Message-Id: <1174335650.6832.156.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Mon, 19 Mar 2007 16:35:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IPFu87mn9F/AjX5zGZJpILsCxSjl0cLcLnHZgDyZ6MXn3s5Z0ArnVsbgkBeO48e5QZyMRIbEepwG7IkvJm2UWLc4eU5EJElldzk73XkvwiEPk0YU+kuVyb3gM1CMyErlLGZoylEJ1OsGjr+ZlYLQEnkk29fIdpWycTXNrXk09aY=
+Message-ID: <b93822910703191335i236cdc4av59cc9fd0685537ec@mail.gmail.com>
+Date: Mon, 19 Mar 2007 21:35:48 +0100
+From: "Stefan Prechtel" <stefan.prechtel@googlemail.com>
+To: tglx@linutronix.de
+Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, "Len Brown" <lenb@kernel.org>,
+       "Andi Kleen" <ak@suse.de>, "john stultz" <johnstul@us.ibm.com>
+In-Reply-To: <1174334646.13341.577.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
+	 <1174325803.13341.515.camel@localhost.localdomain>
+	 <1174326499.13341.517.camel@localhost.localdomain>
+	 <b93822910703191153x20249f00vb604a0eda075a23a@mail.gmail.com>
+	 <1174332477.13341.561.camel@localhost.localdomain>
+	 <b93822910703191249i40a70418ka8165da52070ae82@mail.gmail.com>
+	 <1174334646.13341.577.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I agree with David and Jessie.
+2007/3/19, Thomas Gleixner <tglx@linutronix.de>:
+> > Here is the output of /proc/interrupts on 2.6.20:
+> >            CPU0       CPU1
+> >   0:       7089          0  local-APIC-edge-fasteio   timer
+> > ....
+>
+> Can you provide the numbers for LOC too ?
+>   0:   29801420   29793520    IO-APIC-edge  timer
+> ...
+> LOC:  119180305  119180039
+>
+> And please do a sleep 10; between two reads, so I can see the deltas.
 
-All the kernel needs to know for oopses is frame buffer depth, start,
-stride, and how to get the GPU to "stop" (or it may very well overwrite
-the screen).  Trying to get back to a default mode setting first in the
-middle of oopsing is very unlikely to succeed.
+Ah sorry. I forgot it..
+           CPU0       CPU1
+ 0:      28289          0  local-APIC-edge-fasteio   timer
+...
+LOC:      28237      28236
 
-The time you want mode switching (or lack othereof) is at suspend/resume
-time, not at oopses.
-
-This presumes the frame buffer is accessible in the address space of the
-kernel.  There have been display devices where this is not true; but not
-many.
-                               - Jim
-
-
-
-
-On Mon, 2007-03-19 at 13:05 -0700, David Miller wrote:
-> From: Jesse Barnes <jesse.barnes@intel.com>
-> Date: Mon, 19 Mar 2007 12:54:36 -0700
-> 
-> > Kernel based modesetting should get us a lot of things:
-> 
-> But for panics you're ignoring what Peter and I are saying.
-> 
-> Mode setting is complex and it is not going to work exactly when you
-> need the kernel crash message the most.
-> 
-> After debugging the kernel for 10+ years I can tell you one thing, for
-> a bad crash what's going to happen is you'll get the printk but that's
-> about all that will work at that point, and the kernel is going to
-> hang next.  Sometimes you won't get the whole panic message, just
-> the beginning, even with the most simplistic printk implementation.
-> 
-> You will not, I repeat, will not be able to mode switch or anything
-> non-trivial like that when the kernel is in this state.
-> 
-> Mode switching on panic, just say no. :-)
-> 
--- 
-Jim Gettys
-One Laptop Per Child
+after a read: (I hope that is this what you want :-)
+           CPU0       CPU1
+  0:      30344          0  local-APIC-edge-fasteio   timer
+...
+LOC:      30292      30291
 
 
+- Stefan Prechtel
