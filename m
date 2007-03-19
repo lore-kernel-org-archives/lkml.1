@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966046AbXCSRgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966047AbXCSRlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966046AbXCSRgt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 13:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966049AbXCSRgt
+	id S966047AbXCSRlR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 13:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966049AbXCSRlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 13:36:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:3848 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966046AbXCSRgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 13:36:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,301,1170662400"; 
-   d="scan'208"; a="198882945:sNHT18585763"
-Message-ID: <45FECA26.7010905@intel.com>
-Date: Mon, 19 Mar 2007 10:36:38 -0700
-From: akorolev <alexey.korolev@intel.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Linux 2.4.x MTD CFI P30/P33 support
-References: <523F3D8D8C97554AA47E53DF1A05466A666249@nnsmsx411.ccr.corp.intel.com> <20070317064637.GA14739@1wt.eu>
-In-Reply-To: <20070317064637.GA14739@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Mar 2007 13:41:16 -0400
+Received: from www.osadl.org ([213.239.205.134]:41818 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S966047AbXCSRlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 13:41:16 -0400
+Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Stefan Prechtel <stefan.prechtel@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <1174325803.13341.515.camel@localhost.localdomain>
+References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
+	 <1174325803.13341.515.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 19 Mar 2007 18:48:19 +0100
+Message-Id: <1174326499.13341.517.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Mar 2007 17:36:40.0913 (UTC) FILETIME=[27625410:01C76A4D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Willy,
+On Mon, 2007-03-19 at 18:36 +0100, Thomas Gleixner wrote:
+> On Mon, 2007-03-19 at 18:10 +0100, Stefan Prechtel wrote:
+> > So I tried to boot with nolapic on battery and with this option the
+> > kernel (and system) starts as it should.
+> > If you need more information, I will send it to you.
+> 
+> Can you please provide your .config and a bootlog from a boot with
+> "nolapic" and without. Also please add apic=verbose to the commandline.
+> 
+> Can you please use Linus' latest git snaphost
+> http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-rc4-git4.bz2
+> 
+> or pull from Linus' git repository.
+> 
+> You can please open a new bug (Category: Timers, Component: Other) on
+> http://bugzilla.kernel.org and upload the files there, so we avoid
+> distributing them via LKML.
 
+Oh, a bootlog with ac plugged in would be great too. 
 
-> OK, it seems trivial enough to me. I have no problem merging this. Your
-> mailer has wrapped lines, but I'll fix this by hand.
->   
-Oh thank you very much. Sorry for wrapped text. I've corrected it.
-
-Signed-off-by: Alexey Korolev <alexey.korolev@intel.com
-------------------------
---- a/drivers/mtd/chips/cfi_cmdset_0001.c	2003-06-13 18:51:34.000000000 +0400
-+++ b/drivers/mtd/chips/cfi_cmdset_0001.c	2007-02-16 21:39:50.000000000 +0300
-@@ -152,7 +152,7 @@
- 		}
- 		
- 		if (extp->MajorVersion != '1' || 
--		    (extp->MinorVersion < '0' || extp->MinorVersion > '3')) {
-+		    (extp->MinorVersion < '0' || extp->MinorVersion > '4')) {
- 			printk(KERN_WARNING "  Unknown IntelExt Extended Query "
- 			       "version %c.%c.\n",  extp->MajorVersion,
- 			       extp->MinorVersion);
-------------------------
+Also can you please enable CONFIG_SYSRQ and hit SysRq-Q once, when the
+slowness kicks in.
 
 Thanks,
-Alexey
+
+	tglx
+
+
