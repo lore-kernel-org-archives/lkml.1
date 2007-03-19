@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966018AbXCSPcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966016AbXCSPcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966018AbXCSPcr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 11:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966016AbXCSPcr
+	id S966016AbXCSPcx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 11:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966020AbXCSPcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 11:32:47 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38440 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965885AbXCSPcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 11:32:46 -0400
-Date: Mon, 19 Mar 2007 16:32:22 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Message-ID: <20070319153222.GF1915@elf.ucw.cz>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070226220152.GA29575@stusta.de> <20070228211318.GB4301@mellanox.co.il> <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com> <20070305000421.GF3441@stusta.de> <b6a2187b0703051732v79a532f6mbf0d3da857a914e6@mail.gmail.com> <b6a2187b0703060403o48130853m9393df70160303c1@mail.gmail.com> <20070306120808.GA9537@mellanox.co.il> <b6a2187b0703060412l66fe8db8l12e5403821d1438b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6a2187b0703060412l66fe8db8l12e5403821d1438b@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Mon, 19 Mar 2007 11:32:53 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:62340 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966016AbXCSPcw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 11:32:52 -0400
+Date: Mon, 19 Mar 2007 08:31:59 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Trent Waddington <trent.waddington@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH][1/5][resend] floppy.c: Initial (partial) CodingStyle
+ cleanup
+Message-Id: <20070319083159.0744cf5e.randy.dunlap@oracle.com>
+In-Reply-To: <200703191610.13940.jesper.juhl@gmail.com>
+References: <200703191610.13940.jesper.juhl@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 19 Mar 2007 16:10:13 +0100 Jesper Juhl wrote:
 
-> >> > > > I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
-> >> > > > from RAM, can't suspend to disk. It is possible to revert all the
-> >> > > > changes to ACPI and test it?
-> >> > >
-> >> > > This is with CONFIG_KVM=n?
-> >> >
-> >> > Yes.
-> >>
-> >> I've tried with CONFIG_KVM=n and CONFIG_KVM=y and both does not suspend.
-> >
-> >Do you mean that they "do not resume after suspend"?
+>     This is a basic CodingStyle cleanup for drivers/block/floppy.c
+>     
+>     There are no functional changes in this patch.
+> ---
 > 
-> I can't even suspend to disk/ram. It just hangs and the lights just
-> blink and everything else hangs. With 2.6.20, it works fine.
+> diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+> index 5231ed7..5da54b8 100644
+> --- a/drivers/block/floppy.c
+> +++ b/drivers/block/floppy.c
 
-Turn up console loglevel, and see where it hangs...
+> @@ -1188,7 +1193,7 @@ static int output_byte(char byte)
+>  	return -1;
+>  }
+>  
+> -#define LAST_OUT(x) if (output_byte(x)<0){ reset_fdc();return;}
+> +#define LAST_OUT(x) if (output_byte(x) < 0) { reset_fdc(); return; }
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Not for a coding style cleanup, but that macro is Bad according to
+CodingStyle, so hopefully it will be cleaned up in the future.
+
+Things to avoid when using macros:
+1) macros that affect control flow:
+
+>  /* gets the response from the fdc */
+>  static int result(void)
+
+> @@ -3816,7 +3803,7 @@ static int check_floppy_change(struct gendisk *disk)
+>   */
+>  
+>  static int floppy_rb0_complete(struct bio *bio, unsigned int bytes_done,
+> -			       int err)
+> +		int err)
+
+I don't care one way or the other about most of these, but would
+you explain that one above (and others like it), please?
+It's not an < 80 columns thing.  My <cough> recollection is that
+many indented function parameters in Linux are indented more like
+the original here, near the opening '(' after the function name,
+although I suppose that none of this is in CodingStyle.
+
+>  {
+>  	if (bio->bi_size)
+>  		return 1;
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
