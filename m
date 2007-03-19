@@ -1,42 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642AbXCSJU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbXCSJVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642AbXCSJU0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 05:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXCSJU0
+	id S1752853AbXCSJVu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 05:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXCSJVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 05:20:26 -0400
-Received: from minus.inr.ac.ru ([194.67.69.97]:54253 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752423AbXCSJUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 05:20:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=j57md+G99+Bj5dZ/zvy/PmS95Qo8D52OEczeic4cdtXQmJp8ZOLXMJZ4IxvmNrOPGtc2grbD5Zk/iCLfuWKqVgQQqb/w54Sgqj6rGVE9EczQg/a00ZaN1chOTa6H9BBQN9kdK6R44psd49hpQcQGpLf5MrdQSHvskqApxtPgh1w=;
-Date: Mon, 19 Mar 2007 12:20:09 +0300
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: "Eric W. Biederman" <ebiederman@lnxi.com>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-Message-ID: <20070319092009.GA9387@ms2.inr.ac.ru>
-References: <20070318155532.GG7958@mellanox.co.il> <20070318191238.GA20518@ms2.inr.ac.ru> <20070318202559.GD11078@mellanox.co.il> <m3tzwi8a20.fsf@maxwell.lnxi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Mar 2007 05:21:50 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34808 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752620AbXCSJVt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 05:21:49 -0400
+Date: Mon, 19 Mar 2007 10:21:51 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [-mm patch] remove mmc_deselect_cards()
+Message-ID: <20070319092151.GE752@stusta.de>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <20070307224111.GD3441@stusta.de> <45EFA384.5050509@drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <m3tzwi8a20.fsf@maxwell.lnxi.com>
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <45EFA384.5050509@drzeus.cx>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Thu, Mar 08, 2007 at 06:47:48AM +0100, Pierre Ossman wrote:
+> Adrian Bunk wrote:
+> > On Tue, Mar 06, 2007 at 12:44:08AM -0800, Andrew Morton wrote:
+> >> ...
+> >> Changes since 2.6.20-rc2-mm1:
+> >> ...
+> >>  git-mmc.patch
+> >> ...
+> >>  git trees
+> >> ...
+> > 
+> > mmc_deselect_cards() is no longer used.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > 
+> 
+> Indeed, but it's probably better to just remove it rather than have old crud
+> lying around.
+> 
+> Rgds
 
-> Well I don't think the loopback device is currently but as soon
-> as we get network namespace support we will have multiple loopback
-> devices and they will get unregistered when we remove the network
-> namespace.
+Updated patch below.
 
-There is no logical difference. At the moment when namespace is gone
-there is nobody who can hold unrevokable references to this loopback.
+cu
+Adrian
 
-Alexey
+
+<--  snip  -->
+
+
+mmc_deselect_cards() is no longer used.
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+
+ drivers/mmc/core/mmc_ops.c |    5 -----
+ drivers/mmc/core/mmc_ops.h |    1 -
+ 2 files changed, 6 deletions(-)
+
+--- linux-2.6.21-rc3-mm2/drivers/mmc/core/mmc_ops.h.old	2007-03-09 09:01:13.000000000 +0100
++++ linux-2.6.21-rc3-mm2/drivers/mmc/core/mmc_ops.h	2007-03-09 09:01:18.000000000 +0100
+@@ -13,7 +13,6 @@
+ #define _MMC_MMC_OPS_H
+ 
+ int mmc_select_card(struct mmc_card *card);
+-int mmc_deselect_cards(struct mmc_host *host);
+ int mmc_go_idle(struct mmc_host *host);
+ int mmc_send_op_cond(struct mmc_host *host, u32 ocr, u32 *rocr);
+ int mmc_all_send_cid(struct mmc_host *host, u32 *cid);
+--- linux-2.6.21-rc3-mm2/drivers/mmc/core/mmc_ops.c.old	2007-03-09 09:01:24.000000000 +0100
++++ linux-2.6.21-rc3-mm2/drivers/mmc/core/mmc_ops.c	2007-03-09 09:01:34.000000000 +0100
+@@ -53,11 +53,6 @@
+ 	return _mmc_select_card(card->host, card);
+ }
+ 
+-int mmc_deselect_cards(struct mmc_host *host)
+-{
+-	return _mmc_select_card(host, NULL);
+-}
+-
+ int mmc_go_idle(struct mmc_host *host)
+ {
+ 	int err;
+
