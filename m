@@ -1,125 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXCSPpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030258AbXCSPsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030190AbXCSPpK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 11:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030241AbXCSPpK
+	id S1030258AbXCSPsK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 11:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030263AbXCSPsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 11:45:10 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:57541 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030190AbXCSPpG (ORCPT
+	Mon, 19 Mar 2007 11:48:10 -0400
+Received: from MAIL.13thfloor.at ([213.145.232.33]:53599 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030258AbXCSPsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 11:45:06 -0400
-Date: Mon, 19 Mar 2007 16:43:11 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Avi Kivity <avi@argo.co.il>
-Cc: Anthony Liguori <aliguori@us.ibm.com>, Avi Kivity <avi@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 0/15] KVM userspace interface updates
-Message-ID: <20070319154311.GB8331@osiris.boeblingen.de.ibm.com>
-References: <11736212072915-git-send-email-avi@qumranet.com> <20070316083650.GA8525@osiris.boeblingen.de.ibm.com> <45FAA39C.9050705@us.ibm.com> <20070316150145.GB8525@osiris.boeblingen.de.ibm.com> <45FD1778.6030602@argo.co.il>
-MIME-Version: 1.0
+	Mon, 19 Mar 2007 11:48:09 -0400
+Date: Mon, 19 Mar 2007 16:48:08 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Dave Hansen <hansendc@us.ibm.com>, xemul@sw.ru, containers@lists.osdl.org,
+       menage@google.com, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+Message-ID: <20070319154808.GC17913@MAIL.13thfloor.at>
+Mail-Followup-To: "Eric W. Biederman" <ebiederm@xmission.com>,
+	Dave Hansen <hansendc@us.ibm.com>, xemul@sw.ru,
+	containers@lists.osdl.org, menage@google.com,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <1173724979.11945.103.camel@localhost.localdomain> <20070312224129.GC21258@MAIL.13thfloor.at> <20070312220439.677b4787.akpm@linux-foundation.org> <1173806793.6680.44.camel@localhost.localdomain> <20070313190931.1417c012@lxorguk.ukuu.org.uk> <m1mz2enh0u.fsf@ebiederm.dsl.xmission.com> <1174062660.8184.8.camel@localhost.localdomain> <m1tzwlm33i.fsf@ebiederm.dsl.xmission.com> <1174074412.8184.29.camel@localhost.localdomain> <m1zm6ajvns.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45FD1778.6030602@argo.co.il>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <m1zm6ajvns.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 18, 2007 at 12:42:00PM +0200, Avi Kivity wrote:
-> Heiko Carstens wrote:
-> >In addition, if we would port kvm to s390, then we would need to
-> >make sure that each virtual cpu only gets executed from the thread
-> >that created it. That is simply because the upper half of our page
-> >tables contain information about the guest page states. This is yet
-> >another thing that would be strange to do via an ioctl based interface.
+On Sun, Mar 18, 2007 at 11:42:15AM -0600, Eric W. Biederman wrote:
+> Dave Hansen <hansendc@us.ibm.com> writes:
 > 
-> Right.  I agree it's more natural to associate a vcpu with a task
-> instead of a vcpu being an independent entry.  We'd still need a
-> handle for it, and in Linux that's an fd (pid doesn't cut it as it's
-> racy, and probably slower too as it has to go through a global structure).
+> > On Fri, 2007-03-16 at 12:54 -0600, Eric W. Biederman wrote:
+> >> Dave Hansen <hansendc@us.ibm.com> writes:
+> >
+> >> - Why do limits have to apply to the unmapped page cache?
+> >
+> > To me, it is just because it consumes memory.  Unmapped cache is, of
+> > couse, much more easily reclaimed than mapped files, but it still
+> > fundamentally causes pressure on the VM.  
+> >
+> > To me, a process sitting there doing constant reads of 10 pages has the
+> > same overhead to the VM as a process sitting there with a 10 page file
+> > mmaped, and reading that.
+> 
+> I can see temporarily accounting for pages in use for such a
+> read/write and possibly during things such as read ahead.
+> 
+> However I doubt it is enough memory to be significant, and as
+> such is probably a waste of time accounting for it.
+> 
+> A memory limit is not about accounting for memory pressure, so I think
+> the reasoning for wanting to account for unmapped pages as a hard
+> requirement is still suspect. 
 
-If you go for: only one VM per thread group and only one vcpu per thread
-you don't need any identifier.
-All relevant information or a pointer to it would be saved in the
-thread_info structure.
-That would give you two system calls to add/remove cpus which implicitely
-create a VM if none is present. This add_vcpu syscall would also map
-a memory range to user space which would be used to communicate between
-user/kernel space to avoid frequent copy_to/from_user just like your
-latest patches for KVM_RUN do.
+> A memory limit is to prevent one container from hogging all of the
+> memory in the system, and denying it to other containers.
 
-We implemented a prototype on s390 based on a system call interface
-and which does have full smp support.
+exactly!
 
-This is a simplified version of how a add_cpu system call would look like.
-Please note that I left out all error checkings etc. E.g. checking if the
-vcpu already exists in the VM.
+nevertheless, you might want to extend that to swapping
+and to the very expensive page in/out operations too
 
-asmlinkage long sys_kvm_add_cpu(int vcpu, unsigned long addr)
-{
-	struct kvm *kvm;
+> The page cache by definition is a global resource that facilitates
+> global kernel optimizations.  If we kill those optimizations we
+> are on the wrong track.  By requiring limits there I think we are
+> very likely to kill our very important global optimizations, and bring
+> the performance of the entire system down.
 
-	if (current_thread_info()->vcpu != -1)
-		return -EINVAL;
+that is my major concern for most of the 'straight forward'
+virtualizations proposed (see Xen comment)
 
-	mutex_lock(&kvm_mutex);
+> >> - Could you mention proper multi process RSS limits.
+> >>   (I.e.  we count the number of pages each group of processes have mapped
+> >>    and limit that).
+> >>   It is the same basic idea as partial page ownership, but instead of
+> >>   page ownership you just count how many pages each group is using and
+> >>   strictly limit that.  There is no page owner ship or partial charges.
+> >>   The overhead is just walking the rmap list at map and unmap time to
+> >>   see if this is the first users in the container.  No additional kernel
+> >>   data structures are needed.
+> >
+> > I've tried to capture this.  Let me know what else you think it
+> > needs.
+> 
+> Requirements:
+> - The current kernel global optimizations are preserved and useful.
+> 
+>   This does mean one container can affect another when the
+>   optimizations go awry but on average it means much better
+>   performance.  For many the global optimizations are what make
+>   the in-kernel approach attractive over paravirtualization.
 
-	write_lock_bh(&tasklist_lock);
-	/*
-	 * Check all thread_infos in thread group if a VM context
-	 * was already created.
-	 */
-	kvm = search_threads_for_kvm();
-	write_unlock_bh(&tasklist_lock);
+total agreement here
 
-	if (!kvm) {
-		kvm = create_kvm_context();
-		current_thread_info()->kvm = kvm;
-	}
+> Very nice to have:
+> - Limits should be on things user space have control of.
+>   
+>   Saying you can only have X bytes of kernel memory for file
+>   descriptors and the like is very hard to work with.  Saying you
+>   can have only N file descriptors open is much easier to deal with.
 
-	arch_add_cpu(vcpu);
-	current_thread_info()->vcpu = vcpu;
+yep, and IMHO more natural ...
 
-	/*
-	 * Map vcpu data to userspace at addr.
-	 */
-	arch_create_kvm_area(addr);
+> - SMP Scalability.
+> 
+>   The final implementation should have per cpu counters or per task
+>   reservations so in most instances we don't need to bounce a global
+>   cache line around to perform the accounting.
 
-	mutex_unlock(&kvm_mutex);
+agreed, we want to optimize for small systems
+as well as for large ones, and SMP/NUMA is quite
+common in the server area (even for small servers)
 
-	return 0;
-}
+> Nice to have:
+> 
+> - Perfect precision.
+> 
+>   Having every last byte always accounted for is nice but a
+>   little bit of bounded fuzziness in the accounting is acceptable
+>   if it that make the accounting problem more tractable.
 
-asmlinkage long sys_kvm_remove_cpu(void)
-{
-	int vcpu;
+as long as the accounting is consistant, i.e.
+you do not lose resources by repetitive operations
+inside the guest (or through guest-guest interaction)
+as this could be used for DoS and intentional unfairness
 
-	vcpu = current_thread_info()->vcpu;
-	if (cpu == -1)
-		return -EINVAL;
+> We need several more limits in this discussion to get a full picture,
+> otherwise we may to try and build the all singing all dancing limit.
 
-	mutex_lock(&kvm_mutex);
-	arch_remove_cpu(vcpu);
-	current_thread_info()->vcpu = -1;
-	mutex_unlock(&kvm_mutex);
-	return 0;
-}
+> - A limit on the number of anonymous pages.
+>   (Pages that are or may be in the swap cache).
 
-The interesting part with this is that you don't need any locking
-for a kvm_run system call, simply because only the thread itself can
-create/remove the vcpu:
+> - Filesystem per container quotas.  
+>   (Only applicable in some contexts but you get the idea).
 
-asmlinkage long sys_kvm_run(void)
-{
-	int vcpu;
+with shared files, otherwise an lvm partition does
+a good job for that already ...
 
-	vcpu = current_thread_info()->vcpu;
-	if (vcpu == -1)
-		return -EINVAL;
-	return arch_kvm_run();
-}
+> - Inode, file descriptor, and similar limits.
 
-Of course all this is rather simplified, but should give a good idea
-why I think that a syscall based interface should be the way to go.
+> - I/O limits.
+
+I/O and CPU limits are special, as they have the temporal
+component, i.e. you are not interested in 10s CPU time,
+instead you want 0.5s/s CPU (same for I/O)
+
+note: this is probably also true for page in/out
+
+- sockets 
+- locks
+- dentries
+
+HTH,
+Herbert
+
+> Eric
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
