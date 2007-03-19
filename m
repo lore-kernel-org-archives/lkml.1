@@ -1,106 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964815AbXCSWZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965088AbXCSW1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964815AbXCSWZO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 18:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964944AbXCSWZN
+	id S965088AbXCSW1y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 18:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965138AbXCSW1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 18:25:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:13206 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964815AbXCSWZL (ORCPT
+	Mon, 19 Mar 2007 18:27:54 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:39839 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965088AbXCSW1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 18:25:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HmCe5X8wwdyrH3Sn43sIHokERIb7r/VY2fToNMOYqqIllvQwQAl4LkCxEnT0sizZN78eKSVui+nJrQpZ+LCCa0Ccj/nOTzu7BLQrkc5PMN7OhuRVegcn1OxkzhgO7ErhzaGWPEeaIoyHD2Kowo6284HEiKwjkiJmpggemuLa/Y8=
-Message-ID: <9a8748490703191525o1e80b3e5gdd088726df7715ec@mail.gmail.com>
-Date: Mon, 19 Mar 2007 23:25:08 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [PATCH][1/5][resend] floppy.c: Initial (partial) CodingStyle cleanup
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <ak@suse.de>,
-       "Trent Waddington" <trent.waddington@gmail.com>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070319202008.GY752@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Mar 2007 18:27:53 -0400
+Date: Mon, 19 Mar 2007 15:26:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
+Subject: [PATCH] ptrace needs PROC_FS
+Message-Id: <20070319152616.d0857587.randy.dunlap@oracle.com>
+In-Reply-To: <20070319124007.4ab84e91.randy.dunlap@oracle.com>
+References: <20070307201915.4d579113.akpm@linux-foundation.org>
+	<20070319124007.4ab84e91.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703191610.13940.jesper.juhl@gmail.com>
-	 <20070319083159.0744cf5e.randy.dunlap@oracle.com>
-	 <200703191918.39277.jesper.juhl@gmail.com>
-	 <20070319202008.GY752@stusta.de>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/03/07, Adrian Bunk <bunk@stusta.de> wrote:
-> On Mon, Mar 19, 2007 at 07:18:38PM +0100, Jesper Juhl wrote:
-> >...
-> > The second reason is that indenting two tabs seems to make the most sense for
-> > a few reasons;
-> >       a) not indenting at all is ugly, plain and simple.
-> >               void function(int a, int b,
-> >               int c, int d, int e)
-> >               {
-> >                       int foo;
-> >                       int bar;
-> >               ...
-> >               }
-> >       b) indenting only one tab stop puts parameters at the same indent level as
-> >          variables in the function which is potentially confusing (at least IMHO).
-> >               void function(int a, int b,
-> >                       int c, int d, int e)
-> >               {
-> >                       int foo;
-> >                       int bar;
-> >               ...
-> >               }
-> >       c) Indenting so that all parameter lines start at the opening paranthesis
-> >          rarely matches up with tabs so you have to use varying amounts of spaces
-> >          depending on how long the function name is. Not a good solution IMHO.
-> >               void function(int a, int b,
-> >                                    int c, int d, int e)
-> >...
->
-> Your example is wrong, it's:
->
->                void function(int a, int b,
->                              int c, int d, int e)
->
-Hmm, thanks, when I wrote it in kmail it looked right. two tabs and
-then spaces to make it line up with the starting '('.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
->
-> This is the most common convention in the kernel - and except for
-> extremely long function names it's the one with the best readability.
->
-It may be the most common, but I don't agree that it has the best
-readability - but I guess that's very much a subjective thing.
+CONFIG_PTRACE needs PROC_FS; with CONFIG_PROC_FS=n (x86_64):
 
-> Yes, it's a problem with extremely long function names, but they are
-> rare in the kernel.
->
-> And the "varying amounts of spaces" should be handled automatically by
-> your editor.
->
+  LD      .tmp_vmlinux1
+kernel/built-in.o: In function `ptrace_start':
+ptrace.c:(.text+0x300f9): undefined reference to `ptrace_may_attach'
+make: *** [.tmp_vmlinux1] Error 1
 
-My editor may handle it initially when writing the code, but then it
-gets changed and not updated or spaces and tabs end up getting mixed -
-like "<tab><tab><space><tab><space>" or something else - it easily
-turns into a mess.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ init/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Simply using two tabs makes it easy to see that it's not variables in
-the function body and is an easy and simple convention to follow (and
-IMHO also very readable).
-
-But I guess we'll have to agree to disagree on this.
-In any case, thank you for your input.
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+--- linux-2.6.21-rc3-mm2.orig/init/Kconfig
++++ linux-2.6.21-rc3-mm2/init/Kconfig
+@@ -688,7 +688,7 @@ config UTRACE
+ config PTRACE
+ 	bool "Legacy ptrace system call interface"
+ 	default y
+-	depends on UTRACE
++	depends on UTRACE && PROC_FS
+ 	help
+ 	  Enable the ptrace system call.
+ 	  This is traditionally used by debuggers like GDB,
