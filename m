@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751911AbXCSIWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751949AbXCSI1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751911AbXCSIWV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 04:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbXCSIWV
+	id S1751949AbXCSI1V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 04:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXCSI1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 04:22:21 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:23526 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbXCSIWT (ORCPT
+	Mon, 19 Mar 2007 04:27:21 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:41010 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751949AbXCSI1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 04:22:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=njIAuXadEvxAablizHnue1RjI+Q5wDdgDiP+7wqqMFHgf7/VUV9dQ48wOEeqYr84Vc8pLguimk1UtIv6sOs4xDY85JD9TJTzsq76vTx8XGAuWiuGq7x0T/ls7uGh81icjuX5lgpPjCOKy+IebSDwIlNrMlxcwvUNTbPD45cgsbc=
-Message-ID: <45FE4836.4060102@gmail.com>
-Date: Mon, 19 Mar 2007 17:22:14 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-CC: Frank van Maarseveen <frankvm@frankvm.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20*: PATA DMA timeout, hangs (2)
-References: <20070312085447.GA10955@janus> <200703121207.19042.s0348365@sms.ed.ac.uk> <20070312132546.GC12265@janus> <200703121352.19505.s0348365@sms.ed.ac.uk>
-In-Reply-To: <200703121352.19505.s0348365@sms.ed.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Mar 2007 04:27:20 -0400
+Date: Mon, 19 Mar 2007 10:27:18 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: ast@domdv.de, clameter@sgi.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
+Message-ID: <Pine.LNX.4.64.0703191022310.8671@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan wrote:
-> On Monday 12 March 2007 13:25, Frank van Maarseveen wrote:
-> [snip]
->> So, are /dev/hd* going to disappear in a few years? iow, does it make
->> sense to _slowly_ start to migrate to /dev/sd*?
-> 
-> How would you propose doing this? I'm sure modern distros with an 
-> initrd/initramfs probably already do some sort of root detection. Doesn't fix 
-> the fstab issue, but I suppose this could be auto-generated too.
-> 
->> The problem is there's no plan B in case of any troubles except rename
->> everything back again to boot an old kernel.
-> 
-> I doubt this matters for distributors, as they'll simply switch over when you 
-> upgrade the distro, and the earliest supported kernel will be the one that 
-> shipped with the newer version.
-> 
-> I accept that it's a bit of a drag, but it's better to have a standard naming 
-> convention for all disks, isn't it?
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-The solution is quite simple.  Use the LABEL= trick or other methods to 
-uniquely identify the partition regardless how it's connected.  Most 
-modern distributions are already doing this.
+This changes kmem_cache_free() to deal with NULL objects passed to it. The 
+current behavior is inconsistent with kfree() so there are callers 
+passing NULL to kmem_cache_free().
 
--- 
-tejun
+Andreas, can you please confirm this fixes the oops you reported on 
+linux-scsi?
+
+Cc: Andreas Steinmetz <ast@domdv.de>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ mm/slab.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+Index: 2.6/mm/slab.c
+===================================================================
+--- 2.6.orig/mm/slab.c	2007-03-19 10:18:52.000000000 +0200
++++ 2.6/mm/slab.c	2007-03-19 10:19:42.000000000 +0200
+@@ -3741,6 +3741,8 @@ EXPORT_SYMBOL(__kmalloc);
+  * @cachep: The cache the allocation was from.
+  * @objp: The previously allocated object.
+  *
++ * If @objp is NULL, no operation is performed.
++ *
+  * Free an object which was previously allocated from this
+  * cache.
+  */
+@@ -3748,6 +3750,9 @@ void kmem_cache_free(struct kmem_cache *
+ {
+ 	unsigned long flags;
+ 
++	if (unlikely(!objp))
++		return;
++
+ 	BUG_ON(virt_to_cache(objp) != cachep);
+ 
+ 	local_irq_save(flags);
