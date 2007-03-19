@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbXCSMMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbXCSMOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbXCSMMj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 08:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbXCSMMj
+	id S1753828AbXCSMOX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 08:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbXCSMOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 08:12:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:42926 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827AbXCSMM3 (ORCPT
+	Mon, 19 Mar 2007 08:14:23 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:19993 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753828AbXCSMOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 08:12:29 -0400
-Date: Mon, 19 Mar 2007 14:13:10 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, general@lists.openfabrics.org,
-       Roland Dreier <rolandd@cisco.com>, David Miller <davem@davemloft.net>
-Subject: Re: dst_ifdown breaks infiniband?
-Message-ID: <20070319121310.GE18497@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070318155532.GG7958@mellanox.co.il>
-	<20070318191238.GA20518@ms2.inr.ac.ru>
-	<20070318195355.GB11078@mellanox.co.il>
-	<20070318201826.GB27004@ms2.inr.ac.ru>
-	<20070319093632.GB8386@mellanox.co.il>
-	<20070319120534.GA28187@ms2.inr.ac.ru>
+	Mon, 19 Mar 2007 08:14:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=JiNfeOecaaScIK2TKVTf+MEiUKKPsoepwqWL92EZtJsEJ2cPy54azJqcLCQS3Kzu4IOZK3pyH211enMP3EPCD5vEBzl6jI+z+RmjrqgMtWxxAcay1J/FqbGkTzAnRKic+pTSbsCq1aW0Xx1ZrtTKrmsunzrNH7h0B1vAxAAI5Ak=
+Message-ID: <45FE7E96.4050808@gmail.com>
+Date: Mon, 19 Mar 2007 21:14:14 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070319120534.GA28187@ms2.inr.ac.ru>
-User-Agent: Mutt/1.5.11
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Tony Vroon <chainsaw@gentoo.org>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.22] Add LED trigger to libata core
+References: <20070318170605.3751D5B80F1@ganymede.vroon.org>	<45FE14BD.5090701@gmail.com> <20070319124616.2fb7494b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070319124616.2fb7494b@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
-> Subject: Re: dst_ifdown breaks infiniband?
+Alan Cox wrote:
+> On Mon, 19 Mar 2007 13:42:37 +0900
+> Tejun Heo <htejun@gmail.com> wrote:
 > 
-> Hello!
+>> Tony Vroon wrote:
+>>> This duplicates the IDE core LED trigger in the libata core.
+>>> I plan to use this by allowing PMU LED control on G5 towers. My test platform 
+>>> is a PowerMac 7,3 (Dual G5 2.0GHz, June 2004) with a K2 (sata_svw) controller.
+>> I think this fits better in libata-core.c::ata_qc_issue().  Can you move
+>> it to there?
 > 
-> > If a device driver sets neigh_destructor in neigh_params, this could
-> > get called after the device has been unregistered and the driver module
-> > removed.
-> 
-> It is the same problem: if dst->neighbour holds neighbour, it should
-> not hold device. parms->dev is not supposed to be used after
-> neigh_parms_release(). F.e. set parms->dev to NULL to catch bad references.
+> Gak. I'd rather it stayed out of ata_qc_issue() which is a critical path
+> for performance.
 
-Yes. I fixed that - simply checking that neighbour->dev is a
-loopback device is sufficient to detect the fact that
-the device is being unregistered.
+The original place is in the critical path too.  It's just at the outer 
+function which eventually calls ata_qc_issue() (the mapping is almost 
+one to one).
 
-> Do you search for a way to find real inifiniband device in
-> ipoib_neigh_destructor()?
+> Our command issu is already too heavy and not all
+> controllers have queueing to absorb that. How many controllers actually
+> need this hook and can we not have ata_qc_issue_with_led() helpers for
+> them ?
 
-No, not anymore.
-
-> I guess you will not be able.
-
-I agree it's not possible.
-
-> The problem is logical: if destructor needs device, neighbour entry
-> _somehow_ have to hold reference to the device (via neigh->dev, neigh->parms,
-> whatever). Hence, if we hold neighbour entry, unregister cannot be completed.
-> Therefore, destructor cannot refer to device. Q.E.D. :-)
-> 
-> Seems, releasing dst->neighbour is inevitable.
-
-infiniband sets parm->neigh_destructor, and I search for a way to prevent
-this destructor from being called after the module has been unloaded.
-Ideas?
+Our issue path is somewhat expensive due to SCSI -> ATA translation but 
+I don't think it really matters on any modern cpu.  It can definitely 
+hurt on embedded tho.  :-(
 
 -- 
-MST
+tejun
