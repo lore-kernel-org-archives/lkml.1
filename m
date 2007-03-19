@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965678AbXCSGNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965658AbXCSGUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965678AbXCSGNR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 02:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965673AbXCSGNR
+	id S965658AbXCSGUM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 02:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXCSGUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 02:13:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60084
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965671AbXCSGNQ (ORCPT
+	Mon, 19 Mar 2007 02:20:12 -0400
+Received: from quail.cita.utoronto.ca ([128.100.76.6]:44307 "EHLO
+	quail.cita.utoronto.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965658AbXCSGUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 02:13:16 -0400
-Date: Sun, 18 Mar 2007 23:13:16 -0700 (PDT)
-Message-Id: <20070318.231316.59470365.davem@davemloft.net>
-To: ebiederman@lnxi.com
-Cc: mst@dev.mellanox.co.il, kuznet@ms2.inr.ac.ru, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m3aby94x6o.fsf@maxwell.lnxi.com>
-References: <20070318224234.GP11078@mellanox.co.il>
-	<20070318.171337.112622504.davem@davemloft.net>
-	<m3aby94x6o.fsf@maxwell.lnxi.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 19 Mar 2007 02:20:10 -0400
+X-Greylist: delayed 1224 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 02:20:10 EDT
+Date: Mon, 19 Mar 2007 01:59:32 -0400
+From: Robin Humble <rjh+e1000@cita.utoronto.ca>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Robert Hancock <hancockr@shaw.ca>, e1000-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Greg.Chandler@wellsfargo.com
+Subject: Re: [E1000-devel] 1000xf bus problem
+Message-ID: <20070319055932.GA17345@lemming.cita.utoronto.ca>
+References: <fa.wDPF1lWlqGQpxbyWee64Z3t4BVM@ifi.uio.no> <45FD95CD.2030403@shaw.ca> <E8C008223DD5F64485DFBDF6D4B7F71D0289EDBF@msgswbmnmsp25.wellsfargo.com> <45FE1D89.6020303@shaw.ca> <20070319053151.GU943@1wt.eu>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070319053151.GU943@1wt.eu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ebiederman@lnxi.com (Eric W. Biederman)
-Date: Sun, 18 Mar 2007 23:30:39 -0600
+On Mon, Mar 19, 2007 at 06:31:51AM +0100, Willy Tarreau wrote:
+>On Sun, Mar 18, 2007 at 11:20:09PM -0600, Robert Hancock wrote:
+>> Greg.Chandler@wellsfargo.com wrote:
+>> >lspci -v shows the message below, and I am moving files between systems,
+>> >{from RAMdisk to RAMdisk} on idle machines.
+>> >The transfer rate is concurrent with just under the max throughput
+>> >capable on a 64-bit/66Mhz PCI socket.
+>> 
+>> I think you miscalculate, that bus can transfer 532 MB/sec, Gigabit 
+>> Ethernet tops out at 125 MB/sec at absolute maximum and it's difficult 
+>> to achieve that in practice.
+>
+>On TCP payload, you should achieve 118.66 * 10^6 bytes/s ~= 113 MB/s.
 
-> Sure.  In the network namespace case I think the careful ordering of the
-> shutdown handles that case.   Even with per network namespace lo
-> unregistered it still existed until the network namespace actually
-> exited.  And it only happened on exit.  
-> 
-> So while there may be a tiny race there it hasn't been an issue yet
-> in practice.
+times 2 for full duplex.
+so a 32bit/33MHz bus = 132MB/s isn't enough for fdx, but anything more
+(64bit or 66MHz or both) should be fine.
 
-I think the thing to do is to just leave the loopback references
-in place, try to unregister the per-namespace loopback device,
-and that will safely wait for all the references to go away.
+cheers,
+robin
 
-If you do it that way, you should need absolutely no changes to
-the other code in this area.
-
-As per Herbert, I think he works on Xen rather than vserver :-)
-Perhaps you're thinking of Alexey Kuznetsov or another one of the
-vserver guys.
+>This is what you should observe with FTP or netcat for instance. On
+>local networks, it is perfectly attainable, I do this every day. If you
+>are far from this, check both sides link status with ethtool, and ensure
+>that you do not have wiring problems. It is usually very easy to fill the
+>wire with an e1000.
+>
+>Also, it would be interesting to check the other side. What card does it
+>have, what bus, what driver ? And what software or tests are you using
+>to conclude that you're limited by the bus ?
+>
+>Regards,
+>Willy
+>
+>
+>-------------------------------------------------------------------------
+>Take Surveys. Earn Cash. Influence the Future of IT
+>Join SourceForge.net's Techsay panel and you'll get the chance to share your
+>opinions on IT & business topics through brief surveys-and earn cash
+>http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+>_______________________________________________
+>E1000-devel mailing list
+>E1000-devel@lists.sourceforge.net
+>https://lists.sourceforge.net/lists/listinfo/e1000-devel
