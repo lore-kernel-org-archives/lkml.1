@@ -1,90 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965812AbXCSIAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbXCSINS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965812AbXCSIAR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 04:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965827AbXCSIAR
+	id S1752277AbXCSINS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 04:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXCSINS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 04:00:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:56074 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965819AbXCSIAO (ORCPT
+	Mon, 19 Mar 2007 04:13:18 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42012 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751245AbXCSINQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 04:00:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CTy9AJ4X80pBHZRbGN0HgWgXUf4ApDZPvgHd7xBoeMYIvtpT3c6AEChsw2GPgWKi6xE3mWVYaVu3qO6g+aAHAcObFoOVuePNRjxnkcD8vPau2reEmVWTU2yDcbeHylgiqB1f+SQrWFmf6aUstORDjqv65+t6+val0Zeb/p6K45Y=
-Message-ID: <84144f020703190100j5becc9dka2eba58456ab95f3@mail.gmail.com>
-Date: Mon, 19 Mar 2007 10:00:12 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.20.3: kernel BUG at mm/slab.c:597 try#2
-Cc: "Andreas Steinmetz" <ast@domdv.de>,
-       "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20070318220006.7230fd58.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Mar 2007 04:13:16 -0400
+Date: Mon, 19 Mar 2007 19:12:58 +1100
+From: David Chinner <dgc@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
+Message-ID: <20070319081258.GE32597093@melbourne.sgi.com>
+References: <20070318233008.GA32597093@melbourne.sgi.com> <45FE2F8F.6010603@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45FDDA8E.8030100@domdv.de>
-	 <20070318220006.7230fd58.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 4da3c27e8e833933
+In-Reply-To: <45FE2F8F.6010603@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/19/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->         BUG_ON(!PageSlab(page));
->
-> that's seriously screwed up.  Do you have CONFIG_DEBUG_SLAB enabled?  If
-> not, please enable it and retest.
+On Mon, Mar 19, 2007 at 05:37:03PM +1100, Nick Piggin wrote:
+> David Chinner wrote:
+> > 
+> >+/*
+> >+ * block_page_mkwrite() is not allowed to change the file size as it gets
+> >+ * called from a page fault handler when a page is first dirtied. Hence 
+> >we must
+> >+ * be careful to check for EOF conditions here. We set the page up 
+> >correctly
+> >+ * for a written page which means we get ENOSPC checking when writing into
+> >+ * holes and correct delalloc and unwritten extent mapping on filesystems 
+> >that
+> >+ * support these features.
+> >+ *
+> >+ * We are not allowed to take the i_mutex here so we have to play games to
+> >+ * protect against truncate races as the page could now be beyond EOF.  
+> >Because
+> >+ * vmtruncate() writes the inode size before removing pages, once we have 
+> >the
+> >+ * page lock we can determine safely if the page is beyond EOF. If it is 
+> >not
+> >+ * beyond EOF, then the page is guaranteed safe against truncation until 
+> >we
+> >+ * unlock the page.
+> >+ */
+> >+int
+> >+block_page_mkwrite(struct vm_area_struct *vma, struct page *page,
+> >+		   get_block_t get_block)
+> >+{
+> >+	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+> >+	unsigned long end;
+> >+	loff_t size;
+> >+	int ret = -EINVAL;
+> >+
+> >+	lock_page(page);
+> >+	size = i_size_read(inode);
+> >+	if ((page->mapping != inode->i_mapping) ||
+> >+	    ((page->index << PAGE_CACHE_SHIFT) > size)) {
+> >+		/* page got truncated out from underneath us */
+> >+		goto out_unlock;
+> >+	}
+> 
+> I see your explanation above, but I still don't see why this can't
+> just follow the conventional if (!page->mapping) check for truncation.
+> If the test happens to be performed after truncate concurrently
+> decreases i_size, then the blocks are going to get truncated by the
+> truncate afterwards anyway.
 
-This is scary. Looking at disassembly of the OOPS:
+We have to read the inode size in the normal case so that we know if
+the page is at EOF and is a partial page so we don't allocate past EOF in
+block_prepare_write().  Hence it seems like a no-brainer to me to check
+and error out on a page that we *know* is beyond EOF.
 
-Disassembly of section .text:
+I can drop the check if you see no value in it - I just don't
+like the idea of ignoring obvious boundary condition violations...
 
-00000000 <.text>:
-   0:   5f                      pop    %edi
-   1:   c3                      ret
-   2:   57                      push   %edi
-   3:   89 c1                   mov    %eax,%ecx
-   5:   89 d7                   mov    %edx,%edi
-   7:   8d 92 00 00 00 40       lea    0x40000000(%edx),%edx
-   d:   56                      push   %esi
-   e:   c1 ea 0c                shr    $0xc,%edx
-  11:   53                      push   %ebx
-  12:   c1 e2 05                shl    $0x5,%edx
-  15:   03 15 40 5d 5a c0       add    0xc05a5d40,%edx
+Cheers,
 
-At this point, edx has the result of virt_to_page().
-
-  1b:   8b 02                   mov    (%edx),%eax
-  1d:   f6 c4 40                test   $0x40,%ah
-  20:   74 03                   je     0x25
-
-If it's a compound page, look up the real page from ->private.
-
-  22:   8b 52 0c                mov    0xc(%edx),%edx
-
-Now, reload page flags.
-
-  25:   8b 02                   mov    (%edx),%eax
-
-And test...
-
-  27:   a8 80                   test   $0x80,%al
-  29:   75 04                   jne    0x2f
-  2b:   0f 0b                   ud2a
-  2d:   eb fe                   jmp    0x2d
-  2f:   39 4a 18                cmp    %ecx,0x18(%edx)
-
-[snip, snip]
-
-EIP is at kmem_cache_free+0x29/0x5a
-eax: c1800000   ebx: f0ae12c0   ecx: c18f73c0   edx: c1800000
-esi: c1919de0   edi: 00000000   ebp: 00001000   esp: f1fe7e14
-ds: 007b   es: 007b   ss: 0068
-
-But somehow eax and edx have the same value 0xc1800000 here. Hmm?
-
-                                   Pekka
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
