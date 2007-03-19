@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbXCSVCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbXCSVIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160AbXCSVCl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXCSVCk
+	id S1753230AbXCSVIb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbXCSVIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:02:40 -0400
-Received: from waste.org ([66.93.16.53]:44475 "EHLO waste.org"
+	Mon, 19 Mar 2007 17:08:31 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56449 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753160AbXCSVCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:02:40 -0400
-Date: Mon, 19 Mar 2007 15:49:46 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       ast@domdv.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-Message-ID: <20070319204945.GJ10459@waste.org>
-References: <Pine.LNX.4.64.0703191022310.8671@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0703191007230.23929@schroedinger.engr.sgi.com>
+	id S1753230AbXCSVIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:08:30 -0400
+Date: Mon, 19 Mar 2007 14:08:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
+Message-Id: <20070319140827.285dcc7f.akpm@linux-foundation.org>
+In-Reply-To: <45FEE33C.1020706@googlemail.com>
+References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
+	<45FEE33C.1020706@googlemail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703191007230.23929@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 10:08:03AM -0700, Christoph Lameter wrote:
-> On Mon, 19 Mar 2007, Pekka J Enberg wrote:
+On Mon, 19 Mar 2007 20:23:40 +0100
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+
+> akpm@linux-foundation.org napisał(a):
+> > The mm snapshot broken-out-2007-03-18-02-44.tar.gz has been uploaded to
+> > 
+> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-03-18-02-44.tar.gz
+> > 
+> > It contains the following patches against 2.6.21-rc4:
+> > 
 > 
-> > This changes kmem_cache_free() to deal with NULL objects passed to it. The 
-> > current behavior is inconsistent with kfree() so there are callers 
-> > passing NULL to kmem_cache_free().
-> 
-> Hmmm.. kmem_cache_free is significantly different. One also needs to 
-> specify the slab cache.
+> ------------[ cut here ]------------
+> kernel BUG at mm/filemap.c:123!
+> invalid opcode: 0000 [#1]
+> PREEMPT SMP 
+> last sysfs file: devices/platform/w83627hf.656/temp2_input
+> Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nfsd exportfs lockd nfs_acl autofs4 sunrpc af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss evdev snd_mixer_oss snd_pcm intel_agp agpgart snd_timer snd soundcore i2c_i801 snd_page_alloc ide_cd cdrom rtc unix
+> CPU:    0
+> EIP:    0060:[<c01615de>]    Not tainted VLI
+> EFLAGS: 00010002   (2.6.21-rc4-mm1 #13)
+> EIP is at __remove_from_page_cache+0x42/0x4a
+> eax: 00000001   ebx: ca263a58   ecx: c043c968   edx: 00000001
+> esi: c6ad3480   edi: 00000000   ebp: c968dde8   esp: c968dde0
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process bash-shared-map (pid: 12273, ti=c968c000 task=c78bc030 task.ti=c968c000)
+> Stack: ca263a68 c6ad3480 c968ddf8 c016161b c6ad3480 000000da c968de04 c016824d 
+>        c6ad3480 c968de88 c0168525 00001000 00000000 00000000 d17dc000 0005a91a 
+>        00000000 ca263a58 0000005b ffffffff 0000091a 00000110 c54eb5e0 00000004 
+> Call Trace:
+>  [<c0105256>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0105308>] show_stack_log_lvl+0x9d/0xac
+>  [<c0105504>] show_registers+0x1ed/0x34c
+>  [<c0105780>] die+0x11d/0x234
+>  [<c0105921>] do_trap+0x8a/0xa3
+>  [<c010620a>] do_invalid_op+0x97/0xa1
+>  [<c033f87c>] error_code+0x7c/0x84
+>  [<c016161b>] remove_from_page_cache+0x35/0x40
+>  [<c016824d>] truncate_complete_page+0x38/0x42
+>  [<c0168525>] truncate_inode_pages_range+0x2ce/0x2fe
+>  [<c016856f>] truncate_inode_pages+0x1a/0x1c
+>  [<c016ebcc>] vmtruncate+0x40/0xbb
+>  [<c0193c61>] inode_setattr+0x5c/0x137
+>  [<c01c328d>] ext3_setattr+0x19c/0x1f8
+>  [<c0193e75>] notify_change+0x139/0x2ec
+>  [<c017f666>] do_truncate+0x53/0x6c
+>  [<c017facc>] do_sys_ftruncate+0x135/0x150
+>  [<c017fb02>] sys_ftruncate64+0x1b/0x1d
+>  [<c0104270>] syscall_call+0x7/0xb
 
-I think this sort of thing should work:
+Ugly - it's hard to determine which patch might have caused that, but I
+bet it was Nick ;)
 
-a = kmalloc(...)
-b = kmem_cache_alloc(..)
-c = allocate_some_id(...)
-if (!a || !b || !c) {
-   free_some_id(c)
-   kmem_cache_free(c)
-   kfree(a);
-   return -ENOMEM;
-}
+How hard is it to reproduce?
 
--- 
-Mathematics is the supreme nostalgia of our time.
