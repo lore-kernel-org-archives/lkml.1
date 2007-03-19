@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964863AbXCSANk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXCSAYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964863AbXCSANk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 20:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964838AbXCSANj
+	id S964934AbXCSAYy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 20:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964959AbXCSAYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 20:13:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58915
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S964817AbXCSANi (ORCPT
+	Sun, 18 Mar 2007 20:24:54 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:50630 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964934AbXCSAYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 20:13:38 -0400
-Date: Sun, 18 Mar 2007 17:13:37 -0700 (PDT)
-Message-Id: <20070318.171337.112622504.davem@davemloft.net>
-To: mst@dev.mellanox.co.il
-Cc: ebiederman@lnxi.com, kuznet@ms2.inr.ac.ru, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070318224234.GP11078@mellanox.co.il>
-References: <m3tzwi8a20.fsf@maxwell.lnxi.com>
-	<20070318223653.GO11078@mellanox.co.il>
-	<20070318224234.GP11078@mellanox.co.il>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Mar 2007 20:24:54 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 18 Mar 2007 17:22:48 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
+In-Reply-To: <200703190045.24605.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0703181720410.5482@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
+ <200703172235.09227.arnd@arndb.de> <Pine.LNX.4.64.0703181313460.5482@alien.or.mcafeemobile.com>
+ <200703190045.24605.arnd@arndb.de>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Date: Mon, 19 Mar 2007 00:42:34 +0200
+On Mon, 19 Mar 2007, Arnd Bergmann wrote:
 
-> > Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
-> > Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-> > 
-> > > Quoting Eric W. Biederman <ebiederman@lnxi.com>:
-> > > Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-> > > 
-> > > "Michael S. Tsirkin" <mst@dev.mellanox.co.il> writes:
-> > > 
-> > > >> > Why is neighbour->dev changed here?
-> > > >> 
-> > > >> It holds reference to device and prevents its destruction.
-> > > >> If dst is held somewhere, we cannot destroy the device and deadlock
-> > > >> while unregister.
-> > > >
-> > > > BTW, can this ever happen for the loopback device itself?
-> > > > Is it ever unregistered?
-> > > 
-> > > Well I don't think the loopback device is currently but as soon
-> > > as we get network namespace support we will have multiple loopback
-> > > devices and they will get unregistered when we remove the network
-> > > namespace.
-> > 
-> > Hmm. Then the code moving dst->dev to point to the loopback
-> > device will have to be fixed too. I'll post a patch a bit later.
+> On Sunday 18 March 2007, Davide Libenzi wrote:
+> > bah, __put_user is basically a move, so I don't think that efficency would 
+> > be that different (assuming that it'd matter in this case). The only thing 
+> > many __put_user do, is increase the exception table sizes.
 > 
-> Does this look sane (untested)?
-> 
-> Signed-off-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
+> The cost of user access functions varies a lot depending on the
+> architectures. Those platforms with a 4G/4G split e.g. need to do more
+> than a simple move, and for s390 it may even come down to an indirect
+> function call, which incurs significant register pressure.
 
-You can't point it at NULL, we don't point it at loopback
-just for fun.
+Heh, I'd like ppl to agree on this, because I clearly remember in having 
+an argoument with Andrew for the same thing, where I was doing stack setup 
+plus copy_to_user() ;)
 
-There can be asynchronous paths elsewhere in the networking still
-referencing the neigh or dst and they will (correctly) feel free to
-derefence whatever device is hanging there.  So transitioning
-to NULL is invalid.
 
-You guys will need to come up with a better solution for this silly
-situation with network namespaces.  Loopback is always available to
-point dead routes and neighbour entries at, and this assumption is
-massively rooted in the networking.
+
+- Davide
+
+
