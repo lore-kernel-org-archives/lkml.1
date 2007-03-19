@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965331AbXCSXnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030746AbXCSXnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965331AbXCSXnI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbXCSXnH
+	id S1030746AbXCSXnP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 19:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030753AbXCSXnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:43:07 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:34378 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965263AbXCSXnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:43:06 -0400
-Date: Mon, 19 Mar 2007 16:42:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       rmk@arm.linux.org.uk, sam@ravnborg.org
-Subject: Re: [PATCH] Complain about missing system calls.
-Message-Id: <20070319164243.026fdbfd.akpm@linux-foundation.org>
-In-Reply-To: <1173394873.3461.510.camel@pmac.infradead.org>
-References: <1173394873.3461.510.camel@pmac.infradead.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 19 Mar 2007 19:43:15 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:60779 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030756AbXCSXnN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 19:43:13 -0400
+Date: Mon, 19 Mar 2007 16:41:23 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Greg KH <greg@kroah.com>
+Cc: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Tejun Heo <htejun@gmail.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
+Subject: Re: kref refcounting breakage in mainline
+Message-Id: <20070319164123.756b43a7.randy.dunlap@oracle.com>
+In-Reply-To: <20070315145414.GA18542@kroah.com>
+References: <20070302005833.949be737.akpm@linux-foundation.org>
+	<20070306002521.GA12164@kroah.com>
+	<1173159802.6955.6.camel@Homer.simpson.net>
+	<20070306210445.GB29164@kroah.com>
+	<1173245937.6613.26.camel@Homer.simpson.net>
+	<1173541446.6561.32.camel@Homer.simpson.net>
+	<20070315052724.GA12576@kroah.com>
+	<1173945187.6624.14.camel@Homer.simpson.net>
+	<20070315080639.GA14641@kroah.com>
+	<1173953960.6624.45.camel@Homer.simpson.net>
+	<20070315145414.GA18542@kroah.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 Mar 2007 23:01:13 +0000
-David Woodhouse <dwmw2@infradead.org> wrote:
+On Thu, 15 Mar 2007 07:54:14 -0700 Greg KH wrote:
 
-> Most system calls seem to get added to i386 first. This patch
-> automatically generates a warning for any new system call which is
-> implemented on i386 but not the architecture currently being compiled.
-> On PowerPC at the moment, for example, it results in these warnings:
-> init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
-> init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
-> init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
+> On Thu, Mar 15, 2007 at 11:19:20AM +0100, Mike Galbraith wrote:
+> > On Thu, 2007-03-15 at 01:06 -0700, Greg KH wrote:
+> > 
+> > > That's good.  But why don't we have a module name for this driver?
+> > > 
+> > > And if we don't have a module name, why would there be a symlink to
+> > > remove?  That's what is keeping your module from unloading, right?
+> > 
+> > You keep saying "module", and that's making me a bit nervous ;-)
+> > 
+> > Just to be sure we're not talking past each other, when you say module,
+> > don't mean the modprobe kind... i hope.  This "module" as in driver is
+> > compiled in.  (said that before, but you may have missed it)
+> 
+> Ahh, that changes everything here, thanks for letting me know, I had
+> missed this.
+> 
+> The problem is that the module_init() is failing, yet this isn't really
+> a module, it's built into the kernel.  So some of the module teardown
+> logic is dieing when it thinks that we really have a full module
+> structure here (owner and such).
 
-hm, did you try running this on x86_64?
+Urgh, it's not a "loadable" module, but it's still a logical module.
 
-In file included from init/missing_syscalls.c:73:
-init/missing_syscalls.h:23:3: warning: #warning syscall waitpid not implemented
-init/missing_syscalls.h:68:3: warning: #warning syscall umount not implemented
-init/missing_syscalls.h:77:3: warning: #warning syscall stime not implemented
-init/missing_syscalls.h:104:3: warning: #warning syscall nice not implemented
-init/missing_syscalls.h:146:3: warning: #warning syscall signal not implemented
-init/missing_syscalls.h:203:3: warning: #warning syscall sigaction not implemented
-init/missing_syscalls.h:206:3: warning: #warning syscall sgetmask not implemented
-init/missing_syscalls.h:209:3: warning: #warning syscall ssetmask not implemented
-init/missing_syscalls.h:218:3: warning: #warning syscall sigsuspend not implemented
-init/missing_syscalls.h:221:3: warning: #warning syscall sigpending not implemented
-init/missing_syscalls.h:269:3: warning: #warning syscall readdir not implemented
-init/missing_syscalls.h:308:3: warning: #warning syscall socketcall not implemented
-init/missing_syscalls.h:353:3: warning: #warning syscall ipc not implemented
-init/missing_syscalls.h:359:3: warning: #warning syscall sigreturn not implemented
-init/missing_syscalls.h:380:3: warning: #warning syscall sigprocmask not implemented
-init/missing_syscalls.h:404:3: warning: #warning syscall bdflush not implemented
-init/missing_syscalls.h:422:3: warning: #warning syscall _llseek not implemented
-init/missing_syscalls.h:428:3: warning: #warning syscall _newselect not implemented
-init/missing_syscalls.h:800:3: warning: #warning syscall statfs64 not implemented
-init/missing_syscalls.h:803:3: warning: #warning syscall fstatfs64 not implemented
-init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
-init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
-init/missing_syscalls.h:953:3: warning: #warning syscall lutimesat not implemented
-init/missing_syscalls.h:956:3: warning: #warning syscall revokeat not implemented
-init/missing_syscalls.h:959:3: warning: #warning syscall frevoke not implemented
+> I'll look at this further tomorrow, as I'm travelling pretty much all
+> day today, sorry.
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
