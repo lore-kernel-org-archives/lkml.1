@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933836AbXCSMgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751049AbXCSMh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933836AbXCSMgq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 08:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXCSMgq
+	id S1751049AbXCSMh7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 08:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXCSMh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 08:36:46 -0400
-Received: from ganymede.vroon.org ([195.66.242.11]:42473 "EHLO
-	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933238AbXCSMgp (ORCPT
+	Mon, 19 Mar 2007 08:37:59 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:14023 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbXCSMh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 08:36:45 -0400
-X-Greylist: delayed 1387 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 08:36:44 EDT
-Message-ID: <45FE7E44.6040805@gentoo.org>
-Date: Mon, 19 Mar 2007 12:12:52 +0000
-From: Tony Vroon <chainsaw@gentoo.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Mon, 19 Mar 2007 08:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=lur1kHs0aATB0dbgd5QbQpbTbmJVdGbJwSOixzUbdALLlW95k5JqdyfQw5++PWNkJ+vHHIownLu7Xg0BvWRCnp1vm7dz6eMEj9BLp/5HFvMnRqz+3Kt5TQT5ApFr70CVxQxcfPXd87Zmo1PshybXSvOlJGv7v7ouTlmK4YsYFZA=
+Message-ID: <6eb6ed920703190537o3c4738d6l61dd946d9554b4a3@mail.gmail.com>
+Date: Mon, 19 Mar 2007 20:37:57 +0800
+From: "railroad seeker" <railroad.seeker@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Scheduling in interrupt and call trace
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.22] Add LED trigger to libata core
-References: <20070318170605.3751D5B80F1@ganymede.vroon.org>	<45FE14BD.5090701@gmail.com> <20070319124616.2fb7494b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070319124616.2fb7494b@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+Hi all:
 
-Alan Cox wrote:
-> Gak. I'd rather it stayed out of ata_qc_issue() which is a critical path
-> for performance. Our command issu is already too heavy and not all
-> controllers have queueing to absorb that. How many controllers actually
-> need this hook and can we not have ata_qc_issue_with_led() helpers for
-> them ?
-We're talking about just sata_svw (Apple K2) right now. I'll have a go
-at implementing it conditionally like you suggested. Consider the
-patch withdrawn for now.
+I am tracking a driver bug in arm linux when I got a scheduling in
+interrupt context
+panic.
 
-Regards,
-Tony V.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+I traced into kernel schedule() function, and found that "schedulingin
+interrupt" is a
+check point when the process scheduler is invoked, and the callstack
+reveals that
+the scheduler is invoked due to semaphore down().
 
-iD8DBQFF/n5Dp5vW4rUFj5oRCJbzAJ4+rkkqdA21If03WLFT6jquX+np+QCgwSGX
-UV41rt4ZimQvf0kXLwkuFqo=
-=Ar6p
------END PGP SIGNATURE-----
+After that, the program counter must located in BUG(), that is something like
+"(void *)0 = 0" if we really do scheduling in interrupt contxt, and
+should cause
+the kernel to panic. However, what i got is that the latest program
+counter is located within the do_IRQ() context when the kernel was
+crashed . But it
+seems that the stack trace is a kernel stack of process context since
+the bottom of the stack is ret_from_syscall. (I have not enabled the
+frame pointer when compiling the kernel, instead, I back traced by
+manually inspect each 32 bit value
+from the output of objdump) , and I think that the latest PC should
+point to the next instruction of "(void *) 0 = 0".
 
+Is there any possibility with which we got this incorrect information,
+ or I have
+misunderstanding about "kernel system to interrupt context switch?
+
+Thanks.
