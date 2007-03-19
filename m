@@ -1,111 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030428AbXCSRyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030413AbXCSR6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030428AbXCSRyz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 13:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030427AbXCSRyz
+	id S1030413AbXCSR6c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 13:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030427AbXCSR6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 13:54:55 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:41430 "EHLO
-	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030413AbXCSRy3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 13:54:29 -0400
-Message-Id: <20070319164320.873379417@programming.kicks-ass.net>
-References: <20070319155737.653325176@programming.kicks-ass.net>
-User-Agent: quilt/0.45-1
-Date: Mon, 19 Mar 2007 16:57:43 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl
-Subject: [RFC][PATCH 6/6] mm: expose BDI statistics in sysfs.
-Content-Disposition: inline; filename=bdi_stat_sysfs.patch
+	Mon, 19 Mar 2007 13:58:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:45057 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030413AbXCSR6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 13:58:31 -0400
+Message-ID: <45FECF45.7010705@goop.org>
+Date: Mon, 19 Mar 2007 10:58:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: virtualization@lists.linux-foundation.org, jbeulich@novell.com,
+       Andi Kleen <ak@muc.de>, xen-devel@lists.xensource.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, chrisw@sous-sol.org,
+       virtualization@lists.osdl.org, anthony@codemonkey.ws,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+References: <20070316.023331.59468179.davem@davemloft.net> <20070318193030.GB71548@muc.de> <45FDCF52.4000805@goop.org> <200703191157.29780.ak@suse.de>
+In-Reply-To: <200703191157.29780.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose the per BDI stats in /sys/block/<dev>/queue/*
+Andi Kleen wrote:
+>>
+>>     push %eax
+>>     push %ecx
+>>     push %edx
+>>     call paravirt_cli
+>>     pop %edx
+>>     pop %ecx
+>>     pop %eax
+>>     
+>
+> This cannot right now be expressed as inline assembly in the unwinder at all 
+> because there is no way to inject the push/pops into the compiler generated
+> ehframe tables.
+>   
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- block/ll_rw_blk.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 51 insertions(+)
+I was thinking more of entry.S rather than inline asms.  The only ones I
+can think of which would be relevant are the interrupt operations in
+spinlocks, and even then we get a bit more leeway.
 
-Index: linux-2.6/block/ll_rw_blk.c
-===================================================================
---- linux-2.6.orig/block/ll_rw_blk.c
-+++ linux-2.6/block/ll_rw_blk.c
-@@ -3923,6 +3923,33 @@ static ssize_t queue_max_hw_sectors_show
- 	return queue_var_show(max_hw_sectors_kb, (page));
- }
- 
-+static ssize_t queue_nr_dirty_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lu\n", bdi_stat(&q->backing_dev_info, BDI_DIRTY));
-+}
-+
-+static ssize_t queue_nr_writeback_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lu\n", bdi_stat(&q->backing_dev_info, BDI_WRITEBACK));
-+}
-+
-+static ssize_t queue_nr_unstable_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lu\n", bdi_stat(&q->backing_dev_info, BDI_UNSTABLE));
-+}
-+
-+extern void get_writeout_scale(struct backing_dev_info *, int *, int *);
-+
-+static ssize_t queue_nr_cache_show(struct request_queue *q, char *page)
-+{
-+	int scale, div;
-+
-+	get_writeout_scale(&q->backing_dev_info, &scale, &div);
-+	scale *= 1024;
-+	scale /= div;
-+
-+	return sprintf(page, "%d\n", scale);
-+}
- 
- static struct queue_sysfs_entry queue_requests_entry = {
- 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
-@@ -3947,6 +3974,26 @@ static struct queue_sysfs_entry queue_ma
- 	.show = queue_max_hw_sectors_show,
- };
- 
-+static struct queue_sysfs_entry queue_dirty_entry = {
-+	.attr = {.name = "dirty_pages", .mode = S_IRUGO },
-+	.show = queue_nr_dirty_show,
-+};
-+
-+static struct queue_sysfs_entry queue_writeback_entry = {
-+	.attr = {.name = "writeback_pages", .mode = S_IRUGO },
-+	.show = queue_nr_writeback_show,
-+};
-+
-+static struct queue_sysfs_entry queue_unstable_entry = {
-+	.attr = {.name = "unstable_pages", .mode = S_IRUGO },
-+	.show = queue_nr_unstable_show,
-+};
-+
-+static struct queue_sysfs_entry queue_cache_entry = {
-+	.attr = {.name = "cache_ratio", .mode = S_IRUGO },
-+	.show = queue_nr_cache_show,
-+};
-+
- static struct queue_sysfs_entry queue_iosched_entry = {
- 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
- 	.show = elv_iosched_show,
-@@ -3958,6 +4005,10 @@ static struct attribute *default_attrs[]
- 	&queue_ra_entry.attr,
- 	&queue_max_hw_sectors_entry.attr,
- 	&queue_max_sectors_entry.attr,
-+	&queue_dirty_entry.attr,
-+	&queue_writeback_entry.attr,
-+	&queue_unstable_entry.attr,
-+	&queue_cache_entry.attr,
- 	&queue_iosched_entry.attr,
- 	NULL,
- };
+> gcc normally doesn't generate push/pops around directly around the
+> call site, but somewhere else due to the way its register allocator works.
+> It can be anywhere in the function or even not there at all if the register
+> didn't contain anything useful. And they're not necessarily push/pops of 
+> course.
+>   
 
---
+Right, I'm not making any assumptions about what gcc generates for
+calls, other than assuming it uses a standard "call X" direct call
+instruction.
 
+> So you would need to write it as inline assembly. I'm not sure it would
+> be significantly cleaner than just having tables then.
+>   
+
+No, my intention is that the vast majority of pv_ops uses, which are
+calls from C code, would simply be normal C calls, syntatically and
+semantically.
+
+> It's unlikely you can do much useful in 5 bytes I guess.
+>   
+
+I think the main value is retaining non-PARAVIRT native performance
+levels.  In the native case, the inlined instructions amount to 1 or 2
+bytes, and having small patch sites is an advantage because there's less
+space wasted on nops.  My understanding is that a direct call has almost
+zero overhead on modern processors, because both the call and the return
+can be completely predicted and prefetched, so the threshhold at which
+you make inline vs call tradeoff is pretty small.
+
+> Regarding cli/sti: i've been actually thinking about changing it in the
+> non paravirt kernel. IIRC most save_flags/restore_flags are inside
+> spin_lock_irqsave/restore() and that is a separate function anyways
+> so a little larger special case code is ok as long as it is not slower. 
+> There is some evidence that at least on P4 a software cli/sti flag without 
+> pushf/popf would be faster.
+>   
+
+There are also the ones in entry.S.  I suppose spinlocks do get used
+more than syscalls and interrupts.
+
+
+    J
