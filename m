@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbXCSUwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbXCSUzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753312AbXCSUwx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 16:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbXCSUwx
+	id S1753269AbXCSUzL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 16:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbXCSUzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 16:52:53 -0400
-Received: from [212.12.190.22] ([212.12.190.22]:32943 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753312AbXCSUww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 16:52:52 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: RSDL v0.31
-Date: Mon, 19 Mar 2007 23:53:19 +0300
-User-Agent: KMail/1.5
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200703042335.26785.a1426z@gawab.com> <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca>
-In-Reply-To: <45FEB54A.3040602@rtr.ca>
+	Mon, 19 Mar 2007 16:55:11 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55479 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753269AbXCSUzJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 16:55:09 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Avi Kivity <avi@argo.co.il>
+Cc: Bill Irwin <bill.irwin@oracle.com>, Arjan van de Ven <arjan@infradead.org>,
+       Hugh Dickins <hugh@veritas.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Wanted: simple, safe x86 stack overflow detection
+References: <45E5913D.3080505@redhat.com>
+	<20070228204144.GA32316@one.firstfloor.org>
+	<20070304015031.GA4224@holomorphy.com> <45EDBA1B.8050007@redhat.com>
+	<Pine.LNX.4.64.0703061937450.19813@blonde.wat.veritas.com>
+	<20070306203432.GD18774@holomorphy.com>
+	<1173241715.3236.16.camel@laptopd505.fenrus.org>
+	<20070307064423.GH18774@holomorphy.com>
+	<1173270892.3176.4.camel@laptopd505.fenrus.org>
+	<20070307144816.GQ18774@holomorphy.com> <45EFBEB3.20708@argo.co.il>
+Date: Mon, 19 Mar 2007 14:53:22 -0600
+In-Reply-To: <45EFBEB3.20708@argo.co.il> (Avi Kivity's message of "Thu, 08 Mar
+	2007 09:43:47 +0200")
+Message-ID: <m1k5xdvttp.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703192353.19673.a1426z@gawab.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Al Boldi wrote:
-> >..
-> > Mike, I'm not saying RSDL is perfect, but v0.31 is by far better than
-> > mainline.  Try this easy test:
-> >
-> > startx with the vesa driver
-> > run reflect from the mesa5.0-demos
-> > load 5 cpu-hogs
-> > start moving the mouse
-> >
-> > On my desktop, mainline completely breaks down, and no nicing may
-> > rescue.
-> >
-> > On RSDL, even without nicing, the desktop is at least useable.
+Avi Kivity <avi@argo.co.il> writes:
+
+> I don't understand why interrupt latency suffers.  Sure, the interrupt that's
+> being masked is delayed, but on the other hand the interrupt that's doing the
+> masking is not.  We're moving the latency from the first interrupt to the
+> second, probably with a slight gain in overall throughput.
 >
-> I use a simpler, far more common (for lkml participants) workload:
->
-> Dell notebook, single P-M-2GHz, ATI X300, open source X.org:
-> (1) build a kernel in one window with "make -j$((NUMBER_OF_CPUS + 1))".
-> (2) try to read email and/or surf in Firefox/Thunderbird.
->
-> Stock scheduler wins easily, no contest.
+> It *does* matter if the interrupts have meaningful priorities.  Is that the case
+> here?
 
-Try this on RSDL:
+No.
 
---- sched.bak.c	2007-03-16 23:07:23.000000000 +0300
-+++ sched.c	2007-03-19 23:49:40.000000000 +0300
-@@ -938,7 +938,11 @@ static void activate_task(struct task_st
- 				     (now - p->timestamp) >> 20);
- 	}
- 
--	p->quota = rr_quota(p);
-+	/*
-+	 * boost factor hardcoded to 5; adjust to your liking
-+	 * higher means more likely to DoS
-+	 */
-+	p->quota = rr_quota(p) + (((now - p->timestamp) >> 20) * 5);
- 	p->prio = effective_prio(p);
- 	p->timestamp = now;
- 	__activate_task(p, rq);
+I'll queue this in my irq things to think about...
 
-
-Thanks!
-
---
-Al
-
+Eric
