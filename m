@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964988AbXCSVcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbXCSVhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964988AbXCSVcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbXCSVcS
+	id S1753462AbXCSVhK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXCSVhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:32:18 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:57559 "EHLO smtp.osdl.org"
+	Mon, 19 Mar 2007 17:37:10 -0400
+Received: from ns.suse.de ([195.135.220.2]:55340 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964988AbXCSVcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:32:17 -0400
-Date: Mon, 19 Mar 2007 14:30:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, take3] getrusage() : Fill ru_inblock and ru_oublock
- fields if possible
-Message-Id: <20070319143058.f2a4af1b.akpm@linux-foundation.org>
-In-Reply-To: <20070319143723.GA152@tv-sign.ru>
-References: <20070319130213.bb387150.dada1@cosmosbay.com>
-	<20070319143723.GA152@tv-sign.ru>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753490AbXCSVhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:37:08 -0400
+Date: Mon, 19 Mar 2007 14:34:45 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       Olaf Kirch <olaf.kirch@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 01/31] Fix another NULL pointer deref in ipv6_sockglue.c
+Message-ID: <20070319213445.GA9261@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="fix-another-null-pointer-deref-in-ipv6_sockglue.c.patch"
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 17:37:23 +0300
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+-stable review patch.  If anyone has any objections, please let us know.
 
-> On 03/19, Eric Dumazet wrote:
-> >
-> > [...snip...]
-> >  			do {
-> >  				utime = cputime_add(utime, t->utime);
-> > @@ -2040,6 +2045,8 @@ static void k_getrusage(struct task_stru
-> >  				r->ru_nivcsw += t->nivcsw;
-> >  				r->ru_minflt += t->min_flt;
-> >  				r->ru_majflt += t->maj_flt;
-> > +				r->ru_inblock += task_io_get_inblock(t);
-> > +				r->ru_oublock += task_io_get_oublock(t);
-> >  				t = next_thread(t);
-> >  			} while (t != p);
-> 
-> (offtopic)
-> 
-> We are reading u64 read_bytes/write_bytes which could be updated asynchronously.
-> /proc/pid/io does the same.
+------------------
 
-Yup, as noted in the Documentation/filesystems/proc.txt documentation ;)
+From: Olaf Kirch <olaf.kirch@oracle.com>
 
-> Of course, I don't blame this patch, just a stupid question: can we do something?
-> I guess not.
+[IPV6]: Fix for ipv6_setsockopt NULL dereference
 
-Yes, I find it hard to justify the additional expense which fixing this
-would cause.
+I came across this bug in http://bugzilla.kernel.org/show_bug.cgi?id=8155
 
-Which probably means that someone will find it terribly terribly important
-and we have to go and do something horrid anyway.  Sigh.
+Signed-off-by: Olaf Kirch <olaf.kirch@oracle.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+---
+ net/ipv6/ipv6_sockglue.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/net/ipv6/ipv6_sockglue.c
++++ b/net/ipv6/ipv6_sockglue.c
+@@ -414,7 +414,7 @@ static int do_ipv6_setsockopt(struct soc
+ 		}
+ 
+ 		/* routing header option needs extra check */
+-		if (optname == IPV6_RTHDR && opt->srcrt) {
++		if (optname == IPV6_RTHDR && opt && opt->srcrt) {
+ 			struct ipv6_rt_hdr *rthdr = opt->srcrt;
+ 			switch (rthdr->type) {
+ 			case IPV6_SRCRT_TYPE_0:
+
+-- 
