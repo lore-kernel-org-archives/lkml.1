@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXCSCsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933771AbXCSCsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933760AbXCSCsV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 22:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933763AbXCSCsU
+	id S933771AbXCSCsZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 22:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933763AbXCSCsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 18 Mar 2007 22:48:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:21029 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933755AbXCSCsU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 18 Mar 2007 22:48:20 -0400
-Received: from ozlabs.org ([203.10.76.45]:39541 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933741AbXCSCsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 22:48:19 -0400
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
-	callsites to make them patchable
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@muc.de>
-Cc: David Miller <davem@davemloft.net>, jeremy@goop.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, zach@vmware.com, anthony@codemonkey.ws,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org
-In-Reply-To: <20070318120814.GA45869@muc.de>
-References: <20070316.023331.59468179.davem@davemloft.net>
-	 <45FB005D.9060809@goop.org>
-	 <1174127638.8897.75.camel@localhost.localdomain>
-	 <20070318.003309.71088169.davem@davemloft.net>
-	 <20070318120814.GA45869@muc.de>
-Content-Type: text/plain
-Date: Mon, 19 Mar 2007 13:47:49 +1100
-Message-Id: <1174272469.11680.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ZD/Gly7o+X5bYp+RdSdr5H/itYju1KQCj32A2atptTZSvJfhWVGi1KLmrZn69OLERwTBgGAfeSVz1ibrwKJNgMrHU2yRIGAraPPcWkJse04D/DnlbOGNPX0HkRpKRGEBbEak/mlrjBQ5O7ab+Pl55/OUd6cxjqmWmHIBR1asqlU=
+Message-ID: <45FDF9EE.20303@gmail.com>
+Date: Mon, 19 Mar 2007 11:48:14 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Christian <christiand59@web.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.21-rc3-git9] SATA NCQ failure with Samsum HD401LJ
+References: <fa.wBi/iM3CKSfrll7UnPHTbU0scEQ@ifi.uio.no> <200703161544.59430.christiand59@web.de> <45FCD16D.90806@gmail.com> <200703182131.00476.christiand59@web.de>
+In-Reply-To: <200703182131.00476.christiand59@web.de>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-18 at 13:08 +0100, Andi Kleen wrote:
-> > The idea is _NOT_ that you go look for references to the paravirt_ops
-> > members structure, that would be stupid and you wouldn't be able to
-> > use the most efficient addressing mode on a given cpu, you'd be
-> > patching up indirect calls and crap like that.  Just say no...
+Christian wrote:
+> On Sunday 18 March 2007 06:43:09 you wrote:
+>> Christian wrote:
+>>>> This does indeed look like a drive side issue to me (the controller is
+>>>> reporting CPBs with response flags 2 which as far as I can tell
+>>>> indicates it's still waiting for the drive to complete the request).
+>>> I have been using this hw-config (SATA II, NCQ) since the nvidia ADMA
+>>> support made it in the -mm kernel (maybe around 2.6.19-mm? or even
+>>> earlyer). I'm seeing this problem excessively since I upgraded to
+>>> 2.6.21-rc3-mm1. I think something got broken recently...
+>> Can you post the result of "hdparm -I /dev/sdX"?
 > 
-> That wouldn't handle inlines though. At least some of the current
-> paravirtops like cli/sti are critical enough to require inlining.
+> Output generated on 2.6.21-rc3-mm1 #3 SMP PREEMPT
+> 
+> user@ubuntu:~$ sudo hdparm -I /dev/sda
+> 
+> /dev/sda:
+> 
+> ATA device, with non-removable media
+>         Model Number:       SAMSUNG HD401LJ
+>         Serial Number:      S0HVJ1FL900207
+>         Firmware Revision:  ZZ100-15
+> Standards:
+>         Used: ATA/ATAPI-7 T13 1532D revision 4a
+>         Supported: 7 6 5 4
+> Configuration:
+>         Logical         max     current
+>         cylinders       16383   16383
+>         heads           16      16
+>         sectors/track   63      63
+>         --
+>         CHS current addressable sectors:   16514064
+>         LBA    user addressable sectors:  268435455
+>         LBA48  user addressable sectors:  781422768
+>         device size with M = 1024*1024:      381554 MBytes
+>         device size with M = 1000*1000:      400088 MBytes (400 GB)
 
-Well, we'd patch the inline over the call if we have room.
+That's a fairly recent drive.  Does the problem go away if you downgrade
+the kernel?
 
-Magic patching would be neat, but the downsides are that (1) we can't
-expand the patching room and (2) there's no way of attaching clobber
-info to the call site (doing register liveness analysis is not
-appealing).
-
-Now, this may not be fatal.  5 bytes is enough for all the native ops to
-be patched inline.   For lguest this covers popf and pushf, but not cli
-and sti (10 bytes): they'd have to be calls.
-
-As for clobber info, it turns out that almost all of the calls can
-clobber %eax, which is probably enough.  We just need to mark the
-handful of asm ones where this isn't true.
-
-Thoughts?
-Rusty.
-
+-- 
+tejun
