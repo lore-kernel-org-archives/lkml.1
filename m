@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbXCSLoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXCSL5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbXCSLoa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 07:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbXCSLo3
+	id S1753797AbXCSL5R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 07:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXCSL5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 07:44:29 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:42683 "EHLO lxorguk.ukuu.org.uk"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753468AbXCSLo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 07:44:29 -0400
-Date: Mon, 19 Mar 2007 12:46:16 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Tony Vroon <chainsaw@gentoo.org>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.22] Add LED trigger to libata core
-Message-ID: <20070319124616.2fb7494b@lxorguk.ukuu.org.uk>
-In-Reply-To: <45FE14BD.5090701@gmail.com>
-References: <20070318170605.3751D5B80F1@ganymede.vroon.org>
-	<45FE14BD.5090701@gmail.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Mar 2007 07:57:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54195 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753797AbXCSL5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 07:57:15 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070318142315.6f881ec8@lxorguk.ukuu.org.uk> 
+References: <20070318142315.6f881ec8@lxorguk.ukuu.org.uk>  <20070316153408.3a9a244a@lxorguk.ukuu.org.uk> <20070316151305.04cbc352@lxorguk.ukuu.org.uk> <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <25571.1174054993@redhat.com> <26525.1174058071@redhat.com> <20070316171141.7a4de504@lxorguk.ukuu.org.uk> <076F1B35-BE08-41B4-8294-581EDAFF4ACC@mac.com> 
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>, davem@davemloft.net,
+       netdev@vger.kernel.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org
+Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try #2] 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Mon, 19 Mar 2007 11:56:43 +0000
+Message-ID: <2578.1174305403@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 13:42:37 +0900
-Tejun Heo <htejun@gmail.com> wrote:
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> Tony Vroon wrote:
-> > This duplicates the IDE core LED trigger in the libata core.
-> > I plan to use this by allowing PMU LED control on G5 towers. My test platform 
-> > is a PowerMac 7,3 (Dual G5 2.0GHz, June 2004) with a K2 (sata_svw) controller.
+> > IMHO the problem with classifying RxRPC as a "reliable datagram"  
+> > socket is that even an atomic unidirectional communication isn't a  
+> > single datagram, it's at least 3; there is shared connection state  
 > 
-> I think this fits better in libata-core.c::ata_qc_issue().  Can you move
-> it to there?
+> Thats fine. Any *reliable* protocol sends more than one packet per
+> message you send. RDM is for reliable messages
 
-Gak. I'd rather it stayed out of ata_qc_issue() which is a critical path
-for performance. Our command issu is already too heavy and not all
-controllers have queueing to absorb that. How many controllers actually
-need this hook and can we not have ata_qc_issue_with_led() helpers for
-them ?
+I'm not arguing with that.  Why I think RDM is the wrong thing to use is that
+there seems to be a perception that RDM involves a unidirectional, single
+message transmission.  You yourself defined RDM to be a datagram service.
+RxRPC is not, in my opinion, a datagram service, and neither is it a stream
+service.
+
+Interestingly, searching for SOCK_RDM definitions with google shows there's
+some disagreement as to what it represents.  Some seem to thing it's connection
+oriented and some that it's connectionless, and some seem to think it's
+ordered, and some not.
+
+> > independent and possibly simultaneous RxRPC calls.  From the digging  
+> > around that I did in the kernel socket code a while ago I don't see a  
+> > cleaner way of implementing it than a new SOCK_RXRPC.
+
+Well, I suggest SOCK_RPC, not SOCK_RXRPC.  There's no particular reason such a
+flow type has to be limited to RxRPC.
+
+> I disagree entirely.
+
+That's your prerogative.
+
+> I've still seen no evidence you need a new type for this.
+
+Conversely, you haven't shown that any of the existing types are suitable
+either.
+
+Strictly, the "type" parameter for RxRPC family sockets is completely
+irrelevant as only one flow type is supported anyway; but still, I'd like to
+get it right.
+
+Looking at the socket(2) manpage, I see the definition of the SOCK_RDM to be:
+
+	Provides a reliable datagram layer that does not guarantee ordering.
+
+I'd say that that precludes applicability on two points: firstly, RxRPC is not
+a datagram layer by the definition I provided in a previous email; and
+secondly, RxRPC *does* provide some ordering guarantees.
+
+> What does AIX do out of interest ?
+
+I've no way to find out what AIX does, but I suspect it simply doesn't.
+
+The way OpenAFS does things is that it has an RxRPC library that can be
+compiled either in userspace or in kernel space.  Userspace AFS utilities use
+the userspace-compiled library, which simply uses a UDP socket as its kernel
+interface; the kernel code uses the same library, but compiled for existence
+within the kernel.
+
+David
