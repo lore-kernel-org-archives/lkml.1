@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbXCSTSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbXCSTT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752199AbXCSTSk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 15:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbXCSTSk
+	id S1752506AbXCSTT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 15:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbXCSTT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 15:18:40 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:13274 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752199AbXCSTSj (ORCPT
+	Mon, 19 Mar 2007 15:19:59 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38772
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752439AbXCSTT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 15:18:39 -0400
-Date: Mon, 19 Mar 2007 12:17:24 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, gregkh <greg@kroah.com>
-Subject: Re: 2.6.21-rc3-mm2
-Message-Id: <20070319121724.2360a610.randy.dunlap@oracle.com>
-In-Reply-To: <20070307201915.4d579113.akpm@linux-foundation.org>
-References: <20070307201915.4d579113.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 19 Mar 2007 15:19:58 -0400
+Date: Mon, 19 Mar 2007 12:19:58 -0700 (PDT)
+Message-Id: <20070319.121958.48807741.davem@davemloft.net>
+To: dhowells@redhat.com
+Cc: alan@lxorguk.ukuu.org.uk, mrmacman_g4@mac.com, netdev@vger.kernel.org,
+       herbert.xu@redhat.com, linux-kernel@vger.kernel.org, hch@infradead.org,
+       arjan@infradead.org
+Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try
+ #2] 
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <25752.1174318898@redhat.com>
+References: <2578.1174305403@redhat.com>
+	<3728.1174309154@redhat.com>
+	<25752.1174318898@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 20:19:15 -0800 Andrew Morton wrote:
+From: David Howells <dhowells@redhat.com>
+Date: Mon, 19 Mar 2007 15:41:38 +0000
 
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm2/
+> > So use SOCK_DGRAM, its clearly near enough.
 > 
-> - This is the same as 2.6.21-rc3-mm1, except Con's CPU scheduler changes
->   were dropped.
-> 
->   This is for A/B comparison purposes, and because those changes crashed on
->   one test setup.
+> No, it's not.  SOCK_DGRAM is an unreliable, unidirectional datagram passing
+> service.
 
-x86_64, with CONFIG_HOTPLUG disabled:
+David we're not looking for a precise match, so please stop
+discussing this in those terms.  We're looking for something
+close enough.
 
-drivers/base/bus.c: In function 'store_drivers_probe':
-drivers/base/bus.c:747: error: 'driver_helper' undeclared (first use in this function)
-drivers/base/bus.c:747: error: (Each undeclared identifier is reported only once
-drivers/base/bus.c:747: error: for each function it appears in.)
-make[2]: *** [drivers/base/bus.o] Error 1
-make[1]: *** [drivers/base] Error 2
-make: *** [drivers] Error 2
-
-
-> Changes since 2.6.21-rc3-mm1:
-> 
-> -lists-add-list-splice-tail.patch
-> -sched-remove-sleepavg-from-proc.patch
-> -sched-remove-noninteractive-flag.patch
-> -sched-implement-180-bit-sched-bitmap.patch
-> -sched-implement-rsdl-cpu-scheduler.patch
-> -sched-document-rsdl-cpu-scheduler.patch
-> 
->  Removed.
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+The more and more I read Alan's arguments and your resistence to
+his logic, the more I side with Alan.  He's definitely right on
+all the basic counts here.
