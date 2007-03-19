@@ -1,43 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbXCSEmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375AbXCSFOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752704AbXCSEmn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 00:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXCSEmn
+	id S1751375AbXCSFOn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 01:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXCSFOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 00:42:43 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:43586 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752704AbXCSEmm (ORCPT
+	Mon, 19 Mar 2007 01:14:43 -0400
+Received: from p02c11o142.mxlogic.net ([208.65.144.75]:45292 "EHLO
+	p02c11o142.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbXCSFOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 00:42:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ttD+0WDJE4dpm/POdQZpnKOP434olPyFHCETHsdLs1qONiMBkK6JbcbgOsRqAY7FjoTCB0WZFdgkRXVjzxcRwekdayIS5pHuDgERo76Ir+RCvk1CQdUhfzWkWznhd6C3M/f0B0opB0+JITxCMtEECmYSb4Yb7kzNu5OY1lBLfV8=
-Message-ID: <45FE14BD.5090701@gmail.com>
-Date: Mon, 19 Mar 2007 13:42:37 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Mon, 19 Mar 2007 01:14:42 -0400
+Date: Mon, 19 Mar 2007 07:15:20 +0200
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, general@lists.openfabrics.org,
+       Roland Dreier <rolandd@cisco.com>
+Subject: Re: dst_ifdown breaks infiniband?
+Message-ID: <20070319051520.GR11078@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <20070318155532.GG7958@mellanox.co.il> <20070318191238.GA20518@ms2.inr.ac.ru> <20070318203345.GF11078@mellanox.co.il> <20070318210616.GG11078@mellanox.co.il> <20070318212046.GI11078@mellanox.co.il>
 MIME-Version: 1.0
-To: Tony Vroon <chainsaw@gentoo.org>
-CC: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.22] Add LED trigger to libata core
-References: <20070318170605.3751D5B80F1@ganymede.vroon.org>
-In-Reply-To: <20070318170605.3751D5B80F1@ganymede.vroon.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070318212046.GI11078@mellanox.co.il>
+User-Agent: Mutt/1.5.11
+X-OriginalArrivalTime: 19 Mar 2007 05:17:45.0900 (UTC) FILETIME=[EDA836C0:01C769E5]
+X-TM-AS-Product-Ver: SMEX-7.0.0.1526-3.6.1039-15058.001
+X-TM-AS-Result: No--10.023600-4.000000-4
+X-Spam: [F=0.1597049943; S=0.159(2007030701)]
+X-MAIL-FROM: <mst@dev.mellanox.co.il>
+X-SOURCE-IP: [194.90.237.34]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Vroon wrote:
-> This duplicates the IDE core LED trigger in the libata core.
-> I plan to use this by allowing PMU LED control on G5 towers. My test platform 
-> is a PowerMac 7,3 (Dual G5 2.0GHz, June 2004) with a K2 (sata_svw) controller.
+> Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
+> Subject: Re: dst_ifdown breaks infiniband?
+> 
+> > Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
+> > Subject: Re: dst_ifdown breaks infiniband?
+> > 
+> > > Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
+> > > Subject: Re: dst_ifdown breaks infiniband?
+> > > 
+> > > Quoting Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
+> > > Subject: Re: dst_ifdown breaks infiniband?
+> > > > > Can dst->neighbour be changed to point to NULL instead, and the neighbour
+> > > > > released?
+> > > > 
+> > > > It should be cleared and we should be sure it will not be destroyed
+> > > > before quiescent state.
+> > > > 
+> > > > Seems, this is the only correct solution, but to do this we have
+> > > > to audit all the places where dst->neighbour is dereferenced for
+> > > > RCU safety.
+> > > > 
+> > > > Actually, it is very good you caught this eventually, the bug was
+> > > > so _disgusting_ that it was "forgotten" all the time, waiting for
+> > > > someone who will point out that the king is naked. :-)
+> > > 
+> > > Actually that might not be too bad:
+> > > $grep -rIi 'dst->neighbour' net/ | wc -l
+> > > 36
+> > > 
+> > > I'll try to do it.
+> > 
+> > Here's the list. Looks OK to me. What do you think?
+> > 
+> 
+> So Alexey, how does the following (lightly tested) patch look?
+> Is this what you had in mind?
+> 
+> -----------------------------
+> 
+> Fix dst_ifdown for infiniband.
+> 
+> Changing dst->neighbour->dev is unsafe because neigh->parms callbacks
+> are set up for specific device.
+> We should drop the dst->neighbour reference instead.
+> 
+> Signed-off-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
 
-I think this fits better in libata-core.c::ata_qc_issue().  Can you move
-it to there?
+Ugh, looked again and this looks obviously broken.
+Note to self - stop writing code at 23:00.
 
 -- 
-tejun
+MST
