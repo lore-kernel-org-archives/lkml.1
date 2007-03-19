@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbXCSUGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbXCSUIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbXCSUGr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 16:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbXCSUGk
+	id S1753145AbXCSUIF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 16:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbXCSUHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 16:06:40 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:58779 "EHLO e6.ny.us.ibm.com"
+	Mon, 19 Mar 2007 16:07:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:55631 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751744AbXCSUGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 16:06:30 -0400
-From: Adam Litke <agl@us.ibm.com>
-Subject: [PATCH 7/7] hugetlbfs fault handler
-Date: Mon, 19 Mar 2007 13:06:16 -0700
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adam Litke <agl@us.ibm.com>, Arjan van de Ven <arjan@infradead.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Message-Id: <20070319200616.17168.62372.stgit@localhost.localdomain>
-In-Reply-To: <20070319200502.17168.17175.stgit@localhost.localdomain>
-References: <20070319200502.17168.17175.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.11
+	id S1753150AbXCSUGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 16:06:47 -0400
+Message-ID: <45FEED36.9030302@goop.org>
+Date: Mon, 19 Mar 2007 13:06:14 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: ebiederm@xmission.com, rusty@rustcorp.com.au, ak@muc.de, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, zach@vmware.com, anthony@codemonkey.ws,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+References: <1174272469.11680.23.camel@localhost.localdomain>	<m1648xxf93.fsf@ebiederm.dsl.xmission.com>	<45FEE010.1050103@goop.org> <20070319.124636.59653632.davem@davemloft.net>
+In-Reply-To: <20070319.124636.59653632.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller wrote:
+> Another point worth making is that for function calls you
+> can fix things up lazily if you want.
+> [...]
+> In fact forget I mentioned this idea :)
+>   
 
-Signed-off-by: Adam Litke <agl@us.ibm.com>
----
+OK :)  I think we'll only ever want to bind to a hypervisor once, since
+the underlying hypervisor can't change on the fly (well, in principle it
+might if you migrate, but you'll have more problems than just dealing
+with the hook points).  And lazy binding doesn't buy much; I think its
+much better to get it all out of the way at once, and then throw the
+reloc info away.
 
- fs/hugetlbfs/inode.c |    1 +
- mm/hugetlb.c         |    4 +++-
- mm/memory.c          |    4 ++--
- 3 files changed, 6 insertions(+), 3 deletions(-)
+> As another note, I do agree with Linus about the register usage
+> arguments.  It is important.  I think it's been mentioned but what you
+> could do is save nothing (so that "sti" and "cli" are just that and
+> cost nothing), but the more complicated versions save and restore
+> enough registers to operate.
+>   
 
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 823a9e3..29e65c2 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -571,6 +571,7 @@ static const struct pagetable_operations_struct hugetlbfs_pagetable_ops = {
- 	.unmap_page_range	= unmap_hugepage_range,
- 	.change_protection	= hugetlb_change_protection,
- 	.free_pgtable_range	= hugetlb_free_pgd_range,
-+	.fault			= hugetlb_fault,
- };
- 
- static const struct inode_operations hugetlbfs_dir_inode_operations = {
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index d902fb9..e0f0607 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -590,6 +590,8 @@ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	unsigned long vaddr = *position;
- 	int remainder = *length;
- 
-+	BUG_ON(!has_pt_op(vma, fault));
-+
- 	spin_lock(&mm->page_table_lock);
- 	while (vaddr < vma->vm_end && remainder) {
- 		pte_t *pte;
-@@ -606,7 +608,7 @@ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 			int ret;
- 
- 			spin_unlock(&mm->page_table_lock);
--			ret = hugetlb_fault(mm, vma, vaddr, 0);
-+			ret = pt_op(vma, fault)(mm, vma, vaddr, 0);
- 			spin_lock(&mm->page_table_lock);
- 			if (ret == VM_FAULT_MINOR)
- 				continue;
-diff --git a/mm/memory.c b/mm/memory.c
-index d2f28e7..bd7c243 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2499,8 +2499,8 @@ int __handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 
- 	count_vm_event(PGFAULT);
- 
--	if (unlikely(is_vm_hugetlb_page(vma)))
--		return hugetlb_fault(mm, vma, address, write_access);
-+	if (unlikely(has_pt_op(vma, fault)))
-+		return pt_op(vma, fault)(mm, vma, address, write_access);
- 
- 	pgd = pgd_offset(mm, address);
- 	pud = pud_alloc(mm, pgd, address);
+Right, that's pretty much what we do now.
+
+> It all depends upon what you're trying to do.  For example, it's
+> easy to use patching to make different PTE layouts be supportable
+> in the same kernel image.  We do this on sparc64 since sun4v
+> has a different PTE layout than sun4u, you can see the code in
+> asm-sparc64/pgtable.h for details (search for "sun4v_*_patch")
+>   
+
+I see.  We want to do something conceptually like this, but we need to
+handle more than just adjusting which of two constants to use as a
+mask.  For example, Xen needs to run pfns through a pfn->mfn (machine
+frame number) conversion and back when making/unpacking pagetable entries.
+
+    J
