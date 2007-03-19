@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030326AbXCSQ1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030348AbXCSQ3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030326AbXCSQ1M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 12:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030339AbXCSQ1M
+	id S1030348AbXCSQ3f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 12:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030346AbXCSQ3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 12:27:12 -0400
-Received: from smtp25.orange.fr ([193.252.22.21]:16414 "EHLO smtp25.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030326AbXCSQ1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 12:27:11 -0400
-X-ME-UUID: 20070319162709109.1ABB51C000A1@mwinf2537.orange.fr
-Subject: Re: RSDL v0.31
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <45FEB54A.3040602@rtr.ca>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172048.46267.kernel@kolivas.org>
-	 <1174125534.7734.2.camel@Homer.simpson.net>
-	 <200703172355.30989.a1426z@gawab.com>  <45FEB54A.3040602@rtr.ca>
-Content-Type: text/plain
-Date: Mon, 19 Mar 2007 17:26:57 +0100
-Message-Id: <1174321617.30876.69.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+	Mon, 19 Mar 2007 12:29:35 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:41750 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030348AbXCSQ3e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 12:29:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Tg8JxajODbMv783l4UP6iyqkOJGLkC5BWozI2rbIIbEjosBQVXAILhV2sYxKVkC8HTKDVPaHhVfz3OQjxQpz8fYfIARUqCE11RP1q+TydJTl6TCCYJe1ov+q7L3ebhLdZzjiZWjxyuYMBDRw+dR2MzJ9j0Uh1nJT/d9ectwYdFk=
+Message-ID: <6bffcb0e0703190929rd118b16u21552da0c81b9f04@mail.gmail.com>
+Date: Mon, 19 Mar 2007 17:29:32 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Alan Cox" <alan@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0703191751560.21196@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
+	 <45FD8684.4030501@googlemail.com>
+	 <6bffcb0e0703190845s6bdc1a65p71937d1dffbf6d9e@mail.gmail.com>
+	 <Pine.LNX.4.64.0703191751560.21196@sbz-30.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-19 at 12:07 -0400, Mark Lord wrote:
-> Dell notebook, single P-M-2GHz, ATI X300, open source X.org:
-> (1) build a kernel in one window with "make -j$((NUMBER_OF_CPUS + 1))".
-> (2) try to read email and/or surf in Firefox/Thunderbird.
-> 
-> Stock scheduler wins easily, no contest.
+On 19/03/07, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+> Hi Micael,
+>
+> On Mon, 19 Mar 2007, Michal Piotrowski wrote:
+> > Pekka, can you take a look at this problem and fix my initrd? :)
+> >
+> > GOOD
+> > #
+> > revoke-special-mmap-handling.patch
+> > revoke-core-code.patch
+> > revoke-core-code-misc-fixes.patch
+> > revoke-core-code-fix-shared-mapping-revoke.patch
+> > revoke-core-code-move-magic.patch
+> > revoke-support-for-ext2-and-ext3.patch
+> > revoke-add-documentation.patch
+> > revoke-wire-up-i386-system-calls.patch
+> > BAD
+>
+> Oh, sorry about that. Can you confirm that the patch
+> revoke-special-mmap-handling.patch is bad?
 
-What happens when you renice X ?
+Yes, revoke-special-mmap-handling.patch is bad.
 
-	Xav
+Regards,
+Michal
 
-
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
