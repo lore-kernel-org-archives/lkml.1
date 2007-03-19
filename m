@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751003AbXCSAgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933510AbXCSBHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751003AbXCSAgv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 20:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbXCSAgv
+	id S933510AbXCSBHU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 21:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964919AbXCSBHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 20:36:51 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2821 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751003AbXCSAgu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 20:36:50 -0400
-Date: Sun, 18 Mar 2007 20:36:48 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Ralf Baechle <ralf@linux-mips.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix build error due to not including <linux/errno.h>
-In-Reply-To: <20070318125808.GA25840@linux-mips.org>
-Message-ID: <Pine.LNX.4.44L0.0703182036060.17900-100000@netrider.rowland.org>
+	Sun, 18 Mar 2007 21:07:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54862 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933510AbXCSBHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 21:07:18 -0400
+Message-ID: <45FDE202.80807@redhat.com>
+Date: Sun, 18 Mar 2007 21:06:10 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH take3 00/20] Make common x86 arch area for i386 and x86_64
+ - Take 3
+References: <20070315051337.488091591@goodmis.org> <20070316102933.GB4185@elte.hu>
+In-Reply-To: <20070316102933.GB4185@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Mar 2007, Ralf Baechle wrote:
-
-> Since d9a9cdfb078d755e648d53ec25b7370f84ee5729 <linux/sysfs.h> is using
-> ENOSYS without including <linux/errno.h> if CONFIG_SYSFS is disabled.
+Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> Fixed by including <linux/errno.h>.
+>> Once again here's an attempt to put the shared files of x86_64 and 
+>> i386 into a separate directory.
 > 
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-> 
-> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-> index 0544edd..fea9a6b 100644
-> --- a/include/linux/sysfs.h
-> +++ b/include/linux/sysfs.h
-> @@ -11,6 +11,7 @@
->  #define _SYSFS_H_
->  
->  #include <linux/compiler.h>
-> +#include <linux/errno.h>
->  #include <linux/list.h>
->  #include <asm/atomic.h>
+> what do you think about the idea i suggested: to do an x32_/x64_ prefix 
+> (or _32/_64 postfix), in a brute-force way, _right away_. I.e. do not 
+> have any overlap of having both arch/i386/ and arch/x86_64/ and 
+> arch/x86/ - move everything to arch/x86/ right now.
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
-
-Thank you for spotting and fixing this.
-
-Alan Stern
+No, no, please don't do that. It would make backporting patches
+for stable kernels a real pain.  Moving only the common files 
+is the right way to go for a first cut...
 
