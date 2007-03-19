@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030609AbXCSV46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030628AbXCSV5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030609AbXCSV46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030688AbXCSV45
+	id S1030628AbXCSV5b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030687AbXCSV5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:56:57 -0400
-Received: from waste.org ([66.93.16.53]:52075 "EHLO waste.org"
+	Mon, 19 Mar 2007 17:57:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44301 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030587AbXCSV44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:56:56 -0400
-Date: Mon, 19 Mar 2007 16:44:14 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       ast@domdv.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-Message-ID: <20070319214414.GX4892@waste.org>
-References: <Pine.LNX.4.64.0703191022310.8671@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0703191007230.23929@schroedinger.engr.sgi.com> <20070319204945.GJ10459@waste.org> <Pine.LNX.4.64.0703191414330.8328@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703191414330.8328@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+	id S1030624AbXCSV53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:57:29 -0400
+Message-ID: <45FF06DA.9010500@redhat.com>
+Date: Mon, 19 Mar 2007 17:55:38 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Greg KH <greg@kroah.com>, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 29/31] Input: i8042 - fix AUX IRQ delivery check
+References: <20070319213047.710101653@mini.kroah.org>	 <20070319213647.GB9261@kroah.com> <20070319214108.GE9261@kroah.com> <d120d5000703191448m67c1afcnc3340c956ef7a25a@mail.gmail.com>
+In-Reply-To: <d120d5000703191448m67c1afcnc3340c956ef7a25a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 02:16:01PM -0700, Christoph Lameter wrote:
-> On Mon, 19 Mar 2007, Matt Mackall wrote:
+Dmitry Torokhov wrote:
+> On 3/19/07, Greg KH <gregkh@suse.de> wrote:
+>> -stable review patch.  If anyone has any objections, please let us know.
+>>
+>> ------------------
+>>
+>> From: Dmitry Torokhov <dtor@insightbb.com>
+>>
+>> Input: i8042 - fix AUX IRQ delivery check
+>>
+>> On boxes that do not implement AUX LOOP command we can not
+>> verify AUX IRQ delivery and must assume that it is wired
+>> properly.
+>>
 > 
-> > I think this sort of thing should work:
-> > 
-> > a = kmalloc(...)
-> > b = kmem_cache_alloc(..)
-> > c = allocate_some_id(...)
-> > if (!a || !b || !c) {
-> >    free_some_id(c)
-> >    kmem_cache_free(c)
+> Greg,
 > 
-> ^^^^ this requires the specification of a kmem_cache structure and the 
-> object must be allocated by that cache.
-
-Yes, omitted for brevity.
-
-> >    kfree(a);
+> There is another piece missing in AUX delivery test, commit
 > 
-> Here we dynamically determine the slab cache and do not verify even which 
-> slab it came from.
+>    3ca5de6dd4ec5a139b2b8f00dce3e4726ca91af1
+> 
+> Unfortunately I can't send you a patch at the moment but if you could
+> get it from the mainline that would be great.
+> 
 
-That's an implementation detail that you shouldn't rely on and that
-SLOB in fact breaks. kfree(kmem_cache_alloc(...)) is bad style to the
-point of being a bug.
+I was going to send that but wasn't really sure if I should.
+Next time I'll just send everything I have...
 
-In my opinion:
 
-xxxfree(xxxalloc(...)); /* should always work, even if allocation fails */
-yyyfree(xxxalloc(...)); /* should never be expected to work */
 
--- 
-Mathematics is the supreme nostalgia of our time.
