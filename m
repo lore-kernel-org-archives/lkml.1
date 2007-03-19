@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbXCSTUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561AbXCSTYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbXCSTUy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 15:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXCSTUy
+	id S1752561AbXCSTYZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 15:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXCSTYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 15:20:54 -0400
-Received: from www.osadl.org ([213.239.205.134]:60748 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752444AbXCSTUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 15:20:53 -0400
-Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Stefan Prechtel <stefan.prechtel@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, Len Brown <lenb@kernel.org>,
-       Andi Kleen <ak@suse.de>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <b93822910703191153x20249f00vb604a0eda075a23a@mail.gmail.com>
-References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
-	 <1174325803.13341.515.camel@localhost.localdomain>
-	 <1174326499.13341.517.camel@localhost.localdomain>
-	 <b93822910703191153x20249f00vb604a0eda075a23a@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 19 Mar 2007 20:27:56 +0100
-Message-Id: <1174332477.13341.561.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Mar 2007 15:24:25 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43917 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752561AbXCSTYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 15:24:24 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: David Howells <dhowells@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>, bryan.wu@analog.com,
+       Robin Holt <holt@sgi.com>,
+       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>, haoki@redhat.com,
+       Robin Getz <rgetz@blackfin.uclinux.org>
+Subject: Re: Move to unshared VMAs in NOMMU mode?
+References: <Pine.LNX.4.64.0703152043290.24211@blonde.wat.veritas.com>
+	<3378.1173204813@redhat.com>
+	<Pine.LNX.4.64.0703051843030.10272@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0703021646050.13167@blonde.wat.veritas.com>
+	<20070216165042.GB409@lnx-holt.americas.sgi.com>
+	<45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com>
+	<20368.1171638335@redhat.com> <18817.1171656543@redhat.com>
+	<29317.1172931029@redhat.com> <12852.1173449522@redhat.com>
+	<12838.1173998825@redhat.com>
+Date: Mon, 19 Mar 2007 13:23:17 -0600
+In-Reply-To: <12838.1173998825@redhat.com> (David Howells's message of "Thu,
+	15 Mar 2007 22:47:05 +0000")
+Message-ID: <m1wt1dvxzu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan,
 
-On Mon, 2007-03-19 at 19:53 +0100, Stefan Prechtel wrote:
-> You can find the files here:
-> http://bugzilla.kernel.org/show_bug.cgi?id=8235
+I'm just trying to digest this a little.
 
-thanks for providing the data. Your ACPI tables don't provide
-information about the power states (C-States), but your BIOS seems to
-switch the CPUs into deeper power states, when it runs on battery. In
-those deeper power states the local APIC timers and the TSC are stopped.
-So the machine waits for ever on the next timer interrupt.
+As I understand your description for non-shared mappings the VMAs are
+per process.
 
-We have a broadcast mechanism for this, which gets activated from ACPI,
-but the broadcast mechanism is not activated:
+For shared mappings you share in some sense the page cache.
 
-[    3.798000] Clock Event Device: pit
-....
-[    3.798000] tick_broadcast_mask: 00000000
+My gut feel says just keep a vma per process of the regions the
+process has and do the appropriate book keeping and all will be fine.
 
-Can you please boot with 2.6.20 or earlier and check the output
-of /proc/interrupts ?
+For shm_nattach it looks like you simply are not calling the
+open/close methods on fork (because you have a shared pool of vmas).
 
-IRQ#0 and the LOC (local APIC timer) Interrupts should increment in the
-same frequency.
-
-	tglx
-
-
+Eric
