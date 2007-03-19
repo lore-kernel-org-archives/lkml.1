@@ -1,109 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966049AbXCSRmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030384AbXCSRnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966049AbXCSRmg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 13:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966050AbXCSRmg
+	id S1030384AbXCSRnQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 13:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030395AbXCSRnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 13:42:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:11087 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966049AbXCSRmf (ORCPT
+	Mon, 19 Mar 2007 13:43:16 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39788 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030384AbXCSRnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 13:42:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=j9I5K+rkbQzURzDWhOdaEJyHM4t+lA6kihVxmd2dQ78AVeyWlohHuHP4yN56owrPc7XyRf0gtTZhQSdy7B3phuV6HN0naiSr8l2gqZrPFFinetrZp6E5DZSSHo1UWi7hGsoaCrSSH858cqbau83ba91sfUdFGy8vsy4SG9zTi/E=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH][5/5][resend] floppy.c: Fix device_create_file() warning
-Date: Mon, 19 Mar 2007 18:42:22 +0100
-User-Agent: KMail/1.9.6
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Trent Waddington" <trent.waddington@gmail.com>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, jesper.juhl@gmail.com
-References: <200703191611.13849.jesper.juhl@gmail.com> <9a8748490703190816w2f4bc4b5je8d5c17d232f15c9@mail.gmail.com> <200703191620.00179.ak@suse.de>
-In-Reply-To: <200703191620.00179.ak@suse.de>
+	Mon, 19 Mar 2007 13:43:14 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Paul Menage" <menage@google.com>
+Cc: "Dave Hansen" <hansendc@us.ibm.com>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mel Gorman <MELGOR@ie.ibm.com>, linux-kernel@vger.kernel.org,
+       Andy Wihitcroft <apw@shadowen.org>
+Subject: Re: [Devel] Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru> <45F3F581.9030503@sw.ru>
+	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
+	<20070312010039.GC21861@MAIL.13thfloor.at>
+	<1173724979.11945.103.camel@localhost.localdomain>
+	<20070312224129.GC21258@MAIL.13thfloor.at>
+	<20070312220439.677b4787.akpm@linux-foundation.org>
+	<45F67AC9.4080707@sw.ru>
+	<20070313034834.14013bb0.akpm@linux-foundation.org>
+	<1173805534.6680.26.camel@localhost.localdomain>
+	<6599ad830703181544g52f25820rff1c87e462b8f1d4@mail.gmail.com>
+Date: Mon, 19 Mar 2007 11:41:23 -0600
+In-Reply-To: <6599ad830703181544g52f25820rff1c87e462b8f1d4@mail.gmail.com>
+	(Paul Menage's message of "Sun, 18 Mar 2007 15:44:24 -0700")
+Message-ID: <m1ircxxha4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703191842.24152.jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 March 2007 16:20:00 Andi Kleen wrote:
-> On Monday 19 March 2007 16:16, Jesper Juhl wrote:
-> > On 19/03/07, Andi Kleen <ak@suse.de> wrote:
-> > > > -            
-> > > > device_create_file(&floppy_device[drive].dev,&dev_attr_cmos); +      
-> > > >       err = device_create_file(&floppy_device[drive].dev,
-> > > > &dev_attr_cmos); +             if (err)
-> > > > +                     printk(KERN_WARNING "Unable to create sysfs
-> > > > attribute " +                             "file for floppy device:
-> > > > %s\n", +                             floppy_device[drive].name);
-> > >
-> > > That change looks pretty useless. Either the error should be handled
-> > > correctly by bailing out or the warn_unused_results should be dropped.
-> >
-> > At least letting the user know that something failed is better than
-> > the current situation of just failing silently I'd say.
+"Paul Menage" <menage@google.com> writes:
+
+> On 3/13/07, Dave Hansen <hansendc@us.ibm.com> wrote:
+>> How do we determine what is shared, and goes into the shared zones?
+>> Once we've allocated a page, it's too late because we already picked.
+>> Do we just assume all page cache is shared?  Base it on filesystem,
+>> mount, ...?  Mount seems the most logical to me, that a sysadmin would
+>> have to set up a container's fs, anyway, and will likely be doing
+>> special things to shared data, anyway (r/o bind mounts :).
 >
-> I don't think so. That's just bloat.
->
+> I played with an approach where you can bind a dentry to a set of
+> memory zones, and any children of that dentry would inherit the
+> mempolicy; I was envisaging that most data wouldn't be shared between
+> different containers/jobs, and that userspace would set up "shared"
+> zones for big shared regions such as /lib, /usr, /bin, and for
+> specially-known cases of sharing.
 
-Ok, how about one of the following then?  
-Personally I'd be ok with either one.
+Here is a wacky one.
 
+Suppose there is some NFS server that exports something that most machines
+want to mount like company home directories.
 
-Either this : 
+Suppose multiple containers mount that NFS server based on local policy.
+(If we can allow non-root users to mount filesystems a slightly more trusted
+ guest admin certainly will be able to).
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 577c621..9d543f3 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -4302,7 +4302,12 @@ static int __init floppy_init(void)
- 		if (err)
- 			goto out_flush_work;
- 
--		device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
-+		err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
-+		if (err) {
-+			printk(KERN_WARNING "Unable to create sysfs attribute "
-+				"file for floppy device: %s\n", 
-+				floppy_device[drive].name);
-+			goto out_flush_work;
-+		}
-+
- 		/* to be cleaned up... */
- 		disks[drive]->private_data = (void *)(long)drive;
- 		disks[drive]->queue = floppy_queue;
+The NFS code as current written (unless I am confused) will do
+everything in it's power to share the filesystem cache between the
+different mounts (including the dentry tree).
 
+How do we handle bit shared areas like that.
 
-or this : 
+Dynamic programming solutions where we discovery the areas of sharing
+at runtime seem a lot more general then a priori solutions where you
+have to predict what will come next.
 
+If a priori planning and knowledge about sharing is the best we can do
+it is the best we can do and we will have to live with the limits that
+imposes.  Given the inflexibility in use and setup I'm not yet ready
+to concede that this is the best we can do.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 577c621..9d543f3 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -4302,7 +4302,12 @@ static int __init floppy_init(void)
- 		if (err)
- 			goto out_flush_work;
- 
--		device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
-+		err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
-+		if (err)
-+			goto out_flush_work;
-+
- 		/* to be cleaned up... */
- 		disks[drive]->private_data = (void *)(long)drive;
- 		disks[drive]->queue = floppy_queue;
-
+Eric
