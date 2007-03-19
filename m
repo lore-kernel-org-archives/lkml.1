@@ -1,223 +1,1161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbXCSMCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbXCSMCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753780AbXCSMCR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 08:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbXCSMCR
+	id S1753813AbXCSMCd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 08:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbXCSMCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 08:02:17 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:44276 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753780AbXCSMCQ convert rfc822-to-8bit (ORCPT
+	Mon, 19 Mar 2007 08:02:32 -0400
+Received: from poseidon.ceid.upatras.gr ([150.140.141.169]:25254 "EHLO
+	poseidon.ceid.upatras.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753813AbXCSMCa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 08:02:16 -0400
-Date: Mon, 19 Mar 2007 13:02:13 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH, take3] getrusage() : Fill ru_inblock and ru_oublock fields
- if possible
-Message-Id: <20070319130213.bb387150.dada1@cosmosbay.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.10.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 19 Mar 2007 08:02:30 -0400
+X-Greylist: delayed 1200 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 08:02:29 EDT
+Message-ID: <45FE771E.6050705@sciensis.com>
+Date: Mon, 19 Mar 2007 13:42:22 +0200
+From: Tasos Parisinos <t.parisinos@sciensis.com>
+User-Agent: Mozilla Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: herbert@gondor.apana.org.au
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] crypto API: RSA algorithm patch (kernel version 2.6.20.1)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew
+From: Tasos Parisinos <t.parisinos@sciensis.com>
 
-Here is the third version of this patch. Could you please update mm with it ?
+This patch changes the crypto/Kconfig and crypto/Makefile and adds 
+crypto/rsa.c and crypto/rsa.h in the source tree. These files add module 
+rsa.o (or rsa.ko) in the
+kernel (built-in or as a kernel module) and offer an API to do fast 
+modular exponentiation. The modular exponentiation algorithm is in fact 
+implementation of the
+Montgomery algorithm. The API can also be used to do some multi 
+precision arithmetics as well (multiplication, addition, subtraction, 
+remainder) and can serve as
+a basis for future multi-precision arithmetics implementations. The 
+module is totally written in C, thus being portable but less efficient 
+than any assembly implementation,
+but the code architecture is such that one could replace C code with 
+assembly easily in the future. The module does not have a userland 
+interface yet, so it can
+be only used by other in-kernel code. As mentioned in the subject this 
+patch applies in kernel version 2.6.20.1.
+Signed-off-by: Tasos Parisinos <t.parisinos@sciensis.com>
 
-As noticed by Oleg, previous versions were wrong, reporting three times SELF
-values, and no support for RUSAGE_CHILDREN.
-
-RUSAGE_CHILDREN support imply we add four fields in signal_struct,
-to be able to accumulate inblock/oublock of terminated and waited-for
-children, and terminated threads.
-
-Thank you
-
-[PATCH, take3] getrusage() : Fill ru_inblock and ru_oublock fields if possible
-
-If CONFIG_TASK_IO_ACCOUNTING is defined, we update io accounting counters for
-each task.
-
-This patch permits reporting of these values using the well known getrusage()
-syscall, filling ru_inblock and ru_oublock instead of null values.
-
-For RUSAGE_CHILDREN support, we must add two new fields in struct
-signal_struct, named cinblock and coublock, where we sum the inblock/oublock
-values of terminated and waited-for children. Two other fields, inblock and
-oublock are added too to sum the data for terminated sibling threads.
-
-As TASK_IO_ACCOUNTING currently counts bytes, we approximate blocks
-count doing : nr_blocks = nr_bytes / 512
-
-Example of use :
-----------------------
-After patch is applied, /usr/bin/time command can now give a good
-approximation of IO that the process (and its children) had to do.
-
-$ /usr/bin/time dd if=/dev/zero of=/tmp/testfile count=1000
-1000+0 records in
-1000+0 records out
-512000 bytes (512 kB) copied, 0.0033976 seconds, 151 MB/s
-0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+1000outputs (0major+235minor)pagefaults 0swaps
-
-# /usr/bin/time updatedb
-1.58user 6.20system 4:26.06elapsed 2%CPU (0avgtext+0avgdata 0maxresident)k
-881088inputs+22464outputs (2major+1163minor)pagefaults 0swaps
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 ---
- include/linux/sched.h                  |    1 
- include/linux/task_io_accounting_ops.h |   28 +++++++++++++++++++++++
- kernel/exit.c                          |    9 +++++++
- kernel/fork.c                          |    1 
- kernel/sys.c                           |    7 +++++
- 5 files changed, 46 insertions(+)
 
---- linux-2.6.21-rc4/include/linux/sched.h
-+++ linux-2.6.21-rc4-ed/include/linux/sched.h
-@@ -457,6 +457,7 @@ struct signal_struct {
- 	cputime_t utime, stime, cutime, cstime;
- 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
- 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
-+	unsigned long inblock, oublock, cinblock, coublock;
+diff -uprN -X linux-2.6.20.1-vanilla/Documentation/dontdiff 
+linux-2.6.20.1/crypto/Kconfig linux-2.6.20.1-vanilla/crypto/Kconfig
+--- linux-2.6.20.1/crypto/Kconfig    2007-02-20 08:34:32.000000000 +0200
++++ linux-2.6.20.1-vanilla/crypto/Kconfig    2007-03-11 
+14:09:04.000000000 +0200
+@@ -458,6 +458,46 @@ config CRYPTO_CRC32C
+       See Castagnoli93.  This implementation uses lib/libcrc32c.
+           Module will be crc32c.
  
- 	/*
- 	 * Cumulative ns of scheduled CPU time for dead threads in the
---- linux-2.6.21-rc4/include/linux/task_io_accounting_ops.h
-+++ linux-2.6.21-rc4-ed/include/linux/task_io_accounting_ops.h
-@@ -10,11 +10,29 @@ static inline void task_io_account_read(
- 	current->ioac.read_bytes += bytes;
- }
++config CRYPTO_RSA
++    tristate "RSA cipher algorithm"
++    depends on CRYPTO
++    help
++      The famous RSA asymmetric cipher algorithm. This may be used 
+in-kernel  
++      (no userland interface yet) to compute modular exponentiation.  
+It can
++      be also used to do some multi-precision arithmetics.
++     
++      If it is selected it will add approximately 2K to the kernel size.
++      Select M to build this driver as a module.
++      If unsure say N.
++
++config CRYPTO_RSA_DEBUG
++    bool "Debugging capabilities"
++    depends on CRYPTO_RSA
++    help
++        This adds lots of debugging information and debugging 
+capabilities in
++        the rsa module. It also adds approximately 1 more K to the kernel.
++
++config RSA_AUXCOUNT
++    int "Initial preallocated mpi pool size"
++    default "8"
++    depends on CRYPTO_RSA
++    help
++      The rsa module needs some preallocated space to avoid 
+computation-time
++      allocations. The 'mpi' is the struct used by the rsa module to 
+hold  a
++      multi-precision integer, so this setting is the number of mpi's 
+alloca
++      ted at module load time.
++
++config RSA_AUXSIZE
++    int "Initial preallocated mpi limb size"
++    default "128"
++    depends on CRYPTO_RSA && RSA_AUXCOUNT!="0"
++    help
++      The rsa module needs some preallocated space to avoid 
+computation-time
++      allocations. The 'mpi' is the struct used by the rsa module to 
+hold  a
++      multi-precision  integer. This struct maps a number on multiple 
+32 bit
++      limbs (it is actually a 32 bit array).Here you select the default 
+size
++      (in limbs) of the preallocated mpis.
++
+ config CRYPTO_TEST
+     tristate "Testing module"
+     depends on m
+diff -uprN -X linux-2.6.20.1-vanilla/Documentation/dontdiff 
+linux-2.6.20.1/crypto/Makefile linux-2.6.20.1-vanilla/crypto/Makefile
+--- linux-2.6.20.1/crypto/Makefile    2007-02-20 08:34:32.000000000 +0200
++++ linux-2.6.20.1-vanilla/crypto/Makefile    2007-03-11 
+14:16:46.000000000 +0200
+@@ -2,6 +2,11 @@
+ # Cryptographic API
+ #
  
-+/*
-+ * We approximate number of blocks, because we account bytes only.
-+ * A 'block' is 512 bytes
-+ */
-+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
++ifeq ($(CRYPTO_RSA_DEBUG),y)
++    EXTRA_CFLAGS += -DRSA_DEBUG
++endif
++EXTRA_CFLAGS += -DRSA_HAVE_MPI_PRINT -Wno-unused-function
++
+ obj-$(CONFIG_CRYPTO) += api.o scatterwalk.o cipher.o digest.o compress.o
+ 
+ crypto_algapi-$(CONFIG_PROC_FS) += proc.o
+@@ -43,5 +48,6 @@ obj-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+ obj-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
+ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
+ obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
++obj-$(CONFIG_CRYPTO_RSA) += rsa.o
+ 
+ obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
+diff -uprN -X linux-2.6.20.1-vanilla/Documentation/dontdiff 
+linux-2.6.20.1/crypto/rsa.c linux-2.6.20.1-vanilla/crypto/rsa.c
+--- linux-2.6.20.1/crypto/rsa.c    1970-01-01 02:00:00.000000000 +0200
++++ linux-2.6.20.1-vanilla/crypto/rsa.c    2007-03-11 13:26:14.000000000 
++0200
+@@ -0,0 +1,861 @@
++/*--                                                                         
+
++
++ Cryptographic API
++                                                                             
+
++ RSA cipher algorithm implementation
++          
++ Copyright (c) Tasos Parisinos <t.parisinos@sciensis.com>
++
++ This program is free software; you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation; either version 2 of the License, or
++ (at your option) any later version.
++                                                                 
++*/  
++
++#include "rsa.h"
++
++
++// Variables
++
++static mpi *    aux[RSA_AUX_COUNT];
++static _u32     modinv = 0;
++
++
++// Macros
++
++#define rsaMax(x, y)        ((x > y)? x: y)
++
++
++// Function declarations
++
++
++// Functions
++
++/*--
++    Module loading callback function
++    Returns 0 on success or a negative value indicating error
++*///
++static _err __init rsaLoad(void)
 +{
-+	return p->ioac.read_bytes >> 9;
++    _u32 i;
++    _err retval = RSA_NO_ERR;
++   
++    // Pre-allocate some auxilliary mpis
++    rsaEcho("Preallocating %d bytes for auxilliary operands\n", 
+RSA_AUX_SIZE * RSA_AUX_COUNT * sizeof(_u32));
++    memset(&aux, 0, sizeof(aux));
++    for(i = 0; i < RSA_AUX_COUNT; i++)
++        if((retval = rsaMpiAlloc(&aux[i], RSA_AUX_SIZE)) < 0)
++            goto rollback;
++    rsaEcho("RSA cipher algorithm module initialized\n");
++    return RSA_NO_ERR;
++
++// Free all allocated resources if any errors occur       
++rollback:
++    for(i = 0; i < RSA_AUX_COUNT; i++)
++        rsaMpiFree(aux[i]);
++    return retval;
 +}
 +
- static inline void task_io_account_write(size_t bytes)
- {
- 	current->ioac.write_bytes += bytes;
- }
- 
-+/*
-+ * We approximate number of blocks, because we account bytes only.
-+ * A 'block' is 512 bytes
-+ */
-+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
++
++
++/*--
++    Module unloading callback function
++*///
++static void __exit rsaUnload(void)
 +{
-+	return p->ioac.write_bytes >> 9;
++    _u32 i;
++   
++    // Free all the pre-allocated auxilliary mpis
++    for(i = 0; i < RSA_AUX_COUNT; i++)
++        rsaMpiFree(aux[i]);
++    rsaEcho("RSA cipher algorithm module unloaded\n");
 +}
 +
- static inline void task_io_account_cancelled_write(size_t bytes)
- {
- 	current->ioac.cancelled_write_bytes += bytes;
-@@ -31,10 +49,20 @@ static inline void task_io_account_read(
- {
- }
- 
-+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
++
++
++/*--
++    Preallocate an mpi. The allocated mpi will be all-zeroed and not 
+canonicalized
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiAlloc(mpi **    n,        // Through this pointer 
+pointer the function will return the allocated mpi
++                        _i32    limbs)    // Number of allocated limbs 
+(32 bit digits)
 +{
-+	return 0;
++    mpi * handle;
++       
++    rsaDebug("rsaMpiAlloc called to allocate an mpi of %d limbs\n", limbs);
++   
++    *n = NULL;
++    if(!limbs)
++        return RSA_ERR_INVARG;
++   
++    // Allocate space for the mpi
++    if(!(handle = *n = kmalloc(sizeof(mpi), GFP_KERNEL)))
++    {
++        rsaDebug("rsaMpiAlloc: kmalloc failed\n");
++        return RSA_ERR_NOMEM;
++    }
++            
++    if(!(handle->data = kzalloc(limbs * sizeof(_u32), GFP_KERNEL)))
++    {
++        kfree(handle);
++        *n = NULL;
++        rsaDebug("rsaMpiAlloc: kzalloc failed\n");
++        return RSA_ERR_NOMEM;   
++    }
++   
++    handle->sign = 0;
++    handle->size = handle->limbs = limbs;
++    return RSA_NO_ERR;
 +}
 +
- static inline void task_io_account_write(size_t bytes)
- {
- }
- 
-+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
++
++
++/*--
++    Free the resources held by an mpi
++*///
++static void rsaMpiFree(mpi * n)
 +{
-+	return 0;
++    if(!n)
++        return;
++    kfree(n->data);
++    kfree(n);
 +}
 +
- static inline void task_io_account_cancelled_write(size_t bytes)
- {
- }
---- linux-2.6.21-rc4/kernel/sys.c
-+++ linux-2.6.21-rc4-ed/kernel/sys.c
-@@ -29,6 +29,7 @@
- #include <linux/signal.h>
- #include <linux/cn_proc.h>
- #include <linux/getcpu.h>
-+#include <linux/task_io_accounting_ops.h>
- 
- #include <linux/compat.h>
- #include <linux/syscalls.h>
-@@ -2021,6 +2022,8 @@ static void k_getrusage(struct task_stru
- 			r->ru_nivcsw = p->signal->cnivcsw;
- 			r->ru_minflt = p->signal->cmin_flt;
- 			r->ru_majflt = p->signal->cmaj_flt;
-+			r->ru_inblock = p->signal->cinblock;
-+			r->ru_oublock = p->signal->coublock;
- 
- 			if (who == RUSAGE_CHILDREN)
- 				break;
-@@ -2032,6 +2035,8 @@ static void k_getrusage(struct task_stru
- 			r->ru_nivcsw += p->signal->nivcsw;
- 			r->ru_minflt += p->signal->min_flt;
- 			r->ru_majflt += p->signal->maj_flt;
-+			r->ru_inblock += p->signal->inblock;
-+			r->ru_oublock += p->signal->oublock;
- 			t = p;
- 			do {
- 				utime = cputime_add(utime, t->utime);
-@@ -2040,6 +2045,8 @@ static void k_getrusage(struct task_stru
- 				r->ru_nivcsw += t->nivcsw;
- 				r->ru_minflt += t->min_flt;
- 				r->ru_majflt += t->maj_flt;
-+				r->ru_inblock += task_io_get_inblock(t);
-+				r->ru_oublock += task_io_get_oublock(t);
- 				t = next_thread(t);
- 			} while (t != p);
- 			break;
---- linux-2.6.21-rc4/kernel/fork.c
-+++ linux-2.6.21-rc4-ed/kernel/fork.c
-@@ -874,6 +874,7 @@ static inline int copy_signal(unsigned l
- 	sig->utime = sig->stime = sig->cutime = sig->cstime = cputime_zero;
- 	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
- 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
-+	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
- 	sig->sched_time = 0;
- 	INIT_LIST_HEAD(&sig->cpu_timers[0]);
- 	INIT_LIST_HEAD(&sig->cpu_timers[1]);
---- linux-2.6.21-rc4/kernel/exit.c
-+++ linux-2.6.21-rc4-ed/kernel/exit.c
-@@ -42,6 +42,7 @@
- #include <linux/audit.h> /* for audit_free() */
- #include <linux/resource.h>
- #include <linux/blkdev.h>
-+#include <linux/task_io_accounting_ops.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -113,6 +114,8 @@ static void __exit_signal(struct task_st
- 		sig->nvcsw += tsk->nvcsw;
- 		sig->nivcsw += tsk->nivcsw;
- 		sig->sched_time += tsk->sched_time;
-+		sig->inblock += task_io_get_inblock(tsk);
-+		sig->oublock += task_io_get_oublock(tsk);
- 		sig = NULL; /* Marker for below. */
- 	}
- 
-@@ -1191,6 +1194,12 @@ static int wait_task_zombie(struct task_
- 			p->nvcsw + sig->nvcsw + sig->cnvcsw;
- 		psig->cnivcsw +=
- 			p->nivcsw + sig->nivcsw + sig->cnivcsw;
-+		psig->cinblock +=
-+			task_io_get_inblock(p) +
-+			sig->inblock + sig->cinblock;
-+		psig->coublock +=
-+			task_io_get_oublock(p) +
-+			sig->oublock + sig->coublock;
- 		spin_unlock_irq(&p->parent->sighand->siglock);
- 	}
- 
++
++
++/*--
++    Initialize an mpi given its hex (absolute) value. The optional leading
++    zeroes will be taken into account, so that the mpi created will not be
++    canonicalized
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiInit(mpi **    n,        // Through this pointer 
+pointer the function will return the allocated mpi
++                       _u8 *     str,
++                       _u32        size,
++                       _u32        xtra)    // Preallocate some more 
+limbs to avoid future reallocations
++{
++    _i32 i, j;
++    _u32 * buf;
++    _i32 s;
++    _err retval;
++       
++    *n = NULL;
++    if(!size && !xtra)
++    {
++        rsaDebug("rsaMpiInit: invalid initialization string\n");
++        return RSA_ERR_INVARG;
++    }
++   
++    // Allocate space for the mpi and its data
++    s = (size / 4) + ((size % 4)? 1: 0);
++    if((retval = rsaMpiAlloc(n, s + xtra)) < 0)
++        return retval;
++   
++    (*n)->size = s;
++    buf = (*n)->data;
++       
++    // Copy the data
++    for(i = size - 1, j = 0; i >= 0; i--, j++)
++        buf[j / 4] |= ((_u32)str[i] << ((j % 4) * 8));
++    return RSA_NO_ERR;
++}
++
++
++
++/*--
++    Resize an mpi, doing all the needed re-allocations
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiResize(mpi **    n,
++                         _i32     size,
++                         _u8    hold)    // Hold the initial data
++{
++    _err retval;
++    mpi * handle = *n;
++   
++    // If there is an allocated mpi passed in, that has the available limbs
++    if(handle && handle->limbs >= size)
++    {   
++         _i32 i, s;
++         _u32 * buf;
++       
++        // If the original data are not needed they are zeroed
++        if(!hold)
++        {   
++            for(i = 0, s = handle->size, buf = handle->data; i < s; i++)
++                    buf[i] = 0;
++            handle->sign = 0;
++        }
++        // Zero the xtra limbs
++        else if(size < handle->size)
++            for(i = size, s = handle->size, buf = handle->data; i < s; i++)
++                buf[i] = 0;
++        handle->size = size;
++    }
++    // If there is an allocated mpi passed in, that doesn't have  the 
+available
++    // limbs already allocated
++    else if(handle)
++    {
++        mpi * tmp = NULL;
++       
++        if((retval = rsaMpiAlloc(&tmp, size)) < 0)
++            return retval;
++       
++        // Copy the original data if they are needed
++        if(hold)
++        {
++            memcpy(tmp->data, handle->data, handle->size * 
+sizeof(_u32));   
++            tmp->sign = handle->sign;
++        }
++       
++        rsaMpiFree(*n);
++        *n = tmp;
++        return retval;
++    }
++    // If there is no allocated mpi passed in, allocate one
++    else if(!(handle) && (retval = rsaMpiAlloc(n, size)) < 0)
++        return retval;
++   
++    return RSA_NO_ERR;
++}
++
++
++
++/*--
++    Set the value of an mpi given its hex (absolute) value. The 
+optional leading
++    zeroes will  be taken  into account,  so that  the mpi  created 
+will  not be
++    canonicalized.  The mpi passed  in will be re-allocated  (and 
+relocated)  if
++    needeed
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiSet(mpi **     n,
++                      _u8 *        str,
++                      _u32        size)
++{
++    _i32 s, i, j;
++    _u32 * buf;
++    _err retval;
++   
++    if(!size)
++    {
++        rsaDebug("rsaMpiSet: invalid initialization string\n");
++        return RSA_ERR_INVARG;
++    }
++   
++    // Size of the new mpi value (in limbs)
++    s = (size / 4) + ((size % 4)? 1: 0);
++    if((retval = rsaMpiResize(n, s, false)) < 0)
++        return retval;
++   
++    // Copy the data
++    buf = (*n)->data;
++    for(i = size - 1, j = 0; i >= 0; i--, j++)
++        buf[j / 4] |= ((_u32)str[i] << ((j % 4) * 8));
++    return RSA_NO_ERR;
++}
++
++
++
++/*--
++    Mpi to mpi copy
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiCopy(mpi **    dest,
++                       mpi *    src)
++{
++    _i32 i, s;
++    _u32 * destbuf, * srcbuf;
++    _err retval;
++   
++    if((retval = rsaMpiResize(dest, src->size, false)) < 0)
++        return retval;
++   
++    (*dest)->sign = src->sign;
++    destbuf = (*dest)->data;
++    srcbuf = src->data;
++    for(i = 0, s = src->size; i < s; i++)
++        destbuf[i] = srcbuf[i];
++    return RSA_NO_ERR;
++}
++
++
++
++/*--
++    Print the value of an mpi
++*///
++static void rsaMpiPrint(mpi *    n,
++                        _u8        how)    // True to print canonicalized
++{
++#ifdef RSA_HAVE_MPI_PRINT
++    _i32 i, j;
++    _u32 limb;
++    _u8 byte, started = false;
++
++    rsaEcho("Mpi at 0x%x, %d limbs in size, %d limbs allocated, value = 
+", (_u32)n, n->size, n->limbs);
++   
++    // If the mpi is merely zero
++    if(rsaMpiIsZero(n) && how)
++    {
++        printk("0\n");
++        return;
++    }
++       
++    // Print the sign
++    printk("%s", (n->sign)? "-": " ");
++   
++    // Print the hex value
++    for(i = n->size - 1; i >= 0; i--)
++    {
++        limb = n->data[i];
++       
++        // Ignore leading zero limbs if canonicalized printing is selected
++        if(!limb && !started && how)
++            continue;
++       
++        // Print each limb as though each of its nibbles was a 
+character from the set '0' to '9' and 'a' to 'f'
++        for(j = 28; j >= 0; j -= 4)
++        {
++            byte = (_u8)((limb >> j) & 0x0F);
++           
++            // Ignore leading zero bytes if canonicalized printing is 
+selected
++            if(!byte && !started && how)
++                continue;
++           
++            started = true;   
++            byte += (byte <= 0x09)? '0': 'a' - 0x0A;
++            printk("%c", byte);
++        }
++    }
++   
++    printk("\n");
++#endif
++}
++
++
++
++/*--
++    Check if an mpi is zero
++    Returns true if it is, false otherwise
++*///
++static _u8 rsaMpiIsZero(mpi * n)
++{
++    _i32 i, s;
++    _u32 * buf;
++   
++    for(i = 0, s = n->size, buf = n->data; i < s; i++)
++        if(buf[i])
++            return false;
++    return true;
++}
++
++
++
++/*--
++    Compare two mpis
++    Returns -1 if a < b, 1 if b < a, 0 otherwise
++*///
++static _i8 rsaMpiCompare(mpi * a,
++                         mpi * b)
++{
++    _i32 i, j, asize, bsize;
++    _u32 * abuf, * bbuf;
++   
++    // Compare the two mpis based on sign
++    if(a->sign != b->sign)
++        return (a->sign)? -1: 1;
++   
++    // Compare the two mpis based on their size
++    asize = a->size;
++    bsize = b->size;   
++    if(asize > bsize && rsaMpiClz(a) < (asize - bsize) * 32)
++        return 1;
++    else if(asize > bsize)
++        j = bsize;
++    else if(bsize > asize && rsaMpiClz(b) < (bsize - asize) * 32)
++        return -1;
++    else
++        j = asize;
++   
++    // Compare the two mpis based on their hex values
++    abuf = a->data;
++    bbuf = b->data;
++    for(i = j - 1; i >= 0; i--)
++        if(abuf[i] > bbuf[i])
++            return 1;
++        else if(abuf[i] < bbuf[i])
++            return -1;
++
++    return 0;
++}
++
++
++
++/*--
++    Count leading zeroes
++    Returns the number of leading zero bits
++*///
++static _u64 rsaMpiClz( mpi * n)
++{
++     _u64 retval = 0;
++     _i32 i;
++     _u32 limb;
++   
++    for(i = n->size - 1; i >= 0; i--)
++    {
++        limb = n->data[i];
++       
++        if(!limb)
++        {
++            retval += 32;
++            continue;
++        }
++       
++        while(!(limb & 0x80000000))
++        {
++            retval++;
++            limb = limb << 1;
++        }
++       
++        break;
++    }
++   
++    return retval;
++}
++
++
++
++/*--
++    Complement the number (either 1's or 2's complement) ignoring overflow
++*///
++static void rsaMpiComplement(mpi *    n,
++                             _u8    which)    // Compute 2's complement 
+if true, 1's complement otherwise
++{
++    _i32 i, s;
++    _u32 * buf;
++       
++    for(i = 0, s = n->size, buf = n->data; i < s; i++)
++        buf[i] ^= RSA_MAX_U32;
++    if(!which)
++        return;   
++   
++    // Add 1 using the addition carry
++    for(i = 0; i < s; i++)
++    {
++        buf[i] += 1;
++        if(buf[i])
++            break;
++    }
++}
++
++
++
++/*--
++    Ignore any leading zero limbs of an mpi
++*///
++static void rsaMpiCanonicalize(mpi * n)
++{
++    _i32 i;
++    _u32 * buf = n->data;
++   
++    for(i = n->size - 1; i >= 0; i--)
++        if(!buf[i] && n->size > 1)
++            n->size--;
++        else
++            break;
++}
++
++
++
++/*--
++    Shift a number both directions
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiShift(mpi **    n,      
++                        _i64    bits)    // Shift to the right if 
+positive, otherwise shift to the left
++{
++    _i32 i, distance, size, lz;
++    _u32 * buf;
++    mpi * handle;
++    _err retval;
++   
++    handle = *n;
++    if(!bits || rsaMpiIsZero(handle))
++        return RSA_NO_ERR;
++       
++    // Shifting to the right, no resize needed   
++    if(bits > 0)
++    {
++        // Drop off one limb for each 32 bit shift
++        for(i = 0, distance = bits / 32, size = handle->size, buf = 
+handle->data; i < size; i++)
++            buf[i] = (i + distance >= size)? 0x00: buf[i + distance];
++       
++        // Shift the remaining 'bits' mod 32
++        bits = bits % 32;
++        if(bits)
++        {
++            size -= distance;
++            distance = 32 - bits;
++            for(i = 0; i < size; i++)
++            {
++                buf[i] = buf[i] >> bits;
++                if(i < size - 1)
++                    buf[i] |=  buf[i + 1] << distance;
++            }   
++        }
++       
++        rsaMpiCanonicalize(handle);
++        return RSA_NO_ERR;
++    }   
++   
++    bits = -bits;
++    lz = rsaMpiClz(handle) + (handle->limbs - handle->size) * 32;
++       
++    // Shifting to the left
++    // Reallocation is needed when the leading zeroes are less than the 
+shift distance
++    if(lz < bits)
++    {
++        // Compute the size of the reallocation
++        size = bits - lz;
++        size = (size / 32) + (size % 32 != 0);
++        if((retval = rsaMpiResize(n, handle->limbs + size, true)) < 0)
++            return retval;
++        handle = *n;
++    }
++    else
++    {
++        size = bits - rsaMpiClz(handle);
++        handle->size += ((size / 32) + (size % 32 != 0));
++    }
++   
++    buf = handle->data;   
++    // Shift data 1 byte to the left for each 32 bit shift
++    if((distance = bits / 32))
++    {
++        // Shift bytes                           
++        for(i = handle->size - distance - 1; i >= 0; i--)
++            buf[i + distance] = buf[i];
++        // Zero the shifted in bytes
++        for(i = 0; i < distance; i++)
++            buf[i] = 0;
++    }
++   
++    // Shift the remaining 'bits' mod 32
++    bits = bits % 32;
++    distance = 32 - bits;
++    if(bits)
++        for(i = handle->size - 1; i >= 0; i--)
++        {
++            buf[i] = buf[i] << bits;
++            if(i > 0)
++                buf[i] |= (buf[i - 1] >> distance);
++        }
++   
++    return RSA_NO_ERR;
++}
++
++
++
++/*--
++    Multiply two mpis
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiMultiply(mpi **    res,    // Through this pointer 
+pointer the function will return the product
++                           mpi *    a,
++                           mpi *    b)
++{
++    _i32 i, j, size, asize, bsize;
++    _u32 * buf, * abuf, * bbuf;
++    _u64 tmp;
++    mpi * handle;
++    _err retval;
++   
++    asize = a->size;
++    bsize = b->size;
++    size = asize + bsize;
++    if((retval = rsaMpiResize(res, size, false)) < 0)
++        return retval;
++       
++    handle = *res;
++    handle->sign = a->sign ^ b->sign;
++   
++    buf = handle->data;
++    abuf = a->data;
++    bbuf = b->data;   
++    // Make the multiplication, using the standard algorithm
++    for(i = 0; i < bsize; i++)
++    {
++        tmp = 0;
++        for(j = 0; j < asize; j++)
++            buf[i + j] = tmp = buf[i + j] + (abuf[j] * (_u64)bbuf[i]) + 
+(tmp >> 32);
++        buf[i + asize] = tmp >> 32;
++    }
++   
++    rsaMpiCanonicalize(handle);
++    return RSA_NO_ERR;
++}
++
++
++
++/*--
++    Subtract two mpis
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiSubtract(mpi **    res,    // Through this pointer 
+pointer the function will return the difference
++                           mpi *     a,
++                           mpi *    b)
++{
++    _u32 * buf, * abuf, * bbuf;
++    _i32 i, size;
++    mpi * handle;
++    _err retval;
++   
++    size = rsaMax(a->size, b->size) + (a->sign != b->sign);
++    if((retval = rsaMpiResize(res, size, true)) < 0 ||
++       (retval = rsaMpiResize(&a, size, true)) < 0    ||
++       (retval = rsaMpiResize(&b, size, true)) < 0)
++        return retval;
++   
++    handle = *res;
++    buf = handle->data;
++    abuf = a->data;
++    bbuf = b->data;
++   
++    // If the operands are both negative or positive we perform subtraction
++    if(a->sign == b->sign)
++    {
++         _u8 borrow = false;
++         _u32 limb;
++               
++        for(i = 0; i < size; i++)
++        {
++            limb = borrow + bbuf[i];   
++            buf[i] = abuf[i] - limb;
++            borrow = (abuf[i] < limb);
++        }
++       
++        handle->sign = (borrow)? !b->sign: b->sign;
++        if(borrow)
++            rsaMpiComplement(handle, true);
++    }
++    // If the operands are not signed in the same way we perform addition
++    else
++    {
++         _u8 carry = false;
++         _u64 sum;
++       
++        for(i = 0; i < size; i++)
++        {
++            buf[i] = sum = abuf[i] + bbuf[i] + carry;
++            carry = (sum > RSA_MAX_U32);   
++        }
++       
++        handle->sign = a->sign;
++    }
++   
++    rsaMpiCanonicalize(handle);
++    rsaMpiCanonicalize(a);
++    rsaMpiCanonicalize(b);
++    return RSA_NO_ERR;
++}
++
++
++
++/*--
++    Compute the remainder of a/b (aka a mod b)
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMpiRemainder(mpi **    res,
++                            mpi *     a,
++                            mpi *     b)
++{
++    _i32 i, k;
++    _err retval;
++   
++    // Because b operand will be shifted we need to have a copy of it in
++    // order not to mess with the prototype b
++    if((retval = rsaMpiCopy(&aux[0], a)) < 0 || (retval = 
+rsaMpiCopy(&aux[1], b)) < 0)
++        return retval;
++   
++    k = (aux[0]->size - aux[1]->size) * 32;   
++    k += (rsaMpiClz(aux[1]) - rsaMpiClz(aux[0]));
++    // Align the divisor to the divident
++    if((retval = rsaMpiShift(&aux[1], -k)) < 0)
++        return retval;
++   
++    for(i = 0; i <= k; i++)
++    {
++        if((retval = rsaMpiSubtract(res, aux[0], aux[1])) < 0)
++            return retval;
++        if(!(*res)->sign && (retval = rsaMpiCopy(&aux[0], (*res))) < 0)
++            return retval;
++        if((retval = rsaMpiShift(&aux[1], 1)) < 0)
++            return retval;   
++    }
++   
++    rsaMpiCanonicalize(aux[0]);
++    return rsaMpiCopy(res, aux[0]);
++}
++
++
++
++/*--
++    Compute the first 32 bits of the modular inverse of a number
++    Returns 0 on success or a negative value indicating error
++*///
++static _u32 rsaModinv(mpi * n)
++{
++    _u32 i, x, y, tmp, pow1;
++   
++    pow1 = y = 1;
++    x = n->data[0];
++   
++    for(i = 2; i <= RSA_RADIX_BITS; i++)
++    {
++        pow1 = pow1 << 1;
++        tmp = ((_i64)x * y) & (RSA_MAX_U32 >> (32 - i));
++       
++        if(pow1 < tmp)
++            y += pow1;
++    }
++
++    y = (y ^ RSA_MAX_U32) + 1;
++    return y;
++}
++
++
++
++/*--
++    Compute the montgomery product using single precision modulus 
+modular inverse.
++    Variable modinv must have been pre-computed
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaMonpro(mpi **    res,
++                      mpi *        a,
++                      mpi *        b,
++                      mpi *     n)
++{
++    _i32 nsize, i, j, k;
++    _u32 * buf, * nbuf, * tmp, m;
++    _u64 product = 0;
++    _err retval;
++       
++    nsize = n->size;
++    k = nsize << 1;
++    if((retval = rsaMpiMultiply(&aux[2], a, b)) < 0)
++        return retval;
++    if((retval = rsaMpiResize(&aux[2], rsaMax(aux[2]->size, k), true)) < 0)
++        return retval;
++       
++    tmp = buf = aux[2]->data;
++    nbuf = n->data;
++   
++    for(i = 0; i < nsize; i++, tmp++)
++    {
++        m = buf[i] * modinv;
++        product = 0;   
++       
++        for(j = 0; j < nsize; j++)
++            tmp[j] = product = tmp[j] + (m * (_u64)nbuf[j]) + (product 
+ >> 32);
++       
++        for(j = nsize + i; j < k; j++)
++            buf[j] = product = buf[j] + (product >> 32);
++    }
++
++    if((retval = rsaMpiResize(&aux[2], aux[2]->size + 1, true)) < 0)
++        return retval;
++    aux[2]->data[aux[2]->size - 1] = product >> 32;
++    if((retval = rsaMpiShift(&aux[2], nsize * 32)) < 0)
++        return retval;
++   
++    if(rsaMpiCompare(aux[2], n) >= 0)
++    {
++        if((retval = rsaMpiSubtract(&aux[3], aux[2], n)) < 0 ||
++           (retval = rsaMpiCopy(res, aux[3])) < 0)
++            return retval;
++    }   
++    else if((retval = rsaMpiCopy(res, aux[2])) < 0)
++        return retval;
++    return RSA_NO_ERR;
++}
++
++
++
++/*--
++    Computes the RSA of m, a.k.a m ^ e modn
++    Returns 0 on success or a negative value indicating error
++*///
++static _err rsaModexp(mpi **    res,
++                      mpi *        m,        // base
++                      mpi *        e,        // exponent
++                      mpi *        n)        // modulus
++{
++    _i32 i, j;
++    _u32 limb;
++    _u8 started = false;
++    _err retval;
++   
++    if(m->size != n->size || rsaMpiCompare(m, n) > 0)
++        return RSA_ERR_INVARG;
++
++    modinv = rsaModinv(n);
++   
++    // Compute m * r mod n where r is 2 ^ k and n is the k-bit modulus
++    // The resulting m' is stored in aux[4]
++    if((retval = rsaMpiCopy(&aux[5], m)) < 0)
++        return retval;
++    if((retval = rsaMpiShift(&aux[5], -(n->size * 32))) < 0)
++        return retval;
++    if((retval = rsaMpiRemainder(&aux[4], aux[5], n)) < 0)
++        return retval;
++   
++    // Compute r mod n where r is 2 ^ k and n is the k-bit modulus
++    // The resulting x' is stored in aux[7]
++    if((retval = rsaMpiSet(&aux[5], "\x01", 1)) < 0)
++        return retval;
++    if((retval = rsaMpiShift(&aux[5], -(n->size * 32))) < 0)
++        return retval;
++    if((retval = rsaMpiRemainder(&aux[7], aux[5], n)) < 0)
++        return retval;
++   
++    // Canonicalize the exponent and compute the modular exponentiation.
++    // For each limb of the exponent perform left to right binary 
+exponentiation
++    rsaMpiCanonicalize(e);
++    for(i = e->size - 1; i >= 0; i--)
++    {
++        // Take a limb of the exponent
++        limb = e->data[i];
++       
++        // For each of its bits
++        for(j = 0; j < 32; j++)
++        {
++            // While the exponent has non significant zeroes, shift it 
+to the left
++            if(!(limb & 0x80000000) && !started)
++            {
++                limb = limb << 1;
++                continue;
++            }
++           
++            started = true;   
++            // Compute x' * x' mod n
++            if((retval = rsaMonpro(&aux[5], aux[7], aux[7], n)) < 0)
++                return retval;
++               
++            if(limb & 0x80000000)
++            {
++                // Compute x' = m' * x' mod n
++                if((retval = rsaMonpro(&aux[7], aux[4], aux[5], n)) < 0)
++                    return retval;
++            }
++            else if((retval = rsaMpiCopy(&aux[7], aux[5])) < 0)
++                return retval;
++               
++            limb = limb << 1;       
++        }
++    }
++   
++    // Compute res = x' mod n
++    if((retval = rsaMpiSet(&aux[6], "\x01", 1)) < 0)
++        return retval;
++    return rsaMonpro(res, aux[7], aux[6], n);
++}
++
++
++
++module_init(rsaLoad);
++module_exit(rsaUnload);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Tasos Parisinos @ Sciensis Advanced Technology Systems");
++MODULE_DESCRIPTION("RSA cipher algorithm implementation");
+diff -uprN -X linux-2.6.20.1-vanilla/Documentation/dontdiff 
+linux-2.6.20.1/crypto/rsa.h linux-2.6.20.1-vanilla/crypto/rsa.h
+--- linux-2.6.20.1/crypto/rsa.h    1970-01-01 02:00:00.000000000 +0200
++++ linux-2.6.20.1-vanilla/crypto/rsa.h    2007-03-14 17:59:00.000000000 
++0200
+@@ -0,0 +1,112 @@
++#ifndef _KM_RSA_H_
++#define _KM_RSA_H_
++
++
++// Includes
++
++#include <linux/module.h>
++#include <linux/errno.h>
++#include <config/rsa/auxcount.h>
++#include <config/rsa/auxsize.h>
++
++// Defines
++
++#ifdef CONFIG_RSA_AUXCOUNT
++    #define RSA_AUX_COUNT         CONFIG_RSA_AUXCOUNT
++#else
++    #define RSA_AUX_COUNT         0x08
++#endif
++
++#ifdef CONFIG_RSA_AUXSIZE
++    #define RSA_AUX_SIZE         CONFIG_RSA_AUXSIZE
++#else
++    #define RSA_AUX_SIZE         0x80
++#endif
++
++#define RSA_MAX_U32                0xFFFFFFFF
++#define RSA_RADIX_BITS            0x20
++#define RSA_LOGLEVEL            KERN_ALERT
++
++#define RSA_NO_ERR                0
++#define RSA_ERR_INVARG            -1
++#define RSA_ERR_NOMEM            -2
++
++#define true                    0x01
++#define false                    0x00
++
++
++// Macros
++
++#ifdef RSA_DEBUG
++    #define rsaDebug(fmt, args...) { if(printk_ratelimit()) 
+printk(RSA_LOGLEVEL "rsa: " fmt, ## args); }
++#else
++    #define rsaDebug(fmt, args...)
++#endif
++
++#define rsaEcho(fmt, args...) printk(RSA_LOGLEVEL "rsa: " fmt, ## args)
++
++#if RSA_AUX_COUNT < 8
++    #error "Rsa needs at least 8 auxilliary mpis"
++#endif
++
++
++// Typedefs
++
++typedef signed char         _i8;
++typedef signed short        _i16;
++typedef signed int             _i32;
++typedef signed long long    _i64;
++typedef unsigned char         _u8;
++typedef unsigned short        _u16;
++typedef unsigned int         _u32;
++typedef unsigned long long    _u64;
++typedef    signed int            _err;
++
++// Multi-precision integer
++typedef struct mpi
++{
++    _u32    * data;            // _u32 array holding the number 
+absolute value
++    _u8        sign;            // 1 for negative, 0 for positive
++    _i32    size;            // Significant number limbs
++    _i32    limbs;            // Allocated limbs (sizeof data)
++} mpi;
++
++
++// Variables
++
++
++// Function declarations
++
++// Module loading/unloading functions
++static _err    __init    rsaLoad(void);
++static void __exit    rsaUnload(void);
++
++// Mpi utility functions
++static _err             rsaMpiAlloc(mpi **, _i32);
++static void         rsaMpiFree(mpi *);
++static _err             rsaMpiInit(mpi **, _u8 *, _u32, _u32);
++static _err         rsaMpiResize(mpi **, _i32, _u8);
++static _err         rsaMpiSet(mpi **, _u8 *, _u32);
++static _err         rsaMpiCopy(mpi **, mpi *);
++static void         rsaMpiPrint(mpi *, _u8);
++
++// Mpi comparing and misc functions
++static _u8             rsaMpiIsZero(mpi *);
++static _i8             rsaMpiCompare(mpi *, mpi *);
++static _u64             rsaMpiClz(mpi *);
++static void             rsaMpiComplement(mpi *, _u8);
++static void             rsaMpiCanonicalize(mpi *);
++
++// Mpi arithmetic functions
++static _err             rsaMpiShift(mpi **, _i64);                // 
+2^k multiplication / division
++static _err         rsaMpiMultiply(mpi **, mpi *, mpi *);
++static _err         rsaMpiSubtract(mpi **, mpi *, mpi *);
++static _err         rsaMpiRemainder(mpi **, mpi *, mpi *);
++
++// Rsa functions
++static _u32             rsaModinv(mpi *);
++static _err         rsaMonpro(mpi **, mpi *, mpi *, mpi *);
++static _err         rsaModexp(mpi **, mpi *, mpi *, mpi *);
++
++                      
++#endif // _KM_RSA_H_
+
