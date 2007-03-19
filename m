@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbXCSLNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbXCSLX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752581AbXCSLNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 07:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXCSLNW
+	id S1752949AbXCSLX3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 07:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbXCSLX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 07:13:22 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:43732 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752581AbXCSLNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 07:13:22 -0400
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH, take2] getrusage() : Fill ru_inblock and ru_oublock fields if possible
-Date: Mon, 19 Mar 2007 12:13:19 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200703191139.40281.dada1@cosmosbay.com> <20070319105358.GA152@tv-sign.ru>
-In-Reply-To: <20070319105358.GA152@tv-sign.ru>
+	Mon, 19 Mar 2007 07:23:29 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:1916 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949AbXCSLX2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 07:23:28 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703191213.19652.dada1@cosmosbay.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 19 Mar 2007 11:23:25.0821 (UTC) FILETIME=[02DE7AD0:01C76A19]
+Content-class: urn:content-classes:message
+Subject: Re: i386: Why putting __USER_DS in kernel threads stack initialization?
+Date: Mon, 19 Mar 2007 07:23:25 -0400
+Message-ID: <Pine.LNX.4.61.0703190717240.19254@chaos.analogic.com>
+In-Reply-To: <20070318225831.GB3802@Ahmed>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: i386: Why putting __USER_DS in kernel threads stack initialization?
+thread-index: AcdqGQLo3ZPlJgEsQXW7X1TGXDFpkQ==
+References: <20070318225831.GB3802@Ahmed>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 March 2007 11:53, Oleg Nesterov wrote:
-> On 03/19, Eric Dumazet wrote:
-> > +static inline unsigned long task_io_get_inblock(const struct task_struct
-> > *p) +{
-> > +	return p->ioac.read_bytes >> 9;
-> > +}
-> >
-> > [...snip...]
-> >
-> > @@ -2021,6 +2022,8 @@ static void k_getrusage(struct task_stru
-> >  			r->ru_nivcsw = p->signal->cnivcsw;
-> >  			r->ru_minflt = p->signal->cmin_flt;
-> >  			r->ru_majflt = p->signal->cmaj_flt;
-> > +			r->ru_inblock = p->signal->cinblock;
-> > +			r->ru_oublock = p->signal->coublock;
-> >
-> >  			if (who == RUSAGE_CHILDREN)
-> >  				break;
-> > @@ -2032,6 +2035,8 @@ static void k_getrusage(struct task_stru
-> >  			r->ru_nivcsw += p->signal->nivcsw;
-> >  			r->ru_minflt += p->signal->min_flt;
-> >  			r->ru_majflt += p->signal->maj_flt;
-> > +			r->ru_inblock += task_io_get_inblock(p->signal);
+
+On Sun, 18 Mar 2007, Ahmed S. Darwish wrote:
+
+> Hi list,
 >
-> p->signal is "struct signal_struct *", not "struct task_struct *" as
-> task_io_get_inblock() expects ?
+> Reading the kernel threads initialization code I see:
+>
+> int kernel_thread(...) {
+>
+> 	struct pt_regs regs;
+> 	memset(&regs, 0, sizeof(regs));
+> 	[...]
+> **	regs.xds = __USER_DS;
+> **	regs.xes = __USER_DS;
+> 	[...]
+> 	/* Ok, create the new process.. */
+> 	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, \
+> 	       	       0, NULL, NULL);
+>
+> Continuing with the code, the threads stack (beginning from %esp) is
+> initialized with the passed *regs from do_fork:
+>
+> int copy_thread(..., struct task_struct *p, struct pt_regs *regs) {
+>
+> 	struct pt_regs * childregs;
+> 	struct task_struct *tsk;
+> 	childregs = task_pt_regs(p);
+> **	*childregs = *regs;
+> 	[...]
+> ** 	p->thread.esp = (unsigned long) childregs;
+>
+>
+> So the question is what will a _kernel_ thread do with the Usermode Segment
+> address ?
+>
+> Thanks,
+>
+> P.S. I've tried commenting out both lines which led to a non functional init,
+> Also setting them to __USER_DS made init start but stopped issuing the error:
+> `Panic: Segment violation at 0x8049798 - Sleeping for 30 seconds'
+>
+> -- 
+> Ahmed S. Darwish
+> http://darwish.07.googlepages.com
 
-Me wonder how I can be sooo stupid this morning !
+You might be confusing two routines. The kernel thread routine sets
+DS and ES to the kernel data segment, __KERNEL_DS, not the user data
+segment. This is so the kernel thread can access the kernel data. Note
+that this is done by putting the values in the pt_regs structure so
+it doesn't happen 'now', but after the fork.
 
-I submit 'take3' after some coffee... thank you Oleg
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.68 BogoMips).
+New book: http://www.AbominableFirebug.com/
+_
+
 
-(BTW, I am going to switch from kmail to sylpheed because this damn mailer is 
-too clever for me)
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
+Thank you.
