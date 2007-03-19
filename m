@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932370AbXCSK3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbXCSKjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932370AbXCSK3b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 06:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbXCSK3b
+	id S1751978AbXCSKjP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 06:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbXCSKjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 06:29:31 -0400
-Received: from smtp21.orange.fr ([80.12.242.46]:45280 "EHLO smtp21.orange.fr"
+	Mon, 19 Mar 2007 06:39:15 -0400
+Received: from mx2.suse.de ([195.135.220.15]:46789 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932370AbXCSK3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 06:29:30 -0400
-X-ME-UUID: 20070319102928737.B3FBD1C00098@mwinf2102.orange.fr
-Message-ID: <45FE6607.6050905@wanadoo.fr>
-Date: Mon, 19 Mar 2007 11:29:27 +0100
-From: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	id S1751978AbXCSKjP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 06:39:15 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: linux-usb-devel@lists.sourceforge.net
+Subject: [PATCH]Re: [linux-usb-devel] drivers/usb/misc/iowarrior.c: NULL dereference
+Date: Mon, 19 Mar 2007 11:39:13 +0100
+User-Agent: KMail/1.9.1
+Cc: Adrian Bunk <bunk@stusta.de>, Christian Lucht <lucht@codemercs.com>,
+       Robert Marquardt <marquardt@codemercs.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <20070319092533.GN752@stusta.de>
+In-Reply-To: <20070319092533.GN752@stusta.de>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: I can't compile with success because ueagle-atm.ko undefined
-References: <45FC74C7.3010406@wanadoo.fr> <20070318161100.GQ752@stusta.de>
-In-Reply-To: <20070318161100.GQ752@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703191139.14026.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, I tried the kernel 2.6.19 and patched it with suspend2 for 2.6.19
-For 2.6.20, suspend2 is on development, so I can't use it
+Am Montag, 19. März 2007 10:25 schrieb Adrian Bunk:
+> The Coverity checker spotted the following NULL dereference:
 
+And this fixes an oops upon allocation failures.
 
+	Regards
+		Oliver
 
-Adrian Bunk a Ã©crit :
-> On Sun, Mar 18, 2007 at 12:07:51AM +0100, Thibaud Hulin wrote:
->> Hi,
->> I can't compile with success my kernel, i've got this error message :
->>
->>   Building modules, stage 2.
->>   MODPOST 1750 modules
->> WARNING: Can't handle masks in drivers/ide/pci/atiixp:FFFF05
->> WARNING: "try_to_freeze" [drivers/usb/atm/ueagle-atm.ko] undefined!
->> make[2]: *** [__modpost] Erreur 1
->> make[1]: *** [modules] Erreur 2
-> 
-> You didn't mention the kernel version, but this is a bug in kernels 
-> 2.6.20 and 2.6.20.1 fixed in kernel 2.6.20.2 (and 2.6.20.3).
-> 
->> When I uncheck this module, the compiled kernel works, but there are 
->> many problems and the kernel fails after minutes.
->> ...
-> 
-> That sounds like an unrelated problem that should be reported.
-> 
->> Thanks for help,
->> Thibaud.
-> 
-> cu
-> Adrian
-> 
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+-----
 
-
+--- linux-2.6.21-rc4/drivers/usb/misc/iowarrior.c.alt	2007-03-19 11:05:37.000000000 +0100
++++ linux-2.6.21-rc4/drivers/usb/misc/iowarrior.c	2007-03-19 11:07:30.000000000 +0100
+@@ -417,14 +417,14 @@
+ 		if (!int_out_urb) {
+ 			retval = -ENOMEM;
+ 			dbg("%s Unable to allocate urb ", __func__);
+-			goto error;
++			goto error_no_urb;
+ 		}
+ 		buf = usb_buffer_alloc(dev->udev, dev->report_size,
+ 				       GFP_KERNEL, &int_out_urb->transfer_dma);
+ 		if (!buf) {
+ 			retval = -ENOMEM;
+ 			dbg("%s Unable to allocate buffer ", __func__);
+-			goto error;
++			goto error_no_buffer;
+ 		}
+ 		usb_fill_int_urb(int_out_urb, dev->udev,
+ 				 usb_sndintpipe(dev->udev,
+@@ -459,7 +459,9 @@
+ error:
+ 	usb_buffer_free(dev->udev, dev->report_size, buf,
+ 			int_out_urb->transfer_dma);
++error_no_buffer:
+ 	usb_free_urb(int_out_urb);
++error_no_urb:
+ 	atomic_dec(&dev->write_busy);
+ 	wake_up_interruptible(&dev->write_wait);
+ exit:
