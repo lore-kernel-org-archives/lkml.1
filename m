@@ -1,81 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbXCSVIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932495AbXCSVKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753230AbXCSVIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbXCSVIb
+	id S932495AbXCSVKv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932705AbXCSVKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:08:31 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:56449 "EHLO smtp.osdl.org"
+	Mon, 19 Mar 2007 17:10:51 -0400
+Received: from main.gmane.org ([80.91.229.2]:42348 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753230AbXCSVIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:08:30 -0400
-Date: Mon, 19 Mar 2007 14:08:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
-Message-Id: <20070319140827.285dcc7f.akpm@linux-foundation.org>
-In-Reply-To: <45FEE33C.1020706@googlemail.com>
-References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
-	<45FEE33C.1020706@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	id S932495AbXCSVKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:10:50 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: is RSDL an "unfair" scheduler too?
+Date: Mon, 19 Mar 2007 17:14:49 -0400
+Message-ID: <45FEFD49.2080507@tmr.com>
+References: <200703042335.26785.a1426z@gawab.com> <20070317074506.GA13685@elte.hu> <87fy84i7nn.fsf@depni.sinp.msu.ru> <200703172048.46267.kernel@kolivas.org> <20070317114903.GA20673@elte.hu> <45FC525D.5000708@argo.co.il> <20070318012533.GB2986@holomorphy.com> <Pine.LNX.4.64.0703171830130.4964@woody.linux-foundation.org> <20070318052439.GT943@1wt.eu> <20070318060949.GA13583@gnuppy.monkey.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: mail.tmr.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <20070318060949.GA13583@gnuppy.monkey.org>
+Cc: ck@vds.kolivas.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 20:23:40 +0100
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-
-> akpm@linux-foundation.org napisał(a):
-> > The mm snapshot broken-out-2007-03-18-02-44.tar.gz has been uploaded to
-> > 
-> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-03-18-02-44.tar.gz
-> > 
-> > It contains the following patches against 2.6.21-rc4:
-> > 
+Bill Huey (hui) wrote:
+> On Sun, Mar 18, 2007 at 06:24:40AM +0100, Willy Tarreau wrote:
+>>> Dunno. I guess a lot of people would like to then manage the classes, 
+>>> which would be painful as hell. 
+>> Sure ! I wouldn't like people to point the finger on Linux saying "hey
+>> look, they can't write a good scheduler so you have to adjust the knobs
+>> yourself!". I keep in mind that Solaris' scheduler is very good, both
+>> fair and interactive. FreeBSD was good (I haven't tested for a long time).
+>> We should manage to get something good for most usages, and optimize
+>> later for specific uses.
 > 
-> ------------[ cut here ]------------
-> kernel BUG at mm/filemap.c:123!
-> invalid opcode: 0000 [#1]
-> PREEMPT SMP 
-> last sysfs file: devices/platform/w83627hf.656/temp2_input
-> Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nfsd exportfs lockd nfs_acl autofs4 sunrpc af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss evdev snd_mixer_oss snd_pcm intel_agp agpgart snd_timer snd soundcore i2c_i801 snd_page_alloc ide_cd cdrom rtc unix
-> CPU:    0
-> EIP:    0060:[<c01615de>]    Not tainted VLI
-> EFLAGS: 00010002   (2.6.21-rc4-mm1 #13)
-> EIP is at __remove_from_page_cache+0x42/0x4a
-> eax: 00000001   ebx: ca263a58   ecx: c043c968   edx: 00000001
-> esi: c6ad3480   edi: 00000000   ebp: c968dde8   esp: c968dde0
-> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> Process bash-shared-map (pid: 12273, ti=c968c000 task=c78bc030 task.ti=c968c000)
-> Stack: ca263a68 c6ad3480 c968ddf8 c016161b c6ad3480 000000da c968de04 c016824d 
->        c6ad3480 c968de88 c0168525 00001000 00000000 00000000 d17dc000 0005a91a 
->        00000000 ca263a58 0000005b ffffffff 0000091a 00000110 c54eb5e0 00000004 
-> Call Trace:
->  [<c0105256>] show_trace_log_lvl+0x1a/0x2f
->  [<c0105308>] show_stack_log_lvl+0x9d/0xac
->  [<c0105504>] show_registers+0x1ed/0x34c
->  [<c0105780>] die+0x11d/0x234
->  [<c0105921>] do_trap+0x8a/0xa3
->  [<c010620a>] do_invalid_op+0x97/0xa1
->  [<c033f87c>] error_code+0x7c/0x84
->  [<c016161b>] remove_from_page_cache+0x35/0x40
->  [<c016824d>] truncate_complete_page+0x38/0x42
->  [<c0168525>] truncate_inode_pages_range+0x2ce/0x2fe
->  [<c016856f>] truncate_inode_pages+0x1a/0x1c
->  [<c016ebcc>] vmtruncate+0x40/0xbb
->  [<c0193c61>] inode_setattr+0x5c/0x137
->  [<c01c328d>] ext3_setattr+0x19c/0x1f8
->  [<c0193e75>] notify_change+0x139/0x2ec
->  [<c017f666>] do_truncate+0x53/0x6c
->  [<c017facc>] do_sys_ftruncate+0x135/0x150
->  [<c017fb02>] sys_ftruncate64+0x1b/0x1d
->  [<c0104270>] syscall_call+0x7/0xb
+> Like I've said in a previous email, SGI schedulers have an interactive
+> term in addition to the normal "nice" values. If RSDL ends up being too
+> rigid for desktop use, then this might be a good idea to explore in
+> addition to priority manipulation.
+> 
+> However, it hasn't been completely proven that RSDL can't handle desktop
+> loads and that needs to be completely explored first. It certain seems
+> like, from the .jpgs that were posted earlier in the thread regarding mysql
+> performance, that RSDL seems to have improved performance for those set
+> ups so it's not universally the case that it sucks for server loads. The
+> cause of this performance difference has yet to be pinpointed.
 
-Ugly - it's hard to determine which patch might have caused that, but I
-bet it was Nick ;)
+I would say that RSDL is probably a bit better than default for server 
+use, although if the server starves for CPU interactive processing at 
+the console becomes leisurely indeed. The only thing I would like to 
+address is the order of magnitude blips in latency of nice processes, 
+which may be solved by playing with time slices. Con hasn't really 
+commented on that (or I haven't read down to it).
 
-How hard is it to reproduce?
+> 
+> Also, bandwidth scheduler like this are a new critical development for
+> things like the -rt patch. It would benefit greatly if the RSDL basic
+> mechanisms (RR and deadlines) were to somehow slip into that patch and
+> be used for a more strict -rt based scheduling class. It would be the basis
+> for first-class control over process resource usage and would be a first
+> in Linux or any mainstream kernel.
+
+I don't think that RSDL and -rt should be merged, but that's for Ingo 
+and Con to discuss. I would love to see RSDL in mainline as soon as it 
+is practical, marked as EXPERIMENTAL.
+> 
+> This would be a powerful addition to Linux as a whole and RSDL should
+> not be dismissed without these considerations. If it can somehow be
+> integrated into the kernel with interactivity concerns addressed, then
+> it would be an all out win for the kernel in both these areas.
+> 
+I don't think there are a lot of places where it underperforms the 
+default scheduler, and it avoids a lot of jackpot cases where an 
+overloaded system really bogs down. I would like to see more varied 
+testing before any changes are made, unless a simple change would 
+improve consistency of latency.
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
