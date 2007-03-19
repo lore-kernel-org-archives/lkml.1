@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965717AbXCSHhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965742AbXCSHjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965717AbXCSHhG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 03:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965751AbXCSHhG
+	id S965742AbXCSHjZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 03:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965751AbXCSHjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 03:37:06 -0400
-Received: from 30.mail-out.ovh.net ([213.186.62.213]:59623 "HELO
-	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965717AbXCSHhE (ORCPT
+	Mon, 19 Mar 2007 03:39:24 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:7228 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965742AbXCSHjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 03:37:04 -0400
-Message-ID: <45FE3D4B.20603@boichat.ch>
-Date: Mon, 19 Mar 2007 15:35:39 +0800
-From: Nicolas Boichat <nicolas@boichat.ch>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070309)
+	Mon, 19 Mar 2007 03:39:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=kZuZzn3sK/cHUUKzf/qJCFjSPMfmqDZgJuxxnOSjogGNORegSZnIXJPMURPccVAwRrr3jnFwygWJwazBWt9Wi9tkFdhnkgPd86vIYiWNLr80FpebPyw+NBcPGNwj4QBsDNcYFCXS8Pn55CyPWZeCbQBIOVD7YhUB024yPUNolGU=
+Message-ID: <45FE3E23.1010705@gmail.com>
+Date: Mon, 19 Mar 2007 16:39:15 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, rlove@rlove.org,
-       linux-kernel@hansmi.ch
-Subject: Re: [PATCH] Apple SMC driver (hardware monitoring and control)
-References: <45F7C083.7090504@boichat.ch>	<45FE1D44.8000805@boichat.ch> <20070318225430.3d704289.akpm@linux-foundation.org>
-In-Reply-To: <20070318225430.3d704289.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.3.0
+To: Christian <christiand59@web.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.21-rc3-git9] SATA NCQ failure with Samsum HD401LJ
+References: <fa.wBi/iM3CKSfrll7UnPHTbU0scEQ@ifi.uio.no> <200703182131.00476.christiand59@web.de> <45FDF9EE.20303@gmail.com> <200703190808.00746.christiand59@web.de>
+In-Reply-To: <200703190808.00746.christiand59@web.de>
+X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Ovh-Remote: 137.132.204.228 ()
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 19 Mar 2007 13:19:00 +0800 Nicolas Boichat <nicolas@boichat.ch> wrote:
-> 
->> This driver provides support for the Apple System Management Controller, which
->> provides an accelerometer (Apple Sudden Motion Sensor), light sensors,
->> temperature sensors, keyboard backlight control and fan control. Only
->> Intel-based Apple's computers are supported (MacBook Pro, MacBook, MacMini).
->>
-> 
-> It's trivia time:
-> [snip]
+Christian wrote:
+> Yes, for me the problem was introduced recently. I have moved around terabytes 
+> (sic!) on my discs with older kernels and I never got errors.
 
-Thanks for your comments, I'll send a new patch ASAP.
+There is always the possibility of disk going bad, so it would be great
+if you can boot an older kernel and verify that the problem doesn't
+occur on it.
 
-Best regards,
+Thanks.
 
-Nicolas
+-- 
+tejun
