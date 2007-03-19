@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932716AbXCSSWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932642AbXCSSX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932716AbXCSSWf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 14:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932642AbXCSSWf
+	id S932642AbXCSSX7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 14:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932705AbXCSSX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 14:22:35 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:42851 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932716AbXCSSWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 14:22:34 -0400
-Date: Mon, 19 Mar 2007 11:15:51 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Adrian Bunk <bunk@stusta.de>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 20/26] Xen-paravirt_ops: Core Xen implementation
-Message-ID: <20070319181551.GA10574@sequoia.sous-sol.org>
-References: <20070301232443.195603797@goop.org> <20070301232528.812011702@goop.org> <20070316091411.GF23174@elte.hu> <20070316171250.GM10574@sequoia.sous-sol.org> <m1aby9xg5s.fsf@ebiederm.dsl.xmission.com>
+	Mon, 19 Mar 2007 14:23:59 -0400
+Received: from csclub1.cs.uwaterloo.ca ([129.97.7.226]:42858 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932642AbXCSSX6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 14:23:58 -0400
+Date: Mon, 19 Mar 2007 14:23:55 -0400
+To: takada <takada@mbf.nifty.com>
+Cc: rdreier@cisco.com, pcnet32@verizon.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: MediaGX/GeodeGX1 requires X86_OOSTORE.
+Message-ID: <20070319182355.GC22467@csclub.uwaterloo.ca>
+References: <20070220144823.GN7585@csclub.uwaterloo.ca> <20070315.143939.193680310.takada@mbf.nifty.com> <20070315173137.GJ22466@csclub.uwaterloo.ca> <20070317.220810.208970218.takada@mbf.nifty.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1aby9xg5s.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070317.220810.208970218.takada@mbf.nifty.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric W. Biederman (ebiederm@xmission.com) wrote:
-> Chris Wright <chrisw@sous-sol.org> writes:
+On Sat, Mar 17, 2007 at 10:08:10PM +0900, takada wrote:
+> I tested some patterns. just X86_OOSTORE was effective. WBINVD is needless.
 > 
-> > * Ingo Molnar (mingo@elte.hu) wrote:
-> >> >  ENTRY(swapper_pg_dir)
-> >> > +	.align PAGE_SIZE_asm
-> >> >  	.fill 1024,4,0
-> >> 
-> >> does the native kernel lose memory here?
-> >
-> > Not in my builds.
-> 
-> Shouldn't the align be before the label.  Otherwise padding
-> would be inserted between the label and the data.
+> --- arch/i386/Kconfig.cpu~	2007-02-05 03:44:54.000000000 +0900
+> +++ arch/i386/Kconfig.cpu	2007-02-17 21:25:52.000000000 +0900
+> @@ -322,7 +322,7 @@ config X86_USE_3DNOW
+>  
+>  config X86_OOSTORE
+>  	bool
+> -	depends on (MWINCHIP3D || MWINCHIP2 || MWINCHIPC6) && MTRR
+> +	depends on (MWINCHIP3D || MWINCHIP2 || MWINCHIPC6) && MTRR || MGEODEGX1
+>  	default y
+>  
+>  config X86_TSC
 
-Yes, I think you're right.  Thanks
--chris
+Well that is exactly what I did for the Geode SC1200 (a GX1 based
+design) as well and it certainly improved things a lot for me as well.
+
+--
+Len Sorensen
