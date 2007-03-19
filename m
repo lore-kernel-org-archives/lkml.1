@@ -1,72 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030715AbXCSWJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964815AbXCSWZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030715AbXCSWJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 18:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030729AbXCSWJR
+	id S964815AbXCSWZO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 18:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964944AbXCSWZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 18:09:17 -0400
-Received: from lazybastard.de ([212.112.238.170]:38984 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030715AbXCSWJQ (ORCPT
+	Mon, 19 Mar 2007 18:25:13 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:13206 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964815AbXCSWZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 18:09:16 -0400
-Date: Mon, 19 Mar 2007 23:04:14 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, ast@domdv.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-Message-ID: <20070319220413.GA27302@lazybastard.org>
-References: <Pine.LNX.4.64.0703191022310.8671@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0703191007230.23929@schroedinger.engr.sgi.com> <20070319204945.GJ10459@waste.org> <20070319141038.212d4ac9.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 19 Mar 2007 18:25:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HmCe5X8wwdyrH3Sn43sIHokERIb7r/VY2fToNMOYqqIllvQwQAl4LkCxEnT0sizZN78eKSVui+nJrQpZ+LCCa0Ccj/nOTzu7BLQrkc5PMN7OhuRVegcn1OxkzhgO7ErhzaGWPEeaIoyHD2Kowo6284HEiKwjkiJmpggemuLa/Y8=
+Message-ID: <9a8748490703191525o1e80b3e5gdd088726df7715ec@mail.gmail.com>
+Date: Mon, 19 Mar 2007 23:25:08 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: [PATCH][1/5][resend] floppy.c: Initial (partial) CodingStyle cleanup
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <ak@suse.de>,
+       "Trent Waddington" <trent.waddington@gmail.com>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070319202008.GY752@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070319141038.212d4ac9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+References: <200703191610.13940.jesper.juhl@gmail.com>
+	 <20070319083159.0744cf5e.randy.dunlap@oracle.com>
+	 <200703191918.39277.jesper.juhl@gmail.com>
+	 <20070319202008.GY752@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 March 2007 14:10:38 -0700, Andrew Morton wrote:
-> 
-> Would prefer to do:
-> 
-> static inline void kmem_cache_free_if_not_null(struct kmem_cache *cachep,
-> 						void *objp)
-> {
-> 	if (objp)
-> 		kmem_cache_free(cachep, objp);
-> }
-> 
-> so that we don't add extra overhead to all the thousands of existing,
-> well-behaved callsites.
+On 19/03/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Mon, Mar 19, 2007 at 07:18:38PM +0100, Jesper Juhl wrote:
+> >...
+> > The second reason is that indenting two tabs seems to make the most sense for
+> > a few reasons;
+> >       a) not indenting at all is ugly, plain and simple.
+> >               void function(int a, int b,
+> >               int c, int d, int e)
+> >               {
+> >                       int foo;
+> >                       int bar;
+> >               ...
+> >               }
+> >       b) indenting only one tab stop puts parameters at the same indent level as
+> >          variables in the function which is potentially confusing (at least IMHO).
+> >               void function(int a, int b,
+> >                       int c, int d, int e)
+> >               {
+> >                       int foo;
+> >                       int bar;
+> >               ...
+> >               }
+> >       c) Indenting so that all parameter lines start at the opening paranthesis
+> >          rarely matches up with tabs so you have to use varying amounts of spaces
+> >          depending on how long the function name is. Not a good solution IMHO.
+> >               void function(int a, int b,
+> >                                    int c, int d, int e)
+> >...
+>
+> Your example is wrong, it's:
+>
+>                void function(int a, int b,
+>                              int c, int d, int e)
+>
+Hmm, thanks, when I wrote it in kmail it looked right. two tabs and
+then spaces to make it line up with the starting '('.
 
-In principle, this would work.  But two things need changing, imho:
-1. Don't inline the function.  kmem_cache_free() has only about 34 NULL
-   callers, if my grep is reliable, so this case is arguable.  But in
-   general, out-of-line functions are better than many extra
-   conditionals pulled in through the inline one.
-2. Switch the names.  According to Rusty's benchmark, the easiest way to
-   use and interface should be the correct one.  Every new driver
-   written by a rookie will call kmem_cache_free(), simply because the
-   name seems simpler.
+>
+> This is the most common convention in the kernel - and except for
+> extremely long function names it's the one with the best readability.
+>
+It may be the most common, but I don't agree that it has the best
+readability - but I guess that's very much a subjective thing.
 
-void kmem_cache_free_fast(struct kmem_cache *cachep, void *objp)
-{
-	/* old kmem_cache_free() */
-}
+> Yes, it's a problem with extremely long function names, but they are
+> rare in the kernel.
+>
+> And the "varying amounts of spaces" should be handled automatically by
+> your editor.
+>
 
-void kmem_cache_free(struct kmem_cache *cachep, void *objp)
-{
-	if (likely(objp))
-		kmem_cache_free_fast(cachep, objp);
-}
+My editor may handle it initially when writing the code, but then it
+gets changed and not updated or spaces and tabs end up getting mixed -
+like "<tab><tab><space><tab><space>" or something else - it easily
+turns into a mess.
 
-Jörn
+Simply using two tabs makes it easy to see that it's not variables in
+the function body and is an easy and simple convention to follow (and
+IMHO also very readable).
+
+But I guess we'll have to agree to disagree on this.
+In any case, thank you for your input.
 
 -- 
-Correctness comes second.
-Features come third.
-Performance comes last.
-Maintainability is easily forgotten.
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
