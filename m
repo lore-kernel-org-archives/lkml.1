@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965164AbXCSXmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965331AbXCSXnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965164AbXCSXmv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965263AbXCSXmv
+	id S965331AbXCSXnI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 19:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbXCSXnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:42:51 -0400
-Received: from colin.muc.de ([193.149.48.1]:3915 "EHLO mail.muc.de"
+	Mon, 19 Mar 2007 19:43:07 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:34378 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965164AbXCSXmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:42:50 -0400
-Date: 20 Mar 2007 00:42:48 +0100
-Date: Tue, 20 Mar 2007 00:42:48 +0100
-From: Andi Kleen <ak@muc.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, zach@vmware.com, anthony@codemonkey.ws,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
-Message-ID: <20070319234248.GA93348@muc.de>
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <45FEE010.1050103@goop.org>
+	id S965263AbXCSXnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 19:43:06 -0400
+Date: Mon, 19 Mar 2007 16:42:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       rmk@arm.linux.org.uk, sam@ravnborg.org
+Subject: Re: [PATCH] Complain about missing system calls.
+Message-Id: <20070319164243.026fdbfd.akpm@linux-foundation.org>
+In-Reply-To: <1173394873.3461.510.camel@pmac.infradead.org>
+References: <1173394873.3461.510.camel@pmac.infradead.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45FEE010.1050103@goop.org>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Possibly not, but I'd like to be able to say with confidence that
-> running a PARAVIRT kernel on bare hardware has no performance loss
-> compared to running a !PARAVIRT kernel.  There's the case of small
-> instruction sequences which have been replaced with calls (such as
-> sti/cli/push;popf/etc), 
+On Thu, 08 Mar 2007 23:01:13 +0000
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-My guess is that most critical pushf/popf are in spin_lock_irqsave(). It would 
-be possible to special case that one -- inline it -- and use out of line
-versions for all the others.
+> Most system calls seem to get added to i386 first. This patch
+> automatically generates a warning for any new system call which is
+> implemented on i386 but not the architecture currently being compiled.
+> On PowerPC at the moment, for example, it results in these warnings:
+> init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
+> init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
+> init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
 
--Andi
+hm, did you try running this on x86_64?
+
+In file included from init/missing_syscalls.c:73:
+init/missing_syscalls.h:23:3: warning: #warning syscall waitpid not implemented
+init/missing_syscalls.h:68:3: warning: #warning syscall umount not implemented
+init/missing_syscalls.h:77:3: warning: #warning syscall stime not implemented
+init/missing_syscalls.h:104:3: warning: #warning syscall nice not implemented
+init/missing_syscalls.h:146:3: warning: #warning syscall signal not implemented
+init/missing_syscalls.h:203:3: warning: #warning syscall sigaction not implemented
+init/missing_syscalls.h:206:3: warning: #warning syscall sgetmask not implemented
+init/missing_syscalls.h:209:3: warning: #warning syscall ssetmask not implemented
+init/missing_syscalls.h:218:3: warning: #warning syscall sigsuspend not implemented
+init/missing_syscalls.h:221:3: warning: #warning syscall sigpending not implemented
+init/missing_syscalls.h:269:3: warning: #warning syscall readdir not implemented
+init/missing_syscalls.h:308:3: warning: #warning syscall socketcall not implemented
+init/missing_syscalls.h:353:3: warning: #warning syscall ipc not implemented
+init/missing_syscalls.h:359:3: warning: #warning syscall sigreturn not implemented
+init/missing_syscalls.h:380:3: warning: #warning syscall sigprocmask not implemented
+init/missing_syscalls.h:404:3: warning: #warning syscall bdflush not implemented
+init/missing_syscalls.h:422:3: warning: #warning syscall _llseek not implemented
+init/missing_syscalls.h:428:3: warning: #warning syscall _newselect not implemented
+init/missing_syscalls.h:800:3: warning: #warning syscall statfs64 not implemented
+init/missing_syscalls.h:803:3: warning: #warning syscall fstatfs64 not implemented
+init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
+init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
+init/missing_syscalls.h:953:3: warning: #warning syscall lutimesat not implemented
+init/missing_syscalls.h:956:3: warning: #warning syscall revokeat not implemented
+init/missing_syscalls.h:959:3: warning: #warning syscall frevoke not implemented
