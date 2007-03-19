@@ -1,252 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbXCSKjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbXCSKos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752436AbXCSKjp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 06:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbXCSKjp
+	id S1752190AbXCSKos (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 06:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbXCSKoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 06:39:45 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:43311 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbXCSKjo convert rfc822-to-8bit (ORCPT
+	Mon, 19 Mar 2007 06:44:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:26705 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752190AbXCSKop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 06:39:44 -0400
-Content-Disposition: inline
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH, take2] getrusage() : Fill ru_inblock and ru_oublock fields if possible
-Date: Mon, 19 Mar 2007 11:39:40 +0100
-User-Agent: KMail/1.9.5
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
+	Mon, 19 Mar 2007 06:44:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=sDYJZT4OQ40YAZXE1QtAv3gg97QKUb3CRi/zKYgvtHhDLL2vVlNKb0UTh+ZdsuZYvc7ibj/NJ8I/2bDuvlTdOQlendOGV6fWIdLayBblJavmY2Opaa1CmLrNTJZ8vhYMD7i1rSJnuEMJuDpjjnYenIBsZmHHTh/sQjopPLNvmzc=
+Message-ID: <45FE6971.6090503@gmail.com>
+Date: Mon, 19 Mar 2007 18:44:01 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200703191139.40281.dada1@cosmosbay.com>
+To: linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
+CC: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       =?ISO-8859-1?Q?=3F=3F?= <yanghong@ccoss.com.cn>,
+       =?ISO-8859-1?Q?=3F=3F=3F?= <hongzhiyi@ccoss.com.cn>
+Subject: [RFC] HID bus design overview.
+References: <200703051532096508636@gmail.com>
+In-Reply-To: <200703051532096508636@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew
+--------------------------------------
+    HID bus design overview.
+--------------------------------------
 
-Here is the new version of this patch. Could you please update mm with it ?
+A. Terms.
 
-As noticed by Oleg, first version was wrong, reporting three times SELF
-values, and no support for RUSAGE_CHILDREN.
+    The device of an driver: this mean the device that this driver matched.
 
-RUSAGE_CHILDREN support imply we add cinblock and  coublock in signal_struct,
-to be able to accumulate inblock/oublock of  terminated and waited-for
-children.
+B. Design.
 
-Thank you
+    As we discussed before, The entire HID subsystem is divided into
+three layers:
+    
+    1. HID Driver Layer (HIDDL).
+        
+        This layer is composite of all HID drivers, however, these
+drivers are not equal each other, there are divided into three kinds:
+        
+        1.1 Fundamental driver.
+                
+        This is the most natural driver for us, they control hardware or
+other something that can effect hardware directly. In most cases, each
+of this kind driver is one standard and extendible implementation of HID
+specification for specific HID transport layer. For example, usbhid.ko
+for HID/USB or hidp.ko for Bluetooth/HID. This should alway input-able
+driver, i.e, it is able to allow HIDAL register input device for its device.
+                    
+        1.2 Shadow driver.
+        
+        These driver is created for those buggy/strange/extended HID
+device which fundamental driver can't handle rightly/completely. this
+driver does not share HID information with related fundamental driver,
+but the HID information of their devices is derived from other device of
+fundamental driver. These may not be input-able driver. The shadow
+driver does not share the input device with the related fundamental
+driver, even shadow driver is input-able, it have new input device in
+such case.
+        
+        1.3 HIDDEV drvier.
+        
+        In fact, This isn't one public kind of driver. it just is one
+optionally flag parameter while register driver (also include shadow
+driver). When turn on this feature, the HIDAL will create one hiddev for
+each device of driver, so the every such device also have one hiddev buddy.
+    
+    2. HID Abstract Layer (HIDAL).        
+    
+        This layer maintain HID bus, HID driver, HID device, HID hiddev
+such logical feature, and interact with input subsystem.
 
-[PATCH, take2] getrusage() : Fill ru_inblock and ru_oublock fields if possible
+    3. HID Transport Layer (HIDTL).
 
-If CONFIG_TASK_IO_ACCOUNTING is defined, we update io accounting counters for
-each task.
+        This layer may be rather thin. Up to now, we should have two
+implementation of transport layer, one for USB, one for Bluetooth.
 
-This patch permits reporting of these values using the well known getrusage()
-syscall, filling ru_inblock and ru_oublock instead of null values.
+C. Progress.
 
-For RUSAGE_CHILDREN support, we must add two new fields in struct
-signal_struct, named cinblock and coublock, where we sum the inblock/oublock
-values of terminated and waited-for children.
+Status: USB Fundamental driver works for new HID API now.
+Working: Shadow driver support.
+TODO:
+    1. Shadow driver support.
+    2. Port some drivers to new HID API, includes:
+        1) All HID ff drivers.
+        2) iBook/PowerBook special keys driver.
+    3. Bluetooth fundamental driver.
+    4. Bluetooth transport layer.
+    5. Port Other drivers.
+    6. HIDDEV/USB driver support.
+    7. HIDDEV/Bluetooth driver support.
 
-As TASK_IO_ACCOUNTING currently counts bytes, we approximate blocks
-count doing : nr_blocks = nr_bytes / 512
+I think that post this text earlier is better decision, well, I guess
+the new controversy about HID may begin ...
+  
+PS: In my words, the hiddev is same with rawdev, is it right in your words?
+    I cann't acquire the support for this from my corporation, :( So, I
+must complete this in my spare time, it may take longer time.
 
-Example of use :
-----------------------
-After patch is applied, /usr/bin/time command can now give a good
-approximation of IO that the process (and its children) had to do.
+Goodluck.
 
-$ /usr/bin/time dd if=/dev/zero of=/tmp/testfile count=1000
-1000+0 records in
-1000+0 records out
-512000 bytes (512 kB) copied, 0.0033976 seconds, 151 MB/s
-0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+1000outputs (0major+235minor)pagefaults 0swaps
-
-# /usr/bin/time updatedb
-1.63user 6.38system 4:21.42elapsed 3%CPU (0avgtext+0avgdata 0maxresident)k
-878112inputs+22448outputs (2major+1148minor)pagefaults 0swaps
-
-# ls -s --block-size=512 /var/lib/slocate/slocate.db
-22472 /var/lib/slocate/slocate.db
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
----
- include/linux/sched.h                  |    1 
- include/linux/task_io_accounting_ops.h |   44 +++++++++++++++++++++++
- kernel/exit.c                          |    8 ++++
- kernel/fork.c                          |    1 
- kernel/sys.c                           |    7 +++
- 5 files changed, 61 insertions(+)
-
---- linux-2.6.21-rc4/include/linux/sched.h
-+++ linux-2.6.21-rc4-ed/include/linux/sched.h
-@@ -457,6 +457,7 @@ struct signal_struct {
- 	cputime_t utime, stime, cutime, cstime;
- 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
- 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
-+	unsigned long cinblock, coublock;
- 
- 	/*
- 	 * Cumulative ns of scheduled CPU time for dead threads in the
---- linux-2.6.21-rc4/include/linux/task_io_accounting_ops.h
-+++ linux-2.6.21-rc4-ed/include/linux/task_io_accounting_ops.h
-@@ -10,11 +10,29 @@ static inline void task_io_account_read(
- 	current->ioac.read_bytes += bytes;
- }
- 
-+/*
-+ * We approximate number of blocks, because we account bytes only.
-+ * A 'block' is 512 bytes
-+ */
-+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
-+{
-+	return p->ioac.read_bytes >> 9;
-+}
-+
- static inline void task_io_account_write(size_t bytes)
- {
- 	current->ioac.write_bytes += bytes;
- }
- 
-+/*
-+ * We approximate number of blocks, because we account bytes only.
-+ * A 'block' is 512 bytes
-+ */
-+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
-+{
-+	return p->ioac.write_bytes >> 9;
-+}
-+
- static inline void task_io_account_cancelled_write(size_t bytes)
- {
- 	current->ioac.cancelled_write_bytes += bytes;
-@@ -25,16 +43,38 @@ static inline void task_io_accounting_in
- 	memset(&tsk->ioac, 0, sizeof(tsk->ioac));
- }
- 
-+/*
-+ * task_io_account_transfert() is called from __exit_signal()
-+ * to be able to provide correct ru_inblock/ru_oublock in struct rusage
-+ * This is why we take into account read_bytes and write_bytes only.
-+ */
-+static inline void task_io_account_transfert(struct task_struct *to,
-+	const struct task_struct *from)
-+{
-+	to->ioac.read_bytes += from->ioac.read_bytes;
-+	to->ioac.write_bytes += from->ioac.write_bytes;
-+}
-+
- #else
- 
- static inline void task_io_account_read(size_t bytes)
- {
- }
- 
-+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
-+{
-+	return 0;
-+}
-+
- static inline void task_io_account_write(size_t bytes)
- {
- }
- 
-+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
-+{
-+	return 0;
-+}
-+
- static inline void task_io_account_cancelled_write(size_t bytes)
- {
- }
-@@ -43,5 +83,9 @@ static inline void task_io_accounting_in
- {
- }
- 
-+static inline void task_io_account_transfert(struct task_struct *to,
-+	const struct task_struct *from)
-+{
-+}
- #endif		/* CONFIG_TASK_IO_ACCOUNTING */
- #endif		/* __TASK_IO_ACCOUNTING_OPS_INCLUDED */
---- linux-2.6.21-rc4/kernel/sys.c
-+++ linux-2.6.21-rc4-ed/kernel/sys.c
-@@ -29,6 +29,7 @@
- #include <linux/signal.h>
- #include <linux/cn_proc.h>
- #include <linux/getcpu.h>
-+#include <linux/task_io_accounting_ops.h>
- 
- #include <linux/compat.h>
- #include <linux/syscalls.h>
-@@ -2021,6 +2022,8 @@ static void k_getrusage(struct task_stru
- 			r->ru_nivcsw = p->signal->cnivcsw;
- 			r->ru_minflt = p->signal->cmin_flt;
- 			r->ru_majflt = p->signal->cmaj_flt;
-+			r->ru_inblock = p->signal->cinblock;
-+			r->ru_oublock = p->signal->coublock;
- 
- 			if (who == RUSAGE_CHILDREN)
- 				break;
-@@ -2032,6 +2035,8 @@ static void k_getrusage(struct task_stru
- 			r->ru_nivcsw += p->signal->nivcsw;
- 			r->ru_minflt += p->signal->min_flt;
- 			r->ru_majflt += p->signal->maj_flt;
-+			r->ru_inblock += task_io_get_inblock(p->signal);
-+			r->ru_oublock += task_io_get_oublock(p->signal);
- 			t = p;
- 			do {
- 				utime = cputime_add(utime, t->utime);
-@@ -2040,6 +2045,8 @@ static void k_getrusage(struct task_stru
- 				r->ru_nivcsw += t->nivcsw;
- 				r->ru_minflt += t->min_flt;
- 				r->ru_majflt += t->maj_flt;
-+				r->ru_inblock += task_io_get_inblock(t);
-+				r->ru_oublock += task_io_get_oublock(t);
- 				t = next_thread(t);
- 			} while (t != p);
- 			break;
---- linux-2.6.21-rc4/kernel/fork.c
-+++ linux-2.6.21-rc4-ed/kernel/fork.c
-@@ -874,6 +874,7 @@ static inline int copy_signal(unsigned l
- 	sig->utime = sig->stime = sig->cutime = sig->cstime = cputime_zero;
- 	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
- 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
-+	sig->cinblock = sig->coublock = 0;
- 	sig->sched_time = 0;
- 	INIT_LIST_HEAD(&sig->cpu_timers[0]);
- 	INIT_LIST_HEAD(&sig->cpu_timers[1]);
---- linux-2.6.21-rc4/kernel/exit.c
-+++ linux-2.6.21-rc4-ed/kernel/exit.c
-@@ -42,6 +42,7 @@
- #include <linux/audit.h> /* for audit_free() */
- #include <linux/resource.h>
- #include <linux/blkdev.h>
-+#include <linux/task_io_accounting_ops.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -113,6 +114,7 @@ static void __exit_signal(struct task_st
- 		sig->nvcsw += tsk->nvcsw;
- 		sig->nivcsw += tsk->nivcsw;
- 		sig->sched_time += tsk->sched_time;
-+		task_io_account_transfert(sig, tsk);
- 		sig = NULL; /* Marker for below. */
- 	}
- 
-@@ -1191,6 +1193,12 @@ static int wait_task_zombie(struct task_
- 			p->nvcsw + sig->nvcsw + sig->cnvcsw;
- 		psig->cnivcsw +=
- 			p->nivcsw + sig->nivcsw + sig->cnivcsw;
-+		psig->cinblock +=
-+			task_io_get_inblock(p) +
-+			task_io_get_inblock(sig) + sig->cinblock;
-+		psig->coublock +=
-+			task_io_get_oublock(p) +
-+			task_io_get_oublock(sig) + sig->coublock;
- 		spin_unlock_irq(&p->parent->sighand->siglock);
- 	}
- 
+-Li Yu
