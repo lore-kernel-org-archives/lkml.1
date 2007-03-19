@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030319AbXCSQPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030325AbXCSQP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030319AbXCSQPG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 12:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030325AbXCSQPG
+	id S1030325AbXCSQP1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 12:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030326AbXCSQP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 12:15:06 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35144 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030319AbXCSQPD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 12:15:03 -0400
-Date: Mon, 19 Mar 2007 17:15:04 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lenb@kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [2/6] 2.6.21-rc4: known regressions
-Message-ID: <20070319161504.GU752@stusta.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070318184915.GV752@stusta.de> <20070319090657.3142b8a8.randy.dunlap@oracle.com>
+	Mon, 19 Mar 2007 12:15:26 -0400
+Received: from mail.tpi.com ([198.107.51.143]:3752 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030325AbXCSQPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 12:15:25 -0400
+Message-ID: <45FEB71B.90406@canonical.com>
+Date: Mon, 19 Mar 2007 10:15:23 -0600
+From: Tim Gardner <tim.gardner@canonical.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070319090657.3142b8a8.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Pavel Machek <pavel@ucw.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Suspend to RAM fault in VT when resuming
+References: <45F709F2.80504@canonical.com> <20070313212457.GD12370@elf.ucw.cz> <45F752EF.6030701@canonical.com> <20070319150753.GC1915@elf.ucw.cz>
+In-Reply-To: <20070319150753.GC1915@elf.ucw.cz>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 09:06:57AM -0700, Randy Dunlap wrote:
-> On Sun, 18 Mar 2007 19:49:15 +0100 Adrian Bunk wrote:
+Pavel Machek wrote:
+> On Tue 2007-03-13 19:42:07, Tim Gardner wrote:
+>> Pavel Machek wrote:
+>>> Hi1
+>>>
+>>>> I've chased one of the 'Suspend to RAM' resume problems to a specific
+>>>> line in drivers/char/vt.c, see attached 2.6.21-rc3 diff with
+>>> Has suspend/resume ever worked on that hardware?
+>>>
+>>>> TRACE_RESUME() instrumentation. The macro scr_writew resolves to '*addr
+>>>> = val', which appears to be causing the problem. I've verified that the
+>>>> pointer is not NULL, but don't know if its really valid. Its pretty
+>>>> tough to tell what is happening, but on a Dell XPS it just hangs. A Dell
+>>>> Precision blinks the keyboard lights.
+>>> It is possible that video is not initialized at that point, and that
+>>> hardware goes seriously unhappy when you access non-existing vga. Does
+>>> it resume ok when you completely disable video support? 
+>> Resume works on the Dell XPS with the Ubuntu Edgy release
+>> Ubuntu-2.6.17-10.25 (2.6.17 plus a zillion fixes). Ubuntu's git tree is
+>> rsync://rsync.kernel.org/pub/scm/linux/kernel/git/bcollins/ubuntu-2.6.git.
+>> Ubuntu-2.6.17-8.21 is the first version where resume works, but there
+>> are a boatload of changes in ACPI and SW suspend between that and the
+>> previous tag Ubuntu-2.6.17-7.20. I don't know what made SW suspend work,
+>> but even knowing that won't tell me what broke it again.
+>>
+>> I've been avoiding the bisect process because it is quite time consuming
+>> on my slow machine, there is much branch weirdness, and I'm not that
+>> good with git. I thought if I narrowed the failure down to a small chunk
+>> of code in 2.6.21-rc3, then the answer might be obvious. No such luck, huh?
+>>
+>> This crash behaves like the video memory space has become unmapped. Is
+>> that possible?
 > 
-> > This email lists some known regressions in Linus' tree compared to 2.6.20.
-> > 
-> > If you find your name in the Cc header, you are either submitter of one
-> > of the bugs, maintainer of an affectected subsystem or driver, a patch
-> > of you caused a breakage or I'm considering you in any other way
-> > possibly involved with one or more of these issues.
-> > 
-> > Due to the huge amount of recipients, please trim the Cc when answering.
-> > 
-> > 
-> > Subject    : x86_64: boot hangs unless CONFIG_PCIEPORTBUS=n and acpi=off
-> > References : http://bugzilla.kernel.org/show_bug.cgi?id=8162
-> > Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
-> > Status     : unknown
+> That seems improbable. It is physical ram, we do not unmap that..
 > 
-> Bug is rejected due to user error.
-> This seems to be a netconsole hang, not ACPI.
 
-Thanks for this information.
-
-Is the netconsole hang a regression?
-
-> ~Randy
-
-cu
-Adrian
+The machine _has_ just come out of BIOS ACPI space. Perhaps PCI
+resources for video are hosed. All I can tell for sure is that this one
+line appears to cause some kind of crash. I'm working on finding some
+1394 resources to see if I can nail this one.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Tim Gardner tim.gardner@ubuntu.com
