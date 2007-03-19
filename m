@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030721AbXCSWHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030726AbXCSWI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030721AbXCSWHG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 18:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030726AbXCSWHE
+	id S1030726AbXCSWI2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 18:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030725AbXCSWI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 18:07:04 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:38272 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030721AbXCSWHA (ORCPT
+	Mon, 19 Mar 2007 18:08:28 -0400
+Received: from sccrmhc11.comcast.net ([63.240.77.81]:39807 "EHLO
+	sccrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030587AbXCSWI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 18:07:00 -0400
-Subject: Re: 2.6.20.3: kernel BUG at mm/slab.c:597 try#2
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Mike Christie <michaelc@cs.wisc.edu>,
-       Andreas Steinmetz <ast@domdv.de>, linux-scsi@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <200703191747.48826.gene.heskett@gmail.com>
-References: <45FDDA8E.8030100@domdv.de> <45FECD45.20705@cs.wisc.edu>
-	 <1174328987.3512.37.camel@mulgrave.il.steeleye.com>
-	 <200703191747.48826.gene.heskett@gmail.com>
+	Mon, 19 Mar 2007 18:08:26 -0400
+X-Greylist: delayed 6148 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 18:08:26 EDT
+Subject: Re: [linux-pm] [2/6] 2.6.21-rc2: known regressions
+From: Jim Gettys <jg@laptop.org>
+Reply-To: jg@laptop.org
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       Arkadiusz Miskiewicz <arekm@maven.pl>, linux-pm@lists.osdl.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       linux-usb-devel@lists.sourceforge.net,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Meelis Roos <mroos@linux.ee>,
+       Janosch Machowinski <jmachowinski@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Meyer <thomas.mey@web.de>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <45FEF395.9050409@tmr.com>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	 <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>
+	 <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+	 <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
+	 <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
+	 <20070309111957.GA3928@elf.ucw.cz>  <20070318160707.GC12673@elte.hu>
+	 <1174236045.6832.9.camel@localhost>  <45FEF395.9050409@tmr.com>
 Content-Type: text/plain
-Date: Mon, 19 Mar 2007 17:06:57 -0500
-Message-Id: <1174342017.3512.58.camel@mulgrave.il.steeleye.com>
+Organization: OLPC
+Date: Mon, 19 Mar 2007 18:08:21 -0400
+Message-Id: <1174342101.6832.173.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-19 at 17:47 -0400, Gene Heskett wrote:
-> James, could this also be the cause of a tar based backup going crazy and 
-> thinking all data is new under any 2.6.21-rc* kernel I've tested so far 
-> with amanda, which in my case uses tar?  I've tried the fedora patched 
-> tar-1.15-1, and one I hand built right after 1.15-1 came out over a year 
-> ago, and they both do it, but only when booted to a 2.6.21-rc* kernel.
+On Mon, 2007-03-19 at 16:33 -0400, Bill Davidsen wrote:
+
 > 
-> This obviously will be a show-stopper, either for amanda (and by 
-> inference, any app that uses tar), or for the migration of an amanda 
-> users machinery to a 2.6.21 kernel.
+> What you say sounds good, assuming that the cost of a sleep is less than 
+> the cost of the busy wait. But this may be hardware, the waits may be 
+> very small and frequent, and if it's hitting a small hardware window 
+> like retrace, delays in response will cause the time period to be missed 
+> completely. This probably less critical with very smart cards, many of 
+> us don't run them.
+> > 
 
-Er, I don't think so .. that sounds like mtime miscompare, which is
-either a problem with the filesystem or a problem with the way mtime is
-stored in the tar archive.
+Actually, various strategies involving short busy waiting, or looking at
+DMA address registers before sleeping were commonplace.  But a
+syscall/sleep/wakeup is/was pretty fast.  If you have an operation
+blitting the screen (e.g. scrolling), it takes a bit of time for the GPU
+to execute the command.  I see this right now on OLPC, where a wonderful
+music application needs to scroll (most of) the screen left),
+periodically, and we're losing samples sometimes at those operation.
 
-James
+Remember also, that being nice to everyone else by sleeping, there are
+more cycles to go around, and the scheduler can nicely boost the X
+server's priority as it will for "interactive" processes that are being
+cooperative.
+                                - Jim
+
+-- 
+Jim Gettys
+One Laptop Per Child
 
 
