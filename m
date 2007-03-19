@@ -1,68 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030581AbXCSSp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbXCSSus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030581AbXCSSp4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 14:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030584AbXCSSp4
+	id S1751597AbXCSSus (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 14:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXCSSus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 14:45:56 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:48116 "EHLO smtp.osdl.org"
+	Mon, 19 Mar 2007 14:50:48 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:48508 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030580AbXCSSpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 14:45:54 -0400
-Date: Mon, 19 Mar 2007 11:44:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, zach@vmware.com, anthony@codemonkey.ws,
-       netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-In-Reply-To: <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703191138430.6730@woody.linux-foundation.org>
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org>
- <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net>
- <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain>
- <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751199AbXCSSur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 14:50:47 -0400
+Date: Mon, 19 Mar 2007 10:50:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-kernel@vger.kernel.org, Alex Tomas <alex@clusterfs.com>
+Subject: Re: 2.6.21-rc3-mm2: PG_booked and PG_readahead
+Message-Id: <20070319105009.58c99280.akpm@linux-foundation.org>
+In-Reply-To: <45FEC5F4.8090906@shadowen.org>
+References: <45FEC5F4.8090906@shadowen.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 19 Mar 2007 17:18:44 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
 
-
-On Mon, 19 Mar 2007, Linus Torvalds wrote:
+> [applogies in advance if this has already been asked]
 > 
-> So *please* don't believe that you can make it "as cheap" to have some 
-> automatic fixup of two sequences, one inlined and one as a "call".  It may 
-> look so when you look at the single instruction generated, but you're 
-> ignoring all the instructions *around* the site.
+> I note that PG_booked and PG_readahead are both using bit 20 in
+> 2.6.21-rc3-mm2.  Is this intentional or perhaps a miss-merge.  They do
+> not sound obviously non-overlapping to my mind.
+> 
 
-Side note, you can certainly fix things like this at least in theory, but 
-it requires:
-
- - the "call" instruction that is used instead of the inlining should 
-   basically have no callee-clobbers. Any paravirt_ops called this way
-   should have a special calling sequence where they simple save and 
-   restore all the registers they use.
-
-   This is usually not that bad. Just create a per-architecture wrapper 
-   function that saves/restores anything that the C calling convention on 
-   that architecture says is clobbered by calls.
-
- - if the function has arguments, and the inlined sequence can take the 
-   arguments in arbitrary registers, you are going to penalize the inlined 
-   sequence anyway (by forcing some fixed arbitrary register allocation 
-   policy).This thing is largely unfixable without some really extreme 
-   compiler games (like post-processing the assembler output and having 
-   different entry-points depending on where the arguments are..)
-
-.. it will obviously depend on how thngs are done whether these things are 
-useful or not. But it does mean that it's always a good idea to just have 
-a config option of "turn off all the paravirt crap, because it *does* add 
-overhead, and replacing instructions on the fly doesn't make that 
-overhead go away".
-
-		Linus
+Yes, that's a merging problem - I'll fix it up.  Thanks.
