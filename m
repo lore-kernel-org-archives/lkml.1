@@ -1,82 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933738AbXCSCxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933776AbXCSC6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933738AbXCSCxW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Mar 2007 22:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933755AbXCSCxW
+	id S933776AbXCSC6c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Mar 2007 22:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933780AbXCSC6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Mar 2007 22:53:22 -0400
-Received: from dxa00.wellsfargo.com ([151.151.65.115]:36373 "EHLO
-	dxa00.wellsfargo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933738AbXCSCxV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Mar 2007 22:53:21 -0400
-content-class: urn:content-classes:message
+	Sun, 18 Mar 2007 22:58:32 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:34993 "EHLO relay4.usu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933776AbXCSC6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Mar 2007 22:58:31 -0400
+Message-ID: <45FDFC69.6020605@ums.usu.ru>
+Date: Mon, 19 Mar 2007 07:58:49 +0500
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-Subject: RE: 1000xf bus problem
-Date: Sun, 18 Mar 2007 21:53:09 -0500
-Message-ID: <E8C008223DD5F64485DFBDF6D4B7F71D0289EDBF@msgswbmnmsp25.wellsfargo.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 1000xf bus problem
-Thread-Index: AcdplYm1W7Pzc7WHR3e0wDvxSz3zxAAO+n3Q
-References: <fa.wDPF1lWlqGQpxbyWee64Z3t4BVM@ifi.uio.no> <45FD95CD.2030403@shaw.ca>
-From: <Greg.Chandler@wellsfargo.com>
-To: <hancockr@shaw.ca>, <linux-kernel@vger.kernel.org>
-Cc: <e1000-devel@lists.sourceforge.net>
-X-OriginalArrivalTime: 19 Mar 2007 02:53:10.0234 (UTC) FILETIME=[BA8EA3A0:01C769D1]
-X-WFMX: 0
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Sanitize filesystem NLS handling
+References: <45FD6EF5.1030706@ums.usu.ru> <87hcsius7b.fsf@duaron.myhome.or.jp>
+In-Reply-To: <87hcsius7b.fsf@duaron.myhome.or.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-lspci -v shows the message below, and I am moving files between systems,
-{from RAMdisk to RAMdisk} on idle machines.
-The transfer rate is concurrent with just under the max throughput
-capable on a 64-bit/66Mhz PCI socket.
- 
-
------Original Message-----
-From: Robert Hancock [mailto:hancockr@shaw.ca] 
-Sent: Sunday, March 18, 2007 2:41 PM
-To: Chandler, Greg; linux-kernel
-Cc: e1000-devel@lists.sourceforge.net
-Subject: Re: 1000xf bus problem
-
-Greg.Chandler@wellsfargo.com wrote:
-> I'm running a e1000xf adapter in a 64-bit/100Mhz PCI slot.  The intel 
-> site shows this is a supported config for the card, but linux is 
-> pulling this info:
+OGAWA Hirofumi wrote:
+> "Alexander E. Patrakov" <patrakov@ums.usu.ru> writes:
 > 
-> ed:02.0 Ethernet controller: Intel Corporation 82544EI Gigabit 
-> Ethernet Controller (Fiber) (rev 02)
-> 	Subsystem: Intel Corporation PRO/1000 XF Server Adapter
-> 	Flags: bus master, 66Mhz, medium devsel, latency 64, IRQ 18
-> 	Memory at f7fe0000 (64-bit, non-prefetchable) [size=128K]
->       Memory at f7fc0000 (64-bit, non-prefetchable) [size=128K]
->       I/O ports at 7000 [size=32]
->       [virtual] Expansion ROM at f10a0000 [disabled] [size=128K]
->       Capabilities: [dc] Power Management version 2
->       Capabilities: [e4] PCI-X non-bridge device
->       Capabilities: [f0] Message Signalled Interrupts: 64bit+ 
-> Queue=0/0
-> Enable-
+>>  * Removes CONFIG_FAT_DEFAULT_IOCHARSET, now CONFIG_NLS_DEFAULT is used 
+>> for this purpose. This is because the correct setting of both must match 
+>> the user's locale
 > 
-> My thoughput tests show it is definitely not running at the 100Mhz bus
+> The some filesystems want to use utf-8, and others don't want to use
+> utf-8, no?  And is it also true about some devices using vfat?
 
-> rate is should be capable of.
+Sorry, I can't parse this. Linux programs see filenames in the charset 
+specified by the "iocharset" mount option or this default. If some filenames 
+are in UTF-8 and some aren't, the "ls" command cannot show them all 
+correctly on a properly configured (aka: correctly displays the output of 
+"yes --help") terminal (because it assumes that all filenames are in the 
+same charset as indicated by the output of "locale charmap"). IMHO, this is 
+insane enough, and it makes sense  to disable this by default.
 
-How are you determining this?
+>>  * Merges the two CONFIG_SMB_NLS_REMOTE and CONFIG_FAT_DEFAULT_CODEPAGE 
+>> options into one, named CONFIG_CODEPAGE_DEFAULT. This is because the 
+>> correct setting of both must match the code page used by MS-DOS in the 
+>> user's country. For the same reason, CONFIG_SMB_NLS_DEFAULT is removed 
+>> (the only sane choice is "y")
+> 
+> No. Unfortunately the real is not simple like it in some case.
 
- > Any ideas on how to make it work at full speed?
+More details please. Are you saying that for Japanese people the codepage 
+for FAT and SMB filesystems is not the same? How do Microsoft products work 
+then? What do they send over the wire?
+
+>>  * Makes the FAT filesystem accept both the old-style "codepage=866" 
+>> mount option (which is inconsistent with other filesystems requiring a 
+>> codepage option) and the new-style "codepage=cp866" option. This is 
+>> necessary because CONFIG_CODEPAGE_DEFAULT must work for all filesystems 
+>> that use it
+> 
+> You allow to set any nls to codepage? If so, it is not good.
+
+I did this because it involved less changes. Only FAT treats codepage as a 
+number. All other filesystems already allow arbitrary NLS as a codepage 
+mount parameter.
+
+>>  * Downgrades the UTF-8 FAT warning to a note, because, while using the 
+>> utf8 iocharset produces a case-sensitive FAT filesystem, other 
+>> iocharsets simply produce wrong characters, which is much worse
+> 
+> No, utf-8 makes completely wrong entry. It's more wrong than other nls.
+
+For any non-UTF-8 based locales, the other NLS is correct and utf8 indeed 
+would produce completely wrong characters. But for UTF-8 based locales, utf8 
+is the only correct iocharset.
+
+And the downgraded warning is not for those who mis-use the utf8 iocharset 
+in non-UTF-8 locales, they need a completely different wording: "your 
+iocharset doesn't match the locale settings, non-ASCII characters will be 
+completely wrong in filenames". Unfortunately, this condition is impossible 
+to detect from within the kernel.
+
+>>  * Makes CONFIG_NLS_DEFAULT and CONFIG_CODEPAGE_DEFAULT adjustable at 
+>> runtime via the following mechanisms:
+> 
+> The configurable sounds sane, and it may help some case. But, it should
+> not be system global. At least, I think the default would be per-filesystem,
+> otherwise some configs seems to be needed for other filesystem after all.
+
+OK, now I see that your primary objection is to merging options, and 
+disagree (incorrect locale setup on your side is suspected). For meaningful 
+discussion, I want to see the following:
+
+1) Output of "locale -a"
+2) Output of "yes --help" from the same terminal
+3) The correct iocharset and codepage for mounting FAT filesystems on USB 
+flash drives that are known readable under Windows (here "correct" = "ls in 
+this terminal shows filenames correctly").
+4) The same for SMB filesystems.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca Home Page:
-http://www.roberthancock.com/
-
-
-
+Alexander E. Patrakov
