@@ -1,91 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933816AbXCSFS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933840AbXCSFUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933816AbXCSFS4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 01:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965047AbXCSFS4
+	id S933840AbXCSFUW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 01:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933843AbXCSFUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 01:18:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:39017 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933827AbXCSFSz (ORCPT
+	Mon, 19 Mar 2007 01:20:22 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:5951 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933840AbXCSFUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 01:18:55 -0400
-Date: Mon, 19 Mar 2007 07:19:34 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: David Miller <davem@davemloft.net>
-Cc: mst@dev.mellanox.co.il, ebiederman@lnxi.com, kuznet@ms2.inr.ac.ru,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-Message-ID: <20070319051934.GS11078@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <m3tzwi8a20.fsf@maxwell.lnxi.com>
-	<20070318223653.GO11078@mellanox.co.il>
-	<20070318224234.GP11078@mellanox.co.il>
-	<20070318.171337.112622504.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070318.171337.112622504.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+	Mon, 19 Mar 2007 01:20:21 -0400
+Date: Sun, 18 Mar 2007 23:20:09 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: 1000xf bus problem
+In-reply-to: <E8C008223DD5F64485DFBDF6D4B7F71D0289EDBF@msgswbmnmsp25.wellsfargo.com>
+To: Greg.Chandler@wellsfargo.com
+Cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Message-id: <45FE1D89.6020303@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.wDPF1lWlqGQpxbyWee64Z3t4BVM@ifi.uio.no>
+ <45FD95CD.2030403@shaw.ca>
+ <E8C008223DD5F64485DFBDF6D4B7F71D0289EDBF@msgswbmnmsp25.wellsfargo.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting David Miller <davem@davemloft.net>:
-> Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-> 
-> From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-> Date: Mon, 19 Mar 2007 00:42:34 +0200
-> 
-> > > Quoting Michael S. Tsirkin <mst@dev.mellanox.co.il>:
-> > > Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-> > > 
-> > > > Quoting Eric W. Biederman <ebiederman@lnxi.com>:
-> > > > Subject: Re: [ofa-general] Re: dst_ifdown breaks infiniband?
-> > > > 
-> > > > "Michael S. Tsirkin" <mst@dev.mellanox.co.il> writes:
-> > > > 
-> > > > >> > Why is neighbour->dev changed here?
-> > > > >> 
-> > > > >> It holds reference to device and prevents its destruction.
-> > > > >> If dst is held somewhere, we cannot destroy the device and deadlock
-> > > > >> while unregister.
-> > > > >
-> > > > > BTW, can this ever happen for the loopback device itself?
-> > > > > Is it ever unregistered?
-> > > > 
-> > > > Well I don't think the loopback device is currently but as soon
-> > > > as we get network namespace support we will have multiple loopback
-> > > > devices and they will get unregistered when we remove the network
-> > > > namespace.
-> > > 
-> > > Hmm. Then the code moving dst->dev to point to the loopback
-> > > device will have to be fixed too. I'll post a patch a bit later.
-> > 
-> > Does this look sane (untested)?
-> > 
-> > Signed-off-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
-> 
-> You can't point it at NULL, we don't point it at loopback
-> just for fun.
-> 
-> There can be asynchronous paths elsewhere in the networking still
-> referencing the neigh or dst and they will (correctly) feel free to
-> derefence whatever device is hanging there.  So transitioning
-> to NULL is invalid.
-> 
-> You guys will need to come up with a better solution for this silly
-> situation with network namespaces.  Loopback is always available to
-> point dead routes and neighbour entries at, and this assumption is
-> massively rooted in the networking.
+Greg.Chandler@wellsfargo.com wrote:
+> lspci -v shows the message below, and I am moving files between systems,
+> {from RAMdisk to RAMdisk} on idle machines.
+> The transfer rate is concurrent with just under the max throughput
+> capable on a 64-bit/66Mhz PCI socket.
 
-Yes, I see this now.
+I think you miscalculate, that bus can transfer 532 MB/sec, Gigabit 
+Ethernet tops out at 125 MB/sec at absolute maximum and it's difficult 
+to achieve that in practice.
 
-I guess it's best to focus on the original problem with dst_ifdown breaking
-infiniband for now.
-
-For that, we have to audit all the places where dst->neighbour is dereferenced for
-RCU safety, and this is already a massive task.
+And what lspci reports is merely that the device supports 66MHz bus 
+speed. That doesn't mean it doesn't support higher speeds and that 
+doesn't mean that's what it's running at.
 
 -- 
-MST
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
