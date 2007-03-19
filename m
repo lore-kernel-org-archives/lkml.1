@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbXCSINS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbXCSIOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbXCSINS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 04:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXCSINS
+	id S1752470AbXCSIOJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 04:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbXCSIOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 04:13:18 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42012 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751245AbXCSINQ (ORCPT
+	Mon, 19 Mar 2007 04:14:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:23871 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbXCSIOG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 04:13:16 -0400
-Date: Mon, 19 Mar 2007 19:12:58 +1100
-From: David Chinner <dgc@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
-Message-ID: <20070319081258.GE32597093@melbourne.sgi.com>
-References: <20070318233008.GA32597093@melbourne.sgi.com> <45FE2F8F.6010603@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Mar 2007 04:14:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=VXcEeTGGlh6Zxbdf/cAP5tonvEl6uRto5TgrmM29mrBRGCY0F0R0Nz2uVmBvGoSc8Xcgk9u0n6IP5+aGZKi0t2JvjYRV+l+KrIL+wS6dQMCQ0lwQBSECZmMJi/Ae1wyUKEZNTVAjSWVOxL9jOBQpMqXxsrLJazdOCpU6NmzhWbM=
+To: Bernd Eckenfels <ecki@lina.inka.de>
+Subject: Re: yes --help (was: [PATCH] Sanitize filesystem NLS handling)
+Date: Mon, 19 Mar 2007 13:14:41 +0500
+User-Agent: KMail/1.7.2
+References: <E1HTBW3-0006Ae-00@calista.eckenfels.net>
+In-Reply-To: <E1HTBW3-0006Ae-00@calista.eckenfels.net>
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45FE2F8F.6010603@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200703191314.42202.patrakov@ums.usu.ru>
+From: "Alexander E. Patrakov" <patrakov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 05:37:03PM +1100, Nick Piggin wrote:
-> David Chinner wrote:
-> > 
-> >+/*
-> >+ * block_page_mkwrite() is not allowed to change the file size as it gets
-> >+ * called from a page fault handler when a page is first dirtied. Hence 
-> >we must
-> >+ * be careful to check for EOF conditions here. We set the page up 
-> >correctly
-> >+ * for a written page which means we get ENOSPC checking when writing into
-> >+ * holes and correct delalloc and unwritten extent mapping on filesystems 
-> >that
-> >+ * support these features.
-> >+ *
-> >+ * We are not allowed to take the i_mutex here so we have to play games to
-> >+ * protect against truncate races as the page could now be beyond EOF.  
-> >Because
-> >+ * vmtruncate() writes the inode size before removing pages, once we have 
-> >the
-> >+ * page lock we can determine safely if the page is beyond EOF. If it is 
-> >not
-> >+ * beyond EOF, then the page is guaranteed safe against truncation until 
-> >we
-> >+ * unlock the page.
-> >+ */
-> >+int
-> >+block_page_mkwrite(struct vm_area_struct *vma, struct page *page,
-> >+		   get_block_t get_block)
-> >+{
-> >+	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
-> >+	unsigned long end;
-> >+	loff_t size;
-> >+	int ret = -EINVAL;
-> >+
-> >+	lock_page(page);
-> >+	size = i_size_read(inode);
-> >+	if ((page->mapping != inode->i_mapping) ||
-> >+	    ((page->index << PAGE_CACHE_SHIFT) > size)) {
-> >+		/* page got truncated out from underneath us */
-> >+		goto out_unlock;
-> >+	}
-> 
-> I see your explanation above, but I still don't see why this can't
-> just follow the conventional if (!page->mapping) check for truncation.
-> If the test happens to be performed after truncate concurrently
-> decreases i_size, then the blocks are going to get truncated by the
-> truncate afterwards anyway.
+Bernd Eckenfels wrote:
+> In article <45FDFC69.6020605@ums.usu.ru> you wrote:
+> > 2) Output of "yes --help" from the same terminal
+>
+> Question: what do you expect?
 
-We have to read the inode size in the normal case so that we know if
-the page is at EOF and is a partial page so we don't allocate past EOF in
-block_prepare_write().  Hence it seems like a no-brainer to me to check
-and error out on a page that we *know* is beyond EOF.
+A Japanese version of the help text. Unfortunately, LKML rejected it as SPAM, 
+so I'll redirect you to the graphical rendering of it:
 
-I can drop the check if you see no value in it - I just don't
-like the idea of ignoring obvious boundary condition violations...
+http://www.linuxfromscratch.org/~alexander/test-results/yes--help-ja.png
 
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Alexander E. Patrakov
