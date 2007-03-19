@@ -1,68 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933951AbXCSOI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933945AbXCSOJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933951AbXCSOI2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 10:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933945AbXCSOI2
+	id S933945AbXCSOJP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 10:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933954AbXCSOJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 10:08:28 -0400
-Received: from outmx019.isp.belgacom.be ([195.238.4.200]:53278 "EHLO
-	outmx019.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933951AbXCSOI1 (ORCPT
+	Mon, 19 Mar 2007 10:09:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58681 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933945AbXCSOJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 10:08:27 -0400
-Subject: Oops on serial access using diskless fanless puppylinux
-From: Gerd Luyten <gluyten@skynet.be>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 19 Mar 2007 15:08:07 +0100
-Message-Id: <1174313288.8249.4.camel@workstation.dyn.nu>
+	Mon, 19 Mar 2007 10:09:13 -0400
+Date: Mon, 19 Mar 2007 14:08:51 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc minor pagefault optimization with kprobes enabled
+Message-ID: <20070319140851.GA11285@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andi Kleen <ak@suse.de>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+	linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org
+References: <20070319133149.GA5781@infradead.org> <200703191500.34563.ak@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703191500.34563.ak@suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Agreed, it should be fixed generically.
+> 
+> I think the right fix would be to make the notifier call an inline
+> that checks the call chain in the caller. That would be cheap enough,
+> except for the cache line that might need to be referenced.
+> 
+> For the cache line the short term fix would be to find some other
+> global cache line that is referenced in the fault path anyways and put
+> it on the same (e.g. by just putting the variable next to it or
+> using a shared structure) 
+> 
+> Longer term might be something like Ben LaHaise's patch that can patch
+> code inline for rarely-read globals.
 
-BUG: unable to handle kernel NULL pointer dereference at virtual address
-00000000
- printing eip:
-00000000
-*pde = 00000000
-Oops: 0000 [#1]
-Modules linked in: lp parport_pc parport rt73 8139too mii fuse unionfs
-nls_iso8859_1 nls_cp437 sr_mod ide_cd cdrom ohci_hcd usbcore
-CPU:    0
-EIP:    0060:[<00000000>]    Not tainted VLI
-EFLAGS: 00010206   (2.6.18.1 #1)
-EIP is at rest_init+0x3feffdc0/0x20
-eax: ffffff05   ebx: 00000000   ecx: 00000000   edx: 000002f9
-esi: 00000292   edi: 00000040   ebp: 00000000   esp: c2345e48
-ds: 007b   es: 007b   ss: 0068
-Process solarmax (pid: 11939, ti=c2344000 task=c7b03a90
-task.ti=c2344000)
-Stack: c046add0 00000001 00000005 c78eb360 c046add0 c7b766f0 00000000
-c02779ca
-       c046add0 c7b766f0 c3ab5000 c7b766f0 c4a26e40 c0279328 c7b766f0
-00000000
-       ffffffed c4a26e40 00400041 00000100 c0265f14 c3ab5000 c4a26e40
-0102ca04
-Call Trace:
- [<c02779ca>] uart_startup+0xaa/0x130
- [<c0279328>] uart_open+0x88/0x100
- [<c0265f14>] tty_open+0x224/0x350
- [<c015ade8>] chrdev_open+0x98/0x130
- [<c015ad50>] chrdev_open+0x0/0x130
- [<c0151564>] __dentry_open+0x154/0x210
- [<c0151723>] nameidata_to_filp+0x23/0x40
- [<c0151667>] do_filp_open+0x47/0x50
- [<c0142e8c>] do_anonymous_page+0xac/0x130
- [<c022658e>] strncpy_from_user+0x2e/0x50
- [<c0151910>] do_sys_open+0x40/0xd0
- [<c01519b6>] sys_open+0x16/0x20
- [<c0102f07>] syscall_call+0x7/0xb
-Code:  Bad EIP value.
-EIP: [<00000000>] rest_init+0x3feffdc0/0x20 SS:ESP 0068:c2345e48
+I've attached a patch below the optimizes this code path for powerpc,
+but the scheme applies to all architectures aswell.  It just rips out all
+the callachin madness, and does as good as it gets in the pagefault
+handler:
+
+ - first we check for a user mode pagefault as that check is cheap
+ - then we check kprobes_running which unfortunately requires a
+   pagefault_disable
+ - finally we do a direct function call to kprobe_fault_handler
+
+> 
+> > Please do the right thing to optimize this instead and rip out the brandead
+> > notifier chain mechanisms and directly call into the krobes handler if
+> > kprobes are active, 
+> 
+> No, we should keep the debugger hooks here. Otherwise there will be a zillion
+> external patches patches code in at these places for the various debuggers,
+> resulting in a merge nightmare for lots of people.
+
+So get them to get their debuggers merged upstream.  Anyway, we need to
+keep the die notifiers because we've actually grown some users for it.
+I don't agree on the page fault notifiers, though - this code path
+is too important to bloat it for posisble existing external parasites.
 
 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-
+Index: linux-2.6.20/arch/powerpc/mm/fault.c
+===================================================================
+--- linux-2.6.20.orig/arch/powerpc/mm/fault.c	2007-03-19 14:50:41.000000000 +0100
++++ linux-2.6.20/arch/powerpc/mm/fault.c	2007-03-19 15:00:00.000000000 +0100
+@@ -39,37 +39,26 @@
+ #include <asm/kdebug.h>
+ #include <asm/siginfo.h>
+ 
+-#ifdef CONFIG_KPROBES
+-ATOMIC_NOTIFIER_HEAD(notify_page_fault_chain);
+ 
+-/* Hook to register for page fault notifications */
+-int register_page_fault_notifier(struct notifier_block *nb)
++#ifdef CONFIG_KPROBES
++static inline int notify_page_fault(struct pt_regs *regs)
+ {
+-	return atomic_notifier_chain_register(&notify_page_fault_chain, nb);
+-}
++	int ret = 0;
+ 
+-int unregister_page_fault_notifier(struct notifier_block *nb)
+-{
+-	return atomic_notifier_chain_unregister(&notify_page_fault_chain, nb);
+-}
++	/* kprobe_running() needs smp_processor_id() */
++	if (!user_mode(regs)) {
++		preempt_disable();
++		if (kprobe_running() && kprobe_fault_handler(regs, 11))
++			ret = 1;
++		preempt_enable();
++	}
+ 
+-static inline int notify_page_fault(enum die_val val, const char *str,
+-			struct pt_regs *regs, long err, int trap, int sig)
+-{
+-	struct die_args args = {
+-		.regs = regs,
+-		.str = str,
+-		.err = err,
+-		.trapnr = trap,
+-		.signr = sig
+-	};
+-	return atomic_notifier_call_chain(&notify_page_fault_chain, val, &args);
++	return ret;
+ }
+ #else
+-static inline int notify_page_fault(enum die_val val, const char *str,
+-			struct pt_regs *regs, long err, int trap, int sig)
++static inline int notify_page_fault(struct pt_regs *regs)
+ {
+-	return NOTIFY_DONE;
++	return 0;
+ }
+ #endif
+ 
+@@ -175,8 +164,7 @@ int __kprobes do_page_fault(struct pt_re
+ 	is_write = error_code & ESR_DST;
+ #endif /* CONFIG_4xx || CONFIG_BOOKE */
+ 
+-	if (notify_page_fault(DIE_PAGE_FAULT, "page_fault", regs, error_code,
+-				11, SIGSEGV) == NOTIFY_STOP)
++	if (notify_page_fault(regs))
+ 		return 0;
+ 
+ 	if (trap == 0x300) {
+Index: linux-2.6.20/arch/powerpc/kernel/kprobes.c
+===================================================================
+--- linux-2.6.20.orig/arch/powerpc/kernel/kprobes.c	2007-03-19 14:53:01.000000000 +0100
++++ linux-2.6.20/arch/powerpc/kernel/kprobes.c	2007-03-19 15:03:41.000000000 +0100
+@@ -376,7 +376,7 @@ out:
+ 	return 1;
+ }
+ 
+-static int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
++int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+ {
+ 	struct kprobe *cur = kprobe_running();
+ 	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+@@ -461,14 +461,6 @@ int __kprobes kprobe_exceptions_notify(s
+ 		if (post_kprobe_handler(args->regs))
+ 			ret = NOTIFY_STOP;
+ 		break;
+-	case DIE_PAGE_FAULT:
+-		/* kprobe_running() needs smp_processor_id() */
+-		preempt_disable();
+-		if (kprobe_running() &&
+-		    kprobe_fault_handler(args->regs, args->trapnr))
+-			ret = NOTIFY_STOP;
+-		preempt_enable();
+-		break;
+ 	default:
+ 		break;
+ 	}
+Index: linux-2.6.20/include/asm-powerpc/kdebug.h
+===================================================================
+--- linux-2.6.20.orig/include/asm-powerpc/kdebug.h	2007-03-19 14:55:13.000000000 +0100
++++ linux-2.6.20/include/asm-powerpc/kdebug.h	2007-03-19 15:03:27.000000000 +0100
+@@ -18,8 +18,20 @@ struct die_args {
+ 
+ extern int register_die_notifier(struct notifier_block *);
+ extern int unregister_die_notifier(struct notifier_block *);
+-extern int register_page_fault_notifier(struct notifier_block *);
+-extern int unregister_page_fault_notifier(struct notifier_block *);
++
++/*
++ * These are only here because kprobes.c wants them to implement a
++ * blatant layer violation.  Will hopefully go away soon once all
++ * architectures are updated.
++ */
++static inline int register_page_fault_notifier(struct notifier_block *nb)
++{
++	return 0;
++}
++static inline int unregister_page_fault_notifier(struct notifier_block *nb)
++{
++	return 0;
++}
+ extern struct atomic_notifier_head powerpc_die_chain;
+ 
+ /* Grossly misnamed. */
+@@ -29,7 +41,6 @@ enum die_val {
+ 	DIE_DABR_MATCH,
+ 	DIE_BPT,
+ 	DIE_SSTEP,
+-	DIE_PAGE_FAULT,
+ };
+ 
+ static inline int notify_die(enum die_val val,char *str,struct pt_regs *regs,long err,int trap, int sig)
+Index: linux-2.6.20/include/asm-powerpc/kprobes.h
+===================================================================
+--- linux-2.6.20.orig/include/asm-powerpc/kprobes.h	2007-03-19 15:01:14.000000000 +0100
++++ linux-2.6.20/include/asm-powerpc/kprobes.h	2007-03-19 15:01:55.000000000 +0100
+@@ -100,5 +100,6 @@ struct kprobe_ctlblk {
+ 
+ extern int kprobe_exceptions_notify(struct notifier_block *self,
+ 					unsigned long val, void *data);
++extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_KPROBES_H */
