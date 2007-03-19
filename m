@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751530AbXCSOdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbXCSOwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751530AbXCSOdn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 10:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbXCSOdn
+	id S932134AbXCSOwa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 10:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932194AbXCSOwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 10:33:43 -0400
-Received: from mail.screens.ru ([213.234.233.54]:53913 "EHLO mail.screens.ru"
+	Mon, 19 Mar 2007 10:52:30 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:46675 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751200AbXCSOdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 10:33:42 -0400
-Date: Mon, 19 Mar 2007 17:37:23 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Eric Dumazet <dada1@cosmosbay.com>
+	id S932134AbXCSOwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 10:52:30 -0400
+Date: Mon, 19 Mar 2007 15:52:28 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, take3] getrusage() : Fill ru_inblock and ru_oublock fields if possible
-Message-ID: <20070319143723.GA152@tv-sign.ru>
+Subject: Re: [PATCH, take3] getrusage() : Fill ru_inblock and ru_oublock
+ fields if possible
+Message-Id: <20070319155228.00b0d875.dada1@cosmosbay.com>
+In-Reply-To: <20070319143723.GA152@tv-sign.ru>
 References: <20070319130213.bb387150.dada1@cosmosbay.com>
+	<20070319143723.GA152@tv-sign.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.10.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070319130213.bb387150.dada1@cosmosbay.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/19, Eric Dumazet wrote:
->
-> [...snip...]
->  			do {
->  				utime = cputime_add(utime, t->utime);
-> @@ -2040,6 +2045,8 @@ static void k_getrusage(struct task_stru
->  				r->ru_nivcsw += t->nivcsw;
->  				r->ru_minflt += t->min_flt;
->  				r->ru_majflt += t->maj_flt;
-> +				r->ru_inblock += task_io_get_inblock(t);
-> +				r->ru_oublock += task_io_get_oublock(t);
->  				t = next_thread(t);
->  			} while (t != p);
+On Mon, 19 Mar 2007 17:37:23 +0300
+Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> (offtopic)
 
-(offtopic)
+Well..., it *is*  ontopic I'm afraid...
 
-We are reading u64 read_bytes/write_bytes which could be updated asynchronously.
-/proc/pid/io does the same.
+> 
+> We are reading u64 read_bytes/write_bytes which could be updated asynchronously.
+> /proc/pid/io does the same.
+> 
+> Of course, I don't blame this patch, just a stupid question: can we do something?
+> I guess not.
 
-Of course, I don't blame this patch, just a stupid question: can we do something?
-I guess not.
+We could do a proper thing with a seqlock (only needed on 32bit arches)
+See for example what is done for i_size in struct inode, with i_size_seqcount
 
-Oleg.
-
+Eric
