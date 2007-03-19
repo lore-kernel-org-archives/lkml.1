@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751663AbXCSSye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751686AbXCSSyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751663AbXCSSye (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 14:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbXCSSye
+	id S1751686AbXCSSyy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 14:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbXCSSyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 14:54:34 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:50837 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751638AbXCSSyd (ORCPT
+	Mon, 19 Mar 2007 14:54:54 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:47320 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1751686AbXCSSyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 14:54:33 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 19 Mar 2007 11:53:02 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch 2/13] signal/timer/event fds v6 - signalfd core ...
-In-Reply-To: <m1mz29xi8g.fsf@ebiederm.dsl.xmission.com>
-Message-ID: <Pine.LNX.4.64.0703191112500.2101@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.9367.1174004536.2>
- <m1mz29xi8g.fsf@ebiederm.dsl.xmission.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 19 Mar 2007 14:54:53 -0400
+Date: Mon, 19 Mar 2007 10:30:28 -0800 (PST)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Radoslaw Szkodzinski <astralstorm@gmail.com>
+cc: davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: is RSDL an "unfair" scheduler too?
+In-Reply-To: <f44c5fdf0703190627x43427f26qaed948aed71847ad@mail.gmail.com>
+Message-ID: <Pine.LNX.4.63.0703191027480.7769@qynat.qvtvafvgr.pbz>
+References: <45FCD449.60303@argo.co.il>  <MDEHLPKNGKAHNMBLJOLKGEMBCFAC.davids@webmaster.com>
+ <f44c5fdf0703190627x43427f26qaed948aed71847ad@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007, Eric W. Biederman wrote:
+On Mon, 19 Mar 2007, Radoslaw Szkodzinski wrote:
 
-> Davide Libenzi <davidel@xmailserver.org> writes:
-> 
-> > struct signalfd_siginfo {
-> > 	__u32 signo;	/* si_signo */
-> > 	__s32 err;	/* si_errno */
-> > 	__s32 code;	/* si_code */
-> > 	__u32 pid;	/* si_pid */
-> > 	__u32 uid;	/* si_uid */
-> > 	__s32 fd;	/* si_fd */
-> > 	__u32 tid;	/* si_fd */  
-> > 	__u32 band;	/* si_band */
-> > 	__u32 overrun;	/* si_overrun */
-> > 	__u32 trapno;	/* si_trapno */
-> > 	__s32 status;	/* si_status */
-> > 	__s32 svint;	/* si_int */
-> > 	__u64 svptr;	/* si_ptr */
-> > 	__u64 utime;	/* si_utime */
-> > 	__u64 stime;	/* si_stime */
-> > 	__u64 addr;	/* si_addr */
-> > };
-> 
-> Shouldn't we pad this to 128 bytes like we do siginfo in case there are
-> more fields we need to include, or we need to extend the size of some
-> field?
+>
+>> Consider two servers,
+> ^ ^ ^
+>
+> Well, aren't we discussing desktops?
+> Server admins can fine-tune the rights and CPU quotas per group.
+>
 
-Yes, I guess we can.
+how many multi-user desktops are there? most desktops that I have seen run just 
+about everything as a single user. I know that on mine, I don't want the 
+updatedb process that runs as 'nobody' out of cron to have the same percentage 
+of cpu as all the processes running as my userid.
 
-
-
-> I'm tempted to suggest we have a per arch function that tests current
-> to see if we are in a compat process or not so we can just use
-> siginfo.  But that is probably overkill.
-> 
-> > +
-> > +
-> > +struct signalfd_ctx {
-> > +	struct list_head lnk;
-> > +	wait_queue_head_t wqh;
-> > +	sigset_t sigmask;
-> > +	struct task_struct *tsk;
-> > +};
-> 
-> I think you want to use a struct pid *pid instead of a pointer to the
-> task struct here.  It is slightly less efficient (one more
-> dereference) but it means that we won't pin the task struct in memory
-> indefinitely.  Pinning the task_struct like this makes for a very
-> interesting way to get around the limits on the number of processes a
-> user can have.
-
-Hmm, when the task is detached from the sighand, we get a notify, so I 
-could do a put from there. This would avoid the extra de-reference. I need 
-to verify locking though ...
-
-
-
-- Davide
-
-
+David Lang
