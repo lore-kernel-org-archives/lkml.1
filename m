@@ -1,67 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbXCSPIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbXCSPJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932325AbXCSPIV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 11:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCSPIV
+	id S932339AbXCSPJk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 11:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCSPJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 11:08:21 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40490 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932325AbXCSPIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 11:08:20 -0400
-Date: Mon, 19 Mar 2007 16:07:53 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Tim Gardner <tim.gardner@canonical.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Suspend to RAM fault in VT when resuming
-Message-ID: <20070319150753.GC1915@elf.ucw.cz>
-References: <45F709F2.80504@canonical.com> <20070313212457.GD12370@elf.ucw.cz> <45F752EF.6030701@canonical.com>
+	Mon, 19 Mar 2007 11:09:40 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:45563 "EHLO relay4.usu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932339AbXCSPJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 11:09:39 -0400
+Message-ID: <45FEA7C9.1090305@ums.usu.ru>
+Date: Mon, 19 Mar 2007 20:10:01 +0500
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F752EF.6030701@canonical.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Sanitize filesystem NLS handling
+References: <45FD6EF5.1030706@ums.usu.ru> <87hcsius7b.fsf@duaron.myhome.or.jp>	<45FDFC69.6020605@ums.usu.ru> <87d535vqrz.fsf@duaron.myhome.or.jp>	<45FE13B9.8000203@ums.usu.ru> <87vegxdc8i.fsf@duaron.myhome.or.jp>	<45FE2483.4060706@ums.usu.ru> <878xdtux71.fsf@duaron.myhome.or.jp>
+In-Reply-To: <878xdtux71.fsf@duaron.myhome.or.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-03-13 19:42:07, Tim Gardner wrote:
-> Pavel Machek wrote:
-> > Hi1
-> > 
-> >> I've chased one of the 'Suspend to RAM' resume problems to a specific
-> >> line in drivers/char/vt.c, see attached 2.6.21-rc3 diff with
-> > 
-> > Has suspend/resume ever worked on that hardware?
-> > 
-> >> TRACE_RESUME() instrumentation. The macro scr_writew resolves to '*addr
-> >> = val', which appears to be causing the problem. I've verified that the
-> >> pointer is not NULL, but don't know if its really valid. Its pretty
-> >> tough to tell what is happening, but on a Dell XPS it just hangs. A Dell
-> >> Precision blinks the keyboard lights.
-> > 
-> > It is possible that video is not initialized at that point, and that
-> > hardware goes seriously unhappy when you access non-existing vga. Does
-> > it resume ok when you completely disable video support? 
-> 
-> Resume works on the Dell XPS with the Ubuntu Edgy release
-> Ubuntu-2.6.17-10.25 (2.6.17 plus a zillion fixes). Ubuntu's git tree is
-> rsync://rsync.kernel.org/pub/scm/linux/kernel/git/bcollins/ubuntu-2.6.git.
-> Ubuntu-2.6.17-8.21 is the first version where resume works, but there
-> are a boatload of changes in ACPI and SW suspend between that and the
-> previous tag Ubuntu-2.6.17-7.20. I don't know what made SW suspend work,
-> but even knowing that won't tell me what broke it again.
-> 
-> I've been avoiding the bisect process because it is quite time consuming
-> on my slow machine, there is much branch weirdness, and I'm not that
-> good with git. I thought if I narrowed the failure down to a small chunk
-> of code in 2.6.21-rc3, then the answer might be obvious. No such luck, huh?
-> 
-> This crash behaves like the video memory space has become unmapped. Is
-> that possible?
+OGAWA Hirofumi wrote:
 
-That seems improbable. It is physical ram, we do not unmap that..
+> I'm talking about two filesystems on a system here, not two encoding
+> on one filesystem. You can change locale on each filesystems, or each
+> directory, of course if it's not vfat.
+
+Note that you can still achieve this insane result by specifying iocharset 
+manually for each mount. Only the defaults are changed, but many distros set 
+the default iocharset to either iso8859-1 or utf8, both of which are wrong 
+for you. So you won't notice any regressions after my patch :)
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alexander E. Patrakov
