@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030621AbXCSVlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030672AbXCSVrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030621AbXCSVlq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 17:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030599AbXCSVlM
+	id S1030672AbXCSVrc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 17:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030624AbXCSVm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 17:41:12 -0400
-Received: from ns2.suse.de ([195.135.220.15]:59266 "EHLO mx2.suse.de"
+	Mon, 19 Mar 2007 17:42:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59385 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030616AbXCSVlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 17:41:09 -0400
-Date: Mon, 19 Mar 2007 14:39:20 -0700
+	id S1030634AbXCSVmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 17:42:06 -0400
+Date: Mon, 19 Mar 2007 14:40:18 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, mingo@elte.hu,
-       tglx@linutronix.de
-Subject: [patch 14/31] hrtimer: prevent overrun DoS in hrtimer_forward()
-Message-ID: <20070319213920.GP9261@kroah.com>
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 22/31] Fix sparc64 hugepage bugs
+Message-ID: <20070319214018.GX9261@kroah.com>
 References: <20070319213047.710101653@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hrtimer-prevent-overrun-dos-in-hrtimer_forward.patch"
+Content-Disposition: inline; filename="fix-sparc64-hugepage-bugs.patch"
 In-Reply-To: <20070319213647.GB9261@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: David Miller <davem@davemloft.net>
 
-hrtimer_forward() does not check for the possible overflow of
-timer->expires.  This can happen on 64 bit machines with large interval
-values and results currently in an endless loop in the softirq because the
-expiry value becomes negative and therefor the timer is expired all the
-time.
+[SPARC64]: Add missing HPAGE_MASK masks on address parameters.
 
-Check for this condition and set the expiry value to the max.  expiry time
-in the future.  The fix should be applied to stable kernel series as well.
+These pte loops all assume the passed in address is HPAGE
+aligned, make sure that is actually true.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/hrtimer.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/sparc64/mm/hugetlbpage.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -332,6 +332,12 @@ hrtimer_forward(struct hrtimer *timer, k
- 		orun++;
- 	}
- 	timer->expires = ktime_add(timer->expires, interval);
-+	/*
-+	 * Make sure, that the result did not wrap with a very large
-+	 * interval.
-+	 */
-+	if (timer->expires.tv64 < 0)
-+		timer->expires = ktime_set(KTIME_SEC_MAX, 0);
+--- a/arch/sparc64/mm/hugetlbpage.c
++++ b/arch/sparc64/mm/hugetlbpage.c
+@@ -248,6 +248,7 @@ void set_huge_pte_at(struct mm_struct *m
+ 	if (!pte_present(*ptep) && pte_present(entry))
+ 		mm->context.huge_pte_count++;
  
- 	return orun;
- }
++	addr &= HPAGE_MASK;
+ 	for (i = 0; i < (1 << HUGETLB_PAGE_ORDER); i++) {
+ 		set_pte_at(mm, addr, ptep, entry);
+ 		ptep++;
+@@ -266,6 +267,8 @@ pte_t huge_ptep_get_and_clear(struct mm_
+ 	if (pte_present(entry))
+ 		mm->context.huge_pte_count--;
+ 
++	addr &= HPAGE_MASK;
++
+ 	for (i = 0; i < (1 << HUGETLB_PAGE_ORDER); i++) {
+ 		pte_clear(mm, addr, ptep);
+ 		addr += PAGE_SIZE;
 
 -- 
