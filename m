@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030820AbXCTBD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030824AbXCTBGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030820AbXCTBD5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 21:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030822AbXCTBD4
+	id S1030824AbXCTBGF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 21:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030823AbXCTBGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 21:03:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38581 "EHLO
+	Mon, 19 Mar 2007 21:06:05 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38694 "EHLO
 	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030820AbXCTBDz (ORCPT
+	by vger.kernel.org with ESMTP id S1030802AbXCTBGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 21:03:55 -0400
-Date: Mon, 19 Mar 2007 18:03:54 -0700 (PDT)
+	Mon, 19 Mar 2007 21:06:03 -0400
+Date: Mon, 19 Mar 2007 18:06:02 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V3
-In-Reply-To: <20070319175524.812b2f5d.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703191756060.389@schroedinger.engr.sgi.com>
+In-Reply-To: <20070319172142.542c8284.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703191722110.13927@schroedinger.engr.sgi.com>
 References: <20070319233716.13775.45569.sendpatchset@schroedinger.engr.sgi.com>
- <20070319165329.b5830789.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703191655190.13879@schroedinger.engr.sgi.com>
- <20070319170741.5a24af4c.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703191718220.13927@schroedinger.engr.sgi.com>
- <20070319175524.812b2f5d.akpm@linux-foundation.org>
+ <20070319172142.542c8284.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,47 +27,279 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 19 Mar 2007, Andrew Morton wrote:
 
-> > See the patch. We are only touching 2 cachelines instead of 32. So even 
-> > without considering the page allocator overhead and the slab allocator 
-> > overhead (which will make the situation even better) its superior.
+> > +
+> > +#ifdef CONFIG_QUICKLIST
+> > +
+> > +#ifndef CONFIG_NR_QUICK
+> > +#define CONFIG_NR_QUICK 1
+> > +#endif
 > 
-> That's not proof, it is handwaving.  I could wave right back at you and
-> claim that the benefit from returning a cache-hot pte page back to the page
-> allocator for reuse exceeds the benefit which you waved at me above.
+> No, please don't define config items like this.  Do it in Kconfig.
 
-No you cannot make that claim. That would mean that you have to touch 
-32 pages which is inferior.
-  
-> You may well be right, but nothing is proven, afaict.
+They can be set up in the arch specific Kconfig. Ok. I moved the 
+#ifndef .. #endif into mm/Kconfig.
 
-Nothing can be proven except within a rigorously defined mathematical 
-system but even there we are limited by such things as Russel's paradox.
+> These guys seem to have multiple callsites for ia64 at least and probably
+> would benefit from being uninlined.
 
-Its obvious that this is right. And there has been significant work 
-invested into retaining page table pages on i386, sparc64 and ia64 for 
-exactly the specified. This patch does not change that at all for these 3 
-arches. There is no doubt about the correctness of the approach here.
+Then they would no longer be optimizable. Right now one can compile out 
+the constructor / destructor support and provide a constant list number 
+as well as constant gfp masks. This can be very small and benefit 
+tremendously from inlining.
 
-> > You do not think that our current way of handling ptes is okay? If we do 
-> > not zero the ptes then we need to separate munmap from process shutdown.
+Many arches do not need some features and there are only a few call 
+sites.
+
+> > +void quicklist_check(int nr, void (*dtor)(void *));
+> > +unsigned long quicklist_total_size(void);
+> > +
+> > +#else
+> > +void quicklist_check(int nr, void (*dtor)(void *))
+> > +{
+> > +}
+> > +
+> > +unsigned long quicklist_total_size(void)
+> > +{
+> > +	return 0;
+> > +}
+> > +#endif
 > 
-> Yep.  It's possible that process shutdown is a sufficiently common and
-> costly special-case for it to be worth special-casing.
+> That obviouslty won't link and wasn't tested.  Making these static inline
+> will help.
 
-Ok great idea but what does this have to do with this patch? This patch 
-simply generalizes something that has been there for ages.
+Hmmm... We could drop these conmpletely. If an arch does not use 
+quicklists then they should not be calling these.
 
-> > The advantage of the quicklists is that it does not require a rework of 
-> > the pte serialization.
+> > +#include <linux/module.h>
+> > +#include <linux/quicklist.h>
+> > +
+> > +DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
 > 
-> No, these are unrelated.  We can get pte pages from the page allocator and
-> zero them without touching the munmap handling.
-> 
-> But it's possible that if we _were_ to optimise the munmap handling as
-> suggested, the end result would be superior.
+> If we uninline those big inlines, this can perhaps be made static.
 
-Andrew, this is utter crap and unrelated to this work. The main thing here 
-is to generalize something that various arches already do and to avoid the 
-page struct handling collisions. You use pie-in-the-sky to argue against 
-consolidating code and fixing up usage conflicts of the slab with arch 
-code?
+Yeah but we want the inlines.
+
+> 
+> > +#define MIN_PAGES		25
+> > +#define MAX_FREES_PER_PASS	16
+> > +#define FRACTION_OF_NODE_MEM	16
+> 
+> Are these constants optimal for all architectures?
+
+I added them as parameters to quicklist_trim so that an arch 
+can specify their own settings.
+
+> > +	return min(pages_to_free, (long)MAX_FREES_PER_PASS);
+> > +}
+> 
+> min_t and max_t are the standard way of avoiding that warning.  Or stick a
+> UL on the constants (which is probably better).
+
+We do not need those since the constants are now parameters.
+
+> 
+> > +void quicklist_check(int nr, void (*dtor)(void *))
+> > +{
+> > +	long pages_to_free;
+> > +	struct quicklist *q;
+> > +
+> > +	q = &get_cpu_var(quicklist)[nr];
+> > +	if (q->nr_pages > MIN_PAGES) {
+> > +		pages_to_free = min_pages_to_free(q);
+> > +
+> > +		while (pages_to_free > 0) {
+> > +			void *p = quicklist_alloc(nr, 0, NULL);
+> > +
+> > +			if (dtor)
+> > +				dtor(p);
+> > +			free_page((unsigned long)p);
+> > +			pages_to_free--;
+> > +		}
+> > +	}
+> > +	put_cpu_var(quicklist);
+> > +}
+> 
+> The use of a literal 0 as a gfp_t is a bit ugly.  I assume that we don't
+> care because we should never actually call into the page allocator for this
+> caller.  But it's not terribly clear because there is no commentary
+> describing what this function is supposed to do.
+
+Right. Will add comments.
+
+> The name foo_check() is unfortunate: it implies that the function checks
+> something (ie: has no side-effects).  But this function _does_ change
+> things and perhaps should be called quicklist_trim() or something like
+> that.
+
+Tradition. Dave initially named it check_pgt_cache it seems.
+ 
+> This function lacks any commentary, but I was able to work it out.  I
+> think.  Some nice comments would be, umm, nice.
+
+ok. Here is a fixup patch:
+
+Index: linux-2.6.21-rc3-mm2/include/linux/quicklist.h
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/include/linux/quicklist.h	2007-03-19 17:41:42.000000000 -0700
++++ linux-2.6.21-rc3-mm2/include/linux/quicklist.h	2007-03-19 17:47:34.000000000 -0700
+@@ -13,10 +13,6 @@
+ 
+ #ifdef CONFIG_QUICKLIST
+ 
+-#ifndef CONFIG_NR_QUICK
+-#define CONFIG_NR_QUICK 1
+-#endif
+-
+ struct quicklist {
+ 	void *page;
+ 	int nr_pages;
+@@ -77,18 +73,11 @@ static inline void quicklist_free(int nr
+ 	put_cpu_var(quicklist);
+ }
+ 
+-void quicklist_check(int nr, void (*dtor)(void *));
+-unsigned long quicklist_total_size(void);
++void quicklist_trim(int nr, void (*dtor)(void *),
++	unsigned long min_pages, unsigned long max_free);
+ 
+-#else
+-void quicklist_check(int nr, void (*dtor)(void *))
+-{
+-}
++unsigned long quicklist_total_size(void);
+ 
+-unsigned long quicklist_total_size(void)
+-{
+-	return 0;
+-}
+ #endif
+ 
+ #endif /* LINUX_QUICKLIST_H */
+Index: linux-2.6.21-rc3-mm2/mm/Kconfig
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/mm/Kconfig	2007-03-19 17:41:42.000000000 -0700
++++ linux-2.6.21-rc3-mm2/mm/Kconfig	2007-03-19 17:42:49.000000000 -0700
+@@ -220,3 +220,7 @@ config DEBUG_READAHEAD
+ 
+ 	  Say N for production servers.
+ 
++config NR_QUICK
++	depends on QUICKLIST
++	default 1
++
+Index: linux-2.6.21-rc3-mm2/mm/quicklist.c
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/mm/quicklist.c	2007-03-19 17:41:42.000000000 -0700
++++ linux-2.6.21-rc3-mm2/mm/quicklist.c	2007-03-19 17:53:45.000000000 -0700
+@@ -21,39 +21,46 @@
+ 
+ DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
+ 
+-#define MIN_PAGES		25
+-#define MAX_FREES_PER_PASS	16
+ #define FRACTION_OF_NODE_MEM	16
+ 
+-static unsigned long max_pages(void)
++static unsigned long max_pages(unsigned long min_pages)
+ {
+ 	unsigned long node_free_pages, max;
+ 
+ 	node_free_pages = node_page_state(numa_node_id(),
+ 			NR_FREE_PAGES);
+ 	max = node_free_pages / FRACTION_OF_NODE_MEM;
+-	return max(max, (unsigned long)MIN_PAGES);
++	return max(max, min_pages);
+ }
+ 
+-static long min_pages_to_free(struct quicklist *q)
++static long min_pages_to_free(struct quicklist *q,
++	unsigned long min_pages, long max_free)
+ {
+ 	long pages_to_free;
+ 
+-	pages_to_free = q->nr_pages - max_pages();
++	pages_to_free = q->nr_pages - max_pages(min_pages);
+ 
+-	return min(pages_to_free, (long)MAX_FREES_PER_PASS);
++	return min(pages_to_free, max_free);
+ }
+ 
+-void quicklist_check(int nr, void (*dtor)(void *))
++/*
++ * Trim down the number of pages in the quicklist
++ */
++void quicklist_trim(int nr, void (*dtor)(void *),
++	unsigned long min_pages, unsigned long max_free)
+ {
+ 	long pages_to_free;
+ 	struct quicklist *q;
+ 
+ 	q = &get_cpu_var(quicklist)[nr];
+-	if (q->nr_pages > MIN_PAGES) {
+-		pages_to_free = min_pages_to_free(q);
++	if (q->nr_pages > min_pages) {
++		pages_to_free = min_pages_to_free(q, min_pages, max_free);
+ 
+ 		while (pages_to_free > 0) {
++			/*
++			 * We pass a gfp_t of 0 to quicklist_alloc here
++			 * because we will never call into the page allocator.
++			 */
+ 			void *p = quicklist_alloc(nr, 0, NULL);
+ 
+ 			if (dtor)
+Index: linux-2.6.21-rc3-mm2/arch/i386/mm/pgtable.c
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/arch/i386/mm/pgtable.c	2007-03-19 17:42:44.000000000 -0700
++++ linux-2.6.21-rc3-mm2/arch/i386/mm/pgtable.c	2007-03-19 17:42:49.000000000 -0700
+@@ -299,6 +299,6 @@ void pgd_free(pgd_t *pgd)
+ 
+ void check_pgt_cache(void)
+ {
+-	quicklist_check(QUICK_PGD, pgd_dtor);
+-	quicklist_check(QUICK_PMD, NULL);
++	quicklist_trim(QUICK_PGD, pgd_dtor, 25, 16);
++	quicklist_trim(QUICK_PMD, NULL, 25, 16);
+ }
+Index: linux-2.6.21-rc3-mm2/include/asm-x86_64/pgalloc.h
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/include/asm-x86_64/pgalloc.h	2007-03-19 17:42:46.000000000 -0700
++++ linux-2.6.21-rc3-mm2/include/asm-x86_64/pgalloc.h	2007-03-19 17:42:49.000000000 -0700
+@@ -121,7 +121,7 @@ static inline void pte_free(struct page 
+ 
+ static inline void check_pgt_cache(void)
+ {
+-	quicklist_check(QUICK_PGD, pgd_dtor);
+-	quicklist_check(QUICK_PT, NULL);
++	quicklist_trim(QUICK_PGD, pgd_dtor, 25, 16);
++	quicklist_trim(QUICK_PT, NULL, 25, 16);
+ }
+ #endif /* _X86_64_PGALLOC_H */
+Index: linux-2.6.21-rc3-mm2/include/asm-sparc64/pgalloc.h
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/include/asm-sparc64/pgalloc.h	2007-03-19 17:42:47.000000000 -0700
++++ linux-2.6.21-rc3-mm2/include/asm-sparc64/pgalloc.h	2007-03-19 17:42:49.000000000 -0700
+@@ -67,7 +67,7 @@ static inline void pte_free(struct page 
+ 
+ static inline void check_pgt_cache(void)
+ {
+-	quicklist_check(0, NULL);
++	quicklist_trim(0, NULL, 25, 16);
+ }
+ 
+ #endif /* _SPARC64_PGALLOC_H */
+Index: linux-2.6.21-rc3-mm2/include/asm-ia64/pgalloc.h
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/include/asm-ia64/pgalloc.h	2007-03-19 17:42:43.000000000 -0700
++++ linux-2.6.21-rc3-mm2/include/asm-ia64/pgalloc.h	2007-03-19 17:42:59.000000000 -0700
+@@ -106,7 +106,7 @@ static inline void pte_free_kernel(pte_t
+ 
+ static inline void check_pgt_cache(void)
+ {
+-	quicklist_check(0, NULL);
++	quicklist_trim(0, NULL, 25, 16);
+ }
+ 
+ #define __pte_free_tlb(tlb, pte)	pte_free(pte)
+
+
