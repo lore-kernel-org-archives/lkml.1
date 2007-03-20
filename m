@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbXCTRoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895AbXCTRqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751877AbXCTRoP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 13:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbXCTRoP
+	id S1751895AbXCTRqx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 13:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXCTRqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 13:44:15 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:52768 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbXCTRoO (ORCPT
+	Tue, 20 Mar 2007 13:46:53 -0400
+Received: from honk1.physik.uni-konstanz.de ([134.34.140.224]:38274 "EHLO
+	honk1.physik.uni-konstanz.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751895AbXCTRqw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 13:44:14 -0400
-Message-ID: <46001D5C.3020406@nortel.com>
-Date: Tue, 20 Mar 2007 11:43:56 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
+	Tue, 20 Mar 2007 13:46:52 -0400
+X-Greylist: delayed 1240 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Mar 2007 13:46:52 EDT
+Date: Tue, 20 Mar 2007 18:21:40 +0100
+From: Guido Guenther <agx@sigxcpu.org>
 To: linux-kernel@vger.kernel.org
-Subject: how to purposfully fragment memory?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Mar 2007 17:44:00.0370 (UTC) FILETIME=[57BBE520:01C76B17]
+Cc: Richard Purdie <rpurdie@rpsys.net>
+Subject: [patch] rivafb: fix initial brightness
+Message-ID: <20070320172140.GA28000@bogon.ms20.nix>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+this is the rivafb equivalent of
+238576e12fef1d52751c6e08db2d0bdb0e248caf. It fixes rivafb having a
+default backlight brightness of 0 (no picture at all) on a PBook 6,1.
+Since this is a regression over 2.6.20, can this go into 2.6.21?
+Cheers,
+ -- Guido
 
-I'm trying to test code paths dealing with fragmented memory, so I'd 
-like to have a simple way to cause fragmented memory in the kernel.  Is 
-there any API in the kernel that would let me allocate two contiguous 
-pages, then free one of them?
+Signed-Off-By: Guido Guenther <agx@sigxcpu.org>
 
+diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
+index 1d1c7c6..d7ece8d 100644
+--- a/drivers/video/riva/fbdev.c
++++ b/drivers/video/riva/fbdev.c
+@@ -285,8 +285,6 @@ static const struct riva_regs reg_template = {
+ #define MAX_LEVEL 0x534
+ #define LEVEL_STEP ((MAX_LEVEL - MIN_LEVEL) / FB_BACKLIGHT_MAX)
+ 
+-static struct backlight_properties riva_bl_data;
+-
+ static int riva_bl_get_level_brightness(struct riva_par *par,
+ 		int level)
+ {
+@@ -372,7 +370,7 @@ static void riva_bl_init(struct riva_par *par)
+ 		FB_BACKLIGHT_MAX);
+ 
+ 	bd->props.max_brightness = FB_BACKLIGHT_LEVELS - 1;
+-	bd->props.brightness = riva_bl_data.max_brightness;
++	bd->props.brightness = bd->props.max_brightness;
+ 	bd->props.power = FB_BLANK_UNBLANK;
+ 	backlight_update_status(bd);
+ 
 
-I tried the following, but it triggers an oops in free_page():
-
-unsigned long addr =
-	__get_free_pages(GFP_KERNEL|__GFP_NORETRY|__GFP_NOWARN, 1);
-if (!addr)
-	break;
-free_page(addr+4096);
-
-
-Thanks,
-
-Chris
