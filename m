@@ -1,83 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbXCTQBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933956AbXCTQCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbXCTQBm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbXCTQBk
+	id S933956AbXCTQCE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbXCTQCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:01:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:24764 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694AbXCTQBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:01:37 -0400
-Date: Tue, 20 Mar 2007 18:02:17 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, general@lists.openfabrics.org,
-       Roland Dreier <rolandd@cisco.com>, David Miller <davem@davemloft.net>
-Subject: Re: dst_ifdown breaks infiniband?
-Message-ID: <20070320160217.GC31495@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070318155532.GG7958@mellanox.co.il>
-	<20070318191238.GA20518@ms2.inr.ac.ru>
-	<20070318195355.GB11078@mellanox.co.il>
-	<20070318201826.GB27004@ms2.inr.ac.ru>
-	<20070319093632.GB8386@mellanox.co.il>
-	<20070319120534.GA28187@ms2.inr.ac.ru>
-	<20070319121248.GD18497@mellanox.co.il>
-	<20070319125919.GA4239@ms2.inr.ac.ru>
-	<20070319151336.GA24225@mellanox.co.il>
-	<20070319232043.GA23359@ms2.inr.ac.ru>
+	Tue, 20 Mar 2007 12:02:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54468 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751694AbXCTQBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:01:52 -0400
+Message-ID: <46000552.7010606@redhat.com>
+Date: Tue, 20 Mar 2007 12:01:22 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070319232043.GA23359@ms2.inr.ac.ru>
-User-Agent: Mutt/1.5.11
+To: stefan@prie.be
+CC: Olaf Kirch <olaf.kirch@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Kernel 2.6.20 does not work anymore with SCSI or SATA on old
+ Opteron / Xeon servers
+References: <45FDA626.9000404@prie.be> <20070319232732.854d7120.akpm@linux-foundation.org> <45FFB867.3060500@prie.be> <200703201154.58234.olaf.kirch@oracle.com> <45FFE163.2050107@prie.be>
+In-Reply-To: <45FFE163.2050107@prie.be>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>:
-> Subject: Re: dst_ifdown breaks infiniband?
-> 
+Stefan Priebe wrote:
 > Hello!
 > 
-> > This might work. Could you post a patch to better show what you mean to do?
+> With the sysrq i've found the function with is the problem:
+> inode.c => nfs_getattr => nfs_sync_mapping_range
 > 
-> Here it is.
+> I've also found the attached patch - which is not included in any stable
+> release nor in 2.6.21.X but is public since 20.02.07
 > 
-> ->neigh_destructor() is killed (not used), replaced with ->neigh_cleanup(),
-> which is called when neighbor entry goes to dead state. At this point
-> everything is still valid: neigh->dev, neigh->parms etc.
+> I think this is very important.
 > 
-> The device should guarantee that dead neighbor entries (neigh->dead != 0)
-> do not get private part initialized, otherwise nobody will cleanup it.
 
-OK, I stress-tested this for about 9 hours - apparently this resolves the issues
-I was seeing both with hotplug device unregister and module removal.
+It is queued for 2.6.20.4.
 
-This is an old bug, but somehow it did not trigger on
-older kernels - some code restructuring in infiniband is probably
-the reason - so from that POV it's a regression in 2.6.21.
-So now several people are experiencing these crashes.
-
-David, Alexey, what do you think about this patch? Is it right?
-Could this patch be considered for 2.6.21?
-
-Acked-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
-
-> 
-> I think this is enough for ipoib which is the only user of this thing.
-> Initialization private part of neighbor entries happens in ipib
-> start_xmit routine, which is not reached when device is down.
-> But it would be better to add explicit test for neigh->dead
-> in any case.
-
-Additionally, ip over infiniband actually tests a separate flag
-IPOIB_FLAG_ADMIN_UP before looking at an skb.
-This flag is cleared before the device goes down.
-Taken together this should be sufficient I think.
-
--- 
-MST
