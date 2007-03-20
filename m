@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbXCTPtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbXCTPzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbXCTPtL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 11:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbXCTPtL
+	id S1753855AbXCTPzP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 11:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbXCTPzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 11:49:11 -0400
-Received: from waste.org ([66.93.16.53]:56971 "EHLO waste.org"
+	Tue, 20 Mar 2007 11:55:14 -0400
+Received: from mx1.suse.de ([195.135.220.2]:36995 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753371AbXCTPtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 11:49:09 -0400
-Date: Tue, 20 Mar 2007 10:36:27 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take3 1/6][resend] marking __init
-Message-ID: <20070320153627.GF4892@waste.org>
-References: <45FFCF31.3040000@bx.jp.nec.com> <45FFD272.6020105@bx.jp.nec.com>
-Mime-Version: 1.0
+	id S1753855AbXCTPzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 11:55:13 -0400
+Date: Tue, 20 Mar 2007 08:52:59 -0700
+From: Greg KH <gregkh@suse.de>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/31] 2.6.20-stable review
+Message-ID: <20070320155259.GC14889@suse.de>
+References: <20070319213647.GB9261@kroah.com> <200703200115.05861.gene.heskett@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45FFD272.6020105@bx.jp.nec.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <200703200115.05861.gene.heskett@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 09:24:18PM +0900, Keiichi KII wrote:
-> From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+On Tue, Mar 20, 2007 at 01:15:02AM -0400, Gene Heskett wrote:
 > 
-> This patch contains the following cleanups.
->  - add __init for initialization functions(option_setup() and
->    init_netconsole()).
+> In any event, something tickled the monster, and its hungry.  This is a 
+> full-stop, show-stopper AFAIAC.
 > 
-> Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
-> Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
-> ---
-> Index: linux-mm/drivers/net/netconsole.c
-> ===================================================================
-> --- linux-mm.orig/drivers/net/netconsole.c
-> +++ linux-mm/drivers/net/netconsole.c
-> @@ -91,7 +91,7 @@ static struct console netconsole = {
->  	.write = write_msg
->  };
->  
-> -static int option_setup(char *opt)
-> +static int __init option_setup(char *opt)
->  {
->  	configured = !netpoll_parse_options(&np, opt);
->  	return 1;
-> @@ -99,7 +99,7 @@ static int option_setup(char *opt)
->  
->  __setup("netconsole=", option_setup);
->  
-> -static int init_netconsole(void)
-> +static int __init init_netconsole(void)
->  {
->  	int err;
+> I'll cut that patch-2.6.20.4-rc1 in halves, and build 2 more test 
+> kernels tomorrow to start a bisect if no one has any better idea 
+> before then.
 
-This is fine.
+I'd recommend using the quilt tree of patches to do this, it will be
+easier than trying to split the larger patch up into pieces by hand.
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+thanks,
 
--- 
-Mathematics is the supreme nostalgia of our time.
+greg k-h
