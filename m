@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbXCTPoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbXCTPtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933970AbXCTPoF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 11:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbXCTPoF
+	id S1753371AbXCTPtL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 11:49:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbXCTPtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 11:44:05 -0400
-Received: from 195-13-16-24.net.novis.pt ([195.23.16.24]:33178 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S933971AbXCTPoD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 11:44:03 -0400
-Message-ID: <46000138.20007@grupopie.com>
-Date: Tue, 20 Mar 2007 15:43:52 +0000
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Tasos Parisinos <t.parisinos@sciensis.com>, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel version
- 2.6.20.1)
-References: <45FEB8B7.7020200@sciensis.com> <20070319225858.GK10459@waste.org>
-In-Reply-To: <20070319225858.GK10459@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Mar 2007 11:49:11 -0400
+Received: from waste.org ([66.93.16.53]:56971 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753371AbXCTPtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 11:49:09 -0400
+Date: Tue, 20 Mar 2007 10:36:27 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm take3 1/6][resend] marking __init
+Message-ID: <20070320153627.GF4892@waste.org>
+References: <45FFCF31.3040000@bx.jp.nec.com> <45FFD272.6020105@bx.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45FFD272.6020105@bx.jp.nec.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> [...]
->> +    /* Allocate space for the mpi and its data */
->> +    s = (size / 4) + ((size % 4)? 1: 0);
+On Tue, Mar 20, 2007 at 09:24:18PM +0900, Keiichi KII wrote:
+> From: Keiichi KII <k-keiichi@bx.jp.nec.com>
 > 
-> Uhhh.. (size + 1) / 4?
+> This patch contains the following cleanups.
+>  - add __init for initialization functions(option_setup() and
+>    init_netconsole()).
+> 
+> Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+> Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
+> ---
+> Index: linux-mm/drivers/net/netconsole.c
+> ===================================================================
+> --- linux-mm.orig/drivers/net/netconsole.c
+> +++ linux-mm/drivers/net/netconsole.c
+> @@ -91,7 +91,7 @@ static struct console netconsole = {
+>  	.write = write_msg
+>  };
+>  
+> -static int option_setup(char *opt)
+> +static int __init option_setup(char *opt)
+>  {
+>  	configured = !netpoll_parse_options(&np, opt);
+>  	return 1;
+> @@ -99,7 +99,7 @@ static int option_setup(char *opt)
+>  
+>  __setup("netconsole=", option_setup);
+>  
+> -static int init_netconsole(void)
+> +static int __init init_netconsole(void)
+>  {
+>  	int err;
 
-You mean "(size + 3) / 4", no?
+This is fine.
 
-Overall, I agree with your comments: this file looks like it needs a lot 
-more CodingStyle ;)
-
-Redefining standard kernel interfaces (error numbers, memory allocation, 
-printk, etc.) is not the right way to get code merged.
+Acked-by: Matt Mackall <mpm@selenic.com>
 
 -- 
-Paulo Marques - www.grupopie.com
-
-"For every problem there is one solution which is simple, neat, and wrong."
-H. L. Mencken
+Mathematics is the supreme nostalgia of our time.
