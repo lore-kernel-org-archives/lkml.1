@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbXCTTlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbXCTTn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119AbXCTTlr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 15:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXCTTlr
+	id S1752864AbXCTTn3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 15:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbXCTTn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 15:41:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44184 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753119AbXCTTlp (ORCPT
+	Tue, 20 Mar 2007 15:43:29 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57340 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752864AbXCTTn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 15:41:45 -0400
-Date: Tue, 20 Mar 2007 12:41:44 -0700 (PDT)
+	Tue, 20 Mar 2007 15:43:28 -0400
+Date: Tue, 20 Mar 2007 12:43:27 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>
+cc: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V3
-In-Reply-To: <20070319173218.24219a4a.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703201236110.8729@schroedinger.engr.sgi.com>
+In-Reply-To: <17919.20743.384741.398444@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0703201241560.8729@schroedinger.engr.sgi.com>
 References: <20070319233716.13775.45569.sendpatchset@schroedinger.engr.sgi.com>
- <20070319165329.b5830789.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703191655190.13879@schroedinger.engr.sgi.com>
- <20070319170741.5a24af4c.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703191718220.13927@schroedinger.engr.sgi.com>
- <20070319175524.812b2f5d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703191756060.389@schroedinger.engr.sgi.com>
- <20070319173218.24219a4a.akpm@linux-foundation.org>
+ <17919.20743.384741.398444@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007, Andrew Morton wrote:
+On Tue, 20 Mar 2007, Paul Mackerras wrote:
 
-> Yes, a common quicklist implementation is good.  But no quicklist
-> implementation at all is better.  You say that will be slower, and you may
-> well be right, but I say let's demonstrate that (please) rather than
-> speculating.
-
-There are at least 3 arches already using this scheme there is no 
-speculation here. The slab use in i386 is for exactly the same purpose. 
-There is nothing new here. It consolidates code and fixes the page struct 
-use conflict between slab and arch code. The conflict is the main reason 
-why I want this. That way I will not have the special casing in SLUB and 
-we can make SLAB support debugging for all slab caches.
- 
-> > Its obvious that this is right. And there has been significant work 
-> > invested into retaining page table pages on i386, sparc64 and ia64 for 
-> > exactly the specified.
+> Christoph Lameter writes:
 > 
-> I believe that work predated per-cpu-pages.
-
-Lots of arch code depends on page table pages being in a known state for 
-reuse this is nothing new. 
-
-> > Ok great idea but what does this have to do with this patch? This patch 
-> > simply generalizes something that has been there for ages.
+> > +static inline void *quicklist_alloc(int nr, gfp_t flags, void (*ctor)(void *))
+> > +{
 > 
-> It has a lot to do with this patch.
+> ...
 > 
-> If we decide that it is useful to optimise the full-mm teardown case then
-> we will need to zero these pages when we start to use them so we might as
-> well get them straight from the page allocator.  Hence this patch goes into
-> the bitbucket.
+> > +	p = (void *)__get_free_page(flags | __GFP_ZERO);
+> 
+> This will cause problems on 64-bit powerpc, at least with 4k pages,
+> since the pmd and pgd levels only use 1/4 of a page.
 
-If you decide to optimise the full-mm teardown then you will have to 
-rework more than half of the arch handling of page table pages since they 
-all rely on pages being zero on return.
-
-> It is not pie-in-the-sky to ask "is this code still useful?".
-
-Yes it is if its a funky idea without code or any data to support a major 
-change in the way we handle page table pages. And this falls into that 
-category.
-
-
+quicklists are only useful for page sized allocations. If you have smaller 
+sizes then by all means continue the use of slab. You do not have a page 
+struct for each pmd, pgd  to do bad things with (like i386) so everything 
+is just fine.
