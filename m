@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbXCTW6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXCTXIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbXCTW6n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 18:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbXCTW6n
+	id S932318AbXCTXIV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 19:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932274AbXCTXIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 18:58:43 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:43234 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752063AbXCTW6m (ORCPT
+	Tue, 20 Mar 2007 19:08:21 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:35833 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932318AbXCTXIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 18:58:42 -0400
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
-	far
-From: Eric St-Laurent <ericstl34@sympatico.ca>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Lee Revell <rlrevell@joe-job.com>, tglx@linutronix.de,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Len Brown <lenb@kernel.org>
-In-Reply-To: <1174382141.1158.61.camel@laptopd505.fenrus.org>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	 <1174088686.13341.347.camel@localhost.localdomain>
-	 <75b66ecd0703192204n503eb4d3g361064f66319dd4c@mail.gmail.com>
-	 <1174368995.14239.3.camel@perkele>
-	 <1174382141.1158.61.camel@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Tue, 20 Mar 2007 18:58:40 -0400
-Message-Id: <1174431520.6532.15.camel@perkele>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+	Tue, 20 Mar 2007 19:08:20 -0400
+Message-ID: <46006963.1020401@vmware.com>
+Date: Tue, 20 Mar 2007 15:08:19 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+References: <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org> <20070320224324.GL10459@waste.org>
+In-Reply-To: <20070320224324.GL10459@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-20-03 at 10:15 +0100, Arjan van de Ven wrote:
+Matt Mackall wrote:
+> I don't know that you need an xchg there. If you're still on the same
+> CPU, it should all be nice and causal even across an interrupt handler.
+> So it could be:
+>
+>    pda.intr_mask = 0; /* intr_pending can't get set after this */
+>   
 
-> disabling that is a BAD idea. I'm no fan of SMM myself, but it's there,
-> and we have to live with it. Disabling it without knowing what it does
-> on your system is madness.
-> 
+Why not?  Oh, I see.  intr_mask is inverted form of EFLAGS_IF.
 
-Like Lee said, for "debugging", mainly trying to resolve unexplained
-long latencies.
+>    if (unlikely(pda.intr_pending)) {
+>       pda.intr_pending = 0;
+>       asm("sti");
+>    }
+>
+> (This would actually need a C barrier, but I'll ignore that as this'd
+> end up being asm...)
+>
+> But other interesting things could happen. If we never did a real CLI
+> and we get preempted and switched to another CPU between clearing
+> intr_mask and checking intr_pending, we get a little confused. 
+>   
 
-I've had a laptop that caused latency spikes with the cpu fan was turn
-on. I tried disabling SMI to diagnose the problem with no success.
+I think Jeremy's idea was to have interrupt handlers leave interrupts 
+disabled on exit if pda.intr_mask was set.  In which case, they would 
+bypass all work and we could never get preempted.  I don't think leaving 
+hardware interrupts disabled for such a long time is good though.
 
-My current system has a BIOS feature to control fans speed according to
-temperature. I presume this must a SMI to work right?  In this case it
-should be possible to find and disable the related SMI and replace the
-fan control with a user space software.
+> But perhaps that doesn't matter because we'd by definition have no
+> pending interrupts on either processor?
+>
+> Is it expensive to do an STI if interrupts are already enabled?
+>   
 
-Of course it's not wise to blindly disable SMIs as we don't precisely
-know what they do. 
+Yes.
 
-
-- Eric
-
-
+Zach
