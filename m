@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbXCTOvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751253AbXCTOzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933552AbXCTOvv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 10:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbXCTOvv
+	id S1751253AbXCTOzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 10:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXCTOzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 10:51:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:54857 "EHLO ozlabs.org"
+	Tue, 20 Mar 2007 10:55:50 -0400
+Received: from tapsys.com ([72.36.178.242]:35742 "EHLO tapsys.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933552AbXCTOvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 10:51:51 -0400
-Date: Tue, 20 Mar 2007 09:47:47 -0500
-From: Anton Blanchard <anton@samba.org>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] small documentation fix in Documentation/kbuild/modules.txt
-Message-ID: <20070320144747.GF31173@kryten>
+	id S1751253AbXCTOzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 10:55:49 -0400
+Message-ID: <45FFF5E5.5040201@madrabbit.org>
+Date: Tue, 20 Mar 2007 07:55:33 -0700
+From: Ray Lee <ray-lk@madrabbit.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Adrian Bunk <bunk@stusta.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
+Subject: Re: Odd suspend regression in 2.6.21-rc[123]
+References: <45F0C018.2020409@madrabbit.org> <20070320095638.GA19137@elf.ucw.cz>
+In-Reply-To: <20070320095638.GA19137@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek wrote:
+> Hi!
+> 
+>> In 2.6.21-rc1,2,3, my laptop will fully suspend to ram, but then
+>> *immediately* resumes back from suspension. (It resumes just fine, as well.)
+>>
+>> Nothing out of the ordinary is logged, and this happens even when
+>> booting into init=/bin/sh with minimal modules loaded and executing
+>> s2ram from that minimal environment.
+>>
+>> I'm going to ponder the 2.6.20 to 2.6.21-rc1 changelog, but I'm hoping
+>> someone with a clue can offer a suggestion before I end up bisecting the
+>> whole thing. (Wouldn't be so bad, except I'm given to understand that
+>> there are multiple places in those changes where nothing quite works
+>> with respect to suspend.)
+>>
+>> HP/Compaq NX6125 system, AMD64, dmesg attached.
+> 
+> Known problem in ACPI, hopefully already fixed?
 
-The Makefile fragment in Documentation/kbuild/modules.txt looks to be 
-missing some braces.
+Mostly. The ACPI git tree has the fix
+(1d99967badac599c0d1db0b45c99e073e8e98cd4), but Len has yet to push it
+to Linus. Hopefully that'll happen before 2.6.21 final.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Thanks Pavel,
 
-diff --git a/Documentation/kbuild/modules.txt b/Documentation/kbuild/modules.txt
-index 769ee05..1d247d5 100644
---- a/Documentation/kbuild/modules.txt
-+++ b/Documentation/kbuild/modules.txt
-@@ -249,7 +249,7 @@ following files:
- 		--> filename: Makefile
- 		KERNELDIR := /lib/modules/`uname -r`/build
- 		all::
--			$(MAKE) -C $KERNELDIR M=`pwd` $@
-+			$(MAKE) -C $(KERNELDIR) M=`pwd` $@
- 
- 		# Module specific targets
- 		genbin:
+Ray
+
