@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXCTXIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751400AbXCTXLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932318AbXCTXIV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 19:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932274AbXCTXIV
+	id S1751400AbXCTXLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 19:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXCTXLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 19:08:21 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:35833 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932318AbXCTXIU (ORCPT
+	Tue, 20 Mar 2007 19:11:18 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49941 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbXCTXLR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 19:08:20 -0400
-Message-ID: <46006963.1020401@vmware.com>
-Date: Tue, 20 Mar 2007 15:08:19 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 20 Mar 2007 19:11:17 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <460069F2.5020103@s5r6.in-berlin.de>
+Date: Wed, 21 Mar 2007 00:10:42 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070303 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org> <20070320224324.GL10459@waste.org>
-In-Reply-To: <20070320224324.GL10459@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux1394-devel@lists.sourceforge.net,
+       =?ISO-8859-1?Q?Kristian_H=F8gsb?= =?ISO-8859-1?Q?erg?= 
+	<krh@redhat.com>
+Subject: FireWire update in -mm (was 2.6.21-rc4-mm1)
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+In-Reply-To: <20070319205623.299d0378.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> I don't know that you need an xchg there. If you're still on the same
-> CPU, it should all be nice and causal even across an interrupt handler.
-> So it could be:
->
->    pda.intr_mask = 0; /* intr_pending can't get set after this */
->   
+Andrew Morton wrote:
+> Will appear later at
+> 
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
+...
+>  git-ieee1394.patch
+...
 
-Why not?  Oh, I see.  intr_mask is inverted form of EFLAGS_IF.
-
->    if (unlikely(pda.intr_pending)) {
->       pda.intr_pending = 0;
->       asm("sti");
->    }
->
-> (This would actually need a C barrier, but I'll ignore that as this'd
-> end up being asm...)
->
-> But other interesting things could happen. If we never did a real CLI
-> and we get preempted and switched to another CPU between clearing
-> intr_mask and checking intr_pending, we get a little confused. 
->   
-
-I think Jeremy's idea was to have interrupt handlers leave interrupts 
-disabled on exit if pda.intr_mask was set.  In which case, they would 
-bypass all work and we could never get preempted.  I don't think leaving 
-hardware interrupts disabled for such a long time is good though.
-
-> But perhaps that doesn't matter because we'd by definition have no
-> pending interrupts on either processor?
->
-> Is it expensive to do an STI if interrupts are already enabled?
->   
-
-Yes.
-
-Zach
+Just a note for readers of lkml:  git-ieee1394.patch is steadily growing
+thanks to Kristian Høgsberg's work on his new alternative FireWire
+drivers.  Recently Kristian posted preliminary patches to the popular
+low-level FireWire libraries libraw1394 and libdc1394, making them
+interoperable with his newly designed kernel--userspace ABI.  (Mainline
+Linux' IEEE 1394 subsystem features a slightly unfortunate variety of
+userspace ABIs, some of them abstracted by the mentioned libraries, some
+directly used.)  I heard Kristian also already worked on integration
+with HAL, i.e. there are now more and more pieces of the puzzle coming
+together.
+-- 
+Stefan Richter
+-=====-=-=== --== =-=--
+http://arcgraph.de/sr/
