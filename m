@@ -1,98 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965259AbXCTQbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965349AbXCTQcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965259AbXCTQbV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964935AbXCTQbV
+	id S965349AbXCTQcG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965338AbXCTQcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:31:21 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36204 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965259AbXCTQbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:31:20 -0400
-Date: Tue, 20 Mar 2007 17:31:13 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Andreas Mohr <andi@rhlx01.fht-esslingen.de>, vojtech@suse.cz,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: strange keyboard lag after suspend testing
-Message-ID: <20070320163113.GA5740@elf.ucw.cz>
-References: <20070320153332.GA5533@elf.ucw.cz> <20070320160006.GA14843@rhlx01.hs-esslingen.de> <20070320160338.GC5533@elf.ucw.cz> <d120d5000703200909v326ab6benc3fb85badc061018@mail.gmail.com>
+	Tue, 20 Mar 2007 12:32:05 -0400
+Received: from gw.goop.org ([64.81.55.164]:53981 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965320AbXCTQcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:32:01 -0400
+Message-ID: <46000C7E.4070001@goop.org>
+Date: Tue, 20 Mar 2007 09:31:58 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000703200909v326ab6benc3fb85badc061018@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@muc.de>, David Miller <davem@davemloft.net>,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Linus Torvalds wrote:
+> On Tue, 20 Mar 2007, Eric W. Biederman wrote:
+>   
+>> If that is the case.  In the normal kernel what would
+>> the "the oops, we got an interrupt code do?"
+>> I assume it would leave interrupts disabled when it returns?
+>> Like we currently do with the delayed disable of normal interrupts?
+>>     
+>
+> Yeah, disable interrupts, and set a flag that the fake "sti" can test, and 
+> just return without doing anything.
+>
+> (You may or may not also need to do extra work to Ack the hardware 
+> interrupt etc, which may be irq-controller specific. Once the CPU has 
+> accepted the interrupt, you may not be able to just leave it dangling)
+>   
 
-> >> > I was testing suspend in 2.6.21-rc4 a lot, and now... machine feels
-> >> > like someone added 50..100msec delay somewhere in keyboard
-> >> > handling. Mouse does not seem affected. /proc/interrupts seem to
-> >> > increase as they should, for both keyboard and mouse. Can someone
-> >> > reproduce it? Any ideas how to debug it?
-> >>
-> >> Probably just asking the obvious:
-> >> it's not a trivial "failed to re-configure repeat rate upon resume"
-> >> (which one could rule out by running "kbdrate" again)
-> >> but a lag in some interrupt handler or somewhere else deeper, right?
-> >
-> >No, it is not keyboard rate. Keyboard lags during normal typing,
-> >sometimes letters come in groups of two or so...
-> 
-> I might start looking at embedded controller changes and switches. If
-> ACPI misbehaves that could starve keyboard controller... But you
-> said
+So it would be something like:
 
-Mouse _seems_ okay, but I'm not sure if I'd notice lag there.
+    pda.intr_mask = 1;		/* disable interrupts */
+    ...
+    pda.intr_mask = 0;		/* enable interrupts */
+    if (xchg(&pda.intr_pending, 0))	/* check pending */
+    	asm("sti");		/* was pending; isr left cpu interrupts masked */
+      
 
-> that mouse is OK... Hmm, what happens if you load evbug and type while
-> watching syslog. Do you observe the same delays?
+and in the interrupt handler:
 
-Hmm, seems that it only happens in X... so maybe it is some strange
-scheduling artefact?
+    if (pda.intr_mask) {
+    	pda.intr_pending = 1;
+    	regs->eflags &= ~IF;
+    	maybe_ack_interrupt_controller();
+    	iret
+      
 
-Hmm, something is wrong here:
+    }
 
-On console, I get expected 4-5 ticks a second. In x in gnome-terminal,
-I get this:
+?
 
-root@amd:~# while true ; do echo -n . ; sleep .2; date; done
-.Tue Mar 20 17:28:34 CET 2007
-.Tue Mar 20 17:28:35 CET 2007
-.Tue Mar 20 17:28:35 CET 2007
-.Tue Mar 20 17:28:35 CET 2007
-.Tue Mar 20 17:28:36 CET 2007
-.Tue Mar 20 17:28:36 CET 2007
-.Tue Mar 20 17:28:36 CET 2007
-.Tue Mar 20 17:28:36 CET 2007
-.Tue Mar 20 17:28:37 CET 2007
-.Tue Mar 20 17:28:37 CET 2007
-.Tue Mar 20 17:28:37 CET 2007
-.Tue Mar 20 17:28:37 CET 2007
-.Tue Mar 20 17:28:38 CET 2007
-.Tue Mar 20 17:28:38 CET 2007
-.Tue Mar 20 17:28:38 CET 2007
-.Tue Mar 20 17:28:39 CET 2007
-.Tue Mar 20 17:28:39 CET 2007
-.Tue Mar 20 17:28:39 CET 2007
-.Tue Mar 20 17:28:39 CET 2007
-.Tue Mar 20 17:28:39 CET 2007
-.Tue Mar 20 17:28:40 CET 2007
-.Tue Mar 20 17:28:40 CET 2007
-.Tue Mar 20 17:28:40 CET 2007
-.Tue Mar 20 17:28:40 CET 2007
-.Tue Mar 20 17:28:41 CET 2007
-.Tue Mar 20 17:28:41 CET 2007
-.Tue Mar 20 17:28:41 CET 2007
-.Tue Mar 20 17:28:42 CET 2007
-.Tue Mar 20 17:28:42 CET 2007
+    J
 
-So sorry for false alarm, it is not keyboard related, it is just very
-very strange.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
