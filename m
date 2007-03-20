@@ -1,77 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751431AbXCTQvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751778AbXCTQxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751431AbXCTQvH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXCTQvH
+	id S1751778AbXCTQxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbXCTQxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:51:07 -0400
-Received: from saeurebad.de ([85.214.36.134]:59794 "EHLO saeurebad.de"
+	Tue, 20 Mar 2007 12:53:49 -0400
+Received: from ns1.suse.de ([195.135.220.2]:41254 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbXCTQvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:51:06 -0400
-Date: Tue, 20 Mar 2007 17:50:59 +0100
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: "reboot" swsusp mode leaves moon icon blinking
-Message-ID: <20070320165058.GA15888@leiferikson>
-Mail-Followup-To: kernel list <linux-kernel@vger.kernel.org>
-References: <20070320123245.GA19019@elf.ucw.cz>
+	id S1751778AbXCTQxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:53:48 -0400
+To: Lukas Hejtmanek <xhejtman@mail.muni.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: UDP packets scheduling
+References: <20070320005228.GN22880@mail.muni.cz>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 20 Mar 2007 18:52:51 +0100
+In-Reply-To: <20070320005228.GN22880@mail.muni.cz>
+Message-ID: <p73r6rj6bv0.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070320123245.GA19019@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Lukas Hejtmanek <xhejtman@mail.muni.cz> writes:
 
-On Tue, Mar 20, 2007 at 01:32:45PM +0100, Pavel Machek wrote:
-> Date: Tue, 20 Mar 2007 13:32:45 +0100
-> From: Pavel Machek <pavel@ucw.cz>
-> To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-> 	kernel list <linux-kernel@vger.kernel.org>
-> Cc: Andrew Morton <akpm@osdl.org>
-> Subject: "reboot" swsusp mode leaves moon icon blinking
-> 
-> Hi!
-> 
-> ...and cause is really simple.
-> 
-> During resume, we do not know that "reboot" method was used, so we
-> assume plaform and make the led blink...
+> Flow control must be turned off for some other reason.
 
-What does the "reboot" swsusp mean?
+That's your fundamental problem. Fix that. 
 
-I am having this (or a similar problem):
+Even if you get the rate right there can be many reasons why timing 
+gets disrupted temporarily and to recover from any of this you need
+working flow control.
 
-	echo shutdown > /sys/power/disk; echo disk > /sys/power/state
-
-suspends normally.  But after a resume, the moon keeps blinking _and_
-I don't get ACPI events anymore.  At least all ibm-acpi features refuse
-to work (hotkeys, lcd-brightness, lid, ...).
-
-I saved some /proc files (interrupts, acpi/processor/power, ...) and
-compared them before the suspend and after the resume but I could not
-find any differences.
-
-> diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-> index 873cdf8..dee0ff4 100644
-> --- a/kernel/power/disk.c
-> +++ b/kernel/power/disk.c
-> @@ -241,18 +241,11 @@ static int software_resume(void)
->  		goto Done;
->  	}
->  
-> -	error = platform_prepare();
-> -	if (error) {
-> -		swsusp_free();
-> -		goto Thaw;
-> -	}
-> -
-
-What is platform_prepare() actually good for when _resuming_? I tried to
-follow the function calls and it seems to disable a lot of thing instead
-of re-enabling them...?
-
-=Hannes
+-Andi
