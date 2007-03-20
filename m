@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbXCTJQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXCTJRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbXCTJQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 05:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932310AbXCTJQO
+	id S932310AbXCTJRb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 05:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbXCTJRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 05:16:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40192 "EHLO
+	Tue, 20 Mar 2007 05:17:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40210 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753553AbXCTJQN (ORCPT
+	with ESMTP id S932310AbXCTJRa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 05:16:13 -0400
+	Tue, 20 Mar 2007 05:17:30 -0400
 Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
 	far
 From: Arjan van de Ven <arjan@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Len Brown <lenb@kernel.org>,
-       tglx@linutronix.de, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>
-In-Reply-To: <20070320042734.GA9700@kroah.com>
+To: Eric St-Laurent <ericstl34@sympatico.ca>
+Cc: Lee Revell <rlrevell@joe-job.com>, tglx@linutronix.de,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Len Brown <lenb@kernel.org>
+In-Reply-To: <1174368995.14239.3.camel@perkele>
 References: <200703161230.03712.maximlevitsky@gmail.com>
 	 <1174088686.13341.347.camel@localhost.localdomain>
-	 <200703162132.53906.lenb@kernel.org>
-	 <1174127539.3538.207.camel@laptopd505.fenrus.org>
-	 <p73k5xg6lwe.fsf@bingen.suse.de>  <20070320042734.GA9700@kroah.com>
+	 <75b66ecd0703192204n503eb4d3g361064f66319dd4c@mail.gmail.com>
+	 <1174368995.14239.3.camel@perkele>
 Content-Type: text/plain
 Organization: Intel International BV
-Date: Tue, 20 Mar 2007 10:14:10 +0100
-Message-Id: <1174382050.1158.58.camel@laptopd505.fenrus.org>
+Date: Tue, 20 Mar 2007 10:15:41 +0100
+Message-Id: <1174382141.1158.61.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
@@ -36,24 +35,32 @@ X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafl
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-19 at 21:27 -0700, Greg KH wrote:
-> On Sat, Mar 17, 2007 at 02:26:57PM +0100, Andi Kleen wrote:
-> > Arjan van de Ven <arjan@infradead.org> writes:
-> > > 
-> > > well we can do the handshake to take ownership like we do much later in
-> > > boot, but that requires PCI to be there and fully discovered, which we
-> > > don't have this early.
-> > 
-> > That's not true - we do early pci discovery. Doing USB handsoff
-> > there would be quite possible.
+On Tue, 2007-03-20 at 01:36 -0400, Eric St-Laurent wrote:
+> On Tue, 2007-20-03 at 01:04 -0400, Lee Revell wrote:
 > 
-> What, we don't do USB "handoff" early enough in the boot process?  It's
-> happening at PCI quirk time now, which I think should be early enough
-> for everyone (and too early for some who rely on USB keyboards and
-> initramfs shells...)
+> > I think CONFIG_TRY_TO_DISABLE_SMI would be excellent for debugging,
+> > not to mention people trying to spec out hardware for RT
+> > applications...
+> 
+> There is a SMI disabling module in RTAI, check the smi-module.c in this:
+> 
+> https://www.rtai.org/RTAI/rtai-3.5.tar.bz2
+> 
+> More infos:
+> 
+> http://www.captain.at/rtai-smi-high-latency.php
+> http://www.captain.at/xenomai-smi-high-latency.php
+> 
+> It might make sense to merge this code, at least in the -rt tree.
 
-it's not early enough for this bug, where the SMM code is ruining the
-cpu calibrations :)
+it NEVER makes sense to disable SMM.
+
+SMM is there to ensure that your hardware doesn't get physically
+damaged.
+
+disabling that is a BAD idea. I'm no fan of SMM myself, but it's there,
+and we have to live with it. Disabling it without knowing what it does
+on your system is madness.
 
 -- 
 if you want to mail me at work (you don't), use arjan (at) linux.intel.com
