@@ -1,57 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbXCTNkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933211AbXCTNwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751600AbXCTNkZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 09:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXCTNkZ
+	id S933211AbXCTNwI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 09:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933180AbXCTNwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 09:40:25 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:51902 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751935AbXCTNkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 09:40:24 -0400
-Date: Tue, 20 Mar 2007 14:44:46 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Jan Kara <jack@suse.cz>
-Cc: Folkert van Heusden <folkert@vanheusden.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: dquot.c: possible circular locking Re: [2.6.20] BUG: workqueue leaked lock
-Message-ID: <20070320134446.GA12517@ff.dom.local>
-References: <20070315191749.GS31960@vanheusden.com> <20070320111701.GB1751@ff.dom.local> <20070320112253.GC1751@ff.dom.local> <20070320113151.GA12462@ff.dom.local> <20070320121909.GB14319@duck.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Mar 2007 09:52:07 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:40221 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933211AbXCTNwG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 09:52:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=O19BR30renqhTNdCoP57UAPEuFW0QbmSfwgUzGE5mjaCKHimbM9D4mBmeSHY20mEXNeGXSCXgSZTddTqgy3Srm4T5MWCUCIoLDT0QDleCLOXAmN3v8+ZUuQ48+cpUMJhXBYIkEOlTkr4nr2uzMw+Hc6RvwVhJqcBLpJtxYD2Xik=
+Message-ID: <a44ae5cd0703200652q12aa9398if908757174ba1a6@mail.gmail.com>
+Date: Tue, 20 Mar 2007 06:52:04 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>
+Subject: 2.6.21-rc4-mm1 + 3 hot-fixes -- init/.missing_syscalls.h.cmd:2: *** missing separator. Stop.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070320121909.GB14319@duck.suse.cz>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 01:19:09PM +0100, Jan Kara wrote:
-> On Tue 20-03-07 12:31:51, Jarek Poplawski wrote:
-> > On Tue, Mar 20, 2007 at 12:22:53PM +0100, Jarek Poplawski wrote:
-> > > On Tue, Mar 20, 2007 at 12:17:01PM +0100, Jarek Poplawski wrote:
-> > > ...
-> > > > IMHO lockdep found that two locks are taken in different order:
-> > > > 
-> > > > -> #1: 1) tty_mutex in con_console() 2) dqptr_sem (somewhere later)
-> > > > -> #0: 1) dqptr_sem 2) tty_console in dquot_alloc_space() with print_warning()
-> > 
-> > Once more - should be:
-> >  -> #1: 1) tty_mutex in con_close() 2) dqptr_sem (somewhere later)
-> >  -> #0: 1) dqptr_sem 2) tty_mutex in dquot_alloc_space() with print_warning()
->   Yes, I was looking at it. Hmm, we can possibly get rid of tty_mutex being
-> acquired under dqptr_sem in quota code. But looking at the path from
-> con_close() there's another inversion with i_mutex which is also acquired
-> along the path for sysfs. And we can hardly get rid of it in the quota code.
->   Now none of these is a real deadlock as quota should never call
-> print_warning() for sysfs (it doesn't use quota) but still it's nasty. I
-> suppose tty_mutex is above i_mutex because of those sysfs calls and it
-> seems sysfs must be called under tty_mutex because of races with
-> init_dev(). So it's not easy to get rid of that dependency either.
+Hello,
 
-I wonder if this cannot be done with a workqueue (message to a buffer,
-maybe after try_lock on tty_mutex) and BTW isn't there any "modern"
-way to queue console messages like these?
+I don't see any announcement for 2.6.21-rc4-mm1 on LKML, but I went
+ahead and tried it out.  I hit the following, even after running
+mrproper.
 
-Jarek P.
+init/.missing_syscalls.h.cmd:2: *** missing separator.  Stop.
+make: *** [.tmp_vmlinux1] Error 2
