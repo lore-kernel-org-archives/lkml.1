@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965496AbXCTRFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965526AbXCTRHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965496AbXCTRFB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 13:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965522AbXCTRFA
+	id S965526AbXCTRHU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 13:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965529AbXCTRHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 13:05:00 -0400
-Received: from ns1.suse.de ([195.135.220.2]:41965 "EHLO mx1.suse.de"
+	Tue, 20 Mar 2007 13:07:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41856 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965496AbXCTRE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 13:04:59 -0400
-Date: Tue, 20 Mar 2007 19:03:59 +0100
-From: Andi Kleen <ak@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Miller <davem@davemloft.net>,
-       virtualization@lists.linux-foundation.org, jbeulich@novell.com,
-       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       virtualization@lists.osdl.org, anthony@codemonkey.ws,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
-Message-ID: <20070320180359.GB4286@bingen.suse.de>
-References: <20070319.120854.30182994.davem@davemloft.net> <20070319.204712.118947830.davem@davemloft.net> <m13b40wnrb.fsf@ebiederm.dsl.xmission.com> <200703201428.50564.ak@suse.de> <m1ircvswzz.fsf@ebiederm.dsl.xmission.com> <20070320174159.GA4286@bingen.suse.de> <Pine.LNX.4.64.0703200947501.6730@woody.linux-foundation.org>
+	id S965526AbXCTRHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 13:07:18 -0400
+Date: Tue, 20 Mar 2007 13:01:02 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: new sysfs layout and ethernet device names
+Message-ID: <20070320170102.GA16341@nostromo.devel.redhat.com>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703200947501.6730@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 09:52:42AM -0700, Linus Torvalds wrote:
-> The ones I reported were all about trusting the stack contents implicitly, 
+I was fiddling with the 'new' (no CONFIG_SYSFS_DEPRECATED) layout
+and ethernet device names, and noticed that the new layout effectively
+restricts the availability of certain device names.
 
-The latest version added the full double check you wanted - every
-new RSP is validated against the current stack or the exception stacks.
+By making a directory for the ethernet device name in the parent
+device, you no longer can use any name that is used in sysfs for
+the parent device type - for PCI devices this would be 'resource0',
+'power', 'enable', etc. For USB, it would be a different set
+of names that are no longer available.
 
-> and assuming that the unwind info was there and valid. Using things like 
+If you *do* try to use one of these names, the rename will succeed...
+partway. The link in /sys/class/net is renamed, the directory is
+not (as it obviously can't rename on top of whatever is already there.)
+Various networking tools then break in assorted ways due to the
+naming disconnect.
 
-The code never did that. In fact many of the problems we had initially
-especially came out of that -- the fallback code that would handle
-this case wasn't fully correct.
+Going back to the deprecated layout makes these names available again -
+it's possible (although not necessarily likely) that the new layout
+will break someone's device configuration if they upgrade kernels,
+even if the rest of their tools are updated for the new layout.
 
-> "__get_user()" didn't fix it, because if a WARN_ON() happened while we 
-> held the mm semaphore and the unwind info was bogus, it would take a 
-> page-fault and deadlock.
+Bill
 
-That was fixed too even before you dropped it by using probe_kernel_address()
-
-> And I told you guys this. Over *months*. And you ignored me. You told me 
-> everything was fine. Each time, somebody else ended up reporting a hang 
-> where the unwinder was at fault. 
-
-That was because most of the bugs were reported many times duplicated --
-and reports from older releases kept streaming in even after the fix
-went in.
-
-Also frankly often your analysis about what went wrong was just
-incorrect.
- 
-> And you clearly *still* haven't accepted the fact that the code was buggy. 
-
-There were some bugs, but they were all fixed. Or at least I hope -- 
-we will find out during testing.
-
-> Does anybody wonder why I wouldn't merge it back?
-
-So do you have an alternative to the unwinder? Don't tell me 
-"real men decode 30+ entry long stack traces with lots of callbacks
-by hand". Or do you prefer to use frame pointers everywhere? 
-
--Andi
 
