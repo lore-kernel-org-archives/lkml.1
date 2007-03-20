@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751725AbXCTQKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934019AbXCTQLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751725AbXCTQKB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbXCTQKA
+	id S934019AbXCTQLm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934020AbXCTQLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:10:00 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:44802 "EHLO smtp.osdl.org"
+	Tue, 20 Mar 2007 12:11:42 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44910 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751725AbXCTQJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:09:59 -0400
-Date: Tue, 20 Mar 2007 08:09:44 -0800
+	id S934019AbXCTQLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:11:41 -0400
+Date: Tue, 20 Mar 2007 08:11:38 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, pavel@suse.cz, linux-pm@lists.osdl.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.21-rc4-mm1
-Message-Id: <20070320080944.9cb3c765.akpm@linux-foundation.org>
-In-Reply-To: <45FFF026.4030502@gmail.com>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<45FFF026.4030502@gmail.com>
+To: "Miles Lane" <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc4-mm1 + 3 hot-fixes -- WARNING: could not find
+ versions for .tmp_versions/built-in.mod
+Message-Id: <20070320081138.2a5fdb1e.akpm@linux-foundation.org>
+In-Reply-To: <a44ae5cd0703200735k197bc50cqeb2856f9f50f88c9@mail.gmail.com>
+References: <a44ae5cd0703200735k197bc50cqeb2856f9f50f88c9@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,25 +25,20 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007 15:31:02 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+On Tue, 20 Mar 2007 07:35:06 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
 
-> Andrew Morton napsal(a):
-> >   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
-> 
-> I'm getting this while trying to swsusp:
-> Stopping tasks ...
-> Stopping kernel threads timed out after 20 seconds (1 tasks refusing to freeze):
->  swapper
->  Restarting tasks ... done.
-> 
-> What to test? Enable PM_DEBUG?
+> It looks like the number of section mismatches is much reduced, which
+> is great.
 
-hm, OK.  Rafael has been working on fixing the process freezer and it'll
-take some time to get it to where we want it to be, I expect.
+We fixed something?   Maybe we just broke the checker ;)
 
-Rafael, I think that we could afford to add heaps of debug in there at this
-stage to help us track down problems like this.
+>  But, I don't remember seeing "WARNING: could not find
+> versions for ..." warnings before.  Is this an artifact of the
+> init/.missing_syscalls.h problem I encountered earlier?
 
-Also, it might be useful to add a temporary /proc/freeze-unfreeze thing
-which will simply do a freeze/unfreeze cycle.  Then we can apply various
-workloads to the machine while madly stressing the freezer code.  
+Sam says these are harmless and he's working on making them go away.
+
+>   MODPOST vmlinux
+> WARNING: could not find versions for .tmp_versions/head.mod
+> WARNING: could not find versions for .tmp_versions/init_task.mod
+
