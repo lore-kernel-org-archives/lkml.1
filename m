@@ -1,135 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965301AbXCTKXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965176AbXCTKZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965301AbXCTKXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 06:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965320AbXCTKXV
+	id S965176AbXCTKZP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 06:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965310AbXCTKZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 06:23:21 -0400
-Received: from smtp14.wxs.nl ([195.121.247.5]:55639 "EHLO smtp14.wxs.nl"
+	Tue, 20 Mar 2007 06:25:15 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:4605 "EHLO yumi.tdiedrich.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965301AbXCTKXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 06:23:20 -0400
-Date: Tue, 20 Mar 2007 11:26:40 +0100
-From: jos poortvliet <jos@mijnkamer.nl>
-X-Face: $0>4o"Xx2u2q(Tx!D+6~yPc{ZhEfnQnu:/nthh%Kr%f$aiATk$xjx^X4admsd*)=?utf-8?q?IZz=3A=5FkT=0A=09=7CurITP!=2E?=)L`*)Vw@4\@6>#r;3xSPW`,~C9vb`W/s]}Gq]b!o_/+(lJ:b)=?utf-8?q?T0=26KCLMGvG=7CS=5E=0A=09z=7B=5C=2E7EtehxhFQE=27eYSsir/=7CtQ?=
- =?utf-8?q?j=23rWQe4o?=>WC>_R<vO,d]czmqWYkq[v~iB.e_GuxB'")
- =?utf-8?q?p3=0A=09jGdrhlY4=5E!vd=3F=3AegW?=)xn&fP4!FV<.
-Subject: Re: [ck] Re: RSDL v0.31
-In-reply-to: <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
-To: ck@vds.kolivas.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Xavier Bestel <xavier.bestel@free.fr>, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Mark Lord <lkml@rtr.ca>, Nicholas Miell <nmiell@comcast.net>
-Message-id: <200703201126.41114.jos@mijnkamer.nl>
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart1954619.Rz0z5MrxHk
-Content-transfer-encoding: 7bit
-User-Agent: KMail/1.9.6
-References: <200703042335.26785.a1426z@gawab.com>
- <1174322580.30876.72.camel@frg-rhel40-em64t-04>
- <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
+	id S965176AbXCTKZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 06:25:13 -0400
+Date: Tue, 20 Mar 2007 11:24:41 +0100
+From: Tobias Diedrich <ranma@tdiedrich.de>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [1/6] 2.6.21-rc4: known regressions
+Message-ID: <20070320102440.GB7517@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma@tdiedrich.de>,
+	Adrian Bunk <bunk@stusta.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070318184908.GU752@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070318184908.GU752@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1954619.Rz0z5MrxHk
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Adrian Bunk wrote:
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
 
-Op Tuesday 20 March 2007, schreef Linus Torvalds:
-> On Mon, 19 Mar 2007, Xavier Bestel wrote:
-> > > >> Stock scheduler wins easily, no contest.
-> > > >
-> > > > What happens when you renice X ?
-> > >
-> > > Dunno -- not necessary with the stock scheduler.
-> >
-> > Could you try something like renice -10 $(pidof Xorg) ?
->
-> Could you try something as simple and accepting that maybe this is a
-> problem?
->
-> Quite frankly, I was *planning* on merging RSDL very early after 2.6.21,
-> but there is one thing that has turned me completely off the whole thing:
->
->  - the people involved seem to be totally unwilling to even admit there
->    might be a problem.
->
-> This is like alcoholism. If you cannot admit that you might have a
-> problem, you'll never get anywhere. And quite frankly, the RSDL proponents
-> seem to be in denial ("we're always better", "it's your problem if the old
-> scheduler works better", "just one report of old scheduler being better").
->
-> And the thing is, if people aren't even _willing_ to admit that there may
-> be issues, there's *no*way*in*hell* I will merge it even for testing.
-> Because the whole and only point of merging RSDL was to see if it could
-> replace the old scheduler, and the most important feature in that case is
-> not whether it is perfect, BUT WHETHER ANYBODY IS INTERESTED IN TRYING TO
-> FIX THE INEVITABLE PROBLEMS!
+Since I didn't see any mention of this:
 
-Con simply isn't available right now, but you're right. RSDL isn't ready ye=
-t,=20
-imho, there seem to be some regressions (and I'm bitten by them, too). But =
-if=20
-con's past behaviour says anything about how he's going to behave in the=20
-future (and according to my psych prof it's the most reliable predictor ;-)=
-),=20
-I'm pretty sure he'll jump on this when he's healthy again. He's gone throu=
-gh=20
-great lengths to fix problems with staircase, no matter how obscure, so I s=
-ee=20
-no reason why he wouldn't do the same for RSDL... Though scheduler problems=
-=20
-can be extremely hard to reproduce on other hardware.
+I'm seeing an Oops when removing the ohci1394 module:
 
-> See?
->
-> Can you people not see that the way you're doing that "RSDL is perfect"
-> chorus in the face of people who report problems, you're just making it
-> totally unrealistic that it will *ever* get merged.
->
-> So unless somebody steps up to the plate and actually *talks* about the
-> problem reports, and admits that maybe RSDL will need some tweaking, I'm
-> not going to merge it.
->
-> Because there is just _one_ thing that is more important than code - and
-> that is the willingness to fix the code...
->
-> 		Linus
-> _______________________________________________
-> http://ck.kolivas.org/faqs/replying-to-mailing-list.txt
-> ck mailing list - mailto: ck@vds.kolivas.org
-> http://vds.kolivas.org/mailman/listinfo/ck
+[   16.047275] ieee1394: Node removed: ID:BUS[158717321-38:0860]  GUID[c033ced600000000]
+[   16.047287] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000094
+[   16.047451]  printing eip:
+[   16.047524] c02daf3d
+[   16.047527] *pde = 00000000
+[   16.047603] Oops: 0000 [#1]
+[   16.047676] PREEMPT 
+[   16.047788] Modules linked in: backlight ohci1394 parport_pc parport
+[   16.048069] CPU:    0
+[   16.048071] EIP:    0060:[<c02daf3d>]    Not tainted VLI
+[   16.048074] EFLAGS: 00010246   (2.6.21-rc4 #35)
+[   16.048298] EIP is at class_device_remove_attrs+0xa/0x30
+[   16.048377] eax: dfd04338   ebx: 00000000   ecx: df655988   edx: 00000000
+[   16.048456] esi: 00000000   edi: dfd04338   ebp: 00000000   esp: df506e38
+[   16.048535] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+[   16.048614] Process rmmod (pid: 1455, ti=df506000 task=df6cc0b0 task.ti=df506000)
+[   16.048693] Stack: dfd04338 dfd04340 00000000 c02db02f 00000000 dfd04338 dfd041e4 c0331871 
+[   16.049159]        00000000 c02db065 dfd041b0 c0331858 c055006d 0975d589 00000026 0000035c 
+[   16.049626]        00000000 c033ced6 00000000 df24c000 c0331879 c02d859f df24c0bc df24c0bc 
+[   16.050091] Call Trace:
+[   16.050233]  [<c02db02f>] class_device_del+0xcc/0xfa
+[   16.050352]  [<c0331871>] __nodemgr_remove_host_dev+0x0/0xb
+[   16.050475]  [<c02db065>] class_device_unregister+0x8/0x10
+[   16.050595]  [<c0331858>] nodemgr_remove_ne+0x61/0x7a
+[   16.050714]  [<c033ced6>] ether1394_header_cache+0x0/0x43
+[   16.050835]  [<c0331879>] __nodemgr_remove_host_dev+0x8/0xb
+[   16.050954]  [<c02d859f>] device_for_each_child+0x1a/0x3c
+[   16.051073]  [<c0331b98>] nodemgr_remove_host+0x30/0x90
+[   16.051192]  [<c032f12c>] __unregister_host+0x1a/0xad
+[   16.051311]  [<c032ee17>] hl_get_hostinfo+0x5b/0x76
+[   16.051430]  [<c032f34a>] highlevel_remove_host+0x21/0x42
+[   16.051549]  [<c032ed9d>] hpsb_remove_host+0x37/0x56
+[   16.051668]  [<e0869263>] ohci1394_pci_remove+0x44/0x1c7 [ohci1394]
+[   16.051794]  [<c027e5b0>] pci_device_remove+0x16/0x35
+[   16.053376]  [<c02da6d7>] __device_release_driver+0x6e/0x8b
+[   16.053496]  [<c02dab77>] driver_detach+0xa1/0xde
+[   16.053613]  [<c02da33f>] bus_remove_driver+0x57/0x75
+[   16.053733]  [<c02dabd4>] driver_unregister+0x8/0x13
+[   16.053850]  [<c027e732>] pci_unregister_driver+0xc/0x6e
+[   16.053969]  [<c0134d56>] sys_delete_module+0x174/0x19a
+[   16.054091]  [<c0113cea>] do_page_fault+0x277/0x525
+[   16.054211]  [<c0148b0d>] do_munmap+0x193/0x1ac
+[   16.054331]  [<c0103d0c>] syscall_call+0x7/0xb
+[   16.054450]  =======================
+[   16.054523] Code: ff c3 85 c0 74 08 83 c0 08 e9 9b f8 ea ff b8 ea ff ff ff c3 85 c0 74 08 83 c0 08 e9 b9 db ea ff c3 57 89 c7 56 53 31 db 8b 70 44 <83> be 94 00 00 00 00 75 09 eb 17 89 f8 e8 d7 ff ff ff 89 da 83 
+[   16.057248] EIP: [<c02daf3d>] class_device_remove_attrs+0xa/0x30 SS:ESP 0068:df506e38
 
-
-
-=2D-=20
-Disclaimer:
-
-Alles wat ik doe denk en zeg is gebaseerd op het wereldbeeld wat ik nu heb.=
-=20
-Ik ben niet verantwoordelijk voor wijzigingen van de wereld, of het beeld w=
-at=20
-ik daarvan heb, noch voor de daaruit voortvloeiende gedragingen van mezelf.=
-=20
-Alles wat ik zeg is aardig bedoeld, tenzij expliciet vermeld.
-
-Please avoid sending me Word or PowerPoint attachments.
-See http://www.gnu.org/philosophy/no-word-attachments.html
-
---nextPart1954619.Rz0z5MrxHk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBF/7bh+wgQ1AD35iwRAp1OAKDO+TXuoTLeuJLnpHjMg4KAwF7ZLQCeLyWb
-zE1T6ueYRt3G8bETaXO3noI=
-=BmDr
------END PGP SIGNATURE-----
-
---nextPart1954619.Rz0z5MrxHk--
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
