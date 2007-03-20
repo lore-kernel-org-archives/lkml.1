@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933997AbXCTE4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbXCTFEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933997AbXCTE4u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 00:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933998AbXCTE4t
+	id S934001AbXCTFEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 01:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933998AbXCTFEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 00:56:49 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:46339 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933997AbXCTE4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 00:56:48 -0400
-Date: Mon, 19 Mar 2007 20:56:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
-Message-Id: <20070319205645.4918d978.akpm@linux-foundation.org>
-In-Reply-To: <45FF4B59.3060107@yahoo.com.au>
-References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
-	<45FEE33C.1020706@googlemail.com>
-	<20070319140827.285dcc7f.akpm@linux-foundation.org>
-	<6bffcb0e0703191437i2ee706d4xaec3bc11ca7c3234@mail.gmail.com>
-	<20070319175852.c73406f1.akpm@linux-foundation.org>
-	<20070319180234.6b7826b2.akpm@linux-foundation.org>
-	<45FF4B59.3060107@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Mar 2007 01:04:53 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:51205 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933996AbXCTFEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 01:04:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=tKRucCwOKhgLMEuUZ9JmnZ+feWYDLdyBY5/cqIgYhgO7TbW9l3xs8/FcYYRqK7/Q2JZcPMReSr53u0Yr+izWdQTzImQA2ADM7Vi9B7V9u+TsfOS+Ke3erGpx53v2DgWg1iYs30YUVAXvehvVnloW1i+mnwuopalqxrlDeY1wATM=
+Message-ID: <75b66ecd0703192204n503eb4d3g361064f66319dd4c@mail.gmail.com>
+Date: Tue, 20 Mar 2007 01:04:48 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: tglx@linutronix.de
+Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far
+Cc: "Maxim Levitsky" <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Adrian Bunk" <bunk@stusta.de>,
+       "Arjan van de Ven" <arjan@infradead.org>, "Len Brown" <lenb@kernel.org>
+In-Reply-To: <1174088686.13341.347.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703161230.03712.maximlevitsky@gmail.com>
+	 <1174088686.13341.347.camel@localhost.localdomain>
+X-Google-Sender-Auth: d4eca49dc31f6e85
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007 13:47:53 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On 3/16/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Yes, this is probably caused by SMM code trying to emulate a PS/2
+> keyboard from a (maybe connected or not) USB keyboard. Unfortunately we
+> have no way to disable this BIOS misfeature in the early boot process.
 
-> Andrew Morton wrote:
-> > On Mon, 19 Mar 2007 17:58:52 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > 
-> >>The kernel without Nick's patchset but with the assert runs OK too.  Under
-> >>the principle of mm-has-been-too-flakey-lately, I'll drop the patches:
-> >>
-> >>mm-debug-check-for-the-fault-vs-invalidate-race.patch
-> >>mm-simplify-filemap_nopage.patch
-> >>mm-fix-fault-vs-invalidate-race-for-linear-mappings.patch
-> >>mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
-> >>mm-merge-populate-and-nopage-into-fault-fixes-nonlinear-tidy.patch
-> >>mm-merge-nopfn-into-fault.patch
-> >>mm-merge-nopfn-into-fault-fix.patch
-> >>mm-remove-legacy-cruft.patch
-> > 
-> > 
-> > ug, too many rejects.  I'll leave them in, minus
-> > mm-debug-check-for-the-fault-vs-invalidate-race.patch
-> > 
-> 
-> Hang on a sec... I'll try fixing the thing before you next make a
-> release.
-> 
+https://mail.rtai.org/pipermail/rtai/2003-March/002949.html
 
-Too late.  hot-fixes/ awaits thee.
+http://www.embeddedrelated.com/usenet/embedded/show/50333-1.php
+
+I think CONFIG_TRY_TO_DISABLE_SMI would be excellent for debugging,
+not to mention people trying to spec out hardware for RT
+applications...
+
+Lee
