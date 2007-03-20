@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933599AbXCTFgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbXCTFy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933599AbXCTFgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 01:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933618AbXCTFgi
+	id S1752328AbXCTFy0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 01:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbXCTFyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 01:36:38 -0400
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:58484 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933599AbXCTFgh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 01:36:37 -0400
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
-	far
-From: Eric St-Laurent <ericstl34@sympatico.ca>
-To: Lee Revell <rlrevell@joe-job.com>
-Cc: tglx@linutronix.de, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Arjan van de Ven <arjan@infradead.org>, Len Brown <lenb@kernel.org>
-In-Reply-To: <75b66ecd0703192204n503eb4d3g361064f66319dd4c@mail.gmail.com>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	 <1174088686.13341.347.camel@localhost.localdomain>
-	 <75b66ecd0703192204n503eb4d3g361064f66319dd4c@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 20 Mar 2007 01:36:35 -0400
-Message-Id: <1174368995.14239.3.camel@perkele>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+	Tue, 20 Mar 2007 01:54:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:42063 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752177AbXCTFyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 01:54:25 -0400
+Message-ID: <45FF770C.7050301@goop.org>
+Date: Mon, 19 Mar 2007 22:54:20 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@muc.de>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+References: <20070316.023331.59468179.davem@davemloft.net>	 <45FB005D.9060809@goop.org>	 <1174127638.8897.75.camel@localhost.localdomain>	 <20070318.003309.71088169.davem@davemloft.net>	 <20070318120814.GA45869@muc.de>	 <1174272469.11680.23.camel@localhost.localdomain>	 <m1648xxf93.fsf@ebiederm.dsl.xmission.com>	 <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com>
+In-Reply-To: <45FF4043.4000805@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-20-03 at 01:04 -0400, Lee Revell wrote:
+Zachary Amsden wrote:
+> For VMI, the default clobber was "cc", and you need a way to allow at
+> least that, because saving and restoring flags is too expensive on x86.
 
-> I think CONFIG_TRY_TO_DISABLE_SMI would be excellent for debugging,
-> not to mention people trying to spec out hardware for RT
-> applications...
+According to lore (Andi, I think), asm() always clobbers cc. 
 
-There is a SMI disabling module in RTAI, check the smi-module.c in this:
+> I still don't think this was a good trade.  The primary motivation for
+> clobbering %eax was that Xen wanted a free register to use for
+> computing the offset into the shared data in the case of SMP
+> preemptible kernels.  Xen no longer needs such a register, they can
+> use the PDA offset instead.  And it does hurt native performance by
+> unconditionally stealing a register in the four most commonly invoked
+> paravirt-ops code sequences.
 
-https://www.rtai.org/RTAI/rtai-3.5.tar.bz2
+Actually, it still does need a temp register.  The sequence for cli is:
 
-More infos:
+    mov %fs:xen_vcpu, %eax
+    movb $1,1(%eax)
 
-http://www.captain.at/rtai-smi-high-latency.php
-http://www.captain.at/xenomai-smi-high-latency.php
+At some point I hope to move the vcpu structure directly into the
+pda/percpu variables, at which point it will need no temps.
 
-It might make sense to merge this code, at least in the -rt tree.
-
-
-- Eric
-
-
+    J
