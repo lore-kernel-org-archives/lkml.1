@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbXCTQAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbXCTQBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753862AbXCTQAK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbXCTQAK
+	id S1753870AbXCTQBi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbXCTQBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:00:10 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:55559 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753862AbXCTQAI (ORCPT
+	Tue, 20 Mar 2007 12:01:38 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59257 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751695AbXCTQBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:00:08 -0400
-Date: Tue, 20 Mar 2007 17:00:06 +0100
-From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: vojtech@suse.cz, dmitry.torokhov@gmail.com,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: strange keyboard lag after suspend testing
-Message-ID: <20070320160006.GA14843@rhlx01.hs-esslingen.de>
-References: <20070320153332.GA5533@elf.ucw.cz>
-Mime-Version: 1.0
+	Tue, 20 Mar 2007 12:01:36 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
+References: <20070316.023331.59468179.davem@davemloft.net>
+	<45FB005D.9060809@goop.org>
+	<1174127638.8897.75.camel@localhost.localdomain>
+	<20070318.003309.71088169.davem@davemloft.net>
+	<20070318120814.GA45869@muc.de>
+	<1174272469.11680.23.camel@localhost.localdomain>
+	<m1648xxf93.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
+	<1174348905.11680.54.camel@localhost.localdomain>
+	<45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org>
+	<Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org>
+Date: Tue, 20 Mar 2007 09:58:53 -0600
+In-Reply-To: <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org>
+	(Linus Torvalds's message of "Tue, 20 Mar 2007 08:09:46 -0700 (PDT)")
+Message-ID: <m1mz27sy82.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070320153332.GA5533@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-On Tue, Mar 20, 2007 at 04:33:32PM +0100, Pavel Machek wrote:
-> Hi!
-> 
-> I was testing suspend in 2.6.21-rc4 a lot, and now... machine feels
-> like someone added 50..100msec delay somewhere in keyboard
-> handling. Mouse does not seem affected. /proc/interrupts seem to
-> increase as they should, for both keyboard and mouse. Can someone
-> reproduce it? Any ideas how to debug it?
+> On Mon, 19 Mar 2007, Jeremy Fitzhardinge wrote:
+>> Actually, it still does need a temp register.  The sequence for cli is:
+>> 
+>>     mov %fs:xen_vcpu, %eax
+>>     movb $1,1(%eax)
+>
+> We should just do this natively. There's been several tests over the years 
+> saying that it's much more efficient to do sti/cli as a simple store, and 
+> handling the "oops, we got an interrupt while interrupts were disabled" as 
+> a special case.
+>
+> I have this dim memory that ARM has done it that way for a long time 
+> because it's so expensive to do a "real" cli/sti.
+>
+> And I think -rt does it for other reasons. It's just more flexible.
 
-Probably just asking the obvious:
-it's not a trivial "failed to re-configure repeat rate upon resume"
-(which one could rule out by running "kbdrate" again)
-but a lag in some interrupt handler or somewhere else deeper, right?
+If that is the case.  In the normal kernel what would
+the "the oops, we got an interrupt code do?"
+I assume it would leave interrupts disabled when it returns?
+Like we currently do with the delayed disable of normal interrupts?
 
-Andreas Mohr
+I'm trying to understand the proposed semantics.
+
+Looking at the above code snippet.  I guess it is about time to
+merge our per_cpu and pda variables...
+
+Eric
