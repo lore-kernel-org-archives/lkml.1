@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972AbXCTSJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbXCTSJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751972AbXCTSJH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 14:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXCTSJH
+	id S1752675AbXCTSJJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 14:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXCTSJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 14:09:07 -0400
-Received: from [212.12.190.160] ([212.12.190.160]:33222 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751972AbXCTSJF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 14:09:09 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60586 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752675AbXCTSJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Mar 2007 14:09:05 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: RSDL v0.31
-Date: Tue, 20 Mar 2007 21:08:26 +0300
-User-Agent: KMail/1.5
-Cc: Willy Tarreau <w@1wt.eu>, Xavier Bestel <xavier.bestel@free.fr>,
-       Mark Lord <lkml@rtr.ca>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200703042335.26785.a1426z@gawab.com> <20070320061152.GW943@1wt.eu> <Pine.LNX.4.64.0703200821420.6730@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703200821420.6730@woody.linux-foundation.org>
+Date: Tue, 20 Mar 2007 19:08:57 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Anton Blanchard <anton@samba.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Aneesh Kumar <aneesh.kumar@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH] kthread_should_stop_check_freeze (was: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread)
+Message-ID: <20070320180857.GC2593@elf.ucw.cz>
+References: <200702260800.49603.rjw@sisk.pl> <20070312043854.GA4124@linux.vnet.ibm.com> <20070312081459.GI5242@elf.ucw.cz> <200703121219.12072.rjw@sisk.pl> <20070312223906.GA9749@elf.ucw.cz> <20070312224524.GB807@kryten>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200703202108.26122.a1426z@gawab.com>
+In-Reply-To: <20070312224524.GB807@kryten>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> I was very happy to see the "try this patch" email from Al Boldi - not
-> because I think that patch per se was necessarily the right fix (I have no
-> idea), 
+Hi!
 
-Well, it wasn't really meant as a fix, but rather to point out that 
-interactivity boosting is possible with RSDL.
+> > Do not do it, then. Confusion it causes is not worth saving one line
+> > of code. 
+> > 
+> > You do less typing, but the resulting code is _less_ readable, not
+> > more.
+> 
+> Then please document it _clearly_ with the kthread code somewhere. The
+> reason I brought this up is I had no idea we had to put the freezer gunk
+> in all kernel thread loops and Ive been writing kernel threads for years.
 
-It probably needs a lot more work, but just this one-liner gives an 
-unbelievable ia boost.
+This is in Doc*/power/kernel_threads.txt:
 
-> but simply because I think that's the kind of mindset we need to have.
-
-Thanks.
-
-> Not a lot of people really *like* the old scheduler, but it's been tweaked
-> over the years to try to avoid some nasty behaviour. I'm really hoping
-> that RSDL would be a lot better (and by all accounts it has the potential
-> for that), but I think it's totally naïve to expect that it won't need
-> some tweaking too.
-
-Aside from ia boosting, I think fixed latencies per nice levels may be 
-desirable, when physically possible, to allow for more deterministic 
-scheduling.
-
-> So I'll happily still merge RSDL right after 2.6.21 (and it won't even be
-> a config option - if we want to make it good, we need to make sure
-> *everybody* tests it), but what I want to see is that "can do" spirit wrt
-> tweaking for issues that come up.
->
-> Because let's face it - nothing is ever perfect. Even a really nice
-> conceptual idea always ends up hitting the "but in real life, things are
-> ugly and complex, and we've depended on behaviour X in the past and can't
-> change it, so we need some tweaking for problem Y".
->
-> And everything is totally fixable - at least as long as people are willing
-> to!
-
-Agreed.
+KERNEL THREADS
 
 
-Thanks!
+Freezer
 
---
-Al
+Upon entering a suspended state the system will freeze all
+tasks. This is done by delivering pseudosignals. This affects
+kernel threads, too. To successfully freeze a kernel thread
+the thread has to check for the pseudosignal and enter the
+refrigerator. Code to do this looks like this:
 
+        do {
+                hub_events();
+                wait_event_interruptible(khubd_wait,
+!list_empty(&hub_event_list));
+                try_to_freeze();
+        } while (!signal_pending(current));
+
+
+...do you know about better place?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
