@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895AbXCTRqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbXCTRsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751895AbXCTRqx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 13:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXCTRqx
+	id S1751892AbXCTRsA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 13:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXCTRsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 13:46:53 -0400
-Received: from honk1.physik.uni-konstanz.de ([134.34.140.224]:38274 "EHLO
-	honk1.physik.uni-konstanz.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751895AbXCTRqw (ORCPT
+	Tue, 20 Mar 2007 13:48:00 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:46652 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbXCTRr7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 13:46:52 -0400
-X-Greylist: delayed 1240 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Mar 2007 13:46:52 EDT
-Date: Tue, 20 Mar 2007 18:21:40 +0100
-From: Guido Guenther <agx@sigxcpu.org>
-To: linux-kernel@vger.kernel.org
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Subject: [patch] rivafb: fix initial brightness
-Message-ID: <20070320172140.GA28000@bogon.ms20.nix>
+	Tue, 20 Mar 2007 13:47:59 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Multiple instances of program sharing same text segment ?
+Date: Tue, 20 Mar 2007 10:47:46 -0700
+Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A437@xmb-sjc-214.amer.cisco.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Multiple instances of program sharing same text segment ?
+thread-index: AcdrF963xpiuyTw3RnuBs9xRp1o3rA==
+From: "Ravinandan Arakali \(rarakali\)" <rarakali@cisco.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 20 Mar 2007 17:47:47.0418 (UTC) FILETIME=[DF10ABA0:01C76B17]
+Authentication-Results: sj-dkim-4; header.From=rarakali@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
-this is the rivafb equivalent of
-238576e12fef1d52751c6e08db2d0bdb0e248caf. It fixes rivafb having a
-default backlight brightness of 0 (no picture at all) on a PBook 6,1.
-Since this is a regression over 2.6.20, can this go into 2.6.21?
-Cheers,
- -- Guido
+We have multiple instances of the same executable running on our system.
+Do these instances share the text segment or are there multiple copies
+of the text segment(one for each process) ? Note that I am not talking
+about the shared libraries.
+I note that do_exec calls do_mmap to map the executable file to memory.
+But not sure what happens(w.r.t text sharing) when another instance of 
+the program is invoked. BTW, this is 2.6.10.
 
-Signed-Off-By: Guido Guenther <agx@sigxcpu.org>
-
-diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
-index 1d1c7c6..d7ece8d 100644
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -285,8 +285,6 @@ static const struct riva_regs reg_template = {
- #define MAX_LEVEL 0x534
- #define LEVEL_STEP ((MAX_LEVEL - MIN_LEVEL) / FB_BACKLIGHT_MAX)
- 
--static struct backlight_properties riva_bl_data;
--
- static int riva_bl_get_level_brightness(struct riva_par *par,
- 		int level)
- {
-@@ -372,7 +370,7 @@ static void riva_bl_init(struct riva_par *par)
- 		FB_BACKLIGHT_MAX);
- 
- 	bd->props.max_brightness = FB_BACKLIGHT_LEVELS - 1;
--	bd->props.brightness = riva_bl_data.max_brightness;
-+	bd->props.brightness = bd->props.max_brightness;
- 	bd->props.power = FB_BLANK_UNBLANK;
- 	backlight_update_status(bd);
- 
-
+Thanks,
+Ravi
