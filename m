@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbXCTJHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbXCTJQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932388AbXCTJHa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 05:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932418AbXCTJHa
+	id S1753554AbXCTJQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 05:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932310AbXCTJQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 05:07:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:20478 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932388AbXCTJH3 (ORCPT
+	Tue, 20 Mar 2007 05:16:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40192 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753553AbXCTJQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 05:07:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AItRnDOQ+dXnp7CuyKTE6+9/ITJKGLn76c5p0kbLK8FKE0itxhyocKPMsC7rR3rdGwG2TlYOM/KGulJASY60KiNztZecKRDBZkgdbMxPA3voy5bXvmKQjVcKwFKRHyJZPJOFJfRVxU5h7mNuO0dFXlgRBD4Vre4iiUNlZeb5ufg=
-Message-ID: <6bffcb0e0703200207k324484eep6082da3f244b07a8@mail.gmail.com>
-Date: Tue, 20 Mar 2007 10:07:27 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <45FF6E55.4060101@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 20 Mar 2007 05:16:13 -0400
+Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
+	far
+From: Arjan van de Ven <arjan@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Len Brown <lenb@kernel.org>,
+       tglx@linutronix.de, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>
+In-Reply-To: <20070320042734.GA9700@kroah.com>
+References: <200703161230.03712.maximlevitsky@gmail.com>
+	 <1174088686.13341.347.camel@localhost.localdomain>
+	 <200703162132.53906.lenb@kernel.org>
+	 <1174127539.3538.207.camel@laptopd505.fenrus.org>
+	 <p73k5xg6lwe.fsf@bingen.suse.de>  <20070320042734.GA9700@kroah.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Tue, 20 Mar 2007 10:14:10 +0100
+Message-Id: <1174382050.1158.58.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
-	 <45FEE33C.1020706@googlemail.com>
-	 <20070319140827.285dcc7f.akpm@linux-foundation.org>
-	 <6bffcb0e0703191437i2ee706d4xaec3bc11ca7c3234@mail.gmail.com>
-	 <20070319175852.c73406f1.akpm@linux-foundation.org>
-	 <20070319180234.6b7826b2.akpm@linux-foundation.org>
-	 <45FF4B59.3060107@yahoo.com.au>
-	 <20070319205645.4918d978.akpm@linux-foundation.org>
-	 <45FF6E55.4060101@yahoo.com.au>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20/03/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> Andrew Morton wrote:
-> > On Tue, 20 Mar 2007 13:47:53 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> >
-> >
-> >>Andrew Morton wrote:
-> >>
->
-> >>Hang on a sec... I'll try fixing the thing before you next make a
-> >>release.
-> >>
-> >
-> >
-> > Too late.  hot-fixes/ awaits thee.
->
-> Awww... well thanks very much Michal for reporting the bug, I reproduced
-> it easily and it turns out to be a typo.
->
-> In my testing I never had a lot of writeout going on, so most of the pages
-> will have been truncated in the first loop...
->
+On Mon, 2007-03-19 at 21:27 -0700, Greg KH wrote:
+> On Sat, Mar 17, 2007 at 02:26:57PM +0100, Andi Kleen wrote:
+> > Arjan van de Ven <arjan@infradead.org> writes:
+> > > 
+> > > well we can do the handshake to take ownership like we do much later in
+> > > boot, but that requires PCI to be there and fully discovered, which we
+> > > don't have this early.
+> > 
+> > That's not true - we do early pci discovery. Doing USB handsoff
+> > there would be quite possible.
+> 
+> What, we don't do USB "handoff" early enough in the boot process?  It's
+> happening at PCI quirk time now, which I think should be early enough
+> for everyone (and too early for some who rely on USB keyboards and
+> initramfs shells...)
 
-Problem fixed. Thanks!
-
-Regards,
-Michal
+it's not early enough for this bug, where the SMM code is ruining the
+cpu calibrations :)
 
 -- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
