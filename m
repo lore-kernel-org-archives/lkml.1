@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933974AbXCTEXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933978AbXCTE3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933974AbXCTEXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 00:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933978AbXCTEXW
+	id S933978AbXCTE3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 00:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933977AbXCTE3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 00:23:22 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38526 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933974AbXCTEXV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 00:23:21 -0400
-Message-ID: <45FF6189.9080508@zytor.com>
-Date: Mon, 19 Mar 2007 21:22:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Tue, 20 Mar 2007 00:29:40 -0400
+Received: from ns.suse.de ([195.135.220.2]:50467 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933978AbXCTE3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 00:29:39 -0400
+Date: Mon, 19 Mar 2007 21:27:34 -0700
+From: Greg KH <greg@kroah.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Len Brown <lenb@kernel.org>,
+       tglx@linutronix.de, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far
+Message-ID: <20070320042734.GA9700@kroah.com>
+References: <200703161230.03712.maximlevitsky@gmail.com> <1174088686.13341.347.camel@localhost.localdomain> <200703162132.53906.lenb@kernel.org> <1174127539.3538.207.camel@laptopd505.fenrus.org> <p73k5xg6lwe.fsf@bingen.suse.de>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, "J.H." <warthog9@kernel.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysctl: vfs_cache_divisor
-References: <20061214223718.GA3816@elf.ucw.cz>	<20061216094421.416a271e.randy.dunlap@oracle.com>	<20061216095702.3e6f1d1f.akpm@osdl.org>	<458434B0.4090506@oracle.com>	<1166297434.26330.34.camel@localhost.localdomain>	<20061219063413.GI24090@1wt.eu>	<1166511171.26330.120.camel@localhost.localdomain>	<20070106103331.48150aed.randy.dunlap@oracle.com>	<459FF60D.7080901@zytor.com>	<1168112266.2821.2.camel@entropy>	<20070106121301.d07de0c9.akpm@osdl.org>	<45A0041F.4060903@zytor.com>	<20070319122740.286f602e.randy.dunlap@oracle.com> <20070319133613.9f4881db.akpm@linux-foundation.org> <45FEF5BC.90809@oracle.com>
-In-Reply-To: <45FEF5BC.90809@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73k5xg6lwe.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
->>
->> The we duplicate all the relevant /proc knobs:
->>
->> cat /proc/sys/vm/dirty_ratio
->> 30
->> cat /proc/sys/vm/hires-dirty_ratio/
->> 300000
->>
->> Or we do something else ;)
+On Sat, Mar 17, 2007 at 02:26:57PM +0100, Andi Kleen wrote:
+> Arjan van de Ven <arjan@infradead.org> writes:
+> > 
+> > well we can do the handshake to take ownership like we do much later in
+> > boot, but that requires PCI to be there and fully discovered, which we
+> > don't have this early.
 > 
-> Sounds better.  I wasn't very keen on the userspace interface that this
-> exposed.  Will look at those.
-> 
+> That's not true - we do early pci discovery. Doing USB handsoff
+> there would be quite possible.
 
-Okay... may be I could throw a spanner in the machinery, and suggest 
-another option: perhaps we should add a way to do sysctl which can 
-handle fractional (fixed-point) values... more coherent/detailed message 
-tomorrow.
+What, we don't do USB "handoff" early enough in the boot process?  It's
+happening at PCI quirk time now, which I think should be early enough
+for everyone (and too early for some who rely on USB keyboards and
+initramfs shells...)
 
-	-hpa
+thanks,
+
+greg k-h
