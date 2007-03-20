@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbXCTUCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934044AbXCTUCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbXCTUCL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 16:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbXCTUCK
+	id S934044AbXCTUCp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 16:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934050AbXCTUCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 16:02:10 -0400
-Received: from ozlabs.org ([203.10.76.45]:41318 "EHLO ozlabs.org"
+	Tue, 20 Mar 2007 16:02:45 -0400
+Received: from colin.muc.de ([193.149.48.1]:1087 "EHLO mail.muc.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753833AbXCTUCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 16:02:09 -0400
-MIME-Version: 1.0
+	id S934045AbXCTUCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 16:02:44 -0400
+Date: 20 Mar 2007 21:02:42 +0100
+Date: Tue, 20 Mar 2007 21:02:42 +0100
+From: Andi Kleen <ak@muc.de>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
+Message-ID: <20070320200242.GA90774@muc.de>
+References: <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <20070320192818.GA87860@muc.de> <46003BF1.4090601@vmware.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17919.42767.233797.860230@cargo.ozlabs.ibm.com>
-Date: Tue, 20 Mar 2007 20:19:11 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Miller <davem@davemloft.net>
-Cc: jesse.barnes@intel.com, zaitcev@redhat.com, jg@laptop.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: BSOD
-In-Reply-To: <20070319.130544.115907938.davem@davemloft.net>
-References: <20070319120807.af36ef5d.zaitcev@redhat.com>
-	<20070319.123836.39155546.davem@davemloft.net>
-	<200703191254.36373.jesse.barnes@intel.com>
-	<20070319.130544.115907938.davem@davemloft.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <46003BF1.4090601@vmware.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller writes:
+> Worth it on 32-bit.  On AMD64, probably not.  On Intel 64-bit, maybe, 
+> but less important than in P4 days.
 
-> Mode setting is complex and it is not going to work exactly when you
-> need the kernel crash message the most.
+Well most of Intel 64bit is P4 -- and Intel is still shipping
+millions more of them each quarter.
 
-It's a matter of writing maybe a dozen MMIO registers on the ATI
-chips, for instance, with some delays.  Provided we have interrupts
-disabled and udelay still works, there's not a lot of the kernel that
-we need to rely on to do that.
-
-> After debugging the kernel for 10+ years I can tell you one thing, for
-> a bad crash what's going to happen is you'll get the printk but that's
-> about all that will work at that point, and the kernel is going to
-> hang next.  Sometimes you won't get the whole panic message, just
-> the beginning, even with the most simplistic printk implementation.
+> This could change character completely if used at the tail of a function 
+> where you now have
 > 
-> You will not, I repeat, will not be able to mode switch or anything
-> non-trivial like that when the kernel is in this state.
+> sti; 1: ret
 > 
-> Mode switching on panic, just say no. :-)
+> Which generates an interrupt holdoff on the ret, an unusual thing to do.
 
-Anything is better than nothing.  At the moment we get nothing if you
-are in X when the panic occurs, even for the nicest, most well-behaved
-panics. :)  If we can change that to getting something sometimes,
-that's a win.
+Unusual yes, but I don't see how it should cause problems. Or do you
+have anything specific in mind? 
 
-Paul.
+Worse is probably that on K8 this case might cause a pipeline stall
+if there isn't a prefix in front of the ret.
+
+-Andi
