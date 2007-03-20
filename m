@@ -1,71 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbXCTIDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbXCTII3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbXCTIDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 04:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXCTIDS
+	id S1753293AbXCTII3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 04:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbXCTII3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 04:03:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59130 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753293AbXCTIDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 04:03:15 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18Rbypp1GoRN6MC86ZlFrrpctfSKJhiRR177ILjLK
-	70ZhfLrTH0heOH
-Subject: Re: RSDL v0.31
-From: Mike Galbraith <efault@gmx.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Xavier Bestel <xavier.bestel@free.fr>, Mark Lord <lkml@rtr.ca>,
-       Al Boldi <a1426z@gawab.com>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070320061152.GW943@1wt.eu>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172048.46267.kernel@kolivas.org>
-	 <1174125534.7734.2.camel@Homer.simpson.net>
-	 <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca>
-	 <1174321617.30876.69.camel@frg-rhel40-em64t-04> <45FEBBF5.9060002@rtr.ca>
-	 <1174322580.30876.72.camel@frg-rhel40-em64t-04>
-	 <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
-	 <20070320061152.GW943@1wt.eu>
+	Tue, 20 Mar 2007 04:08:29 -0400
+Received: from amsfep20-int.chello.nl ([62.179.120.15]:42039 "EHLO
+	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753293AbXCTII1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 04:08:27 -0400
+Subject: Re: [RFC][PATCH 0/6] per device dirty throttling
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: David Chinner <dgc@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, neilb@suse.de,
+       tomoki.sekiyama.qu@hitachi.com
+In-Reply-To: <20070320074751.GP32602149@melbourne.sgi.com>
+References: <20070319155737.653325176@programming.kicks-ass.net>
+	 <20070320074751.GP32602149@melbourne.sgi.com>
 Content-Type: text/plain
-Date: Tue, 20 Mar 2007 09:03:07 +0100
-Message-Id: <1174377787.9756.21.camel@Homer.simpson.net>
+Date: Tue, 20 Mar 2007 09:08:24 +0100
+Message-Id: <1174378104.16478.17.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+X-Mailer: Evolution 2.9.92 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 07:11 +0100, Willy Tarreau wrote:
+On Tue, 2007-03-20 at 18:47 +1100, David Chinner wrote:
+> On Mon, Mar 19, 2007 at 04:57:37PM +0100, Peter Zijlstra wrote:
+> > This patch-set implements per device dirty page throttling. Which should solve
+> > the problem we currently have with one device hogging the dirty limit.
+> > 
+> > Preliminary testing shows good results:
+> 
+> I just ran some higher throughput number on this patchset.
+> 
+> Identical 4-disk dm stripes, XFS, 4p x86_64, 16GB RAM, dirty_ratio = 5:
+> 
+> One dm stripe: 320MB/s
+> two dm stripes: 310+315MB/s
+> three dm stripes: 254+253+253MB/s (pci-x bus bound)
+> 
+> The three stripe test was for 100GB of data to each
+> filesystem - all the writes finished with 1s of each other
+> at 7m4s. Interestingly, the amount of memory in cache for
+> each of these devices was almost exactly the same - about
+> 5.2GB each. Looks good so far....
+> 
+> Hmmm - small problem - root disk (XFS) got stuck in
+> balance_dirty_pages_ratelimited_nr() after the above write test
+> attempting to unmount the filesystems (i.e. umount trying
+> to modify /etc/mtab got stuck and the root fs locked up)
+> 
+> (reboot)
 
-> Also, while I don't agree with starting to renice X to get something usable,
-> it seems real that there's something funny on Mike's system which makes it
-> behave particularly strangely when combined with RSDL, because other people
-> in comparable tests (including me) have found X perfectly smooth even with
-> loads in the tens or even hundreds. I really suspect that we will find a bug
-> in RSDL which triggers the problem and that this fix will help discover
-> another problem on Mike's hardware which was not triggered by mainline.
+Hmm, interesting, I'll look into it.
 
-I don't _think_ there's anything funny in my system, and Con said it was
-the expected behavior with my testcase, but I won't rule it out.
+> None-identical dm stripes, XFS, run alone:
+> 
+> Single disk: 80MB/s
+> 2 disk dm stripe: 155MB/s
+> 4 disk dm stripe: 310MB/s
+> 
+> Combined, after some runtime:
+> 
+> # ls -sh /mnt/dm*/test
+> 10G /mnt/dm0/test	19G /mnt/dm1/test	41G /mnt/dm2/test
+> 15G /mnt/dm0/test	27G /mnt/dm1/test	52G /mnt/dm2/test
+> 18G /mnt/dm0/test	32G /mnt/dm1/test	64G /mnt/dm2/test
+> 24G /mnt/dm0/test	45G /mnt/dm1/test	86G /mnt/dm2/test
+> 27G /mnt/dm0/test	51G /mnt/dm1/test	95G /mnt/dm2/test
+> 29G /mnt/dm0/test	52G /mnt/dm1/test	97G /mnt/dm2/test
+> 29G /mnt/dm0/test	54G /mnt/dm1/test	101G /mnt/dm2/test [done]
+> 35G /mnt/dm0/test	65G /mnt/dm1/test	101G /mnt/dm2/test
+> 38G /mnt/dm0/test	70G /mnt/dm1/test	101G /mnt/dm2/test
+> 
+> And so on. Final number:
+> 
+> Single disk: 70MB/s
+> 2 disk dm stripe: 130MB/s
+> 4 disk dm stripe: 260MB/s
+> 
+> So overall we've lost about 15-20% of the theoretical aggregate
+> perfomrance, but we haven't starved any of the devices over a
+> long period of time.
+> 
+> However, looking at vmstat for total throughput, there are periods
+> of time where it appears that the fastest disk goes idle. That is,
+> we drop from an aggregate of about 550MB/s to below 300MB/s for
+> several seconds at a time. You can sort of see this from the file
+> size output above - long term the ratios remain the same, but in the
+> short term we see quite a bit of variability.
 
-Moving right along to the bugs part, I hope others are looking as well,
-and not only talking.
+I suspect you did not apply 7/6? There is some trouble with signed vs
+unsigned in the initial patch set that I tried to 'fix' by masking out
+the MSB, but that doesn't work and results in 'time' getting stuck for
+about half the time.
 
-One area that looks pretty fishy to me is cross-cpu wakeups and task
-migration.  p->rotation appears to lose all meaning when you cross the
-cpu boundary, and try_to_wake_up()is using that information in the
-cross-cpu case.  In pull_task() OTOH, it checks to see if the task ran
-on the remote cpu (at all, hmm), and if so tags the task accordingly.
-It is not immediately obvious to me why this would be a good thing
-though, because quotas of one runqueue don't appear to have any relation
-to quotas of some other runqueue.  (i'm going to it that this old
-information is meaningless)
+> When the fast disk completed, I saw almost the same thing, but
+> this time it seems like the slow disk (i.e. ~230MB/s to ~150MB/s)
+> stopped for several seconds.
+> 
+> I haven't really digested what the patches do,
 
-	-Mike
+If you have questions please ask, I'll try to write up coherent
+answers :-)
+
+>  but it's almost
+> like it is throttling a device completely while it allows another
+> to finish writing it's quota (underestimating bandwidth?).
+
+Yeah, there is some lumpy-ness in BIO submission or write completions it
+seems, and when that granularity (multiplied by the number of active
+devices) is larger than the 'time' period over with we average
+(indicated by vm_cycle_shift) very weird stuff can happen.
+
+> (umount after writes hung again. Same root disk thing as before....)
+> 
+> This is looking promising, Peter. When it is more stable I'll run
+> some more tests....
+
+Thanks for the tests.
 
