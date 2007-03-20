@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbXCTJ7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbXCTKJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933502AbXCTJ7h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 05:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933536AbXCTJ7g
+	id S932192AbXCTKJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 06:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933509AbXCTKJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 05:59:36 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:25005 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933502AbXCTJ7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 05:59:19 -0400
-Date: Tue, 20 Mar 2007 13:06:34 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, davej@codemonkey.org.uk, akpm@osdl.org
-Subject: Re: Oops after cd /sys/.../cpufreq/; rmmod; cat stats/time_in_state
-Message-ID: <20070320100634.GA6811@localhost.sw.ru>
-References: <20070319153013.GA6814@localhost.sw.ru> <20070319204125.GA5598@suse.de>
+	Tue, 20 Mar 2007 06:09:19 -0400
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:3708 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932192AbXCTKJT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 06:09:19 -0400
+Date: Tue, 20 Mar 2007 11:08:18 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Bob Copeland" <me@bobcopeland.com>
+Cc: "Nicolas Boichat" <nicolas@boichat.ch>, linux-kernel@hansmi.ch,
+       rlove@rlove.org, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [RFC][PATCH] Apple SMC driver (hardware monitoring
+ and control)
+Message-Id: <20070320110818.1b11c406.khali@linux-fr.org>
+In-Reply-To: <b6c5339f0703191443l5f8c5271pf43ea62e0c79a614@mail.gmail.com>
+References: <45F7C083.7090504@boichat.ch>
+	<b6c5339f0703191443l5f8c5271pf43ea62e0c79a614@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070319204125.GA5598@suse.de>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 01:41:25PM -0700, Greg KH wrote:
-> On Mon, Mar 19, 2007 at 06:30:13PM +0300, Alexey Dobriyan wrote:
-> > Steps to reproduce:
-> >
-> > 	# modprobe p4-clockmod
-> > 	$ cd /sys/devices/system/cpu/cpu0/cpufreq/
-> > 	# rmmod p4-clockmod
-> > 	$ cat stats/time_in_state
-> > 	Segmentation fault
->
-> Has this always happened?  Or is it new?
+On Mon, 19 Mar 2007 17:43:38 -0400, Bob Copeland wrote:
+> I tried out an earlier version of this patch several months ago just to play
+> around with the joystick part of the accelerometer driver on my MacBook, and
+> found that it was backwards in the y-direction compared to what Neverball
+> seemed to want (of course, NB has no way to invert the joystick).  I think
+> I just did something like this in my own copy:
+> 
+> +       y = -y;
+>         input_report_abs(applesmc_idev, ABS_X, x - rest_x);
+>         input_report_abs(applesmc_idev, ABS_Y, y - rest_y);
+> 
+> I don't claim you necessarily want to change it, but thought I'd pass it
+> along.
 
-I've checked 2.6.17 and up and it happens too.
+This appears to be a common problem with these devices, the hdaps driver
+(IBM) needs to invert the axis on some models too, and I seem to
+remember something similar for the (not yet merged) HP laptops
+accelerometer driver.
 
-Some .config peculiarities:
-
-	CONFIG_CPU_FREQ=y
-	CONFIG_CPU_FREQ_STAT=y
-	CONFIG_X86_P4_CLOCKMOD=m
-
-After modprobe/rmmod cpufreq/stats directory appears but doesn't get
-removed. Should it?
-
-/sys/devices/system/cpu/cpu0/cpufreq $ ls -lR
-.:
-total 0
-drwxr-xr-x 2 root root 0 2007-03-20 12:59 stats
-
-./stats:
-total 0
--r--r--r-- 1 root root 4096 2007-03-20 12:59 time_in_state
--r--r--r-- 1 root root 4096 2007-03-20 12:59 total_trans
-
+-- 
+Jean Delvare
