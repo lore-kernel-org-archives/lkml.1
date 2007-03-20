@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbXCTTuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbXCTTwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753789AbXCTTuy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 15:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbXCTTuy
+	id S1752856AbXCTTwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 15:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbXCTTwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 15:50:54 -0400
-Received: from djz248.neoplus.adsl.tpnet.pl ([83.24.3.248]:64700 "EHLO
-	djz248.neoplus.adsl.tpnet.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753789AbXCTTuy (ORCPT
+	Tue, 20 Mar 2007 15:52:22 -0400
+Received: from smtprelay01.ispgateway.de ([80.67.18.13]:48061 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752856AbXCTTwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 15:50:54 -0400
-Message-ID: <46003B1B.9070601@o2.pl>
-Date: Tue, 20 Mar 2007 20:50:51 +0100
-From: Artur Skawina <art_k@o2.pl>
-User-Agent: Thunderbird 3.0a1 (X11/20070320)
+	Tue, 20 Mar 2007 15:52:21 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] sysctl: vfs_cache_divisor
+Date: Tue, 20 Mar 2007 20:53:00 +0100
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@osdl.org>,
+       "J.H." <warthog9@kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+References: <20061214223718.GA3816@elf.ucw.cz> <45A0041F.4060903@zytor.com> <20070319122740.286f602e.randy.dunlap@oracle.com>
+In-Reply-To: <20070319122740.286f602e.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: RSDL v0.31
-References: <200703042335.26785.a1426z@gawab.com> <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca> <200703192353.19673.a1426z@gawab.com>
-In-Reply-To: <200703192353.19673.a1426z@gawab.com>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703202053.01615.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> --- sched.bak.c	2007-03-16 23:07:23.000000000 +0300
-> +++ sched.c	2007-03-19 23:49:40.000000000 +0300
-> @@ -938,7 +938,11 @@ static void activate_task(struct task_st
->  				     (now - p->timestamp) >> 20);
->  	}
->  
-> -	p->quota = rr_quota(p);
-> +	/*
-> +	 * boost factor hardcoded to 5; adjust to your liking
-> +	 * higher means more likely to DoS
-> +	 */
-> +	p->quota = rr_quota(p) + (((now - p->timestamp) >> 20) * 5);
->  	p->prio = effective_prio(p);
->  	p->timestamp = now;
->  	__activate_task(p, rq);
+Hi Randy,
 
-i've tried this and it lasted only a few minutes -- i was seeing
-mouse cursor stalls lasting almost 1s. i/o bound tasks starving X?
-After reverting the patch everything is smooth again.
+On Monday 19 March 2007, Randy Dunlap wrote:
+> Were there any patches written after this?  If so, I missed them.
+> If not, does this patch help any?
 
-artur
+How is division by zero avoided? Maybe one can avoid setting it to zero.
 
+Regards
+
+Ingo Oeser
