@@ -1,92 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965711AbXCTCQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965768AbXCTC3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965711AbXCTCQe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 22:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965756AbXCTCQe
+	id S965768AbXCTC3O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 22:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965792AbXCTC3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 22:16:34 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:50792 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965711AbXCTCQd convert rfc822-to-8bit (ORCPT
+	Mon, 19 Mar 2007 22:29:14 -0400
+Received: from mga05.intel.com ([192.55.52.89]:2484 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965768AbXCTC3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 22:16:33 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: MPT Fusion LSI22320 ,  Domain validation loops .
-Date: Mon, 19 Mar 2007 20:16:18 -0600
-Message-ID: <664A4EBB07F29743873A87CF62C26D70650FD9@NAMAIL4.ad.lsil.com>
-In-Reply-To: <Pine.LNX.4.64.0703171302440.18291@filesrv1.baby-dragons.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: MPT Fusion LSI22320 ,  Domain validation loops .
-Thread-Index: AcdpC9iBDlxRg2nEQm68ryRU3R0OBQBiDuCA
-From: "Moore, Eric" <Eric.Moore@lsi.com>
-To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       "Linux Kernel Maillist" <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>
-X-OriginalArrivalTime: 20 Mar 2007 02:16:19.0306 (UTC) FILETIME=[BF278CA0:01C76A95]
+	Mon, 19 Mar 2007 22:29:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,302,1170662400"; 
+   d="scan'208"; a="215475014:sNHT19382699"
+Subject: Re: SMP performance degradation with sysbench
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Andrea Arcangeli <andrea@suse.de>,
+       Anton Blanchard <anton@samba.org>, Rik van Riel <riel@redhat.com>,
+       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20070314233301.GK30596@linux-os.sc.intel.com>
+References: <20070312220042.GA807@kryten> <45F63266.1080509@yahoo.com.au>
+	 <20070313094559.GC8992@v2.random> <45F67796.4040508@yahoo.com.au>
+	 <20070313103134.GF8992@v2.random> <45F67F02.5020401@yahoo.com.au>
+	 <20070313105742.GG8992@v2.random> <45F68713.9040608@yahoo.com.au>
+	 <20070313114215.GI8992@v2.random> <45F6945B.2030309@yahoo.com.au>
+	 <20070314233301.GK30596@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 20 Mar 2007 10:29:08 +0800
+Message-Id: <1174357748.4448.21.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, March 17, 2007 2:33 PM,  James W. Laferriere wrote:
->  	Hello All ,  I am have been having this problem since I 
-> purchased the 
-> controller and after changing out the disks I thought were 
-> the problem .
->  	I am still getting the continous :
+On Wed, 2007-03-14 at 16:33 -0700, Siddha, Suresh B wrote:
+> On Tue, Mar 13, 2007 at 05:08:59AM -0700, Nick Piggin wrote:
+> > I would agree that it points to MySQL scalability issues, however the
+> > fact that such large gains come from tcmalloc is still interesting.
 > 
-> mptscsih: ioc1: attempting task abort! (sc=f7a64500)
-> scsi 3:0:4:0:
->          command: Inquiry: 12 00 00 00 60 00
-> mptbase: Initiating ioc1 recovery
-> mptscsih: ioc1: task abort: SUCCESS (sc=f7a64500)
->   target3:0:4: Domain Validation detected failure, dropping back
->   target3:0:4: Domain Validation skipping write tests
->   target3:0:4: Ending Domain Validation
->   target3:0:4: asynchronous
->   target3:0:5: Beginning Domain Validation
-> mptscsih: ioc0: attempting target reset! (sc=f7a64380)
+> What glibc version are you, Anton and others are using?
 > 
->  	The acutual device id's change and the driver 
-> continously resets the 
-> busses & starts all over .
+> Does that version has this fix included?
 > 
->  	The disks are in a HP DS-SL13R-BA 4354R 14drive ultra3 
-> racKmount cabinet 
-> w/ dualbus & dualps ,  Which seems to present a ID6 ,  That 
-> does not show up in 
-> any of the bus scans .
+> Dynamically size mmap treshold if the program frees mmaped blocks.
 > 
->  	Now I have previously had the same cabinet with 18gb 
-> disks which had the 
-> same problem with this controller .  BUT I also have a LSI 
-> Logic / Symbios 
-> Logic 53c1010 66MHz Ultra3 dual SCSI bus Adapter which works 
-> flawlessly with the 
-> 18gb disks in this very same cabinet .
->  	The cables for connecting the adapter(s) to tha cabinet 
-> are less than 24 
-> inches in length .
+> http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/malloc/malloc.c.diff?r1=1.158&r2=1.159&cvsroot=glibc
 > 
->  	Would anyone please shed some light on what it is I am 
-> doing wrong or 
-> need to do or ....?  Too have this controller recognise these 
-> disk drives in 
-> this cabinet .
+Last week, I reproduced it on RHEL4U3 with glibc 2.3.4-2.19. Today, I
+installed RHEL5GA and reproduced it again. RHEL5GA uses glibc 2.5-12 which
+already includes the dynamically size mmap threshold patch, so this patch doesn’t
+resolve the issue.
 
-There is a seperate mailing list for scsi releated issues, e.g.
-linux-scsi@.   I've posted a patch to address your issue several times,
-however it seems its not been picked up by the scsi subsystem
-maintainer.   The last time it was posted was here:
-http://marc.info/?l=linux-scsi&m=117089244809072&w=2   An alternative is
-you could obtain our latest drivers from the LSI download site, where
-these drivers should have this patch
-http://www.lsilogic.com/cm/DownloadSearch.do.
+The problem is really relevant to malloc/free of glibc multi-thread.
 
-Eric
+My paxville has 16 logical cpu (dual core+HT). I disabled HT by hot
+removing the last 8 logical processors.
 
+I captured the schedule status. When sysbench thread=8 (best performance),
+there are about 3.4% context switches caused by __down_read/__down_write_nested.
+When sysbench thread=10 (best performance), the percentage becomes 11.83%.
 
+I captured the thread status by gdb. When sysbench thread=10, usually 2 threads
+are calling mprotect/mmap. When sysbench thread=8, there are no threads calling
+mprotect/mmap. Such capture has random behavior, but I tried for many times.
+
+I think the increased percentage of context switch related to
+__down_read/__down_write_nested is caused by mprotect/mmap. mprotect/mmap
+accesses the semaphore of vm, so there are some contentions on the sema which
+make performance down.
+
+The strace shows mysqld often calls mprotect/mmap with the same data length
+61440. That’s another evidence. Gdb showed such mprotect is called by
+init_io_malloc=>my_malloc=>malloc=>init_malloc=>mprotect. Mmap is caused by
+__init_free=>mmap. I checked the source codes of glibc and found the real call
+chains are malloc=>init_malloc=>grow_heap=>mprotect and __init_free=>heap_trim=>mmap.
+
+I guess the transaction processing of mysql/sysbench is: mysql accepts a connection
+and initiates a block for the connection. After processing a couple of transactions,
+sysbench closes the connection. Then, restart the procedure.
+
+So why are there so many mprotect/mmap?
+
+Glibc uses arena to speedup malloc/free at multi-thread environment.
+mp.trim_threshold only controls main_arena. In function __init_free,
+FASTBIN_CONSOLIDATION_THRE might be helpful, but it’s a fixed value.
+
+The *ROOT CAUSE* is dynamic thresholds don’t apply to non-main arena.
+
+To verify my idea, I created a small patch. When freeing a block, always
+check mp_.trim_threshold even though it might not be in main arena. The
+patch is just to verify my idea instead of the final solution.
+
+--- glibc-2.5-20061008T1257_bak/malloc/malloc.c	2006-09-08 00:06:02.000000000 +0800
++++ glibc-2.5-20061008T1257/malloc/malloc.c	2007-03-20 07:41:03.000000000 +0800
+@@ -4607,10 +4607,13 @@ _int_free(mstate av, Void_t* mem)
+       } else {
+ 	/* Always try heap_trim(), even if the top chunk is not
+ 	   large, because the corresponding heap might go away.  */
++	if ((unsigned long)(chunksize(av->top)) >=
++	    (unsigned long)(mp_.trim_threshold)) {
+ 	heap_info *heap = heap_for_ptr(top(av));
+ 
+ 	assert(heap->ar_ptr == av);
+ 	heap_trim(heap, mp_.top_pad);
++	}
+       }
+     }
+ 
+
+With the patch, I recompiled glibc and reran sysbench/mysql. The result is good.
+When thread number is larger than 8, the tps and response time(avg) are smooth, and
+don't drop severely.
+
+Is there anyone being able to test it on AMD machine?
+
+Yanmin
