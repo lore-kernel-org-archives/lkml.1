@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965522AbXCTSBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965527AbXCTSCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965522AbXCTSBk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 14:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXCTSBk
+	id S965527AbXCTSCF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 14:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965552AbXCTSCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 14:01:40 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40647 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751942AbXCTSBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 14:01:39 -0400
-Date: Tue, 20 Mar 2007 19:01:21 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: "reboot" swsusp mode leaves moon icon blinking
-Message-ID: <20070320180121.GA2856@elf.ucw.cz>
-References: <20070320123245.GA19019@elf.ucw.cz> <20070320165058.GA15888@leiferikson>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070320165058.GA15888@leiferikson>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Tue, 20 Mar 2007 14:02:05 -0400
+Received: from smtp.nokia.com ([131.228.20.170]:63650 "EHLO
+	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965527AbXCTSCC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 14:02:02 -0400
+Subject: Re: JFFS2: BUG: sleeping function called from invalid context
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <45FFBCC6.8010800@nokia.com>
+References: <45FFBCC6.8010800@nokia.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 20 Mar 2007 20:01:37 +0200
+Message-Id: <1174413697.17249.126.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 20 Mar 2007 18:01:37.0937 (UTC) FILETIME=[CE17D010:01C76B19]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070320200152-5FF47BB0-7B2304C7/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 2007-03-20 at 12:51 +0200, Adrian Hunter wrote:
+> BUG: sleeping function called from invalid context at include/linux/writeback.h:76
+> in_atomic():1, irqs_disabled():0
+> 2 locks held by jffs2_gcd_mtd0/5710:
+>  #0:  (&c->wbuf_sem){----}, at: [<f8b09814>] jffs2_flash_writev+0x67/0x5c0 [jffs2]
+>  #1:  (&c->erase_completion_lock){--..}, at: [<f8b085f8>] jffs2_wbuf_recover+0xb03/0x11f1 [jffs2]
+>  [<c01040df>] show_trace_log_lvl+0x1a/0x30
+>  [<c0104806>] show_trace+0x12/0x14
+>  [<c01048aa>] dump_stack+0x16/0x18
+>  [<c011cee4>] __might_sleep+0xb8/0xcb
+>  [<c0181ed9>] ifind_fast+0x48/0x86
+>  [<c01821d9>] iget_locked+0x2a/0x133
+>  [<f8b06713>] jffs2_gc_fetch_inode+0x18e/0x229 [jffs2]
+>  [<f8b08853>] jffs2_wbuf_recover+0xd5e/0x11f1 [jffs2]
+>  [<f8b0909c>] __jffs2_flush_wbuf+0x3b6/0x791 [jffs2]
+>  [<f8b09b14>] jffs2_flash_writev+0x367/0x5c0 [jffs2]
+>  [<f8afb59f>] jffs2_write_dnode+0x180/0x403 [jffs2]
+>  [<f8b02626>] jffs2_garbage_collect_dnode+0x7d3/0x8cd [jffs2]
+>  [<f8b004b8>] jffs2_garbage_collect_live+0x242/0x31e [jffs2]
+>  [<f8b00148>] jffs2_garbage_collect_pass+0x99b/0xac9 [jffs2]
+>  [<f8b04ad7>] jffs2_garbage_collect_thread+0x341/0x396 [jffs2]
+>  [<c0103d53>] kernel_thread_helper+0x7/0x14
+>  =======================
 
-> > ...and cause is really simple.
-> > 
-> > During resume, we do not know that "reboot" method was used, so we
-> > assume plaform and make the led blink...
-> 
-> What does the "reboot" swsusp mean?
+This function seems to be completely broken. JFF2 calls iget() while
+holding c->erase_completion_lock spinlock. This is one problem. Iget can
+sleep.
 
-echo reboot > ...disk.
+The other one is that JFFS2 calls jffs2_gc_fetch_inode() while holding
+c->alloc_sem and c->wbuf_sem semaphores. What happens if JFFS2 races
+with pdflush, and pdflush wins, clears inode, then VFS calls
+read_inode() to satisfy JFFS2's iget() request. It is a _deadlock_
+because the in read_inode JFFS2 will try to lock the above semaphores
+again.
 
-> I am having this (or a similar problem):
-> 
-> 	echo shutdown > /sys/power/disk; echo disk > /sys/power/state
+The wbuf recovery function has to be re-worked or just disabled -
+because returning error is better then fall into a deadlock.
 
-Yep, that's duplicate. Try patch below.
-								Pavel
-
-> I saved some /proc files (interrupts, acpi/processor/power, ...) and
-> compared them before the suspend and after the resume but I could not
-> find any differences.
-> 
-> > diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-> > index 873cdf8..dee0ff4 100644
-> > --- a/kernel/power/disk.c
-> > +++ b/kernel/power/disk.c
-> > @@ -241,18 +241,11 @@ static int software_resume(void)
-> >  		goto Done;
-> >  	}
-> >  
-> > -	error = platform_prepare();
-> > -	if (error) {
-> > -		swsusp_free();
-> > -		goto Thaw;
-> > -	}
-> > -
-> 
-> What is platform_prepare() actually good for when _resuming_? I tried to
-> follow the function calls and it seems to disable a lot of thing instead
-> of re-enabling them...?
-> 
-> =Hannes
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+David,
+comments, ideas?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
