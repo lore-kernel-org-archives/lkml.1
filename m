@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965695AbXCTSmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965618AbXCTSuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965695AbXCTSmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 14:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965896AbXCTSlq
+	id S965618AbXCTSuP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 14:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965753AbXCTSuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 14:41:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60938 "EHLO
+	Tue, 20 Mar 2007 14:50:15 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34293 "EHLO
 	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965686AbXCTSlj (ORCPT
+	by vger.kernel.org with ESMTP id S965589AbXCTSuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 14:41:39 -0400
-Date: Tue, 20 Mar 2007 11:41:37 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
-       "ast@domdv.de" <ast@domdv.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-In-Reply-To: <84144f020703200006q5fbd7835y216426e77e48cc71@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0703201140350.8561@schroedinger.engr.sgi.com>
-References: <20070319141038.212d4ac9.akpm@linux-foundation.org> 
- <az5Ytbv5.1174339536.7416370.penberg@cs.helsinki.fi> 
- <20070319144100.8a87f288.akpm@linux-foundation.org>
- <84144f020703200006q5fbd7835y216426e77e48cc71@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 Mar 2007 14:50:13 -0400
+From: John Keller <jpk@sgi.com>
+To: linux-ia64@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, John Keller <jpk@sgi.com>
+Date: Tue, 20 Mar 2007 13:50:10 -0500
+Message-Id: <20070320185010.4873.23012.sendpatchset@attica.americas.sgi.com>
+Subject: [PATCH] - Altix: ioremap vga_console_iobase
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007, Pekka Enberg wrote:
+When booting an SN system without specifing a console
+(i.e., no "console=" on boot line), the system will hang during
+boot at the point where /sbin/init is run.
 
-> On 3/19/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > The BUG_ON (at least) should probably be moved into CONFIG_DEBUG_SLAB.
-> 
-> No it shouldn't. Letting non-slab pages pass through causes nasty and
-> hard to debug problems which is why we have the BUG_ONs in the first
-> place:
+The problem is that vga_console_iobase is not converted to a
+virtual address before storing in io_space[0].mmio_base.
+The conversion was happening in sn_scan_pcdp(), but not in
+setup_vga_console().
 
-CONFIG_DEBUG_SLAB is there in order to handle these nasty and hard to 
-debug problems. Usually non-slab pages are not passed to kmem_cache_free.
+Signed-off-by: John Keller <jpk@sgi.com>
+---
 
+ arch/ia64/sn/kernel/setup.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+
+Index: linux-2.6/arch/ia64/sn/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/sn/kernel/setup.c	2007-03-16 15:23:54.743044272 -0500
++++ linux-2.6/arch/ia64/sn/kernel/setup.c	2007-03-20 13:22:38.837859262 -0500
+@@ -348,8 +348,7 @@ sn_scan_pcdp(void)
+ 			continue;	/* not PCI interconnect */
+ 
+ 		if (if_pci.translation & PCDP_PCI_TRANS_IOPORT)
+-			vga_console_iobase =
+-				if_pci.ioport_tra | __IA64_UNCACHED_OFFSET;
++			vga_console_iobase = if_pci.ioport_tra;
+ 
+ 		if (if_pci.translation & PCDP_PCI_TRANS_MMIO)
+ 			vga_console_membase =
+@@ -429,7 +428,8 @@ void __init sn_setup(char **cmdline_p)
+ 	 * 	bus containing the VGA console.
+ 	 */
+ 	if (vga_console_iobase) {
+-		io_space[0].mmio_base = vga_console_iobase;
++		io_space[0].mmio_base =
++			(unsigned long) ioremap(vga_console_iobase, 0);
+ 		io_space[0].sparse = 0;
+ 	}
+ 
