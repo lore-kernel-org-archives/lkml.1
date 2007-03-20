@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750894AbXCTDMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbXCTDUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750894AbXCTDMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 23:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbXCTDMb
+	id S932899AbXCTDUA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 23:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933076AbXCTDUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 23:12:31 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:43021 "EHLO smtp.osdl.org"
+	Mon, 19 Mar 2007 23:20:00 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:43248 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750894AbXCTDMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 23:12:30 -0400
-Date: Mon, 19 Mar 2007 20:11:55 -0700 (PDT)
+	id S932899AbXCTDT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 23:19:59 -0400
+Date: Mon, 19 Mar 2007 20:18:14 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Xavier Bestel <xavier.bestel@free.fr>
-cc: Mark Lord <lkml@rtr.ca>, Al Boldi <a1426z@gawab.com>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: RSDL v0.31
-In-Reply-To: <1174322580.30876.72.camel@frg-rhel40-em64t-04>
-Message-ID: <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
-References: <200703042335.26785.a1426z@gawab.com>  <200703172048.46267.kernel@kolivas.org>
-  <1174125534.7734.2.camel@Homer.simpson.net>  <200703172355.30989.a1426z@gawab.com>
-  <45FEB54A.3040602@rtr.ca>  <1174321617.30876.69.camel@frg-rhel40-em64t-04>
-  <45FEBBF5.9060002@rtr.ca> <1174322580.30876.72.camel@frg-rhel40-em64t-04>
+To: Andi Kleen <ak@suse.de>
+cc: David Miller <davem@davemloft.net>,
+       virtualization@lists.linux-foundation.org, jbeulich@novell.com,
+       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       virtualization@lists.osdl.org, anthony@codemonkey.ws,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+In-Reply-To: <200703192159.42396.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0703192015020.6730@woody.linux-foundation.org>
+References: <20070318193030.GB71548@muc.de> <200703191157.29780.ak@suse.de>
+ <20070319.120854.30182994.davem@davemloft.net> <200703192159.42396.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,47 +31,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Mon, 19 Mar 2007, Xavier Bestel wrote:
-> > >> Stock scheduler wins easily, no contest.
-> > > 
-> > > What happens when you renice X ?
-> > 
-> > Dunno -- not necessary with the stock scheduler.
+On Mon, 19 Mar 2007, Andi Kleen wrote:
 > 
-> Could you try something like renice -10 $(pidof Xorg) ?
+> Initially we had some bugs that accounted for near all failures, but they 
+> were all fixed in the latest version.
 
-Could you try something as simple and accepting that maybe this is a 
-problem?
+No. The real bugs were that the people involved wouldn't even accept that 
+unwinding information was inevitably buggy and/or incomplete.
 
-Quite frankly, I was *planning* on merging RSDL very early after 2.6.21, 
-but there is one thing that has turned me completely off the whole thing:
+That much more fundamental bug never got fixed, as far as I know. 
 
- - the people involved seem to be totally unwilling to even admit there 
-   might be a problem.
+I'm not going to merge anything that depends on unwind tables as things 
+stand. The pain just isn't worth it.
 
-This is like alcoholism. If you cannot admit that you might have a 
-problem, you'll never get anywhere. And quite frankly, the RSDL proponents 
-seem to be in denial ("we're always better", "it's your problem if the old 
-scheduler works better", "just one report of old scheduler being better").
+> > Please don't subject us to another couple months of hair-pulling only
+> > to have Linus yank the thing out again, there are certainly more
+> > useful things to spend time on :-)
 
-And the thing is, if people aren't even _willing_ to admit that there may 
-be issues, there's *no*way*in*hell* I will merge it even for testing. 
-Because the whole and only point of merging RSDL was to see if it could 
-replace the old scheduler, and the most important feature in that case is 
-not whether it is perfect, BUT WHETHER ANYBODY IS INTERESTED IN TRYING TO 
-FIX THE INEVITABLE PROBLEMS!
-
-See?
-
-Can you people not see that the way you're doing that "RSDL is perfect" 
-chorus in the face of people who report problems, you're just making it 
-totally unrealistic that it will *ever* get merged.
-
-So unless somebody steps up to the plate and actually *talks* about the 
-problem reports, and admits that maybe RSDL will need some tweaking, I'm 
-not going to merge it.
-
-Because there is just _one_ thing that is more important than code - and 
-that is the willingness to fix the code...
+Good call. Dwarf2 unwinding simply isn't worth doing. But I won't yank it 
+out, I simply won't merge it. It was more than just totally buggy code, it 
+was an inability of the people to understand that even bugfree code 
+isn't enough - you have to be able to also handle buggy data.
 
 		Linus
