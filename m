@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbXCTTXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934043AbXCTTZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934041AbXCTTXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 15:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934043AbXCTTXt
+	id S934043AbXCTTZM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 15:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934045AbXCTTZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 15:23:49 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:48996 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S934041AbXCTTXs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 15:23:48 -0400
-Date: Tue, 20 Mar 2007 10:58:20 -0800 (PST)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-cc: Theodore Tso <tytso@mit.edu>, Artem Bityutskiy <dedekind@infradead.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-In-Reply-To: <1174406395.30079.139.camel@zod.rchland.ibm.com>
-Message-ID: <Pine.LNX.4.63.0703201049310.8684@qynat.qvtvafvgr.pbz>
-References: <20070318162720.GI10459@waste.org>  <1174236579.17249.6.camel@sauron>
- <20070318191812.GM4892@waste.org>  <20070318203149.GC29295@crusty.rchland.ibm.com>
-  <20070319170838.GP4892@waste.org>  <1174328188.30079.46.camel@zod.rchland.ibm.com>
-  <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron> 
- <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron> 
- <20070320135231.GA6043@thunk.org> <1174406395.30079.139.camel@zod.rchland.ibm.com>
+	Tue, 20 Mar 2007 15:25:11 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45898 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934043AbXCTTZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 15:25:09 -0400
+Date: Tue, 20 Mar 2007 21:23:52 +0100
+From: Andi Kleen <ak@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       David Miller <davem@davemloft.net>,
+       virtualization@lists.linux-foundation.org, jbeulich@novell.com,
+       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       virtualization@lists.osdl.org, anthony@codemonkey.ws,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
+Message-ID: <20070320202352.GF4286@bingen.suse.de>
+References: <20070319.204712.118947830.davem@davemloft.net> <m13b40wnrb.fsf@ebiederm.dsl.xmission.com> <200703201428.50564.ak@suse.de> <m1ircvswzz.fsf@ebiederm.dsl.xmission.com> <20070320174159.GA4286@bingen.suse.de> <Pine.LNX.4.64.0703200947501.6730@woody.linux-foundation.org> <20070320180359.GB4286@bingen.suse.de> <Pine.LNX.4.64.0703201022040.6730@woody.linux-foundation.org> <20070320192118.GD4286@bingen.suse.de> <Pine.LNX.4.64.0703201145570.6730@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703201145570.6730@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007, Josh Boyer wrote:
+On Tue, Mar 20, 2007 at 11:49:39AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 20 Mar 2007, Andi Kleen wrote:
+> > 
+> > So what is your proposed alternative to handle long backtraces? 
+> > You didn't answer that question. Please do, I'm curious about your thoughts
+> > in this area.
+> 
+> the thing is, I'd rather see a long backtrace that is hard to decipher but 
+> that *never* *ever* causes any additional problems, over a pretty one.
 
-> On Tue, 2007-03-20 at 09:52 -0400, Theodore Tso wrote:
->> As a suggestion, let's stop right here and see if we can get both
->> sides talking in a more constructive fashion.  Maybe it's just me, but
->> I see both sides talking past each other in a rather dramatic fashion.
->
-> Perhaps, yes.  Though I've been trying to be open to Matt's suggestions.
-> Please don't mistake confusion for hostility.
->
->> There a number of red herrings that have been introduced in this
->> discussion; of *course* the existing block device layer can handle
->> FLASH devices; Matt is proposing that they be extended.  And of
->
-> Sure.  But the larger question is *should* it be extended to do so.
->
->> *course* you woulnd't propose to use ext2 on top of an 128k blocksize,
->> anymore than you would force a flash filesystem to use a 4k or 512
->> byte blocksize; there are plenty of configurations that won't make
->
-> Except that flash filesystems don't use block devices at all.  They use
-> MTD interfaces.
->
->> sense, and by itself this isn't an indictment of the core idea that
->> the block device layer and dm should be augmented to encompass flash
->> functionality.
->
-> This is where the concept starts to lose me.  Augmented how?  To not use
-> MTD at all (obviously with the exception of the low-level flash
-> drivers)?  How is that not going to duplicate MTD?  Etc, etc.
+Well it causes additional problems. We had some cases where it was really
+hard to distingush garbage and the true call chain. I can probably dig
+out some examples if you want.
 
-What Matt and Ted are looking at is the question 'are flash devices close enough 
-to other block devices that it would make sense to change the existing linux 
-definition of a block device to handle the special requirements of flash'
+With lots of call backs (e.g. common with sysfs) it is also frequently
+not obvious how the call chains are supposed to go.
 
-if the block device layer can be reasonably modified to accomodate flash, then 
-doing so greatly improves flexibility and maintainability. It would also reduce 
-the overall code size since existing features of the block layer (for example 
-snapshots) would not need to be duplicated or re-written for the flash block 
-layer.
+I would have agreed with you in the 2.4 time frame. It was also
+always fun to explain this to a newbie with oopses and watch their
+face when they secretly think you're crazy ;-) But code is getting
+much and more complex unfortunately and I had a few cases where
+it was really ugly to sort them out. 
 
-if not then so be it.
+> Because that's really the issue: do you want a "pretty" backtrace, or do 
+> you want one that is rock solid but has some crud in it.
 
-everyone understands that flash has different requirement from a hard drive as a 
-block device, what isn't clear to the people reading this thread (and reviewing 
-the code) is why you believe that it is _so_ different that it's impossible to 
-consider extending the linux definition of a block device.
+I just want an as exact backtrace as possible. I also think
+that we can make the unwinder robust enough.
 
-the fact that the native eraseblock size is significantly larger isn't a factor.
+> I'll take the rock solid one any day. Especially as even the pretty one 
+> won't fix the most common problem, which is "I don't see the caller" (due 
+> to inlining or tail-calls).
 
-the fact that you erase in large blocks and then write in smaller blocks is a 
-difference, and one that the current block layer doesn't understand. but this is 
-a difference that the current block layer could be changed to understand. it's 
-not something that would justify a seperate-but-equal block layer for flash 
-devices.
+The problem is not one or a few levels of calls. That can be always figured
+out from the source. The problem is when you have a double
+digit number of them with non obvious (dynamic indirect) dependencies.  Yes it 
+can be figured out too, but it is a long and very annoying process
+with lots of grepping etc. and even then you sometimes can't be 100% 
+sure in some cases. 
 
-as Ted notes, the idea that block sizes may not be powers of 2 (128k-128b from 
-his e-mail) _may_ end up being a big enough difference that it's not worth 
-teaching the exising block layer how to deal with, but it's not clear why you 
-are useing this odd size.
+It's also a mechanic process that just cries to be done by a machine instead.
 
-this is why you are being asked for further explinations.
+> In contrast, the ugly backtrace will have some "garbage entries" from 
+> previous frames that didn't get overwritten, but there have actually been 
 
-David Lang
+If it was only a few that would be great ...
+
+-Andi
+
