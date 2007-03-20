@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbXCTPns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbXCTPoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933965AbXCTPns (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 11:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbXCTPns
+	id S933970AbXCTPoF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 11:44:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbXCTPoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 11:43:48 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:55360 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933965AbXCTPnr (ORCPT
+	Tue, 20 Mar 2007 11:44:05 -0400
+Received: from 195-13-16-24.net.novis.pt ([195.23.16.24]:33178 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S933971AbXCTPoD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 11:43:47 -0400
-Message-ID: <46000121.7070509@oracle.com>
-Date: Tue, 20 Mar 2007 08:43:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Tue, 20 Mar 2007 11:44:03 -0400
+Message-ID: <46000138.20007@grupopie.com>
+Date: Tue, 20 Mar 2007 15:43:52 +0000
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc3-mm2
-References: <20070307201915.4d579113.akpm@linux-foundation.org> <20070319172711.1176b3d4.randy.dunlap@oracle.com> <20070320121432.GC10240@uranus.ravnborg.org>
-In-Reply-To: <20070320121432.GC10240@uranus.ravnborg.org>
+To: Matt Mackall <mpm@selenic.com>
+CC: Tasos Parisinos <t.parisinos@sciensis.com>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel version
+ 2.6.20.1)
+References: <45FEB8B7.7020200@sciensis.com> <20070319225858.GK10459@waste.org>
+In-Reply-To: <20070319225858.GK10459@waste.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Mon, Mar 19, 2007 at 05:27:11PM -0700, Randy Dunlap wrote:
->> On Wed, 7 Mar 2007 20:19:15 -0800 Andrew Morton wrote:
->>
->>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm2/
->>>
->>> - This is the same as 2.6.21-rc3-mm1, except Con's CPU scheduler changes
->>>   were dropped.
->>>
->>>   This is for A/B comparison purposes, and because those changes crashed on
->>>   one test setup.
->> I don't quite see why this error is happening.  Looks like all
->> the nested #includes should handle it...
->>
->> CONFIG_KEXEC=y
->> CONFIG_CRASH_DUMP=y
->> CONFIG_UTRACE=y
->> # PTRACE=n
->> # PROC_FS=n
->>
->> In file included from arch/x86_64/kernel/crash.c:19:
->> include/linux/elfcore.h: In function 'elf_core_copy_regs':
->> include/linux/elfcore.h:103: error: dereferencing pointer to incomplete type
->> include/linux/elfcore.h:103: error: dereferencing pointer to incomplete type
->> make[1]: *** [arch/x86_64/kernel/crash.o] Error 1
->> make: *** [arch/x86_64/kernel] Error 2
+Matt Mackall wrote:
+> [...]
+>> +    /* Allocate space for the mpi and its data */
+>> +    s = (size / 4) + ((size % 4)? 1: 0);
 > 
-> make arch/x86_64/kernel/crash.i
-> may tell you a bit more why the includes foes wrong.
+> Uhhh.. (size + 1) / 4?
 
-That didn't complain or have any errors/warnings, so hopefully
-Roland can see something.
+You mean "(size + 3) / 4", no?
+
+Overall, I agree with your comments: this file looks like it needs a lot 
+more CodingStyle ;)
+
+Redefining standard kernel interfaces (error numbers, memory allocation, 
+printk, etc.) is not the right way to get code merged.
 
 -- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Paulo Marques - www.grupopie.com
+
+"For every problem there is one solution which is simple, neat, and wrong."
+H. L. Mencken
