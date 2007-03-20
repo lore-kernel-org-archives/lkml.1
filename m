@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXCTUev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbXCTUiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbXCTUev (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 16:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXCTUeu
+	id S1752622AbXCTUiA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 16:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXCTUiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 16:34:50 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:49380 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753858AbXCTUet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 16:34:49 -0400
-Date: Tue, 20 Mar 2007 21:35:29 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc4-mm1 + 3 hot-fixes -- WARNING: could not find versions for .tmp_versions/built-in.mod
-Message-ID: <20070320203529.GA13349@uranus.ravnborg.org>
-References: <a44ae5cd0703200735k197bc50cqeb2856f9f50f88c9@mail.gmail.com> <20070320081138.2a5fdb1e.akpm@linux-foundation.org>
+	Tue, 20 Mar 2007 16:38:00 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34881 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752622AbXCTUh6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 16:37:58 -0400
+Date: Tue, 20 Mar 2007 21:39:18 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <ak@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, jeremy@goop.org,
+       xen-devel@lists.xensource.com, netdev@vger.kernel.org, mingo@elte.hu,
+       Andi Kleen <ak@suse.de>, jbeulich@novell.com,
+       virtualization@lists.linux-foundation.org, chrisw@sous-sol.org,
+       virtualization@lists.osdl.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, anthony@codemonkey.ws,
+       akpm@linux-foundation.org, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Xen-devel] Re: [patch 13/26] Xen-paravirt_ops: Consistently
+ wrap paravirt ops callsites to make them patchable
+Message-ID: <20070320213918.116862be@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070320202352.GF4286@bingen.suse.de>
+References: <20070319.204712.118947830.davem@davemloft.net>
+	<m13b40wnrb.fsf@ebiederm.dsl.xmission.com>
+	<200703201428.50564.ak@suse.de>
+	<m1ircvswzz.fsf@ebiederm.dsl.xmission.com>
+	<20070320174159.GA4286@bingen.suse.de>
+	<Pine.LNX.4.64.0703200947501.6730@woody.linux-foundation.org>
+	<20070320180359.GB4286@bingen.suse.de>
+	<Pine.LNX.4.64.0703201022040.6730@woody.linux-foundation.org>
+	<20070320192118.GD4286@bingen.suse.de>
+	<Pine.LNX.4.64.0703201145570.6730@woody.linux-foundation.org>
+	<20070320202352.GF4286@bingen.suse.de>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070320081138.2a5fdb1e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 08:11:38AM -0800, Andrew Morton wrote:
-> On Tue, 20 Mar 2007 07:35:06 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+> > Because that's really the issue: do you want a "pretty" backtrace, or do 
+> > you want one that is rock solid but has some crud in it.
 > 
-> > It looks like the number of section mismatches is much reduced, which
-> > is great.
-> 
-> We fixed something?   Maybe we just broke the checker ;)
-> 
-> >  But, I don't remember seeing "WARNING: could not find
-> > versions for ..." warnings before.  Is this an artifact of the
-> > init/.missing_syscalls.h problem I encountered earlier?
-> 
-> Sam says these are harmless and he's working on making them go away.
-> 
-> >   MODPOST vmlinux
-> > WARNING: could not find versions for .tmp_versions/head.mod
-> > WARNING: could not find versions for .tmp_versions/init_task.mod
+> I just want an as exact backtrace as possible. I also think
+> that we can make the unwinder robust enough.
 
-They were caused by modpost now being called with several .o files
-that are not modules. The fix was just to get rid of the
-warning.
-I have committed the following to kbuild.git.
+Any reason you can't put the exact back trace in "[xxx]" and the ones we
+see on the stack which dont look like call trace as ?xxx? It makes the
+code a bit trickier but we depend on the quality of traces
 
-	Sam
-
-commit 84b48a0275b4474587cefecb455372e8df6dabda
-Author: Sam Ravnborg <sam@ravnborg.org>
-Date:   Tue Mar 20 21:30:23 2007 +0100
-
-    kbuild: do not emit src version warning for non-modules
-    
-    modpost is now called with .o files that are not modules.
-    So do not warn if there is no corresponding .mod
-    file listing .o files (in .tmp_versions/).
-    
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-
-diff --git a/scripts/mod/sumversion.c b/scripts/mod/sumversion.c
-index 8a28756..6873d5a 100644
---- a/scripts/mod/sumversion.c
-+++ b/scripts/mod/sumversion.c
-@@ -397,10 +397,9 @@ void get_src_version(const char *modname, char sum[], unsigned sumlen)
- 		(int) strlen(basename) - 2, basename);
- 
- 	file = grab_file(filelist, &len);
--	if (!file) {
--		warn("could not find versions for %s\n", filelist);
-+	if (!file)
-+		/* not a module or .mod file missing - ignore */
- 		return;
--	}
- 
- 	sources = strchr(file, '\n');
- 	if (!sources) {
+Alan
