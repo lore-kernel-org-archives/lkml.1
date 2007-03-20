@@ -1,151 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbXCTNWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXCTNW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932638AbXCTNWF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 09:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932806AbXCTNWF
+	id S932903AbXCTNW2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 09:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXCTNW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 09:22:05 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:1337 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932796AbXCTNWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 09:22:04 -0400
-Message-ID: <45FFDFF8.2090208@rtr.ca>
-Date: Tue, 20 Mar 2007 09:22:00 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 20 Mar 2007 09:22:27 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37387 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932796AbXCTNW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 09:22:26 -0400
+Date: Tue, 20 Mar 2007 14:22:03 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: soft lockup during suspend
+Message-ID: <20070320132202.GA5089@elf.ucw.cz>
+References: <20070320123253.GB19019@elf.ucw.cz> <s5htzwgccq3.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Xavier Bestel <xavier.bestel@free.fr>, Al Boldi <a1426z@gawab.com>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: RSDL v0.31
-References: <200703042335.26785.a1426z@gawab.com>  <200703172048.46267.kernel@kolivas.org>  <1174125534.7734.2.camel@Homer.simpson.net>  <200703172355.30989.a1426z@gawab.com>  <45FEB54A.3040602@rtr.ca>  <1174321617.30876.69.camel@frg-rhel40-em64t-04>  <45FEBBF5.9060002@rtr.ca> <1174322580.30876.72.camel@frg-rhel40-em64t-04> <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5htzwgccq3.wl%tiwai@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Hi!
+
+> > I got this nastinness in my syslog... perhaps HDA intel takes too long
+> > to play with its hardware? Or should we just kill the softlockup
+> > watchdog since Linux is not realtime system, yet?
 > 
-> Quite frankly, I was *planning* on merging RSDL very early after 2.6.21, 
-> but there is one thing that has turned me completely off the whole thing:
-> 
->  - the people involved seem to be totally unwilling to even admit there 
->    might be a problem.
+> X60/T60 is known to be often broken regarding the communication
+> between the controller and the codec chip.  When this kind of thing
+> happens, the driver tries to switch to a single-shot I/O without using
+> ring-buffers and IRQs, and even in such a mode, the communication gets
+> broken.  FWIW, it doesn't happen on other machines with HD-audio, so
+> it's fairly specific to X60/T60.  No idea why.
 
-Not to mention that it seems to only be tested thus far
-by a very vocal and supportive core.  It needs much wider
-exposure for much longer before risking it in mainline.
-It likely will get there, eventually, just not yet.
+Is adding touch_softlockup_watchdog() to hd_audio right solution? Or
+should watchdog just disappear?
+								Pavel
 
-I've droppped it from my machine -- interactive response is much
-more important for my primary machine right now.
+> > HDA Intel 0000:00:1b.0: freeze
+> > BUG: soft lockup detected on CPU#0!
+> >  [<c014fdd9>] softlockup_tick+0xa9/0xd0
+> >  [<c0131d63>] update_process_times+0x33/0x80
+> >  [<c0142f52>] tick_periodic+0x22/0x70
+> >  [<c0142fb7>] tick_handle_periodic+0x17/0x80
+> >  [<c014359a>] tick_do_broadcast+0x6a/0x80
+> >  [<c01435cc>] tick_do_periodic_broadcast+0x1c/0x30
+> >  [<c01435fb>] tick_handle_periodic_broadcast+0x1b/0x60
+> >  [<c01435cc>] tick_do_periodic_broadcast+0x1c/0x30
+> >  [<c01077cc>] timer_interrupt+0x2c/0x40
+> >  [<c0150005>] handle_IRQ_event+0x25/0x60
+> >  [<c0151d87>] handle_edge_irq+0xe7/0x130
+> >  [<c0106adb>] do_IRQ+0x3b/0x80
+> >  [<c0106ae0>] do_IRQ+0x40/0x80
+> >  [<c01049eb>] common_interrupt+0x23/0x28
+> >  [<c063007b>] ieee80211_wx_get_scan+0x2b/0x130
+> >  [<c02588f4>] delay_tsc+0x14/0x20
+> >  [<c0258936>] __delay+0x6/0x10
+> >  [<c052f3da>] azx_send_cmd+0xfa/0x110
+> >  [<c053089e>] snd_hda_codec_write+0x3e/0x60
+> >  [<c05314fb>] hda_set_power_state+0xab/0xe0
+> >  [<c0532518>] snd_hda_suspend+0x48/0x60
+> >  [<c0530302>] azx_suspend+0x52/0xd0
+> >  [<c0266b13>] pci_device_suspend+0x23/0x70
+> >  [<c0332dbb>] suspend_device+0x11b/0x2e0
+> >  [<c0333032>] device_suspend+0xb2/0x170
+> >  [<c012a28b>] printk+0x1b/0x20
+> >  [<c014c7ad>] pm_suspend_disk+0x4d/0x2b0
+> >  [<c014b395>] enter_state+0x195/0x220
+> >  [<c014b4c9>] state_store+0xa9/0xc0
+> >  [<c014b420>] state_store+0x0/0xc0
+> >  [<c01ae789>] subsys_attr_store+0x29/0x40
+> >  [<c01af07c>] sysfs_write_file+0xac/0x130
+> >  [<c0172156>] vfs_write+0xa6/0x140
+> >  [<c01aefd0>] sysfs_write_file+0x0/0x130
+> >  [<c0104050>] syscall_call+0x7/0xb
+> >  [<c0630000>] ieee80211_translate_scan+0xa00/0xa50
+> >  =======================
+> > ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+> > 
+> > -- 
+> > (english) http://www.livejournal.com/~pavelmachek
+> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > 
 
-I believe Ingo's much simpler hack produces as good/bad results
-as this RSDL thingie, and with one important extra:
-it can be switched on/off at runtime.
-
------>forwarded message:
-
-Subject: [patch] CFS scheduler: Completely Fair Scheduler
-From: Ingo Molnar <mingo@elte.hu>
-
-add the CONFIG_SCHED_FAIR option (default: off): this turns the Linux 
-scheduler into a completely fair scheduler for SCHED_OTHER tasks: with 
-perfect roundrobin scheduling, fair distribution of timeslices combined 
-with no interactivity boosting and no heuristics.
-
-a /proc/sys/kernel/sched_fair option is also available to turn
-this behavior on/off.
-
-if this option establishes itself amongst leading distributions then we
-could in the future remove the interactivity estimator altogether.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/sched.h  |    1 +
- kernel/Kconfig.preempt |    9 +++++++++
- kernel/sched.c         |    8 ++++++++
- kernel/sysctl.c        |   10 ++++++++++
- 4 files changed, 28 insertions(+)
-
-Index: linux/include/linux/sched.h
-===================================================================
---- linux.orig/include/linux/sched.h
-+++ linux/include/linux/sched.h
-@@ -119,6 +119,7 @@ extern unsigned long avenrun[];		/* Load
- 	load += n*(FIXED_1-exp); \
- 	load >>= FSHIFT;
- 
-+extern unsigned int sched_fair;
- extern unsigned long total_forks;
- extern int nr_threads;
- DECLARE_PER_CPU(unsigned long, process_counts);
-Index: linux/kernel/Kconfig.preempt
-===================================================================
---- linux.orig/kernel/Kconfig.preempt
-+++ linux/kernel/Kconfig.preempt
-@@ -63,3 +63,12 @@ config PREEMPT_BKL
- 	  Say Y here if you are building a kernel for a desktop system.
- 	  Say N if you are unsure.
- 
-+config SCHED_FAIR
-+	bool "Completely Fair Scheduler"
-+	help
-+	  This option turns the Linux scheduler into a completely fair
-+	  scheduler. User-space workloads will round-robin fairly, and
-+	  they have to be prioritized using nice levels.
-+
-+	  Say N if you are unsure.
-+
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -4040,6 +4040,10 @@ static inline struct task_struct *find_p
- 	return pid ? find_task_by_pid(pid) : current;
- }
- 
-+#ifdef CONFIG_SCHED_FAIR
-+unsigned int sched_fair = 1;
-+#endif
-+
- /* Actually do priority change: must hold rq lock. */
- static void __setscheduler(struct task_struct *p, int policy, int prio)
- {
-@@ -4055,6 +4059,10 @@ static void __setscheduler(struct task_s
- 	 */
- 	if (policy == SCHED_BATCH)
- 		p->sleep_avg = 0;
-+#ifdef CONFIG_SCHED_FAIR
-+	if (policy == SCHED_NORMAL && sched_fair)
-+		p->sleep_avg = 0;
-+#endif
- 	set_load_weight(p);
- }
- 
-Index: linux/kernel/sysctl.c
-===================================================================
---- linux.orig/kernel/sysctl.c
-+++ linux/kernel/sysctl.c
-@@ -205,6 +205,16 @@ static ctl_table root_table[] = {
- };
- 
- static ctl_table kern_table[] = {
-+#ifdef CONFIG_SCHED_FAIR
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "sched_fair",
-+		.data		= &sched_fair,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+#endif
- 	{
- 		.ctl_name	= KERN_PANIC,
- 		.procname	= "panic",
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
