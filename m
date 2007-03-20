@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbXCTRUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751857AbXCTRXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751821AbXCTRUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 13:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXCTRUc
+	id S1751857AbXCTRXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 13:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXCTRXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 13:20:32 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58397 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751844AbXCTRUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 13:20:30 -0400
-Date: Tue, 20 Mar 2007 18:20:23 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: "reboot" swsusp mode leaves moon icon blinking
-Message-ID: <20070320172023.GA2593@elf.ucw.cz>
-References: <20070320123245.GA19019@elf.ucw.cz> <200703201805.58299.rjw@sisk.pl>
+	Tue, 20 Mar 2007 13:23:32 -0400
+Received: from ns2.suse.de ([195.135.220.15]:38260 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751857AbXCTRXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 13:23:31 -0400
+Date: Tue, 20 Mar 2007 19:22:33 +0100
+From: Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
+Message-ID: <20070320182233.GC4286@bingen.suse.de>
+References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net> <45FF8A79.7010201@googlemail.com> <20070320083627.27d90a91.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200703201805.58299.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070320083627.27d90a91.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > ...and cause is really simple.
-> > 
-> > During resume, we do not know that "reboot" method was used, so we
-> > assume plaform and make the led blink...
-> > 
-> > Unfortunately I see no easy solution, and this may/will cause other
-> > problems -- in case of broken bios and user telling us not to call
-> > that bios, we'll call it anyway.
-> > 
-> > (Ouch and I think this is regression after 2.6.20?)
+On Tue, Mar 20, 2007 at 08:36:27AM -0800, Andrew Morton wrote:
+> > caller is avail_to_resrv_perfctr_nmi_bit+0x2b/0x43
+> >  [<c0105256>] show_trace_log_lvl+0x1a/0x2f
+> >  [<c010597b>] show_trace+0x12/0x14
+> >  [<c0105a3d>] dump_stack+0x16/0x18
+> >  [<c0213313>] debug_smp_processor_id+0xb3/0xc8
+> >  [<c0116a26>] avail_to_resrv_perfctr_nmi_bit+0x2b/0x43
+> >  [<fdc819b9>] nmi_create_files+0x2a/0x10e [oprofile]
+> >  [<fdc80f52>] oprofile_create_files+0xe6/0xec [oprofile]
+> >  [<fdc81157>] oprofilefs_fill_super+0x78/0x7e [oprofile]
+> >  [<c0182d2e>] get_sb_single+0x59/0x9f
+> >  [<fdc8108f>] oprofilefs_get_sb+0x1c/0x1e [oprofile]
+> >  [<c0182792>] vfs_kern_mount+0x81/0xf1
+> >  [<c0182852>] do_kern_mount+0x38/0xde
+> >  [<c0196671>] do_mount+0x605/0x693
+> >  [<c019677f>] sys_mount+0x80/0xb5
+> >  [<c0104270>] syscall_call+0x7/0xb
+> >  =======================
 > 
-> I'm not sure, will check that later.
-> 
-> The solution would be to pass the information about the suspend mode used
-> in the image header, I think (that's what uswsusp does after my recent patch).
+> Odd.  It looks like oprofile has been doing this for some time.  Andi,
+> there are a few changes in the NMI area - can you think of one whihc would
+> have triggered this?
 
-Yes, we could do that.
+Looks like it was always broken. avail_to_resrv_perfctr_nmi_bit() must 
+always do all this for all possible CPUs, not just the current one.
+I can cook up a patch.
 
-OTOH, we could simply avoid calling the platform code in resume
-path. It worked ok for a long while, and it seems to have no
-downsides...
+-Andi
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
