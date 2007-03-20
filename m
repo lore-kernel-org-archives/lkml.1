@@ -1,96 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966072AbXCTCAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030816AbXCTCCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966072AbXCTCAi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 22:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966068AbXCTCAi
+	id S1030816AbXCTCCi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 22:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966071AbXCTCCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 22:00:38 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:47566 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966064AbXCTCAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 22:00:37 -0400
-Message-ID: <45FF4043.4000805@vmware.com>
-Date: Mon, 19 Mar 2007 18:00:35 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, jeremy@goop.org, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <20070316.023331.59468179.davem@davemloft.net>	 <45FB005D.9060809@goop.org>	 <1174127638.8897.75.camel@localhost.localdomain>	 <20070318.003309.71088169.davem@davemloft.net>	 <20070318120814.GA45869@muc.de>	 <1174272469.11680.23.camel@localhost.localdomain>	 <m1648xxf93.fsf@ebiederm.dsl.xmission.com>	 <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain>
-In-Reply-To: <1174348905.11680.54.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Mar 2007 22:02:38 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:39964 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966074AbXCTCCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 22:02:37 -0400
+Date: Mon, 19 Mar 2007 18:02:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew Morton <akpm@linux-found\"Michal Piotrowski\"" 
+	<michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "\"Nick Piggin\" ation.org>" <nickpiggin@yahoo.com.au>
+Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
+Message-Id: <20070319180234.6b7826b2.akpm@linux-foundation.org>
+In-Reply-To: <20070319175852.c73406f1.akpm@linux-foundation.org>
+References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
+	<45FEE33C.1020706@googlemail.com>
+	<20070319140827.285dcc7f.akpm@linux-foundation.org>
+	<6bffcb0e0703191437i2ee706d4xaec3bc11ca7c3234@mail.gmail.com>
+	<20070319175852.c73406f1.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Mon, 2007-03-19 at 11:38 -0700, Linus Torvalds wrote:
->   
->> On Mon, 19 Mar 2007, Eric W. Biederman wrote:
->>     
->>> True.  You can use all of the call clobbered registers.
->>>       
->> Quite often, the biggest single win of inlining is not so much the code 
->> size (although if done right, that will be smaller too), but the fact that 
->> inlining DOES NOT CLOBBER AS MANY REGISTERS!
->>     
+On Mon, 19 Mar 2007 17:58:52 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-For VMI, the default clobber was "cc", and you need a way to allow at 
-least that, because saving and restoring flags is too expensive on x86.
+> The kernel without Nick's patchset but with the assert runs OK too.  Under
+> the principle of mm-has-been-too-flakey-lately, I'll drop the patches:
+> 
+> mm-debug-check-for-the-fault-vs-invalidate-race.patch
+> mm-simplify-filemap_nopage.patch
+> mm-fix-fault-vs-invalidate-race-for-linear-mappings.patch
+> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
+> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear-tidy.patch
+> mm-merge-nopfn-into-fault.patch
+> mm-merge-nopfn-into-fault-fix.patch
+> mm-remove-legacy-cruft.patch
 
-> Thanks Linus.
->
-> *This* was the reason that the current hand-coded calls only clobber %
-> eax.  It was a compromise between native (no clobbers) and others (might
-> need a reg).
->   
-
-I still don't think this was a good trade.  The primary motivation for 
-clobbering %eax was that Xen wanted a free register to use for computing 
-the offset into the shared data in the case of SMP preemptible kernels.  
-Xen no longer needs such a register, they can use the PDA offset 
-instead.  And it does hurt native performance by unconditionally 
-stealing a register in the four most commonly invoked paravirt-ops code 
-sequences.
-
-> Now, since we decided to allow paravirt_ops operations to be normal C
-> (ie. the patching is optional and done late), we actually push and pop %
-> ecx and %edx.  This makes the call site 10 bytes long, which is a nice
-> size for patching anyway (enough for a movl $0, <addr>, a-la lguest's
-> cli, or movw $0, %gs:<addr> if we supported SMP).
->   
-
-You can do it in 11 bytes with no clobbers and normal C semantics by 
-linking to a direct address instead of calling to an indirect, but then 
-you need some gross fixup technology in paravirt_patch:
-
-if (call_addr == (void*)native_sti) {
-  ...
-}
-
-I think we should probably try to do it in 12 bytes.  Freeing eax to the 
-inline caller is likely to make up the 2 bytes of space more we have to nop.
-
-One thing I always tried to get in VMI was to encapsulate the actual 
-code which went through the business of computing arguments that were 
-not even used in the native case.  Unfortunately, that seems impossible 
-in the current design, but I don't think it is an issue because I don't 
-think there is actually a way to express:
-
-SWITCHABLE_CODE_BLOCK_BEGIN {
-   /* arbitrary C code for native */
-} SWITCHABLE_CODE_BLOCK_ALTERNATIVE {
-   /* arbitrary C code for something else */
-}
-
-Dave's linker suggestion is probably the best for things like that.
-
-Zach
+ug, too many rejects.  I'll leave them in, minus
+mm-debug-check-for-the-fault-vs-invalidate-race.patch
