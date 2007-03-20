@@ -1,47 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030826AbXCTBGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030802AbXCTBIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030826AbXCTBGs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 21:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030827AbXCTBGs
+	id S1030802AbXCTBIZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 21:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030825AbXCTBIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 21:06:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51861 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030826AbXCTBGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 21:06:47 -0400
-Message-ID: <45FF33A5.7010909@redhat.com>
-Date: Mon, 19 Mar 2007 21:06:45 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] split file and anonymous page queues #2
-References: <45FF3052.0@redhat.com>
-In-Reply-To: <45FF3052.0@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 19 Mar 2007 21:08:25 -0400
+Received: from www.osadl.org ([213.239.205.134]:43335 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030802AbXCTBIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 21:08:24 -0400
+Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Stefan Prechtel <stefan.prechtel@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, Len Brown <lenb@kernel.org>,
+       Andi Kleen <ak@suse.de>, john stultz <johnstul@us.ibm.com>
+In-Reply-To: <b93822910703191451o216a8931v9023b174fdef750@mail.gmail.com>
+References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
+	 <1174325803.13341.515.camel@localhost.localdomain>
+	 <1174326499.13341.517.camel@localhost.localdomain>
+	 <b93822910703191153x20249f00vb604a0eda075a23a@mail.gmail.com>
+	 <1174332477.13341.561.camel@localhost.localdomain>
+	 <b93822910703191249i40a70418ka8165da52070ae82@mail.gmail.com>
+	 <1174334646.13341.577.camel@localhost.localdomain>
+	 <b93822910703191335i236cdc4av59cc9fd0685537ec@mail.gmail.com>
+	 <1174337777.13341.621.camel@localhost.localdomain>
+	 <b93822910703191451o216a8931v9023b174fdef750@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 02:15:29 +0100
+Message-Id: <1174353329.13341.762.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Split the anonymous and file backed pages out onto their own pageout
-> queues.  This we do not unnecessarily churn through lots of anonymous
-> pages when we do not want to swap them out anyway.
+On Mon, 2007-03-19 at 22:51 +0100, Stefan Prechtel wrote:
+> 2007/3/19, Thomas Gleixner <tglx@linutronix.de>:
+> > On Mon, 2007-03-19 at 21:35 +0100, Stefan Prechtel wrote:
+> > >            CPU0       CPU1
+> > >  0:      28289          0  local-APIC-edge-fasteio   timer
+> > > ...
+> > > LOC:      28237      28236
+> > >
+> > > after a read: (I hope that is this what you want :-)
+> > >            CPU0       CPU1
+> > >   0:      30344          0  local-APIC-edge-fasteio   timer
+> > > ...
+> > > LOC:      30292      30291
+> >
+> > Is this with AC plugged in ? If yes, please provide the same numbers for
+> > battery mode.
+> 
+> Yes. And here is the output for battery mode (2.6.20):
+>            CPU0       CPU1
+>   0:     292153          0  local-APIC-edge-fasteio   timer
+> LOC:     292114     292113
+> 
+>            CPU0       CPU1
+>   0:     293263          0  local-APIC-edge-fasteio   timer
+> LOC:     293224     293223
 
-> Please take this patch for a spin and let me know what goes well
-> and what goes wrong.
+Hmm. Can you please apply the following patch on top of 2.6.20 and
+check, if the WARN_ON_ONCE triggers when you boot w/o AC plugged ?
 
-In order to make testing easier, I have put some kernel RPMs
-up on http://people.redhat.com/riel/vmsplit/
+Thanks,
 
-Any benchmark results are welcome, especially bad ones.
-I want to make sure this thing runs as well as the current
-VM in every situation, while also fixing the problems described
-in my previous mail.
+	tglx
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Index: linux-2.6.20/arch/i386/kernel/apic.c
+===================================================================
+--- linux-2.6.20.orig/arch/i386/kernel/apic.c
++++ linux-2.6.20/arch/i386/kernel/apic.c
+@@ -1174,6 +1174,8 @@ void switch_APIC_timer_to_ipi(void *cpum
+ 	cpumask_t mask = *(cpumask_t *)cpumask;
+ 	int cpu = smp_processor_id();
+ 
++	WARN_ON_ONCE(1);
++
+ 	if (cpu_isset(cpu, mask) &&
+ 	    !cpu_isset(cpu, timer_bcast_ipi)) {
+ 		disable_APIC_timer();
+
+
