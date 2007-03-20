@@ -1,108 +1,432 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXCTGqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932567AbXCTGqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932224AbXCTGqv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 02:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932760AbXCTGqv
+	id S932567AbXCTGqw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 02:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932975AbXCTGqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 02:46:51 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56046 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932224AbXCTGqt (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 02:46:49 -0400
-Date: Tue, 20 Mar 2007 17:46:32 +1100
-From: David Chinner <dgc@sgi.com>
-To: Marco Berizzi <pupilla@hotmail.com>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c.  Caller 0xc01b00bd
-Message-ID: <20070320064632.GO32602149@melbourne.sgi.com>
-References: <BAY103-DAV1066400DF0615AD677EA1B2730@phx.gbl> <20070316012520.GN5743@melbourne.sgi.com> <BAY103-DAV13EC09E9BCB3E8C9D5EEA2B2710@phx.gbl> <20070316195951.GB5743@melbourne.sgi.com> <BAY103-DAV1484A3797D5368C28969CBB2700@phx.gbl> <BAY103-DAV9C465F21C87A900314523B2760@phx.gbl>
+	Tue, 20 Mar 2007 02:46:52 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50106 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932567AbXCTGqu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 02:46:50 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
+From: Keith Owens <kaos@ocs.com.au>
+To: linux-kernel@vger.kernel.org
+cc: len.brown@intel.com
+Subject: PNPACPI probes serial twice, messes up serial console
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BAY103-DAV9C465F21C87A900314523B2760@phx.gbl>
-User-Agent: Mutt/1.4.2.1i
+Date: Tue, 20 Mar 2007 17:46:46 +1100
+Message-ID: <17887.1174373206@kao2.melbourne.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 11:32:27AM +0100, Marco Berizzi wrote:
-> Marco Berizzi wrote:
-> > David Chinner wrote:
-> >
-> >> Ok, so an ipsec change. And I see from the history below it
-> >> really has nothing to do with this problem. it seems the problem
-> >> has something to do with changes between 2.6.19.1 and 2.6.19.2.
-> >
-> > indeed. Yesterday at 13:00 I have switched from 2.6.19.1 to 2.6.19.2
-> > (without the ipsec fix) and at about 17:30 linux has crashed again.
-> > I have recompiled 2.6.19.2 with all kernel debugging options enabled
-> > and rebooted. Now I'm waiting for the crash...
-> 
-> Linux has not been crashed. However here is dmesg output
-> with all debugging option enabled: (search for 'INFO:
-> possible recursive locking detected'). Is that normal?
+Dell SC1425 x86_64 running in i386 mode (the problem also occurs in
+x86_64 mode).  Kernel 2.6.21-rc4, gcc 4.1.0.  Config extract at end.
 
-.....
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.19.2 #1
-> ---------------------------------------------
-> rm/470 is trying to acquire lock:
->  (&(&ip->i_lock)->mr_lock){----}, at: [<c01cd64a>] xfs_ilock+0x5b/0xa1
-> 
-> but task is already holding lock:
->  (&(&ip->i_lock)->mr_lock){----}, at: [<c01cd64a>] xfs_ilock+0x5b/0xa1
-> 
-> other info that might help us debug this:
-> 3 locks held by rm/470:
->  #0:  (&inode->i_mutex/1){--..}, at: [<c016e5a7>] do_unlinkat+0x70/0x115
->  #1:  (&inode->i_mutex){--..}, at: [<c030be35>] mutex_lock+0x1c/0x1f
->  #2:  (&(&ip->i_lock)->mr_lock){----}, at: [<c01cd64a>]
-> xfs_ilock+0x5b/0xa1
-> 
-> stack backtrace:
->  [<c0103bc0>] dump_trace+0x215/0x21a
->  [<c0103c68>] show_trace_log_lvl+0x1a/0x30
->  [<c0103c90>] show_trace+0x12/0x14
->  [<c0103d8d>] dump_stack+0x19/0x1b
->  [<c01357e7>] print_deadlock_bug+0xc0/0xcf
->  [<c0135860>] check_deadlock+0x6a/0x79
->  [<c01372e1>] __lock_acquire+0x350/0x970
->  [<c0137fd1>] lock_acquire+0x75/0x97
->  [<c01331ab>] down_write+0x3a/0x54
->  [<c01cd64a>] xfs_ilock+0x5b/0xa1
->  [<c01eda0e>] xfs_lock_dir_and_entry+0x105/0x11b
->  [<c01edcc5>] xfs_remove+0x180/0x47f
->  [<c01f8a9e>] xfs_vn_unlink+0x22/0x4f
->  [<c016e533>] vfs_unlink+0x9e/0xa2
->  [<c016e5df>] do_unlinkat+0xa8/0x115
->  [<c016e68b>] sys_unlink+0x10/0x12
->  [<c0102cdb>] syscall_call+0x7/0xb
->  [<b7efaa7d>] 0xb7efaa7d
->  =======================
+Booting with 'console=tty console=ttyS0,9600'.  The serial console on
+ttyS0 (0x3f8, irq 4) is probed twice, once from serial8250_init() and
+again from serial_pnp_probe().  The serial console output is correct
+until the second probe (from PNP) gets to these lines in
+serial8250_config_port()
 
-That's no problem - lockdep just doesn't know that we can nest i_lock
-(we've got to get the annotations for this sorted out).
+	if (flags & UART_CONFIG_TYPE)
+		autoconfig(up, probeflags);
 
-> Here is the relevant results:
-> 
-> Phase 2 - found root inode chunk
-> Phase 3 - ...
->             agno = 0
->             ...
->             agno = 12
-> LEAFN node level is 1 inode 1610612918 bno = 8388608
+After the call to autoconfig(), the serial console starts printing NUL
+characters instead of the console output.  The number of NUL characters
+corresponds closely with the number of characters written to the VT
+console, IOW it outputs each serial character as NUL instead of the
+correct character.  When the kernel boots /sbin/init, the console
+resets to printing normal characters.
 
-Hmmm - single bit error in the bno - that reminds of this:
+AFAICT, the second probe of the UART is doing something nasty to the
+hardware.  This is not a recent problem, I can reproduce the problem on
+2.6.16.  Booting with pnpacpi=off removes the problem, but that
+supresses all the PNPACPI code, not just the second probe of the serial
+devices.
 
-http://oss.sgi.com/projects/xfs/faq.html#dir2
+Should pnpacpi probe and setup the serial devices even when thay have
+already been setup?  Or this is something strange about the UART in
+this particular box?
 
-So I'd definitely make sure that is repaired....
+FWIW, the serial console is plugged into a serial to USB converter
+(pl2303), my laptop has no serial ports.  That should not make a
+difference, but just in case it does ...
 
-Cheers,
+Config extract:
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+X86_32=y
+GENERIC_TIME=y
+CLOCKSOURCE_WATCHDOG=y
+GENERIC_CLOCKEVENTS=y
+GENERIC_CLOCKEVENTS_BROADCAST=y
+LOCKDEP_SUPPORT=y
+STACKTRACE_SUPPORT=y
+SEMAPHORE_SLEEPERS=y
+X86=y
+MMU=y
+ZONE_DMA=y
+GENERIC_ISA_DMA=y
+GENERIC_IOMAP=y
+GENERIC_BUG=y
+GENERIC_HWEIGHT=y
+ARCH_MAY_HAVE_PC_FDC=y
+DMI=y
+DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+EXPERIMENTAL=y
+LOCK_KERNEL=y
+INIT_ENV_ARG_LIMIT=32
+LOCALVERSION="-i386-kaos"
+LOCALVERSION_AUTO=y
+SWAP=y
+SYSVIPC=y
+SYSVIPC_SYSCTL=y
+POSIX_MQUEUE=y
+IKCONFIG=y
+IKCONFIG_PROC=y
+SYSFS_DEPRECATED=y
+CC_OPTIMIZE_FOR_SIZE=y
+SYSCTL=y
+EMBEDDED=y
+SYSCTL_SYSCALL=y
+KALLSYMS=y
+KALLSYMS_ALL=y
+HOTPLUG=y
+PRINTK=y
+BUG=y
+ELF_CORE=y
+BASE_FULL=y
+FUTEX=y
+EPOLL=y
+SHMEM=y
+SLAB=y
+VM_EVENT_COUNTERS=y
+RT_MUTEXES=y
+BASE_SMALL=0
+MODULES=y
+MODULE_UNLOAD=y
+KMOD=y
+STOP_MACHINE=y
+BLOCK=y
+LBD=y
+LSF=y
+IOSCHED_NOOP=y
+IOSCHED_AS=y
+IOSCHED_DEADLINE=y
+IOSCHED_CFQ=y
+DEFAULT_DEADLINE=y
+DEFAULT_IOSCHED="deadline"
+TICK_ONESHOT=y
+HIGH_RES_TIMERS=y
+SMP=y
+X86_PC=y
+MPENTIUM4=y
+X86_CMPXCHG=y
+X86_L1_CACHE_SHIFT=7
+RWSEM_XCHGADD_ALGORITHM=y
+GENERIC_CALIBRATE_DELAY=y
+X86_WP_WORKS_OK=y
+X86_INVLPG=y
+X86_BSWAP=y
+X86_POPAD_OK=y
+X86_CMPXCHG64=y
+X86_GOOD_APIC=y
+X86_INTEL_USERCOPY=y
+X86_USE_PPRO_CHECKSUM=y
+X86_TSC=y
+HPET_TIMER=y
+HPET_EMULATE_RTC=y
+NR_CPUS=8
+SCHED_SMT=y
+PREEMPT_NONE=y
+X86_LOCAL_APIC=y
+X86_IO_APIC=y
+X86_MCE=y
+X86_MCE_NONFATAL=y
+X86_MCE_P4THERMAL=y
+MICROCODE=m
+MICROCODE_OLD_INTERFACE=y
+X86_MSR=m
+X86_CPUID=m
+HIGHMEM4G=y
+VMSPLIT_3G=y
+PAGE_OFFSET=0xC0000000
+HIGHMEM=y
+ARCH_FLATMEM_ENABLE=y
+ARCH_SPARSEMEM_ENABLE=y
+ARCH_SELECT_MEMORY_MODEL=y
+ARCH_POPULATES_NODE_MAP=y
+SELECT_MEMORY_MODEL=y
+FLATMEM_MANUAL=y
+FLATMEM=y
+FLAT_NODE_MEM_MAP=y
+SPARSEMEM_STATIC=y
+SPLIT_PTLOCK_CPUS=4
+ZONE_DMA_FLAG=1
+MTRR=y
+IRQBALANCE=y
+HZ_250=y
+HZ=250
+PHYSICAL_START=0x100000
+PHYSICAL_ALIGN=0x100000
+COMPAT_VDSO=y
+ARCH_ENABLE_MEMORY_HOTPLUG=y
+PM=y
+ACPI=y
+ACPI_PROCFS=y
+ACPI_BUTTON=m
+ACPI_FAN=m
+ACPI_PROCESSOR=m
+ACPI_BLACKLIST_YEAR=0
+ACPI_EC=y
+ACPI_POWER=y
+ACPI_SYSTEM=y
+PCI=y
+PCI_GOANY=y
+PCI_BIOS=y
+PCI_DIRECT=y
+PCI_MMCONFIG=y
+PCIEPORTBUS=y
+PCIEAER=y
+PCI_MSI=y
+HT_IRQ=y
+ISA_DMA_API=y
+BINFMT_ELF=y
+BINFMT_MISC=m
+NET=y
+PACKET=y
+PACKET_MMAP=y
+UNIX=y
+XFRM=y
+INET=y
+IP_MULTICAST=y
+IP_ADVANCED_ROUTER=y
+ASK_IP_FIB_HASH=y
+IP_FIB_HASH=y
+IP_ROUTE_MULTIPATH=y
+IP_ROUTE_VERBOSE=y
+SYN_COOKIES=y
+INET_XFRM_MODE_BEET=y
+INET_DIAG=y
+INET_TCP_DIAG=y
+TCP_CONG_CUBIC=y
+DEFAULT_TCP_CONG="cubic"
+NETFILTER=y
+NETFILTER_NETLINK=m
+NETFILTER_NETLINK_LOG=m
+NETFILTER_XTABLES=y
+NETFILTER_XT_TARGET_CLASSIFY=m
+NETFILTER_XT_TARGET_MARK=m
+NETFILTER_XT_MATCH_COMMENT=m
+NETFILTER_XT_MATCH_DCCP=m
+NETFILTER_XT_MATCH_ESP=m
+NETFILTER_XT_MATCH_LENGTH=m
+NETFILTER_XT_MATCH_LIMIT=m
+NETFILTER_XT_MATCH_MAC=m
+NETFILTER_XT_MATCH_MARK=m
+NETFILTER_XT_MATCH_MULTIPORT=m
+NETFILTER_XT_MATCH_PKTTYPE=m
+NETFILTER_XT_MATCH_QUOTA=m
+NETFILTER_XT_MATCH_REALM=m
+NETFILTER_XT_MATCH_SCTP=m
+NETFILTER_XT_MATCH_STATISTIC=m
+NETFILTER_XT_MATCH_TCPMSS=m
+IP_NF_IPTABLES=y
+IP_NF_MATCH_IPRANGE=m
+IP_NF_MATCH_TOS=m
+IP_NF_MATCH_RECENT=m
+IP_NF_MATCH_ECN=m
+IP_NF_MATCH_AH=m
+IP_NF_MATCH_TTL=m
+IP_NF_MATCH_OWNER=m
+IP_NF_MATCH_ADDRTYPE=m
+IP_NF_FILTER=y
+IP_NF_TARGET_REJECT=y
+IP_NF_TARGET_ULOG=y
+VLAN_8021Q=y
+NET_CLS_ROUTE=y
+STANDALONE=y
+PREVENT_FIRMWARE_BUILD=y
+FW_LOADER=m
+CONNECTOR=m
+PNP=y
+PNP_DEBUG=y
+PNPACPI=y
+BLK_DEV_FD=m
+BLK_DEV_LOOP=m
+IDE=m
+IDE_MAX_HWIFS=4
+BLK_DEV_IDE=m
+BLK_DEV_IDEDISK=m
+IDEDISK_MULTI_MODE=y
+BLK_DEV_IDECD=m
+IDE_TASK_IOCTL=y
+BLK_DEV_IDEPCI=y
+IDEPCI_SHARE_IRQ=y
+BLK_DEV_IDEDMA_PCI=y
+IDEDMA_PCI_AUTO=y
+BLK_DEV_PIIX=m
+BLK_DEV_IDEDMA=y
+IDEDMA_AUTO=y
+RAID_ATTRS=m
+SCSI=y
+SCSI_PROC_FS=y
+BLK_DEV_SD=y
+CHR_DEV_SG=y
+SCSI_CONSTANTS=y
+SCSI_SPI_ATTRS=y
+SCSI_3W_9XXX=y
+SCSI_SYM53C8XX_2=y
+SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=1
+SCSI_SYM53C8XX_DEFAULT_TAGS=16
+SCSI_SYM53C8XX_MAX_TAGS=64
+SCSI_SYM53C8XX_MMIO=y
+ATA=y
+ATA_PIIX=y
+SATA_ACPI=y
+MD=y
+BLK_DEV_MD=y
+MD_RAID1=y
+BLK_DEV_DM=y
+DM_SNAPSHOT=y
+DM_MIRROR=y
+NETDEVICES=y
+DUMMY=m
+BONDING=m
+E1000=y
+E1000_NAPI=y
+SKY2=m
+NETCONSOLE=m
+NETPOLL=y
+NET_POLL_CONTROLLER=y
+INPUT=y
+INPUT_KEYBOARD=y
+KEYBOARD_ATKBD=y
+SERIO=y
+SERIO_I8042=y
+SERIO_LIBPS2=y
+SERIO_RAW=m
+VT=y
+VT_CONSOLE=y
+HW_CONSOLE=y
+SERIAL_8250=y
+SERIAL_8250_CONSOLE=y
+SERIAL_8250_PCI=m
+SERIAL_8250_PNP=y
+SERIAL_8250_NR_UARTS=4
+SERIAL_8250_RUNTIME_UARTS=4
+SERIAL_CORE=y
+SERIAL_CORE_CONSOLE=y
+UNIX98_PTYS=y
+IPMI_HANDLER=y
+IPMI_PANIC_EVENT=y
+IPMI_DEVICE_INTERFACE=y
+IPMI_SI=y
+IPMI_WATCHDOG=y
+IPMI_POWEROFF=m
+WATCHDOG=y
+SOFT_WATCHDOG=m
+I8XX_TCO=y
+NVRAM=m
+RTC=y
+HPET=y
+HPET_MMAP=y
+I2C=y
+I2C_CHARDEV=m
+I2C_ALGOBIT=m
+I2C_I801=y
+SENSORS_EEPROM=m
+HWMON=y
+VGA_CONSOLE=y
+DUMMY_CONSOLE=y
+HID=y
+USB_ARCH_HAS_HCD=y
+USB_ARCH_HAS_OHCI=y
+USB_ARCH_HAS_EHCI=y
+USB=y
+USB_DEVICEFS=y
+USB_EHCI_HCD=y
+USB_STORAGE=m
+USB_HID=y
+USB_MON=y
+USB_SERIAL=m
+USB_SERIAL_GENERIC=y
+USB_SERIAL_PL2303=m
+EDAC=y
+EDAC_MM_EDAC=y
+EDAC_E752X=y
+EDAC_POLL=y
+EXT2_FS=m
+EXT3_FS=y
+JBD=y
+XFS_FS=y
+INOTIFY=y
+INOTIFY_USER=y
+ISO9660_FS=m
+JOLIET=y
+UDF_FS=m
+UDF_NLS=y
+FAT_FS=m
+MSDOS_FS=m
+VFAT_FS=m
+FAT_DEFAULT_CODEPAGE=850
+FAT_DEFAULT_IOCHARSET="iso8859-1"
+PROC_FS=y
+PROC_KCORE=y
+PROC_SYSCTL=y
+SYSFS=y
+TMPFS=y
+RAMFS=y
+NFS_FS=y
+NFS_V3=y
+NFSD=y
+NFSD_V3=y
+LOCKD=y
+LOCKD_V4=y
+EXPORTFS=y
+NFS_COMMON=y
+SUNRPC=y
+MSDOS_PARTITION=y
+NLS=m
+NLS_DEFAULT="iso8859-15"
+NLS_CODEPAGE_437=m
+NLS_CODEPAGE_850=m
+NLS_CODEPAGE_865=m
+NLS_ASCII=m
+NLS_ISO8859_1=m
+NLS_ISO8859_15=m
+NLS_UTF8=m
+TRACE_IRQFLAGS_SUPPORT=y
+ENABLE_MUST_CHECK=y
+MAGIC_SYSRQ=y
+DEBUG_KERNEL=y
+LOG_BUF_SHIFT=16
+DETECT_SOFTLOCKUP=y
+DEBUG_SPINLOCK=y
+DEBUG_MUTEXES=y
+DEBUG_BUGVERBOSE=y
+FORCED_INLINING=y
+DEBUG_STACKOVERFLOW=y
+DEBUG_RODATA=y
+X86_FIND_SMP_CONFIG=y
+X86_MPPARSE=y
+DOUBLEFAULT=y
+KDB=y
+KDB_MODULES=y
+KDB_CONTINUE_CATASTROPHIC=0
+BITREVERSE=y
+CRC32=y
+PLIST=y
+HAS_IOMEM=y
+HAS_IOPORT=y
+GENERIC_HARDIRQS=y
+GENERIC_IRQ_PROBE=y
+GENERIC_PENDING_IRQ=y
+X86_SMP=y
+X86_HT=y
+X86_BIOS_REBOOT=y
+X86_TRAMPOLINE=y
+KTIME_SCALAR=y
+
