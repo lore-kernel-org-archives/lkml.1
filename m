@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965544AbXCTRQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965529AbXCTRTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965544AbXCTRQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 13:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965529AbXCTRQ7
+	id S965529AbXCTRTd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 13:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXCTRTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 13:16:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45059 "EHLO mx1.redhat.com"
+	Tue, 20 Mar 2007 13:19:33 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:32775 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965544AbXCTRQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 13:16:58 -0400
-Date: Tue, 20 Mar 2007 13:16:48 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Andrew Morton <akpm@osdl.org>, tglx@linutronix.de,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] Export not_critical_when_idle feature in workqueue and use it in ondemand
-Message-ID: <20070320171648.GB19781@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-	Andrew Morton <akpm@osdl.org>, tglx@linutronix.de,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070320145812.GB20671@redhat.com> <653FFBB4508B9042B5D43DC9E18836F522F9B7@scsmsx415.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S965529AbXCTRTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 13:19:32 -0400
+Date: Tue, 20 Mar 2007 18:21:19 +0100
+From: Lukas Hejtmanek <xhejtman@mail.muni.cz>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: UDP packets scheduling
+Message-ID: <20070320172119.GT22880@mail.muni.cz>
+References: <20070320005228.GN22880@mail.muni.cz> <p73r6rj6bv0.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F522F9B7@scsmsx415.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <p73r6rj6bv0.fsf@bingen.suse.de>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 Mar 2007 18:19:29 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 10:04:18AM -0700, Pallipadi, Venkatesh wrote:
+On Tue, Mar 20, 2007 at 06:52:51PM +0100, Andi Kleen wrote:
+> > Flow control must be turned off for some other reason.
+> 
+> That's your fundamental problem. Fix that. 
+> 
+> Even if you get the rate right there can be many reasons why timing 
+> gets disrupted temporarily and to recover from any of this you need
+> working flow control.
 
- > >just for kicks (actually because I was seeing the negative effects
- > >of not having this diff) I threw this in the Fedora devel kernel.
- > >Got a few people reporting softlockups during shutdown.
- > >jpeg from one user attached..
- > 
- > Thanks for the report. I will take a look at this message.
- > Looks like, this error is either coming from rmmod or changing the
- > governor to default from ondemand during reboot. Does Fedora
- > use ondemand as a module and rmmod on reboot or is it builtin?
+How do you want to enable wire/fibre flow control, e.g., from Europe to USA?
+You are not guaranteed any hardware based flow control.
 
-Yes, it's modular.
-
-	Dave
+And as of software flow control, you need precise timing of UDP packets to
+keep desired packet rate. How to do it at speeds about 5.5Gbps, that is my
+question.
 
 -- 
-http://www.codemonkey.org.uk
+Luká¹ Hejtmánek
