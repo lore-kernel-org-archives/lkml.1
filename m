@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbXCTJDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbXCTJHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbXCTJDT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 05:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbXCTJDT
+	id S932388AbXCTJHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 05:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932418AbXCTJHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 05:03:19 -0400
-Received: from smtp20.orange.fr ([193.252.22.31]:1393 "EHLO smtp20.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753543AbXCTJDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 05:03:18 -0400
-X-ME-UUID: 20070320090316456.6F5D41C00048@mwinf2024.orange.fr
-Subject: Re: RSDL v0.31
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Mark Lord <lkml@rtr.ca>,
-       Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070320061152.GW943@1wt.eu>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172048.46267.kernel@kolivas.org>
-	 <1174125534.7734.2.camel@Homer.simpson.net>
-	 <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca>
-	 <1174321617.30876.69.camel@frg-rhel40-em64t-04> <45FEBBF5.9060002@rtr.ca>
-	 <1174322580.30876.72.camel@frg-rhel40-em64t-04>
-	 <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
-	 <20070320061152.GW943@1wt.eu>
-Content-Type: text/plain
-Date: Tue, 20 Mar 2007 10:03:03 +0100
-Message-Id: <1174381383.30876.86.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+	Tue, 20 Mar 2007 05:07:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:20478 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932388AbXCTJH3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 05:07:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AItRnDOQ+dXnp7CuyKTE6+9/ITJKGLn76c5p0kbLK8FKE0itxhyocKPMsC7rR3rdGwG2TlYOM/KGulJASY60KiNztZecKRDBZkgdbMxPA3voy5bXvmKQjVcKwFKRHyJZPJOFJfRVxU5h7mNuO0dFXlgRBD4Vre4iiUNlZeb5ufg=
+Message-ID: <6bffcb0e0703200207k324484eep6082da3f244b07a8@mail.gmail.com>
+Date: Tue, 20 Mar 2007 10:07:27 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <45FF6E55.4060101@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
+	 <45FEE33C.1020706@googlemail.com>
+	 <20070319140827.285dcc7f.akpm@linux-foundation.org>
+	 <6bffcb0e0703191437i2ee706d4xaec3bc11ca7c3234@mail.gmail.com>
+	 <20070319175852.c73406f1.akpm@linux-foundation.org>
+	 <20070319180234.6b7826b2.akpm@linux-foundation.org>
+	 <45FF4B59.3060107@yahoo.com.au>
+	 <20070319205645.4918d978.akpm@linux-foundation.org>
+	 <45FF6E55.4060101@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 07:11 +0100, Willy Tarreau wrote:
-> I don't agree with starting to renice X to get something usable
+On 20/03/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> Andrew Morton wrote:
+> > On Tue, 20 Mar 2007 13:47:53 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> >
+> >
+> >>Andrew Morton wrote:
+> >>
+>
+> >>Hang on a sec... I'll try fixing the thing before you next make a
+> >>release.
+> >>
+> >
+> >
+> > Too late.  hot-fixes/ awaits thee.
+>
+> Awww... well thanks very much Michal for reporting the bug, I reproduced
+> it easily and it turns out to be a typo.
+>
+> In my testing I never had a lot of writeout going on, so most of the pages
+> will have been truncated in the first loop...
+>
 
-X looks very special to me: it's a big userspace driver, the primary
-task handling user interaction on the desktop, and on some OS the part
-responsible for moving the mouse pointer and interacting with windows is
-even implemented as an interrupt handler, and that for sure provides for
-smooth user experience even on very low-end hardware. Why not compensate
-for X design by prioritizing it a bit ?
-If RSDL + reniced X makes for a better desktop than sotck kernel + X, on
-all kind of workloads, it's good to know.
+Problem fixed. Thanks!
 
+Regards,
+Michal
 
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
