@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965533AbXCTRMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965537AbXCTRNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965533AbXCTRMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 13:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965537AbXCTRMe
+	id S965537AbXCTRNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 13:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbXCTRNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 13:12:34 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:41089 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965533AbXCTRMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 13:12:34 -0400
-Date: Tue, 20 Mar 2007 18:12:35 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <christoph@lameter.com>,
-       Andi Kleen <andi@firstfloor.org>
-Cc: linux kernel <linux-kernel@vger.kernel.org>
-Subject: [RFC] SLAB : NUMA cache_free_alien() very expensive because of
- virt_to_slab(objp); nodeid = slabp->nodeid;
-Message-Id: <20070320181235.77d28864.dada1@cosmosbay.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
+	Tue, 20 Mar 2007 13:13:38 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37829 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965537AbXCTRNh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 13:13:37 -0400
+Date: Tue, 20 Mar 2007 18:14:42 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dave Jones <davej@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH] Delete obsolete RAW driver feature.
+Message-ID: <20070320181442.1ae73295@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070320165736.GA19781@redhat.com>
+References: <Pine.LNX.4.64.0703180754060.6605@CPE00045a9c397f-CM001225dbafb6>
+	<p73y7lu5yt6.fsf@bingen.suse.de>
+	<20070320165736.GA19781@redhat.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Tue, 20 Mar 2007 12:57:36 -0400
+Dave Jones <davej@redhat.com> wrote:
 
-I noticed on a small x86_64 NUMA setup (2 nodes) that cache_free_alien() is very expensive.
-This is because of a cache miss on struct slab.
-At the time an object is freed (call to kmem_cache_free() for example), the underlying 'struct slab' is not anymore cache-hot.
+> On Sun, Mar 18, 2007 at 04:57:57PM +0100, Andi Kleen wrote:
+>  > "Robert P. J. Day" <rpjday@mindspring.com> writes:
+>  > 
+>  > > Delete the allegedly obsolete raw driver feature, which has been
+>  > > marked for death since 2005.
+>  > 
+>  > I think it would be better to replace it with a wrapper
+>  > that forces O_DIRECT and opens the underlying block device.  I suspect 
+>  > just dropping it will break many people's database setups, which is not
+>  > nice.  Widely used admin interfaces should be only broken when 
+>  > there is a very good reason and just "there is a better way now" 
+>  > doesn't seem quite strong enough.
+> 
+> Agreed.  Given how this keeps coming up every few months, lets just
+> remove that from the list..  It's not that a 306 line driver is
+> particularly invasive anyways..
+> 
+> Signed-off-by: Dave Jones <davej@redhat.com>
 
-struct slab *slabp = virt_to_slab(objp);
-nodeid = slabp->nodeid; // cache miss
+Acked-by: Alan Cox <alan@redhat.com>
 
-So we currently need slab only to lookup nodeid, to be able to use the cachep cpu cache, or not.
-
-Couldn't we use something less expensive, like pfn_to_nid() ?
-On x86_64 pfn_to_nid usually shares one cache line for all objects (struct memnode)
-
-Is it possible virt_to_slab(objp)->nodeid being different from pfn_to_nid(objp) ?
-
-Eric
+This is a user visible API it is therefore not elligable for removal
+anyway
