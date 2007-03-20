@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbXCTMM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbXCTMN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbXCTMM4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 08:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXCTMM4
+	id S1753839AbXCTMN1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 08:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXCTMN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 08:12:56 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36979 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753836AbXCTMM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 08:12:56 -0400
-Date: Tue, 20 Mar 2007 13:19:09 +0100
-From: Jan Kara <jack@suse.cz>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Folkert van Heusden <folkert@vanheusden.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: dquot.c: possible circular locking Re: [2.6.20] BUG: workqueue leaked lock
-Message-ID: <20070320121909.GB14319@duck.suse.cz>
-References: <20070315191749.GS31960@vanheusden.com> <20070320111701.GB1751@ff.dom.local> <20070320112253.GC1751@ff.dom.local> <20070320113151.GA12462@ff.dom.local>
-MIME-Version: 1.0
+	Tue, 20 Mar 2007 08:13:27 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:45772 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753839AbXCTMN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 08:13:26 -0400
+Date: Tue, 20 Mar 2007 13:12:51 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Miller <davem@davemloft.net>
+Cc: dwmw2@infradead.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, rmk@arm.linux.org.uk
+Subject: Re: [PATCH] Complain about missing system calls.
+Message-ID: <20070320121251.GB10240@uranus.ravnborg.org>
+References: <1173394873.3461.510.camel@pmac.infradead.org> <20070308.161407.63995586.davem@davemloft.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070320113151.GA12462@ff.dom.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070308.161407.63995586.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 20-03-07 12:31:51, Jarek Poplawski wrote:
-> On Tue, Mar 20, 2007 at 12:22:53PM +0100, Jarek Poplawski wrote:
-> > On Tue, Mar 20, 2007 at 12:17:01PM +0100, Jarek Poplawski wrote:
-> > ...
-> > > IMHO lockdep found that two locks are taken in different order:
-> > > 
-> > > -> #1: 1) tty_mutex in con_console() 2) dqptr_sem (somewhere later)
-> > > -> #0: 1) dqptr_sem 2) tty_console in dquot_alloc_space() with print_warning()
+On Thu, Mar 08, 2007 at 04:14:07PM -0800, David Miller wrote:
+> From: David Woodhouse <dwmw2@infradead.org>
+> Date: Thu, 08 Mar 2007 23:01:13 +0000
 > 
-> Once more - should be:
->  -> #1: 1) tty_mutex in con_close() 2) dqptr_sem (somewhere later)
->  -> #0: 1) dqptr_sem 2) tty_mutex in dquot_alloc_space() with print_warning()
-  Yes, I was looking at it. Hmm, we can possibly get rid of tty_mutex being
-acquired under dqptr_sem in quota code. But looking at the path from
-con_close() there's another inversion with i_mutex which is also acquired
-along the path for sysfs. And we can hardly get rid of it in the quota code.
-  Now none of these is a real deadlock as quota should never call
-print_warning() for sysfs (it doesn't use quota) but still it's nasty. I
-suppose tty_mutex is above i_mutex because of those sysfs calls and it
-seems sysfs must be called under tty_mutex because of races with
-init_dev(). So it's not easy to get rid of that dependency either.
+> > Most system calls seem to get added to i386 first. This patch
+> > automatically generates a warning for any new system call which is
+> > implemented on i386 but not the architecture currently being compiled.
+> > On PowerPC at the moment, for example, it results in these warnings:
+> > init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
+> > init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
+> > init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
+> > 
+> > Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> 
+> David, thanks for this __incredibly__ __useful__ patch.  I kicked it
+> around on sparc64 and found some more ignores to add, see below.
+> 
+> The vast majority of them vector to sys_ni_syscall in the i386 syscall
+> table.
+> 
+> sys_ugetrlimit is only necessary if the platform started out
+> using the non-SuS compliant sys_old_getrlimit()
+> 
+> The rest, like ioperm, iopl, modify_ldt, et al. are i386
+> specific.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> --- a/init/missing_syscalls.c.ORIG	2007-03-08 16:11:00.000000000 -0800
+> +++ b/init/missing_syscalls.c	2007-03-08 16:02:30.000000000 -0800
+> @@ -18,6 +18,22 @@
+>  #endif
+>  
+>  /* i386-specific or historical system calls */
+> +#define __IGNORE_break
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Could it make sense to keep this in arch specific header files?
+So when we fiddle with ARM we do not impact SPARC etc.
+And in this way ARCH specific changes are kept in ARCH specific files.
+
+For the "Ignore historical" part this should be in a common file I think.
+
+So in other words:
+
+init/missing_syscalls.h	=> Contains common stuff and include:
+include/asm/missing_syscalls.h => contains ARCH specific stuff.
+
+
+	Sam
