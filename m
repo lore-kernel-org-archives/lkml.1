@@ -1,36 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbXCTLRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbXCTLSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411AbXCTLRE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 07:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbXCTLRD
+	id S1753350AbXCTLSR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 07:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXCTLSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 07:17:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57621 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbXCTLRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 07:17:01 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070319190306.44f9a2e5@lxorguk.ukuu.org.uk> 
-References: <20070319190306.44f9a2e5@lxorguk.ukuu.org.uk>  <20070319152959.46a81e57@lxorguk.ukuu.org.uk> <20070319130428.4b645207@lxorguk.ukuu.org.uk> <20070318142315.6f881ec8@lxorguk.ukuu.org.uk> <20070316153408.3a9a244a@lxorguk.ukuu.org.uk> <20070316151305.04cbc352@lxorguk.ukuu.org.uk> <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <25571.1174054993@redhat.com> <26525.1174058071@redhat.com> <20070316171141.7a4de504@lxorguk.ukuu.org.uk> <076F1B35-BE08-41B4-8294-581EDAFF4ACC@mac.com> <2578.1174305403@redhat.com> <3728.1174309154@redhat.com> <25752.1174318898@redhat.com> 
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, davem@davemloft.net,
-       netdev@vger.kernel.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org
-Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try #2] 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 20 Mar 2007 11:16:45 +0000
-Message-ID: <12125.1174389405@redhat.com>
+	Tue, 20 Mar 2007 07:18:17 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60991 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753576AbXCTLSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 07:18:16 -0400
+Date: Tue, 20 Mar 2007 12:18:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Roland McGrath <roland@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] ptrace needs PROC_FS
+Message-ID: <20070320111808.GA27036@elf.ucw.cz>
+References: <20070319152616.d0857587.randy.dunlap@oracle.com> <20070319224847.6FAB71801C5@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070319224847.6FAB71801C5@magilla.sf.frob.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Hi!
 
-> O> No, it's not.  SOCK_DGRAM is an unreliable, unidirectional datagram passing
-> > service.
-> 
-> Thats funny UDP receives and sends packets.
+> Thanks, that Kconfig change seems like the simplest solution for this.
 
-I meant that the protocol ships a datagram from one peer to another, but
-there's no tie at the protocol level to any datagrams going the other way.
+Simplest, maybe, but is it right? Ptrace should work without /proc, no?
 
-David
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
