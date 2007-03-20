@@ -1,95 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbXCTUvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbXCTUwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbXCTUvM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 16:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbXCTUvM
+	id S1753891AbXCTUwq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 16:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbXCTUwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 16:51:12 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:61801 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753897AbXCTUvK (ORCPT
+	Tue, 20 Mar 2007 16:52:46 -0400
+Received: from washoe.rutgers.edu ([165.230.95.67]:57844 "EHLO
+	smtp.onerussian.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753891AbXCTUwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 16:51:10 -0400
-Date: Tue, 20 Mar 2007 13:50:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Kees Cook <kees@outflux.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc4-mm1
-Message-Id: <20070320135003.a3007e75.randy.dunlap@oracle.com>
-In-Reply-To: <20070320192016.GC22797@outflux.net>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<20070320103151.f65c81b6.randy.dunlap@oracle.com>
-	<20070320192016.GC22797@outflux.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 20 Mar 2007 16:52:44 -0400
+Date: Tue, 20 Mar 2007 16:52:36 -0400
+From: Yaroslav Halchenko <yoh@psychology.rutgers.edu>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>
+Message-ID: <20070320205236.GK29757@washoe.onerussian.com>
+Mail-Followup-To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+	Jesper Juhl <jesper.juhl@gmail.com>
+References: <20070223223200.GN26338@washoe.onerussian.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070223223200.GN26338@washoe.onerussian.com>
+X-URL: http://www.onerussian.com
+X-Image-Url: http://www.onerussian.com/img/yoh.png
+X-PGP-Key: http://www.onerussian.com/gpg-yoh.asc
+X-fingerprint: 3BB6 E124 0643 A615 6F00  6854 8D11 4563 75C0 24C8
+User-Agent: mutt-ng/devel-r804 (Debian)
+X-SA-Exim-Connect-IP: 192.168.100.6
+X-SA-Exim-Rcpt-To: linux-kernel@vger.kernel.org, jesper.juhl@gmail.com
+X-SA-Exim-Mail-From: yoh@washoe.rutgers.edu
+Subject: Re: nfs_update_inode: inode X mode changed, Y to Z
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on smtp.onerussian.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007 12:20:16 -0700 Kees Cook wrote:
+Dear Kernel People,
 
-> On Tue, Mar 20, 2007 at 10:31:51AM -0700, Randy Dunlap wrote:
-> >   LD      .tmp_vmlinux1
-> > kernel/built-in.o:(.data+0xfc0): undefined reference to `maps_protect'
-> > make: *** [.tmp_vmlinux1] Error 1
-> > 
-> > with CONFIG_PROC_FS=n
-> 
-> Gah!  Apologies.  This should fix it, but I can't test it since I can't 
-> get 2.6.21-rc4-mm1 to compile (with or without this fix):
-> 
->   GEN     .version
-> init/.missing_syscalls.h.cmd:2: *** missing separator.  Stop.
-> make: *** [.tmp_vmlinux1] Error 2
-> 
-> 
-> Signed-off-by: Kees Cook <kees@outflux.net>
+Problem persists and it seems that I am not alone who hits this problem:
+http://lkml.org/lkml/2007/3/1/53
 
-Yes, that works_for_me.
+in my case it happens if there is a lot (>50) nfs clients which in a
+fast pace create a small file, close it and then open it for reading.
+Some times it fails saying that the file is a directory, some times it
+just fails to open it for writing, etc
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+I would really appreciate any comments and/or ideas on how to
+troubleshoot/eliminate this issue.
 
-> ---
-> diff -uNrp linux-2.6.21-rc4-mm1/kernel/sysctl.c linux-2.6.21-rc4-mm1-kees/kernel/sysctl.c
-> --- linux-2.6.21-rc4-mm1/kernel/sysctl.c	2007-03-20 10:45:06.000000000 -0700
-> +++ linux-2.6.21-rc4-mm1-kees/kernel/sysctl.c	2007-03-20 11:36:06.000000000 -0700
-> @@ -77,9 +77,12 @@ extern int pid_max_min, pid_max_max;
->  extern int sysctl_drop_caches;
->  extern int percpu_pagelist_fraction;
->  extern int compat_log;
-> -extern int maps_protect;
->  extern int print_fatal_signals;
->  
-> +#ifdef CONFIG_PROC_FS
-> +extern int maps_protect;
-> +#endif
-> +
->  #if defined(CONFIG_ADAPTIVE_READAHEAD)
->  extern int readahead_ratio;
->  extern int readahead_hit_rate;
-> @@ -619,6 +622,7 @@ static ctl_table kern_table[] = {
->  		.proc_handler	= &proc_dointvec,
->  	},
->  #endif
-> +#ifdef CONFIG_PROC_FS
->  	{
->  		.ctl_name       = CTL_UNNUMBERED,
->  		.procname       = "maps_protect",
-> @@ -627,6 +631,7 @@ static ctl_table kern_table[] = {
->  		.mode           = 0644,
->  		.proc_handler   = &proc_dointvec,
->  	},
-> +#endif
->  
->  	{ .ctl_name = 0 }
->  };
+Cheers
+Yarik
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+On Fri, 23 Feb 2007, Yaroslav Halchenko wrote:
+
+> Dear Kernel People,
+
+> I am running a tiny cluster (27 nodes). Setup is as follows:
+
+> * NFS server:
+>    kernel: vanilla 2.6.18.2 + areca drivers
+>    mounted partition is XFS
+>    nfs-kernel-server: 1.0.10-1~bpo.1 (from backports.org)
+
+> * clients:
+>    kernel: 2.6.17-2-amd64 (Debian stock from etch installed few months ago)
+
+> Today under heavy load which consisted of the nodes manipulating tons of
+> small files, I started to mention that software reported weird errors
+> like:
+
+> EOFError: EOF read where object expected
+> mv: cannot stat <FILENAME> : No such file or directory
+> etc
+
+> Looking at the client's dmesg I found nasty:
+
+> node17.ravana.rutgers.edu: Feb 23 13:32:06 node17 kernel: nfs_update_inode: inode 680223263 mode changed, 0042755 to 0100644
+> node17.ravana.rutgers.edu: Feb 23 13:41:19 node17 kernel: nfs_update_inode: inode 681427742 mode changed, 0042755 to 0100644
+> node22.ravana.rutgers.edu: Feb 22 22:58:15 node22 kernel: nfs_update_inode: inode 677306152 mode changed, 0042755 to 0100644
+> node22.ravana.rutgers.edu: Feb 23 13:48:33 node22 kernel: nfs_update_inode: inode 681695507 mode changed, 0100644 to 0042755
+> node12.ravana.rutgers.edu: Feb 23 13:31:01 node12 kernel: nfs_update_inode: inode 680150798 mode changed, 0100644 to 0042755
+> node12.ravana.rutgers.edu: Feb 23 13:34:57 node12 kernel: nfs_update_inode: inode 680418141 mode changed, 0100644 to 0042755
+> node12.ravana.rutgers.edu: Feb 23 13:37:01 node12 kernel: nfs_update_inode: inode 680637478 mode changed, 0100644 to 0042755
+> node12.ravana.rutgers.edu: Feb 23 13:39:25 node12 kernel: nfs_update_inode: inode 681034087 mode changed, 0100644 to 0042755
+> node12.ravana.rutgers.edu: Feb 23 13:40:06 node12 kernel: nfs_update_inode: inode 681225056 mode changed, 0042755 to 0100644
+> node12.ravana.rutgers.edu: Feb 23 13:43:26 node12 kernel: nfs_update_inode: inode 681474682 mode changed, 0100644 to 0042755
+> ......
+
+> server logs didn't show any abnormal things... where should I look for the
+> source of the problem? googling up seems to be of no interesting result...
+> is there way to eliminate cause may be by tuning some performance
+> parameters (ie sacrificing performance for stability)?
+
+> Thanks everyone in advance for hints
+-- 
+Yaroslav Halchenko
+Research Assistant, Psychology Department, Rutgers-Newark
+Student  Ph.D. @ CS Dept. NJIT
+Office: (973) 353-5440x263 | FWD: 82823 | Fax: (973) 353-1171
+        101 Warren Str, Smith Hall, Rm 4-105, Newark NJ 07102
+WWW:     http://www.linkedin.com/in/yarik        
