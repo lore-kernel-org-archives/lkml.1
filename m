@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXCTJRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXCTJYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbXCTJRb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 05:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbXCTJRb
+	id S932486AbXCTJYr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 05:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933277AbXCTJYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 05:17:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40210 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932310AbXCTJRa (ORCPT
+	Tue, 20 Mar 2007 05:24:47 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:49025 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932486AbXCTJYq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 05:17:30 -0400
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
-	far
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric St-Laurent <ericstl34@sympatico.ca>
-Cc: Lee Revell <rlrevell@joe-job.com>, tglx@linutronix.de,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Len Brown <lenb@kernel.org>
-In-Reply-To: <1174368995.14239.3.camel@perkele>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	 <1174088686.13341.347.camel@localhost.localdomain>
-	 <75b66ecd0703192204n503eb4d3g361064f66319dd4c@mail.gmail.com>
-	 <1174368995.14239.3.camel@perkele>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 20 Mar 2007 10:15:41 +0100
-Message-Id: <1174382141.1158.61.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Tue, 20 Mar 2007 05:24:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aNdUMwUESkuqhu0IyrRsO0K3oz6I9XipP9sArmjcuD3TdZQcAEJ/iYIyYFs69bL5e9+FPkUTdvhMlMjlojxbtxtxQ0r9AxkgcONJekId2cDhpEj2jjfIiym7EyDOPr0X2cSTvfhUfkQ9ao3Zl7c8B6Nffljvle7eOHGoH0Z4EOQ=
+Message-ID: <9a8748490703200224v204ff9ebs5bd964abef61e9c6@mail.gmail.com>
+Date: Tue, 20 Mar 2007 10:24:44 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Mikael Pettersson" <mikpe@it.uu.se>
+Subject: Re: [PATCH][5/5][resend] floppy.c: Fix device_create_file() warning
+Cc: ak@suse.de, akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       bzolnier@gmail.com, linux-kernel@vger.kernel.org,
+       trent.waddington@gmail.com
+In-Reply-To: <200703200832.l2K8W3o5023643@harpo.it.uu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <200703200832.l2K8W3o5023643@harpo.it.uu.se>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 01:36 -0400, Eric St-Laurent wrote:
-> On Tue, 2007-20-03 at 01:04 -0400, Lee Revell wrote:
-> 
-> > I think CONFIG_TRY_TO_DISABLE_SMI would be excellent for debugging,
-> > not to mention people trying to spec out hardware for RT
-> > applications...
-> 
-> There is a SMI disabling module in RTAI, check the smi-module.c in this:
-> 
-> https://www.rtai.org/RTAI/rtai-3.5.tar.bz2
-> 
-> More infos:
-> 
-> http://www.captain.at/rtai-smi-high-latency.php
-> http://www.captain.at/xenomai-smi-high-latency.php
-> 
-> It might make sense to merge this code, at least in the -rt tree.
+On 20/03/07, Mikael Pettersson <mikpe@it.uu.se> wrote:
+> On Mon, 19 Mar 2007 18:42:22 +0100, Jesper Juhl wrote:
+> > --- a/drivers/block/floppy.c
+> > +++ b/drivers/block/floppy.c
+> > @@ -4302,7 +4302,12 @@ static int __init floppy_init(void)
+> >               if (err)
+> >                       goto out_flush_work;
+> >
+> > -             device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
+> > +             err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
+> > +             if (err)
+> > +                     goto out_flush_work;
+> > +
+> >               /* to be cleaned up... */
+> >               disks[drive]->private_data = (void *)(long)drive;
+> >               disks[drive]->queue = floppy_queue;
+>
+> The floppy driver's sysfs file just provides some auxiliary
+> information to user-space, none of which matters for most of
+> its users. It is IMO totally inappropriate to fail floppy
+> driver init in this case.
+>
 
-it NEVER makes sense to disable SMM.
-
-SMM is there to ensure that your hardware doesn't get physically
-damaged.
-
-disabling that is a BAD idea. I'm no fan of SMM myself, but it's there,
-and we have to live with it. Disabling it without knowing what it does
-on your system is madness.
+Which is why my original patch just output a warning to let the user
+know that creating the file had failed.
 
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
