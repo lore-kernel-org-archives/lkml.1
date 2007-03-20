@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933647AbXCTPOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933666AbXCTPOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933647AbXCTPOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 11:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933666AbXCTPOT
+	id S933666AbXCTPOq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 11:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbXCTPOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 11:14:19 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:61471 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933647AbXCTPOS (ORCPT
+	Tue, 20 Mar 2007 11:14:46 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2372 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933666AbXCTPOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 11:14:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=gr92EIIx6FHgTTAUeQZ0Hr/27Mhlt7ie8K2HwP8ZCnYkC0K3Vz+fCL2Y5npO3TdFpeQA+UCL+h4vraOYt/Dfd636D9vQLTYVbcApuKaXb3a7Ro/BFjQfJ3NZlKP7+XMwtGcdsWrL60WCZb1zxJ1Me+QgaxSww2OXOekcCnZFmEo=
-Message-ID: <b6c5339f0703200814h710388bamffe59fa8fae465c2@mail.gmail.com>
-Date: Tue, 20 Mar 2007 11:14:16 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Nicolas Boichat" <nicolas@boichat.ch>
-Subject: Re: [RFC][PATCH] Apple SMC driver (hardware monitoring and control)
-Cc: linux-kernel@vger.kernel.org, mactel-linux-devel@lists.sourceforge.net
-In-Reply-To: <45FF86F6.7050200@boichat.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Mar 2007 11:14:45 -0400
+Date: Tue, 20 Mar 2007 15:14:29 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Keith Owens <kaos@ocs.com.au>, linux-kernel@vger.kernel.org,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PNPACPI probes serial twice, messes up serial console
+Message-ID: <20070320151429.GA11578@flint.arm.linux.org.uk>
+Mail-Followup-To: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	Keith Owens <kaos@ocs.com.au>, linux-kernel@vger.kernel.org,
+	len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>
+References: <17887.1174373206@kao2.melbourne.sgi.com> <200703200832.24921.bjorn.helgaas@hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45F7C083.7090504@boichat.ch>
-	 <b6c5339f0703191443l5f8c5271pf43ea62e0c79a614@mail.gmail.com>
-	 <45FF86F6.7050200@boichat.ch>
-X-Google-Sender-Auth: f04bdd80e7560f2c
+In-Reply-To: <200703200832.24921.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I tried neverball on my Macbook Pro 1st generation (Core Duo, not Core 2
-> Duo), and the x axis in inverted, not the y axis.
->
-> Could you confirm which axis is inverted on your Macbook?
+On Tue, Mar 20, 2007 at 08:32:24AM -0600, Bjorn Helgaas wrote:
+> Index: work-mm2/include/linux/serial_8250.h
+> ===================================================================
+> --- work-mm2.orig/include/linux/serial_8250.h	2006-08-22 12:26:25.000000000 -0600
+> +++ work-mm2/include/linux/serial_8250.h	2006-08-22 16:37:36.000000000 -0600
+> @@ -44,6 +44,7 @@
+>  	PLAT8250_DEV_HUB6,
+>  	PLAT8250_DEV_MCA,
+>  	PLAT8250_DEV_AU1X00,
+> +	PLAT8250_DEV_X86,
 
-Indeed, my memory is hazy and it may well have been the x-axis.  I can't find
-my modified copy.  I'll check it out again tonight along with your hdaps-gl and
-let you know how it goes...
+There's no need for PLAT8250_DEV_X86 if x86 went to the model that ARM
+and all the others which I did convert use - iow, PLAT8250_DEV_PLATFORM
+and friends.
 
--Bob
+They're there so that the arch/* code can provide their serial port
+information to the 8250 driver instead of using include/asm-*/serial.h
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
