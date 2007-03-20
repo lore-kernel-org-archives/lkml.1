@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933276AbXCTDrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933773AbXCTEHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933276AbXCTDrP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 23:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933247AbXCTDrO
+	id S933773AbXCTEHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 00:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933972AbXCTEHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 23:47:14 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33634
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933175AbXCTDrN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 23:47:13 -0400
-Date: Mon, 19 Mar 2007 20:47:12 -0700 (PDT)
-Message-Id: <20070319.204712.118947830.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: ak@suse.de, virtualization@lists.linux-foundation.org, jbeulich@novell.com,
-       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       virtualization@lists.osdl.org, anthony@codemonkey.ws,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0703192015020.6730@woody.linux-foundation.org>
-References: <20070319.120854.30182994.davem@davemloft.net>
-	<200703192159.42396.ak@suse.de>
-	<Pine.LNX.4.64.0703192015020.6730@woody.linux-foundation.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Mar 2007 00:07:30 -0400
+Received: from mx1.suse.de ([195.135.220.2]:48362 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933773AbXCTEH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 00:07:29 -0400
+Date: Mon, 19 Mar 2007 21:05:07 -0700
+From: Greg KH <greg@kroah.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [patch 03/31] Fix user copy length in ipv6_sockglue.c
+Message-ID: <20070320040507.GA17101@kroah.com>
+References: <20070319213047.710101653@mini.kroah.org> <20070319213729.GE9261@kroah.com> <20070319220125.GD10574@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070319220125.GD10574@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 19 Mar 2007 20:18:14 -0700 (PDT)
-
-> > > Please don't subject us to another couple months of hair-pulling only
-> > > to have Linus yank the thing out again, there are certainly more
-> > > useful things to spend time on :-)
+On Mon, Mar 19, 2007 at 03:01:25PM -0700, Chris Wright wrote:
+> * Greg KH (gregkh@suse.de) wrote:
+> > From: Chris Wright <chrisw@sous-sol.org>
+> > 
+> > [IPV6] fix ipv6_getsockopt_sticky copy_to_user leak
+> > 
+> > User supplied len < 0 can cause leak of kernel memory.
+> > Use unsigned compare instead.
 > 
-> Good call. Dwarf2 unwinding simply isn't worth doing. But I won't yank it 
-> out, I simply won't merge it. It was more than just totally buggy code, it 
-> was an inability of the people to understand that even bugfree code 
-> isn't enough - you have to be able to also handle buggy data.
+> You can drop this one.  It's dependent on a patch
+> that is not in 2.6.20.
 
-Thank you.
+Ok, thanks for letting me know, it is now dropped.
+
+greg k-h
