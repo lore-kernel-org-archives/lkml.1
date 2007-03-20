@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbXCTMNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbXCTMNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753730AbXCTMNj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 08:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXCTMNj
+	id S1753706AbXCTMNw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 08:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXCTMNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 08:13:39 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:38360 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706AbXCTMNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 08:13:38 -0400
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Artem Bityutskiy <dedekind@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20070319195442.GT4892@waste.org>
-References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-	 <20070318162720.GI10459@waste.org> <1174236579.17249.6.camel@sauron>
-	 <20070318191812.GM4892@waste.org>
-	 <20070318203149.GC29295@crusty.rchland.ibm.com>
-	 <20070319170838.GP4892@waste.org>
-	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
-	 <20070319195442.GT4892@waste.org>
-Content-Type: text/plain
-Date: Tue, 20 Mar 2007 07:13:26 -0500
-Message-Id: <1174392806.30079.81.camel@zod.rchland.ibm.com>
+	Tue, 20 Mar 2007 08:13:52 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40415 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753706AbXCTMNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 08:13:51 -0400
+Date: Tue, 20 Mar 2007 13:14:32 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc3-mm2
+Message-ID: <20070320121432.GC10240@uranus.ravnborg.org>
+References: <20070307201915.4d579113.akpm@linux-foundation.org> <20070319172711.1176b3d4.randy.dunlap@oracle.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070319172711.1176b3d4.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-19 at 14:54 -0500, Matt Mackall wrote:
+On Mon, Mar 19, 2007 at 05:27:11PM -0700, Randy Dunlap wrote:
+> On Wed, 7 Mar 2007 20:19:15 -0800 Andrew Morton wrote:
 > 
-> False starts that get mainlined delay or prevent things getting done
-> right. The question is and remains "is UBI the right way to do
-> things?" Not "is UBI the easiest way to do things?" or "is UBI
-> something people have already adopted?"
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm2/
+> > 
+> > - This is the same as 2.6.21-rc3-mm1, except Con's CPU scheduler changes
+> >   were dropped.
+> > 
+> >   This is for A/B comparison purposes, and because those changes crashed on
+> >   one test setup.
 > 
-> If the right way is instead to extend the block layer and device
-> mapper to encompass the quirks of NAND in a sensible fashion, then UBI
-> should not go in.
+> I don't quite see why this error is happening.  Looks like all
+> the nested #includes should handle it...
+> 
+> CONFIG_KEXEC=y
+> CONFIG_CRASH_DUMP=y
+> CONFIG_UTRACE=y
+> # PTRACE=n
+> # PROC_FS=n
+> 
+> In file included from arch/x86_64/kernel/crash.c:19:
+> include/linux/elfcore.h: In function 'elf_core_copy_regs':
+> include/linux/elfcore.h:103: error: dereferencing pointer to incomplete type
+> include/linux/elfcore.h:103: error: dereferencing pointer to incomplete type
+> make[1]: *** [arch/x86_64/kernel/crash.o] Error 1
+> make: *** [arch/x86_64/kernel] Error 2
 
-This is where we disagree obviously.  However, getting UBI into mainline
-won't delay or prevent your proposal from getting done.  That's like
-saying having ext3 in mainline prevents other filesystems from getting
-created.  There is nothing wrong with having different subsystems that
-overlap in a few areas.
+make arch/x86_64/kernel/crash.i
+may tell you a bit more why the includes foes wrong.
 
-What you're proposing seems like it would take at least several weeks to
-even get close to what is needed in terms of reliability and the
-required wear-leveling if it is indeed possible to implement.  And it
-would likely duplicate some of the wear-leveling and bad block handling
-code that is present in UBI anyway.  In the meantime, the need for UBI
-exists today and there is a working, tested implementation available.
-
-josh
-
+	Sam
