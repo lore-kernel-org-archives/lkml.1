@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbXCTLd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbXCTLgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753583AbXCTLd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 07:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbXCTLd4
+	id S1753677AbXCTLgu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 07:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbXCTLgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 07:33:56 -0400
-Received: from mx2.suse.de ([195.135.220.15]:42060 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753573AbXCTLdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 07:33:55 -0400
-Message-ID: <331404.1174390390026.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
-Date: Tue, 20 Mar 2007 12:33:10 +0100 (CET)
-From: Andreas Kleen <ak@suse.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops	callsites to make them patchable
-Cc: Zachary Amsden <zach@vmware.com>, xen-devel@lists.xensource.com,
-       akpm@linux-foundation.org, virtualization@lists.osdl.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       chrisw@sous-sol.org, Andi Kleen <ak@muc.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, anthony@codemonkey.ws,
-       mingo@elte.hu, Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <45FF770C.7050301@goop.org>
+	Tue, 20 Mar 2007 07:36:50 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57497 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753677AbXCTLgt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 07:36:49 -0400
+Date: Tue, 20 Mar 2007 12:36:44 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       Len Brown <lenb@kernel.org>, tglx@linutronix.de,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far
+Message-ID: <20070320113644.GA7751@one.firstfloor.org>
+References: <200703161230.03712.maximlevitsky@gmail.com> <1174088686.13341.347.camel@localhost.localdomain> <200703162132.53906.lenb@kernel.org> <1174127539.3538.207.camel@laptopd505.fenrus.org> <p73k5xg6lwe.fsf@bingen.suse.de> <20070320042734.GA9700@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (normal)
-X-Mailer: SuSE Linux Openexchange Server 4 - WebMail (Build 2.4160)
-X-Operating-System: Linux 2.4.21-314-smp i386 (JVM 1.3.1_19)
-Organization: SuSE Linux AG
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070320042734.GA9700@kroah.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Di 20.03.2007 06:54 schrieb Jeremy Fitzhardinge <jeremy@goop.org>:
+On Mon, Mar 19, 2007 at 09:27:34PM -0700, Greg KH wrote:
+> On Sat, Mar 17, 2007 at 02:26:57PM +0100, Andi Kleen wrote:
+> > Arjan van de Ven <arjan@infradead.org> writes:
+> > > 
+> > > well we can do the handshake to take ownership like we do much later in
+> > > boot, but that requires PCI to be there and fully discovered, which we
+> > > don't have this early.
+> > 
+> > That's not true - we do early pci discovery. Doing USB handsoff
+> > there would be quite possible.
+> 
+> What, we don't do USB "handoff" early enough in the boot process?  It's
+> happening at PCI quirk time now, which I think should be early enough
+> for everyone (and too early for some who rely on USB keyboards and
 
-> Zachary Amsden wrote:
-> > For VMI, the default clobber was "cc", and you need a way to allow
-> > at
-> > least that, because saving and restoring flags is too expensive on
-> > x86.
->
-> According to lore (Andi, I think), asm() always clobbers cc.
+Early for drivers, but quite late for architecture initialization.
 
-asm with input and/or output. I'm not sure about asms without that.
+> initramfs shells...)
+
+It's long after timer calibration, which is what it interfered with here.
+
+To handle that it would need to be moved to the x86 early quirks and
+use boot_ioremap etc. It would be probably somewhat messy, but doable.
 
 -Andi
-
 
