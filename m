@@ -1,90 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbXCTUPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934063AbXCTUPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933605AbXCTUPS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 16:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934065AbXCTUPR
+	id S934063AbXCTUPy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 16:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934065AbXCTUPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 16:15:17 -0400
-Received: from kirby.webscope.com ([204.141.84.54]:57184 "EHLO
-	kirby.webscope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933605AbXCTUPP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 16:15:15 -0400
-Message-ID: <46004021.7040202@linuxtv.org>
-Date: Tue, 20 Mar 2007 16:12:17 -0400
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 20 Mar 2007 16:15:54 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51059 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934063AbXCTUPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 16:15:53 -0400
+Date: Tue, 20 Mar 2007 15:15:48 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Ian Kent <raven@themaw.net>,
+       Cedric Le Goater <clg@fr.ibm.com>, sukadev@us.ibm.com,
+       Andrew Morton <akpm@osdl.org>, Dave Hansen <haveblue@us.ibm.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
+Message-ID: <20070320201548.GA21312@sergelap.austin.ibm.com>
+References: <20070313045100.GC8993@us.ibm.com> <Pine.LNX.4.64.0703161300520.4188@raven.themaw.net> <m1ird1o243.fsf@ebiederm.dsl.xmission.com> <1174055467.3397.17.camel@raven.themaw.net> <45FAAD4F.4000204@fr.ibm.com> <1174063618.3397.58.camel@raven.themaw.net> <m1hcslm1tc.fsf@ebiederm.dsl.xmission.com> <20070319200839.GB19449@sergelap.austin.ibm.com> <m1odmpvuft.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Chuck Ebbert <cebbert@redhat.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/31] 2.6.20-stable review
-References: <20070319213647.GB9261@kroah.com> <200703200115.05861.gene.heskett@gmail.com> <20070320155259.GC14889@suse.de> <200703201559.29508.gene.heskett@gmail.com>
-In-Reply-To: <200703201559.29508.gene.heskett@gmail.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1odmpvuft.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> On Tuesday 20 March 2007, Greg KH wrote:
->> On Tue, Mar 20, 2007 at 01:15:02AM -0400, Gene Heskett wrote:
->>> In any event, something tickled the monster, and its hungry.  This is
->>> a full-stop, show-stopper AFAIAC.
->>>
->>> I'll cut that patch-2.6.20.4-rc1 in halves, and build 2 more test
->>> kernels tomorrow to start a bisect if no one has any better idea
->>> before then.
->> I'd recommend using the quilt tree of patches to do this, it will be
->> easier than trying to split the larger patch up into pieces by hand.
->>
->> thanks,
->>
->> greg k-h
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
 > 
-> I don't have quilt installed, and no idea how to use it if it was, Greg.  
-> Even my git is now pushing a year old.
+> >> 
+> >> >> Index: 2.6.20/fs/autofs4/waitq.c
+> >> >> ===================================================================
+> >> >> --- 2.6.20.orig/fs/autofs4/waitq.c
+> >> >> +++ 2.6.20/fs/autofs4/waitq.c
+> >> >> @@ -292,8 +292,8 @@ int autofs4_wait(struct autofs_sb_info *
+> >> >>  		wq->ino = autofs4_get_ino(sbi);
+> >> >>  		wq->uid = current->uid;
+> >> >>  		wq->gid = current->gid;
+> >> >> -		wq->pid = current->pid;
+> >> >> -		wq->tgid = current->tgid;
+> >> >> +		wq->pid = pid_nr(task_pid(current));
+> >> >> +		wq->tgid = pid_nr(task_tgid(current));
+> >> >>  		wq->status = -EINTR; /* Status return if interrupted */
+> >> >>  		atomic_set(&wq->wait_ctr, 2);
+> >> >>  		mutex_unlock(&sbi->wq_mutex);
+> >> 
+> >> I have a concern with this bit as I my quick review said the wait queue
+> >> persists, and if so we should be cache the struct pid pointer, not the
+> >> pid_t value.  Heck the whol pid_nr(task_xxx(current)) idiom I find very
+> >> suspicious.
+> >
+> > Based just on what I see right here I agree it seems like we would want
+> > to store a ref to the pid, not store the pid_nr(pid) output, so in this
+> > context it is suspicious.
 > 
+> So that far we are in agreement.
 
-Gene-
+So how about the following on top of the patch Cedric sent out?
 
-quilt is a very easy tool to use...  Here is a quick run-down.
+Subject: [PATCH] autofs4: store struct pids in autofs_waitqs
+From: Serge Hallyn <serue@us.ibm.com>
+Date: 1174412305 -0500
 
-#1) remove the stable -rc patch from the tree
+Store struct pids in autofs_waitqs in place of pidnrs to prevent
+pid overflow problems.
 
-#2) install quilt
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 
-#3) go to your source tree, and create a directory called "patches"
+---
 
-#4) copy all of the patches from Greg's queue into that "patches" directory,
-including the "series" file.
+ fs/autofs4/autofs_i.h |   13 +++++++++++--
+ fs/autofs4/waitq.c    |   15 ++++++++-------
+ 2 files changed, 19 insertions(+), 9 deletions(-)
 
-#5) quilt push, to apply the first patch
-    quilt push, to apply the second patch (you get the idea)
-    quilt push -a , to apply all patches in the series
-
-#6) quilt pop, to back out the most recent patch pushed in
-    quilt pop -a to back out the entire series.
-
-If a patch doesnt apply, quilt will let you know about it, and present you with
-the option to force the patch to apply.  This is highly unlikely to occur, since
-Greg has already done what needs to be done to make these patches apply to the
-source.
-
-For a better explanation, see "man quilt".  Using quilt, when you have a list of
-patches and a series file containing the merge order is *much* easier that a git
-bisection, and can help you to find the problem patch much quicker.
-
-I hope this helps...
-
-Good Luck,
-
-Michael Krufky
-
+86a5866c7672b88d48380504977496d5637642ab
+diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+index 3ccec0a..5d119e3 100644
+--- a/fs/autofs4/autofs_i.h
++++ b/fs/autofs4/autofs_i.h
+@@ -79,8 +79,8 @@ struct autofs_wait_queue {
+ 	u64 ino;
+ 	uid_t uid;
+ 	gid_t gid;
+-	pid_t pid;
+-	pid_t tgid;
++	struct pid *pid;
++	struct pid *tgid;
+ 	/* This is for status reporting upon return */
+ 	int status;
+ 	atomic_t wait_ctr;
+@@ -228,5 +228,14 @@ out:
+ 	return ret;
+ }
+ 
++static void autofs_free_wait_queue(struct autofs_wait_queue *wq)
++{
++	if (wq->pid)
++		put_pid(wq->pid);
++	if (wq->tgid)
++		put_pid(wq->tgid);
++	kfree(wq);
++}
++
+ void autofs4_dentry_release(struct dentry *);
+ extern void autofs4_kill_sb(struct super_block *);
+diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+index 9857543..4a9ad9b 100644
+--- a/fs/autofs4/waitq.c
++++ b/fs/autofs4/waitq.c
+@@ -141,8 +141,8 @@ static void autofs4_notify_daemon(struct
+ 		packet->ino = wq->ino;
+ 		packet->uid = wq->uid;
+ 		packet->gid = wq->gid;
+-		packet->pid = wq->pid;
+-		packet->tgid = wq->tgid;
++		packet->pid = pid_nr(wq->pid);
++		packet->tgid = pid_nr(wq->tgid);
+ 		break;
+ 	}
+ 	default:
+@@ -292,8 +292,8 @@ int autofs4_wait(struct autofs_sb_info *
+ 		wq->ino = autofs4_get_ino(sbi);
+ 		wq->uid = current->uid;
+ 		wq->gid = current->gid;
+-		wq->pid = pid_nr(task_pid(current));
+-		wq->tgid = pid_nr(task_tgid(current));
++		wq->pid = get_pid(task_pid(current));
++		wq->tgid = get_pid(task_tgid(current));
+ 		wq->status = -EINTR; /* Status return if interrupted */
+ 		atomic_set(&wq->wait_ctr, 2);
+ 		mutex_unlock(&sbi->wq_mutex);
+@@ -360,8 +360,9 @@ int autofs4_wait(struct autofs_sb_info *
+ 	status = wq->status;
+ 
+ 	/* Are we the last process to need status? */
+-	if (atomic_dec_and_test(&wq->wait_ctr))
+-		kfree(wq);
++	if (atomic_dec_and_test(&wq->wait_ctr)) {
++		autofs_free_wait_queue(wq);
++	}
+ 
+ 	return status;
+ }
+@@ -390,7 +391,7 @@ int autofs4_wait_release(struct autofs_s
+ 	wq->status = status;
+ 
+ 	if (atomic_dec_and_test(&wq->wait_ctr))	/* Is anyone still waiting for this guy? */
+-		kfree(wq);
++		autofs_free_wait_queue(wq);
+ 	else
+ 		wake_up_interruptible(&wq->queue);
+ 
+-- 
+1.1.6
