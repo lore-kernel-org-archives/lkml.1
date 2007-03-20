@@ -1,48 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030816AbXCTCCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965711AbXCTCQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030816AbXCTCCi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 22:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966071AbXCTCCi
+	id S965711AbXCTCQe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 22:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965756AbXCTCQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 22:02:38 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39964 "EHLO smtp.osdl.org"
+	Mon, 19 Mar 2007 22:16:34 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:50792 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966074AbXCTCCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 22:02:37 -0400
-Date: Mon, 19 Mar 2007 18:02:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Andrew Morton <akpm@linux-found\"Michal Piotrowski\"" 
-	<michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "\"Nick Piggin\" ation.org>" <nickpiggin@yahoo.com.au>
-Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
-Message-Id: <20070319180234.6b7826b2.akpm@linux-foundation.org>
-In-Reply-To: <20070319175852.c73406f1.akpm@linux-foundation.org>
-References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
-	<45FEE33C.1020706@googlemail.com>
-	<20070319140827.285dcc7f.akpm@linux-foundation.org>
-	<6bffcb0e0703191437i2ee706d4xaec3bc11ca7c3234@mail.gmail.com>
-	<20070319175852.c73406f1.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S965711AbXCTCQd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 22:16:33 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: MPT Fusion LSI22320 ,  Domain validation loops .
+Date: Mon, 19 Mar 2007 20:16:18 -0600
+Message-ID: <664A4EBB07F29743873A87CF62C26D70650FD9@NAMAIL4.ad.lsil.com>
+In-Reply-To: <Pine.LNX.4.64.0703171302440.18291@filesrv1.baby-dragons.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: MPT Fusion LSI22320 ,  Domain validation loops .
+Thread-Index: AcdpC9iBDlxRg2nEQm68ryRU3R0OBQBiDuCA
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       "Linux Kernel Maillist" <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>
+X-OriginalArrivalTime: 20 Mar 2007 02:16:19.0306 (UTC) FILETIME=[BF278CA0:01C76A95]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 17:58:52 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> The kernel without Nick's patchset but with the assert runs OK too.  Under
-> the principle of mm-has-been-too-flakey-lately, I'll drop the patches:
+On Saturday, March 17, 2007 2:33 PM,  James W. Laferriere wrote:
+>  	Hello All ,  I am have been having this problem since I 
+> purchased the 
+> controller and after changing out the disks I thought were 
+> the problem .
+>  	I am still getting the continous :
 > 
-> mm-debug-check-for-the-fault-vs-invalidate-race.patch
-> mm-simplify-filemap_nopage.patch
-> mm-fix-fault-vs-invalidate-race-for-linear-mappings.patch
-> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
-> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear-tidy.patch
-> mm-merge-nopfn-into-fault.patch
-> mm-merge-nopfn-into-fault-fix.patch
-> mm-remove-legacy-cruft.patch
+> mptscsih: ioc1: attempting task abort! (sc=f7a64500)
+> scsi 3:0:4:0:
+>          command: Inquiry: 12 00 00 00 60 00
+> mptbase: Initiating ioc1 recovery
+> mptscsih: ioc1: task abort: SUCCESS (sc=f7a64500)
+>   target3:0:4: Domain Validation detected failure, dropping back
+>   target3:0:4: Domain Validation skipping write tests
+>   target3:0:4: Ending Domain Validation
+>   target3:0:4: asynchronous
+>   target3:0:5: Beginning Domain Validation
+> mptscsih: ioc0: attempting target reset! (sc=f7a64380)
+> 
+>  	The acutual device id's change and the driver 
+> continously resets the 
+> busses & starts all over .
+> 
+>  	The disks are in a HP DS-SL13R-BA 4354R 14drive ultra3 
+> racKmount cabinet 
+> w/ dualbus & dualps ,  Which seems to present a ID6 ,  That 
+> does not show up in 
+> any of the bus scans .
+> 
+>  	Now I have previously had the same cabinet with 18gb 
+> disks which had the 
+> same problem with this controller .  BUT I also have a LSI 
+> Logic / Symbios 
+> Logic 53c1010 66MHz Ultra3 dual SCSI bus Adapter which works 
+> flawlessly with the 
+> 18gb disks in this very same cabinet .
+>  	The cables for connecting the adapter(s) to tha cabinet 
+> are less than 24 
+> inches in length .
+> 
+>  	Would anyone please shed some light on what it is I am 
+> doing wrong or 
+> need to do or ....?  Too have this controller recognise these 
+> disk drives in 
+> this cabinet .
 
-ug, too many rejects.  I'll leave them in, minus
-mm-debug-check-for-the-fault-vs-invalidate-race.patch
+There is a seperate mailing list for scsi releated issues, e.g.
+linux-scsi@.   I've posted a patch to address your issue several times,
+however it seems its not been picked up by the scsi subsystem
+maintainer.   The last time it was posted was here:
+http://marc.info/?l=linux-scsi&m=117089244809072&w=2   An alternative is
+you could obtain our latest drivers from the LSI download site, where
+these drivers should have this patch
+http://www.lsilogic.com/cm/DownloadSearch.do.
+
+Eric
+
+
