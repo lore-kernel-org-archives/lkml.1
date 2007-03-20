@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbXCTMz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbXCTNRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933318AbXCTMz5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 08:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933328AbXCTMz5
+	id S1752149AbXCTNRE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 09:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXCTNRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 08:55:57 -0400
-Received: from ipmail02.adl2.internode.on.net ([203.16.214.141]:60830 "EHLO
-	ipmail02.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933318AbXCTMz5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 08:55:57 -0400
-X-IronPort-AV: i="4.14,304,1170595800"; 
-   d="scan'208"; a="99878459:sNHT21752584"
-Message-ID: <45FFD9DC.8050103@iinet.net.au>
-Date: Tue, 20 Mar 2007 23:55:56 +1100
-From: Ben Nizette <ben.nizette@iinet.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, dwmw2@infradead.org
-Subject: Re: 2.6.21-rc4-mm1 [PATCH] init/missing_syscalls.h fix
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 20 Mar 2007 09:17:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49312 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750878AbXCTNRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 09:17:01 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070319.121958.48807741.davem@davemloft.net> 
+References: <20070319.121958.48807741.davem@davemloft.net>  <2578.1174305403@redhat.com> <3728.1174309154@redhat.com> <25752.1174318898@redhat.com> 
+To: David Miller <davem@davemloft.net>
+Cc: alan@lxorguk.ukuu.org.uk, mrmacman_g4@mac.com, netdev@vger.kernel.org,
+       herbert.xu@redhat.com, linux-kernel@vger.kernel.org, hch@infradead.org,
+       arjan@infradead.org
+Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try #2] 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 20 Mar 2007 13:16:20 +0000
+Message-ID: <20347.1174396580@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephane Jourdois wrote:
-> On Mon, Mar 19, 2007 at 08:56:23PM -0800, Andrew Morton wrote:
->> Temporarily at
->>
->>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
-> 
-> [..]
-> 
->> +complain-about-missing-system-calls.patch
->> +complain-about-missing-system-calls-update.patch
-> 
-> 
-> Hi,
-> 
-> I needed the following patch to fix this compile error (which does not
-> happend at first compile):
-> [..]
-> # (note all three \1 missing, replaced by char '^A', not visible here.
-> # note also that my /bin/sh is symlinked to dash (not bash) 0.5.3
-> [..] 
-> Can someone confirm that this is the right way to patch this ?
-> 
+David Miller <davem@davemloft.net> wrote:
 
-Can't confirm the correctness but I can confirm that this problem
-appears for me using both bash and dash and that the attached patch
-allows compile to progress.  Cheers :)
+> David we're not looking for a precise match, so please stop
+> discussing this in those terms.  We're looking for something
+> close enough.
 
---Ben.
+But we don't have one that's close.  Let me recap: according to Alan's
+definitions, all (presumably all non-RAW) network services must either be
+datagram services or stream services, and must be selectable from DGRAM, RDM,
+SEQPACKET or STREAM.  RPC is neither.  Also, why does DCCP have its own type?
+According to Alan's logic that's superfluous.
 
-> 
-> Thanks,
-> - Stéphane.
+> The more and more I read Alan's arguments and your resistence to
+> his logic,
+
+Which is flawed...
+
+> the more I side with Alan.  He's definitely right on all the basic counts
+> here.
+
+Well, perhaps *you* can explain why he's right then...
+
+But, since you insist, I'll just remove any restrictions on the type and drop
+SOCK_RPC.  Type 0 will serve just as well since there's only one choice to be
+had anyway, and that's all there's likely to be.
+
+David
