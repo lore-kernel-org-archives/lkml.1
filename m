@@ -1,71 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbXCTGMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752804AbXCTGV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbXCTGMo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 02:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbXCTGMo
+	id S1752804AbXCTGV3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 02:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbXCTGV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 02:12:44 -0400
-Received: from 1wt.eu ([62.212.114.60]:1278 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752778AbXCTGMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 02:12:32 -0400
-Date: Tue, 20 Mar 2007 07:11:52 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Xavier Bestel <xavier.bestel@free.fr>, Mark Lord <lkml@rtr.ca>,
-       Al Boldi <a1426z@gawab.com>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck@vds.kolivas.org,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: RSDL v0.31
-Message-ID: <20070320061152.GW943@1wt.eu>
-References: <200703042335.26785.a1426z@gawab.com> <200703172048.46267.kernel@kolivas.org> <1174125534.7734.2.camel@Homer.simpson.net> <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca> <1174321617.30876.69.camel@frg-rhel40-em64t-04> <45FEBBF5.9060002@rtr.ca> <1174322580.30876.72.camel@frg-rhel40-em64t-04> <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
+	Tue, 20 Mar 2007 02:21:29 -0400
+Received: from www.osadl.org ([213.239.205.134]:59667 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752804AbXCTGV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 02:21:28 -0400
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Matt Mackall <mpm@selenic.com>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070320010529.GC4892@waste.org>
+References: <20070318162720.GI10459@waste.org>
+	 <1174236579.17249.6.camel@sauron> <20070318191812.GM4892@waste.org>
+	 <20070318203149.GC29295@crusty.rchland.ibm.com>
+	 <20070319170838.GP4892@waste.org>
+	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
+	 <20070319195442.GT4892@waste.org>
+	 <1174338329.13341.633.camel@localhost.localdomain>
+	 <20070319223205.GZ4892@waste.org>
+	 <1174351366.13341.739.camel@localhost.localdomain>
+	 <20070320010529.GC4892@waste.org>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 07:28:21 +0100
+Message-Id: <1174372101.13341.775.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 08:11:55PM -0700, Linus Torvalds wrote:
-> Quite frankly, I was *planning* on merging RSDL very early after 2.6.21, 
-> but there is one thing that has turned me completely off the whole thing:
+On Mon, 2007-03-19 at 20:05 -0500, Matt Mackall wrote:
+> On Tue, Mar 20, 2007 at 01:42:46AM +0100, Thomas Gleixner wrote:
+> > On Mon, 2007-03-19 at 17:32 -0500, Matt Mackall wrote:
+> > > This is exactly the same problem as booting on a desktop PC. But
+> > > somehow LILO manages. My first Linux box had a hell of a lot less disk
+> > > than the platform I bootstrapped (and wrote NAND drivers for) last
+> > > month had in NAND.
+> > 
+> > No, it is not. You get the absolute sector address of your second stage
+> > and this is a complete nobrainer. The translation is done in the DISK
+> > device.
 > 
->  - the people involved seem to be totally unwilling to even admit there 
->    might be a problem.
+> LILO and friends manage to boot systems that use software RAID and
+> LVM. There are multiple methods. Some use block lists, some use tiny
+> boot partitions, etc. All of them are applicable to controllerless NAND.
+
+Yes, by using fixed addresses, which is not what I want.
+
+> > You simply ignore the fact, that inside each disk, USB Stick, CF-CARD,
+> > whatever - there is a more or less intellegent controller device, which
+> > does the mapping to the physical storage location. There is _NO_ such
+> > thing on a bare FLASH chip.
 > 
-> This is like alcoholism. If you cannot admit that you might have a 
-> problem, you'll never get anywhere. And quite frankly, the RSDL proponents 
-> seem to be in denial ("we're always better", "it's your problem if the old 
-> scheduler works better", "just one report of old scheduler being better").
+> How many times do I have to tell you that I wrote a driver for
+> controllerless NAND just last month?
+
+Wow. I'm impressed because I'm pulling my opinion out of thin air.
+
+> > How exactly does device mapper:
+> > 
+> > A) across device wear levelling ?
 > 
-> And the thing is, if people aren't even _willing_ to admit that there may 
-> be issues, there's *no*way*in*hell* I will merge it even for testing. 
-> Because the whole and only point of merging RSDL was to see if it could 
-> replace the old scheduler, and the most important feature in that case is 
-> not whether it is perfect, BUT WHETHER ANYBODY IS INTERESTED IN TRYING TO 
-> FIX THE INEVITABLE PROBLEMS!
+> The same way UBI does, but encapsulated in a device mapper layer.
 
-Linus, you're unfair with Con. He initially was on this position, and lately
-worked with Mike by proposing changes to try to improve his X responsiveness.
-But he's ill right now and cannot touch the keyboard, so only his supporters
-speak for him, and as you know, speech is not code and does not fix problems.
+Does the device mapper do that ?
 
-Leave him a week or so to relieve and let's see what he can propose. Hopefully
-a week away from the keyboard will help him think with a more general approach.
-Also, Mike has already modified the code a bit to get better experience.
+> > B) dynamic partitioning for FLASH aware file systems ?
+>
+> See above.
 
-Also, while I don't agree with starting to renice X to get something usable,
-it seems real that there's something funny on Mike's system which makes it
-behave particularly strangely when combined with RSDL, because other people
-in comparable tests (including me) have found X perfectly smooth even with
-loads in the tens or even hundreds. I really suspect that we will find a bug
-in RSDL which triggers the problem and that this fix will help discover
-another problem on Mike's hardware which was not triggered by mainline.
+Does the device mapper do that ?
 
-Regards,
-Willy
+> > C) across device wear levelling for FLASH aware file systems ?
+> 
+> See above.
+
+Look at your own drawing. 
+
+> > D) background bit-flip corrections (copying affected blocks and recylce
+> > the old one) ?
+> 
+> See above.
+
+Repeating patterns do not impress me. Your drawing tells otherwise
+
+> > E) allow position independent placement of the second stage bootloader ?
+> 
+> See way above to my LILO response.
+
+Neither LILO nor GRUB have search capabilities for randomly located
+second stage loaders.
+
+> > > > You need to implement a clever journalling block device
+> > > > emulator in order to keep the data alive and the FLASH not weared out
+> > > > within no time. You need the wear levelling, otherwise you can throw
+> > > > away your FLASH in no time.
+> > > 
+> > > And that's why it's in my picture.
+> > 
+> > Yes, it is in your picture, but:
+> > 
+> > 1) it excludes FLASH aware file systems and UBI does not.
+> > 2) your picture does still not explain how it does achive the above A),
+> > B), C), D) and E)
+> > 
+> > Your extra path for partitioning(4) and JFFS2 is just a weird hack,
+> > which makes your proposal completely absurd.
+> 
+> No, it's just there to show the flexibility of device mapper. But I have
+> the sneaking suspicion you have no idea how device mapper works.
+
+Sigh. Layering violation == flexibility.
+
+> In brief: device mapper takes one or more devices, applies a mapping
+> to them, and returns a new device. For example, take various spans of
+> /dev/hda1 and /dev/sda3 and present them as new-device1. Take
+> new-device1 and transform it with dm-crypt to get new-device2. The
+> kernel doesn't decide how to do this, any more than it decides where
+> to mount your filesystems. Userspace does.
+
+I know how it works. But your blurb does not answer any of my questions.
+
+> > > > > 5. We don't reimplement higher pieces of the stack (dm-crypt,
+> > > > >    snapshot, etc.).
+> > > > 
+> > > > Why should we reimplement that ?
+> > > 
+> > > So that you can get encryption and snapshot, etc.?
+> > 
+> > 1. On top of a clever block device.
+> > 
+> > 2. UBI can do snapshots by design.
+> 
+> Oh, so you HAVE reimplemented it.
+
+No, it already works
+
+> > 3. Encryption should be done on the VFS layer and not below the
+> > filesystem layer. Doing it inside the block layer or the device mapper
+> > is broken by design.
+> 
+> That's highly debatable and not a topic for this thread.
+
+I see, you define, what has to be discussed.
+
+	tglx
+
 
