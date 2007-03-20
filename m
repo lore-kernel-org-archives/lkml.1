@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXCTOCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933235AbXCTOPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933212AbXCTOCS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 10:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXCTOCS
+	id S933235AbXCTOPL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 10:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933158AbXCTOPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 10:02:18 -0400
-Received: from mx2.suse.de ([195.135.220.15]:52338 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933212AbXCTOCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 10:02:18 -0400
-From: Danny Kukawka <dkukawka@suse.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] add Fujitsu Siemens Tablet PC devices to 8250_pnp.c
-Date: Tue, 20 Mar 2007 15:01:41 +0100
-User-Agent: KMail/1.9.6
+	Tue, 20 Mar 2007 10:15:11 -0400
+Received: from styx.suse.cz ([82.119.242.94]:44147 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933235AbXCTOPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 10:15:00 -0400
+Date: Tue, 20 Mar 2007 15:21:13 +0100
+From: Jan Kara <jack@suse.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Jarek Poplawski <jarkao2@o2.pl>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: dquot.c: possible circular locking Re: [2.6.20] BUG: workqueue leaked lock
+Message-ID: <20070320142113.GD14319@duck.suse.cz>
+References: <20070315191749.GS31960@vanheusden.com> <20070320111701.GB1751@ff.dom.local> <20070320112253.GC1751@ff.dom.local> <20070320113151.GA12462@ff.dom.local> <20070320121909.GB14319@duck.suse.cz> <1174397710.1158.75.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200703201501.42209.dkukawka@suse.de>
+In-Reply-To: <1174397710.1158.75.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-adds device ids of two Fujitsu Siemens Tablet PCs to pnp_dev_table
+On Tue 20-03-07 14:35:10, Arjan van de Ven wrote:
+> 
+> 
+> >   Yes, I was looking at it. Hmm, we can possibly get rid of tty_mutex being
+> > acquired under dqptr_sem in quota code. But looking at the path from
+> > con_close() there's another inversion with i_mutex which is also acquired
+> > along the path for sysfs. And we can hardly get rid of it in the quota code.
+> >   Now none of these is a real deadlock as quota should never call
+> > print_warning() for sysfs (it doesn't use quota) but still it's nasty. I
+> > suppose tty_mutex is above i_mutex because of those sysfs calls and it
+> > seems sysfs must be called under tty_mutex because of races with
+> > init_dev(). So it's not easy to get rid of that dependency either.
+> 
+> maybe a far more serious option: Why on EARTH is the quota code going to
+> TTY's directly? That's just WRONG. Maybe it wasn't 10 years ago, but
+> nowadays most people use graphical user interfaces and the like...
+  We've been discussing this sometimes back in August ;)
+(http://lkml.org/lkml/2006/8/8/237) and we've decided to leave the code in.
+The only reason why I think it should stay in is the existence of quota
+softlimits. There it's nice to warn the user and there's no other way to
+propagate this information into userspace (as the write succeeds).
+  One solution would be to leave the warning to some userspace process
+(like warnquota) run from cron but still I'm not sure we should change the
+behavior.
 
-Signed-off-by: Danny Kukawka <dkukawka@suse.de>
-
---- linux-2.6.21-rc4/drivers/serial/8250_pnp.c	2007-03-19 21:42:43.000000000 +0100
-+++ linux-2.6.21-rc5/drivers/serial/8250_pnp.c	2007-03-19 21:55:53.000000000 +0100
-@@ -340,6 +340,9 @@ static const struct pnp_device_id pnp_de
- 	{       "FUJ02B8",              0 },
- 	{       "FUJ02B9",              0 },
- 	{       "FUJ02BC",              0 },
-+	/* Fujitsu Wacom Tablet PC devices */
-+	{	"FUJ02E5",		0	},
-+	{	"FUJ02E6",		0	},
- 	/* Rockwell's (PORALiNK) 33600 INT PNP */
- 	{	"WCI0003",		0	},
- 	/* Unkown PnP modems */
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
