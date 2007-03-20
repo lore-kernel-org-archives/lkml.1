@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750951AbXCTVFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbXCTVGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750951AbXCTVFQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 17:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbXCTVFQ
+	id S1751773AbXCTVGp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 17:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXCTVGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 17:05:16 -0400
-Received: from smtp.ono.com ([62.42.230.12]:62310 "EHLO resmaa02.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750951AbXCTVFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 17:05:15 -0400
-Date: Tue, 20 Mar 2007 22:04:57 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc4-mm1
-Message-ID: <20070320220457.276429b0@werewolf-wl>
-In-Reply-To: <20070319205623.299d0378.akpm@linux-foundation.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.8.1cvs22 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Mar 2007 17:06:45 -0400
+Received: from www17.your-server.de ([213.133.104.17]:2600 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751773AbXCTVGp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 17:06:45 -0400
+Message-ID: <46004D2F.4020901@m3y3r.de>
+Date: Tue, 20 Mar 2007 22:07:59 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: Bug in pci_restore_msi_state
+References: <45FBE22A.8030304@m3y3r.de> <84144f020703170618x73808b4fmf5b420f4c2e02818@mail.gmail.com>
+In-Reply-To: <84144f020703170618x73808b4fmf5b420f4c2e02818@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 20:56:23 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
+Pekka Enberg schrieb:
+> On 3/17/07, Thomas Meyer <thomas@m3y3r.de> wrote:
+>> Hello everybody.
+>>
+>> I get this bug after suspending to disk twice:
+>>
+>> http://m3y3r.de/bilder/Bug-pci_restore_msi_state.png
+>>
+>> This happens with current git head
+>> cd05a1f818073a623455a58e756c5b419fc98db9.
+>
+> If you know a kernel that works, please consider doing git bisect:
+>
+> http://www.kernel.org/pub/software/scm/git/docs/howto/isolate-bugs-with-bisect.txt
+>
+>
 
-> 
-> Temporarily at
-> 
->   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
-> 
+Ok. The error happens in the call of pcibios_enable_device in the
+function do_pci_enable_device (drivers/pci/pci.c):
 
-After applying hot-fixes, I get this:
+Before the call of pcibios_enable_device:
 
-MODPOST vmlinux
-WARNING: init/built-in.o - Section mismatch: reference to .init.text: from .text between 'rest_init' (at offset 0xfa) and 'try_name'
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:cpu_set_gdt from .text between 'initialize_secondary' (at offset 0xbce3) and 'mp_find_ioapic'
-WARNING: mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .text between 'set_up_list3s' (at offset 0x1b384) and 's_start'
+do_pci_enable_device: pci_dev= c1a40000
+do_pci_enable_device: irq= 218
+do_pci_enable_device: msi_enabled= 1
 
-If you need anything, just ask (.config or the like)
+after the call:
+ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 19 (level, low) -> IRQ 19
 
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.20-jam05 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #2 SMP PREEMPT
+do_pci_enable_device: pci_dev= c1a40000
+do_pci_enable_device: irq= 19
+do_pci_enable_device: msi_enabled= 1
+
+
+So the function acpi_pci_irq_enable in drivers/acpi/pci_irq.c  needs to
+be fixed:
+
+a.) acpi_pci_irq_enable should care about msi setups and set the flag
+msi_enabled to 0 or
+b.) acpi_pci_irq_enable should care about msi setups and should touch
+the dev->irq field.
+
+Please comment on this.
+
+with kind regards
+thomas
+
+
