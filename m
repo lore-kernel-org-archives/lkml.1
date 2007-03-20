@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030818AbXCTAoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966054AbXCTAvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030818AbXCTAoa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 20:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030802AbXCTAoa
+	id S966054AbXCTAvL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 20:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966059AbXCTAvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 20:44:30 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59969 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030818AbXCTAo3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 20:44:29 -0400
-Date: Mon, 19 Mar 2007 17:44:28 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V3
-In-Reply-To: <20070319170741.5a24af4c.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703191718220.13927@schroedinger.engr.sgi.com>
-References: <20070319233716.13775.45569.sendpatchset@schroedinger.engr.sgi.com>
- <20070319165329.b5830789.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703191655190.13879@schroedinger.engr.sgi.com>
- <20070319170741.5a24af4c.akpm@linux-foundation.org>
+	Mon, 19 Mar 2007 20:51:11 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:41385 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966054AbXCTAvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 20:51:09 -0400
+Date: Tue, 20 Mar 2007 01:52:28 +0100
+From: Lukas Hejtmanek <xhejtman@mail.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: UDP packets scheduling
+Message-ID: <20070320005228.GN22880@mail.muni.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 Mar 2007 01:51:07 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007, Andrew Morton wrote:
+Hello,
 
-> Please provide proof that quicklists are superior to simply going direct to
-> the page allocator for these pages.
+can anyone suggest me a proper way how to schedule UDP packets to transmit at
+some given rate?
 
-See the patch. We are only touching 2 cachelines instead of 32. So even 
-without considering the page allocator overhead and the slab allocator 
-overhead (which will make the situation even better) its superior.
+E.g., I have two boxes both having 10 GE interfaces. One box is able to
+transmit at 9.9Gbps, the other one is able to receive only at about 5.5Gbps.
+Flow control must be turned off for some other reason.
 
-> > I doubt it. The zeroing is a by product of our way of serializing pte 
-> > handling. Its going to be difficult to change that.
-> 
-> Nick didn't think so, and I don't see the problem either.
+How can I put delay between subsequent msg sends to achieve desired
+packet rate without loses, e.g., 3.5Gbps without bursts? Even nanosleep()
+with the lowest possible delay seems to be too much delay. Busy loop with
+clock_gettime(3) works OK on SMP boxes, but on UP it causes problems.
 
-You do not think that our current way of handling ptes is okay? If we do 
-not zero the ptes then we need to separate munmap from process shutdown.
-
-> We'll save on some bus traffic by avoiding the writeback, but how much
-> effect that will have we don't know.  Presumably little.
-
-The advantage of the quicklists is that it does not require a rework of 
-the pte serialization.
-
+-- 
+Luká¹ Hejtmánek
