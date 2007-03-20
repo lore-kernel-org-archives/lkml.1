@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965830AbXCTSkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965663AbXCTSkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965830AbXCTSkP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 14:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965753AbXCTSjo
+	id S965663AbXCTSkc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 14:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965753AbXCTSkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 14:39:44 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60022 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965808AbXCTSia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 14:38:30 -0400
-Date: Tue, 20 Mar 2007 19:38:21 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.osdl.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.21-rc4-mm1
-Message-ID: <20070320183821.GD2670@elf.ucw.cz>
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <45FFF026.4030502@gmail.com> <20070320080944.9cb3c765.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070320080944.9cb3c765.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Tue, 20 Mar 2007 14:40:17 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49506 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965825AbXCTSju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 14:39:50 -0400
+Subject: Re: [PATCH] time : SMP friendly alignment of struct clocksource
+From: john stultz <johnstul@us.ibm.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1174413862.3101.185.camel@imap.mvista.com>
+References: <20070320110936.1e445e6e.dada1@cosmosbay.com>
+	 <1174413482.17430.1.camel@localhost>
+	 <1174413862.3101.185.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 11:38:01 -0700
+Message-Id: <1174415881.17430.21.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Andrew Morton napsal(a):
-> > >   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
-> > 
-> > I'm getting this while trying to swsusp:
-> > Stopping tasks ...
-> > Stopping kernel threads timed out after 20 seconds (1 tasks refusing to freeze):
-> >  swapper
-> >  Restarting tasks ... done.
-> > 
-> > What to test? Enable PM_DEBUG?
-
-Is it repeatable? Freezer normally works better than that.
-
-> hm, OK.  Rafael has been working on fixing the process freezer and it'll
-> take some time to get it to where we want it to be, I expect.
-
-> Rafael, I think that we could afford to add heaps of debug in there at this
-> stage to help us track down problems like this.
+On Tue, 2007-03-20 at 11:04 -0700, Daniel Walker wrote:
+> On Tue, 2007-03-20 at 10:58 -0700, john stultz wrote:
 > 
-> Also, it might be useful to add a temporary /proc/freeze-unfreeze thing
-> which will simply do a freeze/unfreeze cycle.  Then we can apply various
-> workloads to the machine while madly stressing the freezer code.  
+> > >  	/* timekeeping specific data, ignore */
+> > > -	cycle_t cycle_last, cycle_interval;
+> > > -	u64 xtime_nsec, xtime_interval;
+> > > +	cycle_t cycle_interval;
+> > > +	u64	xtime_interval;
+> > > +	/*
+> > > +	 * Second part is written at each timer interrupt
+> > > +	 * Keep it in a different cache line to dirty no
+> > > +	 * more than one cache line.
+> > > +	 */
+> > > +	cycle_t cycle_last ____cacheline_aligned_in_smp;
+> > > +	u64 xtime_nsec;
+> > >  	s64 error;
+> 
+> What was the motivation for having these (cycle_last for example) in the
+> clocksource structure. I recall them being added in there at one point,
+> but I'm not sure why.. Specifically the ones that are updated often.
 
-echo testproc > /sys/power/disk; echo disk > /sys/power/state ... is
-pretty much what you want.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Roman claimed it produced better code, and the values are functionally
+clocksource specific (meaning if the clocksource changed, and they were
+global, you would have to reset them anyway).
+
+I think logically those values are more timekeeping oriented then
+clocksource oriented, but one could argue that since we manipulate
+clocksource.mult in the timekeeping's NTP code, mult is timekeeping
+specific as well.
+
+If you really wanted a clean design, you'd probably have to keep all of
+those values as a timekeeping_clocksource struct, and then have smaller
+clocksource structs (name, mult, shift, read) that is filled in by the
+clocksource driver and copied over on clocksource changes. That way the
+timekeeping code wouldn't manipulate the clocksource structure directly.
+
+But really, it seems like work for little to no reward (plus opens the
+issue of "but i want a ntp frequency adjusted sched_clock!" which would
+not be possible).
+
+-john
+
