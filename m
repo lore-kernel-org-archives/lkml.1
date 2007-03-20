@@ -1,55 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751253AbXCTOzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbXCTPAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751253AbXCTOzu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 10:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXCTOzu
+	id S1753722AbXCTPAb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 11:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933569AbXCTPAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 10:55:50 -0400
-Received: from tapsys.com ([72.36.178.242]:35742 "EHLO tapsys.com"
+	Tue, 20 Mar 2007 11:00:30 -0400
+Received: from mx1.suse.de ([195.135.220.2]:60557 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751253AbXCTOzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 10:55:49 -0400
-Message-ID: <45FFF5E5.5040201@madrabbit.org>
-Date: Tue, 20 Mar 2007 07:55:33 -0700
-From: Ray Lee <ray-lk@madrabbit.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
+	id S1753367AbXCTPA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 11:00:29 -0400
+Date: Tue, 20 Mar 2007 16:00:27 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] Fix irqpoll on IA64 (timer interrupt != 0)
+Message-ID: <20070320150027.GA18143@strauss.suse.de>
+Mail-Followup-To: linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@elte.hu>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Adrian Bunk <bunk@stusta.de>, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
-Subject: Re: Odd suspend regression in 2.6.21-rc[123]
-References: <45F0C018.2020409@madrabbit.org> <20070320095638.GA19137@elf.ucw.cz>
-In-Reply-To: <20070320095638.GA19137@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> 
->> In 2.6.21-rc1,2,3, my laptop will fully suspend to ram, but then
->> *immediately* resumes back from suspension. (It resumes just fine, as well.)
->>
->> Nothing out of the ordinary is logged, and this happens even when
->> booting into init=/bin/sh with minimal modules loaded and executing
->> s2ram from that minimal environment.
->>
->> I'm going to ponder the 2.6.20 to 2.6.21-rc1 changelog, but I'm hoping
->> someone with a clue can offer a suggestion before I end up bisecting the
->> whole thing. (Wouldn't be so bad, except I'm given to understand that
->> there are multiple places in those changes where nothing quite works
->> with respect to suspend.)
->>
->> HP/Compaq NX6125 system, AMD64, dmesg attached.
-> 
-> Known problem in ACPI, hopefully already fixed?
+On IA64, the timer interrupt is not (always?) zero as it is on x86 platforms.
+Also, the timer interrupt is CPU-local. Two things need to be changed to make
+the irqpoll option make also working on IA64:
 
-Mostly. The ACPI git tree has the fix
-(1d99967badac599c0d1db0b45c99e073e8e98cd4), but Len has yet to push it
-to Linus. Hopefully that'll happen before 2.6.21 final.
+  o Call note_interrupt() also on CPU-local interrupts in __do_IRQ().
+  o Set a variable timer_irq to the value of the timer interrupt
+    after the timer interrupt has been registered and assigned.
 
-Thanks Pavel,
+That requires changes in Linux-generic files. The default of timer_irq is 0, so
+the patch doesn't break i386/x86_64. However, other platforms also may also
+have a timer interrupt non-equal to zero, so they can also use the new
+set_timer_interrupt() function.
 
-Ray
 
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+
+---
+ arch/ia64/kernel/irq_ia64.c |    6 +++++-
+ arch/ia64/kernel/time.c     |    6 +++++-
+ include/asm-ia64/hw_irq.h   |    2 +-
+ include/linux/irq.h         |    3 +++
+ kernel/irq/handle.c         |    2 ++
+ kernel/irq/spurious.c       |    9 ++++++++-
+ 6 files changed, 24 insertions(+), 4 deletions(-)
+
+Index: mainline-msi-init/arch/ia64/kernel/irq_ia64.c
+===================================================================
+--- mainline-msi-init.orig/arch/ia64/kernel/irq_ia64.c
++++ mainline-msi-init/arch/ia64/kernel/irq_ia64.c
+@@ -280,11 +280,12 @@ static struct irqaction resched_irqactio
+ };
+ #endif
+ 
+-void
++int
+ register_percpu_irq (ia64_vector vec, struct irqaction *action)
+ {
+ 	irq_desc_t *desc;
+ 	unsigned int irq;
++	int first_match = -1;
+ 
+ 	for (irq = 0; irq < NR_IRQS; ++irq)
+ 		if (irq_to_vector(irq) == vec) {
+@@ -293,7 +294,10 @@ register_percpu_irq (ia64_vector vec, st
+ 			desc->chip = &irq_type_ia64_lsapic;
+ 			if (action)
+ 				setup_irq(irq, action);
++			first_match = irq;
+ 		}
++
++	return first_match;
+ }
+ 
+ void __init
+Index: mainline-msi-init/arch/ia64/kernel/time.c
+===================================================================
+--- mainline-msi-init.orig/arch/ia64/kernel/time.c
++++ mainline-msi-init/arch/ia64/kernel/time.c
+@@ -247,7 +247,11 @@ void __devinit ia64_disable_timer(void)
+ void __init
+ time_init (void)
+ {
+-	register_percpu_irq(IA64_TIMER_VECTOR, &timer_irqaction);
++	int timer_irq;
++
++	timer_irq = register_percpu_irq(IA64_TIMER_VECTOR, &timer_irqaction);
++	set_timer_interrupt(timer_irq);
++
+ 	efi_gettimeofday(&xtime);
+ 	ia64_init_itm();
+ 
+Index: mainline-msi-init/include/linux/irq.h
+===================================================================
+--- mainline-msi-init.orig/include/linux/irq.h
++++ mainline-msi-init/include/linux/irq.h
+@@ -272,6 +272,9 @@ static inline int irq_balancing_disabled
+ /* Handle irq action chains: */
+ extern int handle_IRQ_event(unsigned int irq, struct irqaction *action);
+ 
++/* sets the timer interrupt number for irqpoll handling (kernel/irq/spurious.c) */
++extern void set_timer_interrupt(unsigned int irq);
++
+ /*
+  * Built-in IRQ handlers for various IRQ types,
+  * callable via desc->chip->handle_irq()
+Index: mainline-msi-init/kernel/irq/spurious.c
+===================================================================
+--- mainline-msi-init.orig/kernel/irq/spurious.c
++++ mainline-msi-init/kernel/irq/spurious.c
+@@ -12,6 +12,7 @@
+ #include <linux/interrupt.h>
+ 
+ static int irqfixup __read_mostly;
++static unsigned int timer_irq __read_mostly;
+ 
+ /*
+  * Recovery handler for misrouted interrupts.
+@@ -146,7 +147,7 @@ void note_interrupt(unsigned int irq, st
+ 
+ 	if (unlikely(irqfixup)) {
+ 		/* Don't punish working computers */
+-		if ((irqfixup == 2 && irq == 0) || action_ret == IRQ_NONE) {
++		if ((irqfixup == 2 && irq == timer_irq) || action_ret == IRQ_NONE) {
+ 			int ok = misrouted_irq(irq);
+ 			if (action_ret == IRQ_NONE)
+ 				desc->irqs_unhandled -= ok;
+@@ -174,6 +175,12 @@ void note_interrupt(unsigned int irq, st
+ 	desc->irqs_unhandled = 0;
+ }
+ 
++void set_timer_interrupt(unsigned int irq)
++{
++	timer_irq = irq;
++}
++EXPORT_SYMBOL_GPL(set_timer_interrupt);
++
+ int noirqdebug __read_mostly;
+ 
+ int noirqdebug_setup(char *str)
+Index: mainline-msi-init/include/asm-ia64/hw_irq.h
+===================================================================
+--- mainline-msi-init.orig/include/asm-ia64/hw_irq.h
++++ mainline-msi-init/include/asm-ia64/hw_irq.h
+@@ -95,7 +95,7 @@ extern int assign_irq_vector (int irq);	
+ extern void free_irq_vector (int vector);
+ extern int reserve_irq_vector (int vector);
+ extern void ia64_send_ipi (int cpu, int vector, int delivery_mode, int redirect);
+-extern void register_percpu_irq (ia64_vector vec, struct irqaction *action);
++extern int register_percpu_irq (ia64_vector vec, struct irqaction *action);
+ 
+ static inline void ia64_resend_irq(unsigned int vector)
+ {
+Index: mainline-msi-init/kernel/irq/handle.c
+===================================================================
+--- mainline-msi-init.orig/kernel/irq/handle.c
++++ mainline-msi-init/kernel/irq/handle.c
+@@ -180,6 +180,8 @@ fastcall unsigned int __do_IRQ(unsigned 
+ 		if (desc->chip->ack)
+ 			desc->chip->ack(irq);
+ 		action_ret = handle_IRQ_event(irq, desc->action);
++		if (!noirqdebug)
++			note_interrupt(irq, desc, action_ret);
+ 		desc->chip->end(irq);
+ 		return 1;
+ 	}
