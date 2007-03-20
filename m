@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933296AbXCTJgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933416AbXCTJjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933296AbXCTJgt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 05:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933454AbXCTJgt
+	id S933416AbXCTJjK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 05:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933490AbXCTJjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 05:36:49 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:37651 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933296AbXCTJgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 05:36:48 -0400
-Date: Tue, 20 Mar 2007 10:38:34 +0100
-From: Lukas Hejtmanek <xhejtman@mail.muni.cz>
-To: David Schwartz <davids@webmaster.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Re: ex-upload
-Message-ID: <20070320093834.GO22880@mail.muni.cz>
-References: <20070318015323.GH12382@kraken.fi.muni.cz> <20070319135100.GH22880@mail.muni.cz> <20070319151643.GC23780@kraken.fi.muni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	Tue, 20 Mar 2007 05:39:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38370 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933416AbXCTJjJ (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 05:39:09 -0400
+Date: Tue, 20 Mar 2007 20:38:45 +1100
+From: David Chinner <dgc@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Chinner <dgc@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, neilb@suse.de,
+       tomoki.sekiyama.qu@hitachi.com
+Subject: Re: [RFC][PATCH 0/6] per device dirty throttling
+Message-ID: <20070320093845.GQ32602149@melbourne.sgi.com>
+References: <20070319155737.653325176@programming.kicks-ass.net> <20070320074751.GP32602149@melbourne.sgi.com> <1174378104.16478.17.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEEACGAC.davids@webmaster.com>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 Mar 2007 10:36:46 +0100 (CET)
+In-Reply-To: <1174378104.16478.17.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Mar 20, 2007 at 09:08:24AM +0100, Peter Zijlstra wrote:
+> On Tue, 2007-03-20 at 18:47 +1100, David Chinner wrote:
+> > So overall we've lost about 15-20% of the theoretical aggregate
+> > perfomrance, but we haven't starved any of the devices over a
+> > long period of time.
+> > 
+> > However, looking at vmstat for total throughput, there are periods
+> > of time where it appears that the fastest disk goes idle. That is,
+> > we drop from an aggregate of about 550MB/s to below 300MB/s for
+> > several seconds at a time. You can sort of see this from the file
+> > size output above - long term the ratios remain the same, but in the
+> > short term we see quite a bit of variability.
+> 
+> I suspect you did not apply 7/6? There is some trouble with signed vs
+> unsigned in the initial patch set that I tried to 'fix' by masking out
+> the MSB, but that doesn't work and results in 'time' getting stuck for
+> about half the time.
 
->> How can I put delay between subsequent msg sends to achieve desired
->> packet rate without loses, e.g., 3.5Gbps without bursts? Even nanosleep()
->> with the lowest possible delay seems to be too much delay. Busy loop with
->> clock_gettime(3) works OK on SMP boxes, but on UP it causes problems.
->
-> Why do you want to avoid bursts? You're going to be bursting between 10Gb/s
-> and 0 anyway.
+I applied the fixes patch as well, so i had all that you posted...
 
-It is because bursts above 5.5Gbps cannot be received by the peer. The peer is
-only able to receive bursts up to 5.5Gbps whereas the sender is able to burst
-up to 9.9Gbps.
+> >  but it's almost
+> > like it is throttling a device completely while it allows another
+> > to finish writing it's quota (underestimating bandwidth?).
+> 
+> Yeah, there is some lumpy-ness in BIO submission or write completions it
+> seems, and when that granularity (multiplied by the number of active
+> devices) is larger than the 'time' period over with we average
+> (indicated by vm_cycle_shift) very weird stuff can happen.
 
-> It sounds like you're deliberately putting impossible requirements on
-> yourself choosing the worst possible protocol and demanding the pacing be
-> perfect. I don't think the technology to do that is here yet, but why would
-> you possibly need it?
+Sounds like the period is a bit too short atm if we can get into this
+sort of problem with only 2 active devices....
 
-it is video transmission encapsulated in RTP over UDP. I do not know whether
-there are any other possibilities that would work also on Mac OS or FreeBSD.
+Cheers,
 
-(Please Cc me)
-
+Dave.
 -- 
-Luká¹ Hejtmánek
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
