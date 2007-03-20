@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbXCTL4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753690AbXCTL6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806AbXCTL4p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 07:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbXCTL4o
+	id S1753690AbXCTL6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 07:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbXCTL6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 07:56:44 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:51664 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753690AbXCTL4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 07:56:41 -0400
-Date: Tue, 20 Mar 2007 12:56:02 +0100 (MET)
-Message-Id: <200703201156.l2KBu2o5024611@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: ak@suse.de, mikpe@it.uu.se
-Subject: Re: [PATCH][5/5][resend] floppy.c: Fix device_create_file() warning
-Cc: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com,
-       jesper.juhl@gmail.com, linux-kernel@vger.kernel.org,
-       trent.waddington@gmail.com
+	Tue, 20 Mar 2007 07:58:54 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60649 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753690AbXCTL6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 07:58:53 -0400
+Date: Tue, 20 Mar 2007 12:56:57 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <len.brown@intel.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: s2ram autowake regression is still there in 2.6.21-rc4-git
+Message-ID: <20070320115657.GA4438@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007 12:29:49 +0100 (CET), Andreas Kleen <ak@suse.de> wrote:
-> > The floppy driver's sysfs file just provides some auxiliary
-> > information to user-space, none of which matters for most of
-> > its users. It is IMO totally inappropriate to fail floppy
-> > driver init in this case.
-> 
-> I thought it was for udev to create the device nodes? But
-> I might be wrong on that.
+Hi!
 
-It's a file called "cmos" containing the ASCII
-representation of UDP->cmos, which appears to be some
-kind of "type" indicator. See floppy_cmos_show().
+Run this script. The s2ram at the end of it will wakeup immediately
+after going to sleep, bad. I tried reproducing it with smaller
+version, but was not too successful.
+								Pavel
 
-The file is only readable, not even root can write to it.
+#!/bin/bash
+killall klogd
 
-On one of my machines it contains the value "4", but the
-device nodes udev created are still just /dev/fd0 and
-/dev/floppy -> /dev/fd0, so I don't think it affects udev.
+echo -n "testing refrigerator (testproc)..."
+echo testproc > /sys/power/disk
+echo disk > /sys/power/state
+echo "okay"
 
-The "cmos" file seems to be a relatively new addition,
-as another machine here running an RHEL4 2.6.9 kernel
-doesn't have it.
+sleep 2
+echo -n "testing drivers (test)..."
+echo test > /sys/power/disk
+echo disk > /sys/power/state
+echo "okay"
 
-Unless someone can prove that it's useful I think it
-should be removed.
+sleep 2
+echo -n "testing swsusp (reboot)..."
+echo reboot > /sys/power/disk
+echo disk > /sys/power/state
+echo "okay"
 
-/Mikael
+sleep 2
+echo -n "testing s2ram..."
+s2ram
+echo "okay"
+
+sleep 2
+echo -n "testing swsusp (shutdown)..."
+echo shutdown > /sys/power/disk
+echo disk > /sys/power/state
+echo "okay"
+
+sleep 2
+echo -n "testing swsusp (platform)..."
+echo platform > /sys/power/disk
+echo disk > /sys/power/state
+echo "okay"
+
+sleep 2
+echo -n "testing s2ram..."
+s2ram
+echo "okay"
+
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
