@@ -1,71 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030814AbXCTAz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030805AbXCTBAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030814AbXCTAz3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 20:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030820AbXCTAz2
+	id S1030805AbXCTBAm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 21:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966067AbXCTBAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 20:55:28 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37652 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030819AbXCTAz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 20:55:27 -0400
-Date: Mon, 19 Mar 2007 17:55:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V3
-Message-Id: <20070319175524.812b2f5d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703191718220.13927@schroedinger.engr.sgi.com>
-References: <20070319233716.13775.45569.sendpatchset@schroedinger.engr.sgi.com>
-	<20070319165329.b5830789.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703191655190.13879@schroedinger.engr.sgi.com>
-	<20070319170741.5a24af4c.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703191718220.13927@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 19 Mar 2007 21:00:42 -0400
+Received: from www.osadl.org ([213.239.205.134]:40540 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964834AbXCTBAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 21:00:41 -0400
+Subject: Re: [patch 1/13] signal/timer/event fds v7 - anonymous inode
+	source ...
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <send-serie.davidel@xmailserver.org.15249.1174348071.1>
+References: <send-serie.davidel@xmailserver.org.15249.1174348071.1>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 02:07:46 +0100
+Message-Id: <1174352866.13341.758.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 17:44:28 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+Davide,
 
-> On Mon, 19 Mar 2007, Andrew Morton wrote:
-> 
-> > Please provide proof that quicklists are superior to simply going direct to
-> > the page allocator for these pages.
-> 
-> See the patch. We are only touching 2 cachelines instead of 32. So even 
-> without considering the page allocator overhead and the slab allocator 
-> overhead (which will make the situation even better) its superior.
+On Mon, 2007-03-19 at 16:47 -0700, Davide Libenzi wrote:
+> This patch add an anonymous inode source, to be used for files that need 
+> and inode only in order to create a file*. We do not care of having an 
+> inode for each file, and we do not even care of having different names in 
+> the associated dentries (dentry names will be same for classes of file*).
+> This allow code reuse, and will be used by epoll, signalfd and timerfd 
+> (and whatever else there'll be).
+>
+> +int aino_getfd(int *pfd, struct inode **pinode, struct file **pfile,
+> +	       char const *name, const struct file_operations *fops, void *priv)
+> +{
+> +	struct qstr this;
+> +	struct dentry *dentry;
+> +	struct inode *inode;
+> +	struct file *file;
+> +	int error, fd;
+> +
+> +	error = -ENFILE;
+> +	file = get_empty_filp();
+> +	if (!file)
+> +		goto eexit_1;
 
-That's not proof, it is handwaving.  I could wave right back at you and
-claim that the benefit from returning a cache-hot pte page back to the page
-allocator for reuse exceeds the benefit which you waved at me above.
+make this "return -ENFILE;" please
 
-You may well be right, but nothing is proven, afaict.
+> +	inode = aino_getinode();
+> +	if (IS_ERR(inode)) {
+> +		error = PTR_ERR(inode);
+> +		goto eexit_2;
 
-> > > I doubt it. The zeroing is a by product of our way of serializing pte 
-> > > handling. Its going to be difficult to change that.
-> > 
-> > Nick didn't think so, and I don't see the problem either.
-> 
-> You do not think that our current way of handling ptes is okay? If we do 
-> not zero the ptes then we need to separate munmap from process shutdown.
+Can you please use a bit more descriptive labels ?
 
-Yep.  It's possible that process shutdown is a sufficiently common and
-costly special-case for it to be worth special-casing.
+e.g:
+	goto out_filp;
 
-> > We'll save on some bus traffic by avoiding the writeback, but how much
-> > effect that will have we don't know.  Presumably little.
-> 
-> The advantage of the quicklists is that it does not require a rework of 
-> the pte serialization.
+> +	}
+> +
+> +	error = get_unused_fd();
+> +	if (error < 0)
+> +		goto eexit_3;
 
-No, these are unrelated.  We can get pte pages from the page allocator and
-zero them without touching the munmap handling.
+e.g:
+	goto out_inode;
 
-But it's possible that if we _were_ to optimise the munmap handling as
-suggested, the end result would be superior.
+> +	fd = error;
+> +
+> +	/*
+> +	 * Link the inode to a directory entry by creating a unique name
+> +	 * using the inode sequence number.
+> +	 */
+> +	error = -ENOMEM;
+> +	this.name = name;
+> +	this.len = strlen(name);
+> +	this.hash = 0;
+> +	dentry = d_alloc(aino_mnt->mnt_sb->s_root, &this);
+> +	if (!dentry)
+> +		goto eexit_4;
+
+e.g:
+
+	goto out_fd;
+
+
+> +static int ainofs_delete_dentry(struct dentry *dentry)
+> +{
+> +	/*
+> +	 * We faked vfs to believe the dentry was hashed when we created it.
+> +	 * Now we restore the flag so that dput() will work correctly.
+> +	 */
+> +	dentry->d_flags |= DCACHE_UNHASHED;
+> +	return 1;
+> +}
+
+Please put either "struct ainofs_dentry_operations ..." below the next
+function or move ainofs_delete_dentry() above "struct
+ainofs_dentry_operations ..."
+
+It's annoying to lookup the protoypes and implemenation back and forth.
+
+> +static struct inode *aino_getinode(void)
+> +{
+> +	return igrab(aino_inode);
+> +}
+
+Please use "igrab(aino_inode);" directly in this one single place above.
+That saves us a prototype and an useless static function with no value.
+
+> +/*
+> + * A single inode exist for all aino files. On the contrary of pipes,
+> + * aino inodes has no per-instance data associated, so we can avoid
+> + * the allocation of multiple of them.
+> + */
+> +static struct inode *aino_mkinode(void)
+> +{
+> +	int error = -ENOMEM;
+> +	struct inode *inode = new_inode(aino_mnt->mnt_sb);
+> +
+> +	if (!inode)
+> +		goto eexit_1;
+
+	return ERR_PTR(-ENOMEM);
+
+> +	inode->i_fop = &aino_fops;
+> +}
+> +
+> +static int ainofs_get_sb(struct file_system_type *fs_type, int flags,
+> +			 const char *dev_name, void *data, struct vfsmount *mnt)
+> +{
+> +	return get_sb_pseudo(fs_type, "aino:", NULL, AINOFS_MAGIC, mnt);
+> +}
+
+Please put either "struct file_system_type aino_fs_typ ..." below this
+function or move ainofs_get_sb() above "struct file_system_type
+aino_fs_typ ..."
+
+> +static int __init aino_init(void)
+> +{
+> +
+> +	if (register_filesystem(&aino_fs_type))
+> +		goto epanic;
+> +
+> +	aino_mnt = kern_mount(&aino_fs_type);
+> +	if (IS_ERR(aino_mnt))
+> +		goto epanic;
+> +
+> +	aino_inode = aino_mkinode();
+> +	if (IS_ERR(aino_inode))
+> +		goto epanic;
+> +
+> +	return 0;
+> +
+> +epanic:
+> +	panic("aino_init() failed\n");
+
+Panic ? It's not life critical - is it ? 
+
+A printk(KERN_ERR...) and a return -Exx would be sufficient.
+
+	tglx
+
+
 
