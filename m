@@ -1,90 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751427AbXCTQ5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965338AbXCTQ7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751427AbXCTQ5c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXCTQ5c
+	id S965338AbXCTQ7z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965389AbXCTQ7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:57:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54016 "EHLO ogre.sisk.pl"
+	Tue, 20 Mar 2007 12:59:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39255 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751427AbXCTQ5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:57:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Weiner <hannes-kernel@saeurebad.de>
-Subject: Re: "reboot" swsusp mode leaves moon icon blinking
-Date: Tue, 20 Mar 2007 18:00:27 +0100
-User-Agent: KMail/1.9.5
-Cc: kernel list <linux-kernel@vger.kernel.org>
-References: <20070320123245.GA19019@elf.ucw.cz> <20070320165058.GA15888@leiferikson>
-In-Reply-To: <20070320165058.GA15888@leiferikson>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S965338AbXCTQ7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:59:54 -0400
+Date: Tue, 20 Mar 2007 12:57:36 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH] Delete obsolete RAW driver feature.
+Message-ID: <20070320165736.GA19781@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, Adrian Bunk <bunk@stusta.de>
+References: <Pine.LNX.4.64.0703180754060.6605@CPE00045a9c397f-CM001225dbafb6> <p73y7lu5yt6.fsf@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703201800.28024.rjw@sisk.pl>
+In-Reply-To: <p73y7lu5yt6.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 20 March 2007 17:50, Johannes Weiner wrote:
-> Hi,
-> 
-> On Tue, Mar 20, 2007 at 01:32:45PM +0100, Pavel Machek wrote:
-> > Date: Tue, 20 Mar 2007 13:32:45 +0100
-> > From: Pavel Machek <pavel@ucw.cz>
-> > To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-> > 	kernel list <linux-kernel@vger.kernel.org>
-> > Cc: Andrew Morton <akpm@osdl.org>
-> > Subject: "reboot" swsusp mode leaves moon icon blinking
-> > 
-> > Hi!
-> > 
-> > ...and cause is really simple.
-> > 
-> > During resume, we do not know that "reboot" method was used, so we
-> > assume plaform and make the led blink...
-> 
-> What does the "reboot" swsusp mean?
-> 
-> I am having this (or a similar problem):
-> 
-> 	echo shutdown > /sys/power/disk; echo disk > /sys/power/state
-> 
-> suspends normally.  But after a resume, the moon keeps blinking _and_
-> I don't get ACPI events anymore.  At least all ibm-acpi features refuse
-> to work (hotkeys, lcd-brightness, lid, ...).
-> 
-> I saved some /proc files (interrupts, acpi/processor/power, ...) and
-> compared them before the suspend and after the resume but I could not
-> find any differences.
-> 
-> > diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-> > index 873cdf8..dee0ff4 100644
-> > --- a/kernel/power/disk.c
-> > +++ b/kernel/power/disk.c
-> > @@ -241,18 +241,11 @@ static int software_resume(void)
-> >  		goto Done;
-> >  	}
-> >  
-> > -	error = platform_prepare();
-> > -	if (error) {
-> > -		swsusp_free();
-> > -		goto Thaw;
-> > -	}
-> > -
-> 
-> What is platform_prepare() actually good for when _resuming_? I tried to
-> follow the function calls and it seems to disable a lot of thing instead
-> of re-enabling them...?
+On Sun, Mar 18, 2007 at 04:57:57PM +0100, Andi Kleen wrote:
+ > "Robert P. J. Day" <rpjday@mindspring.com> writes:
+ > 
+ > > Delete the allegedly obsolete raw driver feature, which has been
+ > > marked for death since 2005.
+ > 
+ > I think it would be better to replace it with a wrapper
+ > that forces O_DIRECT and opens the underlying block device.  I suspect 
+ > just dropping it will break many people's database setups, which is not
+ > nice.  Widely used admin interfaces should be only broken when 
+ > there is a very good reason and just "there is a better way now" 
+ > doesn't seem quite strong enough.
 
-Well, if you suspend using the platform mode, platform_finish() will be called
-after the image has been restored (ie. by the "old" kernel).
+Agreed.  Given how this keeps coming up every few months, lets just
+remove that from the list..  It's not that a 306 line driver is
+particularly invasive anyways..
 
-Greetings,
-Rafael
+Signed-off-by: Dave Jones <davej@redhat.com>
+
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 0bc8b0b..6b845f3 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -21,14 +21,6 @@ Who:	Pavel Machek <pavel@suse.cz>
+ 
+ ---------------------------
+ 
+-What:	RAW driver (CONFIG_RAW_DRIVER)
+-When:	December 2005
+-Why:	declared obsolete since kernel 2.6.3
+-	O_DIRECT can be used instead
+-Who:	Adrian Bunk <bunk@stusta.de>
+-
+----------------------------
+-
+ What:	raw1394: requests of type RAW1394_REQ_ISO_SEND, RAW1394_REQ_ISO_LISTEN
+ When:	June 2007
+ Why:	Deprecated in favour of the more efficient and robust rawiso interface.
 
 
 -- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+http://www.codemonkey.org.uk
