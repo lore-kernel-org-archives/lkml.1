@@ -1,92 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965543AbXCTRNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965544AbXCTRQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965543AbXCTRNx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 13:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXCTRNx
+	id S965544AbXCTRQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 13:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965529AbXCTRQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 13:13:53 -0400
-Received: from mail.chilan.com ([82.160.212.9]:39936 "EHLO mail.chilan.com"
+	Tue, 20 Mar 2007 13:16:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45059 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965543AbXCTRNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 13:13:52 -0400
-X-Greylist: delayed 1606 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Mar 2007 13:13:52 EDT
-From: "Grzegorz Chwesewicz" <grzegorz.chwesewicz@chilan.com>
-To: "Stefan Prechtel" <stefan.prechtel@googlemail.com>, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, "Len Brown" <lenb@kernel.org>,
-       "Andi Kleen" <ak@suse.de>, "john stultz" <johnstul@us.ibm.com>
-Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
-Date: Tue, 20 Mar 2007 17:47:02 +0100
-Message-Id: <20070320164604.M60273@chilan.com>
-In-Reply-To: <b93822910703200123g5b3ac0e4n1ba1122a7e90a838@mail.gmail.com>
-References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com> <1174326499.13341.517.camel@localhost.localdomain> <b93822910703191153x20249f00vb604a0eda075a23a@mail.gmail.com> <1174332477.13341.561.camel@localhost.localdomain> <b93822910703191249i40a70418ka8165da52070ae82@mail.gmail.com> <1174334646.13341.577.camel@localhost.localdomain> <b93822910703191335i236cdc4av59cc9fd0685537ec@mail.gmail.com> <1174337777.13341.621.camel@localhost.localdomain> <b93822910703191451o216a8931v9023b174fdef750@mail.gmail.com> <1174353329.13341.762.camel@localhost.localdomain> <b93822910703200123g5b3ac0e4n1ba1122a7e90a838@mail.gmail.com>
-X-Mailer: OpenWebMail 2.52 20061019
-X-OriginatingIP: 82.160.213.5 (ceho)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-2
+	id S965544AbXCTRQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 13:16:58 -0400
+Date: Tue, 20 Mar 2007 13:16:48 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Andrew Morton <akpm@osdl.org>, tglx@linutronix.de,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] Export not_critical_when_idle feature in workqueue and use it in ondemand
+Message-ID: <20070320171648.GB19781@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Andrew Morton <akpm@osdl.org>, tglx@linutronix.de,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070320145812.GB20671@redhat.com> <653FFBB4508B9042B5D43DC9E18836F522F9B7@scsmsx415.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F522F9B7@scsmsx415.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have HP nx6325. I've tried to use WARN_ON_ONCE patch, but I don't see
-nothing special in dmesg. Just in case I'm posting my
-dmesg_2.6.20_WARN_ON_ONCE_on_battery log on
-http://bugzilla.kernel.org/show_bug.cgi?id=8235 .
+On Tue, Mar 20, 2007 at 10:04:18AM -0700, Pallipadi, Venkatesh wrote:
 
-Below I post output of my /proc interrupts (10 sec. delay between reads).
+ > >just for kicks (actually because I was seeing the negative effects
+ > >of not having this diff) I threw this in the Fedora devel kernel.
+ > >Got a few people reporting softlockups during shutdown.
+ > >jpeg from one user attached..
+ > 
+ > Thanks for the report. I will take a look at this message.
+ > Looks like, this error is either coming from rmmod or changing the
+ > governor to default from ondemand during reboot. Does Fedora
+ > use ondemand as a module and rmmod on reboot or is it builtin?
 
-#########################
+Yes, it's modular.
 
-2.6.20_ac:
+	Dave
 
-           CPU0       CPU1
-  0:      73190          0  local-APIC-edge-fasteio   timer
-LOC:      72967      72966
-
-           CPU0       CPU1
-  0:      83196          0  local-APIC-edge-fasteio   timer
-
-LOC:      82974      82973
-
-#########################
-
-2.6.20_battery:
-
-           CPU0       CPU1
-  0:     468590          0  local-APIC-edge-fasteio   timer
-LOC:     468410     468409
-
-           CPU0       CPU1
-  0:     478596          0  local-APIC-edge-fasteio   timer
-LOC:     478417     478416
-
-#########################
-
-2.6-git_ac:
-
-           CPU0       CPU1
-  0:        262          0  local-APIC-edge-fasteoi   timer
-LOC:      66041      66041
-
-           CPU0       CPU1
-  0:        262          0  local-APIC-edge-fasteoi   timer
-LOC:      76067      76067
-
-#########################
-
-2.6-git_battery:
-
-           CPU0       CPU1
-  0:        261          0  local-APIC-edge-fasteoi   timer
-LOC:      29007      29015
-
-           CPU0       CPU1
-  0:        261          0  local-APIC-edge-fasteoi   timer
-LOC:      29189      29200
-
-#########################
-
-Other interesting thing on 2.6-git is that when I press a key on keyboard it
-doesn't repeat (on battery), but it repeats on 2.6-git on ac.
-
---
-Greetings - Grzegorz Chwesewicz
+-- 
+http://www.codemonkey.org.uk
