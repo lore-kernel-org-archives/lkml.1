@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbXCTH5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbXCTIDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932396AbXCTH5n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 03:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbXCTH5n
+	id S1753295AbXCTIDS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 04:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXCTIDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 03:57:43 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:48039 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932396AbXCTH5m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 03:57:42 -0400
-Message-ID: <45FF93C8.4070602@cosmosbay.com>
-Date: Tue, 20 Mar 2007 08:56:56 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-CC: Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
-       Christoph Lameter <clameter@sgi.com>, "ast@domdv.de" <ast@domdv.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-References: <20070319141038.212d4ac9.akpm@linux-foundation.org>  <az5Ytbv5.1174339536.7416370.penberg@cs.helsinki.fi>  <20070319144100.8a87f288.akpm@linux-foundation.org> <84144f020703200014j1ec8a6feq9828fd8739beff18@mail.gmail.com> <45FF8FB2.3060601@cosmosbay.com> <Pine.LNX.4.64.0703200943430.3622@sbz-30.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0703200943430.3622@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 20 Mar 2007 08:57:05 +0100 (CET)
+	Tue, 20 Mar 2007 04:03:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59130 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753293AbXCTIDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 04:03:15 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18Rbypp1GoRN6MC86ZlFrrpctfSKJhiRR177ILjLK
+	70ZhfLrTH0heOH
+Subject: Re: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Xavier Bestel <xavier.bestel@free.fr>, Mark Lord <lkml@rtr.ca>,
+       Al Boldi <a1426z@gawab.com>, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Nicholas Miell <nmiell@comcast.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070320061152.GW943@1wt.eu>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703172048.46267.kernel@kolivas.org>
+	 <1174125534.7734.2.camel@Homer.simpson.net>
+	 <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca>
+	 <1174321617.30876.69.camel@frg-rhel40-em64t-04> <45FEBBF5.9060002@rtr.ca>
+	 <1174322580.30876.72.camel@frg-rhel40-em64t-04>
+	 <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
+	 <20070320061152.GW943@1wt.eu>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 09:03:07 +0100
+Message-Id: <1174377787.9756.21.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka J Enberg a écrit :
-> Thanks for the profile. I still wonder where exactly thouse super-hot 
-> call-sites are...
-> 
+On Tue, 2007-03-20 at 07:11 +0100, Willy Tarreau wrote:
 
-In this case, it's a typical network server
+> Also, while I don't agree with starting to renice X to get something usable,
+> it seems real that there's something funny on Mike's system which makes it
+> behave particularly strangely when combined with RSDL, because other people
+> in comparable tests (including me) have found X perfectly smooth even with
+> loads in the tens or even hundreds. I really suspect that we will find a bug
+> in RSDL which triggers the problem and that this fix will help discover
+> another problem on Mike's hardware which was not triggered by mainline.
 
-Each time a packet is sent to or received from network, network stack has to 
-allocate/free a skb (kmem_cache_alloc()/kmem_cache_free() and its data 
-(kmalloc/kfree)
+I don't _think_ there's anything funny in my system, and Con said it was
+the expected behavior with my testcase, but I won't rule it out.
 
-Other paths are for example dentries allocations, file allocations, ... really 
-  many spots for some workloads.
+Moving right along to the bugs part, I hope others are looking as well,
+and not only talking.
+
+One area that looks pretty fishy to me is cross-cpu wakeups and task
+migration.  p->rotation appears to lose all meaning when you cross the
+cpu boundary, and try_to_wake_up()is using that information in the
+cross-cpu case.  In pull_task() OTOH, it checks to see if the task ran
+on the remote cpu (at all, hmm), and if so tags the task accordingly.
+It is not immediately obvious to me why this would be a good thing
+though, because quotas of one runqueue don't appear to have any relation
+to quotas of some other runqueue.  (i'm going to it that this old
+information is meaningless)
+
+	-Mike
 
