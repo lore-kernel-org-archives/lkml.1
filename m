@@ -1,37 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934057AbXCTUK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934058AbXCTUKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934057AbXCTUK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 16:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbXCTUK3
+	id S934058AbXCTUKw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 16:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbXCTUKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 16:10:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47612 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934051AbXCTUK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 16:10:28 -0400
-Message-ID: <46003F5F.2090606@redhat.com>
-Date: Tue, 20 Mar 2007 16:09:03 -0400
-From: Jon Masters <jcm@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Sergey Vlasov <vsu@altlinux.ru>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, mit-devel@lists.printk.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Subject: Re: [mit-devel] Re: module-init-tools-3.3-pre10 available
-References: <45DD0031.9010808@redhat.com> <20070222170732.22c1320b.vsu@altlinux.ru> <45DDAE24.6080905@redhat.com> <20070223120136.12ea11db@home.brethil> <45DF0B42.2080208@redhat.com> <Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr> <45E06439.40403@redhat.com> <20070320200345.GB4021@procyon.home>
-In-Reply-To: <20070320200345.GB4021@procyon.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 20 Mar 2007 16:10:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52894 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934058AbXCTUKv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 16:10:51 -0400
+Date: Tue, 20 Mar 2007 21:14:05 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org,
+       dhowells@redhat.com
+Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try
+ #3]
+Message-ID: <20070320211405.3e1d2305@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070320195856.12853.63473.stgit@warthog.cambridge.redhat.com>
+References: <20070320195856.12853.63473.stgit@warthog.cambridge.redhat.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergey Vlasov wrote:
+> These patches together supply secure client-side RxRPC connectivity as a Linux
+> kernel socket family.  Only the transport/session side is supplied - the
+> presentation side (marshalling the data) is left to the client.  Copies of the
+> patches can be found here:
 
-> Has a final decision about generated files been made?  I don't see any
-> updates in the git repo, and man pages are still broken
-
-I'm doing some patching this afternoon anyway, and it's on my todo.
-
-Jon.
+Some of them don't seem to be making it through to the list and are
+dropped each time btw
