@@ -1,67 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934096AbXCTXoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750907AbXCTXs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934096AbXCTXoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 19:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934094AbXCTXoY
+	id S1750907AbXCTXs2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 19:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXCTXs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 19:44:24 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37932 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934089AbXCTXoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 19:44:22 -0400
-Date: Tue, 20 Mar 2007 16:43:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Miller <davem@davemloft.net>,
-       virtualization@lists.linux-foundation.org, jbeulich@novell.com,
-       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       virtualization@lists.osdl.org, anthony@codemonkey.ws,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-In-Reply-To: <20070320202352.GF4286@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0703201626030.6730@woody.linux-foundation.org>
-References: <20070319.204712.118947830.davem@davemloft.net>
- <m13b40wnrb.fsf@ebiederm.dsl.xmission.com> <200703201428.50564.ak@suse.de>
- <m1ircvswzz.fsf@ebiederm.dsl.xmission.com> <20070320174159.GA4286@bingen.suse.de>
- <Pine.LNX.4.64.0703200947501.6730@woody.linux-foundation.org>
- <20070320180359.GB4286@bingen.suse.de> <Pine.LNX.4.64.0703201022040.6730@woody.linux-foundation.org>
- <20070320192118.GD4286@bingen.suse.de> <Pine.LNX.4.64.0703201145570.6730@woody.linux-foundation.org>
- <20070320202352.GF4286@bingen.suse.de>
+	Tue, 20 Mar 2007 19:48:28 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:41455 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbXCTXs1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 19:48:27 -0400
+Message-ID: <460072B5.9060104@freedesktop.org>
+Date: Tue, 20 Mar 2007 16:48:05 -0700
+From: Josh Triplett <josh@freedesktop.org>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-sparse@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Sparse participating in Google Summer of Code 2007; apply by March
+ 24th
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD4DDABB1E6D8CA751CDD9A37"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD4DDABB1E6D8CA751CDD9A37
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+[Sending this to LKML as well, to reach more of Sparse's user community.]=
 
 
-On Tue, 20 Mar 2007, Andi Kleen wrote:
+Google has accepted Sparse as a mentoring organization for Summer of Code=
 
-> On Tue, Mar 20, 2007 at 11:49:39AM -0700, Linus Torvalds wrote:
-> > 
-> > the thing is, I'd rather see a long backtrace that is hard to decipher but 
-> > that *never* *ever* causes any additional problems, over a pretty one.
-> 
-> Well it causes additional problems. We had some cases where it was really
-> hard to distingush garbage and the true call chain. I can probably dig
-> out some examples if you want.
+2007.  Interested students can propose work on Sparse-related projects, w=
+ork
+on those projects over the summer, and receive a stipend from Google for =
+their
+work.
 
-Well, by "additional problems" _I_ mean things like "a warning turned into 
-a fatal oops and didn't get logged at all".
+Student application deadline: March 24th
 
-That's a lot more serious than "there were a few extra entries in the 
-traceback that caused us some confusion".
+Sparse, the semantic parser, provides a compiler frontend capable of pars=
+ing
+most of ANSI C as well as many GCC extensions, and a collection of sample=
 
-And yes, we had exactly that case happen several times.
+compiler backends, including a static analyzer also called 'sparse'. Spar=
+se
+provides a set of annotations designed to convey semantic information abo=
+ut
+types, such as what address space pointers point to, or what locks a func=
+tion
+acquires or releases.  The Linux kernel community uses Sparse to check fo=
+r
+common errors in kernel source code.  Other projects, such as X.org, have=
 
-> With lots of call backs (e.g. common with sysfs) it is also frequently
-> not obvious how the call chains are supposed to go.
+begun to use Sparse as well.
 
-With callbacks, it's actually often nice to see the callback data that is 
-on the stack (and it's very obvious from the "<function+0>" ksymtab 
-explanation: you can't have a <function+0> that is anything but a callback 
-pointer (since it isn't a return address).
+Working on a Sparse project gives students the opportunity to put many co=
+re CS
+skills into practice on a real-world compiler and static analyzer, and ga=
+in
+some recognition within the prominent community of Free and Open Source
+Software developers working on the Linux kernel.
 
-		Linus
+You can see the current Summer of Code project list for Sparse at
+<http://www.kernel.org/pub/software/devel/sparse/soc.html>, or propose an=
+ idea
+of your own.
+
+Students need to apply by March 24th.  You can apply at
+<http://code.google.com/soc>.
+
+Any Sparse developers interested in mentoring projects over the summer (w=
+hich
+primarily consists of answering questions about Sparse, such as on the ma=
+iling
+list), please apply via the Google Summer of Code mentorship application =
+at
+http://code.google.com/soc/mentor.html , and check the "Sparse" box.  Ple=
+ase
+also mail me with details.
+
+Any Linux developers interested in seeing Sparse do something that it can=
+'t
+currently do, please propose possible Summer of Code projects as soon as =
+you
+can, and I'll add them to
+http://www.kernel.org/pub/software/devel/sparse/soc.html .
+
+- Josh Triplett
+
+
+--------------enigD4DDABB1E6D8CA751CDD9A37
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGAHK1GJuZRtD+evsRAiOnAJ9LM0ykguk7Kl+jisIOfIFqoBgLgwCgjUAM
+E+J84cpgjYtp51vT2/3p6/4=
+=HjPE
+-----END PGP SIGNATURE-----
+
+--------------enigD4DDABB1E6D8CA751CDD9A37--
