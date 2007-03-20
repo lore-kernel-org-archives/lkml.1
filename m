@@ -1,93 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbXCTWJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbXCTWJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbXCTWJS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 18:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXCTWJR
+	id S1752024AbXCTWJa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 18:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXCTWJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 18:09:17 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52284 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751979AbXCTWJP (ORCPT
+	Tue, 20 Mar 2007 18:09:27 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:55668 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009AbXCTWJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 18:09:15 -0400
-Message-ID: <46005B89.5070301@vmware.com>
-Date: Tue, 20 Mar 2007 14:09:13 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 20 Mar 2007 18:09:21 -0400
+Message-ID: <46005B7D.3090701@cosmosbay.com>
+Date: Tue, 20 Mar 2007 23:09:01 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org>
-In-Reply-To: <46000C7E.4070001@goop.org>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Christoph Lameter <christoph@lameter.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of
+ virt_to_slab(objp); nodeid = slabp->nodeid;
+References: <20070320181235.77d28864.dada1@cosmosbay.com> <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org>
+In-Reply-To: <20070320213218.GA13952@one.firstfloor.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 20 Mar 2007 23:09:03 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+Andi Kleen a écrit :
+>>> Is it possible virt_to_slab(objp)->nodeid being different from pfn_to_nid(objp) ?
+>> It is possible the page allocator falls back to another node than 
+>> requested. We would need to check that this never occurs.
+> 
+> The only way to ensure that would be to set a strict mempolicy.
+> But I'm not sure that's a good idea -- after all you don't want
+> to fail an allocation in this case.
+> 
+> But pfn_to_nid on the object like proposed by Eric should work anyways.
+> But I'm not sure the tables used for that will be more often cache hot
+> than the slab.
 
->> Yeah, disable interrupts, and set a flag that the fake "sti" can test, and 
->> just return without doing anything.
->>
->> (You may or may not also need to do extra work to Ack the hardware 
->> interrupt etc, which may be irq-controller specific. Once the CPU has 
->> accepted the interrupt, you may not be able to just leave it dangling)
->>   
->>     
->
-> So it would be something like:
->
->     pda.intr_mask = 1;		/* disable interrupts */
->     ...
->     pda.intr_mask = 0;		/* enable interrupts */
->     if (xchg(&pda.intr_pending, 0))	/* check pending */
->   
+pfn_to_nid() on most x86_64 machines access one cache line (struct memnode).
 
-Well, can't do xchg, since it implies #LOCK, and you'll lose more than 
-you gain on the processors where it matters.  Cmpxchg is fine, but 
-processor dependent.
+Node 0 MemBase 0000000000000000 Limit 0000000280000000
+Node 1 MemBase 0000000280000000 Limit 0000000480000000
+NUMA: Using 31 for the hash shift.
 
-Or, just make the interrupt handlers use software resend for IRQs when 
-pda.intr_mask is set to zero.  Now, local_irq_save / restore are very 
-pretty:
+On this example, we use only 8 bytes of memnode.embedded_map[] to find nid of 
+all 16 GB of ram. On profiles I have, memnode is always hot (no cache miss on it).
 
-int local_irq_save(void)
-{
-   int tmp = pda.intr_mask;
-   pda.intr_mask = 0;
-   /*
-    * note there is a window here where local IRQs notice intr_mask == 0
-    * in that case, they will attempt to resend the IRQ via a tasklet,
-    * and will succeed, albeit through a slightly longer path
-    */
-   local_bh_disable();
-   return tmp;
-}
+While virt_to_slab() has to access :
 
-void local_irq_restore(int enabled)
-{
-    pda.intr_mask = enabled;
-    /*
-     * note there is a window here where softirqs are not processed by
-     * the interrupt handler, but that is not a problem, since it will
-     * get done here in the outer enable of any nested pair.
-     */
-    if (enabled)
-        local_bh_enable();
-}
+1) struct page -> page_get_slab() (page->lru.prev) (one cache miss)
+2) struct slab -> nodeid (one other cache miss)
 
-I think Ingo's suggestion of using the hardirq tracing is another way 
-that could work, but it seems to be too heavyweight and tied too much to 
-the lockdep verification code - plus it inserts additional 
-raw_irq_disable in places that seem counter to the goal of getting rid 
-of them in the first place.  Perhaps I'm misunderstanding the code, though.
 
-Zach
+So using pfn_to_nid() would avoid 2 cache misses.
+
+I understand we want to do special things (fallback and such tricks) at 
+allocation time, but I believe that we can just trust the real nid of memory 
+at free time.
+
+
