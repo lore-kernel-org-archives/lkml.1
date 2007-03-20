@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965418AbXCTRCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965456AbXCTRE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965418AbXCTRCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 13:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965346AbXCTRCq
+	id S965456AbXCTRE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 13:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965489AbXCTRE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 13:02:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54051 "EHLO ogre.sisk.pl"
+	Tue, 20 Mar 2007 13:04:28 -0400
+Received: from mga02.intel.com ([134.134.136.20]:24255 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965491AbXCTRCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 13:02:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: "reboot" swsusp mode leaves moon icon blinking
-Date: Tue, 20 Mar 2007 18:05:57 +0100
-User-Agent: KMail/1.9.5
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-References: <20070320123245.GA19019@elf.ucw.cz>
-In-Reply-To: <20070320123245.GA19019@elf.ucw.cz>
+	id S965456AbXCTRE0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 13:04:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,305,1170662400"; 
+   d="scan'208"; a="212841736:sNHT23475893"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703201805.58299.rjw@sisk.pl>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/2] Export not_critical_when_idle feature in workqueue and use it in ondemand
+Date: Tue, 20 Mar 2007 10:04:18 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F522F9B7@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <20070320145812.GB20671@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] Export not_critical_when_idle feature in workqueue and use it in ondemand
+thread-index: AcdrADzgHFtS5xcSS+eUJDNxL5nyUgACkjHw
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Dave Jones" <davej@redhat.com>
+Cc: "Andrew Morton" <akpm@osdl.org>, <tglx@linutronix.de>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 20 Mar 2007 17:04:18.0942 (UTC) FILETIME=[CC4AD1E0:01C76B11]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 20 March 2007 13:32, Pavel Machek wrote:
-> Hi!
-> 
-> ...and cause is really simple.
-> 
-> During resume, we do not know that "reboot" method was used, so we
-> assume plaform and make the led blink...
-> 
-> Unfortunately I see no easy solution, and this may/will cause other
-> problems -- in case of broken bios and user telling us not to call
-> that bios, we'll call it anyway.
-> 
-> (Ouch and I think this is regression after 2.6.20?)
+ 
 
-I'm not sure, will check that later.
+>-----Original Message-----
+>From: Dave Jones [mailto:davej@redhat.com] 
+>Sent: Tuesday, March 20, 2007 7:58 AM
+>To: Pallipadi, Venkatesh
+>Cc: Andrew Morton; tglx@linutronix.de; linux-kernel
+>Subject: Re: [PATCH 2/2] Export not_critical_when_idle feature 
+>in workqueue and use it in ondemand
+>
+>On Fri, Mar 16, 2007 at 03:09:03PM -0700, Venkatesh Pallipadi wrote:
+> > 
+> > 
+> > Add a new not_critical_when_idle parameter to 
+>queue_delayed_work_on(). This
+> > parameter can be used to schedule work that are 'unimportant' when
+> > CPU is idle and can be called later, when CPU eventually 
+>comes out of idle.
+> > 
+> > Use this parameter in cpufreq ondemand governor.
+> >  
+> > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>
+>just for kicks (actually because I was seeing the negative effects
+>of not having this diff) I threw this in the Fedora devel kernel.
+>Got a few people reporting softlockups during shutdown.
+>jpeg from one user attached..
+>
 
-The solution would be to pass the information about the suspend mode used
-in the image header, I think (that's what uswsusp does after my recent patch).
+Thanks for the report. I will take a look at this message.
+Looks like, this error is either coming from rmmod or changing the
+governor to default from ondemand during reboot. Does Fedora
+use ondemand as a module and rmmod on reboot or is it builtin?
 
-Greetings,
-Rafael
+Thanks,
+Venki 
