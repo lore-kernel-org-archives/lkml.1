@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbXCTW0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbXCTWlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752051AbXCTW0c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 18:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXCTW0c
+	id S1752054AbXCTWlr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 18:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbXCTWlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 18:26:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59101 "EHLO mx1.redhat.com"
+	Tue, 20 Mar 2007 18:41:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:35573 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752022AbXCTW0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 18:26:31 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070320213657.15afe5fa@lxorguk.ukuu.org.uk> 
-References: <20070320213657.15afe5fa@lxorguk.ukuu.org.uk>  <20070320195856.12853.63473.stgit@warthog.cambridge.redhat.com> 
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org,
-       dhowells@redhat.com
-Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try #3] 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 20 Mar 2007 22:26:13 +0000
-Message-ID: <15256.1174429573@redhat.com>
+	id S1752042AbXCTWlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 18:41:45 -0400
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+	callsites to make them patchable
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Andi Kleen <ak@muc.de>, David Miller <davem@davemloft.net>,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+In-Reply-To: <m1mz27sy82.fsf@ebiederm.dsl.xmission.com>
+References: <20070316.023331.59468179.davem@davemloft.net>
+	 <45FB005D.9060809@goop.org>
+	 <1174127638.8897.75.camel@localhost.localdomain>
+	 <20070318.003309.71088169.davem@davemloft.net>
+	 <20070318120814.GA45869@muc.de>
+	 <1174272469.11680.23.camel@localhost.localdomain>
+	 <m1648xxf93.fsf@ebiederm.dsl.xmission.com>
+	 <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
+	 <1174348905.11680.54.camel@localhost.localdomain>
+	 <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org>
+	 <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org>
+	 <m1mz27sy82.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Wed, 21 Mar 2007 09:41:16 +1100
+Message-Id: <1174430476.11680.123.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Tue, 2007-03-20 at 09:58 -0600, Eric W. Biederman wrote:
+> Looking at the above code snippet.  I guess it is about time to
+> merge our per_cpu and pda variables...
 
-> - recvmsg not supporting MSG_TRUNC is rather weird and really ought to be
-> fixed one day as its useful to find out the sizeof message pending when
-> combined with MSG_PEEK
+Indeed, thanks for the prod.  Now 2.6.21-rc4-mm1 is out, I'll resend the
+patches.
 
-Hmmm...  I hadn't considered that.  I assumed MSG_TRUNC not to be useful as
-arbitrarily chopping bits out of the request or reply would seem to be
-pointless.
+Cheers,
+Rusty.
 
-> - RXRPC_MIN_SECURITY_LEVEL reads into rx->min_sec_level and then if it is
-> invalid reports an error but doesn't restore the valid level
 
-Fixed.
-
-> - Why does rxrpc_writable always return 0 ?
-
-Good point.  That's slightly tricky to deal with as output messages don't
-remain queued on the socket struct itself.  Hmmm...
-
-One thing I'd like to be able to do is pass the sk_buffs I've set up to UDP
-directly rather than having to call the UDP socket's sendmsg.  That'd eliminate
-a copy.  But I decided to get it working right first, then look at cute
-optimisations like that.
-
-Such a thing would also be useful for the AFS filesystem: it could pass skbuffs
-it has preloaded to AF_RXRPC, which would then hand them on to UDP.
-
-> - rxrpc_process_soft_ACKs doesn't itself limit and check acns->nAcks is
-> always below RXRPC_MAXACKS, as this is a stakc variable it ought to be
-> paranoid about it. I think its ok from the caller check but its very hard
-> to prove...
-
-nAcks is a uint8_t.  If that can exceed RXRPC_MAXACKS (255) then I suspect I'll
-have more pressing worries.  I could put a check in there, but the compiler
-would give me a warning:-/
-
-> It needs a lot more eyes/review due to the complexity and network
-> exposure though - not your fault, whoever designed RXRPC's 8)
-
-It's not an entirely insane protocol:-) Actually, part of the problem is Linux
-itself.
-
-David
