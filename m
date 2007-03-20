@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030780AbXCTAHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030776AbXCTAMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030780AbXCTAHz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 20:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030781AbXCTAHz
+	id S1030776AbXCTAMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 20:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030781AbXCTAMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 20:07:55 -0400
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:45910 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030780AbXCTAHy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 20:07:54 -0400
-X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Mar 2007 20:07:54 EDT
-Date: Tue, 20 Mar 2007 00:52:41 +0100
-From: Till Maas <opensource@till.name>
-Subject: unify encoding of files in Documentation
-To: linux-kernel@vger.kernel.org
-Message-id: <200703200052.49607.opensource@till.name>
-MIME-version: 1.0
-Content-type: multipart/signed; boundary=nextPart5472264.ica1RRm8TC;
- protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-transfer-encoding: 7bit
-X-Spam-Report: * -2.8 ALL_TRUSTED Did not pass through any untrusted hosts
-User-Agent: KMail/1.9.6
+	Mon, 19 Mar 2007 20:12:55 -0400
+Received: from mail.screens.ru ([213.234.233.54]:34128 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030776AbXCTAMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 20:12:54 -0400
+Date: Tue, 20 Mar 2007 03:13:10 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch 2/13] signal/timer/event fds v7 - signalfd core ...
+Message-ID: <20070320001310.GA327@tv-sign.ru>
+References: <send-serie.davidel@xmailserver.org.15249.1174348071.2>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <send-serie.davidel@xmailserver.org.15249.1174348071.2>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5472264.ica1RRm8TC
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On 03/19, Davide Libenzi wrote:
+>
+> +struct signalfd_lockctx {
+> +	struct task_struct *tsk;
+> +	struct sighand_struct *sighand;
+> +	unsigned long flags;
+> +};
 
-Hiyas,
+signalfd_lockctx is "private" to signalfd_lock/signalfd_unlock. But lk->sighand
+is used only by signalfd_lock(). I'd suggest to remove it.
 
-at the moment, some file in Documentation are utf-8 encoded and some are=20
-latin1 encoded. Therefore I propose to change the default encoding to utf-8=
-,=20
-because this is the encoding that may current linux distributions use.
+> +void signalfd_deliver(struct task_struct *tsk, int sig)
+> +{
+> +	struct sighand_struct *sighand = tsk->sighand;
+> +	struct signalfd_ctx *ctx, *tmp;
+> +
+> +	list_for_each_entry_safe(ctx, tmp, &sighand->sfdlist, lnk) {
+> +		/*
+> +		 * We use a negative signal value as a way to broadcast that the
+> +		 * sighand has been orphaned, so that we can notify all the
+> +		 * listeners about this. Remeber the ctx->sigmask is inverted,
+> +		 * so if the user is interested in a signal, that corresponding
+> +		 * bit will be zero.
+> +		 */
+> +		if (sig < 0) {
+> +			if (ctx->tsk == tsk) {
+> +				ctx->tsk = NULL;
+> +				list_del_init(&ctx->lnk);
+> +				wake_up(&ctx->wqh);
+> +			}
+> +		} else if (sig > 0) {
+> +			if (!sigismember(&ctx->sigmask, sig))
+> +				wake_up(&ctx->wqh);
+> +		}
+> +	}
+> +}
 
-I can send a patch, if required. If you want to change the encoding of a fi=
-le=20
-from latin1 to utf-8 you can use recode:
+I tried to avoid this comment, but can't help myself :)
 
-recode latin1..utf-8 file.txt
+This is a matter of taste, of course, but imho this is a classical "hide the
+problem" example.
 
-This changes the encoding in place.
+Why "else if (sig > 0)" ? sig can't be == 0. In my opinion, it is better to
+add BUG_ON(!sig), but use just "else".
 
-Regards,
-Till
-
-
-
-
---nextPart5472264.ica1RRm8TC
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBF/yJJ36qIRnusQIMRAlpLAJwMZSwfuzGevcMoGqkkWKAIKJYq0QCfUlCK
-hPNTZiruqGWyrZ8CghRsUCU=
-=19gz
------END PGP SIGNATURE-----
-
---nextPart5472264.ica1RRm8TC--
-
+Oleg.
 
