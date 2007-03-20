@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbXCTH1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbXCTH3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbXCTH1m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 03:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbXCTH1m
+	id S1753336AbXCTH3L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 03:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbXCTH3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 03:27:42 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51302 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbXCTH1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 03:27:41 -0400
-Date: Mon, 19 Mar 2007 23:27:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefan Priebe <stefan@prie.be>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Kernel 2.6.20 does not work anymore with SCSI or SATA on old
- Opteron / Xeon servers
-Message-Id: <20070319232732.854d7120.akpm@linux-foundation.org>
-In-Reply-To: <45FDA626.9000404@prie.be>
-References: <45FDA626.9000404@prie.be>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 20 Mar 2007 03:29:11 -0400
+Received: from rnd-off.balt.net ([195.14.167.137]:17020 "EHLO barclay.balt.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753336AbXCTH3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 03:29:10 -0400
+Subject: Re: Kernel Oops in  pl2303_shutdown()
+From: Zilvinas Valinskas <zilvinas@wilibox.com>
+Reply-To: zilvinas@wilibox.com
+To: Adrian Bunk <bunk@stusta.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070319163423.GV752@stusta.de>
+References: <1174318078.4601.77.camel@zv.wilibox.com>
+	 <20070319163423.GV752@stusta.de>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 09:07:31 +0200
+Message-Id: <1174374451.6023.2.camel@zv.wilibox.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Mar 2007 21:50:46 +0100 Stefan Priebe <stefan@prie.be> wrote:
+Hello Adrian,
 
-> Hello!
+reverting d9a7ecacac5f8274d2afce09aadcf37bdb42b93a does help. 
+thanks !
+
+
+On Mon, 2007-03-19 at 17:34 +0100, Adrian Bunk wrote:
+> On Mon, Mar 19, 2007 at 05:27:58PM +0200, Zilvinas Valinskas wrote:
+> > Hello, 
+> > 
+> > Before 2.6.21-rc4 (vanilla) serial was oopsing if I pull usb-serial
+> > cable while minicom was running. Now it doesn't matter if minicom is
+> > running or minicom closed, pulling serial cable results in such oops.
+> >...
 > 
-> We've a very strange Problem with Kernel 2.6.20.x
+> Does the patch from [1] fix it?
 > 
-> If i try to access a SCSI or SATA Disk (tested with Adaptec U320 
-> ASC-29320, ICP Vortex 9024, Promise TX300) the whole server hangs - no 
-> output - no error on the screen - but it hangs completely. But it does 
-> not happen on all our systems affected are only old 604pin xeons and 
-> socket 940 Opterons. Socket F Opteron or 771 Xeons does work fine.
+> cu
+> Adrian
 > 
-> I've also testet apci=off pci=routeirq but both does not help. The 
-> systems work fine with 2.6.19.x and before.
+> [1] http://lkml.org/lkml/2007/3/13/217
+> 
 
-Well that's a bit sad.
-
-Could you please set up netconsole
-(Documentation/networking/netconsole.txt) and add initcall_debug to the
-kernel boot command line and then send us the full bootup logs?
-
-(Even better: serial console with earlyprintk).
-
-If that doesn't shed any light, we might have to ask you to perform a
-git-bisect search to find the buggy commit, I'm afraid.
