@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965822AbXCTSjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965832AbXCTSjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965822AbXCTSjA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 14:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965621AbXCTSij
+	id S965832AbXCTSjB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 14:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965663AbXCTSih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 14:38:39 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:51450 "EHLO
+	Tue, 20 Mar 2007 14:38:37 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51456 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965730AbXCTSiD (ORCPT
+	with ESMTP id S965621AbXCTSiE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 14:38:03 -0400
+	Tue, 20 Mar 2007 14:38:04 -0400
 X-AuthUser: davidel@xmailserver.org
 From: Davide Libenzi <davidel@xmailserver.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
@@ -17,15 +17,14 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Date: Tue, 20 Mar 2007 11:37:14 -0700
-Subject: [patch 8/13] signal/timer/event fds v8 - timerfd wire up x86_64 arch ...
+Subject: [patch 9/13] signal/timer/event fds v8 - timerfd compat code ...
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.28743.1174415838.8>
+Message-ID: <send-serie.davidel@xmailserver.org.28743.1174415838.9>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch wire the timerfd system call to the x86_64 architecture.
-
+This patch implement the necessary compat code for the timerfd system call.
 
 
 Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
@@ -35,30 +34,74 @@ Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
 
-Index: linux-2.6.21-rc3.quilt/arch/x86_64/ia32/ia32entry.S
+Index: linux-2.6.21-rc3.quilt/fs/compat.c
 ===================================================================
---- linux-2.6.21-rc3.quilt.orig/arch/x86_64/ia32/ia32entry.S	2007-03-19 19:01:49.000000000 -0700
-+++ linux-2.6.21-rc3.quilt/arch/x86_64/ia32/ia32entry.S	2007-03-19 19:01:55.000000000 -0700
-@@ -720,4 +720,5 @@
- 	.quad sys_getcpu
- 	.quad sys_epoll_pwait
- 	.quad sys_signalfd		/* 320 */
-+	.quad sys_timerfd
- ia32_syscall_end:		
-Index: linux-2.6.21-rc3.quilt/include/asm-x86_64/unistd.h
+--- linux-2.6.21-rc3.quilt.orig/fs/compat.c	2007-03-19 19:01:51.000000000 -0700
++++ linux-2.6.21-rc3.quilt/fs/compat.c	2007-03-19 19:01:57.000000000 -0700
+@@ -2257,3 +2257,23 @@
+ 	return sys_signalfd(ufd, ksigmask, sizeof(sigset_t));
+ }
+ 
++
++asmlinkage long compat_sys_timerfd(int ufd, int clockid, int flags,
++				   const struct compat_itimerspec __user *utmr)
++{
++	long res;
++	struct itimerspec t;
++	struct itimerspec __user *ut;
++
++	res = -EFAULT;
++	if (get_compat_itimerspec(&t, utmr))
++		goto err_exit;
++	ut = compat_alloc_user_space(sizeof(*ut));
++	if (copy_to_user(ut, &t, sizeof(t)) )
++		goto err_exit;
++
++	res = sys_timerfd(ufd, clockid, flags, ut);
++err_exit:
++	return res;
++}
++
+Index: linux-2.6.21-rc3.quilt/include/linux/compat.h
 ===================================================================
---- linux-2.6.21-rc3.quilt.orig/include/asm-x86_64/unistd.h	2007-03-19 19:01:49.000000000 -0700
-+++ linux-2.6.21-rc3.quilt/include/asm-x86_64/unistd.h	2007-03-19 19:01:55.000000000 -0700
-@@ -621,8 +621,10 @@
- __SYSCALL(__NR_move_pages, sys_move_pages)
- #define __NR_signalfd		280
- __SYSCALL(__NR_signalfd, sys_signalfd)
-+#define __NR_timerfd		281
-+__SYSCALL(__NR_timerfd, sys_timerfd)
+--- linux-2.6.21-rc3.quilt.orig/include/linux/compat.h	2007-03-19 19:01:01.000000000 -0700
++++ linux-2.6.21-rc3.quilt/include/linux/compat.h	2007-03-19 19:01:57.000000000 -0700
+@@ -225,6 +225,11 @@
+ 	return lhs->tv_nsec - rhs->tv_nsec;
+ }
  
--#define __NR_syscall_max __NR_signalfd
-+#define __NR_syscall_max __NR_timerfd
++extern int get_compat_itimerspec(struct itimerspec *dst,
++				 const struct compat_itimerspec __user *src);
++extern int put_compat_itimerspec(struct compat_itimerspec __user *dst,
++				 const struct itimerspec *src);
++
+ asmlinkage long compat_sys_adjtimex(struct compat_timex __user *utp);
  
- #ifndef __NO_STUBS
- #define __ARCH_WANT_OLD_READDIR
+ extern int compat_printk(const char *fmt, ...);
+Index: linux-2.6.21-rc3.quilt/kernel/compat.c
+===================================================================
+--- linux-2.6.21-rc3.quilt.orig/kernel/compat.c	2007-03-19 19:01:01.000000000 -0700
++++ linux-2.6.21-rc3.quilt/kernel/compat.c	2007-03-19 19:01:57.000000000 -0700
+@@ -475,8 +475,8 @@
+ 	return min_length;
+ }
+ 
+-static int get_compat_itimerspec(struct itimerspec *dst, 
+-				 struct compat_itimerspec __user *src)
++int get_compat_itimerspec(struct itimerspec *dst,
++			  const struct compat_itimerspec __user *src)
+ { 
+ 	if (get_compat_timespec(&dst->it_interval, &src->it_interval) ||
+ 	    get_compat_timespec(&dst->it_value, &src->it_value))
+@@ -484,8 +484,8 @@
+ 	return 0;
+ } 
+ 
+-static int put_compat_itimerspec(struct compat_itimerspec __user *dst, 
+-				 struct itimerspec *src)
++int put_compat_itimerspec(struct compat_itimerspec __user *dst,
++			  const struct itimerspec *src)
+ { 
+ 	if (put_compat_timespec(&src->it_interval, &dst->it_interval) ||
+ 	    put_compat_timespec(&src->it_value, &dst->it_value))
 
