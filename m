@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXCTNyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXCTOCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932810AbXCTNyg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 09:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933180AbXCTNyg
+	id S933212AbXCTOCS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 10:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXCTOCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 09:54:36 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43860 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932810AbXCTNyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 09:54:35 -0400
-Date: Tue, 20 Mar 2007 15:00:49 +0100
-From: Jan Kara <jack@suse.cz>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Folkert van Heusden <folkert@vanheusden.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: dquot.c: possible circular locking Re: [2.6.20] BUG: workqueue leaked lock
-Message-ID: <20070320140049.GC14319@duck.suse.cz>
-References: <20070315191749.GS31960@vanheusden.com> <20070320111701.GB1751@ff.dom.local> <20070320112253.GC1751@ff.dom.local> <20070320113151.GA12462@ff.dom.local> <20070320121909.GB14319@duck.suse.cz> <20070320134446.GA12517@ff.dom.local>
+	Tue, 20 Mar 2007 10:02:18 -0400
+Received: from mx2.suse.de ([195.135.220.15]:52338 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933212AbXCTOCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 10:02:18 -0400
+From: Danny Kukawka <dkukawka@suse.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] add Fujitsu Siemens Tablet PC devices to 8250_pnp.c
+Date: Tue, 20 Mar 2007 15:01:41 +0100
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070320134446.GA12517@ff.dom.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703201501.42209.dkukawka@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 20-03-07 14:44:46, Jarek Poplawski wrote:
-> On Tue, Mar 20, 2007 at 01:19:09PM +0100, Jan Kara wrote:
-> > On Tue 20-03-07 12:31:51, Jarek Poplawski wrote:
-> > > On Tue, Mar 20, 2007 at 12:22:53PM +0100, Jarek Poplawski wrote:
-> > > > On Tue, Mar 20, 2007 at 12:17:01PM +0100, Jarek Poplawski wrote:
-> > > > ...
-> > > > > IMHO lockdep found that two locks are taken in different order:
-> > > > > 
-> > > > > -> #1: 1) tty_mutex in con_console() 2) dqptr_sem (somewhere later)
-> > > > > -> #0: 1) dqptr_sem 2) tty_console in dquot_alloc_space() with print_warning()
-> > > 
-> > > Once more - should be:
-> > >  -> #1: 1) tty_mutex in con_close() 2) dqptr_sem (somewhere later)
-> > >  -> #0: 1) dqptr_sem 2) tty_mutex in dquot_alloc_space() with print_warning()
-> >   Yes, I was looking at it. Hmm, we can possibly get rid of tty_mutex being
-> > acquired under dqptr_sem in quota code. But looking at the path from
-> > con_close() there's another inversion with i_mutex which is also acquired
-> > along the path for sysfs. And we can hardly get rid of it in the quota code.
-> >   Now none of these is a real deadlock as quota should never call
-> > print_warning() for sysfs (it doesn't use quota) but still it's nasty. I
-> > suppose tty_mutex is above i_mutex because of those sysfs calls and it
-> > seems sysfs must be called under tty_mutex because of races with
-> > init_dev(). So it's not easy to get rid of that dependency either.
-> 
-> I wonder if this cannot be done with a workqueue (message to a buffer,
-> maybe after try_lock on tty_mutex) and BTW isn't there any "modern"
-> way to queue console messages like these?
-  I don't know about any such way...
+adds device ids of two Fujitsu Siemens Tablet PCs to pnp_dev_table
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Signed-off-by: Danny Kukawka <dkukawka@suse.de>
+
+--- linux-2.6.21-rc4/drivers/serial/8250_pnp.c	2007-03-19 21:42:43.000000000 +0100
++++ linux-2.6.21-rc5/drivers/serial/8250_pnp.c	2007-03-19 21:55:53.000000000 +0100
+@@ -340,6 +340,9 @@ static const struct pnp_device_id pnp_de
+ 	{       "FUJ02B8",              0 },
+ 	{       "FUJ02B9",              0 },
+ 	{       "FUJ02BC",              0 },
++	/* Fujitsu Wacom Tablet PC devices */
++	{	"FUJ02E5",		0	},
++	{	"FUJ02E6",		0	},
+ 	/* Rockwell's (PORALiNK) 33600 INT PNP */
+ 	{	"WCI0003",		0	},
+ 	/* Unkown PnP modems */
