@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbXCTOlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbXCTOnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933536AbXCTOlE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 10:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933537AbXCTOlE
+	id S933537AbXCTOnx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 10:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933535AbXCTOnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 10:41:04 -0400
-Received: from mailout18.yourhostingaccount.com ([65.254.253.144]:39527 "EHLO
-	mailout18.yourhostingaccount.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933536AbXCTOlB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 10:41:01 -0400
-X-Greylist: delayed 1782 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Mar 2007 10:41:00 EDT
-Message-ID: <000601c76af9$a0ce3ce0$0864a8c0@scs1>
-From: "Tasos Parisinos" <t.parisinos@sciensis.com>
-To: "Francois Romieu" <romieu@fr.zoreil.com>
-Cc: <herbert@gondor.apana.org.au>, <linux-kernel@vger.kernel.org>
-References: <45FEB8B7.7020200@sciensis.com> <20070320004001.GA11601@electric-eye.fr.zoreil.com>
-Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel version 2.6.20.1)
-Date: Tue, 20 Mar 2007 16:11:11 +0200
+	Tue, 20 Mar 2007 10:43:53 -0400
+Received: from mail.tmr.com ([64.65.253.246]:44587 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbXCTOnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 10:43:51 -0400
+Message-ID: <45FFF35C.20003@tmr.com>
+Date: Tue, 20 Mar 2007 10:44:44 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+To: jg@laptop.org
+CC: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       Arkadiusz Miskiewicz <arekm@maven.pl>, linux-pm@lists.osdl.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       linux-usb-devel@lists.sourceforge.net,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Meelis Roos <mroos@linux.ee>,
+       Janosch Machowinski <jmachowinski@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Meyer <thomas.mey@web.de>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [linux-pm] [2/6] 2.6.21-rc2: known regressions
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>	 <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>	 <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>	 <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>	 <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>	 <20070309111957.GA3928@elf.ucw.cz>  <20070318160707.GC12673@elte.hu>	 <1174236045.6832.9.camel@localhost>  <45FEF395.9050409@tmr.com> <1174342101.6832.173.camel@localhost>
+In-Reply-To: <1174342101.6832.173.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3028
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-EN-UserInfo: 6b5ac0c6b5a8f649d336ffa6ba3f3bc4:297516c839f78035fb456ced5af6b435
-X-EN-AuthUser: tparisinos@sciensis.com
-X-EN-OrigIP: 88.218.52.108
-X-EN-OrigHost: dsl-88-218-52-108.customers.vivodi.gr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francois Romieu wrote:
+Jim Gettys wrote:
+> On Mon, 2007-03-19 at 16:33 -0400, Bill Davidsen wrote:
+>
+>   
+>> What you say sounds good, assuming that the cost of a sleep is less than 
+>> the cost of the busy wait. But this may be hardware, the waits may be 
+>> very small and frequent, and if it's hitting a small hardware window 
+>> like retrace, delays in response will cause the time period to be missed 
+>> completely. This probably less critical with very smart cards, many of 
+>> us don't run them.
+>>     
+>
+> Actually, various strategies involving short busy waiting, or looking at
+> DMA address registers before sleeping were commonplace.  But a
+> syscall/sleep/wakeup is/was pretty fast.  If you have an operation
+> blitting the screen (e.g. scrolling), it takes a bit of time for the GPU
+> to execute the command.  I see this right now on OLPC, where a wonderful
+> music application needs to scroll (most of) the screen left),
+> periodically, and we're losing samples sometimes at those operation.
+>   
+None of that conflicts with what I said, but what works on an LCD may 
+not be appropriate for a CRT. With even moderate 1024x768@70 timing the 
+horizontal retrace happens ~50k/sec, and that's not an appropriate 
+syscall rate. I'm just pointing out that some things a video interface 
+does with simple hardware involve lots of very small windows. Don't read 
+that as "don't do it," just "be careful HOW you do it."
+> Remember also, that being nice to everyone else by sleeping, there are
+> more cycles to go around, and the scheduler can nicely boost the X
+> server's priority as it will for "interactive" processes that are being
+> cooperative.
+I'm going to cautiously guess that the problem might be not "how much" 
+but "how soon." That is, latency might be more important than giving the 
+server a lot of CPU.
 
-> RSA is slow. syscalls are fast.
-> 
-> Which part of the kernel is supposed to benefit from this code ?
-
-The main purpose behind the development of this module was to create an in-kernel 
-system of signed modules. The scenario applies most in embedded systems that are running linux
-where the kernel is physically secure but its filesystem is not, so one may tamper executable code.
-
-In such systems we need to detect the tampering in a centralized way (e.g without using hash databases e.t.c). 
-So what you need to do is sign the executable (or the library) with a private key and have a kernel that will 
-use the public key part to authenticate the executable againts its digital signature.
-
-Of course the signing and the authentication is not done against the whole executable but against its 
-secure hash, and this takes milliseconds to complete before loading the code onto memory.
-You see, in such a usage scenario most of the time the kernel will spend will be on hashing (sha1 module) and not in 
-modular exponentiation. Of course this will not produce any soft lockups
-
-Such a system cannot depend on userland to do the authentication for obvious security reasons, it 
-must be in kernel.
-
-Of course sha1 is slow as well but there is an sha1 module for anyone who may need it.
-That was my idea, we developed it for our own security needs, why not make it available for
-others that may want to use it?
-
-Furthermore one can use the API to do multi-precision arithmetics, if any kernel module may need it
-
---
-Tasos Parisinos
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
