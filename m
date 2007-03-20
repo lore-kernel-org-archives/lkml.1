@@ -1,84 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934033AbXCTQZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXCTQ0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934033AbXCTQZS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934024AbXCTQZR
+	id S964792AbXCTQ0d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934022AbXCTQ0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:25:17 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:34661 "EHLO atlrel8.hp.com"
+	Tue, 20 Mar 2007 12:26:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:55237 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934033AbXCTQZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:25:15 -0400
-Subject: Re: [RFC][PATCH] split file and anonymous page queues #2
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-mm <linux-mm@kvack.org>, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <45FF3052.0@redhat.com>
-References: <45FF3052.0@redhat.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 20 Mar 2007 12:24:57 -0400
-Message-Id: <1174407897.5664.38.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	id S1751771AbXCTQ0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:26:31 -0400
+Message-ID: <46000B35.9070800@goop.org>
+Date: Tue, 20 Mar 2007 09:26:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@muc.de>, David Miller <davem@davemloft.net>,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+References: <20070316.023331.59468179.davem@davemloft.net>	<45FB005D.9060809@goop.org>	<1174127638.8897.75.camel@localhost.localdomain>	<20070318.003309.71088169.davem@davemloft.net>	<20070318120814.GA45869@muc.de>	<1174272469.11680.23.camel@localhost.localdomain>	<m1648xxf93.fsf@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>	<1174348905.11680.54.camel@localhost.localdomain>	<45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org>	<Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1mz27sy82.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-19 at 20:52 -0400, Rik van Riel wrote:
-> Split the anonymous and file backed pages out onto their own pageout
-> queues.  This we do not unnecessarily churn through lots of anonymous
-> pages when we do not want to swap them out anyway.
-> 
-> This should (with additional tuning) be a great step forward in
-> scalability, allowing Linux to run well on very large systems where
-> scanning through the anonymous memory (on our way to the page cache
-> memory we do want to evict) is slowing systems down significantly.
-> 
-> This patch has been stress tested and seems to work, but has not
-> been fine tuned or benchmarked yet.  For now the swappiness parameter
-> can be used to tweak swap aggressiveness up and down as desired, but
-> in the long run we may want to simply measure IO cost of page cache
-> and anonymous memory and auto-adjust.
-> 
-> We apply pressure to each of sets of the pageout queues based on:
-> - the size of each queue
-> - the fraction of recently referenced pages in each queue,
->     not counting used-once file pages
-> - swappiness (file IO is more efficient than swap IO)
-> 
-> Please take this patch for a spin and let me know what goes well
-> and what goes wrong.
+Eric W. Biederman wrote:
+> Looking at the above code snippet.  I guess it is about time to
+> merge our per_cpu and pda variables...
 
-Rick:  Which tree is the patch against.  Diffs say 2.6.20.x86_64, but
-doesn't apply to 2.6.20 which doesn't use __inc_zone_state() for things
-like nr_active, nr_inactive, ...
+Rusty has a nice patch series to do just that; I think he's still
+looking for a taker.
 
-Also, in the snippet:
-
->--- linux-2.6.20.x86_64/mm/swap_state.c.vmsplit 2007-02-04
->13:44:54.000000000 -0500
->+++ linux-2.6.20.x86_64/mm/swap_state.c 2007-03-19 12:00:23.000000000
--0400
->@@ -354,7 +354,7 @@ struct page *read_swap_cache_async(swp_e
->                        /*
->                         * Initiate read into locked page and return.
->                         */
->-                       lru_cache_add_active(new_page);
->+                       lru_cache_add_anon(new_page);
->                        swap_readpage(NULL, new_page);
->                        return new_page;
->                }
-
-Should that be lru_cache_add_active_anon()? Or did you intend to add it
-to the inactive anon list?
-
-Finally, could you [should you?] skip scanning the anon lists--or at
-least the inactive anon list--when nr_swap_pages == 0?  The anon pages
-aren't going anywhere, right?  I think this would obviate Christoph L's
-patch to exclude anon pages from the LRU when there is no swap.  
-
-Lee
-
-
-
+    J
