@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933972AbXCTEU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933975AbXCTEU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933972AbXCTEU1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 00:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933974AbXCTEU1
+	id S933975AbXCTEU6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 00:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933981AbXCTEU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 00:20:27 -0400
-Received: from mx2.suse.de ([195.135.220.15]:51285 "EHLO mx2.suse.de"
+	Tue, 20 Mar 2007 00:20:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:48479 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933972AbXCTEU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 00:20:26 -0400
-Date: Mon, 19 Mar 2007 21:18:29 -0700
-From: Greg KH <greg@kroah.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>, torvalds@linux-foundation.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 29/31] Input: i8042 - fix AUX IRQ delivery check
-Message-ID: <20070320041829.GB17101@kroah.com>
-References: <20070319213047.710101653@mini.kroah.org> <20070319213647.GB9261@kroah.com> <20070319214108.GE9261@kroah.com> <d120d5000703191448m67c1afcnc3340c956ef7a25a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000703191448m67c1afcnc3340c956ef7a25a@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S933975AbXCTEU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 00:20:56 -0400
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+	callsites to make them patchable
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@muc.de>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+In-Reply-To: <45FF4043.4000805@vmware.com>
+References: <20070316.023331.59468179.davem@davemloft.net>
+	 <45FB005D.9060809@goop.org>
+	 <1174127638.8897.75.camel@localhost.localdomain>
+	 <20070318.003309.71088169.davem@davemloft.net>
+	 <20070318120814.GA45869@muc.de>
+	 <1174272469.11680.23.camel@localhost.localdomain>
+	 <m1648xxf93.fsf@ebiederm.dsl.xmission.com>
+	 <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
+	 <1174348905.11680.54.camel@localhost.localdomain>
+	 <45FF4043.4000805@vmware.com>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 15:20:23 +1100
+Message-Id: <1174364423.11680.103.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 05:48:55PM -0400, Dmitry Torokhov wrote:
-> On 3/19/07, Greg KH <gregkh@suse.de> wrote:
-> > -stable review patch.  If anyone has any objections, please let us know.
-> >
-> > ------------------
-> >
-> > From: Dmitry Torokhov <dtor@insightbb.com>
-> >
-> > Input: i8042 - fix AUX IRQ delivery check
-> >
-> > On boxes that do not implement AUX LOOP command we can not
-> > verify AUX IRQ delivery and must assume that it is wired
-> > properly.
-> >
+On Mon, 2007-03-19 at 18:00 -0800, Zachary Amsden wrote:
+> Rusty Russell wrote:
+> > *This* was the reason that the current hand-coded calls only clobber %
+> > eax.  It was a compromise between native (no clobbers) and others (might
+> > need a reg).
 > 
-> Greg,
-> 
-> There is another piece missing in AUX delivery test, commit
-> 
->     3ca5de6dd4ec5a139b2b8f00dce3e4726ca91af1
-> 
-> Unfortunately I can't send you a patch at the moment but if you could
-> get it from the mainline that would be great.
+> I still don't think this was a good trade.
+...
+> Xen no longer needs such a register
 
-Thanks for letting me know, I've added it to the queue now.
+Hmm, well, if VMI is happy, Xen is happy, and lguest is happy, then
+perhaps we're better off with a cc-only clobber rule?  Certainly makes
+life simpler.
 
-greg k-h
+> > Now, since we decided to allow paravirt_ops operations to be normal C
+> > (ie. the patching is optional and done late), we actually push and pop %
+> > ecx and %edx.  This makes the call site 10 bytes long, which is a nice
+> > size for patching anyway (enough for a movl $0, <addr>, a-la lguest's
+> > cli, or movw $0, %gs:<addr> if we supported SMP).
+> 
+> You can do it in 11 bytes with no clobbers and normal C semantics by 
+> linking to a direct address instead of calling to an indirect, but then 
+> you need some gross fixup technology in paravirt_patch:
+> 
+> if (call_addr == (void*)native_sti) {
+>   ...
+> }
+
+Well, I don't think we need such hacks: since we have to use handcoded
+asm and mark the callsites anyway, marking what they're calling is
+trivial.
+
+The other idea from "btfixup" is that we can do the patching *much*
+earlier, so we don't need the initial code to be valid at all if we
+wanted to: we just need room to patch in a call insn.  We could then
+generate trampolines which do the necessary pushes & pops automatically
+for backends which want to use C calling conventions.
+
+Perhaps it's time for code and benchmarks?
+
+Rusty.
+
