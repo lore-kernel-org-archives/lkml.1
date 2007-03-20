@@ -1,60 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934052AbXCTUJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934057AbXCTUK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934052AbXCTUJc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 16:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbXCTUJb
+	id S934057AbXCTUK3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 16:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbXCTUK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 16:09:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54701 "EHLO ogre.sisk.pl"
+	Tue, 20 Mar 2007 16:10:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47612 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934052AbXCTUJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 16:09:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: 2.6.21-rc4-mm1
-Date: Tue, 20 Mar 2007 21:12:17 +0100
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070320183821.GD2670@elf.ucw.cz> <4600389E.6030901@gmail.com>
-In-Reply-To: <4600389E.6030901@gmail.com>
+	id S934051AbXCTUK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 16:10:28 -0400
+Message-ID: <46003F5F.2090606@redhat.com>
+Date: Tue, 20 Mar 2007 16:09:03 -0400
+From: Jon Masters <jcm@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Sergey Vlasov <vsu@altlinux.ru>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, mit-devel@lists.printk.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Subject: Re: [mit-devel] Re: module-init-tools-3.3-pre10 available
+References: <45DD0031.9010808@redhat.com> <20070222170732.22c1320b.vsu@altlinux.ru> <45DDAE24.6080905@redhat.com> <20070223120136.12ea11db@home.brethil> <45DF0B42.2080208@redhat.com> <Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr> <45E06439.40403@redhat.com> <20070320200345.GB4021@procyon.home>
+In-Reply-To: <20070320200345.GB4021@procyon.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703202112.18236.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 20 March 2007 20:40, Jiri Slaby wrote:
-> Pavel Machek napsal(a):
-> > Hi!
-> > 
-> >>> Andrew Morton napsal(a):
-> >>>>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
-> >>> I'm getting this while trying to swsusp:
-> >>> Stopping tasks ...
-> >>> Stopping kernel threads timed out after 20 seconds (1 tasks refusing to freeze):
-> >>>  swapper
-> >>>  Restarting tasks ... done.
-> >>>
-> >>> What to test? Enable PM_DEBUG?
-> > 
-> > Is it repeatable? Freezer normally works better than that.
-> 
-> Yes, at least it happened 3 times consecutively, when I tried to asleep the
-> machine, then I turned it off.
-> 
-> >> Also, it might be useful to add a temporary /proc/freeze-unfreeze thing
-> >> which will simply do a freeze/unfreeze cycle.  Then we can apply various
-> >> workloads to the machine while madly stressing the freezer code.  
-> > 
-> > echo testproc > /sys/power/disk; echo disk > /sys/power/state ... is
-> > pretty much what you want.
-> 
-> Ok, I'll try this.
+Sergey Vlasov wrote:
 
-Can I see .config please?
+> Has a final decision about generated files been made?  I don't see any
+> updates in the git repo, and man pages are still broken
 
-Rafael
+I'm doing some patching this afternoon anyway, and it's on my todo.
+
+Jon.
