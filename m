@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbXCTMN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbXCTMNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbXCTMN1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 08:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXCTMN1
+	id S1753730AbXCTMNj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 08:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXCTMNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 08:13:27 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45772 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753839AbXCTMN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 08:13:26 -0400
-Date: Tue, 20 Mar 2007 13:12:51 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: dwmw2@infradead.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, rmk@arm.linux.org.uk
-Subject: Re: [PATCH] Complain about missing system calls.
-Message-ID: <20070320121251.GB10240@uranus.ravnborg.org>
-References: <1173394873.3461.510.camel@pmac.infradead.org> <20070308.161407.63995586.davem@davemloft.net>
+	Tue, 20 Mar 2007 08:13:39 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:38360 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706AbXCTMNi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 08:13:38 -0400
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070319195442.GT4892@waste.org>
+References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
+	 <20070318162720.GI10459@waste.org> <1174236579.17249.6.camel@sauron>
+	 <20070318191812.GM4892@waste.org>
+	 <20070318203149.GC29295@crusty.rchland.ibm.com>
+	 <20070319170838.GP4892@waste.org>
+	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
+	 <20070319195442.GT4892@waste.org>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 07:13:26 -0500
+Message-Id: <1174392806.30079.81.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070308.161407.63995586.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.0 (2.10.0-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 08, 2007 at 04:14:07PM -0800, David Miller wrote:
-> From: David Woodhouse <dwmw2@infradead.org>
-> Date: Thu, 08 Mar 2007 23:01:13 +0000
+On Mon, 2007-03-19 at 14:54 -0500, Matt Mackall wrote:
 > 
-> > Most system calls seem to get added to i386 first. This patch
-> > automatically generates a warning for any new system call which is
-> > implemented on i386 but not the architecture currently being compiled.
-> > On PowerPC at the moment, for example, it results in these warnings:
-> > init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
-> > init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
-> > init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
-> > 
-> > Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> False starts that get mainlined delay or prevent things getting done
+> right. The question is and remains "is UBI the right way to do
+> things?" Not "is UBI the easiest way to do things?" or "is UBI
+> something people have already adopted?"
 > 
-> David, thanks for this __incredibly__ __useful__ patch.  I kicked it
-> around on sparc64 and found some more ignores to add, see below.
-> 
-> The vast majority of them vector to sys_ni_syscall in the i386 syscall
-> table.
-> 
-> sys_ugetrlimit is only necessary if the platform started out
-> using the non-SuS compliant sys_old_getrlimit()
-> 
-> The rest, like ioperm, iopl, modify_ldt, et al. are i386
-> specific.
-> 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> --- a/init/missing_syscalls.c.ORIG	2007-03-08 16:11:00.000000000 -0800
-> +++ b/init/missing_syscalls.c	2007-03-08 16:02:30.000000000 -0800
-> @@ -18,6 +18,22 @@
->  #endif
->  
->  /* i386-specific or historical system calls */
-> +#define __IGNORE_break
+> If the right way is instead to extend the block layer and device
+> mapper to encompass the quirks of NAND in a sensible fashion, then UBI
+> should not go in.
 
-Could it make sense to keep this in arch specific header files?
-So when we fiddle with ARM we do not impact SPARC etc.
-And in this way ARCH specific changes are kept in ARCH specific files.
+This is where we disagree obviously.  However, getting UBI into mainline
+won't delay or prevent your proposal from getting done.  That's like
+saying having ext3 in mainline prevents other filesystems from getting
+created.  There is nothing wrong with having different subsystems that
+overlap in a few areas.
 
-For the "Ignore historical" part this should be in a common file I think.
+What you're proposing seems like it would take at least several weeks to
+even get close to what is needed in terms of reliability and the
+required wear-leveling if it is indeed possible to implement.  And it
+would likely duplicate some of the wear-leveling and bad block handling
+code that is present in UBI anyway.  In the meantime, the need for UBI
+exists today and there is a working, tested implementation available.
 
-So in other words:
+josh
 
-init/missing_syscalls.h	=> Contains common stuff and include:
-include/asm/missing_syscalls.h => contains ARCH specific stuff.
-
-
-	Sam
