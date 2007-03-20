@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933666AbXCTPOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbXCTPQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933666AbXCTPOq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 11:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbXCTPOq
+	id S933645AbXCTPQW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 11:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbXCTPQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 11:14:46 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2372 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933666AbXCTPOp (ORCPT
+	Tue, 20 Mar 2007 11:16:22 -0400
+Received: from smtp.nokia.com ([131.228.20.172]:49368 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933645AbXCTPQU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 11:14:45 -0400
-Date: Tue, 20 Mar 2007 15:14:29 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Keith Owens <kaos@ocs.com.au>, linux-kernel@vger.kernel.org,
-       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PNPACPI probes serial twice, messes up serial console
-Message-ID: <20070320151429.GA11578@flint.arm.linux.org.uk>
-Mail-Followup-To: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	Keith Owens <kaos@ocs.com.au>, linux-kernel@vger.kernel.org,
-	len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>
-References: <17887.1174373206@kao2.melbourne.sgi.com> <200703200832.24921.bjorn.helgaas@hp.com>
+	Tue, 20 Mar 2007 11:16:20 -0400
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Theodore Tso <tytso@mit.edu>
+Cc: Matt Mackall <mpm@selenic.com>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070320135231.GA6043@thunk.org>
+References: <20070318162720.GI10459@waste.org>
+	 <1174236579.17249.6.camel@sauron> <20070318191812.GM4892@waste.org>
+	 <20070318203149.GC29295@crusty.rchland.ibm.com>
+	 <20070319170838.GP4892@waste.org>
+	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
+	 <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron>
+	 <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron>
+	 <20070320135231.GA6043@thunk.org>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 20 Mar 2007 17:14:10 +0200
+Message-Id: <1174403650.17249.117.camel@sauron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703200832.24921.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 20 Mar 2007 15:14:10.0712 (UTC) FILETIME=[697AF180:01C76B02]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070320171420-1C862BB0-0CC1466A/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 08:32:24AM -0600, Bjorn Helgaas wrote:
-> Index: work-mm2/include/linux/serial_8250.h
-> ===================================================================
-> --- work-mm2.orig/include/linux/serial_8250.h	2006-08-22 12:26:25.000000000 -0600
-> +++ work-mm2/include/linux/serial_8250.h	2006-08-22 16:37:36.000000000 -0600
-> @@ -44,6 +44,7 @@
->  	PLAT8250_DEV_HUB6,
->  	PLAT8250_DEV_MCA,
->  	PLAT8250_DEV_AU1X00,
-> +	PLAT8250_DEV_X86,
+On Tue, 2007-03-20 at 09:52 -0400, Theodore Tso wrote:
+> It would also help people understand why there are so many "units" in
+> UBI, since hopefully the high-level documentation would explain why
+> they fit together, and perhaps why some of the units weren't folded
+> together.  What value do they add as separate components?
 
-There's no need for PLAT8250_DEV_X86 if x86 went to the model that ARM
-and all the others which I did convert use - iow, PLAT8250_DEV_PLATFORM
-and friends.
+Teo, the units will go away. I'll leave only 4 of them:
 
-They're there so that the arch/* code can provide their serial port
-information to the 8250 driver instead of using include/asm-*/serial.h
+1. I/O, just to hide some I/O related complexities.
+2. Scanning: just because I am planning to add other device attaching
+methods, without scanning.
+3. Wear-leveling, just because I want to improve the algorithm in
+future. Changing algorithm means changing data structures. So I want to
+keeps them separate.
+4. EBA - because I want to keep all mapping-related stuff in one place.
+Well, this does not have to be called unit, just mapping-related code in
+on file. Also, long-term is to have the table on-flash (currently it is
+in-ram which does not scale well).
+
+Everything else will be folded together. No itsy-bitsy. I've almost
+finished this re-structuring, doing bug-fixing.
+
+P.S.: I'll let other folks to comment the other stuff.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
