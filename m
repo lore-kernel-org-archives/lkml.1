@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751820AbXCTQzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751427AbXCTQ5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751820AbXCTQzR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXCTQzQ
+	id S1751427AbXCTQ5c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXCTQ5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:55:16 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:47539 "EHLO smtp.osdl.org"
+	Tue, 20 Mar 2007 12:57:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54016 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751820AbXCTQzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:55:14 -0400
-Date: Tue, 20 Mar 2007 09:52:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Miller <davem@davemloft.net>,
-       virtualization@lists.linux-foundation.org, jbeulich@novell.com,
-       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       virtualization@lists.osdl.org, anthony@codemonkey.ws,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-In-Reply-To: <20070320174159.GA4286@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0703200947501.6730@woody.linux-foundation.org>
-References: <20070319.120854.30182994.davem@davemloft.net>
- <20070319.204712.118947830.davem@davemloft.net> <m13b40wnrb.fsf@ebiederm.dsl.xmission.com>
- <200703201428.50564.ak@suse.de> <m1ircvswzz.fsf@ebiederm.dsl.xmission.com>
- <20070320174159.GA4286@bingen.suse.de>
+	id S1751427AbXCTQ5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:57:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Weiner <hannes-kernel@saeurebad.de>
+Subject: Re: "reboot" swsusp mode leaves moon icon blinking
+Date: Tue, 20 Mar 2007 18:00:27 +0100
+User-Agent: KMail/1.9.5
+Cc: kernel list <linux-kernel@vger.kernel.org>
+References: <20070320123245.GA19019@elf.ucw.cz> <20070320165058.GA15888@leiferikson>
+In-Reply-To: <20070320165058.GA15888@leiferikson>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703201800.28024.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 20 Mar 2007, Andi Kleen wrote:
+On Tuesday, 20 March 2007 17:50, Johannes Weiner wrote:
+> Hi,
 > 
-> No, me and Jan fixed all reported bugs as far as I know.
+> On Tue, Mar 20, 2007 at 01:32:45PM +0100, Pavel Machek wrote:
+> > Date: Tue, 20 Mar 2007 13:32:45 +0100
+> > From: Pavel Machek <pavel@ucw.cz>
+> > To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+> > 	kernel list <linux-kernel@vger.kernel.org>
+> > Cc: Andrew Morton <akpm@osdl.org>
+> > Subject: "reboot" swsusp mode leaves moon icon blinking
+> > 
+> > Hi!
+> > 
+> > ...and cause is really simple.
+> > 
+> > During resume, we do not know that "reboot" method was used, so we
+> > assume plaform and make the led blink...
+> 
+> What does the "reboot" swsusp mean?
+> 
+> I am having this (or a similar problem):
+> 
+> 	echo shutdown > /sys/power/disk; echo disk > /sys/power/state
+> 
+> suspends normally.  But after a resume, the moon keeps blinking _and_
+> I don't get ACPI events anymore.  At least all ibm-acpi features refuse
+> to work (hotkeys, lcd-brightness, lid, ...).
+> 
+> I saved some /proc files (interrupts, acpi/processor/power, ...) and
+> compared them before the suspend and after the resume but I could not
+> find any differences.
+> 
+> > diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+> > index 873cdf8..dee0ff4 100644
+> > --- a/kernel/power/disk.c
+> > +++ b/kernel/power/disk.c
+> > @@ -241,18 +241,11 @@ static int software_resume(void)
+> >  		goto Done;
+> >  	}
+> >  
+> > -	error = platform_prepare();
+> > -	if (error) {
+> > -		swsusp_free();
+> > -		goto Thaw;
+> > -	}
+> > -
+> 
+> What is platform_prepare() actually good for when _resuming_? I tried to
+> follow the function calls and it seems to disable a lot of thing instead
+> of re-enabling them...?
 
-No you did not. You didn't fix the ones I reported. Which is why it got 
-removed, and will not get added back until there is another maintainer.
+Well, if you suspend using the platform mode, platform_finish() will be called
+after the image has been restored (ie. by the "old" kernel).
 
-The ones I reported were all about trusting the stack contents implicitly, 
-and assuming that the unwind info was there and valid. Using things like 
-"__get_user()" didn't fix it, because if a WARN_ON() happened while we 
-held the mm semaphore and the unwind info was bogus, it would take a 
-page-fault and deadlock.
+Greetings,
+Rafael
 
-Those kinds of things are not acceptable for debugging output. If I cannot 
-use WARN_ON() because I hold the MM lock and I'm afraid there might be 
-kernel corruption, then something is *wrong*!
 
-And I told you guys this. Over *months*. And you ignored me. You told me 
-everything was fine. Each time, somebody else ended up reporting a hang 
-where the unwinder was at fault. And since I couldn't trust the 
-maintainers to fix it, removing the broken feature that only caused more 
-problems than it fixed was the only option.
-
-And you clearly *still* haven't accepted the fact that the code was buggy. 
-
-Does anybody wonder why I wouldn't merge it back?
-
-		Linus
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
