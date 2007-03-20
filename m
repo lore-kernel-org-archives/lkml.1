@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934086AbXCTXiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934096AbXCTXoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934086AbXCTXiL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 19:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934090AbXCTXiL
+	id S934096AbXCTXoY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 19:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934094AbXCTXoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 19:38:11 -0400
-Received: from xyzzy.farnsworth.org ([65.39.95.219]:3940 "HELO farnsworth.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S934089AbXCTXiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 19:38:09 -0400
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 20 Mar 2007 16:38:04 -0700
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] mv643xx_eth: add mv643xx_eth_shutdown function
-Message-ID: <20070320233801.GA24374@xyzzy.farnsworth.org>
+	Tue, 20 Mar 2007 19:44:24 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:37932 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934089AbXCTXoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 19:44:22 -0400
+Date: Tue, 20 Mar 2007 16:43:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       David Miller <davem@davemloft.net>,
+       virtualization@lists.linux-foundation.org, jbeulich@novell.com,
+       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       virtualization@lists.osdl.org, anthony@codemonkey.ws,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+In-Reply-To: <20070320202352.GF4286@bingen.suse.de>
+Message-ID: <Pine.LNX.4.64.0703201626030.6730@woody.linux-foundation.org>
+References: <20070319.204712.118947830.davem@davemloft.net>
+ <m13b40wnrb.fsf@ebiederm.dsl.xmission.com> <200703201428.50564.ak@suse.de>
+ <m1ircvswzz.fsf@ebiederm.dsl.xmission.com> <20070320174159.GA4286@bingen.suse.de>
+ <Pine.LNX.4.64.0703200947501.6730@woody.linux-foundation.org>
+ <20070320180359.GB4286@bingen.suse.de> <Pine.LNX.4.64.0703201022040.6730@woody.linux-foundation.org>
+ <20070320192118.GD4286@bingen.suse.de> <Pine.LNX.4.64.0703201145570.6730@woody.linux-foundation.org>
+ <20070320202352.GF4286@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dale Farnsworth <dale@farnsworth.org>
 
-mv643xx_eth_shutdown is needed for kexec.
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+On Tue, 20 Mar 2007, Andi Kleen wrote:
 
----
- drivers/net/mv643xx_eth.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+> On Tue, Mar 20, 2007 at 11:49:39AM -0700, Linus Torvalds wrote:
+> > 
+> > the thing is, I'd rather see a long backtrace that is hard to decipher but 
+> > that *never* *ever* causes any additional problems, over a pretty one.
+> 
+> Well it causes additional problems. We had some cases where it was really
+> hard to distingush garbage and the true call chain. I can probably dig
+> out some examples if you want.
 
-Index: linux-2.6-powerpc-df/drivers/net/mv643xx_eth.c
-===================================================================
---- linux-2.6-powerpc-df.orig/drivers/net/mv643xx_eth.c
-+++ linux-2.6-powerpc-df/drivers/net/mv643xx_eth.c
-@@ -1516,9 +1516,23 @@ static int mv643xx_eth_shared_remove(str
- 	return 0;
- }
- 
-+static void mv643xx_eth_shutdown(struct platform_device *pdev)
-+{
-+	struct net_device *dev = platform_get_drvdata(pdev);
-+	struct mv643xx_private *mp = netdev_priv(dev);
-+	unsigned int port_num = mp->port_num;
-+
-+	/* Mask all interrupts on ethernet port */
-+	mv_write(MV643XX_ETH_INTERRUPT_MASK_REG(port_num), 0);
-+	mv_read (MV643XX_ETH_INTERRUPT_MASK_REG(port_num));
-+
-+	eth_port_reset(port_num);
-+}
-+
- static struct platform_driver mv643xx_eth_driver = {
- 	.probe = mv643xx_eth_probe,
- 	.remove = mv643xx_eth_remove,
-+	.shutdown = mv643xx_eth_shutdown,
- 	.driver = {
- 		.name = MV643XX_ETH_NAME,
- 	},
+Well, by "additional problems" _I_ mean things like "a warning turned into 
+a fatal oops and didn't get logged at all".
+
+That's a lot more serious than "there were a few extra entries in the 
+traceback that caused us some confusion".
+
+And yes, we had exactly that case happen several times.
+
+> With lots of call backs (e.g. common with sysfs) it is also frequently
+> not obvious how the call chains are supposed to go.
+
+With callbacks, it's actually often nice to see the callback data that is 
+on the stack (and it's very obvious from the "<function+0>" ksymtab 
+explanation: you can't have a <function+0> that is anything but a callback 
+pointer (since it isn't a return address).
+
+		Linus
