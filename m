@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030758AbXCSX6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030770AbXCTACQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030758AbXCSX6G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 19:58:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030754AbXCSX6G
+	id S1030770AbXCTACQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 20:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030769AbXCTACQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 19:58:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40490
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1030766AbXCSX6E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 19:58:04 -0400
-Date: Mon, 19 Mar 2007 16:58:03 -0700 (PDT)
-Message-Id: <20070319.165803.55508162.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: clameter@sgi.com, linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V3
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070319165329.b5830789.akpm@linux-foundation.org>
-References: <20070319233716.13775.45569.sendpatchset@schroedinger.engr.sgi.com>
-	<20070319165329.b5830789.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 19 Mar 2007 20:02:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:42898 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030761AbXCTACO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 20:02:14 -0400
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+	callsites to make them patchable
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@muc.de>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, zach@vmware.com, anthony@codemonkey.ws,
+       netdev@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
+References: <20070316.023331.59468179.davem@davemloft.net>
+	 <45FB005D.9060809@goop.org>
+	 <1174127638.8897.75.camel@localhost.localdomain>
+	 <20070318.003309.71088169.davem@davemloft.net>
+	 <20070318120814.GA45869@muc.de>
+	 <1174272469.11680.23.camel@localhost.localdomain>
+	 <m1648xxf93.fsf@ebiederm.dsl.xmission.com>
+	 <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 20 Mar 2007 11:01:45 +1100
+Message-Id: <1174348905.11680.54.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 19 Mar 2007 16:53:29 -0700
+On Mon, 2007-03-19 at 11:38 -0700, Linus Torvalds wrote:
+> 
+> On Mon, 19 Mar 2007, Eric W. Biederman wrote:
+> > 
+> > True.  You can use all of the call clobbered registers.
+> 
+> Quite often, the biggest single win of inlining is not so much the code 
+> size (although if done right, that will be smaller too), but the fact that 
+> inlining DOES NOT CLOBBER AS MANY REGISTERS!
 
-> Would it provide a superior solution if we were to a) stop zeroing out the
-> pte's when doing a fullmm==1 teardown and b) go direct to the page allocator
-> for these pages?
+Thanks Linus.
 
-While you could avoid zero'ing them out, you certainly can't avoid
-reading them into the cpu caches.
+*This* was the reason that the current hand-coded calls only clobber %
+eax.  It was a compromise between native (no clobbers) and others (might
+need a reg).
 
-And for the PGDs you have to initialize these things partially to
-non-zero values on x86{,_64} on every new PGD you allocate, which is a
-complete waste of cpu cache dirtying.  Avoiding this overhead alone
-justifies the quicklists I think.  It's not just a "zero" thing,
-so GFP_ZERO cannot help you here.
+Now, since we decided to allow paravirt_ops operations to be normal C
+(ie. the patching is optional and done late), we actually push and pop %
+ecx and %edx.  This makes the call site 10 bytes long, which is a nice
+size for patching anyway (enough for a movl $0, <addr>, a-la lguest's
+cli, or movw $0, %gs:<addr> if we supported SMP).
 
-The more I think about it the more I like the quicklists.
+The current 6 paravirt ops which are patched cover the vast majority of
+calls (until the Xen patches, then we need ~4 more?).  Jeremy chose to
+expand patching to cover *all* paravirt ops, rather than just the new
+hot ones, and that's where we tipped over the ugliness threshold.
+
+Cheers,
+Rusty.
 
