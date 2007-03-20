@@ -1,76 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933030AbXCTMdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933239AbXCTMeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933030AbXCTMdQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 08:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbXCTMdP
+	id S933239AbXCTMeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 08:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXCTMeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 08:33:15 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56990 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933102AbXCTMdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 08:33:13 -0400
-Date: Tue, 20 Mar 2007 13:32:53 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, tiwai@suse.de
-Cc: Ingo Molnar <mingo@elte.hu>
-Subject: BUG: soft lockup during suspend
-Message-ID: <20070320123253.GB19019@elf.ucw.cz>
+	Tue, 20 Mar 2007 08:34:25 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:42507 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933112AbXCTMeX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 08:34:23 -0400
+Message-ID: <45FFD4C1.7000103@bx.jp.nec.com>
+Date: Tue, 20 Mar 2007 21:34:09 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: mpm@selenic.com
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [RFC][PATCH -mm take3 6/6][resend] add ioctls for adding/removing
+ target
+References: <45FFCF31.3040000@bx.jp.nec.com>
+In-Reply-To: <45FFCF31.3040000@bx.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
 
-I got this nastinness in my syslog... perhaps HDA intel takes too long
-to play with its hardware? Or should we just kill the softlockup
-watchdog since Linux is not realtime system, yet?
-								Pavel 
+We add ioctls for adding/removing target.
+If we use NETCONSOLE_ADD_TARGET ioctl, 
+we can dynamically add netconsole target. 
+If we use NETCONSOLE_REMOVE_TARGET ioctl,
+we can dynamically remoe netconsole target.
 
-HDA Intel 0000:00:1b.0: freeze
-BUG: soft lockup detected on CPU#0!
- [<c014fdd9>] softlockup_tick+0xa9/0xd0
- [<c0131d63>] update_process_times+0x33/0x80
- [<c0142f52>] tick_periodic+0x22/0x70
- [<c0142fb7>] tick_handle_periodic+0x17/0x80
- [<c014359a>] tick_do_broadcast+0x6a/0x80
- [<c01435cc>] tick_do_periodic_broadcast+0x1c/0x30
- [<c01435fb>] tick_handle_periodic_broadcast+0x1b/0x60
- [<c01435cc>] tick_do_periodic_broadcast+0x1c/0x30
- [<c01077cc>] timer_interrupt+0x2c/0x40
- [<c0150005>] handle_IRQ_event+0x25/0x60
- [<c0151d87>] handle_edge_irq+0xe7/0x130
- [<c0106adb>] do_IRQ+0x3b/0x80
- [<c0106ae0>] do_IRQ+0x40/0x80
- [<c01049eb>] common_interrupt+0x23/0x28
- [<c063007b>] ieee80211_wx_get_scan+0x2b/0x130
- [<c02588f4>] delay_tsc+0x14/0x20
- [<c0258936>] __delay+0x6/0x10
- [<c052f3da>] azx_send_cmd+0xfa/0x110
- [<c053089e>] snd_hda_codec_write+0x3e/0x60
- [<c05314fb>] hda_set_power_state+0xab/0xe0
- [<c0532518>] snd_hda_suspend+0x48/0x60
- [<c0530302>] azx_suspend+0x52/0xd0
- [<c0266b13>] pci_device_suspend+0x23/0x70
- [<c0332dbb>] suspend_device+0x11b/0x2e0
- [<c0333032>] device_suspend+0xb2/0x170
- [<c012a28b>] printk+0x1b/0x20
- [<c014c7ad>] pm_suspend_disk+0x4d/0x2b0
- [<c014b395>] enter_state+0x195/0x220
- [<c014b4c9>] state_store+0xa9/0xc0
- [<c014b420>] state_store+0x0/0xc0
- [<c01ae789>] subsys_attr_store+0x29/0x40
- [<c01af07c>] sysfs_write_file+0xac/0x130
- [<c0172156>] vfs_write+0xa6/0x140
- [<c01aefd0>] sysfs_write_file+0x0/0x130
- [<c0104050>] syscall_call+0x7/0xb
- [<c0630000>] ieee80211_translate_scan+0xa00/0xa50
- =======================
-ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+We attach a sample program for ioctl.
+
+Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
+---
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stropts.h>
+#include <fcntl.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <linux/if_ether.h>
+
+#define NETCONSOLE_DEV_NAME "/dev/netconsole"
+
+struct command {
+        char *name;
+        char *options;
+        int (*handle_command)(struct command* command,
+                              int argc, char* argv[]);
+        void (*usage)(char *msg);
+
+extern char *optarg;
+
+static void generic_usage(char *msg) {
+        fprintf(stderr, "Usage  : netconfig command [option] [args]\n");
+        fprintf(stderr, "command: add remove help\n");
+        exit(-1);
+                        break;
+                case 's':
+                        address = inet_addr(optarg);
+                        if (address == -1)
+                                (*command->usage)("invlid IP address!\n");
+                        req.local_ip = address;
+                        break;
+                case 'h':
+                default:
+                        (*command->usage)(NULL);
+                }
+        }
+        argc -= optind;
+                if (i != ETH_ALEN)
+                        (*command->usage)("Invalid MAC address!\n");
+                memcpy(req.remote_mac, mac, ETH_ALEN);
+
+        fd = open(NETCONSOLE_DEV_NAME, O_RDWR);
+        if (fd < 0) {
+                fprintf(stderr, "cannot open device" NETCONSOLE_DEV_NAME "\n");
+                return -1;
+        exit(-1);
+
+static int handle_command_remove(struct command *command,
+                                 int argc, char** argv)
+{
+
+        while ((ch = getopt(argc, argv, command->options)) != -1) {
+                switch (ch) {
+                case 'h':
+                default:
+                        (*command->usage)(NULL);
+                }
+        }
+        argc -= optind;
+
+        if (argc != 1)
+
+        id = atoi(argv[0]);
+        fd = open(NETCONSOLE_DEV_NAME, O_RDWR);
+        if (fd < 0) {
+                fprintf(stderr, "can't open device " NETCONSOLE_DEV_NAME "\n");
+                return -1;
+        }
+        if(ioctl(fd, NETCON_REMOVE_TARGET, &id) != 0)
+                perror("remove");
+
+        return 0;
+
+static void usage_remove(char *msg) {
+        fprintf(stderr, "Usage  : netconfig remove id\n");
+        exit(-1);
+
+static int handle_command_help(struct command *command,
+                               int argc, char** argv) {
+
+        return 0;
+
+static void usage_help(char *msg) {
+        generic_usage(NULL);
+                        break;
+                }
+        }
+
+        if (command == NULL)
+                generic_usage(NULL);
+        argc--;
+        argv++;
+
+        if (command->handle_command)
+                (*command->handle_command)(command, argc, argv);
+        else {
+                fprintf(stderr, "function handle_command() isn't set.");
+                exit(-1);
+        }
+        return 0;
+}
+
+Index: linux-mm/fs/compat_ioctl.c
+===================================================================
+--- linux-mm.orig/fs/compat_ioctl.c
++++ linux-mm/fs/compat_ioctl.c
+@@ -117,6 +117,8 @@
+ #include <linux/dvb/video.h>
+ #include <linux/lp.h>
+ 
++#include <linux/netconsole.h>
++
+ static int do_ioctl32_pointer(unsigned int fd, unsigned int cmd,
+ 			      unsigned long arg, struct file *f)
+ {
+Index: linux-mm/include/linux/compat_ioctl.h
+===================================================================
+--- linux-mm.orig/include/linux/compat_ioctl.h
++++ linux-mm/include/linux/compat_ioctl.h
+@@ -828,3 +828,6 @@ COMPATIBLE_IOCTL(VIDEO_GET_NAVI)
+ COMPATIBLE_IOCTL(VIDEO_SET_ATTRIBUTES)
+ COMPATIBLE_IOCTL(VIDEO_GET_SIZE)
+ COMPATIBLE_IOCTL(VIDEO_GET_FRAME_RATE)
++/* netconsole */
++COMPATIBLE_IOCTL(NETCON_ADD_TARGET)
++ULONG_IOCTL(NETCON_REMOVE_TARGET)
+Index: linux-mm/include/linux/netconsole.h
+===================================================================
+--- /dev/null
++++ linux-mm/include/linux/netconsole.h
+@@ -0,0 +1,18 @@
++#ifndef __NETCONSOLE_H
++#define __NETCONSOLE_H
++
++#include <linux/ioctl.h>
++#include <linux/types.h>
++
++struct netconsole_request {
++	__u32 id;
++	__u8 netdev_name[IFNAMSIZ];
++	__u8 remote_mac[ETH_ALEN];
++	__u32 local_ip, remote_ip;
++	__u16 local_port, remote_port;
++};
++
++#define NETCON_ADD_TARGET _IOW(0xAE, 4, struct netconsole_request)
++#define NETCON_REMOVE_TARGET _IOW(0xAE, 5, int)
++
++#endif /* __NETCONSOLE_H */
+Index: linux-mm/drivers/net/netconsole.c
+===================================================================
+--- linux-mm.orig/drivers/net/netconsole.c
++++ linux-mm/drivers/net/netconsole.c
+@@ -47,6 +47,7 @@
+ #include <linux/netpoll.h>
+ #include <linux/miscdevice.h>
+ #include <linux/inet.h>
++#include <linux/netconsole.h>
+ 
+ MODULE_AUTHOR("Maintainer: Matt Mackall <mpm@selenic.com>");
+ MODULE_DESCRIPTION("Console driver for network interfaces");
+@@ -306,6 +307,64 @@ static void release_target(struct kobjec
+ 	delete_target(nt);
+ }
+ 
++static int netconsole_ioctl(struct inode *inode, struct file *file,
++			    unsigned int cmd, unsigned long arg)
++{
++	int id, count;
++	char config[256];
++	char *cur;
++	struct netconsole_request req;
++	struct netconsole_target *nt, *tmp;
++	void __user *argp = (void __user *)arg;
++
++	switch (cmd) {
++	case NETCON_ADD_TARGET:
++		printk(KERN_INFO "netconsole: cmd=NETCON_ADD_TARGET\n");
++		if (copy_from_user(&req, argp, sizeof(req)))
++			return -EFAULT;
++		cur = config;
++		count = sprintf(cur, "%d@", req.local_port);
++		cur += count;
++		if (req.local_ip)
++			count = sprintf(cur, "%d.%d.%d.%d/",
++					NIPQUAD(req.local_ip));
++		else
++			count = sprintf(cur, "/");
++		cur += count;
++		count = sprintf(cur, "%s,", req.netdev_name);
++		cur += count;
++		count = sprintf(cur, "%d@", req.remote_port);
++		cur += count;
++		count = sprintf(cur, "%d.%d.%d.%d/",
++				NIPQUAD(req.remote_ip));
++		cur += count;
++		count = sprintf(cur, "%02x:%02x:%02x:%02x:%02x:%02x",
++				req.remote_mac[0], req.remote_mac[1],
++				req.remote_mac[2], req.remote_mac[3],
++				req.remote_mac[4], req.remote_mac[5]);
++		printk(KERN_INFO "count = %d config=[%s]\n", count, config);
++		if (add_target(config))
++			return -EINVAL;
++		break;
++	case NETCON_REMOVE_TARGET:
++		printk(KERN_INFO "netconsole: cmd=NETCON_REMOVE_TARGET\n");
++		if (copy_from_user(&id, argp, sizeof(int)))
++			return -EFAULT;
++		printk(KERN_INFO "netconsole: id=%d\n", id);
++		list_for_each_entry_safe(nt, tmp, &target_list, list) {
++			if (nt->id == id) {
++				kobject_unregister(&nt->obj);
++				break;
++			}
++		}
++		break;
++	default:
++		return -ENOTTY;
++	}
++
++	return 0;
++}
++
+ static struct sysfs_ops target_sysfs_ops = {
+ 	.show = show_target_attr,
+ 	.store = store_target_attr
+@@ -317,9 +376,14 @@ static struct kobj_type target_ktype = {
+ 	.default_attrs = target_attrs,
+ };
+ 
++static struct file_operations miscdev_fops = {
++	.ioctl = netconsole_ioctl,
++};
++
+ static struct miscdevice netconsole_miscdev = {
+ 	.minor = MISC_DYNAMIC_MINOR,
+ 	.name = "netconsole",
++	.fops = &miscdev_fops,
+ };
+ 
+ static struct netpoll np = {
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+
