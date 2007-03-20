@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933626AbXCTPLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933647AbXCTPOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933626AbXCTPLG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 11:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933601AbXCTPLE
+	id S933647AbXCTPOT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 11:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933666AbXCTPOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 11:11:04 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:41581 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933609AbXCTPLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 11:11:01 -0400
-Date: Tue, 20 Mar 2007 08:09:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-In-Reply-To: <45FF770C.7050301@goop.org>
-Message-ID: <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org>
-References: <20070316.023331.59468179.davem@davemloft.net>  <45FB005D.9060809@goop.org>
-  <1174127638.8897.75.camel@localhost.localdomain>  <20070318.003309.71088169.davem@davemloft.net>
-  <20070318120814.GA45869@muc.de>  <1174272469.11680.23.camel@localhost.localdomain>
-  <m1648xxf93.fsf@ebiederm.dsl.xmission.com> 
- <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
- <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com>
- <45FF770C.7050301@goop.org>
+	Tue, 20 Mar 2007 11:14:19 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:61471 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933647AbXCTPOS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 11:14:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=gr92EIIx6FHgTTAUeQZ0Hr/27Mhlt7ie8K2HwP8ZCnYkC0K3Vz+fCL2Y5npO3TdFpeQA+UCL+h4vraOYt/Dfd636D9vQLTYVbcApuKaXb3a7Ro/BFjQfJ3NZlKP7+XMwtGcdsWrL60WCZb1zxJ1Me+QgaxSww2OXOekcCnZFmEo=
+Message-ID: <b6c5339f0703200814h710388bamffe59fa8fae465c2@mail.gmail.com>
+Date: Tue, 20 Mar 2007 11:14:16 -0400
+From: "Bob Copeland" <me@bobcopeland.com>
+To: "Nicolas Boichat" <nicolas@boichat.ch>
+Subject: Re: [RFC][PATCH] Apple SMC driver (hardware monitoring and control)
+Cc: linux-kernel@vger.kernel.org, mactel-linux-devel@lists.sourceforge.net
+In-Reply-To: <45FF86F6.7050200@boichat.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45F7C083.7090504@boichat.ch>
+	 <b6c5339f0703191443l5f8c5271pf43ea62e0c79a614@mail.gmail.com>
+	 <45FF86F6.7050200@boichat.ch>
+X-Google-Sender-Auth: f04bdd80e7560f2c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 19 Mar 2007, Jeremy Fitzhardinge wrote:
+> I tried neverball on my Macbook Pro 1st generation (Core Duo, not Core 2
+> Duo), and the x axis in inverted, not the y axis.
 >
-> Zachary Amsden wrote:
-> > For VMI, the default clobber was "cc", and you need a way to allow at
-> > least that, because saving and restoring flags is too expensive on x86.
-> 
-> According to lore (Andi, I think), asm() always clobbers cc. 
+> Could you confirm which axis is inverted on your Macbook?
 
-On x86, yes. Practically any instruction will clobber cc anyway, so it's 
-the default.
+Indeed, my memory is hazy and it may well have been the x-axis.  I can't find
+my modified copy.  I'll check it out again tonight along with your hdaps-gl and
+let you know how it goes...
 
-Although the gcc guys have occasionally been suggesting we should set it 
-in our asms.
-
-> Actually, it still does need a temp register.  The sequence for cli is:
-> 
->     mov %fs:xen_vcpu, %eax
->     movb $1,1(%eax)
-
-We should just do this natively. There's been several tests over the years 
-saying that it's much more efficient to do sti/cli as a simple store, and 
-handling the "oops, we got an interrupt while interrupts were disabled" as 
-a special case.
-
-I have this dim memory that ARM has done it that way for a long time 
-because it's so expensive to do a "real" cli/sti.
-
-And I think -rt does it for other reasons. It's just more flexible.
-
-		Linus
-
+-Bob
