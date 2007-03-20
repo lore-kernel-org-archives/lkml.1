@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965349AbXCTQcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964935AbXCTQdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965349AbXCTQcG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965338AbXCTQcF
+	id S964935AbXCTQdN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965312AbXCTQdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:32:05 -0400
-Received: from gw.goop.org ([64.81.55.164]:53981 "EHLO mail.goop.org"
+	Tue, 20 Mar 2007 12:33:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54505 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965320AbXCTQcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:32:01 -0400
-Message-ID: <46000C7E.4070001@goop.org>
-Date: Tue, 20 Mar 2007 09:31:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <ak@muc.de>, David Miller <davem@davemloft.net>,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S964935AbXCTQdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:33:11 -0400
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: UDP packets scheduling
+Date: Tue, 20 Mar 2007 09:31:46 -0700
+Organization: OSDL
+Message-ID: <20070320093146.5f208697@freekitty>
+References: <20070320005228.GN22880@mail.muni.cz>
+	<MDEHLPKNGKAHNMBLJOLKCEEACGAC.davids@webmaster.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Trace: build.pdx.osdl.net 1174408307 16263 10.8.0.54 (20 Mar 2007 16:31:47 GMT)
+X-Complaints-To: abuse@osdl.org
+NNTP-Posting-Date: Tue, 20 Mar 2007 16:31:47 +0000 (UTC)
+X-Newsreader: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Tue, 20 Mar 2007, Eric W. Biederman wrote:
->   
->> If that is the case.  In the normal kernel what would
->> the "the oops, we got an interrupt code do?"
->> I assume it would leave interrupts disabled when it returns?
->> Like we currently do with the delayed disable of normal interrupts?
->>     
->
-> Yeah, disable interrupts, and set a flag that the fake "sti" can test, and 
-> just return without doing anything.
->
-> (You may or may not also need to do extra work to Ack the hardware 
-> interrupt etc, which may be irq-controller specific. Once the CPU has 
-> accepted the interrupt, you may not be able to just leave it dangling)
->   
+On Mon, 19 Mar 2007 19:37:58 -0700
+"David Schwartz" <davids@webmaster.com> wrote:
 
-So it would be something like:
+> 
+> > can anyone suggest me a proper way how to schedule UDP packets to
+> > transmit at
+> > some given rate?
+> >
+> > E.g., I have two boxes both having 10 GE interfaces. One box is able to
+> > transmit at 9.9Gbps, the other one is able to receive only at
+> > about 5.5Gbps.
+> > Flow control must be turned off for some other reason.
 
-    pda.intr_mask = 1;		/* disable interrupts */
-    ...
-    pda.intr_mask = 0;		/* enable interrupts */
-    if (xchg(&pda.intr_pending, 0))	/* check pending */
-    	asm("sti");		/* was pending; isr left cpu interrupts masked */
-      
+  "Those who do not understand TCP are condemned to reinvent it, poorly."
 
-and in the interrupt handler:
 
-    if (pda.intr_mask) {
-    	pda.intr_pending = 1;
-    	regs->eflags &= ~IF;
-    	maybe_ack_interrupt_controller();
-    	iret
-      
-
-    }
-
-?
-
-    J
-
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
