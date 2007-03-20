@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966071AbXCTCr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750894AbXCTDMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966071AbXCTCr6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 22:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966075AbXCTCr6
+	id S1750894AbXCTDMb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 23:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbXCTDMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 22:47:58 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:43920 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S966071AbXCTCr5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 22:47:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=k0tXGLLbVCm4kKVV75THhcGjA0HhWzp2rEhcfh1fZDSMYF93fOKulOY+jgJLECH3kmoeLDKirYfg9e5otswGTmsnMusPhuI9FIxxwYyaeBRHpgRKhlExBGIXsJNlfbDsLldWGfpf9tzyR21PC7+my7l9GRu6yM5YumZ4opUwePM=  ;
-X-YMail-OSG: 2HUTSNwVM1kyIOrN2HwsGISl.OxBypOmWDXPSs0aA6d8R3JS5NxVfgIv0DvjbCPAEG0nTGdbQLUu0YN0jlhvTwsor2PSV1tvrFrnnOakOJufSQhWxRa_TaZdW76D1Ubqfp5EoGMB7rmzme3paWNmOL7efjYLO94iWAJToeQe45Y4JzSsyj8s
-Message-ID: <45FF4B59.3060107@yahoo.com.au>
-Date: Tue, 20 Mar 2007 13:47:53 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 19 Mar 2007 23:12:31 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:43021 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750894AbXCTDMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 23:12:30 -0400
+Date: Mon, 19 Mar 2007 20:11:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Xavier Bestel <xavier.bestel@free.fr>
+cc: Mark Lord <lkml@rtr.ca>, Al Boldi <a1426z@gawab.com>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Nicholas Miell <nmiell@comcast.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: RSDL v0.31
+In-Reply-To: <1174322580.30876.72.camel@frg-rhel40-em64t-04>
+Message-ID: <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
+References: <200703042335.26785.a1426z@gawab.com>  <200703172048.46267.kernel@kolivas.org>
+  <1174125534.7734.2.camel@Homer.simpson.net>  <200703172355.30989.a1426z@gawab.com>
+  <45FEB54A.3040602@rtr.ca>  <1174321617.30876.69.camel@frg-rhel40-em64t-04>
+  <45FEBBF5.9060002@rtr.ca> <1174322580.30876.72.camel@frg-rhel40-em64t-04>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
-References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>	<45FEE33C.1020706@googlemail.com>	<20070319140827.285dcc7f.akpm@linux-foundation.org>	<6bffcb0e0703191437i2ee706d4xaec3bc11ca7c3234@mail.gmail.com>	<20070319175852.c73406f1.akpm@linux-foundation.org> <20070319180234.6b7826b2.akpm@linux-foundation.org>
-In-Reply-To: <20070319180234.6b7826b2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 19 Mar 2007 17:58:52 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> 
->>The kernel without Nick's patchset but with the assert runs OK too.  Under
->>the principle of mm-has-been-too-flakey-lately, I'll drop the patches:
->>
->>mm-debug-check-for-the-fault-vs-invalidate-race.patch
->>mm-simplify-filemap_nopage.patch
->>mm-fix-fault-vs-invalidate-race-for-linear-mappings.patch
->>mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
->>mm-merge-populate-and-nopage-into-fault-fixes-nonlinear-tidy.patch
->>mm-merge-nopfn-into-fault.patch
->>mm-merge-nopfn-into-fault-fix.patch
->>mm-remove-legacy-cruft.patch
-> 
-> 
-> ug, too many rejects.  I'll leave them in, minus
-> mm-debug-check-for-the-fault-vs-invalidate-race.patch
-> 
 
-Hang on a sec... I'll try fixing the thing before you next make a
-release.
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+On Mon, 19 Mar 2007, Xavier Bestel wrote:
+> > >> Stock scheduler wins easily, no contest.
+> > > 
+> > > What happens when you renice X ?
+> > 
+> > Dunno -- not necessary with the stock scheduler.
+> 
+> Could you try something like renice -10 $(pidof Xorg) ?
+
+Could you try something as simple and accepting that maybe this is a 
+problem?
+
+Quite frankly, I was *planning* on merging RSDL very early after 2.6.21, 
+but there is one thing that has turned me completely off the whole thing:
+
+ - the people involved seem to be totally unwilling to even admit there 
+   might be a problem.
+
+This is like alcoholism. If you cannot admit that you might have a 
+problem, you'll never get anywhere. And quite frankly, the RSDL proponents 
+seem to be in denial ("we're always better", "it's your problem if the old 
+scheduler works better", "just one report of old scheduler being better").
+
+And the thing is, if people aren't even _willing_ to admit that there may 
+be issues, there's *no*way*in*hell* I will merge it even for testing. 
+Because the whole and only point of merging RSDL was to see if it could 
+replace the old scheduler, and the most important feature in that case is 
+not whether it is perfect, BUT WHETHER ANYBODY IS INTERESTED IN TRYING TO 
+FIX THE INEVITABLE PROBLEMS!
+
+See?
+
+Can you people not see that the way you're doing that "RSDL is perfect" 
+chorus in the face of people who report problems, you're just making it 
+totally unrealistic that it will *ever* get merged.
+
+So unless somebody steps up to the plate and actually *talks* about the 
+problem reports, and admits that maybe RSDL will need some tweaking, I'm 
+not going to merge it.
+
+Because there is just _one_ thing that is more important than code - and 
+that is the willingness to fix the code...
+
+		Linus
