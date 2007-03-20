@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbXCTWY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbXCTW0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752031AbXCTWY5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 18:24:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbXCTWY4
+	id S1752051AbXCTW0c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 18:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXCTW0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 18:24:56 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:46037 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752031AbXCTWYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 18:24:55 -0400
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 2.6.21-rc4] ieee1394: fix oops on "modprobe -r ohci1394" after network class_device conversion
-Date: Wed, 21 Mar 2007 00:26:22 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       Adrian Bunk <bunk@stusta.de>, Greg KH <greg@kroah.com>,
-       Thomas Meyer <thomas@m3y3r.de>, Tobias Diedrich <ranma@tdiedrich.de>
-References: <200703140642.28390.ismail@pardus.org.tr> <200703150249.04169.ismail@pardus.org.tr> <tkrat.5965dca5154c0fa2@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.5965dca5154c0fa2@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703210026.22825.ismail@pardus.org.tr>
+	Tue, 20 Mar 2007 18:26:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59101 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752022AbXCTW0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 18:26:31 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070320213657.15afe5fa@lxorguk.ukuu.org.uk> 
+References: <20070320213657.15afe5fa@lxorguk.ukuu.org.uk>  <20070320195856.12853.63473.stgit@warthog.cambridge.redhat.com> 
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org,
+       dhowells@redhat.com
+Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try #3] 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 20 Mar 2007 22:26:13 +0000
+Message-ID: <15256.1174429573@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 March 2007 23:43:22 Stefan Richter wrote:
-> The networking subsystem has been converted from class_device to device
-> but ieee1394 hasn't.  This results in a 100% reproducible NULL pointer
-> dereference if the ohci1394 driver module is unloaded while the eth1394
-> module is still loaded.
-> http://lkml.org/lkml/2006/11/16/147
-> http://lkml.org/lkml/2007/3/14/4
->
-> This is a regression in 2.6.21-rc1.
->
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
->
-> Works for me.  I still can connect to an OS X box via eth1394 after that
-> and modprobe -r ohci1394 before modprobe -r eth1394 works again.
->
-> Index: linux-2.6.21-rc4/drivers/ieee1394/eth1394.c
-> ===================================================================
-> --- linux-2.6.21-rc4.orig/drivers/ieee1394/eth1394.c	2007-03-16
-> 19:24:44.000000000 +0100 +++
-> linux-2.6.21-rc4/drivers/ieee1394/eth1394.c	2007-03-20 22:28:49.000000000
-> +0100 @@ -586,7 +586,10 @@ static void ether1394_add_host (struct h
->          }
->
->  	SET_MODULE_OWNER(dev);
-> +#if 0
-> +	/* FIXME - Is this the correct parent device anyway? */
->  	SET_NETDEV_DEV(dev, &host->device);
-> +#endif
->
->  	priv = netdev_priv(dev);
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-This also fixes the issue for me, thanks for tracking this down Stefan.
+> - recvmsg not supporting MSG_TRUNC is rather weird and really ought to be
+> fixed one day as its useful to find out the sizeof message pending when
+> combined with MSG_PEEK
 
-Regards.
+Hmmm...  I hadn't considered that.  I assumed MSG_TRUNC not to be useful as
+arbitrarily chopping bits out of the request or reply would seem to be
+pointless.
 
--- 
-Happiness in intelligent people is the rarest thing I know. (Ernest Hemingway)
+> - RXRPC_MIN_SECURITY_LEVEL reads into rx->min_sec_level and then if it is
+> invalid reports an error but doesn't restore the valid level
 
-Ismail Donmez ismail (at) pardus.org.tr
-GPG Fingerprint: 7ACD 5836 7827 5598 D721 DF0D 1A9D 257A 5B88 F54C
-Pardus Linux / KDE developer
+Fixed.
+
+> - Why does rxrpc_writable always return 0 ?
+
+Good point.  That's slightly tricky to deal with as output messages don't
+remain queued on the socket struct itself.  Hmmm...
+
+One thing I'd like to be able to do is pass the sk_buffs I've set up to UDP
+directly rather than having to call the UDP socket's sendmsg.  That'd eliminate
+a copy.  But I decided to get it working right first, then look at cute
+optimisations like that.
+
+Such a thing would also be useful for the AFS filesystem: it could pass skbuffs
+it has preloaded to AF_RXRPC, which would then hand them on to UDP.
+
+> - rxrpc_process_soft_ACKs doesn't itself limit and check acns->nAcks is
+> always below RXRPC_MAXACKS, as this is a stakc variable it ought to be
+> paranoid about it. I think its ok from the caller check but its very hard
+> to prove...
+
+nAcks is a uint8_t.  If that can exceed RXRPC_MAXACKS (255) then I suspect I'll
+have more pressing worries.  I could put a check in there, but the compiler
+would give me a warning:-/
+
+> It needs a lot more eyes/review due to the complexity and network
+> exposure though - not your fault, whoever designed RXRPC's 8)
+
+It's not an entirely insane protocol:-) Actually, part of the problem is Linux
+itself.
+
+David
