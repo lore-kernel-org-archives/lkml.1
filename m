@@ -1,81 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751060AbXCTQgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751122AbXCTQhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751060AbXCTQgs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 12:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbXCTQgs
+	id S1751122AbXCTQhA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 12:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXCTQhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 12:36:48 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:46549 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbXCTQgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 12:36:47 -0400
-Date: Tue, 20 Mar 2007 08:36:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: mm snapshot broken-out-2007-03-18-02-44.tar.gz uploaded
-Message-Id: <20070320083627.27d90a91.akpm@linux-foundation.org>
-In-Reply-To: <45FF8A79.7010201@googlemail.com>
-References: <200703180946.l2I9kTVc020636@shell0.pdx.osdl.net>
-	<45FF8A79.7010201@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 20 Mar 2007 12:37:00 -0400
+Received: from smtp.ono.com ([62.42.230.12]:30909 "EHLO resmaa02.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751122AbXCTQg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 12:36:59 -0400
+Date: Tue, 20 Mar 2007 17:36:57 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070320173657.09a13940@werewolf-wl>
+In-Reply-To: <20070319205623.299d0378.akpm@linux-foundation.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.8.1cvs22 (GTK+ 2.10.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007 08:17:13 +0100 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+On Mon, 19 Mar 2007 20:56:23 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> akpm@linux-foundation.org napisał(a):
-> > The mm snapshot broken-out-2007-03-18-02-44.tar.gz has been uploaded to
-> > 
-> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-03-18-02-44.tar.gz
-> > 
-> > It contains the following patches against 2.6.21-rc4:
 > 
-> PM: Adding info for No Bus:vcsa7
-> BUG: at kernel/lockdep.c:2430 check_flags()
->  [<c0105256>] show_trace_log_lvl+0x1a/0x2f
->  [<c010597b>] show_trace+0x12/0x14
->  [<c0105a3d>] dump_stack+0x16/0x18
->  [<c013e1b5>] check_flags+0xb7/0x187
->  [<c01413ea>] lock_acquire+0x3a/0x93
->  [<c0139a64>] down_write+0x3a/0x54
->  [<c0170563>] sys_munmap+0x23/0x3f
->  [<c0104270>] syscall_call+0x7/0xb
->  =======================
-> irq event stamp: 302470
-> hardirqs last  enabled at (302469): [<c0104391>] syscall_exit_work+0x11/0x26
-> hardirqs last disabled at (302470): [<c0104119>] ret_from_exception+0x9/0xc
-> softirqs last  enabled at (301928): [<c0128e58>] __do_softirq+0xe4/0xea
-> softirqs last disabled at (301921): [<c0128e97>] do_softirq+0x39/0x55
-> oprofile: using NMI interrupt.
-> printk: 6 messages suppressed.
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> 
+> Will appear later at
+> 
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
+> 
 
-Don't know.  Several people seem to be hitting this.
+(oops, I forgot LKML)
 
+I have no udev events for my dvd-rw...
+When I insert a disc in the dvd reader:
 
-> BUG: using smp_processor_id() in preemptible [00000001] code: mount/27913
-> caller is avail_to_resrv_perfctr_nmi_bit+0x2b/0x43
->  [<c0105256>] show_trace_log_lvl+0x1a/0x2f
->  [<c010597b>] show_trace+0x12/0x14
->  [<c0105a3d>] dump_stack+0x16/0x18
->  [<c0213313>] debug_smp_processor_id+0xb3/0xc8
->  [<c0116a26>] avail_to_resrv_perfctr_nmi_bit+0x2b/0x43
->  [<fdc819b9>] nmi_create_files+0x2a/0x10e [oprofile]
->  [<fdc80f52>] oprofile_create_files+0xe6/0xec [oprofile]
->  [<fdc81157>] oprofilefs_fill_super+0x78/0x7e [oprofile]
->  [<c0182d2e>] get_sb_single+0x59/0x9f
->  [<fdc8108f>] oprofilefs_get_sb+0x1c/0x1e [oprofile]
->  [<c0182792>] vfs_kern_mount+0x81/0xf1
->  [<c0182852>] do_kern_mount+0x38/0xde
->  [<c0196671>] do_mount+0x605/0x693
->  [<c019677f>] sys_mount+0x80/0xb5
->  [<c0104270>] syscall_call+0x7/0xb
->  =======================
+werewolf:~# udevmonitor
+udevmonitor prints the received event from the kernel [UEVENT]
+and the event which udev sends out after rule processing [UDEV]
 
-Odd.  It looks like oprofile has been doing this for some time.  Andi,
-there are a few changes in the NMI area - can you think of one whihc would
-have triggered this?
+UEVENT[1174385162.607021] mount    /block/sr1 (block)
+UDEV  [1174385162.610056] mount    /block/sr1 (block)
 
+If I insert it in the dvd-rw drive, nothing happens.
+
+extracts from dmesg:
+(I have just noticed the message for the 40 wire cable, I will check)
+(btw, why the h**l ata busses start nubering in 1 and scsi ones in 0 :((((,
+it ata also begun in 0 life will be much easier...)
+
+ata_piix 0000:00:1f.1: version 2.10ac1
+ata1: PATA max UDMA/133 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x0001f000 irq 14
+ata2: PATA max UDMA/133 cmd 0x00010170 ctl 0x00010376 bmdma 0x0001f008 irq 15
+scsi0 : ata_piix
+ata1.00: ATAPI, max UDMA/33
+ata1.01: ATAPI, max MWDMA0, CDB intr
+ata1.00: configured for UDMA/33
+ata1.01: configured for PIO3
+scsi1 : ata_piix
+ata2.00: ATA-6: ST3120022A, 3.06, max UDMA/100
+ata2.00: 234441648 sectors, multi 16: LBA48 
+ata2.01: ATAPI, max UDMA/33
+ata2.00: limited to UDMA/33 due to 40-wire cable
+ata2.00: configured for UDMA/33
+ata2.01: configured for UDMA/33
+scsi 0:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-H10N  JL10 PQ: 0 ANSI: 5
+sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 0:0:0:0: Attached scsi CD-ROM sr0
+scsi 0:0:1:0: Direct-Access     IOMEGA   ZIP 250          51.G PQ: 0 ANSI: 5
+sd 0:0:1:0: [sda] Attached SCSI removable disk
+scsi 1:0:0:0: Direct-Access     ATA      ST3120022A       3.06 PQ: 0 ANSI: 5
+sd 1:0:0:0: [sdb] 234441648 512-byte hardware sectors (120034 MB)
+sd 1:0:0:0: [sdb] Attached SCSI disk
+scsi 1:0:1:0: CD-ROM            TOSHIBA  DVD-ROM SD-M1712 1004 PQ: 0 ANSI: 5
+sr1: scsi3-mmc drive: 48x/48x cd/rw xa/form2 cdda tray
+sr 1:0:1:0: Attached scsi CD-ROM sr1
+ata_piix 0000:00:1f.2: MAP [ P0 -- P1 -- ]
+ata3: SATA max UDMA/133 cmd 0x0001c000 ctl 0x0001c402 bmdma 0x0001d000 irq 18
+ata4: SATA max UDMA/133 cmd 0x0001c800 ctl 0x0001cc02 bmdma 0x0001d008 irq 18
+scsi2 : ata_piix
+ata3.00: ATA-6: ST3200822AS, 3.01, max UDMA/133
+ata3.00: 390721968 sectors, multi 16: LBA48 
+ata3.00: configured for UDMA/133
+scsi3 : ata_piix
+ATA: abnormal status 0x7F on port 0x0001c807
+scsi 2:0:0:0: Direct-Access     ATA      ST3200822AS      3.01 PQ: 0 ANSI: 5
+sd 2:0:0:0: [sdc] 390721968 512-byte hardware sectors (200050 MB)
+sd 2:0:0:0: [sdc] Write Protect is off
+sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 2:0:0:0: [sdc] 390721968 512-byte hardware sectors (200050 MB)
+sd 2:0:0:0: [sdc] Write Protect is off
+sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sdc: sdc1 sdc2 sdc3
+sd 2:0:0:0: [sdc] Attached SCSI disk
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.20-jam05 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #1 SMP PREEMPT
