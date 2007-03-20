@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbXCTUeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXCTUev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbXCTUeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 16:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbXCTUeR
+	id S1752868AbXCTUev (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 16:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXCTUeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 16:34:17 -0400
-Received: from sccrmhc13.comcast.net ([63.240.77.83]:55197 "EHLO
-	sccrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753889AbXCTUeQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 16:34:16 -0400
-Subject: Re: BSOD
-From: Jim Gettys <jg@laptop.org>
-Reply-To: jg@laptop.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: David Miller <davem@davemloft.net>, jesse.barnes@intel.com,
-       zaitcev@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <17919.42767.233797.860230@cargo.ozlabs.ibm.com>
-References: <20070319120807.af36ef5d.zaitcev@redhat.com>
-	 <20070319.123836.39155546.davem@davemloft.net>
-	 <200703191254.36373.jesse.barnes@intel.com>
-	 <20070319.130544.115907938.davem@davemloft.net>
-	 <17919.42767.233797.860230@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Organization: OLPC
-Date: Tue, 20 Mar 2007 16:33:56 -0400
-Message-Id: <1174422836.6832.313.camel@localhost>
+	Tue, 20 Mar 2007 16:34:50 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49380 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753858AbXCTUet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 16:34:49 -0400
+Date: Tue, 20 Mar 2007 21:35:29 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc4-mm1 + 3 hot-fixes -- WARNING: could not find versions for .tmp_versions/built-in.mod
+Message-ID: <20070320203529.GA13349@uranus.ravnborg.org>
+References: <a44ae5cd0703200735k197bc50cqeb2856f9f50f88c9@mail.gmail.com> <20070320081138.2a5fdb1e.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070320081138.2a5fdb1e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 20:19 +1100, Paul Mackerras wrote:
+On Tue, Mar 20, 2007 at 08:11:38AM -0800, Andrew Morton wrote:
+> On Tue, 20 Mar 2007 07:35:06 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+> 
+> > It looks like the number of section mismatches is much reduced, which
+> > is great.
+> 
+> We fixed something?   Maybe we just broke the checker ;)
+> 
+> >  But, I don't remember seeing "WARNING: could not find
+> > versions for ..." warnings before.  Is this an artifact of the
+> > init/.missing_syscalls.h problem I encountered earlier?
+> 
+> Sam says these are harmless and he's working on making them go away.
+> 
+> >   MODPOST vmlinux
+> > WARNING: could not find versions for .tmp_versions/head.mod
+> > WARNING: could not find versions for .tmp_versions/init_task.mod
 
-> Anything is better than nothing.  At the moment we get nothing if you
-> are in X when the panic occurs, even for the nicest, most well-behaved
-> panics. :)  If we can change that to getting something sometimes,
-> that's a win.
+They were caused by modpost now being called with several .o files
+that are not modules. The fix was just to get rid of the
+warning.
+I have committed the following to kbuild.git.
 
-Treating the display as a frame buffer if at all possible is more likely
-to work than anything else.  All the kernel needs to know is beginning
-address, stride (# bytes/line; not necessarily the same as the number of
-pixels on a row), number of rows, and depth of the display.  Thereafter,
-it's just a SMOP as they say (and the sometimes maligned fbdev driver of
-course already has all this code, and usually oops messages do ok on
-fbdev).  
+	Sam
 
-The other interesting headache that comes up sometimes is when the oops
-message is more than a screen-full long.
+commit 84b48a0275b4474587cefecb455372e8df6dabda
+Author: Sam Ravnborg <sam@ravnborg.org>
+Date:   Tue Mar 20 21:30:23 2007 +0100
 
-One may also need to reset lookup tables to some sane value, and halt
-the GPU, and maybe worry about video overlays.
-                                 - Jim
+    kbuild: do not emit src version warning for non-modules
+    
+    modpost is now called with .o files that are not modules.
+    So do not warn if there is no corresponding .mod
+    file listing .o files (in .tmp_versions/).
+    
+    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-
--- 
-Jim Gettys
-One Laptop Per Child
-
-
+diff --git a/scripts/mod/sumversion.c b/scripts/mod/sumversion.c
+index 8a28756..6873d5a 100644
+--- a/scripts/mod/sumversion.c
++++ b/scripts/mod/sumversion.c
+@@ -397,10 +397,9 @@ void get_src_version(const char *modname, char sum[], unsigned sumlen)
+ 		(int) strlen(basename) - 2, basename);
+ 
+ 	file = grab_file(filelist, &len);
+-	if (!file) {
+-		warn("could not find versions for %s\n", filelist);
++	if (!file)
++		/* not a module or .mod file missing - ignore */
+ 		return;
+-	}
+ 
+ 	sources = strchr(file, '\n');
+ 	if (!sources) {
