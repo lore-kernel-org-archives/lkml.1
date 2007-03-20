@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbXCTIcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbXCTIwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbXCTIcg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 04:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbXCTIcg
+	id S1752579AbXCTIwI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 04:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbXCTIwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 04:32:36 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:49796 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531AbXCTIcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 04:32:35 -0400
-Date: Tue, 20 Mar 2007 09:32:03 +0100 (MET)
-Message-Id: <200703200832.l2K8W3o5023643@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: ak@suse.de, jesper.juhl@gmail.com
-Subject: Re: [PATCH][5/5][resend] floppy.c: Fix device_create_file() warning
-Cc: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com,
-       linux-kernel@vger.kernel.org, trent.waddington@gmail.com
+	Tue, 20 Mar 2007 04:52:08 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3759 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752579AbXCTIwH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 04:52:07 -0400
+Date: Tue, 20 Mar 2007 08:51:56 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Keith Owens <kaos@ocs.com.au>
+Cc: linux-kernel@vger.kernel.org, len.brown@intel.com
+Subject: Re: PNPACPI probes serial twice, messes up serial console
+Message-ID: <20070320085156.GA19799@flint.arm.linux.org.uk>
+Mail-Followup-To: Keith Owens <kaos@ocs.com.au>,
+	linux-kernel@vger.kernel.org, len.brown@intel.com
+References: <17887.1174373206@kao2.melbourne.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17887.1174373206@kao2.melbourne.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 18:42:22 +0100, Jesper Juhl wrote:
-> --- a/drivers/block/floppy.c
-> +++ b/drivers/block/floppy.c
-> @@ -4302,7 +4302,12 @@ static int __init floppy_init(void)
->  		if (err)
->  			goto out_flush_work;
->  
-> -		device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
-> +		err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
-> +		if (err)
-> +			goto out_flush_work;
-> +
->  		/* to be cleaned up... */
->  		disks[drive]->private_data = (void *)(long)drive;
->  		disks[drive]->queue = floppy_queue;
+On Tue, Mar 20, 2007 at 05:46:46PM +1100, Keith Owens wrote:
+> Should pnpacpi probe and setup the serial devices even when thay have
+> already been setup?  Or this is something strange about the UART in
+> this particular box?
 
-The floppy driver's sysfs file just provides some auxiliary
-information to user-space, none of which matters for most of
-its users. It is IMO totally inappropriate to fail floppy
-driver init in this case.
+Yes, so it can be associated with the correct device.
 
-/Mikael
+No idea why it's affecting your serial console though - the autoconfig
+should be transparent once it's completed.  Sure, if you enable
+serial debugging (thereby making it produce output during the autoconfig)
+it will mess it up, but that's the standard gun and foot scenario.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
