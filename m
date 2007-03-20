@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934067AbXCTU2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934073AbXCTU3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934067AbXCTU2m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 16:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934068AbXCTU2m
+	id S934073AbXCTU3Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 16:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934076AbXCTU3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 16:28:42 -0400
-Received: from mail.suse.de ([195.135.220.2]:58009 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934067AbXCTU2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 16:28:42 -0400
-Date: Tue, 20 Mar 2007 13:26:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: Daniel Yeisley <dan.yeisley@unisys.com>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] I/O space boot parameter
-Message-ID: <20070320202652.GA15439@suse.de>
-References: <1174407505.23830.14.camel@localhost.localdomain> <20070320180020.GB21470@suse.de> <1174411538.23830.28.camel@localhost.localdomain>
+	Tue, 20 Mar 2007 16:29:25 -0400
+Received: from smtp112.sbc.mail.re2.yahoo.com ([68.142.229.93]:21572 "HELO
+	smtp112.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S934073AbXCTU3Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 16:29:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=2WXKenWn8Znh0PgJubtVYbpebDec9mKYC191mmEtkCmfpv3EbVc8Yk35ku+vzqxATO1CX3gW0tk9Ya7voJx+YqBQyyJkdgM5N9YL4H4nBdNqm90uIyzUAq7ThIUw1W7fpg2UGRhHNzd4vJlAFKjXAkl+QoWaHKih8b1SfOTEWuM=  ;
+X-YMail-OSG: TMWXcHkVM1lCjYbN9Smoeb6rDWauyg_zS8HREniBpgRuDWp1jUf4eQyurvNtCiu.25c9RnWNjh0f8LbDFX4n8YYJydGeP1jTUyanPSYGxbpgm9ZMQRWABXL16pdN0inkctSrppVRogO3rw--
+From: David Brownell <david-b@pacbell.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.21-rc4-git] fix SND_SOC Kconfig
+Date: Tue, 20 Mar 2007 13:49:51 -0700
+User-Agent: KMail/1.7.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1174411538.23830.28.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703201349.52156.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 01:25:38PM -0400, Daniel Yeisley wrote:
-> On Tue, 2007-03-20 at 11:00 -0700, Greg KH wrote:
-> > On Tue, Mar 20, 2007 at 12:18:24PM -0400, Daniel Yeisley wrote:
-> > > It has been mentioned before that large systems with a lot of PCI buses
-> > > have issues with the 64k I/O space limit.  The ES7000 has a BIOS option
-> > > to either assign I/O space to all adapters, or only to those that need
-> > > it.  A list of supported adapters that don't need it is kept in the
-> > > BIOS.  When this option is used, the kernel sees the BARs on the
-> > > adapters and still tries to assign I/O space (until it runs out).  I've
-> > > written a patch to implement a boot parameter that tells the kernel not
-> > > to assign I/O space if the BIOS hasn't.  
-> > 
-> > How prelevant are machines like this?  And why are the BARs on these
-> > devices wrong?
-> > 
-> I don't have any sales numbers, but I can tell you that our current
-> systems can have up to 64 PCI buses.  
-> 
-> I've been working with Emulex cards, and my understanding is that the
-> BARs on the devices aren't wrong, but we can't allocate 4k of I/O space
-> for each one.  So we maintain a list in the BIOS of devices that don't
-> actually need I/O space and then don't assign it.  I've tested an a
-> x86_64 system with 20+ adapters and saw all the disks attached without
-> any problems.
+The new ALSA "SOC" support has bogus Kconfig ... it should
+not be presenting anything AT91-related except on AT91,
+or anything PXA-related except on PXA.  Right now, x86
+sees both of those menus, as do all other platforms.
 
-Ah.  Others are working on providing a fix for this too, but it is being
-done in the drivers themselves, not in the pci core.  Look in the
-linux-pci mailing list archives for those patches (I don't think they
-every went into mainline for some reason, but I might be wrong...)
+This patch removes needless Kconfig layering, and the
+related inappropriate choice presentation.
 
-I suggest you work with those developers, as they have the same issue
-that you are trying to solve here.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-thanks,
-
-greg k-h
+Index: g26/sound/soc/Kconfig
+===================================================================
+--- g26.orig/sound/soc/Kconfig	2007-03-18 14:11:36.000000000 -0700
++++ g26/sound/soc/Kconfig	2007-03-20 13:33:06.000000000 -0700
+@@ -22,11 +22,8 @@ config SND_SOC
+ 	  will be called snd-soc-core.
+ 
+ # All the supported Soc's
+-menu "SoC Platforms"
+-depends on SND_SOC
+ source "sound/soc/at91/Kconfig"
+ source "sound/soc/pxa/Kconfig"
+-endmenu
+ 
+ # Supported codecs
+ source "sound/soc/codecs/Kconfig"
+Index: g26/sound/soc/at91/Kconfig
+===================================================================
+--- g26.orig/sound/soc/at91/Kconfig	2007-03-18 14:11:36.000000000 -0700
++++ g26/sound/soc/at91/Kconfig	2007-03-20 13:31:52.000000000 -0700
+@@ -1,5 +1,3 @@
+-menu "SoC Audio for the Atmel AT91"
+-
+ config SND_AT91_SOC
+ 	tristate "SoC Audio for the Atmel AT91 System-on-Chip"
+ 	depends on ARCH_AT91 && SND_SOC
+@@ -27,5 +25,3 @@ config SND_AT91_SOC_ETI_SLAVE
+ 	help
+ 	  Say Y if you want to run with the AT91 SSC generating the BCLK
+ 	  and LRC signals on Endrelia boards.
+-
+-endmenu
+Index: g26/sound/soc/pxa/Kconfig
+===================================================================
+--- g26.orig/sound/soc/pxa/Kconfig	2007-03-18 14:11:36.000000000 -0700
++++ g26/sound/soc/pxa/Kconfig	2007-03-20 13:31:57.000000000 -0700
+@@ -1,5 +1,3 @@
+-menu "SoC Audio for the Intel PXA2xx"
+-
+ config SND_PXA2XX_SOC
+ 	tristate "SoC Audio for the Intel PXA2xx chip"
+ 	depends on ARCH_PXA && SND_SOC
+@@ -55,5 +53,3 @@ config SND_PXA2XX_SOC_TOSA
+ 	help
+ 	  Say Y if you want to add support for SoC audio on Sharp
+ 	  Zaurus SL-C6000x models (Tosa).
+-
+-endmenu
