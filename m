@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750699AbXCTSWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750928AbXCTSWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750699AbXCTSWb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 14:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbXCTSWb
+	id S1750928AbXCTSWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 14:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXCTSWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 14:22:31 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42293 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbXCTSWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 14:22:30 -0400
-Date: Tue, 20 Mar 2007 20:21:19 +0100
-From: Andi Kleen <ak@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Miller <davem@davemloft.net>,
-       virtualization@lists.linux-foundation.org, jbeulich@novell.com,
-       jeremy@goop.org, xen-devel@lists.xensource.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
-       virtualization@lists.osdl.org, anthony@codemonkey.ws,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
-Message-ID: <20070320192118.GD4286@bingen.suse.de>
-References: <20070319.120854.30182994.davem@davemloft.net> <20070319.204712.118947830.davem@davemloft.net> <m13b40wnrb.fsf@ebiederm.dsl.xmission.com> <200703201428.50564.ak@suse.de> <m1ircvswzz.fsf@ebiederm.dsl.xmission.com> <20070320174159.GA4286@bingen.suse.de> <Pine.LNX.4.64.0703200947501.6730@woody.linux-foundation.org> <20070320180359.GB4286@bingen.suse.de> <Pine.LNX.4.64.0703201022040.6730@woody.linux-foundation.org>
+	Tue, 20 Mar 2007 14:22:54 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:46536 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXCTSWw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 14:22:52 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703201022040.6730@woody.linux-foundation.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Multiple instances of program sharing same text segment ?
+Date: Tue, 20 Mar 2007 11:22:45 -0700
+Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A439@xmb-sjc-214.amer.cisco.com>
+In-Reply-To: <460023F1.8060102@goop.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Multiple instances of program sharing same text segment ?
+thread-index: AcdrG2rvk7YNbP7BSdaGNItpYDVdwgAATEmg
+References: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A437@xmb-sjc-214.amer.cisco.com> <460023F1.8060102@goop.org>
+From: "Ravinandan Arakali \(rarakali\)" <rarakali@cisco.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 20 Mar 2007 18:22:45.0989 (UTC) FILETIME=[C1E93150:01C76B1C]
+Authentication-Results: sj-dkim-2; header.From=rarakali@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 10:27:00AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 20 Mar 2007, Andi Kleen wrote:
-> > 
-> > The code never did that. In fact many of the problems we had initially
-> > especially came out of that -- the fallback code that would handle
-> > this case wasn't fully correct.
-> 
-> I don't keep my emails any more, but you *never* fixed the problems in 
-> arch/*/kernel/traps.c.
+Thanks Jeremy.
 
-I fixed that one after you dropped it (hmm, double checking: or at least
-I thought I had fixed it, but don't see the code right now; will redo then) 
-Basically it was just a one liner anyways - always check against all the
-stacks that are there.
+Ravi 
 
+-----Original Message-----
+From: Jeremy Fitzhardinge [mailto:jeremy@goop.org] 
+Sent: Tuesday, March 20, 2007 11:12 AM
+To: Ravinandan Arakali (rarakali)
+Cc: Linux Kernel
+Subject: Re: Multiple instances of program sharing same text segment ?
 
-> Yes, the kernel/unwind.c issues generally got fixed. The infinite loops in 
-> the *callers* never did.
+Ravinandan Arakali (rarakali) wrote:
+> I note that do_exec calls do_mmap to map the executable file to
+memory.
+> But not sure what happens(w.r.t text sharing) when another instance of
 
-There was later a weaker form that should have caught most loops, but admittedly
-it wasn't 100% bullet-proof with exception stacks.
+> the program is invoked. BTW, this is 2.6.10.
 
-> 
-> > Also frankly often your analysis about what went wrong was just
-> > incorrect.
-> 
-> Still in denial, I see.
-> 
-> Do you still claim that "the fallback position always did the right 
-> thing"
+Yes, they will be shared.  As far as the rest of the kernel is
+concerned, an mmap is an mmap is an mmap, and the pages will be shared.
 
-No initially it was buggy and that caused several of the crashes.
-
-> Despite the fact that the unwinder had sometimes *corrupted* the 
-> incoming information so much that the fallback position was the one that 
-> oopsed? And no, you didn't fix that.
-
-No, it oopsed because it was broken by itself.
-Anyways that got fixed quickly.
-
-> 
-> And no, IT DID NOT use probe_kernel_address like you still claim.
-
-There definitely was a patch that made it use it. You might have
-not merged it though.
- 
-> Anyway, you work for Suse, I don't care what you do to the Suse kernel. 
-> Maybe it will get stable some day. Somehow, I doubt it. 
-
-So what is your proposed alternative to handle long backtraces? 
-You didn't answer that question. Please do, I'm curious about your thoughts
-in this area.
-
--Andi
-
+    J
