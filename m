@@ -1,117 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030801AbXCTAyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030814AbXCTAz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030801AbXCTAyx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Mar 2007 20:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966064AbXCTAyx
+	id S1030814AbXCTAz3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Mar 2007 20:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030820AbXCTAz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Mar 2007 20:54:53 -0400
-Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3]:40018 "EHLO
-	lana.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966062AbXCTAyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Mar 2007 20:54:52 -0400
-From: Tobias Doerffel <tobias.doerffel@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend to RAM doesn't work anymore in 2.6.21
-Date: Tue, 20 Mar 2007 01:54:45 +0100
-User-Agent: KMail/1.9.6
-References: <200703191350.44105.tobias.doerffel@gmail.com> <200703192243.20836.rjw@sisk.pl>
-In-Reply-To: <200703192243.20836.rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2180764.zSylXJFeQB";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 19 Mar 2007 20:55:28 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:37652 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030819AbXCTAz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Mar 2007 20:55:27 -0400
+Date: Mon, 19 Mar 2007 17:55:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V3
+Message-Id: <20070319175524.812b2f5d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703191718220.13927@schroedinger.engr.sgi.com>
+References: <20070319233716.13775.45569.sendpatchset@schroedinger.engr.sgi.com>
+	<20070319165329.b5830789.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703191655190.13879@schroedinger.engr.sgi.com>
+	<20070319170741.5a24af4c.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703191718220.13927@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200703200154.49695.tobias.doerffel@gmail.com>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.1.8 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: a3b0e08747af407ddbe205f4431f3cdb
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2180764.zSylXJFeQB
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 19 Mar 2007 17:44:28 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-On Monday 19 March 2007 22:43:20 you wrote:
-> Hi,
->
-> On Monday, 19 March 2007 13:50, Tobias Doerffel wrote:
-> > Hi,
-> >
-> > Suspend to RAM used to work fine on my computer (Intel Core Duo, 1 GB
-> > RAM, Intel 82801G (ICH7-chipset) mainboard, NVIDIA-gfx-card,
-> > tg3-ethernet) up to 2.6.20.3. But no matter which rc of 2.6.21 I use,
-> > suspend to RAM doesn't work anymore. Up to rc3 even suspending stopped =
-at
-> > "suspending console" which appearently seems to be fixed in rc4. I tried
-> > rc4-git4 with minimal config (no dyndicks, no HRT, no MSI, no sound, no
-> > bluetooth, no PCMCIA, no WLAN, no USB, no cpufreq) but still I can't
-> > resume properly. Caps works and I can login through SSH. Back to a more
-> > complete config (sound, MMC, WLAN, PCMCIA - still no dynticks or HRT -
-> > see attachment "config") I get exactly the same behaviour.
-> >
-> > When logged in through SSH after resume I saved output of dmesg (which
-> > includes full power management debug messages), see
-> > attachement "dmesg-resume". The system basically seems to be back but l=
-ot
-> > of things do not work such as loading/unloading e.g. my WLAN-driver
-> > (ipw3945), running "top" or "dstat" etc.   "uptime" always returns 0 mi=
-n,
-> > even with power management debug disabled.
-> >
-> > Kernel:
-> > Linux version 2.6.21-rc4 (gcc version 4.1.2 20061115 (prerelease) (Debi=
-an
-> > 4.1.1-21)) #23 SMP PREEMPT Mon Mar 19 12:27:56 CET 2007
-I made some further investigations on this issue. A complete bisect between=
-=20
-2.6.20 and 2.6.21-rc4-git4 stops at a stage=20
-(a4bbb810dedaecf74d54b16b6dd3c33e95e1024c) where I'm not able to compile th=
-e=20
-kernel anymore because of compiling-errors in arch/i386/kernel/setup.c=20
-(ACPI-related compiling errors). Stepping some revisions back until it=20
-compiled again resume didn't work either.
+> On Mon, 19 Mar 2007, Andrew Morton wrote:
+> 
+> > Please provide proof that quicklists are superior to simply going direct to
+> > the page allocator for these pages.
+> 
+> See the patch. We are only touching 2 cachelines instead of 32. So even 
+> without considering the page allocator overhead and the slab allocator 
+> overhead (which will make the situation even better) its superior.
 
-So I started all over again with bisect only on arch/i386 and ended up at=20
-ceb6c46839021d5c7c338d48deac616944660124 as the bad commit. But this file=20
-seems to be some kind of finalization of a series of patches ("ACPICA: Remo=
-ve=20
-duplicate table manager") so I guess it's hard to debug this thing...
+That's not proof, it is handwaving.  I could wave right back at you and
+claim that the benefit from returning a cache-hot pte page back to the page
+allocator for reuse exceeds the benefit which you waved at me above.
 
-> Can you please do
->
-> # echo test > /sys/power/disk
-> # echo disk > /sys/power/state
->
-> (the system should freeze tasks, suspend devices, disable nonboot CPUs,
-> wait for 5 seconds, enable nonboot CPUs, resume devices, thaw tasks and
-> return to your command prompt) and see if you can reproduce the problem?
-Same problem here. Works fine in 2.6.20 as well as before=20
-ceb6c46839021d5c7c338d48deac616944660124. Doesn't work on recent=20
-2.6.21-rc4-git4.
+You may well be right, but nothing is proven, afaict.
 
-Any more information I can give?
+> > > I doubt it. The zeroing is a by product of our way of serializing pte 
+> > > handling. Its going to be difficult to change that.
+> > 
+> > Nick didn't think so, and I don't see the problem either.
+> 
+> You do not think that our current way of handling ptes is okay? If we do 
+> not zero the ptes then we need to separate munmap from process shutdown.
 
-Tobias
+Yep.  It's possible that process shutdown is a sufficiently common and
+costly special-case for it to be worth special-casing.
 
---nextPart2180764.zSylXJFeQB
-Content-Type: application/pgp-signature
+> > We'll save on some bus traffic by avoiding the writeback, but how much
+> > effect that will have we don't know.  Presumably little.
+> 
+> The advantage of the quicklists is that it does not require a rework of 
+> the pte serialization.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+No, these are unrelated.  We can get pte pages from the page allocator and
+zero them without touching the munmap handling.
 
-iD4DBQBF/zDZHsjdpw2OaacRAu/3AJ4sl0EooHwm864XKEnB58sUKyhiDgCWMTcf
-0Tur6hmmMkhN9LxS9f9txQ==
-=jsoO
------END PGP SIGNATURE-----
+But it's possible that if we _were_ to optimise the munmap handling as
+suggested, the end result would be superior.
 
---nextPart2180764.zSylXJFeQB--
