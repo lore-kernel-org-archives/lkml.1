@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750991AbXCTTkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbXCTTlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750991AbXCTTkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 15:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXCTTkz
+	id S1752858AbXCTTlh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 15:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbXCTTlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 15:40:55 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:35858 "EHLO minas.ics.muni.cz"
+	Tue, 20 Mar 2007 15:41:37 -0400
+Received: from Mail.MNSU.EDU ([134.29.1.12]:37606 "EHLO mail.mnsu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751324AbXCTTky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 15:40:54 -0400
-Message-ID: <4600389E.6030901@gmail.com>
-Date: Tue, 20 Mar 2007 20:40:14 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	id S1752858AbXCTTlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 15:41:36 -0400
+Message-ID: <460038AA.4050506@mnsu.edu>
+Date: Tue, 20 Mar 2007 14:40:26 -0500
+From: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.osdl.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.21-rc4-mm1
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <45FFF026.4030502@gmail.com> <20070320080944.9cb3c765.akpm@linux-foundation.org> <20070320183821.GD2670@elf.ucw.cz>
-In-Reply-To: <20070320183821.GD2670@elf.ucw.cz>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Multiple instances of program sharing same text segment ?
+References: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A437@xmb-sjc-214.amer.cisco.com> <460023F1.8060102@goop.org>
+In-Reply-To: <460023F1.8060102@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 Mar 2007 20:40:17 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek napsal(a):
-> Hi!
-> 
->>> Andrew Morton napsal(a):
->>>>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
->>> I'm getting this while trying to swsusp:
->>> Stopping tasks ...
->>> Stopping kernel threads timed out after 20 seconds (1 tasks refusing to freeze):
->>>  swapper
->>>  Restarting tasks ... done.
->>>
->>> What to test? Enable PM_DEBUG?
-> 
-> Is it repeatable? Freezer normally works better than that.
+Keep in mind that while the text of the program IS SHARED any 
+configuration file that is then loaded into ram after the execution IS 
+NOT SHARED.
 
-Yes, at least it happened 3 times consecutively, when I tried to asleep the
-machine, then I turned it off.
+BTW you can find out what is shared and not by taking a look at the proc 
+files:
 
->> Also, it might be useful to add a temporary /proc/freeze-unfreeze thing
->> which will simply do a freeze/unfreeze cycle.  Then we can apply various
->> workloads to the machine while madly stressing the freezer code.  
-> 
-> echo testproc > /sys/power/disk; echo disk > /sys/power/state ... is
-> pretty much what you want.
+# ps auxwww | grep emacs | grep -v grep # -- find the pids
+user       21529  0.2  0.3  16784  7560 pts/11   S+   14:27   0:00 
+xemacs -nw
+user       21549  0.2  0.3  16784  7548 pts/12   S+   14:27   0:00 
+xemacs -nw
 
-Ok, I'll try this.
+# cat /proc/21529/maps |grep xemacs | grep "r-xp" # -- find the mapped 
+text executable
+08048000-081f5000 r-xp 00000000 08:02 201672393  
+/usr/bin/xemacs-21.4.19-nomule
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+# cat /proc/21549/maps |grep xemacs | grep "r-xp" # -- find the mapped 
+text executable
+08048000-081f5000 r-xp 00000000 08:02 201672393  
+/usr/bin/xemacs-21.4.19-nomule
+
+#ls -li /usr/bin/xemacs-21.4.19-nomule # -- confirm that 201672393 is 
+the inode we're looking at.
+201672393 -rwxr-xr-x 1 root root 1800764 2006-11-03 11:11 
+/usr/bin/xemacs-21.4.19-nomule
+
+
+Jeremy Fitzhardinge wrote:
+> Ravinandan Arakali (rarakali) wrote:
+>   
+>> I note that do_exec calls do_mmap to map the executable file to memory.
+>> But not sure what happens(w.r.t text sharing) when another instance of 
+>> the program is invoked. BTW, this is 2.6.10.
+>>     
+>
+> Yes, they will be shared.  As far as the rest of the kernel is
+> concerned, an mmap is an mmap is an mmap, and the pages will be shared.
+>
+>     J
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
