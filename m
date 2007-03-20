@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbXCTWI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbXCTWJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbXCTWI6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 18:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbXCTWI6
+	id S1751979AbXCTWJS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 18:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXCTWJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 18:08:58 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58909 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbXCTWI5 (ORCPT
+	Tue, 20 Mar 2007 18:09:17 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52284 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751979AbXCTWJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 18:08:57 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Ian Kent <raven@themaw.net>, Cedric Le Goater <clg@fr.ibm.com>,
-       sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
-References: <Pine.LNX.4.64.0703161300520.4188@raven.themaw.net>
-	<m1ird1o243.fsf@ebiederm.dsl.xmission.com>
-	<1174055467.3397.17.camel@raven.themaw.net>
-	<45FAAD4F.4000204@fr.ibm.com>
-	<1174063618.3397.58.camel@raven.themaw.net>
-	<m1hcslm1tc.fsf@ebiederm.dsl.xmission.com>
-	<20070319200839.GB19449@sergelap.austin.ibm.com>
-	<m1odmpvuft.fsf@ebiederm.dsl.xmission.com>
-	<20070320201548.GA21312@sergelap.austin.ibm.com>
-	<m17itbmypc.fsf@ebiederm.dsl.xmission.com>
-	<20070320214125.GA5585@sergelap.austin.ibm.com>
-Date: Tue, 20 Mar 2007 16:01:38 -0600
-In-Reply-To: <20070320214125.GA5585@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Tue, 20 Mar 2007 16:41:25 -0500")
-Message-ID: <m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 20 Mar 2007 18:09:15 -0400
+Message-ID: <46005B89.5070301@vmware.com>
+Date: Tue, 20 Mar 2007 14:09:13 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org>
+In-Reply-To: <46000C7E.4070001@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+Jeremy Fitzhardinge wrote:
 
->> >  void autofs4_dentry_release(struct dentry *);
->> >  extern void autofs4_kill_sb(struct super_block *);
->> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
->> > index 9857543..4a9ad9b 100644
->> > --- a/fs/autofs4/waitq.c
->> > +++ b/fs/autofs4/waitq.c
->> > @@ -141,8 +141,8 @@ static void autofs4_notify_daemon(struct
->> >  		packet->ino = wq->ino;
->> >  		packet->uid = wq->uid;
->> >  		packet->gid = wq->gid;
->> > -		packet->pid = wq->pid;
->> > -		packet->tgid = wq->tgid;
->> > +		packet->pid = pid_nr(wq->pid);
->> > +		packet->tgid = pid_nr(wq->tgid);
->> >  		break;
->> 
->> I'm assuming we build the packet in the process context of the
->> daemon we are sending it to.  If not we have a problem here.
+>> Yeah, disable interrupts, and set a flag that the fake "sti" can test, and 
+>> just return without doing anything.
+>>
+>> (You may or may not also need to do extra work to Ack the hardware 
+>> interrupt etc, which may be irq-controller specific. Once the CPU has 
+>> accepted the interrupt, you may not be able to just leave it dangling)
+>>   
+>>     
 >
-> Yes this is data being sent to a userspace daemon (Ian pls correct me if
-> I'm wrong) so the pid_nr is the only thing we can send.
+> So it would be something like:
+>
+>     pda.intr_mask = 1;		/* disable interrupts */
+>     ...
+>     pda.intr_mask = 0;		/* enable interrupts */
+>     if (xchg(&pda.intr_pending, 0))	/* check pending */
+>   
 
-Agreed.  The question is are we in the user space daemon's process when
-we generate the pid_nr.  Or do we stuff this in some kind of socket,
-and the socket switch locations of the packet.
+Well, can't do xchg, since it implies #LOCK, and you'll lose more than 
+you gain on the processors where it matters.  Cmpxchg is fine, but 
+processor dependent.
 
-Basically I'm just trying to be certain we are calling pid_nr in the
-proper context.  Otherwise we could get the wrong pid when we have
-multiple pid namespaces in play.
+Or, just make the interrupt handlers use software resend for IRQs when 
+pda.intr_mask is set to zero.  Now, local_irq_save / restore are very 
+pretty:
 
-Eric
+int local_irq_save(void)
+{
+   int tmp = pda.intr_mask;
+   pda.intr_mask = 0;
+   /*
+    * note there is a window here where local IRQs notice intr_mask == 0
+    * in that case, they will attempt to resend the IRQ via a tasklet,
+    * and will succeed, albeit through a slightly longer path
+    */
+   local_bh_disable();
+   return tmp;
+}
+
+void local_irq_restore(int enabled)
+{
+    pda.intr_mask = enabled;
+    /*
+     * note there is a window here where softirqs are not processed by
+     * the interrupt handler, but that is not a problem, since it will
+     * get done here in the outer enable of any nested pair.
+     */
+    if (enabled)
+        local_bh_enable();
+}
+
+I think Ingo's suggestion of using the hardirq tracing is another way 
+that could work, but it seems to be too heavyweight and tied too much to 
+the lockdep verification code - plus it inserts additional 
+raw_irq_disable in places that seem counter to the goal of getting rid 
+of them in the first place.  Perhaps I'm misunderstanding the code, though.
+
+Zach
