@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbXCUOlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbXCUOmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752905AbXCUOlX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 10:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbXCUOlX
+	id S1752912AbXCUOmD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 10:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbXCUOmC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 10:41:23 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:59557 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752905AbXCUOlV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 10:41:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=DERWLhCMjrialAvT0jQoaTYVO92fMZ0prb7KIXL50SlOpVsfOzdAY+gIwxZ45DX/37j7tU5oAZZ8cNUssGAdqSa3l1+00nFd09ynBIx8i/1HiqacS/ynVwhoF1KMMkvac28hmUkIXhEBv8mMJ89UPnGoWmsy/aC/T37r3gLqEr0=
-Message-ID: <84144f020703210741g4b6b2000kf19b439a4c42f445@mail.gmail.com>
-Date: Wed, 21 Mar 2007 16:41:19 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-Cc: "Jarek Poplawski" <jarkao2@o2.pl>, "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, mpm@selenic.com,
-       "Christoph Lameter" <clameter@sgi.com>, "ast@domdv.de" <ast@domdv.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200703211511.10342.rjw@sisk.pl>
+	Wed, 21 Mar 2007 10:42:02 -0400
+Received: from graphe.net ([209.204.138.32]:56763 "EHLO graphe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752912AbXCUOmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 10:42:00 -0400
+Date: Wed, 21 Mar 2007 07:41:46 -0700 (PDT)
+From: Christoph Lameter <christoph@lameter.com>
+X-X-Sender: christoph@graphe.net
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead
+ of struct slab
+In-Reply-To: <20070321102231.7288f231.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0703210737400.1573@graphe.net>
+References: <20070321102231.7288f231.dada1@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703200943430.3622@sbz-30.cs.Helsinki.FI>
-	 <20070321133151.GC1939@ff.dom.local>
-	 <Pine.LNX.4.64.0703211531450.16596@sbz-30.cs.Helsinki.FI>
-	 <200703211511.10342.rjw@sisk.pl>
-X-Google-Sender-Auth: c2821d7c70ac1fe0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> IMHO one way to find them is to actually slow down kmem_cache_free() and see
-> where the performance is hurt.
+On Wed, 21 Mar 2007, Eric Dumazet wrote:
 
-Yeah, I'll try to sneak a patch past Andrew.
+> In order to avoid a cache miss in kmem_cache_free() on NUMA and reduce hot path length, we could exploit the following common facts.
+> 
+> 1) MAX_NUMNODES <= 64
+
+MAX_NUMNODES == 1024 on IA64 and may be on x86_64 in the future.
+ 
+> 2) alignment of 'struct kmem_cache *' can be >= 64
+> 
+> The following patch changes the page->lru.next to contain not only the 
+> 'struct kmem_cache *' pointer, but also the nodeid in the low order 
+> bits.
+
+Nack.
+
+I would suggest you audit slab and make sure that we never fall back and 
+always enter a slab on the node of page_to_nid(page). If 
+all allocations use GFP_THISNODE then you should be safe and then we can 
+remove the nodeid from the slab structure and simply use the available 
+node information in the page struct.
