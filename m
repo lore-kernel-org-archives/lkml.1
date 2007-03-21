@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXCUQlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932987AbXCUQlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbXCUQlE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 12:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXCUQlE
+	id S932987AbXCUQlL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 12:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933040AbXCUQlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 12:41:04 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:59240 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932965AbXCUQlD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 12:41:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=G09QI6w+1DjA9YMJ/jGX85aUyyL+T/nnuRWNlj0fNskr7fUljfg/cFkwWah3HmEGz+eaSX1jbDkq/GRdh4IO0Hso1hy8WBGYoG+mgkHcVpm6ixXb88R5UUqt0AS2dblGb3zN9lH8nE2C1WMz6v847HBCMKaPcz+A5vJjoWQbmoI=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] Code reordering in swsusp breaks suspend on SMP systems
-Date: Wed, 21 Mar 2007 18:40:52 +0200
-User-Agent: KMail/1.9.6
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+	Wed, 21 Mar 2007 12:41:11 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:58968 "EHLO atlrel8.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932987AbXCUQlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 12:41:09 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: PNPACPI probes serial twice, messes up serial console
+Date: Wed, 21 Mar 2007 10:40:54 -0600
+User-Agent: KMail/1.9.5
+Cc: Keith Owens <kaos@ocs.com.au>, linux-kernel@vger.kernel.org,
+       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>
+References: <17887.1174373206@kao2.melbourne.sgi.com> <200703211035.39340.bjorn.helgaas@hp.com> <20070321163758.GB28239@flint.arm.linux.org.uk>
+In-Reply-To: <20070321163758.GB28239@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200703211840.53242.maximlevitsky@gmail.com>
+Content-Disposition: inline
+Message-Id: <200703211040.54380.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wednesday 21 March 2007 10:37, Russell King wrote:
+> On Wed, Mar 21, 2007 at 10:35:38AM -0600, Bjorn Helgaas wrote:
+> > On Tuesday 20 March 2007 08:32, Bjorn Helgaas wrote:
+> > > On Tuesday 20 March 2007 00:46, Keith Owens wrote:
+> > > > Booting with 'console=tty console=ttyS0,9600'.  The serial console on
+> > > > ttyS0 (0x3f8, irq 4) is probed twice, once from serial8250_init() and
+> > > > again from serial_pnp_probe().
+> > > 
+> > > I played with this last summer, but was too timid to finish it
+> > > and post it.  My plan was to remove the legacy SERIAL_PORT_DFNS,
+> > > make platform devices for them, and only register the platform
+> > > devices in the absence of PNP.
+> > > 
+> > > My motivation at the time was to prevent 8250 from claiming IRDA
+> > > devices that happened to live at legacy UART addresses.  I also
+> > > wanted to make IRDA (smsc-ircc2 in my case) smart enough to use
+> > > PNP to locate its devices, since 8250 would no longer claim them.
+> > > 
+> > > Here's the dusty patch (against 2.6.18-rc1-mm2).  If it seems
+> > > like a reasonable thing to do, I can update it, polish it up,
+> > > add a changelog, and post it.
+> > 
+> > Keith, does this patch help?  Russell didn't complain about it, so
+> > if it fixes your problem, maybe we could put it in -mm and see if
+> > it breaks anything else.
+> 
+> Yes I did.
 
-Starting with 2.6.21-rc1 suspend to ram and disk doesn't work anymore on my system.
+Sorry.  What I should have said was "Russell gave constructive
+feedback for a minor improvement, but didn't complain about the
+overall approach of converting to platform devices, so if the
+patch solves your (Keith's) problem, I'll incorporate Russell's
+feedback and send an updated patch to Andrew."
 
-I did a git-bisect and found that those commits break it:
-
-e3c7db621bed4afb8e231cb005057f2feb5db557 - [PATCH] [PATCH] PM: Change code ordering in main.c
-ed746e3b18f4df18afa3763155972c5835f284c5 - [PATCH] [PATCH] swsusp: Change code ordering in disk.c
-259130526c267550bc365d3015917d90667732f1 - [PATCH] [PATCH] swsusp: Change code ordering in user.c
-
-I already reported about it, but now i know the reason why suspend breaks.
-
-The problem is that both cpu_up/cpu_down were allowed to sleep until now, 
-and it did work because those functions could be called only in process context
-(the one that writes to /sys/devices/system/cpu/cpu*/online) or  idle thread  that does smp_init()).
-
-But now they are called _after_ all tasks were suspended, so if cpu_down tries for example to take a lock
-that is taken by different process, it can't since the different proccess is frozen and can't release the lock.
-
-I tested this and all results are positive:
-
-I disabled 2nd cpu by hand, and then suspend to ram was successfull.
-Suspend to disk went correctly, but it hang on resume, and I know why.
-It hang in old kernel trying to disable 2nd cpu that was enabled by it.
-
-I was able using kdb to confirm that this is true because it was still possible to enter kdb, and see that
-idle thread (swapper) was active, and uswsusp was waiting on mutex inside workqueue_cpu_callback.
-
-The solution for this problem seems to be ether complete audit of code that uses register_cpu_notifier,
-to ensure that it doesn't sleep. 
-Also documentation should be changed to note about it.
-
-Or, it is also possible to revert this change.
-
-	Regards,
-		Maxim Levitsky
-
+Bjorn
