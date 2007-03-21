@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbXCUOAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbXCUODS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752854AbXCUOAm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 10:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXCUOAm
+	id S1752860AbXCUODS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 10:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXCUODS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 10:00:42 -0400
-Received: from mail.cs.tut.fi ([130.230.4.42]:37698 "EHLO mail.cs.tut.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752854AbXCUOAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 10:00:41 -0400
-X-Greylist: delayed 1968 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Mar 2007 10:00:41 EDT
-Message-ID: <460132D0.3020008@tut.fi>
-Date: Wed, 21 Mar 2007 15:27:44 +0200
-From: Timo Aaltonen <timo.aaltonen@tut.fi>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: jim@coolzero.info
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Survey about the Kernel Community
-References: <457EA2C2.5060408@tut.fi> <35725.84.81.1.164.1165927769.squirrel@webmail.coolzero.info> <457F989B.5030004@tut.fi>
-In-Reply-To: <457F989B.5030004@tut.fi>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 10:03:18 -0400
+Received: from smtp.nokia.com ([131.228.20.172]:23054 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752860AbXCUODR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 10:03:17 -0400
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Theodore Tso <tytso@mit.edu>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070321135033.GA7235@thunk.org>
+References: <20070319170838.GP4892@waste.org>
+	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
+	 <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron>
+	 <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron>
+	 <20070320135231.GA6043@thunk.org>
+	 <1174406395.30079.139.camel@zod.rchland.ibm.com>
+	 <20070320220312.GC29493@thunk.org> <1174466675.17249.182.camel@sauron>
+	 <20070321135033.GA7235@thunk.org>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 21 Mar 2007 16:02:35 +0200
+Message-Id: <1174485755.17249.206.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 21 Mar 2007 14:02:35.0365 (UTC) FILETIME=[93AAC150:01C76BC1]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-03-21 at 09:50 -0400, Theodore Tso wrote:
+> And at this point, I don't doubt that you will at some point going to
+> heed my comments --- but note that doing so will involve a massive
+> refactorization of the code, which will tend to invalidate the reviews
+> done of this current (take 3) version of the patches; so I am bit
+> curious what was your motiviation in reposting this round of the
+> patches.  
 
-Hi,
+Well, in take 3 I _already_ removed quite _a lot_ of itsy-bitsy units,
+and I thought it is enough, so I've submitted it. But later I've
+realized that I should go further (e.g., dispose of per-unit data
+structures), and started more re-work. Yes, I should have notified about
+this new re-work, apologies.
 
-It took a while for us to analyze the results (and to write a
-publication about it). The summary about the answers can be found at URL
-<http://www.cs.tut.fi/~tta/Summary.html> and the aswers to the open
-question #34 at URL <http://www.cs.tut.fi/~tta/roleOfTrust.html>.
+Point taken, will be fixed :-)
 
-Thaks for everybody.
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-Timo Aaltonen and Maria Antikainen
-
-
->Hi,
->
->Well, I filled in the survey. Was wondering if you also post the
->results
->here at the mailing list. That would be nice.
->
->Greetings,
->
->Jim.
->
->> Hi all,
->>
->> We would like to ask you few question about Linux Kernel Community.
->>The
->> survey consists of 31 multiple choice questions and three text boxes.
->> The survey is conducted by Institute of Business Information
->>Management
->> and Institute of Software Systems at Tampere University of
->>Technology.
->>
->> We close the survey at 24th of December. The results of our study
->>will
->> be published  in an international academic conference.
->>
->> Please devote a few minutes to help us in understanding OSS
->>communities.
->> The survey is located at
->> <http://www.surveymonkey.com/s.asp?u=577413001783>.
->>
->> Thanks in advance.
->>
->> --
->> Timo Aaltonen and Maria Antikainen
->> firstname.lastname@tut.fi
