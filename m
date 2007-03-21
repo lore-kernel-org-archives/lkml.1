@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbXCUHcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbXCUHgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932771AbXCUHcm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 03:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932910AbXCUHcm
+	id S932893AbXCUHgK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 03:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933001AbXCUHgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 03:32:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:54946 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932771AbXCUHck (ORCPT
+	Wed, 21 Mar 2007 03:36:10 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:34087 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932936AbXCUHgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 03:32:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=JdoE3wo0J+2stl9rS4ETFDdhRLGxbDw3GL8CoHKBdcWJh9DTEZVRT4WyqZrbd5XwN8SJolLxnLwm9+PWBATkYiXQkXqoVGswI3klxf1RGhK2FK2KTPKFypZ6xWkK5hAlEEQVG0H/MSYbUrE5+sW+UCSSUUlYvSVdnKUmDGURMVw=
-Message-ID: <4600DF90.3030902@gmail.com>
-Date: Wed, 21 Mar 2007 16:32:32 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 21 Mar 2007 03:36:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=mGorvfWuFEHQXf6Ga4/Mh1/t5ytiytddtyKxRtEArupOfkwodxPzvZeHAFY+akk2mlq4kWxXudHdTml91iR2x9girIPyxtsQQXUpCsgbwaYbpFCrfvG1xuDgJNSwbB/TUoUC5eBBkHEUX8FmCEqPi1Tky2PgpmFkDrvksO3KW1A=  ;
+X-YMail-OSG: 8ANqw9oVM1l3b9hPFraLs1_SjKRYI1BjF2SPl.EBa2S7SPaMezp4G2jqABce1R1KqvcjN3ryF_vcHLFgmImbpsCJ9WgYx0pe9CAKceh.yfTIbWfWY5kulgsOzeuSITvEI6GFiU9NaqXe95U-
+Message-ID: <4600E062.8020001@yahoo.com.au>
+Date: Wed, 21 Mar 2007 18:36:02 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "Eric D. Mudama" <edmudama@gmail.com>, Mathieu.Berard@crans.org
-Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image
- Windows driver
-References: <45DD2EC9.4050403@shaw.ca> <45DF67C4.8090802@garzik.org>
-In-Reply-To: <45DF67C4.8090802@garzik.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: William Lee Irwin III <wli@holomorphy.com>, Adam Litke <agl@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/7] Introduce the pagetable_operations and associated
+ helper macros.
+References: <20070319200502.17168.17175.stgit@localhost.localdomain> <20070319200513.17168.52238.stgit@localhost.localdomain> <4600B216.3010505@yahoo.com.au> <20070321045214.GE2986@holomorphy.com> <4600BD9F.8030609@yahoo.com.au> <20070321054102.GF2986@holomorphy.com> <4600D5EB.90507@yahoo.com.au>
+In-Reply-To: <4600D5EB.90507@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Robert Hancock wrote:
->> This patch adds in some NCQ blacklist entries taken from the Silicon
->> Image Windows drivers' .inf files for the 3124 and 3132 controllers.
->> These entries were marked as ""DisableSataQueueing". Assume these are
->> in their blacklist for a reason and disable NCQ on these drives.
->>
->> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
->>
->> --- linux-2.6.21-rc1edit/drivers/ata/libata-core.c.prev    2007-02-21
->> 22:23:05.000000000 -0600
->> +++ linux-2.6.21-rc1edit/drivers/ata/libata-core.c    2007-02-21
->> 22:25:44.000000000 -0600
->> @@ -3269,6 +3269,13 @@ static const struct ata_blacklist_entry
->>     /* Devices with NCQ limits */
->>
->> +    /* The following blacklist entries are taken from the Windows
->> +       driver .inf files for the Silicon Image 3124 and 3132. */
->> +    { "Maxtor 7B250S0",    "BANC1B70",    ATA_HORKAGE_NONCQ, },
->> +    { "HTS541060G9SA00",    "MB3OC60D",    ATA_HORKAGE_NONCQ, },
->> +    { "HTS541080G9SA00",    "MB4OC60D",    ATA_HORKAGE_NONCQ, },
->> +    { "HTS541010G9SA00",    "MBZOC60D",    ATA_HORKAGE_NONCQ, },
+Nick Piggin wrote:
 
-There was a recent regression report on ahci + HTS541010G9SA00 from
-Mathieu Berard (cc'd).  NCQ + device initiated link power saving (which,
-BTW, got activated by executing _GTF.  surprise!) combination seems
-broken.  I know that ahci controllers (at least ich6m, ich7 and ich8)
-work with device initiated PS, so it's most likely the disk that's
-malfunctioning.
+> Yeah you could, but it looks back to front to me.
+> 
+> The VM tells the filesystem that the machine took a fault at virtual
+> address X, then the filesystem asks the VM what pgoff that is, then
+> tells the VM to install the corresponding page to vaddr X.
+> 
+> With my ->fault, the VM asks the filesystem to give the page that
+> corresponds to vaddr X, then installs it into that vaddr.
 
-This and the fact sata_sil24 windows driver blacklists them make me
-think those HTS5410s should be added to our blacklist too.  What do you
-think?
+Err, sorry, that's what the current ->nopage does. It is then still
+up to the filesystem to do the vaddr to pgoff conversion.
 
-Mathieu, just to be sure, can you post the result of 'hdparm -I
-/dev/sdX' and 'lspci -nn'?
-
-Thanks.
+My fault patches of course just ask the filesystem for the page at
+a given pgoff.
 
 -- 
-tejun
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
