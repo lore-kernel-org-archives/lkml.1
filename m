@@ -1,91 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbXCUKnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbXCUKxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752103AbXCUKnt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 06:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbXCUKnt
+	id S1752135AbXCUKxU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 06:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbXCUKxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 06:43:49 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:3939 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103AbXCUKns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 06:43:48 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: RSDL v0.31
-Date: Wed, 21 Mar 2007 03:43:16 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKEEMNCGAC.davids@webmaster.com>
+	Wed, 21 Mar 2007 06:53:20 -0400
+Received: from holomorphy.com ([66.93.40.71]:42755 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752135AbXCUKxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 06:53:19 -0400
+Date: Wed, 21 Mar 2007 03:46:49 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Adam Litke <agl@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/7] Introduce the pagetable_operations and associated helper macros.
+Message-ID: <20070321104649.GG2986@holomorphy.com>
+References: <20070319200502.17168.17175.stgit@localhost.localdomain> <20070319200513.17168.52238.stgit@localhost.localdomain> <4600B216.3010505@yahoo.com.au> <20070321045214.GE2986@holomorphy.com> <4600BD9F.8030609@yahoo.com.au> <20070321054102.GF2986@holomorphy.com> <4600D5EB.90507@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <20070321075033.GA10368@elte.hu>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 21 Mar 2007 03:43:30 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 21 Mar 2007 03:43:30 -0800
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4600D5EB.90507@yahoo.com.au>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+William Lee Irwin III wrote:
+>> I'm tied up elsewhere so I won't get to it in a timely fashion. Maybe
+>> in a few weeks I can start up on the first two of the bunch.
 
-> there were multiple attempts with renicing X under the vanilla
-> scheduler, and they were utter failures most of the time. _More_ people
-> complained about interactivity issues _after_ X has been reniced to -5
-> (or -10) than people complained about "nice 0" interactivity issues to
-> begin with.
+On Wed, Mar 21, 2007 at 05:51:23PM +1100, Nick Piggin wrote:
+> Care to give us a hint? :)
 
-Unfortunately, nicing X is not going to work. It causes X to pre-empt any
-local process that tries to batch requests to it, defeating the batching.
-What you really want is X to get scheduled after the client pauses in
-sending data to it or has sent more than a certain amount. It seems kind of
-crazy to put such login in a scheduler.
-
-Perhaps when one process unblocks another, you put that other process at the
-head of the run queue but don't pre-empt the currently running process. That
-way, the process can continue to batch requests, but X's maximum latency
-delay will be the quantum of the client program.
-
-> The vanilla scheduler's auto-nice feature rewards _behavior_, so it gets
-> X right most of the time. The fundamental issue is that sometimes X is
-> very interactive - we boost it then, there's lots of scheduling but nice
-> low latencies. Sometimes it's a hog - we penalize it then and things
-> start to batch up more and we get out of the overload situation faster.
-> That's the case even if all you care about is desktop performance.
->
-> no doubt it's hard to get the auto-nice thing right, but one thing is
-> clear: currently RSDL causes problems in areas that worked well in the
-> vanilla scheduler for a long time, so RSDL needs to improve. RSDL should
-> not lure itself into the false promise of 'just renice X statically'. It
-> wont work. (You might want to rewrite X's request scheduling - but if so
-> then i'd like to see that being done _first_, because i just dont trust
-> such 10-mile-distance problem analysis.)
-
-I am hopeful that there exists a heuristic that both improves this problem
-and is also inherently fair. If that's true, then such a heuristic can be
-added to RSDL without damaging its properties and without requiring any
-special settings. Perhaps longer-term latency benefits to processes that
-have yielded in the past?
-
-I think there are certain circumstances, however, where it is inherently
-reasonable to insist that 'nice' be used. If you want a CPU-starved task to
-get more than 1/X of the CPU, where X is the number of CPU-starved tasks,
-you should have to ask for that. If you want one CPU-starved task to get
-better latency than other CPU-starved tasks, you should have to ask for
-that.
-
-Fundamentally, the scheduler cannot do it by itself. You can create cases
-where the load is precisely identical and one person wants X and another
-person wants Y. The scheduler cannot know what's important to you.
-
-DS
+The first is something DISM-like. I've not made up my mind on the
+second, but the shopping catalogue of feature requests I've done
+nothing about for some time that want this is long.
 
 
+William Lee Irwin III wrote:
+>> Not much of a VM translation; it's just a lookup through the
+>> software mocked-up structures on everything save i386, x86_64, and
+>> some m68k where they're the same thing only with hardware walkers
+>> (ISTR ia64's being firmware a la Alpha despite the "HPW" name,
+>> though I could be wrong)
+
+On Wed, Mar 21, 2007 at 05:51:23PM +1100, Nick Piggin wrote:
+> Well the vma+pagetables *are* our VM translation data structure. It is
+> a good data structure. The Gelato/UNSW guys experimenting with changing
+> this have basically said they haven't yet got anything that beats it.
+> I would be opposed to anything that bypasses that unless a) it is not
+> applicable to the VM as a whole, and b) it is really worth it
+> (hugepages was a reasonable exception).
+
+Maybe anticipating the conventional Linux approach to this wasn't as
+difficult as I supposed. ;)
+
+
+William Lee Irwin III wrote:
+>> reliant on them. The drivers/etc. could just as easily use helper
+>> functions to carry out the lookup, thereby accomplishing the
+>> unification. There's nothing particularly fundamental about a pte
+>> lookup.
+
+On Wed, Mar 21, 2007 at 05:51:23PM +1100, Nick Piggin wrote:
+> Yeah you could, but it looks back to front to me.
+> The VM tells the filesystem that the machine took a fault at virtual
+> address X, then the filesystem asks the VM what pgoff that is, then
+> tells the VM to install the corresponding page to vaddr X.
+> With my ->fault, the VM asks the filesystem to give the page that
+> corresponds to vaddr X, then installs it into that vaddr.
+
+I'm aware of what is now done and the minor modification accomplished
+by your ->fault(). Maybe I've even written something like this before
+that I never posted. It's obvious what I'm on about and that my
+thoughts here are too divergent to fly. Others should chime in with
+more Linux-native ideas about what's to be done here.
+
+
+William Lee Irwin III wrote:
+>> Normal arches that do software TLB refill could just as easily
+>> consult the radix trees dangled off struct address_space or any old
+>> data structure floating around the kernel with enough information to
+>> translate user virtual addresses to the physical addresses they need to
+>> fill the TLB with, and there are other kernels that literally do things
+>> like that.
+
+On Wed, Mar 21, 2007 at 05:51:23PM +1100, Nick Piggin wrote:
+> Sure it *could* be done, but it may not be very nice, given Linux's
+> design. And you definitely need _something_ other than just the
+> pagecache radix-tree, because the VM needs to know who maps the page.
+> So if, for your backing store, you use a small hash table and evict old
+> entries like powerpc, you'll constantly be faulting in and out pages
+> from the VM's high level view of the address space. That isn't a really
+> cheap operation. It takes at least:
+[long list of locking operations snipped]
+> Compared to our current page table walk which is just a single locked
+> op + barrier for the spinlock + radix tree walk.
+> If you had a very large hash table (ia64 long mode, maybe?), then you
+> may have slightly fewer high level faults, but range based operations
+> are going to take a whole lot of cache misses, aren't they? Especially
+> for small processes.
+> Not that I wouldn't be happy to be proven wrong, but I don't think it
+> should be something that sneaks in under these pagetable operations.
+> IMO.
+
+I'll presume that was not for my benefit; if so, it was superfluous.
+
+The example I gave was to show how far things could diverge from Linux'
+conventions. Every single locking operation cited for Linux didn't
+apply to the kernel I was thinking of due to its lockless pagecache
+analogue, its lack of a direct equivalent of struct page, and its use
+of different lifetime-bounding protocols from reference counting.
+Things like page replacement didn't rely on things that would disturb
+all that. It all worked out quite well for that kernel. So not only
+can it be done other ways, but those ways are indeed efficient.
+
+It should be clear from the above that retrofitting Linux to do similar
+is effectively impossible. (Well, if you think you can pull off removing
+struct page in favor of no direct equivalent and bounding the lifetimes
+of page-sized chunks of memory by shooting down all references using
+knowledge of who could possibly be hanging onto them in Linux, feel
+free to attempt such a retrofit, and I'll send you a case of Scotch
+whisky if you can get it to boot and run a major database benchmark
+without crashing regardless of whether it's merged.)
+
+In any event, let's not talk too much at cross-purposes. I'm deferring
+to others on this, as I said. Someone else will doubtless come at this
+from a direction that gibes better with Linux-native conventions.
+
+
+-- wli
