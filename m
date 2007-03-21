@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbXCUD7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933404AbXCUEMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195AbXCUD7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 23:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXCUD7W
+	id S933404AbXCUEMQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 00:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933571AbXCUEMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 23:59:22 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:54234 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195AbXCUD7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 23:59:21 -0400
-Message-ID: <4600AD92.7070205@in.ibm.com>
-Date: Wed, 21 Mar 2007 09:29:14 +0530
-From: Balbir Singh <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+	Wed, 21 Mar 2007 00:12:15 -0400
+Received: from [212.12.190.150] ([212.12.190.150]:33312 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933404AbXCUEMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 00:12:14 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Artur Skawina <art_k@o2.pl>
+Subject: Re: RSDL v0.31
+Date: Wed, 21 Mar 2007 07:15:35 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703192353.19673.a1426z@gawab.com> <46003B1B.9070601@o2.pl>
+In-Reply-To: <46003B1B.9070601@o2.pl>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, rdunlap@xenotime.net,
-       jlan@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: taskstats accounting info
-References: <Pine.LNX.4.58.0703140503250.28169@shark.he.net> <45F7E818.7010608@in.ibm.com> <20070315110655.5a815f2e.akpm@linux-foundation.org> <20070319083512.908fc695.randy.dunlap@oracle.com>
-In-Reply-To: <20070319083512.908fc695.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200703210715.35898.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Thu, 15 Mar 2007 11:06:55 -0800 Andrew Morton wrote:
-> 
->>> It's the most portable example, since it does not depend on libnl.
->> err, what is libnl?
-> 
-> lib-netlink (as already answered, but I wrote this last week)
-> 
+Artur Skawina wrote:
+> Al Boldi wrote:
+> > --- sched.bak.c	2007-03-16 23:07:23.000000000 +0300
+> > +++ sched.c	2007-03-19 23:49:40.000000000 +0300
+> > @@ -938,7 +938,11 @@ static void activate_task(struct task_st
+> >  				     (now - p->timestamp) >> 20);
+> >  	}
+> >
+> > -	p->quota = rr_quota(p);
+> > +	/*
+> > +	 * boost factor hardcoded to 5; adjust to your liking
+> > +	 * higher means more likely to DoS
+> > +	 */
+> > +	p->quota = rr_quota(p) + (((now - p->timestamp) >> 20) * 5);
+> >  	p->prio = effective_prio(p);
+> >  	p->timestamp = now;
+> >  	__activate_task(p, rq);
+>
+> i've tried this and it lasted only a few minutes -- i was seeing
+> mouse cursor stalls lasting almost 1s. i/o bound tasks starving X?
+> After reverting the patch everything is smooth again.
 
-I was referring to the library at http://people.suug.ch/~tgr/libnl/
+This patch wasn't really meant for production, as any sleeping background 
+proc turned cpu-hog may DoS the system.
 
->> If there exists some real userspace infrastructure which utilises
->> taskstats, can we please get a referece to it into the kernel
->> Documentation?  Perhaps in the TASKSTATS Kconfig entry, thanks.
-> 
-> 
-> Balbir, I was working with getdelays.c when I initially wrote
-> these questions.  Here is a small patch for it.  Hopefully you can
-> use it when you find the updated version of it.
-> 
-> ~Randy
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> 1.  add usage() function
-> 
-> 2.  add unknown character in %c format (was only in %d, not useful):
-> 
-> ./getdelays: invalid option -- h
-> Unknown option '?' (63)
-> 
-> instead of:
-> 
-> ./getdelays: invalid option -- h
-> Unknown option 63
-> 
-> (or just remove that message)
-> 
-> 3.  -v does not use an optarg, so remove ':' in getopt string after 'v';
-> 
-
-Thanks, these look good. I'll add them to my local copy.
+If you like to play with this, then you probably want to at least reset the 
+quota in its expiration.
 
 
+Thanks!
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+--
+Al
+
