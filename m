@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964826AbXCUUYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXCUU0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964826AbXCUUYG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964871AbXCUUYG
+	id S964784AbXCUU0y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964871AbXCUU0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:24:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:15742 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964826AbXCUUYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:24:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,309,1170662400"; 
-   d="scan'208"; a="200303186:sNHT18723936"
-Date: Wed, 21 Mar 2007 13:23:40 -0700
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>,
-       tglx@linutronix.de
-Subject: [PATCH 2/2] Export deferrable timer through workqueue and use it in ondemand governor
-Message-ID: <20070321202339.GB29367@linux-os.sc.intel.com>
+	Wed, 21 Mar 2007 16:26:54 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:39406 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964784AbXCUU0x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 16:26:53 -0400
+Subject: Re: pagetable_ops: Hugetlb character device example
+From: Adam Litke <agl@us.ibm.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200703211951.l2LJpVPS020364@turing-police.cc.vt.edu>
+References: <20070319200502.17168.17175.stgit@localhost.localdomain>
+	 <1174506228.21684.41.camel@localhost.localdomain>
+	 <200703211951.l2LJpVPS020364@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Wed, 21 Mar 2007 15:26:44 -0500
+Message-Id: <1174508804.21684.48.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-03-21 at 15:51 -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 21 Mar 2007 14:43:48 CDT, Adam Litke said:
+> > The main reason I am advocating a set of pagetable_operations is to
+> > enable the development of a new hugetlb interface.
+> 
+> Do you have an exit strategy for the *old* interface?
 
+Not really.  Hugetlbfs needs to be kept around for a number of reasons.
+It was designed to support MAP_SHARED mappings and IPC shm segments.  It
+is probably still the best interface for those jobs.  Of course
+hugetlbfs has lots of users so we must preserve the interface for them.
 
-Add a new deferrable delayed work init. This can be used to schedule work
-that are 'unimportant' when CPU is idle and can be called later, when CPU
-eventually comes out of idle.
+But... once hugetlbfs is abstracted behind pagetable_operations, you
+would have the option of configuring it out of the kernel without losing
+access to huge pages by other means (such as the character device).
 
-Use this init in cpufreq ondemand governor.
- 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
-Index: new/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- new.orig/drivers/cpufreq/cpufreq_ondemand.c	2007-03-21 09:16:52.000000000 -0800
-+++ new/drivers/cpufreq/cpufreq_ondemand.c	2007-03-21 09:18:08.000000000 -0800
-@@ -470,7 +470,7 @@
- 	dbs_info->enable = 1;
- 	ondemand_powersave_bias_init();
- 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
--	INIT_DELAYED_WORK(&dbs_info->work, do_dbs_timer);
-+	INIT_DELAYED_WORK_DEF(&dbs_info->work, do_dbs_timer);
- 	queue_delayed_work_on(dbs_info->cpu, kondemand_wq, &dbs_info->work,
- 	                      delay);
- }
-Index: new/include/linux/workqueue.h
-===================================================================
---- new.orig/include/linux/workqueue.h	2007-03-21 09:16:52.000000000 -0800
-+++ new/include/linux/workqueue.h	2007-03-21 09:18:08.000000000 -0800
-@@ -115,6 +115,12 @@
- 		init_timer(&(_work)->timer);			\
- 	} while (0)
- 
-+#define INIT_DELAYED_WORK_DEF(_work, _func)			\
-+	do {							\
-+		INIT_WORK(&(_work)->work, (_func));		\
-+		init_timer_deferrable(&(_work)->timer);		\
-+	} while (0)
-+
- #define INIT_DELAYED_WORK_NAR(_work, _func)			\
- 	do {							\
- 		INIT_WORK_NAR(&(_work)->work, (_func));		\
