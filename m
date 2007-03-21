@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXCURnO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbXCURnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933174AbXCURnO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 13:43:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933165AbXCURnO
+	id S933231AbXCURnb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 13:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933236AbXCURnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 13:43:14 -0400
-Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:42689 "EHLO
-	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933174AbXCURnN (ORCPT
+	Wed, 21 Mar 2007 13:43:31 -0400
+Received: from dkl3.neoplus.adsl.tpnet.pl ([83.24.15.3]:63064 "EHLO
+	dkl3.neoplus.adsl.tpnet.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933231AbXCURna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 13:43:13 -0400
-Message-ID: <46016EAF.6010801@blueyonder.co.uk>
-Date: Wed, 21 Mar 2007 17:43:11 +0000
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 21 Mar 2007 13:43:30 -0400
+X-Greylist: delayed 1157 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Mar 2007 13:43:30 EDT
+Message-ID: <46016A3B.2090205@o2.pl>
+Date: Wed, 21 Mar 2007 18:24:11 +0100
+From: Artur Skawina <art_k@o2.pl>
+User-Agent: Thunderbird 3.0a1 (X11/20070320)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: auxsvr@gmail.com, Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
-References: <45E59D64.3070202@blueyonder.co.uk>	<200702281805.13822.auxsvr@gmail.com> <20070307214730.87859590.akpm@linux-foundation.org> <45EFBC73.2030005@blueyonder.co.uk>
-In-Reply-To: <45EFBC73.2030005@blueyonder.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Al Boldi <a1426z@gawab.com>
+CC: linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>
+Subject: Re: RSDL v0.31
+References: <200703042335.26785.a1426z@gawab.com> <200703192353.19673.a1426z@gawab.com> <46003B1B.9070601@o2.pl> <200703210715.35898.a1426z@gawab.com>
+In-Reply-To: <200703210715.35898.a1426z@gawab.com>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sid Boyce wrote:
-> Andrew Morton wrote:
->> (cc restored.  Please always do reply-to-all)
->>
->>  
->>> On Wed, 28 Feb 2007 18:05:13 +0200 auxsvr@gmail.com wrote:
->>> On Wednesday 28 February 2007 17:19, Sid Boyce wrote:
->>>    
->>>> openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to
->>>> require a password to unlock, but it asks for password. When the screen
->>>> unlocks, kwin is gone with no errors logged in /var/log/kdm or
->>>> /var/log/messages. No problems with 2.6.20.
->>>>
->>>> Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2.
->>>> Regards
->>>> Sid.
->>>>       
->>> This is the linux kernel mailing list. Perhaps you should post your 
->>> problem to the opensuse mailing list.
->>>     
->>
->> 2.6.20 worked.
->>
->> 2.6.20-rc2 did not.
->>
->> Working theory: the kernel broke.
->>
->> Sid, the chances that anyone can work out what caused this are pretty 
->> low. It would be great if you could perform a git bisection search 
->> sometime in
->> the next few weeks, work out which commit caused this.
->>
->> Thanks.
->>
->>
->>
->>   
-> I shall go back to 2.6.20-git3 and work forward. Up to 2.6.20-git2 was OK.
-> Regards
-> Sid.
+Al Boldi wrote:
+> Artur Skawina wrote:
+>> Al Boldi wrote:
+>>> -	p->quota = rr_quota(p);
+>>> +	/*
+>>> +	 * boost factor hardcoded to 5; adjust to your liking
+>>> +	 * higher means more likely to DoS
+>>> +	 */
+>>> +	p->quota = rr_quota(p) + (((now - p->timestamp) >> 20) * 5);
+
+>> mouse cursor stalls lasting almost 1s. i/o bound tasks starving X?
+>> After reverting the patch everything is smooth again.
 > 
+> This patch wasn't really meant for production, as any sleeping background 
+> proc turned cpu-hog may DoS the system.
+> 
+> If you like to play with this, then you probably want to at least reset the 
+> quota in its expiration.
 
-I tracked the problem down to 2.6.20-git11. Up to 2.6.20-git10 is OK, 
-but from 2.6.20-git11 up to current 2.6.21-rc4-git2 all exhibit the problem.
-Regards
-Sid.
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support 
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+well, the problem is that i can't reproduce the problem :) I tried
+the patch because i suspected it could introduce regressions, and it
+did. Maybe with some tuning a reasonable compromise could be found,
+but first we need to know what to tune for... Does anybody have a
+simple reproducible way to show the scheduling regressions of RSDL
+vs mainline? ie one that does not involve (or at least is
+independent of) specific X drivers, binary apps etc. Some reports
+mentioned MP, is UP less susceptible?
 
+I've now tried a -j2 kernel compilation on UP and in the not niced
+case X interactivity suffers, which i guess is to be expected when
+you have ~5 processes competing for one cpu (2*(cc+as)+X). "nice -5"
+helps a bit, but does not eliminate the effect completely. Obviously
+the right solution is to nice the makes, but i think the scheduler
+could do better, at least in the case of almost idle X (once you
+start moving windows etc it becomes a cpuhog just as the the
+compiler). I'll look into this, maybe there's a way to prioritize
+often sleeping tasks which can not be abused.
+Another thing is the nice levels; right now "nice -10" means ~35%
+and "nice -19" gives ~5% cpu; that's probably 2..5 times too much.
+
+artur
