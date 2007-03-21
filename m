@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXCUIwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750714AbXCUI4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750719AbXCUIwG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 04:52:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXCUIwF
+	id S1750714AbXCUI4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 04:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXCUI4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 04:52:05 -0400
-Received: from smtp.nokia.com ([131.228.20.172]:37527 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbXCUIwE convert rfc822-to-8bit (ORCPT
+	Wed, 21 Mar 2007 04:56:18 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:40618 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbXCUI4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 04:52:04 -0400
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Theodore Tso <tytso@mit.edu>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20070320220312.GC29493@thunk.org>
-References: <20070318191812.GM4892@waste.org>
-	 <20070318203149.GC29295@crusty.rchland.ibm.com>
-	 <20070319170838.GP4892@waste.org>
-	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
-	 <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron>
-	 <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron>
-	 <20070320135231.GA6043@thunk.org>
-	 <1174406395.30079.139.camel@zod.rchland.ibm.com>
-	 <20070320220312.GC29493@thunk.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 21 Mar 2007 10:44:35 +0200
-Message-Id: <1174466675.17249.182.camel@sauron>
+	Wed, 21 Mar 2007 04:56:17 -0400
+Subject: Re: RSDL v0.31
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: ray-gmail@madrabbit.org
+Cc: Mark Lord <lkml@rtr.ca>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Xavier Bestel <xavier.bestel@free.fr>, Al Boldi <a1426z@gawab.com>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Nicholas Miell <nmiell@comcast.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <2c0942db0703200816r36544407o1f60270c5d1da7af@mail.gmail.com>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703172048.46267.kernel@kolivas.org>
+	 <1174125534.7734.2.camel@Homer.simpson.net>
+	 <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca>
+	 <1174321617.30876.69.camel@frg-rhel40-em64t-04> <45FEBBF5.9060002@rtr.ca>
+	 <1174322580.30876.72.camel@frg-rhel40-em64t-04>
+	 <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
+	 <45FFDFF8.2090208@rtr.ca>
+	 <2c0942db0703200816r36544407o1f60270c5d1da7af@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 21 Mar 2007 09:55:29 +0100
+Message-Id: <1174467329.22159.3.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 21 Mar 2007 08:44:35.0741 (UTC) FILETIME=[27532CD0:01C76B95]
-X-Nokia-AV: Clean
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 18:03 -0400, Theodore Tso wrote:
-> So this is probably a stupid question, but what drives the design
-> decision to store the metadata in-band instead of out-of-band (and you
-> don't have to answer me here; putting it in the overall system
-> architecture document is just as good, and probably better.  :-)
+On Tue, 2007-03-20 at 08:16 -0700, Ray Lee wrote:
+> On 3/20/07, Mark Lord <lkml@rtr.ca> wrote:
+> > I've droppped it from my machine -- interactive response is much
+> > more important for my primary machine right now.
+> 
+> Help out with a data point? Are you running KDE as well? If you are,
+> then it looks like the common denominator that RSDL is handling poorly
+> is client-server communication. (KDE's KIO slaves in this case, but X
+> in general.)
 
-Because
-a. Many flashes have no out-of-band. We want to support them as well
-b. Modern MLC NAND flashes use _whole_ OOB for ECC and this is the
-modern trend.
+im not experiencing any problems with KDE. if anything ktorrent seems to
+be going a teeny tiny bit smoother, though its nothing i can back up
+with data.
 
-I will update FAQ and add this there later.
+now i havent tested ALL kioslaves yet, but stuff like sftp, fish, tar
+and such works just as good.
 
-> As I mentioned to you in IRC, in the future if there is pending
-> changes in response to reviewer comments, it might be a good idea to
-> mention that, so that reviewers know not make those comments again, or
-> worry that the comments had been ignored.
 
-Teo, I wrote you 2 times that your point was understood and this would
-be fixed. You should not think your comments are ignored because they
-are not.
- 
-> Well, having spent some time looking at the FAQ's and all of the
-> comments kernel docs embedded in the header files and source files,
-> there are sections that I would move to an overall system architecture
-> documentation, but there is still a lot that was missing that makes it
-> hard to review the patches.  I'm sure a lot of it is my own ignorance,
-> but that's probably one of the challenges with the UBI layer; not as
-> more people have a basic background in say say scheduling or VM or
-> filesystem than there are people who have a basic background in flash
-> devices.
+> 
+> If so, one would hope that a variation on Linus's 2.5.63 pipe wakeup
+> pass-the-interactivity idea could work here. The problem with that
+> original patch, IIRC, was that a couple of tasks could bounce their
+> interactivity bonus back and forth and thereby starve others. Which
+> might be expected given there was no 'decaying' of the interactivity
+> bonus, which means you can make a feedback loop.
+> 
+> Anyway, looks like processes that do A -> B -> A communication chains
+> are getting penalized under RSDL. In which case, perhaps I can make a
+> test case that exhibits the problem without having to have the same
+> graphics card or desktop as you.
+An easy-to-reproduce testcase would be good.
 
-Docs and FAQ will be improved, this is a question of time.
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+> 
+> Ray
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
