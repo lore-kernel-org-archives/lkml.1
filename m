@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbXCTX4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbXCUADk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751922AbXCTX4L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 19:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbXCTX4K
+	id S1751769AbXCUADk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 20:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXCUADk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 19:56:10 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:52048 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbXCTX4I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 19:56:08 -0400
-Date: Tue, 20 Mar 2007 17:55:31 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: UDP packets scheduling
-In-reply-to: <fa.Mj0BY4rypcd66zFbzfAQxZCpUVk@ifi.uio.no>
-To: Lukas Hejtmanek <xhejtman@mail.muni.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andi Kleen <andi@firstfloor.org>
-Message-id: <46007473.7070001@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-2; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.CWur1AzeHpCwg8xikmKYIrHD+vg@ifi.uio.no>
- <fa.XuXSOUdBq9+oYcuagtcjLic4XjE@ifi.uio.no>
- <fa.Mj0BY4rypcd66zFbzfAQxZCpUVk@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 20 Mar 2007 20:03:40 -0400
+Received: from ozlabs.org ([203.10.76.45]:57220 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751250AbXCUADj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 20:03:39 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17920.30274.608018.34484@cargo.ozlabs.ibm.com>
+Date: Wed, 21 Mar 2007 11:03:14 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@muc.de>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+In-Reply-To: <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org>
+References: <20070316.023331.59468179.davem@davemloft.net>
+	<45FB005D.9060809@goop.org>
+	<1174127638.8897.75.camel@localhost.localdomain>
+	<20070318.003309.71088169.davem@davemloft.net>
+	<20070318120814.GA45869@muc.de>
+	<1174272469.11680.23.camel@localhost.localdomain>
+	<m1648xxf93.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
+	<1174348905.11680.54.camel@localhost.localdomain>
+	<45FF4043.4000805@vmware.com>
+	<45FF770C.7050301@goop.org>
+	<Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lukas Hejtmanek wrote:
-> On Tue, Mar 20, 2007 at 06:52:51PM +0100, Andi Kleen wrote:
->>> Flow control must be turned off for some other reason.
->> That's your fundamental problem. Fix that. 
->>
->> Even if you get the rate right there can be many reasons why timing 
->> gets disrupted temporarily and to recover from any of this you need
->> working flow control.
+Linus Torvalds writes:
+
+> We should just do this natively. There's been several tests over the years 
+> saying that it's much more efficient to do sti/cli as a simple store, and 
+> handling the "oops, we got an interrupt while interrupts were disabled" as 
+> a special case.
 > 
-> How do you want to enable wire/fibre flow control, e.g., from Europe to USA?
-> You are not guaranteed any hardware based flow control.
+> I have this dim memory that ARM has done it that way for a long time 
+> because it's so expensive to do a "real" cli/sti.
 > 
-> And as of software flow control, you need precise timing of UDP packets to
-> keep desired packet rate. How to do it at speeds about 5.5Gbps, that is my
-> question.
+> And I think -rt does it for other reasons. It's just more flexible.
 
-Why is it necessary to avoid bursting? There should be enough buffering 
-along the chain to avoid packet loss with reasonable burst sizes.
+64-bit powerpc does this now as well.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Paul.
