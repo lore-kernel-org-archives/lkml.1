@@ -1,43 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbXCUOfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbXCUOiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677AbXCUOfZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 10:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXCUOfZ
+	id S1752857AbXCUOiE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 10:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbXCUOiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 10:35:25 -0400
-Received: from graphe.net ([209.204.138.32]:34769 "EHLO graphe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677AbXCUOfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 10:35:25 -0400
-Date: Wed, 21 Mar 2007 07:35:04 -0700 (PDT)
-From: Christoph Lameter <christoph@lameter.com>
-X-X-Sender: christoph@graphe.net
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of
- virt_to_slab(objp); nodeid = slabp->nodeid;
-In-Reply-To: <4600DB6E.40107@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0703210734010.1573@graphe.net>
-References: <20070320181235.77d28864.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org>
- <46005B7D.3090701@cosmosbay.com> <Pine.LNX.4.64.0703201715110.17799@graphe.net>
- <4600D04B.6030305@cosmosbay.com> <Pine.LNX.4.64.0703210001220.25462@graphe.net>
- <4600DB6E.40107@cosmosbay.com>
+	Wed, 21 Mar 2007 10:38:03 -0400
+Received: from poseidon.ceid.upatras.gr ([150.140.141.169]:7358 "EHLO
+	poseidon.ceid.upatras.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857AbXCUOiB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 10:38:01 -0400
+Message-ID: <460141B4.1080109@sciensis.com>
+Date: Wed, 21 Mar 2007 16:31:16 +0200
+From: Tasos Parisinos <t.parisinos@sciensis.com>
+User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.5
+To: Indan Zupancic <indan@nul.nu>
+Cc: Francois Romieu <romieu@fr.zoreil.com>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel  
+              version 2.6.20.1)
+References: <45FEB8B7.7020200@sciensis.com>    <20070320004001.GA11601@electric-eye.fr.zoreil.com>    <000601c76af9$a0ce3ce0$0864a8c0@scs1>    <4734.81.207.0.53.1174427010.squirrel@secure.samage.net>    <000e01c76b99$769cbbe0$0864a8c0@scs1>    <3118.81.207.0.53.1174480598.squirrel@secure.samage.net>    <46012E1A.3030309@sciensis.com> <1860.81.207.0.53.1174485549.squirrel@secure.samage.net>
+In-Reply-To: <1860.81.207.0.53.1174485549.squirrel@secure.samage.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007, Eric Dumazet wrote:
+Indan Zupancic wrote:
+> On Wed, March 21, 2007 14:07, Tasos Parisinos wrote:
+>   
+>>> On Wed, March 21, 2007 10:15, Tasos Parisinos wrote:
+>>>
+>>>       
+>>>> Protecting a TripleDES key in high security standards is not as
+>>>> simple as making the kernel read
+>>>> protected, you need a whole lot and
+>>>> that also means hardware (cryptomemories e.t.c)
+>>>> So you forget about all this overhead when you use assymetric
+>>>>
+>>>>         
+>>> Ah, you're talking about fishing the key out of RAM here, right?
+>>> My point stays the same for that: If you can't read protect the
+>>> kernel RAM, small chance you can write protect it. And then they
+>>> can just bypass all signature checking you put in it anyway.
+>>>
+>>>       
+>> How can one tamper (write) the kernel memory of a booted and running kernel
+>> without using an exploitable bug?
+>>
+>> I mean, you can't mess with the bzImage on flash, the secure bootloader
+>> boots it without
+>> letting someone alter the (non crypto-) memory while loading the bzImage
+>> on it, and then
+>> no-one can run something that will tamper the system or write anywhere
+>> on kernel memory
+>> without exploiting a bug
+>>
+>> I mean, am i missing something here?
+>>     
+>
+> Depends on what you consider an exploitable bug. Does getting root access count?
+> If not, then you must make very sure that all possible ways to modify kernel
+> memory from userspace are thwarted (I don't know what those are, hopefully
+> loading modules is the only one, but maybe there are smart other ways).
+>
+> Assuming one can't write kernel memory, it's also safe to assume kernel memory
+> can be protected against reads (else the whole keys infrastructure is useless).
+>
+> But instead of only reading the bus traffic also modifying it doesn't seem so
+> far fetched to me. That modification can be reduced to swapping one bit which
+> tells whether the modules being loaded has a valid signature or not.
+> Timing it might be tricky, but that can be automated.
+>
+> When someone has the hardware in his hands and really want to exploit it, you
+> lose no matter what you do. At best you can make it harder and more expensive.
+>
+> In the end my point is that you might think that you can get away with less
+> security when using RSA, but perhaps in reality you don't. At least when using
+> symmetric key encryption you're forced to secure the whole thing more.
+>
+> So design it for symmetric keys. If it turns out that using asymmetric keys is
+> more practical for whatever reason, fine, use those. But they won't give you
+> added security.
+>
+> Greetings,
+>
+> Indan
+>
+>
+> P.S. The whole argument of secure bootloader checks the kernel can be
+> extrapolated to a secure kernel checking a user space program. Why not
+> letting the kernel check the signature of a monolithic modprobe program,
+> and let it do all the (RSA) checking. The expected hash of the modprobe
+> program can be hardcoded in the kernel.
+>
+>
+>
+>   
+I agree that you have no more security that using symmetric
+but we believe you have lower costs, simpler key management
+(which is a big headache alone), tougher to break through
+(not unbreakable) and more centralization
 
-> If numa_node_id() is equal to the node of the page containing the first byte
-> of the object, then object is on the local node. Or what ?
+As for modprobe u are right but we also need to check (apart
+from kernel modules) the executables and libraries in the
+usage scenario.
 
-No. The slab (the page you are referring to) may have been allocated for 
-another node and been tracked via the node structs of that other node. We 
-were just falling back to the node that now appears to be local.
+About time:
+In my pc system running 2.6.20.3 (2.66 GHz P4, 1G mem) the computation of
+modular exponentiation of 1Kbit (with a 32bit exponent all bits set and 
+a 1024 bit key)
+took almost 3ms. That's the time needed to check the signature of any 
+code loaded
+in ram using this module, after having it hashed (sha1) and signature 
+extracted from elf.
 
-
+Best regards
+Tasos Parisinos
+-
