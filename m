@@ -1,72 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964856AbXCUUVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964838AbXCUUWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964856AbXCUUVr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964826AbXCUUVq
+	id S964838AbXCUUWH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964871AbXCUUWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:21:46 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52119 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964817AbXCUUVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:21:40 -0400
-Date: Wed, 21 Mar 2007 13:15:32 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>
-Cc: rkuhn@e18.physik.tu-muenchen.de, andi@firstfloor.org, dada1@cosmosbay.com,
-       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH 1/2] div64_64 optimization
-Message-ID: <20070321131532.66e7f0e1@freekitty>
-In-Reply-To: <20070321191537.GA28914@1wt.eu>
-References: <20070307170731.2b4397e3@freekitty>
-	<20070307.185539.48527371.davem@davemloft.net>
-	<45EF7EB7.8040806@linux-foundation.org>
-	<20070307.195135.74749102.davem@davemloft.net>
-	<20070310114826.GB1608@1wt.eu>
-	<20070312141156.08e88b0e@freekitty>
-	<20070313205020.GA5418@1wt.eu>
-	<20070321115419.483a655a@freekitty>
-	<20070321191537.GA28914@1wt.eu>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 16:22:07 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33389 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964838AbXCUUWA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 16:22:00 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Sid Boyce <g3vbv@blueyonder.co.uk>, linux-kernel@vger.kernel.org,
+       auxsvr@gmail.com
+Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
+References: <45E59D64.3070202@blueyonder.co.uk>
+	<200702281805.13822.auxsvr@gmail.com>
+	<20070307214730.87859590.akpm@linux-foundation.org>
+	<45EFBC73.2030005@blueyonder.co.uk>
+	<46016EAF.6010801@blueyonder.co.uk> <20070321193420.GP752@stusta.de>
+Date: Wed, 21 Mar 2007 14:17:40 -0600
+In-Reply-To: <20070321193420.GP752@stusta.de> (Adrian Bunk's message of "Wed,
+	21 Mar 2007 20:34:20 +0100")
+Message-ID: <m17itabbbv.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minor optimization of div64_64.  do_div() already does optimization
-for the case of 32 by 32 divide, so no need to do it here.
+Adrian Bunk <bunk@stusta.de> writes:
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+> On Wed, Mar 21, 2007 at 05:43:11PM +0000, Sid Boyce wrote:
+>> Sid Boyce wrote:
+>> >Andrew Morton wrote:
+>> >>(cc restored.  Please always do reply-to-all)
+>> >>
+>> >> 
+>> >>>On Wed, 28 Feb 2007 18:05:13 +0200 auxsvr@gmail.com wrote:
+>> >>>On Wednesday 28 February 2007 17:19, Sid Boyce wrote:
+>> >>>   
+>> >>>>openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to
+>> >>>>require a password to unlock, but it asks for password. When the screen
+>> >>>>unlocks, kwin is gone with no errors logged in /var/log/kdm or
+>> >>>>/var/log/messages. No problems with 2.6.20.
+>> >>>>
+>> >>>>Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2.
+>> >>>>Regards
+>> >>>>Sid.
+>> >>>>      
+>> >>>This is the linux kernel mailing list. Perhaps you should post your 
+>> >>>problem to the opensuse mailing list.
+>> >>>    
+>> >>
+>> >>2.6.20 worked.
+>> >>
+>> >>2.6.20-rc2 did not.
+>> >>
+>> >>Working theory: the kernel broke.
+>> >>
+>> >>Sid, the chances that anyone can work out what caused this are pretty 
+>> >>low. It would be great if you could perform a git bisection search 
+>> >>sometime in
+>> >>the next few weeks, work out which commit caused this.
+>> >>
+>> >>Thanks.
+>> >>
+>> >>
+>> >>
+>> >>  
+>> >I shall go back to 2.6.20-git3 and work forward. Up to 2.6.20-git2 was OK.
+>> >Regards
+>> >Sid.
+>> >
+>> 
+>> I tracked the problem down to 2.6.20-git11. Up to 2.6.20-git10 is OK, 
+>> but from 2.6.20-git11 up to current 2.6.21-rc4-git2 all exhibit the problem.
+>
+> Thanks for this search.
+>
+> Looking at the changes between 2.6.20-git10 and 2.6.20-git11, the only 
+> suspicious changes are the 60 sysctl patches by Eric.
+>
+> Eric, can you look at this issue?
 
---- net-2.6.22.orig/lib/div64.c	2007-03-21 12:03:59.000000000 -0700
-+++ net-2.6.22/lib/div64.c	2007-03-21 12:04:46.000000000 -0700
-@@ -61,20 +61,18 @@
- /* 64bit divisor, dividend and result. dynamic precision */
- uint64_t div64_64(uint64_t dividend, uint64_t divisor)
- {
--	uint32_t d = divisor;
-+	uint32_t high, d;
- 
--	if (divisor > 0xffffffffULL) {
--		unsigned int shift = fls(divisor >> 32);
-+	high = divisor >> 32;
-+	if (high) {
-+		unsigned int shift = fls(high);
- 
- 		d = divisor >> shift;
- 		dividend >>= shift;
--	}
-+	} else
-+		d = divisor;
- 
--	/* avoid 64 bit division if possible */
--	if (dividend >> 32)
--		do_div(dividend, d);
--	else
--		dividend = (uint32_t) dividend / d;
-+	do_div(dividend, d);
- 
- 	return dividend;
- }
+git bisect between git10 (ac98695d6c1508b724f246f38ce57fb4e3cec356)
+and git11 (86a71dbd3e81e8870d0f0e56b87875f57e58222b) is likely the most
+productive thing that can be done right now.  
+
+I can't think of anything in my sysctl patches that would kill an
+application.  My sysctl work is right on the border with user space
+so it is a good candidate but at the same time there should have
+been no user visible changes.  There were a few places where
+I removed sys_sysctl support (but not /proc/sys support) but I don't
+think any of those were on x86, and they were is such a messed up
+state I don't think anyone could have reasonably used them anyway.
+
+So I think either we poke blindly making random guess by hand or
+we let git-bisect do it.
+
+Sid do you think you can figure out git-bisect?
+git-bisect start
+git-bisect bad 86a71dbd3e81e8870d0f0e56b87875f57e58222b
+git-bisect good ac98695d6c1508b724f246f38ce57fb4e3cec356
+
+It should narrow the problem down to a single commit in 6-8 tries
+after which point we should have enough information to start
+making intelligent guesses. 
+
+Eric
