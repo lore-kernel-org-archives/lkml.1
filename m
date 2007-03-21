@@ -1,977 +1,755 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751288AbXCUKI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751615AbXCUKI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751288AbXCUKI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 06:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbXCUKHy
+	id S1751615AbXCUKI5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 06:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbXCUKIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 06:07:54 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39221 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbXCUKHB (ORCPT
+	Wed, 21 Mar 2007 06:08:32 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:26485 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbXCUKIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 06:07:01 -0400
-Message-Id: <20070321100537.640796336@bull.net>
-References: <20070321095432.207136068@bull.net>
-User-Agent: quilt/0.46-1
-Date: Wed, 21 Mar 2007 10:54:35 +0100
-From: Pierre.Peiffer@bull.net
-To: akpm@linux-foundation.org
-Cc: mingo@elte.hu, drepper@redhat.com, linux-kernel@vger.kernel.org,
-       jean-pierre.dion@bull.net, Pierre Peiffer <pierre.peiffer@bull.net>
-Subject: [PATCH 2.6.21-rc4-mm1 3/4] futex_requeue_pi optimization
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 21/03/2007 11:08:56,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 21/03/2007 11:08:59,
-	Serialize complete at 21/03/2007 11:08:59
-Content-Disposition: inline; filename=futex-requeue-pi.diff
+	Wed, 21 Mar 2007 06:08:13 -0400
+X-IronPort-AV: i="4.14,308,1170651600"; 
+   d="scan'208"; a="25051862:sNHT42920276"
+Subject: [PATCH -mm 4/4] Blackfin: on-chip Two Wire Interface I2C driver
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: khali@linux-fr.org, David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Wed, 21 Mar 2007 18:08:08 +0800
+Message-Id: <1174471688.5648.56.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides the futex_requeue_pi functionality, which allows some
-threads waiting on a normal futex to be requeued on the wait-queue of
-a PI-futex.
+Hi folks,
 
-This provides an optimization, already used for (normal) futexes, to be used with
-the PI-futexes.
+As GPIO based blackfin driver will be replaced by I2C-GPIO generic
+driver, we just update this latest version of blackfin on-chip TWI I2C
+driver according to LKML review.
 
-This optimization is currently used by the glibc in pthread_broadcast, when
-using "normal" mutexes. With futex_requeue_pi, it can be used with PRIO_INHERIT
-mutexes too.
+[PATCH] Blackfin: on-chip Two Wire Interface I2C driver
 
-Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+The i2c linux driver for blackfin architecture which supports blackfin
+on-chip TWI controller i2c operation.
 
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
+Reviewed-by: Alexey Dobriyan <adobriyan@gmail.com>
+Reviewed-by: Jean Delvare <khali@linux-fr.org>
+Cc: David Brownell <david-b@pacbell.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- include/linux/futex.h   |    9 
- kernel/futex.c          |  541 +++++++++++++++++++++++++++++++++++++++++++-----
- kernel/futex_compat.c   |    3 
- kernel/rtmutex.c        |   41 ---
- kernel/rtmutex_common.h |   34 +++
- 5 files changed, 540 insertions(+), 88 deletions(-)
 
-Index: b/include/linux/futex.h
+ drivers/i2c/busses/Kconfig        |   16 
+ drivers/i2c/busses/Makefile       |    1 
+ drivers/i2c/busses/i2c-bfin-twi.c |  653 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 670 insertions(+)
+
+Index: linux-2.6/drivers/i2c/busses/Kconfig
 ===================================================================
---- a/include/linux/futex.h
-+++ b/include/linux/futex.h
-@@ -16,6 +16,7 @@
- #define FUTEX_LOCK_PI		6
- #define FUTEX_UNLOCK_PI		7
- #define FUTEX_TRYLOCK_PI	8
-+#define FUTEX_CMP_REQUEUE_PI	9
+--- linux-2.6.orig/drivers/i2c/busses/Kconfig
++++ linux-2.6/drivers/i2c/busses/Kconfig
+@@ -91,6 +91,22 @@
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called i2c-au1550.
  
- /*
-  * Support for robust futexes: the kernel cleans up held futexes at
-@@ -84,9 +85,14 @@ struct robust_list_head {
- #define FUTEX_OWNER_DIED	0x40000000
- 
- /*
-+ * Some processes have been requeued on this PI-futex
++config I2C_BLACKFIN_TWI
++	tristate "Blackfin TWI I2C support"
++	depends on I2C && (BF534 || BF536 || BF537)
++	help
++	  This is the TWI I2C device driver for Blackfin 534/536/537.
++	  This driver can also be built as a module.  If so, the module
++	  will be called i2c-bfin-twi.
++
++config I2C_BLACKFIN_TWI_CLK_KHZ
++	int "Blackfin TWI I2C clock (kHz)"
++	depends on I2C_BLACKFIN_TWI
++	range 10 400
++	default 50
++	help
++	  The unit of the TWI clock is kilo HZ.
++
+ config I2C_ELEKTOR
+ 	tristate "Elektor ISA card"
+ 	depends on I2C && ISA && BROKEN_ON_SMP
+Index: linux-2.6/drivers/i2c/busses/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/i2c/busses/Makefile
++++ linux-2.6/drivers/i2c/busses/Makefile
+@@ -10,6 +10,7 @@
+ obj-$(CONFIG_I2C_AMD8111)	+= i2c-amd8111.o
+ obj-$(CONFIG_I2C_AT91)		+= i2c-at91.o
+ obj-$(CONFIG_I2C_AU1550)	+= i2c-au1550.o
++obj-$(CONFIG_I2C_BLACKFIN_TWI)  += i2c-bfin-twi.o
+ obj-$(CONFIG_I2C_ELEKTOR)	+= i2c-elektor.o
+ obj-$(CONFIG_I2C_HYDRA)		+= i2c-hydra.o
+ obj-$(CONFIG_I2C_I801)		+= i2c-i801.o
+Index: linux-2.6/drivers/i2c/busses/i2c-bfin-twi.c
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/i2c/busses/i2c-bfin-twi.c
+@@ -0,0 +1,653 @@
++/*
++ * drivers/i2c/busses/i2c-bfin-twi.c
++ *
++ * Description: Driver for Blackfin Two Wire Interface
++ *
++ * Author:      sonicz  <sonic.zhang@analog.com>
++ *
++ * Copyright (c) 2005-2007 Analog Devices, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
-+#define FUTEX_WAITER_REQUEUED	0x20000000
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/i2c.h>
++#include <linux/mm.h>
++#include <linux/timer.h>
++#include <linux/spinlock.h>
++#include <linux/completion.h>
++#include <linux/interrupt.h>
++#include <linux/platform_device.h>
++
++#include <asm/blackfin.h>
++#include <asm/irq.h>
++
++#define POLL_TIMEOUT       (2 * HZ)
++
++/* SMBus mode*/
++#define TWI_I2C_MODE_STANDARD		0x01
++#define TWI_I2C_MODE_STANDARDSUB	0x02
++#define TWI_I2C_MODE_COMBINED		0x04
++
++struct bfin_twi_iface {
++	struct mutex		twi_lock;
++	int			irq;
++	spinlock_t		lock;
++	char			read_write;
++	u8			command;
++	u8			*transPtr;
++	int			readNum;
++	int			writeNum;
++	int			cur_mode;
++	int			manual_stop;
++	int			result;
++	int			timeout_count;
++	struct timer_list	timeout_timer;
++	struct i2c_adapter	adap;
++	struct completion	complete;
++};
++
++static struct bfin_twi_iface twi_iface;
++
++static void bfin_twi_handle_interrupt(struct bfin_twi_iface *iface)
++{
++	unsigned short twi_int_status = bfin_read_TWI_INT_STAT();
++	unsigned short mast_stat = bfin_read_TWI_MASTER_STAT();
++
++	if (twi_int_status & XMTSERV) {
++		/* Transmit next data */
++		if (iface->writeNum > 0) {
++			bfin_write_TWI_XMT_DATA8(*(iface->transPtr++));
++			iface->writeNum--;
++		}
++		/* start receive immediately after complete sending in
++		 * combine mode.
++		 */
++		else if (iface->cur_mode == TWI_I2C_MODE_COMBINED) {
++			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL()
++				| MDIR | RSTART);
++		} else if (iface->manual_stop)
++			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL()
++				| STOP);
++		SSYNC();
++		/* Clear status */
++		bfin_write_TWI_INT_STAT(XMTSERV);
++		SSYNC();
++	}
++	if (twi_int_status & RCVSERV) {
++		if (iface->readNum > 0) {
++			/* Receive next data */
++			*(iface->transPtr) = bfin_read_TWI_RCV_DATA8();
++			if (iface->cur_mode == TWI_I2C_MODE_COMBINED) {
++				/* Change combine mode into sub mode after
++				 * read first data.
++				 */
++				iface->cur_mode = TWI_I2C_MODE_STANDARDSUB;
++				/* Get read number from first byte in block
++				 * combine mode.
++				 */
++				if (iface->readNum == 1 && iface->manual_stop)
++					iface->readNum = *iface->transPtr + 1;
++			}
++			iface->transPtr++;
++			iface->readNum--;
++		} else if (iface->manual_stop) {
++			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL()
++				| STOP);
++			SSYNC();
++		}
++		/* Clear interrupt source */
++		bfin_write_TWI_INT_STAT(RCVSERV);
++		SSYNC();
++	}
++	if (twi_int_status & MERR) {
++		bfin_write_TWI_INT_STAT(MERR);
++		bfin_write_TWI_INT_MASK(0);
++		bfin_write_TWI_MASTER_STAT(0x3e);
++		bfin_write_TWI_MASTER_CTL(0);
++		SSYNC();
++		iface->result = -1;
++		/* if both err and complete int stats are set, return proper
++		 * results.
++		 */
++		if (twi_int_status & MCOMP) {
++			bfin_write_TWI_INT_STAT(MCOMP);
++			bfin_write_TWI_INT_MASK(0);
++			bfin_write_TWI_MASTER_CTL(0);
++			SSYNC();
++			/* If it is a quick transfer, only address bug no data,
++			 * not an err, return 1.
++			 */
++			if (iface->writeNum == 0 && (mast_stat & BUFRDERR))
++				iface->result = 1;
++			/* If address not acknowledged return -1,
++			 * else return 0.
++			 */
++			else if (!(mast_stat & ANAK))
++				iface->result = 0;
++		}
++		complete(&iface->complete);
++		return;
++	}
++	if (twi_int_status & MCOMP) {
++		bfin_write_TWI_INT_STAT(MCOMP);
++		SSYNC();
++		if (iface->cur_mode == TWI_I2C_MODE_COMBINED) {
++			if (iface->readNum == 0) {
++				/* set the read number to 1 and ask for manual
++				 * stop in block combine mode
++				 */
++				iface->readNum = 1;
++				iface->manual_stop = 1;
++				bfin_write_TWI_MASTER_CTL(
++					bfin_read_TWI_MASTER_CTL()
++					| (0xff << 6));
++			} else {
++				/* set the readd number in other
++				 * combine mode.
++				 */
++				bfin_write_TWI_MASTER_CTL(
++					(bfin_read_TWI_MASTER_CTL() &
++					(~(0xff << 6))) |
++					( iface->readNum << 6));
++			}
++			/* remove restart bit and enable master receive */
++			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() &
++				~RSTART);
++			bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() |
++				MEN | MDIR);
++			SSYNC();
++		} else {
++			iface->result = 1;
++			bfin_write_TWI_INT_MASK(0);
++			bfin_write_TWI_MASTER_CTL(0);
++			SSYNC();
++			complete(&iface->complete);
++		}
++	}
++}
++
++/* Interrupt handler */
++static irqreturn_t bfin_twi_interrupt_entry(int irq, void *dev_id)
++{
++	struct bfin_twi_iface *iface = dev_id;
++	unsigned long flags;
++
++	spin_lock_irqsave(&iface->lock, flags);
++	del_timer(&iface->timeout_timer);
++	bfin_twi_handle_interrupt(iface);
++	spin_unlock_irqrestore(&iface->lock, flags);
++	return IRQ_HANDLED;
++}
++
++static void bfin_twi_timeout(unsigned long data)
++{
++	struct bfin_twi_iface *iface = (struct bfin_twi_iface *)data;
++	unsigned long flags;
++
++	spin_lock_irqsave(&iface->lock, flags);
++	bfin_twi_handle_interrupt(iface);
++	if (iface->result == 0) {
++		iface->timeout_count--;
++		if (iface->timeout_count > 0) {
++			iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
++			add_timer(&iface->timeout_timer);
++		} else {
++			iface->result = -1;
++			complete(&iface->complete);
++		}
++	}
++	spin_unlock_irqrestore(&iface->lock, flags);
++}
 +
 +/*
-  * The rest of the robust-futex field is for the TID:
-  */
--#define FUTEX_TID_MASK		0x3fffffff
-+#define FUTEX_TID_MASK		0x0fffffff
- 
- /*
-  * This limit protects against a deliberately circular list.
-@@ -110,6 +116,7 @@ handle_futex_death(u32 __user *uaddr, st
-  * We set bit 0 to indicate if it's an inode-based key.
-  */
- union futex_key {
-+	u32 __user *uaddr;
- 	struct {
- 		unsigned long pgoff;
- 		struct inode *inode;
-Index: b/kernel/futex.c
-===================================================================
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -53,6 +53,12 @@
- 
- #include "rtmutex_common.h"
- 
-+#ifdef CONFIG_DEBUG_RT_MUTEXES
-+# include "rtmutex-debug.h"
-+#else
-+# include "rtmutex.h"
-+#endif
-+
- #define FUTEX_HASHBITS (CONFIG_BASE_SMALL ? 4 : 8)
- 
- /*
-@@ -102,6 +108,12 @@ struct futex_q {
- 	/* Optional priority inheritance state: */
- 	struct futex_pi_state *pi_state;
- 	struct task_struct *task;
-+
-+	/*
-+	 * This waiter is used in case of requeue from a
-+	 * normal futex to a PI-futex
-+	 */
-+	struct rt_mutex_waiter waiter;
- };
- 
- /*
-@@ -180,6 +192,9 @@ int get_futex_key(u32 __user *uaddr, uni
- 	if (unlikely((vma->vm_flags & (VM_IO|VM_READ)) != VM_READ))
- 		return (vma->vm_flags & VM_IO) ? -EPERM : -EACCES;
- 
-+	/* Save the user address in the ley */
-+	key->uaddr = uaddr;
-+
- 	/*
- 	 * Private mappings are handled in a simple way.
- 	 *
-@@ -439,7 +454,8 @@ void exit_pi_state_list(struct task_stru
- }
- 
- static int
--lookup_pi_state(u32 uval, struct futex_hash_bucket *hb, struct futex_q *me)
-+lookup_pi_state(u32 uval, struct futex_hash_bucket *hb,
-+		union futex_key *key, struct futex_pi_state **ps)
- {
- 	struct futex_pi_state *pi_state = NULL;
- 	struct futex_q *this, *next;
-@@ -450,7 +466,7 @@ lookup_pi_state(u32 uval, struct futex_h
- 	head = &hb->chain;
- 
- 	plist_for_each_entry_safe(this, next, head, list) {
--		if (match_futex(&this->key, &me->key)) {
-+		if (match_futex(&this->key, key)) {
- 			/*
- 			 * Another waiter already exists - bump up
- 			 * the refcount and return its pi_state:
-@@ -465,7 +481,7 @@ lookup_pi_state(u32 uval, struct futex_h
- 			WARN_ON(!atomic_read(&pi_state->refcount));
- 
- 			atomic_inc(&pi_state->refcount);
--			me->pi_state = pi_state;
-+			*ps = pi_state;
- 
- 			return 0;
- 		}
-@@ -492,7 +508,7 @@ lookup_pi_state(u32 uval, struct futex_h
- 	rt_mutex_init_proxy_locked(&pi_state->pi_mutex, p);
- 
- 	/* Store the key for possible exit cleanups: */
--	pi_state->key = me->key;
-+	pi_state->key = *key;
- 
- 	spin_lock_irq(&p->pi_lock);
- 	WARN_ON(!list_empty(&pi_state->list));
-@@ -502,7 +518,7 @@ lookup_pi_state(u32 uval, struct futex_h
- 
- 	put_task_struct(p);
- 
--	me->pi_state = pi_state;
-+	*ps = pi_state;
- 
- 	return 0;
- }
-@@ -562,6 +578,8 @@ static int wake_futex_pi(u32 __user *uad
- 	 */
- 	if (!(uval & FUTEX_OWNER_DIED)) {
- 		newval = FUTEX_WAITERS | new_owner->pid;
-+		/* Keep the FUTEX_WAITER_REQUEUED flag if it was set */
-+		newval |= (uval & FUTEX_WAITER_REQUEUED);
- 
- 		pagefault_disable();
- 		curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
-@@ -666,6 +684,254 @@ out:
- }
- 
- /*
-+ * Called from futex_requeue_pi.
-+ * Set FUTEX_WAITERS and FUTEX_WAITER_REQUEUED flags on the
-+ * PI-futex value; search its associated pi_state if an owner exist
-+ * or create a new one without owner.
++ * Generic i2c master transfer entrypoint
 + */
-+static inline int
-+lookup_pi_state_for_requeue(u32 __user *uaddr, struct futex_hash_bucket *hb,
-+			    union futex_key *key,
-+			    struct futex_pi_state **pi_state)
++static int bfin_twi_master_xfer(struct i2c_adapter *adap,
++				struct i2c_msg *msgs, int num)
 +{
-+	u32 curval, uval, newval;
++	struct bfin_twi_iface *iface = adap->algo_data;
++	struct i2c_msg *pmsg;
++	int i, ret;
++	int rc = 0;
 +
-+retry:
-+	/*
-+	 * We can't handle a fault cleanly because we can't
-+	 * release the locks here. Simply return the fault.
-+	 */
-+	if (get_futex_value_locked(&curval, uaddr))
-+		return -EFAULT;
++	if (!(bfin_read_TWI_CONTROL() & TWI_ENA))
++		return -ENXIO;
 +
-+	/* set the flags FUTEX_WAITERS and FUTEX_WAITER_REQUEUED */
-+	if ((curval & (FUTEX_WAITERS | FUTEX_WAITER_REQUEUED))
-+	    != (FUTEX_WAITERS | FUTEX_WAITER_REQUEUED)) {
-+		/*
-+		 * No waiters yet, we prepare the futex to have some waiters.
++	mutex_lock(&iface->twi_lock);
++
++	while (bfin_read_TWI_MASTER_STAT() & BUSBUSY) {
++		mutex_unlock(&iface->twi_lock);
++		yield();
++		mutex_lock(&iface->twi_lock);
++	}
++
++	ret = 0;
++	for (i = 0; rc >= 0 && i < num; i++) {
++		pmsg = &msgs[i];
++		if (pmsg->flags & I2C_M_TEN) {
++			dev_err(&(adap->dev), "i2c-bfin-twi: 10 bits addr "
++				"not supported !\n");
++			rc = -EINVAL;
++			break;
++		}
++
++		iface->cur_mode = TWI_I2C_MODE_STANDARD;
++		iface->manual_stop = 0;
++		iface->transPtr = pmsg->buf;
++		iface->writeNum = iface->readNum = pmsg->len;
++		iface->result = 0;
++		iface->timeout_count = 10;
++		/* Set Transmit device address */
++		bfin_write_TWI_MASTER_ADDR(pmsg->addr);
++
++		/* FIFO Initiation. Data in FIFO should be
++		 *  discarded before start a new operation.
 +		 */
++		bfin_write_TWI_FIFO_CTL(0x3);
++		SSYNC();
++		bfin_write_TWI_FIFO_CTL(0);
++		SSYNC();
 +
-+		uval = curval;
-+		newval = uval | FUTEX_WAITERS | FUTEX_WAITER_REQUEUED;
++		if (pmsg->flags & I2C_M_RD)
++			iface->read_write = I2C_SMBUS_READ;
++		else {
++			iface->read_write = I2C_SMBUS_WRITE;
++			/* Transmit first data */
++			if (iface->writeNum > 0) {
++				bfin_write_TWI_XMT_DATA8(*(iface->transPtr++));
++				iface->writeNum--;
++				SSYNC();
++			}
++		}
 +
-+		pagefault_disable();
-+		curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
-+		pagefault_enable();
++		/* clear int stat */
++		bfin_write_TWI_INT_STAT(MERR|MCOMP|XMTSERV|RCVSERV);
 +
-+		if (unlikely(curval == -EFAULT))
-+			return -EFAULT;
-+		if (unlikely(curval != uval))
-+			goto retry;
++		/* Interrupt mask . Enable XMT, RCV interrupt */
++		bfin_write_TWI_INT_MASK(MCOMP | MERR |
++			((iface->read_write == I2C_SMBUS_READ)?
++			RCVSERV : XMTSERV));
++		SSYNC();
++
++		if (pmsg->len > 0 && pmsg->len <= 255)
++			bfin_write_TWI_MASTER_CTL(pmsg->len << 6);
++		else if (pmsg->len > 255) {
++			bfin_write_TWI_MASTER_CTL(0xff << 6);
++			iface->manual_stop = 1;
++		} else
++			break;
++
++		iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
++		add_timer(&iface->timeout_timer);
++
++		/* Master enable */
++		bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() | MEN |
++			((iface->read_write == I2C_SMBUS_READ) ? MDIR : 0) |
++			((CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ>100) ? FAST : 0));
++		SSYNC();
++
++		wait_for_completion(&iface->complete);
++
++		rc = iface->result;
++		if (rc == 1)
++			ret++;
++		else if (rc == -1)
++			break;
 +	}
 +
-+	if (!(curval & FUTEX_TID_MASK)
-+	    || lookup_pi_state(curval, hb, key, pi_state)) {
-+		/* the futex has no owner (yet) or the lookup failed:
-+		   allocate one pi_state without owner */
++	/* Release mutex */
++	mutex_unlock(&iface->twi_lock);
 +
-+		*pi_state = alloc_pi_state();
++	return ret;
++}
 +
-+		/* Already stores the key: */
-+		(*pi_state)->key = *key;
++/*
++ * SMBus type transfer entrypoint
++ */
 +
-+		/* init the mutex without owner */
-+		__rt_mutex_init(&(*pi_state)->pi_mutex, NULL);
++int bfin_twi_smbus_xfer(struct i2c_adapter *adap, u16 addr,
++			unsigned short flags, char read_write,
++			u8 command, int size, union i2c_smbus_data *data)
++{
++	struct bfin_twi_iface *iface = adap->algo_data;
++	int rc = 0;
++
++	if (!(bfin_read_TWI_CONTROL() & TWI_ENA))
++		return -ENXIO;
++
++	mutex_lock(&iface->twi_lock);
++
++	while (bfin_read_TWI_MASTER_STAT() & BUSBUSY) {
++		mutex_unlock(&iface->twi_lock);
++		yield();
++		mutex_lock(&iface->twi_lock);
 +	}
++
++	iface->writeNum = 0;
++	iface->readNum = 0;
++
++	/* Prepare datas & select mode */
++	switch (size) {
++	case I2C_SMBUS_QUICK:
++		iface->transPtr = NULL;
++		iface->cur_mode = TWI_I2C_MODE_STANDARD;
++		break;
++	case I2C_SMBUS_BYTE:
++		if (data == NULL)
++			iface->transPtr = NULL;
++		else {
++			if (read_write == I2C_SMBUS_READ)
++				iface->readNum = 1;
++			else
++				iface->writeNum = 1;
++			iface->transPtr = &data->byte;
++		}
++		iface->cur_mode = TWI_I2C_MODE_STANDARD;
++		break;
++	case I2C_SMBUS_BYTE_DATA:
++		if (read_write == I2C_SMBUS_READ) {
++			iface->readNum = 1;
++			iface->cur_mode = TWI_I2C_MODE_COMBINED;
++		} else {
++			iface->writeNum = 1;
++			iface->cur_mode = TWI_I2C_MODE_STANDARDSUB;
++		}
++		iface->transPtr = &data->byte;
++		break;
++	case I2C_SMBUS_WORD_DATA:
++		if (read_write == I2C_SMBUS_READ) {
++			iface->readNum = 2;
++			iface->cur_mode = TWI_I2C_MODE_COMBINED;
++		} else {
++			iface->writeNum = 2;
++			iface->cur_mode = TWI_I2C_MODE_STANDARDSUB;
++		}
++		iface->transPtr = (u8 *)&data->word;
++		break;
++	case I2C_SMBUS_PROC_CALL:
++		iface->writeNum = 2;
++		iface->readNum = 2;
++		iface->cur_mode = TWI_I2C_MODE_COMBINED;
++		iface->transPtr = (u8 *)&data->word;
++		break;
++	case I2C_SMBUS_BLOCK_DATA:
++		if (read_write == I2C_SMBUS_READ) {
++			iface->readNum = 0;
++			iface->cur_mode = TWI_I2C_MODE_COMBINED;
++		} else {
++			iface->writeNum = data->block[0] + 1;
++			iface->cur_mode = TWI_I2C_MODE_STANDARDSUB;
++		}
++		iface->transPtr = data->block;
++		break;
++	default:
++		return -1;
++	}
++
++	iface->result = 0;
++	iface->manual_stop = 0;
++	iface->read_write = read_write;
++	iface->command = command;
++	iface->timeout_count = 10;
++
++	/* FIFO Initiation. Data in FIFO should be discarded before
++	 * start a new operation.
++	 */
++	bfin_write_TWI_FIFO_CTL(0x3);
++	SSYNC();
++	bfin_write_TWI_FIFO_CTL(0);
++
++	/* clear int stat */
++	bfin_write_TWI_INT_STAT(MERR|MCOMP|XMTSERV|RCVSERV);
++
++	/* Set Transmit device address */
++	bfin_write_TWI_MASTER_ADDR(addr);
++	SSYNC();
++
++	iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
++	add_timer(&iface->timeout_timer);
++
++	switch (iface->cur_mode) {
++	case TWI_I2C_MODE_STANDARDSUB:
++		bfin_write_TWI_XMT_DATA8(iface->command);
++		bfin_write_TWI_INT_MASK(MCOMP | MERR |
++			((iface->read_write == I2C_SMBUS_READ) ?
++			RCVSERV : XMTSERV));
++		SSYNC();
++
++		if (iface->writeNum + 1 <= 255)
++			bfin_write_TWI_MASTER_CTL((iface->writeNum + 1) << 6);
++		else {
++			bfin_write_TWI_MASTER_CTL(0xff << 6);
++			iface->manual_stop = 1;
++		}
++		/* Master enable */
++		bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() | MEN |
++			((CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ>100) ? FAST : 0));
++		break;
++	case TWI_I2C_MODE_COMBINED:
++		bfin_write_TWI_XMT_DATA8(iface->command);
++		bfin_write_TWI_INT_MASK(MCOMP | MERR | RCVSERV | XMTSERV);
++		SSYNC();
++
++		if (iface->writeNum > 0)
++			bfin_write_TWI_MASTER_CTL((iface->writeNum + 1) << 6);
++		else
++			bfin_write_TWI_MASTER_CTL(0x1 << 6);
++		/* Master enable */
++		bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() | MEN |
++			((CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ>100) ? FAST : 0));
++		break;
++	default:
++		bfin_write_TWI_MASTER_CTL(0);
++		if (size != I2C_SMBUS_QUICK) {
++			/* Don't access xmit data register when this is a
++			 * read operation.
++			 */
++			if (iface->read_write != I2C_SMBUS_READ) {
++				if (iface->writeNum > 0) {
++					bfin_write_TWI_XMT_DATA8(*(iface->transPtr++));
++					if (iface->writeNum <= 255)
++						bfin_write_TWI_MASTER_CTL(iface->writeNum << 6);
++					else {
++						bfin_write_TWI_MASTER_CTL(0xff << 6);
++						iface->manual_stop = 1;
++					}
++					iface->writeNum--;
++				} else {
++					bfin_write_TWI_XMT_DATA8(iface->command);
++					bfin_write_TWI_MASTER_CTL(1 << 6);
++				}
++			} else {
++				if (iface->readNum > 0 && iface->readNum <= 255)
++					bfin_write_TWI_MASTER_CTL(iface->readNum << 6);
++				else if (iface->readNum > 255) {
++					bfin_write_TWI_MASTER_CTL(0xff << 6);
++					iface->manual_stop = 1;
++				} else {
++					del_timer(&iface->timeout_timer);
++					break;
++				}
++			}
++		}
++		bfin_write_TWI_INT_MASK(MCOMP | MERR |
++			((iface->read_write == I2C_SMBUS_READ) ?
++			RCVSERV : XMTSERV));
++		SSYNC();
++
++		/* Master enable */
++		bfin_write_TWI_MASTER_CTL(bfin_read_TWI_MASTER_CTL() | MEN |
++			((iface->read_write == I2C_SMBUS_READ) ? MDIR : 0) |
++			((CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ > 100) ? FAST : 0));
++		break;
++	}
++	SSYNC();
++
++	wait_for_completion(&iface->complete);
++
++	rc = (iface->result >= 0) ? 0 : -1;
++
++	/* Release mutex */
++	mutex_unlock(&iface->twi_lock);
++
++	return rc;
++}
++
++/*
++ * Return what the adapter supports
++ */
++static u32 bfin_twi_functionality(struct i2c_adapter *adap)
++{
++	return I2C_FUNC_SMBUS_QUICK | I2C_FUNC_SMBUS_BYTE |
++	       I2C_FUNC_SMBUS_BYTE_DATA | I2C_FUNC_SMBUS_WORD_DATA |
++	       I2C_FUNC_SMBUS_BLOCK_DATA | I2C_FUNC_SMBUS_PROC_CALL |
++	       I2C_FUNC_I2C;
++}
++
++
++static struct i2c_algorithm bfin_twi_algorithm = {
++	.master_xfer   = bfin_twi_master_xfer,
++	.smbus_xfer    = bfin_twi_smbus_xfer,
++	.functionality = bfin_twi_functionality,
++};
++
++
++static int i2c_bfin_twi_suspend(struct platform_device *dev, pm_message_t state)
++{
++/*	struct bfin_twi_iface *iface = platform_get_drvdata(dev);*/
++
++	/* Disable TWI */
++	bfin_write_TWI_CONTROL(bfin_read_TWI_CONTROL() & ~TWI_ENA);
++	SSYNC();
 +
 +	return 0;
 +}
 +
-+/*
-+ * Keep the first nr_wake waiter from futex1, wake up one,
-+ * and requeue the next nr_requeue waiters following hashed on
-+ * one physical page to another physical page (PI-futex uaddr2)
-+ */
-+static int futex_requeue_pi(u32 __user *uaddr1, u32 __user *uaddr2,
-+			    int nr_wake, int nr_requeue, u32 *cmpval)
++static int i2c_bfin_twi_resume(struct platform_device *dev)
 +{
-+	union futex_key key1, key2;
-+	struct futex_hash_bucket *hb1, *hb2;
-+	struct plist_head *head1;
-+	struct futex_q *this, *next;
-+	struct futex_pi_state *pi_state2 = NULL;
-+	struct rt_mutex_waiter *waiter, *top_waiter = NULL;
-+	struct rt_mutex *lock2 = NULL;
-+	int ret, drop_count = 0;
++/*	struct bfin_twi_iface *iface = platform_get_drvdata(dev);*/
 +
-+	if (refill_pi_state_cache())
-+		return -ENOMEM;
++	/* Enable TWI */
++	bfin_write_TWI_CONTROL(bfin_read_TWI_CONTROL() | TWI_ENA);
++	SSYNC();
 +
-+retry:
-+	/*
-+	 * First take all the futex related locks:
-+	 */
-+	down_read(&current->mm->mmap_sem);
-+
-+	ret = get_futex_key(uaddr1, &key1);
-+	if (unlikely(ret != 0))
-+		goto out;
-+	ret = get_futex_key(uaddr2, &key2);
-+	if (unlikely(ret != 0))
-+		goto out;
-+
-+	hb1 = hash_futex(&key1);
-+	hb2 = hash_futex(&key2);
-+
-+	double_lock_hb(hb1, hb2);
-+
-+	if (likely(cmpval != NULL)) {
-+		u32 curval;
-+
-+		ret = get_futex_value_locked(&curval, uaddr1);
-+
-+		if (unlikely(ret)) {
-+			spin_unlock(&hb1->lock);
-+			if (hb1 != hb2)
-+				spin_unlock(&hb2->lock);
-+
-+			/*
-+			 * If we would have faulted, release mmap_sem, fault
-+			 * it in and start all over again.
-+			 */
-+			up_read(&current->mm->mmap_sem);
-+
-+			ret = get_user(curval, uaddr1);
-+
-+			if (!ret)
-+				goto retry;
-+
-+			return ret;
-+		}
-+		if (curval != *cmpval) {
-+			ret = -EAGAIN;
-+			goto out_unlock;
-+		}
-+	}
-+
-+	head1 = &hb1->chain;
-+	plist_for_each_entry_safe(this, next, head1, list) {
-+		if (!match_futex (&this->key, &key1))
-+			continue;
-+		if (++ret <= nr_wake) {
-+			wake_futex(this);
-+		} else {
-+			/*
-+			 * FIRST: get and set the pi_state
-+			 */
-+			if (!pi_state2) {
-+				int s;
-+				/* do this only the first time we requeue someone */
-+				s = lookup_pi_state_for_requeue(uaddr2, hb2,
-+								&key2, &pi_state2);
-+				if (s) {
-+					ret = s;
-+					goto out_unlock;
-+				}
-+
-+				lock2 = &pi_state2->pi_mutex;
-+				spin_lock(&lock2->wait_lock);
-+
-+				/* Save the top waiter of the wait_list */
-+				if (rt_mutex_has_waiters(lock2))
-+					top_waiter = rt_mutex_top_waiter(lock2);
-+			} else
-+				atomic_inc(&pi_state2->refcount);
-+
-+
-+			this->pi_state = pi_state2;
-+
-+			/*
-+			 * SECOND: requeue futex_q to the correct hashbucket
-+			 */
-+
-+			/*
-+			 * If key1 and key2 hash to the same bucket, no need to
-+			 * requeue.
-+			 */
-+			if (likely(head1 != &hb2->chain)) {
-+				plist_del(&this->list, &hb1->chain);
-+				plist_add(&this->list, &hb2->chain);
-+				this->lock_ptr = &hb2->lock;
-+#ifdef CONFIG_DEBUG_PI_LIST
-+				this->list.plist.lock = &hb2->lock;
-+#endif
-+			}
-+			this->key = key2;
-+			get_futex_key_refs(&key2);
-+			drop_count++;
-+
-+
-+			/*
-+			 * THIRD: queue it to lock2
-+			 */
-+			spin_lock_irq(&this->task->pi_lock);
-+			waiter = &this->waiter;
-+			waiter->task = this->task;
-+			waiter->lock = lock2;
-+			plist_node_init(&waiter->list_entry, this->task->prio);
-+			plist_node_init(&waiter->pi_list_entry, this->task->prio);
-+			plist_add(&waiter->list_entry, &lock2->wait_list);
-+			this->task->pi_blocked_on = waiter;
-+			spin_unlock_irq(&this->task->pi_lock);
-+
-+			if (ret - nr_wake >= nr_requeue)
-+				break;
-+		}
-+	}
-+
-+	/* If we've requeued some tasks and the top_waiter of the rt_mutex
-+	   has changed, we must adjust the priority of the owner, if any */
-+	if (drop_count) {
-+		struct task_struct *owner = rt_mutex_owner(lock2);
-+		if (owner &&
-+		    (top_waiter != (waiter = rt_mutex_top_waiter(lock2)))) {
-+			int chain_walk = 0;
-+
-+			spin_lock_irq(&owner->pi_lock);
-+			if (top_waiter)
-+				plist_del(&top_waiter->pi_list_entry, &owner->pi_waiters);
-+			else
-+				/*
-+				 * There was no waiters before the requeue,
-+				 * the flag must be updated
-+				 */
-+				mark_rt_mutex_waiters(lock2);
-+
-+			plist_add(&waiter->pi_list_entry, &owner->pi_waiters);
-+			__rt_mutex_adjust_prio(owner);
-+			if (owner->pi_blocked_on) {
-+				chain_walk = 1;
-+				get_task_struct(owner);
-+			}
-+
-+			spin_unlock_irq(&owner->pi_lock);
-+			spin_unlock(&lock2->wait_lock);
-+
-+			if (chain_walk)
-+				rt_mutex_adjust_prio_chain(owner, 0, lock2, NULL,
-+							   current);
-+		} else {
-+			/* No owner or the top_waiter does not change */
-+			mark_rt_mutex_waiters(lock2);
-+			spin_unlock(&lock2->wait_lock);
-+		}
-+	}
-+
-+out_unlock:
-+	spin_unlock(&hb1->lock);
-+	if (hb1 != hb2)
-+		spin_unlock(&hb2->lock);
-+
-+	/* drop_futex_key_refs() must be called outside the spinlocks. */
-+	while (--drop_count >= 0)
-+		drop_futex_key_refs(&key1);
-+
-+out:
-+	up_read(&current->mm->mmap_sem);
-+	return ret;
++	return 0;
 +}
 +
-+/*
-  * Wake up all waiters hashed on the physical page that is mapped
-  * to this virtual address:
-  */
-@@ -984,9 +1250,10 @@ static int unqueue_me(struct futex_q *q)
- 
- /*
-  * PI futexes can not be requeued and must remove themself from the
-- * hash bucket. The hash bucket lock is held on entry and dropped here.
-+ * hash bucket. The hash bucket lock (i.e. lock_ptr) is held on entry
-+ * and dropped here.
-  */
--static void unqueue_me_pi(struct futex_q *q, struct futex_hash_bucket *hb)
-+static void unqueue_me_pi(struct futex_q *q)
- {
- 	WARN_ON(plist_node_empty(&q->list));
- 	plist_del(&q->list, &q->list.plist);
-@@ -995,11 +1262,65 @@ static void unqueue_me_pi(struct futex_q
- 	free_pi_state(q->pi_state);
- 	q->pi_state = NULL;
- 
--	spin_unlock(&hb->lock);
-+	spin_unlock(q->lock_ptr);
- 
- 	drop_futex_key_refs(&q->key);
- }
- 
-+/*
-+ * Fixup the pi_state owner with current.
-+ *
-+ * The cur->mm semaphore must be  held, it is released at return of this
-+ * function.
-+ */
-+static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
-+				struct futex_hash_bucket *hb,
-+				struct task_struct *curr)
++static int i2c_bfin_twi_probe(struct platform_device *dev)
 +{
-+	u32 newtid = curr->pid | FUTEX_WAITERS;
-+	struct futex_pi_state *pi_state = q->pi_state;
-+	u32 uval, curval, newval;
++	struct bfin_twi_iface *iface = &twi_iface;
++	struct i2c_adapter *p_adap;
++	int rc;
++
++	mutex_init(&(iface->twi_lock));
++	spin_lock_init(&(iface->lock));
++	init_completion(&(iface->complete));
++	iface->irq = IRQ_TWI;
++
++	init_timer(&(iface->timeout_timer));
++	iface->timeout_timer.function = bfin_twi_timeout;
++	iface->timeout_timer.data = (unsigned long)iface;
++
++	p_adap = &(iface->adap);
++	p_adap->id = I2C_DRIVERID_BLACKFINTWI;
++	strlcpy(p_adap->name, dev->name, I2C_NAME_SIZE);
++	p_adap->algo = &bfin_twi_algorithm;
++	p_adap->algo_data = iface;
++	p_adap->class = I2C_CLASS_ALL;
++	p_adap->dev.parent = &(dev->dev);
++
++	rc = request_irq(iface->irq, bfin_twi_interrupt_entry,
++		SA_INTERRUPT, dev->name, iface);
++	if (rc) {
++		printk(KERN_ERR"i2c-bfin-twi: can't get IRQ %d !\n",
++			iface->irq);
++		return -ENODEV;
++	}
++
++	/* Set TWI internal clock as 10MHz */
++	bfin_write_TWI_CONTROL(((get_sclk() / 1024 / 1024 + 5) / 10) & 0x7F);
++
++	/* Set Twi interface clock as specified */
++	if (CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ > 400)
++		bfin_write_TWI_CLKDIV((( 5*1024 / 400 ) << 8) |
++			(( 5*1024 / 400 ) & 0xFF));
++	else
++		bfin_write_TWI_CLKDIV((( 5*1024 / CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ )
++			<< 8) | (( 5*1024 / CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ )
++			& 0xFF));
++
++	/* Enable TWI */
++	bfin_write_TWI_CONTROL(bfin_read_TWI_CONTROL() | TWI_ENA);
++	SSYNC();
++
++	rc = i2c_add_adapter(p_adap);
++	if (rc < 0)
++		free_irq(iface->irq, iface);
++	else
++		platform_set_drvdata(dev, iface);
++
++	return rc;
++}
++
++static int i2c_bfin_twi_remove(struct platform_device *pdev)
++{
++	struct bfin_twi_iface *iface = platform_get_drvdata(pdev);
++
++	platform_set_drvdata(pdev, NULL);
++
++	i2c_del_adapter(&(iface->adap));
++	free_irq(iface->irq, iface);
++
++	return 0;
++}
++
++static struct platform_driver i2c_bfin_twi_driver = {
++	.probe		= i2c_bfin_twi_probe,
++	.remove		= i2c_bfin_twi_remove,
++	.suspend	= i2c_bfin_twi_suspend,
++	.resume		= i2c_bfin_twi_resume,
++	.driver		= {
++		.name	= "i2c-bfin-twi",
++	},
++};
++
++static int __init i2c_bfin_twi_init(void)
++{
 +	int ret;
 +
-+	/* Owner died? */
-+	if (pi_state->owner != NULL) {
-+		spin_lock_irq(&pi_state->owner->pi_lock);
-+		WARN_ON(list_empty(&pi_state->list));
-+		list_del_init(&pi_state->list);
-+		spin_unlock_irq(&pi_state->owner->pi_lock);
-+	} else
-+		newtid |= FUTEX_OWNER_DIED;
++	pr_info("I2C: Blackfin I2C TWI driver\n");
 +
-+	pi_state->owner = curr;
-+
-+	spin_lock_irq(&curr->pi_lock);
-+	WARN_ON(!list_empty(&pi_state->list));
-+	list_add(&pi_state->list, &curr->pi_state_list);
-+	spin_unlock_irq(&curr->pi_lock);
-+
-+	/* Unqueue and drop the lock */
-+	unqueue_me_pi(q);
-+	up_read(&curr->mm->mmap_sem);
-+	/*
-+	 * We own it, so we have to replace the pending owner
-+	 * TID. This must be atomic as we have preserve the
-+	 * owner died bit here.
-+	 */
-+	ret = get_user(uval, uaddr);
-+	while (!ret) {
-+		newval = (uval & FUTEX_OWNER_DIED) | newtid;
-+		newval |= (uval & FUTEX_WAITER_REQUEUED);
-+		curval = futex_atomic_cmpxchg_inatomic(uaddr,
-+						       uval, newval);
-+		if (curval == -EFAULT)
-+ 			ret = -EFAULT;
-+		if (curval == uval)
-+			break;
-+		uval = curval;
++	ret = platform_driver_register(&i2c_bfin_twi_driver);
++	if (ret) {
++		pr_debug("Fail to register i2c_bfin_twi driver\n");
 +	}
 +	return ret;
 +}
 +
- static long futex_wait_restart(struct restart_block *restart);
- static int futex_wait(u32 __user *uaddr, u32 val, ktime_t *abs_time)
- {
-@@ -1009,7 +1330,7 @@ static int futex_wait(u32 __user *uaddr,
- 	struct futex_q q;
- 	u32 uval;
- 	int ret;
--	struct hrtimer_sleeper t;
-+	struct hrtimer_sleeper t, *to = NULL;
- 	int rem = 0;
- 
- 	q.pi_state = NULL;
-@@ -1063,6 +1384,14 @@ static int futex_wait(u32 __user *uaddr,
- 	if (uval != val)
- 		goto out_unlock_release_sem;
- 
-+	/*
-+	 * This rt_mutex_waiter structure is prepared here and will
-+	 * be used only if this task is requeued from a normal futex to
-+	 * a PI-futex with futex_requeue_pi.
-+	 */
-+	debug_rt_mutex_init_waiter(&q.waiter);
-+	q.waiter.task = NULL;
-+
- 	/* Only actually queue if *uaddr contained val.  */
- 	__queue_me(&q, hb);
- 
-@@ -1092,6 +1421,7 @@ static int futex_wait(u32 __user *uaddr,
- 		if (!abs_time)
- 			schedule();
- 		else {
-+			to = &t;
- 			hrtimer_init(&t.timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
- 			hrtimer_init_sleeper(&t, current);
- 			t.timer.expires = *abs_time;
-@@ -1119,6 +1449,66 @@ static int futex_wait(u32 __user *uaddr,
- 	 * we are the only user of it.
- 	 */
- 
-+	if (q.pi_state) {
-+		/*
-+		 * We were woken but have been requeued on a PI-futex.
-+		 * We have to complete the lock acquisition by taking
-+		 * the rtmutex.
-+		 */
-+
-+		struct rt_mutex *lock = &q.pi_state->pi_mutex;
-+
-+		spin_lock(&lock->wait_lock);
-+		if (unlikely(q.waiter.task)) {
-+			remove_waiter(lock, &q.waiter);
-+		}
-+		spin_unlock(&lock->wait_lock);
-+
-+		if (rem)
-+			ret = -ETIMEDOUT;
-+		else
-+			ret = rt_mutex_timed_lock(lock, to, 1);
-+
-+		down_read(&curr->mm->mmap_sem);
-+		spin_lock(q.lock_ptr);
-+
-+		/*
-+		 * Got the lock. We might not be the anticipated owner if we
-+		 * did a lock-steal - fix up the PI-state in that case.
-+		 */
-+		if (!ret && q.pi_state->owner != curr) {
-+			/*
-+			 * We MUST play with the futex we were requeued on,
-+			 * NOT the current futex.
-+			 * We can retrieve it from the key of the pi_state
-+			 */
-+			uaddr = q.pi_state->key.uaddr;
-+
-+			/* mmap_sem and hash_bucket lock are unlocked at
-+			   return of this function */
-+			ret = fixup_pi_state_owner(uaddr, &q, hb, curr);
-+		} else {
-+			/*
-+			 * Catch the rare case, where the lock was released
-+			 * when we were on the way back before we locked
-+			 * the hash bucket.
-+			 */
-+			if (ret && q.pi_state->owner == curr) {
-+				if (rt_mutex_trylock(&q.pi_state->pi_mutex))
-+					ret = 0;
-+			}
-+			/* Unqueue and drop the lock */
-+			unqueue_me_pi(&q);
-+			up_read(&curr->mm->mmap_sem);
-+		}
-+
-+		debug_rt_mutex_free_waiter(&q.waiter);
-+
-+		return ret;
-+	}
-+
-+	debug_rt_mutex_free_waiter(&q.waiter);
-+
- 	/* If we were woken (and unqueued), we succeeded, whatever. */
- 	if (!unqueue_me(&q))
- 		return 0;
-@@ -1161,6 +1551,51 @@ static long futex_wait_restart(struct re
- }
- 
- 
-+static void set_pi_futex_owner(struct futex_hash_bucket *hb,
-+			       union futex_key *key, struct task_struct *p)
++static void __exit i2c_bfin_twi_exit(void)
 +{
-+	struct plist_head *head;
-+	struct futex_q *this, *next;
-+	struct futex_pi_state *pi_state = NULL;
-+	struct rt_mutex *lock;
-+
-+	/* Search a waiter that should already exists */
-+
-+	head = &hb->chain;
-+
-+	plist_for_each_entry_safe(this, next, head, list) {
-+		if (match_futex (&this->key, key)) {
-+			pi_state = this->pi_state;
-+			break;
-+		}
-+	}
-+
-+	BUG_ON(!pi_state);
-+
-+	/* set p as pi_state's owner */
-+	lock = &pi_state->pi_mutex;
-+
-+	spin_lock(&lock->wait_lock);
-+	spin_lock_irq(&p->pi_lock);
-+
-+	list_add(&pi_state->list, &p->pi_state_list);
-+	pi_state->owner = p;
-+
-+
-+	/* set p as pi_mutex's owner */
-+	debug_rt_mutex_proxy_lock(lock, p);
-+	WARN_ON(rt_mutex_owner(lock));
-+	rt_mutex_set_owner(lock, p, 0);
-+	rt_mutex_deadlock_account_lock(lock, p);
-+
-+	plist_add(&rt_mutex_top_waiter(lock)->pi_list_entry,
-+		  &p->pi_waiters);
-+	__rt_mutex_adjust_prio(p);
-+
-+	spin_unlock_irq(&p->pi_lock);
-+	spin_unlock(&lock->wait_lock);
++	platform_driver_unregister(&i2c_bfin_twi_driver);
 +}
 +
- /*
-  * Userspace tried a 0 -> TID atomic transition of the futex value
-  * and failed. The kernel side here does the whole locking operation:
-@@ -1175,7 +1610,7 @@ static int futex_lock_pi(u32 __user *uad
- 	struct futex_hash_bucket *hb;
- 	u32 uval, newval, curval;
- 	struct futex_q q;
--	int ret, attempt = 0;
-+	int ret, lock_held, attempt = 0;
- 
- 	if (refill_pi_state_cache())
- 		return -ENOMEM;
-@@ -1198,6 +1633,8 @@ static int futex_lock_pi(u32 __user *uad
- 	hb = queue_lock(&q, -1, NULL);
- 
-  retry_locked:
-+	lock_held = 0;
++MODULE_AUTHOR("Sonic Zhang <sonic.zhang@analog.com>");
++MODULE_DESCRIPTION("I2C-Bus adapter routines for Blackfin TWI");
++MODULE_LICENSE("GPL");
 +
- 	/*
- 	 * To avoid races, we attempt to take the lock here again
- 	 * (by doing a 0 -> TID atomic cmpxchg), while holding all
-@@ -1216,7 +1653,16 @@ static int futex_lock_pi(u32 __user *uad
- 	if (unlikely((curval & FUTEX_TID_MASK) == current->pid)) {
- 		if (!detect && 0)
- 			force_sig(SIGKILL, current);
--		ret = -EDEADLK;
-+		/*
-+		 * Normally, this check is done in user space.
-+		 * In case of requeue, the owner may attempt to lock this futex,
-+		 * even if the ownership has already been given by the previous
-+		 * waker.
-+		 * In the usual case, this is a case of deadlock, but not in case
-+		 * of REQUEUE_PI.
-+		 */
-+		if (!(curval & FUTEX_WAITER_REQUEUED))
-+			ret = -EDEADLK;
- 		goto out_unlock_release_sem;
- 	}
- 
-@@ -1228,7 +1674,18 @@ static int futex_lock_pi(u32 __user *uad
- 		goto out_unlock_release_sem;
- 
- 	uval = curval;
--	newval = uval | FUTEX_WAITERS;
-+	/*
-+	 * In case of a requeue, check if there already is an owner
-+	 * If not, just take the futex.
-+	 */
-+	if ((curval & FUTEX_WAITER_REQUEUED) && !(curval & FUTEX_TID_MASK)) {
-+		/* set current as futex owner */
-+		newval = curval | current->pid;
-+		lock_held = 1;
-+	} else
-+		/* Set the WAITERS flag, so the owner will know it has someone
-+		   to wake at next unlock */
-+		newval = curval | FUTEX_WAITERS;
- 
- 	pagefault_disable();
- 	curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
-@@ -1239,11 +1696,16 @@ static int futex_lock_pi(u32 __user *uad
- 	if (unlikely(curval != uval))
- 		goto retry_locked;
- 
-+	if (lock_held) {
-+		set_pi_futex_owner(hb, &q.key, curr);
-+		goto out_unlock_release_sem;
-+	}
-+
- 	/*
- 	 * We dont have the lock. Look up the PI state (or create it if
- 	 * we are the first waiter):
- 	 */
--	ret = lookup_pi_state(uval, hb, &q);
-+	ret = lookup_pi_state(uval, hb, &q.key, &q.pi_state);
- 
- 	if (unlikely(ret)) {
- 		/*
-@@ -1306,45 +1768,10 @@ static int futex_lock_pi(u32 __user *uad
- 	 * Got the lock. We might not be the anticipated owner if we
- 	 * did a lock-steal - fix up the PI-state in that case.
- 	 */
--	if (!ret && q.pi_state->owner != curr) {
--		u32 newtid = current->pid | FUTEX_WAITERS;
--
--		/* Owner died? */
--		if (q.pi_state->owner != NULL) {
--			spin_lock_irq(&q.pi_state->owner->pi_lock);
--			WARN_ON(list_empty(&q.pi_state->list));
--			list_del_init(&q.pi_state->list);
--			spin_unlock_irq(&q.pi_state->owner->pi_lock);
--		} else
--			newtid |= FUTEX_OWNER_DIED;
--
--		q.pi_state->owner = current;
--
--		spin_lock_irq(&current->pi_lock);
--		WARN_ON(!list_empty(&q.pi_state->list));
--		list_add(&q.pi_state->list, &current->pi_state_list);
--		spin_unlock_irq(&current->pi_lock);
--
--		/* Unqueue and drop the lock */
--		unqueue_me_pi(&q, hb);
--		up_read(&curr->mm->mmap_sem);
--		/*
--		 * We own it, so we have to replace the pending owner
--		 * TID. This must be atomic as we have preserve the
--		 * owner died bit here.
--		 */
--		ret = get_user(uval, uaddr);
--		while (!ret) {
--			newval = (uval & FUTEX_OWNER_DIED) | newtid;
--			curval = futex_atomic_cmpxchg_inatomic(uaddr,
--							       uval, newval);
--			if (curval == -EFAULT)
--				ret = -EFAULT;
--			if (curval == uval)
--				break;
--			uval = curval;
--		}
--	} else {
-+	if (!ret && q.pi_state->owner != curr)
-+		/* mmap_sem is unlocked at return of this function */
-+		ret = fixup_pi_state_owner(uaddr, &q, hb, curr);
-+	else {
- 		/*
- 		 * Catch the rare case, where the lock was released
- 		 * when we were on the way back before we locked
-@@ -1355,7 +1782,7 @@ static int futex_lock_pi(u32 __user *uad
- 				ret = 0;
- 		}
- 		/* Unqueue and drop the lock */
--		unqueue_me_pi(&q, hb);
-+		unqueue_me_pi(&q);
- 		up_read(&curr->mm->mmap_sem);
- 	}
- 
-@@ -1724,6 +2151,8 @@ retry:
- 		 * userspace.
- 		 */
- 		mval = (uval & FUTEX_WAITERS) | FUTEX_OWNER_DIED;
-+		/* Also keep the FUTEX_WAITER_REQUEUED flag if set */
-+		mval |= (uval & FUTEX_WAITER_REQUEUED);
- 		nval = futex_atomic_cmpxchg_inatomic(uaddr, uval, mval);
- 
- 		if (nval == -EFAULT)
-@@ -1854,6 +2283,9 @@ long do_futex(u32 __user *uaddr, int op,
- 	case FUTEX_TRYLOCK_PI:
- 		ret = futex_lock_pi(uaddr, 0, timeout, 1);
- 		break;
-+	case FUTEX_CMP_REQUEUE_PI:
-+		ret = futex_requeue_pi(uaddr, uaddr2, val, val2, &val3);
-+		break;
- 	default:
- 		ret = -ENOSYS;
- 	}
-@@ -1881,7 +2313,8 @@ asmlinkage long sys_futex(u32 __user *ua
- 	/*
- 	 * requeue parameter in 'utime' if op == FUTEX_REQUEUE.
- 	 */
--	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE)
-+	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE
-+	    || op == FUTEX_CMP_REQUEUE_PI)
- 		val2 = (u32) (unsigned long) utime;
- 
- 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
-Index: b/kernel/rtmutex.c
-===================================================================
---- a/kernel/rtmutex.c
-+++ b/kernel/rtmutex.c
-@@ -56,7 +56,7 @@
-  * state.
-  */
- 
--static void
-+void
- rt_mutex_set_owner(struct rt_mutex *lock, struct task_struct *owner,
- 		   unsigned long mask)
- {
-@@ -81,29 +81,6 @@ static void fixup_rt_mutex_waiters(struc
- }
- 
- /*
-- * We can speed up the acquire/release, if the architecture
-- * supports cmpxchg and if there's no debugging state to be set up
-- */
--#if defined(__HAVE_ARCH_CMPXCHG) && !defined(CONFIG_DEBUG_RT_MUTEXES)
--# define rt_mutex_cmpxchg(l,c,n)	(cmpxchg(&l->owner, c, n) == c)
--static inline void mark_rt_mutex_waiters(struct rt_mutex *lock)
--{
--	unsigned long owner, *p = (unsigned long *) &lock->owner;
--
--	do {
--		owner = *p;
--	} while (cmpxchg(p, owner, owner | RT_MUTEX_HAS_WAITERS) != owner);
--}
--#else
--# define rt_mutex_cmpxchg(l,c,n)	(0)
--static inline void mark_rt_mutex_waiters(struct rt_mutex *lock)
--{
--	lock->owner = (struct task_struct *)
--			((unsigned long)lock->owner | RT_MUTEX_HAS_WAITERS);
--}
--#endif
--
--/*
-  * Calculate task priority from the waiter list priority
-  *
-  * Return task->normal_prio when the waiter list is empty or when
-@@ -123,7 +100,7 @@ int rt_mutex_getprio(struct task_struct 
-  *
-  * This can be both boosting and unboosting. task->pi_lock must be held.
-  */
--static void __rt_mutex_adjust_prio(struct task_struct *task)
-+void __rt_mutex_adjust_prio(struct task_struct *task)
- {
- 	int prio = rt_mutex_getprio(task);
- 
-@@ -159,11 +136,11 @@ int max_lock_depth = 1024;
-  * Decreases task's usage by one - may thus free the task.
-  * Returns 0 or -EDEADLK.
-  */
--static int rt_mutex_adjust_prio_chain(struct task_struct *task,
--				      int deadlock_detect,
--				      struct rt_mutex *orig_lock,
--				      struct rt_mutex_waiter *orig_waiter,
--				      struct task_struct *top_task)
-+int rt_mutex_adjust_prio_chain(struct task_struct *task,
-+			       int deadlock_detect,
-+			       struct rt_mutex *orig_lock,
-+			       struct rt_mutex_waiter *orig_waiter,
-+			       struct task_struct *top_task)
- {
- 	struct rt_mutex *lock;
- 	struct rt_mutex_waiter *waiter, *top_waiter = orig_waiter;
-@@ -524,8 +501,8 @@ static void wakeup_next_waiter(struct rt
-  *
-  * Must be called with lock->wait_lock held
-  */
--static void remove_waiter(struct rt_mutex *lock,
--			  struct rt_mutex_waiter *waiter)
-+void remove_waiter(struct rt_mutex *lock,
-+		   struct rt_mutex_waiter *waiter)
- {
- 	int first = (waiter == rt_mutex_top_waiter(lock));
- 	struct task_struct *owner = rt_mutex_owner(lock);
-Index: b/kernel/rtmutex_common.h
-===================================================================
---- a/kernel/rtmutex_common.h
-+++ b/kernel/rtmutex_common.h
-@@ -113,6 +113,29 @@ static inline unsigned long rt_mutex_own
- }
- 
- /*
-+ * We can speed up the acquire/release, if the architecture
-+ * supports cmpxchg and if there's no debugging state to be set up
-+ */
-+#if defined(__HAVE_ARCH_CMPXCHG) && !defined(CONFIG_DEBUG_RT_MUTEXES)
-+# define rt_mutex_cmpxchg(l,c,n)	(cmpxchg(&l->owner, c, n) == c)
-+static inline void mark_rt_mutex_waiters(struct rt_mutex *lock)
-+{
-+	unsigned long owner, *p = (unsigned long *) &lock->owner;
-+
-+	do {
-+		owner = *p;
-+	} while (cmpxchg(p, owner, owner | RT_MUTEX_HAS_WAITERS) != owner);
-+}
-+#else
-+# define rt_mutex_cmpxchg(l,c,n)	(0)
-+static inline void mark_rt_mutex_waiters(struct rt_mutex *lock)
-+{
-+	lock->owner = (struct task_struct *)
-+			((unsigned long)lock->owner | RT_MUTEX_HAS_WAITERS);
-+}
-+#endif
-+
-+/*
-  * PI-futex support (proxy locking functions, etc.):
-  */
- extern struct task_struct *rt_mutex_next_owner(struct rt_mutex *lock);
-@@ -120,4 +143,15 @@ extern void rt_mutex_init_proxy_locked(s
- 				       struct task_struct *proxy_owner);
- extern void rt_mutex_proxy_unlock(struct rt_mutex *lock,
- 				  struct task_struct *proxy_owner);
-+
-+extern void rt_mutex_set_owner(struct rt_mutex *lock, struct task_struct *owner,
-+			       unsigned long mask);
-+extern void __rt_mutex_adjust_prio(struct task_struct *task);
-+extern int rt_mutex_adjust_prio_chain(struct task_struct *task,
-+				      int deadlock_detect,
-+				      struct rt_mutex *orig_lock,
-+				      struct rt_mutex_waiter *orig_waiter,
-+				      struct task_struct *top_task);
-+extern void remove_waiter(struct rt_mutex *lock,
-+			  struct rt_mutex_waiter *waiter);
- #endif
-Index: b/kernel/futex_compat.c
-===================================================================
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -154,7 +154,8 @@ asmlinkage long compat_sys_futex(u32 __u
- 			t = ktime_add(ktime_get(), timespec_to_ktime(ts));
- 		tp = &t;
- 	}
--	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE)
-+	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE
-+	    || op == FUTEX_CMP_REQUEUE_PI)
- 		val2 = (int) (unsigned long) utime;
- 
- 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
++module_init(i2c_bfin_twi_init);
++module_exit(i2c_bfin_twi_exit);
+_
 
--- 
-Pierre Peiffer
+Thanks
+-Bryan Wu
