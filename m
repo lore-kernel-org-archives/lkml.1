@@ -1,34 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbXCUXGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965426AbXCUXHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753115AbXCUXGm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbXCUXGm
+	id S965426AbXCUXHM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965410AbXCUXHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:06:42 -0400
-Received: from mx.laposte.net ([81.255.54.16]:7528 "EHLO mx.laposte.net"
+	Wed, 21 Mar 2007 19:07:12 -0400
+Received: from waste.org ([66.93.16.53]:58314 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753115AbXCUXGl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:06:41 -0400
-X-Greylist: delayed 1211 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Mar 2007 19:06:41 EDT
-Subject: Re: 2.6.21-rc4-mm1
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: Matt Mackall <mpm@selenic.com>, Larry Finger <larry.finger@lwfinger.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Organization: Adresse perso
-Date: Wed, 21 Mar 2007 23:45:52 +0100
-Message-Id: <1174517152.25431.3.camel@rousalka.dyndns.org>
+	id S965426AbXCUXHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 19:07:10 -0400
+Date: Wed, 21 Mar 2007 17:53:48 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Valdis.Kletnieks@vt.edu, Adam Litke <agl@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: pagetable_ops: Hugetlb character device example
+Message-ID: <20070321225348.GO10459@waste.org>
+References: <20070319200502.17168.17175.stgit@localhost.localdomain> <1174506228.21684.41.camel@localhost.localdomain> <200703211951.l2LJpVPS020364@turing-police.cc.vt.edu> <20070321222659.GJ2986@holomorphy.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-2.fc7) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070321222659.GJ2986@holomorphy.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Firmware loading is broken for all subsystems, not just network
+On Wed, Mar 21, 2007 at 03:26:59PM -0700, William Lee Irwin III wrote:
+> On Wed, 21 Mar 2007 14:43:48 CDT, Adam Litke said:
+> >> The main reason I am advocating a set of pagetable_operations is to
+> >> enable the development of a new hugetlb interface.
+> 
+> On Wed, Mar 21, 2007 at 03:51:31PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> > Do you have an exit strategy for the *old* interface?
+> 
+> Hello.
+> 
+> My exit strategy was to make hugetlbfs an alias for ramfs when ramfs
+> acquired the necessary functionality until expand-on-mmap() was merged.
+> That would've allowed rm -rf fs/hugetlbfs/ outright. A compatibility
+> wrapper for expand-on-mmap() around ramfs once ramfs acquires the
+> necessary functionality is now the exit strategy.
 
-→ http://bugzilla.kernel.org/show_bug.cgi?id=8239
+Can you describe what ramfs needs here in a bit more detail?
+
+If it's non-trivial, I'd rather see any new functionality go into
+shmfs/tmpfs, as ramfs has done a good job at staying a minimal fs thus
+far.
 
 -- 
-Nicolas Mailhot
+Mathematics is the supreme nostalgia of our time.
