@@ -1,147 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbXCUGve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbXCUGwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932162AbXCUGve (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 02:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932149AbXCUGve
+	id S932149AbXCUGwb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 02:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932205AbXCUGwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 02:51:34 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:35558 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932162AbXCUGvc (ORCPT
+	Wed, 21 Mar 2007 02:52:30 -0400
+Received: from ns3.system-techniques.com ([204.91.156.41]:49723 "EHLO
+	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932149AbXCUGw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 02:51:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=PMniIiGgaVCR+CEdvOEP4uBPE7+JLr2YHvoatGzu1Yb0ISgsV2SXBGT2HZA7S2xngGY1AfMtpCLCs4KKXow0QJ8PYXgiBpyoNbbcu+ntvhKbUCSPu5J4WmbBFTM5sp/qKvrWd5+/I1Cv2oYpGPyuDxWqPO8Wt1zvaOH/mbPdoW0=  ;
-X-YMail-OSG: xgOZRAoVM1mdIdAiONTp1htZF_o3F9NiwL6Ygzlv7UvN9k5XchHU55NyNqi_qF8QqyaDcy0N9L7rQfeWKejFvfZE39ONhg3HA4u08PdiqwKOxAo.7AbaLUFeDCpU5z6PEgVUJfNzJWajQSQ-
-Message-ID: <4600D5EB.90507@yahoo.com.au>
-Date: Wed, 21 Mar 2007 17:51:23 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 21 Mar 2007 02:52:29 -0400
+Date: Tue, 20 Mar 2007 23:52:25 -0700 (PDT)
+From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+To: "Moore, Eric" <Eric.Moore@lsi.com>
+cc: Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
+       Linux Scsi maillist <linux-scsi@vger.kernel.org>,
+       James.Bottomley@SteelEye.com
+Subject: RE: MPT Fusion LSI22320 ,  Domain validation loops .
+In-Reply-To: <664A4EBB07F29743873A87CF62C26D70650FD9@NAMAIL4.ad.lsil.com>
+Message-ID: <Pine.LNX.4.64.0703202347010.27070@filesrv1.baby-dragons.com>
+References: <664A4EBB07F29743873A87CF62C26D70650FD9@NAMAIL4.ad.lsil.com>
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Adam Litke <agl@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/7] Introduce the pagetable_operations and associated
- helper macros.
-References: <20070319200502.17168.17175.stgit@localhost.localdomain> <20070319200513.17168.52238.stgit@localhost.localdomain> <4600B216.3010505@yahoo.com.au> <20070321045214.GE2986@holomorphy.com> <4600BD9F.8030609@yahoo.com.au> <20070321054102.GF2986@holomorphy.com>
-In-Reply-To: <20070321054102.GF2986@holomorphy.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (ns3.baby-dragons.com [204.91.156.41]); Wed, 21 Mar 2007 06:52:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> William Lee Irwin III wrote:
-> 
->>>ISTR potential ppc64 users coming out of the woodwork for something I
->>>didn't recognize the name of, but I may be confusing that with your
->>>patch. I can implement additional users (and useful ones at that)
->>>needing this in particular if desired.
-> 
-> 
-> On Wed, Mar 21, 2007 at 04:07:43PM +1100, Nick Piggin wrote:
-> 
->>Yes I would be interested in seeing useful additional users of this
->>that cannot use our regular virtual memory, before making it a general
->>thing.
->>I just don't want to see proliferation of these things, if possible.
-> 
-> 
-> I'm tied up elsewhere so I won't get to it in a timely fashion. Maybe
-> in a few weeks I can start up on the first two of the bunch.
+ 	Hello Eric ,  Fyi ,  linux-2.6.21-rc4 + mpt-fusion(*) patches from 
+Andrew Morton's patch tree .  Still gives me the ever looping reset .  But I 
+have just found sometrhing of interest one of the Powersuplies in the cabiinet 
+'May be' failing .  I have to test that to be satisfied that is the case .
+ 	I'll report back soon on the PS & please look into this .  There is no 
+reason for the driver to keep a system in loop over a failing drive set .
+ 		Tia ,  JimL
 
-Care to give us a hint? :)
+(*)
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/broken-out/mpt-fusion-handle-pci-layer-error-on-resume.patch
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/broken-out/mpt-fusion-handle-mpt_resume-failure-while-resuming.patch
 
-
-> William Lee Irwin III wrote:
-> 
->>>Two fault handling methods callbacks raise an eyebrow over here at least.
->>>I was vaguely hoping for unification of the fault handling callbacks.
-> 
-> 
-> On Wed, Mar 21, 2007 at 04:07:43PM +1100, Nick Piggin wrote:
-> 
->>I don't know if it would be so clean to do that as they are at different 
->>levels.
->>Adam's fault is before the VM translation (and bypasses it), and mine is 
->>after.
-> 
-> 
-> Not much of a VM translation; it's just a lookup through the software
-> mocked-up structures on everything save i386, x86_64, and some m68k where
-> they're the same thing only with hardware walkers (ISTR ia64's being
-> firmware a la Alpha despite the "HPW" name, though I could be wrong)
-
-Well the vma+pagetables *are* our VM translation data structure. It is
-a good data structure. The Gelato/UNSW guys experimenting with changing
-this have basically said they haven't yet got anything that beats it.
-
-I would be opposed to anything that bypasses that unless a) it is not
-applicable to the VM as a whole, and b) it is really worth it
-(hugepages was a reasonable exception).
-
-
-> reliant on them. The drivers/etc. could just as easily use helper
-> functions to carry out the lookup, thereby accomplishing the
-> unification. There's nothing particularly fundamental about a pte
-> lookup.
-
-Yeah you could, but it looks back to front to me.
-
-The VM tells the filesystem that the machine took a fault at virtual
-address X, then the filesystem asks the VM what pgoff that is, then
-tells the VM to install the corresponding page to vaddr X.
-
-With my ->fault, the VM asks the filesystem to give the page that
-corresponds to vaddr X, then installs it into that vaddr.
-
-
-> Normal arches that do software TLB refill could just as easily
-> consult the radix trees dangled off struct address_space or any old
-> data structure floating around the kernel with enough information to
-> translate user virtual addresses to the physical addresses they need to
-> fill the TLB with, and there are other kernels that literally do things
-> like that.
-
-Sure it *could* be done, but it may not be very nice, given Linux's
-design. And you definitely need _something_ other than just the
-pagecache radix-tree, because the VM needs to know who maps the page.
-
-So if, for your backing store, you use a small hash table and evict old
-entries like powerpc, you'll constantly be faulting in and out pages
-from the VM's high level view of the address space. That isn't a really
-cheap operation. It takes at least:
-
-read_lock_irq(mapping->tree_lock);
-radix_tree_lookup()
-read_unlock_irq(mapping->tree_lock);
-lock_page()
-atomic_add(page->_count)
-atomic_add(page->_mapcount)
-unlock_page()
-
-atomic_add_negative(page->_mapcount)
-atomic_dec_and_test(page->_count)
-
-Compared to our current page table walk which is just a single locked
-op + barrier for the spinlock + radix tree walk.
-
-
-If you had a very large hash table (ia64 long mode, maybe?), then you
-may have slightly fewer high level faults, but range based operations
-are going to take a whole lot of cache misses, aren't they? Especially
-for small processes.
-
-Not that I wouldn't be happy to be proven wrong, but I don't think it
-should be something that sneaks in under these pagetable operations.
-IMO.
+On Mon, 19 Mar 2007, Moore, Eric wrote:
+> On Saturday, March 17, 2007 2:33 PM,  James W. Laferriere wrote:
+>>  	Hello All ,  I am have been having this problem since I
+>> purchased the
+>> controller and after changing out the disks I thought were
+>> the problem .
+>>  	I am still getting the continous :
+>>
+>> mptscsih: ioc1: attempting task abort! (sc=f7a64500)
+>> scsi 3:0:4:0:
+>>          command: Inquiry: 12 00 00 00 60 00
+>> mptbase: Initiating ioc1 recovery
+>> mptscsih: ioc1: task abort: SUCCESS (sc=f7a64500)
+>>   target3:0:4: Domain Validation detected failure, dropping back
+>>   target3:0:4: Domain Validation skipping write tests
+>>   target3:0:4: Ending Domain Validation
+>>   target3:0:4: asynchronous
+>>   target3:0:5: Beginning Domain Validation
+>> mptscsih: ioc0: attempting target reset! (sc=f7a64380)
+>>
+>>  	The acutual device id's change and the driver
+>> continously resets the
+>> busses & starts all over .
+>>
+>>  	The disks are in a HP DS-SL13R-BA 4354R 14drive ultra3
+>> racKmount cabinet
+>> w/ dualbus & dualps ,  Which seems to present a ID6 ,  That
+>> does not show up in
+>> any of the bus scans .
+>>
+>>  	Now I have previously had the same cabinet with 18gb
+>> disks which had the
+>> same problem with this controller .  BUT I also have a LSI
+>> Logic / Symbios
+>> Logic 53c1010 66MHz Ultra3 dual SCSI bus Adapter which works
+>> flawlessly with the
+>> 18gb disks in this very same cabinet .
+>>  	The cables for connecting the adapter(s) to tha cabinet
+>> are less than 24
+>> inches in length .
+>>
+>>  	Would anyone please shed some light on what it is I am
+>> doing wrong or
+>> need to do or ....?  Too have this controller recognise these
+>> disk drives in
+>> this cabinet .
+>
+> There is a seperate mailing list for scsi releated issues, e.g.
+> linux-scsi@.   I've posted a patch to address your issue several times,
+> however it seems its not been picked up by the scsi subsystem
+> maintainer.   The last time it was posted was here:
+> http://marc.info/?l=linux-scsi&m=117089244809072&w=2   An alternative is
+> you could obtain our latest drivers from the LSI download site, where
+> these drivers should have this patch
+> http://www.lsilogic.com/cm/DownloadSearch.do.
+>
+> Eric
+>
+>
 
 -- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
++-----------------------------------------------------------------+
+| James   W.   Laferriere | System   Techniques | Give me VMS     |
+| Network        Engineer | 663  Beaumont  Blvd |  Give me Linux  |
+| babydr@baby-dragons.com | Pacifica, CA. 94044 |   only  on  AXP |
++-----------------------------------------------------------------+
