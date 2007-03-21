@@ -1,116 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbXCUTUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933804AbXCUTWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933811AbXCUTUu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 15:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933652AbXCUTUu
+	id S933804AbXCUTWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 15:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933813AbXCUTWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 15:20:50 -0400
-Received: from 1wt.eu ([62.212.114.60]:1294 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933804AbXCUTUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 15:20:48 -0400
-Date: Wed, 21 Mar 2007 20:15:37 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, rkuhn@e18.physik.tu-muenchen.de,
-       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp_cubic: use 32 bit math
-Message-ID: <20070321191537.GA28914@1wt.eu>
-References: <20070307170731.2b4397e3@freekitty> <20070307.185539.48527371.davem@davemloft.net> <45EF7EB7.8040806@linux-foundation.org> <20070307.195135.74749102.davem@davemloft.net> <20070310114826.GB1608@1wt.eu> <20070312141156.08e88b0e@freekitty> <20070313205020.GA5418@1wt.eu> <20070321115419.483a655a@freekitty>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 21 Mar 2007 15:22:42 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:54594 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933804AbXCUTWl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 15:22:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=k+yRzmAbkOB0R+YZwzJYlf4Xu5arTMbMnodtHQJiLtPURM3A+Ul39+FWET/hGlEp+C3rARjqV3v8SpPC0jgnNU/5hMoIHGKhGk4M0SEFHxUuDj6QmYe7cJ1ngNwd7T1MzNVrnL99PFBA4lrRXlKnPKzMbNel7+V3uMySu/xxiLc=
+Message-ID: <d120d5000703211222j64fd22fbn1e06267790f8a569@mail.gmail.com>
+Date: Wed, 21 Mar 2007 15:22:39 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "johann deneux" <johann.deneux@gmail.com>
+Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom driver]
+Cc: "Jiri Slaby" <jirislaby@gmail.com>,
+       "=?ISO-8859-1?Q?STenyaK_(Bruno_Gonz=E1lez)?=" <stenyak@gmail.com>,
+       "Anssi Hannula" <anssi.hannula@gmail.com>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz
+In-Reply-To: <38b3b7c0703211202p29f7865cr34960c7ea708640e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070321115419.483a655a@freekitty>
-User-Agent: Mutt/1.5.11
+References: <2460126662758025813@fi.muni.cz> <45F722CE.9000602@gmail.com>
+	 <d120d5000703140802jb48bc74tbbe7ee2b120b1798@mail.gmail.com>
+	 <45F82626.8000108@gmail.com> <45F83930.4060401@gmail.com>
+	 <8e4ff20a0703141147n4b690ab8g4cc8138d1ecc94e1@mail.gmail.com>
+	 <d120d5000703141213k6554f7f6o58e4a9da1aa6a20a@mail.gmail.com>
+	 <8e4ff20a0703141218r3add7923n74470b5e16f58c5c@mail.gmail.com>
+	 <4601339C.6010706@gmail.com>
+	 <38b3b7c0703211202p29f7865cr34960c7ea708640e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On 3/21/07, johann deneux <johann.deneux@gmail.com> wrote:
+> On 3/21/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> > STenyaK (Bruno González) napsal(a):
+> > > On 3/14/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > >> > I have a question: if the force is to be 3D, why only 3 possible
+> > >> values?
+> > >> > What would they be, 3 torques or 3 forces? In the case of car sims (ff
+> > >> > steering wheels), only one axis of torque is usually used (except
+> > >> for 6 dof
+> > >> > platforms, as mentioned).
+> > >> >
+> > >>
+> > >> I wonder if we could somehow extend or augment FF envelope se we could
+> > >> specify a plane for the effect.. Then a vector could be represented by
+> > >> a sum 3 constant effects in 3 separate planes and we could also use
+> > >> spring and other effects as well.
+> > >
+> > > Ideally, afaik we should use:
+> > > -3 values for translation force (linear force): x,y,z components of
+> > > the force vector.
+> > > -4 values for rotation force (torque): x,y,z,w components of the
+> > > quaternion. You can also use euler angles (and i think there are
+> > > another one or two notations), which is just 3 values, but i'm not
+> > > sure it will be a correct decision (due to the gimbal lock problem,
+> > > which may or may not be present in ff devices, dunno).
+> >
+> > So, the resolution is? Since I want no longer have out-of-kernel driver, I
+> > need to know how to implement the phantom driver -- merge it `as is', i.e.
+> > control through mmio or rewrite ff layer somehow, and in that case how?
+> >
+> > There seem to be only few possibilities:
+> >
+> > - new 3D effect, which will be problematic in any other future use, that may
+> > need more than 3 axis. no matter if torques or vector is passed -- depending
+> > on device and programmer (as I need to compute torques from forces in FP).
+> > Maybe struct with 2x 3 axis is OK
+> >
+> > - "raw" effect, which may contain more axis, but this is ugly in Anssi's eyes
+> >
+> > - something else? (did I forget something)
+> >
+>
+> I would suggest adding a new effect type (3d effect) and extending the
+> union in struct ff_effect.
+> Let me know if I'm too vague, I already suggested that solution but
+> got no answer. I wonder if my mail got lost, nobody understood what I
+> said, or if it's just a plain bad idea.
+>
 
-On Wed, Mar 21, 2007 at 11:54:19AM -0700, Stephen Hemminger wrote:
-> On Tue, 13 Mar 2007 21:50:20 +0100
-> Willy Tarreau <w@1wt.eu> wrote:
+My concern with a new 3D effect is that it will be a very "simple"
+effect with only constant force apllied. That might be enough for
+phantom but may not be sufficient for future devices. If we add
+ability to specify a "plane" for an effect we will be able to add
+envelopes on top of more complex effects and get desired combined
+effcet. I would not worry aboput extra memory needed on I-force like
+devices because they just would not support additional "planes". What
+about phantom? Would it have enough memory?
 
-[...] ( cut my boring part )
+On the other hand if you guys (Anssi, Johann, Jiri...) decide that a
+simple new 3d effect is the most efficient solution for now and will
+be enough for a few years (till we get FF v2 API) I will merge it.
 
-> > Here are the results classed by speed :
-> > 
-> > /* Sample output on a Pentium-M 600 MHz :
-> > 
-> > Function          clocks mean(us)  max(us)  std(us) Avg err size
-> > ncubic_tab0           79     0.66     7.20     1.04  0.613%  160
-> > ncubic_0div           84     0.70     7.64     1.57  4.521%  192
-> > ncubic_1div          178     1.48    16.27     1.81  0.443%  336
-> > ncubic_tab1          179     1.49    16.34     1.85  0.195%  320
-> > ncubic_ndiv3         263     2.18    24.04     3.59  0.250%  512
-> > ncubic_2div          270     2.24    24.70     2.77  0.187%  512
-> > ncubic32_1           359     2.98    32.81     3.59  0.238%  544
-> > ncubic_3div          361     2.99    33.08     3.79  0.170%  656
-> > ncubic32             364     3.02    33.29     3.51  0.247%  544
-> > ncubic               529     4.39    48.39     4.92  0.247%  720
-> > hcbrt                539     4.47    49.25     5.98  1.580%   96
-> > ocubic               732     4.93    61.83     7.22  0.274%  320
-> > acbrt                842     6.98    76.73     8.55  0.275%  192
-> > bictcp              1032     6.95    86.30     9.04  0.172%  768
-> > 
-
-[...]
-
-> The following version of div64_64 is faster because do_div already
-> optimized for the 32 bit case..
-
-Cool, this is interesting because I first wanted to optimize it but did
-not find how to start with this. You seem to get very good results. BTW,
-you did not append your changes.
-
-However, one thing I do not understand is why your avg error is about 1/3
-below the original one. Was there a precision bug in the original div_64_64
-or did you extend the values used in the test ?
-
-Or perhaps you used -fast-math to build and the original cbrt() is less
-precise in this case ?
-
-> I get the following results on ULV Core Solo (ie slow current processor)
-> and the following on 64bit Core Duo. ncubic_tab1 seems like
-> the best (no additional error and about as fast)
-
-OK. It was the one I preferred too unless tab0's avg error was acceptable.
-
-> ULV Core Solo
-> 
-> Function          clocks mean(us)  max(us)  std(us) Avg err size
-> ncubic_tab0          192    11.24    45.10    15.28  0.450% -2262
-> ncubic_0div          201    11.77    47.23    27.40  3.357% -2404
-> ncubic_1div          324    19.02    76.32    25.82  0.189% -2567
-> ncubic_tab1          326    19.13    76.73    23.71  0.043% -2059
-> ncubic_2div          456    26.72   108.92   493.16  0.028% -2790
-> ncubic_ndiv3         463    27.15   133.37  1889.39  0.104% -3344
-> ncubic32             549    32.18   130.59   508.97  0.041% -3794
-> ncubic32_1           574    33.66   138.32   548.48  0.029% -3604
-> ncubic_3div          581    34.04   140.24   608.55  0.018% -3050
-> ncubic               733    42.92   173.35   523.19  0.041%  299
-> ocubic              1046    61.25   283.68  3305.65  0.027% -2232
-> acbrt               1149    67.32   284.91  1941.55  0.029%  168
-> bictcp              1663    97.41   394.29   604.86  0.017%  628
-> 
-> Core 2 Duo
-> 
-> Function          clocks mean(us)  max(us)  std(us) Avg err size
-> ncubic_0div           74     0.03     1.60     0.07  3.357% -2101
-> ncubic_tab0           74     0.03     1.60     0.04  0.450% -2029
-> ncubic_1div          142     0.07     3.11     1.05  0.189% -2195
-> ncubic_tab1          144     0.07     3.18     1.02  0.043% -1638
-> ncubic_2div          216     0.10     4.74     1.07  0.028% -2326
-> ncubic_ndiv3         219     0.10     4.76     1.04  0.104% -2709
-> ncubic32             269     0.13     5.87     1.13  0.041% -1500
-> ncubic32_1           272     0.13     5.92     1.10  0.029% -2881
-> ncubic               273     0.13     5.96     1.13  0.041% -1763
-> ncubic_3div          290     0.14     6.32     1.01  0.018% -2499
-> acbrt                430     0.20     9.42     1.18  0.029%   77
-> ocubic               444     0.21     9.82     1.82  0.027% -1924
-> bictcp               549     0.26    12.06     1.68  0.017%  236
-
-Thanks,
-Willy
-
+-- 
+Dmitry
