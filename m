@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965378AbXCUWYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965398AbXCUW1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965378AbXCUWYV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 18:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965384AbXCUWYV
+	id S965398AbXCUW1G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 18:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965381AbXCUW1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 18:24:21 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:58773 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965378AbXCUWYT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 18:24:19 -0400
-Subject: Re: [BUG] no boot with 2.6.21-rc3 and later
-From: john stultz <johnstul@us.ibm.com>
-To: Bob Tracy <rct@gherkin.frus.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, bunk@stusta.de, jikos@jikos.cz
-In-Reply-To: <20070321220038.5D962DBA1@gherkin.frus.com>
-References: <20070321220038.5D962DBA1@gherkin.frus.com>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 15:24:12 -0700
-Message-Id: <1174515853.5477.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 18:27:06 -0400
+Received: from holomorphy.com ([66.93.40.71]:56489 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965398AbXCUW1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 18:27:04 -0400
+Date: Wed, 21 Mar 2007 15:26:59 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Adam Litke <agl@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: pagetable_ops: Hugetlb character device example
+Message-ID: <20070321222659.GJ2986@holomorphy.com>
+References: <20070319200502.17168.17175.stgit@localhost.localdomain> <1174506228.21684.41.camel@localhost.localdomain> <200703211951.l2LJpVPS020364@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703211951.l2LJpVPS020364@turing-police.cc.vt.edu>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-21 at 16:00 -0600, Bob Tracy wrote:
-> john stultz wrote:
-> > Hmmm. Are you able to capture a full dmesg?
-> 
-> For the "it hangs" case, short of either trying to boot with the
-> console I/O redirected to a serial port or hooking up a printer to
-> the console and scanning in the resulting output, I don't think so.
-> There's too much output prior to the hang point to make manual
-> transcription feasible.
+On Wed, 21 Mar 2007 14:43:48 CDT, Adam Litke said:
+>> The main reason I am advocating a set of pagetable_operations is to
+>> enable the development of a new hugetlb interface.
 
-Hmm. You could give netconsole a try(see
-Documentation/networking/netconsole.txt), although if the hang is before
-that inits you might be out of luck.
+On Wed, Mar 21, 2007 at 03:51:31PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> Do you have an exit strategy for the *old* interface?
 
-> > Also, does booting w/ "clocksource=jiffies" change the behavior?
-> 
-> I'll build a post-"bad"-commit kernel later this evening and let you
-> know.  Unfortunately, real life has to intrude for a few hours :-).
+Hello.
 
-No problem. When you can get to it. :)
+My exit strategy was to make hugetlbfs an alias for ramfs when ramfs
+acquired the necessary functionality until expand-on-mmap() was merged.
+That would've allowed rm -rf fs/hugetlbfs/ outright. A compatibility
+wrapper for expand-on-mmap() around ramfs once ramfs acquires the
+necessary functionality is now the exit strategy.
 
-Also trying booting w/ "notsc" would be a useful data point.
+Given current opinions on general multiple pagesize support, by means of
+which the ramfs functionality is/was intended to be implemented, that
+time may well be "never."
 
-> If specifying the clocksource allows for a normal bootup, would you
-> like to see the corresponding dmesg output?
+Character device analogues of /dev/zero are not replacements for the
+filesystem. Few or no transitions of existing users to such are
+possible. It primarily enables new users who really need anonymous
+hugetlb, such as numerical applications. The need for a filesystem
+namespace and persisting across process creation and destruction will
+not be eliminated by character devices.
 
-No, although a pre-bad-commit dmesg would help.
 
-thanks
--john
-
+-- wli
