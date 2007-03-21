@@ -1,106 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbXCUGwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXCUGx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932149AbXCUGwb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 02:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932205AbXCUGwa
+	id S932185AbXCUGx4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 02:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932205AbXCUGx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 02:52:30 -0400
-Received: from ns3.system-techniques.com ([204.91.156.41]:49723 "EHLO
-	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932149AbXCUGw3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 02:52:29 -0400
-Date: Tue, 20 Mar 2007 23:52:25 -0700 (PDT)
-From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-To: "Moore, Eric" <Eric.Moore@lsi.com>
-cc: Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
-       Linux Scsi maillist <linux-scsi@vger.kernel.org>,
-       James.Bottomley@SteelEye.com
-Subject: RE: MPT Fusion LSI22320 ,  Domain validation loops .
-In-Reply-To: <664A4EBB07F29743873A87CF62C26D70650FD9@NAMAIL4.ad.lsil.com>
-Message-ID: <Pine.LNX.4.64.0703202347010.27070@filesrv1.baby-dragons.com>
-References: <664A4EBB07F29743873A87CF62C26D70650FD9@NAMAIL4.ad.lsil.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (ns3.baby-dragons.com [204.91.156.41]); Wed, 21 Mar 2007 06:52:26 +0000 (UTC)
+	Wed, 21 Mar 2007 02:53:56 -0400
+Received: from ozlabs.org ([203.10.76.45]:40034 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932185AbXCUGxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 02:53:55 -0400
+Subject: [PATCH 4/4] i386 GDT cleanups: cleanup GDT Access
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1174459014.11680.153.camel@localhost.localdomain>
+References: <1174457426.11680.132.camel@localhost.localdomain>
+	 <1174458636.11680.143.camel@localhost.localdomain>
+	 <1174458730.11680.145.camel@localhost.localdomain>
+	 <1174458938.11680.150.camel@localhost.localdomain>
+	 <1174459014.11680.153.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 21 Mar 2007 17:53:36 +1100
+Message-Id: <1174460016.11680.156.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 	Hello Eric ,  Fyi ,  linux-2.6.21-rc4 + mpt-fusion(*) patches from 
-Andrew Morton's patch tree .  Still gives me the ever looping reset .  But I 
-have just found sometrhing of interest one of the Powersuplies in the cabiinet 
-'May be' failing .  I have to test that to be satisfied that is the case .
- 	I'll report back soon on the PS & please look into this .  There is no 
-reason for the driver to keep a system in loop over a failing drive set .
- 		Tia ,  JimL
+Now we have an explicit per-cpu GDT variable, we don't need to keep
+the descriptors around to use them to find the GDT: expose cpu_gdt
+directly.
 
-(*)
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/broken-out/mpt-fusion-handle-pci-layer-error-on-resume.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/broken-out/mpt-fusion-handle-mpt_resume-failure-while-resuming.patch
+We could go further and make load_gdt() pack the descriptor for us, or
+even assume it means "load the current cpu's GDT" which is what it
+always does.
 
-On Mon, 19 Mar 2007, Moore, Eric wrote:
-> On Saturday, March 17, 2007 2:33 PM,  James W. Laferriere wrote:
->>  	Hello All ,  I am have been having this problem since I
->> purchased the
->> controller and after changing out the disks I thought were
->> the problem .
->>  	I am still getting the continous :
->>
->> mptscsih: ioc1: attempting task abort! (sc=f7a64500)
->> scsi 3:0:4:0:
->>          command: Inquiry: 12 00 00 00 60 00
->> mptbase: Initiating ioc1 recovery
->> mptscsih: ioc1: task abort: SUCCESS (sc=f7a64500)
->>   target3:0:4: Domain Validation detected failure, dropping back
->>   target3:0:4: Domain Validation skipping write tests
->>   target3:0:4: Ending Domain Validation
->>   target3:0:4: asynchronous
->>   target3:0:5: Beginning Domain Validation
->> mptscsih: ioc0: attempting target reset! (sc=f7a64380)
->>
->>  	The acutual device id's change and the driver
->> continously resets the
->> busses & starts all over .
->>
->>  	The disks are in a HP DS-SL13R-BA 4354R 14drive ultra3
->> racKmount cabinet
->> w/ dualbus & dualps ,  Which seems to present a ID6 ,  That
->> does not show up in
->> any of the bus scans .
->>
->>  	Now I have previously had the same cabinet with 18gb
->> disks which had the
->> same problem with this controller .  BUT I also have a LSI
->> Logic / Symbios
->> Logic 53c1010 66MHz Ultra3 dual SCSI bus Adapter which works
->> flawlessly with the
->> 18gb disks in this very same cabinet .
->>  	The cables for connecting the adapter(s) to tha cabinet
->> are less than 24
->> inches in length .
->>
->>  	Would anyone please shed some light on what it is I am
->> doing wrong or
->> need to do or ....?  Too have this controller recognise these
->> disk drives in
->> this cabinet .
->
-> There is a seperate mailing list for scsi releated issues, e.g.
-> linux-scsi@.   I've posted a patch to address your issue several times,
-> however it seems its not been picked up by the scsi subsystem
-> maintainer.   The last time it was posted was here:
-> http://marc.info/?l=linux-scsi&m=117089244809072&w=2   An alternative is
-> you could obtain our latest drivers from the LSI download site, where
-> these drivers should have this patch
-> http://www.lsilogic.com/cm/DownloadSearch.do.
->
-> Eric
->
->
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/i386/kernel/cpu/common.c |    4 +---
+ arch/i386/kernel/efi.c        |   18 +++++++++---------
+ arch/i386/kernel/entry.S      |    3 +--
+ arch/i386/kernel/smpboot.c    |   12 ++++++------
+ arch/i386/kernel/traps.c      |    4 +---
+ include/asm-i386/desc.h       |   15 ++++++---------
+ 6 files changed, 24 insertions(+), 32 deletions(-)
 
--- 
-+-----------------------------------------------------------------+
-| James   W.   Laferriere | System   Techniques | Give me VMS     |
-| Network        Engineer | 663  Beaumont  Blvd |  Give me Linux  |
-| babydr@baby-dragons.com | Pacifica, CA. 94044 |   only  on  AXP |
-+-----------------------------------------------------------------+
+diff -r 0714eeaace72 arch/i386/kernel/cpu/common.c
+--- a/arch/i386/kernel/cpu/common.c	Wed Mar 21 15:55:51 2007 +1100
++++ b/arch/i386/kernel/cpu/common.c	Wed Mar 21 16:02:02 2007 +1100
+@@ -22,9 +22,6 @@
+ 
+ #include "cpu.h"
+ 
+-DEFINE_PER_CPU(struct Xgt_desc_struct, cpu_gdt_descr);
+-EXPORT_PER_CPU_SYMBOL(cpu_gdt_descr);
+-
+ DEFINE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]) = {
+ 	[GDT_ENTRY_KERNEL_CS] = { 0x0000ffff, 0x00cf9a00 },
+ 	[GDT_ENTRY_KERNEL_DS] = { 0x0000ffff, 0x00cf9200 },
+@@ -52,6 +49,7 @@ DEFINE_PER_CPU(struct desc_struct, cpu_g
+ 	[GDT_ENTRY_ESPFIX_SS] = { 0x00000000, 0x00c09200 },
+ 	[GDT_ENTRY_PDA] = { 0x00000000, 0x00c09200 }, /* set in setup_pda */
+ };
++EXPORT_PER_CPU_SYMBOL_GPL(cpu_gdt);
+ 
+ DEFINE_PER_CPU(struct i386_pda, _cpu_pda);
+ EXPORT_PER_CPU_SYMBOL(_cpu_pda);
+diff -r 0714eeaace72 arch/i386/kernel/efi.c
+--- a/arch/i386/kernel/efi.c	Wed Mar 21 15:55:51 2007 +1100
++++ b/arch/i386/kernel/efi.c	Wed Mar 21 15:56:22 2007 +1100
+@@ -69,12 +69,10 @@ static void efi_call_phys_prelog(void) _
+ {
+ 	unsigned long cr4;
+ 	unsigned long temp;
+-	struct Xgt_desc_struct *cpu_gdt_descr;
++	struct Xgt_desc_struct gdt_descr;
+ 
+ 	spin_lock(&efi_rt_lock);
+ 	local_irq_save(efi_rt_eflags);
+-
+-	cpu_gdt_descr = &per_cpu(cpu_gdt_descr, 0);
+ 
+ 	/*
+ 	 * If I don't have PSE, I should just duplicate two entries in page
+@@ -105,17 +103,19 @@ static void efi_call_phys_prelog(void) _
+ 	 */
+ 	local_flush_tlb();
+ 
+-	cpu_gdt_descr->address = __pa(cpu_gdt_descr->address);
+-	load_gdt(cpu_gdt_descr);
++	gdt_descr.address = __pa(get_cpu_gdt_table(0));
++	gdt_descr.size = GDT_SIZE - 1;
++	load_gdt(&gdt_descr);
+ }
+ 
+ static void efi_call_phys_epilog(void) __releases(efi_rt_lock)
+ {
+ 	unsigned long cr4;
+-	struct Xgt_desc_struct *cpu_gdt_descr = &per_cpu(cpu_gdt_descr, 0);
+-
+-	cpu_gdt_descr->address = (unsigned long)__va(cpu_gdt_descr->address);
+-	load_gdt(cpu_gdt_descr);
++	struct Xgt_desc_struct gdt_descr;
++
++	gdt_descr.address = (unsigned long)get_cpu_gdt_table(0);
++	gdt_descr.size = GDT_SIZE - 1;
++	load_gdt(&gdt_descr);
+ 
+ 	cr4 = read_cr4();
+ 
+diff -r 0714eeaace72 arch/i386/kernel/entry.S
+--- a/arch/i386/kernel/entry.S	Wed Mar 21 15:55:51 2007 +1100
++++ b/arch/i386/kernel/entry.S	Wed Mar 21 16:02:02 2007 +1100
+@@ -558,8 +558,7 @@ END(syscall_badsys)
+ #define FIXUP_ESPFIX_STACK \
+ 	/* since we are on a wrong stack, we cant make it a C code :( */ \
+ 	movl %fs:PDA_cpu, %ebx; \
+-	PER_CPU(cpu_gdt_descr, %ebx); \
+-	movl GDS_address(%ebx), %ebx; \
++	PER_CPU(cpu_gdt, %ebx); \
+ 	GET_DESC_BASE(GDT_ENTRY_ESPFIX_SS, %ebx, %eax, %ax, %al, %ah); \
+ 	addl %esp, %eax; \
+ 	pushl $__KERNEL_DS; \
+diff -r 0714eeaace72 arch/i386/kernel/smpboot.c
+--- a/arch/i386/kernel/smpboot.c	Wed Mar 21 15:55:51 2007 +1100
++++ b/arch/i386/kernel/smpboot.c	Wed Mar 21 16:02:02 2007 +1100
+@@ -786,12 +786,8 @@ static inline struct task_struct * alloc
+    secondary which will soon come up. */
+ static __cpuinit void init_gdt(int cpu, struct task_struct *idle)
+ {
+-	struct Xgt_desc_struct *cpu_gdt_descr = &per_cpu(cpu_gdt_descr, cpu);
+-	struct desc_struct *gdt = per_cpu(cpu_gdt, cpu);
++	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
+ 	struct i386_pda *pda = &per_cpu(_cpu_pda, cpu);
+-
+- 	cpu_gdt_descr->address = (unsigned long)gdt;
+-	cpu_gdt_descr->size = GDT_SIZE - 1;
+ 
+ 	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PDA].a,
+ 			(u32 *)&gdt[GDT_ENTRY_PDA].b,
+@@ -1187,7 +1183,11 @@ void __init smp_prepare_cpus(unsigned in
+  * it's on the real one. */
+ static inline void switch_to_new_gdt(void)
+ {
+-	load_gdt(&per_cpu(cpu_gdt_descr, smp_processor_id()));
++	struct Xgt_desc_struct gdt_descr;
++
++	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
++	gdt_descr.size = GDT_SIZE - 1;
++	load_gdt(&gdt_descr);
+ 	asm volatile ("mov %0, %%fs" : : "r" (__KERNEL_PDA) : "memory");
+ }
+ 
+diff -r 0714eeaace72 arch/i386/kernel/traps.c
+--- a/arch/i386/kernel/traps.c	Wed Mar 21 15:55:51 2007 +1100
++++ b/arch/i386/kernel/traps.c	Wed Mar 21 16:02:02 2007 +1100
+@@ -1037,9 +1037,7 @@ fastcall unsigned long patch_espfix_desc
+ fastcall unsigned long patch_espfix_desc(unsigned long uesp,
+ 					  unsigned long kesp)
+ {
+-	int cpu = smp_processor_id();
+-	struct Xgt_desc_struct *cpu_gdt_descr = &per_cpu(cpu_gdt_descr, cpu);
+-	struct desc_struct *gdt = (struct desc_struct *)cpu_gdt_descr->address;
++	struct desc_struct *gdt = __get_cpu_var(cpu_gdt);
+ 	unsigned long base = (kesp - uesp) & -THREAD_SIZE;
+ 	unsigned long new_kesp = kesp - base;
+ 	unsigned long lim_pages = (new_kesp | (THREAD_SIZE - 1)) >> PAGE_SHIFT;
+diff -r 0714eeaace72 arch/i386/lguest/core.c
+--- a/arch/i386/lguest/core.c	Wed Mar 21 15:55:51 2007 +1100
++++ b/arch/i386/lguest/core.c	Wed Mar 21 16:11:14 2007 +1100
+@@ -96,7 +96,8 @@ static __init int map_hypervisor(void)
+ 		struct lguest_ro_state *state = &pages->state;
+ 
+ 		/* These fields are static: rest done in copy_in_guest_info */
+-		state->host_gdt_desc = per_cpu(cpu_gdt_descr, i);
++		state->host_gdt_desc.size = GDT_SIZE-1;
++		state->host_gdt_desc.address = (long)get_cpu_gdt_table(i);
+ 		store_idt(&state->host_idt_desc);
+ 		state->guest_idt_desc.size = sizeof(state->guest_idt)-1;
+ 		state->guest_idt_desc.address = (long)&state->guest_idt;
+diff -r 0714eeaace72 arch/i386/lguest/lguest.c
+--- a/arch/i386/lguest/lguest.c	Wed Mar 21 15:55:51 2007 +1100
++++ b/arch/i386/lguest/lguest.c	Wed Mar 21 16:03:12 2007 +1100
+@@ -451,6 +451,7 @@ static void lguest_power_off(void)
+ 
+ /* From head.S */
+ extern void setup_pda(void);
++extern struct Xgt_desc_struct early_gdt_descr;
+ 
+ static __attribute_used__ __init void lguest_init(void)
+ {
+diff -r 0714eeaace72 include/asm-i386/desc.h
+--- a/include/asm-i386/desc.h	Wed Mar 21 15:55:51 2007 +1100
++++ b/include/asm-i386/desc.h	Wed Mar 21 16:02:02 2007 +1100
+@@ -18,16 +18,13 @@ struct Xgt_desc_struct {
+ 	unsigned short pad;
+ } __attribute__ ((packed));
+ 
++DECLARE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]);
++static inline struct desc_struct *get_cpu_gdt_table(unsigned int cpu)
++{
++	return per_cpu(cpu_gdt, cpu);
++}
++
+ extern struct Xgt_desc_struct idt_descr;
+-DECLARE_PER_CPU(struct Xgt_desc_struct, cpu_gdt_descr);
+-DECLARE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]);
+-extern struct Xgt_desc_struct early_gdt_descr;
+-
+-static inline struct desc_struct *get_cpu_gdt_table(unsigned int cpu)
+-{
+-	return (struct desc_struct *)per_cpu(cpu_gdt_descr, cpu).address;
+-}
+-
+ extern struct desc_struct idt_table[];
+ extern void set_intr_gate(unsigned int irq, void * addr);
+ 
+
+
