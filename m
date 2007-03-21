@@ -1,110 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964793AbXCUUDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXCUUEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964793AbXCUUDO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964810AbXCUUDO
+	id S964810AbXCUUEQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964801AbXCUUEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:03:14 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51681 "EHLO smtp.osdl.org"
+	Wed, 21 Mar 2007 16:04:16 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:52601 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964780AbXCUUDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:03:12 -0400
-Date: Wed, 21 Mar 2007 12:58:54 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: David Miller <davem@davemloft.net>, rkuhn@e18.physik.tu-muenchen.de,
-       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp_cubic: use 32 bit math
-Message-ID: <20070321125854.465cf4f9@freekitty>
-In-Reply-To: <20070321191537.GA28914@1wt.eu>
-References: <20070307170731.2b4397e3@freekitty>
-	<20070307.185539.48527371.davem@davemloft.net>
-	<45EF7EB7.8040806@linux-foundation.org>
-	<20070307.195135.74749102.davem@davemloft.net>
-	<20070310114826.GB1608@1wt.eu>
-	<20070312141156.08e88b0e@freekitty>
-	<20070313205020.GA5418@1wt.eu>
-	<20070321115419.483a655a@freekitty>
-	<20070321191537.GA28914@1wt.eu>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S964821AbXCUUEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 16:04:15 -0400
+Message-ID: <46018FB8.1080601@gmail.com>
+Date: Wed, 21 Mar 2007 21:04:08 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: johann deneux <johann.deneux@gmail.com>,
+       =?UTF-8?B?IlNUZW55YUsgKEJydW4=?= =?UTF-8?B?byBHb256w6FsZXopIg==?= 
+	<stenyak@gmail.com>,
+       Anssi Hannula <anssi.hannula@gmail.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom
+ driver]
+References: <2460126662758025813@fi.muni.cz> <45F722CE.9000602@gmail.com>	 <d120d5000703140802jb48bc74tbbe7ee2b120b1798@mail.gmail.com>	 <45F82626.8000108@gmail.com> <45F83930.4060401@gmail.com>	 <8e4ff20a0703141147n4b690ab8g4cc8138d1ecc94e1@mail.gmail.com>	 <d120d5000703141213k6554f7f6o58e4a9da1aa6a20a@mail.gmail.com>	 <8e4ff20a0703141218r3add7923n74470b5e16f58c5c@mail.gmail.com>	 <4601339C.6010706@gmail.com>	 <38b3b7c0703211202p29f7865cr34960c7ea708640e@mail.gmail.com> <d120d5000703211222j64fd22fbn1e06267790f8a569@mail.gmail.com>
+In-Reply-To: <d120d5000703211222j64fd22fbn1e06267790f8a569@mail.gmail.com>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 21 Mar 2007 21:04:12 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007 20:15:37 +0100
-Willy Tarreau <w@1wt.eu> wrote:
-
-> Hi Stephen,
+Dmitry Torokhov napsal(a):
+> On 3/21/07, johann deneux <johann.deneux@gmail.com> wrote:
+>> I would suggest adding a new effect type (3d effect) and extending the
+>> union in struct ff_effect.
+>> Let me know if I'm too vague, I already suggested that solution but
+>> got no answer. I wonder if my mail got lost, nobody understood what I
+>> said, or if it's just a plain bad idea.
+>>
 > 
-> On Wed, Mar 21, 2007 at 11:54:19AM -0700, Stephen Hemminger wrote:
-> > On Tue, 13 Mar 2007 21:50:20 +0100
-> > Willy Tarreau <w@1wt.eu> wrote:
-> 
-> [...] ( cut my boring part )
-> 
-> > > Here are the results classed by speed :
-> > > 
-> > > /* Sample output on a Pentium-M 600 MHz :
-> > > 
-> > > Function          clocks mean(us)  max(us)  std(us) Avg err size
-> > > ncubic_tab0           79     0.66     7.20     1.04  0.613%  160
-> > > ncubic_0div           84     0.70     7.64     1.57  4.521%  192
-> > > ncubic_1div          178     1.48    16.27     1.81  0.443%  336
-> > > ncubic_tab1          179     1.49    16.34     1.85  0.195%  320
-> > > ncubic_ndiv3         263     2.18    24.04     3.59  0.250%  512
-> > > ncubic_2div          270     2.24    24.70     2.77  0.187%  512
-> > > ncubic32_1           359     2.98    32.81     3.59  0.238%  544
-> > > ncubic_3div          361     2.99    33.08     3.79  0.170%  656
-> > > ncubic32             364     3.02    33.29     3.51  0.247%  544
-> > > ncubic               529     4.39    48.39     4.92  0.247%  720
-> > > hcbrt                539     4.47    49.25     5.98  1.580%   96
-> > > ocubic               732     4.93    61.83     7.22  0.274%  320
-> > > acbrt                842     6.98    76.73     8.55  0.275%  192
-> > > bictcp              1032     6.95    86.30     9.04  0.172%  768
-> > > 
-> 
-> [...]
-> 
-> > The following version of div64_64 is faster because do_div already
-> > optimized for the 32 bit case..
->
+> My concern with a new 3D effect is that it will be a very "simple"
+> effect with only constant force apllied. That might be enough for
+> phantom but may not be sufficient for future devices. If we add
+> ability to specify a "plane" for an effect we will be able to add
+> envelopes on top of more complex effects and get desired combined
+> effcet.
 
-/* 64bit divisor, dividend and result. dynamic precision */
-static uint64_t div64_64(uint64_t dividend, uint64_t divisor)
-{
-	uint32_t high, d;
+I didn't get this too much, because I don't understand the FF layer well so
+far. How is this going to work? Let's say, we have 3 torque values computed
+in US, and this structure:
 
-	high = divisor >> 32;
-	if (high) {
-		unsigned int shift = fls(high);
+struct ff_effect {
+    __u16 direction;
+    struct ff_trigger trigger;
+    struct ff_replay replay;
 
-		d = divisor >> shift;
-		dividend >>= shift;
-	} else
-		d = divisor;
+    struct ff_constant_effect {
+        __s16 level;
+ 	struct ff_envelope {
+   	     __u16 attack_length;
+    	     __u16 attack_level;
+   	     __u16 fade_length;
+     	     __u16 fade_level;
+	};
+    };
+};
 
-	do_div(dividend, d);
+and need to pass the three 16bits torques into s16 ioaddr[0..2]. How?
 
-	return dividend;
-}
+> I would not worry aboput extra memory needed on I-force like
+> devices because they just would not support additional "planes". What
+> about phantom? Would it have enough memory?
 
+It's a memless device -- values written into pci space are immediately felt
+in FF (it's just PLX chip interface to some their proprietary chip or somewhat).
 
+> On the other hand if you guys (Anssi, Johann, Jiri...) decide that a
+> simple new 3d effect is the most efficient solution for now and will
+> be enough for a few years (till we get FF v2 API) I will merge it.
 
-> Cool, this is interesting because I first wanted to optimize it but did
-> not find how to start with this. You seem to get very good results. BTW,
-> you did not append your changes.
-> 
-> However, one thing I do not understand is why your avg error is about 1/3
-> below the original one. Was there a precision bug in the original div_64_64
-> or did you extend the values used in the test ?
-> 
-> Or perhaps you used -fast-math to build and the original cbrt() is less
-> precise in this case ?
+I won't force any of mentioned solutions, but this seems the simplest one in
+my eyes.
 
-No, but I did use -mtune=pentiumm on the ULV
+thanks for clues,
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
