@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964960AbXCUU6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964888AbXCUVD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964960AbXCUU6x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964981AbXCUU6x
+	id S964888AbXCUVD1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 17:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964974AbXCUVD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:58:53 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:42634 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964960AbXCUU6i (ORCPT
+	Wed, 21 Mar 2007 17:03:27 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:33460 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964888AbXCUVDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:58:38 -0400
-Date: Wed, 21 Mar 2007 15:58:34 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Ian Kent <raven@themaw.net>,
-       Cedric Le Goater <clg@fr.ibm.com>, sukadev@us.ibm.com,
-       Andrew Morton <akpm@osdl.org>, Dave Hansen <haveblue@us.ibm.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
-Message-ID: <20070321205834.GB21517@sergelap.austin.ibm.com>
-References: <1174055467.3397.17.camel@raven.themaw.net> <45FAAD4F.4000204@fr.ibm.com> <1174063618.3397.58.camel@raven.themaw.net> <m1hcslm1tc.fsf@ebiederm.dsl.xmission.com> <20070319200839.GB19449@sergelap.austin.ibm.com> <m1odmpvuft.fsf@ebiederm.dsl.xmission.com> <20070320201548.GA21312@sergelap.austin.ibm.com> <m17itbmypc.fsf@ebiederm.dsl.xmission.com> <20070320214125.GA5585@sergelap.austin.ibm.com> <m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
+	Wed, 21 Mar 2007 17:03:25 -0400
+Message-ID: <46019D9C.4020909@lwfinger.net>
+Date: Wed, 21 Mar 2007 16:03:24 -0500
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: 2.6.21-rc4-mm1
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <1174433034.62033.16.camel@localhost> <20070320223643.d8cbc3f6.akpm@linux-foundation.org> <4601761F.4000302@lwfinger.net> <20070321185900.GC3801@tuxdriver.com> <20070321202225.GN10459@waste.org>
+In-Reply-To: <20070321202225.GN10459@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+Matt Mackall wrote:
+> With the latest -mm, I'm now getting this:
 > 
-> >> >  void autofs4_dentry_release(struct dentry *);
-> >> >  extern void autofs4_kill_sb(struct super_block *);
-> >> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-> >> > index 9857543..4a9ad9b 100644
-> >> > --- a/fs/autofs4/waitq.c
-> >> > +++ b/fs/autofs4/waitq.c
-> >> > @@ -141,8 +141,8 @@ static void autofs4_notify_daemon(struct
-> >> >  		packet->ino = wq->ino;
-> >> >  		packet->uid = wq->uid;
-> >> >  		packet->gid = wq->gid;
-> >> > -		packet->pid = wq->pid;
-> >> > -		packet->tgid = wq->tgid;
-> >> > +		packet->pid = pid_nr(wq->pid);
-> >> > +		packet->tgid = pid_nr(wq->tgid);
-> >> >  		break;
-> >> 
-> >> I'm assuming we build the packet in the process context of the
-> >> daemon we are sending it to.  If not we have a problem here.
-> >
-> > Yes this is data being sent to a userspace daemon (Ian pls correct me if
-> > I'm wrong) so the pid_nr is the only thing we can send.
-> 
-> Agreed.  The question is are we in the user space daemon's process when
-> we generate the pid_nr.  Or do we stuff this in some kind of socket,
-> and the socket switch locations of the packet.
-> 
-> Basically I'm just trying to be certain we are calling pid_nr in the
-> proper context.  Otherwise we could get the wrong pid when we have
-> multiple pid namespaces in play.
+> Mar 21 15:06:52 cinder kernel: ipw2200: Detected Intel PRO/Wireless
+> 2200BG Network Connection
+> Mar 21 15:06:52 cinder kernel: firmware_loading_store: unexpected
+> value (0)
+> Mar 21 15:06:52 cinder kernel: ipw2200: ipw2200-bss.fw
+> request_firmware failed:
+> Reason -2
+> Mar 21 15:06:52 cinder kernel: ipw2200: Unable to load firmware: -2
+> Mar 21 15:06:52 cinder kernel: ipw2200: failed to register network
+> device
 
-We need to know what the userspace daemon being written to is doing
-with autofs_ptype_{missing,expire}_{in,}direct() messages.
+The problem for me is a general protection fault.
 
-If I understand correctly, the pid being sent is of a process which
-tried to automount some directory.  The message is being sent to the
-autofs daemon, which should be running in the root pid namespace.
+kernel: general protection fault: 0000 [1] SMP
+kernel: last sysfs file: class/firmware/0000:01:00.0/loading
+kernel: CPU 0
+kernel: Modules linked in: af_packet snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device
+cpufreq_conservative cpufreq_ondemand cpufreq_userspace cpufreq_powersave powernow_k8 freq_table
+button battery ac nls_utf8 ntfs loop nfsd exportfs nfs lockd nfs_acl sunrpc sr_mod usb_storage
+libusual snd_hda_intel snd_hda_codec sdhci snd_pcm snd_timer ohci1394 mmc_core snd ieee1394
+forcedeth soundcore snd_page_alloc ohci_hcd ide_cd ehci_hcd cdrom usbcore i2c_nforce2 bcm43xx
+firmware_class ieee80211softmac ieee80211 ieee80211_crypt ext3 mbcache jbd sg edd fan sata_nv libata
+amd74xx thermal processor sd_mod scsi_mod ide_disk ide_core
+kernel: Pid: 4026, comm: cat Not tainted 2.6.21-rc4-mm1-mm1 #6
+kernel: RIP: 0010:[<ffffffff80251f99>]  [<ffffffff80251f99>] module_put+0x1f/0x35
+kernel: RSP: 0018:ffff810006f85ea8  EFLAGS: 00010256
+kernel: RAX: 6b6b6b6b6b6b6dab RBX: ffff810005dbe1f0 RCX: ffffffff803f6160
+kernel: RDX: 0000000000000001 RSI: ffffffff802ec3dc RDI: 6b6b6b6b6b6b6b6b
+kernel: RBP: ffff810006f85ea8 R08: 0000000000000000 R09: ffff810005918888
+kernel: R10: 0000000000000000 R11: ffffffff8811b020 R12: ffff81000850d000
+kernel: R13: ffff810004ec25a8 R14: ffff810006f38c18 R15: ffff8100034017c0
+kernel: FS:  00002b621c2f86f0(0000) GS:ffffffff8051e000(0000) knlGS:0000000000000000
+kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+kernel: CR2: 00002b621c01d3c0 CR3: 0000000008154000 CR4: 00000000000006e0
+kernel: Process cat (pid: 4026, threadinfo ffff810006f84000, task ffff810005dd3140)
+kernel: Stack:  ffff810006f85ec8 ffffffff802cf4ba 0000000000000008 ffff810006f38c18
+kernel:  ffff810006f85f08 ffffffff80290a44 ffff81000853bde0 ffff810004ec25a8
+kernel:  ffff8100035d1cb0 0000000000000000 ffff810004ec25a8 00007fff8ed0f6d0
+kernel: Call Trace:
+kernel:  [<ffffffff802cf4ba>] release+0x3a/0x49
+kernel:  [<ffffffff80290a44>] __fput+0xca/0x180
+kernel:  [<ffffffff80290b0e>] fput+0x14/0x16
+kernel:  [<ffffffff8028e1aa>] filp_close+0x66/0x71
+kernel:  [<ffffffff8028f3c2>] sys_close+0x98/0xdd
+kernel:  [<ffffffff80209f6e>] system_call+0x7e/0x83
+kernel:
+kernel:
+kernel: Code: 48 ff 08 83 3f 02 75 0c 48 8b bf 50 22 00 00 e8 08 9d fd ff
+kernel: RIP  [<ffffffff80251f99>] module_put+0x1f/0x35
+kernel:  RSP <ffff810006f85ea8>
 
-So as it is, the pid_nr(wq->pid) should be done under the init
-pid_namespace, since it's a kthread.  So as long as the userspace
-automount daemon is started in the root pid namespace, the pid it gets
-will be the right one.
+Larry
 
-Ian, does what I'm saying make sense, or am I wrong about how things
-work for autofs?
 
-thanks,
--serge
 
-PS
-Note that if I'm right, but some machine starts autofs in a child
-pid_namespace, the pid_nr() the way I have it is wrong.  I'm not sure in
-that case how we go about fixing that.  Somehow we need to store the
-autofs userspace daemon's pid namespace pointer to help us find the
-proper pid_nr.
+
+
+
+
