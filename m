@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbXCUNgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbXCUNvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbXCUNgh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 09:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXCUNgg
+	id S1752842AbXCUNvA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 09:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXCUNvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 09:36:36 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48851 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbXCUNgg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 09:36:36 -0400
-Date: Wed, 21 Mar 2007 15:36:34 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Jarek Poplawski <jarkao2@o2.pl>
-cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
-       Christoph Lameter <clameter@sgi.com>, "ast\\@domdv\\.de" <ast@domdv.de>,
-       "linux-kernel\\@vger\\.kernel\\.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-In-Reply-To: <20070321133151.GC1939@ff.dom.local>
-Message-ID: <Pine.LNX.4.64.0703211531450.16596@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0703200943430.3622@sbz-30.cs.Helsinki.FI>
- <20070321101143.GB1939@ff.dom.local> <84144f020703210513i37d1576erb7814483bcaad505@mail.gmail.com>
- <20070321133151.GC1939@ff.dom.local>
-Mime-Version: 1.0
+	Wed, 21 Mar 2007 09:51:00 -0400
+Received: from thunk.org ([69.25.196.29]:46552 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752842AbXCUNu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 09:50:59 -0400
+Date: Wed, 21 Mar 2007 09:50:33 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+Message-ID: <20070321135033.GA7235@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Artem Bityutskiy <dedekind@infradead.org>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Matt Mackall <mpm@selenic.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Frank Haverkamp <haver@vnet.ibm.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	David Woodhouse <dwmw2@infradead.org>
+References: <20070319170838.GP4892@waste.org> <1174328188.30079.46.camel@zod.rchland.ibm.com> <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron> <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron> <20070320135231.GA6043@thunk.org> <1174406395.30079.139.camel@zod.rchland.ibm.com> <20070320220312.GC29493@thunk.org> <1174466675.17249.182.camel@sauron>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1174466675.17249.182.camel@sauron>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007, Jarek Poplawski wrote:
-> With  __kmem_cache_free you would set #1 I hope, but if
-> nobody would use this - debugging time wouldn't change.
+On Wed, Mar 21, 2007 at 10:44:35AM +0200, Artem Bityutskiy wrote:
+> > As I mentioned to you in IRC, in the future if there is pending
+> > changes in response to reviewer comments, it might be a good idea to
+> > mention that, so that reviewers know not make those comments again, or
+> > worry that the comments had been ignored.
+> 
+> Teo, I wrote you 2 times that your point was understood and this would
+> be fixed. You should not think your comments are ignored because they
+> are not.
 
-I think you got it backwards. I suggested making the _current_ 
-kmem_cache_free() deal with NULL (so everyone will get it) and add a new 
-optimized __kmem_cache_free() for those call-sites that really need it.
+Artem, no need to be defensive.  You did tell me that you were going
+to address them; but then you resubmitted patches where they weren't
+address.  Normally, patch authors take all of the comments, clear them
+all, and then in the next repost of the patch, either explain why it
+wasn't feasible to handle some of the comments, *OR* why some of the
+comments were so hard to handle that they wouldn't be handled until a
+future version of the patch.  Furthermore, in a patch of the size that
+you are submitting, a listing of what you *did* fix would also be
+good.  
 
-On Wed, 21 Mar 2007, Jarek Poplawski wrote:
-> This could be acceptable, if there were no problems
-> with fixing the errors. But there are problems - bugs
-> like this aren't fixed on time - maybe because people
-> waste too much time per bug?
+And at this point, I don't doubt that you will at some point going to
+heed my comments --- but note that doing so will involve a massive
+refactorization of the code, which will tend to invalidate the reviews
+done of this current (take 3) version of the patches; so I am bit
+curious what was your motiviation in reposting this round of the
+patches.  
 
-You're barking up the wrong tree here, Jarek. I strongly feel that we 
-should be more defensive in the slab for the exact reasons you outlined. 
-There's bunch of bug reports people seem to dismiss as slab errors where 
-in fact it's caused by a buggy caller.
+Believe it or not, the people who are responding on this thread are
+trying to help.  Otherwise they would just be ignoring you and UBI.
+Keeping this thought in mind and trying to help them, where in some
+cases perhaps they are lacking in the same knowledge and experience
+and those who have been working on UBI and have spent many months
+thinking about the problem, may help keep things more constructive.
 
-That said, Eric and Andrew make a good point about kmem_cache_free() being 
-in super-hot paths which clearly must be addressed. The only reason 
-holding me back is the fact that I don't know what those super-hot 
-call-sites are (with the exception of network skb allocation) so I am 
-really in no position to make that patch.
+Regards,
 
-			Pekka
+						- Ted
