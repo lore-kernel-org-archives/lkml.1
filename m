@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbXCUAQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbXCUAQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbXCUAQk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 20:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXCUAQk
+	id S1752205AbXCUAQu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 20:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXCUAQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 20:16:40 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34593 "EHLO mx2.suse.de"
+	Tue, 20 Mar 2007 20:16:50 -0400
+Received: from graphe.net ([209.204.138.32]:33475 "EHLO graphe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752005AbXCUAQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 20:16:39 -0400
-Date: Tue, 20 Mar 2007 17:14:26 -0700
-From: Greg KH <greg@kroah.com>
-To: James Simmons <jsimmons@infradead.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
-       Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] fbdev sysfs imrovements
-Message-ID: <20070321001426.GA29665@kroah.com>
-References: <Pine.LNX.4.64.0703192055090.27580@pentafluge.infradead.org>
+	id S1752205AbXCUAQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 20:16:49 -0400
+Date: Tue, 20 Mar 2007 17:16:37 -0700 (PDT)
+From: Christoph Lameter <christoph@lameter.com>
+X-X-Sender: christoph@graphe.net
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of
+ virt_to_slab(objp); nodeid = slabp->nodeid;
+In-Reply-To: <46005B7D.3090701@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0703201715110.17799@graphe.net>
+References: <20070320181235.77d28864.dada1@cosmosbay.com>
+ <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org>
+ <46005B7D.3090701@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703192055090.27580@pentafluge.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 02:25:49PM +0000, James Simmons wrote:
-> 
-> This patch does several things to allow the underlying hardware to be 
-> shared amount many devices. The most important thing is the use of
-> the created device via device_create instead of the hardware device. No 
-> longer should fbdev drivers use the xxx_set_drvdata with the parent
-> bus device. The second change is having a bus independent power management
-> for the framebuffer driver. The final change is using the release method 
-> to cleanup the device. The reason again is to make the fbdev driver 
-> independent of the bus parent device. Feedback is welcomed.
+On Tue, 20 Mar 2007, Eric Dumazet wrote:
 
-Looks good to me.
+> I understand we want to do special things (fallback and such tricks) at
+> allocation time, but I believe that we can just trust the real nid of memory
+> at free time.
 
-thanks,
+Sorry no. The node at allocation time determines which node specific 
+structure tracks the slab. If we fall back then the node is allocated 
+from one node but entered in the node structure of another. Thus you 
+cannot free the slab without knowing the node at allocation time.
 
-greg k-h
