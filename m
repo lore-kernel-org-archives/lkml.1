@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbXCUMfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXCUMfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752613AbXCUMfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 08:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbXCUMfA
+	id S1752712AbXCUMfx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbXCUMfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 08:35:00 -0400
-Received: from poseidon.ceid.upatras.gr ([150.140.141.169]:1892 "EHLO
-	poseidon.ceid.upatras.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613AbXCUMe7 (ORCPT
+	Wed, 21 Mar 2007 08:35:53 -0400
+Received: from lazybastard.de ([212.112.238.170]:57063 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752712AbXCUMfw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 08:34:59 -0400
-Message-ID: <4601265F.4030907@sciensis.com>
-Date: Wed, 21 Mar 2007 14:34:39 +0200
-From: Tasos Parisinos <t.parisinos@sciensis.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
-MIME-Version: 1.0
-To: Indan Zupancic <indan@nul.nu>
-Cc: Francois Romieu <romieu@fr.zoreil.com>, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel  
-         version 2.6.20.1)
-References: <45FEB8B7.7020200@sciensis.com>    <20070320004001.GA11601@electric-eye.fr.zoreil.com>    <000601c76af9$a0ce3ce0$0864a8c0@scs1>    <4734.81.207.0.53.1174427010.squirrel@secure.samage.net>    <000e01c76b99$769cbbe0$0864a8c0@scs1> <4040.81.207.0.53.1174478934.squirrel@secure.samage.net>
-In-Reply-To: <4040.81.207.0.53.1174478934.squirrel@secure.samage.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 08:35:52 -0400
+Date: Wed, 21 Mar 2007 13:31:36 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Matt Mackall <mpm@selenic.com>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+Message-ID: <20070321123136.GA495@lazybastard.org>
+References: <20070319170838.GP4892@waste.org> <1174328188.30079.46.camel@zod.rchland.ibm.com> <20070319195442.GT4892@waste.org> <1174338329.13341.633.camel@localhost.localdomain> <20070319223205.GZ4892@waste.org> <1174351366.13341.739.camel@localhost.localdomain> <20070321110528.GC3785@lazybastard.org> <1174476334.10840.49.camel@localhost.localdomain> <20070321113523.GD3785@lazybastard.org> <1174478263.10840.56.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1174478263.10840.56.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Indan Zupancic wrote:
->> Protecting a TripleDES key in high security standards is not as simple as making the kernel
->> read protected, you need a whole lot and that also means hardware (cryptomemories e.t.c)
->> So you forget about all this overhead when you use assymetric
->>     
->
-> You need to protect your kernel binary already, adding a key to that doesn't increase the
-> complexity or safety requirements, so all that hardware safety is already in place.
-> (And I'd use AES instead of TripleDES.)
->
->   
-Well, lets assume you have a trapped casing that prevents a flash chip 
-(which holds
-the kernel) from being tamperred. Then you have write protection of the 
-bzimage
+On Wed, 21 March 2007 12:57:42 +0100, Thomas Gleixner wrote:
+> On Wed, 2007-03-21 at 12:35 +0100, Jörn Engel wrote:
+> > Even if such flashes still contain a bootloader and a kernel, that will
+> > occupy less than 1% of the device.  Wear leveling across the device is
+> > fairly pointless here.  This is what I designed LogFS for.
+> 
+> Still you need to have a solution for handling bitflips in those
+> bootloader and kernel areas.
 
-When this thing will run, and it will need to check an executable using 
-AES for example
-(which is a lot better than TripleDes, i agree) then the key will be for 
-a time window
-onto buses and memory. Then it can be probed and retrieved by someone.
+Correct.  It may make sense to use UBI for that, I don't know.  What I
+do know is that UBI cannot make wear leveling decisions as well as
+LogFS.
 
-Then you need cryptomemory
+And that is all I care about wrt. this discussion.
 
-While with asymmetric you don't. There are no high-risk data anywhere, 
-only a public
-key
+Jörn
 
-Of course if you have other data that need to be secured, and you 
-already run
-on a trusted platform, including all these crypto hardware modules, then 
-you can use
-a symmetric scheme
-
-Tasos Parisinos
--
+-- 
+Joern's library part 8:
+http://citeseer.ist.psu.edu/plank97tutorial.html
