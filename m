@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbXCUVoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbXCUVpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753008AbXCUVoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 17:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbXCUVoU
+	id S1753018AbXCUVpO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 17:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbXCUVpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 17:44:20 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:54836 "EHLO smtp.osdl.org"
+	Wed, 21 Mar 2007 17:45:13 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:54842 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753008AbXCUVoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 17:44:19 -0400
-Date: Wed, 21 Mar 2007 14:40:52 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: sky2 still broken in 2.6.20.3
-Message-ID: <20070321144052.02eb2ac7@dxpl.pdx.osdl.net>
-In-Reply-To: <4601950D.5000503@redhat.com>
-References: <4601950D.5000503@redhat.com>
-Organization: The Linux Foundation
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
+	id S1753011AbXCUVpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 17:45:11 -0400
+Date: Wed, 21 Mar 2007 14:45:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: 2.6.21-rc4-mm1
+Message-Id: <20070321144503.1b1e16ca.akpm@linux-foundation.org>
+In-Reply-To: <20070321202225.GN10459@waste.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<1174433034.62033.16.camel@localhost>
+	<20070320223643.d8cbc3f6.akpm@linux-foundation.org>
+	<4601761F.4000302@lwfinger.net>
+	<20070321185900.GC3801@tuxdriver.com>
+	<20070321202225.GN10459@waste.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007 16:26:53 -0400
-Chuck Ebbert <cebbert@redhat.com> wrote:
+On Wed, 21 Mar 2007 15:22:25 -0500
+Matt Mackall <mpm@selenic.com> wrote:
 
-> Transmit timeouts and locked-up adapters still occur in kernel
-> 2.6.20.3.
+> With the latest -mm, I'm now getting this:
+> 
+> Mar 21 15:06:52 cinder kernel: ipw2200: Detected Intel PRO/Wireless
+> 2200BG Network Connection
+> Mar 21 15:06:52 cinder kernel: firmware_loading_store: unexpected
+> value (0)
+> Mar 21 15:06:52 cinder kernel: ipw2200: ipw2200-bss.fw
+> request_firmware failed:
+> Reason -2
+> Mar 21 15:06:52 cinder kernel: ipw2200: Unable to load firmware: -2
+> Mar 21 15:06:52 cinder kernel: ipw2200: failed to register network
+> device
+> 
 
-There is more changes in 2.6.21-rc4 please try that.
-I am still getting reports of timeouts with that code but
-it does recover better. It may be the case that with hardware
-flow control transmits can take an indefinite period so increasing
-the timeout value could help.
+Yes, someone seems to have thoroughly bollixed firmware loading.  I was
+able to make it pretend to work for my ipw2200, but that obviously wasn't
+sufficient.
 
-> It looks like the patch that was applied to 2.6.20.2
-> is not enough. Unfortunately that one isn't the same as what
-> went upstream. Looks like it needs to be reverted, then the two
-> upstream patches applied?
-
-Until, unless the problem is reproducible with my hardware
-there is not much that can be done. I'll add the better recovery
-logic to for next stable cycle, but still not clear what causes
-all the timeouts.
+I plan to do a bisection this evening, find the dud patch.
