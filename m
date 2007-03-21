@@ -1,79 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXCUIhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750844AbXCUIox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751980AbXCUIhv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 04:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbXCUIhv
+	id S1750844AbXCUIox (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 04:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXCUIox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 04:37:51 -0400
-Received: from saeurebad.de ([85.214.36.134]:35095 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751980AbXCUIhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 04:37:50 -0400
-Date: Wed, 21 Mar 2007 09:37:36 +0100
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Wink Saville <wink@saville.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] Initial implementation of the trec driver and include files
-Message-ID: <20070321083736.GB16768@leiferikson>
-Mail-Followup-To: Wink Saville <wink@saville.com>,
-	linux-kernel@vger.kernel.org
-References: <d4cf37a60703202347o67740694jc1c9030c647ff7c6@mail.gmail.com> <20070321082238.GA16768@leiferikson>
+	Wed, 21 Mar 2007 04:44:53 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:39469 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbXCUIow (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 04:44:52 -0400
+From: Nikita Danilov <nikita@clusterfs.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070321082238.GA16768@leiferikson>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Message-ID: <17920.61568.770999.626623@gargle.gargle.HOWL>
+Date: Wed, 21 Mar 2007 11:44:48 +0300
+To: Rik van Riel <riel@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] split file and anonymous page queues #3
+Newsgroups: gmane.linux.kernel,gmane.linux.kernel.mm
+In-Reply-To: <46005B4A.6050307@redhat.com>
+References: <46005B4A.6050307@redhat.com>
+X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
+X-SystemSpamProbe: GOOD 0.0000500 150bfdc75b699c394f1fbe28887fa8ad
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Rik van Riel writes:
+ > [ OK, I suck.  I edited yesterday's email with the new info, but forgot
+ >    to change the attachment to today's patch.  Here is today's patch. ]
+ > 
+ > Split the anonymous and file backed pages out onto their own pageout
+ > queues.  This we do not unnecessarily churn through lots of anonymous
+ > pages when we do not want to swap them out anyway.
 
-On Wed, Mar 21, 2007 at 09:22:39AM +0100, Johannes Weiner wrote:
-> Your patch has broken lines where there shouldn't be any.
+Won't this re-introduce problems similar to ones due to split
+inactive_clean/inactive_dirty queues we had in the past?
 
-I mean, the attached patch. This is probably not an error in the patch
-but in the way of posting it.
+For example, by rotating anon queues faster than file queues, kernel
+would end up reclaiming anon pages that are hotter (in "absolute" LRU
+order) than some file pages.
 
-> > +static int snprint_address(char *b, int bsize, unsigned long address)
-> > +{
-> > +#ifdef CONFIG_KALLSYMS
-> > +	unsigned long offset = 0, symsize;
-> > +	const char *symname;
-> > +	char *modname;
-> > +	char *delim = ":";
-> > +	int n;
-> > +	char namebuf[128];
-> > +
-> > +	symname = kallsyms_lookup(address, &symsize, &offset, &modname, 
-> > namebuf);
-> > +	if (!symname) {
-> > +		n = 0;
-> > +	} else {
-> > +		if (!modname)
-> > +			modname = delim = ""; 		
-> > +		n = snprintf(b, bsize, "0x%016lx %s%s%s%s+0x%lx/0x%lx",
-> > +			address, delim, modname, delim, symname, offset, 
-> > symsize);
-> > +	}
-> > +	return n;
-> > +#else
-> > +	return snprintf(b, bsize, "0x%016lx", address);
-> > +	return 0;
-> > +#endif
-> > +}
-> 
-> Would it make sense to #ifdef the whole function?
-> Make it static int (*)(...) if CONFIG_KALLSYMS and otherwise just a
-> static inline int (*)(...) { return 0; }
+Nikita.
 
-Sorry, I meant:
-
-[...]
-#else /* !CONFIG_KALLSYMS */
-static inline int snprint_address(char *b, int bsize, unsigned long addr)
-{
-	return snprintf(b, bsize, "%#16x", addr);
-}
-#endif
-
-=Hannes
