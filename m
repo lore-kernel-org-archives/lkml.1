@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964828AbXCUUiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934002AbXCUUiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964828AbXCUUiV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933849AbXCUUiV
+	id S934002AbXCUUiw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934000AbXCUUiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:38:21 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52795 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933821AbXCUUiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:38:20 -0400
-Date: Wed, 21 Mar 2007 13:38:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Larry Finger <larry.finger@lwfinger.net>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.21-rc4-mm1 - problem with cpuidle routine
-Message-Id: <20070321133815.304eb256.akpm@linux-foundation.org>
-In-Reply-To: <46017E56.7050400@lwfinger.net>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<1174433034.62033.16.camel@localhost>
-	<20070320223643.d8cbc3f6.akpm@linux-foundation.org>
-	<46017E56.7050400@lwfinger.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Mar 2007 16:38:52 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:28708 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933996AbXCUUiu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 16:38:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Z45d1PlHzqXFSBccZq4pHVc40rFmsqkkjvQVr/W4awMNpLGg+cEHty5+0Vh2cKzQLweXMUH85SEgsf0KlJSKcm5sjVS1kH4SzuYBaKkXD8mbMl7kE0hDDjiYK/7+Th4iU8i1NXj9j19cuq5UB9Rs7IhaEt0fmr8GjBVasjLS5uk=
+Message-ID: <6bffcb0e0703211338i2aa6f933ube53c6604c78e285@mail.gmail.com>
+Date: Wed, 21 Mar 2007 21:38:48 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: 2.6.21-rc4-rt0 BUG: at kernel/fork.c:1033 copy_process()
+Cc: LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007 13:49:58 -0500
-Larry Finger <larry.finger@lwfinger.net> wrote:
+Hi Ingo,
 
-> When I configure 'CPU Idle PM Support' on my HP dv2125nr notebook with a Turion X64 X2 processor and
-> X86_64 architecture selected, the computer freezes on bootup. I have included a portion the
-> configuration file and part of /var/log/boot.msg for my working system. Please let me know if
-> further info from my system is required. I would be happy to test any patches, etc.
-> 
-> Larry
-> 
-> ==============================================================
-> 
-> The console log ends with the following entries:
-> 
-> ACPI: Processor [CPU0] (supports 8 throttling states)
-> ACPI: Processor [CPU1] (supports 8 throttling states)
-> cpuidle: driver acpi_idle failed to attach to cpu 0
-> cpuidle: driver acpi_idle failed to attach to cpu 0
-> cpuidle: using driver acpi_idle
-> Loading thermal
-> 
-> At this point, the system hangs.
-> 
-> =================================================
-> 
-> The beginning section of my .config is as follows:
-> 
+It might be lockdep related
 
-Thanks.   Cc's added..
+-#ifdef CONFIG_TRACE_IRQFLAGS
++#if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_LOCKDEP)
+
+BUG: at kernel/fork.c:1033 copy_process()
+ [<c0105474>] dump_trace+0x78/0x21a
+ [<c010564b>] show_trace_log_lvl+0x35/0x54
+ [<c0105ddc>] show_trace+0x2c/0x2e
+ [<c0105ea3>] dump_stack+0x29/0x2b
+ [<c01234e0>] copy_process+0x1d1/0x1440
+ [<c01249fc>] do_fork+0xa8/0x18f
+ [<c010239e>] kernel_thread+0x93/0x99
+ [<c01393ec>] keventd_create_kthread+0x2f/0x7c
+ [<c01394ae>] kthread_create+0x75/0xbb
+ [<c011feba>] migration_call+0x5c/0x3cf
+ [<c04ddb54>] migration_init+0x2b/0x62
+  [<c04d14c5>] init+0x56/0x361
+ [<c0104ffb>] kernel_thread_helper+0x7/0x10
+ =======================
+---------------------------
+| preempt count: 00000000 ]
+| 0-level deep critical section nesting:
+----------------------------------------
+
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc4-rt0/rt-config
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc4-rt0/rt-dmesg
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
