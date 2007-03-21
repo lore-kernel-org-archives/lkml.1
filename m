@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932891AbXCUSXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbXCUSX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932891AbXCUSXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 14:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933353AbXCUSXb
+	id S933368AbXCUSX7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 14:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933347AbXCUSX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 14:23:31 -0400
-Received: from mail.velocity.net ([66.211.211.55]:53205 "EHLO
-	mail.velocity.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932891AbXCUSX3 (ORCPT
+	Wed, 21 Mar 2007 14:23:58 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:59868 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933339AbXCUSXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 14:23:29 -0400
-X-AV-Checked: Wed Mar 21 14:23:28 2007 clean
-Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests
-	(2.6.21-rc2 and 2.6.20)
-From: Dale Blount <linux-kernel@dale.us>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <460174EC.8000608@redhat.com>
-References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com>
-	 <200703011308.28266.linux@f-seidel.de> <20070301123057.GO23985@kernel.dk>
-	 <loom.20070321T135132-397@post.gmane.org>  <460174EC.8000608@redhat.com>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 14:23:27 -0400
-Message-Id: <1174501407.14261.34.camel@dale.velocity.net>
+	Wed, 21 Mar 2007 14:23:41 -0400
+Date: Wed, 21 Mar 2007 11:23:37 -0700
+From: sukadev@us.ibm.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       David Chinner <dgc@sgi.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] 2.6.21-rc4-mm1: freezing of processes broken
+Message-ID: <20070321182337.GA28698@us.ibm.com>
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <1174446834.6665.3.camel@nigel.suspend2.net> <20070321142350.GB78@tv-sign.ru> <200703211545.17919.rjw@sisk.pl> <20070321082029.2a38e09f.akpm@linux-foundation.org> <20070321165534.GA476@tv-sign.ru> <20070321090824.38d67ce3.akpm@linux-foundation.org> <20070321180713.GA27575@us.ibm.com> <m1bqimbgy1.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1bqimbgy1.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-21 at 14:09 -0400, Chuck Ebbert wrote:
-> Dale Blount wrote:
-> >> I'm puzzled why this is hitting Dan, but no one else has reported
-> >> anything. Dan, did 2.6.19 work for you?
-> > 
-> > Actually, I believe it is happening to me too.  This is on a 4-disk raid5 with
-> > one failed disk on two 2-port sata_sil pci controller cards.
-> > 
-> > The BUG below is from 2.6.20.3, but I will try 2.6.21-rc4 tonight.
-> > The disk didn't fail until 2.6.20, so I don't know if 2.6.19 would have worked
-> > or not.
-> > 
-> > 
-> 
-> Just to be clear: you have a RAID array (what level?) with a failed disk
-> and it's giving you the same error that Dan gets?
+Eric W. Biederman [ebiederm@xmission.com] wrote:
+| 
+| While we are on the topic.  What became of the notion of zeroing the
+| session and process group values for the init_task?
 
+I just sent that patch a few minutes ago.
 
-Yes, the BUG looks to be pretty similar to me.  It's a 4 disk raid5 with
-one disk missing (dead and sent in for RMA).
-
-Dale
-
+| 
+| Eric
