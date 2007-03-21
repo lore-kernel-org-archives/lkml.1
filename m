@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbXCUUxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964893AbXCUU63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964896AbXCUUxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964931AbXCUUxx
+	id S964893AbXCUU63 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964931AbXCUU63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:53:53 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:59781 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964896AbXCUUxw (ORCPT
+	Wed, 21 Mar 2007 16:58:29 -0400
+Received: from smtp.bulldogdsl.com ([212.158.248.8]:2302 "EHLO
+	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964893AbXCUU63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:53:52 -0400
-Date: Wed, 21 Mar 2007 21:53:53 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] reject taskset for kernel threads
-Message-ID: <20070321205353.GA32529@aepfle.de>
+	Wed, 21 Mar 2007 16:58:29 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: rol@as2917.net
+Subject: Re: Why is /dev on a different filesystem ? [Kernel 2.6.20.3]
+Date: Wed, 21 Mar 2007 20:58:18 +0000
+User-Agent: KMail/1.9.5
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>
+References: <04ea01c76bed$11b0d050$4b00a8c0@donald>
+In-Reply-To: <04ea01c76bed$11b0d050$4b00a8c0@donald>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703212058.18067.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 21 March 2007 19:13, Paul Rolland wrote:
+> So, obviously, /dev is on /, but the stat(2) says no.
+> Who is right, and where is the bug ?
+>
+> Kernel 2.4 had it right : /dev was on /, no doubt.
 
-Do not allow taskset for kernel threads.
-These commands will cause oopses due to stack corruption:
+Some distros will mount tmpfs over /dev so that a minimal "real dev" can be 
+provided as a fallback, but udev can add and remove nodes from /dev ad hoc 
+during regular runtime. So I don't think there's a bug and I don't think 
+anything is lying.
 
-ls /proc/*/task | grep -v ^/ | xargs echo | xargs -n1 taskset -pc 2-9
-taskset -pc 1 $$
-taskset -pc 0 $((pidof john))
+If you want the dev your distro gave you, just mount your rootfs on another 
+mount point in read-only and run tar over that instead.
 
-Possible fix in userland:
+-- 
+Cheers,
+Alistair.
 
-for i in ` ls /proc/*/task | grep -v ^/ `
-do
-	e=/proc/*/task/$i/exe
-	if test -e $e
-	then
-		taskset -pc 2-9	$i
-	fi
-done
-
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
----
- kernel/sched.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6.20/kernel/sched.c
-===================================================================
---- linux-2.6.20.orig/kernel/sched.c
-+++ linux-2.6.20/kernel/sched.c
-@@ -4310,6 +4310,8 @@ long sched_setaffinity(pid_t pid, cpumas
- 	read_unlock(&tasklist_lock);
- 
- 	retval = -EPERM;
-+	if (!p->mm)
-+		goto out_unlock;
- 	if ((current->euid != p->euid) && (current->euid != p->uid) &&
- 			!capable(CAP_SYS_NICE))
- 		goto out_unlock;
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
