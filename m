@@ -1,56 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbXCUNGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbXCUNHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbXCUNGb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 09:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXCUNGb
+	id S1752759AbXCUNHR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 09:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXCUNHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 09:06:31 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:58283 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752773AbXCUNGa (ORCPT
+	Wed, 21 Mar 2007 09:07:17 -0400
+Received: from lazybastard.de ([212.112.238.170]:43923 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752759AbXCUNHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 09:06:30 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH -mm 1/4] Blackfin: architecture update patch
-Date: Wed, 21 Mar 2007 14:06:20 +0100
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       bert hubert <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org
-References: <1174471618.5648.50.camel@roc-desktop>
-In-Reply-To: <1174471618.5648.50.camel@roc-desktop>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 09:07:15 -0400
+Date: Wed, 21 Mar 2007 14:03:21 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Lang <david.lang@digitalinsight.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>, Theodore Tso <tytso@mit.edu>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+Message-ID: <20070321130320.GC495@lazybastard.org>
+References: <20070319170838.GP4892@waste.org> <1174328188.30079.46.camel@zod.rchland.ibm.com> <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron> <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron> <20070320135231.GA6043@thunk.org> <1174406395.30079.139.camel@zod.rchland.ibm.com> <Pine.LNX.4.63.0703201049310.8684@qynat.qvtvafvgr.pbz> <1174426360.20505.15.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200703211406.22040.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/TKG8Qd2/kUwZWF/IN1GF4VM4Y9BQuR9WkIgZ
- u6S3DQKbtqQzFTI8DYSheeJaPpP5u03bMTc+XopuCF+DFPDqPT
- Otr+R99j4VvF5aF4QnHLg==
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1174426360.20505.15.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 March 2007, Wu, Bryan wrote:
-> 1) Some issues are fixed according to LKML patch review.
-> 2) Remove not supported BF535 code
-> 3) Fixed some bugs from blackfin.uclinux.org SVN update
-> Here is the updated patch for 2.6.21-rc4-mm1
+*sigh*
 
-One rather general but important comment:
+I really did not want to become involved in this.  So please be nice and
+leave the flamethrower in your weapon closet or I will disappear again
+before you can say "fire".
 
-You need to get used to providing smaller, one fix per mail, patches.
-As long as the full tree is waiting in -mm, this is not as important,
-as I assume that Andrew will fold the whole architecture support into
-a big patch before submitting to Linus, but as soon as it's in, such
-big patches will not be acceptable any more.
+On Tue, 20 March 2007 21:32:40 +0000, David Woodhouse wrote:
+> On Tue, 2007-03-20 at 10:58 -0800, David Lang wrote:
+> > What Matt and Ted are looking at is the question 'are flash devices close enough 
+> > to other block devices that it would make sense to change the existing linux 
+> > definition of a block device to handle the special requirements of flash'
+> 
+> I've seen no real proposals about how this could be done, so it's a
+> purely academic question.
 
-If you're not already doing it, look into how 'quilt' or similar tools
-help you with this.
+What you have seen and shot down were patches to make mtd more generic.
+So let me just assume both mtd and jffs2 were generic, even though they
+currently aren't.
 
-	Arnd <><
+In very broad terms, an mtd is a device with:
+1. a read operation
+2. a write operation
+3. an erase operation
+4. a minimal write blocksize
+5. a minimal erase blocksize
+6. a method to query bad eraseblocks
+7. a method to mark bad eraseblocks
+
+Anything else?  There are many more fields, but I believe this is the
+essential.  point() and unpoint() were omitted, because they are just
+one option to provide XIP.  filemap_xip.c is another used for block
+devices.
+
+In very broad terms, a block device has:
+1. a read operation
+2. a write operation
+3. some devices have an ioctl() for erase, but that is uncommon
+4. a blocksize
+
+What is missing?  Obviously the erase operation needs to become a
+first-class citizen and block devices need two fields for the two
+meaningful blocksizes.  And they need methods to query and set bad
+blocks.
+
+So far it looks simple enough.  Obviously there are many messy details
+left out, so it will be a lot of work in practice.  So the question is:
+is it worth it?
+
+What are the gains from combining mtd and block devices?
+
+[ And at this point I would like to state again that I don't want to
+become involved in the UBI discussion.  The question whether two
+seperate subsystems make sense is quite independent and I don't want
+both discussions to get mixed up. ]
+
+Jörn
+
+-- 
+He who knows others is wise.
+He who knows himself is enlightened.
+-- Lao Tsu
