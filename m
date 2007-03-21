@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569AbXCUMBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbXCUMCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569AbXCUMBx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 08:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXCUMBx
+	id S1752590AbXCUMCO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbXCUMCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 08:01:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56251 "EHLO mx1.redhat.com"
+	Wed, 21 Mar 2007 08:02:14 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60839 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752569AbXCUMBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 08:01:52 -0400
-Message-ID: <46011E8F.2000109@redhat.com>
-Date: Wed, 21 Mar 2007 08:01:19 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Nikita Danilov <nikita@clusterfs.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] split file and anonymous page queues #3
-References: <46005B4A.6050307@redhat.com>	<17920.61568.770999.626623@gargle.gargle.HOWL>	<460115D9.7030806@redhat.com> <17921.7074.900919.784218@gargle.gargle.HOWL>
-In-Reply-To: <17921.7074.900919.784218@gargle.gargle.HOWL>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752590AbXCUMCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 08:02:11 -0400
+Date: Wed, 21 Mar 2007 13:02:46 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Miller <davem@davemloft.net>
+Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: BLK_DEV_MD with CONFIG_NET
+Message-ID: <20070321120246.GB18195@uranus.ravnborg.org>
+References: <20070320200538.5270d636.randy.dunlap@oracle.com> <20070320.202621.74740974.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070320.202621.74740974.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nikita Danilov wrote:
+On Tue, Mar 20, 2007 at 08:26:21PM -0700, David Miller wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> Date: Tue, 20 Mar 2007 20:05:38 -0700
+> 
+> > Build a kernel with CONFIG_NET-n and CONFIG_BLK_DEV_MD=m.
+> > Unless csum_partial() is built and kept by some arch Makefile,
+> > the result is:
+> > ERROR: "csum_partial" [drivers/md/md-mod.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > make: *** [modules] Error 2
+> > 
+> > 
+> > Any suggested solutions?
+> 
+> Anything which is every exported to modules, which ought to
+> be the situation in this case, should be obj-y not lib-y
+> right?
+That is also my understanding of lib-y - I should update makefiles.txt
+to reflect this..
 
-> Probably I am missing something, but I don't see how that can help. For
-> example, suppose (for simplicity) that we have swappiness of 100%, and
-> that fraction of referenced anon pages gets slightly less than of file
-> pages. get_scan_ratio() increases anon_percent, and shrink_zone() starts
-> scanning anon queue more aggressively. As a result, pages spend less
-> time there, and have less chance of ever being accessed, reducing
-> fraction of referenced anon pages further, and triggering further
-> increase in the amount of scanning, etc. Doesn't this introduce positive
-> feed-back loop?
-
-It's a possibility, but I don't think it will be much of an
-issue in practice.
-
-If it is, we can always use refaults as a correcting
-mechanism - which would have the added benefit of being
-able to do streaming IO without putting any pressure on
-the active list, essentially clock-pro replacement with
-just some tweaks to shrink_list()...
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+	Sam
