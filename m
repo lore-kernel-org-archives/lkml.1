@@ -1,127 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXCUPjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbXCUPmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932458AbXCUPjb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932414AbXCUPjb
+	id S932451AbXCUPmY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbXCUPmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:39:31 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43429 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932458AbXCUPj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:39:29 -0400
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-From: Frank Haverkamp <haver@vnet.ibm.com>
-Reply-To: haver@vnet.ibm.com
-To: Theodore Tso <tytso@mit.edu>
-Cc: Artem Bityutskiy <dedekind@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>
-In-Reply-To: <20070321135033.GA7235@thunk.org>
-References: <20070319170838.GP4892@waste.org>
-	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
-	 <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron>
-	 <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron>
-	 <20070320135231.GA6043@thunk.org>
-	 <1174406395.30079.139.camel@zod.rchland.ibm.com>
-	 <20070320220312.GC29493@thunk.org> <1174466675.17249.182.camel@sauron>
-	 <20070321135033.GA7235@thunk.org>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 21 Mar 2007 16:38:07 +0100
-Message-Id: <1174491487.21506.66.camel@localhost.localdomain>
+	Wed, 21 Mar 2007 11:42:24 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:32973 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932451AbXCUPmX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 11:42:23 -0400
+Date: Wed, 21 Mar 2007 17:42:22 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <christoph@lameter.com>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead
+ of struct slab
+In-Reply-To: <Pine.LNX.4.64.0703210742080.1573@graphe.net>
+Message-ID: <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI>
+References: <20070321102231.7288f231.dada1@cosmosbay.com>
+ <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com>
+ <Pine.LNX.4.64.0703210742080.1573@graphe.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ted,
+On Wed, 21 Mar 2007, Christoph Lameter wrote:
+> None of that please. The page flags already contain a node number that is 
+> accessible via page_to_nid(). Just make sure that we never put a slab onto 
+> the wrong node.
 
-On Wed, 2007-03-21 at 09:50 -0400, Theodore Tso wrote:
-> Keeping this thought in mind and trying to help them, where in some
-> cases perhaps they are lacking in the same knowledge and experience
-> and those who have been working on UBI and have spent many months
-> thinking about the problem, may help keep things more constructive. 
+Oh well, here's a patch to find out. (I don't have a NUMA box.)
 
-since I am one of those who are working on UBI together with Artem, I
-would like to try to describe how we are using UBI and how it solves
-some problems, we could not solve to our satisfaction with existing
-solutions.
+			Pekka
 
-Our system is using only NAND flashes and we use a nand-flash-controller
-for the 1st stage boot-code (we called it IPL - initial program loader)
-to appear contiguous in memory. The size of the IPL is limited to 4 KiB.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-In these 4KiB code we initialize the processor, and scan the NAND flash
-for copies of our 2nd stage boot-loader (SPL), which is stored in one or
-even redundantly in multiple static UBI volumes. If the SPL has one-bit
-flips we can correct them in the IPL before loading it into RAM.
+This adds a virt_to_nodeid() for looking up the NUMA node ID for a
+slab object. The current implementation uses slab->nodeid but adds a
+WARN_ON to catch cases where page nid differs. Eventually, we can
+change virt_to_nodeid() to use page_to_nid after which slab->nodeid
+can be removed.
 
-We want to correct bit-flips as soon as possible to avoid getting
-uncorrectable errors. UBI is doing that transparently for us by copying
-the block with the bitflip to a free block. The logic in the IPL is able
-to cope with the situation where UBI is interrupted when doing that.
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ mm/slab.c |   17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-Imagine if you have boot-code at a fixed location (skipping bad blocks
-of course too): if you erase a block of the SPL to write it back to the
-same block (to remove bit-errors), you will not be robust against
-power-loss anymore! You could put a 2nd temporary SPL before you could
-do this, but that is not nice too.
-
-The static UBI volumes are so simple structured, that it is possible to
-load them to RAM using only a few KiB of code. We do not even look at
-UBIs volume information table to be able to do this.
-
-UBI solves here:
- 1. possiblitly to boot a controller with limited resources using NAND
- 2. transparent bitflip correction on read only data e.g. boot-code,
-    kernel, initrd. Note that the mechanisms here are robust against
-    power-loss, that is also very important to us
-
-We wanted to use JFFS2 and found that the traditional update mechanisms
-did not ensure that an interrupted update attempt can be detected as
-such. The UBI volume update ensures, that the volume is only usable
-after it was updated completely.
-
- 3. Update mechanism which ensures that incomplete data cannot be used
-
-We found that putting certain flash content at fixed locations with
-fixed size is especially cumbersome if raw NAND is used e.g. if you
-consider that bad blocks have to be skipped. Resizing partitions is a
-pain.
-
-UBI helps us to get rid of those limitations. We can resize the UBI
-volumes and because UBI takes care to find the volume data even our
-second stage boot-code can be located anywhere on the chip.
-
- 4. Volume resizing is easy
-
-Because we want to ensure that we gain maximum lifetime for our systems,
-we want that bitflips are corrected immediately when they are found.
-Feature 2. of UBI does this for us.
-
-I think that the largest portion of what we put in our NAND flashes is
-code and data and basically read-only. Nevertheless data is written
-during operation and, as already pointed out, maximum lifetime is
-important for us, and wear-leveling across the whole flash chip helps
-espcially with our usage-pattern. UBIs ability to copy blocks
-transparently e.g. a read-only block with small erase count to a free
-block with relatively high erase count, helps to get this done.
-
- 5. wear-leveling across the whole flash chip
-
-We found that being able to use the same code update mechanisms for
-NAND/NOR/? based systems is a nice side effect too. That was one reason
-beside others (see previous mails) to up the UBI meta data into the data
-section of the flashes and sacrifice therefore some space for data and
-of course that the usable size of a block is not n^2 anymore. I think it
-was a good decision, because if we would have put in in NAND OOB area,
-the discussion here might be limited to NAND users only.
-
-Regards,
-
-Frank Haverkamp
-
+Index: 2.6/mm/slab.c
+===================================================================
+--- 2.6.orig/mm/slab.c	2007-03-21 16:58:53.000000000 +0200
++++ 2.6/mm/slab.c	2007-03-21 16:59:26.000000000 +0200
+@@ -623,6 +623,14 @@ static inline struct slab *virt_to_slab(
+ 	return page_get_slab(page);
+ }
+ 
++static inline unsigned short virt_to_nodeid(const void *obj)
++{
++	struct page *page = virt_to_page(obj);
++	struct slab *slab = page_get_slab(page);
++	WARN_ON(slab->nodeid != page_to_nid(page));
++	return slab->nodeid;
++}
++
+ static inline void *index_to_obj(struct kmem_cache *cache, struct slab *slab,
+ 				 unsigned int idx)
+ {
+@@ -1134,8 +1142,7 @@ 	int i = 0;
+ 
+ static inline int cache_free_alien(struct kmem_cache *cachep, void *objp)
+ {
+-	struct slab *slabp = virt_to_slab(objp);
+-	int nodeid = slabp->nodeid;
++	int nodeid = virt_to_nodeid(objp);
+ 	struct kmem_list3 *l3;
+ 	struct array_cache *alien = NULL;
+ 	int node;
+@@ -1146,7 +1153,7 @@ static inline int cache_free_alien(struc
+ 	 * Make sure we are not freeing a object from another node to the array
+ 	 * cache on this cpu.
+ 	 */
+-	if (likely(slabp->nodeid == node) || unlikely(!use_alien_caches))
++	if (likely(nodeid == node) || unlikely(!use_alien_caches))
+ 		return 0;
+ 
+ 	l3 = cachep->nodelists[node];
+@@ -2665,7 +2672,7 @@ static void *slab_get_obj(struct kmem_ca
+ 	next = slab_bufctl(slabp)[slabp->free];
+ #if DEBUG
+ 	slab_bufctl(slabp)[slabp->free] = BUFCTL_FREE;
+-	WARN_ON(slabp->nodeid != nodeid);
++	WARN_ON(virt_to_nodeid(objp) != nodeid);
+ #endif
+ 	slabp->free = next;
+ 
+@@ -2679,7 +2686,7 @@ static void slab_put_obj(struct kmem_cac
+ 
+ #if DEBUG
+ 	/* Verify that the slab belongs to the intended node */
+-	WARN_ON(slabp->nodeid != nodeid);
++	WARN_ON(virt_to_nodeid(objp) != nodeid);
+ 
+ 	if (slab_bufctl(slabp)[objnr] + 1 <= SLAB_LIMIT + 1) {
+ 		printk(KERN_ERR "slab: double free detected in cache "
