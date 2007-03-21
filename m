@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932881AbXCUQPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932753AbXCUQQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932881AbXCUQPv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 12:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932908AbXCUQPv
+	id S932753AbXCUQQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 12:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbXCUQQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 12:15:51 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:11233 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932881AbXCUQPt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 12:15:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=d/ePGeeLoDlGtiQ6FJeurxFE8fFNt+Rn0JW+NlsO3vkfxAUmHILroVdT8IlfB2Y25PhhE6EC/Iwkhpp2lMPX5BbV9kkaDKYc2L2c8X3anaLwIQNGz9bcp6rVXK06E95aQ89/Hd00Moev8xkyErfx5MprZ63hvU+zc4UYtM36PNw=
-Message-ID: <2a12af650703210915r35d2d1a1q30f10020db269098@mail.gmail.com>
-Date: Wed, 21 Mar 2007 18:15:47 +0200
-From: "Marti Raudsepp" <marti@juffo.org>
-To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
-Subject: Re: BUG: Files corrupt after moving LVM volume to USB disk
-Cc: "Kernel hackers" <linux-kernel@vger.kernel.org>,
-       fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20070321155039.GM22466@csclub.uwaterloo.ca>
+	Wed, 21 Mar 2007 12:16:19 -0400
+Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:23976 "EHLO
+	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932753AbXCUQQR convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 12:16:17 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=1kQpycrqnvxy+lvd+1IJOb+lqUPuBr6+SKPYpm5Uok/5V0ZaHjPRJpSNsZNtxqsRlw7EYi8om+cEhd8thtDmQSzK9OcR2kRYqszH8n1R7NyvosfD9WnGb2KHL++cpiXH;
+X-SBRSScore: None
+X-IronPort-AV: i="4.14,309,1170630000"; 
+   d="scan'208"; a="62672883:sNHT23427036"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2a12af650703200334u2b94bbcbt2aab8e94b6f2a527@mail.gmail.com>
-	 <20070321155039.GM22466@csclub.uwaterloo.ca>
-X-Google-Sender-Auth: 7777d8f51e8c3864
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: how can I touch softlockup watchdog on all cpus?
+Date: Wed, 21 Mar 2007 17:06:34 +0100
+Message-ID: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB6F2A@ABGEX01E.abg.fsc.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: how can I touch softlockup watchdog on all cpus?
+Thread-Index: Acdr0uXUzQRkiPRBS2WyCNlFmDOOkw==
+From: "Cestonaro, Thilo \(external\)" 
+	<Thilo.Cestonaro.external@fujitsu-siemens.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 21 Mar 2007 16:06:30.0764 (UTC) FILETIME=[E3829AC0:01C76BD2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/21/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
-> Not that I really have a clue, but some questions anyhow:
-Thanks for your response; I will answer the remaining questions after I've
-freed up some space on the USB disk and done some additional tests. Possibly
-later today, or maybe tomorrow.
+Hey,
 
-> Do you ever unmount and shutdown the lvm during this test?
-> What happens if you were to build the LVM and filesystem, then issue the
-> move, and then reboot.  Can you then read them from the USB device or is
-> it still corrupt?
-Yes, when I first came across this problem, I had done several reboots, prior
-to and following the lvmove; the filesystem-level corruptions remained
-afterwards (though, as reported, everything worked fine again after moving it
-back).
+my module generates this ugly softlockup dump, because all cpus are stopped longer then 10 secs.
+What I do is:
+[code]
+local_irq_disable();
+// my stuff which takes long and stopps all cpus
+.....
+touch_softlockup_watchdog();
+local_irq_enable();
+[/code]
 
-> Using any insane gentoo compiler options?
-Nothing insane, just -fstack-protector -march=athlon64 -fomit-frame-pointer
+this prevents a dump of my current cpu but not for all.
+A call to smp_call_function with a function which calls touch_softlockup_watchdog in it,
+doesn't work because smp_call_function needs to be done with irqs enabled, so the watchdog comes first :(.
 
-> On Tue, Mar 20, 2007 at 12:34:08PM +0200, Marti Raudsepp wrote:
-> > * Test partition is 68 extents times 16MiB = 1088 MiB large (that's the
-> >  largest I could allocate while remaining in one segment -- otherwise lvmove
-> >  wouldn't move the partition back to /dev/sda5 after "defragmenting" it.)
->
-> That sounds strange.
-I suppose it's a shortcoming of the current LVM mirror target -- when
-allocating a larger LV on the primary disk, it initially creates the volume in
-two segments; after done moving them to the secondary disk, it merges them into
-one, as the two segments had been allocated continuously.
+Any hints or ideas how I can do it in a better way? Disabling softlockup watchdog is not possible for me.
 
-However, when attempting to move back the LV, the allocater can create two
-extents, but the "mirror" LVM target does not appear to support regions that
-are continuous on one copy and fragmented on another.
-
-I even tried explicitly specifying --alloc= to lvmove, and it didn't have any
-effect, confirming that it's not about allocation, but likely the "mirror"
-stage of the move.
-
-Regards,
-Marti Raudsepp
+Ciao Thilo
