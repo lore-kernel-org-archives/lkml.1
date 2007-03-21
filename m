@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933933AbXCUAU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbXCUAZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933933AbXCUAU0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 20:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933602AbXCUAUZ
+	id S1752313AbXCUAZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 20:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbXCUAZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 20:20:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:33929 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933933AbXCUAUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 20:20:22 -0400
-Message-ID: <46007A3A.2010101@goop.org>
-Date: Tue, 20 Mar 2007 17:20:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <ak@muc.de>, David Miller <davem@davemloft.net>,
-       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org> <20070320224324.GL10459@waste.org>
-In-Reply-To: <20070320224324.GL10459@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Mar 2007 20:25:33 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:44318 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbXCUAZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 20:25:31 -0400
+Date: Tue, 20 Mar 2007 20:25:29 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: git@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] Guilt v0.23
+Message-ID: <20070321002529.GA17011@filer.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, Mar 20, 2007 at 09:31:58AM -0700, Jeremy Fitzhardinge wrote:
->   
->> Linus Torvalds wrote:
->>     
->>> On Tue, 20 Mar 2007, Eric W. Biederman wrote:
->>>   
->>>       
->>>> If that is the case.  In the normal kernel what would
->>>> the "the oops, we got an interrupt code do?"
->>>> I assume it would leave interrupts disabled when it returns?
->>>> Like we currently do with the delayed disable of normal interrupts?
->>>>     
->>>>         
->>> Yeah, disable interrupts, and set a flag that the fake "sti" can test, and 
->>> just return without doing anything.
->>>
->>> (You may or may not also need to do extra work to Ack the hardware 
->>> interrupt etc, which may be irq-controller specific. Once the CPU has 
->>> accepted the interrupt, you may not be able to just leave it dangling)
->>>   
->>>       
->> So it would be something like:
->>
->>     pda.intr_mask = 1;		/* disable interrupts */
->>     ...
->>     pda.intr_mask = 0;		/* enable interrupts */
->>     if (xchg(&pda.intr_pending, 0))	/* check pending */
->>     	asm("sti");		/* was pending; isr left cpu interrupts masked */
->>     
->
-> I don't know that you need an xchg there. If you're still on the same
-> CPU, it should all be nice and causal even across an interrupt handler.
-> So it could be:
->
->    pda.intr_mask = 0; /* intr_pending can't get set after this */
->    if (unlikely(pda.intr_pending)) {
->       pda.intr_pending = 0;
->       asm("sti");
->    }
->
-> (This would actually need a C barrier, but I'll ignore that as this'd
-> end up being asm...)
->
-> But other interesting things could happen. If we never did a real CLI
-> and we get preempted and switched to another CPU between clearing
-> intr_mask and checking intr_pending, we get a little confused. 
->   
+Guilt v0.23 is available for download (once it mirrors out on kernel.org).
 
-Could prevent preempt if pda.intr_mask is set.  preemptible() is defined as:
+Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
+queues-like functionality and interface to git.
 
-    # define preemptible()    (preempt_count() == 0 && !irqs_disabled())
+Tarballs:
+http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
 
-anyway, so that would be changed to look at the intr_mask rather than
-eflags.
-(I'm not sure if preemptible() is actually used to determine whether
-preempt or not).
+Git repo:
+git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
 
-Alternatively, the intr_mask could be encoded in a bit of preempt_count...
 
-    J
+There are two brand new commands: fork and fold. A few minor bugs related to
+really unusual patch names (containing commas) were fixed. And finally, each
+command has a manual page!
+
+As always, patches, and other feedback is welcome.
+
+Josef "Jeff" Sipek.
+
+------------
+Changes since v0.22:
+
+Brandon Philips (2):
+      Get usage information from the USAGE variable
+      Remaining guilt documentation
+
+Josef 'Jeff' Sipek (14):
+      Docs: Ignore generated usage-*.txt files
+      Docs: Consistified the man pages
+      Docs: Reimplemented cmd-list generation script in sh
+      Docs: Added import-commit manpage
+      Docs: Fixed up patchbomb documentation
+      Docs: Include version Guilt version number in page footer
+      Remove pop_patch as there are no real users
+      fold: fold a patch into the topmost patch
+      delete: use series_remove_patch instead of opencoding the logic
+      fold: fixed patch backup creation
+      Docs: guilt-fold manpage
+      new: escape new patch name properly when changing the series file
+      fork: fork the topmost applied patch
+      Guilt v0.23
