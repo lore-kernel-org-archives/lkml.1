@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbXCUCnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXCUCo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbXCUCnf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 22:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXCUCnf
+	id S932097AbXCUCo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 22:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbXCUCo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 22:43:35 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50132 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752504AbXCUCne (ORCPT
+	Tue, 20 Mar 2007 22:44:57 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55138 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752571AbXCUCo4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 22:43:34 -0400
-Message-ID: <4600A9FF.3010309@vmware.com>
-Date: Tue, 20 Mar 2007 19:43:59 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org> <46005B89.5070301@vmware.com> <Pine.LNX.4.64.0703201715470.6730@woody.linux-foundation.org> <46009E42.30400@vmware.com> <Pine.LNX.4.64.0703201912270.6730@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703201912270.6730@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Mar 2007 22:44:56 -0400
+Date: Wed, 21 Mar 2007 03:44:52 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <christoph@lameter.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of virt_to_slab(objp); nodeid = slabp->nodeid;
+Message-ID: <20070321024452.GA17532@one.firstfloor.org>
+References: <20070320181235.77d28864.dada1@cosmosbay.com> <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org> <Pine.LNX.4.64.0703201716440.17799@graphe.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703201716440.17799@graphe.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Tue, 20 Mar 2007, Zachary Amsden wrote:
->   
->> Actually, I was thinking the irq handlers would just not mess around with
->> eflags on the stack, just call the chip to ack the interrupt and re-enable
->> hardware interrupts when they left, since that is free anyway with the iret.
->>     
->
-> No can do. Think level-triggered. You *need* to disable the interrupt, and 
-> disabling it at the CPU is the easiest approach. Even so, you need to 
-> worry about SMP and screaming interrupts at all CPU's, but if you don't 
-> ack it to the IO-APIC until later, that should be ok (alternatively, you 
-> need to just mask-and-ack the irq controller).
->   
+> We usually use page_to_nid(). Sure this will determine the node the object 
+> resides on. But this may not be the node on which the slab is tracked 
+> since there may have been a fallback at alloc time.
 
-Well, you can keep it masked, but a more important point is that I've 
-entirely neglected local interrupts.  This might work for IRQs, but for 
-local timer or thermal or IPIs, using the tasklet based replay simply 
-will not work.
+How about your slab rewrite?  I assume it would make more sense to fix
+such problems in that code instead of the old which is going to be replaced
+at some point.
 
-> One of the advantages of doing that is that you only ever have a queue of 
-> one single entry, which then makes it easier to do the replay.
->   
-
-Yes.  Unfortunately now both do_IRQ and all the smp_foo interrupt 
-handlers need to detect and queue for replay, but fortunately they all 
-have the interrupt number conveniently on the stack.
-
-Zach
+-Andi
+> 
