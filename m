@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933317AbXCUSRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933332AbXCUSSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933317AbXCUSRr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 14:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933327AbXCUSRq
+	id S933332AbXCUSSP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 14:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933327AbXCUSSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 14:17:46 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:43896 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933317AbXCUSRo (ORCPT
+	Wed, 21 Mar 2007 14:18:15 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:35830 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933332AbXCUSSF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 14:17:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=M0oRAcH5ErleHusI/JrfhcyPU7lEJrt1SAUnfTRXBkgoc6sqJS8e6p4lKfgjzmJZGfsFDqtN1PHynJW74go4qcy+T38vxUoiEb2R6zc2HGU/miuz2IlMU+GhtsaTrRVWswn3eeb4yftCAOVIYyMI/y934S7OIJ7nCE60XOcICIE=
-Message-ID: <b6c5339f0703211117m70d01240mdfe1c0798d3296e2@mail.gmail.com>
-Date: Wed, 21 Mar 2007 14:17:42 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH -mm 4/4] Blackfin: on-chip Two Wire Interface I2C driver
-Cc: khali@linux-fr.org, "David Brownell" <david-b@pacbell.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1174471688.5648.56.camel@roc-desktop>
+	Wed, 21 Mar 2007 14:18:05 -0400
+Date: Wed, 21 Mar 2007 11:17:30 -0700
+From: Kees Cook <kees@outflux.net>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       Marcus Meissner <meissner@suse.de>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@codemonkey.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: revert PIE randomization?
+Message-ID: <20070321181730.GV22797@outflux.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1174471688.5648.56.camel@roc-desktop>
-X-Google-Sender-Auth: 7b69a37057368c52
+In-Reply-To: <Pine.LNX.4.64.0701062005001.22171@blonde.wat.veritas.com>
+Organization: Outflux
+X-HELO: gorgon.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +config I2C_BLACKFIN_TWI
-> +       tristate "Blackfin TWI I2C support"
-> +       depends on I2C && (BF534 || BF536 || BF537)
-> +       help
-> +         This is the TWI I2C device driver for Blackfin 534/536/537.
-> +         This driver can also be built as a module.  If so, the module
-> +         will be called i2c-bfin-twi.
+Hi Hugh,
 
-Pardon my ignorance, but is there any reason to call it "Blackfin TWI"
-as opposed to just "Blackfin" since TWI and I2C mean the same thing?
-It lends itself to some redundancies such as:
+Hugh Dickins said:
+> Inconsistency detected by ld.so: rtld.c: 1217: dl_main:
+>  Assertion `_rtld_local._dl_rtld_map.l_libname' failed!
 
-> +       pr_info("I2C: Blackfin I2C TWI driver\n");
+I'm trying to reproduce the problem you saw (so that I can then test 
+your proposed fix).  However, I haven't had any luck.  I've got a 
+pie-compiled version of bash, and I've been running it in a loop for a 
+while now with the original randomization patch.  (I can clearly see the 
+base address bouncing around.)
 
--Bob
+I'm at just over 10 million exec's, and I haven't hit the problem.  :(
+
+Do you have any clues on how to trigger this more reliably?
+
+Also, does anyone have any thoughts on why x86 uses a ELF_ET_DYN_BASE 
+below the libraries, where as x86_64 uses one above them?  From this, 
+I'd expect x86_64 to collide with the libraries at times.  I need more 
+help understanding the memory layouts, I guess.  :)
+
+Thanks,
+
+-- 
+Kees Cook                                            @outflux.net
