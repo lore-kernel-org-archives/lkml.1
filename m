@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933408AbXCUW3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933334AbXCUW3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933408AbXCUW3m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 18:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933886AbXCUW3m
+	id S933334AbXCUW3p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 18:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933886AbXCUW3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 18:29:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:60653 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933408AbXCUW3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 18:29:43 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:52898 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933347AbXCUW3l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Mar 2007 18:29:41 -0400
-Message-ID: <4601B1D4.8060908@goop.org>
-Date: Wed, 21 Mar 2007 15:29:40 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: BLK_DEV_MD with CONFIG_NET
+Date: Wed, 21 Mar 2007 23:30:24 +0100
+User-Agent: KMail/1.9.6
+Cc: David Miller <davem@davemloft.net>, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+References: <20070320200538.5270d636.randy.dunlap@oracle.com> <20070320.202621.74740974.davem@davemloft.net> <20070321120246.GB18195@uranus.ravnborg.org>
+In-Reply-To: <20070321120246.GB18195@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: remove-unused-header-file-include-linux-elfnoteh.patch
-References: <4601A56A.40609@goop.org> <200703212320.35920.arnd@arndb.de>
-In-Reply-To: <200703212320.35920.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703212330.24502.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+aoeZcgPI95+xfp9unvL9bVZjG8FBwojALyRI
+ B3l6Hu4DL+ud8bYAchwHR+PxA0kzY+GIFyYEaFGZYBzkWvAgB6
+ /iC1MurXGOzNwalmr6wVg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Wednesday 21 March 2007 22:36:42 Jeremy Fitzhardinge wrote:
->   
->> Please don't.  We need it.
->>
->> BTW, I didn't see this one go by, and I couldn't see it searching
->> around.  Did it get posted to lkml?
->>     
+On Wednesday 21 March 2007 13:02:46 Sam Ravnborg wrote:
+> > Anything which is every exported to modules, which ought to
+> > be the situation in this case, should be obj-y not lib-y
+> > right?
 >
-> I think it was only on the janitor list. It was considered
-> obviously correct since it does not get installed by
-> headers_installed and did not seem to be used anywhere in
-> the kernel.
->
-> Could you explain how this file is used in the kernel? Robert
-> probably wants to update his script to handle this correctly.
+> That is also my understanding of lib-y - I should update makefiles.txt
+> to reflect this..
 
-It's used in the Xen patch series, which I'm actively trying to upstream
-at the moment.  There are also a couple of other places in the kernel
-which generate ELF notes, and they could probably be changed to use this
-common header.
+Strictly speaking, it could well be obj-m instead of obj-y if it
+is _only_ used by modules. OTOH, it makes the Makefile a lot simpler
+to not optimize for this case.
 
-    J
+	Arnd <><
