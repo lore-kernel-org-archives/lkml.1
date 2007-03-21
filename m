@@ -1,233 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbXCUMEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbXCUMFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752456AbXCUMEi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 08:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXCUMEi
+	id S1752617AbXCUMFi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbXCUMFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 08:04:38 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:42297 "EHLO e5.ny.us.ibm.com"
+	Wed, 21 Mar 2007 08:05:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57577 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752456AbXCUMEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 08:04:35 -0400
-Date: Wed, 21 Mar 2007 17:34:25 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>,
-       suparna@in.ibm.com, cmm@us.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com
-Subject: Re: [RFC][PATCH] sys_fallocate() system call
-Message-ID: <20070321120425.GA27273@amitarora.in.ibm.com>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752613AbXCUMFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 08:05:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [linux-pm] 2.6.21-rc4-mm1: freezing of processes broken
+Date: Wed, 21 Mar 2007 13:08:32 +0100
+User-Agent: KMail/1.9.5
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Nigel Cunningham <ncunningham@linuxmail.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <200703210149.33240.rjw@sisk.pl> <m1lkhre6f5.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1lkhre6f5.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070317111036.GC29931@parisc-linux.org>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200703211308.33295.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 17, 2007 at 05:10:37AM -0600, Matthew Wilcox wrote:
-> How about:
+On Wednesday, 21 March 2007 02:23, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> asmlinkage long sys_fallocate(int fd, int mode, u32 off_low, u32 off_high,
-> 				u32 len_low, u32 len_high);
+> > On Tuesday, 20 March 2007 22:06, Rafael J. Wysocki wrote:
+> >> On Tuesday, 20 March 2007 21:58, Jiri Slaby wrote:
+> >> > Rafael J. Wysocki napsal(a):
+> >> > > Actually, the problem is 100% reproducible on my system too and I doubt
+> > it's
+> >> > > caused by the recent freezer patches.
+> >> > 
+> >> > I don't know what exactly do you mean by recent, but 2.6.21-rc3-mm2 works
+> >> > for me.
+> >> 
+> >> Thanks for the confirmation.
+> >> 
+> >> The patches I was talking about had already been in 2.6.21-rc3-mm2, so the
+> >> reason of this failure must be different.
+> >
+> > Bisection shows that the freezing of processes has been broken by one of the
+> > patches:
+> >
+> > remove-the-likelypid-check-in-copy_process.patch
 > 
-> That way we all suffer equally ...
+> Grr.  Oleg's review of remove-the-likelypid-check-in-copy-process
+> showed it to be questionable (and it was just an optimization)
+> so we can get rid of that one easily. 
+> 
+> Although all it did that was really questionable was add
+> the idle process to the global process list and bump a process
+> count when we forked the idle process.  Not dramatically dangerous
+> things.
 
-As suggested by you and Russel, I have made this change to the patch.
-Here is how it looks like now. Please let me know if anyone has concerns
-about passing arguments this way (breaking each "loff_t" into two "u32"s).
+I think this patch is the culprit, though, as it seems that the freezer tries
+to freeze the idle process and fails.  Yesterday I didn't have the time to
+figure out the exact reason, I'll try to look at it later today.
 
-Signed-off-by: Amit K Arora <aarora@in.ibm.com>
----
- arch/i386/kernel/syscall_table.S |    1 
- arch/x86_64/kernel/functionlist  |    1 
- fs/open.c                        |   46 +++++++++++++++++++++++++++++++++++++++
- include/asm-i386/unistd.h        |    3 +-
- include/asm-powerpc/systbl.h     |    1 
- include/asm-powerpc/unistd.h     |    3 +-
- include/asm-x86_64/unistd.h      |    4 ++-
- include/linux/fs.h               |    7 +++++
- include/linux/syscalls.h         |    2 +
- 9 files changed, 65 insertions(+), 3 deletions(-)
+> > use-task_pgrp-task_session-in-copy_process.patch
+> 
+> As I recall that patch was pretty trivial, and shouldn't have
+> anything to do with the freezer.   The process freezer doesn't care
+> about pids does it?
 
-Index: linux-2.6.20.1/arch/i386/kernel/syscall_table.S
-===================================================================
---- linux-2.6.20.1.orig/arch/i386/kernel/syscall_table.S
-+++ linux-2.6.20.1/arch/i386/kernel/syscall_table.S
-@@ -319,3 +319,4 @@ ENTRY(sys_call_table)
- 	.long sys_move_pages
- 	.long sys_getcpu
- 	.long sys_epoll_pwait
-+	.long sys_fallocate		/* 320 */
-Index: linux-2.6.20.1/fs/open.c
-===================================================================
---- linux-2.6.20.1.orig/fs/open.c
-+++ linux-2.6.20.1/fs/open.c
-@@ -350,6 +350,52 @@ asmlinkage long sys_ftruncate64(unsigned
- }
- #endif
- 
-+asmlinkage long sys_fallocate(int fd, int mode, u32 off_low, u32 off_high,
-+				u32 len_low, u32 len_high)
-+{
-+	struct file *file;
-+	struct inode *inode;
-+	loff_t offset, len;
-+	long ret = -EINVAL;
-+
-+	offset = (off_high << 32) + off_low;
-+	len = (len_high << 32) + len_low;
-+
-+	if (len == 0 || offset < 0)
-+		goto out;
-+
-+	ret = -EBADF;
-+	file = fget(fd);
-+	if (!file)
-+		goto out;
-+	if (!(file->f_mode & FMODE_WRITE))
-+		goto out_fput;
-+
-+	inode = file->f_path.dentry->d_inode;
-+
-+	ret = -ESPIPE;
-+	if (S_ISFIFO(inode->i_mode))
-+		goto out_fput;
-+
-+	ret = -ENODEV;
-+	if (!S_ISREG(inode->i_mode))
-+		goto out_fput;
-+
-+	ret = -EFBIG;
-+	if (offset + len > inode->i_sb->s_maxbytes)
-+		goto out_fput;
-+
-+	if (inode->i_op && inode->i_op->fallocate)
-+		ret = inode->i_op->fallocate(inode, mode, offset, len);
-+	else
-+		ret = -ENOSYS;
-+out_fput:
-+	fput(file);
-+out:
-+	return ret;
-+}
-+EXPORT_SYMBOL(sys_fallocate);
-+
- /*
-  * access() needs to use the real uid/gid, not the effective uid/gid.
-  * We do this by temporarily clearing all FS-related capabilities and
-Index: linux-2.6.20.1/include/asm-i386/unistd.h
-===================================================================
---- linux-2.6.20.1.orig/include/asm-i386/unistd.h
-+++ linux-2.6.20.1/include/asm-i386/unistd.h
-@@ -325,10 +325,11 @@
- #define __NR_move_pages		317
- #define __NR_getcpu		318
- #define __NR_epoll_pwait	319
-+#define __NR_fallocate		320
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 320
-+#define NR_syscalls 321
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-Index: linux-2.6.20.1/include/linux/fs.h
-===================================================================
---- linux-2.6.20.1.orig/include/linux/fs.h
-+++ linux-2.6.20.1/include/linux/fs.h
-@@ -263,6 +263,12 @@ extern int dir_notify_enable;
- #define SYNC_FILE_RANGE_WRITE		2
- #define SYNC_FILE_RANGE_WAIT_AFTER	4
- 
-+/*
-+ * fallocate() modes
-+ */
-+#define FA_ALLOCATE	0x1
-+#define FA_DEALLOCATE	0x2
-+
- #ifdef __KERNEL__
- 
- #include <linux/linkage.h>
-@@ -1124,6 +1130,7 @@ struct inode_operations {
- 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
- 	int (*removexattr) (struct dentry *, const char *);
- 	void (*truncate_range)(struct inode *, loff_t, loff_t);
-+	int (*fallocate)(struct inode *, int, loff_t, loff_t);
- };
- 
- struct seq_file;
-Index: linux-2.6.20.1/include/linux/syscalls.h
-===================================================================
---- linux-2.6.20.1.orig/include/linux/syscalls.h
-+++ linux-2.6.20.1/include/linux/syscalls.h
-@@ -602,6 +602,8 @@ asmlinkage long sys_get_robust_list(int 
- asmlinkage long sys_set_robust_list(struct robust_list_head __user *head,
- 				    size_t len);
- asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
-+asmlinkage long sys_fallocate(int fd, int mode, u32 off_low, u32 off_high,
-+				u32 len_low, u32 len_high);
- 
- int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
- 
-Index: linux-2.6.20.1/include/asm-x86_64/unistd.h
-===================================================================
---- linux-2.6.20.1.orig/include/asm-x86_64/unistd.h
-+++ linux-2.6.20.1/include/asm-x86_64/unistd.h
-@@ -619,8 +619,10 @@ __SYSCALL(__NR_sync_file_range, sys_sync
- __SYSCALL(__NR_vmsplice, sys_vmsplice)
- #define __NR_move_pages		279
- __SYSCALL(__NR_move_pages, sys_move_pages)
-+#define __NR_fallocate		280
-+__SYSCALL(__NR_fallocate, sys_fallocate)
- 
--#define __NR_syscall_max __NR_move_pages
-+#define __NR_syscall_max __NR_fallocate
- 
- #ifndef __NO_STUBS
- #define __ARCH_WANT_OLD_READDIR
-Index: linux-2.6.20.1/include/asm-powerpc/unistd.h
-===================================================================
---- linux-2.6.20.1.orig/include/asm-powerpc/unistd.h
-+++ linux-2.6.20.1/include/asm-powerpc/unistd.h
-@@ -324,10 +324,11 @@
- #define __NR_get_robust_list	299
- #define __NR_set_robust_list	300
- #define __NR_move_pages		301
-+#define __NR_fallocate		302
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		302
-+#define __NR_syscalls		303
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-Index: linux-2.6.20.1/arch/x86_64/kernel/functionlist
-===================================================================
---- linux-2.6.20.1.orig/arch/x86_64/kernel/functionlist
-+++ linux-2.6.20.1/arch/x86_64/kernel/functionlist
-@@ -932,6 +932,7 @@
- *(.text.sys_getitimer)
- *(.text.sys_getgroups)
- *(.text.sys_ftruncate)
-+*(.text.sys_fallocate)
- *(.text.sysfs_lookup)
- *(.text.sys_exit_group)
- *(.text.stub_fork)
-Index: linux-2.6.20.1/include/asm-powerpc/systbl.h
-===================================================================
---- linux-2.6.20.1.orig/include/asm-powerpc/systbl.h
-+++ linux-2.6.20.1/include/asm-powerpc/systbl.h
-@@ -305,3 +305,4 @@ SYSCALL_SPU(faccessat)
- COMPAT_SYS_SPU(get_robust_list)
- COMPAT_SYS_SPU(set_robust_list)
- COMPAT_SYS(move_pages)
-+SYSCALL(fallocate)
---
-Regards,
-Amit Arora
+No, it doesn't, at least not directly.  I'll try to run the kernel with this
+change and without remove-the-likelypid-check-in-copy_process.patch .
+
+Greetings,
+Rafael
