@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbXCUXb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbXCUXfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbXCUXb5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXCUXb4
+	id S1753197AbXCUXfe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbXCUXfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:31:56 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2812 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753208AbXCUXb4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:31:56 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel version 2.6.20.1)
-Date: Wed, 21 Mar 2007 16:31:52 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMEBICHAC.davids@webmaster.com>
+	Wed, 21 Mar 2007 19:35:34 -0400
+Received: from holomorphy.com ([66.93.40.71]:60732 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753197AbXCUXfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 19:35:34 -0400
+Date: Wed, 21 Mar 2007 16:35:28 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Valdis.Kletnieks@vt.edu, Adam Litke <agl@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: pagetable_ops: Hugetlb character device example
+Message-ID: <20070321233528.GL2986@holomorphy.com>
+References: <20070319200502.17168.17175.stgit@localhost.localdomain> <1174506228.21684.41.camel@localhost.localdomain> <200703211951.l2LJpVPS020364@turing-police.cc.vt.edu> <20070321222659.GJ2986@holomorphy.com> <20070321225348.GO10459@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <4040.81.207.0.53.1174478934.squirrel@secure.samage.net>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 21 Mar 2007 16:32:02 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 21 Mar 2007 16:32:04 -0800
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070321225348.GO10459@waste.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 21, 2007 at 03:26:59PM -0700, William Lee Irwin III wrote:
+>> My exit strategy was to make hugetlbfs an alias for ramfs when ramfs
+>> acquired the necessary functionality until expand-on-mmap() was merged.
+>> That would've allowed rm -rf fs/hugetlbfs/ outright. A compatibility
+>> wrapper for expand-on-mmap() around ramfs once ramfs acquires the
+>> necessary functionality is now the exit strategy.
 
-> If you can't read protect your kernel, you can't write protect it
-> either.
+On Wed, Mar 21, 2007 at 05:53:48PM -0500, Matt Mackall wrote:
+> Can you describe what ramfs needs here in a bit more detail?
+> If it's non-trivial, I'd rather see any new functionality go into
+> shmfs/tmpfs, as ramfs has done a good job at staying a minimal fs thus
+> far.
 
-This is so misleading as to basically be false.
-
-It is true that any security scheme that can prevent people from taking
-money out of my account can also prevent people from putting money in.
-However, the set of people I allow to put money in my account might include
-people I don't want to be able to take money out.
-
-As a more concrete counter-example, consider a signed kernel module that I
-wish to publically distribute. I can't stop anyone from reading it. I can
-certainly keep people from changing the copy running on my machine.
-
-Your point is not even valid about keys residing in RAM. There are perfectly
-sensible scenarios in which the same key needs to be in several different
-places, some very secure, some not so. Using a symettric key means that the
-securest use can be compromised by a break of the least-secure use. Consider
-data that is signed by the kernel and verified by a user-space program.
-
-DS
+I was referring to fully-general multiple pagesize support. ramfs
+would inherit the functionality by virtue of generic pagecache and TLB
+handling in such an arrangement. It doesn't make sense to modify ramfs
+as a special case; hugetlb is as it stands a ramfs special-cased for
+such purposes.
 
 
+-- wli
