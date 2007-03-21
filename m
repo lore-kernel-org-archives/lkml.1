@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbXCUNNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbXCUNNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbXCUNNS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 09:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbXCUNNR
+	id S1752795AbXCUNNY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 09:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbXCUNNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 09:13:17 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:56061 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752794AbXCUNNR (ORCPT
+	Wed, 21 Mar 2007 09:13:24 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:7363 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752795AbXCUNNX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 09:13:17 -0400
-Subject: Re: [Bluez-devel] 2.6.21-rc4-mm1
-From: Marcel Holtmann <marcel@holtmann.org>
-To: BlueZ development <bluez-devel@lists.sourceforge.net>
-Cc: Zan Lynx <zlynx@acm.org>, reiserfs-dev@namesys.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070320223643.d8cbc3f6.akpm@linux-foundation.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	 <1174433034.62033.16.camel@localhost>
-	 <20070320223643.d8cbc3f6.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 15:12:50 +0100
-Message-Id: <1174486370.15638.29.camel@aeonflux.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+	Wed, 21 Mar 2007 09:13:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=qeKzWI9EjOSR0EXjwgEpZsdSr+va1H6S69nlT5Uy+Ec8jVYAEmQNTsmvCZ54yO13B8tpavBcEzI8IsbpZvfbAGgW6MTx37erH6zl2eHjBrium2nGIYBq6BUSs+DmIvc3F4vZkd8nohHr5xqfO7w1w/Cs/6Y5vB7dKpoCT691rQA=
+Message-ID: <84144f020703210613p62bfa578rb8ece4da39b00faf@mail.gmail.com>
+Date: Wed, 21 Mar 2007 15:13:21 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: [PATCH] SLAB : Dont allocate empty shared caches
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Lameter" <christoph@lameter.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4600DD13.80305@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070320181235.77d28864.dada1@cosmosbay.com>
+	 <Pine.LNX.4.64.0703201248530.12664@graphe.net>
+	 <20070320213218.GA13952@one.firstfloor.org>
+	 <46005B7D.3090701@cosmosbay.com>
+	 <Pine.LNX.4.64.0703201715110.17799@graphe.net>
+	 <4600D04B.6030305@cosmosbay.com> <4600D756.7070500@cosmosbay.com>
+	 <4600DD13.80305@cosmosbay.com>
+X-Google-Sender-Auth: 1f46058603f12867
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On 3/21/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> We can avoid allocating empty shared caches and avoid unecessary check of
+> cache->limit. We save some memory. We avoid bringing into CPU cache unecessary
+> cache lines.
+>
+> All accesses to l3->shared are already checking NULL pointers so this patch is
+> safe.
 
-> >       * Freezes immediately if I allow Bluetooth to configure.
-> 
-> cc bluez-devel
+Looks good to me.
 
-is the -mm specific or does this also happens with 2.6.21-rc4?
-
-Regards
-
-Marcel
-
-
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
