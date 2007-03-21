@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751474AbXCUL4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbXCUL7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751474AbXCUL4O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 07:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbXCUL4O
+	id S1752402AbXCUL7s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 07:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXCUL7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 07:56:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:58632 "EHLO ozlabs.org"
+	Wed, 21 Mar 2007 07:59:48 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57029 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751474AbXCUL4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 07:56:13 -0400
-Subject: Re: [PATCH 2/4] i386 GDT cleanups: Use per-cpu GDT immediately
-	upon boot
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <m1aby7c59k.fsf@ebiederm.dsl.xmission.com>
-References: <1174457426.11680.132.camel@localhost.localdomain>
-	 <1174458636.11680.143.camel@localhost.localdomain>
-	 <1174458730.11680.145.camel@localhost.localdomain>
-	 <1174458938.11680.150.camel@localhost.localdomain>
-	 <m1aby7c59k.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 22:55:53 +1100
-Message-Id: <1174478153.11680.183.camel@localhost.localdomain>
+	id S1752580AbXCUL7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 07:59:48 -0400
+Date: Wed, 21 Mar 2007 12:59:55 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kees Cook <kees@outflux.net>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070321115955.GA18195@uranus.ravnborg.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070320103151.f65c81b6.randy.dunlap@oracle.com> <20070320192016.GC22797@outflux.net> <20070320214714.0e584cd4.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070320214714.0e584cd4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-21 at 03:31 -0600, Eric W. Biederman wrote:
-> Rusty Russell <rusty@rustcorp.com.au> writes:
-> > -/*
-> > - * The boot_gdt_table must mirror the equivalent in setup.S and is
-> > - * used only for booting.
-> > - */
+On Tue, Mar 20, 2007 at 09:47:14PM -0800, Andrew Morton wrote:
+> On Tue, 20 Mar 2007 12:20:16 -0700 Kees Cook <kees@outflux.net> wrote:
 > 
-> It looks like you are killing a useful comment here for no good reason.
+> > I can't 
+> > get 2.6.21-rc4-mm1 to compile (with or without this fix):
+> > 
+> >   GEN     .version
+> > init/.missing_syscalls.h.cmd:2: *** missing separator.  Stop.
+> > make: *** [.tmp_vmlinux1] Error 2
+> 
+> How'd you manage that?
+> 
+> Sam, I think this is a you-thing rather than a dwmw2-thing?
+I will give it a shot tonight.
+One issue I have with current approach is that the ARCH specific things are
+in a single .h file.
 
-Hi Eric,
-
-	I think one has to look harder, then.  There is no "equivalent in
-setup.S": there is no setup.S, and it's certainly not clear what GDT
-this "must mirror": it doesn't mirror any GDT at the moment.
-
-	This leaves us with "is only used for booting".  The name
-"boot_gdt_table" and the code itself are pretty clear.
-
-	A comment might well deserve to live here, but not this one 8)
-
-Hope that clarifies,
-Rusty.
-
+	Sam
