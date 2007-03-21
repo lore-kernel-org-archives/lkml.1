@@ -1,57 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbXCUPZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXCUP3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932065AbXCUPZa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241AbXCUPZa
+	id S932244AbXCUP3D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:29:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932247AbXCUP3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:25:30 -0400
-Received: from mail.screens.ru ([213.234.233.54]:44450 "EHLO mail.screens.ru"
+	Wed, 21 Mar 2007 11:29:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42505 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932065AbXCUPZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:25:29 -0400
-Date: Wed, 21 Mar 2007 18:29:35 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Re: [2.6.20] BUG: workqueue leaked lock
-Message-ID: <20070321152935.GA215@tv-sign.ru>
-References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru> <20070321080510.GA1939@ff.dom.local> <20070321144620.GC78@tv-sign.ru> <20070321151651.GA4547@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070321151651.GA4547@ff.dom.local>
-User-Agent: Mutt/1.5.11
+	id S932244AbXCUP3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 11:29:00 -0400
+Date: Wed, 21 Mar 2007 11:28:53 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       bhavana.nagendra@amd.com
+Cc: Prarit Bhargava <prarit@redhat.com>
+Message-Id: <20070321152853.31767.47460.sendpatchset@prarit.boston.redhat.com>
+Subject: [PATCH]: Resubmitting: __init to __cpuinit in mtrr code
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/21, Jarek Poplawski wrote:
->
-> > Sorry, I can't understand you. lockdep_depth is counted within a process,
-> > which starts before f(), yes. This process is cwq->thread, it was forked
-> > during create_workqueue(). It does not take any locks directly, only by
-> > calling work->func(). laundry_wq doesn't differ from keventd_wq or any other
-> > wq in this sense. nfsd does not "runs kthread by itself", it inserts the
-> > work and wakes up cwq->thread.
-> 
-> I think we know how it all should start and go. If only analyzing
-> the code could be enough, this current check of lockdep_depth()
-> is unnecessary too, because laundromat_code code looks as good
-> as run_workqueue code. I send it for testing and I mean it -
-> something strange is going here, so some checks should be added
-> - I didn't say mine is the right and will certainly help.
+Originally submitted 2007-02-28.  Adding Bhavana from AMD...
 
-Ah, sorry, I misunderstood you. I had (my fault) a false impression
-that you propose this patch as a "fix", while we seem to agree that
-the real source of this problem remains unknown.
+__init to __cpuinit in mtrr code.
 
-> So, if
-> you have another idea for looking after it, let us know.
+Resolves warnings similar to:
 
-No, I don't.
+WARNING: vmlinux - Section mismatch: reference to .init.text:mtrr_bp_init from .text between 'identify_cpu' (at offset 0xc040b38e) and 'detect_ht'
 
-Oleg.
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
+diff --git a/arch/i386/kernel/cpu/mtrr/amd.c b/arch/i386/kernel/cpu/mtrr/amd.c
+index 0949cdb..375752a 100644
+--- a/arch/i386/kernel/cpu/mtrr/amd.c
++++ b/arch/i386/kernel/cpu/mtrr/amd.c
+@@ -112,7 +112,7 @@ static struct mtrr_ops amd_mtrr_ops = {
+ 	.have_wrcomb       = positive_have_wrcomb,
+ };
+ 
+-int __init amd_init_mtrr(void)
++int __cpuinit amd_init_mtrr(void)
+ {
+ 	set_mtrr_ops(&amd_mtrr_ops);
+ 	return 0;
+diff --git a/arch/i386/kernel/cpu/mtrr/centaur.c b/arch/i386/kernel/cpu/mtrr/centaur.c
+index cb9aa3a..8b61016 100644
+--- a/arch/i386/kernel/cpu/mtrr/centaur.c
++++ b/arch/i386/kernel/cpu/mtrr/centaur.c
+@@ -215,7 +215,7 @@ static struct mtrr_ops centaur_mtrr_ops = {
+ 	.have_wrcomb       = positive_have_wrcomb,
+ };
+ 
+-int __init centaur_init_mtrr(void)
++int __cpuinit centaur_init_mtrr(void)
+ {
+ 	set_mtrr_ops(&centaur_mtrr_ops);
+ 	return 0;
+diff --git a/arch/i386/kernel/cpu/mtrr/cyrix.c b/arch/i386/kernel/cpu/mtrr/cyrix.c
+index 0737a59..df38d8c 100644
+--- a/arch/i386/kernel/cpu/mtrr/cyrix.c
++++ b/arch/i386/kernel/cpu/mtrr/cyrix.c
+@@ -370,7 +370,7 @@ static struct mtrr_ops cyrix_mtrr_ops = {
+ 	.have_wrcomb       = positive_have_wrcomb,
+ };
+ 
+-int __init cyrix_init_mtrr(void)
++int __cpuinit cyrix_init_mtrr(void)
+ {
+ 	set_mtrr_ops(&cyrix_mtrr_ops);
+ 	return 0;
+diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
+index f77fc53..fd97f84 100644
+--- a/arch/i386/kernel/cpu/mtrr/generic.c
++++ b/arch/i386/kernel/cpu/mtrr/generic.c
+@@ -30,14 +30,14 @@ static __initdata int mtrr_show;
+ module_param_named(show, mtrr_show, bool, 0);
+ 
+ /*  Get the MSR pair relating to a var range  */
+-static void __init
++static void __cpuinit
+ get_mtrr_var_range(unsigned int index, struct mtrr_var_range *vr)
+ {
+ 	rdmsr(MTRRphysBase_MSR(index), vr->base_lo, vr->base_hi);
+ 	rdmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
+ }
+ 
+-static void __init
++static void __cpuinit
+ get_fixed_ranges(mtrr_type * frs)
+ {
+ 	unsigned int *p = (unsigned int *) frs;
+@@ -60,7 +60,7 @@ static void __init print_fixed(unsigned base, unsigned step, const mtrr_type*typ
+ }
+ 
+ /*  Grab all of the MTRR state for this CPU into *state  */
+-void __init get_mtrr_state(void)
++void __cpuinit get_mtrr_state(void)
+ {
+ 	unsigned int i;
+ 	struct mtrr_var_range *vrs;
+diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
+index 0acfb6a..cdbca55 100644
+--- a/arch/i386/kernel/cpu/mtrr/main.c
++++ b/arch/i386/kernel/cpu/mtrr/main.c
+@@ -103,7 +103,7 @@ static int have_wrcomb(void)
+ }
+ 
+ /*  This function returns the number of variable MTRRs  */
+-static void __init set_num_var_ranges(void)
++static void __cpuinit set_num_var_ranges(void)
+ {
+ 	unsigned long config = 0, dummy;
+ 
+@@ -116,7 +116,7 @@ static void __init set_num_var_ranges(void)
+ 	num_var_ranges = config & 0xff;
+ }
+ 
+-static void __init init_table(void)
++static void __cpuinit init_table(void)
+ {
+ 	int i, max;
+ 
+@@ -571,7 +571,7 @@ extern void amd_init_mtrr(void);
+ extern void cyrix_init_mtrr(void);
+ extern void centaur_init_mtrr(void);
+ 
+-static void __init init_ifs(void)
++static void __cpuinit init_ifs(void)
+ {
+ #ifndef CONFIG_X86_64
+ 	amd_init_mtrr();
+@@ -639,7 +639,7 @@ static struct sysdev_driver mtrr_sysdev_driver = {
+  * initialized (i.e. before smp_init()).
+  * 
+  */
+-void __init mtrr_bp_init(void)
++void __cpuinit mtrr_bp_init(void)
+ {
+ 	init_ifs();
+ 
