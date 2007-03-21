@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752251AbXCUASN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933933AbXCUAU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752251AbXCUASN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 20:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXCUASN
+	id S933933AbXCUAU0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 20:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933602AbXCUAUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 20:18:13 -0400
-Received: from graphe.net ([209.204.138.32]:33485 "EHLO graphe.net"
+	Tue, 20 Mar 2007 20:20:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:33929 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbXCUASM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 20:18:12 -0400
-Date: Tue, 20 Mar 2007 17:18:04 -0700 (PDT)
-From: Christoph Lameter <christoph@lameter.com>
-X-X-Sender: christoph@graphe.net
-To: Andi Kleen <andi@firstfloor.org>
-cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of
- virt_to_slab(objp); nodeid = slabp->nodeid;
-In-Reply-To: <20070320213218.GA13952@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0703201716440.17799@graphe.net>
-References: <20070320181235.77d28864.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org>
+	id S933933AbXCUAUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 20:20:22 -0400
+Message-ID: <46007A3A.2010101@goop.org>
+Date: Tue, 20 Mar 2007 17:20:10 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.5
+To: Matt Mackall <mpm@selenic.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@muc.de>, David Miller <davem@davemloft.net>,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+References: <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org> <20070320224324.GL10459@waste.org>
+In-Reply-To: <20070320224324.GL10459@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007, Andi Kleen wrote:
+Matt Mackall wrote:
+> On Tue, Mar 20, 2007 at 09:31:58AM -0700, Jeremy Fitzhardinge wrote:
+>   
+>> Linus Torvalds wrote:
+>>     
+>>> On Tue, 20 Mar 2007, Eric W. Biederman wrote:
+>>>   
+>>>       
+>>>> If that is the case.  In the normal kernel what would
+>>>> the "the oops, we got an interrupt code do?"
+>>>> I assume it would leave interrupts disabled when it returns?
+>>>> Like we currently do with the delayed disable of normal interrupts?
+>>>>     
+>>>>         
+>>> Yeah, disable interrupts, and set a flag that the fake "sti" can test, and 
+>>> just return without doing anything.
+>>>
+>>> (You may or may not also need to do extra work to Ack the hardware 
+>>> interrupt etc, which may be irq-controller specific. Once the CPU has 
+>>> accepted the interrupt, you may not be able to just leave it dangling)
+>>>   
+>>>       
+>> So it would be something like:
+>>
+>>     pda.intr_mask = 1;		/* disable interrupts */
+>>     ...
+>>     pda.intr_mask = 0;		/* enable interrupts */
+>>     if (xchg(&pda.intr_pending, 0))	/* check pending */
+>>     	asm("sti");		/* was pending; isr left cpu interrupts masked */
+>>     
+>
+> I don't know that you need an xchg there. If you're still on the same
+> CPU, it should all be nice and causal even across an interrupt handler.
+> So it could be:
+>
+>    pda.intr_mask = 0; /* intr_pending can't get set after this */
+>    if (unlikely(pda.intr_pending)) {
+>       pda.intr_pending = 0;
+>       asm("sti");
+>    }
+>
+> (This would actually need a C barrier, but I'll ignore that as this'd
+> end up being asm...)
+>
+> But other interesting things could happen. If we never did a real CLI
+> and we get preempted and switched to another CPU between clearing
+> intr_mask and checking intr_pending, we get a little confused. 
+>   
 
-> > > Is it possible virt_to_slab(objp)->nodeid being different from pfn_to_nid(objp) ?
-> > 
-> > It is possible the page allocator falls back to another node than 
-> > requested. We would need to check that this never occurs.
-> 
-> The only way to ensure that would be to set a strict mempolicy.
-> But I'm not sure that's a good idea -- after all you don't want
-> to fail an allocation in this case.
-> 
-> But pfn_to_nid on the object like proposed by Eric should work anyways.
-> But I'm not sure the tables used for that will be more often cache hot
-> than the slab.
+Could prevent preempt if pda.intr_mask is set.  preemptible() is defined as:
 
-We usually use page_to_nid(). Sure this will determine the node the object 
-resides on. But this may not be the node on which the slab is tracked 
-since there may have been a fallback at alloc time.
+    # define preemptible()    (preempt_count() == 0 && !irqs_disabled())
 
+anyway, so that would be changed to look at the intr_mask rather than
+eflags.
+(I'm not sure if preemptible() is actually used to determine whether
+preempt or not).
+
+Alternatively, the intr_mask could be encoded in a bit of preempt_count...
+
+    J
