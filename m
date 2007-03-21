@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXCUPi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbXCUPjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbXCUPi2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbXCUPi2
+	id S932344AbXCUPjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXCUPjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:38:28 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:33348 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932409AbXCUPi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:38:27 -0400
-Date: Wed, 21 Mar 2007 16:36:35 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Christoph Lameter <christoph@lameter.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead
- of struct slab
-Message-Id: <20070321163635.82697f08.dada1@cosmosbay.com>
-In-Reply-To: <Pine.LNX.4.64.0703210737400.1573@graphe.net>
-References: <20070321102231.7288f231.dada1@cosmosbay.com>
-	<Pine.LNX.4.64.0703210737400.1573@graphe.net>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Mar 2007 11:39:22 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:33584 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932344AbXCUPjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 11:39:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QmPPdloUGHmADzn+sDn+4ZAhZ5IZA8EW5H/NO06RjJR2tu0s1C+3isoY7YIbLLrtu1Vz+zmd66V251kVJB0P4a2QPuaa1F6QV57ID5EbwJ7navfl/ZnfbpEpVdPEVoh6w1xguERDNPtw48R9X6wXWl3TQBL6ubA48usUqHgSmHI=
+Message-ID: <8bd0f97a0703210839g6cabb2ccla11d0ec19f3d0810@mail.gmail.com>
+Date: Wed, 21 Mar 2007 11:39:20 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>, "Wu, Bryan" <bryan.wu@analog.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Arnd Bergmann" <arnd@arndb.de>,
+       "bert hubert" <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/4] Blackfin: architecture update patch
+In-Reply-To: <20070321125631.GA13192@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1174471618.5648.50.camel@roc-desktop>
+	 <20070321125631.GA13192@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007 07:41:46 -0700 (PDT)
-Christoph Lameter <christoph@lameter.com> wrote:
+On 3/21/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> On Wed, Mar 21, 2007 at 06:06:58PM +0800, Wu, Bryan wrote:
+> > +++ linux-2.6/arch/blackfin/Kconfig   2007-03-21 14:38:42.000000000 +0800
+> > +config BLACKFIN
+> >  config BFIN
+>
+> Again, there's no reason to have both of these. Pick one and stick with
+> it.
 
-> On Wed, 21 Mar 2007, Eric Dumazet wrote:
-> 
-> > In order to avoid a cache miss in kmem_cache_free() on NUMA and reduce hot path length, we could exploit the following common facts.
-> > 
-> > 1) MAX_NUMNODES <= 64
-> 
-> MAX_NUMNODES == 1024 on IA64 and may be on x86_64 in the future.
+we're working on it ... not everything has been converted yet, thus
+they're still both alive :/
 
-So what ? I am very happy for you Christoph.
+> > +/* CSYNC implementation for C file */
+> >  #if defined(ANOMALY_05000312) && defined(ANOMALY_05000244)
+>
+> Is there some reason these aren't config options? Perhaps an errata
+> sub-menu might be more intuitive.
 
-Average linux machines (ie more than 99.99 % on this planet) are using MAX_NUMNODES <= 64
-
-If you read my patch, your lovely 1024 nodes machines will run as before : No change at all for big machines.
-
->  
-> > 2) alignment of 'struct kmem_cache *' can be >= 64
-> > 
-> > The following patch changes the page->lru.next to contain not only the 
-> > 'struct kmem_cache *' pointer, but also the nodeid in the low order 
-> > bits.
-> 
-> Nack.
-> 
-> I would suggest you audit slab and make sure that we never fall back and 
-> always enter a slab on the node of page_to_nid(page). If 
-> all allocations use GFP_THISNODE then you should be safe and then we can 
-> remove the nodeid from the slab structure and simply use the available 
-> node information in the page struct.
-> 
-
-Last time I checked 'struct page', they was no nodeid in it.
-
-I cooked this patch because you told me it was possible to have a 'slab nodeid' different than page_to_nid(obj). Now you want me to prove the contrary. Me confused.
-
+there is ... in the Kconfig, you select the CPU and the silicon
+version ... we then have a header file that determines which anomalies
+need to be worked around since the anomaly/silicon binding is static
+-mike
