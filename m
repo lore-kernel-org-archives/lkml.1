@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbXCUQJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXCUQMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932710AbXCUQJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 12:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932715AbXCUQJc
+	id S932184AbXCUQMO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 12:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932702AbXCUQMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 12:09:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43995 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932710AbXCUQJb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 12:09:31 -0400
-Date: Wed, 21 Mar 2007 17:09:29 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <christoph@lameter.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead of struct slab
-Message-ID: <20070321160929.GB25583@one.firstfloor.org>
-References: <20070321102231.7288f231.dada1@cosmosbay.com> <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com> <Pine.LNX.4.64.0703210742080.1573@graphe.net> <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 21 Mar 2007 12:12:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36031 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932184AbXCUQMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 12:12:12 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <4269.1174417930@redhat.com> 
+References: <4269.1174417930@redhat.com>  <m1bqinsvy3.fsf@ebiederm.dsl.xmission.com> <m1wt1dvxzu.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703152043290.24211@blonde.wat.veritas.com> <3378.1173204813@redhat.com> <Pine.LNX.4.64.0703051843030.10272@blonde.wat.veritas.com> <Pine.LNX.4.64.0703021646050.13167@blonde.wat.veritas.com> <20070216165042.GB409@lnx-holt.americas.sgi.com> <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> <18817.1171656543@redhat.com> <29317.1172931029@redhat.com> <12852.1173449522@redhat.com> <12838.1173998825@redhat.com> <11772.1174388792@redhat.com> 
+To: ebiederm@xmission.com (Eric W. Biederman)
+cc: Hugh Dickins <hugh@veritas.com>, bryan.wu@analog.com,
+       Robin Holt <holt@sgi.com>,
+       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>, haoki@redhat.com,
+       Robin Getz <rgetz@blackfin.uclinux.org>, dhowells@redhat.com
+Subject: Re: Move to unshared VMAs in NOMMU mode? 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 21 Mar 2007 16:11:35 +0000
+Message-ID: <10866.1174493495@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 05:42:22PM +0200, Pekka J Enberg wrote:
-> On Wed, 21 Mar 2007, Christoph Lameter wrote:
-> > None of that please. The page flags already contain a node number that is 
-> > accessible via page_to_nid(). Just make sure that we never put a slab onto 
-> > the wrong node.
-> 
-> Oh well, here's a patch to find out. (I don't have a NUMA box.)
 
-You can always use numa emulation on x86-64.  Boot with numa=fake=NODES
+David Howells <dhowells@redhat.com> wrote:
 
--Andi
+> I don't quite what your limitations are
+
+ (8) Handling mappings that extend beyond the end of file.
+
+David
