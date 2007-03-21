@@ -1,140 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbXCUN1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXCUNbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752829AbXCUN1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 09:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbXCUN1Z
+	id S1752826AbXCUNbU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 09:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXCUNbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 09:27:25 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:43208 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752829AbXCUN1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 09:27:21 -0400
-Date: Wed, 21 Mar 2007 14:31:51 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
-       Christoph Lameter <clameter@sgi.com>, "ast\@domdv\.de" <ast@domdv.de>,
-       "linux-kernel\@vger\.kernel\.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
-Message-ID: <20070321133151.GC1939@ff.dom.local>
-References: <Pine.LNX.4.64.0703200943430.3622@sbz-30.cs.Helsinki.FI> <20070321101143.GB1939@ff.dom.local> <84144f020703210513i37d1576erb7814483bcaad505@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020703210513i37d1576erb7814483bcaad505@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 21 Mar 2007 09:31:20 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:34821 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbXCUNbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 09:31:19 -0400
+Message-ID: <4601339C.6010706@gmail.com>
+Date: Wed, 21 Mar 2007 14:31:08 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: =?UTF-8?B?IlNUZW55YUsgKEJydW5vIEdvbnrDoWxleiki?= 
+	<stenyak@gmail.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Anssi Hannula <anssi.hannula@gmail.com>,
+       johann deneux <johann.deneux@gmail.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom
+ driver]
+References: <2460126662758025813@fi.muni.cz>	 <d120d5000703070856of068f19k62c5a7ce1f829336@mail.gmail.com>	 <4af2d03a0703130919nb4893b1ja9ec795dcf4bf53c@mail.gmail.com>	 <38b3b7c0703131450v2646e63fj2be4b9dda7f928c0@mail.gmail.com>	 <45F722CE.9000602@gmail.com>	 <d120d5000703140802jb48bc74tbbe7ee2b120b1798@mail.gmail.com>	 <45F82626.8000108@gmail.com> <45F83930.4060401@gmail.com>	 <8e4ff20a0703141147n4b690ab8g4cc8138d1ecc94e1@mail.gmail.com>	 <d120d5000703141213k6554f7f6o58e4a9da1aa6a20a@mail.gmail.com> <8e4ff20a0703141218r3add7923n74470b5e16f58c5c@mail.gmail.com>
+In-Reply-To: <8e4ff20a0703141218r3add7923n74470b5e16f58c5c@mail.gmail.com>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 21 Mar 2007 14:31:16 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 02:13:52PM +0200, Pekka Enberg wrote:
-> On 3/21/07, Jarek Poplawski <jarkao2@o2.pl> wrote:
-> >I think Pekka was right (it looks he changed his mind now) something
-> >should be done here. I think something like this should be a minimum:
-> >
-> >BUG_ON(!objp || virt_to_cache(objp) != cachep);
-> >
-> >to show distinctly what's going on.
-> 
-> No, if we were to add a NULL check in kmem_cache_free(), it should
-> behave like kfree() does. Anyway, if you feel about this strongly I
-> suspect the best solution is to add a __kmem_cache_free which does
-> _not_ have the NULL check and convert those super-hot paths to use it.
-> Sort of what Andrew suggested already.
-> 
-
-Are you sure there is no difference? Would this message
-below be written? Would you waste youre time to write
-the patch in this thread? Maybe even repostal of this
-bug would be unnecessary - because somebody would have
-seen in a minute something you analyzed at least 0,5h.
-
-I don't say it's the best proposal - but at least:
-
-1. we know the rules,
-2. we save the diagnosing time for the real problem.
-
-With  __kmem_cache_free you would set #1 I hope, but if
-nobody would use this - debugging time wouldn't change.
-This could be acceptable, if there were no problems
-with fixing the errors. But there are problems - bugs
-like this aren't fixed on time - maybe because people
-waste too much time per bug?
-
-If this path is so hot, there is other possibility:
-- to write a comment about NULLs here,
-- to require such checks were inserted earlier.
-
-Why after this all there is no change in the bio_free?
-This bio_free still is waiting to pass NULL bi_io_vecs
-without any warning!
-Why still no "nr_pages > 0" check in scsi_req_map_sg?
-Was this patch so obvious - authors weren't so sure
-(not talking about time)?
-
-I think optimizations are good and possible: if there
-is no bug in some place for 2 or 3 years - then OK.
-But until there are such bugs - let from 1 driver only -
-checks should definitely be added, even at a cost of
-speed.
-
-Cheers,
-Jarek P. 
- 
-
-On 19-03-2007 09:00, Pekka Enberg wrote:
-> On 3/19/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->>         BUG_ON(!PageSlab(page));
+STenyaK (Bruno González) napsal(a):
+> On 3/14/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+>> > I have a question: if the force is to be 3D, why only 3 possible
+>> values?
+>> > What would they be, 3 torques or 3 forces? In the case of car sims (ff
+>> > steering wheels), only one axis of torque is usually used (except
+>> for 6 dof
+>> > platforms, as mentioned).
+>> >
 >>
->> that's seriously screwed up.  Do you have CONFIG_DEBUG_SLAB enabled?  If
->> not, please enable it and retest.
+>> I wonder if we could somehow extend or augment FF envelope se we could
+>> specify a plane for the effect.. Then a vector could be represented by
+>> a sum 3 constant effects in 3 separate planes and we could also use
+>> spring and other effects as well.
 > 
-> This is scary. Looking at disassembly of the OOPS:
-> 
-> Disassembly of section .text:
-> 
-> 00000000 <.text>:
->   0:   5f                      pop    %edi
->   1:   c3                      ret
->   2:   57                      push   %edi
->   3:   89 c1                   mov    %eax,%ecx
->   5:   89 d7                   mov    %edx,%edi
->   7:   8d 92 00 00 00 40       lea    0x40000000(%edx),%edx
->   d:   56                      push   %esi
->   e:   c1 ea 0c                shr    $0xc,%edx
->  11:   53                      push   %ebx
->  12:   c1 e2 05                shl    $0x5,%edx
->  15:   03 15 40 5d 5a c0       add    0xc05a5d40,%edx
-> 
-> At this point, edx has the result of virt_to_page().
-> 
->  1b:   8b 02                   mov    (%edx),%eax
->  1d:   f6 c4 40                test   $0x40,%ah
->  20:   74 03                   je     0x25
-> 
-> If it's a compound page, look up the real page from ->private.
-> 
->  22:   8b 52 0c                mov    0xc(%edx),%edx
-> 
-> Now, reload page flags.
-> 
->  25:   8b 02                   mov    (%edx),%eax
-> 
-> And test...
-> 
->  27:   a8 80                   test   $0x80,%al
->  29:   75 04                   jne    0x2f
->  2b:   0f 0b                   ud2a
->  2d:   eb fe                   jmp    0x2d
->  2f:   39 4a 18                cmp    %ecx,0x18(%edx)
-> 
-> [snip, snip]
-> 
-> EIP is at kmem_cache_free+0x29/0x5a
-> eax: c1800000   ebx: f0ae12c0   ecx: c18f73c0   edx: c1800000
-> esi: c1919de0   edi: 00000000   ebp: 00001000   esp: f1fe7e14
-> ds: 007b   es: 007b   ss: 0068
-> 
-> But somehow eax and edx have the same value 0xc1800000 here. Hmm?
-> 
->                                   Pekka
+> Ideally, afaik we should use:
+> -3 values for translation force (linear force): x,y,z components of
+> the force vector.
+> -4 values for rotation force (torque): x,y,z,w components of the
+> quaternion. You can also use euler angles (and i think there are
+> another one or two notations), which is just 3 values, but i'm not
+> sure it will be a correct decision (due to the gimbal lock problem,
+> which may or may not be present in ff devices, dunno).
+
+So, the resolution is? Since I want no longer have out-of-kernel driver, I
+need to know how to implement the phantom driver -- merge it `as is', i.e.
+control through mmio or rewrite ff layer somehow, and in that case how?
+
+There seem to be only few possibilities:
+
+- new 3D effect, which will be problematic in any other future use, that may
+need more than 3 axis. no matter if torques or vector is passed -- depending
+on device and programmer (as I need to compute torques from forces in FP).
+Maybe struct with 2x 3 axis is OK
+
+- "raw" effect, which may contain more axis, but this is ugly in Anssi's eyes
+
+- something else? (did I forget something)
+
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
