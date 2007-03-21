@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbXCUBYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751594AbXCUBrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbXCUBYP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 21:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbXCUBYP
+	id S1751594AbXCUBrZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 21:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXCUBrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 21:24:15 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50639 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752226AbXCUBYO (ORCPT
+	Tue, 20 Mar 2007 21:47:25 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:50937 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbXCUBrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 21:24:14 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [linux-pm] 2.6.21-rc4-mm1: freezing of processes broken
+	Tue, 20 Mar 2007 21:47:24 -0400
+Date: Tue, 20 Mar 2007 18:47:04 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, gregkh <greg@kroah.com>, tglx@linutronix.de
+Subject: Re: 2.6.21-rc4-mm1
+Message-Id: <20070320184704.8fd1bc64.randy.dunlap@oracle.com>
+In-Reply-To: <20070319205623.299d0378.akpm@linux-foundation.org>
 References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<46004B02.7020407@gmail.com> <200703202206.38168.rjw@sisk.pl>
-	<200703210149.33240.rjw@sisk.pl>
-Date: Tue, 20 Mar 2007 19:23:10 -0600
-In-Reply-To: <200703210149.33240.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Wed, 21 Mar 2007 01:49:32 +0100")
-Message-ID: <m1lkhre6f5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Mon, 19 Mar 2007 20:56:23 -0800 Andrew Morton wrote:
 
-> On Tuesday, 20 March 2007 22:06, Rafael J. Wysocki wrote:
->> On Tuesday, 20 March 2007 21:58, Jiri Slaby wrote:
->> > Rafael J. Wysocki napsal(a):
->> > > Actually, the problem is 100% reproducible on my system too and I doubt
-> it's
->> > > caused by the recent freezer patches.
->> > 
->> > I don't know what exactly do you mean by recent, but 2.6.21-rc3-mm2 works
->> > for me.
->> 
->> Thanks for the confirmation.
->> 
->> The patches I was talking about had already been in 2.6.21-rc3-mm2, so the
->> reason of this failure must be different.
->
-> Bisection shows that the freezing of processes has been broken by one of the
-> patches:
->
-> remove-the-likelypid-check-in-copy_process.patch
+> 
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> 
+> Will appear later at
+> 
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
 
-Grr.  Oleg's review of remove-the-likelypid-check-in-copy-process
-showed it to be questionable (and it was just an optimization)
-so we can get rid of that one easily. 
 
-Although all it did that was really questionable was add
-the idle process to the global process list and bump a process
-count when we forked the idle process.  Not dramatically dangerous
-things.
+UIO_CIF should depend on PCI ??
 
-> use-task_pgrp-task_session-in-copy_process.patch
+With CONFIG_PCI=n, I get:
 
-As I recall that patch was pretty trivial, and shouldn't have
-anything to do with the freezer.   The process freezer doesn't care
-about pids does it?
+ERROR: "pci_module_init" [drivers/uio/uio_cif.ko] undefined!
+ERROR: "pci_release_regions" [drivers/uio/uio_cif.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-Eric
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
