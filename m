@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbXCUPzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbXCUPz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752423AbXCUPzJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932529AbXCUPzJ
+	id S932696AbXCUPz6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932489AbXCUPz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:55:09 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40752 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbXCUPzG (ORCPT
+	Wed, 21 Mar 2007 11:55:58 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:27207 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932569AbXCUPz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:55:06 -0400
-Date: Wed, 21 Mar 2007 17:55:05 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Christoph Lameter <christoph@lameter.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead
- of struct slab
-In-Reply-To: <20070321164927.98256bf8.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0703211752470.20159@sbz-30.cs.Helsinki.FI>
-References: <20070321102231.7288f231.dada1@cosmosbay.com>
- <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com>
- <Pine.LNX.4.64.0703210742080.1573@graphe.net>
- <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI>
- <20070321164927.98256bf8.dada1@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 11:55:57 -0400
+X-AuditID: d80ac287-a106abb000000de9-8d-4601558cc91c 
+Date: Wed, 21 Mar 2007 15:55:54 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Adam Litke <agl@us.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] [RFC] hugetlb: pagetable_operations API (V2)
+In-Reply-To: <20070319200502.17168.17175.stgit@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0703211549220.32077@blonde.wat.veritas.com>
+References: <20070319200502.17168.17175.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 21 Mar 2007 15:55:55.0993 (UTC) FILETIME=[69283C90:01C76BD1]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007, Eric Dumazet wrote:
-> This wont work, because of use_alien_caches knob.
-> 
-> If use_alien_caches is set to 0, your WARN_ON will trigger many false 
-> alarms
+On Mon, 19 Mar 2007, Adam Litke wrote:
+> Andrew, given the favorable review of these patches the last time around, would
+> you consider them for the -mm tree?  Does anyone else have any objections?
 
-How is that? The mapping should always be the same regardless of whether 
-we use alien caches or not.
+I quite fail to understand the enthusiasm for these patches.  All they
+do is make the already ugly interfaces to hugetlb more obscure than at
+present, and open the door to even uglier stuff later.  Don't you need
+to wait for at least one other user of these interfaces to emerge,
+to get a better idea of whether they're appropriate?
+
+Hugh
