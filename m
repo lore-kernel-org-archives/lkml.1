@@ -1,64 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbXCUOm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbXCUOmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752933AbXCUOm0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 10:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXCUOmZ
+	id S1752916AbXCUOmX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 10:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbXCUOmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 10:42:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58320 "EHLO ogre.sisk.pl"
+	Wed, 21 Mar 2007 10:42:23 -0400
+Received: from mail.screens.ru ([213.234.233.54]:34754 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752923AbXCUOmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 10:42:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] 2.6.21-rc4-mm1: freezing of processes broken
-Date: Wed, 21 Mar 2007 15:45:16 +0100
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <1174446834.6665.3.camel@nigel.suspend2.net> <20070321142350.GB78@tv-sign.ru>
-In-Reply-To: <20070321142350.GB78@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1752924AbXCUOmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 10:42:20 -0400
+Date: Wed, 21 Mar 2007 17:46:20 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Re: [2.6.20] BUG: workqueue leaked lock
+Message-ID: <20070321144620.GC78@tv-sign.ru>
+References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru> <20070321080510.GA1939@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703211545.17919.rjw@sisk.pl>
+In-Reply-To: <20070321080510.GA1939@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 21 March 2007 15:23, Oleg Nesterov wrote:
-> On 03/21, Nigel Cunningham wrote:
+On 03/21, Jarek Poplawski wrote:
+>
+> On Tue, Mar 20, 2007 at 07:07:59PM +0300, Oleg Nesterov wrote:
+> > On 03/20, Jarek Poplawski wrote:
+> ...
+> > > >>> On Thu, 2007-03-15 at 11:06 -0800, Andrew Morton wrote:
+> > > >>>>> On Tue, 13 Mar 2007 17:50:14 +0100 Folkert van Heusden <folkert@vanheusden.com> wrote:
+> > > >>>>> ...
+> > > >>>>> [ 1756.728209] BUG: workqueue leaked lock or atomic: nfsd4/0x00000000/3577
+> > > >>>>> [ 1756.728271]     last function: laundromat_main+0x0/0x69 [nfsd]
+> > > >>>>> [ 1756.728392] 2 locks held by nfsd4/3577:
+> > > >>>>> [ 1756.728435]  #0:  (client_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
+> > > >>>>> [ 1756.728679]  #1:  (&inode->i_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
+> > > >>>>> [ 1756.728923]  [<c1003d57>] show_trace_log_lvl+0x1a/0x30
+> > > >>>>> [ 1756.729015]  [<c1003d7f>] show_trace+0x12/0x14
+> > > >>>>> [ 1756.729103]  [<c1003e79>] dump_stack+0x16/0x18
+> > > >>>>> [ 1756.729187]  [<c102c2e8>] run_workqueue+0x167/0x170
+> > > >>>>> [ 1756.729276]  [<c102c437>] worker_thread+0x146/0x165
+> > > >>>>> [ 1756.729368]  [<c102f797>] kthread+0x97/0xc4
+> > > >>>>> [ 1756.729456]  [<c1003bdb>] kernel_thread_helper+0x7/0x10
+> > > >>>>> [ 1756.729547]  =======================
+> ...
+> > > This check is valid with keventd, but it looks like nfsd runs
+> > > kthread by itself. I'm not sure it's illegal to hold locks then,
 > > 
-> > On Tue, 2007-03-20 at 19:23 -0600, Eric W. Biederman wrote:
-> > > >> > Rafael J. Wysocki napsal(a):
-> > > >
-> > > > Bisection shows that the freezing of processes has been broken by one of the
-> > > > patches:
-> > > >
-> > > > remove-the-likelypid-check-in-copy_process.patch
-> > > 
-> > > Grr.  Oleg's review of remove-the-likelypid-check-in-copy-process
-> > > showed it to be questionable (and it was just an optimization)
-> > > so we can get rid of that one easily. 
-> > > 
-> > > Although all it did that was really questionable was add
-> > > the idle process to the global process list and bump a process
-> > > count when we forked the idle process.  Not dramatically dangerous
-> > > things.
-> > 
-> > Could the freezer code be trying to freeze the idle thread as a result?
+> > nfsd creates laundry_wq by itself, yes, but cwq->thread runs with
+> > lockdep_depth() == 0. Unless we have a bug with lockdep_depth(),
+> > lockdep_depth() != 0 means that work->func() returns with a lock
+> > held (or it can flush its own workqueue under lock, but in that case
+> > we should have a different trace).
 > 
-> Yes. remove-the-likelypid-check-in-copy_process.patch make idle threads
-> visible to for_each_process/do_each_thread. Note also that idle threads
-> have ->mm != NULL. freezer, oom_kill, move_task_off_dead_cpu, etc, should
-> not see idle threads, but they do now.
+> IMHO you can only say this thread is supposed to run with
+> lockdep_depth() == 0. lockdep_depth is counted within a process,
+> which starts before f(), so the only way to say f() leaked locks
+> is to check these locks before and after f().
 
-Well, I think this is a good enough reason for asking Andrew to drop this
-patch.
+Sorry, I can't understand you. lockdep_depth is counted within a process,
+which starts before f(), yes. This process is cwq->thread, it was forked
+during create_workqueue(). It does not take any locks directly, only by
+calling work->func(). laundry_wq doesn't differ from keventd_wq or any other
+wq in this sense. nfsd does not "runs kthread by itself", it inserts the
+work and wakes up cwq->thread.
 
-Greetings,
-Rafael
+> > Personally I agree with Andrew:
+> > >
+> > > > OK.  That's not necessarily a bug: one could envisage a (weird) piece of
+> > > > code which takes a lock then releases it on a later workqueue invokation.
+> 
+> But this code is named here as laundromat_main and it doesn't
+> seem to work like this.
+
+This means we have a problem with leak detection.
+
+> > > +		ld = lockdep_depth(current);
+> > > +
+> > >  		f(work);
+> > >  
+> > > -		if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
+> > > +		if (unlikely(in_atomic() || (ld -= lockdep_depth(current)))) {
+> > 
+> > and with this change we will also have a BUG report on "then releases it on a
+> > later workqueue invokation".
+> 
+> Then we could say at least this code is weird (buggy - in my opinion).
+> This patch doesn't change the way the "standard" code is treated,
+> so I cannot see any possibility to get it worse then now.
+
+I didn't mean this patch makes things worse (except it conflicts with other
+patches in -mm tree). In fact, it may improve the diagnostics. My point is
+that this patch afaics has nothing to do with the discussed problem.
+
+Oleg.
+
