@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbXCUNEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbXCUNGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752716AbXCUNEX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 09:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXCUNEX
+	id S1752773AbXCUNGb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 09:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXCUNGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 09:04:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:61579 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752716AbXCUNEW (ORCPT
+	Wed, 21 Mar 2007 09:06:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:58283 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752773AbXCUNGa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 09:04:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tX2TkTOeUjddbIK4T+MrTei1xG8IvQzJOnyhPBa8y2VjNDDHyNiC2Z2m2ofLntZPGcjIAaWhN8bDd+C+KB5WOosIT4k5urCHVTd1JfUVauCHq8+SbYjCEp7OlxhdE88v4ZXEXzK1ZzlZWWB5zEV/pq3aTfVBptmlbSmLG6x6uic=
-Message-ID: <b93822910703210604w6bcc2e1dt4cac7f9f9295edf8@mail.gmail.com>
-Date: Wed, 21 Mar 2007 14:04:19 +0100
-From: "Stefan Prechtel" <stefan.prechtel@googlemail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
-Cc: tglx@linutronix.de, "Grzegorz Chwesewicz" <grzegorz.chwesewicz@chilan.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu,
-       "Len Brown" <lenb@kernel.org>, "john stultz" <johnstul@us.ibm.com>
-In-Reply-To: <200703211342.59093.ak@suse.de>
+	Wed, 21 Mar 2007 09:06:30 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: bryan.wu@analog.com
+Subject: Re: [PATCH -mm 1/4] Blackfin: architecture update patch
+Date: Wed, 21 Mar 2007 14:06:20 +0100
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       bert hubert <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org
+References: <1174471618.5648.50.camel@roc-desktop>
+In-Reply-To: <1174471618.5648.50.camel@roc-desktop>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
-	 <200703211137.10884.ak@suse.de>
-	 <1174475666.10840.44.camel@localhost.localdomain>
-	 <200703211342.59093.ak@suse.de>
+Message-Id: <200703211406.22040.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/TKG8Qd2/kUwZWF/IN1GF4VM4Y9BQuR9WkIgZ
+ u6S3DQKbtqQzFTI8DYSheeJaPpP5u03bMTc+XopuCF+DFPDqPT
+ Otr+R99j4VvF5aF4QnHLg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/3/21, Andi Kleen <ak@suse.de>:
-> On Wednesday 21 March 2007 12:14, Thomas Gleixner wrote:
-> > On Wed, 2007-03-21 at 11:37 +0100, Andi Kleen wrote:
-> > > > The BIOS/ACPI is broken and does only expose C1, which should not
-> > > > switch off LAPIC. The BIOS is switching into deeper C-States behind the
-> > > > kernels back somehow.
-> > >
-> > > Hmm, perhaps we can check AMD && (cstate >= 2 || has a battery) ?
-> > > Should be doable by looking up the battery object in ACPI
-> >
-> > Which makes us rely on another ACPI feature. What guarantees that the
-> > ACPI tables are correct for this one ?
->
-> Nothing, but wrong C2 and wrong battery state together seems unlikely.
->
-> -Andi
->
+On Wednesday 21 March 2007, Wu, Bryan wrote:
+> 1) Some issues are fixed according to LKML patch review.
+> 2) Remove not supported BF535 code
+> 3) Fixed some bugs from blackfin.uclinux.org SVN update
+> Here is the updated patch for 2.6.21-rc4-mm1
 
-Hello
+One rather general but important comment:
 
-I uploaded the output of dmesg (kernel 2.6.21-rc4-git5) (battery / ac)
-and dmidecode
-I can boot on battery with nolapic_timer and the second core is online, too.
-/proc/acpi/processor/C000/ shows the same as before but
-/proc/interrupts has changed:
+You need to get used to providing smaller, one fix per mail, patches.
+As long as the full tree is waiting in -mm, this is not as important,
+as I assume that Andrew will fold the whole architecture support into
+a big patch before submitting to Linus, but as soon as it's in, such
+big patches will not be acceptable any more.
 
-(battery)
-           CPU0       CPU1
-  0:      47131          0  local-APIC-edge-fasteoi   timer
-LOC:          0      46978
+If you're not already doing it, look into how 'quilt' or similar tools
+help you with this.
 
-(ac)
-           CPU0       CPU1
-  0:      59137          0  local-APIC-edge-fasteoi   timer
-LOC:          0      58984
-
-
-- Stefan Prechtel
+	Arnd <><
