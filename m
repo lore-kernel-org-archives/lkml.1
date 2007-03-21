@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbXCUXYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbXCUXZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbXCUXYx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933648AbXCUXYx
+	id S1753164AbXCUXZO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbXCUXZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:24:53 -0400
-Received: from 1wt.eu ([62.212.114.60]:1309 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753167AbXCUXYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:24:52 -0400
-Date: Thu, 22 Mar 2007 00:24:33 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] Delete obsolete RAW driver feature.
-Message-ID: <20070321232433.GX943@1wt.eu>
-References: <Pine.LNX.4.64.0703180754060.6605@CPE00045a9c397f-CM001225dbafb6> <p73y7lu5yt6.fsf@bingen.suse.de> <20070320165736.GA19781@redhat.com> <20070320181442.1ae73295@lxorguk.ukuu.org.uk> <20070321151952.02b5612d.akpm@linux-foundation.org> <20070322001050.13588e5e@lxorguk.ukuu.org.uk> <20070321161341.0f87ed60.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070321161341.0f87ed60.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+	Wed, 21 Mar 2007 19:25:11 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:44086 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753167AbXCUXZI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 19:25:08 -0400
+Date: Wed, 21 Mar 2007 17:21:55 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] I/O space boot parameter
+In-reply-to: <fa.YYUCGI1tr2Apb+hF3LEwyIhLDPM@ifi.uio.no>
+To: Daniel Yeisley <dan.yeisley@unisys.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Greg KH <gregkh@suse.de>
+Message-id: <4601BE13.1080500@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.GB583YHCocLIeymeVam9mpGF9CI@ifi.uio.no>
+ <fa.QhX1j7epBXZBOc8pKi+Kk+1Ry2o@ifi.uio.no>
+ <fa.236bWOhrGT0j4UCxsmp32/n8NCo@ifi.uio.no>
+ <fa.5exuGSZI65YO9pz/5yzd/gtgBJI@ifi.uio.no>
+ <fa.YYUCGI1tr2Apb+hF3LEwyIhLDPM@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 04:13:41PM -0700, Andrew Morton wrote:
-> On Thu, 22 Mar 2007 00:10:50 +0000
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Daniel Yeisley wrote:
+>> Ah.  Others are working on providing a fix for this too, but it is being
+>> done in the drivers themselves, not in the pci core.  Look in the
+>> linux-pci mailing list archives for those patches (I don't think they
+>> every went into mainline for some reason, but I might be wrong...)
+>>
+>> I suggest you work with those developers, as they have the same issue
+>> that you are trying to solve here.
+>>
 > 
-> > > > This is a user visible API it is therefore not elligable for removal
-> > > > anyway
-> > > 
-> > > mutter.
-> > > 
-> > > We've given people years of notice and _some_ applications have converted
-> > > over to open("/dev/sda1", O_DIRECT), as they should.
-> > 
-> > Linus said we don't break old applications by removing APIs. People
-> > believe him. 
-> > 
+> I have seen some patches that make the drivers I/O port free here:
+> http://lkml.org/lkml/2006/2/26/261
 > 
-> That's just dogma, and not credible dogma at that.  We regularly remove
-> features and we have processes for this.
+> I checked and they still aren't in the mainline.  
 > 
-> There is no reason why we cannot, with sufficient effort, remove this
-> driver at some time in the future.
+> I don't know that it matters though because I see all the disks attached
+> to the system regardless of whether or not the adapters get I/O space.
+> The real issue I have is with all the error messages I get at boot.  I
+> see 40+ messages that say "PCI: Failed to allocate I/O
+> resource..." (from setup-res.c) when the kernel tries to allocate the
+> I/O space and can't.  The modules load fine.  I see all the disks just
+> fine.  But that many error messages tends to raise concerns and causes
+> support calls from customers.
 
-Then a printk() on every open() should be enough. We've all been seeing
-"Warning: tcpdump uses obsolete AF_PACKET"... and it finally disappeared.
-It's a slow but necessary process IMHO. I agree with Alan that it's not
-nice for the users to have sudden application errors without enough earlier
-notification (not everybody reads sources for removal notifications).
+I don't think this can be handled entirely at the driver level. Assuming 
+that the IO regions get allocated at bootup, and there's not enough 
+space for all devices' IO space to fit, there's no guarantee that the 
+ones that didn't fit are the ones where using the IO space is optional, 
+and so you could end up with some broken devices.
 
-Regards,
-Willy
+I suppose you could handle this by assigning the devices who had no 
+space assigned by the BIOS last, so that we wouldn't try to assign those 
+until we'd already assigned everything else..
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
