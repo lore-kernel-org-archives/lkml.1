@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbXCUGyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXCUGyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932439AbXCUGyP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 02:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbXCUGyO
+	id S932178AbXCUGyp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 02:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXCUGyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 02:54:14 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:18806 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932205AbXCUGyK (ORCPT
+	Wed, 21 Mar 2007 02:54:45 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:33311 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932178AbXCUGyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 02:54:10 -0400
-Message-ID: <d4cf37a60703202354l648e08fauecb730c2de46fd41@mail.gmail.com>
-Date: Tue, 20 Mar 2007 23:54:10 -0700
-From: "Wink Saville" <wink@saville.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 7/7] Add trec_snapshot and trec_print_snapshot in panic()
+	Wed, 21 Mar 2007 02:54:43 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 20 Mar 2007 23:54:22 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: AIO, FIO and Threads ...
+In-Reply-To: <Pine.LNX.4.64.0703202146570.28960@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0703202350280.28960@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703202146570.28960@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Wink Saville <wink@saville.com>
----
- kernel/panic.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+On Tue, 20 Mar 2007, Davide Libenzi wrote:
 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 623d182..64a047e 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -20,6 +20,10 @@
- #include <linux/kexec.h>
- #include <linux/debug_locks.h>
+> 
+> I was looking at Jens FIO stuff, and I decided to cook a quick patch for 
+> FIO to support GUASI (Generic Userspace Asyncronous Syscall Interface):
+> 
+> http://www.xmailserver.org/guasi-lib.html
+> 
+> I then ran a few tests on my Dual Opteron 252 with SATA drives (sata_nv) 
+> and 8GB of RAM.
+> Mind that I'm not FIO expert, like at all, but I got some interesting 
+> results when comparing GUASI with libaio at 8/1000/10000 depths.
+> If I read those result correctly (Jens may help), GUASI output is more 
+> then double the libaio one.
+> Lots of context switches, yes. But the throughput looks like 2+ times.
+> Can someone try to repeat the measures and/or spot the error?
+> Or tell me which other tests to run?
+> This is kinda a suprise for me ...
 
-+#ifdef CONFIG_TREC
-+#include <linux/trec.h>
-+#endif
-+
- int panic_on_oops;
- int tainted;
- static int pause_on_oops;
-@@ -66,6 +70,10 @@ NORET_TYPE void panic(const char * fmt, ...)
-         unsigned long caller = (unsigned long) __builtin_return_address(0);
- #endif
+Tests with block sizes bigger than 4KB bring libaio performance close to 
+GUASI, but not quite:
 
-+#ifdef CONFIG_TREC
-+	trec_snapshot();
-+#endif
-+
- 	/*
- 	 * It's possible to come here directly from a panic-assertion and not
- 	 * have preempt disabled. Some functions called from here want
-@@ -96,6 +104,10 @@ NORET_TYPE void panic(const char * fmt, ...)
- 	smp_send_stop();
- #endif
+http://www.xmailserver.org/guasi-libaio-fio-results-1.txt
 
-+#ifdef CONFIG_TREC
-+	trec_print_snapshot();
-+#endif
-+
- 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+I dropped the last FIO+GUASI patch here:
 
- 	if (!panic_blink)
--- 
-1.5.0.rc2
+http://www.xmailserver.org/fio-guasi-0.5.diff
+
+And Jens FIO is here:
+
+http://brick.kernel.dk/snaps/
+
+
+
+- Davide
+
+
