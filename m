@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750837AbXCUBxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbXCUBzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750837AbXCUBxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 21:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXCUBxb
+	id S932096AbXCUBzG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 21:55:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXCUBzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 21:53:31 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:60512 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750850AbXCUBx3 (ORCPT
+	Tue, 20 Mar 2007 21:55:05 -0400
+Received: from old-tantale.fifi.org ([64.81.251.130]:38723 "EHLO
+	tantale.fifi.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751611AbXCUBzE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 21:53:29 -0400
-Message-ID: <46009E42.30400@vmware.com>
-Date: Tue, 20 Mar 2007 18:53:54 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 20 Mar 2007 21:55:04 -0400
+X-Greylist: delayed 684 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Mar 2007 21:55:03 EDT
+To: Wakko Warner <wakko@animx.eu.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: scsi: Devices offlined
+References: <20070321004830.GA4901@animx.eu.org>
+Mail-Copies-To: nobody
+From: Philippe Troin <phil@fifi.org>
+Date: 20 Mar 2007 18:43:12 -0700
+In-Reply-To: <20070321004830.GA4901@animx.eu.org>
+Message-ID: <87ircv5q33.fsf@tantale.fifi.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.2
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org> <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net> <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org> <46005B89.5070301@vmware.com> <Pine.LNX.4.64.0703201715470.6730@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703201715470.6730@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Tue, 20 Mar 2007, Zachary Amsden wrote:
->   
->> void local_irq_restore(int enabled)
->> {
->>    pda.intr_mask = enabled;
->>    /*
->>     * note there is a window here where softirqs are not processed by
->>     * the interrupt handler, but that is not a problem, since it will
->>     * get done here in the outer enable of any nested pair.
->>     */
->>    if (enabled)
->>        local_bh_enable();
->> }
->>     
->
-> Actually, this one is more complicated. You also need to actually enable 
-> hardware interrupts again if they got disabled by an interrupt actually 
-> occurring while the "soft-interrupt" was disabled.
->   
+Wakko Warner <wakko@animx.eu.org> writes:
 
-Actually, I was thinking the irq handlers would just not mess around 
-with eflags on the stack, just call the chip to ack the interrupt and 
-re-enable hardware interrupts when they left, since that is free anyway 
-with the iret.  Maybe leaving irqs disabled is better.
+> [84797.683873] sr 1:0:13:0: scsi: Device offlined - not ready after error recovery
+> 
+> Is there anyway to make the kernel "online" a device that has done this? 
+> I've had this happen on various devices (mostly on usb where I can
+> unplug/replug), but this time, it's on a scsi controller and the driver is
+> not a module.
+> 
+> If it's possible to do this w/o rebooting, I'd like to know for when I have
+> this happen in the future.
 
-> Anyway, it really *should* be pretty damn simple. No need to disable 
-> preemption, there should be no events that can *cause* it, since all 
-> interrupts get headed off at the pass.. (the return-from-interrupt thng 
-> should already notice that it's returning to an interrupts-disabled 
-> section and not try to do any preemption).
->   
-> What did I miss?
->   
+Have you tried:
 
-I wasn't disabling preemption to actually disable preemption.  I was 
-just using bh_disable as a global hammer to stop softirqs (thus the irq 
-replay tasklet) from running during the normal irq_exit path.  Then, we 
-can just use the existing software IRQ replay code, and I think barely 
-any new code (queue_irq(), etc) has to be written.
+  echo remove-single-device BUS ID LUN > /proc/scsi
+  echo add-single-device BUS ID LUN > /proc/scsi
 
-Zach
+?
+
+Phil.
