@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbXCUPoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932488AbXCUPo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932444AbXCUPoI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932414AbXCUPoI
+	id S932488AbXCUPo3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbXCUPo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:44:08 -0400
-Received: from graphe.net ([209.204.138.32]:36260 "EHLO graphe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932444AbXCUPoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:44:06 -0400
-Date: Wed, 21 Mar 2007 08:43:30 -0700 (PDT)
-From: Christoph Lameter <christoph@lameter.com>
-X-X-Sender: christoph@graphe.net
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead
- of struct slab
-In-Reply-To: <84144f020703210803x70c6827di99864618d36f725e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0703210842180.3160@graphe.net>
-References: <20070321102231.7288f231.dada1@cosmosbay.com> 
- <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com> 
- <Pine.LNX.4.64.0703210742080.1573@graphe.net>
- <84144f020703210803x70c6827di99864618d36f725e@mail.gmail.com>
+	Wed, 21 Mar 2007 11:44:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:39405 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932508AbXCUPo2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 11:44:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JGbQeRzVzrQAlZ4tdMp00YRM1uphmexzrBeEjI5PSNwpgxrNF8Z7/PyEExCISeknXipiLzqNuFRP2qz5TulUs8MbgwE9qi1OC+3gaQtshlUizPgV2WUuoh1xafCmSWeXD7IBLvkylfUAFJ7Fan3tib4Sa4z9lvmTIJ5NFK8PiKo=
+Message-ID: <8bd0f97a0703210844u44209fc2k27f8ccf431862557@mail.gmail.com>
+Date: Wed, 21 Mar 2007 11:44:27 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>, "Wu, Bryan" <bryan.wu@analog.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
+In-Reply-To: <20070305092346.GB11664@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.5
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1172722480.5264.75.camel@roc-desktop>
+	 <20070305092346.GB11664@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007, Pekka Enberg wrote:
+On 3/5/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> > +int __init oprofile_arch_init(struct oprofile_operations *ops)
+> > +{
+> > +#ifdef CONFIG_HARDWARE_PM
+> [snip]
+> > +#else
+> > +     return -1;
+> > +#endif
+> > +}
+>
+> Uh.. fix your dependencies.
 
-> On 3/21/07, Christoph Lameter <christoph@lameter.com> wrote:
-> > None of that please. The page flags already contain a node number that is
-> > accessible via page_to_nid(). Just make sure that we never put a slab onto
-> > the wrong node.
-> 
-> Sounds good. Do you know for a fact that we don't or are you just
-> afraid we have a bug?
-
-I tried to clean it up during the GFP_THISNODE work but there was some 
-issue on powerpc where we needed fallback for bootstrap. There may be more 
-trouble there. Checking the allocs where we do not use GFP_THISNODE should 
-get you there.
-
+can you elaborate ?
+-mike
