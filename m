@@ -1,64 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbXCUXiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbXCUXje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbXCUXiM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXCUXiM
+	id S1753214AbXCUXje (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbXCUXje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:38:12 -0400
-Received: from dkj137.neoplus.adsl.tpnet.pl ([83.24.13.137]:62842 "EHLO
-	dkj137.neoplus.adsl.tpnet.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753219AbXCUXiK (ORCPT
+	Wed, 21 Mar 2007 19:39:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:45153 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753214AbXCUXjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:38:10 -0400
-X-Greylist: delayed 665 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Mar 2007 19:38:09 EDT
-Message-ID: <4601BF45.7070708@o2.pl>
-Date: Thu, 22 Mar 2007 00:27:01 +0100
-From: Artur Skawina <art_k@o2.pl>
-User-Agent: Thunderbird 3.0a1 (X11/20070320)
+	Wed, 21 Mar 2007 19:39:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=nBOw5pH2N5+bFfoTrI/6xBmvRm7mUWKt4QNX7lPa7Z1/M167bepF4vLp+z43t4vkZ8dWwnqCQQclj7+qWC1hvcIhiRin3ayseiApfJcH3/NjvdCf3vlyrbA/Yso2k14T3T+NP5R40tISMQnBj6mGe2m7+hM5xCH/4g3/7dDSQOY=
+From: Maxim <maximlevitsky@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
+Date: Thu, 22 Mar 2007 01:39:24 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <200703211840.53242.maximlevitsky@gmail.com> <200703220109.54719.maximlevitsky@gmail.com> <200703220024.25436.rjw@sisk.pl>
+In-Reply-To: <200703220024.25436.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: linux list <linux-kernel@vger.kernel.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sched: rsdl improvements
-References: <200703220429.45311.kernel@kolivas.org>
-In-Reply-To: <200703220429.45311.kernel@kolivas.org>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703220139.25071.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> Note no interactive boost idea here.
+On Thursday 22 March 2007 01:24:25 Rafael J. Wysocki wrote:
+> On Thursday, 22 March 2007 00:09, Maxim wrote:
+> > On Thursday 22 March 2007 00:39:02 you wrote:
+> > > On Wednesday, 21 March 2007 23:21, Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > > > Starting with 2.6.21-rc1 suspend to ram and disk doesn't work anymore on my system.
+> > > > > 
+> > > > > I did a git-bisect and found that those commits break it:
+> > > > > 
+> > > > > e3c7db621bed4afb8e231cb005057f2feb5db557 - [PATCH] [PATCH] PM: Change code ordering in main.c
+> > > > > ed746e3b18f4df18afa3763155972c5835f284c5 - [PATCH] [PATCH] swsusp: Change code ordering in disk.c
+> > > > > 259130526c267550bc365d3015917d90667732f1 - [PATCH] [PATCH] swsusp: Change code ordering in user.c
+> > > > > 
+> > > > 
+> > > > (Yep, it was in my "to analyze" queue).
+> > > > 
+> > > > > I already reported about it, but now i know the reason why suspend breaks.
+> > > > > 
+> > > > > The problem is that both cpu_up/cpu_down were allowed to sleep until now, 
+> > > > > and it did work because those functions could be called only in process context
+> > > > > (the one that writes to /sys/devices/system/cpu/cpu*/online) or  idle thread  that does smp_init()).
+> > > > > 
+> > > > > But now they are called _after_ all tasks were suspended, so if cpu_down tries for example to take a lock
+> > > > > that is taken by different process, it can't since the different proccess is frozen and can't release the lock.
+> > > > > 
+> > > > 
+> > > > Thanks for detailed explanation.
+> > > > 
+> > > > ...but, on my machine suspend works ok in -rc4. I'm not seeing this.
+> > > > 
+> > > > ...by design, "frozen" tasks must not hold any locks. If frozen task
+> > > > holds a lock, that's a bug.
+> > > > 
+> > > > > Or, it is also possible to revert this change.
+> > > > 
+> > > > Are you using xfs?
+> > > 
+> > > Well, this is the only case that can trigger it.  There are no other freezable
+> > > workqueues.
+> > > 
+> > > Greetings,
+> > > Rafael
+> > > 
+> > 
+> > Hello,
+> > 
+> > 	Yes, you are right and it is XFS
+> > 
+> > 	System suspends and resumes with xfs and your patch correctly,
 > 
-> Patch is for 2.6.21-rc4-mm1. I have not spent the time trying to bring other
-> bases in sync.
+> Could you please sent this information to the list?  I'd like it to reach all
+> of the CCed parites. ;-)
 
-I've tried RSDLv.31+this on 2.6.20.3 as i'm not tracking -mm.
-
-> Further improve the deterministic nature of the RSDL cpu scheduler and make
-> the rr_interval tunable.
+I did now ( sorry I just keep using this Answer command, instead of Answer to everybody)
+I didn't intend to send private email.
 > 
-> By only giving out priority slots to tasks at the current runqueue's
-> prio_level or below we can make the cpu allocation not altered by accounting
-> issues across major_rotation periods. This makes the cpu allocation and
-> latencies more deterministic, and decreases maximum latencies substantially.
-> This change removes the possibility that tasks can get bursts of cpu activity
-> which can favour towards interactive tasks but also favour towards cpu bound
-> tasks which happen to wait on other activity (such as I/O) and is a net
-> gain.
+> > 	Of course I need to mention that I had to unload microcode update driver because it prevented resume,
+> > 	because it calls firmware loader helper, and again sleeps on lock
+> 
+> This is interesting.  Did it happen before or is it a regression?
 
-I'm not sure this is going in the right direction... I'm writing
-this while compiling a kernel w/ "nice -20 make -j2" and X is almost
-unusable -- even the x pointer jumps instead of moving smoothly like
-it always did; I had to stop the build to be able to quickly finish
-this as the latency is making it hard to properly position the cursor...
-Hmm, this is weird; I've tried various nice values for the build and
-19 is the only one triggering this, w/ 18 and less the cursor moves
-smoothly, but there are short sub-second stalls. nice=0 isn't much
-different.
-RSDL 0.31 was behaving properly, and only exhibited problems when
-the box was overloaded w/ non-niced tasks; Right now even a properly
-niced background job kills interactivity completely.
+It is from the same group of bugs , I mean hang because cpu_up/down is called with frozen tasks
+Of course it didn't happen before those reordering commits were introduced
+> 
+> > 	And also I noticed now that system oopses on second attempt to suspend ether to ram or disk
+> > 	in pci_restore_msi_state which is called indirectly by ahci_pci_device_resume, I will investigate this soon.
+> 
+> Thanks.  We've had such reports earlier, but I think the problem is still unresolved.  Any
+> additional information will be valuable.
 
-artur
+I will do my best,
+Also I want to note that the above problem is 100% repeatable, and happens independently whenever suspend to disk
+or suspend to ram was used in first successful try ( or at least, I got back-trace using kdb, after suspend to disk, after suspend to ram system hang, 
+so I assume, that this it is same problem , because it didn't hang of first try)
+
+> 
+> Greetings,
+> Rafael
+> 
+
+
+
+
