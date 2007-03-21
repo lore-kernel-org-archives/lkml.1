@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbXCUQtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXCUQuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933044AbXCUQtR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 12:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933054AbXCUQtR
+	id S933090AbXCUQuP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 12:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933057AbXCUQuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 12:49:17 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:7349 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933044AbXCUQtQ (ORCPT
+	Wed, 21 Mar 2007 12:50:15 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38198 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933104AbXCUQuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 12:49:16 -0400
-Message-ID: <46016208.3040303@saville.com>
-Date: Wed, 21 Mar 2007 09:49:12 -0700
-From: Wink Saville <wink@saville.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 21 Mar 2007 12:50:13 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Allow per-cpu variables to be page-aligned
+References: <1174457426.11680.132.camel@localhost.localdomain>
+	<m1ejnjc5qa.fsf@ebiederm.dsl.xmission.com>
+	<1174477457.11680.170.camel@localhost.localdomain>
+Date: Wed, 21 Mar 2007 10:49:25 -0600
+In-Reply-To: <1174477457.11680.170.camel@localhost.localdomain> (Rusty
+	Russell's message of "Wed, 21 Mar 2007 22:44:16 +1100")
+Message-ID: <m11wjiczje.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Johannes Weiner <hannes-kernel@saeurebad.de>
-Subject: Re: [PATCH 2/7] Initial implementation of the trec driver and include
- files
-References: <d4cf37a60703202347o67740694jc1c9030c647ff7c6@mail.gmail.com> <20070321082238.GA16768@leiferikson>
-In-Reply-To: <20070321082238.GA16768@leiferikson>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner wrote:
-> Your patch has broken lines where there shouldn't be any.
->   
-OK.
+Rusty Russell <rusty@rustcorp.com.au> writes:
 
->> +	struct trec_buffer_struct *	pNext;
->> +	struct trec_struct *		pCur;
->> +	struct trec_struct *		pEnd;
->> Please don't use camel-case - in general.
->>     
-Would p_next, p_cur and p_end be OK?
->   
->> +static int snprint_address(char *b, int bsize, unsigned long address)
->> +{
->> +#ifdef CONFIG_KALLSYMS
->> +	unsigned long offset = 0, symsize;
->>     
->> +#else
->> +	return snprintf(b, bsize, "0x%016lx", address);
->> +#endif
->> +}
->>     
+> On Wed, 2007-03-21 at 03:21 -0600, Eric W. Biederman wrote:
+>> Do we really want to allow modules to be able to allocate page sized
+>> per cpu memory.
 >
-> Would it make sense to #ifdef the whole function?
-> Make it static int (*)(...) if CONFIG_KALLSYMS and otherwise just a
-> static inline int (*)(...) { return 0; }
->   
-Maybe, but I think just letting the compiler decide is better.
->   
->> [...]
->> +static int trec_device_init(void)
->> +{
->> +	int 		result;
->> +		DPK("trec_device_init: cdev_add failed\n");
->> +		goto done;
->>     
+> Hi Eric!
 >
-> If you jump to `done' here, unregister_chrdev_region is never called.
+> 	They always could, of course, they just wouldn't get correct alignment.
+> I think the principle of least surprise says that if we support this, it
+> will also work in modules...
+
+The module load would fail.
+
+>>   If my memory servers on how this code works we will wind
+>> up allocating 1 page of per cpu memory for every module that allocates a
+>> per cpu variable.  128 bytes sucks 4k is an order of magnitude worse.
 >
-> You should also declare trec_device_init as __init and trex_device_exit
-> as __exit.
->   
-I'll fix this.
->   
->> --- /dev/null
->> +++ b/include/linux/trec.h
->> @@ -0,0 +1,34 @@
->> +/*
->> +#define TREC0()			trec_write(TREC_PC_ADDR, TREC_PID, 0, 0)
->>     
-
->> +
->> +#define ZREC0()			do { } while (0)
->>     
-> Why not seperate them by an #ifndef? So you don't have to replace TREC?
-> with ZREC? but rather change one #define knob.
+> Not quite.  We allocate a total amount of per-cpu memory at boot, then
+> anything left over gets used for per-cpu vars in modules.
 >
-> =Hannes
+> Looking at the module per-cpu code again, the rounding up of the memory
+> used by the kernel seems unnecessary though.  I'll try ripping that
+> out...
+
+I want to say that when dealing with cpu stuff aligning to a cache
+line makes sense as it prevents multiple variables from sharing
+the same cache line.  However we rarely access per cpu variables from
+other cpus (the point) so the extra alignment doesn't seem to have
+a justification in this context.
+
+Although I'm not quite certain what this will do to the per cpu
+memory allocator...
+
+>> On x86_64 we are only reserving 8K for modules...
 >
->   
+> Really?  I can't see that.
 
-The reason is to allow the user easily change individual TREC's from 
-active to inactive by just
-changing a single character. Eventually I envision adding runtime 
-support for changing if a
-particular set of TREC's are active or not, but this was simple.
+Look at how we define PERCPU_MODULE_RESERVE and PERCPU_ENOUGH_ROOM.
 
-Thanks for the feed back.
+> It did look like the x86-64 setup_per_cpu_areas should be moved into
+> common code though (it's numa-aware).  Maybe that breaks some platforms.
 
+After increasing NR_IRQS on x86_64 to (NR_CPUS*32) the per cpu irq
+stats got much bigger especially as NR_CPUS went up.  The only
+reasonable way I could see to fix this at the time was to just make
+PER_CPU_ENOUGH_ROOM do the right thing and change size dynamically
+with the size of the per cpu section.  I added PERCPU_MODULE_RESERVE
+to allocate the amount that we did not have compile information on.
+8K was roughly what we had left over for modules before I made the
+change so I just preserved that.
 
-Wink
+We do have to be careful though as some architectures have fixed sized
+areas they are putting the per cpu stats into.
 
+> It means the x86 cpu_pda initialization would have to be done in
+> smp_prepare_boot_cpu tho...
+
+Well that is earlier than trap_init so it shouldn't be a problem...
+
+Eric
