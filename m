@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933741AbXCUTNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933780AbXCUTOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933741AbXCUTNt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 15:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933763AbXCUTNt
+	id S933780AbXCUTOT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 15:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933770AbXCUTOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 15:13:49 -0400
-Received: from tag.witbe.net ([81.88.96.48]:38776 "EHLO tag.witbe.net"
+	Wed, 21 Mar 2007 15:14:19 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3355 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933741AbXCUTNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 15:13:48 -0400
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'LKML'" <linux-kernel@vger.kernel.org>
-Subject: Why is /dev on a different filesystem ? [Kernel 2.6.20.3]
-Date: Wed, 21 Mar 2007 20:13:50 +0100
-Organization: AS2917.net
-Message-ID: <04ea01c76bed$11b0d050$4b00a8c0@donald>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: Acdr7QzT9Ayu9il8QM+n3PvJmknhZg==
+	id S933766AbXCUTOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 15:14:18 -0400
+Date: Wed, 21 Mar 2007 15:00:03 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Larry Finger <larry.finger@lwfinger.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       bcm43xx devel <Bcm43xx-dev@lists.berlios.de>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070321190003.GD3801@tuxdriver.com>
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070320223643.d8cbc3f6.akpm@linux-foundation.org> <4601761F.4000302@lwfinger.net> <200703211934.28465.mb@bu3sch.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703211934.28465.mb@bu3sch.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Mar 21, 2007 at 07:34:28PM +0100, Michael Buesch wrote:
+> On Wednesday 21 March 2007 19:14, Larry Finger wrote:
+> > Andrew Morton wrote:
+> > > On Tue, 20 Mar 2007 17:23:54 -0600 Zan Lynx <zlynx@acm.org> wrote:
+> > > 
+> > >> On Mon, 2007-03-19 at 20:56 -0800, Andrew Morton wrote:
+> > >>> Temporarily at
+> > >>>
+> > >>>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> > >>>
+> > >>> Will appear later at
+> > >>>
+> > >>>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
+> > >> First impressions:
+> > >> Several of the same bugs as rc3-mm*:
+> > >>       * Freezes immediately if I touch the wlan0 device after loading
+> > >>         the new Broadcom wireless driver.
+> > 
+> > The version of the ssb driver in 2.6.21-rc4-mm1 has a bug that causes a kernel oops if the bcm43xx
+> > chip contains a USB (dangling) core. This bug has been fixed in Michael Buesch's tree, but
+> > apparently not yet in Linville's wireless-dev tree. The patch is as follows:
+> > 
+> > commit 08531ff130bcc8181d9294a66e25010f48eefb97
+> > Author: Michael Buesch <mb@bu3sch.de>
+> > Date:   Wed Mar 7 23:01:08 2007 +0100
+> > 
+> >     ssb: Don't freeze unregistered devices.
+> 
+> No, that's a different fix for suspend.
+> 
+> This is the fix:
+> http://bu3sch.de/gitweb?p=wireless-dev.git;a=commitdiff;h=b87f743f3643ea162892dce0bbc91e6f026a49bf
+> 
+> Pull request was sent to John.
 
-I was trying to backup a machine using tar and the --one-file-system option
-and I was getting an archive without /dev, but tar was spitting :
-/dev: file is on a different filesystem; not dumped
+That's "ssb-ohci: Completely disable the driver on non-embedded
+systems", also in wireless-dev as of yesterday.
 
-So, I had a look at the code in tar, and the comparison is done on the
-stat.st_dev field... 
-I then wrote a simple program to stat("/", ...) and stat("/dev", ...),
-and got :
+Thanks,
 
-For / :
-st_dev   : 769
-st_ino   : 2
-st_mode  : 16877
-st_nlink : 23
-st_uid   : 0
-st_gid   : 0
-st_rdev  : 0
-st_size  : 4096
-
-For /dev :
-st_dev   : 15
-st_ino   : 1117
-st_mode  : 16877
-st_nlink : 23
-st_uid   : 0
-st_gid   : 0
-st_rdev  : 0
-st_size  : 165580
-
-So, obviously, tar is right...
-man 2 stat says :
-       The st_dev field describes the device on which this file resides.
-
-and df -a reports :
-[root@host-181 src]# df -a
-Filesystem           1K-blocks      Used Available Use% Mounted on
-/dev/hda1              7936256   3105556   4421048  42% /
-proc                         0         0         0   -  /proc
-sysfs                        0         0         0   -  /sys
-devpts                       0         0         0   -  /dev/pts
-tmpfs                   517632         0    517632   0% /dev/shm
-/dev/hda5             61787140    237360  58360480   1% /usr/local/witbe
-/dev/hda2              4956316    142292   4558192   4% /var/log
-none                         0         0         0   -
-/proc/sys/fs/binfmt_misc
-
-So, obviously, /dev is on /, but the stat(2) says no.
-Who is right, and where is the bug ?
-
-Kernel 2.4 had it right : /dev was on /, no doubt.
-
-Regards,
-Paul
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
