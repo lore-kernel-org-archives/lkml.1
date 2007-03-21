@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933857AbXCUWVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965138AbXCUWV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933857AbXCUWVb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 18:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933347AbXCUWVb
+	id S965138AbXCUWV4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 18:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965268AbXCUWV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 18:21:31 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33179 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933857AbXCUWVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 18:21:30 -0400
-Date: Wed, 21 Mar 2007 23:21:06 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
-Message-ID: <20070321222106.GF6057@elf.ucw.cz>
-References: <200703211840.53242.maximlevitsky@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703211840.53242.maximlevitsky@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Wed, 21 Mar 2007 18:21:56 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56446 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965138AbXCUWVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 18:21:54 -0400
+Date: Wed, 21 Mar 2007 15:19:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Dave Jones <davej@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH] Delete obsolete RAW driver feature.
+Message-Id: <20070321151952.02b5612d.akpm@linux-foundation.org>
+In-Reply-To: <20070320181442.1ae73295@lxorguk.ukuu.org.uk>
+References: <Pine.LNX.4.64.0703180754060.6605@CPE00045a9c397f-CM001225dbafb6>
+	<p73y7lu5yt6.fsf@bingen.suse.de>
+	<20070320165736.GA19781@redhat.com>
+	<20070320181442.1ae73295@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 20 Mar 2007 18:14:42 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> Starting with 2.6.21-rc1 suspend to ram and disk doesn't work anymore on my system.
+> On Tue, 20 Mar 2007 12:57:36 -0400
+> Dave Jones <davej@redhat.com> wrote:
 > 
-> I did a git-bisect and found that those commits break it:
+> > On Sun, Mar 18, 2007 at 04:57:57PM +0100, Andi Kleen wrote:
+> >  > "Robert P. J. Day" <rpjday@mindspring.com> writes:
+> >  > 
+> >  > > Delete the allegedly obsolete raw driver feature, which has been
+> >  > > marked for death since 2005.
+> >  > 
+> >  > I think it would be better to replace it with a wrapper
+> >  > that forces O_DIRECT and opens the underlying block device.  I suspect 
+> >  > just dropping it will break many people's database setups, which is not
+> >  > nice.  Widely used admin interfaces should be only broken when 
+> >  > there is a very good reason and just "there is a better way now" 
+> >  > doesn't seem quite strong enough.
+> > 
+> > Agreed.  Given how this keeps coming up every few months, lets just
+> > remove that from the list..  It's not that a 306 line driver is
+> > particularly invasive anyways..
+> > 
+> > Signed-off-by: Dave Jones <davej@redhat.com>
 > 
-> e3c7db621bed4afb8e231cb005057f2feb5db557 - [PATCH] [PATCH] PM: Change code ordering in main.c
-> ed746e3b18f4df18afa3763155972c5835f284c5 - [PATCH] [PATCH] swsusp: Change code ordering in disk.c
-> 259130526c267550bc365d3015917d90667732f1 - [PATCH] [PATCH] swsusp: Change code ordering in user.c
+> Acked-by: Alan Cox <alan@redhat.com>
 > 
+> This is a user visible API it is therefore not elligable for removal
+> anyway
 
-(Yep, it was in my "to analyze" queue).
+mutter.
 
-> I already reported about it, but now i know the reason why suspend breaks.
-> 
-> The problem is that both cpu_up/cpu_down were allowed to sleep until now, 
-> and it did work because those functions could be called only in process context
-> (the one that writes to /sys/devices/system/cpu/cpu*/online) or  idle thread  that does smp_init()).
-> 
-> But now they are called _after_ all tasks were suspended, so if cpu_down tries for example to take a lock
-> that is taken by different process, it can't since the different proccess is frozen and can't release the lock.
-> 
+We've given people years of notice and _some_ applications have converted
+over to open("/dev/sda1", O_DIRECT), as they should.
 
-Thanks for detailed explanation.
+Sure, it's a small and simple driver (now), so the cost of maintaining it
+is low.
 
-...but, on my machine suspend works ok in -rc4. I'm not seeing this.
+But otoh, there's no reason for it to exist, except for userspace
+sluggishness.
 
-...by design, "frozen" tasks must not hold any locks. If frozen task
-holds a lock, that's a bug.
+So we can either give up, or we can push on: put a rude printk in there
+somewhere and who knows, maybe in five years time we can finally be rid of
+the thing.
 
-> Or, it is also possible to revert this change.
-
-Are you using xfs?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
