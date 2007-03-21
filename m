@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbXCUXPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933944AbXCUXPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753108AbXCUXPg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbXCUXPf
+	id S933944AbXCUXPy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933903AbXCUXPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:15:35 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:44520 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753108AbXCUXPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:15:34 -0400
-Date: Wed, 21 Mar 2007 15:59:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: BLK_DEV_MD with CONFIG_NET
-Message-Id: <20070321155925.172944e5.randy.dunlap@oracle.com>
-In-Reply-To: <20070321120246.GB18195@uranus.ravnborg.org>
-References: <20070320200538.5270d636.randy.dunlap@oracle.com>
-	<20070320.202621.74740974.davem@davemloft.net>
-	<20070321120246.GB18195@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 21 Mar 2007 19:15:54 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:49598 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933944AbXCUXPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 19:15:53 -0400
+Date: Thu, 22 Mar 2007 00:11:57 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Andi Kleen <ak@suse.de>, David Howells <dhowells@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] : Is /proc/kcore still usefull and/or maintained ?
+In-Reply-To: <4601B89E.3060605@cosmosbay.com>
+Message-ID: <Pine.LNX.4.61.0703220011080.9555@yvahk01.tjqt.qr>
+References: <200703211840.53242.maximlevitsky@gmail.com> <20070321222106.GF6057@elf.ucw.cz>
+ <200703212339.02972.rjw@sisk.pl> <4601B89E.3060605@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007 13:02:46 +0100 Sam Ravnborg wrote:
 
-> On Tue, Mar 20, 2007 at 08:26:21PM -0700, David Miller wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > Date: Tue, 20 Mar 2007 20:05:38 -0700
-> > 
-> > > Build a kernel with CONFIG_NET-n and CONFIG_BLK_DEV_MD=m.
-> > > Unless csum_partial() is built and kept by some arch Makefile,
-> > > the result is:
-> > > ERROR: "csum_partial" [drivers/md/md-mod.ko] undefined!
-> > > make[1]: *** [__modpost] Error 1
-> > > make: *** [modules] Error 2
-> > > 
-> > > 
-> > > Any suggested solutions?
-> > 
-> > Anything which is every exported to modules, which ought to
-> > be the situation in this case, should be obj-y not lib-y
-> > right?
-> That is also my understanding of lib-y - I should update makefiles.txt
-> to reflect this..
+On Mar 21 2007 23:58, Eric Dumazet wrote:
+> Hi all
+>
+> On i386 , 2.6.20 / 2.6.21-rc4 :
+>
+> # gdb vmlinux /proc/kcore
+> error
+> # file /proc/kcore
+> error
 
-I concur, but there seems to be quite a bit of change needed in
-Makefile*s for this.  I'll begin with csum_partial() and trying
-to use Arnd's suggestion as well.
+00:11 ichi:/hld # file /proc/kcore
+/proc/kcore: ELF 32-bit LSB core file Intel 80386, version 1 (SYSV),
+SVR4-style, from 'vmlinux'
+00:11 ichi:/hld # hexdump -C /proc/kcore | head -n5
+00000000  7f 45 4c 46 01 01 01 00  00 00 00 00 00 00 00 00  |.ELF............|
+00000010  04 00 03 00 01 00 00 00  00 00 00 00 34 00 00 00  |............4...|
+00000020  00 00 00 00 00 00 00 00  34 00 20 00 03 00 00 00  |........4. .....|
+00000030  00 00 00 00 04 00 00 00  94 00 00 00 00 00 00 00  |................|
+00000040  00 00 00 00 a8 06 00 00  00 00 00 00 00 00 00 00  |................|
+00:11 ichi:/hld # uname -rm
+2.6.20.2 i686
 
+>
+>
+> Apparently we can not llseek() anymore on this file (returns -EINVAL)
+>
+> On x86_64 2.6.20 it's working
+>
+> # file /proc/kcore
+> /proc/kcore: ELF 64-bit LSB core file x86-64, version 1 (SYSV), SVR4-style
+>
+>
+> On i386 2.6.14 it's working too.
+>
+> Eric
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Jan
+-- 
