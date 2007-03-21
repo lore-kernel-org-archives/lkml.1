@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972AbXCUPTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbXCUPYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752972AbXCUPTb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbXCUPTb
+	id S932212AbXCUPYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXCUPYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:19:31 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:10059 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752972AbXCUPTa (ORCPT
+	Wed, 21 Mar 2007 11:24:40 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:33856 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932212AbXCUPYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:19:30 -0400
-X-AuditID: d80ac287-9d9d4bb000000de9-3a-46014d013cc5 
-Date: Wed, 21 Mar 2007 14:41:15 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc4-mm1: init hangs on tty_mutex
-In-Reply-To: <m1vegvlgyx.fsf@ebiederm.dsl.xmission.com>
-Message-ID: <Pine.LNX.4.64.0703211429201.21322@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0703201930060.14654@blonde.wat.veritas.com>
- <m1vegvlgyx.fsf@ebiederm.dsl.xmission.com>
+	Wed, 21 Mar 2007 11:24:39 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 21 Mar 2007 08:23:56 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: AIO, FIO and Threads ...
+In-Reply-To: <20070321074014.GD14389@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0703210815190.24472@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703202146570.28960@alien.or.mcafeemobile.com>
+ <20070321074014.GD14389@kernel.dk>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 21 Mar 2007 15:19:29.0153 (UTC) FILETIME=[51B2EF10:01C76BCC]
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007, Eric W. Biederman wrote:
-> Hugh Dickins <hugh@veritas.com> writes:
-> 
-> > I get a hang at startup or shutdown: tiocsctty() holds tty_mutex, and
-> > now with Eric's tty-in-tiocsctty-when-we-steal-a-tty-hang-it-up.patch
-> > it can end up calling con_close(), which tries to take tty_mutex.
-> > So best revert that in hot-fixes, until Eric provides a better.
-> 
-> Well I'm confused I know I tested this, and I even added a printk and
-> saw it trigger a couple of times.
-> 
-> Hmm.  Looking at the code it is clearly not safe to hold the tty_mutex
-> when calling tty_vhangup.  I thought the other caller in tty_io.c was doing
-> that but on a second glance it is clearly not.  And the hangup and close
-> methods do seem to take the tty_mutex.
-> 
-> How this worked in my testing is beyond me..
+On Wed, 21 Mar 2007, Jens Axboe wrote:
 
-I agree there's something weird about it, and wonder whether it's
-exposing some other, unrelated bug e.g. something uninitialized.
+> On Tue, Mar 20 2007, Davide Libenzi wrote:
+> > 
+> > I was looking at Jens FIO stuff, and I decided to cook a quick patch for 
+> > FIO to support GUASI (Generic Userspace Asyncronous Syscall Interface):
+> > 
+> > http://www.xmailserver.org/guasi-lib.html
+> > 
+> > I then ran a few tests on my Dual Opteron 252 with SATA drives (sata_nv) 
+> > and 8GB of RAM.
+> > Mind that I'm not FIO expert, like at all, but I got some interesting 
+> > results when comparing GUASI with libaio at 8/1000/10000 depths.
+> > If I read those result correctly (Jens may help), GUASI output is more 
+> > then double the libaio one.
+> > Lots of context switches, yes. But the throughput looks like 2+ times.
+> > Can someone try to repeat the measures and/or spot the error?
+> > Or tell me which other tests to run?
+> > This is kinda a suprise for me ...
+> 
+> I don't know guasi at all, but libaio requires O_DIRECT to be async. I'm
+> sure you know this, but you may not know that fio default to buffered IO
+> so you have to tell it to use O_DIRECT :-)
+> 
+> So try adding a --direct=1 (or --buffered=0, same thing) as an extra
+> option when comparing depths > 1.
 
-What I omitted to mention is that I reliably had init hanging on
-startup with my KDB kernels (on i386 UP and i386 SMP and x86_64 SMP);
-but never saw my non-KDB kernels (nor my powerpc kernel) hanging
-there at startup - they would hang (in the same way) at shutdown
-(every time? I can't swear to that).  But I can't imagine what
-KDB would have to do with it, other than shifting stuff around.
+I knew about AIO and O_DIRECT, but I thought FIO was using it by default :)
+I used it for the first time yesterday night, and there are a pretty wide 
+set of options. Will re-run today with --direct.
+I was pretty surprised though. Since libaio was matching with syslets, I 
+was thinking that a userspace version using a queue-always design (hard to 
+do the cachehit optimization if you're not inside the scheduler ;), was 
+going to be considerably slower.
 
-Hugh
+
+> I'll add your guasi engine, but disable it. Unfortunately fio still
+> doesn't have a nifty configure setup, so these things are still
+> manual...
+
+Well, you do have your own HAVE_*, you just need to make autoconf/automake 
+do the checks for you. Of course, then you'll be pissed every time an 
+autoconf/automake update break your setup, but lately it seems to be going 
+better. Really :)
+
+
+- Davide
+
+
