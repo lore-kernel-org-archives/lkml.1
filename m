@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933238AbXCUUgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXCUUiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933238AbXCUUgN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964865AbXCUUgN
+	id S932436AbXCUUiO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933849AbXCUUiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:36:13 -0400
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:53844 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933847AbXCUUgM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:36:12 -0400
-Date: Wed, 21 Mar 2007 21:36:47 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Reg Clemens <reg@dwf.com>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com, reg@deneb.dwf.com
-Message-ID: <20070321203647.GD4539@enneenne.com>
-References: <20070321074121.GA13843@enneenne.com> <200703211655.l2LGtwWl017848@deneb.dwf.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703211655.l2LGtwWl017848@deneb.dwf.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [LinuxPPS] [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Wed, 21 Mar 2007 16:38:14 -0400
+Received: from mga03.intel.com ([143.182.124.21]:16465 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932436AbXCUUiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 16:38:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,309,1170662400"; 
+   d="scan'208"; a="200311863:sNHT21667737"
+In-Reply-To: <46017E56.7050400@lwfinger.net>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>	<1174433034.62033.16.camel@localhost> <20070320223643.d8cbc3f6.akpm@linux-foundation.org> <46017E56.7050400@lwfinger.net>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8B46B235-9F02-4A39-943A-9D33F6661D04@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: 2.6.21-rc4-mm1 - problem with cpuidle routine
+Date: Wed, 21 Mar 2007 13:39:58 -0700
+To: Larry Finger <larry.finger@lwfinger.net>
+X-Mailer: Apple Mail (2.752.3)
+X-OriginalArrivalTime: 21 Mar 2007 20:38:01.0405 (UTC) FILETIME=[D17D26D0:01C76BF8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 10:55:58AM -0600, Reg Clemens wrote:
-> 
-> Just one point with your patch.
-> A couple of years ago there was a long discussion on the Linux Kernel mailing 
-> list
-> as to how USER codes were not supposed to use KERNEL include files.  Now I 
-> still
-> see __KERNEL__ all over the place in the linux=source includes so mabe this
-> never went anywhere, but you MIGHT have to provide a separate patch (addition)
-> to the Linux (as opposed to Linux-kernel) include files with timepps.h
 
-Do you mean I should separate file timepps.h into two files? One for
-the kernel and one for the userland?
+On Mar 21, 2007, at 11:49 AM, Larry Finger wrote:
 
-I'm sorry but I don't understand what you suggest. Can you explain it?
+> When I configure 'CPU Idle PM Support' on my HP dv2125nr notebook  
+> with a Turion X64 X2 processor and
+> X86_64 architecture selected, the computer freezes on bootup. I  
+> have included a portion the
+> configuration file and part of /var/log/boot.msg for my working  
+> system. Please let me know if
+> further info from my system is required. I would be happy to test  
+> any patches, etc.
+>
+> Larry
+>
+
+Looking at this failure. Will get back to you once I have some update...
+
+In the mean time, can you send me the complete boot message when you  
+disable cpuidle and system boots ok.
 
 Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+~Venki
