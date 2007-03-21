@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965449AbXCUW74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbXCUXBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965449AbXCUW74 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 18:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965475AbXCUW74
+	id S1753083AbXCUXBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbXCUXBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 18:59:56 -0400
-Received: from www.cosmosbay.com ([86.65.150.131]:41824 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753027AbXCUW7x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 18:59:53 -0400
-Message-ID: <4601B89E.3060605@cosmosbay.com>
-Date: Wed, 21 Mar 2007 23:58:38 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>, David Howells <dhowells@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org
-Subject: [RFC] : Is /proc/kcore still usefull and/or maintained ?
-References: <200703211840.53242.maximlevitsky@gmail.com> <20070321222106.GF6057@elf.ucw.cz> <200703212339.02972.rjw@sisk.pl>
-In-Reply-To: <200703212339.02972.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Mar 2007 19:01:40 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:57886 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753066AbXCUXBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 19:01:39 -0400
+Date: Wed, 21 Mar 2007 16:01:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Kees Cook <kees@outflux.net>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-Id: <20070321160111.b26be525.akpm@linux-foundation.org>
+In-Reply-To: <20070321221905.GA22623@uranus.ravnborg.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<20070320103151.f65c81b6.randy.dunlap@oracle.com>
+	<20070320192016.GC22797@outflux.net>
+	<20070320214714.0e584cd4.akpm@linux-foundation.org>
+	<20070321221905.GA22623@uranus.ravnborg.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 21 Mar 2007 23:58:41 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all
+On Wed, 21 Mar 2007 23:19:05 +0100
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
-On i386 , 2.6.20 / 2.6.21-rc4 :
+> On Tue, Mar 20, 2007 at 09:47:14PM -0800, Andrew Morton wrote:
+> > On Tue, 20 Mar 2007 12:20:16 -0700 Kees Cook <kees@outflux.net> wrote:
+> > 
+> > > I can't 
+> > > get 2.6.21-rc4-mm1 to compile (with or without this fix):
+> > > 
+> > >   GEN     .version
+> > > init/.missing_syscalls.h.cmd:2: *** missing separator.  Stop.
+> > > make: *** [.tmp_vmlinux1] Error 2
+> > 
+> > How'd you manage that?
+> > 
+> > Sam, I think this is a you-thing rather than a dwmw2-thing?
+> Took a look. Things looked pretty OK but an updated patch
+> applied to kbuild.git.
+> Corrected a few things in the Makefile and combined the
+> patch from dwmw2 and Stephane.
+> 
+> kbuild.git pused out and patches follows.
+>
 
-# gdb vmlinux /proc/kcore
-error
-# file /proc/kcore
-error
+David has set up a git tree with this stuff, so you presumably
+have an out-of-date copy.
 
+git://git.infradead.org/~dwmw2/syscalls-2.6.git
 
-Apparently we can not llseek() anymore on this file (returns -EINVAL)
-
-On x86_64 2.6.20 it's working
-
-# file /proc/kcore
-/proc/kcore: ELF 64-bit LSB core file x86-64, version 1 (SYSV), SVR4-style
-
-
-On i386 2.6.14 it's working too.
-
-Eric
+I don't know what's changed in there.  One never does, with git
+trees :(
