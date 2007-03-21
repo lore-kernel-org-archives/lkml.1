@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbXCUXNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbXCUXPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131AbXCUXNl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXCUXNl
+	id S1753108AbXCUXPg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbXCUXPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:13:41 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:38706 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753131AbXCUXNk (ORCPT
+	Wed, 21 Mar 2007 19:15:35 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:44520 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753108AbXCUXPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:13:40 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Wed, 21 Mar 2007 19:10:32 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] De-list the raw driver from scheduled removal.
-Message-ID: <Pine.LNX.4.64.0703211908140.5679@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 21 Mar 2007 19:15:34 -0400
+Date: Wed, 21 Mar 2007 15:59:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: BLK_DEV_MD with CONFIG_NET
+Message-Id: <20070321155925.172944e5.randy.dunlap@oracle.com>
+In-Reply-To: <20070321120246.GB18195@uranus.ravnborg.org>
+References: <20070320200538.5270d636.randy.dunlap@oracle.com>
+	<20070320.202621.74740974.davem@davemloft.net>
+	<20070321120246.GB18195@uranus.ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 21 Mar 2007 13:02:46 +0100 Sam Ravnborg wrote:
 
-Stop trying to remove the raw driver.
+> On Tue, Mar 20, 2007 at 08:26:21PM -0700, David Miller wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > Date: Tue, 20 Mar 2007 20:05:38 -0700
+> > 
+> > > Build a kernel with CONFIG_NET-n and CONFIG_BLK_DEV_MD=m.
+> > > Unless csum_partial() is built and kept by some arch Makefile,
+> > > the result is:
+> > > ERROR: "csum_partial" [drivers/md/md-mod.ko] undefined!
+> > > make[1]: *** [__modpost] Error 1
+> > > make: *** [modules] Error 2
+> > > 
+> > > 
+> > > Any suggested solutions?
+> > 
+> > Anything which is every exported to modules, which ought to
+> > be the situation in this case, should be obj-y not lib-y
+> > right?
+> That is also my understanding of lib-y - I should update makefiles.txt
+> to reflect this..
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+I concur, but there seems to be quite a bit of change needed in
+Makefile*s for this.  I'll begin with csum_partial() and trying
+to use Arnd's suggestion as well.
+
 
 ---
-
-  happy now?  :-P
-
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 0bc8b0b..6b845f3 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -21,14 +21,6 @@ Who:	Pavel Machek <pavel@suse.cz>
-
- ---------------------------
-
--What:	RAW driver (CONFIG_RAW_DRIVER)
--When:	December 2005
--Why:	declared obsolete since kernel 2.6.3
--	O_DIRECT can be used instead
--Who:	Adrian Bunk <bunk@stusta.de>
--
-----------------------------
--
- What:	raw1394: requests of type RAW1394_REQ_ISO_SEND, RAW1394_REQ_ISO_LISTEN
- When:	June 2007
- Why:	Deprecated in favour of the more efficient and robust rawiso interface.
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
