@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933917AbXCUUju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964865AbXCUUsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933917AbXCUUju (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934000AbXCUUju
+	id S964865AbXCUUsr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933855AbXCUUsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:39:50 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52867 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933917AbXCUUjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:39:49 -0400
-Date: Wed, 21 Mar 2007 13:39:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: sukadev@us.ibm.com
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       serue@us.ibm.com, haveblue@us.ibm.com,
-       Containers <containers@lists.osdl.org>, clg@fr.ibm.com
-Subject: Re: [PATCH] Define CLONE_NEWPID flag
-Message-Id: <20070321133938.bff535a3.akpm@linux-foundation.org>
-In-Reply-To: <20070321194103.GA29820@us.ibm.com>
-References: <20070321194103.GA29820@us.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Mar 2007 16:48:47 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:59594 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932932AbXCUUsr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 16:48:47 -0400
+Message-ID: <46019A1F.7060708@lwfinger.net>
+Date: Wed, 21 Mar 2007 15:48:31 -0500
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: 2.6.21-rc4-mm1
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <1174433034.62033.16.camel@localhost> <20070320223643.d8cbc3f6.akpm@linux-foundation.org> <4601761F.4000302@lwfinger.net> <20070321185900.GC3801@tuxdriver.com> <20070321202225.GN10459@waste.org>
+In-Reply-To: <20070321202225.GN10459@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007 12:41:03 -0700
-sukadev@us.ibm.com wrote:
+Matt Mackall wrote:
+> With the latest -mm, I'm now getting this:
+> 
+> Mar 21 15:06:52 cinder kernel: ipw2200: Detected Intel PRO/Wireless
+> 2200BG Network Connection
+> Mar 21 15:06:52 cinder kernel: firmware_loading_store: unexpected
+> value (0)
+> Mar 21 15:06:52 cinder kernel: ipw2200: ipw2200-bss.fw
+> request_firmware failed:
+> Reason -2
+> Mar 21 15:06:52 cinder kernel: ipw2200: Unable to load firmware: -2
+> Mar 21 15:06:52 cinder kernel: ipw2200: failed to register network
+> device
+> 
 
-> 
-> This was discussed on containers and we thought it would be useful
-> to reserve this flag.
-> ---
-> 
-> From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-> Subject: [PATCH] Define CLONE_NEWPID flag
-> 
-> Define CLONE_NEWPID flag that will be used to clone pid namespaces.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-> ---
->  include/linux/sched.h |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: lx26-21-rc3-mm2/include/linux/sched.h
-> ===================================================================
-> --- lx26-21-rc3-mm2.orig/include/linux/sched.h	2007-03-20 20:13:19.000000000 -0700
-> +++ lx26-21-rc3-mm2/include/linux/sched.h	2007-03-21 11:10:33.000000000 -0700
-> @@ -26,6 +26,7 @@
->  #define CLONE_STOPPED		0x02000000	/* Start in stopped state */
->  #define CLONE_NEWUTS		0x04000000	/* New utsname group? */
->  #define CLONE_NEWIPC		0x08000000	/* New ipcs */
-> +#define CLONE_NEWPID		0x10000000      /* New pid namespace */
->  
+I am seeing similar messages trying to load bcm43xx firmware with 2.6.21-rc4-mm1.
 
-Do we actually have any need to reserve it at this time?  I'd have thought
-that we could defer adding this until we have some code in-kernel which
-uses it.
+Larry
 
