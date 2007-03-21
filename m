@@ -1,55 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbXCUN5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbXCUN7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752852AbXCUN5M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 09:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXCUN5L
+	id S1752783AbXCUN7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 09:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXCUN7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 09:57:11 -0400
-Received: from www.osadl.org ([213.239.205.134]:48142 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752852AbXCUN5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 09:57:11 -0400
-Subject: Re: [PATCH] clockevents: Fix suspend/resume to disk hangs
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Marcus Better <marcus@better.se>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-In-Reply-To: <eto9sh$262$1@sea.gmane.org>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <200703162134.14265.rjw@sisk.pl>
-	 <1174078066.13341.279.camel@localhost.localdomain>
-	 <1174087552.13341.332.camel@localhost.localdomain>
-	 <eto9sh$262$1@sea.gmane.org>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 15:04:22 +0100
-Message-Id: <1174485863.10840.80.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 09:59:19 -0400
+Received: from neon.samage.net ([83.149.67.130]:41768 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752783AbXCUN7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 09:59:18 -0400
+Message-ID: <1860.81.207.0.53.1174485549.squirrel@secure.samage.net>
+In-Reply-To: <46012E1A.3030309@sciensis.com>
+References: <45FEB8B7.7020200@sciensis.com>
+    <20070320004001.GA11601@electric-eye.fr.zoreil.com>
+    <000601c76af9$a0ce3ce0$0864a8c0@scs1>
+    <4734.81.207.0.53.1174427010.squirrel@secure.samage.net>
+    <000e01c76b99$769cbbe0$0864a8c0@scs1>
+    <3118.81.207.0.53.1174480598.squirrel@secure.samage.net>
+    <46012E1A.3030309@sciensis.com>
+Date: Wed, 21 Mar 2007 14:59:09 +0100 (CET)
+Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel     
+           version 2.6.20.1)
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Tasos Parisinos" <t.parisinos@sciensis.com>
+Cc: "Francois Romieu" <romieu@fr.zoreil.com>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.3
+X-Scan-Signature: 3ced5df4177ef3a93a84b902ce7c160e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 10:35 +0100, Marcus Better wrote:
-> Thomas Gleixner wrote:
-> 
-> > I finally found a dual core box, which survives suspend/resume without
-> > crashing in the middle of nowhere. Sigh, I never figured out from the
-> > code and the bug reports what's going on.
-> > 
-> > The observed hangs are caused by a stale state transition of the clock
-> > event devices, which keeps the RCU synchronization away from completion,
-> > when the non boot CPU is brought back up.
-> 
-> This didn't fix the suspend problems on my Thinkpad R60. (Sorry for
-> nagging - please let me know if I can assist in debugging this...)
+On Wed, March 21, 2007 14:07, Tasos Parisinos wrote:
+>
+>> On Wed, March 21, 2007 10:15, Tasos Parisinos wrote:
+>>
+>>> Protecting a TripleDES key in high security standards is not as
+>>> simple as making the kernel read
+>>> protected, you need a whole lot and
+>>> that also means hardware (cryptomemories e.t.c)
+>>> So you forget about all this overhead when you use assymetric
+>>>
+>>
+>> Ah, you're talking about fishing the key out of RAM here, right?
+>> My point stays the same for that: If you can't read protect the
+>> kernel RAM, small chance you can write protect it. And then they
+>> can just bypass all signature checking you put in it anyway.
+>>
+>
+> How can one tamper (write) the kernel memory of a booted and running kernel
+> without using an exploitable bug?
+>
+> I mean, you can't mess with the bzImage on flash, the secure bootloader
+> boots it without
+> letting someone alter the (non crypto-) memory while loading the bzImage
+> on it, and then
+> no-one can run something that will tamper the system or write anywhere
+> on kernel memory
+> without exploiting a bug
+>
+> I mean, am i missing something here?
 
-I did not expect that it fixes your problem. clockevents are only used
-in arch/i386 right now. You are running a 64 bit kernel, so a change of
-your problem would have been very surprising.
+Depends on what you consider an exploitable bug. Does getting root access count?
+If not, then you must make very sure that all possible ways to modify kernel
+memory from userspace are thwarted (I don't know what those are, hopefully
+loading modules is the only one, but maybe there are smart other ways).
 
-You said, that the breakage came between 2.6.20 and rc2. Can you bisect
-it ?
+Assuming one can't write kernel memory, it's also safe to assume kernel memory
+can be protected against reads (else the whole keys infrastructure is useless).
 
-	tglx
+But instead of only reading the bus traffic also modifying it doesn't seem so
+far fetched to me. That modification can be reduced to swapping one bit which
+tells whether the modules being loaded has a valid signature or not.
+Timing it might be tricky, but that can be automated.
+
+When someone has the hardware in his hands and really want to exploit it, you
+lose no matter what you do. At best you can make it harder and more expensive.
+
+In the end my point is that you might think that you can get away with less
+security when using RSA, but perhaps in reality you don't. At least when using
+symmetric key encryption you're forced to secure the whole thing more.
+
+So design it for symmetric keys. If it turns out that using asymmetric keys is
+more practical for whatever reason, fine, use those. But they won't give you
+added security.
+
+Greetings,
+
+Indan
+
+
+P.S. The whole argument of secure bootloader checks the kernel can be
+extrapolated to a secure kernel checking a user space program. Why not
+letting the kernel check the signature of a monolithic modprobe program,
+and let it do all the (RSA) checking. The expected hash of the modprobe
+program can be hardcoded in the kernel.
 
 
