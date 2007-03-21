@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933897AbXCUWbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933895AbXCUWgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933897AbXCUWbx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 18:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933898AbXCUWbw
+	id S933895AbXCUWgM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 18:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933944AbXCUWgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 18:31:52 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:37471 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933897AbXCUWbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 18:31:51 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Wed, 21 Mar 2007 18:27:05 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: remove-unused-header-file-include-linux-elfnoteh.patch
-In-Reply-To: <200703212320.35920.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.64.0703211825110.4746@CPE00045a9c397f-CM001225dbafb6>
-References: <4601A56A.40609@goop.org> <200703212320.35920.arnd@arndb.de>
+	Wed, 21 Mar 2007 18:36:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60270 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933895AbXCUWgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 18:36:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
+Date: Wed, 21 Mar 2007 23:39:02 +0100
+User-Agent: KMail/1.9.5
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
+References: <200703211840.53242.maximlevitsky@gmail.com> <20070321222106.GF6057@elf.ucw.cz>
+In-Reply-To: <20070321222106.GF6057@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-442325719-1174516025=:4746"
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703212339.02972.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wednesday, 21 March 2007 23:21, Pavel Machek wrote:
+> Hi!
+> 
+> > Starting with 2.6.21-rc1 suspend to ram and disk doesn't work anymore on my system.
+> > 
+> > I did a git-bisect and found that those commits break it:
+> > 
+> > e3c7db621bed4afb8e231cb005057f2feb5db557 - [PATCH] [PATCH] PM: Change code ordering in main.c
+> > ed746e3b18f4df18afa3763155972c5835f284c5 - [PATCH] [PATCH] swsusp: Change code ordering in disk.c
+> > 259130526c267550bc365d3015917d90667732f1 - [PATCH] [PATCH] swsusp: Change code ordering in user.c
+> > 
+> 
+> (Yep, it was in my "to analyze" queue).
+> 
+> > I already reported about it, but now i know the reason why suspend breaks.
+> > 
+> > The problem is that both cpu_up/cpu_down were allowed to sleep until now, 
+> > and it did work because those functions could be called only in process context
+> > (the one that writes to /sys/devices/system/cpu/cpu*/online) or  idle thread  that does smp_init()).
+> > 
+> > But now they are called _after_ all tasks were suspended, so if cpu_down tries for example to take a lock
+> > that is taken by different process, it can't since the different proccess is frozen and can't release the lock.
+> > 
+> 
+> Thanks for detailed explanation.
+> 
+> ...but, on my machine suspend works ok in -rc4. I'm not seeing this.
+> 
+> ...by design, "frozen" tasks must not hold any locks. If frozen task
+> holds a lock, that's a bug.
+> 
+> > Or, it is also possible to revert this change.
+> 
+> Are you using xfs?
 
---0-442325719-1174516025=:4746
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Well, this is the only case that can trigger it.  There are no other freezable
+workqueues.
 
-On Wed, 21 Mar 2007, Arnd Bergmann wrote:
-
-> On Wednesday 21 March 2007 22:36:42 Jeremy Fitzhardinge wrote:
-> > Please don't.  We need it.
-> >
-> > BTW, I didn't see this one go by, and I couldn't see it searching
-> > around.  Did it get posted to lkml?
->
-> I think it was only on the janitor list. It was considered
-> obviously correct since it does not get installed by
-> headers_installed and did not seem to be used anywhere in
-> the kernel.
->
-> Could you explain how this file is used in the kernel? Robert
-> probably wants to update his script to handle this correctly.
-
-i doubt that this is going to make any difference to my script.  that
-header file is, AFAICT, not included by any other file in the entire
-source tree -- a simple "grep" will demonstrate that.
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
---0-442325719-1174516025=:4746--
+Greetings,
+Rafael
