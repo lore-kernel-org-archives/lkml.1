@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933648AbXCUXpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934085AbXCUXqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933648AbXCUXpm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932195AbXCUXpm
+	id S934085AbXCUXqI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933946AbXCUXqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:45:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56901 "EHLO mx1.redhat.com"
+	Wed, 21 Mar 2007 19:46:07 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:41142 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934011AbXCUXp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:45:29 -0400
-Date: Wed, 21 Mar 2007 19:43:18 -0400
-From: Dave Jones <davej@redhat.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] Delete obsolete RAW driver feature.
-Message-ID: <20070321234318.GE9092@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Willy Tarreau <w@1wt.eu>,
+	id S934085AbXCUXqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 19:46:04 -0400
+Date: Thu, 22 Mar 2007 08:42:54 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: "Wu, Bryan" <bryan.wu@analog.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
+Message-ID: <20070321234254.GA17498@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mike Frysinger <vapier.adi@gmail.com>,
+	"Wu, Bryan" <bryan.wu@analog.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Andi Kleen <andi@firstfloor.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Adrian Bunk <bunk@stusta.de>
-References: <Pine.LNX.4.64.0703180754060.6605@CPE00045a9c397f-CM001225dbafb6> <p73y7lu5yt6.fsf@bingen.suse.de> <20070320165736.GA19781@redhat.com> <20070320181442.1ae73295@lxorguk.ukuu.org.uk> <20070321151952.02b5612d.akpm@linux-foundation.org> <20070322001050.13588e5e@lxorguk.ukuu.org.uk> <20070321161341.0f87ed60.akpm@linux-foundation.org> <20070321232433.GX943@1wt.eu>
-Mime-Version: 1.0
+	linux-kernel@vger.kernel.org
+References: <1172722480.5264.75.camel@roc-desktop> <20070305092346.GB11664@linux-sh.org> <8bd0f97a0703210844u44209fc2k27f8ccf431862557@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070321232433.GX943@1wt.eu>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <8bd0f97a0703210844u44209fc2k27f8ccf431862557@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 12:24:33AM +0100, Willy Tarreau wrote:
- 
- > Then a printk() on every open() should be enough. We've all been seeing
- > "Warning: tcpdump uses obsolete AF_PACKET"... and it finally disappeared.
+On Wed, Mar 21, 2007 at 11:44:27AM -0400, Mike Frysinger wrote:
+> On 3/5/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> >> +int __init oprofile_arch_init(struct oprofile_operations *ops)
+> >> +{
+> >> +#ifdef CONFIG_HARDWARE_PM
+> >[snip]
+> >> +#else
+> >> +     return -1;
+> >> +#endif
+> >> +}
+> >
+> >Uh.. fix your dependencies.
+> 
+> can you elaborate ?
 
-There's a difference.  We have the source for tcpdump.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+This code does nothing if CONFIG_HARDWARE_PM isn't enabled, so your best
+bet is to simply have an op_model_null for the cases where you can't
+support the counters and work out the dependencies in the Makefile.
+Trying to hack both of these together in one driver is not the way to go.
