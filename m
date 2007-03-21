@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbXCUMI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbXCUMJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752659AbXCUMI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 08:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbXCUMI3
+	id S1752668AbXCUMJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbXCUMJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 08:08:29 -0400
-Received: from www.osadl.org ([213.239.205.134]:33462 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752659AbXCUMI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 08:08:28 -0400
-Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andi Kleen <ak@suse.de>
-Cc: Grzegorz Chwesewicz <grzegorz.chwesewicz@chilan.com>,
-       Stefan Prechtel <stefan.prechtel@googlemail.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Len Brown <lenb@kernel.org>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <1174475666.10840.44.camel@localhost.localdomain>
-References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
-	 <200703211046.20724.ak@suse.de>
-	 <1174471808.10840.28.camel@localhost.localdomain>
-	 <200703211137.10884.ak@suse.de>
-	 <1174475666.10840.44.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 13:15:38 +0100
-Message-Id: <1174479339.10840.59.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 08:09:05 -0400
+Received: from neon.samage.net ([83.149.67.130]:37299 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752668AbXCUMJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 08:09:02 -0400
+Message-ID: <4040.81.207.0.53.1174478934.squirrel@secure.samage.net>
+In-Reply-To: <000e01c76b99$769cbbe0$0864a8c0@scs1>
+References: <45FEB8B7.7020200@sciensis.com>
+    <20070320004001.GA11601@electric-eye.fr.zoreil.com>
+    <000601c76af9$a0ce3ce0$0864a8c0@scs1>
+    <4734.81.207.0.53.1174427010.squirrel@secure.samage.net>
+    <000e01c76b99$769cbbe0$0864a8c0@scs1>
+Date: Wed, 21 Mar 2007 13:08:54 +0100 (CET)
+Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel     
+      version 2.6.20.1)
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Tasos Parisinos" <t.parisinos@sciensis.com>
+Cc: "Francois Romieu" <romieu@fr.zoreil.com>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.3
+X-Scan-Signature: 2ecd0b53b7de9511489f92806276a3d7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan, Grzegorz
+On Wed, March 21, 2007 10:15, Tasos Parisinos wrote:
+>> Assuming you have a secure kernel binary that is tamper proof, why do you need
+>> slow and complex asymmetric encryption again? If you can write protect the kernel,
+>> you can also read protect it (or let the boot loader pass the key to the kernel).
+>> So what stops you from using a simple symmetric key cipher for signing?
+>
+> In symmetric cryptography you would give away your key if one could read the kernel binary
+> while in assymetric one can only get the public key
 
-On Wed, 2007-03-21 at 12:14 +0100, Thomas Gleixner wrote:
-> On Wed, 2007-03-21 at 11:37 +0100, Andi Kleen wrote:
-> > > The BIOS/ACPI is broken and does only expose C1, which should not switch
-> > > off LAPIC. The BIOS is switching into deeper C-States behind the kernels
-> > > back somehow.
-> > 
-> > Hmm, perhaps we can check AMD && (cstate >= 2 || has a battery) ? 
-> > Should be doable by looking up the battery object in ACPI
-> 
-> Which makes us rely on another ACPI feature. What guarantees that the
-> ACPI tables are correct for this one ?
+If you can't read protect your kernel, you can't write protect it either. Of course the
+symmetric key would be per kernel, not a single global one.
 
-Can you please apply the patch below and add "nolapic_timer" to the
-kernel command line ?
+> Protecting a TripleDES key in high security standards is not as simple as making the kernel
+> read protected, you need a whole lot and that also means hardware (cryptomemories e.t.c)
+> So you forget about all this overhead when you use assymetric
 
-Please provide also the output of
+You need to protect your kernel binary already, adding a key to that doesn't increase the
+complexity or safety requirements, so all that hardware safety is already in place.
+(And I'd use AES instead of TripleDES.)
 
-# dmidecode
+> Also this is the way this is done in all implementations ranging from Linux platforms (see
+> DigSig@sourceforge for an example, or in
+> Debian, Fedora) and in Microsoft platforms as far as i know
 
-on your laptops.
+Nothing stops you from signing the binaries with an asymmetric key. After checking that
+signature the user can sign the binary with his private symmetric key and upload it to
+the device.
 
-Thanks,
+Greetings,
 
-	tglx
-
-diff --git a/arch/i386/kernel/apic.c b/arch/i386/kernel/apic.c
-index 5cff797..67f8d9f 100644
---- a/arch/i386/kernel/apic.c
-+++ b/arch/i386/kernel/apic.c
-@@ -61,6 +61,8 @@ static int enable_local_apic __initdata = 0;
- 
- /* Local APIC timer verification ok */
- static int local_apic_timer_verify_ok;
-+/* Disable local APIC timer from the kernel commandline */
-+static int local_apic_timer_disabled;
- 
- /*
-  * Debug level, exported for io_apic.c
-@@ -340,6 +342,13 @@ void __init setup_boot_APIC_clock(void)
- 	long delta, deltapm;
- 	int pm_referenced = 0;
- 
-+	if (local_apic_timer_disabled) {
-+		/* No broadcast on UP ! */
-+		if (num_possible_cpus() > 1)
-+			setup_APIC_timer();
-+		return;
-+	}}
-+
- 	apic_printk(APIC_VERBOSE, "Using local APIC timer interrupts.\n"
- 		    "calibrating APIC timer ...\n");
- 
-@@ -1179,6 +1188,13 @@ static int __init parse_nolapic(char *arg)
- }
- early_param("nolapic", parse_nolapic);
- 
-+static int __init parse_disable_lapic_timer(char *arg)
-+{
-+	local_apic_timer_disabled = 1;
-+	return 0;
-+}
-+early_param("nolapic_timer", parse_disable_lapic_timer);
-+
- static int __init apic_set_verbosity(char *str)
- {
- 	if (strcmp("debug", str) == 0)
+Indan
 
 
