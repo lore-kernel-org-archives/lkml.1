@@ -1,174 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbXCUTXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933807AbXCUTZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933805AbXCUTXz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 15:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933807AbXCUTXz
+	id S933807AbXCUTZS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 15:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933814AbXCUTZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 15:23:55 -0400
-Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:2985 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933805AbXCUTXy (ORCPT
+	Wed, 21 Mar 2007 15:25:18 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:57414 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933807AbXCUTZQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 15:23:54 -0400
-Date: Wed, 21 Mar 2007 20:22:31 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Bryan Wu <bryan.wu@analog.com>
-Cc: David Brownell <david-b@pacbell.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 4/4] Blackfin: on-chip Two Wire Interface I2C driver
-Message-Id: <20070321202231.2eac1cf9.khali@linux-fr.org>
-In-Reply-To: <1174471688.5648.56.camel@roc-desktop>
-References: <1174471688.5648.56.camel@roc-desktop>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Mar 2007 15:25:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=ntH8jCL31KzhGMhxk7xNHRvFRMJheo9GzZRfnJptqEomUu4co5mEqozxNztdcVusw4lD48PsO8/AvpQ3oHvB1AoVk3zVjQMTsik9Qk8Sk8HJ3O+oH3aJWr4uRfi4V5UYWMAUkzV58JQzamEMCPIpJjBuRebhAJpqNGGjyXCRDUU=
+Date: Wed, 21 Mar 2007 21:25:04 +0200
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: i386: Why putting __USER_DS in kernel threads stack initialization?
+Message-ID: <20070321192504.GB5835@Ahmed>
+References: <20070318225831.GB3802@Ahmed> <Pine.LNX.4.61.0703190717240.19254@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0703190717240.19254@chaos.analogic.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan,
-
-On Wed, 21 Mar 2007 18:08:08 +0800, Wu, Bryan wrote:
-> As GPIO based blackfin driver will be replaced by I2C-GPIO generic
-> driver, we just update this latest version of blackfin on-chip TWI I2C
-> driver according to LKML review.
+On Mon, Mar 19, 2007 at 07:23:25AM -0400, linux-os (Dick Johnson) wrote:
 > 
-> [PATCH] Blackfin: on-chip Two Wire Interface I2C driver
+> On Sun, 18 Mar 2007, Ahmed S. Darwish wrote:
 > 
-> The i2c linux driver for blackfin architecture which supports blackfin
-> on-chip TWI controller i2c operation.
+> > Hi list,
+> >
+> > Reading the kernel threads initialization code I see:
+> >
+> > int kernel_thread(...) {
+> >
+> > 	struct pt_regs regs;
+> > 	memset(&regs, 0, sizeof(regs));
+> > 	[...]
+> > **	regs.xds = __USER_DS;
+> > **	regs.xes = __USER_DS;
+> > 	[...]
+> > 	/* Ok, create the new process.. */
+> > 	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, \
+> > 	       	       0, NULL, NULL);
+> >
+> > Continuing with the code, the threads stack (beginning from %esp) is
+> > initialized with the passed *regs from do_fork:
+> >
+> > int copy_thread(..., struct task_struct *p, struct pt_regs *regs) {
+> >
+> > 	struct pt_regs * childregs;
+> > 	struct task_struct *tsk;
+> > 	childregs = task_pt_regs(p);
+> > **	*childregs = *regs;
+> > 	[...]
+> > ** 	p->thread.esp = (unsigned long) childregs;
+> >
+> >
+> > So the question is what will a _kernel_ thread do with the Usermode Segment
+> > address ?
+> >
+> > Thanks,
+> >
+> > P.S. I've tried commenting out both lines which led to a non functional init,
+> > Also setting them to __USER_DS made init start but stopped issuing the error:
+> > `Panic: Segment violation at 0x8049798 - Sleeping for 30 seconds'
+> >
+
+Sorry, I meant "setting them to __KERNEL_DS" here.
+
 > 
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
-> Reviewed-by: Alexey Dobriyan <adobriyan@gmail.com>
-> Reviewed-by: Jean Delvare <khali@linux-fr.org>
-> Cc: David Brownell <david-b@pacbell.net>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/i2c/busses/Kconfig        |   16 
->  drivers/i2c/busses/Makefile       |    1 
->  drivers/i2c/busses/i2c-bfin-twi.c |  653 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 670 insertions(+)
+> You might be confusing two routines. The kernel thread routine sets
+> DS and ES to the kernel data segment, __KERNEL_DS, not the user data
+> segment. 
 
-I overlooked a number of problems in the probe function, sorry.
+And that's what's _not_ happening in the code as I mentioned in original post.
 
-> Index: linux-2.6/drivers/i2c/busses/Makefile
-> ===================================================================
-> --- linux-2.6.orig/drivers/i2c/busses/Makefile
-> +++ linux-2.6/drivers/i2c/busses/Makefile
-> @@ -10,6 +10,7 @@
->  obj-$(CONFIG_I2C_AMD8111)	+= i2c-amd8111.o
->  obj-$(CONFIG_I2C_AT91)		+= i2c-at91.o
->  obj-$(CONFIG_I2C_AU1550)	+= i2c-au1550.o
-> +obj-$(CONFIG_I2C_BLACKFIN_TWI)  += i2c-bfin-twi.o
+> This is so the kernel thread can access the kernel data. Note
+> that this is done by putting the values in the pt_regs structure so
+> it doesn't happen 'now', but after the fork.
 
-Please align with a tab, not spaces.
+I've searched the code for such case (setting xds to __KERNEL_DS _After_ 
+copy_thread()) with no success. As I understand, the kernel thread 
+executes the passed function immediately (when given control by scheduler):
 
->  obj-$(CONFIG_I2C_ELEKTOR)	+= i2c-elektor.o
->  obj-$(CONFIG_I2C_HYDRA)		+= i2c-hydra.o
->  obj-$(CONFIG_I2C_I801)		+= i2c-i801.o
-> Index: linux-2.6/drivers/i2c/busses/i2c-bfin-twi.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/drivers/i2c/busses/i2c-bfin-twi.c
-> (...)
-> +static int i2c_bfin_twi_probe(struct platform_device *dev)
-> +{
-> +	struct bfin_twi_iface *iface = &twi_iface;
-> +	struct i2c_adapter *p_adap;
-> +	int rc;
-> +
-> +	mutex_init(&(iface->twi_lock));
-> +	spin_lock_init(&(iface->lock));
-> +	init_completion(&(iface->complete));
-> +	iface->irq = IRQ_TWI;
-> +
-> +	init_timer(&(iface->timeout_timer));
-> +	iface->timeout_timer.function = bfin_twi_timeout;
-> +	iface->timeout_timer.data = (unsigned long)iface;
-> +
-> +	p_adap = &(iface->adap);
-> +	p_adap->id = I2C_DRIVERID_BLACKFINTWI;
+i386/kernel/process::kernel_thread():
+**	regs.ebx = (unsigned long) fn;
+	regs.edx = (unsigned long) arg;
+	regs.xds = __USER_DS;
+	regs.xes = __USER_DS;
+	regs.xfs = __KERNEL_PDA;
+	regs.orig_eax = -1;
+**	regs.eip = (unsigned long) kernel_thread_helper;
+	do_fork(...)
 
-This isn't defined anywhere, and isn't valid anyway. I2C_DRIVERID_* are
-for I2C chip drivers, not bus drivers.
+entry.S::kernel_thread_helper (removing CFI_* pseudo ops):
 
-> +	strlcpy(p_adap->name, dev->name, I2C_NAME_SIZE);
+   ENTRY(kernel_thread_helper)
+	pushl $0		
+	movl %edx,%eax
+	push %edx
+**	call *%ebx
+	push %eax
+	call do_exit
+	
+Am I interpreting the forking process completely wrong?. I'm just curious why 
+the __USER_DS is playing a vital rule in kernel threads regs/stack ?
 
-I2C_NAME_SIZE changed recently, it no longer applies to
-i2c_adapter.name. Please use sizeof(p_adap->name) instead.
+Thanks alot,
 
-> +	p_adap->algo = &bfin_twi_algorithm;
-> +	p_adap->algo_data = iface;
-> +	p_adap->class = I2C_CLASS_ALL;
-
-This pretty much voids the point of these probing classes. You should
-only select the classes matching devices which may actually be probed
-for on this bus. If different boards have different needs, get the
-right classes from the platform data.
-
-> +	p_adap->dev.parent = &(dev->dev);
-
-Note that parentheses are not needed.
-
-> +
-> +	rc = request_irq(iface->irq, bfin_twi_interrupt_entry,
-> +		SA_INTERRUPT, dev->name, iface);
-> +	if (rc) {
-> +		printk(KERN_ERR"i2c-bfin-twi: can't get IRQ %d !\n",
-> +			iface->irq);
-
-Usually we leave a space between KERN_* and the beginning of the string
-- I'm even surprised that it compiles without it. OTOH there is no
-space before exclamation marks in English.
-
-Oh, and it should be dev_err() anyway.
-
-> +		return -ENODEV;
-> +	}
-> +
-> +	/* Set TWI internal clock as 10MHz */
-> +	bfin_write_TWI_CONTROL(((get_sclk() / 1024 / 1024 + 5) / 10) & 0x7F);
-> +
-> +	/* Set Twi interface clock as specified */
-> +	if (CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ > 400)
-> +		bfin_write_TWI_CLKDIV((( 5*1024 / 400 ) << 8) |
-> +			(( 5*1024 / 400 ) & 0xFF));
-
-This can never happen, as you have a range defined in Kconfig.
-
-> +	else
-> +		bfin_write_TWI_CLKDIV((( 5*1024 / CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ )
-> +			<< 8) | (( 5*1024 / CONFIG_I2C_BLACKFIN_TWI_CLK_KHZ )
-> +			& 0xFF));
-> +
-> +	/* Enable TWI */
-> +	bfin_write_TWI_CONTROL(bfin_read_TWI_CONTROL() | TWI_ENA);
-> +	SSYNC();
-> +
-> +	rc = i2c_add_adapter(p_adap);
-> +	if (rc < 0)
-> +		free_irq(iface->irq, iface);
-> +	else
-> +		platform_set_drvdata(dev, iface);
-> +
-> +	return rc;
-> +}
-
-> +static struct platform_driver i2c_bfin_twi_driver = {
-> +	.probe		= i2c_bfin_twi_probe,
-> +	.remove		= i2c_bfin_twi_remove,
-> +	.suspend	= i2c_bfin_twi_suspend,
-> +	.resume		= i2c_bfin_twi_resume,
-> +	.driver		= {
-> +		.name	= "i2c-bfin-twi",
-> +	},
-> +};
-
-Missing .owner = THIS_MODULE.
-
-Thanks,
 -- 
-Jean Delvare
+Ahmed S. Darwish
+http://darwish.07.googlepages.com
+
