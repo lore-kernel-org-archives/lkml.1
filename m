@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbXCUMJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbXCUMNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752668AbXCUMJF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 08:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbXCUMJF
+	id S1752266AbXCUMNz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbXCUMNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 08:09:05 -0400
-Received: from neon.samage.net ([83.149.67.130]:37299 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752668AbXCUMJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 08:09:02 -0400
-Message-ID: <4040.81.207.0.53.1174478934.squirrel@secure.samage.net>
-In-Reply-To: <000e01c76b99$769cbbe0$0864a8c0@scs1>
-References: <45FEB8B7.7020200@sciensis.com>
-    <20070320004001.GA11601@electric-eye.fr.zoreil.com>
-    <000601c76af9$a0ce3ce0$0864a8c0@scs1>
-    <4734.81.207.0.53.1174427010.squirrel@secure.samage.net>
-    <000e01c76b99$769cbbe0$0864a8c0@scs1>
-Date: Wed, 21 Mar 2007 13:08:54 +0100 (CET)
-Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel     
-      version 2.6.20.1)
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Tasos Parisinos" <t.parisinos@sciensis.com>
-Cc: "Francois Romieu" <romieu@fr.zoreil.com>, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
+	Wed, 21 Mar 2007 08:13:55 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:23811 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbXCUMNy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 08:13:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ni06C5Wkx64FuLEewTYCM+Kg7vM4mLz5XgDpeZ0czgrZ+j32U6xoyPkK+8fianlhB3gP3Refc5srSyulkYZ1cgvdlI8kYj+5Rb0oZaInREe50SeJ1BwdcXz4wAhUocz5v5p8Qi/xacECQDcUHJKPU6HLHG4LATzeUvXd0b3mejU=
+Message-ID: <84144f020703210513i37d1576erb7814483bcaad505@mail.gmail.com>
+Date: Wed, 21 Mar 2007 14:13:52 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Jarek Poplawski" <jarkao2@o2.pl>
+Subject: Re: [PATCH] slab: deal with NULL pointers passed to kmem_cache_free
+Cc: "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>, mpm@selenic.com,
+       "Christoph Lameter" <clameter@sgi.com>, "ast@domdv.de" <ast@domdv.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070321101143.GB1939@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.3
-X-Scan-Signature: 2ecd0b53b7de9511489f92806276a3d7
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703200943430.3622@sbz-30.cs.Helsinki.FI>
+	 <20070321101143.GB1939@ff.dom.local>
+X-Google-Sender-Auth: 676dec3d6b723e76
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, March 21, 2007 10:15, Tasos Parisinos wrote:
->> Assuming you have a secure kernel binary that is tamper proof, why do you need
->> slow and complex asymmetric encryption again? If you can write protect the kernel,
->> you can also read protect it (or let the boot loader pass the key to the kernel).
->> So what stops you from using a simple symmetric key cipher for signing?
+On 3/21/07, Jarek Poplawski <jarkao2@o2.pl> wrote:
+> I think Pekka was right (it looks he changed his mind now) something
+> should be done here. I think something like this should be a minimum:
 >
-> In symmetric cryptography you would give away your key if one could read the kernel binary
-> while in assymetric one can only get the public key
+> BUG_ON(!objp || virt_to_cache(objp) != cachep);
+>
+> to show distinctly what's going on.
 
-If you can't read protect your kernel, you can't write protect it either. Of course the
-symmetric key would be per kernel, not a single global one.
-
-> Protecting a TripleDES key in high security standards is not as simple as making the kernel
-> read protected, you need a whole lot and that also means hardware (cryptomemories e.t.c)
-> So you forget about all this overhead when you use assymetric
-
-You need to protect your kernel binary already, adding a key to that doesn't increase the
-complexity or safety requirements, so all that hardware safety is already in place.
-(And I'd use AES instead of TripleDES.)
-
-> Also this is the way this is done in all implementations ranging from Linux platforms (see
-> DigSig@sourceforge for an example, or in
-> Debian, Fedora) and in Microsoft platforms as far as i know
-
-Nothing stops you from signing the binaries with an asymmetric key. After checking that
-signature the user can sign the binary with his private symmetric key and upload it to
-the device.
-
-Greetings,
-
-Indan
-
-
+No, if we were to add a NULL check in kmem_cache_free(), it should
+behave like kfree() does. Anyway, if you feel about this strongly I
+suspect the best solution is to add a __kmem_cache_free which does
+_not_ have the NULL check and convert those super-hot paths to use it.
+Sort of what Andrew suggested already.
