@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933998AbXCUT7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933916AbXCUUBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933998AbXCUT7y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 15:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933996AbXCUT7y
+	id S933916AbXCUUBq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933821AbXCUUBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 15:59:54 -0400
-Received: from brick.kernel.dk ([62.242.22.158]:25477 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933998AbXCUT7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 15:59:52 -0400
-Date: Wed, 21 Mar 2007 20:59:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dale Blount <linux-kernel@dale.us>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests  (2.6.21-rc2 and 2.6.20)
-Message-ID: <20070321195928.GG15024@kernel.dk>
-References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com> <200703011308.28266.linux@f-seidel.de> <20070301123057.GO23985@kernel.dk> <loom.20070321T135132-397@post.gmane.org> <460174EC.8000608@redhat.com> <1174501407.14261.34.camel@dale.velocity.net>
+	Wed, 21 Mar 2007 16:01:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:29897 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933916AbXCUUBp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 16:01:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OhjgnQp3mH632z5D3p+G6qnfJlANW8vwLbzu6nKA6JpsqXq6QK6pEnrCHGFv0cYtHgR9iu9lTc//ZLc6WRcpPvWk4RE1bVzIg4uA7XCep6u2OaG1y1gnO56mzHsuzN/3isS1cp9oiFlRxYBapaO0aaBTCaShvpZSjABBvsgqcEQ=
+Message-ID: <d12bb7ab0703211301n22a3e6eeh8cad4ed447d493d3@mail.gmail.com>
+Date: Wed, 21 Mar 2007 21:01:34 +0100
+From: "Victor Fernandes" <victor.dias.fernandes@gmail.com>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Subject: Re: New kernel mouse recognition problem
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <d12bb7ab0703201053q7860c42fl9d78a8985a2a414b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1174501407.14261.34.camel@dale.velocity.net>
+References: <63140.87.244.133.121.1174080814.squirrel@postino>
+	 <39605.87.244.133.121.1174151177.squirrel@postino>
+	 <200703191259.31104.dtor@insightbb.com>
+	 <d12bb7ab0703201053q7860c42fl9d78a8985a2a414b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21 2007, Dale Blount wrote:
-> On Wed, 2007-03-21 at 14:09 -0400, Chuck Ebbert wrote:
-> > Dale Blount wrote:
-> > >> I'm puzzled why this is hitting Dan, but no one else has reported
-> > >> anything. Dan, did 2.6.19 work for you?
-> > > 
-> > > Actually, I believe it is happening to me too.  This is on a 4-disk raid5 with
-> > > one failed disk on two 2-port sata_sil pci controller cards.
-> > > 
-> > > The BUG below is from 2.6.20.3, but I will try 2.6.21-rc4 tonight.
-> > > The disk didn't fail until 2.6.20, so I don't know if 2.6.19 would have worked
-> > > or not.
-> > > 
-> > > 
-> > 
-> > Just to be clear: you have a RAID array (what level?) with a failed disk
-> > and it's giving you the same error that Dan gets?
-> 
-> 
-> Yes, the BUG looks to be pretty similar to me.  It's a 4 disk raid5 with
-> one disk missing (dead and sent in for RMA).
+Oh yes it helps, it works nicely, on X and on the console with gpm.
 
-Interesting, I'll definitely see if I can reproduce it like that.
+Most probably psmouse is built-in on the kernel because I have no
+module with that name and if I check on the, what I suppose was the
+build .config kernel file, I can see the following:
 
--- 
-Jens Axboe
+CONFIG_INPUT_MOUSE=y
+ CONFIG_MOUSE_PS2=y
 
+ Do you want me to check something else?
+
+Don't bother to Cc me directly anymore, I have subscribe to the
+mailing list with another e-mail address to avoid problems. Some
+domain migration issues, sorry for the inconveniency. Regards,
+
+Victor Fernandes
+
+On 3/19/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+>  Hi Victor,
+>
+> On Saturday 17 March 2007 13:06, Victor Fernandes wrote:
+> > Dmitry,
+> >
+> > Thanks for you feedback, sorry for the delay on my reply but because
+> > I'm not subscribe to the list, only now I saw your message. I hope you
+> > will be able to see that this message is a follow up on the previous ones.
+> > If you do not mind can you please Cc directly to me.
+> >
+>
+> I did CC you on my reply but unfortunaltely your mail server did
+> not like me. Let's see if this one goes through.
+>
+> > Now to answer your questions.
+> > The mouse do not works properly, I mean with this that I have the mouse
+> > pointer on the screen, with gpm and X, but it jumps randomly when used.
+> >
+>
+> Does it help if you boot with "psmouse.proto=exps"? (Is psmouse a built-in
+> or a module)?
+>
+> --
+> Dmitry
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
