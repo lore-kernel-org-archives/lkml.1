@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932753AbXCUQQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbXCUQT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932753AbXCUQQT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 12:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbXCUQQT
+	id S932886AbXCUQT6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 12:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932908AbXCUQT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 12:16:19 -0400
-Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:23976 "EHLO
-	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932753AbXCUQQR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 12:16:17 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=1kQpycrqnvxy+lvd+1IJOb+lqUPuBr6+SKPYpm5Uok/5V0ZaHjPRJpSNsZNtxqsRlw7EYi8om+cEhd8thtDmQSzK9OcR2kRYqszH8n1R7NyvosfD9WnGb2KHL++cpiXH;
-X-SBRSScore: None
-X-IronPort-AV: i="4.14,309,1170630000"; 
-   d="scan'208"; a="62672883:sNHT23427036"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 21 Mar 2007 12:19:58 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46205 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932886AbXCUQT6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 12:19:58 -0400
+To: andi@firstfloor.org
+Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead of struct slab
+X-IlohaMail-Blah: penberg@cs.helsinki.fi
+X-IlohaMail-Method: mail() [mem]
+X-IlohaMail-Dummy: moo
+X-Mailer: IlohaMail/0.8.12+pk-11 (On: iloha.cs.Helsinki.FI)
+In-Reply-To: <20070321160929.GB25583@one.firstfloor.org>
+Message-ID: <Vmgv8b38.1174493996.6673440.penberg@cs.helsinki.fi>
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+CC: "Christoph Lameter" <christoph@lameter.com>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Subject: how can I touch softlockup watchdog on all cpus?
-Date: Wed, 21 Mar 2007 17:06:34 +0100
-Message-ID: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB6F2A@ABGEX01E.abg.fsc.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: how can I touch softlockup watchdog on all cpus?
-Thread-Index: Acdr0uXUzQRkiPRBS2WyCNlFmDOOkw==
-From: "Cestonaro, Thilo \(external\)" 
-	<Thilo.Cestonaro.external@fujitsu-siemens.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 21 Mar 2007 16:06:30.0764 (UTC) FILETIME=[E3829AC0:01C76BD2]
+Date: Wed, 21 Mar 2007 18:19:56 +0200 (EET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
 
-my module generates this ugly softlockup dump, because all cpus are stopped longer then 10 secs.
-What I do is:
-[code]
-local_irq_disable();
-// my stuff which takes long and stopps all cpus
-.....
-touch_softlockup_watchdog();
-local_irq_enable();
-[/code]
+On 3/21/2007, "Andi Kleen" <andi@firstfloor.org> wrote:
+> You can always use numa emulation on x86-64.  Boot with 
+> numa=fake=NODES
 
-this prevents a dump of my current cpu but not for all.
-A call to smp_call_function with a function which calls touch_softlockup_watchdog in it,
-doesn't work because smp_call_function needs to be done with irqs enabled, so the watchdog comes first :(.
-
-Any hints or ideas how I can do it in a better way? Disabling softlockup watchdog is not possible for me.
-
-Ciao Thilo
+Yes, I know, but I don't have a x86-64 box either =)
