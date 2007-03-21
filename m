@@ -1,140 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXCUP3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbXCUP3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244AbXCUP3D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932247AbXCUP3B
+	id S932253AbXCUP3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932247AbXCUP3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:29:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42505 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932244AbXCUP3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:29:00 -0400
-Date: Wed, 21 Mar 2007 11:28:53 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       bhavana.nagendra@amd.com
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20070321152853.31767.47460.sendpatchset@prarit.boston.redhat.com>
-Subject: [PATCH]: Resubmitting: __init to __cpuinit in mtrr code
+	Wed, 21 Mar 2007 11:29:17 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:49190 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932253AbXCUP3P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 11:29:15 -0400
+From: Nikita Danilov <nikita@clusterfs.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17921.20299.7899.527765@gargle.gargle.HOWL>
+Date: Wed, 21 Mar 2007 18:29:15 +0300
+To: Rik van Riel <riel@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] split file and anonymous page queues #3
+In-Reply-To: <46011EF6.3040704@redhat.com>
+References: <46005B4A.6050307@redhat.com>
+	<17920.61568.770999.626623@gargle.gargle.HOWL>
+	<460115D9.7030806@redhat.com>
+	<17921.7074.900919.784218@gargle.gargle.HOWL>
+	<46011E8F.2000109@redhat.com>
+	<46011EF6.3040704@redhat.com>
+X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
+X-SystemSpamProbe: GOOD 0.0000579 c4b9fe8ba5119cc53e8acb6fa9f886e1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Originally submitted 2007-02-28.  Adding Bhavana from AMD...
+Rik van Riel writes:
+ > Rik van Riel wrote:
+ > > Nikita Danilov wrote:
+ > > 
+ > >> Probably I am missing something, but I don't see how that can help. For
+ > >> example, suppose (for simplicity) that we have swappiness of 100%, and
+ > >> that fraction of referenced anon pages gets slightly less than of file
+ > >> pages. get_scan_ratio() increases anon_percent, and shrink_zone() starts
+ > >> scanning anon queue more aggressively. As a result, pages spend less
+ > >> time there, and have less chance of ever being accessed, reducing
+ > >> fraction of referenced anon pages further, and triggering further
+ > >> increase in the amount of scanning, etc. Doesn't this introduce positive
+ > >> feed-back loop?
+ > > 
+ > > It's a possibility, but I don't think it will be much of an
+ > > issue in practice.
+ > > 
+ > > If it is, we can always use refaults as a correcting
+ > > mechanism - which would have the added benefit of being
+ > > able to do streaming IO without putting any pressure on
+ > > the active list, essentially clock-pro replacement with
+ > > just some tweaks to shrink_list()...
+ > 
+ > As an aside, due to the use-once algorithm file pages are at a
+ > natural disadvantage already.  I believe it would be really
+ > hard to construct a workload where anon pages suffer the positive
+ > feedback loop you describe...
 
-__init to __cpuinit in mtrr code.
+That scenario works for file queues too. Of course, all this is but a
+theoretical speculation at this point, but I am concerned that
 
-Resolves warnings similar to:
+ - that loop would tend to happen under various border conditions,
+ making it hard to isolate, diagnose, and debug, and
 
-WARNING: vmlinux - Section mismatch: reference to .init.text:mtrr_bp_init from .text between 'identify_cpu' (at offset 0xc040b38e) and 'detect_ht'
+ - long before it becomes explicitly visible (say, as an excessive cpu
+ consumption by scanner), it would ruin global lru ordering, degrading
+ overall performance.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Generally speaking, multi-queue replacement mechanisms were tried in the
+past, and they all suffer from the common drawback: once scanning rate
+is different for different queues, so is the notion of "hotness",
+measured by scanner. As a result multi-queue scanner fails to capture
+working set properly.
 
-diff --git a/arch/i386/kernel/cpu/mtrr/amd.c b/arch/i386/kernel/cpu/mtrr/amd.c
-index 0949cdb..375752a 100644
---- a/arch/i386/kernel/cpu/mtrr/amd.c
-+++ b/arch/i386/kernel/cpu/mtrr/amd.c
-@@ -112,7 +112,7 @@ static struct mtrr_ops amd_mtrr_ops = {
- 	.have_wrcomb       = positive_have_wrcomb,
- };
- 
--int __init amd_init_mtrr(void)
-+int __cpuinit amd_init_mtrr(void)
- {
- 	set_mtrr_ops(&amd_mtrr_ops);
- 	return 0;
-diff --git a/arch/i386/kernel/cpu/mtrr/centaur.c b/arch/i386/kernel/cpu/mtrr/centaur.c
-index cb9aa3a..8b61016 100644
---- a/arch/i386/kernel/cpu/mtrr/centaur.c
-+++ b/arch/i386/kernel/cpu/mtrr/centaur.c
-@@ -215,7 +215,7 @@ static struct mtrr_ops centaur_mtrr_ops = {
- 	.have_wrcomb       = positive_have_wrcomb,
- };
- 
--int __init centaur_init_mtrr(void)
-+int __cpuinit centaur_init_mtrr(void)
- {
- 	set_mtrr_ops(&centaur_mtrr_ops);
- 	return 0;
-diff --git a/arch/i386/kernel/cpu/mtrr/cyrix.c b/arch/i386/kernel/cpu/mtrr/cyrix.c
-index 0737a59..df38d8c 100644
---- a/arch/i386/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/i386/kernel/cpu/mtrr/cyrix.c
-@@ -370,7 +370,7 @@ static struct mtrr_ops cyrix_mtrr_ops = {
- 	.have_wrcomb       = positive_have_wrcomb,
- };
- 
--int __init cyrix_init_mtrr(void)
-+int __cpuinit cyrix_init_mtrr(void)
- {
- 	set_mtrr_ops(&cyrix_mtrr_ops);
- 	return 0;
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index f77fc53..fd97f84 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -30,14 +30,14 @@ static __initdata int mtrr_show;
- module_param_named(show, mtrr_show, bool, 0);
- 
- /*  Get the MSR pair relating to a var range  */
--static void __init
-+static void __cpuinit
- get_mtrr_var_range(unsigned int index, struct mtrr_var_range *vr)
- {
- 	rdmsr(MTRRphysBase_MSR(index), vr->base_lo, vr->base_hi);
- 	rdmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
- }
- 
--static void __init
-+static void __cpuinit
- get_fixed_ranges(mtrr_type * frs)
- {
- 	unsigned int *p = (unsigned int *) frs;
-@@ -60,7 +60,7 @@ static void __init print_fixed(unsigned base, unsigned step, const mtrr_type*typ
- }
- 
- /*  Grab all of the MTRR state for this CPU into *state  */
--void __init get_mtrr_state(void)
-+void __cpuinit get_mtrr_state(void)
- {
- 	unsigned int i;
- 	struct mtrr_var_range *vrs;
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-index 0acfb6a..cdbca55 100644
---- a/arch/i386/kernel/cpu/mtrr/main.c
-+++ b/arch/i386/kernel/cpu/mtrr/main.c
-@@ -103,7 +103,7 @@ static int have_wrcomb(void)
- }
- 
- /*  This function returns the number of variable MTRRs  */
--static void __init set_num_var_ranges(void)
-+static void __cpuinit set_num_var_ranges(void)
- {
- 	unsigned long config = 0, dummy;
- 
-@@ -116,7 +116,7 @@ static void __init set_num_var_ranges(void)
- 	num_var_ranges = config & 0xff;
- }
- 
--static void __init init_table(void)
-+static void __cpuinit init_table(void)
- {
- 	int i, max;
- 
-@@ -571,7 +571,7 @@ extern void amd_init_mtrr(void);
- extern void cyrix_init_mtrr(void);
- extern void centaur_init_mtrr(void);
- 
--static void __init init_ifs(void)
-+static void __cpuinit init_ifs(void)
- {
- #ifndef CONFIG_X86_64
- 	amd_init_mtrr();
-@@ -639,7 +639,7 @@ static struct sysdev_driver mtrr_sysdev_driver = {
-  * initialized (i.e. before smp_init()).
-  * 
-  */
--void __init mtrr_bp_init(void)
-+void __cpuinit mtrr_bp_init(void)
- {
- 	init_ifs();
- 
+Nikita.
+
+
+ > 
+ > -- 
+ > Politics is the struggle between those who want to make their country
+ > the best in the world, and those who believe it already is.  Each group
+ > calls the other unpatriotic.
+
