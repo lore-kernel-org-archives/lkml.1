@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbXCUPRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972AbXCUPTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbXCUPRs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbXCUPRs
+	id S1752972AbXCUPTb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbXCUPTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:17:48 -0400
-Received: from keetweej.vanheusden.com ([213.84.46.114]:36621 "EHLO
-	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752503AbXCUPRr (ORCPT
+	Wed, 21 Mar 2007 11:19:31 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:10059 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752972AbXCUPTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:17:47 -0400
-Date: Wed, 21 Mar 2007 16:17:45 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       "J. Bruce Fields" <bfields@fieldses.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Re: [2.6.20] BUG: workqueue leaked lock
-Message-ID: <20070321151745.GG741@vanheusden.com>
-References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru> <20070321080510.GA1939@ff.dom.local> <20070321144620.GC78@tv-sign.ru> <20070321151651.GA4547@ff.dom.local>
+	Wed, 21 Mar 2007 11:19:30 -0400
+X-AuditID: d80ac287-9d9d4bb000000de9-3a-46014d013cc5 
+Date: Wed, 21 Mar 2007 14:41:15 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc4-mm1: init hangs on tty_mutex
+In-Reply-To: <m1vegvlgyx.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <Pine.LNX.4.64.0703211429201.21322@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0703201930060.14654@blonde.wat.veritas.com>
+ <m1vegvlgyx.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070321151651.GA4547@ff.dom.local>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Sun Mar 18 00:02:24 CET 2007
-X-Message-Flag: PGP key-id: 0x1f28d8ae - consider encrypting your e-mail to me with PGP!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 21 Mar 2007 15:19:29.0153 (UTC) FILETIME=[51B2EF10:01C76BCC]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I thought you are trying to diagnose a bug and maybe Folkert could test,
-> if this patch makes any difference. Sorry, if I missed the real problem.
+On Tue, 20 Mar 2007, Eric W. Biederman wrote:
+> Hugh Dickins <hugh@veritas.com> writes:
+> 
+> > I get a hang at startup or shutdown: tiocsctty() holds tty_mutex, and
+> > now with Eric's tty-in-tiocsctty-when-we-steal-a-tty-hang-it-up.patch
+> > it can end up calling con_close(), which tries to take tty_mutex.
+> > So best revert that in hot-fixes, until Eric provides a better.
+> 
+> Well I'm confused I know I tested this, and I even added a printk and
+> saw it trigger a couple of times.
+> 
+> Hmm.  Looking at the code it is clearly not safe to hold the tty_mutex
+> when calling tty_vhangup.  I thought the other caller in tty_io.c was doing
+> that but on a second glance it is clearly not.  And the hangup and close
+> methods do seem to take the tty_mutex.
+> 
+> How this worked in my testing is beyond me..
 
-Yes please let me know when I can test a patch.
+I agree there's something weird about it, and wonder whether it's
+exposing some other, unrelated bug e.g. something uninitialized.
 
+What I omitted to mention is that I reliably had init hanging on
+startup with my KDB kernels (on i386 UP and i386 SMP and x86_64 SMP);
+but never saw my non-KDB kernels (nor my powerpc kernel) hanging
+there at startup - they would hang (in the same way) at shutdown
+(every time? I can't swear to that).  But I can't imagine what
+KDB would have to do with it, other than shifting stuff around.
 
-Folkert van Heusden
-
--- 
-www.biglumber.com <- site where one can exchange PGP key signatures 
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+Hugh
