@@ -1,91 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXCUX1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbXCUX22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753180AbXCUX1u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbXCUX1u
+	id S1753205AbXCUX22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXCUX22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:27:50 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:58443 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753180AbXCUX1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:27:48 -0400
-Date: Wed, 21 Mar 2007 16:27:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] Delete obsolete RAW driver feature.
-Message-Id: <20070321162717.34edb348.akpm@linux-foundation.org>
-In-Reply-To: <20070321231935.GC9092@redhat.com>
-References: <Pine.LNX.4.64.0703180754060.6605@CPE00045a9c397f-CM001225dbafb6>
-	<p73y7lu5yt6.fsf@bingen.suse.de>
-	<20070320165736.GA19781@redhat.com>
-	<20070320181442.1ae73295@lxorguk.ukuu.org.uk>
-	<20070321151952.02b5612d.akpm@linux-foundation.org>
-	<20070321231935.GC9092@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Mar 2007 19:28:28 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:64130 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753205AbXCUX21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 19:28:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ZNICp8HuMzoG5km/cddBdOiWS7lO0eTudksvlxdnqiOHSzah2fk9Wmv/QsImdQEwLAgqAZiGEFudIj1GQNvenDs5WAqeyFitkFZvP5EGoZhpuCQBX0tbhlIO4QnzgbxHp1uRjDpeAJfS2Yu2Hf28S3lNKzIDkuvHfdGyELHDK40=
+From: Maxim <maximlevitsky@gmail.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: [RFC] : Is /proc/kcore still usefull and/or maintained ?
+Date: Thu, 22 Mar 2007 01:28:18 +0200
+User-Agent: KMail/1.9.6
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <ak@suse.de>,
+       David Howells <dhowells@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+References: <200703211840.53242.maximlevitsky@gmail.com> <4601B89E.3060605@cosmosbay.com> <Pine.LNX.4.61.0703220011080.9555@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0703220011080.9555@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703220128.18610.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007 19:19:35 -0400
-Dave Jones <davej@redhat.com> wrote:
+On Thursday 22 March 2007 01:11:57 Jan Engelhardt wrote:
+> 
+> On Mar 21 2007 23:58, Eric Dumazet wrote:
+> > Hi all
+> >
+> > On i386 , 2.6.20 / 2.6.21-rc4 :
+> >
+> > # gdb vmlinux /proc/kcore
+> > error
+> > # file /proc/kcore
+> > error
+> 
+> 00:11 ichi:/hld # file /proc/kcore
+> /proc/kcore: ELF 32-bit LSB core file Intel 80386, version 1 (SYSV),
+> SVR4-style, from 'vmlinux'
+> 00:11 ichi:/hld # hexdump -C /proc/kcore | head -n5
+> 00000000  7f 45 4c 46 01 01 01 00  00 00 00 00 00 00 00 00  |.ELF............|
+> 00000010  04 00 03 00 01 00 00 00  00 00 00 00 34 00 00 00  |............4...|
+> 00000020  00 00 00 00 00 00 00 00  34 00 20 00 03 00 00 00  |........4. .....|
+> 00000030  00 00 00 00 04 00 00 00  94 00 00 00 00 00 00 00  |................|
+> 00000040  00 00 00 00 a8 06 00 00  00 00 00 00 00 00 00 00  |................|
+> 00:11 ichi:/hld # uname -rm
+> 2.6.20.2 i686
+> 
+> >
+> >
+> > Apparently we can not llseek() anymore on this file (returns -EINVAL)
+> >
+> > On x86_64 2.6.20 it's working
+> >
+> > # file /proc/kcore
+> > /proc/kcore: ELF 64-bit LSB core file x86-64, version 1 (SYSV), SVR4-style
+> >
+> >
+> > On i386 2.6.14 it's working too.
+> >
+> > Eric
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> >
+> 
+> Jan
 
-> On Wed, Mar 21, 2007 at 03:19:52PM -0700, Andrew Morton wrote:
-> 
->  > We've given people years of notice and _some_ applications have converted
->  > over to open("/dev/sda1", O_DIRECT), as they should.
->  > 
->  > Sure, it's a small and simple driver (now), so the cost of maintaining it
->  > is low.
->  > 
->  > But otoh, there's no reason for it to exist, except for userspace
->  > sluggishness.
->  > 
->  > So we can either give up, or we can push on: put a rude printk in there
->  > somewhere and who knows, maybe in five years time we can finally be rid of
->  > the thing.
-> 
-> We've actually tried to deprecate this twice. First in RHEL4, and more
-> recently in RHEL5.  The conversations go something like this..
-> 
-> Customer: app xyz doesn't work.
-> Us: it's using a deprecated API, it needs to be updated to use O_DIRECT
-> Customer: vendor says "pay us $$$$$ to go to version N+1"
-> 
-> Then we find out the customer can't move to N+1 because they have
-> some other piece of infrastructure that relies on semantics in the
-> old version, and screaming and hairpulling ensues.
-> 
-> (And this is one of the more promising conversations. Others
->  that have happened with certain db vendors are enough to
->  make the pope curse).
-> 
-> Adding printk's on open() of it doesn't solve the problem either.
-> The people that see them are the customers who run this stuff,
-> not the people who have the ability to change the code.
-> 
-> If it gets dropped from kernel.org, it wouldn't be long before
-> it'd find its way back into enterprise vendor kernels.
-> Isn't it better that we all at least ship the same thing? [1]
-> 
+Hello, 
 
-Yes, I realise it's a tough thing to do - large vendors of large databases
-aren't the most agile or clueful of organisations.
+	I once had similar problem with /proc/kcore
 
-If it's your assessment that it's just unreasonsable for us to expect that
-we'll ever be able to be rid of the thing then ho hum I guess we might as
-well give up.
+	then gdb showed all zeros for all kernel memory,
 
-It's a pretty sad situation though.
+	I had look at code , and I found that "Sparse memory model" was the problem, it doesn't say where kernel memory is 
+	(I don't remember details now)
+	I once choosed it just for experiment,  so I switched to Flat memory, and /proc/kcore works fine till then,
 
-> 
-> [1] Though admittedly the one in RHEL deviates from upstream
-> as it contains performance enhancements that were vetoed from
-> upstream acceptance due to it being "deprecated".
+	I use 32 bit x86 kernel.
 
-What enhancements are they?
+	Regards,
+		Maxim Levitsky
