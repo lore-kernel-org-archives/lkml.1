@@ -1,82 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752445AbXCUPKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbXCUPLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752445AbXCUPKR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 11:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXCUPKR
+	id S1752962AbXCUPLI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 11:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbXCUPLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 11:10:17 -0400
-Received: from usea-naimss2.unisys.com ([192.61.61.104]:1851 "EHLO
-	usea-naimss2.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752445AbXCUPKP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 11:10:15 -0400
-Subject: Re: [PATCH] I/O space boot parameter
-From: Daniel Yeisley <dan.yeisley@unisys.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-In-Reply-To: <20070320202652.GA15439@suse.de>
-References: <1174407505.23830.14.camel@localhost.localdomain>
-	 <20070320180020.GB21470@suse.de>
-	 <1174411538.23830.28.camel@localhost.localdomain>
-	 <20070320202652.GA15439@suse.de>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 09:37:52 -0400
-Message-Id: <1174484272.6299.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Mar 2007 15:10:08.0256 (UTC) FILETIME=[0360D800:01C76BCB]
+	Wed, 21 Mar 2007 11:11:08 -0400
+Received: from neon.samage.net ([83.149.67.130]:43515 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752962AbXCUPLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 11:11:06 -0400
+Message-ID: <3079.81.207.0.53.1174489854.squirrel@secure.samage.net>
+In-Reply-To: <460141B4.1080109@sciensis.com>
+References: <45FEB8B7.7020200@sciensis.com>
+    <20070320004001.GA11601@electric-eye.fr.zoreil.com>
+    <000601c76af9$a0ce3ce0$0864a8c0@scs1>
+    <4734.81.207.0.53.1174427010.squirrel@secure.samage.net>
+    <000e01c76b99$769cbbe0$0864a8c0@scs1>
+    <3118.81.207.0.53.1174480598.squirrel@secure.samage.net>
+    <46012E1A.3030309@sciensis.com>
+    <1860.81.207.0.53.1174485549.squirrel@secure.samage.net>
+    <460141B4.1080109@sciensis.com>
+Date: Wed, 21 Mar 2007 16:10:54 +0100 (CET)
+Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel     
+                version 2.6.20.1)
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Tasos Parisinos" <t.parisinos@sciensis.com>
+Cc: "Francois Romieu" <romieu@fr.zoreil.com>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.3
+X-Scan-Signature: efbdb1e6b7bcd6669f1cb70b651542d8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 13:26 -0700, Greg KH wrote:
-> On Tue, Mar 20, 2007 at 01:25:38PM -0400, Daniel Yeisley wrote:
-> > On Tue, 2007-03-20 at 11:00 -0700, Greg KH wrote:
-> > > On Tue, Mar 20, 2007 at 12:18:24PM -0400, Daniel Yeisley wrote:
-> > > > It has been mentioned before that large systems with a lot of PCI buses
-> > > > have issues with the 64k I/O space limit.  The ES7000 has a BIOS option
-> > > > to either assign I/O space to all adapters, or only to those that need
-> > > > it.  A list of supported adapters that don't need it is kept in the
-> > > > BIOS.  When this option is used, the kernel sees the BARs on the
-> > > > adapters and still tries to assign I/O space (until it runs out).  I've
-> > > > written a patch to implement a boot parameter that tells the kernel not
-> > > > to assign I/O space if the BIOS hasn't.  
-> > > 
-> > > How prelevant are machines like this?  And why are the BARs on these
-> > > devices wrong?
-> > > 
-> > I don't have any sales numbers, but I can tell you that our current
-> > systems can have up to 64 PCI buses.  
-> > 
-> > I've been working with Emulex cards, and my understanding is that the
-> > BARs on the devices aren't wrong, but we can't allocate 4k of I/O space
-> > for each one.  So we maintain a list in the BIOS of devices that don't
-> > actually need I/O space and then don't assign it.  I've tested an a
-> > x86_64 system with 20+ adapters and saw all the disks attached without
-> > any problems.
-> 
-> Ah.  Others are working on providing a fix for this too, but it is being
-> done in the drivers themselves, not in the pci core.  Look in the
-> linux-pci mailing list archives for those patches (I don't think they
-> every went into mainline for some reason, but I might be wrong...)
-> 
-> I suggest you work with those developers, as they have the same issue
-> that you are trying to solve here.
-> 
+On Wed, March 21, 2007 15:31, Tasos Parisinos wrote:
+> Indan Zupancic wrote:
+>> On Wed, March 21, 2007 14:07, Tasos Parisinos wrote:
+>>> How can one tamper (write) the kernel memory of a booted and running kernel
+>>> without using an exploitable bug?
+>>>
+>>> I mean, you can't mess with the bzImage on flash, the secure bootloader
+>>> boots it without
+>>> letting someone alter the (non crypto-) memory while loading the bzImage
+>>> on it, and then
+>>> no-one can run something that will tamper the system or write anywhere
+>>> on kernel memory
+>>> without exploiting a bug
+>>>
+>>> I mean, am i missing something here?
+>>>
+>>
+>> Depends on what you consider an exploitable bug. Does getting root access count?
+>> If not, then you must make very sure that all possible ways to modify kernel
+>> memory from userspace are thwarted (I don't know what those are, hopefully
+>> loading modules is the only one, but maybe there are smart other ways).
+>>
+>> Assuming one can't write kernel memory, it's also safe to assume kernel memory
+>> can be protected against reads (else the whole keys infrastructure is useless).
+>>
+>> But instead of only reading the bus traffic also modifying it doesn't seem so
+>> far fetched to me. That modification can be reduced to swapping one bit which
+>> tells whether the modules being loaded has a valid signature or not.
+>> Timing it might be tricky, but that can be automated.
+>>
+>> When someone has the hardware in his hands and really want to exploit it, you
+>> lose no matter what you do. At best you can make it harder and more expensive.
+>>
+>> In the end my point is that you might think that you can get away with less
+>> security when using RSA, but perhaps in reality you don't. At least when using
+>> symmetric key encryption you're forced to secure the whole thing more.
+>>
+>> So design it for symmetric keys. If it turns out that using asymmetric keys is
+>> more practical for whatever reason, fine, use those. But they won't give you
+>> added security.
+>>
+>> Greetings,
+>>
+>> Indan
+>>
+>>
+>> P.S. The whole argument of secure bootloader checks the kernel can be
+>> extrapolated to a secure kernel checking a user space program. Why not
+>> letting the kernel check the signature of a monolithic modprobe program,
+>> and let it do all the (RSA) checking. The expected hash of the modprobe
+>> program can be hardcoded in the kernel.
+>>
+>>
+>>
+>>
+> I agree that you have no more security that using symmetric
+> but we believe you have lower costs, simpler key management
+> (which is a big headache alone), tougher to break through
+> (not unbreakable) and more centralization
 
-I have seen some patches that make the drivers I/O port free here:
-http://lkml.org/lkml/2006/2/26/261
+It depends a bit on who you want to give control over what can and what
+can't be loaded whether centralization is an advantage or not. It might
+be a bit easier and simpler for the vendor, but if users have control
+over their hardware and thus the keys, it doesn't make any difference.
+Even for the vendor it isn't very hard to keep a database with all keys
+and signing modules with the right key when needed.
 
-I checked and they still aren't in the mainline.  
+I don't see where the lower cost or the increased toughness comes from.
+Don't forget that you need to protect the stored public key against
+modification as well (As well as the boot loader).
 
-I don't know that it matters though because I see all the disks attached
-to the system regardless of whether or not the adapters get I/O space.
-The real issue I have is with all the error messages I get at boot.  I
-see 40+ messages that say "PCI: Failed to allocate I/O
-resource..." (from setup-res.c) when the kernel tries to allocate the
-I/O space and can't.  The modules load fine.  I see all the disks just
-fine.  But that many error messages tends to raise concerns and causes
-support calls from customers.
+> As for modprobe u are right but we also need to check (apart
+> from kernel modules) the executables and libraries in the
+> usage scenario.
 
-Dan
+What about bytecode programs, self modifying software and mmap?
+One exploitable bug in any program renders all this checking void.
+
+But even then you can move all the checking to a userspace helper program.
+(Which can be in initramfs, glued to the kernel binary.)
+
+> About time:
+> In my pc system running 2.6.20.3 (2.66 GHz P4, 1G mem) the computation of
+> modular exponentiation of 1Kbit (with a 32bit exponent all bits set and
+> a 1024 bit key)
+> took almost 3ms. That's the time needed to check the signature of any
+> code loaded
+> in ram using this module, after having it hashed (sha1) and signature
+> extracted from elf.
+
+Time was never the problem, the extra code bloat and complexity is.
+(Though if you're going to check all binaries it probably is.)
+
+Greetings,
+
+Indan
+
 
