@@ -1,61 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbXCUAOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbXCUAOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbXCUAOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 20:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXCUAOV
+	id S1752093AbXCUAOi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 20:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXCUAOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 20:14:21 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42948 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752034AbXCUAOU (ORCPT
+	Tue, 20 Mar 2007 20:14:37 -0400
+Received: from smtp.ono.com ([62.42.230.12]:41454 "EHLO resmaa02.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752093AbXCUAOg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 20:14:20 -0400
-Message-ID: <46008705.6010007@vmware.com>
-Date: Tue, 20 Mar 2007 17:14:45 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Matt Mackall <mpm@selenic.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-References: <1174272469.11680.23.camel@localhost.localdomain> <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org> <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com> <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org> <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org> <46000C7E.4070001@goop.org> <20070320224324.GL10459@waste.org> <46006963.1020401@vmware.com> <46006F66.4030901@goop.org>
-In-Reply-To: <46006F66.4030901@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Mar 2007 20:14:36 -0400
+Date: Wed, 21 Mar 2007 01:14:32 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070321011432.4c089dac@werewolf-wl>
+In-Reply-To: <20070320173657.09a13940@werewolf-wl>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<20070320173657.09a13940@werewolf-wl>
+X-Mailer: Claws Mail 2.8.1cvs22 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Zachary Amsden wrote:
->   
->> I think Jeremy's idea was to have interrupt handlers leave interrupts
->> disabled on exit if pda.intr_mask was set.  In which case, they would
->> bypass all work and we could never get preempted.
->>     
->
-> Yes, I was worried that if we left the isr without actually handling the
-> interrupt, it would still be asserted and we'd just get interrupted
-> again.  The idea is that we avoid touching cli/sti for the common case
-> of no interrupts while interrupts are disabled, but we'd still need to
-> fall back to using them if an interrupt becomes pending.
->
->   
->> I don't think leaving hardware interrupts disabled for such a long
->> time is good though. 
->>     
->
-> How long?  It would be no longer than now, and possibly less, wouldn't it?
->   
+On Tue, 20 Mar 2007 17:36:57 +0100, "J.A. Magallón" <jamagallon@ono.com> wrote:
 
-Hmm.  Perhaps.  Something about the asymmetry bothers me alot though.
+> On Mon, 19 Mar 2007 20:56:23 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > 
+> > Temporarily at
+> > 
+> >   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> > 
+> > Will appear later at
+> > 
+> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
+> > 
+> 
+> (oops, I forgot LKML)
+> 
+> I have no udev events for my dvd-rw...
+> When I insert a disc in the dvd reader:
+> 
+> werewolf:~# udevmonitor
+> udevmonitor prints the received event from the kernel [UEVENT]
+> and the event which udev sends out after rule processing [UDEV]
+> 
+> UEVENT[1174385162.607021] mount    /block/sr1 (block)
+> UDEV  [1174385162.610056] mount    /block/sr1 (block)
+> 
+> If I insert it in the dvd-rw drive, nothing happens.
+> 
 
-Zach
+I realized that my scsi devices were like this:
 
+werewolf:~# lsscsi
+[0:0:0:0]    cd/dvd  HL-DT-ST DVDRAM GSA-H10N  JL10  /dev/.tmp-11-0
+[0:0:1:0]    disk    IOMEGA   ZIP 250          51.G  /dev/sda
+[1:0:0:0]    disk    ATA      ST3120022A       3.06  /dev/sdb
+[1:0:1:0]    cd/dvd  TOSHIBA  DVD-ROM SD-M1712 1004  /dev/.tmp-11-1
+[2:0:0:0]    disk    ATA      ST3200822AS      3.01  /dev/sdc
+[7:0:0:0]    disk    LG       USBDrive         1100  /dev/sdd
+
+After a service udev force-reload:
+
+werewolf:~# lsscsi
+[0:0:0:0]    cd/dvd  HL-DT-ST DVDRAM GSA-H10N  JL10  /dev/sr0
+[0:0:1:0]    disk    IOMEGA   ZIP 250          51.G  /dev/sda
+[1:0:0:0]    disk    ATA      ST3120022A       3.06  /dev/sdb
+[1:0:1:0]    cd/dvd  TOSHIBA  DVD-ROM SD-M1712 1004  /dev/sr1
+[2:0:0:0]    disk    ATA      ST3200822AS      3.01  /dev/sdc
+[7:0:0:0]    disk    LG       USBDrive         1100  /dev/sdd
+
+If I insert a disc in /dev/sr1 and eject it:
+
+werewolf:~# lsscsi
+[0:0:0:0]    cd/dvd  HL-DT-ST DVDRAM GSA-H10N  JL10  /dev/sr0
+[0:0:1:0]    disk    IOMEGA   ZIP 250          51.G  /dev/sda
+[1:0:0:0]    disk    ATA      ST3120022A       3.06  /dev/sdb
+[1:0:1:0]    cd/dvd  TOSHIBA  DVD-ROM SD-M1712 1004  /dev/.tmp-11-1
+[2:0:0:0]    disk    ATA      ST3200822AS      3.01  /dev/sdc
+[7:0:0:0]    disk    LG       USBDrive         1100  /dev/sdd
+
+If I reload the disc in the TOSHIBA, it is automounted but the strange
+device is still there.
+
+Trying with /dev/sr0 still gives no events. What is happening here ?
+It is the kernel or is udev setup ?
+
+TIA
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.20-jam05 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #2 SMP PREEMPT
