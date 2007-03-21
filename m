@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbXCUXZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXCUX1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbXCUXZO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 19:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbXCUXZL
+	id S1753180AbXCUX1u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 19:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbXCUX1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 19:25:11 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:44086 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753167AbXCUXZI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 19:25:08 -0400
-Date: Wed, 21 Mar 2007 17:21:55 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] I/O space boot parameter
-In-reply-to: <fa.YYUCGI1tr2Apb+hF3LEwyIhLDPM@ifi.uio.no>
-To: Daniel Yeisley <dan.yeisley@unisys.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Greg KH <gregkh@suse.de>
-Message-id: <4601BE13.1080500@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.GB583YHCocLIeymeVam9mpGF9CI@ifi.uio.no>
- <fa.QhX1j7epBXZBOc8pKi+Kk+1Ry2o@ifi.uio.no>
- <fa.236bWOhrGT0j4UCxsmp32/n8NCo@ifi.uio.no>
- <fa.5exuGSZI65YO9pz/5yzd/gtgBJI@ifi.uio.no>
- <fa.YYUCGI1tr2Apb+hF3LEwyIhLDPM@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 21 Mar 2007 19:27:50 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:58443 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753180AbXCUX1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 19:27:48 -0400
+Date: Wed, 21 Mar 2007 16:27:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH] Delete obsolete RAW driver feature.
+Message-Id: <20070321162717.34edb348.akpm@linux-foundation.org>
+In-Reply-To: <20070321231935.GC9092@redhat.com>
+References: <Pine.LNX.4.64.0703180754060.6605@CPE00045a9c397f-CM001225dbafb6>
+	<p73y7lu5yt6.fsf@bingen.suse.de>
+	<20070320165736.GA19781@redhat.com>
+	<20070320181442.1ae73295@lxorguk.ukuu.org.uk>
+	<20070321151952.02b5612d.akpm@linux-foundation.org>
+	<20070321231935.GC9092@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Yeisley wrote:
->> Ah.  Others are working on providing a fix for this too, but it is being
->> done in the drivers themselves, not in the pci core.  Look in the
->> linux-pci mailing list archives for those patches (I don't think they
->> every went into mainline for some reason, but I might be wrong...)
->>
->> I suggest you work with those developers, as they have the same issue
->> that you are trying to solve here.
->>
+On Wed, 21 Mar 2007 19:19:35 -0400
+Dave Jones <davej@redhat.com> wrote:
+
+> On Wed, Mar 21, 2007 at 03:19:52PM -0700, Andrew Morton wrote:
 > 
-> I have seen some patches that make the drivers I/O port free here:
-> http://lkml.org/lkml/2006/2/26/261
+>  > We've given people years of notice and _some_ applications have converted
+>  > over to open("/dev/sda1", O_DIRECT), as they should.
+>  > 
+>  > Sure, it's a small and simple driver (now), so the cost of maintaining it
+>  > is low.
+>  > 
+>  > But otoh, there's no reason for it to exist, except for userspace
+>  > sluggishness.
+>  > 
+>  > So we can either give up, or we can push on: put a rude printk in there
+>  > somewhere and who knows, maybe in five years time we can finally be rid of
+>  > the thing.
 > 
-> I checked and they still aren't in the mainline.  
+> We've actually tried to deprecate this twice. First in RHEL4, and more
+> recently in RHEL5.  The conversations go something like this..
 > 
-> I don't know that it matters though because I see all the disks attached
-> to the system regardless of whether or not the adapters get I/O space.
-> The real issue I have is with all the error messages I get at boot.  I
-> see 40+ messages that say "PCI: Failed to allocate I/O
-> resource..." (from setup-res.c) when the kernel tries to allocate the
-> I/O space and can't.  The modules load fine.  I see all the disks just
-> fine.  But that many error messages tends to raise concerns and causes
-> support calls from customers.
+> Customer: app xyz doesn't work.
+> Us: it's using a deprecated API, it needs to be updated to use O_DIRECT
+> Customer: vendor says "pay us $$$$$ to go to version N+1"
+> 
+> Then we find out the customer can't move to N+1 because they have
+> some other piece of infrastructure that relies on semantics in the
+> old version, and screaming and hairpulling ensues.
+> 
+> (And this is one of the more promising conversations. Others
+>  that have happened with certain db vendors are enough to
+>  make the pope curse).
+> 
+> Adding printk's on open() of it doesn't solve the problem either.
+> The people that see them are the customers who run this stuff,
+> not the people who have the ability to change the code.
+> 
+> If it gets dropped from kernel.org, it wouldn't be long before
+> it'd find its way back into enterprise vendor kernels.
+> Isn't it better that we all at least ship the same thing? [1]
+> 
 
-I don't think this can be handled entirely at the driver level. Assuming 
-that the IO regions get allocated at bootup, and there's not enough 
-space for all devices' IO space to fit, there's no guarantee that the 
-ones that didn't fit are the ones where using the IO space is optional, 
-and so you could end up with some broken devices.
+Yes, I realise it's a tough thing to do - large vendors of large databases
+aren't the most agile or clueful of organisations.
 
-I suppose you could handle this by assigning the devices who had no 
-space assigned by the BIOS last, so that we wouldn't try to assign those 
-until we'd already assigned everything else..
+If it's your assessment that it's just unreasonsable for us to expect that
+we'll ever be able to be rid of the thing then ho hum I guess we might as
+well give up.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+It's a pretty sad situation though.
 
+> 
+> [1] Though admittedly the one in RHEL deviates from upstream
+> as it contains performance enhancements that were vetoed from
+> upstream acceptance due to it being "deprecated".
+
+What enhancements are they?
