@@ -1,94 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933813AbXCUTeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933790AbXCUTj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933813AbXCUTeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 15:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933817AbXCUTeS
+	id S933790AbXCUTj2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 15:39:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933817AbXCUTj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 15:34:18 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37412 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933813AbXCUTeR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 15:34:17 -0400
-Date: Wed, 21 Mar 2007 20:34:20 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Sid Boyce <g3vbv@blueyonder.co.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org, auxsvr@gmail.com
-Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
-Message-ID: <20070321193420.GP752@stusta.de>
-References: <45E59D64.3070202@blueyonder.co.uk> <200702281805.13822.auxsvr@gmail.com> <20070307214730.87859590.akpm@linux-foundation.org> <45EFBC73.2030005@blueyonder.co.uk> <46016EAF.6010801@blueyonder.co.uk>
+	Wed, 21 Mar 2007 15:39:28 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40128 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933790AbXCUTj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 15:39:28 -0400
+Date: Wed, 21 Mar 2007 12:37:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Paul Rolland <rol@as2917.net>
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>
+Subject: Re: Why is /dev on a different filesystem ? [Kernel 2.6.20.3]
+Message-ID: <20070321193733.GA18778@kroah.com>
+References: <04ea01c76bed$11b0d050$4b00a8c0@donald>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46016EAF.6010801@blueyonder.co.uk>
+In-Reply-To: <04ea01c76bed$11b0d050$4b00a8c0@donald>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 05:43:11PM +0000, Sid Boyce wrote:
-> Sid Boyce wrote:
-> >Andrew Morton wrote:
-> >>(cc restored.  Please always do reply-to-all)
-> >>
-> >> 
-> >>>On Wed, 28 Feb 2007 18:05:13 +0200 auxsvr@gmail.com wrote:
-> >>>On Wednesday 28 February 2007 17:19, Sid Boyce wrote:
-> >>>   
-> >>>>openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to
-> >>>>require a password to unlock, but it asks for password. When the screen
-> >>>>unlocks, kwin is gone with no errors logged in /var/log/kdm or
-> >>>>/var/log/messages. No problems with 2.6.20.
-> >>>>
-> >>>>Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2.
-> >>>>Regards
-> >>>>Sid.
-> >>>>      
-> >>>This is the linux kernel mailing list. Perhaps you should post your 
-> >>>problem to the opensuse mailing list.
-> >>>    
-> >>
-> >>2.6.20 worked.
-> >>
-> >>2.6.20-rc2 did not.
-> >>
-> >>Working theory: the kernel broke.
-> >>
-> >>Sid, the chances that anyone can work out what caused this are pretty 
-> >>low. It would be great if you could perform a git bisection search 
-> >>sometime in
-> >>the next few weeks, work out which commit caused this.
-> >>
-> >>Thanks.
-> >>
-> >>
-> >>
-> >>  
-> >I shall go back to 2.6.20-git3 and work forward. Up to 2.6.20-git2 was OK.
-> >Regards
-> >Sid.
-> >
+On Wed, Mar 21, 2007 at 08:13:50PM +0100, Paul Rolland wrote:
+> Hello,
 > 
-> I tracked the problem down to 2.6.20-git11. Up to 2.6.20-git10 is OK, 
-> but from 2.6.20-git11 up to current 2.6.21-rc4-git2 all exhibit the problem.
+> I was trying to backup a machine using tar and the --one-file-system option
+> and I was getting an archive without /dev, but tar was spitting :
+> /dev: file is on a different filesystem; not dumped
 
-Thanks for this search.
+That is probably because your distro is using udev which usually means
+tmpfs is mounted at /dev/
 
-Looking at the changes between 2.6.20-git10 and 2.6.20-git11, the only 
-suspicious changes are the 60 sysctl patches by Eric.
+> So, I had a look at the code in tar, and the comparison is done on the
+> stat.st_dev field... 
+> I then wrote a simple program to stat("/", ...) and stat("/dev", ...),
+> and got :
 
-Eric, can you look at this issue?
+What does /proc/mounts show?
 
-> Regards
-> Sid.
+thanks,
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+greg k-h
