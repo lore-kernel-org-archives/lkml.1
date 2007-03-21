@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964931AbXCUU6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964960AbXCUU6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964931AbXCUU6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964960AbXCUU6e
+	id S964960AbXCUU6x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964981AbXCUU6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:58:34 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40817 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964931AbXCUU6d (ORCPT
+	Wed, 21 Mar 2007 16:58:53 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:42634 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964960AbXCUU6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:58:33 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: sukadev@us.ibm.com, linux-kernel@vger.kernel.org, serue@us.ibm.com,
-       haveblue@us.ibm.com, Containers <containers@lists.osdl.org>,
-       clg@fr.ibm.com
-Subject: Re: [PATCH] Define CLONE_NEWPID flag
-References: <20070321194103.GA29820@us.ibm.com>
-	<20070321133938.bff535a3.akpm@linux-foundation.org>
-Date: Wed, 21 Mar 2007 14:57:30 -0600
-In-Reply-To: <20070321133938.bff535a3.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 21 Mar 2007 13:39:38 -0700")
-Message-ID: <m1y7lq9ux1.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 21 Mar 2007 16:58:38 -0400
+Date: Wed, 21 Mar 2007 15:58:34 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Ian Kent <raven@themaw.net>,
+       Cedric Le Goater <clg@fr.ibm.com>, sukadev@us.ibm.com,
+       Andrew Morton <akpm@osdl.org>, Dave Hansen <haveblue@us.ibm.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
+Message-ID: <20070321205834.GB21517@sergelap.austin.ibm.com>
+References: <1174055467.3397.17.camel@raven.themaw.net> <45FAAD4F.4000204@fr.ibm.com> <1174063618.3397.58.camel@raven.themaw.net> <m1hcslm1tc.fsf@ebiederm.dsl.xmission.com> <20070319200839.GB19449@sergelap.austin.ibm.com> <m1odmpvuft.fsf@ebiederm.dsl.xmission.com> <20070320201548.GA21312@sergelap.austin.ibm.com> <m17itbmypc.fsf@ebiederm.dsl.xmission.com> <20070320214125.GA5585@sergelap.austin.ibm.com> <m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> 
+> >> >  void autofs4_dentry_release(struct dentry *);
+> >> >  extern void autofs4_kill_sb(struct super_block *);
+> >> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+> >> > index 9857543..4a9ad9b 100644
+> >> > --- a/fs/autofs4/waitq.c
+> >> > +++ b/fs/autofs4/waitq.c
+> >> > @@ -141,8 +141,8 @@ static void autofs4_notify_daemon(struct
+> >> >  		packet->ino = wq->ino;
+> >> >  		packet->uid = wq->uid;
+> >> >  		packet->gid = wq->gid;
+> >> > -		packet->pid = wq->pid;
+> >> > -		packet->tgid = wq->tgid;
+> >> > +		packet->pid = pid_nr(wq->pid);
+> >> > +		packet->tgid = pid_nr(wq->tgid);
+> >> >  		break;
+> >> 
+> >> I'm assuming we build the packet in the process context of the
+> >> daemon we are sending it to.  If not we have a problem here.
+> >
+> > Yes this is data being sent to a userspace daemon (Ian pls correct me if
+> > I'm wrong) so the pid_nr is the only thing we can send.
+> 
+> Agreed.  The question is are we in the user space daemon's process when
+> we generate the pid_nr.  Or do we stuff this in some kind of socket,
+> and the socket switch locations of the packet.
+> 
+> Basically I'm just trying to be certain we are calling pid_nr in the
+> proper context.  Otherwise we could get the wrong pid when we have
+> multiple pid namespaces in play.
 
->> Index: lx26-21-rc3-mm2/include/linux/sched.h
->> ===================================================================
->> --- lx26-21-rc3-mm2.orig/include/linux/sched.h 2007-03-20 20:13:19.000000000
-> -0700
->> +++ lx26-21-rc3-mm2/include/linux/sched.h 2007-03-21 11:10:33.000000000 -0700
->> @@ -26,6 +26,7 @@
->> #define CLONE_STOPPED 0x02000000 /* Start in stopped state */
->>  #define CLONE_NEWUTS		0x04000000	/* New utsname group? */
->>  #define CLONE_NEWIPC		0x08000000	/* New ipcs */
->> +#define CLONE_NEWPID		0x10000000      /* New pid namespace */
->>  
->
-> Do we actually have any need to reserve it at this time?  I'd have thought
-> that we could defer adding this until we have some code in-kernel which
-> uses it.
+We need to know what the userspace daemon being written to is doing
+with autofs_ptype_{missing,expire}_{in,}direct() messages.
 
-In practice this is pretty much reserved already but I understand the sentiment.
+If I understand correctly, the pid being sent is of a process which
+tried to automount some directory.  The message is being sent to the
+autofs daemon, which should be running in the root pid namespace.
 
-Currently the plan is to work on the core pid namespace and get those functions
-merged at least to -mm with a big fat CONFIG_EXPERIMENTAL so people
-can really understand what we are talking about when we say a
-pid_namespace.  Then go through and finish up all converting the rest
-of the pid uses that we haven't tackled yet.  There aren't that many
-left and most of the remaining conversions only make sense in the
-context of a pid namespace.
+So as it is, the pid_nr(wq->pid) should be done under the init
+pid_namespace, since it's a kthread.  So as long as the userspace
+automount daemon is started in the root pid namespace, the pid it gets
+will be the right one.
 
-Currently we are one or two review cycles away from being able to push
-out the core pid namespace code.
+Ian, does what I'm saying make sense, or am I wrong about how things
+work for autofs?
 
-Further it is actually critical that we have a clone flag for the pid
-namespace because unshare is very much harder if it is possible at
-all.
+thanks,
+-serge
 
-Personally if you want to delay it a week or two, until the rest of
-the code is ready that is fine.  Mostly getting it out now is about
-release early and release often.
-
-Eric
+PS
+Note that if I'm right, but some machine starts autofs in a child
+pid_namespace, the pid_nr() the way I have it is wrong.  I'm not sure in
+that case how we go about fixing that.  Somehow we need to store the
+autofs userspace daemon's pid namespace pointer to help us find the
+proper pid_nr.
