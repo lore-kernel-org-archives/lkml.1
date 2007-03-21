@@ -1,172 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbXCUMxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751016AbXCUM7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752720AbXCUMxX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 08:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXCUMxX
+	id S1751016AbXCUM7j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXCUM7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 08:53:23 -0400
-Received: from mx-a.polytechnique.fr ([129.104.30.14]:50664 "EHLO
-	mx-a.polytechnique.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752720AbXCUMxW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 08:53:22 -0400
-Message-ID: <46012A93.7000302@crans.org>
-Date: Wed, 21 Mar 2007 13:52:35 +0100
-From: =?ISO-8859-1?Q?Mathieu_B=E9rard?= <Mathieu.Berard@crans.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
+	Wed, 21 Mar 2007 08:59:38 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:47985 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751016AbXCUM7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 08:59:37 -0400
+Date: Wed, 21 Mar 2007 21:56:31 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Wu, Bryan" <bryan.wu@analog.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       bert hubert <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/4] Blackfin: architecture update patch
+Message-ID: <20070321125631.GA13192@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Wu, Bryan" <bryan.wu@analog.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	bert hubert <bert.hubert@netherlabs.nl>,
+	linux-kernel@vger.kernel.org
+References: <1174471618.5648.50.camel@roc-desktop>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "Eric D. Mudama" <edmudama@gmail.com>
-Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image
- Windows driver
-References: <45DD2EC9.4050403@shaw.ca> <45DF67C4.8090802@garzik.org> <4600DF90.3030902@gmail.com>
-In-Reply-To: <4600DF90.3030902@gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174471618.5648.50.camel@roc-desktop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo a écrit :
-> Jeff Garzik wrote:
->
-> Mathieu, just to be sure, can you post the result of 'hdparm -I
-> /dev/sdX' and 'lspci -nn'?
->
-Hi,
-no problem :
+On Wed, Mar 21, 2007 at 06:06:58PM +0800, Wu, Bryan wrote:
+> +++ linux-2.6/arch/blackfin/Kconfig	2007-03-21 14:38:42.000000000 +0800
+> @@ -21,6 +21,10 @@ config RWSEM_XCHGADD_ALGORITHM
+>  	bool
+>  	default n
+>  
+> +config BLACKFIN
+> +	bool
+> +	default y
+> +
+>  config BFIN
+>  	bool
+>  	default y
 
-lspci -nn:
-00:00.0 Host bridge [0600]: Intel Corporation Mobile 915GM/PM/GMS/910GML
-Express Processor to DRAM Controller [8086:2590] (rev 03)
-00:01.0 PCI bridge [0604]: Intel Corporation Mobile 915GM/PM Express PCI
-Express Root Port [8086:2591] (rev 03)
-00:1c.0 PCI bridge [0604]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
-Family) PCI Express Port 1 [8086:2660] (rev 03)
-00:1c.1 PCI bridge [0604]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
-Family) PCI Express Port 2 [8086:2662] (rev 03)
-00:1d.0 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW
-(ICH6 Family) USB UHCI #1 [8086:2658] (rev 03)
-00:1d.1 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW
-(ICH6 Family) USB UHCI #2 [8086:2659] (rev 03)
-00:1d.2 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW
-(ICH6 Family) USB UHCI #3 [8086:265a] (rev 03)
-00:1d.3 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW
-(ICH6 Family) USB UHCI #4 [8086:265b] (rev 03)
-00:1d.7 USB Controller [0c03]: Intel Corporation 82801FB/FBM/FR/FW/FRW
-(ICH6 Family) USB2 EHCI Controller [8086:265c] (rev 03)
-00:1e.0 PCI bridge [0604]: Intel Corporation 82801 Mobile PCI Bridge
-[8086:2448] (rev d3)
-00:1e.2 Multimedia audio controller [0401]: Intel Corporation
-82801FB/FBM/FR/FW/FRW (ICH6 Family) AC'97 Audio Controller [8086:266e]
-(rev 03)
-00:1e.3 Modem [0703]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
-Family) AC'97 Modem Controller [8086:266d] (rev 03)
-00:1f.0 ISA bridge [0601]: Intel Corporation 82801FBM (ICH6M) LPC
-Interface Bridge [8086:2641] (rev 03)
-00:1f.1 IDE interface [0101]: Intel Corporation 82801FB/FBM/FR/FW/FRW
-(ICH6 Family) IDE Controller [8086:266f] (rev 03)
-00:1f.2 IDE interface [0101]: Intel Corporation 82801FBM (ICH6M) SATA
-Controller [8086:2653] (rev 03)
-00:1f.3 SMBus [0c05]: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
-Family) SMBus Controller [8086:266a] (rev 03)
-01:00.0 VGA compatible controller [0300]: ATI Technologies Inc M24
-[Radeon Mobility X600] [1002:5462]
-06:01.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd.
-RTL-8139/8139C/8139C+ [10ec:8139] (rev 10)
-06:02.0 Network controller [0280]: Intel Corporation PRO/Wireless 2200BG
-Network Connection [8086:4220] (rev 05)
-06:04.0 CardBus bridge [0607]: Texas Instruments PCIxx21/x515 Cardbus
-Controller [104c:8031]
-06:04.2 FireWire (IEEE 1394) [0c00]: Texas Instruments OHCI Compliant
-IEEE 1394 Host Controller [104c:8032]
-06:04.3 Mass storage controller [0180]: Texas Instruments PCIxx21
-Integrated FlashMedia Controller [104c:8033]
-06:04.4 Generic system peripheral [0805]: Texas Instruments
-PCI6411/6421/6611/6621/7411/7421/7611/7621 Secure Digital Controller
-[104c:8034]
+Again, there's no reason to have both of these. Pick one and stick with
+it.
 
-hdparm -I /dev/sda:
+> diff -purN linux-2.6-orig/arch/blackfin/kernel/flat.c linux-2.6/arch/blackfin/kernel/flat.c
+> --- linux-2.6-orig/arch/blackfin/kernel/flat.c	1970-01-01 08:00:00.000000000 +0800
+> +++ linux-2.6/arch/blackfin/kernel/flat.c	2007-03-21 14:43:37.000000000 +0800
+[snip]
+> +	switch (type) {
+> +		case FLAT_BFIN_RELOC_TYPE_16_BIT:
+> +		case FLAT_BFIN_RELOC_TYPE_16H_BIT:
+> +			usptr = (unsigned short *)ptr;
+> +#ifdef DEBUG_BFIN_RELOC
+> +			pr_info(" *usptr = %x", get_unaligned(usptr));
+> +#endif
+> +			val = get_unaligned(usptr);
 
-/dev/sda:
+The debugging here looks broken, just use pr_debug() and DEBUG as normal,
+then you can kill off this DEBUG_BFIN_RELOC thing.
 
-ATA device, with non-removable media
-        Model Number:       HTS541010G9SA00                        
-        Serial Number:      MP2ZM4X0GSWJKR
-        Firmware Revision:  MBZOC60D
-Standards:
-        Used: ATA/ATAPI-7 T13 1532D revision 1
-        Supported: 7 6 5 4
-Configuration:
-        Logical         max     current
-        cylinders       16383   16383
-        heads           16      16
-        sectors/track   63      63
-        --
-        CHS current addressable sectors:   16514064
-        LBA    user addressable sectors:  195371568
-        LBA48  user addressable sectors:  195371568
-        device size with M = 1024*1024:       95396 MBytes
-        device size with M = 1000*1000:      100030 MBytes (100 GB)
-Capabilities:
-        LBA, IORDY(can be disabled)
-        Queue depth: 32
-        Standby timer values: spec'd by Vendor, no device specific minimum
-        R/W multiple sector transfer: Max = 16  Current = 0
-        Advanced power management level: 128 (0x80)
-        Recommended acoustic management value: 128, current value: 254
-        DMA: mdma0 mdma1 mdma2 udma0 udma1 udma2 udma3 udma4 *udma5
-             Cycle time: min=120ns recommended=120ns
-        PIO: pio0 pio1 pio2 pio3 pio4
-             Cycle time: no flow control=240ns  IORDY flow control=120ns
-Commands/features:
-        Enabled Supported:
-           *    SMART feature set
-                Security Mode feature set
-           *    Power Management feature set
-           *    Write cache
-           *    Look-ahead
-           *    Host Protected Area feature set
-           *    WRITE_BUFFER command
-           *    READ_BUFFER command
-           *    NOP cmd
-           *    DOWNLOAD_MICROCODE
-           *    Advanced Power Management feature set
-                Power-Up In Standby feature set
-           *    SET_FEATURES required to spinup after power up
-                SET_MAX security extension
-                Automatic Acoustic Management feature set
-           *    48-bit Address feature set
-           *    Device Configuration Overlay feature set
-           *    Mandatory FLUSH_CACHE
-           *    FLUSH_CACHE_EXT
-           *    SMART error logging
-           *    SMART self-test
-           *    General Purpose Logging feature set
-           *    WRITE_{DMA|MULTIPLE}_FUA_EXT
-           *    IDLE_IMMEDIATE with UNLOAD
-           *    SATA-I signaling speed (1.5Gb/s)
-           *    Native Command Queueing (NCQ)
-           *    Host-initiated interface power management
-                Non-Zero buffer offsets in DMA Setup FIS
-                DMA Setup Auto-Activate optimization
-                Device-initiated interface power management
-                In-order data delivery
-           *    Software settings preservation
-Security:
-        Master password revision code = 65534
-                supported
-        not     enabled
-        not     locked
-        not     frozen
-        not     expired: security count
-        not     supported: enhanced erase
-        64min for SECURITY ERASE UNIT.
-Checksum: correct
+> @@ -346,3 +351,46 @@ unsigned long get_wchan(struct task_stru
+>  	while (count++ < 16);
+>  	return 0;
+>  }
+> +
+> +#if !defined(CONFIG_NO_ACCESS_CHECK)
+> +int _access_ok(unsigned long addr, unsigned long size)
 
--- 
-Mathieu
+You may want to change this to CONFIG_ACCESS_CHECK instead, it's a bit
+more intuitive than checking ! CONFIG_NO_ACCESS_CHECK.
 
+> --- linux-2.6-orig/arch/blackfin/mach-bf533/boards/ezkit.c	2007-03-21 17:32:30.000000000 +0800
+> +++ linux-2.6/arch/blackfin/mach-bf533/boards/ezkit.c	2007-03-21 14:42:17.000000000 +0800
+> @@ -6,7 +6,7 @@
+>   * Created:      2005
+>   * Description:
+>   *
+> - * Rev:          $Id: ezkit.c,v 1.27 2006/11/24 10:23:54 aubrey Exp $
+> + * Rev:          $Id: ezkit.c 2794 2007-03-05 05:27:47Z cooloney $
+>   *
+>   * Modified:     Robin Getz <rgetz@blackfin.uclinux.org> - Named the boards
+>   *               Copyright 2005 National ICT Australia (NICTA)
+
+The RCS tags should be killed off as well, it's clear that they don't
+really mean anthing, even in this case.
+
+> diff -purN linux-2.6-orig/arch/blackfin/mach-bf533/boards/generic_board.c linux-2.6/arch/blackfin/mach-bf533/boards/generic_board.c
+> --- linux-2.6-orig/arch/blackfin/mach-bf533/boards/generic_board.c	2007-03-21 17:32:30.000000000 +0800
+> +++ linux-2.6/arch/blackfin/mach-bf533/boards/generic_board.c	2007-03-21 14:42:17.000000000 +0800
+> @@ -6,7 +6,7 @@
+>   * Created:      2005
+>   * Description:
+>   *
+> - * Rev:          $Id: generic_board.c,v 1.9 2006/09/23 06:35:21 vapier Exp $
+> + * Rev:          $Id: generic_board.c 2684 2007-01-22 03:59:04Z vapier $
+>   *
+>   * Modified:
+>   *               Copyright 2005 National ICT Australia (NICTA)
+
+An then do-nothing patches like this can be left out..
+
+> +#if defined(CONFIG_USB_ISP1760_HCD) || defined(CONFIG_USB_ISP1760_HCD_MODULE)
+> +static struct resource bfin_isp1761_resources[] = {
+> +	[0] = {
+> +		.name	= "isp1761-regs",
+> +		.start  = ISP1761_BASE + 0x00000000,
+> +		.end    = ISP1761_BASE + 0x000fffff,
+> +		.flags  = IORESOURCE_MEM,
+> +	},
+> +	[1] = {
+> +		.start  = ISP1761_IRQ,
+> +		.end    = ISP1761_IRQ,
+> +		.flags  = IORESOURCE_IRQ | IORESOURCE_IRQ_LOWLEVEL,
+> +	},
+
+Here you have low level.
+
+> +};
+> +
+> +static struct platform_device bfin_isp1761_device = {
+> +	.name           = "isp1761",
+> +	.id             = 0,
+> +	.num_resources  = ARRAY_SIZE(bfin_isp1761_resources),
+> +	.resource       = bfin_isp1761_resources,
+> +};
+> +
+> +static struct platform_device *bfin_isp1761_devices[] = {
+> +	&bfin_isp1761_device,
+> +};
+> +
+> +int __init bfin_isp1761_init(void)
+> +{
+> +	unsigned int num_devices=ARRAY_SIZE(bfin_isp1761_devices);
+> +
+> +	printk(KERN_INFO "%s(): registering device resources\n", __FUNCTION__);
+> +	set_irq_type(ISP1761_IRQ, IRQF_TRIGGER_FALLING);
+> +
+But here you set it to falling?
+
+> diff -purN linux-2.6-orig/include/asm-blackfin/asm-offsets.h linux-2.6/include/asm-blackfin/asm-offsets.h
+> --- linux-2.6-orig/include/asm-blackfin/asm-offsets.h	1970-01-01 08:00:00.000000000 +0800
+> +++ linux-2.6/include/asm-blackfin/asm-offsets.h	2007-03-21 15:21:10.000000000 +0800
+
+This is generated by Kbuild, there's no point in including it in the
+diff.
+
+> -
+> +/* CSYNC implementation for C file */
+>  #if defined(ANOMALY_05000312) && defined(ANOMALY_05000244)
+
+Is there some reason these aren't config options? Perhaps an errata
+sub-menu might be more intuitive.
+
+> diff -purN linux-2.6-orig/include/asm-blackfin/entry.h linux-2.6/include/asm-blackfin/entry.h
+> --- linux-2.6-orig/include/asm-blackfin/entry.h	2007-03-21 17:32:31.000000000 +0800
+> +++ linux-2.6/include/asm-blackfin/entry.h	2007-03-21 14:15:41.000000000 +0800
+> @@ -52,10 +52,8 @@
+>  #define RESTORE_ALL_SYS		restore_context_no_interrupts
+>  #define RESTORE_CONTEXT		restore_context_with_interrupts
+>  
+> -#define STR(X) STR1(X)
+> -#define STR1(X) #X
+> -# define PT_OFF_ORIG_P0		208
+> -# define PT_OFF_SR		8
+> +#define PT_OFF_ORIG_P0		208
+> +#define PT_OFF_SR		8
+>  
+
+Should these be in asm-offsets?
+
+The rest of the patch looks good, this is certainly an improvement!
