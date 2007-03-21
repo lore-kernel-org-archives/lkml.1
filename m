@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964821AbXCUUVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964856AbXCUUVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964821AbXCUUVj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964826AbXCUUVj
+	id S964856AbXCUUVr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964826AbXCUUVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:21:39 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52118 "EHLO smtp.osdl.org"
+	Wed, 21 Mar 2007 16:21:46 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:52119 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964821AbXCUUVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:21:38 -0400
-Date: Wed, 21 Mar 2007 13:17:21 -0700
+	id S964817AbXCUUVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 16:21:40 -0400
+Date: Wed, 21 Mar 2007 13:15:32 -0700
 From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>,
-       rkuhn@e18.physik.tu-muenchen.de, andi@firstfloor.org,
-       dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 2/2] tcp: cubic optimization
-Message-ID: <20070321131721.448de522@freekitty>
-In-Reply-To: <20070321131532.66e7f0e1@freekitty>
+To: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>
+Cc: rkuhn@e18.physik.tu-muenchen.de, andi@firstfloor.org, dada1@cosmosbay.com,
+       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH 1/2] div64_64 optimization
+Message-ID: <20070321131532.66e7f0e1@freekitty>
+In-Reply-To: <20070321191537.GA28914@1wt.eu>
 References: <20070307170731.2b4397e3@freekitty>
 	<20070307.185539.48527371.davem@davemloft.net>
 	<45EF7EB7.8040806@linux-foundation.org>
@@ -28,7 +27,6 @@ References: <20070307170731.2b4397e3@freekitty>
 	<20070313205020.GA5418@1wt.eu>
 	<20070321115419.483a655a@freekitty>
 	<20070321191537.GA28914@1wt.eu>
-	<20070321131532.66e7f0e1@freekitty>
 Organization: Linux Foundation
 X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
@@ -37,76 +35,38 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use willy's work in optimizing cube root by having table for small values.
+Minor optimization of div64_64.  do_div() already does optimization
+for the case of 32 by 32 divide, so no need to do it here.
 
 Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
---- net-2.6.22.orig/net/ipv4/tcp_cubic.c	2007-03-21 12:57:11.000000000 -0700
-+++ net-2.6.22/net/ipv4/tcp_cubic.c	2007-03-21 13:04:59.000000000 -0700
-@@ -91,23 +91,51 @@
- 		tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
- }
- 
--/*
-- * calculate the cubic root of x using Newton-Raphson
-+/* calculate the cubic root of x using a table lookup followed by one
-+ * Newton-Raphson iteration.
-+ * Avg err ~= 0.195%
-  */
- static u32 cubic_root(u64 a)
+--- net-2.6.22.orig/lib/div64.c	2007-03-21 12:03:59.000000000 -0700
++++ net-2.6.22/lib/div64.c	2007-03-21 12:04:46.000000000 -0700
+@@ -61,20 +61,18 @@
+ /* 64bit divisor, dividend and result. dynamic precision */
+ uint64_t div64_64(uint64_t dividend, uint64_t divisor)
  {
--	u32 x;
--
--	/* Initial estimate is based on:
--	 * cbrt(x) = exp(log(x) / 3)
-+	u32 x, b, shift;
-+	/*
-+	 * cbrt(x) MSB values for x MSB values in [0..63].
-+	 * Precomputed then refined by hand - Willy Tarreau
-+	 *
-+	 * For x in [0..63],
-+	 *   v = cbrt(x << 18) - 1
-+	 *   cbrt(x) = (v[x] + 10) >> 6
- 	 */
--	x = 1u << (fls64(a)/3);
-+	static const u8 v[] = {
-+		/* 0x00 */    0,   54,   54,   54,  118,  118,  118,  118,
-+		/* 0x08 */  123,  129,  134,  138,  143,  147,  151,  156,
-+		/* 0x10 */  157,  161,  164,  168,  170,  173,  176,  179,
-+		/* 0x18 */  181,  185,  187,  190,  192,  194,  197,  199,
-+		/* 0x20 */  200,  202,  204,  206,  209,  211,  213,  215,
-+		/* 0x28 */  217,  219,  221,  222,  224,  225,  227,  229,
-+		/* 0x30 */  231,  232,  234,  236,  237,  239,  240,  242,
-+		/* 0x38 */  244,  245,  246,  248,  250,  251,  252,  254,
-+	};
-+
-+	b = fls64(a);
-+	if (b < 7) {
-+		/* a in [0..63] */
-+		return ((u32)v[(u32)a] + 35) >> 6;
-+	}
-+
-+	b = ((b * 84) >> 8) - 1;
-+	shift = (a >> (b * 3));
+-	uint32_t d = divisor;
++	uint32_t high, d;
  
--	/* converges to 32 bits in 3 iterations */
--	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
--	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
--	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
-+	x = ((u32)(((u32)v[shift] + 10) << b)) >> 6;
+-	if (divisor > 0xffffffffULL) {
+-		unsigned int shift = fls(divisor >> 32);
++	high = divisor >> 32;
++	if (high) {
++		unsigned int shift = fls(high);
  
-+	/*
-+	 * Newton-Raphson iteration
-+	 *                         2
-+	 * x    = ( 2 * x  +  a / x  ) / 3
-+	 *  k+1          k         k
-+	 */
-+	x = (2 * x + (u32)div64_64(a, (u64)x * (u64)(x - 1)));
-+	x = ((x * 341) >> 10);
- 	return x;
+ 		d = divisor >> shift;
+ 		dividend >>= shift;
+-	}
++	} else
++		d = divisor;
+ 
+-	/* avoid 64 bit division if possible */
+-	if (dividend >> 32)
+-		do_div(dividend, d);
+-	else
+-		dividend = (uint32_t) dividend / d;
++	do_div(dividend, d);
+ 
+ 	return dividend;
  }
- 
-
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
