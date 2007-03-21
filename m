@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933916AbXCUUBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964791AbXCUUCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933916AbXCUUBq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 16:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933821AbXCUUBq
+	id S964791AbXCUUCB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 16:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964790AbXCUUB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 16:01:46 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:29897 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933916AbXCUUBp (ORCPT
+	Wed, 21 Mar 2007 16:01:59 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:61042 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964788AbXCUUB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 16:01:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OhjgnQp3mH632z5D3p+G6qnfJlANW8vwLbzu6nKA6JpsqXq6QK6pEnrCHGFv0cYtHgR9iu9lTc//ZLc6WRcpPvWk4RE1bVzIg4uA7XCep6u2OaG1y1gnO56mzHsuzN/3isS1cp9oiFlRxYBapaO0aaBTCaShvpZSjABBvsgqcEQ=
-Message-ID: <d12bb7ab0703211301n22a3e6eeh8cad4ed447d493d3@mail.gmail.com>
-Date: Wed, 21 Mar 2007 21:01:34 +0100
-From: "Victor Fernandes" <victor.dias.fernandes@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: New kernel mouse recognition problem
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <d12bb7ab0703201053q7860c42fl9d78a8985a2a414b@mail.gmail.com>
+	Wed, 21 Mar 2007 16:01:57 -0400
+X-AuditID: d80ac287-a106abb000000de9-2b-46018f332691 
+Date: Wed, 21 Mar 2007 20:01:50 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Kees Cook <kees@outflux.net>
+cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       Marcus Meissner <meissner@suse.de>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@codemonkey.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: revert PIE randomization?
+In-Reply-To: <20070321181730.GV22797@outflux.net>
+Message-ID: <Pine.LNX.4.64.0703211940370.24602@blonde.wat.veritas.com>
+References: <20070321181730.GV22797@outflux.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <63140.87.244.133.121.1174080814.squirrel@postino>
-	 <39605.87.244.133.121.1174151177.squirrel@postino>
-	 <200703191259.31104.dtor@insightbb.com>
-	 <d12bb7ab0703201053q7860c42fl9d78a8985a2a414b@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 21 Mar 2007 20:01:51.0441 (UTC) FILETIME=[C416EC10:01C76BF3]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oh yes it helps, it works nicely, on X and on the console with gpm.
+On Wed, 21 Mar 2007, Kees Cook wrote:
+> Hugh Dickins said:
+> > Inconsistency detected by ld.so: rtld.c: 1217: dl_main:
+> >  Assertion `_rtld_local._dl_rtld_map.l_libname' failed!
+> 
+> I'm trying to reproduce the problem you saw (so that I can then test 
+> your proposed fix).  However, I haven't had any luck.  I've got a 
+> pie-compiled version of bash, and I've been running it in a loop for a 
+> while now with the original randomization patch.  (I can clearly see the 
+> base address bouncing around.)
+> 
+> I'm at just over 10 million exec's, and I haven't hit the problem.  :(
+> 
+> Do you have any clues on how to trigger this more reliably?
 
-Most probably psmouse is built-in on the kernel because I have no
-module with that name and if I check on the, what I suppose was the
-build .config kernel file, I can see the following:
+It was in doing kernel builds that I hit it, nothing special: an
+overnight cycle of kernel building would collapse in a few hours.
+openSUSE 10.2.
 
-CONFIG_INPUT_MOUSE=y
- CONFIG_MOUSE_PS2=y
+If that doesn't reproduce it for you, let me know and I'll try again
+with the original patch, to reproduce it here: maybe something else
+has changed in 2.6.21-rc to affect it.
 
- Do you want me to check something else?
+> 
+> Also, does anyone have any thoughts on why x86 uses a ELF_ET_DYN_BASE 
+> below the libraries, where as x86_64 uses one above them?  From this, 
+> I'd expect x86_64 to collide with the libraries at times.  I need more 
+> help understanding the memory layouts, I guess.  :)
 
-Don't bother to Cc me directly anymore, I have subscribe to the
-mailing list with another e-mail address to avoid problems. Some
-domain migration issues, sorry for the inconveniency. Regards,
+Andi would tell definitively, but I guess it's merely that with so
+much more address space to play with, x86_64 can divide up that space
+more satisfactorily.
 
-Victor Fernandes
+But don't be misled: try "ulimit -s unlimited" and I expect you'll
+find i386 allocating mmap addresses (hence libraries) from the
+opposite end, below ELF_ET_DYN_BASE.
 
-On 3/19/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
->  Hi Victor,
->
-> On Saturday 17 March 2007 13:06, Victor Fernandes wrote:
-> > Dmitry,
-> >
-> > Thanks for you feedback, sorry for the delay on my reply but because
-> > I'm not subscribe to the list, only now I saw your message. I hope you
-> > will be able to see that this message is a follow up on the previous ones.
-> > If you do not mind can you please Cc directly to me.
-> >
->
-> I did CC you on my reply but unfortunaltely your mail server did
-> not like me. Let's see if this one goes through.
->
-> > Now to answer your questions.
-> > The mouse do not works properly, I mean with this that I have the mouse
-> > pointer on the screen, with gpm and X, but it jumps randomly when used.
-> >
->
-> Does it help if you boot with "psmouse.proto=exps"? (Is psmouse a built-in
-> or a module)?
->
-> --
-> Dmitry
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Hugh
