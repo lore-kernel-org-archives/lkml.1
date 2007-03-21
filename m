@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbXCUCrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbXCUCwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752585AbXCUCrH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 22:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbXCUCrH
+	id S1752519AbXCUCwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 22:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbXCUCwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 22:47:07 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:42449 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752585AbXCUCrG (ORCPT
+	Tue, 20 Mar 2007 22:52:49 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:59925 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752558AbXCUCwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 22:47:06 -0400
-Date: Tue, 20 Mar 2007 19:47:01 -0700
-From: sukadev@us.ibm.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [linux-pm] 2.6.21-rc4-mm1: freezing of processes broken
-Message-ID: <20070321024701.GC13436@us.ibm.com>
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <46004B02.7020407@gmail.com> <200703202206.38168.rjw@sisk.pl> <200703210149.33240.rjw@sisk.pl> <m1lkhre6f5.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1lkhre6f5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+	Tue, 20 Mar 2007 22:52:47 -0400
+Message-ID: <46009CEA.1050206@zytor.com>
+Date: Tue, 20 Mar 2007 19:48:10 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>
+CC: David Miller <davem@davemloft.net>, hch@infradead.org, arjan@infradead.org,
+       zippel@linux-m68k.org, dmlb2000@gmail.com, linux-kernel@vger.kernel.org,
+       gdb@sourceware.org
+Subject: Re: PAGE_SIZE Availability Inconsistency
+References: <20070308.134825.45514445.davem@davemloft.net> <20070309024324.GA24695@kryten> <45F0E014.8060907@zytor.com> <20070308.202718.68040662.davem@davemloft.net> <45F0E309.70403@zytor.com> <20070321021202.GA11745@kryten>
+In-Reply-To: <20070321021202.GA11745@kryten>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman [ebiederm@xmission.com] wrote:
-| "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-| 
-| > On Tuesday, 20 March 2007 22:06, Rafael J. Wysocki wrote:
-| >> On Tuesday, 20 March 2007 21:58, Jiri Slaby wrote:
-| >> > Rafael J. Wysocki napsal(a):
-| >> > > Actually, the problem is 100% reproducible on my system too and I doubt
-| > it's
-| >> > > caused by the recent freezer patches.
-| >> > 
-| >> > I don't know what exactly do you mean by recent, but 2.6.21-rc3-mm2 works
-| >> > for me.
-| >> 
-| >> Thanks for the confirmation.
-| >> 
-| >> The patches I was talking about had already been in 2.6.21-rc3-mm2, so the
-| >> reason of this failure must be different.
-| >
-| > Bisection shows that the freezing of processes has been broken by one of the
-| > patches:
-| >
-| > remove-the-likelypid-check-in-copy_process.patch
-| 
-| Grr.  Oleg's review of remove-the-likelypid-check-in-copy-process
-| showed it to be questionable (and it was just an optimization)
-| so we can get rid of that one easily. 
-| 
-| Although all it did that was really questionable was add
-| the idle process to the global process list and bump a process
-| count when we forked the idle process.  Not dramatically dangerous
-| things.
-| 
-| > use-task_pgrp-task_session-in-copy_process.patch
-| 
-| As I recall that patch was pretty trivial, and shouldn't have
-| anything to do with the freezer.   The process freezer doesn't care
-| about pids does it?
+Anton Blanchard wrote:
+> Hi,
+> 
+>> The advantage would be that it wouldn't require a v3 for platforms for 
+>> which MIN_PAGE_SIZE == PAGE_SIZE, which accounts for a very large 
+>> percentage of systems.
+>>
+>> You still have to look for the darn magic in two places, so there is no 
+>> reason for it to be different.
+> 
+> The problem is if you can hit in two places then what PAGE_SIZE should
+> you use to size the contents of the swap header while remaining backward
+> compatible.
+> 
+> Im leaning towards Dave suggestion of creating a clean v3 swap header.
+> 
 
-Yes. I think this one is trivial too. Here is the effective change in
-copy_process():
+Changing the header format doesn't make *ANY* difference whatsoever.
 
--               attach_pid(p, PIDTYPE_PGID, find_pid(pgid));
--               attach_pid(p, PIDTYPE_SID, find_pid(sid));
-+               attach_pid(p, PIDTYPE_PGID, task_pgrp(current));
-+               attach_pid(p, PIDTYPE_SID, task_session(current));
+You have to write two copies of the swap header, and the kernel should 
+check for a header at MIN_PAGE_SIZE first and then at PAGE_SIZE.
+
+If there are fields (other than position) in the v2 swap header that are 
+dependent on PAGE_SIZE, then the copy at MIN_PAGE_SIZE should be sized 
+using MIN_PAGE_SIZE, and the copy at PAGE_SIZE should be sized at 
+PAGE_SIZE.  It's that simple.
+
+Creating a new format will not help that one iota, and will create 
+gratuitous incompatiblity for the very common case of PAGE_SIZE == 
+MIN_PAGE_SIZE.
+
+	-hpa
 
 
-| 
-| Eric
+	-hpa
+
