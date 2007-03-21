@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbXCUN7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbXCUOAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752859AbXCUN7m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 09:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXCUN7m
+	id S1752854AbXCUOAm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 10:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXCUOAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 09:59:42 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:57858 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752860AbXCUN7l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 09:59:41 -0400
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Artem Bityutskiy <dedekind@infradead.org>, Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20070321135033.GA7235@thunk.org>
-References: <20070319170838.GP4892@waste.org>
-	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
-	 <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron>
-	 <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron>
-	 <20070320135231.GA6043@thunk.org>
-	 <1174406395.30079.139.camel@zod.rchland.ibm.com>
-	 <20070320220312.GC29493@thunk.org> <1174466675.17249.182.camel@sauron>
-	 <20070321135033.GA7235@thunk.org>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 08:59:28 -0500
-Message-Id: <1174485568.3416.59.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-2.fc7) 
+	Wed, 21 Mar 2007 10:00:42 -0400
+Received: from mail.cs.tut.fi ([130.230.4.42]:37698 "EHLO mail.cs.tut.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752854AbXCUOAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 10:00:41 -0400
+X-Greylist: delayed 1968 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Mar 2007 10:00:41 EDT
+Message-ID: <460132D0.3020008@tut.fi>
+Date: Wed, 21 Mar 2007 15:27:44 +0200
+From: Timo Aaltonen <timo.aaltonen@tut.fi>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: jim@coolzero.info
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Survey about the Kernel Community
+References: <457EA2C2.5060408@tut.fi> <35725.84.81.1.164.1165927769.squirrel@webmail.coolzero.info> <457F989B.5030004@tut.fi>
+In-Reply-To: <457F989B.5030004@tut.fi>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-21 at 09:50 -0400, Theodore Tso wrote:
-> 
-> And at this point, I don't doubt that you will at some point going to
-> heed my comments --- but note that doing so will involve a massive
-> refactorization of the code, which will tend to invalidate the reviews
-> done of this current (take 3) version of the patches; so I am bit
-> curious what was your motiviation in reposting this round of the
-> patches.  
 
-Yes.  However, nobody has actually reviewed any of the _code_ in this
-round.  So while it may have been somewhat superfluous from a submission
-standpoint, at least no code review has been wasted and we are getting
-some fairly decent design discussions.
+Hi,
 
-josh
+It took a while for us to analyze the results (and to write a
+publication about it). The summary about the answers can be found at URL
+<http://www.cs.tut.fi/~tta/Summary.html> and the aswers to the open
+question #34 at URL <http://www.cs.tut.fi/~tta/roleOfTrust.html>.
 
+Thaks for everybody.
+
+Timo Aaltonen and Maria Antikainen
+
+
+>Hi,
+>
+>Well, I filled in the survey. Was wondering if you also post the
+>results
+>here at the mailing list. That would be nice.
+>
+>Greetings,
+>
+>Jim.
+>
+>> Hi all,
+>>
+>> We would like to ask you few question about Linux Kernel Community.
+>>The
+>> survey consists of 31 multiple choice questions and three text boxes.
+>> The survey is conducted by Institute of Business Information
+>>Management
+>> and Institute of Software Systems at Tampere University of
+>>Technology.
+>>
+>> We close the survey at 24th of December. The results of our study
+>>will
+>> be published  in an international academic conference.
+>>
+>> Please devote a few minutes to help us in understanding OSS
+>>communities.
+>> The survey is located at
+>> <http://www.surveymonkey.com/s.asp?u=577413001783>.
+>>
+>> Thanks in advance.
+>>
+>> --
+>> Timo Aaltonen and Maria Antikainen
+>> firstname.lastname@tut.fi
