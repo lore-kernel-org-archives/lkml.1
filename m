@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXCUQMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932713AbXCUQMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932184AbXCUQMO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 12:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932702AbXCUQMO
+	id S932713AbXCUQMz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 12:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932798AbXCUQMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 12:12:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36031 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932184AbXCUQMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 12:12:12 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <4269.1174417930@redhat.com> 
-References: <4269.1174417930@redhat.com>  <m1bqinsvy3.fsf@ebiederm.dsl.xmission.com> <m1wt1dvxzu.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703152043290.24211@blonde.wat.veritas.com> <3378.1173204813@redhat.com> <Pine.LNX.4.64.0703051843030.10272@blonde.wat.veritas.com> <Pine.LNX.4.64.0703021646050.13167@blonde.wat.veritas.com> <20070216165042.GB409@lnx-holt.americas.sgi.com> <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> <18817.1171656543@redhat.com> <29317.1172931029@redhat.com> <12852.1173449522@redhat.com> <12838.1173998825@redhat.com> <11772.1174388792@redhat.com> 
-To: ebiederm@xmission.com (Eric W. Biederman)
-cc: Hugh Dickins <hugh@veritas.com>, bryan.wu@analog.com,
-       Robin Holt <holt@sgi.com>,
-       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>, haoki@redhat.com,
-       Robin Getz <rgetz@blackfin.uclinux.org>, dhowells@redhat.com
-Subject: Re: Move to unshared VMAs in NOMMU mode? 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 21 Mar 2007 16:11:35 +0000
-Message-ID: <10866.1174493495@redhat.com>
+	Wed, 21 Mar 2007 12:12:55 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45194 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932713AbXCUQMy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 12:12:54 -0400
+X-Originating-Ip: 74.108.131.3
+Date: Wed, 21 Mar 2007 12:08:58 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Tasos Parisinos <t.parisinos@sciensis.com>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1][NEW] crypto API: rsa algorithm module patch (kernel
+ version 2.6.20.3)
+In-Reply-To: <20070321090420.f46cef4f.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0703211207170.7576@localhost.localdomain>
+References: <Pine.LNX.4.64.0703211701260.27640@zenon.ceid.upatras.gr>
+ <20070321090420.f46cef4f.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 21 Mar 2007, Randy Dunlap wrote:
 
-David Howells <dhowells@redhat.com> wrote:
+> On Wed, 21 Mar 2007 17:13:31 +0200 (EET) Tasos Parisinos wrote:
 
-> I don't quite what your limitations are
+> > +/*
+> > + * mpi_alloc - allocate an mpi
+> > + * @n: pointer pointer to the allocated mpi
+> > + * @limbs: number of allocated limbs (32 bit digits)
+> > + *
+> > + * The allocated mpi will be zeroed and not canonicalized
+> > + */
 
- (8) Handling mappings that extend beyond the end of file.
 
-David
+if this is extractable kernel doc content, shouldn't it begin with
+"/**" rather than just "/*"?
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
