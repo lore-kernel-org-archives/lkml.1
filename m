@@ -1,64 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbXCUVfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbXCUVfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbXCUVfK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 17:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXCUVfK
+	id S1752987AbXCUVfn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 17:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbXCUVfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 17:35:10 -0400
-Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:48185 "HELO
-	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752984AbXCUVfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 17:35:08 -0400
-X-YMail-OSG: pjw7UZkVM1nFyALxVVqcIST4efuApn9dwh3R7L1UVUbwYfruJq.UdMmUHdwiJM8vh6rmFfam3HlbLLlxtaPAwFXf7zg6WNVPSaT6jtPVLzG5nzkpmWg2ivceCMy9UeFYawpiJtQpfh8F25w-
-Date: Wed, 21 Mar 2007 14:35:02 -0700
-From: Chris Wedgwood <cw@f00f.org>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com,
-       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
-       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC][PATCH] sys_fallocate() system call
-Message-ID: <20070321213501.GA1208@tuatara.stupidest.org>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com>
+	Wed, 21 Mar 2007 17:35:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60000 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752987AbXCUVfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 17:35:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net, Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
+Date: Wed, 21 Mar 2007 22:38:33 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       David Chinner <dgc@sgi.com>
+References: <200703211840.53242.maximlevitsky@gmail.com> <1174512160.6665.97.camel@nigel.suspend2.net>
+In-Reply-To: <1174512160.6665.97.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070321120425.GA27273@amitarora.in.ibm.com>
+Message-Id: <200703212238.33897.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I hate to comment at this late stage, especially on something that I
-think is really a great idea (I did similar more complex, sys_blkalloc
-with even more arguments time ago --- I'm glad given how complex this
-thread has become I didn't post them now).
+On Wednesday, 21 March 2007 22:22, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Wed, 2007-03-21 at 18:40 +0200, Maxim Levitsky wrote:
+> > Hi,
+> > 
+> > Starting with 2.6.21-rc1 suspend to ram and disk doesn't work anymore on my system.
+> > 
+> > I did a git-bisect and found that those commits break it:
+> > 
+> > e3c7db621bed4afb8e231cb005057f2feb5db557 - [PATCH] [PATCH] PM: Change code ordering in main.c
+> > ed746e3b18f4df18afa3763155972c5835f284c5 - [PATCH] [PATCH] swsusp: Change code ordering in disk.c
+> > 259130526c267550bc365d3015917d90667732f1 - [PATCH] [PATCH] swsusp: Change code ordering in user.c
+> > 
+> > I already reported about it, but now i know the reason why suspend breaks.
+> > 
+> > The problem is that both cpu_up/cpu_down were allowed to sleep until now, 
+> > and it did work because those functions could be called only in process context
+> > (the one that writes to /sys/devices/system/cpu/cpu*/online) or  idle thread  that does smp_init()).
+> > 
+> > But now they are called _after_ all tasks were suspended, so if cpu_down tries for example to take a lock
+> > that is taken by different process, it can't since the different proccess is frozen and can't release the lock.
+> > 
+> > I tested this and all results are positive:
+> > 
+> > I disabled 2nd cpu by hand, and then suspend to ram was successfull.
+> > Suspend to disk went correctly, but it hang on resume, and I know why.
+> > It hang in old kernel trying to disable 2nd cpu that was enabled by it.
+> > 
+> > I was able using kdb to confirm that this is true because it was still possible to enter kdb, and see that
+> > idle thread (swapper) was active, and uswsusp was waiting on mutex inside workqueue_cpu_callback.
+> > 
+> > The solution for this problem seems to be ether complete audit of code that uses register_cpu_notifier,
+> > to ensure that it doesn't sleep. 
+> > Also documentation should be changed to note about it.
+> > 
+> > Or, it is also possible to revert this change.
+> 
+> Do you know exactly which mutex was being waited on and where it was
+> taken? If you can say that, it would be much more helpful.
 
-In the past there wasn't that much incentive to get this functionality
-exposed because of various other issues (mmap + page dirty didn't
-flush reliably) which are close to being resolve, so I think the
-timing of this is really great....
+I think this is the XFS problem with freezable workqueues.
+
+Maxim, please try to apply the appended patch and see if it helps.
+
+Greetings,
+Rafael
 
 
-On Wed, Mar 21, 2007 at 05:34:25PM +0530, Amit K. Arora wrote:
+---
+Since freezable workqueues are broken in 2.6.21-rc
+(cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
+http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
+it's better to remove them altogether for 2.6.21 and change the only user of
+them (XFS) accordingly.
 
-> As suggested by you and Russel, I have made this change to the
-> patch.  Here is how it looks like now. Please let me know if anyone
-> has concerns about passing arguments this way (breaking each
-> "loff_t" into two "u32"s).
+---
+ fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I really dislike breaking 64-bit args up unless it's necessary.  I
-guess it doesn't really hurt, but it feels needlessly ugly.
-
-> +	.long sys_fallocate		/* 320 */
-
-> +/*
-> + * fallocate() modes
-> + */
-> +#define FA_ALLOCATE	0x1
-> +#define FA_DEALLOCATE	0x2
-> +
-
-given there are the only TWO modes right now, why not leave the
-arguments as 64-bit sane and simply have two syscalls, one for each?
+Index: linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
+===================================================================
+--- linux-2.6.21-rc4.orig/fs/xfs/linux-2.6/xfs_buf.c
++++ linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
+@@ -1829,11 +1829,11 @@ xfs_buf_init(void)
+ 	if (!xfs_buf_zone)
+ 		goto out_free_trace_buf;
+ 
+-	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
++	xfslogd_workqueue = create_workqueue("xfslogd");
+ 	if (!xfslogd_workqueue)
+ 		goto out_free_buf_zone;
+ 
+-	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
++	xfsdatad_workqueue = create_workqueue("xfsdatad");
+ 	if (!xfsdatad_workqueue)
+ 		goto out_destroy_xfslogd_workqueue;
+ 
