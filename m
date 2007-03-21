@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933114AbXCURHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbXCURJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933114AbXCURHi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 13:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933138AbXCURHi
+	id S933057AbXCURJg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 13:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXCURJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 13:07:38 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50606 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933114AbXCURHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 13:07:37 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+kNRwhYmekpZuC5mYyxZPp2cgliUFVG20fpDxEDR
-	xirOZtF0wexmcx
-Subject: Re: RSDL v0.31
-From: Mike Galbraith <efault@gmx.de>
-To: Paolo Ornati <ornati@fastwebnet.it>
-Cc: Willy Tarreau <w@1wt.eu>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Xavier Bestel <xavier.bestel@free.fr>, Mark Lord <lkml@rtr.ca>,
-       Al Boldi <a1426z@gawab.com>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070321161147.54c7a727@localhost>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703172048.46267.kernel@kolivas.org>
-	 <1174125534.7734.2.camel@Homer.simpson.net>
-	 <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca>
-	 <1174321617.30876.69.camel@frg-rhel40-em64t-04> <45FEBBF5.9060002@rtr.ca>
-	 <1174322580.30876.72.camel@frg-rhel40-em64t-04>
-	 <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
-	 <20070320061152.GW943@1wt.eu> <1174377787.9756.21.camel@Homer.simpson.net>
-	 <1174489064.5379.42.camel@Homer.simpson.net>
-	 <20070321161147.54c7a727@localhost>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 18:07:33 +0100
-Message-Id: <1174496853.6441.2.camel@Homer.simpson.net>
+	Wed, 21 Mar 2007 13:09:36 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44318 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933057AbXCURJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 13:09:35 -0400
+Date: Wed, 21 Mar 2007 09:08:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>, David Chinner <dgc@sgi.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] 2.6.21-rc4-mm1: freezing of processes broken
+Message-Id: <20070321090824.38d67ce3.akpm@linux-foundation.org>
+In-Reply-To: <20070321165534.GA476@tv-sign.ru>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<1174446834.6665.3.camel@nigel.suspend2.net>
+	<20070321142350.GB78@tv-sign.ru>
+	<200703211545.17919.rjw@sisk.pl>
+	<20070321082029.2a38e09f.akpm@linux-foundation.org>
+	<20070321165534.GA476@tv-sign.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-21 at 16:11 +0100, Paolo Ornati wrote:
-> On Wed, 21 Mar 2007 15:57:44 +0100
-> Mike Galbraith <efault@gmx.de> wrote:
+On Wed, 21 Mar 2007 19:55:34 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+
+> On 03/21, Andrew Morton wrote:
+> >
+> > On Wed, 21 Mar 2007 15:45:16 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > On Wednesday, 21 March 2007 15:23, Oleg Nesterov wrote:
+> > > > > 
+> > > > > Could the freezer code be trying to freeze the idle thread as a result?
+> > > > 
+> > > > Yes. remove-the-likelypid-check-in-copy_process.patch make idle threads
+> > > > visible to for_each_process/do_each_thread. Note also that idle threads
+> > > > have ->mm != NULL. freezer, oom_kill, move_task_off_dead_cpu, etc, should
+> > > > not see idle threads, but they do now.
+> > > 
+> > > Well, I think this is a good enough reason for asking Andrew to drop this
+> > > patch.
+> > 
+> > Or we change the freezer to skip pid==0 tasks.
 > 
-> > I was more than a bit surprised that mainline did this well, considering
-> > that the proggy was one someone posted long time ago to demonstrate
-> > starvation issues with the interactivity estimator.  (source not
-> > available unfortunately, was apparently still on my old PIII box along
-> > with the one Willy posted when I installed opensuse 10.2 on it.  damn.
-> > trivial thing though)
+> I strongly disagree. In that case we should audit all users of for_each_process.
+> Imho, this change is too dangerous. Actually, I personally think it is very good
+> that idle threads are special and not visible, imho we should not change this.
+
+OK, I'll tentatively drop remove-the-likelypid-check-in-copy_process.patch
+
+> Btw. Rafael, Andrew, what about
 > 
-> This one?  :)
+> 	[PATCH] Make XFS workqueues nonfreezable
+> 	http://marc.info/?l=linux-kernel&m=117270675922229
+> 
+> , don't you think this should go to 2.6.21 ?
+> 
 
-No, but that one went to bit heaven too ;-)
+I've sent it to the XFS guys a couple of times, but their black hole is one
+of the deeper ones.
 
-	-Mike
-
+David?
