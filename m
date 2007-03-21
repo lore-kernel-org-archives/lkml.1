@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751473AbXCUDyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbXCUD7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751473AbXCUDyD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 23:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbXCUDyD
+	id S1752195AbXCUD7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 23:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXCUD7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 23:54:03 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:61366 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbXCUDyB (ORCPT
+	Tue, 20 Mar 2007 23:59:22 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:54234 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195AbXCUD7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 23:54:01 -0400
-Date: Tue, 20 Mar 2007 23:53:55 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch 00/31] 2.6.20-stable review
-In-reply-to: <20070321033938.GA4907@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg KH <gregkh@suse.de>, Michael Krufky <mkrufky@linuxtv.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Chuck Ebbert <cebbert@redhat.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Message-id: <200703202353.55577.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070319213647.GB9261@kroah.com>
- <200703202304.44388.gene.heskett@gmail.com> <20070321033938.GA4907@suse.de>
-User-Agent: KMail/1.9.6
+	Tue, 20 Mar 2007 23:59:21 -0400
+Message-ID: <4600AD92.7070205@in.ibm.com>
+Date: Wed, 21 Mar 2007 09:29:14 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, rdunlap@xenotime.net,
+       jlan@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: taskstats accounting info
+References: <Pine.LNX.4.58.0703140503250.28169@shark.he.net> <45F7E818.7010608@in.ibm.com> <20070315110655.5a815f2e.akpm@linux-foundation.org> <20070319083512.908fc695.randy.dunlap@oracle.com>
+In-Reply-To: <20070319083512.908fc695.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 March 2007, Greg KH wrote:
-[...]
->> It looks like, from the series files contents, that I grabbed the
->> wrong 'queue', its all 2.6.21 stuff.  url please.
->
->The patch queue can be found at:
->  git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git
->
->All of the patches and the series file are in the review-2.6.20/
->directory.
+Randy Dunlap wrote:
+> On Thu, 15 Mar 2007 11:06:55 -0800 Andrew Morton wrote:
+> 
+>>> It's the most portable example, since it does not depend on libnl.
+>> err, what is libnl?
+> 
+> lib-netlink (as already answered, but I wrote this last week)
+> 
 
-This is not available via ftp?  My git is git version 0.99.7d, veddy veddy 
-long in the tooth by now I suspect.  And, apparently no manpages.  Humm, 
-smart is still running, maybe it has a newer git that's more conversant 
-with your syntax.  Yup smart is pulling it in now.  Later, thanks.
+I was referring to the library at http://people.suug.ch/~tgr/libnl/
 
->thanks,
->
->greg k-h
+>> If there exists some real userspace infrastructure which utilises
+>> taskstats, can we please get a referece to it into the kernel
+>> Documentation?  Perhaps in the TASKSTATS Kconfig entry, thanks.
+> 
+> 
+> Balbir, I was working with getdelays.c when I initially wrote
+> these questions.  Here is a small patch for it.  Hopefully you can
+> use it when you find the updated version of it.
+> 
+> ~Randy
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> 1.  add usage() function
+> 
+> 2.  add unknown character in %c format (was only in %d, not useful):
+> 
+> ./getdelays: invalid option -- h
+> Unknown option '?' (63)
+> 
+> instead of:
+> 
+> ./getdelays: invalid option -- h
+> Unknown option 63
+> 
+> (or just remove that message)
+> 
+> 3.  -v does not use an optarg, so remove ':' in getopt string after 'v';
+> 
+
+Thanks, these look good. I'll add them to my local copy.
 
 
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-When I works, I works hard.
-When I sits, I sits easy.
-And when I thinks, I goes to sleep.
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
