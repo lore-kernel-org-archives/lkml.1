@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750755AbXCUI6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbXCUI6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750755AbXCUI6N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 04:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXCUI6N
+	id S1750893AbXCUI6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 04:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXCUI6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 04:58:13 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:35500 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbXCUI6M convert rfc822-to-8bit (ORCPT
+	Wed, 21 Mar 2007 04:58:22 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:41619 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbXCUI6V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 04:58:12 -0400
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: David Lang <david.lang@digitalinsight.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>, Theodore Tso <tytso@mit.edu>,
-       Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <1174426591.20505.20.camel@pmac.infradead.org>
-References: <20070318162720.GI10459@waste.org>
-	 <1174236579.17249.6.camel@sauron> <20070318191812.GM4892@waste.org>
-	 <20070318203149.GC29295@crusty.rchland.ibm.com>
-	 <20070319170838.GP4892@waste.org>
-	 <1174328188.30079.46.camel@zod.rchland.ibm.com>
-	 <20070319195442.GT4892@waste.org> <1174338393.17249.53.camel@sauron>
-	 <20070319213628.GW4892@waste.org> <1174393549.17249.101.camel@sauron>
-	 <20070320135231.GA6043@thunk.org>
-	 <1174406395.30079.139.camel@zod.rchland.ibm.com>
-	 <Pine.LNX.4.63.0703201049310.8684@qynat.qvtvafvgr.pbz>
-	 <1174421151.17249.168.camel@sauron>
-	 <1174426591.20505.20.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 21 Mar 2007 10:54:36 +0200
-Message-Id: <1174467276.17249.192.camel@sauron>
+	Wed, 21 Mar 2007 04:58:21 -0400
+Subject: Re: [ck] Re: RSDL v0.31
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Mike Galbraith <efault@gmx.de>,
+       Radoslaw Szkodzinski <astralstorm@gmail.com>,
+       Al Boldi <a1426z@gawab.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ck@vds.kolivas.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicholas Miell <nmiell@comcast.net>
+In-Reply-To: <45FEF6D1.7020309@tmr.com>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703172048.46267.kernel@kolivas.org>
+	 <1174125534.7734.2.camel@Homer.simpson.net>
+	 <200703172355.30989.a1426z@gawab.com>
+	 <1174198651.8199.44.camel@Homer.simpson.net>
+	 <1174200463.10498.23.camel@localhost>
+	 <1174201726.8732.6.camel@Homer.simpson.net>
+	 <f44c5fdf0703180022n44b2ca61o62602e54aaab3334@mail.gmail.com>
+	 <1174203482.8855.8.camel@Homer.simpson.net>
+	 <1174211853.10498.25.camel@localhost>  <45FEF6D1.7020309@tmr.com>
+Content-Type: text/plain
+Date: Wed, 21 Mar 2007 09:58:03 +0100
+Message-Id: <1174467483.22159.5.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 21 Mar 2007 08:54:37.0148 (UTC) FILETIME=[8DCA99C0:01C76B96]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070321105441-64F45BB0-2724F102/0-0/0-1
-X-Nokia-AV: Clean
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 21:36 +0000, David Woodhouse wrote:
-> On Tue, 2007-03-20 at 22:05 +0200, Artem Bityutskiy wrote:
-> > Guess why we still do not have a decent FTL? Because it is
-> > _difficult_. 
+On Mon, 2007-03-19 at 16:47 -0400, Bill Davidsen wrote:
+> Kasper Sandberg wrote:
+> > On Sun, 2007-03-18 at 08:38 +0100, Mike Galbraith wrote:
+> >> On Sun, 2007-03-18 at 08:22 +0100, Radoslaw Szkodzinski wrote:
+> >>
+> >>> I'd recon KDE regresses because of kioslaves waiting on a pipe
+> >>> (communication with the app they're doing IO for) and then expiring.
+> >>> That's why splitting IO from an app isn't exactly smart. It should at
+> >>> least be ran in an another thread.
+> >> Hm.  Sounds rather a lot like the...
+> >> X sucks, fix X and RSDL will rock your world.  RSDL is perfect.
+> >> ...that I've been getting.
+> >>
+> > not really, only X sucks. KDE works atleast as good with rsdl as
+> > vanilla. i dont know how originally said kde works worse, wasnt it just
+> > someone that thought?
+> > 
+> It was probably me, and I had the opinion that KDE is not as smooth as 
+> GNOME with RSDL. I haven't had time to measure, but using for daily 
+> stuff for about an hour each way hasn't changed my opinion. Every once 
+> in a while KDE will KLUNK to a halt for 200-300ms doing mundane stuff 
+> like redrawing a page, scrolling, etc. I don't see it with GNOME.
+
+umm, could you try to find something that always does it, so i can try
+to reproduce? cause i dont really hit any such thing, and i only have a
+2ghz amd64
+
 > 
-> No. We don't have a decent FTL because it's _pointless_. We've got basic
-> implementations of FTL, NFTL, INFTL etc. for compatibility with PCMCIA
-> stuff and DiskOnChip, but the fact remains that pretending to be a
-> normal block device with atomically-overwritten 512-byte sectors is just
-> _stupid_. You end up implementing a kind of pseudo-filesystem to do
-> that, and then on top of that you put a 'normal' filesystem with no real
-> knowledge about what's underneath. It's crap -- and as we currently have
-> it, the top level file system doesn't even get to tell the underlying
-> FTL that a given block can be discarded because it's no longer used. So
-> during garbage collection the FTL even ends up copying crap around the
-> medium that's no longer relevant.
-> 
-> This isn't DOS. We don't have to make our storage available through the
-> restricted interface that INT 13h offers us. We can, and do, do better
-> than that. And that's why we don't have a decent FTL implementation.
-
-While I agree with you, I still think decent FTL (a) makes sense and is
-(b) difficult.
-
-a. Some people may be satisfied with FTL and enjoy all the block
-device-related software, which is huge benefit, although costs you
-performance. Yes, FTL moves garbage around, but who cares as long as the
-performance fits the system requirements.
-
-b. It is certainly not easy.
-
-But anyway, I agree with what you say, although you seem to be too
-assertive.
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
 
