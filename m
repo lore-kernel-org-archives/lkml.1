@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751692AbXCUHv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbXCUIAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751692AbXCUHv1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 03:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXCUHv1
+	id S1751341AbXCUIAm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 04:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbXCUIAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 03:51:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36619 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbXCUHv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 03:51:26 -0400
-Date: Wed, 21 Mar 2007 08:50:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: Willy Tarreau <w@1wt.eu>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Lord <lkml@rtr.ca>, Al Boldi <a1426z@gawab.com>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       linux-kernel@vger.kernel.org, Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: RSDL v0.31
-Message-ID: <20070321075033.GA10368@elte.hu>
-References: <200703172048.46267.kernel@kolivas.org> <1174125534.7734.2.camel@Homer.simpson.net> <200703172355.30989.a1426z@gawab.com> <45FEB54A.3040602@rtr.ca> <1174321617.30876.69.camel@frg-rhel40-em64t-04> <45FEBBF5.9060002@rtr.ca> <1174322580.30876.72.camel@frg-rhel40-em64t-04> <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org> <20070320061152.GW943@1wt.eu> <1174381383.30876.86.camel@frg-rhel40-em64t-04>
+	Wed, 21 Mar 2007 04:00:41 -0400
+Received: from poczta.o2.pl ([193.17.41.142]:40557 "EHLO poczta.o2.pl"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751341AbXCUIAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 04:00:40 -0400
+Date: Wed, 21 Mar 2007 09:05:10 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, "J\. Bruce Fields" <bfields@fieldses.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Re: [2.6.20] BUG: workqueue leaked lock
+Message-ID: <20070321080510.GA1939@ff.dom.local>
+References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1174381383.30876.86.camel@frg-rhel40-em64t-04>
+In-Reply-To: <20070320160759.GA107@tv-sign.ru>
 User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 20, 2007 at 07:07:59PM +0300, Oleg Nesterov wrote:
+> On 03/20, Jarek Poplawski wrote:
+...
+> > >>> On Thu, 2007-03-15 at 11:06 -0800, Andrew Morton wrote:
+> > >>>>> On Tue, 13 Mar 2007 17:50:14 +0100 Folkert van Heusden <folkert@vanheusden.com> wrote:
+> > >>>>> ...
+> > >>>>> [ 1756.728209] BUG: workqueue leaked lock or atomic: nfsd4/0x00000000/3577
+> > >>>>> [ 1756.728271]     last function: laundromat_main+0x0/0x69 [nfsd]
+> > >>>>> [ 1756.728392] 2 locks held by nfsd4/3577:
+> > >>>>> [ 1756.728435]  #0:  (client_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
+> > >>>>> [ 1756.728679]  #1:  (&inode->i_mutex){--..}, at: [<c1205b88>] mutex_lock+0x8/0xa
+> > >>>>> [ 1756.728923]  [<c1003d57>] show_trace_log_lvl+0x1a/0x30
+> > >>>>> [ 1756.729015]  [<c1003d7f>] show_trace+0x12/0x14
+> > >>>>> [ 1756.729103]  [<c1003e79>] dump_stack+0x16/0x18
+> > >>>>> [ 1756.729187]  [<c102c2e8>] run_workqueue+0x167/0x170
+> > >>>>> [ 1756.729276]  [<c102c437>] worker_thread+0x146/0x165
+> > >>>>> [ 1756.729368]  [<c102f797>] kthread+0x97/0xc4
+> > >>>>> [ 1756.729456]  [<c1003bdb>] kernel_thread_helper+0x7/0x10
+> > >>>>> [ 1756.729547]  =======================
+...
+> > This check is valid with keventd, but it looks like nfsd runs
+> > kthread by itself. I'm not sure it's illegal to hold locks then,
+> 
+> nfsd creates laundry_wq by itself, yes, but cwq->thread runs with
+> lockdep_depth() == 0. Unless we have a bug with lockdep_depth(),
+> lockdep_depth() != 0 means that work->func() returns with a lock
+> held (or it can flush its own workqueue under lock, but in that case
+> we should have a different trace).
 
-* Xavier Bestel <xavier.bestel@free.fr> wrote:
+IMHO you can only say this thread is supposed to run with
+lockdep_depth() == 0. lockdep_depth is counted within a process,
+which starts before f(), so the only way to say f() leaked locks
+is to check these locks before and after f().
 
-> On Tue, 2007-03-20 at 07:11 +0100, Willy Tarreau wrote:
-> > I don't agree with starting to renice X to get something usable
->
-> [...] Why not compensate for X design by prioritizing it a bit ?
+> 
+> Personally I agree with Andrew:
+> >
+> > > OK.  That's not necessarily a bug: one could envisage a (weird) piece of
+> > > code which takes a lock then releases it on a later workqueue invokation.
 
-there were multiple attempts with renicing X under the vanilla 
-scheduler, and they were utter failures most of the time. _More_ people 
-complained about interactivity issues _after_ X has been reniced to -5 
-(or -10) than people complained about "nice 0" interactivity issues to 
-begin with.
+But this code is named here as laundromat_main and it doesn't
+seem to work like this.
 
-The vanilla scheduler's auto-nice feature rewards _behavior_, so it gets 
-X right most of the time. The fundamental issue is that sometimes X is 
-very interactive - we boost it then, there's lots of scheduling but nice 
-low latencies. Sometimes it's a hog - we penalize it then and things 
-start to batch up more and we get out of the overload situation faster. 
-That's the case even if all you care about is desktop performance.
+> 
+> > @@ -323,13 +324,15 @@ static void run_workqueue(struct cpu_wor
+> >  		BUG_ON(get_wq_data(work) != cwq);
+> >  		if (!test_bit(WORK_STRUCT_NOAUTOREL, work_data_bits(work)))
+> >  			work_release(work);
+> > +		ld = lockdep_depth(current);
+> > +
+> >  		f(work);
+> >  
+> > -		if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
+> > +		if (unlikely(in_atomic() || (ld -= lockdep_depth(current)))) {
+> 
+> and with this change we will also have a BUG report on "then releases it on a
+> later workqueue invokation".
 
-no doubt it's hard to get the auto-nice thing right, but one thing is 
-clear: currently RSDL causes problems in areas that worked well in the 
-vanilla scheduler for a long time, so RSDL needs to improve. RSDL should 
-not lure itself into the false promise of 'just renice X statically'. It 
-wont work. (You might want to rewrite X's request scheduling - but if so 
-then i'd like to see that being done _first_, because i just dont trust 
-such 10-mile-distance problem analysis.)
+Then we could say at least this code is weird (buggy - in my opinion).
+This patch doesn't change the way the "standard" code is treated,
+so I cannot see any possibility to get it worse then now.
 
-	Ingo
+Regards,
+Jarek P.
