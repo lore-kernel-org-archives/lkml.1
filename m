@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXCUQuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbXCUQut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933090AbXCUQuP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 12:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933057AbXCUQuP
+	id S933054AbXCUQut (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 12:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933057AbXCUQus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 12:50:15 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38198 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933104AbXCUQuN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 12:50:13 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Allow per-cpu variables to be page-aligned
-References: <1174457426.11680.132.camel@localhost.localdomain>
-	<m1ejnjc5qa.fsf@ebiederm.dsl.xmission.com>
-	<1174477457.11680.170.camel@localhost.localdomain>
-Date: Wed, 21 Mar 2007 10:49:25 -0600
-In-Reply-To: <1174477457.11680.170.camel@localhost.localdomain> (Rusty
-	Russell's message of "Wed, 21 Mar 2007 22:44:16 +1100")
-Message-ID: <m11wjiczje.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 21 Mar 2007 12:50:48 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:2537 "EHLO parknet.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933054AbXCUQur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 12:50:47 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Sanitize filesystem NLS handling
+References: <45FD6EF5.1030706@ums.usu.ru> <87hcsius7b.fsf@duaron.myhome.or.jp>
+	<45FDFC69.6020605@ums.usu.ru> <87d535vqrz.fsf@duaron.myhome.or.jp>
+	<45FE13B9.8000203@ums.usu.ru> <87vegxdc8i.fsf@duaron.myhome.or.jp>
+	<45FE2483.4060706@ums.usu.ru> <878xdtux71.fsf@duaron.myhome.or.jp>
+	<45FEA669.1060301@ums.usu.ru> <871wjlp2l0.fsf@duaron.myhome.or.jp>
+	<45FF7E5B.3070602@ums.usu.ru>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Thu, 22 Mar 2007 01:50:33 +0900
+In-Reply-To: <45FF7E5B.3070602@ums.usu.ru> (Alexander E. Patrakov's message of "Tue\, 20 Mar 2007 11\:25\:31 +0500")
+Message-ID: <87vegu4k2u.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell <rusty@rustcorp.com.au> writes:
+"Alexander E. Patrakov" <patrakov@ums.usu.ru> writes:
 
-> On Wed, 2007-03-21 at 03:21 -0600, Eric W. Biederman wrote:
->> Do we really want to allow modules to be able to allocate page sized
->> per cpu memory.
+> Would it be OK for you if I add the mount-time check for iocharset=utf8 to 
+> the fat filesystem and silently replace this with the "utf8" option, instead 
+> of overly actively warning the users? This way, the sysfs option and the 
+> nls_base.iocharset module parameter will still work as I want.
+
+Sounds good. But, how do you specify the iocharset's nls for utf8?
+
+>> Because you didn't change the locale. And it is your policy, right?
 >
-> Hi Eric!
->
-> 	They always could, of course, they just wouldn't get correct alignment.
-> I think the principle of least surprise says that if we support this, it
-> will also work in modules...
+> Yes. This is because I have some files with non-ASCII names in my home 
+> directory. Changing the locale would make these filenames look wrong until I 
+> change it back.
 
-The module load would fail.
-
->>   If my memory servers on how this code works we will wind
->> up allocating 1 page of per cpu memory for every module that allocates a
->> per cpu variable.  128 bytes sucks 4k is an order of magnitude worse.
->
-> Not quite.  We allocate a total amount of per-cpu memory at boot, then
-> anything left over gets used for per-cpu vars in modules.
->
-> Looking at the module per-cpu code again, the rounding up of the memory
-> used by the kernel seems unnecessary though.  I'll try ripping that
-> out...
-
-I want to say that when dealing with cpu stuff aligning to a cache
-line makes sense as it prevents multiple variables from sharing
-the same cache line.  However we rarely access per cpu variables from
-other cpus (the point) so the extra alignment doesn't seem to have
-a justification in this context.
-
-Although I'm not quite certain what this will do to the per cpu
-memory allocator...
-
->> On x86_64 we are only reserving 8K for modules...
->
-> Really?  I can't see that.
-
-Look at how we define PERCPU_MODULE_RESERVE and PERCPU_ENOUGH_ROOM.
-
-> It did look like the x86-64 setup_per_cpu_areas should be moved into
-> common code though (it's numa-aware).  Maybe that breaks some platforms.
-
-After increasing NR_IRQS on x86_64 to (NR_CPUS*32) the per cpu irq
-stats got much bigger especially as NR_CPUS went up.  The only
-reasonable way I could see to fix this at the time was to just make
-PER_CPU_ENOUGH_ROOM do the right thing and change size dynamically
-with the size of the per cpu section.  I added PERCPU_MODULE_RESERVE
-to allocate the amount that we did not have compile information on.
-8K was roughly what we had left over for modules before I made the
-change so I just preserved that.
-
-We do have to be careful though as some architectures have fixed sized
-areas they are putting the per cpu stats into.
-
-> It means the x86 cpu_pda initialization would have to be done in
-> smp_prepare_boot_cpu tho...
-
-Well that is earlier than trap_init so it shouldn't be a problem...
-
-Eric
+The _kernel_ has no reason to force one policy, and that's why I
+suggested to add per-filesystem driver option (not per-super_block).
+(e.g. nls provides interface for it, etc...)
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
