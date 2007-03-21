@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933815AbXCUT7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933998AbXCUT7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933815AbXCUT7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 15:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933917AbXCUT7e
+	id S933998AbXCUT7y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 15:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933996AbXCUT7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 15:59:34 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1907 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933815AbXCUT7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 15:59:33 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Why is /dev on a different filesystem ? [Kernel 2.6.20.3]
-Date: Wed, 21 Mar 2007 12:59:29 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEPPCGAC.davids@webmaster.com>
+	Wed, 21 Mar 2007 15:59:54 -0400
+Received: from brick.kernel.dk ([62.242.22.158]:25477 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933998AbXCUT7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 15:59:52 -0400
+Date: Wed, 21 Mar 2007 20:59:28 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Dale Blount <linux-kernel@dale.us>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests  (2.6.21-rc2 and 2.6.20)
+Message-ID: <20070321195928.GG15024@kernel.dk>
+References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com> <200703011308.28266.linux@f-seidel.de> <20070301123057.GO23985@kernel.dk> <loom.20070321T135132-397@post.gmane.org> <460174EC.8000608@redhat.com> <1174501407.14261.34.camel@dale.velocity.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <04ea01c76bed$11b0d050$4b00a8c0@donald>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 21 Mar 2007 12:59:39 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 21 Mar 2007 12:59:41 -0800
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174501407.14261.34.camel@dale.velocity.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> So, obviously, /dev is on /, but the stat(2) says no.
-> Who is right, and where is the bug ?
+On Wed, Mar 21 2007, Dale Blount wrote:
+> On Wed, 2007-03-21 at 14:09 -0400, Chuck Ebbert wrote:
+> > Dale Blount wrote:
+> > >> I'm puzzled why this is hitting Dan, but no one else has reported
+> > >> anything. Dan, did 2.6.19 work for you?
+> > > 
+> > > Actually, I believe it is happening to me too.  This is on a 4-disk raid5 with
+> > > one failed disk on two 2-port sata_sil pci controller cards.
+> > > 
+> > > The BUG below is from 2.6.20.3, but I will try 2.6.21-rc4 tonight.
+> > > The disk didn't fail until 2.6.20, so I don't know if 2.6.19 would have worked
+> > > or not.
+> > > 
+> > > 
+> > 
+> > Just to be clear: you have a RAID array (what level?) with a failed disk
+> > and it's giving you the same error that Dan gets?
 > 
-> Kernel 2.4 had it right : /dev was on /, no doubt.
+> 
+> Yes, the BUG looks to be pretty similar to me.  It's a 4 disk raid5 with
+> one disk missing (dead and sent in for RMA).
 
-Have a look at the contents of /proc/mounts and all will be clear.
+Interesting, I'll definitely see if I can reproduce it like that.
 
-DS
-
+-- 
+Jens Axboe
 
