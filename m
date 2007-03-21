@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXCUMVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbXCUM01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbXCUMVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 08:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXCUMVT
+	id S1752696AbXCUM01 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbXCUM01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 08:21:19 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:37030 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbXCUMVS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 08:21:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Kel6uPR/nckiDVRnbo3Z6sLx1clXwzXTn2e5vO7RHMMV66k6UOKfF9OSYzSIvE5QccxTOAvP+3ulCr6pGR/j+Eodxx3Q3jjGtkxcxC/6AYl1v3PDJu0iEg2rH//XQwdf311/FsNY0pBp0l0A9QBdiwVHaPFlVGOsr7H533aZHEs=
-Message-ID: <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com>
-Date: Wed, 21 Mar 2007 14:21:16 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead of struct slab
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Lameter" <christoph@lameter.com>,
-       "linux kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070321102231.7288f231.dada1@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Mar 2007 08:26:27 -0400
+Received: from www.osadl.org ([213.239.205.134]:40884 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752687AbXCUM00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 08:26:26 -0400
+Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Andi Kleen <ak@suse.de>
+Cc: Grzegorz Chwesewicz <grzegorz.chwesewicz@chilan.com>,
+       Stefan Prechtel <stefan.prechtel@googlemail.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Len Brown <lenb@kernel.org>, john stultz <johnstul@us.ibm.com>
+In-Reply-To: <1174479339.10840.59.camel@localhost.localdomain>
+References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
+	 <200703211046.20724.ak@suse.de>
+	 <1174471808.10840.28.camel@localhost.localdomain>
+	 <200703211137.10884.ak@suse.de>
+	 <1174475666.10840.44.camel@localhost.localdomain>
+	 <1174479339.10840.59.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 21 Mar 2007 13:33:37 +0100
+Message-Id: <1174480417.10840.63.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070321102231.7288f231.dada1@cosmosbay.com>
-X-Google-Sender-Auth: ba850d10dda7e8ef
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/21/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> In order to avoid a cache miss in kmem_cache_free() on NUMA and reduce hot path
-> length, we could exploit the following common facts.
+On Wed, 2007-03-21 at 13:15 +0100, Thomas Gleixner wrote:
+> +		return;
+> +	}}
+> +
 
-It would be nice if you could cc me for slab patches.
+Ooops, sorry. Did not quilt refresh before sending it out. Correct
+version below.
 
-On 3/21/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> -static inline void page_set_cache(struct page *page, struct kmem_cache *cache)
-> +static inline void page_set_cache_slab_nodeid(struct page *page,
-> +       struct kmem_cache *cache, struct slab *slab, int nodeid)
->  {
-> +       page->lru.prev = (struct list_head *)slab;
-> +#ifdef KEEP_NODEID_IN_PAGE
-> +       page->lru.next = (struct list_head *)((long)cache + nodeid);
-> +#else
->         page->lru.next = (struct list_head *)cache;
-> +#endif
-> +#ifdef KEEP_NODEID_IN_SLAB
-> +       slab->nodeid = nodeid;
-> +#endif
+	tglx
 
-Can we please have a slab_get_nid() and slab_set_nid() instead which
-reduces the need for #ifdefs?
+diff --git a/arch/i386/kernel/apic.c b/arch/i386/kernel/apic.c
+index 5cff797..83cf98d 100644
+--- a/arch/i386/kernel/apic.c
++++ b/arch/i386/kernel/apic.c
+@@ -61,6 +61,8 @@ static int enable_local_apic __initdata = 0;
+ 
+ /* Local APIC timer verification ok */
+ static int local_apic_timer_verify_ok;
++/* Disable local APIC timer from the kernel commandline */
++static int local_apic_timer_disabled;
+ 
+ /*
+  * Debug level, exported for io_apic.c
+@@ -340,6 +342,13 @@ void __init setup_boot_APIC_clock(void)
+ 	long delta, deltapm;
+ 	int pm_referenced = 0;
+ 
++	if (local_apic_timer_disabled) {
++		/* No broadcast on UP ! */
++		if (num_possible_cpus() > 1)
++			setup_APIC_timer();
++		return;
++	}
++
+ 	apic_printk(APIC_VERBOSE, "Using local APIC timer interrupts.\n"
+ 		    "calibrating APIC timer ...\n");
+ 
+@@ -1179,6 +1188,13 @@ static int __init parse_nolapic(char *arg)
+ }
+ early_param("nolapic", parse_nolapic);
+ 
++static int __init parse_disable_lapic_timer(char *arg)
++{
++	local_apic_timer_disabled = 1;
++	return 0;
++}
++early_param("nolapic_timer", parse_disable_lapic_timer);
++
+ static int __init apic_set_verbosity(char *str)
+ {
+ 	if (strcmp("debug", str) == 0)
+
+
