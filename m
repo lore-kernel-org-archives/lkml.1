@@ -1,55 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965369AbXCUWh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750726AbXCUWjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965369AbXCUWh0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 18:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965410AbXCUWh0
+	id S1750726AbXCUWjP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 18:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbXCUWjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 18:37:26 -0400
-Received: from c-69-254-139-13.hsd1.nm.comcast.net ([69.254.139.13]:57579 "EHLO
-	deneb.dwf.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965369AbXCUWhY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 18:37:24 -0400
-Message-Id: <200703212235.l2LMZMQ4005361@deneb.dwf.com>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
-To: Rodolfo Giometti <giometti@enneenne.com>
-cc: Reg Clemens <reg@dwf.com>, linux-kernel@vger.kernel.org,
-       linuxpps@ml.enneenne.com, reg@deneb.dwf.com, reg@deneb.dwf.com
-Subject: Re: [LinuxPPS] [PATCH 1/1] LinuxPPS: Pulse per Second support for 
- Linux
-In-reply-to: <20070321203647.GD4539@enneenne.com> 
-References: <20070321074121.GA13843@enneenne.com> <200703211655.l2LGtwWl017848@deneb.dwf.com> <20070321203647.GD4539@enneenne.com>
-Comments: In-reply-to Rodolfo Giometti <giometti@enneenne.com>
-   message dated "Wed, 21 Mar 2007 21:36:47 +0100."
-Mime-Version: 1.0
+	Wed, 21 Mar 2007 18:39:15 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46665 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751004AbXCUWjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 18:39:14 -0400
+Date: Wed, 21 Mar 2007 23:39:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Lukas Hejtmanek <xhejtman@mail.muni.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Suspend to disk bug 2.6.21-rc2-git1
+Message-ID: <20070321223908.GI6057@elf.ucw.cz>
+References: <20070305132331.GF3693@mail.muni.cz> <20070310221639.GC2674@elf.ucw.cz> <20070321213007.GA3637@mail.muni.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Wed, 21 Mar 2007 16:35:22 -0600
-From: Reg Clemens <reg@dwf.com>
+Content-Disposition: inline
+In-Reply-To: <20070321213007.GA3637@mail.muni.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Mar 21, 2007 at 10:55:58AM -0600, Reg Clemens wrote:
+Hi!
+
+> > > I'm not sure what version did exacly caused susped to disk problems but
+> > > anyway, in 2.6.21-rc2-git1, suspend to disk breaks ACPI. ACPI events do not
+> > > even emit ACPI interrupts. Suspend to ram works nicely.
 > > 
-> > Just one point with your patch.
-> > A couple of years ago there was a long discussion on the Linux Kernel mailing 
-> > list
-> > as to how USER codes were not supposed to use KERNEL include files.  Now I 
-> > still
-> > see __KERNEL__ all over the place in the linux=source includes so mabe this
-> > never went anywhere, but you MIGHT have to provide a separate patch (addition)
-> > to the Linux (as opposed to Linux-kernel) include files with timepps.h
+> > Is 2.6.21-latest better?  There were many problems in suspend area,
+> > hopefully they are slowly being fixed...
 > 
-> Do you mean I should separate file timepps.h into two files? One for
-> the kernel and one for the userland?
-> 
-Well, Im sure you are dealing with some of the Linux Kernel people, so its
-whatever they want.  But dont be surprised if they ask for a *.h file thats 
-ONLY
-for Kernel use.  And I have NO idea how you would get the USER version into
-the Linux distribution itself.
+> I've found out that only platform method is working. reboot method does not.
+
+Try this one.
+									Pavel
+
+Fix reboot mode blinking moon icon after resume.
+
+---
+commit 5958dbea2ea6147f4fd0477b303be752d5c4f53a
+tree 9c032e050d09201f66e1706fef4d7bbe8e55c418
+parent 2744ccbdcc03f36d193fe20fc17698cfb2a1acea
+author Pavel <pavel@amd.ucw.cz> Tue, 20 Mar 2007 16:33:03 +0100
+committer Pavel <pavel@amd.ucw.cz> Tue, 20 Mar 2007 16:33:03 +0100
+
+ kernel/power/disk.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index 873cdf8..dee0ff4 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -241,18 +241,11 @@ static int software_resume(void)
+ 		goto Done;
+ 	}
+ 
+-	error = platform_prepare();
+-	if (error) {
+-		swsusp_free();
+-		goto Thaw;
+-	}
+-
+ 	pr_debug("PM: Reading swsusp image.\n");
+ 
+ 	error = swsusp_read();
+ 	if (error) {
+ 		swsusp_free();
+-		platform_finish();
+ 		goto Thaw;
+ 	}
+ 
+@@ -270,7 +263,6 @@ static int software_resume(void)
+ 	enable_nonboot_cpus();
+  Free:
+ 	swsusp_free();
+-	platform_finish();
+ 	device_resume();
+ 	resume_console();
+  Thaw:
 
 -- 
-                                        Reg.Clemens
-                                        reg@dwf.com
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
