@@ -1,45 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbXCUL7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbXCUMAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752402AbXCUL7s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 07:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXCUL7s
+	id S1751908AbXCUMAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXCUMAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 07:59:48 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57029 "EHLO pasmtpB.tele.dk"
+	Wed, 21 Mar 2007 08:00:48 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:43316 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbXCUL7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 07:59:48 -0400
-Date: Wed, 21 Mar 2007 12:59:55 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kees Cook <kees@outflux.net>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: 2.6.21-rc4-mm1
-Message-ID: <20070321115955.GA18195@uranus.ravnborg.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070320103151.f65c81b6.randy.dunlap@oracle.com> <20070320192016.GC22797@outflux.net> <20070320214714.0e584cd4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070320214714.0e584cd4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1751908AbXCUMAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 08:00:47 -0400
+Date: Wed, 21 Mar 2007 12:59:37 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: kconfig `bool' (was: Re: [PATCH 13/13] fix ps3fb glue allowing
+ a modular build)
+In-Reply-To: <Pine.LNX.4.62.0703202148150.22113@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.64.0703211244150.14457@scrub.home>
+References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
+ <Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
+ <20070314160258.GK4095@ftp.linux.org.uk> <Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
+ <20070314170720.GL4095@ftp.linux.org.uk> <Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
+ <Pine.LNX.4.62.0703202148150.22113@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 09:47:14PM -0800, Andrew Morton wrote:
-> On Tue, 20 Mar 2007 12:20:16 -0700 Kees Cook <kees@outflux.net> wrote:
-> 
-> > I can't 
-> > get 2.6.21-rc4-mm1 to compile (with or without this fix):
-> > 
-> >   GEN     .version
-> > init/.missing_syscalls.h.cmd:2: *** missing separator.  Stop.
-> > make: *** [.tmp_vmlinux1] Error 2
-> 
-> How'd you manage that?
-> 
-> Sam, I think this is a you-thing rather than a dwmw2-thing?
-I will give it a shot tonight.
-One issue I have with current approach is that the ARCH specific things are
-in a single .h file.
+Hi,
 
-	Sam
+On Tue, 20 Mar 2007, Geert Uytterhoeven wrote:
+
+> On Wed, 14 Mar 2007, Linus Torvalds wrote:
+> > In many ways it would be nice if we had two different kinds of "bool": one 
+> > where "m" in the dependency chain means "y" is ok, and one where "m" means 
+> > "n".
+> > 
+> > We used to have "dep_bool" and "dep_mbool" for this, a long time ago. It 
+> > got dropped in the Kconfig language rewrite, and I think it was a mistake.
+
+Well, it wasn't really dropped, just the syntax changed...
+There were only one or two rules which depended on the dep_bool syntax and 
+it were special cases anyway.
+
+> > So I think it would be nice to re-introduce it. As it is, we have a number 
+> > of Kconfig language constructs that are just unnecessarily hard to 
+> > understand, because we end up having to add a "= y" or similar.
+> > 
+> > The rule *used* to be: "dep_mbool" was a boolean that was valid even for 
+> > modules, while "dep_bool" was a boolean that was valid only for straigth 
+> > "y", and a module would turn it off.
+> > 
+> > Maybe not "bool" vs "mbool", but it might be nice to have
+> > 
+> > 	bool FB_PS3
+> > 		depends strictly on FB
+> > 
+> > ie a "depends strictly" refuses to upgrade a bool dependency from "m" to 
+> > "y", while a regular depends allows it.
+> > 
+> > Or something.. The "depends strictly on X" thing would really be just a 
+> > mental shorthand for "depends on (X)=y" (it's actually longer to type, but 
+> > I think it's a bit more intuitive, thus "mental shortcut").
+
+I'm not sure this would really an improvement, for the casual reader X=y 
+is IMO more readable if he knows the basic kconfig syntax, whereas he had 
+to lookup first what "strictly" means. Also the potential user had to know 
+about this syntax, but it's simply not needed often enough that it would 
+be common and might be easily forgotten if one fixed the driver and 
+changed the bool to tristate.
+
+> I've been thinking about this a bit more...
+> 
+> Kconfig knows about the following types:
+>   o bool
+>   o tristate
+>   o string
+>   o hex
+>   o int
+> 
+> However, from a semantical point of view, they can be subdivided in 2 classes:
+>   1. driver/subsystem/library enablers (i.e. things that are used in a Makefile
+>      to decide whether to compile a unit or not):
+>        o tristate (y=builtin, m=loadable, n=disabled)
+>        o bool (y=builtin, n=disabled)
+>   2. options (i.e. things that control some features, limits, or default
+>      values):
+>        o bool (y=true, n=false)
+>        o string (literal)
+>        o hex (literal)
+>        o int (literal)
+> 
+> The confusion arises from the 2 different semantics for `bool': for the former,
+> a `depends on' obviously cannot be `builtin' if the dependency is `modular',
+> while for the latter, it can be `true' if the dependency is `modular'.
+
+What I'm considering in this context is to introduce a syntax to 
+specifically describe modules (e.g. to also generate the Makefile from 
+it):
+
+module FB_PS3
+	bool ".."
+	depends on FB
+
+In this context it would be valid to add the requirement that the 
+dependencies must be 'y'.
+
+bye, Roman
