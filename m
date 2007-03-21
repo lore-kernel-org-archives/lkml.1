@@ -1,88 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbXCUM01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbXCUM1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752696AbXCUM01 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 08:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbXCUM01
+	id S1752678AbXCUM1e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 08:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbXCUM1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 08:26:27 -0400
-Received: from www.osadl.org ([213.239.205.134]:40884 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752687AbXCUM00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 08:26:26 -0400
-Subject: Re: BUG lapic: Can't boot on battery (2.6.21-rc{1,2,3,4})
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andi Kleen <ak@suse.de>
-Cc: Grzegorz Chwesewicz <grzegorz.chwesewicz@chilan.com>,
-       Stefan Prechtel <stefan.prechtel@googlemail.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Len Brown <lenb@kernel.org>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <1174479339.10840.59.camel@localhost.localdomain>
-References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com>
-	 <200703211046.20724.ak@suse.de>
-	 <1174471808.10840.28.camel@localhost.localdomain>
-	 <200703211137.10884.ak@suse.de>
-	 <1174475666.10840.44.camel@localhost.localdomain>
-	 <1174479339.10840.59.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 21 Mar 2007 13:33:37 +0100
-Message-Id: <1174480417.10840.63.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 21 Mar 2007 08:27:34 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:48361 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbXCUM1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 08:27:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XCwjaLL35IBUfLFT84azulLh1/vXGTrsVk5QZfN3k/soNgU70sDiwN6AcX67e8InyVRjDhQUnCYqq6cb13BWyMfn3BlGLAG6HNavB9ZfdThTYVLW/BXb+nk858ICQCLjkzzizwtgghDQcfK5STeHyGqc4fbgE8OY+s/+GPFoNDU=
+Message-ID: <84144f020703210527x591d58c6i9ae7919d2dde8256@mail.gmail.com>
+Date: Wed, 21 Mar 2007 14:27:31 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead of struct slab
+Cc: "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Lameter" <christoph@lameter.com>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070321102231.7288f231.dada1@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070321102231.7288f231.dada1@cosmosbay.com>
+X-Google-Sender-Auth: 0808acfe70c1a20e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-21 at 13:15 +0100, Thomas Gleixner wrote:
-> +		return;
-> +	}}
-> +
+On 3/21/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> +#ifdef KEEP_NODEID_IN_PAGE
+> +       /* kmem_cache addresses must be multiple of 64 */
+> +       cache_cache.buffer_size = ALIGN(cache_cache.buffer_size,
+> +                                       max(64, cache_line_size()));
+> +#else
+>         cache_cache.buffer_size = ALIGN(cache_cache.buffer_size,
+>                                         cache_line_size());
+> +#endif
 
-Ooops, sorry. Did not quilt refresh before sending it out. Correct
-version below.
-
-	tglx
-
-diff --git a/arch/i386/kernel/apic.c b/arch/i386/kernel/apic.c
-index 5cff797..83cf98d 100644
---- a/arch/i386/kernel/apic.c
-+++ b/arch/i386/kernel/apic.c
-@@ -61,6 +61,8 @@ static int enable_local_apic __initdata = 0;
- 
- /* Local APIC timer verification ok */
- static int local_apic_timer_verify_ok;
-+/* Disable local APIC timer from the kernel commandline */
-+static int local_apic_timer_disabled;
- 
- /*
-  * Debug level, exported for io_apic.c
-@@ -340,6 +342,13 @@ void __init setup_boot_APIC_clock(void)
- 	long delta, deltapm;
- 	int pm_referenced = 0;
- 
-+	if (local_apic_timer_disabled) {
-+		/* No broadcast on UP ! */
-+		if (num_possible_cpus() > 1)
-+			setup_APIC_timer();
-+		return;
-+	}
-+
- 	apic_printk(APIC_VERBOSE, "Using local APIC timer interrupts.\n"
- 		    "calibrating APIC timer ...\n");
- 
-@@ -1179,6 +1188,13 @@ static int __init parse_nolapic(char *arg)
- }
- early_param("nolapic", parse_nolapic);
- 
-+static int __init parse_disable_lapic_timer(char *arg)
-+{
-+	local_apic_timer_disabled = 1;
-+	return 0;
-+}
-+early_param("nolapic_timer", parse_disable_lapic_timer);
-+
- static int __init apic_set_verbosity(char *str)
- {
- 	if (strcmp("debug", str) == 0)
-
-
+Please introduce cache_cache_align() to hide the #ifdeffing.
