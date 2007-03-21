@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933161AbXCUWUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933876AbXCUWU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933161AbXCUWUG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 18:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933334AbXCUWUG
+	id S933876AbXCUWU7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 18:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933347AbXCUWU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 18:20:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:50829 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933161AbXCUWUE convert rfc822-to-8bit (ORCPT
+	Wed, 21 Mar 2007 18:20:58 -0400
+Received: from www17.your-server.de ([213.133.104.17]:3576 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933876AbXCUWU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 18:20:04 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: remove-unused-header-file-include-linux-elfnoteh.patch
-Date: Wed, 21 Mar 2007 23:20:35 +0100
-User-Agent: KMail/1.9.6
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4601A56A.40609@goop.org>
-In-Reply-To: <4601A56A.40609@goop.org>
+	Wed, 21 Mar 2007 18:20:57 -0400
+Message-ID: <4601B012.6070802@m3y3r.de>
+Date: Wed, 21 Mar 2007 23:22:10 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703212320.35920.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/rGk2HxZ/eTclNxomO/8SguD7GOQQE/3o6CXw
- T7ik4R/zo3xpwJ9Uw6sJVhAIYZS7LdKawk+Q5DnTadmYf6ERV8
- xSR0Y+TXdI1lW0mAAPi0Q==
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH] Unset msi and msix flags on pci_device_disable
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 March 2007 22:36:42 Jeremy Fitzhardinge wrote:
-> Please don't.  We need it.
->
-> BTW, I didn't see this one go by, and I couldn't see it searching
-> around.  Did it get posted to lkml?
+The commit f5f2b13129a6541debf8851bae843cbbf48298b7 broke suspend/resume
+to disk two or more  times in a row. This patches fixes the problem:
 
-I think it was only on the janitor list. It was considered
-obviously correct since it does not get installed by
-headers_installed and did not seem to be used anywhere in
-the kernel.
+This patch should be included in 2.6.21
 
-Could you explain how this file is used in the kernel? Robert
-probably wants to update his script to handle this correctly.
+Signed-off-by: Thomas Meyer <thomas@m3y3r.de>
 
-	Arnd <><
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index d3eab05..d7f8f96 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -886,7 +886,9 @@ pci_disable_device(struct pci_dev *dev)
+         pci_write_config_word(dev, PCI_COMMAND, pci_command);
+     }
+     dev->is_busmaster = 0;
+-
++    dev->msi_enabled=0;
++    dev->msix_enabled=0;
++   
+     pcibios_disable_device(dev);
+ }
+ 
+
+
