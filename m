@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965322AbXCUWSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933161AbXCUWUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965322AbXCUWSi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 18:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965346AbXCUWSh
+	id S933161AbXCUWUG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 18:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933334AbXCUWUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 18:18:37 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:36573 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965345AbXCUWSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 18:18:36 -0400
-Date: Wed, 21 Mar 2007 23:19:05 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kees Cook <kees@outflux.net>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       sam@ravnborg.org
-Subject: Re: 2.6.21-rc4-mm1
-Message-ID: <20070321221905.GA22623@uranus.ravnborg.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070320103151.f65c81b6.randy.dunlap@oracle.com> <20070320192016.GC22797@outflux.net> <20070320214714.0e584cd4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 21 Mar 2007 18:20:06 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:50829 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933161AbXCUWUE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 18:20:04 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: remove-unused-header-file-include-linux-elfnoteh.patch
+Date: Wed, 21 Mar 2007 23:20:35 +0100
+User-Agent: KMail/1.9.6
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <4601A56A.40609@goop.org>
+In-Reply-To: <4601A56A.40609@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070320214714.0e584cd4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200703212320.35920.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/rGk2HxZ/eTclNxomO/8SguD7GOQQE/3o6CXw
+ T7ik4R/zo3xpwJ9Uw6sJVhAIYZS7LdKawk+Q5DnTadmYf6ERV8
+ xSR0Y+TXdI1lW0mAAPi0Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 09:47:14PM -0800, Andrew Morton wrote:
-> On Tue, 20 Mar 2007 12:20:16 -0700 Kees Cook <kees@outflux.net> wrote:
-> 
-> > I can't 
-> > get 2.6.21-rc4-mm1 to compile (with or without this fix):
-> > 
-> >   GEN     .version
-> > init/.missing_syscalls.h.cmd:2: *** missing separator.  Stop.
-> > make: *** [.tmp_vmlinux1] Error 2
-> 
-> How'd you manage that?
-> 
-> Sam, I think this is a you-thing rather than a dwmw2-thing?
-Took a look. Things looked pretty OK but an updated patch
-applied to kbuild.git.
-Corrected a few things in the Makefile and combined the
-patch from dwmw2 and Stephane.
+On Wednesday 21 March 2007 22:36:42 Jeremy Fitzhardinge wrote:
+> Please don't.  We need it.
+>
+> BTW, I didn't see this one go by, and I couldn't see it searching
+> around.  Did it get posted to lkml?
 
-kbuild.git pused out and patches follows.
+I think it was only on the janitor list. It was considered
+obviously correct since it does not get installed by
+headers_installed and did not seem to be used anywhere in
+the kernel.
 
-	Sam
+Could you explain how this file is used in the kernel? Robert
+probably wants to update his script to handle this correctly.
+
+	Arnd <><
