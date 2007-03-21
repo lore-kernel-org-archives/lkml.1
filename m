@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932700AbXCUQIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbXCUQIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932700AbXCUQIu (ORCPT <rfc822;w@1wt.eu>);
+	id S932706AbXCUQIu (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 21 Mar 2007 12:08:50 -0400
 Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932710AbXCUQIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 21 Mar 2007 12:08:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34419 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932700AbXCUQIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 12:08:49 -0400
-Message-ID: <4601586E.302@redhat.com>
-Date: Wed, 21 Mar 2007 12:08:14 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061004)
-MIME-Version: 1.0
-To: Nikita Danilov <nikita@clusterfs.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] split file and anonymous page queues #3
-References: <46005B4A.6050307@redhat.com>	<17920.61568.770999.626623@gargle.gargle.HOWL>	<460115D9.7030806@redhat.com>	<17921.7074.900919.784218@gargle.gargle.HOWL>	<46011E8F.2000109@redhat.com>	<46011EF6.3040704@redhat.com> <17921.20299.7899.527765@gargle.gargle.HOWL>
-In-Reply-To: <17921.20299.7899.527765@gargle.gargle.HOWL>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Received: from one.firstfloor.org ([213.235.205.2]:43984 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932706AbXCUQIu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 12:08:50 -0400
+Date: Wed, 21 Mar 2007 17:08:46 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <christoph@lameter.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC, PATCH] SLAB : [NUMA] keep nodeid in struct page instead of struct slab
+Message-ID: <20070321160846.GA25583@one.firstfloor.org>
+References: <20070321102231.7288f231.dada1@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070321102231.7288f231.dada1@cosmosbay.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nikita Danilov wrote:
+On Wed, Mar 21, 2007 at 10:22:31AM +0100, Eric Dumazet wrote:
+> In order to avoid a cache miss in kmem_cache_free() on NUMA and reduce hot path length, we could exploit the following common facts.
+> 
+> 1) MAX_NUMNODES <= 64
+> 
+> 2) alignment of 'struct kmem_cache *' can be >= 64
+> 
+> The following patch changes the page->lru.next to contain not only the 'struct kmem_cache *' pointer, but also the nodeid in the low order bits.
+> 
 
-> Generally speaking, multi-queue replacement mechanisms were tried in the
-> past, and they all suffer from the common drawback: once scanning rate
-> is different for different queues, so is the notion of "hotness",
-> measured by scanner. As a result multi-queue scanner fails to capture
-> working set properly.
+It might be cleaner to just put it into flags on 64bit. There is enough
+space there and we don't really care about 32bit NUMA machines.
 
-You realize that the current "single" queue in the 2.6 kernel
-has this problem in a much worse way: when swappiness is low
-and the kernel does not want to reclaim mapped pages, it will
-randomly rotate those pages around the list.
-
-In addition, the referenced bit on unmapped page cache pages
-was ignored completely, making it impossible for the VM to
-separate the page cache working set from transient pages due
-to streaming IO.
-
-I agree that we should put some more negative feedback in
-place if it turns out we need it.  I have refault code ready
-that can be plugged into this patch, but I don't want to add
-the overhead of such code if it turns out we do not actually
-need it.
-
--- 
-All Rights Reversed
+-Andi
