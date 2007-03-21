@@ -1,55 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751594AbXCUBrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbXCUBsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751594AbXCUBrZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 21:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXCUBrZ
+	id S1751328AbXCUBsu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 21:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXCUBsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 21:47:25 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:50937 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751069AbXCUBrY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 21:47:24 -0400
-Date: Tue, 20 Mar 2007 18:47:04 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, gregkh <greg@kroah.com>, tglx@linutronix.de
-Subject: Re: 2.6.21-rc4-mm1
-Message-Id: <20070320184704.8fd1bc64.randy.dunlap@oracle.com>
-In-Reply-To: <20070319205623.299d0378.akpm@linux-foundation.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Mar 2007 21:48:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59970 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750850AbXCUBst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 21:48:49 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+From: Roland McGrath <roland@redhat.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+X-Fcc: ~/Mail/utrace
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] utrace: make an inline void
+In-Reply-To: Randy Dunlap's message of  Tuesday, 20 March 2007 11:09:26 -0700 <20070320110926.e2f51054.randy.dunlap@oracle.com>
+X-Shopping-List: (1) Enchained consumption flakes
+   (2) Would-be incantation detergents
+   (3) Advantageous insufficient party salads
+   (4) Flagrant relaxers
+Message-Id: <20070321014841.88A0218004F@magilla.sf.frob.com>
+Date: Tue, 20 Mar 2007 18:48:41 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Mar 2007 20:56:23 -0800 Andrew Morton wrote:
+> Avoid multiple/repeated warnings:
+> include/linux/utrace.h:594: warning: return type defaults to 'int'
 
-> 
-> Temporarily at
-> 
->   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
-> 
-> Will appear later at
-> 
->   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
+Oops!  Thanks for catching this.
 
 
-UIO_CIF should depend on PCI ??
-
-With CONFIG_PCI=n, I get:
-
-ERROR: "pci_module_init" [drivers/uio/uio_cif.ko] undefined!
-ERROR: "pci_release_regions" [drivers/uio/uio_cif.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Thanks,
+Roland
