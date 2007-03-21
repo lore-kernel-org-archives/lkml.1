@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbXCUCQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752430AbXCUCR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752404AbXCUCQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Mar 2007 22:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXCUCQY
+	id S1752430AbXCUCR2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Mar 2007 22:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXCUCR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Mar 2007 22:16:24 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:43800 "EHLO smtp.osdl.org"
+	Tue, 20 Mar 2007 22:17:27 -0400
+Received: from animx.eu.org ([216.98.75.249]:36672 "EHLO animx.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752398AbXCUCQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Mar 2007 22:16:23 -0400
-Date: Tue, 20 Mar 2007 19:15:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Zachary Amsden <zach@vmware.com>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       David Miller <davem@davemloft.net>, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
-Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
- callsites to make them patchable
-In-Reply-To: <46009E42.30400@vmware.com>
-Message-ID: <Pine.LNX.4.64.0703201912270.6730@woody.linux-foundation.org>
-References: <20070316.023331.59468179.davem@davemloft.net> <45FB005D.9060809@goop.org>
- <1174127638.8897.75.camel@localhost.localdomain> <20070318.003309.71088169.davem@davemloft.net>
- <20070318120814.GA45869@muc.de> <1174272469.11680.23.camel@localhost.localdomain>
- <m1648xxf93.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703191134190.6730@woody.linux-foundation.org>
- <1174348905.11680.54.camel@localhost.localdomain> <45FF4043.4000805@vmware.com>
- <45FF770C.7050301@goop.org> <Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org>
- <m1mz27sy82.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0703200903500.6730@woody.linux-foundation.org>
- <46000C7E.4070001@goop.org> <46005B89.5070301@vmware.com>
- <Pine.LNX.4.64.0703201715470.6730@woody.linux-foundation.org>
- <46009E42.30400@vmware.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752430AbXCUCR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Mar 2007 22:17:26 -0400
+Date: Tue, 20 Mar 2007 22:15:56 -0400
+From: Wakko Warner <wakko@animx.eu.org>
+To: Philippe Troin <phil@fifi.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: scsi: Devices offlined
+Message-ID: <20070321021556.GA5039@animx.eu.org>
+Mail-Followup-To: Philippe Troin <phil@fifi.org>,
+	linux-kernel@vger.kernel.org
+References: <20070321004830.GA4901@animx.eu.org> <87ircv5q33.fsf@tantale.fifi.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87ircv5q33.fsf@tantale.fifi.org>
+User-Agent: Mutt/1.5.6+20040907i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 20 Mar 2007, Zachary Amsden wrote:
+Philippe Troin wrote:
+> Wakko Warner <wakko@animx.eu.org> writes:
 > 
-> Actually, I was thinking the irq handlers would just not mess around with
-> eflags on the stack, just call the chip to ack the interrupt and re-enable
-> hardware interrupts when they left, since that is free anyway with the iret.
+> > [84797.683873] sr 1:0:13:0: scsi: Device offlined - not ready after error recovery
+> > 
+> > Is there anyway to make the kernel "online" a device that has done this? 
+> > I've had this happen on various devices (mostly on usb where I can
+> > unplug/replug), but this time, it's on a scsi controller and the driver is
+> > not a module.
+> > 
+> > If it's possible to do this w/o rebooting, I'd like to know for when I have
+> > this happen in the future.
+> 
+> Have you tried:
+> 
+>   echo remove-single-device BUS ID LUN > /proc/scsi
+>   echo add-single-device BUS ID LUN > /proc/scsi
 
-No can do. Think level-triggered. You *need* to disable the interrupt, and 
-disabling it at the CPU is the easiest approach. Even so, you need to 
-worry about SMP and screaming interrupts at all CPU's, but if you don't 
-ack it to the IO-APIC until later, that should be ok (alternatively, you 
-need to just mask-and-ack the irq controller).
+I tried:
+echo "scsi remove-scingle-device 1 0 13 0" > /proc/scsi/scsi
+<device removed from /proc/scsi/scsi list>
+echo "scsi add-scingle-device 1 0 13 0" > /proc/scsi/scsi
+<device does not show up in /proc/scsi/scsi list>
 
-> Maybe leaving irqs disabled is better.
+I also tried your method, which just gives invalid argument (using
+/proc/scsi/scsi, since /proc/scsi is a directory)
 
-One of the advantages of doing that is that you only ever have a queue of 
-one single entry, which then makes it easier to do the replay.
+According to scsi_proc.c:
+        /*
+         * Usage: echo "scsi add-single-device 0 1 2 3" >/proc/scsi/scsi
+         * with  "0 1 2 3" replaced by your "Host Channel Id Lun".
+         */
 
-		Linus
+        /*
+         * Usage: echo "scsi remove-single-device 0 1 2 3" >/proc/scsi/scsi
+         * with  "0 1 2 3" replaced by your "Host Channel Id Lun".
+         */
+
+Either way, nothing.
+
+Er, on second though, I actually unplugged the power from the scsi device
+and replugged it and it shows up now.  Oh well..  Thanks anyway =)
+
+-- 
+ Lab tests show that use of micro$oft causes cancer in lab animals
+ Got Gas???
