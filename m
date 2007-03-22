@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbXCVPhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXCVPiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933228AbXCVPhg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 11:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933233AbXCVPhg
+	id S933232AbXCVPiX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 11:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933233AbXCVPiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 11:37:36 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:38254 "EHLO
-	asav00.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933228AbXCVPhf convert rfc822-to-8bit (ORCPT
+	Thu, 22 Mar 2007 11:38:22 -0400
+Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:41986 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933232AbXCVPiV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 11:37:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnoUAHs/AkZKhRO4UGdsb2JhbACHL4dsAQEq
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Nicolas Boichat <nicolas@boichat.ch>
-Subject: Re: [PATCH] Apple SMC driver (hardware monitoring and control)
-Date: Thu, 22 Mar 2007 11:37:34 -0400
-User-Agent: KMail/1.9.3
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org, rlove@rlove.org, linux-kernel@hansmi.ch
-References: <45F7C083.7090504@boichat.ch> <45FE1D44.8000805@boichat.ch>
-In-Reply-To: <45FE1D44.8000805@boichat.ch>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703221137.35906.dtor@insightbb.com>
+	Thu, 22 Mar 2007 11:38:21 -0400
+Subject: [PATCH 2.6.21] iw_cxgb3: Handle build_phys_page_list() failure in
+	iwch_reregister_phys_mem().
+From: Steve Wise <swise@opengridcomputing.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org,
+       General@lists.openfabrics.org, Adrian Bunk <bunk@stusta.de>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 10:38:20 -0500
+Message-Id: <1174577900.16862.27.camel@stevo-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nicolas,
 
-On Monday 19 March 2007 01:19, Nicolas Boichat wrote:
-> +       /* initialize the input class */
-> +       applesmc_idev->name = "applesmc";
+Handle build_phys_page_list() failure in iwch_reregister_phys_mem().
 
-You may want to set applesmc_idev->id.bus = BUS_HOST;
+Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+---
 
-> +       applesmc_idev->cdev.dev = &pdev->dev;
-> +       applesmc_idev->evbit[0] = BIT(EV_ABS);
-> +       input_set_abs_params(applesmc_idev, ABS_X,
-> +                       -256, 256, APPLESMC_INPUT_FUZZ, APPLESMC_INPUT_FLAT);
-> +       input_set_abs_params(applesmc_idev, ABS_Y,
-> +                       -256, 256, APPLESMC_INPUT_FUZZ, APPLESMC_INPUT_FLAT);
-> +
-> +       input_register_device(applesmc_idev);
+ drivers/infiniband/hw/cxgb3/iwch_provider.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Please add error hanling here.
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+index f2774ae..24e0df0 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_provider.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+@@ -545,11 +545,14 @@ static int iwch_reregister_phys_mem(stru
+ 		php = to_iwch_pd(pd);
+ 	if (mr_rereg_mask & IB_MR_REREG_ACCESS)
+ 		mh.attr.perms = iwch_ib_to_tpt_access(acc);
+-	if (mr_rereg_mask & IB_MR_REREG_TRANS)
++	if (mr_rereg_mask & IB_MR_REREG_TRANS) {
+ 		ret = build_phys_page_list(buffer_list, num_phys_buf,
+ 					   iova_start,
+ 					   &total_size, &npages,
+ 					   &shift, &page_list);
++		if (ret)
++			return ret;
++	}
+ 
+ 	ret = iwch_reregister_mem(rhp, php, &mh, shift, page_list, npages);
+ 	kfree(page_list);
 
-> +
-> +       /* start up our timer for the input device */
-> +       init_timer(&applesmc_timer);
-> +       applesmc_timer.function = applesmc_mousedev_poll;
-> +       applesmc_timer.expires = jiffies + APPLESMC_POLL_PERIOD;
-> +       add_timer(&applesmc_timer);
-> 
-
-Please consider implemention open and close methods for the input
-device and start/stop timer from there - there is no point of checking
-hardware state if noone is listening to events. 
-
--- 
-Dmitry
