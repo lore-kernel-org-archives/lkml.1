@@ -1,39 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbXCVVWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXCVV1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752662AbXCVVWD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 17:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbXCVVWC
+	id S932234AbXCVV1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 17:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934240AbXCVV1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 17:22:02 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52043 "EHLO smtp.osdl.org"
+	Thu, 22 Mar 2007 17:27:46 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:3454 "EHLO mms1.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752662AbXCVVWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 17:22:01 -0400
-Date: Thu, 22 Mar 2007 14:21:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: cpw@sgi.com (Cliff Wickman)
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] cpusets/sched_domain reconciliation
-Message-Id: <20070322142152.5f6fa41c.akpm@linux-foundation.org>
-In-Reply-To: <4600329B.mailxHGH16L00Y@eag09.americas.sgi.com>
-References: <4600329B.mailxHGH16L00Y@eag09.americas.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S932234AbXCVV1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 17:27:45 -0400
+X-Greylist: delayed 408 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Mar 2007 17:27:45 EDT
+X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
+Subject: Re: [PATCH] Fix crash in tg3 when using irqpoll
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Bernhard Walle" <bwalle@suse.de>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070322204635.GA27152@strauss.suse.de>
+References: <20070322204635.GA27152@strauss.suse.de>
+Date: Thu, 22 Mar 2007 14:04:27 -0800
+Message-ID: <1174601067.9753.42.camel@dell>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6A1C2CAE3707174185-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Mar 2007 13:14:35 -0600
-cpw@sgi.com (Cliff Wickman) wrote:
+On Thu, 2007-03-22 at 21:46 +0100, Bernhard Walle wrote:
 
-> This patch reconciles cpusets and sched_domains that get out of sync
-> due to disabling and re-enabling of cpu's.
+> 
+> This patch makes sure that even the tr32() instruction in the interrupt handler
+> is not executed which accesses PCI memory. Accessing PCI memory when
+> pci_restore_state() is called is a bad idea because that function modifies
+> the BARs of the PCI device.
 
-I get three-out-of-three rejects in cpuset.c.  I could fix them, but I
-wouldn't be very confident that the result works at runtime.  2.6.20-rc6 was
-a long time ago - please, always raise patches against the latest mainline
-kernel (the daily git snapshot suffices).
+It is not caused by the BAR as it doesn't get changed in this case.  The
+pci_restore_state() call is to restore the memory enable bit in the PCI
+command register.  The tr32() call in tg3_interrupt() will cause a
+master abort if it is called before the memory enable bit has been
+restored.
 
-Recursion is a big no-no in kernel.  Is there any way in which it can be
-avoided?  Is Dinakar's implementation also recursive?
+> --- mainline-msi-init.orig/drivers/net/tg3.c
+> +++ mainline-msi-init/drivers/net/tg3.c
+> @@ -3561,7 +3561,10 @@ static irqreturn_t tg3_interrupt(int irq
+>  	struct net_device *dev = dev_id;
+>  	struct tg3 *tp = netdev_priv(dev);
+>  	struct tg3_hw_status *sblk = tp->hw_status;
+> -	unsigned int handled = 1;
+> +	unsigned int handled = 0;
+> +
+> +	if (tg3_irq_sync(tp))
+> +		goto out;
+
+
+This will break other things.  When we disable interrupts, we set the
+irq_sync flag but allow one more interrupt to be generated.  The irq
+handler will simply mask off the interrupt when it sees the irq_sync
+flag.  With the above change, the irq handler can no longer mask off
+this trailing interrupt and you may get screaming interrupts as a
+result.
+
+Thanks for reporting this.  I'll try to come up with a good solution.
+
+
+
