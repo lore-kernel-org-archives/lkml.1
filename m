@@ -1,71 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030572AbXCVMTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965911AbXCVM3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030572AbXCVMTB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 08:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030580AbXCVMTB
+	id S965911AbXCVM3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 08:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965907AbXCVM3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 08:19:01 -0400
-Received: from mga02.intel.com ([134.134.136.20]:19366 "EHLO mga02.intel.com"
+	Thu, 22 Mar 2007 08:29:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57064 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030572AbXCVMTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 08:19:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,313,1170662400"; 
-   d="scan'208"; a="214089428:sNHT711713331"
-Date: Thu, 22 Mar 2007 05:18:17 -0700
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, tglx@linutronix.de
-Subject: Re: [PATCH 1/2] Add support for deferrable timers
-Message-ID: <20070322121816.GA15473@linux-os.sc.intel.com>
-References: <20070321202217.GA29367@linux-os.sc.intel.com> <20070322031826.55d483e4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070322031826.55d483e4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	id S965645AbXCVM3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 08:29:32 -0400
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FDPIC: Fix the /proc/pid/stat representation of executable
+	boundaries
+To: torvalds@osdl.org, akpm@osdl.org, rgetz@blackfin.uclinux.org
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Thu, 22 Mar 2007 12:29:19 +0000
+Message-ID: <20070322122919.31568.99690.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 03:18:26AM -0800, Andrew Morton wrote:
-> On Wed, 21 Mar 2007 13:22:17 -0700 Venkatesh Pallipadi <venkatesh.pallipadi@intel.com> wrote:
-> 
-> > 
-> > Introduce a new flag for timers - 'deferrable timer'
-> > Timers that work normally when system is busy. But, will not cause CPU to
-> > come out of idle (just to service this timer), when CPU is idle. Instead,
-> > this timer will be serviced when CPU eventually wakes up with a subsequent
-> > non-deferrable timer or any other event.
-> > 
-> > The main advantage of this is to avoid unnecessary timer interrupts when
-> > CPU is idle. If the routine currently called by a timer can wait until next
-> > event without any issues, this new timer can be used while setting up timer
-> > for that routine. This, with dynticks, allows CPUs to be lazy, allowing them
-> > to stay in idle for extended period of time by reducing unnecesary wakeup and
-> > thereby reducing the power consumption.
-> > 
-> > This patch:
-> > Builds this new timer on top of existing timer infrastructure. It uses
-> > last bit in 'base' pointer of timer_list structure to store this
-> > deferrable timer flag. __next_timer_interrupt() function
-> > skips over these deferrable timers when CPU looks for
-> > next timer event for which it has to wake up.
-> > 
-> > This is exported by a new interface init_timer_deferrable() that can
-> > be called in place of regular init_timer().
-> > 
-> 
-> These patches cause a lockup during execuion of `halt -p'.  See phuzzy foto
-> at http://userweb.kernel.org/~akpm/s5000486.jpg
-> 
-> It's fairly obvious why, when one looks at lock_timer_base().
+From: David Howells <dhowells@redhat.com>
 
-Hmm.. Wonder how it worked for me and why I did not see this hang.
-I had thought I covered all accesses to ->base. Obviously, I have missed
-this "base == timer->base" check here. Will fix it and respin a patch later
-today with below suggestions as well.
+Fix the /proc/pid/stat representation of executable boundaries.  It should show
+the bounds of the executable, but instead shows the bounds of the loader.
 
-Thanks,
-Venki
+Before the patch is applied, the bug can be seen by examining, say, inetd:
+
+	# ps | grep inetd
+	  610         root          0   S   /usr/sbin/inetd -i
+	# cat /proc/610/maps
+	c0bb0000-c0bba788 r-xs 00000000 00:0b 14582157  /lib/ld-uClibc-0.9.28.so
+	c3180000-c31dede4 r-xs 00000000 00:0b 14582179  /lib/libuClibc-0.9.28.so
+	c328c000-c328ea00 rw-p 00008000 00:0b 14582157  /lib/ld-uClibc-0.9.28.so
+	c3290000-c329b6c0 rw-p 00000000 00:00 0
+	c32a0000-c32c0000 rwxp 00000000 00:00 0
+	c32d4000-c32d8000 rw-p 00000000 00:00 0
+	c3394000-c3398000 rw-p 00000000 00:00 0
+	c3458000-c345f464 r-xs 00000000 00:0b 16384612  /usr/sbin/inetd
+	c3470000-c34748f8 rw-p 00004000 00:0b 16384612  /usr/sbin/inetd
+	c34cc000-c34d0000 rw-p 00000000 00:00 0
+	c34d4000-c34d8000 rw-p 00000000 00:00 0
+	c34d8000-c34dc000 rw-p 00000000 00:00 0
+	# cat /proc/610/stat
+	610 (inetd) S 1 610 610 0 -1 256 0 0 0 0 0 8 0 0 19 0 1 0 94392000718
+	950272 0 4294967295 3233480704 3233523592 3274440352 3274439976
+ 	3273467584 0 0 4096 90115 3221712796 0 0 17 0 0 0 0
+
+The code boundaries are 3233480704 to 3233523592, which are:
+
+	(gdb) p/x 3233480704
+	$1 = 0xc0bb0000
+	(gdb) p/x 3233523592
+	$2 = 0xc0bba788
+
+Which corresponds to this line in the maps file:
+
+	c0bb0000-c0bba788 r-xs 00000000 00:0b 14582157  /lib/ld-uClibc-0.9.28.so
+
+Which is wrong.  After the patch is applied, the maps file is pretty much
+identical (there's some minor shuffling of the location of some of the
+anonymous VMAs), but the stat file is now:
+
+	# cat /proc/610/stat
+	610 (inetd) S 1 610 610 0 -1 256 0 0 0 0 0 7 0 0 18 0 1 0 94392000722
+	950272 0 4294967295 3276111872 3276141668 3274440352 3274439976
+	3273467584 0 0 4096 90115 3221712796 0 0 17 0 0 0 0
+
+The code boundaries are then 3276111872 to 3276141668, which are:
+
+	(gdb) p/x 3276111872
+	$1 = 0xc3458000
+	(gdb) p/x 3276141668
+	$2 = 0xc345f464
+
+And these correspond to this line in the maps file instead:
+
+	c3458000-c345f464 r-xs 00000000 00:0b 16384612  /usr/sbin/inetd
+
+Which is now correct.
+
+Signed-Off-By: David Howells <dhowells@redhat.com>
+---
+
+ fs/binfmt_elf_fdpic.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 5810aa1..47d6d49 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -179,6 +179,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 	int executable_stack;
+ 	int retval, i;
+ 
++	kdebug("____ LOAD %d ____", current->pid);
++
+ 	memset(&exec_params, 0, sizeof(exec_params));
+ 	memset(&interp_params, 0, sizeof(interp_params));
+ 
+@@ -941,8 +943,11 @@ static int elf_fdpic_map_file_constdisp_on_uclinux(
+ 
+ 		if (mm) {
+ 			if (phdr->p_flags & PF_X) {
+-				mm->start_code = seg->addr;
+-				mm->end_code = seg->addr + phdr->p_memsz;
++				if (!mm->start_code) {
++					mm->start_code = seg->addr;
++					mm->end_code = seg->addr +
++						phdr->p_memsz;
++				}
+ 			} else if (!mm->start_data) {
+ 				mm->start_data = seg->addr;
+ #ifndef CONFIG_MMU
+@@ -1123,8 +1128,10 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *params,
+ 
+ 		if (mm) {
+ 			if (phdr->p_flags & PF_X) {
+-				mm->start_code = maddr;
+-				mm->end_code = maddr + phdr->p_memsz;
++				if (!mm->start_code) {
++					mm->start_code = maddr;
++					mm->end_code = maddr + phdr->p_memsz;
++				}
+ 			} else if (!mm->start_data) {
+ 				mm->start_data = maddr;
+ 				mm->end_data = maddr + phdr->p_memsz;
+
