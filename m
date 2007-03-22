@@ -1,88 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934015AbXCVKEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934013AbXCVKFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934015AbXCVKEp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 06:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933913AbXCVKEo
+	id S934013AbXCVKFx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 06:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934083AbXCVKFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 06:04:44 -0400
-Received: from mail23.syd.optusnet.com.au ([211.29.133.164]:41509 "EHLO
-	mail23.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030342AbXCVKEn (ORCPT
+	Thu, 22 Mar 2007 06:05:52 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:40670 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934093AbXCVKFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 06:04:43 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.21-rc4-mm1
-Date: Thu, 22 Mar 2007 21:04:06 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steve Fox <drfickle@us.ibm.com>, "Martin J. Bligh" <mbligh@mbligh.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <4602413C.6000504@shadowen.org> <46025100.7060103@shadowen.org>
-In-Reply-To: <46025100.7060103@shadowen.org>
+	Thu, 22 Mar 2007 06:05:51 -0400
+Message-ID: <460254F4.8060800@bx.jp.nec.com>
+Date: Thu, 22 Mar 2007 19:05:40 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+CC: mpm@selenic.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm take3 6/6][resend] add ioctls for adding/removing
+ target
+References: <45FFCF31.3040000@bx.jp.nec.com> <45FFD4C1.7000103@bx.jp.nec.com>
+In-Reply-To: <45FFD4C1.7000103@bx.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703222104.06507.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 March 2007 20:48, Andy Whitcroft wrote:
-> Andy Whitcroft wrote:
-> > Andy Whitcroft wrote:
-> >> Andrew Morton wrote:
-> >>> Temporarily at
-> >>>
-> >>>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
-> >>>
-> >>> Will appear later at
-> >>>
-> >>>  
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc
-> >>>4/2.6.21-rc4-mm1/
-> >>
-> >> [All of the below is from the pre hot-fix runs.  The very few results
-> >> which are in for the hot-fix runs seem worse if anything.  :(  All
-> >> results should be out on TKO.]
-> >>
-> >>> - Restored the RSDL CPU scheduler (a new version thereof)
-> >>
-> >> Unsure if the above is the culprit but there seems to be a smattering of
-> >> BUG's in kernbench from the schedular on several systems, and panics
-> >> which do not fully dump out.
-> >>
-> >> elm3b239 is about 2/4 kernbench being the test in progress when we
-> >> blammo in both failed tests, elm3b234 doesn't boot at all.
-> >
-> > Well I have one result through for backing RSDL out on elm3b239 and that
-> > does indeed seem to give us a successful boot and test.  peterz has
-> > pointed me to an incremental patch from Con which I'll push through
-> > testing and see if that sorts it out.
->
-> Ok, tested the patch below on top of 2.6.21-rc4-mm1 and this seems to
-> fix the problem:
->
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc4-mm1-rsdl-0.32.p
->atch
->
-> Hard to tell from that patch whether it will be fixed in the changes
-> already committed to the next -mm.
->
-> Its possible that it may be fixed by the following patch:
->
->     sched-rsdl-improvements.patch
->
-> Which has the following slipped in at the end of the changelog:
->
->     A tiny change checking for MAX_PRIO in normal_prio()
->     may prevent oopses on bootup on large SMP due to
->     forking off the idle task.
->
-> Con, are all the changes in the 0.32 patch above with akpm?
+Sorry, I sent the incomplete sample program. 
+So, I send the complete one again.
+Any comments welcom.
 
-Yes he's queued everything in that patch you tested for the next -mm. Thanks 
-very much for testing it.
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stropts.h>
+#include <fcntl.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <linux/if_ether.h>
+#include <linux/netconsole.h>
 
--- 
--ck
+#define NETCONSOLE_DEV_NAME "/dev/netconsole"
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+struct command {
+	char *name;
+	char *options;
+	int (*handle_command)(struct command* command,
+			      int argc, char* argv[]);
+	void (*usage)(char *msg);
+};
+
+extern char *optarg;
+extern int opterr, optind, errno;
+
+static void generic_usage(char *msg) {
+	fprintf(stderr, "Usage  : netconfig command [option] [args]\n");
+	fprintf(stderr, "command: add remove help\n");
+	exit(-1);
+}
+
+static int handle_command_add(struct command* command, int argc, char** argv)
+{
+	int i, fd, ch;
+	unsigned int address;
+	unsigned char mac[ETH_ALEN];
+	struct netconsole_request req = {
+		.netdev_name = "eth0",
+		.local_port = 6665,
+		.remote_port = 6666,
+		.remote_mac = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+	};
+
+	while ((ch = getopt(argc, argv, command->options)) != -1) {
+		switch (ch) {
+		case 'p':
+			req.local_port = atoi(optarg);
+			break;
+		case 's':
+			address = inet_addr(optarg);
+			if (address == -1)
+				(*command->usage)("invlid IP address!\n");
+			req.local_ip = address;
+			break;
+		case 'h':
+		default:
+			(*command->usage)(NULL);
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (argc < 3 || argc > 4)
+		(*command->usage)(NULL);
+
+	memcpy(req.netdev_name, argv[0], IFNAMSIZ);
+	address = inet_addr(argv[1]);
+	if (address == -1)
+		(*command->usage)("invlid IP address!\n");
+	req.remote_ip = address;
+	req.remote_port = atoi(argv[2]);
+	if (argc == 4) {
+		i = 0;
+		mac[i++] = strtol(argv[3], NULL, 16);
+		while ((argv[3] = strchr(argv[3], ':')) != NULL) {
+			argv[3]++;
+			mac[i++] = strtol(argv[3], NULL, 16);
+		}
+		if (i != ETH_ALEN)
+			(*command->usage)("Invalid MAC address!\n");
+		memcpy(req.remote_mac, mac, ETH_ALEN);
+	}
+
+	fd = open(NETCONSOLE_DEV_NAME, O_RDWR);
+	if (fd < 0) {
+		fprintf(stderr, "cannot open device" NETCONSOLE_DEV_NAME "\n");
+		return -1;
+	}
+
+	if(ioctl(fd, NETCON_ADD_TARGET, &req) != 0)
+		perror("add");
+	close(fd);
+
+	return 0;
+}
+
+static void usage_add(char *msg)
+{
+	if (msg != NULL)
+		fprintf(stderr, "%s", msg);
+	fprintf(stderr, "Usage  : netconfig add [-options] dev_name remote_ip "
+		"remote_port [remote_mac]\n");
+	fprintf(stderr, "options:\n");
+	fprintf(stderr, "        -p local_port     :local port number\n");
+	fprintf(stderr, "        -s local_up       :local IP address\n");
+	exit(-1);
+}
+
+static int handle_command_remove(struct command *command,
+				 int argc, char** argv)
+{
+	int fd, id, ch;
+
+	while ((ch = getopt(argc, argv, command->options)) != -1) {
+		switch (ch) {
+		case 'h':
+		default:
+			(*command->usage)(NULL);
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (argc != 1)
+		(*command->usage)(NULL);
+
+	id = atoi(argv[0]);
+	fd = open(NETCONSOLE_DEV_NAME, O_RDWR);
+	if (fd < 0) {
+		fprintf(stderr, "can't open device " NETCONSOLE_DEV_NAME "\n");
+		return -1;
+	}
+	if(ioctl(fd, NETCON_REMOVE_TARGET, &id) != 0)
+		perror("remove");
+	close(fd);
+
+	return 0;
+}
+
+static void usage_remove(char *msg) {
+	fprintf(stderr, "Usage  : netconfig remove id\n");
+	exit(-1);
+}
+
+static int handle_command_help(struct command *command,
+			       int argc, char** argv) {
+	(*command->usage)(NULL);
+
+	return 0;
+}
+
+static void usage_help(char *msg) {
+	generic_usage(NULL);
+}
+
+static struct command s_commands[] = {
+	{"add", "hp:s:", handle_command_add, usage_add},
+	{"remove", "hp:", handle_command_remove, usage_remove},
+	{"help", NULL, handle_command_help, usage_help},
+};
+
+int main(int argc, char* argv[]) {
+	int i;
+	struct command *command = NULL;
+
+	for(i = 0; i < ARRAY_SIZE(s_commands); i++) {
+		if (argc <= 1)
+			break;
+		if (strcmp(s_commands[i].name, argv[1]) == 0) {
+			command = &s_commands[i];
+			break;
+		}
+	}
+
+	if (command == NULL)
+		generic_usage(NULL);
+	argc--;
+	argv++;
+
+	if (command->handle_command)
+		(*command->handle_command)(command, argc, argv);
+	else {
+		fprintf(stderr, "function handle_command() isn't set.");
+		exit(-1);
+	}
+	return 0;
+}
+
+
+
