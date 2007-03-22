@@ -1,65 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161133AbXCVWM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161137AbXCVWNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161133AbXCVWM6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 18:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161141AbXCVWM5
+	id S1161137AbXCVWNl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 18:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161141AbXCVWNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 18:12:57 -0400
-Received: from www.cosmosbay.com ([86.65.150.131]:52523 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161133AbXCVWM5 (ORCPT
+	Thu, 22 Mar 2007 18:13:40 -0400
+Received: from mga05.intel.com ([192.55.52.89]:37171 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161137AbXCVWNj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 18:12:57 -0400
-Message-ID: <4602FF57.7030001@cosmosbay.com>
-Date: Thu, 22 Mar 2007 23:12:39 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-CC: Christoph Lameter <christoph@lameter.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA cache_free_alien()
- very expensive because of virt_to_slab(objp); nodeid = slabp->nodeid;)
-References: <20070320181235.77d28864.dada1@cosmosbay.com> <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org> <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org> <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com>
-In-Reply-To: <20070322212831.GA25665@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 22 Mar 2007 23:12:44 +0100 (CET)
+	Thu, 22 Mar 2007 18:13:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,316,1170662400"; 
+   d="scan'208"; a="217511160:sNHT25011217"
+Subject: RSDL 0.31 causes slowdown
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Reply-To: tim.c.chen@linux.intel.com
+To: ck@vds.kolivas.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Intel
+Date: Thu, 22 Mar 2007 13:21:46 -0800
+Message-Id: <1174598506.23795.62.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Siddha, Suresh B a écrit :
-> Christoph,
-> 
-> While we are at this topic, recently I had reports that
-> cache_free_alien() is costly on non NUMA platforms too (similar
-> to the cache miss issues that Eric was referring to on NUMA)
-> and the appended patch seems to fix it for non NUMA atleast.
-> 
-> Appended patch gives a nice 1% perf improvement on non-NUMA platform
-> with database workload.
-> 
-> Please comment or Ack for mainline :)
+Con,
 
-I have one comment :)
+I've tried running Volanomark and found a 80% regression
+with RSDL 0.31 scheduler on 2.6.21-rc4 on a 2 socket Core 2 quad cpu
+system (4 cpus per socket, 8 cpus for system). 
 
-> @@ -1394,6 +1394,9 @@ void __init kmem_cache_init(void)
->  	int order;
->  	int node;
->  
-> +	if (num_online_nodes() == 1)
-> +		use_alien_caches = 0;
-> +
+The results are sensitive to rr_interval. Using Con's patch to increase
+rr_interval to a large value of 100, 
+the regression reduced to 30% instead of 80%.
 
-Unfortunatly this part is wrong.
+I ran Volanomark in loopback mode with 10 chatrooms 
+(20 clients per chatroom) configuration, with each client sending
+out 10000 messages. 
 
-You should check num_possible_nodes(), or nr_node_ids (this one is cheaper, 
-its a variable instead of a function call)
+http://www.volano.com/benchmarks.html
 
-I wonder if we could add a new SLAB_NUMA_BYPASS, so that we can declare some 
-kmem_cache as non NUMA aware (for example, I feel network skb dont need the 
-NUMA overhead)
+There are significant differences in the vmstat runqueue profile 
+between the 2.6.21-rc4 and the one with RSDL.  
 
+There are a lot less runnable jobs (see col 2) with RSDL 0.31  (rr_interval=15)
+and higher idle time.
 
+2.6.21-rc4 (original)
+Time	procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----
+(sec)	r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa st
+
+10	 2  3      0 2642376  15320 194612    0    0   161   875   44   70  1  1 92  5  0
+20	379  0      0 1573484  15680 195152    0    0    46   237  350 152686  9  8 81  2  0
+30	395  0      0 1579056  15704 195152    0    0     0    30  284 1017337 44 48  8  0  0
+40	469  0      0 1586368  15744 195144    0    0     0    50  284 1075456 42 51  7  0  0
+50	425  0      0 1593628  15756 195156    0    0     0    40  289 1108785 41 52  6  0  0
+60	394  0      0 1599452  15772 195156    0    0     0    31  284 1160316 41 53  5  0  0
+70	65  0      0 1599684  15788 195160    0    0     0    20  284 1075719 40 52  8  0  0
+80	424  0      0 1599320  15928 195168    0    0     1   122  314 1187583 41 54  4  0  0
+90	438  0      0 1600188  15944 195164    0    0     0    41  289 1171807 40 53  6  0  0
+100	412  0      0 1599312  15968 195160    0    0     0    22  284 1183832 41 54  5  0  0
+110	398  0      0 1599716  15976 195176    0    0     0     6  283 1227036 42 55  3  0  0
+120	382  0      0 1599468  15992 195180    0    0     0    23  286 1160802 40 54  6  0  0
+130	370  0      0 1599912  16008 195180    0    0     0    10  284 1159618 42 52  7  0  0
+
+2.6.21-rc4 with RSDL 0.31 
+Time	procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----
+(sec)	r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa st
+10	 2  3      0 2644892  15316 194612    0    0   160   869   44   64  1  1 92  5  0
+20	 2  0      0 1577512  15388 194984    0    0    24    93  293 3935  3  2 95  1  0
+30	 2  0      0 1583888  15412 194984    0    0     0    33  284 638668 28 39 33  0  0
+40	 2  0      0 1591208  15444 194972    0    0     0    50  284 307181 19 28 53  0  0
+50	 4  0      0 1598364  15460 194980    0    0     0    39  285 311971 18 29 53  0  0
+60	 8  0      0 1604108  15476 194980    0    0     0    29  284 308109 18 29 53  0  0
+70	 9  0      0 1603792  15492 194992    0    0     0     8  283 315947 18 29 52  0  0
+80	11  0      0 1602440  15784 195032    0    0    20   161  342 310849 18 29 52  1  0
+90	 1  0      0 1602504  15792 195160    0    0     0    37  287 317667 18 29 53  0  0
+100	 1  0      0 1603140  15824 195144    0    0     0    25  284 319106 18 30 52  0  0
+110	 7  0      0 1602760  15832 195160    0    0     0     6  283 316589 17 29 53  0  0
+120	12  0      0 1602644  15848 195164    0    0     0    22  285 320019 17 30 52  0  0
+130	 1  0      0 1602644  15864 195164    0    0     0    10  283 319537 17 30 53  0  0
+140	 6  0      0 1601744  16016 195176    0    0     2   104  312 316836 18 30 52  0  0
+
+2.6.21-rc4 with RSDL 0.31, rr_interval = 100
+
+Time	procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----
+(sec)	r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa st
+10       4  2      0 2679976  16696 195380    0    0    65   353   40   33  0  1 97  2  0
+20      296  0      0 1602676  16780 195764    0    0    22   104  294 151873  8  9 82  1  0
+30      298  0      0 1601280  16808 195756    0    0     0    14  284 1164355 41 56  3  0  0
+40      272  0      0 1600108  16832 195764    0    0     0    12  284 1205454 42 57  1  0  0
+50      321  0      0 1599128  16848 195760    0    0     0    25  287 1209822 41 58  1  0  0
+60      281  0      0 1598764  16864 195760    0    0     0    12  283 1206452 41 57  2  0  0
+70      287  0      0 1598888  16880 195764    0    0     0    15  284 1206103 40 58  2  0  0
+80      276  0      0 1597764  16904 195776    0    0     0    33  285 1193156 39 58  3  0  0
+90      293  0      0 1598144  16920 195780    0    0     0    14  284 1215350 39 59  2  0  0
+100     287  0      0 1598260  16936 195780    0    0     0    11  283 1236433 40 58  2  0  0
+110     257  0      0 1597872  16952 195784    0    0     0    10  283 1234983 40 59  1  0  0
+120     255  0      0 1598640  16968 195784    0    0     0    16  284 1178551 39 58  3  0  0
+130     200  0      0 1598764  16984 195788    0    0     0    13  284 1223963 39 59  2  0  0
+140     274  0      0 1598632  17008 195792    0    0     0    22  284 1179931 40 57  3  0  0
+150     278  0      0 1598616  17024 195792    0    0     0    21  286 1215157 39 59  2  0  0
+
+- Tim 
