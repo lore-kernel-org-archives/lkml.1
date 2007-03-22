@@ -1,49 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933898AbXCVJtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXCVJur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933898AbXCVJtv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 05:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932773AbXCVJtq
+	id S932690AbXCVJur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 05:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932773AbXCVJur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 05:49:46 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:53708 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933898AbXCVJti (ORCPT
+	Thu, 22 Mar 2007 05:50:47 -0400
+Received: from mo-p07-ob.rzone.de ([81.169.146.188]:8747 "EHLO
+	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932690AbXCVJuq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 05:49:38 -0400
-Date: Thu, 22 Mar 2007 15:26:51 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: menage@google.com
-Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
-       rohitseth@google.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container system abstracted from cpusets code
-Message-ID: <20070322095651.GA17796@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.130746000@menage.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 22 Mar 2007 05:50:46 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-usb-users@lists.sourceforge.net
+Subject: looking for testers for whiteheat driver
+Date: Thu, 22 Mar 2007 10:50:37 +0100
+User-Agent: KMail/1.9.1
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070212085104.130746000@menage.corp.google.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703221050.38433.oliver@neukum.org>
+X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GPE5pUNaoG1wTinqjVVl1GKJZKNFH/ytS4zw==
+X-RZG-CLASS-ID: mo07
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 12:15:22AM -0800, menage@google.com wrote:
-> +static void remove_dir(struct dentry *d)
-> +{
-> +	struct dentry *parent = dget(d->d_parent);
+Hi,
 
-Don't we need to lock parent inode's mutex here? sysfs seems to take
-that lock.
+if you have a device using this driver and are willing to test patches,
+please contact me.
 
-> +
-> +	d_delete(d);
-> +	simple_rmdir(parent->d_inode, d);
-> +	dput(parent);
-> +}
-
--- 
-Regards,
-vatsa
+	Regards
+		Oliver
