@@ -1,83 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbXCVHpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030181AbXCVHs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbXCVHpA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbXCVHpA
+	id S1030181AbXCVHs5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXCVHs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:45:00 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:43123 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753183AbXCVHo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:44:59 -0400
-Date: Wed, 21 Mar 2007 23:44:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Monakhov Dmitriy <dmonakhov@openvz.org>
-Subject: Re: 2.6.21-rc4-mm1 + 4 hotfixes -- BUG: unable to handle kernel
- paging request at virtual address 6b6b6ceb -- EIP is at module_put+0x7/0x1f
-Message-Id: <20070321234456.946d1742.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0703220029lb4df507ne21da177f7c05008@mail.gmail.com>
-References: <a44ae5cd0703220029lb4df507ne21da177f7c05008@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 Mar 2007 03:48:57 -0400
+Received: from poseidon.ceid.upatras.gr ([150.140.141.169]:7692 "EHLO
+	poseidon.ceid.upatras.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753162AbXCVHsz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:48:55 -0400
+Message-ID: <4602348E.80901@sciensis.com>
+Date: Thu, 22 Mar 2007 09:47:26 +0200
+From: Tasos Parisinos <t.parisinos@sciensis.com>
+User-Agent: Mozilla Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Indan Zupancic <indan@nul.nu>
+Cc: Francois Romieu <romieu@fr.zoreil.com>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RESEND 1/1] crypto API: RSA algorithm patch (kernel  
+                        version 2.6.20.1)
+References: <45FEB8B7.7020200@sciensis.com>    <20070320004001.GA11601@electric-eye.fr.zoreil.com>    <000601c76af9$a0ce3ce0$0864a8c0@scs1>    <4734.81.207.0.53.1174427010.squirrel@secure.samage.net>    <000e01c76b99$769cbbe0$0864a8c0@scs1>    <3118.81.207.0.53.1174480598.squirrel@secure.samage.net>    <46012E1A.3030309@sciensis.com>    <1860.81.207.0.53.1174485549.squirrel@secure.samage.net>    <460141B4.1080109@sciensis.com>    <3079.81.207.0.53.1174489854.squirrel@secure.samage.net>    <46015442.9020008@sciensis.com> <3564.81.207.0.53.1174495003.squirrel@secure.samage.net>
+In-Reply-To: <3564.81.207.0.53.1174495003.squirrel@secure.samage.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Mar 2007 00:29:54 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
 
-> kobject 0000:01:06.0: cleaning up
-> kobject firmware: cleaning up
-> BUG: unable to handle kernel paging request at virtual address 6b6b6ceb
->  printing eip:
-> c0137c22
-> *pde = 00000000
-> Oops: 0002 [#1]
-> last sysfs file:
-> devices/pci0000:00/0000:00:1e.0/0000:01:06.0/firmware/0000:01:06.0/loading
-> Modules linked in: intel_rng rng_core ac97_bus snd_pcm_oss
-> snd_mixer_oss mmc_core ipw2200 snd_pcm snd_seq_dummy snd_seq_oss
-> fw_ohci fw_core yenta_socket rsrc_nonstatic pcmcia_core ieee80211
-> ieee80211_crypt snd_seq_midi_event snd_seq snd_timer snd_seq_device
-> iTCO_wdt tifm_7xx1 tifm_core snd psmouse iTCO_vendor_support intel_agp
-> agpgart rtc soundcore shpchp pci_hotplug evdev snd_page_alloc ext3 jbd
-> mbcache sg sr_mod cdrom sd_mod pata_acpi ata_piix ohci1394 ieee1394
-> 8139too mii libata scsi_mod ehci_hcd uhci_hcd usbcore thermal
-> processor fan
-> CPU:    0
-> EIP:    0060:[<c0137c22>]    Not tainted VLI
-> EFLAGS: 00010202   (2.6.21-rc4-mm1 #4)
-> EIP is at module_put+0x7/0x1f
-> eax: 6b6b6b6b   ebx: c34bea98   ecx: c01618d2   edx: 00000001
-> esi: c3580000   edi: c34ba2fc   ebp: c3597f38   esp: c3597f38
-> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> Process firmware_helper (pid: 1895, ti=c3596000 task=c35a40b0 task.ti=c3596000)
-> Stack: c3597f48 c019db66 00000008 c3569548 c3597f70 c0165eee 00000000 00000000
->        c39bc5f8 c1c12118 c3569548 c34ba2fc c3590310 00000000 c3597f80 c0166036
->        c34ba2fc c34ba2fc c3597f98 c0163ac6 c3590334 00000003 c3590310 c3590334
-> Call Trace:
->  [<c0104c22>] show_trace_log_lvl+0x1a/0x2f
->  [<c0104cd2>] show_stack_log_lvl+0x9b/0xaa
->  [<c0104e97>] show_registers+0x1b6/0x288
->  [<c010505d>] die+0xf4/0x209
->  [<c0114b20>] do_page_fault+0x45d/0x529
->  [<c028a10c>] error_code+0x74/0x7c
->  [<c019db66>] release+0x2a/0x37
->  [<c0165eee>] __fput+0xbe/0x168
->  [<c0166036>] fput+0x31/0x35
->  [<c0163ac6>] filp_close+0x54/0x5c
->  [<c0164a97>] sys_close+0x6f/0xa7
->  [<c0103c94>] sysenter_past_esp+0x5d/0x99
->  =======================
 
-yeah, please try
+> On Wed, March 21, 2007 16:50, Tasos Parisinos wrote:
+>   
+>> A malicious person may want to alter code on the detachable (and unsafe)
+>> file system.
+>> Lots of stuff including the kernel will be in a trapped casing (opening,
+>> probing it, power
+>> analyzing it, heating it etc will result in system suicide and erasure)
+>>     
+>
+> What happens ift he whole thing is cooled so much that it stops functioning?
+>
+> What if the part that is supposed to do the system suicide is shot away?
+>
+> There are all kind of interesting ways of bypassing such protections, I
+> wouldn't count on covering all of them (which doesn't mean you shouldn't try).
+>
+>
+>   
+I really can't comment more on these... you understand that in that case 
+i would give away some interesting
+security details... ;) But i tell you that things have evolved, i am 
+even suprised to see these pieces of hardware
+work against lots (i mean lots) of kinds of attacks. If you search a 
+little you will find lots of hardware security
+solutions on the market. Of course having the money to obtain them is 
+another issue. Of course it also needs
+a lot of paperwork and NDAs
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/hot-fixes/revert-driver-core-handles-kobject_uevent-failure-while-device_add.patch
+>> If one alters one device then he can go on and play with it at home
+>> But if one finds the key that authenticates the executable code it will
+>> be possible to
+>> attack and tamper the non-system software on some of the networked devices
+>>
+>> That is why we can't use symmetric, the risk is a lot greater there. And
+>> of course
+>> we cant have one key per device (maybe thousands)
+>>     
+>
+> How many devices there are doesn't matter, a RSA key is ten times as big
+> as an AES key anyway. But maybe you've a more complex system where having
+> multiple keys indeed isn't possible (e.g. the filesystem is shared between
+> multiple devices).
+>
+>
+>   
+it would be a mess to do desent key management
 
-That might make things happier, but I don't see why the original patch
-would cause an oops.  So if
-revert-driver-core-handles-kobject_uevent-failure-while-device_add.patch
-fixes the oops then we probably have another bug in there.
+>> You are not going to check all at once but only on load. I tell you
+>> again this is
+>> not going to be running as a web server, but in a restricted environment
+>>     
+>
+> Well, as the filesystem isn't restricted you should be prepared for anything.
+>
+> Is the RAM in restricted area or not? Because if it isn't and they have
+> access to the bus then it can be tampered with.
+>
+>   
+RAM will be restricted, we try to do the best we can on filesystem.
+>> As for the code bloat and complexity... well you know its up to u to use
+>> it or leave it
+>> dont include where you don't need it.
+>> I mean we created for our specific use, other may want to use it to
+>> (maybe for
+>> the same reasons, who knows) why not make it available? Isn't that what
+>> open source
+>> is about?
+>>
+>> And on the bottom line, why not have a module and functionality that Linux
+>> competitors provide and advertise?
+>>     
+>
+> I've nothing against your RSA implementation, it's one of the cleaner and
+> smaller ones. Merging it is probably a good idea to stop others and to have
+> a minimalistic reference implementation.
+>
+> I've problems with the assumed security it brings to many uses of it though.
+>
+> Depending on the expected lifetime of your product I'd also consider using
+> something that can't be broken by quantum computers in the (near?) future. ;-)
+>
+> Good luck,
+>
+> Indan
+>
+>
+>   
+Well in our design the most HOT data will be inside chips that you need 
+serious equipment (and money)
+to tamper with. But these have our own OS running. Even if someone 
+breaks the signed modules system he can do
+damage but not to such an extent. We understand that this is not 
+unbreakable (yes, no assumed super-security) ,
+but we need to do it as hard as we can for others to intrude.
+This is going to work as the first security-barrier.
+
+Well with quantum, RSA will be obsolete. Also elliptic curve is now 
+becoming more and more popular
+But the RSA is nowadays in common use, ranging from payment systems to 
+the military. It will take some years
+for this to change
+
+Thanks for your interest and usefull comments
+
+Tasos Parisinos
+-
+
+
+
 
