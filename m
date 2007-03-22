@@ -1,37 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934151AbXCVRa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934156AbXCVRl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934151AbXCVRa2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 13:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934150AbXCVRa1
+	id S934156AbXCVRl5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 13:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934154AbXCVRl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 13:30:27 -0400
-Received: from saeurebad.de ([85.214.36.134]:44275 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934149AbXCVRaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 13:30:25 -0400
-Date: Thu, 22 Mar 2007 18:29:47 +0100
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Dale Blount <linux-kernel@dale.us>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests (2.6.21-rc2 and 2.6.20)
-Message-ID: <20070322172946.GB5864@localhost>
-Mail-Followup-To: Dale Blount <linux-kernel@dale.us>,
-	linux-kernel@vger.kernel.org
-References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com> <200703011308.28266.linux@f-seidel.de> <20070301123057.GO23985@kernel.dk> <loom.20070321T135132-397@post.gmane.org> <20070321190359.GD16768@leiferikson>
+	Thu, 22 Mar 2007 13:41:57 -0400
+Received: from 68-191-203-42.static.stls.mo.charter.com ([68.191.203.42]:31328
+	"EHLO service.eng.exegy.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934153AbXCVRlz convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 13:41:55 -0400
+X-Ninja-PIM: Scanned by Ninja
+X-Ninja-AttachmentFiltering: (no action)
+thread-index: AcdsqTa+50LTdCGLRX2maAZdEaPN/A==
+Message-ID: <4602BF9A.2080402@exegy.com>
+Date: Thu, 22 Mar 2007 12:40:42 -0500
+From: "Mr. Berkley Shands" <bshands@exegy.com>
+Content-Class: urn:content-classes:message
+User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
+Importance: normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.2826
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070321190359.GD16768@leiferikson>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Cc: Dave Lloyd <dlloyd@exegy.com>
+Subject: 2.6.20 (+2.6.21-rc4) write hang modifier
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
+X-OriginalArrivalTime: 22 Mar 2007 17:40:42.0426 (UTC) FILETIME=[369389A0:01C76CA9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+If I set /proc/sys/vm/dirty_ratio to "5" the write lockup happens within
+the first MilliSecond, at about 100MB per file system.
+If I slew the dirty_ratio to 80, the lockup happens
+at about 2GB per file system.
 
-On Wed, Mar 21, 2007 at 08:04:00PM +0100, Johannes Weiner wrote:
-> Did I even get the right place on where the NULL pointer dereference
-> happens? :)
+2.6.21-rc4 has the same symptoms, and same lockups.
+It appears that mptsas is dropping something.
 
-No, I did not. Sorry for the noise.
+berkley
 
-=Hannes
+-- 
+
+//E. F. Berkley Shands, MSc//
+
+**Exegy Inc.**
+
+3668 S. Geyer Road, Suite 300
+
+St. Louis, MO  63127
+
+Direct:  (314) 450-5348
+
+Cell:  (314) 303-2546
+
+Office:  (314) 450-5353
+
+Fax:  (314) 450-5354
+
+ 
+
+The Usual Disclaimer follows...
+This e-mail and any documents accompanying it may contain legally privileged and/or confidential information belonging to Exegy, Inc. Such information may be protected from disclosure by law. The information is intended for use by only the addressee. If you are not the intended recipient, you are hereby notified that any disclosure or use of the information is strictly prohibited. If you have received this e-mail in error, please immediately contact the sender by e-mail or phone regarding instructions for return or destruction and do not use or disclose the content to others.
