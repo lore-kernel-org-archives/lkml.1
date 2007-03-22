@@ -1,97 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965512AbXCVAJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXCVAP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965512AbXCVAJa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 20:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965519AbXCVAJa
+	id S965521AbXCVAP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 20:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965539AbXCVAP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 20:09:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:59599 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965512AbXCVAJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 20:09:29 -0400
-Subject: Re: [PATCH] Allow per-cpu variables to be page-aligned
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <m11wjiczje.fsf@ebiederm.dsl.xmission.com>
-References: <1174457426.11680.132.camel@localhost.localdomain>
-	 <m1ejnjc5qa.fsf@ebiederm.dsl.xmission.com>
-	 <1174477457.11680.170.camel@localhost.localdomain>
-	 <m11wjiczje.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 11:09:12 +1100
-Message-Id: <1174522152.2713.73.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Wed, 21 Mar 2007 20:15:26 -0400
+Received: from dkj137.neoplus.adsl.tpnet.pl ([83.24.13.137]:64969 "EHLO
+	dkj137.neoplus.adsl.tpnet.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965521AbXCVAP0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 20:15:26 -0400
+Message-ID: <4601CA9C.6050708@o2.pl>
+Date: Thu, 22 Mar 2007 01:15:24 +0100
+From: Artur Skawina <art_k@o2.pl>
+User-Agent: Thunderbird 3.0a1 (X11/20070320)
+MIME-Version: 1.0
+To: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
+CC: Con Kolivas <kernel@kolivas.org>,
+       linux list <linux-kernel@vger.kernel.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] sched: rsdl improvements
+References: <200703220429.45311.kernel@kolivas.org> <4601BF45.7070708@o2.pl> <4601C44B.9060705@mnsu.edu>
+In-Reply-To: <4601C44B.9060705@mnsu.edu>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-21 at 10:49 -0600, Eric W. Biederman wrote:
-> Rusty Russell <rusty@rustcorp.com.au> writes:
-> 
-> > On Wed, 2007-03-21 at 03:21 -0600, Eric W. Biederman wrote:
-> >> Do we really want to allow modules to be able to allocate page sized
-> >> per cpu memory.
-> >
-> > Hi Eric!
-> >
-> > 	They always could, of course, they just wouldn't get correct alignment.
-> > I think the principle of least surprise says that if we support this, it
-> > will also work in modules...
-> 
-> The module load would fail.
+Jeffrey Hundstad wrote:
+>> I'm not sure this is going in the right direction... I'm writing
+>> this while compiling a kernel w/ "nice -20 make -j2" and X is almost
+>>   
+> Did you mean "nice -20"?  If so, that should have slowed X quite a bit. 
+> Try "nice 19" instead.
 
-Hi again Eric,
+i did try "nice --20" too :) Resulted in long X stalls, but i don't
+think that's a reasonable load so I did not mention it.
+"nice -20 cmd" runs cmd at nice==19.
 
-	Unfortunately not.  It probably should, though: people ignore printks.
-I was probably thinking that large alignment constraints were only for
-performance when I wrote this code, but a page-aligned requirement for
-hypervisors changes that.
+Usage: nice [OPTION] [COMMAND [ARG]...]
+Run COMMAND with an adjusted niceness, which affects process scheduling.
+With no COMMAND, print the current niceness.  Nicenesses range from
+-20 (most favorable scheduling) to 19 (least favorable).
 
-> > Looking at the module per-cpu code again, the rounding up of the memory
-> > used by the kernel seems unnecessary though.  I'll try ripping that
-> > out...
->
-> I want to say that when dealing with cpu stuff aligning to a cache
-> line makes sense as it prevents multiple variables from sharing
-> the same cache line.  However we rarely access per cpu variables from
-> other cpus (the point) so the extra alignment doesn't seem to have
-> a justification in this context.
-
-Um, yes, always good to remember.  I wrote the per-cpu infrastructure,
-and I haven't forgotten 8)
-
-> Although I'm not quite certain what this will do to the per cpu
-> memory allocator...
-
-It should Just Work.  My only hesitation is that I obviously thought
-different when I wrote this code, so am I smarter now, or then?
-
-> After increasing NR_IRQS on x86_64 to (NR_CPUS*32) the per cpu irq
-> stats got much bigger especially as NR_CPUS went up.  The only
-> reasonable way I could see to fix this at the time was to just make
-> PER_CPU_ENOUGH_ROOM do the right thing and change size dynamically
-> with the size of the per cpu section.  I added PERCPU_MODULE_RESERVE
-> to allocate the amount that we did not have compile information on.
-> 8K was roughly what we had left over for modules before I made the
-> change so I just preserved that.
-
-This makes a lot of sense.  A fixed constant seemed sensible at the
-time, but now we know that the majority of per-cpu vars are in code
-which can never be a module.  Reasons are obvious, and seem unlikely to
-change.
-
-> > It means the x86 cpu_pda initialization would have to be done in
-> > smp_prepare_boot_cpu tho...
-> 
-> Well that is earlier than trap_init so it shouldn't be a problem...
-
-But it doesn't get called on UP.  Don't know if that matters, but it
-wasn't immediately obvious.
-
-Thanks,
-Rusty.
-
+  -n, --adjustment=N   add integer N to the niceness (default 10)
