@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbXCVV3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030576AbXCVVbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934247AbXCVV3O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 17:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934246AbXCVV3O
+	id S1030576AbXCVVbB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 17:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965414AbXCVVbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 17:29:14 -0400
-Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:43993 "HELO
-	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S934240AbXCVV3M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 17:29:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=u4fkDtG6bw9NJIsAs/0V4GQkK4IJmm6TygkY1LwAlPoHZz2ZkZoca9SX2zRcm4e2ZuViqVoOVepW5XhayAUQLXJf2DHLgGbp3GLNOYwF7oTQ3T3wK87KLEygZws4BFw3ghkCQd8c5Q6/8yj/SIE1azbbJreEjywqlqKcZ9EpFwU=  ;
-X-YMail-OSG: dRXF1H4VM1nHhsB56RsWod2oKROGfRFYxiSKsZpLM8uhkPmnRaO2gXhCKwLhS2lM8GBE5_MQcmCu4BrPBU_IjFIx8xWSNpFHowbIeLnI2CPZN2Hxl2.3w9pZfpq75mVuzLfRtVYrqRtLuvw-
-From: David Brownell <david-b@pacbell.net>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] possible USB regression with 2.6.21-rc4: iPod doesn't work
-Date: Thu, 22 Mar 2007 14:29:11 -0700
-User-Agent: KMail/1.7.1
-Cc: Tino Keitel <tino.keitel@gmx.de>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org
-References: <20070322085451.GB10598@dose.home.local> <Pine.LNX.4.44L0.0703221539440.4669-100000@iolanthe.rowland.org> <20070322195448.GA17521@dose.home.local>
-In-Reply-To: <20070322195448.GA17521@dose.home.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Mar 2007 17:31:00 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:52448 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965405AbXCVVa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 17:30:59 -0400
+Date: Thu, 22 Mar 2007 14:30:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Avi Kivity <avi@qumranet.com>, Andi Kleen <ak@muc.de>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] make KVM conform to sucky rdmsr interface
+Message-Id: <20070322143011.0cf83370.akpm@linux-foundation.org>
+In-Reply-To: <1174549770.2713.121.camel@localhost.localdomain>
+References: <1174531917.2713.91.camel@localhost.localdomain>
+	<46022E40.8080300@qumranet.com>
+	<1174549770.2713.121.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703221429.12029.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 March 2007 12:54 pm, Tino Keitel wrote:
-> On Thu, Mar 22, 2007 at 15:40:40 -0400, Alan Stern wrote:
-> > 	  _Something_ is generating those overcurrent 
-> > warnings, and it sure looks like a hardware malfunction.
+On Thu, 22 Mar 2007 18:49:30 +1100
+Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> rdmsr_safe() takes pointers.  rdmsr() modifies its arguments.  What a
+> mess.
 > 
-> But it works with 2.6.20.
+> Fix rdmsr_safe() with !CONFIG_PARAVIRT.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff -r a7f78e8eacc8 include/asm-i386/msr.h
+> --- a/include/asm-i386/msr.h	Thu Mar 22 12:38:35 2007 +1100
+> +++ b/include/asm-i386/msr.h	Thu Mar 22 18:40:35 2007 +1100
+> @@ -96,12 +96,12 @@ static inline void wrmsrl (unsigned long
+>  	(native_write_msr(msr, ((unsigned long long)val2 << 32) | val1))
+>  
+>  /* rdmsr with exception handling */
+> -#define rdmsr_safe(msr,val1,val2)						\
+> +#define rdmsr_safe(msr,p1,p2)						\
+>  	({								\
+>  		int __err;						\
+> -		unsigned long long __val = native_read_msr(msr, &__err);	\
+> -		val1 = __val;						\
+> -		val2 = __val >> 32;					\
+> +		unsigned long long __val = native_read_msr(msr, &__err);\
+> +		(*p1) = __val;						\
+> +		(*p2) = __val >> 32;					\
+>  		__err;							\
+>  	})
 
-So can you bisect to find what caused the problem?
 
-We've been afflicted with such strange overcurrent messages
-off and on for some time.  Some hardware triggers them, while
-most doesn't, and the USB developers don't have any of the
-hardware that triggers it (that almost goes without saying).
+Linus's tree has
 
-It's been clear to me that _something_ the software does is
-making that more likely to happen.
+/* rdmsr with exception handling */
+#define rdmsr_safe(msr,a,b) ({ int ret__;						\
+	asm volatile("2: rdmsr ; xorl %0,%0\n"						\
+		     "1:\n\t"								\
+		     ".section .fixup,\"ax\"\n\t"					\
+		     "3:  movl %4,%0 ; jmp 1b\n\t"					\
+		     ".previous\n\t"							\
+ 		     ".section __ex_table,\"a\"\n"					\
+		     "   .align 4\n\t"							\
+		     "   .long 	2b,3b\n\t"						\
+		     ".previous"							\
+		     : "=r" (ret__), "=a" (*(a)), "=d" (*(b))				\
+		     : "c" (msr), "i" (-EFAULT));\
+	ret__; })
 
-One thing we've been lacking is anything like a usable clue
-as to what kind of changes would have that failure mode ...
-and thus, what kind of changes could remove it.
+(secret decoder ring: resize your xterm to 100 cols to read the above.  Sigh).
 
-- Dave
+Which tree are you patching??
