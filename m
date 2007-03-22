@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXCVOh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXCVOjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933012AbXCVOh4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 10:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933010AbXCVOh4
+	id S933036AbXCVOjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 10:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933041AbXCVOjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 10:37:56 -0400
-Received: from hoppetossa.avesi.com ([208.239.169.21]:54364 "HELO
-	hoppetossa.avesi.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933024AbXCVOhz (ORCPT
+	Thu, 22 Mar 2007 10:39:13 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:45360 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933036AbXCVOjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 10:37:55 -0400
-Message-ID: <460294CB.6060909@avesi.com>
-Date: Thu, 22 Mar 2007 10:38:03 -0400
-From: Christopher Mulcahy <cmulcahy@avesi.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Thu, 22 Mar 2007 10:39:12 -0400
+Date: Thu, 22 Mar 2007 09:39:09 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, pj@sgi.com, Sam Vilain <sam@vilain.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, winget@google.com,
+       containers@lists.osdl.org, akpm@linux-foundation.org, dev@sw.ru
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070322143909.GC6981@sergelap.austin.ibm.com>
+References: <45EF5A62.8000103@vilain.net> <6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com> <45EF5E71.7090101@vilain.net> <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com> <45EF793C.1000700@vilain.net> <6599ad830703071857yf711921ja3440c4276bbe58e@mail.gmail.com> <45EF83CB.9080903@vilain.net> <6599ad830703080110i33405501tb12bf8e58bf829c9@mail.gmail.com> <20070309165017.GF5948@sergelap.austin.ibm.com> <20070322140814.GA20796@in.ibm.com>
 MIME-Version: 1.0
-To: Vincent Jorrand <vjorrand@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: sata_nv exceptions in 2.6.20.3
-References: <756092.42594.qm@web31805.mail.mud.yahoo.com>
-In-Reply-To: <756092.42594.qm@web31805.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070322140814.GA20796@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Srivatsa Vaddagiri (vatsa@in.ibm.com):
+> On Fri, Mar 09, 2007 at 10:50:17AM -0600, Serge E. Hallyn wrote:
+> > The nsproxy container subsystem could be said to be that unification.
+> > If we really wanted to I suppose we could now always mount the nsproxy
+> > subsystem, get rid of tsk->nsproxy, and always get thta through it's
+> > nsproxy subsystem container.  But then that causes trouble with being
+> > able to mount a hierarachy like
+> > 
+> > 	mount -t container -o ns,cpuset
+> 
+> What troubles will mounting both cpuset and ns in the same hierarchy
+> cause?
 
-Robert Hancock thought this was a hardware problem.
-He was right.
+Wow, don't recall the full context here.  But at least with Paul's
+container patchset, a subsystem can only be mounted once.  So if the
+nsproxy container subsystem is always mounted by itself, then you cannot
+remount it to bind it with cpusets.
 
-I switched around cables on the hot-swap backplane, figuring that I 
-would determine whether I had a bad cable or a bad backplane ( hoping 
-for a bad cable ) and the problem went away.   One of the cables wasn't 
-seated properly apparently.  ( It was a tight 1U box with very 
-aggressive twist-ties that I had to cut to switch them around, so this 
-wasn't immediately obvious.
+> IMO that may be a good feature by itself, which makes it convenient to 
+> bind different containers to different cpusets.
 
-I would make sure that all cables are seated properly, and try a 
-different cable if the problem persists.
+Absolutely.
 
-Vincent Jorrand wrote:
-> I saw your email in the kernel dev mailing and I think I have the same problem, but since I am not a kernel developer, or running the bleeding edge kernels, I was not sure whether it was appropriate for me to post on the list.
->
->
->
->   My hard drive is a Seagate Barracudas ( 7200.10, 750GB, ST3750640AS ), very similar to yours. It is brand new (less than a month old)
-> I also get the:
->      CPB flags CMD err, flags-0x11
-> error in /var/log/messages.
->
-> I am running kernel 2.6.20-1.2925.fc6
->
-> Did you figure out a way to fix the problem?
->
-> Vincent
->
->
->
->
->
->
->
->   
+-serge
 
+> In this case, we want 'ns' subsystem to override all decisions wrt
+> mkdir of directories and also movement of tasks b/n different
+> groups. This is automatically accomplished in the patches, by having ns
+> subsystem veto mkdir/can_attach request which aren't allowed as per
+> namespace semantics (but which may be allowed as per cpuset semantics).
+> 
+> > so we'd have to fix something.  It also slows things down...
+> 
+> -- 
+> Regards,
+> vatsa
