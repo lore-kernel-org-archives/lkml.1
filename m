@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbXCVWph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751468AbXCVWqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752652AbXCVWph (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 18:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXCVWph
+	id S1751468AbXCVWqw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 18:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbXCVWqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 18:45:37 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36687 "EHLO mx1.suse.de"
+	Thu, 22 Mar 2007 18:46:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:35585 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbXCVWpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 18:45:36 -0400
-Date: Thu, 22 Mar 2007 23:45:34 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Fix irqpoll on IA64 (timer interrupt != 0)
-Message-ID: <20070322224534.GA12791@sykes.suse.de>
-Mail-Followup-To: Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>
-References: <20070320150027.GA18143@strauss.suse.de> <20070322140922.a59bea5c.akpm@linux-foundation.org> <1174598601.10840.231.camel@localhost.localdomain>
+	id S1751468AbXCVWqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 18:46:51 -0400
+Message-ID: <4603075E.4090001@goop.org>
+Date: Thu, 22 Mar 2007 15:46:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1174598601.10840.231.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Cestonaro, Thilo \(external\)" 
+	<Thilo.Cestonaro.external@fujitsu-siemens.com>
+CC: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
+Subject: Re: how can I touch softlockup watchdog on all cpus?
+References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB6F2A@ABGEX01E.abg.fsc.net> <20070321164404.GF13218@redhat.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB710B@ABGEX01E.abg.fsc.net> <75b66ecd0703220830wdb4a612u86c80e71d4918cc4@mail.gmail.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FEB060@ABGEX01E.abg.fsc.net> <75b66ecd0703220917w2fa7c6afs4817b689f8a2e98f@mail.gmail.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FEB0F5@ABGEX01E.abg.fsc.net>
+In-Reply-To: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FEB0F5@ABGEX01E.abg.fsc.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Cestonaro, Thilo (external) wrote:
+> It's a condition of a customer of us, so I can't change it.
+>
+> But it happens not often that my part is used. So I thought there is a mechanism to disable or reset the watchdog
+> because it is a legal pause for it. And there is one "touch_softlockup_watchdog()", that does what I want,
+> BUT just for the current cpu. And so the watchdog blats from the other cpu.
+>   
 
-* Thomas Gleixner <tglx@linutronix.de> [2007-03-22 22:23]:
-> 
-> > Also, the code presently passes the magic IRQ number into the generic IRQ
-> > code.  I wonder if we'd get a more pleasing result if we were to make the
-> > generic IRQ code call _out_ to the architecture:
-> 
-> > Then, ia64 can implement arch_is_irqpoll_irq() and it can do whatever it
-> > wants in there.
-> > 
-> > The __attribute__((weak)) thing adds a little bit of overhead, but I don't
-> > think this is a fastpath?
-> 
-> Well, depends what you consider a fastpath. When noirqdebug == 0, it is
-> called on every interrupt.
+on_each_cpu(touch_softlockup_watchdog, NULL, 0, 0)?
 
-I think that function is only called if irqfixup == 2, because if the
-first condition in the expression is wrong, the evaluation of the
-expression is aborted in C.
+Or patch the softlockup watchdog to add a way to temporarily disable it.
 
-
-Regards,
-  Bernhard
+    J
