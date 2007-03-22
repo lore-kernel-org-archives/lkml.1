@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030401AbXCVKjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030453AbXCVKry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030401AbXCVKjG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 06:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934093AbXCVKjG
+	id S1030453AbXCVKry (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 06:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030456AbXCVKry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 06:39:06 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49138 "EHLO gate.crashing.org"
+	Thu, 22 Mar 2007 06:47:54 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:41996 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934098AbXCVKjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 06:39:03 -0400
-Subject: Re: [RFC/PATCH 0/15] Pass MAP_FIXED down to get_unmapped_area
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linux Memory Management <linux-mm@kvack.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <46025A6E.60603@yahoo.com.au>
-References: <1174543217.531981.572863804039.qpush@grosgo>
-	 <46023055.1030004@yahoo.com.au>
-	 <1174558498.10836.30.camel@localhost.localdomain>
-	 <46025A6E.60603@yahoo.com.au>
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 21:38:57 +1100
-Message-Id: <1174559937.10836.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	id S1030367AbXCVKrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 06:47:52 -0400
+Date: Thu, 22 Mar 2007 11:49:57 +0100
+From: Lukas Hejtmanek <xhejtman@mail.muni.cz>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: libata - 2.6.21-rc4-git5, ata channel still badly configured
+Message-ID: <20070322104957.GA3621@mail.muni.cz>
+References: <20070321213757.GB3637@mail.muni.cz> <460225EA.9060409@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <460225EA.9060409@gmail.com>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Muni-Spam-TestIP: 147.251.54.96
+X-Muni-Envelope-From: xhejtman@fi.muni.cz
+X-Muni-Envelope-To: alan@lxorguk.ukuu.org.uk
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 22 Mar 2007 11:47:50 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Well if we use a set of valid ranges, then we can start with generic code
-> that will set up ranges allowed by the syscall semantics.
+On Thu, Mar 22, 2007 at 03:44:58PM +0900, Tejun Heo wrote:
+> Lukas Hejtmanek wrote:
+> >> Subject    : ata_piix: PATA UDMA/100 configured as UDMA/33
+> >> References : http://lkml.org/lkml/2007/2/20/294
+> >> Submitter  : Fabio Comolli <fabio.comolli@gmail.com>
+> >> Status     : patch exists
+> > 
 > 
-> Then the arch code could be called with that set of ranges, and perform
-> its modifications to that set.
+> Does this fix your problem?
 
-A bit complicated in practice... "set of ranges" can be big... depend on
-what hthe restrictions actually are.
+Yes, it does. Thank you.
 
-On powerpc, for example, the fs/driver don't even know. With my multiple
-page size thingy for example, the only thing I want to rely on is the
-page size of a given mapping. The arch code can open/close segments for
-different page sizes depending if they have already some VMAs in them or
-not. Thus providing ranges isn't a good idea.
-
-With my slices patch (you can find it on linuxppc-dev, at least an older
-version not base on that serie, I can post a newer one if you want), you
-can see that hugetlbfs g_u_a basically turns into a single slice request
-for a given page size and the arch code will automatically try to find a
-segment already converted for that page size if any, if not, will try to
-convert one that has no other VMAs in it.
-
-Another counter example to you proposal is cacheable vs. cache
-invalidate. A driver like /dev/mem or /proc/bus/pci only knows "cache
-invalidate" in most case (and currently has no way to tell that to the
-arch). It doesn't and shouldn't have to know what kind of rstrictions
-the arch might have on such a mapping. Thus it shouldn't have to pick up
-ranges. It doesn't care.
- 
-> This would add some constraint onto the ordering of whether driver or
-> arch gets called first, but still wouldn't invalidate the above...
-
-Problem is as I said above, driver doesn't really know about "ranges".
-Driver really knows about constraints
-> 
-> > I'm still thinking about it. I think my first patch set is a good step
-> > to give some more flexibility to archs but is by no mean something to
-> > settle on.
-> 
-> Yeah definitely a nice start. And of course things should be done
-> incrementally rather than thinking about a complete rewrite first ;)
-
-Yeah...
-
-Ben.
-
-
+-- 
+Luká¹ Hejtmánek
