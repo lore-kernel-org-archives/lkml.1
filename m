@@ -1,152 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933776AbXCVQC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933624AbXCVQD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933776AbXCVQC1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 12:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbXCVQC1
+	id S933624AbXCVQD5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 12:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933761AbXCVQD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 12:02:27 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50951 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933776AbXCVQCZ convert rfc822-to-8bit (ORCPT
+	Thu, 22 Mar 2007 12:03:57 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:49918 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933624AbXCVQD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 12:02:25 -0400
-Date: Thu, 22 Mar 2007 16:59:25 +0100
-From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386 GDT cleanups: Rename boot_gdt_table to boot_gdt
-Message-ID: <20070322165925.3630fce9@frecb000686.frec.bull.fr>
-In-Reply-To: <1174555451.2713.139.camel@localhost.localdomain>
-References: <1174457426.11680.132.camel@localhost.localdomain>
-	<1174458636.11680.143.camel@localhost.localdomain>
-	<1174458730.11680.145.camel@localhost.localdomain>
-	<1174458938.11680.150.camel@localhost.localdomain>
-	<m1aby7c59k.fsf@ebiederm.dsl.xmission.com>
-	<1174478153.11680.183.camel@localhost.localdomain>
-	<m1wt1abkuo.fsf@ebiederm.dsl.xmission.com>
-	<1174521510.2713.61.camel@localhost.localdomain>
-	<20070322091031.33a753fe@frecb000686.frec.bull.fr>
-	<1174555451.2713.139.camel@localhost.localdomain>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 22/03/2007 17:04:20,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 22/03/2007 17:04:27,
-	Serialize complete at 22/03/2007 17:04:27
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 22 Mar 2007 12:03:56 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+Organization: IBM Corporation
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ibmebus: change probe/remove interface from using loc-code to DT path
+Date: Thu, 22 Mar 2007 17:00:46 +0100
+User-Agent: KMail/1.6.2
+Cc: pmac@au1.ibm.com, hnguyen@de.ibm.com, johnrose@austin.ibm.com,
+       johnrose@us.ibm.com, nfont@austin.ibm.com, paulus@samba.org,
+       themann@de.ibm.com
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703221700.46292.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In some cases, multiple OFDT nodes might share the same location code, so
+the location code is not a unique identifier for an OFDT node. Changed the
+ibmebus probe/remove interface to use the DT path of the device node instead
+of the location code.
 
-  Rusty,
+The DT path must be written into probe/remove right as it would appear in
+the "devspec" attribute of the ebus device: relative to the DT root, with a
+leading slash and without a trailing slash. One trailing newline will not
+hurt; multiple newlines will (like perl's chomp()).
 
-On Thu, 22 Mar 2007 20:24:10 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
+Example:
 
-> On Thu, 2007-03-22 at 09:10 +0100, Sébastien Dugué wrote:
-> >   Why not take on the opportunity to rename boot_gt_table to boot_gtd,
-> > to avoid the duplicate T(able)?
-> 
-> That's not a bad idea, but IMHO deserves its own patch.
-> 
-> I look forward to it!
-> Rusty.
-> 
-> 
+ Add a device "/proc/device-tree/foo@12345678" to ibmebus like this:
+    echo /foo@12345678 > /sys/bus/ibmebus/probe
 
-  Here it is, boot tested on an SMP x86 box.
-
-  Sébastien.
+ Remove the device like this:
+    echo /foo@12345678 > /sys/bus/ibmebus/remove
 
 
-
- Rename boot_gdt_table to boot_gdt to avoid the duplicate
-T(able).
-
-Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
-
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- arch/i386/kernel/head.S       |    9 ++++-----
- arch/i386/kernel/trampoline.S |   12 ++++++------
- 2 files changed, 10 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/arch/i386/kernel/head.S
-===================================================================
---- linux-2.6.orig/arch/i386/kernel/head.S	2007-03-22 15:09:02.000000000 +0100
-+++ linux-2.6/arch/i386/kernel/head.S	2007-03-22 16:14:38.000000000 +0100
-@@ -147,8 +147,7 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
- /*
-  * Non-boot CPU entry point; entered from trampoline.S
-  * We can't lgdt here, because lgdt itself uses a data segment, but
-- * we know the trampoline has already loaded the boot_gdt_table GDT
-- * for us.
-+ * we know the trampoline has already loaded the boot_gdt for us.
-  *
-  * If cpu hotplug is not supported then this code can go in init section
-  * which will be freed later
-@@ -588,7 +587,7 @@ fault_msg:
- 	.word 0				# 32 bit align gdt_desc.address
- boot_gdt_descr:
- 	.word __BOOT_DS+7
--	.long boot_gdt_table - __PAGE_OFFSET
-+	.long boot_gdt - __PAGE_OFFSET
+
+This patch applies on top of part 2/3 or 3/3 of my previous ibmebus patches,
+which are already in Paul's git. Part 3/3 of that patchset will still apply
+cleanly (with a little offset) after this patch.
+
+
+ ibmebus.c |  118 ++++++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 61 insertions(+), 57 deletions(-)
+
+
+diff -Nurp 03.almost-all/arch/powerpc/kernel/ibmebus.c 03b.path/arch/powerpc/kernel/ibmebus.c
+--- 03.almost-all/arch/powerpc/kernel/ibmebus.c	2007-03-09 17:37:08.000000000 +0100
++++ 03b.path/arch/powerpc/kernel/ibmebus.c	2007-03-21 15:23:23.358121376 +0100
+@@ -44,8 +44,6 @@
+ #include <asm/ibmebus.h>
+ #include <asm/abs_addr.h>
  
- 	.word 0				# 32-bit align idt_desc.address
- idt_descr:
-@@ -602,11 +601,11 @@ ENTRY(early_gdt_descr)
- 	.long cpu_gdt_table
+-#define MAX_LOC_CODE_LENGTH 80
+-
+ static struct device ibmebus_bus_device = { /* fake "parent" device */
+ 	.bus_id = "ibmebus",
+ };
+@@ -253,7 +251,7 @@ static void ibmebus_add_devices_by_id(st
+ 	return;
+ }
  
- /*
-- * The boot_gdt_table must mirror the equivalent in setup.S and is
-+ * The boot_gdt must mirror the equivalent in setup.S and is
-  * used only for booting.
-  */
- 	.align L1_CACHE_BYTES
--ENTRY(boot_gdt_table)
-+ENTRY(boot_gdt)
- 	.fill GDT_ENTRY_BOOT_CS,8,0
- 	.quad 0x00cf9a000000ffff	/* kernel 4GB code at 0x00000000 */
- 	.quad 0x00cf92000000ffff	/* kernel 4GB data at 0x00000000 */
-Index: linux-2.6/arch/i386/kernel/trampoline.S
-===================================================================
---- linux-2.6.orig/arch/i386/kernel/trampoline.S	2007-03-22 15:09:02.000000000 +0100
-+++ linux-2.6/arch/i386/kernel/trampoline.S	2007-03-22 16:13:23.000000000 +0100
-@@ -29,7 +29,7 @@
-  *
-  *	TYPE              VALUE
-  *	R_386_32          startup_32_smp
-- *	R_386_32          boot_gdt_table
-+ *	R_386_32          boot_gdt
-  */
+-static int ibmebus_match_helper_name(struct device *dev, void *data)
++static int ibmebus_match_name(struct device *dev, void *data)
+ {
+ 	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
+ 	char *name;
+@@ -281,7 +279,7 @@ static void ibmebus_remove_devices_by_id
+ 	while (strlen(idt->name) > 0) {
+ 		while ((dev = bus_find_device(&ibmebus_bus_type, NULL,
+ 					      (void*)idt->name,
+-					      ibmebus_match_helper_name))) {
++					      ibmebus_match_name))) {
+ 			ibmebus_unregister_device(dev);
+ 		}
+ 		idt++;
+@@ -372,18 +370,30 @@ static struct device_attribute ibmebus_d
+ 	__ATTR_NULL
+ };
  
- #include <linux/linkage.h>
-@@ -62,8 +62,8 @@ r_base = .
- 	 * to 32 bit.
- 	 */
+-static int ibmebus_match_helper_loc_code(struct device *dev, void *data)
++static int ibmebus_match_path(struct device *dev, void *data)
+ {
+-	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
+-	char *loc_code;
++	int rc;
++	struct device_node *dn =
++		of_node_get(to_ibmebus_dev(dev)->ofdev.node);
  
--	lidtl	boot_idt - r_base	# load idt with 0, 0
--	lgdtl	boot_gdt - r_base	# load gdt with whatever is appropriate
-+	lidtl	boot_idt_descr - r_base	# load idt with 0, 0
-+	lgdtl	boot_gdt_descr - r_base	# load gdt with whatever is appropriate
+-	loc_code = (char*)get_property(
+-		ebus_dev->ofdev.node, "ibm,loc-code", NULL);
++	rc = (dn->full_name && (strcasecmp((char*)data, dn->full_name) == 0));
  
- 	xor	%ax, %ax
- 	inc	%ax		# protected mode (PE) bit
-@@ -73,11 +73,11 @@ r_base = .
+-	if (loc_code && (strcmp((char*)data, loc_code) == 0))
+-		return 1;
++	of_node_put(dn);
++	return rc;
++}
  
- 	# These need to be in the same 64K segment as the above;
- 	# hence we don't use the boot_gdt_descr defined in head.S
--boot_gdt:
-+boot_gdt_descr:
- 	.word	__BOOT_DS + 7			# gdt limit
--	.long	boot_gdt_table-__PAGE_OFFSET	# gdt base
-+	.long	boot_gdt - __PAGE_OFFSET	# gdt base
+-	return 0;
++static char *ibmebus_chomp(const char *in, size_t count)
++{
++	char *out = (char*)kmalloc(count + 1, GFP_KERNEL);
++	if (!out)
++		return NULL;
++
++	memcpy(out, in, count);
++	out[count] = '\0';
++	if (out[count - 1] == '\n')
++		out[count - 1] = '\0';
++
++	return out;
+ }
  
--boot_idt:
-+boot_idt_descr:
- 	.word	0				# idt limit = 0
- 	.long	0				# idt base = 0L
+ static ssize_t ibmebus_store_probe(struct bus_type *bus,
+@@ -391,65 +401,59 @@ static ssize_t ibmebus_store_probe(struc
+ {
+ 	struct device_node *dn = NULL;
+ 	struct ibmebus_dev *dev;
+-	char *loc_code;
+-	char parm[MAX_LOC_CODE_LENGTH];
+-
+-	if (count >= MAX_LOC_CODE_LENGTH)
+-		return -EINVAL;
+-	memcpy(parm, buf, count);
+-	parm[count] = '\0';
+-	if (parm[count-1] == '\n')
+-		parm[count-1] = '\0';
+-
+-	if (bus_find_device(&ibmebus_bus_type, NULL, parm,
+-			     ibmebus_match_helper_loc_code)) {
+-		printk(KERN_WARNING "%s: loc_code %s has already been probed\n",
+-		       __FUNCTION__, parm);
+-		return -EINVAL;
+-	}
++	char *path;
++	ssize_t rc;
  
+-	while ((dn = of_find_all_nodes(dn))) {
+-		loc_code = (char *)get_property(dn, "ibm,loc-code", NULL);
+-		if (loc_code && (strncmp(loc_code, parm, count) == 0)) {
+-			dev = ibmebus_register_device_node(dn);
+-			if (IS_ERR(dev)) {
+-				of_node_put(dn);
+-				return PTR_ERR(dev);
+-			} else
+-				return count; /* success */
+-		}
++	path = ibmebus_chomp(buf, count);
++	if (!path)
++		return -ENOMEM;
++
++	if (bus_find_device(&ibmebus_bus_type, NULL, path,
++			     ibmebus_match_path)) {
++		printk(KERN_WARNING "%s: %s has already been probed\n",
++		       __FUNCTION__, path);
++		rc = -EINVAL;
++		goto out;
++	}
++
++	if ((dn = of_find_node_by_path(path))) {
++		dev = ibmebus_register_device_node(dn);
++		of_node_put(dn);
++		rc = IS_ERR(dev) ? PTR_ERR(dev) : count;
++	} else {
++		printk(KERN_WARNING "%s: no such device node: %s",
++		       __FUNCTION__, path);
++		rc = -ENODEV;
+ 	}
+ 
+-	/* if we drop out of the loop, the loc code was invalid */
+-	printk(KERN_WARNING "%s: no device with loc_code %s found\n",
+-	       __FUNCTION__, parm);
+-	return -ENODEV;
++out:
++	kfree(path);
++	return rc;
+ }
+ 
+ static ssize_t ibmebus_store_remove(struct bus_type *bus,
+ 				    const char *buf, size_t count)
+ {
+ 	struct device *dev;
+-	char parm[MAX_LOC_CODE_LENGTH];
++	char *path;
+ 
+-	if (count >= MAX_LOC_CODE_LENGTH)
+-		return -EINVAL;
+-	memcpy(parm, buf, count);
+-	parm[count] = '\0';
+-	if (parm[count-1] == '\n')
+-		parm[count-1] = '\0';
+-
+-	/* The location code is unique, so we will find one device at most */
+-	if ((dev = bus_find_device(&ibmebus_bus_type, NULL, parm,
+-				   ibmebus_match_helper_loc_code))) {
++	path = ibmebus_chomp(buf, count);
++	if (!path)
++		return -ENOMEM;
++
++	if ((dev = bus_find_device(&ibmebus_bus_type, NULL, path,
++				   ibmebus_match_path))) {
+ 		ibmebus_unregister_device(dev);
++
++		kfree(path);
++		return count;
+ 	} else {
+-		printk(KERN_WARNING "%s: loc_code %s not on the bus\n",
+-		       __FUNCTION__, parm);
++		printk(KERN_WARNING "%s: %s not on the bus\n",
++		       __FUNCTION__, path);
++
++		kfree(path);
+ 		return -ENODEV;
+ 	}
+-
+-	return count;
+ }
+ 
+ static struct bus_attribute ibmebus_bus_attrs[] = {
+
