@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030238AbXCVJFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030274AbXCVJG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030238AbXCVJFB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 05:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030266AbXCVJFB
+	id S1030274AbXCVJG5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 05:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030278AbXCVJG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 05:05:01 -0400
-Received: from mail.suse.de ([195.135.220.2]:44076 "EHLO mx1.suse.de"
+	Thu, 22 Mar 2007 05:06:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42762 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030238AbXCVJFA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 05:05:00 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] 2.6.21-rc4: NULL pointer dereference oops when unplugging sierra device
-Date: Thu, 22 Mar 2007 10:04:46 +0100
-User-Agent: KMail/1.9.1
-Cc: Greg KH <gregkh@suse.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Kevin Lloyd <linux@sierrawireless.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kevin Lloyd <klloyd@sierrawireless.com>
-References: <4601A3B9.3030701@goop.org> <20070321215309.GA18940@suse.de>
-In-Reply-To: <20070321215309.GA18940@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	id S1030274AbXCVJG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 05:06:56 -0400
+Date: Thu, 22 Mar 2007 10:06:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: [PATCH] lockdep: lockdep_depth vs. debug_locks Re: [2.6.20] BUG: workqueue leaked lock
+Message-ID: <20070322090632.GB15328@elte.hu>
+References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru> <20070321080510.GA1939@ff.dom.local> <20070321144620.GC78@tv-sign.ru> <20070321151651.GA4547@ff.dom.local> <20070321152935.GA215@tv-sign.ru> <20070321181635.GA570@tv-sign.ru> <20070322061119.GA1466@ff.dom.local> <1174548157.16411.4.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703221004.46806.oneukum@suse.de>
+In-Reply-To: <1174548157.16411.4.camel@twins>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 21. März 2007 22:53 schrieb Greg KH:
-> > EIP is at sierra_shutdown+0x3a/0x113 [sierra]
-> > eax: 00000000   ebx: 00000000   ecx: 00000000   edx: f8e52c9d
-> > esi: 00000000   edi: e889fa1c   ebp: e84c0e2c   esp: e84c0e0c
-> > ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> > Process pppd (pid: 3847, ti=e84c0000 task=e8553550 task.ti=e84c0000)
-> > Stack: 00000002 e84c0e18 c01cfda8 e84c0e20 c0240431 e889fa1c 00000003 e8a79d00 
-> >        e84c0e50 f8e219e4 f8e5212d 00000021 00000000 00000000 00000000 e889fa50 
-> >        f8e21956 e84c0e70 c01d099a e84c0e78 f8e52c58 e84c0e6c f6c5576c f6c55760 
-> > Call Trace:
-> >  [<c0104e98>] show_trace_log_lvl+0x1a/0x2f
-> >  [<c0104f4a>] show_stack_log_lvl+0x9d/0xa5
-> >  [<c0105114>] show_registers+0x1c2/0x293
-> >  [<c0105307>] die+0x122/0x224
-> >  [<c030fe69>] do_page_fault+0x505/0x5e1
-> >  [<c030e5c4>] error_code+0x7c/0x84
-> >  [<f8e219e4>] destroy_serial+0x8e/0x124 [usbserial]
-> >  [<c01d099a>] kref_put+0x63/0x71
-> >  [<f8e217f0>] usb_serial_put+0x10/0x12 [usbserial]
-> >  [<f8e2194e>] serial_close+0xb6/0xbe [usbserial]
 
-This looks like the "shutdown called too late bug".
-Does the patch included here help:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-http://lkml.org/lkml/2007/3/13/217
+> On Thu, 2007-03-22 at 07:11 +0100, Jarek Poplawski wrote:
+> > Here is some joke:
+> > 
+> > [PATCH] lockdep: lockdep_depth vs. debug_locks
+> > 
+> > lockdep really shouldn't be used when debug_locks == 0!
+> 
+> This happens then lockdep reports a fatal error, at which point
+> it will stop tracking locks and leave whatever state was there.
+> 
+> > Reported-by: Folkert van Heusden <folkert@vanheusden.com>
+> > Inspired-by: Oleg Nesterov <oleg@tv-sign.ru>
+> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+> 
+> This looks sane, thanks for figuring this out.
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-	Regards
-		Oliver
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
