@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934171AbXCVR6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934172AbXCVSAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934171AbXCVR6c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 13:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934170AbXCVR6c
+	id S934172AbXCVSAT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 14:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934174AbXCVSAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 13:58:32 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:28861 "EHLO
+	Thu, 22 Mar 2007 14:00:19 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:43924 "EHLO
 	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934158AbXCVR6b (ORCPT
+	with ESMTP id S934172AbXCVSAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 13:58:31 -0400
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org,
-       General@lists.openfabrics.org, Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH 2.6.21] iw_cxgb3: Handle build_phys_page_list() failure in iwch_reregister_phys_mem().
+	Thu, 22 Mar 2007 14:00:17 -0400
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: rolandd@cisco.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org, hnguyen@de.ibm.com
+Subject: Re: [PATCH] eHCA: Make scaling code also work without CPU hotplug
 X-Message-Flag: Warning: May contain useful information
-References: <1174577900.16862.27.camel@stevo-desktop>
+References: <200703221652.13216.fenkes@de.ibm.com>
 From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 22 Mar 2007 10:58:25 -0700
-In-Reply-To: <1174577900.16862.27.camel@stevo-desktop> (Steve Wise's message of "Thu, 22 Mar 2007 10:38:20 -0500")
-Message-ID: <ada7it9gny6.fsf@cisco.com>
+Date: Thu, 22 Mar 2007 11:00:06 -0700
+In-Reply-To: <200703221652.13216.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 22 Mar 2007 16:52:13 +0100")
+Message-ID: <ada3b3xgnvd.fsf@cisco.com>
 User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 22 Mar 2007 17:58:25.0511 (UTC) FILETIME=[B0396F70:01C76CAB]
-Authentication-Results: sj-dkim-6; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim6002 verified; ); 
+X-OriginalArrivalTime: 22 Mar 2007 18:00:06.0835 (UTC) FILETIME=[EC9E4030:01C76CAB]
+Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim7002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
