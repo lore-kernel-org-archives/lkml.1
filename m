@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbXCVP2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbXCVPaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933127AbXCVP2b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 11:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933190AbXCVP2b
+	id S933190AbXCVPaV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 11:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbXCVPaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 11:28:31 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51492 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933127AbXCVP2a (ORCPT
+	Thu, 22 Mar 2007 11:30:21 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:58286 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933190AbXCVPaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 11:28:30 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ian Kent <raven@themaw.net>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
-References: <1174055467.3397.17.camel@raven.themaw.net>
-	<45FAAD4F.4000204@fr.ibm.com>
-	<1174063618.3397.58.camel@raven.themaw.net>
-	<m1hcslm1tc.fsf@ebiederm.dsl.xmission.com>
-	<20070319200839.GB19449@sergelap.austin.ibm.com>
-	<m1odmpvuft.fsf@ebiederm.dsl.xmission.com>
-	<20070320201548.GA21312@sergelap.austin.ibm.com>
-	<m17itbmypc.fsf@ebiederm.dsl.xmission.com>
-	<20070320214125.GA5585@sergelap.austin.ibm.com>
-	<m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
-	<20070321205834.GB21517@sergelap.austin.ibm.com>
-	<1174530523.4635.25.camel@raven.themaw.net>
-Date: Thu, 22 Mar 2007 09:22:37 -0600
-In-Reply-To: <1174530523.4635.25.camel@raven.themaw.net> (Ian Kent's message
-	of "Thu, 22 Mar 2007 11:28:43 +0900")
-Message-ID: <m17it98fr6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 22 Mar 2007 11:30:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=H+sk1F8dIAm8pD/Asn0GhDcr8XLxs2FHsSd5Xs0pGg1VgiMrPJs7p8gF4NcowmxEiq5RVPveGhiuXEiZ/XdFS6uSp11p3qesmre9RgoobSBfcli+bZVf2GiAYrQZ25BJT9h2SPTxpYMmSL4zVUCYiLIiXLOy7J7jQvZ+GgGd9eM=
+Message-ID: <75b66ecd0703220830wdb4a612u86c80e71d4918cc4@mail.gmail.com>
+Date: Thu, 22 Mar 2007 11:30:18 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Cestonaro, Thilo (external)" 
+	<Thilo.Cestonaro.external@fujitsu-siemens.com>
+Subject: Re: how can I touch softlockup watchdog on all cpus?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB710B@ABGEX01E.abg.fsc.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB6F2A@ABGEX01E.abg.fsc.net>
+	 <20070321164404.GF13218@redhat.com>
+	 <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB710B@ABGEX01E.abg.fsc.net>
+X-Google-Sender-Auth: 04a6ad566f3ced6c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent <raven@themaw.net> writes:
-
-> On Wed, 2007-03-21 at 15:58 -0500, Serge E. Hallyn wrote:
-
->> PS
->> Note that if I'm right, but some machine starts autofs in a child
->> pid_namespace, the pid_nr() the way I have it is wrong.  I'm not sure in
->> that case how we go about fixing that.  Somehow we need to store the
->> autofs userspace daemon's pid namespace pointer to help us find the
->> proper pid_nr.
+On 3/22/07, Cestonaro, Thilo (external)
+<Thilo.Cestonaro.external@fujitsu-siemens.com> wrote:
+> > You didn't explain _why_ you need to sleep for such a long time,
+> > and as you didn't give a pointer to your code, there's not
+> > much people can do to recommend changes other than "don't do that".
 >
-> In order for any user space application to use the module it must mount
-> the autofs file system, passing a file handle for the pipe to use for
-> communication. This must always be done. Can we grab the process pid
-> namespace at that time and store it in the superblock info structure?
+> The code which is executed between the local_irq_disable and enable,
+> is just a function call into our companies bios (e.g. for updating itself)
+> and the long time is just 15 sec. while the bios has full control and OS is halted.
+> So I can't change anything at this point, but I need to fetch the watchdog,
+> cause it is not so nice, if there is a big BUG output on console while the
+> computer updates it's bios, very trustworthy isn't it :).
 
-I think this sounds like what Serge's did with his last patch, and
-it sounds like the only reasonable thing we can do in this situation.
+Just disable the softlockup watchdog.
 
-I had missed the fact the pipe is passed in at mount time.
-
-> How does this affect getting ids for waitq request packets of other user
-> space processes triggering mounts? I'm guessing that they would need to
-> belong to the appropriate namespace for this mechanism to funtion
-> correctly.
-
-Not really.  As long as the user space applications that trigger the mount
-is in the pid namespace where the mount was performed or in a child of that
-pid namespace it will has a process id that you can see.
-
-If it happens that someone is entirely too creative and the process that
-triggered the mount is in an entirely different pid namespace that does
-not map __pid_nr will return 0.  Not perfect but at least it is well defined.
-And a reasonable thing to return for a process you cannot see.
-
-Eric
+Lee
