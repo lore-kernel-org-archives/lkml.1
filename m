@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965838AbXCVHaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030197AbXCVHci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965838AbXCVHaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965847AbXCVHap
+	id S1030197AbXCVHci (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030196AbXCVHci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:30:45 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:57902 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965838AbXCVHan (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:30:43 -0400
-Date: Thu, 22 Mar 2007 07:30:42 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       sam@ravnborg.org
-Subject: Re: $CHECK can't be overridden
-Message-ID: <20070322073042.GT4095@ftp.linux.org.uk>
-References: <20070322051525.GD17159@redhat.com>
+	Thu, 22 Mar 2007 03:32:38 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42689 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030197AbXCVHcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:32:36 -0400
+Date: Wed, 21 Mar 2007 23:31:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Chinner <dgc@sgi.com>, nigel@nigel.suspend2.net,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
+Message-Id: <20070321233159.0f851bdd.akpm@linux-foundation.org>
+In-Reply-To: <200703220823.41077.rjw@sisk.pl>
+References: <200703211840.53242.maximlevitsky@gmail.com>
+	<200703212238.33897.rjw@sisk.pl>
+	<20070322045106.GP32602149@melbourne.sgi.com>
+	<200703220823.41077.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070322051525.GD17159@redhat.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 01:15:25AM -0400, Dave Jones wrote:
-> make help implies that supplying $CHECK on the command line
-> should override sparse as the checker used when building with C=1
-> Yet, this doesn't seem to be the case.
+On Thu, 22 Mar 2007 08:23:39 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Thursday, 22 March 2007 05:51, David Chinner wrote:
+> > On Wed, Mar 21, 2007 at 10:38:33PM +0100, Rafael J. Wysocki wrote:
+> > > 
+> > > I think this is the XFS problem with freezable workqueues.
+> > > 
+> > > Maxim, please try to apply the appended patch and see if it helps.
+> > > 
+> > > Greetings,
+> > > Rafael
+> > > 
+> > > 
+> > > ---
+> > > Since freezable workqueues are broken in 2.6.21-rc
+> > > (cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
+> > > http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
+> > > it's better to remove them altogether for 2.6.21 and change the only user of
+> > > them (XFS) accordingly.
+> > > 
+> > > ---
+> > >  fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
+> > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > Index: linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
+> > > ===================================================================
+> > > --- linux-2.6.21-rc4.orig/fs/xfs/linux-2.6/xfs_buf.c
+> > > +++ linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
+> > > @@ -1829,11 +1829,11 @@ xfs_buf_init(void)
+> > >  	if (!xfs_buf_zone)
+> > >  		goto out_free_trace_buf;
+> > >  
+> > > -	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
+> > > +	xfslogd_workqueue = create_workqueue("xfslogd");
+> > >  	if (!xfslogd_workqueue)
+> > >  		goto out_free_buf_zone;
+> > >  
+> > > -	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
+> > > +	xfsdatad_workqueue = create_workqueue("xfsdatad");
+> > >  	if (!xfsdatad_workqueue)
+> > >  		goto out_destroy_xfslogd_workqueue;
+> > >  
+> > 
+> > Acked-by: Dave Chinner <dgc@sgi.com>
+> > 
+> > Rafael, it sounds like this really needs to go into the next -rc
+> > kernel. Can you push it to Linus?
 > 
-> This would be useful for cases where for eg, sparse isn't in
-> the $PATH, allowing an explicit path to the executable to be
-> passed in automated build environments.
+> I tried, but Andrew resent it to you. :-)
+> 
+> Andrew, could we please merge it?
 
-Eh?  Works fine here...
+Sure.
 
-aviro@icy:/usr/src/cross-kernel/audit$ cat >/tmp/foo <<'EOF'
-#!/bin/sh
-echo "$@"
-EOF
-aviro@icy:/usr/src/cross-kernel/audit$ chmod +x /tmp/foo
-aviro@icy:/usr/src/cross-kernel/audit$ make clean
-  CLEAN   /usr/src/cross-kernel/audit
-  CLEAN   .tmp_versions
-aviro@icy:/usr/src/cross-kernel/audit$ make CHECK=/tmp/foo C=1
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/docproc
-  CC      arch/x86_64/kernel/asm-offsets.s
-  GEN     include/asm-x86_64/asm-offsets.h
-  HOSTCC  scripts/genksyms/genksyms.o
-  HOSTCC  scripts/genksyms/lex.o
-  HOSTCC  scripts/genksyms/parse.o
-  HOSTLD  scripts/genksyms/genksyms
-  CHECK   scripts/mod/empty.c
--D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise -D__x86_64__ -m64 -nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.0.2/include -Wp,-MD,scripts/mod/.empty.o.d -nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.0.2/include -D__KERNEL__ -Iinclude -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -m64 -mno-red-zone -mcmodel=kernel -pipe -fno-reorder-blocks -Wno-sign-compare -fno-asynchronous-unwind-tables -funit-at-a-time -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -g -Wdeclaration-after-statement -Wno-pointer-sign -ffunction-sections -DKBUILD_STR(s)=#s -DKBUILD_BASENAME=KBUILD_STR(empty) -DKBUILD_MODNAME=KBUILD_STR(empty) scripts/mod/empty.c
-  CC      scripts/mod/empty.o
-  HOSTCC  scripts/mod/mk_elfconfig
-  MKELF   scripts/mod/elfconfig.h
-  HOSTCC  scripts/mod/file2alias.o
-^C
-make[2]: *** [scripts/mod/file2alias.o] Interrupt
-make[1]: *** [scripts/mod] Interrupt
-make: *** [scripts] Interrupt
-
-Gets executed just fine...
+It shouldn't be this hard :(
