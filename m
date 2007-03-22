@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030241AbXCVICx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030259AbXCVIJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030241AbXCVICx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 04:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030254AbXCVICx
+	id S1030259AbXCVIJc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 04:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030238AbXCVIJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 04:02:53 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:4996 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030241AbXCVICv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 04:02:51 -0400
-Message-ID: <460237D8.3040505@jonmasters.org>
-Date: Thu, 22 Mar 2007 04:01:28 -0400
-From: Jon Masters <jonathan@jonmasters.org>
-Organization: World Organi[sz]ation Of Broken Dreams
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Thu, 22 Mar 2007 04:09:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:48169 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030230AbXCVIJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 04:09:31 -0400
+Message-ID: <460239BC.4070500@goop.org>
+Date: Thu, 22 Mar 2007 01:09:32 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Jon Masters <jcm@redhat.com>
-CC: Sergey Vlasov <vsu@altlinux.ru>, mit-devel@lists.printk.net,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [mit-devel] Re: module-init-tools-3.3-pre10 available
-References: <45DD0031.9010808@redhat.com>	<20070222170732.22c1320b.vsu@altlinux.ru>	<45DDAE24.6080905@redhat.com>	<20070223120136.12ea11db@home.brethil>	<45DF0B42.2080208@redhat.com>	<Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr>	<45E06439.40403@redhat.com> <20070320200345.GB4021@procyon.home> <46003F5F.2090606@redhat.com>
-In-Reply-To: <46003F5F.2090606@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Avi Kivity <avi@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@muc.de>
+Subject: Re: [PATCH] Cleanup: rationalize paravirt wrappers
+References: <1174531311.2713.86.camel@localhost.localdomain>	 <46023096.8060809@qumranet.com> <1174550442.2713.128.camel@localhost.localdomain>
+In-Reply-To: <1174550442.2713.128.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Masters wrote:
+Rusty Russell wrote:
+> The behaviour change (don't oops when an invalid rdmsr is used) was
+> there with CONFIG_PARAVIRT=y, the cleanup just made !CONFIG_PARAVIRT the
+> same.  Is it important?
+>   
 
-> Sergey Vlasov wrote:
-> 
->> Has a final decision about generated files been made?  I don't see any
->> updates in the git repo, and man pages are still broken
-> 
-> I'm doing some patching this afternoon anyway, and it's on my todo.
+We could always fling a BUG_ON in the non-safe versions, which would
+probably be more informative than a GPF or whatever a bad MSR gives you.
 
-I pushed up v3.3-pre11 just now. If all goes to plan, this will become a 
-final release so we can move on to more cleanups for a v3.4.
-
-Jon.
+    J
