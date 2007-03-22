@@ -1,37 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbXCVUQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934229AbXCVUZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751551AbXCVUQa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 16:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbXCVUQa
+	id S934229AbXCVUZY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 16:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934228AbXCVUZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 16:16:30 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:2704 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbXCVUQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 16:16:29 -0400
-X-Greylist: delayed 1501 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Mar 2007 16:16:29 EDT
-Date: Thu, 22 Mar 2007 20:51:27 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: max_loop limit
-Message-ID: <20070322195127.GA69143@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-References: <460236CE.1030303@slax.org> <20070322110058.GB23664@tatooine.rebelbase.local> <46026A92.4020106@slax.org> <20070322144210.73dfaf83.dada1@cosmosbay.com> <20070322134230.GP19922@kernel.dk> <20070322143314.GX4095@ftp.linux.org.uk>
+	Thu, 22 Mar 2007 16:25:24 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:48069 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934230AbXCVUZV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 16:25:21 -0400
+Subject: [PATCH] correct slow acpi_pm rating (fixes no boot with 2.6.21-rc3
+	and later)
+From: john stultz <johnstul@us.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, bunk@stusta.de, jikos@jikos.cz,
+       Bob Tracy <rct@gherkin.frus.com>
+In-Reply-To: <20070322034523.90050DBA1@gherkin.frus.com>
+References: <20070322034523.90050DBA1@gherkin.frus.com>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 13:25:18 -0700
+Message-Id: <1174595118.5662.16.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070322143314.GX4095@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 02:33:14PM +0000, Al Viro wrote:
-> Correction: current ABI is crap.  To set the thing up you need to open
-> it and issue an ioctl.  Which is a bloody bad idea, for obvious reasons...
+Tested by Bob Tracy.
 
-Agreed.  What would be a right way?  Global device ala ptmx/tun/tap?
-New syscall?  Something else?
+On Wed, 2007-03-21 at 21:45 -0600, Bob Tracy wrote:
+> john stultz wrote:
+> > > > Also, does booting w/ "clocksource=jiffies" change the behavior?
+> 
+> Works fine with 2.6.21-rc4.  I'm running on that kernel as I type this.
+> 
+> > Also trying booting w/ "notsc" would be a useful data point.
+> 
+> Boot hangs at the point indicated in my original message.  I *did*
+> notice the blurb in the console messages about the pit clocksource
+> being selected/used.  There was also a complaint about it being
+> unstable, with a negative delta.  I think these messages are consistent
+> with the pre-bad-commit case other than where they appear in the boot
+> messages.
+> 
+> > (...) a pre-bad-commit dmesg would help.
+> 
+> Sent under separate cover to John.
 
-  OG.
+Yea. From looking at your boot log, it does look like the PIT
+clocksource is being used. 
+
+This does point to an issue w/ that clocksource, however I noticed its
+getting selected over the ACPI PM timer, because you have the PIIX4 bug.
+That bug drops the ACPI PM timers rating to the same as the PIT, so
+that's why you're getting the PIT.
+
+Realistically, the PIT is much slower then even the triple read ACPI PM,
+so the de-ranking code is probably dropping it too far.
+
+Try this patch and let me know if it does the right thing. Although I do
+still need to dig a bit on the PIT hang issue.
+
+-john
+
+
+Don't drop ACPI PM quite so low if we see the PIIX4 bug.
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/drivers/clocksource/acpi_pm.c b/drivers/clocksource/acpi_pm.c
+index d42060e..5ac309e 100644
+--- a/drivers/clocksource/acpi_pm.c
++++ b/drivers/clocksource/acpi_pm.c
+@@ -90,7 +90,7 @@ __setup("acpi_pm_good", acpi_pm_good_set
+ static inline void acpi_pm_need_workaround(void)
+ {
+ 	clocksource_acpi_pm.read = acpi_pm_read_slow;
+-	clocksource_acpi_pm.rating = 110;
++	clocksource_acpi_pm.rating = 120;
+ }
+ 
+ /*
+
+
+
