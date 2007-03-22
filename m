@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965626AbXCVDYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXCVDYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965626AbXCVDYL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 23:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965632AbXCVDYL
+	id S965632AbXCVDYx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 23:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965636AbXCVDYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 23:24:11 -0400
-Received: from mail.kroah.org ([69.55.234.183]:55860 "EHLO perch.kroah.org"
+	Wed, 21 Mar 2007 23:24:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:39152 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965626AbXCVDYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 23:24:10 -0400
-Date: Wed, 21 Mar 2007 20:07:53 -0700
-From: Greg KH <gregkh@suse.de>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: linux-kernel@vger.kernel.org, davej@codemonkey.org.uk, akpm@osdl.org
-Subject: Re: Oops after cd /sys/.../cpufreq/; rmmod; cat stats/time_in_state
-Message-ID: <20070322030753.GB5728@suse.de>
-References: <20070319153013.GA6814@localhost.sw.ru> <20070319204125.GA5598@suse.de> <20070320100634.GA6811@localhost.sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070320100634.GA6811@localhost.sw.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S965632AbXCVDYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 23:24:51 -0400
+Subject: Re: [PATCH] Define EFLAGS_IF
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <1174533374.2713.104.camel@localhost.localdomain>
+References: <1174533374.2713.104.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 14:24:34 +1100
+Message-Id: <1174533874.2713.105.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 01:06:34PM +0300, Alexey Dobriyan wrote:
-> On Mon, Mar 19, 2007 at 01:41:25PM -0700, Greg KH wrote:
-> > On Mon, Mar 19, 2007 at 06:30:13PM +0300, Alexey Dobriyan wrote:
-> > > Steps to reproduce:
-> > >
-> > > 	# modprobe p4-clockmod
-> > > 	$ cd /sys/devices/system/cpu/cpu0/cpufreq/
-> > > 	# rmmod p4-clockmod
-> > > 	$ cat stats/time_in_state
-> > > 	Segmentation fault
-> >
-> > Has this always happened?  Or is it new?
-> 
-> I've checked 2.6.17 and up and it happens too.
-> 
-> Some .config peculiarities:
-> 
-> 	CONFIG_CPU_FREQ=y
-> 	CONFIG_CPU_FREQ_STAT=y
-> 	CONFIG_X86_P4_CLOCKMOD=m
-> 
-> After modprobe/rmmod cpufreq/stats directory appears but doesn't get
-> removed. Should it?
+On Thu, 2007-03-22 at 14:16 +1100, Rusty Russell wrote:
+> There is now more than one place where we use the fact that bit 9 of
+> eflags is the interrupt-enabled flag, so define EFLAGS_IF.  We make it
+> 512 so it can be used in asm, too.
 
-Yes.
+Belay this: there's a X86_EFLAGS_IF in asm/processor.h which we should
+use.  Will send patch.
 
-Well, one can argue that those stats should never be in sysfs at all
-anyway, I mean come on, a histogram in sysfs?  That's, not ok.
+Thanks to Jeremy Fitzhardinge for the clue.
 
-thanks,
+Rusty.
 
-greg k-h
+
