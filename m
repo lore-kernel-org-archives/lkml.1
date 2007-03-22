@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932465AbXCVNtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbXCVNwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932465AbXCVNtc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 09:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932478AbXCVNtc
+	id S932456AbXCVNwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 09:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932536AbXCVNwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 09:49:32 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:45643 "EHLO scrub.xs4all.nl"
+	Thu, 22 Mar 2007 09:52:43 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:50993 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932465AbXCVNtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 09:49:31 -0400
-Date: Thu, 22 Mar 2007 14:49:26 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] Sanitize filesystem NLS handling
-In-Reply-To: <46028303.7070104@ums.usu.ru>
-Message-ID: <Pine.LNX.4.64.0703221438050.14457@scrub.home>
-References: <45FD6EF5.1030706@ums.usu.ru> <Pine.LNX.4.64.0703221350400.14458@scrub.home>
- <46028303.7070104@ums.usu.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S932456AbXCVNwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 09:52:43 -0400
+Date: Thu, 22 Mar 2007 14:52:45 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Tomas M <tomas@slax.org>, linux-kernel@vger.kernel.org
+Subject: Re: max_loop limit
+Message-Id: <20070322145245.a49fefeb.dada1@cosmosbay.com>
+In-Reply-To: <20070322134230.GP19922@kernel.dk>
+References: <460236CE.1030303@slax.org>
+	<20070322110058.GB23664@tatooine.rebelbase.local>
+	<46026A92.4020106@slax.org>
+	<20070322144210.73dfaf83.dada1@cosmosbay.com>
+	<20070322134230.GP19922@kernel.dk>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 22 Mar 2007 14:42:31 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Thu, 22 Mar 2007, Alexander E. Patrakov wrote:
 
-> It is exposed as a mount parameter and kernel configuration option only for
-> fat and smbfs (the two filesystems that my patch touches for this matter), and
-> both of these filesystems come from DOS days, where there was one codepage for
-> a given country. So, for me, it made sense to glue these two parameters,
-> because they both should be set to this codepage. The contrary would (AFAIK)
-> only make sense if one gets floppies from France, but communicates with Polish
-> SMB servers. It is a very rare situation, isn't it? Or do you know any other
-> example where it would clearly make sense to have different defaults for fat
-> and smbfs?
+> > This time, you would be limited to 16384 loop devices on x86_64, 32768 on i386 :)
+> 
+> But this still wastes memory, why not just allocate each loop device
+> dynamically when it is set up? The current approach is crap, it is just
+> wasting memory for loop devices, queues, etc.
+> 
 
-hfs has a codepage option as well, but I don't know its default in the 
-various countries, but it could be different from DOS.
+Sure, but it's the first Tomas patch :)
 
-bye, Roman
+Apparently the 'current crap' didnt caugth someone else attention.
