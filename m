@@ -1,57 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXCVPiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbXCVPmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933232AbXCVPiX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 11:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933233AbXCVPiW
+	id S933068AbXCVPmc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 11:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933316AbXCVPmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 11:38:22 -0400
-Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:41986 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933232AbXCVPiV (ORCPT
+	Thu, 22 Mar 2007 11:42:32 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:60190 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933068AbXCVPmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 11:38:21 -0400
-Subject: [PATCH 2.6.21] iw_cxgb3: Handle build_phys_page_list() failure in
-	iwch_reregister_phys_mem().
-From: Steve Wise <swise@opengridcomputing.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org,
-       General@lists.openfabrics.org, Adrian Bunk <bunk@stusta.de>
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 10:38:20 -0500
-Message-Id: <1174577900.16862.27.camel@stevo-desktop>
+	Thu, 22 Mar 2007 11:42:31 -0400
+Date: Thu, 22 Mar 2007 15:42:27 +0000
+To: Christoph Hellwig <hch@infradead.org>, Adam Litke <agl@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Ken Chen <kenchen@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pagetable_ops: Hugetlb character device example
+Message-ID: <20070322154227.GA14366@skynet.ie>
+References: <20070319200502.17168.17175.stgit@localhost.localdomain> <1174506228.21684.41.camel@localhost.localdomain> <20070322103817.GA7348@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070322103817.GA7348@infradead.org>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On (22/03/07 10:38), Christoph Hellwig didst pronounce:
+> On Wed, Mar 21, 2007 at 02:43:48PM -0500, Adam Litke wrote:
+> > The main reason I am advocating a set of pagetable_operations is to
+> > enable the development of a new hugetlb interface.  During the hugetlb
+> > BOFS at OLS last year, we talked about a character device that would
+> > behave like /dev/zero.  Many of the people were talking about how they
+> > just wanted to create MAP_PRIVATE hugetlb mappings without all the fuss
+> > about the hugetlbfs filesystem.  /dev/zero is a familiar interface for
+> > getting anonymous memory so bringing that model to huge pages would make
+> > programming for anonymous huge pages easier.
+> 
+> That is a very laudable goal, but an utterly wrong way to get there.
+> Despite Linus' veto a while ago what we really want is support for transparent
+> super pages.
 
-Handle build_phys_page_list() failure in iwch_reregister_phys_mem().
+A year ago, I may have agreed with you. However, Linus not only veto'd it but
+stamped on it repeatadly at VM Summit. He couldn't have made it clearer if
+he wore a t-shirt a hat and held up a neon sign. The assertion at the time
+was that variable page support of any sort had to be outside of the core VM
+because automatic support will get it wrong in some cases and makes the core
+VM harder to understand (because it's super-clear at the moment). Others
+attending agreed with the position. That position rules out drivers or
+filesystems giving hints about superpage sizes in the foreseeable future.
 
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
+What they did not have any problem with was providing better interfaces to
+program against as long as they were on the side of the VM like hugetlbfs
+and not in the core. The character device for private mappings is an
+example of an interface that is easier to program against than hugetlbfs.
+It's far easier for an application to mmap a file at a fixed location than
+trying to discover if hugetlbfs is mounted or not. However, to support that
+sort of interface, there needs to be a way of telling the VM to call the an
+alternative pagetable handler - hence Adam's patches.
 
- drivers/infiniband/hw/cxgb3/iwch_provider.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+Someone with sufficient energy could try implementing variable page support
+entirely as a device using Adam's interface. If it turned out to be a
+good idea, then another push could be made for transparent support later.
+As it is, transparent superpage support is a also bit of a bitch for Power
+and IA64. Power because in many cases (not all), pages of two different
+sizes cannot be in the same virtual address range. IA64 has issues because
+with the *current* pagetable implementation, hugepages are limited to fixed
+address ranges. These sort of issues alone make transparent support in the
+kernel a non-trivial problem.
 
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
-index f2774ae..24e0df0 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_provider.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c
-@@ -545,11 +545,14 @@ static int iwch_reregister_phys_mem(stru
- 		php = to_iwch_pd(pd);
- 	if (mr_rereg_mask & IB_MR_REREG_ACCESS)
- 		mh.attr.perms = iwch_ib_to_tpt_access(acc);
--	if (mr_rereg_mask & IB_MR_REREG_TRANS)
-+	if (mr_rereg_mask & IB_MR_REREG_TRANS) {
- 		ret = build_phys_page_list(buffer_list, num_phys_buf,
- 					   iova_start,
- 					   &total_size, &npages,
- 					   &shift, &page_list);
-+		if (ret)
-+			return ret;
-+	}
- 
- 	ret = iwch_reregister_mem(rhp, php, &mh, shift, page_list, npages);
- 	kfree(page_list);
+> Adding random pointer indirections where we had the direct
+> hugetlb calls before isn't helpful for that at all. 
 
+They aren't random, they are pretty specific. Also, even when paths like fault
+is entered, the cost of an indirect call is insignificant in comparison to
+the page allocation, clearing the page and updating page tables.
+
+In Adam's current patches, the indirect call only happens when a driver is
+using the pagetable ops. In the tests I looked at, the cost of the branch
+could only be detected on an instruction-level profile and even the branch
+cost was pretty damn tiny. If it was a case that indirect calls always took
+place, it *might* be a bit more noticable but still nothing in comparison
+to the cost of the remainder of the operation.
+
+> As a start you might
+> want to make a clear destinction between core hugetlb code and the
+> filesystem interface to it without all the useless indirections. 
+
+The indirect calls are about supporting interfaces to userspace. In practice,
+the hugetlbfs interface, the shared memory interface and the character device
+interface would share a large amount of core code.  Admittadly that code
+could do with restructuring because it's all mangled together at the moment.
+
+The core hugetlb code as you call it is mainly dealing with page cache and
+huge page pool management. The filesystem layer is relatively thin on top of
+it. With Adams pagetable abstraction, it would make more sense to restructuring
+the huge page code and separate out core-support-for-superpages from hugetlbfs.
+
+> That
+> should get you as far as your char dev interface. 
+
+No, it wouldn't. Restructing the current code would allow better sharing
+between interfaces but that's it. At the end of the restructuring, we'd still
+need a way of saying "this VMA should be using some but not all the hugetlb
+code over there even though I'm not hugetlbfs". At that point, we'd be back
+at the pagetable ops abstraction.
+
+> But over the long
+> term the core VM needs to deal with multiple (and probably not just two)
+> page sizes.  Given that the code to deal with different sized pages is
+> essentially the same just on different units on most architectures cries
+> for a better method to implement this than adding random function indirection
+> that point to mostly identical code.
+> 
+
+Internally, a semi-sane way of supporting multiple page sizes would be
+to have one internal VFS mount per page size and using the hugetlbfs page
+cache management code.  Currently, HugetlbFS is basically a wrapper around
+an internal VFS mount whose pages happen to be a specific size.
+
+That said, variable page sizes is a different problem to the one Adam is
+addressing here. In fact, someone with sufficient energy could implement a
+variable page device behind Adam's abstraction just to see if it worked in
+practice or not.
+
+Restructering to support something like variable page support and more than
+one interface would look something like;
+
+HugetlbFS Interface	Shared Memory Interface		Char Device
+	|                         |                          |
+	|                         |               |-----------------
+	|                         |               |                |
+Internal hugetlbfs mount   Internal mount       mount            mount
+ size HugePageSize         size HugPageSize   HugePageSize   different size
+        |                         |               |                |
+	|-----------------------------------------------------------
+	                          |
+		          Hugeage Reservation tracking
+			          |
+			  Hugepage pool management
+			          |
+		           Page allocator
+	
+
+But if this nice arrangement existed today, Adams patches would still be
+needed to make it usable.
+
+> And your driver is the best example of why we utterly don't want
+> a page_table operations interface.  The last thing we want is random
+> driver taking over core VM functionality. 
+
+Who said anything about random? If a new driver of any sort shows up and
+using pagetable_ops, the developer will certainly be asked what they are
+doing that for.
+
+> The right way would be to a
+> filesystem/driver to tell (or maybe just give hints) which page size
+> to use for this mapping.
+> 
+
+If a driver wants to "tell" what pagesize to use, they can override the ops
+to call the appropriate hugetlb code. Hints will be damn near impossible to
+get right in all cases.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
