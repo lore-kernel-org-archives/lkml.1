@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934141AbXCVRRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934126AbXCVRRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934141AbXCVRRH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 13:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934136AbXCVRRG
+	id S934126AbXCVRRZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 13:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934146AbXCVRRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 13:17:06 -0400
-Received: from mail.suse.de ([195.135.220.2]:45448 "EHLO mx1.suse.de"
+	Thu, 22 Mar 2007 13:17:25 -0400
+Received: from saeurebad.de ([85.214.36.134]:44229 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934141AbXCVRRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 13:17:05 -0400
-Date: Thu, 22 Mar 2007 18:17:03 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: linux-scsi@vger.kernel.org
+	id S934143AbXCVRRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 13:17:23 -0400
+Date: Thu, 22 Mar 2007 18:16:45 +0100
+From: Johannes Weiner <hannes-kernel@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Use unchecked_isa_dma in sd_revalidate_disk()
-Message-ID: <20070322171703.GA22470@strauss.suse.de>
-Mail-Followup-To: linux-scsi@vger.kernel.org,
+Subject: Re: [PATCH] - fix compile warning: `found' might be used uninitialized in this function
+Message-ID: <20070322171645.GA5864@localhost>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
 	linux-kernel@vger.kernel.org
+References: <04bf01c76c13$5f25ce00$eeeea8c0@aldipc> <20070321235607.GA10998@localhost> <20070322004540.45d8ee87.akpm@linux-foundation.org> <20070322162550.GB5591@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070322162550.GB5591@localhost>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In sd_revalidate_disk(), the SCSI Disk driver needs a few bytes DMA memory,
-allocated by kmalloc() and __GFP_DMA. This patch uses __GFP_DMA only if
-the corresponding host structure has unchecked_isa_dma set.
+Hi,
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
+On Thu, Mar 22, 2007 at 05:26:04PM +0100, Johannes Weiner wrote:
+> > The code in there is irksome - it'd be nice to find some way of
+> > restructuring it to make it less obscure, and to kill that warning.
+> 
+> Functionscope or filescope? ;)
 
----
- drivers/scsi/sd.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Oh well... I think the latter.  I wil clean it up and send the patches
+in several steps to seperate opticals from functionals.
 
-Index: linux-2.6.21-rc4/drivers/scsi/sd.c
-===================================================================
---- linux-2.6.21-rc4.orig/drivers/scsi/sd.c
-+++ linux-2.6.21-rc4/drivers/scsi/sd.c
-@@ -1553,7 +1553,8 @@ static int sd_revalidate_disk(struct gen
- 	if (!scsi_device_online(sdp))
- 		goto out;
- 
--	buffer = kmalloc(SD_BUF_SIZE, GFP_KERNEL | __GFP_DMA);
-+	buffer = kmalloc(SD_BUF_SIZE, GFP_KERNEL | 
-+			(sdp->host->unchecked_isa_dma ? __GFP_DMA : 0));
- 	if (!buffer) {
- 		printk(KERN_WARNING "(sd_revalidate_disk:) Memory allocation "
- 		       "failure.\n");
+=Hannes
