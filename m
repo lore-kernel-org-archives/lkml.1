@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751548AbXCVGgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbXCVGoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751548AbXCVGgI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 02:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXCVGgI
+	id S1752715AbXCVGoK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 02:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXCVGoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 02:36:08 -0400
-Received: from www.cosmosbay.com ([86.65.150.131]:46131 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751548AbXCVGgF (ORCPT
+	Thu, 22 Mar 2007 02:44:10 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57250 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbXCVGoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 02:36:05 -0400
-Date: Thu, 22 Mar 2007 07:35:36 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Maxim <maximlevitsky@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
-       David Howells <dhowells@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] : Is /proc/kcore still usefull and/or maintained ?
-Message-Id: <20070322073536.0fce422a.dada1@cosmosbay.com>
-In-Reply-To: <200703220204.51146.maximlevitsky@gmail.com>
-References: <200703211840.53242.maximlevitsky@gmail.com>
-	<200703220128.18610.maximlevitsky@gmail.com>
-	<20070322005310.03be8637.dada1@cosmosbay.com>
-	<200703220204.51146.maximlevitsky@gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 22 Mar 2007 07:35:41 +0100 (CET)
+	Thu, 22 Mar 2007 02:44:07 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Ian Kent <raven@themaw.net>, Cedric Le Goater <clg@fr.ibm.com>,
+       sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
+References: <45FAAD4F.4000204@fr.ibm.com>
+	<1174063618.3397.58.camel@raven.themaw.net>
+	<m1hcslm1tc.fsf@ebiederm.dsl.xmission.com>
+	<20070319200839.GB19449@sergelap.austin.ibm.com>
+	<m1odmpvuft.fsf@ebiederm.dsl.xmission.com>
+	<20070320201548.GA21312@sergelap.austin.ibm.com>
+	<m17itbmypc.fsf@ebiederm.dsl.xmission.com>
+	<20070320214125.GA5585@sergelap.austin.ibm.com>
+	<m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
+	<1174528851.4635.6.camel@raven.themaw.net>
+	<20070322021931.GA11485@sergelap.austin.ibm.com>
+Date: Thu, 22 Mar 2007 00:43:08 -0600
+In-Reply-To: <20070322021931.GA11485@sergelap.austin.ibm.com> (Serge
+	E. Hallyn's message of "Wed, 21 Mar 2007 21:19:31 -0500")
+Message-ID: <m1irctaidf.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Mar 2007 02:04:50 +0200
-Maxim <maximlevitsky@gmail.com> wrote:
+"Serge E. Hallyn" <serue@us.ibm.com> writes:
+>
+> So is the pid used for anything other than debugging?
+>
+> In any case, here is a replacement patch which sends the pid number
+> in the pid_namespace of the process which did the autofs4 mount.
+>
+> Still not sure whether that is actually what makes sense...
+>
+> From: "Serge E. Hallyn" <serue@us.ibm.com>
+> Subject: [PATCH] autofs: prevent pid wraparound in waitqs
+>
+> Instead of storing pid numbers for waitqs, store references
+> to struct pids.  Also store a reference to the mounter's pid
+> namespace in the autofs4 sb info so that pid numbers for
+> mount miss and expiry msgs can send the pid# in the mounter's
+> pidns.
 
+Hmm.  Not quite what I would have expected but given that
+we are sending data over a pipe that sounds reasonable.
 
-> Hi,
-> 	Yes, you are right, you have different problem that I had
-> 
-> 	But why do you need llseek ?
+If it wasn't a pipe we would really want to do this in
+the context of the process receiving the message, but since
+a pipe can receive a message, and then be passed to another
+process we clearly can't know the pid namespace of the
+process receiving the message.
 
-I dont personnaly, but tools do need llseek.
+Therefore just caching the pid namespace either on pipe
+open or on mount makes sense.  pipe open might be better.
 
-> 
-> 	Why not to mmap it ?
-> 	It is natural thing to do with files that represent memory.
+Serge we really need to introduce __pid_nr in a separate
+patch.   And we really seem to be confusing Ian.
 
-Because I dont want to rewrite gdb, file, and other various tools ?
+Plus we have some pid namespace ref counting issues we need
+to handle carefully.
 
+Let's stop working on autofs4 for a bit, fix the pid namespace
+infrastructure so there is enough of it to handle autofs4 and
+then come back.
+
+Either that or take autofs4 in two passes.  Pass one we do what
+we can with the current infrastructure.  Pass two after we fix up
+the infrastructure including introducing __pid_nr we come back
+and update autofs4 to handle multiple pid namespaces properly.
+
+Eric
