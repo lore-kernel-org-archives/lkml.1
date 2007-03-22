@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161130AbXCVWKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXCVWLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161130AbXCVWKf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 18:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161140AbXCVWKe
+	id S1161140AbXCVWLH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 18:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161142AbXCVWLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 18:10:34 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34490 "EHLO mx2.suse.de"
+	Thu, 22 Mar 2007 18:11:06 -0400
+Received: from graphe.net ([209.204.138.32]:44968 "EHLO graphe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161130AbXCVWKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 18:10:34 -0400
-Date: Thu, 22 Mar 2007 15:08:37 -0700
-From: Greg KH <greg@kroah.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Michael Ellerman <michael@ellerman.id.au>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, daniel.e.wolstenholme@intel.com
-Subject: Re: [PATCH 0/21] MSI rework
-Message-ID: <20070322220837.GD20713@kroah.com>
-References: <1174560686.307511.956605711793.qpush@cradle> <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com> <20070322190834.GA14802@kroah.com> <1174600936.10836.53.camel@localhost.localdomain>
+	id S1161140AbXCVWLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 18:11:05 -0400
+Date: Thu, 22 Mar 2007 15:10:29 -0700 (PDT)
+From: Christoph Lameter <christoph@lameter.com>
+X-X-Sender: christoph@graphe.net
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+cc: Andi Kleen <andi@firstfloor.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA
+ cache_free_alien() very expensive because of virt_to_slab(objp); nodeid =
+ slabp->nodeid;)
+In-Reply-To: <20070322212831.GA25665@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0703221510080.9678@graphe.net>
+References: <20070320181235.77d28864.dada1@cosmosbay.com>
+ <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org>
+ <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org>
+ <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1174600936.10836.53.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, 2007 at 09:02:16AM +1100, Benjamin Herrenschmidt wrote:
-> > > i.e.  First the simple bug fixes that should purely be restructure of
-> > > msi.c with no affect on anything outside of it.
-> > > 
-> > > And then get into the architecture enhancements.
-> > 
-> > I agree, care to break these down into a smaller series of patches that
-> > can go into -mm for testing?
-> 
-> I don't see the point in breaking the serie... you can bisect half way
-> through if necessary... it's made of small patches that are done, afaik,
-> in such a way that the whole thing should still work at any level in the
-> serie.
-> 
-> The serie just expresses the dependency between them.
+On Thu, 22 Mar 2007, Siddha, Suresh B wrote:
 
-Ok, then which patches in the series should be acceptable to take right
-now for 2.6.22?  The "clean up the BUG" ones?
+> @@ -1394,6 +1394,9 @@ void __init kmem_cache_init(void)
+>  	int order;
+>  	int node;
+>  
+> +	if (num_online_nodes() == 1)
+> +		use_alien_caches = 0;
+> +
 
-thanks,
+What happens if you bring up a second node?
 
-greg k-h
