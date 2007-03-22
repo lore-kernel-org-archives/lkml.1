@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161115AbXCVVw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161125AbXCVVw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161115AbXCVVw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 17:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161121AbXCVVw0
+	id S1161125AbXCVVw2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 17:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161123AbXCVVw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 17:52:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36875 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161115AbXCVVwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 17:52:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Sergey Smirnov <svs1957@gmail.com>
-Subject: Re: HELP!!! SD and suspend damage i-node.
-Date: Thu, 22 Mar 2007 22:55:19 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-References: <4602781C.9060804@gmail.com>
-In-Reply-To: <4602781C.9060804@gmail.com>
+	Thu, 22 Mar 2007 17:52:28 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:42927 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161121AbXCVVw1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 17:52:27 -0400
+Date: Thu, 22 Mar 2007 22:52:34 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: request_queue_t depends on CONFIG_BLOCK
+Message-ID: <20070322215234.GA13219@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="koi8-r"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200703222255.20167.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 22 March 2007 13:35, Sergey Smirnov wrote:
-> I use 2.6.20.2 kernel with ext3 rootfs on 4Gb SD on sharp zaurus sl-750 (PXA255).
-> After suspend/resume filesystem stay clean. But some i-nodes become broken.
-> Some files looks like block device or pipe with strange permissions, owner etc.
-> I'm sure that there is no bad blocks on SD.
-> I'll send any additional information. Just say me what you need to help me.
-> I had i lot of tries. Apply patches, remove its, change fstype etc.
-> output of fsck -f
+How can this compile error be fixed properly?
+request_queue_t is inside CONFIG_BLOCK,
+ide_drive_s (and likely others) use it unconditionally.
 
-I assume this is the suspend to RAM?
 
-Rafael
+  CC      arch/powerpc/kernel/setup_64.o
+In file included from linux-2.6.21-rc4/arch/powerpc/kernel/setup_64.c:23:
+linux-2.6.21-rc4/include/linux/ide.h:556: error: expected specifier-qualifier-list before 'request_queue_t'
+linux-2.6.21-rc4/include/linux/ide.h:695: warning: 'struct request' declared inside parameter list
+linux-2.6.21-rc4/include/linux/ide.h:695: warning: its scope is only this definition or declaration, which is probably not what you want
+linux-2.6.21-rc4/include/linux/ide.h:823: warning: 'struct request' declared inside parameter list
+linux-2.6.21-rc4/include/linux/ide.h:856: error: field 'wrq' has incomplete type
+linux-2.6.21-rc4/include/linux/ide.h:1199: error: expected ')' before '*' token
+make[2]: *** [arch/powerpc/kernel/setup_64.o] Error 1
+  CC      arch/powerpc/kernel/setup-common.o
+In file included from linux-2.6.21-rc4/arch/powerpc/kernel/setup-common.c:24:
+linux-2.6.21-rc4/include/linux/ide.h:556: error: expected specifier-qualifier-list before 'request_queue_t'
+linux-2.6.21-rc4/include/linux/ide.h:695: warning: 'struct request' declared inside parameter list
+linux-2.6.21-rc4/include/linux/ide.h:695: warning: its scope is only this definition or declaration, which is probably not what you want
+linux-2.6.21-rc4/include/linux/ide.h:823: warning: 'struct request' declared inside parameter list
+linux-2.6.21-rc4/include/linux/ide.h:856: error: field 'wrq' has incomplete type
+linux-2.6.21-rc4/include/linux/ide.h:1199: error: expected ')' before '*' token
+make[2]: *** [arch/powerpc/kernel/setup-common.o] Error 1
+make[2]: Target `__build' not remade because of errors.
+make[1]: *** [arch/powerpc/kernel] Error 2
+
+
+
