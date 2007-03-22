@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbXCVXQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933389AbXCVXUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932561AbXCVXQF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 19:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932470AbXCVXQF
+	id S933389AbXCVXUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 19:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933386AbXCVXUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 19:16:05 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:56553 "EHLO smtp.osdl.org"
+	Thu, 22 Mar 2007 19:20:55 -0400
+Received: from ns.suse.de ([195.135.220.2]:38227 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932561AbXCVXQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 19:16:03 -0400
-Date: Thu, 22 Mar 2007 16:15:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Fix irqpoll on IA64 (timer interrupt != 0)
-Message-Id: <20070322161545.c8ad3b7a.akpm@linux-foundation.org>
-In-Reply-To: <20070322230407.GA3333@sykes.suse.de>
-References: <20070320150027.GA18143@strauss.suse.de>
-	<20070322140922.a59bea5c.akpm@linux-foundation.org>
-	<20070322230407.GA3333@sykes.suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S933389AbXCVXUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 19:20:54 -0400
+Date: Fri, 23 Mar 2007 00:20:48 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Michael Chan <mchan@broadcom.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix crash in tg3 when using irqpoll
+Message-ID: <20070322232048.GC3333@sykes.suse.de>
+Mail-Followup-To: Michael Chan <mchan@broadcom.com>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070322204635.GA27152@strauss.suse.de> <1174601067.9753.42.camel@dell>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174601067.9753.42.camel@dell>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Mar 2007 00:04:07 +0100
-Bernhard Walle <bwalle@suse.de> wrote:
+Hello Michael,
 
-> * Andrew Morton <akpm@linux-foundation.org> [2007-03-22 22:09]:
-> > On Tue, 20 Mar 2007 16:00:27 +0100
-> > Bernhard Walle <bwalle@suse.de> wrote:
-> > 
-> > > On IA64, the timer interrupt is not (always?) zero as it is on x86 platforms.
-> > > Also, the timer interrupt is CPU-local. Two things need to be changed to make
-> > > the irqpoll option make also working on IA64:
-> > > 
-> > >   o Call note_interrupt() also on CPU-local interrupts in __do_IRQ().
-> > >   o Set a variable timer_irq to the value of the timer interrupt
-> > >     after the timer interrupt has been registered and assigned.
-> > > 
-> > > That requires changes in Linux-generic files. The default of timer_irq is 0, so
-> > > the patch doesn't break i386/x86_64. However, other platforms also may also
-> > > have a timer interrupt non-equal to zero, so they can also use the new
-> > > set_timer_interrupt() function.
-> > 
-> > Couple of things..
-> > 
-> > I think the term 'timer_interrupt' is a bit generic-sounding.  Would it be
-> > better to call it irqpoll_interrupt?  After all, some architecture might
-> > want to use, umm, the keyboard interrupt to trigger IRQ polling ;)  
+* Michael Chan <mchan@broadcom.com> [2007-03-22 23:04]:
+> On Thu, 2007-03-22 at 21:46 +0100, Bernhard Walle wrote:
 > 
-> Well, the documentation of irqpoll says that it's called on the timer
-> interrupt. But maybe also the documentation should be changed. :)
+> > This patch makes sure that even the tr32() instruction in the interrupt handler
+> > is not executed which accesses PCI memory. Accessing PCI memory when
+> > pci_restore_state() is called is a bad idea because that function modifies
+> > the BARs of the PCI device.
 > 
-> > Also, the code presently passes the magic IRQ number into the generic IRQ
-> > code.  I wonder if we'd get a more pleasing result if we were to make the
-> > generic IRQ code call _out_ to the architecture:
-> 
-> I think I have a third solution. There's already IRQF_TIMER, and
-> that's used and defined in a few architectures already (like Sh), so
-> why not simply use that here. Maybe we should introduce IRQF_IRQPOLL,
-> but the concept would be the same. If we don't take care of shared
-> interrupt handlers (and I think sharing the timer interrupt is a
-> _very_ bad idea, are there architectures that do this?), the could
-> would look like this (+ the change in __do_IRQ).
-> 
-> What's your opinion on this approach? Of course, we would have to make
-> sure that IRQF_TIMER is defined on _every_ architectures, but that
-> would give us the chance to find out each architecture that also has a
-> timer interrupt != 0.
-> 
-> 
-> Index: mainline-msi-init/arch/ia64/kernel/time.c
-> ===================================================================
-> --- mainline-msi-init.orig/arch/ia64/kernel/time.c
-> +++ mainline-msi-init/arch/ia64/kernel/time.c
-> @@ -235,7 +235,7 @@ ia64_init_itm (void)
->  
->  static struct irqaction timer_irqaction = {
->  	.handler =	timer_interrupt,
-> -	.flags =	IRQF_DISABLED,
-> +	.flags =	IRQF_DISABLED | IRQF_TIMER,
->  	.name =		"timer"
->  };
->  
-> Index: mainline-msi-init/arch/x86_64/kernel/time.c
-> ===================================================================
-> --- mainline-msi-init.orig/arch/x86_64/kernel/time.c
-> +++ mainline-msi-init/arch/x86_64/kernel/time.c
-> @@ -320,7 +320,7 @@ void __init stop_timer_interrupt(void)
->  }
->  
->  static struct irqaction irq0 = {
-> -	timer_interrupt, IRQF_DISABLED, CPU_MASK_NONE, "timer", NULL, NULL
-> +	timer_interrupt, IRQF_DISABLED | IRQF_TIMER, CPU_MASK_NONE, "timer", NULL, NULL
->  };
->  
->  void __init time_init(void)
-> Index: mainline-msi-init/kernel/irq/spurious.c
-> ===================================================================
-> --- mainline-msi-init.orig/kernel/irq/spurious.c
-> +++ mainline-msi-init/kernel/irq/spurious.c
-> @@ -146,7 +146,7 @@ void note_interrupt(unsigned int irq, st
->  
->  	if (unlikely(irqfixup)) {
->  		/* Don't punish working computers */
-> -		if ((irqfixup == 2 && irq == 0) || action_ret == IRQ_NONE) {
-> +		if ((irqfixup == 2 && (desc->action->flags & IRQF_TIMER)) || action_ret == IRQ_NONE) {
->  			int ok = misrouted_irq(irq);
->  			if (action_ret == IRQ_NONE)
->  				desc->irqs_unhandled -= ok;
+> It is not caused by the BAR as it doesn't get changed in this case.  The
+> pci_restore_state() call is to restore the memory enable bit in the PCI
+> command register.  The tr32() call in tg3_interrupt() will cause a
+> master abort if it is called before the memory enable bit has been
+> restored.
 
-Seems sane.
+Ok, thanks for the explanation. I wondered why you call
+pci_restore_state() here, normally that's only called from .resume
+handlers.
 
-Or we could add a new flag specifically for this purpose: IRQF_IRQPOLL_IRQ?
+> > --- mainline-msi-init.orig/drivers/net/tg3.c
+> > +++ mainline-msi-init/drivers/net/tg3.c
+> > @@ -3561,7 +3561,10 @@ static irqreturn_t tg3_interrupt(int irq
+> >  	struct net_device *dev = dev_id;
+> >  	struct tg3 *tp = netdev_priv(dev);
+> >  	struct tg3_hw_status *sblk = tp->hw_status;
+> > -	unsigned int handled = 1;
+> > +	unsigned int handled = 0;
+> > +
+> > +	if (tg3_irq_sync(tp))
+> > +		goto out;
+> 
+> 
+> This will break other things.  When we disable interrupts, we set the
+> irq_sync flag but allow one more interrupt to be generated.  The irq
+> handler will simply mask off the interrupt when it sees the irq_sync
+> flag.  With the above change, the irq handler can no longer mask off
+> this trailing interrupt and you may get screaming interrupts as a
+> result.
+
+You're right, I had only the case in mind where the network device
+doesn't generate any interrupts (in initialisation phase and in
+shutdown phase) because it's disabled in the device, and the interrupt
+handler is only called because of IRQ-sharing/irqpoll.
+
+> Thanks for reporting this.  I'll try to come up with a good solution.
+
+Could you please CC me, I'd like to test it here.
+
+
+Thanks,
+   Bernhard
