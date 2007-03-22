@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030576AbXCVVbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161093AbXCVVjC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030576AbXCVVbB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 17:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965414AbXCVVbA
+	id S1161093AbXCVVjC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 17:39:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161062AbXCVVjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 17:31:00 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52448 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965405AbXCVVa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 17:30:59 -0400
-Date: Thu, 22 Mar 2007 14:30:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Avi Kivity <avi@qumranet.com>, Andi Kleen <ak@muc.de>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] make KVM conform to sucky rdmsr interface
-Message-Id: <20070322143011.0cf83370.akpm@linux-foundation.org>
-In-Reply-To: <1174549770.2713.121.camel@localhost.localdomain>
-References: <1174531917.2713.91.camel@localhost.localdomain>
-	<46022E40.8080300@qumranet.com>
-	<1174549770.2713.121.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 22 Mar 2007 17:39:01 -0400
+Received: from www.osadl.org ([213.239.205.134]:42547 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161053AbXCVVjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 17:39:00 -0400
+Subject: [PATCH] i386: clockevents fix breakage on Geode/Cyrix PIT
+	implementations
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: idht4n@hotmail.com, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 22:46:18 +0100
+Message-Id: <1174599978.10840.252.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Mar 2007 18:49:30 +1100
-Rusty Russell <rusty@rustcorp.com.au> wrote:
+The PIT has no dedicated mode for shut down. The only way to disable PIT
+is to put it into one shot mode. AMD implementations of PIT on Geode
+(also observed on Cyrix) are confused by an "empty" transition from
+CLOCK_EVT_MODE_UNUSED to CLOCK_EVT_MODE_SHUTDOWN, which puts the PIT
+into one shot mode momentarily.
 
-> rdmsr_safe() takes pointers.  rdmsr() modifies its arguments.  What a
-> mess.
-> 
-> Fix rdmsr_safe() with !CONFIG_PARAVIRT.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> diff -r a7f78e8eacc8 include/asm-i386/msr.h
-> --- a/include/asm-i386/msr.h	Thu Mar 22 12:38:35 2007 +1100
-> +++ b/include/asm-i386/msr.h	Thu Mar 22 18:40:35 2007 +1100
-> @@ -96,12 +96,12 @@ static inline void wrmsrl (unsigned long
->  	(native_write_msr(msr, ((unsigned long long)val2 << 32) | val1))
->  
->  /* rdmsr with exception handling */
-> -#define rdmsr_safe(msr,val1,val2)						\
-> +#define rdmsr_safe(msr,p1,p2)						\
->  	({								\
->  		int __err;						\
-> -		unsigned long long __val = native_read_msr(msr, &__err);	\
-> -		val1 = __val;						\
-> -		val2 = __val >> 32;					\
-> +		unsigned long long __val = native_read_msr(msr, &__err);\
-> +		(*p1) = __val;						\
-> +		(*p2) = __val >> 32;					\
->  		__err;							\
->  	})
+I realized after staring helpless at the bug report
+http://bugzilla.kernel.org/show_bug.cgi?id=8027 for quite a while, that
+the only change, which might influence the bogomips calibration, is the
+above transition during the PIT initialization.
+
+Avoiding the unnecessary switch to oneshot and later to periodic mode
+fixes the weird bogomips value and also the resulting slowness.
+
+The fix is confirmed on OLPC and another Geode based box.
+
+Note: this is unrelated to the Dual Core problem discussed here:
+http://lkml.org/lkml/2007/3/17/48
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+diff --git a/arch/i386/kernel/i8253.c b/arch/i386/kernel/i8253.c
+index 5cbb776..10cef5c 100644
+--- a/arch/i386/kernel/i8253.c
++++ b/arch/i386/kernel/i8253.c
+@@ -47,9 +47,17 @@ static void init_pit_timer(enum clock_event_mode mode,
+ 		outb(LATCH >> 8 , PIT_CH0);	/* MSB */
+ 		break;
+ 
+-	case CLOCK_EVT_MODE_ONESHOT:
++	/*
++	 * Avoid unnecessary state transitions, as it confuses
++	 * Geode / Cyrix based boxen.
++	 */
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
++		if (evt->mode == CLOCK_EVT_MODE_UNUSED)
++			break;
+ 	case CLOCK_EVT_MODE_UNUSED:
++		if (evt->mode == CLOCK_EVT_MODE_SHUTDOWN)
++			break;
++	case CLOCK_EVT_MODE_ONESHOT:
+ 		/* One shot setup */
+ 		outb_p(0x38, PIT_MODE);
+ 		udelay(10);
 
 
-Linus's tree has
-
-/* rdmsr with exception handling */
-#define rdmsr_safe(msr,a,b) ({ int ret__;						\
-	asm volatile("2: rdmsr ; xorl %0,%0\n"						\
-		     "1:\n\t"								\
-		     ".section .fixup,\"ax\"\n\t"					\
-		     "3:  movl %4,%0 ; jmp 1b\n\t"					\
-		     ".previous\n\t"							\
- 		     ".section __ex_table,\"a\"\n"					\
-		     "   .align 4\n\t"							\
-		     "   .long 	2b,3b\n\t"						\
-		     ".previous"							\
-		     : "=r" (ret__), "=a" (*(a)), "=d" (*(b))				\
-		     : "c" (msr), "i" (-EFAULT));\
-	ret__; })
-
-(secret decoder ring: resize your xterm to 100 cols to read the above.  Sigh).
-
-Which tree are you patching??
