@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbXCVNQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751197AbXCVNVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751330AbXCVNQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 09:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXCVNQz
+	id S1751197AbXCVNVz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 09:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXCVNVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 09:16:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57627 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbXCVNQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 09:16:54 -0400
-Subject: Re: [PATCH -mm] Fix lseek on /proc/kcore
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070322095600.GA6816@localhost.sw.ru>
-References: <20070322095600.GA6816@localhost.sw.ru>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Thu, 22 Mar 2007 14:14:35 +0100
-Message-Id: <1174569275.1158.175.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Thu, 22 Mar 2007 09:21:55 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:57085 "EHLO relay4.usu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751197AbXCVNVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 09:21:54 -0400
+Message-ID: <46028303.7070104@ums.usu.ru>
+Date: Thu, 22 Mar 2007 18:22:11 +0500
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] Sanitize filesystem NLS handling
+References: <45FD6EF5.1030706@ums.usu.ru> <Pine.LNX.4.64.0703221350400.14458@scrub.home>
+In-Reply-To: <Pine.LNX.4.64.0703221350400.14458@scrub.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-22 at 12:56 +0300, Alexey Dobriyan wrote:
-> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-> ---
-> 
->  fs/proc/inode.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> --- a/fs/proc/inode.c
-> +++ b/fs/proc/inode.c
-> @@ -167,8 +167,9 @@ static loff_t proc_reg_llseek(struct fil
->  	llseek = pde->proc_fops->llseek;
->  	spin_unlock(&pde->pde_unload_lock);
->  
-> -	if (llseek)
-> -		rv = llseek(file, offset, whence);
-> +	if (!llseek)
-> +		llseek = default_llseek;
-> +	rv = llseek(file, offset, whence);
->  
+Roman Zippel wrote:
 
-this has potential impact way outside kcore......
+> I agree that these parameters should be changable not just at compile time 
+> and the iocharset should be a global default, but the on disk encoding is 
+> often filesystem specific, so I'd rather keep this option per filesystem.
 
-did you audit all proc users to see if they can deal with lseek?
+You are right, the on-disk encoding is filesystem specific. E.g., it is 
+always UCS-2 for CIFS, NTFS and VFAT (and my patch doesn't change this).
 
+It is exposed as a mount parameter and kernel configuration option only for 
+fat and smbfs (the two filesystems that my patch touches for this matter), 
+and both of these filesystems come from DOS days, where there was one 
+codepage for a given country. So, for me, it made sense to glue these two 
+parameters, because they both should be set to this codepage. The contrary 
+would (AFAIK) only make sense if one gets floppies from France, but 
+communicates with Polish SMB servers. It is a very rare situation, isn't it? 
+Or do you know any other example where it would clearly make sense to have 
+different defaults for fat and smbfs?
+
+-- 
+Alexander E. Patrakov
