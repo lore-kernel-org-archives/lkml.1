@@ -1,37 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933010AbXCVO57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbXCVPCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933010AbXCVO57 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 10:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933068AbXCVO57
+	id S933051AbXCVPCR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 11:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbXCVPCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 10:57:59 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:60787 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933010AbXCVO56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 10:57:58 -0400
-Message-ID: <46029985.8080705@ums.usu.ru>
-Date: Thu, 22 Mar 2007 19:58:13 +0500
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.9 (X11/20061220)
+	Thu, 22 Mar 2007 11:02:16 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44432 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933051AbXCVPCQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 11:02:16 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       <daniel.e.wolstenholme@intel.com>
+Subject: Re: [PATCH 0/21] MSI rework
+References: <1174560686.307511.956605711793.qpush@cradle>
+Date: Thu, 22 Mar 2007 09:01:10 -0600
+In-Reply-To: <1174560686.307511.956605711793.qpush@cradle> (Michael Ellerman's
+	message of "Thu, 22 Mar 2007 21:51:26 +1100")
+Message-ID: <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       agalakhov@ifmlrs.uran.ru, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] Sanitize filesystem NLS handling
-References: <45FD6EF5.1030706@ums.usu.ru> <Pine.LNX.4.64.0703221350400.14458@scrub.home> <46028303.7070104@ums.usu.ru> <Pine.LNX.4.64.0703221438050.14457@scrub.home>
-In-Reply-To: <Pine.LNX.4.64.0703221438050.14457@scrub.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Zippel wrote:
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-> hfs has a codepage option as well
+> This is my series to rework the generic MSI code into something we can use
+> on powerpc[1].
+>
+> I've tried as much as possible not to change the semantics for other archs,
+> but there's a few little changes. I think they're all OK in their own right.
+>
+> I don't have any serious hardware to test on, but my little x86_64 box with
+> an e1000 using MSI still works with these changes. I've also got MSI working
+> on a powerpc blade with a tg3. I haven't tested MSI-X _at all_.
+>
+> I've also tested on the blade with a debug hack to make the MSI case
+> allocate/free 8 MSIs, but only use the last one, just to exercise the n > 1
+> case a little. All seems to work fine.
 
-Is it _currently_ useful at all? The problem is that the kernel has no nls 
-modules for Mac codepages (e.g., MacRoman which is cp10000).
+Generally I think this looks good.  However there is a lot here, and some
+of it potentially at least has some pretty subtle side effects.
 
--- 
-Alexander E. Patrakov
+So reviewing all of these patches at once is almost certain to cause
+something important to be missed :(
+
+Can we slow this process down a few days by taking this one logical chunk
+at a time?
+
+i.e.  First the simple bug fixes that should purely be restructure of
+msi.c with no affect on anything outside of it.
+
+And then get into the architecture enhancements.
+
+Eric
