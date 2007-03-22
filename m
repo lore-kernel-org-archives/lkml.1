@@ -1,79 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934162AbXCVSQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934176AbXCVSSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934162AbXCVSQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 14:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934176AbXCVSQA
+	id S934176AbXCVSSM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 14:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964785AbXCVSSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 14:16:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58315 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934162AbXCVSP7 (ORCPT
+	Thu, 22 Mar 2007 14:18:12 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2902 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934176AbXCVSSL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 14:15:59 -0400
-Date: Thu, 22 Mar 2007 18:15:37 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Christoph Hellwig <hch@infradead.org>, Adam Litke <agl@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Ken Chen <kenchen@google.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pagetable_ops: Hugetlb character device example
-Message-ID: <20070322181537.GA8317@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mel Gorman <mel@skynet.ie>, Adam Litke <agl@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	William Lee Irwin III <wli@holomorphy.com>,
-	Ken Chen <kenchen@google.com>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-References: <20070319200502.17168.17175.stgit@localhost.localdomain> <1174506228.21684.41.camel@localhost.localdomain> <20070322103817.GA7348@infradead.org> <20070322154227.GA14366@skynet.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070322154227.GA14366@skynet.ie>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 22 Mar 2007 14:18:11 -0400
+Message-ID: <4602C83B.20608@shadowen.org>
+Date: Thu, 22 Mar 2007 18:17:31 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Con Kolivas <kernel@kolivas.org>
+CC: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, "Martin J. Bligh" <mbligh@mbligh.org>
+Subject: Re: 2.6.21-rc4-mm1
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <4602413C.6000504@shadowen.org> <46025100.7060103@shadowen.org> <200703222104.06507.kernel@kolivas.org> <4602B7D3.4030108@shadowen.org>
+In-Reply-To: <4602B7D3.4030108@shadowen.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 03:42:27PM +0000, Mel Gorman wrote:
-> A year ago, I may have agreed with you. However, Linus not only veto'd it but
-> stamped on it repeatadly at VM Summit. He couldn't have made it clearer if
-> he wore a t-shirt a hat and held up a neon sign. The assertion at the time
-> was that variable page support of any sort had to be outside of the core VM
-> because automatic support will get it wrong in some cases and makes the core
-> VM harder to understand (because it's super-clear at the moment). Others
-> attending agreed with the position. That position rules out drivers or
-> filesystems giving hints about superpage sizes in the foreseeable future.
+Andy Whitcroft wrote:
+> Con Kolivas wrote:
+>> On Thursday 22 March 2007 20:48, Andy Whitcroft wrote:
+>>> Andy Whitcroft wrote:
+>>>> Andy Whitcroft wrote:
+>>>>> Andrew Morton wrote:
+>>>>>> Temporarily at
+>>>>>>
+>>>>>>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+>>>>>>
+>>>>>> Will appear later at
+>>>>>>
+>>>>>>  
+>>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc
+>>>>>> 4/2.6.21-rc4-mm1/
+>>>>> [All of the below is from the pre hot-fix runs.  The very few results
+>>>>> which are in for the hot-fix runs seem worse if anything.  :(  All
+>>>>> results should be out on TKO.]
+>>>>>
+>>>>>> - Restored the RSDL CPU scheduler (a new version thereof)
+>>>>> Unsure if the above is the culprit but there seems to be a smattering of
+>>>>> BUG's in kernbench from the schedular on several systems, and panics
+>>>>> which do not fully dump out.
+>>>>>
+>>>>> elm3b239 is about 2/4 kernbench being the test in progress when we
+>>>>> blammo in both failed tests, elm3b234 doesn't boot at all.
+>>>> Well I have one result through for backing RSDL out on elm3b239 and that
+>>>> does indeed seem to give us a successful boot and test.  peterz has
+>>>> pointed me to an incremental patch from Con which I'll push through
+>>>> testing and see if that sorts it out.
+>>> Ok, tested the patch below on top of 2.6.21-rc4-mm1 and this seems to
+>>> fix the problem:
+>>>
+>>> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc4-mm1-rsdl-0.32.p
+>>> atch
+>>>
+>>> Hard to tell from that patch whether it will be fixed in the changes
+>>> already committed to the next -mm.
+>>>
+>>> Its possible that it may be fixed by the following patch:
+>>>
+>>>     sched-rsdl-improvements.patch
+>>>
+>>> Which has the following slipped in at the end of the changelog:
+>>>
+>>>     A tiny change checking for MAX_PRIO in normal_prio()
+>>>     may prevent oopses on bootup on large SMP due to
+>>>     forking off the idle task.
+>>>
+>>> Con, are all the changes in the 0.32 patch above with akpm?
+>> Yes he's queued everything in that patch you tested for the next -mm. Thanks 
+>> very much for testing it.
+> 
+> No worries.  I've just got through the results on the other machine in
+> the mix.  That machine seems to be fixed by backing out RSDL and not by
+> the fixup 0.32 patch ...
+> 
+> This second machine seems to had hard very soon after user space starts
+> executing but without a panic.  I can't say that the symptoms are very
+> definitive, but I do have a good result from that machine without RSDL
+> and not with rsdl-0.32.
+> 
+> The machine is a dual-core x86_64 machine: Dual Core AMD Opteron(tm)
+> Processor 275.
+> 
+> I'll let you know if I find out anything else.  Shout if you want any
+> information or have anything you want poked or tested.
 
-Actually I think the only way to get it right is to do it in the core
-(or inm the architecture code for the really nasty bits of course), but
-then again this isn't the point I want to make here..
+Ok, I have yet a third x86_64 machine is is blowing up with the latest
+2.6.21-rc4-mm1+hotfixes+rsdl-0.32 but working with
+2.6.21-rc4-mm1+hotfixes-RSDL.  I have results on various hotfix levels
+so I have just fired off a set of tests across the affected machines on
+that latest hotfix stack plus the RSDL backout and the results should be
+in in the next hour or two.
 
-> What they did not have any problem with was providing better interfaces to
-> program against as long as they were on the side of the VM like hugetlbfs
-> and not in the core. The character device for private mappings is an
-> example of an interface that is easier to program against than hugetlbfs.
-> It's far easier for an application to mmap a file at a fixed location than
-> trying to discover if hugetlbfs is mounted or not. However, to support that
-> sort of interface, there needs to be a way of telling the VM to call the an
-> alternative pagetable handler - hence Adam's patches.
+I think there is a strong correlation between RSDL and these hangs.  Any
+suggestions as to the next step.
 
-.. and this is where we get into problems.  There should be no need to
-use all kinds of pseudo-OO obsfucation to get there.  A VMA flag that
-means 'this is hugetlb backed anonymous memory' is much nicer to archive
-this.  Because it makes clear there is exactly one special case here
-and no carte blanche for drivers to do whatever they want.  I would prefer
-to even get rid of that single special case as mentioned above, but I'm
-definitly set dead against at making this special case totally open for
-random bits of the kernel to mess with.
-
-> Someone with sufficient energy could try implementing variable page support
-> entirely as a device using Adam's interface. 
-
-Hopefully not, doing this in a driver would be utterly braindead and
-certainly not mergeable.
-
+-apw
