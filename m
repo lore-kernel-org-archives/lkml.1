@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933185AbXCVPal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933217AbXCVPbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933185AbXCVPal (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 11:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933228AbXCVPal
+	id S933217AbXCVPbR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 11:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbXCVPbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 11:30:41 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40594 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933217AbXCVPak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 11:30:40 -0400
-Date: Thu, 22 Mar 2007 08:28:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Maxim <maximlevitsky@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: sysfs ugly timer interface (was Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far)
-Message-ID: <20070322152842.GA6054@kroah.com>
-References: <200703161230.03712.maximlevitsky@gmail.com> <200703161919.44458.lenb@kernel.org> <200703180100.01889.maximlevitsky@gmail.com> <20070320115403.GA3983@ucw.cz>
+	Thu, 22 Mar 2007 11:31:17 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53153 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933217AbXCVPbQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 11:31:16 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ian Kent <raven@themaw.net>
+Cc: Herbert Poetzl <herbert@13thfloor.at>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>,
+       Dave Hansen <haveblue@us.ibm.com>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
+References: <1174063618.3397.58.camel@raven.themaw.net>
+	<m1hcslm1tc.fsf@ebiederm.dsl.xmission.com>
+	<20070319200839.GB19449@sergelap.austin.ibm.com>
+	<m1odmpvuft.fsf@ebiederm.dsl.xmission.com>
+	<20070320201548.GA21312@sergelap.austin.ibm.com>
+	<m17itbmypc.fsf@ebiederm.dsl.xmission.com>
+	<20070320214125.GA5585@sergelap.austin.ibm.com>
+	<m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
+	<20070321205834.GB21517@sergelap.austin.ibm.com>
+	<1174530523.4635.25.camel@raven.themaw.net>
+	<20070322143312.GA17784@MAIL.13thfloor.at>
+	<1174575837.4635.68.camel@raven.themaw.net>
+Date: Thu, 22 Mar 2007 09:29:37 -0600
+In-Reply-To: <1174575837.4635.68.camel@raven.themaw.net> (Ian Kent's message
+	of "Fri, 23 Mar 2007 00:03:57 +0900")
+Message-ID: <m13b3x8ffi.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070320115403.GA3983@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 20, 2007 at 11:54:03AM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered
-> > lapic                F:0007 M:3(periodic) C: 1
-> > hpet                 F:0003 M:1(shutdown) C: 0
-> > lapic                F:0007 M:3(periodic) C: 0
-> > root@MAIN:/home/maxim#   
-> 
-> Now... this file needs to die, before 2.6.21 is released. It tries to
-> bring /proc-like parsing nightmare to sysfs. Kill it before it becomes
-> part of stable ABI!
+Ian Kent <raven@themaw.net> writes:
 
-Eeek!
+> btw please don't be confused by my use of "user space application". In
+> my comments I'm talking about applications that are similar in function
+> to autofs itself and not processes that might trigger mounts. For
+> example the "autodir" package uses the autofs filesystem to provide
+> dynamic home directory creation. The point being that we can't know what
+> an application may do with the info in a request packet so we need to be
+> sure we cover all the cases.
 
-I agree, that needs to be fixed now.
+A sentiment I share, and the reason why it is taking so long to come
+up with a patch for autofs4 that passes review.
 
-Remember, 1 value per file in sysfs!  Shall I just submit a patch
-ripping it out for now?
-
-thanks,
-
-greg k-h
+Eric
