@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965853AbXCVHae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965838AbXCVHaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965853AbXCVHae (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965851AbXCVHae
+	id S965838AbXCVHaq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965847AbXCVHap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:30:34 -0400
-Received: from mtaout5.012.net.il ([84.95.2.13]:16203 "EHLO mtaout5.012.net.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965855AbXCVHac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:30:32 -0400
-Date: Thu, 22 Mar 2007 09:30:30 +0200
-From: Avi Kivity <avi@qumranet.com>
-Subject: Re: [PATCH] Cleanup: rationalize paravirt wrappers
-In-reply-to: <1174531311.2713.86.camel@localhost.localdomain>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@muc.de>
-Message-id: <46023096.8060809@qumranet.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7BIT
-X-Greylist: Sender IP whitelisted,
- not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Thu,
- 22 Mar 2007 09:30:30 +0200 (IST)
-References: <1174531311.2713.86.camel@localhost.localdomain>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 22 Mar 2007 03:30:45 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57902 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965838AbXCVHan (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:30:43 -0400
+Date: Thu, 22 Mar 2007 07:30:42 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org
+Subject: Re: $CHECK can't be overridden
+Message-ID: <20070322073042.GT4095@ftp.linux.org.uk>
+References: <20070322051525.GD17159@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070322051525.GD17159@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> +static inline unsigned long long native_read_msr(unsigned int msr, int *err)
-> +{
-> +	unsigned long long val;
-> +
-> +	asm volatile("2: rdmsr ; xorl %0,%0\n"
-> +		     "1:\n\t"
-> +		     ".section .fixup,\"ax\"\n\t"
-> +		     "3:  movl %3,%0 ; jmp 1b\n\t"
-> +		     ".previous\n\t"
-> + 		     ".section __ex_table,\"a\"\n"
-> +		     "   .align 4\n\t"
-> +		     "   .long 	2b,3b\n\t"
-> +		     ".previous"
-> +		     : "=r" (*err), "=A" (val)
-> +		     : "c" (msr), "i" (-EFAULT));
-> +
-> +	return val;
-> +}
->   
+On Thu, Mar 22, 2007 at 01:15:25AM -0400, Dave Jones wrote:
+> make help implies that supplying $CHECK on the command line
+> should override sparse as the checker used when building with C=1
+> Yet, this doesn't seem to be the case.
+> 
+> This would be useful for cases where for eg, sparse isn't in
+> the $PATH, allowing an explicit path to the executable to be
+> passed in automated build environments.
 
+Eh?  Works fine here...
 
-> +#define rdmsr(msr,val1,val2)						\
-> +	do {								\
-> +		int __err;						\
-> +		unsigned long long __val = native_read_msr(msr, &__err);	\
-> +		val1 = __val;						\
-> +		val2 = __val >> 32;					\
-> +	} while(0)
-> +
->   
+aviro@icy:/usr/src/cross-kernel/audit$ cat >/tmp/foo <<'EOF'
+#!/bin/sh
+echo "$@"
+EOF
+aviro@icy:/usr/src/cross-kernel/audit$ chmod +x /tmp/foo
+aviro@icy:/usr/src/cross-kernel/audit$ make clean
+  CLEAN   /usr/src/cross-kernel/audit
+  CLEAN   .tmp_versions
+aviro@icy:/usr/src/cross-kernel/audit$ make CHECK=/tmp/foo C=1
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+  CC      arch/x86_64/kernel/asm-offsets.s
+  GEN     include/asm-x86_64/asm-offsets.h
+  HOSTCC  scripts/genksyms/genksyms.o
+  HOSTCC  scripts/genksyms/lex.o
+  HOSTCC  scripts/genksyms/parse.o
+  HOSTLD  scripts/genksyms/genksyms
+  CHECK   scripts/mod/empty.c
+-D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise -D__x86_64__ -m64 -nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.0.2/include -Wp,-MD,scripts/mod/.empty.o.d -nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.0.2/include -D__KERNEL__ -Iinclude -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -m64 -mno-red-zone -mcmodel=kernel -pipe -fno-reorder-blocks -Wno-sign-compare -fno-asynchronous-unwind-tables -funit-at-a-time -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -g -Wdeclaration-after-statement -Wno-pointer-sign -ffunction-sections -DKBUILD_STR(s)=#s -DKBUILD_BASENAME=KBUILD_STR(empty) -DKBUILD_MODNAME=KBUILD_STR(empty) scripts/mod/empty.c
+  CC      scripts/mod/empty.o
+  HOSTCC  scripts/mod/mk_elfconfig
+  MKELF   scripts/mod/elfconfig.h
+  HOSTCC  scripts/mod/file2alias.o
+^C
+make[2]: *** [scripts/mod/file2alias.o] Interrupt
+make[1]: *** [scripts/mod] Interrupt
+make: *** [scripts] Interrupt
 
-You're silently changing the behavior (as well as the prototype) here,  
-rdmsr() used to fail loudly, now it fails silently, with no way for the 
-caller to check.
-
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Gets executed just fine...
