@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965724AbXCVFFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965714AbXCVFI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965724AbXCVFFJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 01:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965748AbXCVFFJ
+	id S965714AbXCVFI7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 01:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965737AbXCVFI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 01:05:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34989 "EHLO mx1.redhat.com"
+	Thu, 22 Mar 2007 01:08:59 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:45840 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965724AbXCVFFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 01:05:07 -0400
-Date: Thu, 22 Mar 2007 01:02:50 -0400
-From: Dave Jones <davej@redhat.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] Delete obsolete RAW driver feature.
-Message-ID: <20070322050250.GC17159@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Willy Tarreau <w@1wt.eu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Andi Kleen <andi@firstfloor.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Adrian Bunk <bunk@stusta.de>
-References: <20070320165736.GA19781@redhat.com> <20070320181442.1ae73295@lxorguk.ukuu.org.uk> <20070321151952.02b5612d.akpm@linux-foundation.org> <20070322001050.13588e5e@lxorguk.ukuu.org.uk> <20070321161341.0f87ed60.akpm@linux-foundation.org> <20070321232433.GX943@1wt.eu> <20070321234318.GE9092@redhat.com> <20070322041242.GA29741@1wt.eu> <20070322041751.GB17159@redhat.com> <20070322044540.GA32191@1wt.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S965714AbXCVFI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 01:08:58 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Keith Owens <kaos@ocs.com.au>
+Subject: Re: PNPACPI probes serial twice, messes up serial console
+Date: Wed, 21 Mar 2007 23:08:45 -0600
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+References: <11466.1174537431@kao2.melbourne.sgi.com>
+In-Reply-To: <11466.1174537431@kao2.melbourne.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070322044540.GA32191@1wt.eu>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200703212308.45250.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 05:45:40AM +0100, Willy Tarreau wrote:
- > On Thu, Mar 22, 2007 at 12:17:51AM -0400, Dave Jones wrote:
- > > On Thu, Mar 22, 2007 at 05:12:42AM +0100, Willy Tarreau wrote:
- > >  > On Wed, Mar 21, 2007 at 07:43:18PM -0400, Dave Jones wrote:
- > >  > > On Thu, Mar 22, 2007 at 12:24:33AM +0100, Willy Tarreau wrote:
- > >  > >  
- > >  > >  > Then a printk() on every open() should be enough. We've all been seeing
- > >  > >  > "Warning: tcpdump uses obsolete AF_PACKET"... and it finally disappeared.
- > >  > > 
- > >  > > There's a difference.  We have the source for tcpdump.
- > >  > 
- > >  > But what's the problem with "warning: process XXX uses obsolete raw driver
- > >  > and may not work anymore after 2007/XX/XX if not fixed" ?
- > > 
- > > The target audience isn't going to read it.
- > 
- > Yes they will if you write it with KERN_CRIT.
+On Wednesday 21 March 2007 22:23, Keith Owens wrote:
+> The aim of the patch looks sensible, but it will not compile for
+> 2.6.21-rc4.  8250_x86.c tests pnp_platform_devices, which does not
+> exist.  Also the combination of CONFIG_SERIAL_8250_X86=y and
+> CONFIG_SERIAL_8250_PNP=m would result in 8250_x86.o being built into
+> vmlinux but referring to serial8250_nopnp in module 8250_pnp.o, kernel
+> to module references are tricky.
 
-*no*.
-
-Users will see it. The developers of the software those users are running won't.
-We're talking about apps here that we don't have the source to, and vendors
-want extortionate amount of money to change.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+OK, I'll rework it and update it.  It will probably take me
+a couple weeks though.
