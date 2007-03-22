@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965714AbXCVFI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965716AbXCVFPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965714AbXCVFI7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 01:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965737AbXCVFI7
+	id S965716AbXCVFPa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 01:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965737AbXCVFPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 01:08:59 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:45840 "EHLO atlrel6.hp.com"
+	Thu, 22 Mar 2007 01:15:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39819 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965714AbXCVFI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 01:08:58 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Keith Owens <kaos@ocs.com.au>
-Subject: Re: PNPACPI probes serial twice, messes up serial console
-Date: Wed, 21 Mar 2007 23:08:45 -0600
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-References: <11466.1174537431@kao2.melbourne.sgi.com>
-In-Reply-To: <11466.1174537431@kao2.melbourne.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S965716AbXCVFP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 01:15:29 -0400
+Date: Thu, 22 Mar 2007 01:15:25 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: sam@ravnborg.org
+Subject: $CHECK can't be overridden
+Message-ID: <20070322051525.GD17159@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, sam@ravnborg.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703212308.45250.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 March 2007 22:23, Keith Owens wrote:
-> The aim of the patch looks sensible, but it will not compile for
-> 2.6.21-rc4.  8250_x86.c tests pnp_platform_devices, which does not
-> exist.  Also the combination of CONFIG_SERIAL_8250_X86=y and
-> CONFIG_SERIAL_8250_PNP=m would result in 8250_x86.o being built into
-> vmlinux but referring to serial8250_nopnp in module 8250_pnp.o, kernel
-> to module references are tricky.
+make help implies that supplying $CHECK on the command line
+should override sparse as the checker used when building with C=1
+Yet, this doesn't seem to be the case.
 
-OK, I'll rework it and update it.  It will probably take me
-a couple weeks though.
+This would be useful for cases where for eg, sparse isn't in
+the $PATH, allowing an explicit path to the executable to be
+passed in automated build environments.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
