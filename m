@@ -1,122 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965855AbXCVIn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965864AbXCVIpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965855AbXCVIn0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 04:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965861AbXCVIn0
+	id S965864AbXCVIpq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 04:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965869AbXCVIpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 04:43:26 -0400
-Received: from poseidon.ceid.upatras.gr ([150.140.141.169]:9222 "EHLO
-	poseidon.ceid.upatras.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965855AbXCVInZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 04:43:25 -0400
-Message-ID: <46024000.2070208@sciensis.com>
-Date: Thu, 22 Mar 2007 10:36:16 +0200
-From: Tasos Parisinos <t.parisinos@sciensis.com>
-User-Agent: Mozilla Thunderbird 1.5.0.10 (Windows/20070221)
+	Thu, 22 Mar 2007 04:45:45 -0400
+Received: from hosting4p.com ([81.0.235.160]:42973 "EHLO micron1.hosting4p.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965864AbXCVIpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 04:45:44 -0400
+X-Greylist: delayed 2930 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Mar 2007 04:45:44 EDT
+Message-ID: <460236CE.1030303@slax.org>
+Date: Thu, 22 Mar 2007 08:57:02 +0100
+From: Tomas M <tomas@slax.org>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1][NEW] crypto API: rsa algorithm module patch (kernel
- version 2.6.20.3)
-References: <Pine.LNX.4.64.0703211701260.27640@zenon.ceid.upatras.gr> <20070321090420.f46cef4f.randy.dunlap@oracle.com>
-In-Reply-To: <20070321090420.f46cef4f.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Subject: max_loop limit
+Content-Type: multipart/mixed;
+ boundary="------------060801080908060703070002"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------060801080908060703070002
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Hello,
+
+this is my first code submitted to kernel, I hope you won't hate it.
+
+This 4-lines-change patch adds support for nearly two-times more loop
+devices. Explanation follows:
+
+The maximum amount of loop devices has been 255 for many years, while
+there is a lot of space for more. The maximum depends on max memory
+available from kmalloc(), which is usually 128KB, but can be increased
+in some cases.
+
+It would be better to support thousands of loop devices of course, but
+the change could be more complicated (perhaps replace kmalloc by
+vmalloc). This four lines change is just simple and sufficient, without
+any need for kmalloc replacement.
+
+I only removed the test if (max_loop > 255), so now we support much more
+loop devices then before, without ANY OTHER CHANGE to the code.
+
+Information: The maximum max_loop is 455 if kmalloc can allocate 128KB,
+so the amount is nearly doubled without any significant change to kernel
+code. The maximum could be even bigger I guess, it probably depends on:
+NR_CPUS, MAX_NUMNODES, CONFIG_MMU and CONFIG_LARGE_ALLOCS.
+
+If kmalloc can't allocate enough RAM, loop is simply unloaded.
+
+
+Thank you for your consideration.
+
+I hope you will like it and you will include it in kernel.
+Or, if not, maybe this patch will start some debate regarding
+the current insufficient limit of 255 loop devices.
+
+
+Tomas M
+slax.org
 
 
 
-> Hi,
-> Lots of good progress here, but still a few comments below.
->
-> Needs to apply to current mainline.
->
->
->   
-What do you mean by mainline?
-> Most (probably all) of these functions should also be "static"
-> unless they are meant for use outside of this module.
->
-> Which leads to the question:  which functions are meant for
-> external/exported use?
->
-> And it would be really Good if those function headers were
-> documented in kernel-doc notation (not much of a change from
-> what you already have here; see Documentation/kernel-doc-nano-HOWTO.txt).
->
->
->   
+--------------060801080908060703070002
+Content-Type: text/x-patch;
+ name="loop.c.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="loop.c.diff"
 
-I think that if someone wants to do modular exponentiation rsa-style 
-(where n is always odd)
-using the montgomery algorithm i implement, only rsa_modexp should be static
+--- linux/drivers/block/loop_old.c	2007-02-04 18:44:54.000000000 +0000
++++ linux/drivers/block/loop.c	2007-03-22 08:31:55.000000000 +0000
+@@ -44,6 +44,16 @@
+  * backing filesystem.
+  * Anton Altaparmakov, 16 Feb 2005
+  *
++ * The maximum amount of loop devices has been 255 for many years, while there
++ * is a lot of space for more. The maximum depends on max memory available 
++ * from kmalloc, which is usually 128KB, but can be even more.
++ * I removed the test if (max_loop > 255), so now we support much more loop 
++ * devices then before; it probably depends on:
++ *    NR_CPUS, MAX_NUMNODES, CONFIG_MMU and CONFIG_LARGE_ALLOCS.
++ * Information: The maximum max_loop is 455 if kmalloc handles only 128KB.
++ * If kmalloc can't allocate enough RAM, loop is simply unloaded.
++ * Author: Tomas Matejicek, www.slax.org, 21 Mar 2007
++ *
+  * Still To Fix:
+  * - Advisory locking is ignored here.
+  * - Should use an own CAP_* category instead of CAP_SYS_ADMIN
+@@ -1358,7 +1368,7 @@
+  * And now the modules code and kernel interface.
+  */
+ module_param(max_loop, int, 0);
+-MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-256)");
++MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-455 on i386)");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+ 
+@@ -1402,9 +1412,9 @@
+ {
+ 	int	i;
+ 
+-	if (max_loop < 1 || max_loop > 256) {
+-		printk(KERN_WARNING "loop: invalid max_loop (must be between"
+-				    " 1 and 256), using default (8)\n");
++	if (max_loop < 1) {
++		printk(KERN_WARNING "loop: invalid max_loop (must be at least 1"
++				    ", using default (8)\n");
+ 		max_loop = 8;
+ 	}
+ 
+@@ -1465,7 +1475,7 @@
+ 	kfree(loop_dev);
+ out_mem1:
+ 	unregister_blkdev(LOOP_MAJOR, "loop");
+-	printk(KERN_ERR "loop: ran out of memory\n");
++	printk(KERN_ERR "loop: ran out of memory for max_loop=%d\n", max_loop);
+ 	return -ENOMEM;
+ }
+ 
 
-But the rest of the API can be used for multi-precision integer 
-arithmetics, so they could almost all
-be exported (except rsa_load and rsa_unload). Do you think that this is 
-namespace pollution?
-In that case i should make them all static except rsa_modexp
-
-About exportable comments, i just missed it, i will fix that
->>  = tmp = buf[i + j] + (abuf[j] * (u64)bbuf[i]) + (tmp >> 32);
->>     
->
-> Break that line to < 80 columns, please.
->
->   
->> +			tmp[j] = product = tmp[j] + (m * (u64)nbuf[j]) + (product >> 32);
->>     
->
-> Line too long.
->
->   
->
-Well this is going to be a problem, because i believe that in this way 
-gcc will create the best code. These internal product
-computations are essential and they get run many-many times. I will do 
-my best to write it in less than 80 columns
-
-
-Then i need to comment on some of the changes that where suggested on 
-the previous patch but where not carried out
-
-First of all the
-
-UINT32_T_MAX
-
-This is nowhere in linux/kernel.h but there are some equivalents but they are 
-defined as macros that do some computation to compute the max 32 bit unsigned integer
-and this would steal some (enough) clocks in loops that execute a lot. So i use the static value
-0xFFFFFFFF which is more efficient.
-
-Secondly the chunk that initializes the mpi data
-
-/* Copy the data */
-for (i = size - 1, j = 0; i >= 0; i--, j++)
- buf[j / 4] |= ((u32)str[i] << ((j % 4) * 8));
-
-Ok this is not pretty, its rather cruel. What i want to do is have a byte array for example
-
-\xab\x11\xed\x43\x54\x34\x56\xcd
-
-and make the mpi having data[0] = 0x543456cd and data[1]=0xab11ed43
-
-I could reverse the byte array and then memcpy, what do you think?
-Is there a faster (and prettier) way to do this? someone said ntohl but im not sure
-
-
-Also there are places that memset or memcpy could be used, but i can't figure out if it
-is more efficient to execute the set/copy loop my own or call such a function
-What is your opinion on that?
-
-
-All the other changes suggested where carried out
-
-Tasos Parisinos
--
-
-
-
+--------------060801080908060703070002--
