@@ -1,109 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161137AbXCVWNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161141AbXCVWUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161137AbXCVWNl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 18:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161141AbXCVWNk
+	id S1161141AbXCVWUZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 18:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161142AbXCVWUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 18:13:40 -0400
-Received: from mga05.intel.com ([192.55.52.89]:37171 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161137AbXCVWNj (ORCPT
+	Thu, 22 Mar 2007 18:20:25 -0400
+Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:49329 "EHLO
+	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161141AbXCVWUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 18:13:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,316,1170662400"; 
-   d="scan'208"; a="217511160:sNHT25011217"
-Subject: RSDL 0.31 causes slowdown
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Reply-To: tim.c.chen@linux.intel.com
-To: ck@vds.kolivas.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Intel
-Date: Thu, 22 Mar 2007 13:21:46 -0800
-Message-Id: <1174598506.23795.62.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+	Thu, 22 Mar 2007 18:20:24 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.21-rc4-mm1
+Date: Fri, 23 Mar 2007 09:14:24 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, "Martin J. Bligh" <mbligh@mbligh.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <4602B7D3.4030108@shadowen.org> <4602C83B.20608@shadowen.org>
+In-Reply-To: <4602C83B.20608@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703230914.25041.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con,
+On Friday 23 March 2007 05:17, Andy Whitcroft wrote:
+> Andy Whitcroft wrote:
+> > Con Kolivas wrote:
+> >> On Thursday 22 March 2007 20:48, Andy Whitcroft wrote:
+> >>> Andy Whitcroft wrote:
+> >>>> Andy Whitcroft wrote:
+> >>>>> Andrew Morton wrote:
+> >>>>>> Temporarily at
+> >>>>>>
+> >>>>>>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> >>>>>>
+> >>>>>> Will appear later at
+> >>>>>>
+> >>>>>>
+> >>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21
+> >>>>>>-rc 4/2.6.21-rc4-mm1/
+> >>>>>
+> >>>>> [All of the below is from the pre hot-fix runs.  The very few results
+> >>>>> which are in for the hot-fix runs seem worse if anything.  :(  All
+> >>>>> results should be out on TKO.]
+> >>>>>
+> >>>>>> - Restored the RSDL CPU scheduler (a new version thereof)
+> >>>>>
+> >>>>> Unsure if the above is the culprit but there seems to be a smattering
+> >>>>> of BUG's in kernbench from the schedular on several systems, and
+> >>>>> panics which do not fully dump out.
+> >>>>>
+> >>>>> elm3b239 is about 2/4 kernbench being the test in progress when we
+> >>>>> blammo in both failed tests, elm3b234 doesn't boot at all.
+> >>>>
+> >>>> Well I have one result through for backing RSDL out on elm3b239 and
+> >>>> that does indeed seem to give us a successful boot and test.  peterz
+> >>>> has pointed me to an incremental patch from Con which I'll push
+> >>>> through testing and see if that sorts it out.
+> >>>
+> >>> Ok, tested the patch below on top of 2.6.21-rc4-mm1 and this seems to
+> >>> fix the problem:
+> >>>
+> >>> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc4-mm1-rsdl-0.
+> >>>32.p atch
+> >>>
+> >>> Hard to tell from that patch whether it will be fixed in the changes
+> >>> already committed to the next -mm.
+> >>>
+> >>> Its possible that it may be fixed by the following patch:
+> >>>
+> >>>     sched-rsdl-improvements.patch
+> >>>
+> >>> Which has the following slipped in at the end of the changelog:
+> >>>
+> >>>     A tiny change checking for MAX_PRIO in normal_prio()
+> >>>     may prevent oopses on bootup on large SMP due to
+> >>>     forking off the idle task.
+> >>>
+> >>> Con, are all the changes in the 0.32 patch above with akpm?
+> >>
+> >> Yes he's queued everything in that patch you tested for the next -mm.
+> >> Thanks very much for testing it.
+> >
+> > No worries.  I've just got through the results on the other machine in
+> > the mix.  That machine seems to be fixed by backing out RSDL and not by
+> > the fixup 0.32 patch ...
+> >
+> > This second machine seems to had hard very soon after user space starts
+> > executing but without a panic.  I can't say that the symptoms are very
+> > definitive, but I do have a good result from that machine without RSDL
+> > and not with rsdl-0.32.
+> >
+> > The machine is a dual-core x86_64 machine: Dual Core AMD Opteron(tm)
+> > Processor 275.
+> >
+> > I'll let you know if I find out anything else.  Shout if you want any
+> > information or have anything you want poked or tested.
+>
+> Ok, I have yet a third x86_64 machine is is blowing up with the latest
+> 2.6.21-rc4-mm1+hotfixes+rsdl-0.32 but working with
+> 2.6.21-rc4-mm1+hotfixes-RSDL.  I have results on various hotfix levels
+> so I have just fired off a set of tests across the affected machines on
+> that latest hotfix stack plus the RSDL backout and the results should be
+> in in the next hour or two.
+>
+> I think there is a strong correlation between RSDL and these hangs.  Any
+> suggestions as to the next step.
 
-I've tried running Volanomark and found a 80% regression
-with RSDL 0.31 scheduler on 2.6.21-rc4 on a 2 socket Core 2 quad cpu
-system (4 cpus per socket, 8 cpus for system). 
+If it's hitting the bug_on that I put in sched.c which you say it is then it 
+is most certainly my fault. It implies a task has been queued without a 
+corresponding bit being anywhere in the priority bitmaps. Somehow you only 
+seem to be hitting it on big(ger) smp which is why I haven't seen it. It 
+implies some complication occuring at sched or idle init/fork off these 
+accounting not working. If I could reproduce it on qemu I'd step through the 
+kernel init checking where each task is being queued and see if the bitmaps 
+are being set. This is obviously time consuming and laborious so I don't 
+expect you to do it. 
 
-The results are sensitive to rr_interval. Using Con's patch to increase
-rr_interval to a large value of 100, 
-the regression reduced to 30% instead of 80%.
+The next best thing is if you can send me the config of one of the machines 
+that's oopsing I can try that on qemu but qemu is only good at debugging 
+i386. If any of the machines that were oopsing were i386 that would be very 
+helpful, otherwise x86_64 is the next best. Then I need to make a creative 
+debugging patch for you to try which checks every queued/dequeued task and 
+dumps all that information. I don't have that patch just yet so I need to 
+find enough accumulated short stints at the pc to do that (still hurts a lot 
+and worsens my condition).
 
-I ran Volanomark in loopback mode with 10 chatrooms 
-(20 clients per chatroom) configuration, with each client sending
-out 10000 messages. 
+Thanks!
 
-http://www.volano.com/benchmarks.html
-
-There are significant differences in the vmstat runqueue profile 
-between the 2.6.21-rc4 and the one with RSDL.  
-
-There are a lot less runnable jobs (see col 2) with RSDL 0.31  (rr_interval=15)
-and higher idle time.
-
-2.6.21-rc4 (original)
-Time	procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----
-(sec)	r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa st
-
-10	 2  3      0 2642376  15320 194612    0    0   161   875   44   70  1  1 92  5  0
-20	379  0      0 1573484  15680 195152    0    0    46   237  350 152686  9  8 81  2  0
-30	395  0      0 1579056  15704 195152    0    0     0    30  284 1017337 44 48  8  0  0
-40	469  0      0 1586368  15744 195144    0    0     0    50  284 1075456 42 51  7  0  0
-50	425  0      0 1593628  15756 195156    0    0     0    40  289 1108785 41 52  6  0  0
-60	394  0      0 1599452  15772 195156    0    0     0    31  284 1160316 41 53  5  0  0
-70	65  0      0 1599684  15788 195160    0    0     0    20  284 1075719 40 52  8  0  0
-80	424  0      0 1599320  15928 195168    0    0     1   122  314 1187583 41 54  4  0  0
-90	438  0      0 1600188  15944 195164    0    0     0    41  289 1171807 40 53  6  0  0
-100	412  0      0 1599312  15968 195160    0    0     0    22  284 1183832 41 54  5  0  0
-110	398  0      0 1599716  15976 195176    0    0     0     6  283 1227036 42 55  3  0  0
-120	382  0      0 1599468  15992 195180    0    0     0    23  286 1160802 40 54  6  0  0
-130	370  0      0 1599912  16008 195180    0    0     0    10  284 1159618 42 52  7  0  0
-
-2.6.21-rc4 with RSDL 0.31 
-Time	procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----
-(sec)	r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa st
-10	 2  3      0 2644892  15316 194612    0    0   160   869   44   64  1  1 92  5  0
-20	 2  0      0 1577512  15388 194984    0    0    24    93  293 3935  3  2 95  1  0
-30	 2  0      0 1583888  15412 194984    0    0     0    33  284 638668 28 39 33  0  0
-40	 2  0      0 1591208  15444 194972    0    0     0    50  284 307181 19 28 53  0  0
-50	 4  0      0 1598364  15460 194980    0    0     0    39  285 311971 18 29 53  0  0
-60	 8  0      0 1604108  15476 194980    0    0     0    29  284 308109 18 29 53  0  0
-70	 9  0      0 1603792  15492 194992    0    0     0     8  283 315947 18 29 52  0  0
-80	11  0      0 1602440  15784 195032    0    0    20   161  342 310849 18 29 52  1  0
-90	 1  0      0 1602504  15792 195160    0    0     0    37  287 317667 18 29 53  0  0
-100	 1  0      0 1603140  15824 195144    0    0     0    25  284 319106 18 30 52  0  0
-110	 7  0      0 1602760  15832 195160    0    0     0     6  283 316589 17 29 53  0  0
-120	12  0      0 1602644  15848 195164    0    0     0    22  285 320019 17 30 52  0  0
-130	 1  0      0 1602644  15864 195164    0    0     0    10  283 319537 17 30 53  0  0
-140	 6  0      0 1601744  16016 195176    0    0     2   104  312 316836 18 30 52  0  0
-
-2.6.21-rc4 with RSDL 0.31, rr_interval = 100
-
-Time	procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----
-(sec)	r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa st
-10       4  2      0 2679976  16696 195380    0    0    65   353   40   33  0  1 97  2  0
-20      296  0      0 1602676  16780 195764    0    0    22   104  294 151873  8  9 82  1  0
-30      298  0      0 1601280  16808 195756    0    0     0    14  284 1164355 41 56  3  0  0
-40      272  0      0 1600108  16832 195764    0    0     0    12  284 1205454 42 57  1  0  0
-50      321  0      0 1599128  16848 195760    0    0     0    25  287 1209822 41 58  1  0  0
-60      281  0      0 1598764  16864 195760    0    0     0    12  283 1206452 41 57  2  0  0
-70      287  0      0 1598888  16880 195764    0    0     0    15  284 1206103 40 58  2  0  0
-80      276  0      0 1597764  16904 195776    0    0     0    33  285 1193156 39 58  3  0  0
-90      293  0      0 1598144  16920 195780    0    0     0    14  284 1215350 39 59  2  0  0
-100     287  0      0 1598260  16936 195780    0    0     0    11  283 1236433 40 58  2  0  0
-110     257  0      0 1597872  16952 195784    0    0     0    10  283 1234983 40 59  1  0  0
-120     255  0      0 1598640  16968 195784    0    0     0    16  284 1178551 39 58  3  0  0
-130     200  0      0 1598764  16984 195788    0    0     0    13  284 1223963 39 59  2  0  0
-140     274  0      0 1598632  17008 195792    0    0     0    22  284 1179931 40 57  3  0  0
-150     278  0      0 1598616  17024 195792    0    0     0    21  286 1215157 39 59  2  0  0
-
-- Tim 
+-- 
+-ck
