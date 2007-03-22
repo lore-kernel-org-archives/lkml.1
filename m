@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030275AbXCVIQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752104AbXCVIWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030275AbXCVIQG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 04:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030266AbXCVIP3
+	id S1752104AbXCVIWG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 04:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbXCVIWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 04:15:29 -0400
-Received: from www.cosmosbay.com ([86.65.150.131]:46960 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965844AbXCVIPY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 04:15:24 -0400
-Date: Thu, 22 Mar 2007 09:14:45 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Problem with fix-rmmod-read-write-races-in-proc-entries.patch in
- 2.6.21-rc4-mm1
-Message-Id: <20070322091445.0eecd44f.dada1@cosmosbay.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
+	Thu, 22 Mar 2007 04:22:06 -0400
+Received: from poczta.o2.pl ([193.17.41.142]:32833 "EHLO poczta.o2.pl"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752104AbXCVIWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 04:22:04 -0400
+Date: Thu, 22 Mar 2007 09:26:34 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, "J\. Bruce Fields" <bfields@fieldses.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] lockdep: lockdep_depth vs. debug_locks Re: [2.6.20] BUG: workqueue leaked lock
+Message-ID: <20070322082634.GA2426@ff.dom.local>
+References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru> <20070321080510.GA1939@ff.dom.local> <20070321144620.GC78@tv-sign.ru> <20070321151651.GA4547@ff.dom.local> <20070321152935.GA215@tv-sign.ru> <20070321181635.GA570@tv-sign.ru> <20070322061119.GA1466@ff.dom.local> <20070321222802.0e09f0c2.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 22 Mar 2007 09:14:49 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070321222802.0e09f0c2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alexey,
+On Wed, Mar 21, 2007 at 10:28:02PM -0800, Andrew Morton wrote:
+> On Thu, 22 Mar 2007 07:11:19 +0100 Jarek Poplawski <jarkao2@o2.pl> wrote:
+> 
+> > 
+> > Here is some joke:
+> > 
+> > [PATCH] lockdep: lockdep_depth vs. debug_locks
+> > 
+> > lockdep really shouldn't be used when debug_locks == 0!
+> > 
+> 
+> This isn't a very good changelog.
 
-It seems you are fix-rmmod-read-write-races-in-proc-entries.patch author ?
+Actually it's not a changelog (it's a joke).
 
-/proc/kcore is no longer seekable (or mappable)
-
-Also, do we really need to proxy via proc_reg_file_ops files that are not provided by a module ?
-
-I think not.
-
-Could you please add in proc_get_inode() a check against de->proc_fops->owner ?
-
-if (de->proc_fops) {
-#ifdef CONFIG_MODULE
-    if (S_ISREG(inode->i_mode) && de->proc_fops->owner)
-        inode->i_fop = &proc_reg_file_ops;
-    else
-#endif
-        inode->i_fop = de->proc_fops;
-}
-
-Maybe the whole proc_reg_XXX() functions could be omitted for a kernel without module support ?
-
-Thank you
-Eric
+Jarek P.
