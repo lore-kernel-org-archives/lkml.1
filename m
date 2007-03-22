@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030490AbXCVLdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030502AbXCVLht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030490AbXCVLdO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 07:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030470AbXCVLdO
+	id S1030502AbXCVLht (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 07:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030517AbXCVLht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 07:33:14 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:40138 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030461AbXCVLdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 07:33:13 -0400
-Date: Thu, 22 Mar 2007 12:35:08 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, Monakhov Dmitriy <dmonakhov@openvz.org>
-Subject: Re: 2.6.21-rc4-mm1
-Message-ID: <20070322123508.3785fd30@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070321233917.0393dfd1.akpm@linux-foundation.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<1174433034.62033.16.camel@localhost>
-	<20070320223643.d8cbc3f6.akpm@linux-foundation.org>
-	<4601761F.4000302@lwfinger.net>
-	<20070321185900.GC3801@tuxdriver.com>
-	<20070321202225.GN10459@waste.org>
-	<20070321233917.0393dfd1.akpm@linux-foundation.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 Mar 2007 07:37:49 -0400
+Received: from hosting4p.com ([81.0.235.160]:50730 "EHLO micron1.hosting4p.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030502AbXCVLhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 07:37:48 -0400
+Message-ID: <46026A92.4020106@slax.org>
+Date: Thu, 22 Mar 2007 12:37:54 +0100
+From: Tomas M <tomas@slax.org>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: max_loop limit
+References: <460236CE.1030303@slax.org> <20070322110058.GB23664@tatooine.rebelbase.local>
+In-Reply-To: <20070322110058.GB23664@tatooine.rebelbase.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Mar 2007 23:39:17 -0800,
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 21 Mar 2007 15:22:25 -0500 Matt Mackall <mpm@selenic.com> wrote:
+> 255 loop devices are insufficient? What kind of scenario do you have
+> in mind?
 > 
-> > With the latest -mm, I'm now getting this:
-> > 
-> > Mar 21 15:06:52 cinder kernel: ipw2200: Detected Intel PRO/Wireless
-> > 2200BG Network Connection
-> > Mar 21 15:06:52 cinder kernel: firmware_loading_store: unexpected
-> > value (0)
-> > Mar 21 15:06:52 cinder kernel: ipw2200: ipw2200-bss.fw
-> > request_firmware failed:
-> > Reason -2
-> > Mar 21 15:06:52 cinder kernel: ipw2200: Unable to load firmware: -2
-> > Mar 21 15:06:52 cinder kernel: ipw2200: failed to register network
-> > device
 > 
-> The firmware loading bug is caused by
-> driver-core-handles-kobject_uevent-failure-while-device_add.patch
 
-Hm, this patch looks sane. It might be a good idea to enable
-CONFIG_DEBUG_KOBJECT and find out why kobject_uevent() actually fails
-in this case...
+Thank you very much for replying.
+
+In 1981, Bill Gates said that 64KB of memory is enough for everybody.
+And you know how much RAM do you have right now. :)
+
+Every limit is bad. The limit of 255 loop devices has been introduced 
+years ago, in the times when minor device number has been limited by 
+255. Nowadays, there is no such limitation.
+
+There are many possible/reasonable uses for more than 255 loop devices. 
+For example CD/ISO server. My project, Slax Linux live, is based on 
+modular approach where many parts of the root filesystem are stored 
+separately in compressed read-only loop files, and are mounted and 
+unioned to a single root by using union fs (aufs).
+
+The question is not "Why do we need more than 255 loops?".
+The question should be "Why do we need the hardcoded 255-limit in kernel 
+while there is no reason for it at all?"
+
+My patch simply removes the hardcoded limitation.
+
+
+Tomas M
+slax.org
+
