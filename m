@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbXCVHUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965781AbXCVHUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbXCVHUg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbXCVHUg
+	id S965781AbXCVHUm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965828AbXCVHUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:20:36 -0400
-Received: from mtaout4.012.net.il ([84.95.2.10]:24925 "EHLO mtaout4.012.net.il"
+	Thu, 22 Mar 2007 03:20:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33273 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753252AbXCVHUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:20:35 -0400
-Date: Thu, 22 Mar 2007 09:20:32 +0200
-From: Avi Kivity <avi@qumranet.com>
-Subject: Re: [PATCH] make KVM conform to sucky rdmsr interface
-In-reply-to: <1174531917.2713.91.camel@localhost.localdomain>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Message-id: <46022E40.8080300@qumranet.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7BIT
-X-Greylist: Sender IP whitelisted,
- not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Thu,
- 22 Mar 2007 09:20:32 +0200 (IST)
-References: <1174531917.2713.91.camel@localhost.localdomain>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S965781AbXCVHUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:20:40 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
+Date: Thu, 22 Mar 2007 08:23:39 +0100
+User-Agent: KMail/1.9.5
+Cc: nigel@nigel.suspend2.net, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <200703211840.53242.maximlevitsky@gmail.com> <200703212238.33897.rjw@sisk.pl> <20070322045106.GP32602149@melbourne.sgi.com>
+In-Reply-To: <20070322045106.GP32602149@melbourne.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703220823.41077.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Grrr.... Andi refused to take my "rdmsr64" patch which moved to a
-> function-like interface for MSRs, dismissing it as pointless churn.
->
-> paravirt_ops cleanups changed a macro to an inline and spotted this
-> kvm bug.
->
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->
-> diff -r 47c6ee74a5c5 drivers/kvm/vmx.c
-> --- a/drivers/kvm/vmx.c	Thu Mar 22 12:57:44 2007 +1100
-> +++ b/drivers/kvm/vmx.c	Thu Mar 22 13:38:24 2007 +1100
-> @@ -1127,7 +1127,7 @@ static int vmx_vcpu_setup(struct kvm_vcp
->  		u64 data;
->  		int j = vcpu->nmsrs;
->  
-> -		if (rdmsr_safe(index, &data_low, &data_high) < 0)
-> +		if (rdmsr_safe(index, data_low, data_high) < 0)
->  			continue;
->  		if (wrmsr_safe(index, data_low, data_high) < 0)
->  			continue;
->
->
->   
+On Thursday, 22 March 2007 05:51, David Chinner wrote:
+> On Wed, Mar 21, 2007 at 10:38:33PM +0100, Rafael J. Wysocki wrote:
+> > 
+> > I think this is the XFS problem with freezable workqueues.
+> > 
+> > Maxim, please try to apply the appended patch and see if it helps.
+> > 
+> > Greetings,
+> > Rafael
+> > 
+> > 
+> > ---
+> > Since freezable workqueues are broken in 2.6.21-rc
+> > (cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
+> > http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
+> > it's better to remove them altogether for 2.6.21 and change the only user of
+> > them (XFS) accordingly.
+> > 
+> > ---
+> >  fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
+> > ===================================================================
+> > --- linux-2.6.21-rc4.orig/fs/xfs/linux-2.6/xfs_buf.c
+> > +++ linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
+> > @@ -1829,11 +1829,11 @@ xfs_buf_init(void)
+> >  	if (!xfs_buf_zone)
+> >  		goto out_free_trace_buf;
+> >  
+> > -	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
+> > +	xfslogd_workqueue = create_workqueue("xfslogd");
+> >  	if (!xfslogd_workqueue)
+> >  		goto out_free_buf_zone;
+> >  
+> > -	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
+> > +	xfsdatad_workqueue = create_workqueue("xfsdatad");
+> >  	if (!xfsdatad_workqueue)
+> >  		goto out_destroy_xfslogd_workqueue;
+> >  
+> 
+> Acked-by: Dave Chinner <dgc@sgi.com>
+> 
+> Rafael, it sounds like this really needs to go into the next -rc
+> kernel. Can you push it to Linus?
 
-My rdmsr_safe (x86_64, i386 is similar/same) is
+I tried, but Andrew resent it to you. :-)
 
-#define rdmsr_safe(msr,a,b) \
-        ({ int ret__;                                           \
-          asm volatile ("1:       rdmsr\n"                      \
-                      "2:\n"                                    \
-                      ".section .fixup,\"ax\"\n"                \
-                      "3:       movl %4,%0\n"                   \
-                      " jmp 2b\n"                               \
-                      ".previous\n"                             \
-                      ".section __ex_table,\"a\"\n"             \
-                      " .align 8\n"                             \
-                      " .quad 1b,3b\n"                          \
-                      ".previous":"=&bDS" (ret__), "=a"(*(a)), "=d"(*(b))\
-                      :"c"(msr), "i"(-EIO), "0"(0));            \
-          ret__; })
+Andrew, could we please merge it?
 
-
-Which seems quite happy to accept pointers to the values. The one in 
-asm/i386/paravirt.h has a similar calling convention.
-
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Greetings,
+Rafael
