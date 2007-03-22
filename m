@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965513AbXCVAFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965512AbXCVAJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965513AbXCVAFA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 20:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964981AbXCVAFA
+	id S965512AbXCVAJa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 20:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965519AbXCVAJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 20:05:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:12633 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965513AbXCVAE7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 20:04:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=U5hqDFbcwfSU4saxLkwVlAuDp24b5Y2gajwHu3tEeVPhz+YdzuxRLtZtlKW1lOV+Vp3KOKjBWPt9VT5Q5WKb7sIvYkhBZSDwQLjsm647InUhVaQ3TfGQkARojADjUaPT7FyUZGj5qfgZhfaSVhoGOlvhUzDC7bta4QuvKO/QWgs=
-From: Maxim <maximlevitsky@gmail.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [RFC] : Is /proc/kcore still usefull and/or maintained ?
-Date: Thu, 22 Mar 2007 02:04:50 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
-       David Howells <dhowells@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-References: <200703211840.53242.maximlevitsky@gmail.com> <200703220128.18610.maximlevitsky@gmail.com> <20070322005310.03be8637.dada1@cosmosbay.com>
-In-Reply-To: <20070322005310.03be8637.dada1@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 21 Mar 2007 20:09:30 -0400
+Received: from ozlabs.org ([203.10.76.45]:59599 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965512AbXCVAJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Mar 2007 20:09:29 -0400
+Subject: Re: [PATCH] Allow per-cpu variables to be page-aligned
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <m11wjiczje.fsf@ebiederm.dsl.xmission.com>
+References: <1174457426.11680.132.camel@localhost.localdomain>
+	 <m1ejnjc5qa.fsf@ebiederm.dsl.xmission.com>
+	 <1174477457.11680.170.camel@localhost.localdomain>
+	 <m11wjiczje.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 11:09:12 +1100
+Message-Id: <1174522152.2713.73.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703220204.51146.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 March 2007 01:53:10 Eric Dumazet wrote:
-> I stand corrected : This is a new bug
+On Wed, 2007-03-21 at 10:49 -0600, Eric W. Biederman wrote:
+> Rusty Russell <rusty@rustcorp.com.au> writes:
 > 
-> The /proc/kcore problem appears with linux-2.6.21-rc4-mm1
+> > On Wed, 2007-03-21 at 03:21 -0600, Eric W. Biederman wrote:
+> >> Do we really want to allow modules to be able to allocate page sized
+> >> per cpu memory.
+> >
+> > Hi Eric!
+> >
+> > 	They always could, of course, they just wouldn't get correct alignment.
+> > I think the principle of least surprise says that if we support this, it
+> > will also work in modules...
 > 
-> fd = open("/proc/kcore", 0);
-> llseek(fd, ...) returns an -EINVAL error
-> 
-> 
-> Quick code inspection (before going to sleep...) shows that
-> 
-> proc_reg_llseek() (file fs/proc/inode.c)
-> 
-> is doing something like :
-> 
-> rv = -EINVAL;
-> llseek = pde->proc_fops->llseek;
-> spin_unlock(&pde->pde_unload_lock);
-> if (llseek)
-> 	rv = llseek(file, offset, whence);
-> 
-> As kcore dont have a .llseek handler, proc_reg_llseek() returns -EINVAL;
-> 
-> Previous kernel was probably calling a default llseek() handler.
-> 
-> if (!llseek)
-> 	llseek = default_llseek;
-> 
-> Hum ???
-> 
+> The module load would fail.
 
-Hi,
-	Yes, you are right, you have different problem that I had
+Hi again Eric,
 
-	But why do you need llseek ?
+	Unfortunately not.  It probably should, though: people ignore printks.
+I was probably thinking that large alignment constraints were only for
+performance when I wrote this code, but a page-aligned requirement for
+hypervisors changes that.
 
-	Why not to mmap it ?
-	It is natural thing to do with files that represent memory.
+> > Looking at the module per-cpu code again, the rounding up of the memory
+> > used by the kernel seems unnecessary though.  I'll try ripping that
+> > out...
+>
+> I want to say that when dealing with cpu stuff aligning to a cache
+> line makes sense as it prevents multiple variables from sharing
+> the same cache line.  However we rarely access per cpu variables from
+> other cpus (the point) so the extra alignment doesn't seem to have
+> a justification in this context.
 
-	Regards,
-		Maxim Levitsky
+Um, yes, always good to remember.  I wrote the per-cpu infrastructure,
+and I haven't forgotten 8)
+
+> Although I'm not quite certain what this will do to the per cpu
+> memory allocator...
+
+It should Just Work.  My only hesitation is that I obviously thought
+different when I wrote this code, so am I smarter now, or then?
+
+> After increasing NR_IRQS on x86_64 to (NR_CPUS*32) the per cpu irq
+> stats got much bigger especially as NR_CPUS went up.  The only
+> reasonable way I could see to fix this at the time was to just make
+> PER_CPU_ENOUGH_ROOM do the right thing and change size dynamically
+> with the size of the per cpu section.  I added PERCPU_MODULE_RESERVE
+> to allocate the amount that we did not have compile information on.
+> 8K was roughly what we had left over for modules before I made the
+> change so I just preserved that.
+
+This makes a lot of sense.  A fixed constant seemed sensible at the
+time, but now we know that the majority of per-cpu vars are in code
+which can never be a module.  Reasons are obvious, and seem unlikely to
+change.
+
+> > It means the x86 cpu_pda initialization would have to be done in
+> > smp_prepare_boot_cpu tho...
+> 
+> Well that is earlier than trap_init so it shouldn't be a problem...
+
+But it doesn't get called on UP.  Don't know if that matters, but it
+wasn't immediately obvious.
+
+Thanks,
+Rusty.
+
