@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXCVPIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXCVPJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933106AbXCVPIr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 11:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933127AbXCVPIq
+	id S933115AbXCVPJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 11:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933152AbXCVPJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 11:08:46 -0400
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:50037 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933106AbXCVPIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 11:08:30 -0400
-X-Sasl-enc: rw6Vo+mjPZ52kJVkWpXHnCO7szdke3egsvcnyaneneuP 1174576109
-Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
-From: Ian Kent <raven@themaw.net>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, sukadev@us.ibm.com,
-       Andrew Morton <akpm@osdl.org>, Dave Hansen <haveblue@us.ibm.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070322133153.GB22933@sergelap.austin.ibm.com>
-References: <m1hcslm1tc.fsf@ebiederm.dsl.xmission.com>
-	 <20070319200839.GB19449@sergelap.austin.ibm.com>
-	 <m1odmpvuft.fsf@ebiederm.dsl.xmission.com>
-	 <20070320201548.GA21312@sergelap.austin.ibm.com>
-	 <m17itbmypc.fsf@ebiederm.dsl.xmission.com>
-	 <20070320214125.GA5585@sergelap.austin.ibm.com>
-	 <m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
-	 <1174528851.4635.6.camel@raven.themaw.net>
-	 <20070322021931.GA11485@sergelap.austin.ibm.com>
-	 <1174533494.4635.37.camel@raven.themaw.net>
-	 <20070322133153.GB22933@sergelap.austin.ibm.com>
+	Thu, 22 Mar 2007 11:09:27 -0400
+Received: from www.osadl.org ([213.239.205.134]:55272 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933143AbXCVPJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 11:09:25 -0400
+Subject: Re: 2.6.21-rc[123] regression with NOAPIC
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Ray Lee <ray-lk@madrabbit.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Len Brown <len.brown@intel.com>, Andi Kleen <ak@suse.de>,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20070322141630.GA752@stusta.de>
+References: <4601573A.8070602@madrabbit.org>
+	 <20070322134238.GY752@stusta.de>
+	 <1174572603.10840.162.camel@localhost.localdomain>
+	 <20070322141630.GA752@stusta.de>
 Content-Type: text/plain
-Date: Fri, 23 Mar 2007 00:06:20 +0900
-Message-Id: <1174575980.4635.72.camel@raven.themaw.net>
+Date: Thu, 22 Mar 2007 16:16:41 +0100
+Message-Id: <1174576601.10840.189.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-22 at 08:31 -0500, Serge E. Hallyn wrote:
-> > > 
-> > > From: "Serge E. Hallyn" <serue@us.ibm.com>
-> > > Subject: [PATCH] autofs: prevent pid wraparound in waitqs
-> > > 
-> > > Instead of storing pid numbers for waitqs, store references
-> > > to struct pids.  Also store a reference to the mounter's pid
-> > > namespace in the autofs4 sb info so that pid numbers for
-> > > mount miss and expiry msgs can send the pid# in the mounter's
-> > > pidns.
+On Thu, 2007-03-22 at 15:16 +0100, Adrian Bunk wrote:
+> > > Does it work if you do _not_ revert the commits, and instead replace in
+> > > drivers/acpi/processor_idle.c the
+> > >   #ifdef ARCH_APICTIMER_STOPS_ON_C3
+> > > with an
+> > >   #if 0
+> > > ?
 > > 
-> > I think this amounts to what I suggested in my previous replies.
-> > Hopefully my comments are enough to clear up any questions on
-> > correctness of this approach.
-> > 
-> > Sorry to be a pain but I'm having a little trouble reviewing the patch
-> > because I'm not clear on where the code to handle the automount process
-> > group (so called oz_pgrp), from the first patch, fits in with this.
+> > Then NOAPIC probably works again, but booting w/o NOAPIC fails.
 > 
-> It also has pidspace infrastructure code in it, so I think we will just
-> hold off on this until we have that infrastructure merged into the
-> pidspace code and into -mm.  Then we can send you a single, more concise
-> patch.
+> But we'll know that it's this code that has a problen with noapic
+> in the CONFIG_GENERIC_CLOCKEVENTS=n case.
 
-OK great.
+Nope. This code does not have a problem. It causes a problem elsewhere:
 
-I'll have a close look through the code and it's related calls when I
-get hold of a complete patch. That will be much easier and mistakes will
-be less likely.
+It calls switch_ipi_to_APIC_timer() or switch_APIC_timer_to_ipi(), which
+sets/clears a bit in the broadcast mask and enables / disables the local
+APIC timer.
 
-Ian
+I don't see right now, why this causes the box to lock up hard, but
+maybe the debug printk's below give us some hint.
+
+	tglx
+
+diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
+index 723417d..29376e2 100644
+--- a/arch/x86_64/kernel/apic.c
++++ b/arch/x86_64/kernel/apic.c
+@@ -886,6 +886,8 @@ void disable_APIC_timer(void)
+ 	if (using_apic_timer) {
+ 		unsigned long v;
+ 
++		printk("Disabling local APIC timer %d\n", apic_runs_main_timer);
++
+ 		v = apic_read(APIC_LVTT);
+ 		/*
+ 		 * When an illegal vector value (0-15) is written to an LVT
+@@ -910,6 +912,7 @@ void enable_APIC_timer(void)
+ 	    !cpu_isset(cpu, timer_interrupt_broadcast_ipi_mask)) {
+ 		unsigned long v;
+ 
++		printk("Enabling local APIC timer: %d\n", apic_runs_main_timer);
+ 		v = apic_read(APIC_LVTT);
+ 		apic_write(APIC_LVTT, v & ~APIC_LVT_MASKED);
+ 	}
+@@ -934,6 +937,7 @@ void smp_send_timer_broadcast_ipi(void)
+ 
+ 	cpus_and(mask, cpu_online_map, timer_interrupt_broadcast_ipi_mask);
+ 	if (!cpus_empty(mask)) {
++		printk("Send IPI\n");
+ 		send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
+ 	}
+ }
 
 
