@@ -1,52 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXCVTXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933980AbXCVTYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933175AbXCVTXO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 15:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933982AbXCVTXO
+	id S933980AbXCVTYP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 15:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933982AbXCVTYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 15:23:14 -0400
-Received: from saeurebad.de ([85.214.36.134]:44978 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933175AbXCVTXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 15:23:13 -0400
-Date: Thu, 22 Mar 2007 20:22:34 +0100
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests (2.6.21-rc2 and 2.6.20)
-Message-ID: <20070322192233.GA5873@localhost>
-Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
-	linux-kernel@vger.kernel.org
-References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com> <200703011308.28266.linux@f-seidel.de> <20070301123057.GO23985@kernel.dk> <loom.20070321T135132-397@post.gmane.org> <20070321190359.GD16768@leiferikson> <20070322184235.GZ19922@kernel.dk>
+	Thu, 22 Mar 2007 15:24:15 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:49279 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933980AbXCVTYN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 15:24:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=J/Nl6jMuTGZXwbQTQzZREq/9en7LkSbuNtt1rhFXx1ATA9io9lGG/SCQPoeKcnNUOWmltZVq+wWXBSqDXYe9jQuXvYDd2HE1Zsgl9AQAK5xkx0SRF2gVfuW592T49bStX4oc6LMxs8Jmp7AktjCEkROSr5S7kglN1vhZPSq8xSQ=
+Message-ID: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
+Date: Thu, 22 Mar 2007 12:24:12 -0700
+From: "Phy Prabab" <phyprabab@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Opps in 2.6.21-rc4 nfsd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070322184235.GZ19922@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
 
-On Thu, Mar 22, 2007 at 07:42:35PM +0100, Jens Axboe wrote:
-> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > index b6491c0..ca84f0b 100644
-> > --- a/block/cfq-iosched.c
-> > +++ b/block/cfq-iosched.c
-> > @@ -961,8 +961,8 @@ __cfq_dispatch_requests(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-> >  		/*
-> >  		 * follow expired path, else get first next available
-> >  		 */
-> > -		if ((rq = cfq_check_fifo(cfqq)) == NULL)
-> > -			rq = cfqq->next_rq;
-> > +		if (!(rq = cfq_check_fifo(cfqq)) && !(rq = cfqq->next_rq))
-> > +			break;
-> 
-> That still only hides a bug. It is illegal for ->next_rq to be NULL
-> while the RB tree is non-empty.
+I have a recent oopps on a small file server I have running.  The
+machine in question is a dual, dual core AMD Opteron 2.2GHz w/4G RAM,
+3Ware 9650SE (14 drive RAID 10), using XFS, LVM2 (latest), exported
+via knfsd.  Kernel is 2.6.21-rc4 64b.  Here is the bt:
 
-As I noticed afterwards this isn't even the point where the NULL ptr is
-dereferenced.  It must be in the next code-line, cfqd->queue or
-cfqd->queue->elevator was NULL when the oops occured or am I wrong?
+Mar 22 12:09:01 rcfs05 kernel: Modules linked in:
+Mar 22 12:09:01 rcfs05 kernel: Pid: 3102, comm: nfsd Not tainted
+2.6.21-rc4-smp #3
+Mar 22 12:09:01 rcfs05 kernel: RIP: 0010:[<ffffffff80350613>]
+[<ffffffff80350613>] fh_compose+0x3e3/0x4d0
+Mar 22 12:09:01 rcfs05 kernel: RSP: 0018:ffff8101197fdd70  EFLAGS: 00010297
+Mar 22 12:09:01 rcfs05 kernel: RAX: 0000000000000006 RBX:
+000000000ee00004 RCX: 0000000000000000
+Mar 22 12:09:01 rcfs05 kernel: RDX: 0000000000000018 RSI:
+ffff81011975a940 RDI: 0000000000000080
+Mar 22 12:09:01 rcfs05 kernel: RBP: 0000000000000001 R08:
+00000000ffffffff R09: 00002ba24f06ca50
+Mar 22 12:09:01 rcfs05 kernel: R10: ffff81011975a808 R11:
+ffffffff8022f500 R12: ffff81011975a938
+Mar 22 12:09:01 rcfs05 kernel: R13: 0000000000000006 R14:
+ffff81010eaab0c0 R15: ffff8100cc714940
+Mar 22 12:09:01 rcfs05 kernel: FS:  00002b020c71b6d0(0000)
+GS:ffff81011dcf56c0(0000) knlGS:0000000000000000
+Mar 22 12:09:01 rcfs05 kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+Mar 22 12:09:01 rcfs05 kernel: CR2: 0000000000000000 CR3:
+00000001173d1000 CR4: 00000000000006e0
+Mar 22 12:09:01 rcfs05 kernel: Process nfsd (pid: 3102, threadinfo
+ffff8101197fc000, task ffff81011b7ef020)
+Mar 22 12:09:01 rcfs05 kernel: Stack:  ffff81010fa7b868
+ffffffff80239d8a 0000000000000286 ffff810111aee5e8
+Mar 22 12:09:01 rcfs05 kernel:  ffff810105af2890 ffff81011975a808
+ffff810105af2890 000000000eaab0c0
+Mar 22 12:09:01 rcfs05 kernel:  ffff810105af2890 ffff81011975a808
+ffff810105af2890 000000000000000a
+Mar 22 12:09:01 rcfs05 kernel: Call Trace:
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80239d8a>] __lookup_hash+0x7a/0x160
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff803547a5>] nfsd_lookup+0x435/0x4d0
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8035aaa8>]
+nfsd3_proc_lookup+0xe8/0x110
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034d69d>] nfsd_dispatch+0xfd/0x1f0
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80608094>] svc_process+0x3e4/0x730
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8026bbf2>] __down_read+0x12/0xa2
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034dd00>] nfsd+0x1a0/0x2d0
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80264f38>] child_rip+0xa/0x12
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034db60>] nfsd+0x0/0x2d0
+Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80264f2e>] child_rip+0x0/0x12
+Mar 22 12:09:01 rcfs05 kernel:
+Mar 22 12:09:01 rcfs05 kernel:
+Mar 22 12:09:01 rcfs05 kernel: Code: 48 8b 01 ba 10 00 00 00 bf 10 00
+00 00 48 89 06 48 8b 41 08
+Mar 22 12:09:01 rcfs05 kernel: RIP  [<ffffffff80350613>] fh_compose+0x3e3/0x4d0
+Mar 22 12:09:01 rcfs05 kernel:  RSP <ffff8101197fdd70>
+Mar 22 12:09:01 rcfs05 kernel: CR2: 0000000000000000
 
-'Hannes
+Once this oops happens, the machine is still usable, however NFS
+crawls to a halt (in fact one of the machines with a mount point of
+this machine, failed to respond anymore - I assume that thread is the
+one that ooops'ed).
+
+Any more information or debugging, please let me know.
+
+TIA!
+Phy
