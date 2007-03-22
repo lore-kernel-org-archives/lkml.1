@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161089AbXCVVkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161095AbXCVVk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161089AbXCVVkA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 17:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161103AbXCVVkA
+	id S1161095AbXCVVk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 17:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161062AbXCVVk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 17:40:00 -0400
-Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:59761 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161089AbXCVVj6 (ORCPT
+	Thu, 22 Mar 2007 17:40:29 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58724 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161095AbXCVVkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 17:39:58 -0400
-Subject: [PATCH 2.6.21] iw_cxgb3: Fix a resource leak in
-	cxio_hal_init_ctrl_qp().
-From: Steve Wise <swise@opengridcomputing.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org,
-       General@lists.openfabrics.org
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 16:39:57 -0500
-Message-Id: <1174599597.16862.70.camel@stevo-desktop>
+	Thu, 22 Mar 2007 17:40:25 -0400
+Date: Thu, 22 Mar 2007 16:39:45 -0600
+From: Cliff Wickman <cpw@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dino@in.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] cpusets/sched_domain reconciliation
+Message-ID: <20070322223945.GA22206@sgi.com>
+References: <4600329B.mailxHGH16L00Y@eag09.americas.sgi.com> <20070322142152.5f6fa41c.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070322142152.5f6fa41c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a resource leak in cxio_hal_init_ctrl_qp().
+Hello Andrew,
 
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
+On Thu, Mar 22, 2007 at 02:21:52PM -0700, Andrew Morton wrote:
+> On Tue, 20 Mar 2007 13:14:35 -0600
+> cpw@sgi.com (Cliff Wickman) wrote:
+> 
+> > This patch reconciles cpusets and sched_domains that get out of sync
+> > due to disabling and re-enabling of cpu's.
+> 
+> I get three-out-of-three rejects in cpuset.c.  I could fix them, but I
+> wouldn't be very confident that the result works at runtime.  2.6.20-rc6 was
+> a long time ago - please, always raise patches against the latest mainline
+> kernel (the daily git snapshot suffices).
 
- drivers/infiniband/hw/cxgb3/cxio_hal.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.c b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-index 818cf1a..f5e9aee 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
-+++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-@@ -498,9 +498,9 @@ static int cxio_hal_init_ctrl_qp(struct 
- 	u64 sge_cmd, ctx0, ctx1;
- 	u64 base_addr;
- 	struct t3_modify_qp_wr *wqe;
--	struct sk_buff *skb = alloc_skb(sizeof(*wqe), GFP_KERNEL);
--
-+	struct sk_buff *skb;
+Will do.
  
-+	skb = alloc_skb(sizeof(*wqe), GFP_KERNEL);
- 	if (!skb) {
- 		PDBG("%s alloc_skb failed\n", __FUNCTION__);
- 		return -ENOMEM;
-@@ -508,7 +508,7 @@ static int cxio_hal_init_ctrl_qp(struct 
- 	err = cxio_hal_init_ctrl_cq(rdev_p);
- 	if (err) {
- 		PDBG("%s err %d initializing ctrl_cq\n", __FUNCTION__, err);
--		return err;
-+		goto err;
- 	}
- 	rdev_p->ctrl_qp.workq = dma_alloc_coherent(
- 					&(rdev_p->rnic_info.pdev->dev),
-@@ -518,7 +518,8 @@ static int cxio_hal_init_ctrl_qp(struct 
- 					GFP_KERNEL);
- 	if (!rdev_p->ctrl_qp.workq) {
- 		PDBG("%s dma_alloc_coherent failed\n", __FUNCTION__);
--		return -ENOMEM;
-+		err = -ENOMEM;
-+		goto err;
- 	}
- 	pci_unmap_addr_set(&rdev_p->ctrl_qp, mapping,
- 			   rdev_p->ctrl_qp.dma_addr);
-@@ -556,6 +557,9 @@ static int cxio_hal_init_ctrl_qp(struct 
- 	     rdev_p->ctrl_qp.workq, 1 << T3_CTRL_QP_SIZE_LOG2);
- 	skb->priority = CPL_PRIORITY_CONTROL;
- 	return (cxgb3_ofld_send(rdev_p->t3cdev_p, skb));
-+err:
-+	kfree_skb(skb);
-+	return err;
- }
- 
- static int cxio_hal_destroy_ctrl_qp(struct cxio_rdev *rdev_p)
+> Recursion is a big no-no in kernel.  Is there any way in which it can be
+> avoided?  Is Dinakar's implementation also recursive?
 
+I was a little reluctant to use recursion, but this use parallels another,
+existing such use in cpuset.c  The depth of the recursion is only the depth of
+the cpuset hierarchy, which is set up by an administrator, and which is
+logically limited by the number of cpus in the system.  e.g. it would be
+hard to even deliberately organize 16 cpus into a hierarchy greater
+than 16 layers deep, even if you wanted cpusets of single cpus.
+We've not run into such a problem on systems of hundreds of cpus.
+I would think it's safe.  What do you think?
+
+Dinakar's solution is not written yet, as far as I know.  I'll copy him
+for his status.
+
+-- 
+Cliff Wickman
+Silicon Graphics, Inc.
+cpw@sgi.com
+(651) 683-3824
