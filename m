@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934243AbXCVV3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbXCVV3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934243AbXCVV3B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 17:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934247AbXCVV3A
+	id S934247AbXCVV3O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 17:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934246AbXCVV3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 17:29:00 -0400
-Received: from mga01.intel.com ([192.55.52.88]:10035 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934243AbXCVV27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 17:28:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,316,1170662400"; 
-   d="scan'208"; a="217483802:sNHT29584905"
-Date: Thu, 22 Mar 2007 14:28:31 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Christoph Lameter <christoph@lameter.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of virt_to_slab(objp); nodeid = slabp->nodeid;)
-Message-ID: <20070322212831.GA25665@linux-os.sc.intel.com>
-References: <20070320181235.77d28864.dada1@cosmosbay.com> <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org> <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org> <Pine.LNX.4.64.0703202006230.20568@graphe.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 22 Mar 2007 17:29:14 -0400
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:43993 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S934240AbXCVV3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 17:29:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=u4fkDtG6bw9NJIsAs/0V4GQkK4IJmm6TygkY1LwAlPoHZz2ZkZoca9SX2zRcm4e2ZuViqVoOVepW5XhayAUQLXJf2DHLgGbp3GLNOYwF7oTQ3T3wK87KLEygZws4BFw3ghkCQd8c5Q6/8yj/SIE1azbbJreEjywqlqKcZ9EpFwU=  ;
+X-YMail-OSG: dRXF1H4VM1nHhsB56RsWod2oKROGfRFYxiSKsZpLM8uhkPmnRaO2gXhCKwLhS2lM8GBE5_MQcmCu4BrPBU_IjFIx8xWSNpFHowbIeLnI2CPZN2Hxl2.3w9pZfpq75mVuzLfRtVYrqRtLuvw-
+From: David Brownell <david-b@pacbell.net>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] possible USB regression with 2.6.21-rc4: iPod doesn't work
+Date: Thu, 22 Mar 2007 14:29:11 -0700
+User-Agent: KMail/1.7.1
+Cc: Tino Keitel <tino.keitel@gmx.de>, Alan Stern <stern@rowland.harvard.edu>,
+       linux-kernel@vger.kernel.org
+References: <20070322085451.GB10598@dose.home.local> <Pine.LNX.4.44L0.0703221539440.4669-100000@iolanthe.rowland.org> <20070322195448.GA17521@dose.home.local>
+In-Reply-To: <20070322195448.GA17521@dose.home.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703202006230.20568@graphe.net>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200703221429.12029.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph,
+On Thursday 22 March 2007 12:54 pm, Tino Keitel wrote:
+> On Thu, Mar 22, 2007 at 15:40:40 -0400, Alan Stern wrote:
+> > 	  _Something_ is generating those overcurrent 
+> > warnings, and it sure looks like a hardware malfunction.
+> 
+> But it works with 2.6.20.
 
-While we are at this topic, recently I had reports that
-cache_free_alien() is costly on non NUMA platforms too (similar
-to the cache miss issues that Eric was referring to on NUMA)
-and the appended patch seems to fix it for non NUMA atleast.
+So can you bisect to find what caused the problem?
 
-Appended patch gives a nice 1% perf improvement on non-NUMA platform
-with database workload.
+We've been afflicted with such strange overcurrent messages
+off and on for some time.  Some hardware triggers them, while
+most doesn't, and the USB developers don't have any of the
+hardware that triggers it (that almost goes without saying).
 
-Please comment or Ack for mainline :)
+It's been clear to me that _something_ the software does is
+making that more likely to happen.
 
-thanks,
-suresh
----
+One thing we've been lacking is anything like a usable clue
+as to what kind of changes would have that failure mode ...
+and thus, what kind of changes could remove it.
 
-Subject: [patch] slab: skip cache_free_alien() on non NUMA
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-
-set use_alien_caches to 0 on non NUMA platforms. And avoid calling
-the cache_free_alien() when use_alien_caches is not set. This will avoid
-the cache miss that happens while dereferencing slabp to get nodeid.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-diff --git a/mm/slab.c b/mm/slab.c
-index 8fdaffa..146082d 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -1146,7 +1146,7 @@ static inline int cache_free_alien(struct kmem_cache *cachep, void *objp)
- 	 * Make sure we are not freeing a object from another node to the array
- 	 * cache on this cpu.
- 	 */
--	if (likely(slabp->nodeid == node) || unlikely(!use_alien_caches))
-+	if (likely(slabp->nodeid == node))
- 		return 0;
- 
- 	l3 = cachep->nodelists[node];
-@@ -1394,6 +1394,9 @@ void __init kmem_cache_init(void)
- 	int order;
- 	int node;
- 
-+	if (num_online_nodes() == 1)
-+		use_alien_caches = 0;
-+
- 	for (i = 0; i < NUM_INIT_LISTS; i++) {
- 		kmem_list3_init(&initkmem_list3[i]);
- 		if (i < MAX_NUMNODES)
-@@ -3563,7 +3566,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
- 	check_irq_off();
- 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
- 
--	if (cache_free_alien(cachep, objp))
-+	if (use_alien_caches && cache_free_alien(cachep, objp))
- 		return;
- 
- 	if (likely(ac->avail < ac->limit)) {
+- Dave
