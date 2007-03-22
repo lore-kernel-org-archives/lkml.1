@@ -1,47 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXCVAP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934006AbXCVAZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965521AbXCVAP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 20:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965539AbXCVAP0
+	id S934006AbXCVAZS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 20:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932469AbXCVAZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 20:15:26 -0400
-Received: from dkj137.neoplus.adsl.tpnet.pl ([83.24.13.137]:64969 "EHLO
-	dkj137.neoplus.adsl.tpnet.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965521AbXCVAP0 (ORCPT
+	Wed, 21 Mar 2007 20:25:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:38171 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934006AbXCVAZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 20:15:26 -0400
-Message-ID: <4601CA9C.6050708@o2.pl>
-Date: Thu, 22 Mar 2007 01:15:24 +0100
-From: Artur Skawina <art_k@o2.pl>
-User-Agent: Thunderbird 3.0a1 (X11/20070320)
+	Wed, 21 Mar 2007 20:25:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=XASZBxoWS4qB9GZJbva8iVRe4XMIR1GRuhUbfQMWspqFb28Xr+j1PBaOYp66Z4krXPzr35tj5E2G3bnGKmHtgBLW322QBniKpmQC42X9lCtKvH9lVPdDV813qHGcko0Ib2vRjo1op28sqfseui6+fUsBpBhMUag/a20GYWvehRQ=
+From: Maxim <maximlevitsky@gmail.com>
+To: nigel@nigel.suspend2.net
+Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
+Date: Thu, 22 Mar 2007 02:25:07 +0200
+User-Agent: KMail/1.9.6
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, David Chinner <dgc@sgi.com>
+References: <200703211840.53242.maximlevitsky@gmail.com> <200703212238.33897.rjw@sisk.pl> <1174520825.6665.105.camel@nigel.suspend2.net>
+In-Reply-To: <1174520825.6665.105.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-To: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
-CC: Con Kolivas <kernel@kolivas.org>,
-       linux list <linux-kernel@vger.kernel.org>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sched: rsdl improvements
-References: <200703220429.45311.kernel@kolivas.org> <4601BF45.7070708@o2.pl> <4601C44B.9060705@mnsu.edu>
-In-Reply-To: <4601C44B.9060705@mnsu.edu>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703220225.07663.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeffrey Hundstad wrote:
->> I'm not sure this is going in the right direction... I'm writing
->> this while compiling a kernel w/ "nice -20 make -j2" and X is almost
->>   
-> Did you mean "nice -20"?  If so, that should have slowed X quite a bit. 
-> Try "nice 19" instead.
+On Thursday 22 March 2007 01:47:05 Nigel Cunningham wrote:
+> Hi.
+> 
+> On Wed, 2007-03-21 at 22:38 +0100, Rafael J. Wysocki wrote:
+> > > Do you know exactly which mutex was being waited on and where it was
+> > > taken? If you can say that, it would be much more helpful.
+> 
+> Yeah, me too, but assuming too much sometimes bites me :)
+> 
+> > I think this is the XFS problem with freezable workqueues.
+> > 
+> > Maxim, please try to apply the appended patch and see if it helps.
+> 
+> Thanks for your subsequent messages, Maxim. Could you confirm for us
+> that the patch Rafael attached fixes it?
+> 
+> Regards,
+> 
+> Nigel
+> 
+> > ---
+> > Since freezable workqueues are broken in 2.6.21-rc
+> > (cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
+> > http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
+> > it's better to remove them altogether for 2.6.21 and change the only user of
+> > them (XFS) accordingly.
+> > 
+> > ---
+> >  fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
+> > ===================================================================
+> > --- linux-2.6.21-rc4.orig/fs/xfs/linux-2.6/xfs_buf.c
+> > +++ linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
+> > @@ -1829,11 +1829,11 @@ xfs_buf_init(void)
+> >  	if (!xfs_buf_zone)
+> >  		goto out_free_trace_buf;
+> >  
+> > -	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
+> > +	xfslogd_workqueue = create_workqueue("xfslogd");
+> >  	if (!xfslogd_workqueue)
+> >  		goto out_free_buf_zone;
+> >  
+> > -	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
+> > +	xfsdatad_workqueue = create_workqueue("xfsdatad");
+> >  	if (!xfsdatad_workqueue)
+> >  		goto out_destroy_xfslogd_workqueue;
+> >  
+> 
+> 
 
-i did try "nice --20" too :) Resulted in long X stalls, but i don't
-think that's a reasonable load so I did not mention it.
-"nice -20 cmd" runs cmd at nice==19.
+Hello,
 
-Usage: nice [OPTION] [COMMAND [ARG]...]
-Run COMMAND with an adjusted niceness, which affects process scheduling.
-With no COMMAND, print the current niceness.  Nicenesses range from
--20 (most favorable scheduling) to 19 (least favorable).
+I can confirm now that the above patch work,
 
-  -n, --adjustment=N   add integer N to the niceness (default 10)
+First as I said I did try to suspend with this patch and without XFS, and it did work,
+Now I reverted it and now system still suspends correctly without xfs module loaded ( I didn't tell you that i use now ext3,
+and that I generally compile everything in kernel, so i put XFS too, because I used it once, and I still have a XFS disk image)
+
+But system hangs with XFS loaded, so this patch works.
+
+Regards,
+	Maxim Levitsky
+
+
