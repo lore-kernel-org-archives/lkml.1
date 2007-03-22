@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbXCVVQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbXCVVWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650AbXCVVQF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 17:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbXCVVQF
+	id S1752662AbXCVVWD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 17:22:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbXCVVWC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 17:16:05 -0400
-Received: from www.osadl.org ([213.239.205.134]:37208 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752650AbXCVVQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 17:16:04 -0400
-Subject: Re: [PATCH] Fix irqpoll on IA64 (timer interrupt != 0)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bernhard Walle <bwalle@suse.de>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20070322140922.a59bea5c.akpm@linux-foundation.org>
-References: <20070320150027.GA18143@strauss.suse.de>
-	 <20070322140922.a59bea5c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 22:23:21 +0100
-Message-Id: <1174598601.10840.231.camel@localhost.localdomain>
+	Thu, 22 Mar 2007 17:22:02 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:52043 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752662AbXCVVWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 17:22:01 -0400
+Date: Thu, 22 Mar 2007 14:21:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cpw@sgi.com (Cliff Wickman)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] cpusets/sched_domain reconciliation
+Message-Id: <20070322142152.5f6fa41c.akpm@linux-foundation.org>
+In-Reply-To: <4600329B.mailxHGH16L00Y@eag09.americas.sgi.com>
+References: <4600329B.mailxHGH16L00Y@eag09.americas.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-22 at 14:09 -0700, Andrew Morton wrote:
-> I think the term 'timer_interrupt' is a bit generic-sounding.  Would it be
-> better to call it irqpoll_interrupt?  After all, some architecture might
-> want to use, umm, the keyboard interrupt to trigger IRQ polling ;)  
+On Tue, 20 Mar 2007 13:14:35 -0600
+cpw@sgi.com (Cliff Wickman) wrote:
 
-Interesting thought, but in general I have to agree.
+> This patch reconciles cpusets and sched_domains that get out of sync
+> due to disabling and re-enabling of cpu's.
 
-> Also, the code presently passes the magic IRQ number into the generic IRQ
-> code.  I wonder if we'd get a more pleasing result if we were to make the
-> generic IRQ code call _out_ to the architecture:
+I get three-out-of-three rejects in cpuset.c.  I could fix them, but I
+wouldn't be very confident that the result works at runtime.  2.6.20-rc6 was
+a long time ago - please, always raise patches against the latest mainline
+kernel (the daily git snapshot suffices).
 
-> Then, ia64 can implement arch_is_irqpoll_irq() and it can do whatever it
-> wants in there.
-> 
-> The __attribute__((weak)) thing adds a little bit of overhead, but I don't
-> think this is a fastpath?
-
-Well, depends what you consider a fastpath. When noirqdebug == 0, it is
-called on every interrupt.
-
-	tglx
-
-
+Recursion is a big no-no in kernel.  Is there any way in which it can be
+avoided?  Is Dinakar's implementation also recursive?
