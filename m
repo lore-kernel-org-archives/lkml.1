@@ -1,52 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934112AbXCVQqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934121AbXCVQ7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934112AbXCVQqb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 12:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934118AbXCVQqa
+	id S934121AbXCVQ7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 12:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934120AbXCVQ7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 12:46:30 -0400
-Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:13918 "EHLO
-	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934112AbXCVQq3 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 12:46:29 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=QlaNOH5vEJps+CZeAhU6x+wwFZ3vTQFd/3s+8DhNj5CvC4nZB0to3VZadnZJOR6XKyNMCsw96Di2YztE3IdKcDYofPAOHXSsSEJL5q9uQtMGFvHUsouNwhofQNtQrpMR;
-X-SBRSScore: None
-X-IronPort-AV: i="4.14,315,1170630000"; 
-   d="scan'208"; a="62810818:sNHT2033884728"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 22 Mar 2007 12:59:20 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:22051 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934121AbXCVQ7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 12:59:19 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 1/2] ehea: fix for dynamic lpar support
+Date: Thu, 22 Mar 2007 17:49:42 +0100
+User-Agent: KMail/1.8.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: how can I touch softlockup watchdog on all cpus?
-Date: Thu, 22 Mar 2007 17:46:15 +0100
-Message-ID: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FEB0F5@ABGEX01E.abg.fsc.net>
-in-reply-to: <75b66ecd0703220917w2fa7c6afs4817b689f8a2e98f@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: how can I touch softlockup watchdog on all cpus?
-Thread-Index: Acdsnafm8k5LaMq1RXmhglz7qXIVoQAAz6jg
-References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB6F2A@ABGEX01E.abg.fsc.net> <20070321164404.GF13218@redhat.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB710B@ABGEX01E.abg.fsc.net> <75b66ecd0703220830wdb4a612u86c80e71d4918cc4@mail.gmail.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FEB060@ABGEX01E.abg.fsc.net> <75b66ecd0703220917w2fa7c6afs4817b689f8a2e98f@mail.gmail.com>
-From: "Cestonaro, Thilo \(external\)" 
-	<Thilo.Cestonaro.external@fujitsu-siemens.com>
-To: "Lee Revell" <rlrevell@joe-job.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 22 Mar 2007 16:46:20.0249 (UTC) FILETIME=[9E2AD490:01C76CA1]
+Content-Disposition: inline
+To: Jeff Garzik <jeff@garzik.org>
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703221749.42876.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sounds like you have a fundamentally incompatible set of requirements.
+The patch fixes bugs related to the probe / remove adapter
+functionality (handling of OFDT nodes)
 
-Sounds so yep :)
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+---
 
-> Why do you need the softlockup watchdog if you intend to induce soft
-> lockups on purpose?
 
-It's a condition of a customer of us, so I can't change it.
+This patch applies on top of the netdev upstream branch for 2.6.22
 
-But it happens not often that my part is used. So I thought there is a mechanism to disable or reset the watchdog
-because it is a legal pause for it. And there is one "touch_softlockup_watchdog()", that does what I want,
-BUT just for the current cpu. And so the watchdog blats from the other cpu.
 
-Thilo
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index d593513..1fefb2d 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@ #include <asm/abs_addr.h>
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0052"
++#define DRV_VERSION	"EHEA_0053"
+ 
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index a3c235e..8d94a85 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -2556,11 +2556,8 @@ static int ehea_setup_ports(struct ehea_
+ 	int i = 0;
+ 
+ 	lhea_dn = adapter->ebus_dev->ofdev.node;
+-	do {
+-		eth_dn = of_get_next_child(lhea_dn, eth_dn);
+-		if (!eth_dn)
+-			break;
+-
++	while ((eth_dn = of_get_next_child(lhea_dn, eth_dn))) {
++		
+ 		dn_log_port_id = (u32*)get_property(eth_dn, "ibm,hea-port-no",
+ 						    NULL);
+ 		if (!dn_log_port_id) {
+@@ -2577,9 +2574,7 @@ static int ehea_setup_ports(struct ehea_
+ 				  adapter->port[i]->netdev->name, 
+ 				  *dn_log_port_id);
+ 		i++;
+-	} while (eth_dn);
+-
+-	of_node_put(lhea_dn);
++	};
+ 
+ 	/* Check for succesfully set up ports */
+ 	for (i = 0; i < EHEA_MAX_PORTS; i++)
+@@ -2600,21 +2595,14 @@ static struct device_node *ehea_get_eth_
+ 	u32 *dn_log_port_id;
+ 
+ 	lhea_dn = adapter->ebus_dev->ofdev.node;
+-	do {
+-		eth_dn = of_get_next_child(lhea_dn, eth_dn);
+-		if (!eth_dn)
+-			break;
+-
++	while ((eth_dn = of_get_next_child(lhea_dn, eth_dn))) {
++		
+ 		dn_log_port_id = (u32*)get_property(eth_dn, "ibm,hea-port-no",
+ 						    NULL);
+-
+ 		if (dn_log_port_id)
+ 			if (*dn_log_port_id == logical_port_id)
+ 				return eth_dn;
+-
+-	} while (eth_dn);
+-
+-	of_node_put(lhea_dn);
++	};
+ 
+ 	return NULL;
+ }
+@@ -2650,6 +2638,8 @@ static ssize_t ehea_probe_port(struct de
+ 		
+ 	port = ehea_setup_single_port(adapter, logical_port_id, eth_dn);
+ 
++	of_node_put(eth_dn);
++
+ 	if (port) {
+ 		for (i=0; i < EHEA_MAX_PORTS; i++)
+ 			if (!adapter->port[i]) {
+@@ -2725,6 +2715,11 @@ static int __devinit ehea_probe_adapter(
+ 	u64 *adapter_handle;
+ 	int ret;
+ 
++	if (!dev || !dev->ofdev.node) {
++		ehea_error("Invalid ibmebus device probed");
++		return -EINVAL;
++	}
++
+ 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+ 	if (!adapter) {
+ 		ret = -ENOMEM;
+@@ -2767,6 +2762,7 @@ static int __devinit ehea_probe_adapter(
+ 	adapter->neq = ehea_create_eq(adapter,
+ 				      EHEA_NEQ, EHEA_MAX_ENTRIES_EQ, 1);
+ 	if (!adapter->neq) {
++		ret = -EIO;
+ 		dev_err(&dev->ofdev.dev, "NEQ creation failed");
+ 		goto out_free_res;
+ 	}
+@@ -2783,10 +2779,13 @@ static int __devinit ehea_probe_adapter(
+ 	}
+ 
+ 	adapter->ehea_wq = create_workqueue("ehea_wq");
+-	if (!adapter->ehea_wq)
++	if (!adapter->ehea_wq) {
++		ret = -EIO;
+ 		goto out_free_irq;
++	}
+ 
+-	if (ehea_create_device_sysfs(dev))
++	ret = ehea_create_device_sysfs(dev);
++	if (ret)
+ 		goto out_kill_wq;
+ 
+ 	ret = ehea_setup_ports(adapter);
