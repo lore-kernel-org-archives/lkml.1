@@ -1,105 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030263AbXCVIMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030268AbXCVINa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030263AbXCVIMk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 04:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030266AbXCVIMk
+	id S1030268AbXCVINa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 04:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030274AbXCVINa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 04:12:40 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:4348 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030263AbXCVIMi (ORCPT
+	Thu, 22 Mar 2007 04:13:30 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:58169 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030268AbXCVIN1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 04:12:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DtxvZUm9Of4epxyme+WH8BkEEziSG8pxbfWIt/4QmdKxD87Y6W8Lro1qvhTTUkyQB0WcUHB4kZ2rXbhwFBK6ZzZhFO42bSE+sEX5saA7VNKcMvn70VOrpwe4d+j+Vf2QW+JnJXVg6yMOdmKMEb99YSVBP/PqZTe2IGkgu+xbnF8=
-Message-ID: <8bd0f97a0703220112y7d6cef2ax612ea5ece3df9740@mail.gmail.com>
-Date: Thu, 22 Mar 2007 04:12:37 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH -mm 4/4] Blackfin: on-chip Two Wire Interface I2C driver
-Cc: "Bryan Wu" <bryan.wu@analog.com>, "David Brownell" <david-b@pacbell.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070322084806.8bf0f231.khali@linux-fr.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1174471688.5648.56.camel@roc-desktop>
-	 <20070321202231.2eac1cf9.khali@linux-fr.org>
-	 <8bd0f97a0703212239n3edb9a44waa0994e3cffe48d8@mail.gmail.com>
-	 <20070322084806.8bf0f231.khali@linux-fr.org>
+	Thu, 22 Mar 2007 04:13:27 -0400
+Date: Thu, 22 Mar 2007 09:10:31 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] i386 GDT cleanups: Use per-cpu GDT immediately upon
+ boot
+Message-ID: <20070322091031.33a753fe@frecb000686.frec.bull.fr>
+In-Reply-To: <1174521510.2713.61.camel@localhost.localdomain>
+References: <1174457426.11680.132.camel@localhost.localdomain>
+	<1174458636.11680.143.camel@localhost.localdomain>
+	<1174458730.11680.145.camel@localhost.localdomain>
+	<1174458938.11680.150.camel@localhost.localdomain>
+	<m1aby7c59k.fsf@ebiederm.dsl.xmission.com>
+	<1174478153.11680.183.camel@localhost.localdomain>
+	<m1wt1abkuo.fsf@ebiederm.dsl.xmission.com>
+	<1174521510.2713.61.camel@localhost.localdomain>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 22/03/2007 09:15:25,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 22/03/2007 09:15:28,
+	Serialize complete at 22/03/2007 09:15:28
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/22/07, Jean Delvare <khali@linux-fr.org> wrote:
-> On Thu, 22 Mar 2007 01:39:28 -0400, Mike Frysinger wrote:
-> > On 3/21/07, Jean Delvare <khali@linux-fr.org> wrote:
-> > > > +     p_adap->class = I2C_CLASS_ALL;
+
+  Hi Rusty,
+
+On Thu, 22 Mar 2007 10:58:30 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> On Wed, 2007-03-21 at 10:51 -0600, Eric W. Biederman wrote:
+> > Rusty Russell <rusty@rustcorp.com.au> writes:
+> > 
+> > > On Wed, 2007-03-21 at 03:31 -0600, Eric W. Biederman wrote:
+> > >> Rusty Russell <rusty@rustcorp.com.au> writes:
+> > >> > -/*
+> > >> > - * The boot_gdt_table must mirror the equivalent in setup.S and is
+> > >> > - * used only for booting.
+> > >> > - */
+> > >> 
+> > >> It looks like you are killing a useful comment here for no good reason.
 > > >
-> > > This pretty much voids the point of these probing classes. You should
-> > > only select the classes matching devices which may actually be probed
-> > > for on this bus. If different boards have different needs, get the
-> > > right classes from the platform data.
-> >
-> > i asked about the class issue previously specifically for this bus
-> > driver and was told that they werent really fully defined ... the
-> > on-chip I2C interface on the Blackfin chip can handle any I2C device
-> > which is why i added this line
->
-> Grep for I2C_CLASS_ and you'll see that the classes are defined and
-> used consistently in the kernel tree. Maybe just not by the embedded
-> folks.
->
-> Also note that what matters is not the type of devices that can be
-> connected on the bus, but the type of devices that can be probed for.
-> This was essentially the same so far (general probing was the only way
-> to instantiate an i2c device), but the new i2c-core code that will go
-> into 2.6.22 will make it different. These classes will probably be less
-> used in the future.
+> > > Hi Eric,
+> > >
+> > > 	I think one has to look harder, then.  There is no "equivalent in
+> > > setup.S": there is no setup.S, and it's certainly not clear what GDT
+> > > this "must mirror": it doesn't mirror any GDT at the moment.
+> > 
+> > see the gdt in:
+> > arch/i386/boot/setup.S
+> 
+> Erk, what a dumb mistake.  Apologies for my snarky comment above 8(
+> 
+> > If anything the comment should read these values are fixed by the boot
+> > protocol and we can't change them.
+> 
+> Since lguest doesn't use setup.S, it's outside my experience.  I'll just
+> leave the comment, and try to pretend this never happened 8)
+> 
+> Thanks muchly,
+> Rusty.
+> ==
+> Now we are no longer dynamically allocating the GDT, we don't need the
+> "cpu_gdt_table" at all: we can switch straight from "boot_gdt_table"
+> to the per-cpu GDT.  This means initializing the cpu_gdt array in C.
 
-was referring to this:
-http://lists.lm-sensors.org/pipermail/i2c/2007-February/000770.html
 
-> > any examples of how to go about doing it via boards ?  i dont see any
-> > other I2C bus driver doing it that way ...
->
-> I don't think many drivers from the embedded world do it properly.
+  Why not take on the opportunity to rename boot_gt_table to boot_gtd,
+to avoid the duplicate T(able)?
 
-which is why i asked if you had any hints ... if no one else is doing
-it, it means no standard exists, which means there's nothing for me to
-copy :)
-
-it isnt obvious to me how to leverage the normal platform_device and
-resource structures to achieve moving the class out of the driver and
-into a boards file ... i'm perfectly happy doing this knowing what the
-correct direction to take things ... but i guess this gets us back to
-if no one is doing this yet and no one has any proposals, it's on our
-shoulders to get it resolved satisfactorily
-
-i might also argue (for fun) that some of the bus drivers arent doing
-it correctly ... they should implement support for the specific I2C
-implementation and then a different file for the specific
-[mother]board would contain the specific details
-
-> But
-> they don't appear to define any class at all, which means that in
-> practice they keep most regular i2c drivers out of their bus. Pretty
-> much the contrary of what you're doing with I2C_CLASS_ALL.
-
-this is certainly true, but i'd rather have the default behavior be
-"allow any I2C device on the bus" than "only allow I2C devices that
-dont check the bus type" ...
-
-> It's really up to you, but if you set the class to I2C_CLASS_ALL, don't
-> later come and complain that other drivers keep probing your I2C bus
-> and possibly attach to your I2C devices. You asked for it.
-
-i dont see why we would complain when it's obviously our fault ;)
-
-it also wouldnt be a real issue as it's an embedded board, so it'd
-only have the drivers enabled for devices that are actually hooked up
-...
--mike
+  Sébastien.
