@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934209AbXCVTyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934212AbXCVTzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934209AbXCVTyv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 15:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934207AbXCVTyv
+	id S934212AbXCVTzF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 15:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934210AbXCVTzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 15:54:51 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:57211 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934209AbXCVTyt (ORCPT
+	Thu, 22 Mar 2007 15:55:04 -0400
+Received: from nijmegen.renzel.net ([195.243.213.130]:35172 "EHLO
+	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934212AbXCVTzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 15:54:49 -0400
-Date: Thu, 22 Mar 2007 20:54:48 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] possible USB regression with 2.6.21-rc4: iPod doesn't work
-Message-ID: <20070322195448.GA17521@dose.home.local>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070322085451.GB10598@dose.home.local> <Pine.LNX.4.44L0.0703221539440.4669-100000@iolanthe.rowland.org>
+	Thu, 22 Mar 2007 15:55:01 -0400
+From: Mws <mws@twisted-brains.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: MCE Erros
+Date: Thu, 22 Mar 2007 20:54:43 +0100
+User-Agent: KMail/1.9.6
+Cc: Thomas Glanzmann <thomas@glanzmann.de>
+References: <20070322195043.GA19732@cip.informatik.uni-erlangen.de>
+In-Reply-To: <20070322195043.GA19732@cip.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.44L0.0703221539440.4669-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703222054.45426.mws@twisted-brains.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 15:40:40 -0400, Alan Stern wrote:
-> On Thu, 22 Mar 2007, Tino Keitel wrote:
+On Thursday 22 March 2007, Thomas Glanzmann wrote:
+> Hello,
+> I have two Dual Opteron Machines where I get two MCE errors on. The
+> first one is:
 > 
-> > On Thu, Mar 22, 2007 at 09:50:29 +0100, Oliver Neukum wrote:
-> > > Am Mittwoch, 21. März 2007 21:47 schrieb Tino Keitel:
-> > > 
-> > > > along with other USB error messages. I tried a hub with own power
-> > > > supply and a USB port on the computer. A full log is attached.
-> > > 
-> > > Your log basically shows a hub going berserk.
+>         MCE 0
+>         HARDWARE ERROR. This is *NOT* a software problem!
+>         Please contact your hardware vendor
+>         CPU 0 4 northbridge TSC edc587de6e99
+>         ADDR 1001a0000
+>           Northbridge GART error
+>                bit61 = error uncorrected
+>           TLB error 'generic transaction, level generic'
+>         STATUS a40000000005001b MCGSTATUS 0
 > 
-> Or a bad USB transceiver.  _Something_ is generating those overcurrent 
-> warnings, and it sure looks like a hardware malfunction.
+> I see this error exactly 8 times. What does 'GART' mean?
 
-But it works with 2.6.20.
+Graphics Address Remapping Table
 
-Regards,
-Tino
+used with agp
+
+regards
+marcel
+
+
