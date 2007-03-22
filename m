@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751540AbXCVHCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbXCVHFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751540AbXCVHCN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbXCVHCN
+	id S1753144AbXCVHFV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbXCVHFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:02:13 -0400
-Received: from poczta.o2.pl ([193.17.41.142]:40143 "EHLO poczta.o2.pl"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751540AbXCVHCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:02:12 -0400
-Date: Thu, 22 Mar 2007 08:06:44 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, "J\. Bruce Fields" <bfields@fieldses.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] lockdep: lockdep_depth vs. debug_locks Re: [2.6.20] BUG: workqueue leaked lock
-Message-ID: <20070322070644.GA2065@ff.dom.local>
-References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru> <20070321080510.GA1939@ff.dom.local> <20070321144620.GC78@tv-sign.ru> <20070321151651.GA4547@ff.dom.local> <20070321152935.GA215@tv-sign.ru> <20070321181635.GA570@tv-sign.ru> <20070322061119.GA1466@ff.dom.local> <20070321222802.0e09f0c2.akpm@linux-foundation.org>
+	Thu, 22 Mar 2007 03:05:21 -0400
+Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:1977 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753144AbXCVHFU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:05:20 -0400
+Date: Thu, 22 Mar 2007 08:03:56 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: "Bob Copeland" <me@bobcopeland.com>, bryan.wu@analog.com,
+       "David Brownell" <david-b@pacbell.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 4/4] Blackfin: on-chip Two Wire Interface I2C driver
+Message-Id: <20070322080356.738b7a1e.khali@linux-fr.org>
+In-Reply-To: <8bd0f97a0703211214ic7e42d2pa9452ef52b566fd9@mail.gmail.com>
+References: <1174471688.5648.56.camel@roc-desktop>
+	<b6c5339f0703211117m70d01240mdfe1c0798d3296e2@mail.gmail.com>
+	<8bd0f97a0703211214ic7e42d2pa9452ef52b566fd9@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070321222802.0e09f0c2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 10:28:02PM -0800, Andrew Morton wrote:
-> On Thu, 22 Mar 2007 07:11:19 +0100 Jarek Poplawski <jarkao2@o2.pl> wrote:
+On Wed, 21 Mar 2007 15:14:29 -0400, Mike Frysinger wrote:
+> On 3/21/07, Bob Copeland <me@bobcopeland.com> wrote:
+> > > +config I2C_BLACKFIN_TWI
+> > > +       tristate "Blackfin TWI I2C support"
+> > > +       depends on I2C && (BF534 || BF536 || BF537)
+> > > +       help
+> > > +         This is the TWI I2C device driver for Blackfin 534/536/537.
+> > > +         This driver can also be built as a module.  If so, the module
+> > > +         will be called i2c-bfin-twi.
+> >
+> > Pardon my ignorance, but is there any reason to call it "Blackfin TWI"
+> > as opposed to just "Blackfin" since TWI and I2C mean the same thing?
+> > It lends itself to some redundancies such as:
+> >
+> > > +       pr_info("I2C: Blackfin I2C TWI driver\n");
 > 
-> > 
-> > Here is some joke:
-> > 
-> > [PATCH] lockdep: lockdep_depth vs. debug_locks
-> > 
-> > lockdep really shouldn't be used when debug_locks == 0!
-> > 
-> 
-> This isn't a very good changelog.
-> 
-> > 
-> > Reported-by: Folkert van Heusden <folkert@vanheusden.com>
-> > Inspired-by: Oleg Nesterov <oleg@tv-sign.ru>
-> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-> > 
-> > ---
-> > 
-> > diff -Nurp 2.6.21-rc4-git4-/include/linux/lockdep.h 2.6.21-rc4-git4/include/linux/lockdep.h
-> > --- 2.6.21-rc4-git4-/include/linux/lockdep.h	2007-03-20 20:24:17.000000000 +0100
-> > +++ 2.6.21-rc4-git4/include/linux/lockdep.h	2007-03-21 22:32:41.000000000 +0100
-> > @@ -245,7 +245,7 @@ extern void lock_release(struct lockdep_
-> >  
-> >  # define INIT_LOCKDEP				.lockdep_recursion = 0,
-> >  
-> > -#define lockdep_depth(tsk)	((tsk)->lockdep_depth)
-> > +#define lockdep_depth(tsk)	(debug_locks ? (tsk)->lockdep_depth : 0)
-> >  
-> >  #else /* !LOCKDEP */
-> >  
-> 
-> What problem does this solve, and how does it solve it?
-> 
-> I assume that some codepath is incrementing ->lockdep_depth even when
-> debug_locks==0.  Isn't that wrong of it?
-> 
+> it reflects the hardware manual and all public Analog Devices
+> documentation ... the peripheral is always referred to as a "Two Wire
+> Interface that is fully compatible with the I2C standard" since using
+> the "I2C" term is not free
 
-This should definitely solve this problem - as it was said
-a few times before lockdep stops registering locks after
-a bug, so even the lock which caused the warning isn't
-reported. Here lockdep found a bug in a workqueue function,
-so after this no lock or unlock isn't counted nor reported.
+Damn, I hate it when legal idiocy takes the lead on technical clarity :(
 
-I think Ingo can tell more.
-
-Regards,
-Jarek P.
+-- 
+Jean Delvare
