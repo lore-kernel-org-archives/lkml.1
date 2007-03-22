@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbXCVWlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbXCVWph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752658AbXCVWlP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 18:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbXCVWlP
+	id S1752652AbXCVWph (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 18:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXCVWph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 18:41:15 -0400
-Received: from mga09.intel.com ([134.134.136.24]:12761 "EHLO mga09.intel.com"
+	Thu, 22 Mar 2007 18:45:37 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36687 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbXCVWlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 18:41:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,316,1170662400"; 
-   d="scan'208"; a="62614008:sNHT20305791"
-Date: Thu, 22 Mar 2007 15:40:45 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Christoph Lameter <christoph@lameter.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of virt_to_slab(objp); nodeid = slabp->nodeid;)
-Message-ID: <20070322224045.GA3200@linux-os.sc.intel.com>
-References: <20070320181235.77d28864.dada1@cosmosbay.com> <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org> <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org> <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com> <4602FF57.7030001@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1751479AbXCVWpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 18:45:36 -0400
+Date: Thu, 22 Mar 2007 23:45:34 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Fix irqpoll on IA64 (timer interrupt != 0)
+Message-ID: <20070322224534.GA12791@sykes.suse.de>
+Mail-Followup-To: Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>
+References: <20070320150027.GA18143@strauss.suse.de> <20070322140922.a59bea5c.akpm@linux-foundation.org> <1174598601.10840.231.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4602FF57.7030001@cosmosbay.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <1174598601.10840.231.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 11:12:39PM +0100, Eric Dumazet wrote:
-> Siddha, Suresh B a écrit :
-> >+	if (num_online_nodes() == 1)
-> >+		use_alien_caches = 0;
-> >+
+Hello,
+
+* Thomas Gleixner <tglx@linutronix.de> [2007-03-22 22:23]:
 > 
-> Unfortunatly this part is wrong.
-
-oops.
-
+> > Also, the code presently passes the magic IRQ number into the generic IRQ
+> > code.  I wonder if we'd get a more pleasing result if we were to make the
+> > generic IRQ code call _out_ to the architecture:
 > 
-> You should check num_possible_nodes(), or nr_node_ids (this one is cheaper, 
-> its a variable instead of a function call)
+> > Then, ia64 can implement arch_is_irqpoll_irq() and it can do whatever it
+> > wants in there.
+> > 
+> > The __attribute__((weak)) thing adds a little bit of overhead, but I don't
+> > think this is a fastpath?
+> 
+> Well, depends what you consider a fastpath. When noirqdebug == 0, it is
+> called on every interrupt.
 
-But that is based on compile time option, isn't it? Perhaps I need
-to use some other mechanism to find out the platform is not NUMA capable..
+I think that function is only called if irqfixup == 2, because if the
+first condition in the expression is wrong, the evaluation of the
+expression is aborted in C.
 
-thanks,
-suresh
+
+Regards,
+  Bernhard
