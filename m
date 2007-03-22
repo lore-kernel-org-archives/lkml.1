@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965548AbXCVAZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965549AbXCVA1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965548AbXCVAZu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 20:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965564AbXCVAZu
+	id S965549AbXCVA1a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 20:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965553AbXCVA1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 20:25:50 -0400
-Received: from mail06.syd.optusnet.com.au ([211.29.132.187]:48708 "EHLO
-	mail06.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965548AbXCVAZt (ORCPT
+	Wed, 21 Mar 2007 20:27:30 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:45019 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965549AbXCVA13 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 20:25:49 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
-Subject: Re: [PATCH] sched: rsdl improvements
-Date: Thu, 22 Mar 2007 11:24:58 +1100
-User-Agent: KMail/1.9.5
-Cc: Artur Skawina <art_k@o2.pl>, linux list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200703220429.45311.kernel@kolivas.org> <4601BF45.7070708@o2.pl> <4601C44B.9060705@mnsu.edu>
-In-Reply-To: <4601C44B.9060705@mnsu.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 21 Mar 2007 20:27:29 -0400
+Date: Wed, 21 Mar 2007 17:25:08 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org
+Subject: [PATCH] More "deprecated" spellos
+Message-Id: <20070321172508.6aa66aa4.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0702220437370.22382@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0702220437370.22382@CPE00045a9c397f-CM001225dbafb6>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703221124.59126.kernel@kolivas.org>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 March 2007 10:48, Jeffrey Hundstad wrote:
-> Artur Skawina wrote:
-> > Con Kolivas wrote:
-> >> Note no interactive boost idea here.
-> >>
-> >> Patch is for 2.6.21-rc4-mm1. I have not spent the time trying to bring
-> >> other bases in sync.
-> >
-> > I've tried RSDLv.31+this on 2.6.20.3 as i'm not tracking -mm.
-> >
-> >> Further improve the deterministic nature of the RSDL cpu scheduler and
-> >> make the rr_interval tunable.
-> >>
-> >> By only giving out priority slots to tasks at the current runqueue's
-> >> prio_level or below we can make the cpu allocation not altered by
-> >> accounting issues across major_rotation periods. This makes the cpu
-> >> allocation and latencies more deterministic, and decreases maximum
-> >> latencies substantially. This change removes the possibility that tasks
-> >> can get bursts of cpu activity which can favour towards interactive
-> >> tasks but also favour towards cpu bound tasks which happen to wait on
-> >> other activity (such as I/O) and is a net gain.
-> >
-> > I'm not sure this is going in the right direction... I'm writing
-> > this while compiling a kernel w/ "nice -20 make -j2" and X is almost
->
-> Did you mean "nice -20"?  If so, that should have slowed X quite a bit.
-> Try "nice 19" instead.
->
-> nice(1):
->        Run  COMMAND  with an adjusted niceness, which affects process
-> scheduling.  With no COMMAND, print the current  niceness.   Nicenesses
-> range from -20 (most favorable scheduling) to 19 (least favorable).
+On Thu, 22 Feb 2007 04:39:40 -0500 (EST) Robert P. J. Day wrote:
 
-No he's right. Something scrambled my brain and I've completely left out the 
-part where I offer the old bursts as a tunable option as well, which 
-unintentionally killed off SCHED_BATCH as an entity. I'll have to put that as 
-an additional patch sorry as this by itself is not always a win. Hang in 
-there.
+>   Fix remaining misspellings of "depreciated" to "deprecated."
 
--- 
--ck
+More of these.
+---
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Fix more "deprecated" spellos.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/fb/aty128fb.txt      |    4 ++--
+ Documentation/filesystems/proc.txt |    2 +-
+ drivers/pci/pci-driver.c           |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+--- linux-2.6.21-rc4-git5.orig/drivers/pci/pci-driver.c
++++ linux-2.6.21-rc4-git5/drivers/pci/pci-driver.c
+@@ -133,7 +133,7 @@ static inline int pci_create_newid_file(
+  * system is in its list of supported devices.  Returns the matching
+  * pci_device_id structure or %NULL if there is no match.
+  *
+- * Depreciated, don't use this as it will not catch any dynamic ids
++ * Deprecated, don't use this as it will not catch any dynamic ids
+  * that a driver might want to check for.
+  */
+ const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
+--- linux-2.6.21-rc4-git5.orig/Documentation/fb/aty128fb.txt
++++ linux-2.6.21-rc4-git5/Documentation/fb/aty128fb.txt
+@@ -54,8 +54,8 @@ Accepted options:
+ 
+ noaccel  - do not use acceleration engine. It is default.
+ accel    - use acceleration engine. Not finished.
+-vmode:x  - chooses PowerMacintosh video mode <x>. Depreciated.
+-cmode:x  - chooses PowerMacintosh colour mode <x>. Depreciated.
++vmode:x  - chooses PowerMacintosh video mode <x>. Deprecated.
++cmode:x  - chooses PowerMacintosh colour mode <x>. Deprecated.
+ <XxX@X>  - selects startup videomode. See modedb.txt for detailed
+ 	   explanation. Default is 640x480x8bpp.
+ 
+--- linux-2.6.21-rc4-git5.orig/Documentation/filesystems/proc.txt
++++ linux-2.6.21-rc4-git5/Documentation/filesystems/proc.txt
+@@ -228,7 +228,7 @@ Table 1-3: Kernel info in /proc 
+  mounts      Mounted filesystems                               
+  net         Networking info (see text)                        
+  partitions  Table of partitions known to the system           
+- pci	     Depreciated info of PCI bus (new way -> /proc/bus/pci/, 
++ pci	     Deprecated info of PCI bus (new way -> /proc/bus/pci/,
+              decoupled by lspci					(2.4)
+  rtc         Real time clock                                   
+  scsi        SCSI info (see text)                              
