@@ -1,67 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbXCVXvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXCWAAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752784AbXCVXvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 19:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXCVXvl
+	id S1752812AbXCWAAH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 20:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbXCWAAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 19:51:41 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:44417 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752784AbXCVXvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 19:51:41 -0400
-Message-ID: <460324A7.3010604@vmware.com>
-Date: Thu, 22 Mar 2007 16:51:51 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 22 Mar 2007 20:00:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38336 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751196AbXCWAAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 20:00:02 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Fri, 23 Mar 2007 10:59:46 +1100
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dan Hecht <dhecht@vmware.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Akinobu Mita <mita@miraclelinux.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH RFC] Change softlockup watchdog to ignore stolen time
-References: <460311FA.6070400@goop.org>
-In-Reply-To: <460311FA.6070400@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17923.6258.855467.589548@notabene.brown>
+Cc: linux@horizon.com, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-kernel@dale.us, cebbert@redhat.com
+Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
+In-Reply-To: message from Jens Axboe on Thursday March 22
+References: <20070322184155.GY19922@kernel.dk>
+	<20070322185413.13929.qmail@science.horizon.com>
+	<20070322190052.GA19922@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> The softlockup watchdog is currently a nuisance in a virtual machine,
-> since the whole system could have the CPU stolen from it for a long
-> period of time.  While it would be unlikely for a guest domain to be
-> denied timer interrupts for over 10s, it could happen and any softlockup
-> message would be completely spurious.
->   
+On Thursday March 22, jens.axboe@oracle.com wrote:
+> On Thu, Mar 22 2007, linux@horizon.com wrote:
+> > > 3 (I think) seperate instances of this, each involving raid5. Is your
+> > > array degraded or fully operational?
+> > 
+> > Ding! A drive fell out the other day, which is why the problems only
+> > appeared recently.
+> > 
+> > md5 : active raid5 sdf4[5] sdd4[3] sdc4[2] sdb4[1] sda4[0]
+> >       1719155200 blocks level 5, 64k chunk, algorithm 2 [6/5] [UUUU_U]
+> >       bitmap: 149/164 pages [596KB], 1024KB chunk
+> > 
+> > H'm... this means that my alarm scripts aren't working.  Well, that's
+> > good to know.  The drive is being re-integrated now.
+> 
+> Heh, at least something good came out of this bug then :-)
+> But that's reaffirming. Neil, are you following this? It smells somewhat
+> fishy wrt raid5.
 
-No, it is not unlikely.  4-way SMP VMs idling exhibit this behavior with 
-NO_HZ or NO_IDLE_HZ because they get quiet enough to schedule nothing on 
-the APs.
+Yes, I've been trying to pay attention....
 
-And that can happen on native hardware as well.
+The evidence does seem to point to raid5 and degraded arrays being
+implicated.  However I'm having trouble finding how the fact that an array
+is degraded would be visible down in the elevator except for having a
+slightly different distribution of reads and writes.
 
-> Earlier I proposed that sched_clock() return time in unstolen
-> nanoseconds, which is how Xen and VMI currently implement it.  If the
-> softlockup watchdog uses sched_clock() to measure time, it would
-> automatically ignore stolen time, and therefore only report when the
-> guest itself locked up.  When running native, sched_clock() returns
-> real-time nanoseconds, so the behaviour would be unchanged.
->
-> Does this seem sound?
->
-> Also, softlockup.c's use of jiffies seems archaic now.  Should it be
-> converted to use timers?  Mightn't it report lockups just because there
-> was no timer event?
->   
+One possible way is that if an array is degraded, then some read
+requests will go through the stripe cache rather than direct to the
+device.  However I would more expect the direct-to-device path to have
+problems as it is much newer code.  Going through the cache for reads
+is very well tested code - and reads come from the cache for most
+writes anyway, so the elevator will still see lots of single-page.
+reads.  It only ever sees single-page write.
 
-This looks good to me, as a first order approximation.  But on native 
-hardware, with NO_HZ, this is just broken to begin with.  Perhaps we 
-should make SOFTLOCKUP depend on !NO_HZ.
+There might be more pressure on the stripe cache when running
+degraded, so we might call the ->unplug_fn a little more often, but I
+doubt that would be noticeable.
 
-Zach
+As you seem to suggest by the patch, it does look like some sort of
+unlocked access to the cfq_queue structure.  However apart from the
+comment before cfq_exit_single_io_context being in the wrong place
+(should be before __cfq_exit_single_io_context) I cannot see anything
+obviously wrong with the locking around that structure.
+
+So I'm afraid I'm stumped too. 
+
+NeilBrown
+
+> 
+> I wonder if this triggers anything?
+> 
+> --- linux-2.6.20.3/block/ll_rw_blk.c~	2007-03-22 19:59:17.128833635 +0100
+> +++ linux-2.6.20.3/block/ll_rw_blk.c	2007-03-22 19:59:28.850045490 +0100
+> @@ -1602,6 +1602,8 @@
+>   **/
+>  void generic_unplug_device(request_queue_t *q)
+>  {
+> +	WARN_ON(irqs_disabled());
+> +
+>  	spin_lock_irq(q->queue_lock);
+>  	__generic_unplug_device(q);
+>  	spin_unlock_irq(q->queue_lock);
+> 
+> -- 
+> Jens Axboe
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
