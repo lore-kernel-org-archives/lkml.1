@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751044AbXCVGv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbXCVGx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751044AbXCVGv2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 02:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbXCVGv1
+	id S1752722AbXCVGx3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 02:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbXCVGx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 02:51:27 -0400
-Received: from brick.kernel.dk ([62.242.22.158]:17427 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751044AbXCVGv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 02:51:27 -0400
-Date: Thu, 22 Mar 2007 07:47:47 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: AIO, FIO and Threads ...
-Message-ID: <20070322064747.GB19922@kernel.dk>
-References: <Pine.LNX.4.64.0703202146570.28960@alien.or.mcafeemobile.com> <20070321074014.GD14389@kernel.dk> <Pine.LNX.4.64.0703210815190.24472@alien.or.mcafeemobile.com>
+	Thu, 22 Mar 2007 02:53:28 -0400
+Received: from poczta.o2.pl ([193.17.41.142]:38426 "EHLO poczta.o2.pl"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753044AbXCVGx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 02:53:27 -0400
+Date: Thu, 22 Mar 2007 07:57:59 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, "J\. Bruce Fields" <bfields@fieldses.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] lockdep: debug_show_all_locks &  debug_show_held_locks vs. debug_locks
+Message-ID: <20070322065759.GB1466@ff.dom.local>
+References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru> <20070321080510.GA1939@ff.dom.local> <20070321144620.GC78@tv-sign.ru> <20070321151651.GA4547@ff.dom.local> <20070321152935.GA215@tv-sign.ru> <20070321181635.GA570@tv-sign.ru> <20070322061119.GA1466@ff.dom.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703210815190.24472@alien.or.mcafeemobile.com>
+In-Reply-To: <20070322061119.GA1466@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21 2007, Davide Libenzi wrote:
-> On Wed, 21 Mar 2007, Jens Axboe wrote:
-> 
-> > On Tue, Mar 20 2007, Davide Libenzi wrote:
-> > > 
-> > > I was looking at Jens FIO stuff, and I decided to cook a quick patch for 
-> > > FIO to support GUASI (Generic Userspace Asyncronous Syscall Interface):
-> > > 
-> > > http://www.xmailserver.org/guasi-lib.html
-> > > 
-> > > I then ran a few tests on my Dual Opteron 252 with SATA drives (sata_nv) 
-> > > and 8GB of RAM.
-> > > Mind that I'm not FIO expert, like at all, but I got some interesting 
-> > > results when comparing GUASI with libaio at 8/1000/10000 depths.
-> > > If I read those result correctly (Jens may help), GUASI output is more 
-> > > then double the libaio one.
-> > > Lots of context switches, yes. But the throughput looks like 2+ times.
-> > > Can someone try to repeat the measures and/or spot the error?
-> > > Or tell me which other tests to run?
-> > > This is kinda a suprise for me ...
-> > 
-> > I don't know guasi at all, but libaio requires O_DIRECT to be async. I'm
-> > sure you know this, but you may not know that fio default to buffered IO
-> > so you have to tell it to use O_DIRECT :-)
-> > 
-> > So try adding a --direct=1 (or --buffered=0, same thing) as an extra
-> > option when comparing depths > 1.
-> 
-> I knew about AIO and O_DIRECT, but I thought FIO was using it by default :)
 
-It actually used to, but I changed the default a few months ago as I
-think that is more appropriate.
+And here is some addition.
 
-> I used it for the first time yesterday night, and there are a pretty wide 
-> set of options. Will re-run today with --direct.
+[PATCH] lockdep: debug_show_all_locks &  debug_show_held_locks vs. debug_locks
+ 
+lockdep's data shouldn't be used when debug_locks == 0
+because it's not updated after this, so it's more misleading
+than helpful.
 
-Yep, I try to add good explanations to all of them though, also
-available through --cmdhelp or --cmdhelp=option so you don't have to
-lookup the documentation all the time.
+PS: probably lockdep's current-> fields should be reset after
+it turns debug_locks off: so, after printing a bug report, but
+before return from exported functions, but there are really
+a lot of these possibilities (e.g. after DEBUG_LOCKS_WARN_ON),
+so, something could be missed. (Of course direct use of this
+fields isn't recommended either.)
 
--- 
-Jens Axboe
+Reported-by: Folkert van Heusden <folkert@vanheusden.com>
+Inspired-by: Oleg Nesterov <oleg@tv-sign.ru>
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
 
+---
+
+diff -Nurp 2.6.21-rc4-git4-/kernel/lockdep.c 2.6.21-rc4-git4/kernel/lockdep.c
+--- 2.6.21-rc4-git4-/kernel/lockdep.c	2007-03-21 22:46:26.000000000 +0100
++++ 2.6.21-rc4-git4/kernel/lockdep.c	2007-03-21 23:05:17.000000000 +0100
+@@ -2742,6 +2742,10 @@ void debug_show_all_locks(void)
+ 	int count = 10;
+ 	int unlock = 1;
+ 
++	if (unlikely(!debug_locks)) {
++		printk("INFO: lockdep is turned off.\n");
++		return;
++	}
+ 	printk("\nShowing all locks held in the system:\n");
+ 
+ 	/*
+@@ -2785,6 +2789,10 @@ EXPORT_SYMBOL_GPL(debug_show_all_locks);
+ 
+ void debug_show_held_locks(struct task_struct *task)
+ {
++	if (unlikely(!debug_locks)) {
++		printk("INFO: lockdep is turned off.\n");
++		return;
++	}
+ 	lockdep_print_held_locks(task);
+ }
+ 
