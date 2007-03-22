@@ -1,105 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932837AbXC0QMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932901AbXC0QOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932837AbXC0QMd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 12:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932819AbXC0QMc
+	id S932901AbXC0QOy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 12:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932819AbXC0QOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 12:12:32 -0400
-Received: from il.qumranet.com ([82.166.9.18]:48973 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932837AbXC0QMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 12:12:32 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [GIT PULL] KVM updates for 2.6.21-rc5
-Date: Tue, 27 Mar 2007 18:12:31 +0200
-Message-Id: <1175011951175-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.0.5
+	Tue, 27 Mar 2007 12:14:54 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2674 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932901AbXC0QOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 12:14:53 -0400
+Date: Thu, 22 Mar 2007 23:19:17 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: David Safford <safford@watson.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
+Subject: Re: [Patch 3/7] integrity: EVM as an integrity service provider
+Message-ID: <20070322231917.GC4064@ucw.cz>
+References: <1174666176.11149.3.camel@localhost.localdomain> <20070325001605.31ed39e7.akpm@linux-foundation.org> <20070325121321.GA8550@ucw.cz> <1174931715.3493.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174931715.3493.44.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the 'linus' branch of
+Hi!
 
-  git://kvm.qumranet.com/home/avi/kvm.git
+> > > > +	  The Extended Verification Module is an integrity provider.
+> > > > +	  An extensible set of extended attributes, as defined in
+> > > > +	  /etc/evm.conf, are HMAC protected against modification
+> > > > +	  using the TPM's KERNEL ROOT KEY, if configured, or with a
+> > > > +	  pass-phrase.  Possible extended attributes include authenticity,
+> > > > +	  integrity, and revision level.
+> > 
+> > What is identity provider good for? Can you explain it a bit more, or
+> > perhaps point to Doc*/ somewhere?
+> 
+> There are some papers and related userspace code at
+>    http://www.research.ibm.com/gsal/tcpa
+> which describe the architecture in more detail, but basically this 
+> integrity provider is designed to complement mandatory access control
+> systems like selinux and slim. Such systems can protect a running system 
+> against on-line attacks, but do not protect against off-line attacks  
+> (booting Knoppix and changing executables or their selinux labels), or 
+> against attacks which find weaknesses in the kernel or the LSM module 
+> itself.
 
-to receive the following updates:
+Thanks. Can this go to Doc*/ somewhere?
 
-Avi Kivity (1):
-      KVM: Prevent system selectors leaking into guest on real->protected
-      mode transition on vmx
+...but... If I can attack your system using knoppix, I can get at your
+data, already, right? So you'll need to encrypt your data, anyway? 
 
-Ingo Molnar (1):
-      KVM: always reload segment selectors
+> Using a TPM or passphrase, EVM can verify the integrity of all files 
+> (including the kernel and initrd) and their labels before they are 
 
-The updates fix a potential oops, and allow guests to use the ACPI-enabled
-bios.
+How does passphrase work here?
 
- drivers/kvm/vmx.c |   39 ++++++++++++++++++++++-----------------
- 1 files changed, 22 insertions(+), 17 deletions(-)
+...so you have your data encrypted, and you have bootloader that
+verifies kernel/initrd (you need that, anyway). Because you data are
+encrypted, knoppix attack will not work... assuming crypto does some
+integrity checks, but IIRC crypto needs to do that.
 
+							Pavel,
+who is afraid, that this code will come back and bite him. He has
+nightmares of opening PS4 box as a christmas gift, then not being able
+to hack his new hardware.
 
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index bfa0ce4..fbbf9d6 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -618,7 +618,7 @@ static void fix_pmode_dataseg(int seg, struct kvm_save_segment *save)
- {
- 	struct kvm_vmx_segment_field *sf = &kvm_vmx_segment_fields[seg];
- 
--	if (vmcs_readl(sf->base) == save->base) {
-+	if (vmcs_readl(sf->base) == save->base && (save->base & AR_S_MASK)) {
- 		vmcs_write16(sf->selector, save->selector);
- 		vmcs_writel(sf->base, save->base);
- 		vmcs_write32(sf->limit, save->limit);
-@@ -1888,6 +1888,27 @@ again:
- 		[cr2]"i"(offsetof(struct kvm_vcpu, cr2))
- 	      : "cc", "memory" );
- 
-+	/*
-+	 * Reload segment selectors ASAP. (it's needed for a functional
-+	 * kernel: x86 relies on having __KERNEL_PDA in %fs and x86_64
-+	 * relies on having 0 in %gs for the CPU PDA to work.)
-+	 */
-+	if (fs_gs_ldt_reload_needed) {
-+		load_ldt(ldt_sel);
-+		load_fs(fs_sel);
-+		/*
-+		 * If we have to reload gs, we must take care to
-+		 * preserve our gs base.
-+		 */
-+		local_irq_disable();
-+		load_gs(gs_sel);
-+#ifdef CONFIG_X86_64
-+		wrmsrl(MSR_GS_BASE, vmcs_readl(HOST_GS_BASE));
-+#endif
-+		local_irq_enable();
-+
-+		reload_tss();
-+	}
- 	++kvm_stat.exits;
- 
- 	save_msrs(vcpu->guest_msrs, NR_BAD_MSRS);
-@@ -1905,22 +1926,6 @@ again:
- 		kvm_run->exit_reason = vmcs_read32(VM_INSTRUCTION_ERROR);
- 		r = 0;
- 	} else {
--		if (fs_gs_ldt_reload_needed) {
--			load_ldt(ldt_sel);
--			load_fs(fs_sel);
--			/*
--			 * If we have to reload gs, we must take care to
--			 * preserve our gs base.
--			 */
--			local_irq_disable();
--			load_gs(gs_sel);
--#ifdef CONFIG_X86_64
--			wrmsrl(MSR_GS_BASE, vmcs_readl(HOST_GS_BASE));
--#endif
--			local_irq_enable();
--
--			reload_tss();
--		}
- 		/*
- 		 * Profile KVM exit RIPs:
- 		 */
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
