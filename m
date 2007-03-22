@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbXCVG2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751548AbXCVGgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752439AbXCVG2r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 02:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbXCVG2r
+	id S1751548AbXCVGgI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 02:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXCVGgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 02:28:47 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:41298 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbXCVG2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 02:28:46 -0400
-Date: Wed, 21 Mar 2007 22:28:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, "J\. Bruce Fields" <bfields@fieldses.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] lockdep: lockdep_depth vs. debug_locks Re: [2.6.20]
- BUG: workqueue leaked lock
-Message-Id: <20070321222802.0e09f0c2.akpm@linux-foundation.org>
-In-Reply-To: <20070322061119.GA1466@ff.dom.local>
-References: <17918.11420.155569.991473@notabene.brown>
-	<20070320093753.GA1751@ff.dom.local>
-	<20070320160759.GA107@tv-sign.ru>
-	<20070321080510.GA1939@ff.dom.local>
-	<20070321144620.GC78@tv-sign.ru>
-	<20070321151651.GA4547@ff.dom.local>
-	<20070321152935.GA215@tv-sign.ru>
-	<20070321181635.GA570@tv-sign.ru>
-	<20070322061119.GA1466@ff.dom.local>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 22 Mar 2007 02:36:08 -0400
+Received: from www.cosmosbay.com ([86.65.150.131]:46131 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751548AbXCVGgF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 02:36:05 -0400
+Date: Thu, 22 Mar 2007 07:35:36 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Maxim <maximlevitsky@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
+       David Howells <dhowells@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] : Is /proc/kcore still usefull and/or maintained ?
+Message-Id: <20070322073536.0fce422a.dada1@cosmosbay.com>
+In-Reply-To: <200703220204.51146.maximlevitsky@gmail.com>
+References: <200703211840.53242.maximlevitsky@gmail.com>
+	<200703220128.18610.maximlevitsky@gmail.com>
+	<20070322005310.03be8637.dada1@cosmosbay.com>
+	<200703220204.51146.maximlevitsky@gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 22 Mar 2007 07:35:41 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Mar 2007 07:11:19 +0100 Jarek Poplawski <jarkao2@o2.pl> wrote:
+On Thu, 22 Mar 2007 02:04:50 +0200
+Maxim <maximlevitsky@gmail.com> wrote:
+
+
+> Hi,
+> 	Yes, you are right, you have different problem that I had
+> 
+> 	But why do you need llseek ?
+
+I dont personnaly, but tools do need llseek.
 
 > 
-> Here is some joke:
-> 
-> [PATCH] lockdep: lockdep_depth vs. debug_locks
-> 
-> lockdep really shouldn't be used when debug_locks == 0!
-> 
+> 	Why not to mmap it ?
+> 	It is natural thing to do with files that represent memory.
 
-This isn't a very good changelog.
+Because I dont want to rewrite gdb, file, and other various tools ?
 
-> 
-> Reported-by: Folkert van Heusden <folkert@vanheusden.com>
-> Inspired-by: Oleg Nesterov <oleg@tv-sign.ru>
-> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-> 
-> ---
-> 
-> diff -Nurp 2.6.21-rc4-git4-/include/linux/lockdep.h 2.6.21-rc4-git4/include/linux/lockdep.h
-> --- 2.6.21-rc4-git4-/include/linux/lockdep.h	2007-03-20 20:24:17.000000000 +0100
-> +++ 2.6.21-rc4-git4/include/linux/lockdep.h	2007-03-21 22:32:41.000000000 +0100
-> @@ -245,7 +245,7 @@ extern void lock_release(struct lockdep_
->  
->  # define INIT_LOCKDEP				.lockdep_recursion = 0,
->  
-> -#define lockdep_depth(tsk)	((tsk)->lockdep_depth)
-> +#define lockdep_depth(tsk)	(debug_locks ? (tsk)->lockdep_depth : 0)
->  
->  #else /* !LOCKDEP */
->  
-
-What problem does this solve, and how does it solve it?
-
-I assume that some codepath is incrementing ->lockdep_depth even when
-debug_locks==0.  Isn't that wrong of it?
