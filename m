@@ -1,35 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932997AbXCVOda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbXCVOhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932997AbXCVOda (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 10:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933006AbXCVOda
+	id S932991AbXCVOhW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 10:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933010AbXCVOhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 10:33:30 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45913 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932997AbXCVOd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 10:33:29 -0400
-Date: Thu, 22 Mar 2007 14:33:14 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Tomas M <tomas@slax.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: max_loop limit
-Message-ID: <20070322143314.GX4095@ftp.linux.org.uk>
-References: <460236CE.1030303@slax.org> <20070322110058.GB23664@tatooine.rebelbase.local> <46026A92.4020106@slax.org> <20070322144210.73dfaf83.dada1@cosmosbay.com> <20070322134230.GP19922@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 22 Mar 2007 10:37:22 -0400
+Received: from [212.12.190.194] ([212.12.190.194]:32866 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932991AbXCVOhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 10:37:21 -0400
+From: Al Boldi <a1426z@gawab.com>
+Subject: [patch] 2.6.21-rc4 nicksched v32
+Date: Thu, 22 Mar 2007 17:40:47 +0300
+User-Agent: KMail/1.5
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20070322134230.GP19922@kernel.dk>
-User-Agent: Mutt/1.4.1i
+To: linux-kernel@vger.kernel.org
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_vVpAG7TMC0urdWZ"
+Message-Id: <200703221740.47801.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 02:42:31PM +0100, Jens Axboe wrote:
-> But this still wastes memory, why not just allocate each loop device
-> dynamically when it is set up? The current approach is crap, it is just
-> wasting memory for loop devices, queues, etc.
 
-Correction: current ABI is crap.  To set the thing up you need to open
-it and issue an ioctl.  Which is a bloody bad idea, for obvious reasons...
+--Boundary-00=_vVpAG7TMC0urdWZ
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Nick Piggin wrote:
+> Forward port of nicksched to 2.6.21-rc4.
+
+Great!
+
+> Can't find my old
+> design/description document for it, but it is yet another scheduler. Focus
+> is on simplicity and fairness.
+
+Simplicity is really key.
+
+> This one tends to require X to be reniced to -10 or so for best results
+> (renice -10 `pidof X`).
+
+No problem.
+
+> Timeslices get scaled by /proc/sys/kernel/base_timeslice. If you have bad
+> interactivity you could try lowering this and see if it helps.
+
+As I am on 2.6.20, I can't really test this patch, but I tried your sched 
+from PlugSched and its not bad.
+
+I'm getting strange numbers with chew.c, though.  Try this:
+Boot into /bin/sh
+Run ./chew on one console.
+Run ./chew on another console.
+Watch latencies.
+
+Console 1:
+pid 671, prio   0, out for  799 ms, ran for  800 ms, load  50%
+pid 671, prio   0, out for  799 ms, ran for  801 ms, load  50%
+pid 671, prio   0, out for  799 ms, ran for  799 ms, load  49%
+pid 671, prio   0, out for  800 ms, ran for  800 ms, load  49%
+
+Console 2:
+pid 672, prio   0, out for  800 ms, ran for  799 ms, load  49%
+pid 672, prio   0, out for  799 ms, ran for  800 ms, load  50%
+pid 672, prio   0, out for  799 ms, ran for  800 ms, load  50%
+pid 672, prio   0, out for  799 ms, ran for  799 ms, load  49%
+pid 672, prio   0, out for  799 ms, ran for  799 ms, load  49%
+
+Looks good, but now add a cpu-hog, ie. while :; do :; done
+
+Console 1:
+
+pid 671, prio   0, out for  799 ms, ran for  399 ms, load  33%
+pid 671, prio   0, out for  799 ms, ran for  399 ms, load  33%
+pid 671, prio   0, out for  799 ms, ran for  399 ms, load  33%
+pid 671, prio   0, out for  799 ms, ran for  399 ms, load  33%
+
+Console 2:
+pid 672, prio   0, out for 1599 ms, ran for  799 ms, load  33%
+pid 672, prio   0, out for 1599 ms, ran for  799 ms, load  33%
+pid 672, prio   0, out for 1599 ms, ran for  800 ms, load  33%
+pid 672, prio   0, out for 1599 ms, ran for  799 ms, load  33%
+
+It's smooth, but latencies are double on console2.  Easy enough to fix, 
+though, just press scrollock to induce a sleep and then release.
+
+Also, latencies are huge.  Is there a way to fix latencies per nice?
+
+
+Thanks!
+
+--
+Al
+
+
+
+--Boundary-00=_vVpAG7TMC0urdWZ
+Content-Type: text/x-csrc;
+  charset="us-ascii";
+  name="chew.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="chew.c"
+
+/*
+ * original idea by Chris Friesen.  Thanks.
+ */
+
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+#define THRESHOLD_USEC 2000
+
+unsigned long long stamp()
+{
+        struct timeval tv;
+        gettimeofday(&tv, 0);
+        return (unsigned long long) tv.tv_usec + ((unsigned long long) tv.tv_sec)*1000000;
+}
+
+
+int main()
+{
+        unsigned long long thresh_ticks = THRESHOLD_USEC;
+        unsigned long long cur, last, start, act;
+        struct timespec ts;
+
+        sched_rr_get_interval(0, &ts);
+        printf("pid %d, prio %3d, interval of %d nsec\n", getpid(), getpriority(PRIO_PROCESS, 0), ts.tv_nsec);
+
+        start = last = stamp();
+        while(1) {
+                cur = stamp();
+                unsigned long long delta = cur-last;
+                if (delta > thresh_ticks) {
+			act = last - start;
+                        printf("pid %d, prio %3d, out for %4llu ms, ran for %4llu ms, load %3llu%\n"
+			, getpid(), getpriority(PRIO_PROCESS, 0), delta/1000, act/1000,(act*100)/(cur-start));
+                        start = cur = stamp();
+                }
+                last = cur;
+        }
+
+        return 0;
+}
+
+--Boundary-00=_vVpAG7TMC0urdWZ--
+
