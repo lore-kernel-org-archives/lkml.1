@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXCVTCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965084AbXCVTEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964934AbXCVTCD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 15:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXCVTCC
+	id S965084AbXCVTEl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 15:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965136AbXCVTEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 15:02:02 -0400
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:61948 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S964934AbXCVTCA convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 15:02:00 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: rsdl 0.32 backport to 2.6.18.8 available & pre-built Debian Etch and Fedora 6 kernels
-Date: Thu, 22 Mar 2007 15:01:29 -0400
-Message-ID: <8E8F647D7835334B985D069AE964A4F7033AB5B3@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: rsdl 0.32 backport to 2.6.18.8 available & pre-built Debian Etch and Fedora 6 kernels
-Thread-Index: AcdstH+X2OxZ2blRS66lf07VqMBpYg==
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: <ck@vds.kolivas.org>
-Cc: "LKML" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 22 Mar 2007 19:01:30.0160 (UTC) FILETIME=[800D0B00:01C76CB4]
+	Thu, 22 Mar 2007 15:04:41 -0400
+Received: from brick.kernel.dk ([62.242.22.158]:7740 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965084AbXCVTEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 15:04:40 -0400
+Date: Thu, 22 Mar 2007 20:00:52 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux@horizon.com
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, linux-kernel@dale.us, cebbert@redhat.com
+Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
+Message-ID: <20070322190052.GA19922@kernel.dk>
+References: <20070322184155.GY19922@kernel.dk> <20070322185413.13929.qmail@science.horizon.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070322185413.13929.qmail@science.horizon.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, Mar 22 2007, linux@horizon.com wrote:
+> > 3 (I think) seperate instances of this, each involving raid5. Is your
+> > array degraded or fully operational?
+> 
+> Ding! A drive fell out the other day, which is why the problems only
+> appeared recently.
+> 
+> md5 : active raid5 sdf4[5] sdd4[3] sdc4[2] sdb4[1] sda4[0]
+>       1719155200 blocks level 5, 64k chunk, algorithm 2 [6/5] [UUUU_U]
+>       bitmap: 149/164 pages [596KB], 1024KB chunk
+> 
+> H'm... this means that my alarm scripts aren't working.  Well, that's
+> good to know.  The drive is being re-integrated now.
 
-A backported version of the RSDL 0.32 patch is now available at
-http://linux-dev.qc.ec.gc.ca for a 2.6.18.8 kernel.
+Heh, at least something good came out of this bug then :-)
+But that's reaffirming. Neil, are you following this? It smells somewhat
+fishy wrt raid5.
 
-There are also a few 2.6.18/2.6.20 pre-built kernels available for both
-Debian Etch (x86_64) and Fedora 6 (x86_64).
+I wonder if this triggers anything?
 
-Vincent Fortier
-Informatique
-Environnement Canada
+--- linux-2.6.20.3/block/ll_rw_blk.c~	2007-03-22 19:59:17.128833635 +0100
++++ linux-2.6.20.3/block/ll_rw_blk.c	2007-03-22 19:59:28.850045490 +0100
+@@ -1602,6 +1602,8 @@
+  **/
+ void generic_unplug_device(request_queue_t *q)
+ {
++	WARN_ON(irqs_disabled());
++
+ 	spin_lock_irq(q->queue_lock);
+ 	__generic_unplug_device(q);
+ 	spin_unlock_irq(q->queue_lock);
 
+-- 
+Jens Axboe
 
