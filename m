@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965640AbXCVEI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965654AbXCVELc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965640AbXCVEI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 00:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965648AbXCVEI6
+	id S965654AbXCVELc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 00:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965648AbXCVELc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 00:08:58 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:38316 "EHLO smtp.osdl.org"
+	Thu, 22 Mar 2007 00:11:32 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:38402 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965640AbXCVEI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 00:08:57 -0400
-Date: Wed, 21 Mar 2007 20:08:35 -0800
+	id S965654AbXCVELb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 00:11:31 -0400
+Date: Wed, 21 Mar 2007 20:10:42 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: bryan.wu@analog.com
-Cc: Wu@analog.com, Arnd Bergmann <arnd@arndb.de>,
-       Paul Mundt <lethal@linux-sh.org>,
-       bert hubert <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/4] Blackfin: architecture update patch
-Message-Id: <20070321200835.275cdb67.akpm@linux-foundation.org>
-In-Reply-To: <1174530291.20061.9.camel@roc-desktop>
-References: <1174472363.5648.58.camel@roc-desktop>
-	<20070321155324.a7d2d75a.akpm@linux-foundation.org>
-	<1174530291.20061.9.camel@roc-desktop>
+To: Greg KH <gregkh@suse.de>
+Cc: Dave Jones <davej@redhat.com>, Alexey Dobriyan <adobriyan@sw.ru>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Oops after cd /sys/.../cpufreq/; rmmod; cat stats/time_in_state
+Message-Id: <20070321201042.f1cbf4d8.akpm@linux-foundation.org>
+In-Reply-To: <20070322040006.GA6892@suse.de>
+References: <20070319153013.GA6814@localhost.sw.ru>
+	<20070319204125.GA5598@suse.de>
+	<20070320100634.GA6811@localhost.sw.ru>
+	<20070322030753.GB5728@suse.de>
+	<20070322035104.GA17159@redhat.com>
+	<20070322040006.GA6892@suse.de>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,29 +30,26 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Mar 2007 10:24:51 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
+On Wed, 21 Mar 2007 21:00:06 -0700 Greg KH <gregkh@suse.de> wrote:
 
-> > 1 out of 1 hunk FAILED -- saving rejects to file include/asm-blackfin/cplbinit.h.rej
-> > 1 out of 1 hunk FAILED -- saving rejects to file include/asm-blackfin/mach-bf535/bf535.h.rej
-> > 1 out of 1 hunk FAILED -- saving rejects to file include/asm-blackfin/scatterlist.h.rej
+> On Wed, Mar 21, 2007 at 11:51:04PM -0400, Dave Jones wrote:
+> > On Wed, Mar 21, 2007 at 08:07:53PM -0700, Greg KH wrote:
+> >  
+> >  > > After modprobe/rmmod cpufreq/stats directory appears but doesn't get
+> >  > > removed. Should it?
+> >  > Well, one can argue that those stats should never be in sysfs at all
+> >  > anyway, I mean come on, a histogram in sysfs?  That's, not ok.
 > > 
-> > This seems to be against a kernel which did not include
-> > blackfin-arch-balance-parenthesis-in-macros.patch.  But 2.6.21-rc4-mm1 did
-> > include blackfin-arch-balance-parenthesis-in-macros.patch, so I'm not sure
-> > what is going on here.
-> > 
+> > Meh, it's only a cheesy debug thing, so it's not really that big a deal imo.
+> > it could probably move to debugfs (we didn't have that when it was merged iirc)
+> > I doubt anyone really cares enough to bother though I wouldn't
+> > be averse to a patch.
 > 
-> Sorry for this mess up. you know, as
-> blackfin-arch-balance-parenthesis-in-macros.patch was posted, it was
-> applied to our SVN tree. And I just merged these weeks SVN change to
-> this update patch. So this patch includes
-> blackfin-arch-balance-parenthesis-in-macros.patch. 
+> Yeah, I realize this, I'm not trying to find fault, sorry if it came
+> across that way.  And yes, it should move to debugfs some day, but if it
+> does, I'll loose my "what not to put in sysfs" example I use in
+> presentations :)
+> 
 
-Well, you'd better get used to it.  As I told you a few weeks ago, once this
-code is merged into mainline you no longer own the master copy of the blackfin
-tree - Linus does.
-
-If you're not careful, you'll end up submitting patches which revert other
-people's fixes.   And there's an excellent chance that you will submit patches
-which have dependencies on other stuff in your private tree and which are
-insufficiently-tested-against, and possibly incorrect-against Linus's tree.
+I ain't picky, but as a short-term thing it'd be kinda nice if it didn't
+oops the kernel.
