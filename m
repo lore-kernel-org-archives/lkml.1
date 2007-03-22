@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934177AbXCVSVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbXCVSfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934177AbXCVSVL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 14:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964844AbXCVSVL
+	id S1752262AbXCVSfR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 14:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXCVSfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 14:21:11 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1342 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934179AbXCVSVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 14:21:10 -0400
-From: Mariusz =?iso-8859-2?q?Koz=B3owski?= <m.kozlowski@tuxland.pl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [1/6] 2.6.21-rc4: known regressions
-Date: Thu, 22 Mar 2007 19:24:08 +0100
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <Pine.LNX.4.64.0703212023550.6730@woody.linux-foundation.org> <46020385.50301@yahoo.com.au>
-In-Reply-To: <46020385.50301@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Mar 2007 14:35:17 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:58104 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbXCVSfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 14:35:15 -0400
+Subject: Re: [BUG] no boot with 2.6.21-rc3 and later
+From: john stultz <johnstul@us.ibm.com>
+To: Bob Tracy <rct@gherkin.frus.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, bunk@stusta.de, jikos@jikos.cz
+In-Reply-To: <20070322034523.90050DBA1@gherkin.frus.com>
+References: <20070322034523.90050DBA1@gherkin.frus.com>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 11:35:12 -0700
+Message-Id: <1174588512.5662.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703221924.09331.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 2007-03-21 at 21:45 -0600, Bob Tracy wrote:
+> john stultz wrote:
+> > > > Also, does booting w/ "clocksource=jiffies" change the behavior?
+> 
+> Works fine with 2.6.21-rc4.  I'm running on that kernel as I type this.
+> 
+> > Also trying booting w/ "notsc" would be a useful data point.
+> 
+> Boot hangs at the point indicated in my original message.  I *did*
+> notice the blurb in the console messages about the pit clocksource
+> being selected/used.  There was also a complaint about it being
+> unstable, with a negative delta.  I think these messages are consistent
+> with the pre-bad-commit case other than where they appear in the boot
+> messages.
+> 
+> > (...) a pre-bad-commit dmesg would help.
+> 
+> Sent under separate cover to John.
 
-> > In contrast, the hang reported by Mariusz Kozlowski has a slightly 
-> > different feel to it, but there's a tantalizing pattern in there too:
+Yea. From looking at your boot log, it does look like the PIT
+clocksource is being used. 
 
-Just to make things clear. I didn't say I could reproduce it on 2.6.21-rc4.
-In fact I'm running 2.6.21-rc4-mm1 with no problems so far. I just replied
-to show my sysrq dumps of processes states with 2.6.21-rc2-mm1.
+This does point to an issue w/ that clocksource, however I noticed its
+getting selected over the ACPI PM timer, because you have the PIIX4 bug.
+That bug drops the ACPI PM timers rating to the same as the PIT, so
+that's why you're getting the PIT.
 
-I could reproduce similar (but still each time slightly different) hangs 
-on -mm series from 2.6.20-mm1 to 2.6.21-rc2-mm1. 2.6.21-rc3-mm1 worked well
-for me so not sure If my report is still valid here.
+Realistically, the PIT is much slower then even the triple read ACPI PM,
+so the de-ranking code is probably dropping it too far.
 
-Sorry if I didn't make it clear enough.
+Try this patch and let me know if it does the right thing. Although I do
+still need to dig a bit on the PIT hang issue.
 
-> >   http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/1243.html
-> > 
-> > 	Call Trace:
-> > 	[<c03ec87e>] io_schedule+0x42/0x59
-> > 	[<c0184915>] sleep_on_buffer+0x8/0xc
-> > 	[<c03ed217>] __wait_on_bit+0x47/0x6c
-> > 	[<c03ed297>] out_of_line_wait_on_bit+0x5b/0x64
-> > 	[<c01848a8>] __wait_on_buffer+0x27/0x2d
-> > 	[<c01b4228>] journal_commit_transaction+0x707/0x127f
-> > 	[<c01b868b>] kjournald+0xac/0x1ed
-> > 	[<c0126af5>] kthread+0xa2/0xc9
-> > 	[<c010422b>] kernel_thread_helper+0x7/0x1c
-> > 
-> > which certainly also looks like an IO never completed (or completed but 
-> > never woke anything up).
+-john
 
-As I previously noticed each time the system hang I/O activity to disk looked
-dead (couldn't even sysrq-s).
 
-> It could be possible that ext3 is doing something weird and expecting
+Don't drop ACPI PM quite so low if we see the PIIX4 bug.
 
-True. I'm using ext3.
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-> fs: nobh data leak... again hard to see how it could cause an unlock/wakeup
-> to get lost. Is Mariusz using the nobh mount option?
+diff --git a/drivers/clocksource/acpi_pm.c b/drivers/clocksource/acpi_pm.c
+index d42060e..5ac309e 100644
+--- a/drivers/clocksource/acpi_pm.c
++++ b/drivers/clocksource/acpi_pm.c
+@@ -90,7 +90,7 @@ __setup("acpi_pm_good", acpi_pm_good_set
+ static inline void acpi_pm_need_workaround(void)
+ {
+ 	clocksource_acpi_pm.read = acpi_pm_read_slow;
+-	clocksource_acpi_pm.rating = 110;
++	clocksource_acpi_pm.rating = 120;
+ }
+ 
+ /*
 
-No. He is not.
 
-Regards,
 
-	Mariusz Kozlowski
