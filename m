@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934126AbXCVRRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbXCVRS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934126AbXCVRRZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 13:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934146AbXCVRRZ
+	id S934142AbXCVRS7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 13:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934144AbXCVRS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 13:17:25 -0400
-Received: from saeurebad.de ([85.214.36.134]:44229 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934143AbXCVRRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 13:17:23 -0400
-Date: Thu, 22 Mar 2007 18:16:45 +0100
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] - fix compile warning: `found' might be used uninitialized in this function
-Message-ID: <20070322171645.GA5864@localhost>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <04bf01c76c13$5f25ce00$eeeea8c0@aldipc> <20070321235607.GA10998@localhost> <20070322004540.45d8ee87.akpm@linux-foundation.org> <20070322162550.GB5591@localhost>
+	Thu, 22 Mar 2007 13:18:59 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:22765 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934142AbXCVRS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 13:18:58 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ibmebus: change probe/remove interface from using loc-code to DT path
+Date: Thu, 22 Mar 2007 18:15:50 +0100
+User-Agent: KMail/1.6.2
+Cc: linux-kernel@vger.kernel.org, pmac@au1.ibm.com, hnguyen@de.ibm.com,
+       johnrose@austin.ibm.com, johnrose@us.ibm.com, nfont@austin.ibm.com,
+       paulus@samba.org, themann@de.ibm.com
+References: <200703221700.46292.fenkes@de.ibm.com>
+In-Reply-To: <200703221700.46292.fenkes@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070322162550.GB5591@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703221815.50506.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, Mar 22, 2007 at 05:26:04PM +0100, Johannes Weiner wrote:
-> > The code in there is irksome - it'd be nice to find some way of
-> > restructuring it to make it less obscure, and to kill that warning.
+On Thursday 22 March 2007 17:00, Joachim Fenkes wrote:
+> Example:
 > 
-> Functionscope or filescope? ;)
+>  Add a device "/proc/device-tree/foo@12345678" to ibmebus like this:
+>     echo /foo@12345678 > /sys/bus/ibmebus/probe
+> 
+>  Remove the device like this:
+>     echo /foo@12345678 > /sys/bus/ibmebus/remove
+> 
 
-Oh well... I think the latter.  I wil clean it up and send the patches
-in several steps to seperate opticals from functionals.
+Of course, we have tested this on our own machines, including error
+paths, and it worked fine.
 
-=Hannes
+Cheers,
+  Joachim
+
+---
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239
+
