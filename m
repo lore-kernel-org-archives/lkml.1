@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965773AbXCVF4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965776AbXCVGB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965773AbXCVF4e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 01:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965774AbXCVF4e
+	id S965776AbXCVGB5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 02:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965780AbXCVGB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 01:56:34 -0400
-Received: from 1wt.eu ([62.212.114.60]:1348 "EHLO 1wt.eu"
+	Thu, 22 Mar 2007 02:01:56 -0400
+Received: from ozlabs.org ([203.10.76.45]:41763 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965773AbXCVF4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 01:56:34 -0400
-Date: Thu, 22 Mar 2007 06:53:06 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] Delete obsolete RAW driver feature.
-Message-ID: <20070322055306.GZ943@1wt.eu>
-References: <20070320181442.1ae73295@lxorguk.ukuu.org.uk> <20070321151952.02b5612d.akpm@linux-foundation.org> <20070322001050.13588e5e@lxorguk.ukuu.org.uk> <20070321161341.0f87ed60.akpm@linux-foundation.org> <20070321232433.GX943@1wt.eu> <20070321234318.GE9092@redhat.com> <20070322041242.GA29741@1wt.eu> <20070322041751.GB17159@redhat.com> <20070322044540.GA32191@1wt.eu> <20070322050250.GC17159@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070322050250.GC17159@redhat.com>
-User-Agent: Mutt/1.5.11
+	id S965776AbXCVGB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 02:01:56 -0400
+To: Linux Memory Management <linux-mm@kvack.org>
+CC: <linux-kernel@vger.kernel.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 22 Mar 2007 17:00:17 +1100
+Subject: [RFC/PATCH 0/15] Pass MAP_FIXED down to get_unmapped_area
+Message-Id: <1174543217.531981.572863804039.qpush@grosgo>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 01:02:50AM -0400, Dave Jones wrote:
-> On Thu, Mar 22, 2007 at 05:45:40AM +0100, Willy Tarreau wrote:
->  > On Thu, Mar 22, 2007 at 12:17:51AM -0400, Dave Jones wrote:
->  > > On Thu, Mar 22, 2007 at 05:12:42AM +0100, Willy Tarreau wrote:
->  > >  > On Wed, Mar 21, 2007 at 07:43:18PM -0400, Dave Jones wrote:
->  > >  > > On Thu, Mar 22, 2007 at 12:24:33AM +0100, Willy Tarreau wrote:
->  > >  > >  
->  > >  > >  > Then a printk() on every open() should be enough. We've all been seeing
->  > >  > >  > "Warning: tcpdump uses obsolete AF_PACKET"... and it finally disappeared.
->  > >  > > 
->  > >  > > There's a difference.  We have the source for tcpdump.
->  > >  > 
->  > >  > But what's the problem with "warning: process XXX uses obsolete raw driver
->  > >  > and may not work anymore after 2007/XX/XX if not fixed" ?
->  > > 
->  > > The target audience isn't going to read it.
->  > 
->  > Yes they will if you write it with KERN_CRIT.
-> 
-> *no*.
-> 
-> Users will see it. The developers of the software those users are running won't.
-> We're talking about apps here that we don't have the source to, and vendors
-> want extortionate amount of money to change.
+!!! This is a first cut, and there are still cleanups to be done in various
+areas touched by that code. I also haven't done descriptions yet for the
+individual patches.
 
-Dave, I think you don't get it. People are paying to run those apps. When
-you pay 10s or 100s of K$ a year for support and you see such messages
-appear in your logs, you ask the app vendor what will happen at the given
-date. Those people are already afraid by end of support on products without
-any warning message. I sincerely believe that they will insist even more
-when the message tells them about the end of compatibility date.
+The current get_unmapped_area code calls the f_ops->get_unmapped_area or
+the arch one (via the mm) only when MAP_FIXED is not passed. That makes
+it impossible for archs to impose proper constraints on regions of the
+virtual address space. To work around that, get_unmapped_area() then
+calls some hugetlbfs specific hacks.
 
-Of course, the vendor will say "we've been informed that this is caused by
-a change in distro XXX. Distro YYY does not have it, you may want to migrate".
-But those responses rarely satisfy customers who have to revalidate everything
-to change a distro.
+This cause several problems, among others:
 
-At most, they will ask their distro vendor for continued support of the
-feature (which there will be in the same minor release), and if vendors'
-feedback show there is enough demand, then we will just have to delay the
-removal.
+ - It makes it impossible for a driver or filesystem to do the same thing
+that hugetlbfs does (for example, to allow a driver to use larger page
+sizes to map external hardware) if that requires applying a constraint
+on the addresses (constraining that mapping in certain regions and other
+mappings out of those regions).
 
-Regards,
-Willy
+ - Some archs like arm, mips, sparc, sparc64, sh and sh64 already want
+MAP_FIXED to be passed down in order to deal with aliasing issues.
+The code is there to handle it... but is never called.
+
+This serie of patches moves the logic to handle MAP_FIXED down to the
+various arch/driver get_unmapped_area() implementations, and then changes
+the generic code to always call them. The hugetlbfs hacks then disappear
+from the generic code.
+
+Since I need to do some special 64K pages mappings for SPEs on cell, I need
+to work around the first problem at least. I have further patches thus
+implementing a "slices" layer that handles multiple page sizes through
+slices of the address space for use by hugetlbfs, the SPE code, and possibly
+others, but it requires that serie of patches first/
+
+There is still a potential (but not practical) issue due to the fact that
+filesystems/drivers implemeting g_u_a will effectively bypass all arch
+checks. This is not an issue in practice as the only users of those are
+actually doing so are doing it using arch hooks in the first place.
+
+There is also a problem with mremap that will completely bypass all arch
+checks. I'll try to address that separately mostly by making it not work
+when the vma has a file whose f_ops has a get_unmapped_area callback,
+and by making it use is_hugepage_only_range() before expanding into a
+new area.
+
+Also, I want to turn is_hugepage_only_range() into a more generic
+is_normal_page_range() as that's really what it will end up meaning
+when used in stack grow, brk grow and mremap.
 
