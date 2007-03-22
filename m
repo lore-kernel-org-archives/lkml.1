@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933913AbXCVQYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934094AbXCVQ0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933913AbXCVQYm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 12:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934094AbXCVQYm
+	id S934094AbXCVQ0L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 12:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934108AbXCVQ0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 12:24:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:13032 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933913AbXCVQYk (ORCPT
+	Thu, 22 Mar 2007 12:26:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50775 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934094AbXCVQ0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 12:24:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Xc2zAcJS/O+I+b8sgYJbVRDBXsB4tP4Bh8V5JuINpB86RhmRox/x0fN2MNEfK2OtgjKYKWsCshpgttnAeG6ib4L9E1J9F4VAWt9lGWYQfUeLJjZLAIjIGG9EEN4YVjVRhU4xLy9bKVO28pvb3qEI1vMtyclV7dJUl1HL9k5Kkcw=
-Message-ID: <a44ae5cd0703220924h20f6cd1bsc4d7b354b61859d4@mail.gmail.com>
-Date: Thu, 22 Mar 2007 09:24:38 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc4-mm1 + 4 hotfixes -- BUG: unable to handle kernel paging request at virtual address 6b6b6ceb -- EIP is at module_put+0x7/0x1f
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
-In-Reply-To: <20070322012836.8e1a0d10.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 22 Mar 2007 12:26:09 -0400
+Subject: Re: 2.6.21-rc4-mm1
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kees Cook <kees@outflux.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070322114144.GA29453@uranus.ravnborg.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	 <20070320103151.f65c81b6.randy.dunlap@oracle.com>
+	 <20070320192016.GC22797@outflux.net>
+	 <20070320214714.0e584cd4.akpm@linux-foundation.org>
+	 <20070321115955.GA18195@uranus.ravnborg.org>
+	 <1174555020.20505.89.camel@pmac.infradead.org>
+	 <20070322114144.GA29453@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 16:25:53 +0000
+Message-Id: <1174580753.20505.120.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0703220029lb4df507ne21da177f7c05008@mail.gmail.com>
-	 <20070321234456.946d1742.akpm@linux-foundation.org>
-	 <a44ae5cd0703220114r42dd1954t3a4e1357d5ff71d6@mail.gmail.com>
-	 <20070322012836.8e1a0d10.akpm@linux-foundation.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I cannot reproduce the BUG with your ml.bz2 patch applied.
-I am seeing this with both 2.6.21-rc4-mm1 + hotfixes, and with
-2.6.21-rc4 + ml.bz2:
+On Thu, 2007-03-22 at 12:41 +0100, Sam Ravnborg wrote:
+> Yep - realized this when I took a closer look.
+> One thing striked my mind. It is correct that new things gets added
+> to i386 first these days?
 
-Mar 22 09:10:35 FractalPath kernel: ACPI: CPU0 (power states: C1[C1]
-C2[C2] C3[C3])
-Mar 22 09:10:35 FractalPath kernel: The kobject at, or inside
-per_cpu__cpuidle_devices+0x40/0x558 is not dynamically allocated.
-Mar 22 09:10:35 FractalPath kernel: The kobject at, or inside
-per_cpu__cpuidle_devices+0xd4/0x558 is not dynamically allocated.
-Mar 22 09:10:35 FractalPath kernel: The kobject at, or inside
-per_cpu__cpuidle_devices+0x168/0x558 is not dynamically allocated.
-Mar 22 09:10:35 FractalPath kernel: cpuidle: using driver acpi_idle
+Personally I tend to do PowerPC first, but most others seem to do i386,
+yes. There are still system calls being added to i386 and not x86_64...
 
-Not sure if this is a problem.  Also, the first time I booted the ml.bz2
-build, it hung.  I don't have netconsole or a serial debugging system
-set up, so I have no idea what the problem was.  The second boot,
-ipw2200 loaded with no errors, but NetworkManager wouldn't
-connect until I removed and reinserted the module.
+init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
+init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
+init/missing_syscalls.h:953:3: warning: #warning syscall lutimesat not implemented
+init/missing_syscalls.h:956:3: warning: #warning syscall revokeat not implemented
+init/missing_syscalls.h:959:3: warning: #warning syscall frevoke not implemented
 
-All the best,
-           Miles
+> To me it looks like x86_64 is growing larger than i386 among the
+> developers these days so using asm-x86_64/unistd.h could be a better
+> choice?
+
+Or perhaps the union of i386, x86_64 and powerpc. But I think i386 is
+good enough for now.
+
+-- 
+dwmw2
+
