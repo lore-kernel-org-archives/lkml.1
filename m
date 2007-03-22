@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbXCVTKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965261AbXCVTKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965059AbXCVTKL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 15:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965238AbXCVTKK
+	id S965261AbXCVTKm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 15:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965337AbXCVTKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 15:10:10 -0400
-Received: from 68-191-203-42.static.stls.mo.charter.com ([68.191.203.42]:10474
-	"EHLO service.eng.exegy.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965059AbXCVTKJ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 15:10:09 -0400
-X-Ninja-PIM: Scanned by Ninja
-X-Ninja-AttachmentFiltering: (no action)
-thread-index: AcdstYJR9Nn3qPLNQ5W7+oKl0M2Klg==
-Message-ID: <4602D433.3070406@exegy.com>
-Date: Thu, 22 Mar 2007 14:08:35 -0500
-From: "Mr. Berkley Shands" <bshands@exegy.com>
-Content-Class: urn:content-classes:message
-Importance: normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.2826
-User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
+	Thu, 22 Mar 2007 15:10:42 -0400
+Received: from ns2.suse.de ([195.135.220.15]:52852 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965261AbXCVTKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 15:10:41 -0400
+Date: Thu, 22 Mar 2007 12:08:34 -0700
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       daniel.e.wolstenholme@intel.com
+Subject: Re: [PATCH 0/21] MSI rework
+Message-ID: <20070322190834.GA14802@kroah.com>
+References: <1174560686.307511.956605711793.qpush@cradle> <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-To: linux-xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Quick fix for LSI8888ELP overruns in 2.6.20 and 2.6.21-rc4
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
-X-OriginalArrivalTime: 22 Mar 2007 19:08:43.0275 (UTC) FILETIME=[823525B0:01C76CB5]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My local kernel guru recognized this problem as a duplicate of the
-LSI8408E bus lockup problem. The controller gets flooded with work,
-and just climbs under a rock to hide. In the 8408E case, it
-froze the PCI-e bus :-)
+On Thu, Mar 22, 2007 at 09:01:10AM -0600, Eric W. Biederman wrote:
+> Michael Ellerman <michael@ellerman.id.au> writes:
+> 
+> > This is my series to rework the generic MSI code into something we can use
+> > on powerpc[1].
+> >
+> > I've tried as much as possible not to change the semantics for other archs,
+> > but there's a few little changes. I think they're all OK in their own right.
+> >
+> > I don't have any serious hardware to test on, but my little x86_64 box with
+> > an e1000 using MSI still works with these changes. I've also got MSI working
+> > on a powerpc blade with a tg3. I haven't tested MSI-X _at all_.
+> >
+> > I've also tested on the blade with a debug hack to make the MSI case
+> > allocate/free 8 MSIs, but only use the last one, just to exercise the n > 1
+> > case a little. All seems to work fine.
+> 
+> Generally I think this looks good.  However there is a lot here, and some
+> of it potentially at least has some pretty subtle side effects.
+> 
+> So reviewing all of these patches at once is almost certain to cause
+> something important to be missed :(
+> 
+> Can we slow this process down a few days by taking this one logical chunk
+> at a time?
+> 
+> i.e.  First the simple bug fixes that should purely be restructure of
+> msi.c with no affect on anything outside of it.
+> 
+> And then get into the architecture enhancements.
 
-#!/bin/csh
-#
-# set the max request queue down from 128. any more than 32
-# quickly slows down from 810MB/Sec to 11MB/Sec.
-#
-setenv X 32
-#
-foreach i ( /sys/block/sd{g,h,i,j,k,l,m,n}/queue/nr_requests)
-   echo $X > $i
-   end
+I agree, care to break these down into a smaller series of patches that
+can go into -mm for testing?
 
-Lots of time was spent in the congestion queue, like 99% of the time.
+thanks,
 
-Berkley
-This e-mail and any documents accompanying it may contain legally privileged and/or confidential information belonging to Exegy, Inc. Such information may be protected from disclosure by law. The information is intended for use by only the addressee. If you are not the intended recipient, you are hereby notified that any disclosure or use of the information is strictly prohibited. If you have received this e-mail in error, please immediately contact the sender by e-mail or phone regarding instructions for return or destruction and do not use or disclose the content to others.
+greg k-h
