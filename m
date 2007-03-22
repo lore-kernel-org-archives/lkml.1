@@ -1,222 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934013AbXCVKFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030369AbXCVKJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934013AbXCVKFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 06:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934083AbXCVKFw
+	id S1030369AbXCVKJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 06:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030367AbXCVKJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 06:05:52 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:40670 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934093AbXCVKFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 06:05:51 -0400
-Message-ID: <460254F4.8060800@bx.jp.nec.com>
-Date: Thu, 22 Mar 2007 19:05:40 +0900
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
-MIME-Version: 1.0
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>
-CC: mpm@selenic.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take3 6/6][resend] add ioctls for adding/removing
- target
-References: <45FFCF31.3040000@bx.jp.nec.com> <45FFD4C1.7000103@bx.jp.nec.com>
-In-Reply-To: <45FFD4C1.7000103@bx.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Thu, 22 Mar 2007 06:09:59 -0400
+Received: from ozlabs.org ([203.10.76.45]:45010 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030369AbXCVKJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 06:09:58 -0400
+Subject: [PATCH] lguest: clean rest of linkage warnings (bar one)
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@osdl.org>
+Cc: virtualization <virtualization@lists.osdl.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <1174532243.2713.95.camel@localhost.localdomain>
+References: <1174532243.2713.95.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 21:09:42 +1100
+Message-Id: <1174558182.2713.151.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, I sent the incomplete sample program. 
-So, I send the complete one again.
-Any comments welcom.
+My previous warning fix broke lguest if your text size wasn't correct
+to make the __start_paravirtprobe aligned correctly.  Put the separate
+paravirtprobe section back, but inside the init section so it gets
+discarded.
 
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stropts.h>
-#include <fcntl.h>
-#include <arpa/inet.h>
-#include <net/if.h>
-#include <linux/if_ether.h>
-#include <linux/netconsole.h>
+It also fixes the remaining warnings, except one.  The code in
+modpost.c which needs to be taught that it's legal to link from
+.paravirtprobe to .init.text is horrible, and I'm pretty sure I'd just
+make it worse.
 
-#define NETCONSOLE_DEV_NAME "/dev/netconsole"
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-struct command {
-	char *name;
-	char *options;
-	int (*handle_command)(struct command* command,
-			      int argc, char* argv[]);
-	void (*usage)(char *msg);
-};
-
-extern char *optarg;
-extern int opterr, optind, errno;
-
-static void generic_usage(char *msg) {
-	fprintf(stderr, "Usage  : netconfig command [option] [args]\n");
-	fprintf(stderr, "command: add remove help\n");
-	exit(-1);
-}
-
-static int handle_command_add(struct command* command, int argc, char** argv)
-{
-	int i, fd, ch;
-	unsigned int address;
-	unsigned char mac[ETH_ALEN];
-	struct netconsole_request req = {
-		.netdev_name = "eth0",
-		.local_port = 6665,
-		.remote_port = 6666,
-		.remote_mac = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-	};
-
-	while ((ch = getopt(argc, argv, command->options)) != -1) {
-		switch (ch) {
-		case 'p':
-			req.local_port = atoi(optarg);
-			break;
-		case 's':
-			address = inet_addr(optarg);
-			if (address == -1)
-				(*command->usage)("invlid IP address!\n");
-			req.local_ip = address;
-			break;
-		case 'h':
-		default:
-			(*command->usage)(NULL);
-		}
-	}
-	argc -= optind;
-	argv += optind;
-
-	if (argc < 3 || argc > 4)
-		(*command->usage)(NULL);
-
-	memcpy(req.netdev_name, argv[0], IFNAMSIZ);
-	address = inet_addr(argv[1]);
-	if (address == -1)
-		(*command->usage)("invlid IP address!\n");
-	req.remote_ip = address;
-	req.remote_port = atoi(argv[2]);
-	if (argc == 4) {
-		i = 0;
-		mac[i++] = strtol(argv[3], NULL, 16);
-		while ((argv[3] = strchr(argv[3], ':')) != NULL) {
-			argv[3]++;
-			mac[i++] = strtol(argv[3], NULL, 16);
-		}
-		if (i != ETH_ALEN)
-			(*command->usage)("Invalid MAC address!\n");
-		memcpy(req.remote_mac, mac, ETH_ALEN);
-	}
-
-	fd = open(NETCONSOLE_DEV_NAME, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "cannot open device" NETCONSOLE_DEV_NAME "\n");
-		return -1;
-	}
-
-	if(ioctl(fd, NETCON_ADD_TARGET, &req) != 0)
-		perror("add");
-	close(fd);
-
-	return 0;
-}
-
-static void usage_add(char *msg)
-{
-	if (msg != NULL)
-		fprintf(stderr, "%s", msg);
-	fprintf(stderr, "Usage  : netconfig add [-options] dev_name remote_ip "
-		"remote_port [remote_mac]\n");
-	fprintf(stderr, "options:\n");
-	fprintf(stderr, "        -p local_port     :local port number\n");
-	fprintf(stderr, "        -s local_up       :local IP address\n");
-	exit(-1);
-}
-
-static int handle_command_remove(struct command *command,
-				 int argc, char** argv)
-{
-	int fd, id, ch;
-
-	while ((ch = getopt(argc, argv, command->options)) != -1) {
-		switch (ch) {
-		case 'h':
-		default:
-			(*command->usage)(NULL);
-		}
-	}
-	argc -= optind;
-	argv += optind;
-
-	if (argc != 1)
-		(*command->usage)(NULL);
-
-	id = atoi(argv[0]);
-	fd = open(NETCONSOLE_DEV_NAME, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "can't open device " NETCONSOLE_DEV_NAME "\n");
-		return -1;
-	}
-	if(ioctl(fd, NETCON_REMOVE_TARGET, &id) != 0)
-		perror("remove");
-	close(fd);
-
-	return 0;
-}
-
-static void usage_remove(char *msg) {
-	fprintf(stderr, "Usage  : netconfig remove id\n");
-	exit(-1);
-}
-
-static int handle_command_help(struct command *command,
-			       int argc, char** argv) {
-	(*command->usage)(NULL);
-
-	return 0;
-}
-
-static void usage_help(char *msg) {
-	generic_usage(NULL);
-}
-
-static struct command s_commands[] = {
-	{"add", "hp:s:", handle_command_add, usage_add},
-	{"remove", "hp:", handle_command_remove, usage_remove},
-	{"help", NULL, handle_command_help, usage_help},
-};
-
-int main(int argc, char* argv[]) {
-	int i;
-	struct command *command = NULL;
-
-	for(i = 0; i < ARRAY_SIZE(s_commands); i++) {
-		if (argc <= 1)
-			break;
-		if (strcmp(s_commands[i].name, argv[1]) == 0) {
-			command = &s_commands[i];
-			break;
-		}
-	}
-
-	if (command == NULL)
-		generic_usage(NULL);
-	argc--;
-	argv++;
-
-	if (command->handle_command)
-		(*command->handle_command)(command, argc, argv);
-	else {
-		fprintf(stderr, "function handle_command() isn't set.");
-		exit(-1);
-	}
-	return 0;
-}
-
+diff -r a38b5b461807 arch/i386/kernel/vmlinux.lds.S
+--- a/arch/i386/kernel/vmlinux.lds.S	Thu Mar 22 19:28:55 2007 +1100
++++ b/arch/i386/kernel/vmlinux.lds.S	Thu Mar 22 20:12:26 2007 +1100
+@@ -145,12 +145,7 @@ SECTIONS
+ 	*(.init.text)
+ 	_einittext = .;
+   }
+-  .init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
+-	*(.init.data)
+-  	__start_paravirtprobe = .;
+-	*(.paravirtprobe)
+-  	__stop_paravirtprobe = .;
+-  }
++  .init.data : AT(ADDR(.init.data) - LOAD_OFFSET) { *(.init.data) }
+   . = ALIGN(16);
+   .init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+   	__setup_start = .;
+@@ -178,6 +173,11 @@ SECTIONS
+ 	*(.altinstr_replacement)
+   }
+   . = ALIGN(4);
++  .paravirtprobe : AT(ADDR(.paravirtprobe) - LOAD_OFFSET) {
++ 	__start_paravirtprobe = .;
++	*(.paravirtprobe)
++  	__stop_paravirtprobe = .;
++  }
+   .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
+   	__start_parainstructions = .;
+ 	*(.parainstructions)
+diff -r a38b5b461807 arch/i386/lguest/core.c
+--- a/arch/i386/lguest/core.c	Thu Mar 22 19:28:55 2007 +1100
++++ b/arch/i386/lguest/core.c	Thu Mar 22 20:21:21 2007 +1100
+@@ -131,7 +131,7 @@ free_some_pages:
+ 	return err;
+ }
+ 
+-static __exit void unmap_hypervisor(void)
++static void unmap_hypervisor(void)
+ {
+ 	unsigned int i;
+ 
+diff -r a38b5b461807 arch/i386/lguest/lg.h
+--- a/arch/i386/lguest/lg.h	Thu Mar 22 19:28:55 2007 +1100
++++ b/arch/i386/lguest/lg.h	Thu Mar 22 20:20:15 2007 +1100
+@@ -38,7 +38,7 @@ struct lguest_regs
+ 	u32 ss;
+ };
+ 
+-__exit void free_pagetables(void);
++void free_pagetables(void);
+ __init int init_pagetables(struct page **hype_page, int pages);
+ 
+ /* Full 4G segment descriptors, suitable for CS and DS. */
+diff -r a38b5b461807 arch/i386/lguest/lguest.c
+--- a/arch/i386/lguest/lguest.c	Thu Mar 22 19:28:55 2007 +1100
++++ b/arch/i386/lguest/lguest.c	Thu Mar 22 20:40:22 2007 +1100
+@@ -550,7 +550,7 @@ static __attribute_used__ __init void lg
+ 	start_kernel();
+ }
+ 
+-asm(".section .init.text\n"
++asm(".pushsection .init.text,\"ax\",@progbits\n"
+     "lguest_maybe_init:\n"
+     "	cmpl $"__stringify(LGUEST_MAGIC_EBP)", %ebp\n"
+     "	jne 1f\n"
+@@ -558,6 +558,7 @@ asm(".section .init.text\n"
+     "	jne 1f\n"
+     "	cmpl $"__stringify(LGUEST_MAGIC_ESI)", %esi\n"
+     "	je lguest_init\n"
+-    "1: ret");
++    "1: ret\n"
++    ".popsection");
+ extern void asmlinkage lguest_maybe_init(void);
+ paravirt_probe(lguest_maybe_init);
+diff -r a38b5b461807 arch/i386/lguest/page_tables.c
+--- a/arch/i386/lguest/page_tables.c	Thu Mar 22 19:28:55 2007 +1100
++++ b/arch/i386/lguest/page_tables.c	Thu Mar 22 20:06:03 2007 +1100
+@@ -381,7 +381,7 @@ __init int init_pagetables(struct page *
+ 	return 0;
+ }
+ 
+-__exit void free_pagetables(void)
++void free_pagetables(void)
+ {
+ 	free_hypervisor_pte_pages();
+ }
 
 
