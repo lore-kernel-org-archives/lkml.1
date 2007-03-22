@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXCVWCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbXCVWCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932418AbXCVWCY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 18:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932431AbXCVWCX
+	id S932515AbXCVWCt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 18:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934240AbXCVWCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 18:02:23 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:53721 "EHLO smtp.osdl.org"
+	Thu, 22 Mar 2007 18:02:49 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39481 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932418AbXCVWCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 18:02:22 -0400
-Date: Thu, 22 Mar 2007 15:02:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: tglx@linutronix.de
-Cc: Bernhard Walle <bwalle@suse.de>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Fix irqpoll on IA64 (timer interrupt != 0)
-Message-Id: <20070322150207.a35d3f15.akpm@linux-foundation.org>
-In-Reply-To: <1174598601.10840.231.camel@localhost.localdomain>
-References: <20070320150027.GA18143@strauss.suse.de>
-	<20070322140922.a59bea5c.akpm@linux-foundation.org>
-	<1174598601.10840.231.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	id S932562AbXCVWCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 18:02:48 -0400
+Subject: Re: [PATCH 0/21] MSI rework
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, daniel.e.wolstenholme@intel.com
+In-Reply-To: <20070322190834.GA14802@kroah.com>
+References: <1174560686.307511.956605711793.qpush@cradle>
+	 <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com>
+	 <20070322190834.GA14802@kroah.com>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 09:02:16 +1100
+Message-Id: <1174600936.10836.53.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Mar 2007 22:23:21 +0100
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Thu, 2007-03-22 at 14:09 -0700, Andrew Morton wrote:
-> > I think the term 'timer_interrupt' is a bit generic-sounding.  Would it be
-> > better to call it irqpoll_interrupt?  After all, some architecture might
-> > want to use, umm, the keyboard interrupt to trigger IRQ polling ;)  
-> 
-> Interesting thought, but in general I have to agree.
-> 
-> > Also, the code presently passes the magic IRQ number into the generic IRQ
-> > code.  I wonder if we'd get a more pleasing result if we were to make the
-> > generic IRQ code call _out_ to the architecture:
-> 
-> > Then, ia64 can implement arch_is_irqpoll_irq() and it can do whatever it
-> > wants in there.
+> > i.e.  First the simple bug fixes that should purely be restructure of
+> > msi.c with no affect on anything outside of it.
 > > 
-> > The __attribute__((weak)) thing adds a little bit of overhead, but I don't
-> > think this is a fastpath?
+> > And then get into the architecture enhancements.
 > 
-> Well, depends what you consider a fastpath. When noirqdebug == 0, it is
-> called on every interrupt.
-> 
+> I agree, care to break these down into a smaller series of patches that
+> can go into -mm for testing?
 
-OK, well the alternative is to do
+I don't see the point in breaking the serie... you can bisect half way
+through if necessary... it's made of small patches that are done, afaik,
+in such a way that the whole thing should still work at any level in the
+serie.
 
-extern bool __arch_irqpoll_irq(unsigned int irq);
-#define arch_is_irqpoll_irq(irq)	__arch_is_irqpoll_irq(irq)
+The serie just expresses the dependency between them.
 
-in an ia64 header file and then do
+Ben.
 
-#ifndef arch_is_irqpoll_irq
-static inline bool arch_is_irqpoll_irq(unsigned irq)
-{
-	return irq == 0;
-}
-#endif
-
-in spurious.c
 
