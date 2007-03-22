@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934212AbXCVTzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934208AbXCVT4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934212AbXCVTzF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 15:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934210AbXCVTzE
+	id S934208AbXCVT4t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 15:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934213AbXCVT4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 15:55:04 -0400
-Received: from nijmegen.renzel.net ([195.243.213.130]:35172 "EHLO
-	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934212AbXCVTzB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 15:55:01 -0400
-From: Mws <mws@twisted-brains.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: MCE Erros
-Date: Thu, 22 Mar 2007 20:54:43 +0100
-User-Agent: KMail/1.9.6
-Cc: Thomas Glanzmann <thomas@glanzmann.de>
-References: <20070322195043.GA19732@cip.informatik.uni-erlangen.de>
-In-Reply-To: <20070322195043.GA19732@cip.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Mar 2007 15:56:49 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44166 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934208AbXCVT4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 15:56:48 -0400
+Subject: Re: [BUG] no boot with 2.6.21-rc3 and later
+From: john stultz <johnstul@us.ibm.com>
+To: Bob Tracy <rct@gherkin.frus.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, bunk@stusta.de, jikos@jikos.cz,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070322193946.2B7D8DBA1@gherkin.frus.com>
+References: <20070322193946.2B7D8DBA1@gherkin.frus.com>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 12:56:42 -0700
+Message-Id: <1174593402.5662.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703222054.45426.mws@twisted-brains.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 March 2007, Thomas Glanzmann wrote:
-> Hello,
-> I have two Dual Opteron Machines where I get two MCE errors on. The
-> first one is:
+On Thu, 2007-03-22 at 13:39 -0600, Bob Tracy wrote:
+> john stultz wrote:
+> > On Thu, 2007-03-22 at 13:14 -0600, Bob Tracy wrote:
+> > > john stultz wrote:
+> > > > Try this patch and let me know if it does the right thing.
+> > > 
+> > > Will do.  I'll report back in a few hours.
+> > > 
+> > > > Although I do
+> > > > still need to dig a bit on the PIT hang issue.
+> > > 
+> > > Any chance this might be related to the APIC issues currently being
+> > > discussed in other threads?
+> > 
+> > Hmmm. Good thought, I'll have to look into it. It could be that if the
+> > PIT is disabled in favor of the local apic, we'll have to make sure its
+> > not being used as a clocksource.
 > 
->         MCE 0
->         HARDWARE ERROR. This is *NOT* a software problem!
->         Please contact your hardware vendor
->         CPU 0 4 northbridge TSC edc587de6e99
->         ADDR 1001a0000
->           Northbridge GART error
->                bit61 = error uncorrected
->           TLB error 'generic transaction, level generic'
->         STATUS a40000000005001b MCGSTATUS 0
+> According to the dmesg output, the local apic is disabled in the BIOS on
+> this system, and I'm not booting with "lapic" to enable it.
 > 
-> I see this error exactly 8 times. What does 'GART' mean?
+> Anyway, the "few hours" turned out to be more like a few minutes :-).
+> The patch worked as far as selecting/installing the acpi_pm clocksource
+> instead of the pit clocksource, and there was no hang during boot.  If
+> you would like to see the dmesg output, let me know and I'll forward it
+> to you in a separate message.
 
-Graphics Address Remapping Table
+Great to hear! Please do send me the dmesg output so I can look to
+narrow down what's happening w/ the PIT.
 
-used with agp
+I'll also go ahead and push that acpi_pm change to akpm.
 
-regards
-marcel
+thanks
+-john
 
 
