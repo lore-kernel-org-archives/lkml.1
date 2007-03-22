@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030197AbXCVHci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030200AbXCVHdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030197AbXCVHci (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030196AbXCVHci
+	id S1030200AbXCVHdP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030201AbXCVHdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:32:38 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:42689 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030197AbXCVHcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:32:36 -0400
-Date: Wed, 21 Mar 2007 23:31:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Chinner <dgc@sgi.com>, nigel@nigel.suspend2.net,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
-Message-Id: <20070321233159.0f851bdd.akpm@linux-foundation.org>
-In-Reply-To: <200703220823.41077.rjw@sisk.pl>
-References: <200703211840.53242.maximlevitsky@gmail.com>
-	<200703212238.33897.rjw@sisk.pl>
-	<20070322045106.GP32602149@melbourne.sgi.com>
-	<200703220823.41077.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Thu, 22 Mar 2007 03:33:15 -0400
+Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:14045 "EHLO
+	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030200AbXCVHdN convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:33:13 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=wv8fG25YOP74GWMY9MYm2TqrSEv/vUph6BJyPpqXU9b1UbRI1e/jpkYZ6J4fBny1mrd/9qNh6Rg80+2ESDg9w3pRy9phPIZHfbMNkKp/6IRvPCX0+5NgTqM2x23/oOuR;
+X-SBRSScore: None
+X-IronPort-AV: i="4.14,311,1170630000"; 
+   d="scan'208"; a="62721213:sNHT23614064"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: RE: how can I touch softlockup watchdog on all cpus?
+Date: Thu, 22 Mar 2007 08:33:05 +0100
+Message-ID: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB710B@ABGEX01E.abg.fsc.net>
+in-reply-to: <20070321164404.GF13218@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: how can I touch softlockup watchdog on all cpus?
+Thread-Index: Acdr2CxsXMRHUjnjRKG3npj8G+U/aAAfAynw
+References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB6F2A@ABGEX01E.abg.fsc.net> <20070321164404.GF13218@redhat.com>
+From: "Cestonaro, Thilo \(external\)" 
+	<Thilo.Cestonaro.external@fujitsu-siemens.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 22 Mar 2007 07:33:05.0371 (UTC) FILETIME=[547A6AB0:01C76C54]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Mar 2007 08:23:39 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> You didn't explain _why_ you need to sleep for such a long time,
+> and as you didn't give a pointer to your code, there's not
+> much people can do to recommend changes other than "don't do that".
 
-> On Thursday, 22 March 2007 05:51, David Chinner wrote:
-> > On Wed, Mar 21, 2007 at 10:38:33PM +0100, Rafael J. Wysocki wrote:
-> > > 
-> > > I think this is the XFS problem with freezable workqueues.
-> > > 
-> > > Maxim, please try to apply the appended patch and see if it helps.
-> > > 
-> > > Greetings,
-> > > Rafael
-> > > 
-> > > 
-> > > ---
-> > > Since freezable workqueues are broken in 2.6.21-rc
-> > > (cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
-> > > http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
-> > > it's better to remove them altogether for 2.6.21 and change the only user of
-> > > them (XFS) accordingly.
-> > > 
-> > > ---
-> > >  fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > > Index: linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
-> > > ===================================================================
-> > > --- linux-2.6.21-rc4.orig/fs/xfs/linux-2.6/xfs_buf.c
-> > > +++ linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
-> > > @@ -1829,11 +1829,11 @@ xfs_buf_init(void)
-> > >  	if (!xfs_buf_zone)
-> > >  		goto out_free_trace_buf;
-> > >  
-> > > -	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
-> > > +	xfslogd_workqueue = create_workqueue("xfslogd");
-> > >  	if (!xfslogd_workqueue)
-> > >  		goto out_free_buf_zone;
-> > >  
-> > > -	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
-> > > +	xfsdatad_workqueue = create_workqueue("xfsdatad");
-> > >  	if (!xfsdatad_workqueue)
-> > >  		goto out_destroy_xfslogd_workqueue;
-> > >  
-> > 
-> > Acked-by: Dave Chinner <dgc@sgi.com>
-> > 
-> > Rafael, it sounds like this really needs to go into the next -rc
-> > kernel. Can you push it to Linus?
-> 
-> I tried, but Andrew resent it to you. :-)
-> 
-> Andrew, could we please merge it?
+The code which is executed between the local_irq_disable and enable,
+is just a function call into our companies bios (e.g. for updating itself)
+and the long time is just 15 sec. while the bios has full control and OS is halted.
+So I can't change anything at this point, but I need to fetch the watchdog,
+cause it is not so nice, if there is a big BUG output on console while the
+computer updates it's bios, very trustworthy isn't it :).
 
-Sure.
-
-It shouldn't be this hard :(
+Ciao Thilo
+@Dave: sorry that I send a direct mail :(
