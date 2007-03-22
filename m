@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965821AbXCVGG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965820AbXCVGHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965821AbXCVGG1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 02:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965828AbXCVGEy
+	id S965820AbXCVGHI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 02:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965828AbXCVGHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 02:04:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:57965 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965821AbXCVGEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 02:04:07 -0400
-To: Linux Memory Management <linux-mm@kvack.org>
-CC: <linux-kernel@vger.kernel.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 22 Mar 2007 17:01:28 +1100
-Subject: [RFC/PATCH 12/15] get_unmapped_area handles MAP_FIXED in ffb DRM
-In-Reply-To: <1174543217.531981.572863804039.qpush@grosgo>
-Message-Id: <20070322060302.72AE6DE40D@ozlabs.org>
+	Thu, 22 Mar 2007 02:07:07 -0400
+Received: from poczta.o2.pl ([193.17.41.142]:59922 "EHLO poczta.o2.pl"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965820AbXCVGGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 02:06:47 -0400
+Date: Thu, 22 Mar 2007 07:11:19 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, "J\. Bruce Fields" <bfields@fieldses.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] lockdep: lockdep_depth vs. debug_locks Re: [2.6.20] BUG: workqueue leaked lock
+Message-ID: <20070322061119.GA1466@ff.dom.local>
+References: <17918.11420.155569.991473@notabene.brown> <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru> <20070321080510.GA1939@ff.dom.local> <20070321144620.GC78@tv-sign.ru> <20070321151651.GA4547@ff.dom.local> <20070321152935.GA215@tv-sign.ru> <20070321181635.GA570@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070321181635.GA570@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Here is some joke:
+
+[PATCH] lockdep: lockdep_depth vs. debug_locks
+
+lockdep really shouldn't be used when debug_locks == 0!
+
+
+Reported-by: Folkert van Heusden <folkert@vanheusden.com>
+Inspired-by: Oleg Nesterov <oleg@tv-sign.ru>
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+
 ---
 
- drivers/char/drm/ffb_drv.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-Index: linux-cell/drivers/char/drm/ffb_drv.c
-===================================================================
---- linux-cell.orig/drivers/char/drm/ffb_drv.c	2007-03-22 16:21:22.000000000 +1100
-+++ linux-cell/drivers/char/drm/ffb_drv.c	2007-03-22 16:23:13.000000000 +1100
-@@ -191,6 +191,12 @@ unsigned long ffb_get_unmapped_area(stru
- 			if ((kvirt & (SHMLBA - 1)) != (addr & (SHMLBA - 1))) {
- 				unsigned long koff, aoff;
+diff -Nurp 2.6.21-rc4-git4-/include/linux/lockdep.h 2.6.21-rc4-git4/include/linux/lockdep.h
+--- 2.6.21-rc4-git4-/include/linux/lockdep.h	2007-03-20 20:24:17.000000000 +0100
++++ 2.6.21-rc4-git4/include/linux/lockdep.h	2007-03-21 22:32:41.000000000 +0100
+@@ -245,7 +245,7 @@ extern void lock_release(struct lockdep_
  
-+				/* Address needs adjusting which can't be done
-+				 * for MAP_FIXED
-+				 */
-+				if (flags & MAP_FIXED)
-+					return -EINVAL;
-+
- 				koff = kvirt & (SHMLBA - 1);
- 				aoff = addr & (SHMLBA - 1);
- 				if (koff < aoff)
+ # define INIT_LOCKDEP				.lockdep_recursion = 0,
+ 
+-#define lockdep_depth(tsk)	((tsk)->lockdep_depth)
++#define lockdep_depth(tsk)	(debug_locks ? (tsk)->lockdep_depth : 0)
+ 
+ #else /* !LOCKDEP */
+ 
