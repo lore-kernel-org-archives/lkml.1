@@ -1,84 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbXCVSfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXCVSlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbXCVSfR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 14:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXCVSfR
+	id S932282AbXCVSlV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 14:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934180AbXCVSlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 14:35:17 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:58104 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752267AbXCVSfP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 14:35:15 -0400
-Subject: Re: [BUG] no boot with 2.6.21-rc3 and later
-From: john stultz <johnstul@us.ibm.com>
-To: Bob Tracy <rct@gherkin.frus.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, bunk@stusta.de, jikos@jikos.cz
-In-Reply-To: <20070322034523.90050DBA1@gherkin.frus.com>
-References: <20070322034523.90050DBA1@gherkin.frus.com>
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 11:35:12 -0700
-Message-Id: <1174588512.5662.3.camel@localhost.localdomain>
+	Thu, 22 Mar 2007 14:41:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34283 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932282AbXCVSlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 14:41:20 -0400
+Date: Thu, 22 Mar 2007 13:14:36 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix cpufreq_stats attrs removal
+Message-ID: <20070322171436.GM15364@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+	Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+References: <20070319153013.GA6814@localhost.sw.ru> <20070319204125.GA5598@suse.de> <20070320100634.GA6811@localhost.sw.ru> <20070322030753.GB5728@suse.de> <20070322035104.GA17159@redhat.com> <20070322040006.GA6892@suse.de> <20070321201042.f1cbf4d8.akpm@linux-foundation.org> <20070322170201.GP4108@inferi.kami.home>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070322170201.GP4108@inferi.kami.home>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-21 at 21:45 -0600, Bob Tracy wrote:
-> john stultz wrote:
-> > > > Also, does booting w/ "clocksource=jiffies" change the behavior?
-> 
-> Works fine with 2.6.21-rc4.  I'm running on that kernel as I type this.
-> 
-> > Also trying booting w/ "notsc" would be a useful data point.
-> 
-> Boot hangs at the point indicated in my original message.  I *did*
-> notice the blurb in the console messages about the pit clocksource
-> being selected/used.  There was also a complaint about it being
-> unstable, with a negative delta.  I think these messages are consistent
-> with the pre-bad-commit case other than where they appear in the boot
-> messages.
-> 
-> > (...) a pre-bad-commit dmesg would help.
-> 
-> Sent under separate cover to John.
+On Thu, Mar 22, 2007 at 06:02:01PM +0100, Mattia Dongili wrote:
 
-Yea. From looking at your boot log, it does look like the PIT
-clocksource is being used. 
+ > The problem is cpufreq_stats doesn't know when a cpufreq driver is
+ > removed and doesn't cleanup. I guess this affects any setup with
+ > cpufreq_stats.
+ > The attached patch seems to solve both symptoms and yes... it's quite
+ > invasive as it introduce one more cpufreq policy notification (REMOVED).
+ > 
+ > BTW: the patch is against .21-rc4-mm1 but applies with some fuzz to
+ > 2.6.20 too
 
-This does point to an issue w/ that clocksource, however I noticed its
-getting selected over the ACPI PM timer, because you have the PIIX4 bug.
-That bug drops the ACPI PM timers rating to the same as the PIT, so
-that's why you're getting the PIT.
+Alternatively, as it's just debug functionality, we could just
+mark it unsafe for rmmod, which is nastier, but a lot less invasive
+to the non-debug code.
 
-Realistically, the PIT is much slower then even the triple read ACPI PM,
-so the de-ranking code is probably dropping it too far.
+	Dave
 
-Try this patch and let me know if it does the right thing. Although I do
-still need to dig a bit on the PIT hang issue.
-
--john
-
-
-Don't drop ACPI PM quite so low if we see the PIIX4 bug.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/drivers/clocksource/acpi_pm.c b/drivers/clocksource/acpi_pm.c
-index d42060e..5ac309e 100644
---- a/drivers/clocksource/acpi_pm.c
-+++ b/drivers/clocksource/acpi_pm.c
-@@ -90,7 +90,7 @@ __setup("acpi_pm_good", acpi_pm_good_set
- static inline void acpi_pm_need_workaround(void)
- {
- 	clocksource_acpi_pm.read = acpi_pm_read_slow;
--	clocksource_acpi_pm.rating = 110;
-+	clocksource_acpi_pm.rating = 120;
- }
- 
- /*
-
-
-
+-- 
+http://www.codemonkey.org.uk
