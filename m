@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030196AbXCVHtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030202AbXCVHtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030196AbXCVHtc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXCVHtb
+	id S1030202AbXCVHtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030234AbXCVHtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:49:31 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:4225 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753150AbXCVHtb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:49:31 -0400
-Date: Thu, 22 Mar 2007 08:48:06 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Bryan Wu" <bryan.wu@analog.com>, "David Brownell" <david-b@pacbell.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 4/4] Blackfin: on-chip Two Wire Interface I2C driver
-Message-Id: <20070322084806.8bf0f231.khali@linux-fr.org>
-In-Reply-To: <8bd0f97a0703212239n3edb9a44waa0994e3cffe48d8@mail.gmail.com>
-References: <1174471688.5648.56.camel@roc-desktop>
-	<20070321202231.2eac1cf9.khali@linux-fr.org>
-	<8bd0f97a0703212239n3edb9a44waa0994e3cffe48d8@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+	Thu, 22 Mar 2007 03:49:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:35894 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030228AbXCVHtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:49:51 -0400
+Subject: Re: [PATCH] make KVM conform to sucky rdmsr interface
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <46022E40.8080300@qumranet.com>
+References: <1174531917.2713.91.camel@localhost.localdomain>
+	 <46022E40.8080300@qumranet.com>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 18:49:30 +1100
+Message-Id: <1174549770.2713.121.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
+On Thu, 2007-03-22 at 09:20 +0200, Avi Kivity wrote:
+> My rdmsr_safe (x86_64, i386 is similar/same) is
 
-On Thu, 22 Mar 2007 01:39:28 -0400, Mike Frysinger wrote:
-> On 3/21/07, Jean Delvare <khali@linux-fr.org> wrote:
-> > > +     p_adap->class = I2C_CLASS_ALL;
-> >
-> > This pretty much voids the point of these probing classes. You should
-> > only select the classes matching devices which may actually be probed
-> > for on this bus. If different boards have different needs, get the
-> > right classes from the platform data.
-> 
-> i asked about the class issue previously specifically for this bus
-> driver and was told that they werent really fully defined ... the
-> on-chip I2C interface on the Blackfin chip can handle any I2C device
-> which is why i added this line
+Erk.  Andrew, please drop that patch, and take this one.
 
-Grep for I2C_CLASS_ and you'll see that the classes are defined and
-used consistently in the kernel tree. Maybe just not by the embedded
-folks.
+It was actually Jeremy's paravirt cleanup patch which changed the
+calling convention of rdmsr_safe() to match rdmsr().
 
-Also note that what matters is not the type of devices that can be
-connected on the bus, but the type of devices that can be probed for.
-This was essentially the same so far (general probing was the only way
-to instantiate an i2c device), but the new i2c-core code that will go
-into 2.6.22 will make it different. These classes will probably be less
-used in the future.
+I went "oh it's that fucking rdmsr interface" and "fixed" kvm.
 
-> any examples of how to go about doing it via boards ?  i dont see any
-> other I2C bus driver doing it that way ...
+Sorry for the bad patch,
+Rusty.
+==
+rdmsr_safe() takes pointers.  rdmsr() modifies its arguments.  What a
+mess.
 
-I don't think many drivers from the embedded world do it properly. But
-they don't appear to define any class at all, which means that in
-practice they keep most regular i2c drivers out of their bus. Pretty
-much the contrary of what you're doing with I2C_CLASS_ALL.
+Fix rdmsr_safe() with !CONFIG_PARAVIRT.
 
-It's really up to you, but if you set the class to I2C_CLASS_ALL, don't
-later come and complain that other drivers keep probing your I2C bus
-and possibly attach to your I2C devices. You asked for it.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
--- 
-Jean Delvare
+diff -r a7f78e8eacc8 include/asm-i386/msr.h
+--- a/include/asm-i386/msr.h	Thu Mar 22 12:38:35 2007 +1100
++++ b/include/asm-i386/msr.h	Thu Mar 22 18:40:35 2007 +1100
+@@ -96,12 +96,12 @@ static inline void wrmsrl (unsigned long
+ 	(native_write_msr(msr, ((unsigned long long)val2 << 32) | val1))
+ 
+ /* rdmsr with exception handling */
+-#define rdmsr_safe(msr,val1,val2)						\
++#define rdmsr_safe(msr,p1,p2)						\
+ 	({								\
+ 		int __err;						\
+-		unsigned long long __val = native_read_msr(msr, &__err);	\
+-		val1 = __val;						\
+-		val2 = __val >> 32;					\
++		unsigned long long __val = native_read_msr(msr, &__err);\
++		(*p1) = __val;						\
++		(*p2) = __val >> 32;					\
+ 		__err;							\
+ 	})
+ 
+
+
