@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933245AbXCVPej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbXCVPhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933245AbXCVPej (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 11:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933258AbXCVPej
+	id S933228AbXCVPhg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 11:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933233AbXCVPhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 11:34:39 -0400
-Received: from www.osadl.org ([213.239.205.134]:54636 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933245AbXCVPei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 11:34:38 -0400
-Subject: Re: sysfs ugly timer interface (was Re: [BUG] 2.6.21-rc1,2,3
-	regressions on my system that I found so far)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Greg KH <greg@kroah.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Maxim <maximlevitsky@gmail.com>,
-       Andrew Morton <akpm@osdl.org>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070322152842.GA6054@kroah.com>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	 <200703161919.44458.lenb@kernel.org>
-	 <200703180100.01889.maximlevitsky@gmail.com> <20070320115403.GA3983@ucw.cz>
-	 <20070322152842.GA6054@kroah.com>
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 16:41:53 +0100
-Message-Id: <1174578114.10840.194.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Mar 2007 11:37:36 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:38254 "EHLO
+	asav00.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933228AbXCVPhf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 11:37:35 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnoUAHs/AkZKhRO4UGdsb2JhbACHL4dsAQEq
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Nicolas Boichat <nicolas@boichat.ch>
+Subject: Re: [PATCH] Apple SMC driver (hardware monitoring and control)
+Date: Thu, 22 Mar 2007 11:37:34 -0400
+User-Agent: KMail/1.9.3
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org, rlove@rlove.org, linux-kernel@hansmi.ch
+References: <45F7C083.7090504@boichat.ch> <45FE1D44.8000805@boichat.ch>
+In-Reply-To: <45FE1D44.8000805@boichat.ch>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703221137.35906.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-22 at 08:28 -0700, Greg KH wrote:
-> On Tue, Mar 20, 2007 at 11:54:03AM +0000, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered
-> > > lapic                F:0007 M:3(periodic) C: 1
-> > > hpet                 F:0003 M:1(shutdown) C: 0
-> > > lapic                F:0007 M:3(periodic) C: 0
-> > > root@MAIN:/home/maxim#   
-> > 
-> > Now... this file needs to die, before 2.6.21 is released. It tries to
-> > bring /proc-like parsing nightmare to sysfs. Kill it before it becomes
-> > part of stable ABI!
+Hi Nicolas,
+
+On Monday 19 March 2007 01:19, Nicolas Boichat wrote:
+> +       /* initialize the input class */
+> +       applesmc_idev->name = "applesmc";
+
+You may want to set applesmc_idev->id.bus = BUS_HOST;
+
+> +       applesmc_idev->cdev.dev = &pdev->dev;
+> +       applesmc_idev->evbit[0] = BIT(EV_ABS);
+> +       input_set_abs_params(applesmc_idev, ABS_X,
+> +                       -256, 256, APPLESMC_INPUT_FUZZ, APPLESMC_INPUT_FLAT);
+> +       input_set_abs_params(applesmc_idev, ABS_Y,
+> +                       -256, 256, APPLESMC_INPUT_FUZZ, APPLESMC_INPUT_FLAT);
+> +
+> +       input_register_device(applesmc_idev);
+
+Please add error hanling here.
+
+> +
+> +       /* start up our timer for the input device */
+> +       init_timer(&applesmc_timer);
+> +       applesmc_timer.function = applesmc_mousedev_poll;
+> +       applesmc_timer.expires = jiffies + APPLESMC_POLL_PERIOD;
+> +       add_timer(&applesmc_timer);
 > 
-> Eeek!
-> 
-> I agree, that needs to be fixed now.
-> 
-> Remember, 1 value per file in sysfs!  Shall I just submit a patch
-> ripping it out for now?
 
-I fix it.
+Please consider implemention open and close methods for the input
+device and start/stop timer from there - there is no point of checking
+hardware state if noone is listening to events. 
 
-	tglx
-
-
+-- 
+Dmitry
