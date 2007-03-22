@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965781AbXCVHUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965828AbXCVHWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965781AbXCVHUm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965828AbXCVHUl
+	id S965828AbXCVHWl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965837AbXCVHWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:20:41 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33273 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965781AbXCVHUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:20:40 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
-Date: Thu, 22 Mar 2007 08:23:39 +0100
-User-Agent: KMail/1.9.5
-Cc: nigel@nigel.suspend2.net, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-References: <200703211840.53242.maximlevitsky@gmail.com> <200703212238.33897.rjw@sisk.pl> <20070322045106.GP32602149@melbourne.sgi.com>
-In-Reply-To: <20070322045106.GP32602149@melbourne.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Mar 2007 03:22:41 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:7035 "EHLO
+	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965828AbXCVHWk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:22:40 -0400
+Subject: Re: [PATCH] lockdep: lockdep_depth vs. debug_locks Re: [2.6.20]
+	BUG: workqueue leaked lock
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070322061119.GA1466@ff.dom.local>
+References: <17918.11420.155569.991473@notabene.brown>
+	 <20070320093753.GA1751@ff.dom.local> <20070320160759.GA107@tv-sign.ru>
+	 <20070321080510.GA1939@ff.dom.local> <20070321144620.GC78@tv-sign.ru>
+	 <20070321151651.GA4547@ff.dom.local> <20070321152935.GA215@tv-sign.ru>
+	 <20070321181635.GA570@tv-sign.ru>  <20070322061119.GA1466@ff.dom.local>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 08:22:37 +0100
+Message-Id: <1174548157.16411.4.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703220823.41077.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 22 March 2007 05:51, David Chinner wrote:
-> On Wed, Mar 21, 2007 at 10:38:33PM +0100, Rafael J. Wysocki wrote:
-> > 
-> > I think this is the XFS problem with freezable workqueues.
-> > 
-> > Maxim, please try to apply the appended patch and see if it helps.
-> > 
-> > Greetings,
-> > Rafael
-> > 
-> > 
-> > ---
-> > Since freezable workqueues are broken in 2.6.21-rc
-> > (cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
-> > http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
-> > it's better to remove them altogether for 2.6.21 and change the only user of
-> > them (XFS) accordingly.
-> > 
-> > ---
-> >  fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
-> > ===================================================================
-> > --- linux-2.6.21-rc4.orig/fs/xfs/linux-2.6/xfs_buf.c
-> > +++ linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
-> > @@ -1829,11 +1829,11 @@ xfs_buf_init(void)
-> >  	if (!xfs_buf_zone)
-> >  		goto out_free_trace_buf;
-> >  
-> > -	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
-> > +	xfslogd_workqueue = create_workqueue("xfslogd");
-> >  	if (!xfslogd_workqueue)
-> >  		goto out_free_buf_zone;
-> >  
-> > -	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
-> > +	xfsdatad_workqueue = create_workqueue("xfsdatad");
-> >  	if (!xfsdatad_workqueue)
-> >  		goto out_destroy_xfslogd_workqueue;
-> >  
+On Thu, 2007-03-22 at 07:11 +0100, Jarek Poplawski wrote:
+> Here is some joke:
 > 
-> Acked-by: Dave Chinner <dgc@sgi.com>
+> [PATCH] lockdep: lockdep_depth vs. debug_locks
 > 
-> Rafael, it sounds like this really needs to go into the next -rc
-> kernel. Can you push it to Linus?
+> lockdep really shouldn't be used when debug_locks == 0!
 
-I tried, but Andrew resent it to you. :-)
+This happens then lockdep reports a fatal error, at which point
+it will stop tracking locks and leave whatever state was there.
 
-Andrew, could we please merge it?
+> Reported-by: Folkert van Heusden <folkert@vanheusden.com>
+> Inspired-by: Oleg Nesterov <oleg@tv-sign.ru>
+> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
 
-Greetings,
-Rafael
+This looks sane, thanks for figuring this out.
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> ---
+> 
+> diff -Nurp 2.6.21-rc4-git4-/include/linux/lockdep.h 2.6.21-rc4-git4/include/linux/lockdep.h
+> --- 2.6.21-rc4-git4-/include/linux/lockdep.h	2007-03-20 20:24:17.000000000 +0100
+> +++ 2.6.21-rc4-git4/include/linux/lockdep.h	2007-03-21 22:32:41.000000000 +0100
+> @@ -245,7 +245,7 @@ extern void lock_release(struct lockdep_
+>  
+>  # define INIT_LOCKDEP				.lockdep_recursion = 0,
+>  
+> -#define lockdep_depth(tsk)	((tsk)->lockdep_depth)
+> +#define lockdep_depth(tsk)	(debug_locks ? (tsk)->lockdep_depth : 0)
+>  
+>  #else /* !LOCKDEP */
+>  
+
