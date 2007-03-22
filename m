@@ -1,82 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXCVCDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbXCVCDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753025AbXCVCDE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Mar 2007 22:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbXCVCDE
+	id S1753132AbXCVCDI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Mar 2007 22:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbXCVCDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Mar 2007 22:03:04 -0400
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:56656 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753025AbXCVCDB (ORCPT
+	Wed, 21 Mar 2007 22:03:07 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:25023 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753054AbXCVCDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Mar 2007 22:03:01 -0400
-X-Sasl-enc: C/qGh4z4EBPOVBRaK3K0WjhvlUao7Jiyw8+Z2mDbR+3/ 1174528980
-Subject: Re: [PATCH 2/2] Replace pid_t in autofs with struct pid reference
-From: Ian Kent <raven@themaw.net>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       sukadev@us.ibm.com, Andrew Morton <akpm@osdl.org>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
-References: <Pine.LNX.4.64.0703161300520.4188@raven.themaw.net>
-	 <m1ird1o243.fsf@ebiederm.dsl.xmission.com>
-	 <1174055467.3397.17.camel@raven.themaw.net> <45FAAD4F.4000204@fr.ibm.com>
-	 <1174063618.3397.58.camel@raven.themaw.net>
-	 <m1hcslm1tc.fsf@ebiederm.dsl.xmission.com>
-	 <20070319200839.GB19449@sergelap.austin.ibm.com>
-	 <m1odmpvuft.fsf@ebiederm.dsl.xmission.com>
-	 <20070320201548.GA21312@sergelap.austin.ibm.com>
-	 <m17itbmypc.fsf@ebiederm.dsl.xmission.com>
-	 <20070320214125.GA5585@sergelap.austin.ibm.com>
-	 <m1r6rjlgl9.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 11:00:51 +0900
-Message-Id: <1174528851.4635.6.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
+	Wed, 21 Mar 2007 22:03:06 -0400
+Message-ID: <4601E3C5.5070103@chelsio.com>
+Date: Wed, 21 Mar 2007 18:02:45 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 2.6.21 2/4] cxgb3 - Auto-load FW if mismatch detected
+References: <20070318201006.16292.12877.stgit@localhost.localdomain> <20070321150706.9b916d79.akpm@linux-foundation.org>
+In-Reply-To: <20070321150706.9b916d79.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Mar 2007 02:02:48.0129 (UTC) FILETIME=[307B4310:01C76C26]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-20 at 16:01 -0600, Eric W. Biederman wrote:
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> 
-> >> >  void autofs4_dentry_release(struct dentry *);
-> >> >  extern void autofs4_kill_sb(struct super_block *);
-> >> > diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-> >> > index 9857543..4a9ad9b 100644
-> >> > --- a/fs/autofs4/waitq.c
-> >> > +++ b/fs/autofs4/waitq.c
-> >> > @@ -141,8 +141,8 @@ static void autofs4_notify_daemon(struct
-> >> >  		packet->ino = wq->ino;
-> >> >  		packet->uid = wq->uid;
-> >> >  		packet->gid = wq->gid;
-> >> > -		packet->pid = wq->pid;
-> >> > -		packet->tgid = wq->tgid;
-> >> > +		packet->pid = pid_nr(wq->pid);
-> >> > +		packet->tgid = pid_nr(wq->tgid);
-> >> >  		break;
-> >> 
-> >> I'm assuming we build the packet in the process context of the
-> >> daemon we are sending it to.  If not we have a problem here.
-> >
-> > Yes this is data being sent to a userspace daemon (Ian pls correct me if
-> > I'm wrong) so the pid_nr is the only thing we can send.
-> 
-> Agreed.  The question is are we in the user space daemon's process when
-> we generate the pid_nr.  Or do we stuff this in some kind of socket,
-> and the socket switch locations of the packet.
+Andrew Morton wrote:
+> On Sun, 18 Mar 2007 13:10:06 -0700
+> divy@chelsio.com wrote:
+>
+>   
+>>  config CHELSIO_T3
+>>          tristate "Chelsio Communications T3 10Gb Ethernet support"
+>>          depends on PCI
+>> +	select FW_LOADER
+>>     
+>
+> Something has gone wrong with the indenting there.
+>   
 
-The context here is the automount daemon only for expire runs.
+The added line is fine. The surrounding lines are not. They use white 
+spaces.
+I'll send a patch over the last series to use tabs in drivers/net/Kconfig.
 
-Mount request packets are triggered by user processes walking over an
-autofs mount point directory. So "current" in this case isn't the autofs
-daemon.
-
-Requests are sent via a pipe to the daemon.
-
-Ian
-
-
+Cheers,
+Divy
