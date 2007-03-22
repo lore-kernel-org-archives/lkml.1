@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbXCVHNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbXCVHPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753243AbXCVHNd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 03:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbXCVHNd
+	id S1753248AbXCVHPG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 03:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXCVHPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 03:13:33 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:24099 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753243AbXCVHNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 03:13:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FXQn7VHluAyBo2efV6oAaaKukZXxZxwBV17tz25GixIJn0vaHF8A3SVdzFbS1NbwXXjFjXyu9RtJNpNQVkbD+pii3Hv9w1FExf6NUxwW1f74oVHJEVlESriabs7ns9OQB0op14GWiLNNL4flbrdCJF4UELshRcoynIxnDxc9TYE=
-Message-ID: <8bd0f97a0703220013h7898e5e6sd97df17705765d57@mail.gmail.com>
-Date: Thu, 22 Mar 2007 03:13:32 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH -mm 4/4] Blackfin: on-chip Two Wire Interface I2C driver
-Cc: "Bob Copeland" <me@bobcopeland.com>, bryan.wu@analog.com,
-       "David Brownell" <david-b@pacbell.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070322080356.738b7a1e.khali@linux-fr.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 22 Mar 2007 03:15:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40330 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753248AbXCVHPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 03:15:03 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+1znAVYyC1sjCNVtA22eiBmZnuhFdojTClXhj0cw
+	6mYYSr0UE5bpXy
+Subject: Re: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Paolo Ornati <ornati@fastwebnet.it>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Xavier Bestel <xavier.bestel@free.fr>, Mark Lord <lkml@rtr.ca>,
+       Al Boldi <a1426z@gawab.com>, Con Kolivas <kernel@kolivas.org>,
+       ck@vds.kolivas.org, Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Nicholas Miell <nmiell@comcast.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070322044935.GY943@1wt.eu>
+References: <45FEB54A.3040602@rtr.ca>
+	 <1174321617.30876.69.camel@frg-rhel40-em64t-04> <45FEBBF5.9060002@rtr.ca>
+	 <1174322580.30876.72.camel@frg-rhel40-em64t-04>
+	 <Pine.LNX.4.64.0703192006130.6730@woody.linux-foundation.org>
+	 <20070320061152.GW943@1wt.eu> <1174377787.9756.21.camel@Homer.simpson.net>
+	 <1174489064.5379.42.camel@Homer.simpson.net>
+	 <20070321161147.54c7a727@localhost>
+	 <1174496853.6441.2.camel@Homer.simpson.net>  <20070322044935.GY943@1wt.eu>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 08:14:59 +0100
+Message-Id: <1174547699.7414.136.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1174471688.5648.56.camel@roc-desktop>
-	 <b6c5339f0703211117m70d01240mdfe1c0798d3296e2@mail.gmail.com>
-	 <8bd0f97a0703211214ic7e42d2pa9452ef52b566fd9@mail.gmail.com>
-	 <20070322080356.738b7a1e.khali@linux-fr.org>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/22/07, Jean Delvare <khali@linux-fr.org> wrote:
-> On Wed, 21 Mar 2007 15:14:29 -0400, Mike Frysinger wrote:
-> > On 3/21/07, Bob Copeland <me@bobcopeland.com> wrote:
-> > > > +config I2C_BLACKFIN_TWI
-> > > > +       tristate "Blackfin TWI I2C support"
-> > > > +       depends on I2C && (BF534 || BF536 || BF537)
-> > > > +       help
-> > > > +         This is the TWI I2C device driver for Blackfin 534/536/537.
-> > > > +         This driver can also be built as a module.  If so, the module
-> > > > +         will be called i2c-bfin-twi.
-> > >
-> > > Pardon my ignorance, but is there any reason to call it "Blackfin TWI"
-> > > as opposed to just "Blackfin" since TWI and I2C mean the same thing?
-> > > It lends itself to some redundancies such as:
-> > >
-> > > > +       pr_info("I2C: Blackfin I2C TWI driver\n");
-> >
-> > it reflects the hardware manual and all public Analog Devices
-> > documentation ... the peripheral is always referred to as a "Two Wire
-> > Interface that is fully compatible with the I2C standard" since using
-> > the "I2C" term is not free
->
-> Damn, I hate it when legal idiocy takes the lead on technical clarity :(
+On Thu, 2007-03-22 at 05:49 +0100, Willy Tarreau wrote:
 
-i'm with you 100% but it isnt my call to make ;(
--mike
+> Mike, if you need my old scheddos, I can resend it to you as well as to
+> any people working on the scheduler and asking for it. Although trivial,
+> I'm a bit reluctant to publish it to the whole world because I suspect
+> that distros based on older kernels are still vulnerable and the fixes
+> may not be easy. Anyway, it has absolutely no effect on non-interactive
+> schedulers.
+
+Sure.  I'm really irked that I lost most of my collection of posted
+exploits.  I prefer to test with the same widget the poster tested
+with.  
+
+(in this particular case, it's not _very_ important which one i test
+with, i'm exploring my RSDL troubles with sleepers in general...
+duration matters though, need to be fairly short/short burn.)
+
+	-Mike
+
