@@ -1,146 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934235AbXCVUqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752422AbXCVVDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934235AbXCVUqj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 16:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934234AbXCVUqj
+	id S1752422AbXCVVDw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 17:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbXCVVDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 16:46:39 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57167 "EHLO mx1.suse.de"
+	Thu, 22 Mar 2007 17:03:52 -0400
+Received: from mga03.intel.com ([143.182.124.21]:6294 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934235AbXCVUqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 16:46:38 -0400
-Date: Thu, 22 Mar 2007 21:46:35 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix crash in tg3 when using irqpoll
-Message-ID: <20070322204635.GA27152@strauss.suse.de>
-Mail-Followup-To: netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752422AbXCVVDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 17:03:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,315,1170662400"; 
+   d="scan'208"; a="201018420:sNHT29130675"
+Subject: [PATCH 2.6.21-rc4] Flush writes to MSI-X table
+From: Mitch Williams <mitch.a.williams@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@redhat.com, gregkh@suse.de, auke-jan.h.kok@intel.com,
+       john.ronciak@intel.com, jesse.brandeburg@intel.com
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 14:03:47 -0700
+Message-Id: <1174597427.24177.28.camel@strongmad>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When using irqpoll I had a crash when I loaded the tg3 network driver
-(on IA64). The stack trace was:
+Because both MSI-X interrupt messages and MSI-X table writes are posted,
+it's possible for them to cross while in-flight.  This results in
+interrupts being received long after the kernel thinks they're disabled,
+and in interrupts being sent to stale vectors after rebalancing.
 
-        ia64_leave_kernel
-        [tg3]tg3_interrupt_tagged
-        note_interrupt
-        __do_IRQ
-        ia64_handle_irq
-        ia64_leave_kernel
-        _spin_unlock_irqrestore
-        pci_bus_read_config_dword
-        pci_restore_state
-        [tg3]tg3_chip_reset
-        [tg3]tg3_reset_hw
-        [tg3]tg3_init_hw
-        [tg3]tg3_open
-        dev_open
-        dev_change_flags
-        devinet_ioctl
-        inet_ioctl
-        sock_ioctl
-        do_ioctl
-        vfs_ioctl
-        sys_ioctl
-        ia64_ret_from_syscall
-        __kernel_syscall_via_break
+This patch performs a read flush after writes to the MSI-X table for
+enable/disable and rebalancing operations.  Because this is an expensive
+operation, we do not perform the read flush after mask/unmask
+operations.  Hardware which supports MSI-X typically also supports some
+sort of interrupt moderation, so a read-flush is not necessary for
+mask/unmask operations.
 
-Also, I had a MCA that ended up in a read from a PCI address that belongs to the
-tg3 driver.
+This patch has been validated with (unreleased) network hardware which
+uses MSI-X.
 
-This patch makes sure that even the tr32() instruction in the interrupt handler
-is not executed which accesses PCI memory. Accessing PCI memory when
-pci_restore_state() is called is a bad idea because that function modifies
-the BARs of the PCI device.
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 
-I think the problem could also happen when using shared interrupts, not only
-irqpoll.
-
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- drivers/net/tg3.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
-
-Index: mainline-msi-init/drivers/net/tg3.c
-===================================================================
---- mainline-msi-init.orig/drivers/net/tg3.c
-+++ mainline-msi-init/drivers/net/tg3.c
-@@ -3561,7 +3561,10 @@ static irqreturn_t tg3_interrupt(int irq
- 	struct net_device *dev = dev_id;
- 	struct tg3 *tp = netdev_priv(dev);
- 	struct tg3_hw_status *sblk = tp->hw_status;
--	unsigned int handled = 1;
-+	unsigned int handled = 0;
+diff -urpN -X dontdiff linux-2.6.21-rc4-clean/arch/i386/kernel/io_apic.c linux-2.6.21-rc4/arch/i386/kernel/io_apic.c
+--- linux-2.6.21-rc4-clean/arch/i386/kernel/io_apic.c	2007-03-19 16:16:30.000000000 -0700
++++ linux-2.6.21-rc4/arch/i386/kernel/io_apic.c	2007-03-19 16:24:05.000000000 -0700
+@@ -2594,6 +2594,8 @@ static void set_msi_irq_affinity(unsigne
+  */
+ static struct irq_chip msi_chip = {
+ 	.name		= "PCI-MSI",
++	.enable		= enable_msi_irq,
++	.disable	= disable_msi_irq,
+ 	.unmask		= unmask_msi_irq,
+ 	.mask		= mask_msi_irq,
+ 	.ack		= ack_ioapic_irq,
+diff -urpN -X dontdiff linux-2.6.21-rc4-clean/arch/ia64/kernel/msi_ia64.c linux-2.6.21-rc4/arch/ia64/kernel/msi_ia64.c
+--- linux-2.6.21-rc4-clean/arch/ia64/kernel/msi_ia64.c	2007-03-19 16:16:30.000000000 -0700
++++ linux-2.6.21-rc4/arch/ia64/kernel/msi_ia64.c	2007-03-19 16:24:05.000000000 -0700
+@@ -121,6 +121,8 @@ static int ia64_msi_retrigger_irq(unsign
+  */
+ static struct irq_chip ia64_msi_chip = {
+ 	.name		= "PCI-MSI",
++	.enable		= enable_msi_irq,
++	.disable	= disable_msi_irq,
+ 	.mask		= mask_msi_irq,
+ 	.unmask		= unmask_msi_irq,
+ 	.ack		= ia64_ack_msi_irq,
+diff -urpN -X dontdiff linux-2.6.21-rc4-clean/arch/ia64/sn/kernel/msi_sn.c linux-2.6.21-rc4/arch/ia64/sn/kernel/msi_sn.c
+--- linux-2.6.21-rc4-clean/arch/ia64/sn/kernel/msi_sn.c	2007-03-19 16:16:30.000000000 -0700
++++ linux-2.6.21-rc4/arch/ia64/sn/kernel/msi_sn.c	2007-03-19 16:24:05.000000000 -0700
+@@ -224,6 +224,8 @@ static int sn_msi_retrigger_irq(unsigned
+ 
+ static struct irq_chip sn_msi_chip = {
+ 	.name		= "PCI-MSI",
++	.enable		= enable_msi_irq,
++	.disable	= disable_msi_irq,
+ 	.mask		= mask_msi_irq,
+ 	.unmask		= unmask_msi_irq,
+ 	.ack		= sn_ack_msi_irq,
+diff -urpN -X dontdiff linux-2.6.21-rc4-clean/arch/x86_64/kernel/io_apic.c linux-2.6.21-rc4/arch/x86_64/kernel/io_apic.c
+--- linux-2.6.21-rc4-clean/arch/x86_64/kernel/io_apic.c	2007-03-19 16:16:31.000000000 -0700
++++ linux-2.6.21-rc4/arch/x86_64/kernel/io_apic.c	2007-03-21 12:44:51.000000000 -0700
+@@ -1942,6 +1942,7 @@ static void set_msi_irq_affinity(unsigne
+ 	if (cpus_empty(tmp))
+ 		return;
+ 
++	msix_flush_writes(irq);
+ 	if (assign_irq_vector(irq, mask))
+ 		return;
+ 
+@@ -1956,6 +1957,7 @@ static void set_msi_irq_affinity(unsigne
+ 	msg.address_lo |= MSI_ADDR_DEST_ID(dest);
+ 
+ 	write_msi_msg(irq, &msg);
++	msix_flush_writes(irq);
+ 	irq_desc[irq].affinity = mask;
+ }
+ #endif /* CONFIG_SMP */
+@@ -1966,6 +1968,8 @@ static void set_msi_irq_affinity(unsigne
+  */
+ static struct irq_chip msi_chip = {
+ 	.name		= "PCI-MSI",
++	.enable		= enable_msi_irq,
++	.disable	= disable_msi_irq,
+ 	.unmask		= unmask_msi_irq,
+ 	.mask		= mask_msi_irq,
+ 	.ack		= ack_apic_edge,
+diff -urpN -X dontdiff linux-2.6.21-rc4-clean/drivers/pci/msi.c linux-2.6.21-rc4/drivers/pci/msi.c
+--- linux-2.6.21-rc4-clean/drivers/pci/msi.c	2007-03-19 16:16:32.000000000 -0700
++++ linux-2.6.21-rc4/drivers/pci/msi.c	2007-03-21 12:44:51.000000000 -0700
+@@ -68,6 +68,29 @@ static void msix_set_enable(struct pci_d
+ 	}
+ }
+ 
++void msix_flush_writes(unsigned int irq)
++{
++	struct msi_desc *entry;
 +
-+	if (tg3_irq_sync(tp))
-+		goto out;
- 
- 	/* In INTx mode, it is possible for the interrupt to arrive at
- 	 * the CPU before the status block posted prior to the interrupt.
-@@ -3579,8 +3582,6 @@ static irqreturn_t tg3_interrupt(int irq
- 		 */
- 		tw32_mailbox(MAILBOX_INTERRUPT_0 + TG3_64BIT_REG_LOW,
- 			     0x00000001);
--		if (tg3_irq_sync(tp))
--			goto out;
- 		sblk->status &= ~SD_STATUS_UPDATED;
- 		if (likely(tg3_has_work(tp))) {
- 			prefetch(&tp->rx_rcb[tp->rx_rcb_ptr]);
-@@ -3592,8 +3593,7 @@ static irqreturn_t tg3_interrupt(int irq
- 			tw32_mailbox_f(MAILBOX_INTERRUPT_0 + TG3_64BIT_REG_LOW,
- 			     	0x00000000);
- 		}
--	} else {	/* shared interrupt */
--		handled = 0;
-+		handled = 1;
- 	}
- out:
- 	return IRQ_RETVAL(handled);
-@@ -3604,7 +3604,10 @@ static irqreturn_t tg3_interrupt_tagged(
- 	struct net_device *dev = dev_id;
- 	struct tg3 *tp = netdev_priv(dev);
- 	struct tg3_hw_status *sblk = tp->hw_status;
--	unsigned int handled = 1;
-+	unsigned int handled = 0;
++	entry = get_irq_msi(irq);
++	BUG_ON(!entry || !entry->dev);
++	switch (entry->msi_attrib.type) {
++	case PCI_CAP_ID_MSI:
++		/* nothing to do */
++		break;
++	case PCI_CAP_ID_MSIX:
++	{
++		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
++			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
++		readl(entry->mask_base + offset);
++		break;
++	}
++	default:
++		BUG();
++		break;
++	}
++}
 +
-+	if (tg3_irq_sync(tp))
-+		goto out;
+ static void msi_set_mask_bit(unsigned int irq, int flag)
+ {
+ 	struct msi_desc *entry;
+@@ -193,6 +216,17 @@ void unmask_msi_irq(unsigned int irq)
+ 	msi_set_mask_bit(irq, 0);
+ }
  
- 	/* In INTx mode, it is possible for the interrupt to arrive at
- 	 * the CPU before the status block posted prior to the interrupt.
-@@ -3622,8 +3625,6 @@ static irqreturn_t tg3_interrupt_tagged(
- 		 */
- 		tw32_mailbox(MAILBOX_INTERRUPT_0 + TG3_64BIT_REG_LOW,
- 			     0x00000001);
--		if (tg3_irq_sync(tp))
--			goto out;
- 		if (netif_rx_schedule_prep(dev)) {
- 			prefetch(&tp->rx_rcb[tp->rx_rcb_ptr]);
- 			/* Update last_tag to mark that this status has been
-@@ -3634,8 +3635,7 @@ static irqreturn_t tg3_interrupt_tagged(
- 			tp->last_tag = sblk->status_tag;
- 			__netif_rx_schedule(dev);
- 		}
--	} else {	/* shared interrupt */
--		handled = 0;
-+		handled = 1;
- 	}
- out:
- 	return IRQ_RETVAL(handled);
-@@ -7052,7 +7052,7 @@ static int tg3_open(struct net_device *d
- 		return err;
- 	}
++void disable_msi_irq(unsigned int irq)
++{
++	msi_set_mask_bit(irq, 1);
++	msix_flush_writes(irq);
++}
++
++void enable_msi_irq(unsigned int irq)
++{
++	msi_set_mask_bit(irq, 0);
++	msix_flush_writes(irq);
++}
+ static int msi_free_irq(struct pci_dev* dev, int irq);
  
--	tg3_full_lock(tp, 0);
-+	tg3_full_lock(tp, 1);
+ static int msi_init(void)
+diff -urpN -X dontdiff linux-2.6.21-rc4-clean/include/linux/msi.h linux-2.6.21-rc4/include/linux/msi.h
+--- linux-2.6.21-rc4-clean/include/linux/msi.h	2007-03-19 16:16:34.000000000 -0700
++++ linux-2.6.21-rc4/include/linux/msi.h	2007-03-21 12:44:51.000000000 -0700
+@@ -10,8 +10,11 @@ struct msi_msg {
+ /* Helper functions */
+ extern void mask_msi_irq(unsigned int irq);
+ extern void unmask_msi_irq(unsigned int irq);
++extern void disable_msi_irq(unsigned int irq);
++extern void enable_msi_irq(unsigned int irq);
+ extern void read_msi_msg(unsigned int irq, struct msi_msg *msg);
+ extern void write_msi_msg(unsigned int irq, struct msi_msg *msg);
++extern void msix_flush_writes(unsigned int irq);
  
- 	err = tg3_init_hw(tp, 1);
- 	if (err) {
+ struct msi_desc {
+ 	struct {
