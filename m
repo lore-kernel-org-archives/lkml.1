@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbXCVEvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932808AbXCVE7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbXCVEvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 00:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXCVEvd
+	id S932808AbXCVE7e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 00:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933151AbXCVE7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 00:51:33 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36139 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932645AbXCVEvc (ORCPT
+	Thu, 22 Mar 2007 00:59:34 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:19317 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932808AbXCVE7d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 00:51:32 -0400
-Date: Thu, 22 Mar 2007 15:51:06 +1100
-From: David Chinner <dgc@sgi.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: nigel@nigel.suspend2.net, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       David Chinner <dgc@sgi.com>
-Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
-Message-ID: <20070322045106.GP32602149@melbourne.sgi.com>
-References: <200703211840.53242.maximlevitsky@gmail.com> <1174512160.6665.97.camel@nigel.suspend2.net> <200703212238.33897.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 22 Mar 2007 00:59:33 -0400
+Message-ID: <d4cf37a60703212159u54fe7fdehf052c1cc788b9b94@mail.gmail.com>
+Date: Wed, 21 Mar 2007 21:59:33 -0700
+From: "Wink Saville" <wink@saville.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] Initial implementation of the trec driver and include files
+In-Reply-To: <20070321181739.GC16768@leiferikson>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200703212238.33897.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.1i
+References: <d4cf37a60703202347o67740694jc1c9030c647ff7c6@mail.gmail.com>
+	 <20070321082238.GA16768@leiferikson> <46016208.3040303@saville.com>
+	 <20070321181739.GC16768@leiferikson>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 10:38:33PM +0100, Rafael J. Wysocki wrote:
-> 
-> I think this is the XFS problem with freezable workqueues.
-> 
-> Maxim, please try to apply the appended patch and see if it helps.
-> 
-> Greetings,
-> Rafael
-> 
-> 
-> ---
-> Since freezable workqueues are broken in 2.6.21-rc
-> (cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
-> http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
-> it's better to remove them altogether for 2.6.21 and change the only user of
-> them (XFS) accordingly.
-> 
-> ---
->  fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
-> ===================================================================
-> --- linux-2.6.21-rc4.orig/fs/xfs/linux-2.6/xfs_buf.c
-> +++ linux-2.6.21-rc4/fs/xfs/linux-2.6/xfs_buf.c
-> @@ -1829,11 +1829,11 @@ xfs_buf_init(void)
->  	if (!xfs_buf_zone)
->  		goto out_free_trace_buf;
->  
-> -	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
-> +	xfslogd_workqueue = create_workqueue("xfslogd");
->  	if (!xfslogd_workqueue)
->  		goto out_free_buf_zone;
->  
-> -	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
-> +	xfsdatad_workqueue = create_workqueue("xfsdatad");
->  	if (!xfsdatad_workqueue)
->  		goto out_destroy_xfslogd_workqueue;
->  
+On 3/21/07, Johannes Weiner <hannes-kernel@saeurebad.de> wrote:
+> Hi,
+>
+> On Wed, Mar 21, 2007 at 09:49:12AM -0700, Wink Saville wrote:
+> > >>Please don't use camel-case - in general.
+> > >>
+> > Would p_next, p_cur and p_end be OK?
+>
+> I think it's generally disliked. Quoting Documentation/CodingStyle:
+>
+> ``Encoding the type of a function into the name (so-called Hungarian
+> notation) is brain damaged - the compiler knows the types anyway and can
+> check those, and it only confuses the programmer.  No wonder MicroSoft
+> makes buggy programs.''
+>
 
-Acked-by: Dave Chinner <dgc@sgi.com>
+I'll change it to; next, cur, end (when in rome do as the romans)
 
-Rafael, it sounds like this really needs to go into the next -rc
-kernel. Can you push it to Linus?
+>
+> You can implement a sysctl-setting to enable/disable the whole system
+> (which then would be runtime changeable).
 
-Cheers,
+Generally the way I've used this in the kernel is sprinkle them liberally
+where I'm trying to track down a bug or understand how some code works
+and then disable some of them using ZREC's but then reenable as
+necessary. Finally, I remove them all usually by reverting to the original
+code.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+In userland I have a more sophisticated version which combines TREC's
+and printf's in one macro with a "debug variable" defined as a
+set of bits controlling the enable/disable sets of these. For example:
+
+   DPRP1(1 << 2, "This is a DPR with parameter=%d", xyz);
+
+#define DPRP1(__bits, __format, __param, ...) \
+do { \
+   if (((__bits) << 16) & dbg_variable) \
+         printf((__format), __param...); \
+   if ((__bits) & dbg_variable) \
+         TREC1((__param)); \
+} while (0)
+
+The above divides "dbg_variable" into 2 16 bit fields, the upper 16
+bits control if the printf is enabled and the lower 16 bits controls if
+the TREC1 is enabled. What I envision happening would possibly
+to expose the "dbg_variable" via procfs where it could "easily" be
+modified from userland.
+
+Anyway, for my immediate needs I just needed the TREC's so I could
+understand the inner workings of the kernel better and assist in debugging.
+I've submitted it as a patch incase anyone might be interested.
+
+Actually, are you interested in using them?
+
+In anycase thanks for the feed back.
+
+Wink
