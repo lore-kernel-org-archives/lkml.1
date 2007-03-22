@@ -1,37 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXCVWLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161133AbXCVWM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161140AbXCVWLH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 18:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161142AbXCVWLG
+	id S1161133AbXCVWM6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 18:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161141AbXCVWM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 18:11:06 -0400
-Received: from graphe.net ([209.204.138.32]:44968 "EHLO graphe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161140AbXCVWLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 18:11:05 -0400
-Date: Thu, 22 Mar 2007 15:10:29 -0700 (PDT)
-From: Christoph Lameter <christoph@lameter.com>
-X-X-Sender: christoph@graphe.net
+	Thu, 22 Mar 2007 18:12:57 -0400
+Received: from www.cosmosbay.com ([86.65.150.131]:52523 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161133AbXCVWM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 18:12:57 -0400
+Message-ID: <4602FF57.7030001@cosmosbay.com>
+Date: Thu, 22 Mar 2007 23:12:39 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
 To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-cc: Andi Kleen <andi@firstfloor.org>, Eric Dumazet <dada1@cosmosbay.com>,
+CC: Christoph Lameter <christoph@lameter.com>,
+       Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA
- cache_free_alien() very expensive because of virt_to_slab(objp); nodeid =
- slabp->nodeid;)
+Subject: Re: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA cache_free_alien()
+ very expensive because of virt_to_slab(objp); nodeid = slabp->nodeid;)
+References: <20070320181235.77d28864.dada1@cosmosbay.com> <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org> <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org> <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com>
 In-Reply-To: <20070322212831.GA25665@linux-os.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0703221510080.9678@graphe.net>
-References: <20070320181235.77d28864.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org>
- <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org>
- <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 22 Mar 2007 23:12:44 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Mar 2007, Siddha, Suresh B wrote:
+Siddha, Suresh B a écrit :
+> Christoph,
+> 
+> While we are at this topic, recently I had reports that
+> cache_free_alien() is costly on non NUMA platforms too (similar
+> to the cache miss issues that Eric was referring to on NUMA)
+> and the appended patch seems to fix it for non NUMA atleast.
+> 
+> Appended patch gives a nice 1% perf improvement on non-NUMA platform
+> with database workload.
+> 
+> Please comment or Ack for mainline :)
+
+I have one comment :)
 
 > @@ -1394,6 +1394,9 @@ void __init kmem_cache_init(void)
 >  	int order;
@@ -41,5 +53,13 @@ On Thu, 22 Mar 2007, Siddha, Suresh B wrote:
 > +		use_alien_caches = 0;
 > +
 
-What happens if you bring up a second node?
+Unfortunatly this part is wrong.
+
+You should check num_possible_nodes(), or nr_node_ids (this one is cheaper, 
+its a variable instead of a function call)
+
+I wonder if we could add a new SLAB_NUMA_BYPASS, so that we can declare some 
+kmem_cache as non NUMA aware (for example, I feel network skb dont need the 
+NUMA overhead)
+
 
