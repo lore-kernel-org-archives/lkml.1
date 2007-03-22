@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbXCVPaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933185AbXCVPal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933190AbXCVPaV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 11:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbXCVPaV
+	id S933185AbXCVPal (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 11:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933228AbXCVPal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 11:30:21 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:58286 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933190AbXCVPaU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 11:30:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=H+sk1F8dIAm8pD/Asn0GhDcr8XLxs2FHsSd5Xs0pGg1VgiMrPJs7p8gF4NcowmxEiq5RVPveGhiuXEiZ/XdFS6uSp11p3qesmre9RgoobSBfcli+bZVf2GiAYrQZ25BJT9h2SPTxpYMmSL4zVUCYiLIiXLOy7J7jQvZ+GgGd9eM=
-Message-ID: <75b66ecd0703220830wdb4a612u86c80e71d4918cc4@mail.gmail.com>
-Date: Thu, 22 Mar 2007 11:30:18 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Cestonaro, Thilo (external)" 
-	<Thilo.Cestonaro.external@fujitsu-siemens.com>
-Subject: Re: how can I touch softlockup watchdog on all cpus?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB710B@ABGEX01E.abg.fsc.net>
+	Thu, 22 Mar 2007 11:30:41 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40594 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933217AbXCVPak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 11:30:40 -0400
+Date: Thu, 22 Mar 2007 08:28:42 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Maxim <maximlevitsky@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: sysfs ugly timer interface (was Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so far)
+Message-ID: <20070322152842.GA6054@kroah.com>
+References: <200703161230.03712.maximlevitsky@gmail.com> <200703161919.44458.lenb@kernel.org> <200703180100.01889.maximlevitsky@gmail.com> <20070320115403.GA3983@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB6F2A@ABGEX01E.abg.fsc.net>
-	 <20070321164404.GF13218@redhat.com>
-	 <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB710B@ABGEX01E.abg.fsc.net>
-X-Google-Sender-Auth: 04a6ad566f3ced6c
+In-Reply-To: <20070320115403.GA3983@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/22/07, Cestonaro, Thilo (external)
-<Thilo.Cestonaro.external@fujitsu-siemens.com> wrote:
-> > You didn't explain _why_ you need to sleep for such a long time,
-> > and as you didn't give a pointer to your code, there's not
-> > much people can do to recommend changes other than "don't do that".
->
-> The code which is executed between the local_irq_disable and enable,
-> is just a function call into our companies bios (e.g. for updating itself)
-> and the long time is just 15 sec. while the bios has full control and OS is halted.
-> So I can't change anything at this point, but I need to fetch the watchdog,
-> cause it is not so nice, if there is a big BUG output on console while the
-> computer updates it's bios, very trustworthy isn't it :).
+On Tue, Mar 20, 2007 at 11:54:03AM +0000, Pavel Machek wrote:
+> Hi!
+> 
+> > root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered
+> > lapic                F:0007 M:3(periodic) C: 1
+> > hpet                 F:0003 M:1(shutdown) C: 0
+> > lapic                F:0007 M:3(periodic) C: 0
+> > root@MAIN:/home/maxim#   
+> 
+> Now... this file needs to die, before 2.6.21 is released. It tries to
+> bring /proc-like parsing nightmare to sysfs. Kill it before it becomes
+> part of stable ABI!
 
-Just disable the softlockup watchdog.
+Eeek!
 
-Lee
+I agree, that needs to be fixed now.
+
+Remember, 1 value per file in sysfs!  Shall I just submit a patch
+ripping it out for now?
+
+thanks,
+
+greg k-h
