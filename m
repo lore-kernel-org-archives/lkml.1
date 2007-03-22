@@ -1,37 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbXCVWB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXCVWCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562AbXCVWB3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 18:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbXCVWB3
+	id S932418AbXCVWCY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 18:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932431AbXCVWCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 18:01:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:43321 "EHLO mail.goop.org"
+	Thu, 22 Mar 2007 18:02:23 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:53721 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752562AbXCVWB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 18:01:28 -0400
-Message-ID: <4602FCBA.20005@goop.org>
-Date: Thu, 22 Mar 2007 15:01:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@qumranet.com>,
-       Andi Kleen <ak@muc.de>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: [PATCH] make KVM conform to sucky rdmsr interface
-References: <1174531917.2713.91.camel@localhost.localdomain>	<46022E40.8080300@qumranet.com>	<1174549770.2713.121.camel@localhost.localdomain> <20070322143011.0cf83370.akpm@linux-foundation.org>
-In-Reply-To: <20070322143011.0cf83370.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S932418AbXCVWCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 18:02:22 -0400
+Date: Thu, 22 Mar 2007 15:02:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tglx@linutronix.de
+Cc: Bernhard Walle <bwalle@suse.de>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Fix irqpoll on IA64 (timer interrupt != 0)
+Message-Id: <20070322150207.a35d3f15.akpm@linux-foundation.org>
+In-Reply-To: <1174598601.10840.231.camel@localhost.localdomain>
+References: <20070320150027.GA18143@strauss.suse.de>
+	<20070322140922.a59bea5c.akpm@linux-foundation.org>
+	<1174598601.10840.231.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Which tree are you patching??
-> -
+On Thu, 22 Mar 2007 22:23:21 +0100
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-It looks like its against the previously posted "Cleanup: rationalize
-paravirt wrappers" patch.
+> On Thu, 2007-03-22 at 14:09 -0700, Andrew Morton wrote:
+> > I think the term 'timer_interrupt' is a bit generic-sounding.  Would it be
+> > better to call it irqpoll_interrupt?  After all, some architecture might
+> > want to use, umm, the keyboard interrupt to trigger IRQ polling ;)  
+> 
+> Interesting thought, but in general I have to agree.
+> 
+> > Also, the code presently passes the magic IRQ number into the generic IRQ
+> > code.  I wonder if we'd get a more pleasing result if we were to make the
+> > generic IRQ code call _out_ to the architecture:
+> 
+> > Then, ia64 can implement arch_is_irqpoll_irq() and it can do whatever it
+> > wants in there.
+> > 
+> > The __attribute__((weak)) thing adds a little bit of overhead, but I don't
+> > think this is a fastpath?
+> 
+> Well, depends what you consider a fastpath. When noirqdebug == 0, it is
+> called on every interrupt.
+> 
 
-    J
+OK, well the alternative is to do
+
+extern bool __arch_irqpoll_irq(unsigned int irq);
+#define arch_is_irqpoll_irq(irq)	__arch_is_irqpoll_irq(irq)
+
+in an ia64 header file and then do
+
+#ifndef arch_is_irqpoll_irq
+static inline bool arch_is_irqpoll_irq(unsigned irq)
+{
+	return irq == 0;
+}
+#endif
+
+in spurious.c
+
