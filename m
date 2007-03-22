@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965713AbXCVFXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965737AbXCVF0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965713AbXCVFXx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 01:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965737AbXCVFXx
+	id S965737AbXCVF0p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 01:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965739AbXCVF0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 01:23:53 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54159 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965713AbXCVFXx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 01:23:53 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Unset msi and msix flags on pci_device_disable
-References: <4601B012.6070802@m3y3r.de>
-Date: Wed, 21 Mar 2007 23:23:33 -0600
-In-Reply-To: <4601B012.6070802@m3y3r.de> (Thomas Meyer's message of "Wed, 21
-	Mar 2007 23:22:10 +0100")
-Message-ID: <m1tzwdam22.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 22 Mar 2007 01:26:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55781 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965737AbXCVF0p (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 01:26:45 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
+From: Keith Owens <kaos@ocs.com.au>
+To: Dave Jones <davej@redhat.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, sam@ravnborg.org
+Subject: Re: $CHECK can't be overridden 
+In-reply-to: Your message of "Thu, 22 Mar 2007 01:15:25 EDT."
+             <20070322051525.GD17159@redhat.com> 
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Date: Thu, 22 Mar 2007 16:26:39 +1100
+Message-ID: <12464.1174541199@kao2.melbourne.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer <thomas@m3y3r.de> writes:
+Dave Jones (on Thu, 22 Mar 2007 01:15:25 -0400) wrote:
+>make help implies that supplying $CHECK on the command line
+>should override sparse as the checker used when building with C=1
+>Yet, this doesn't seem to be the case.
+>
+>This would be useful for cases where for eg, sparse isn't in
+>the $PATH, allowing an explicit path to the executable to be
+>passed in automated build environments.
 
-> The commit f5f2b13129a6541debf8851bae843cbbf48298b7 broke suspend/resume
-> to disk two or more  times in a row. This patches fixes the problem:
+Works for me.
 
-Please clue me in, on what the problem is, I see why my patch would
-have changed things I don't see how it is breaking things.  Clearing
-the device bits has no effect on the hardware and it leaks our
-msi handling data structures.
+# make C=1 CHECK=foo
+Using somedir/linux as source for kernel
+GEN     someobj/Makefile
+CHK     include/linux/version.h
+CHK     include/linux/utsrelease.h
+CHK     include/linux/compile.h
+CHECK   somedir/linux/kdb/modules/kdb_bt2.c
+/bin/sh: foo: command not found
 
-What is the user doing that this code broke?
 
-I will be happy to work through a proper fix but this isn't it.
-
-If this is actually helps something I am tempted to make the
-added lines say WARN_ON.....
-
-But I would really like to understand the nature of the problem
-so that we can do something to fix it properly.
-
-Eric
