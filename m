@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933907AbXCVKiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933912AbXCVKik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933907AbXCVKiF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 06:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXCVKiF
+	id S933912AbXCVKik (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 06:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934100AbXCVKik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 06:38:05 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:37755 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933912AbXCVKiE (ORCPT
+	Thu, 22 Mar 2007 06:38:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60689 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933912AbXCVKii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 06:38:04 -0400
-Message-ID: <46025C3B.6010702@boichat.ch>
-Date: Thu, 22 Mar 2007 18:36:43 +0800
-From: Nicolas Boichat <nicolas@boichat.ch>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070309)
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Bob Copeland <me@bobcopeland.com>, linux-kernel@hansmi.ch, rlove@rlove.org,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [RFC][PATCH] Apple SMC driver (hardware monitoring
- and control)
-References: <45F7C083.7090504@boichat.ch>	<b6c5339f0703191443l5f8c5271pf43ea62e0c79a614@mail.gmail.com> <20070320110818.1b11c406.khali@linux-fr.org>
-In-Reply-To: <20070320110818.1b11c406.khali@linux-fr.org>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Ovh-Remote: 137.132.201.168 (nusnet-201-168.dynip.nus.edu.sg)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+	Thu, 22 Mar 2007 06:38:38 -0400
+Date: Thu, 22 Mar 2007 10:38:17 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Adam Litke <agl@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Christoph Hellwig <hch@infradead.org>, Ken Chen <kenchen@google.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: pagetable_ops: Hugetlb character device example
+Message-ID: <20070322103817.GA7348@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Adam Litke <agl@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	William Lee Irwin III <wli@holomorphy.com>,
+	Ken Chen <kenchen@google.com>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+References: <20070319200502.17168.17175.stgit@localhost.localdomain> <1174506228.21684.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174506228.21684.41.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Mon, 19 Mar 2007 17:43:38 -0400, Bob Copeland wrote:
->   
->> I tried out an earlier version of this patch several months ago just to play
->> around with the joystick part of the accelerometer driver on my MacBook, and
->> found that it was backwards in the y-direction compared to what Neverball
->> seemed to want (of course, NB has no way to invert the joystick).  I think
->> I just did something like this in my own copy:
->>
->> +       y = -y;
->>         input_report_abs(applesmc_idev, ABS_X, x - rest_x);
->>         input_report_abs(applesmc_idev, ABS_Y, y - rest_y);
->>
->> I don't claim you necessarily want to change it, but thought I'd pass it
->> along.
->>     
->
-> This appears to be a common problem with these devices, the hdaps driver
-> (IBM) needs to invert the axis on some models too, and I seem to
-> remember something similar for the (not yet merged) HP laptops
-> accelerometer driver.
->   
-Ok, so let's invert the axis on the input device.
+On Wed, Mar 21, 2007 at 02:43:48PM -0500, Adam Litke wrote:
+> The main reason I am advocating a set of pagetable_operations is to
+> enable the development of a new hugetlb interface.  During the hugetlb
+> BOFS at OLS last year, we talked about a character device that would
+> behave like /dev/zero.  Many of the people were talking about how they
+> just wanted to create MAP_PRIVATE hugetlb mappings without all the fuss
+> about the hugetlbfs filesystem.  /dev/zero is a familiar interface for
+> getting anonymous memory so bringing that model to huge pages would make
+> programming for anonymous huge pages easier.
 
-I think the raw x value in sysfs behaves the same way as hdaps (because
-tools like hdaps-gl don't need any inversion), so I don't invert it.
-
-Anyone with an IBM laptop could confirm this please?
- - x value gets more positive when you lift the right side on the laptop
-(= tilted to the left)
- - y value gets more negative when you tilt the laptop backwards
-(simply cat /sys/devices/platform/hdaps/position)
-
-Thanks,
-
-Best regards,
-
-Nicolas
-
-Invert x axis on applesmc input device to make it usable as a joystick.
-
-Signed-off-by: Nicolas Boichat <nicolas@boichat.ch>
+That is a very laudable goal, but an utterly wrong way to get there.
+Despite Linus' veto a while ago what we really want is support for transparent
+super pages.  Adding random pointer indirections where we had the direct
+hugetlb calls before isn't helpful for that at all.  As a start you might
+want to make a clear destinction between core hugetlb code and the
+filesystem interface to it without all the useless indirections.  That
+should get you as far as your char dev interface.  But over the long
+term the core VM needs to deal with multiple (and probably not just two)
+page sizes.  Given that the code to deal with different sized pages is
+essentially the same just on different units on most architectures cries
+for a better method to implement this than adding random function indirection
+that point to mostly identical code.
 
 
----
-
- drivers/hwmon/applesmc.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
-index 4060667..581ed3e 100644
---- a/drivers/hwmon/applesmc.c
-+++ b/drivers/hwmon/applesmc.c
-@@ -349,6 +349,7 @@ static void applesmc_calibrate(void)
- {
- 	applesmc_read_motion_sensor(SENSOR_X, &rest_x);
- 	applesmc_read_motion_sensor(SENSOR_Y, &rest_y);
-+	rest_x = -rest_x;
- }
- 
- static void applesmc_mousedev_poll(unsigned long unused)
-@@ -366,6 +367,7 @@ static void applesmc_mousedev_poll(unsigned long unused)
- 	if (applesmc_read_motion_sensor(SENSOR_Y, &y))
- 		goto out;
- 
-+	x = -x;
- 	input_report_abs(applesmc_idev, ABS_X, x - rest_x);
- 	input_report_abs(applesmc_idev, ABS_Y, y - rest_y);
- 	input_sync(applesmc_idev);
-
-
+And your driver is the best example of why we utterly don't want
+a page_table operations interface.  The last thing we want is random
+driver taking over core VM functionality.  The right way would be to a
+filesystem/driver to tell (or maybe just give hints) which page size
+to use for this mapping.
