@@ -1,132 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965911AbXCVM3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750700AbXCVMfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965911AbXCVM3d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 08:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965907AbXCVM3d
+	id S1750700AbXCVMfr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 08:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXCVMfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 08:29:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57064 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965645AbXCVM3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 08:29:32 -0400
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FDPIC: Fix the /proc/pid/stat representation of executable
-	boundaries
-To: torvalds@osdl.org, akpm@osdl.org, rgetz@blackfin.uclinux.org
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Thu, 22 Mar 2007 12:29:19 +0000
-Message-ID: <20070322122919.31568.99690.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	Thu, 22 Mar 2007 08:35:46 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:4014 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750700AbXCVMfp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 08:35:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=sr4HZ5lEG3M8fVuCTMeuk5pUQaiArTOpLPHuWRmOO+d9ANusoC2uMVKi9cfpErGZgO9bjjgkW/0s9+DARbqRhIDMP6p+YCly57uSIrXInIwgi7KKOIvkzrrf56OiHqXc58PdvTcCRh5aGEdAmDow/zOpriC/e0OkSz6PTuQbbUM=
+Message-ID: <4602781C.9060804@gmail.com>
+Date: Thu, 22 Mar 2007 15:35:40 +0300
+From: Sergey Smirnov <svs1957@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: linux-kernel@vger.kernel.org
+Subject: HELP!!! SD and suspend damage i-node.
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+I use 2.6.20.2 kernel with ext3 rootfs on 4Gb SD on sharp zaurus sl-750 (PXA255).
+After suspend/resume filesystem stay clean. But some i-nodes become broken.
+Some files looks like block device or pipe with strange permissions, owner etc.
+I'm sure that there is no bad blocks on SD.
+I'll send any additional information. Just say me what you need to help me.
+I had i lot of tries. Apply patches, remove its, change fstype etc.
+output of fsck -f
 
-Fix the /proc/pid/stat representation of executable boundaries.  It should show
-the bounds of the executable, but instead shows the bounds of the loader.
+e2fsck 1.40-WIP (14-Nov-2006)
+Pass 1: Checking inodes, blocks, and sizes
+Inode 328897 is in use, but has dtime set.  Fix<y>? yes
 
-Before the patch is applied, the bug can be seen by examining, say, inetd:
+Inode 328897 has imagic flag set.  Clear<y>? yes
 
-	# ps | grep inetd
-	  610         root          0   S   /usr/sbin/inetd -i
-	# cat /proc/610/maps
-	c0bb0000-c0bba788 r-xs 00000000 00:0b 14582157  /lib/ld-uClibc-0.9.28.so
-	c3180000-c31dede4 r-xs 00000000 00:0b 14582179  /lib/libuClibc-0.9.28.so
-	c328c000-c328ea00 rw-p 00008000 00:0b 14582157  /lib/ld-uClibc-0.9.28.so
-	c3290000-c329b6c0 rw-p 00000000 00:00 0
-	c32a0000-c32c0000 rwxp 00000000 00:00 0
-	c32d4000-c32d8000 rw-p 00000000 00:00 0
-	c3394000-c3398000 rw-p 00000000 00:00 0
-	c3458000-c345f464 r-xs 00000000 00:0b 16384612  /usr/sbin/inetd
-	c3470000-c34748f8 rw-p 00004000 00:0b 16384612  /usr/sbin/inetd
-	c34cc000-c34d0000 rw-p 00000000 00:00 0
-	c34d4000-c34d8000 rw-p 00000000 00:00 0
-	c34d8000-c34dc000 rw-p 00000000 00:00 0
-	# cat /proc/610/stat
-	610 (inetd) S 1 610 610 0 -1 256 0 0 0 0 0 8 0 0 19 0 1 0 94392000718
-	950272 0 4294967295 3233480704 3233523592 3274440352 3274439976
- 	3273467584 0 0 4096 90115 3221712796 0 0 17 0 0 0 0
+Deleted inode 328898 has zero dtime.  Fix<y>? yes
 
-The code boundaries are 3233480704 to 3233523592, which are:
+Inode 328901 is in use, but has dtime set.  Fix<y>? yes
 
-	(gdb) p/x 3233480704
-	$1 = 0xc0bb0000
-	(gdb) p/x 3233523592
-	$2 = 0xc0bba788
+Inode 328901 has imagic flag set.  Clear<y>? yes
 
-Which corresponds to this line in the maps file:
+Inode 328902 is in use, but has dtime set.  Fix<y>? yes
 
-	c0bb0000-c0bba788 r-xs 00000000 00:0b 14582157  /lib/ld-uClibc-0.9.28.so
+Inode 328902 has imagic flag set.  Clear<y>? yes
 
-Which is wrong.  After the patch is applied, the maps file is pretty much
-identical (there's some minor shuffling of the location of some of the
-anonymous VMAs), but the stat file is now:
+Inode 328903 is in use, but has dtime set.  Fix<y>? yes
 
-	# cat /proc/610/stat
-	610 (inetd) S 1 610 610 0 -1 256 0 0 0 0 0 7 0 0 18 0 1 0 94392000722
-	950272 0 4294967295 3276111872 3276141668 3274440352 3274439976
-	3273467584 0 0 4096 90115 3221712796 0 0 17 0 0 0 0
+Inode 328903 has imagic flag set.  Clear<y>? yes
 
-The code boundaries are then 3276111872 to 3276141668, which are:
+Inode 328904 is in use, but has dtime set.  Fix<y>? yes
 
-	(gdb) p/x 3276111872
-	$1 = 0xc3458000
-	(gdb) p/x 3276141668
-	$2 = 0xc345f464
+Inode 328904 has imagic flag set.  Clear<y>? yes
 
-And these correspond to this line in the maps file instead:
+Inode 328905 is in use, but has dtime set.  Fix<y>? yes
 
-	c3458000-c345f464 r-xs 00000000 00:0b 16384612  /usr/sbin/inetd
+Inode 328906 is in use, but has dtime set.  Fix<y>? yes
 
-Which is now correct.
+Inode 328907 is in use, but has dtime set.  Fix<y>? yes
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
+Inode 328908 is in use, but has dtime set.  Fix<y>? yes
 
- fs/binfmt_elf_fdpic.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+Inode 328897 has illegal block(s).  Clear<y>? yes
 
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 5810aa1..47d6d49 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -179,6 +179,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 	int executable_stack;
- 	int retval, i;
- 
-+	kdebug("____ LOAD %d ____", current->pid);
-+
- 	memset(&exec_params, 0, sizeof(exec_params));
- 	memset(&interp_params, 0, sizeof(interp_params));
- 
-@@ -941,8 +943,11 @@ static int elf_fdpic_map_file_constdisp_on_uclinux(
- 
- 		if (mm) {
- 			if (phdr->p_flags & PF_X) {
--				mm->start_code = seg->addr;
--				mm->end_code = seg->addr + phdr->p_memsz;
-+				if (!mm->start_code) {
-+					mm->start_code = seg->addr;
-+					mm->end_code = seg->addr +
-+						phdr->p_memsz;
-+				}
- 			} else if (!mm->start_data) {
- 				mm->start_data = seg->addr;
- #ifndef CONFIG_MMU
-@@ -1123,8 +1128,10 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *params,
- 
- 		if (mm) {
- 			if (phdr->p_flags & PF_X) {
--				mm->start_code = maddr;
--				mm->end_code = maddr + phdr->p_memsz;
-+				if (!mm->start_code) {
-+					mm->start_code = maddr;
-+					mm->end_code = maddr + phdr->p_memsz;
-+				}
- 			} else if (!mm->start_data) {
- 				mm->start_data = maddr;
- 				mm->end_data = maddr + phdr->p_memsz;
+Illegal block #0 (4027835811) in inode 328897.  CLEARED.
+Illegal block #1 (4293308792) in inode 328897.  CLEARED.
+Illegal block #2 (55841555) in inode 328897.  CLEARED.
+Illegal block #3 (2960401150) in inode 328897.  CLEARED.
+Illegal block #4 (2197115429) in inode 328897.  CLEARED.
+Illegal block #5 (4124718308) in inode 328897.  CLEARED.
+Illegal block #6 (504504963) in inode 328897.  CLEARED.
+Illegal block #7 (4028032370) in inode 328897.  CLEARED.
+Illegal block #8 (4028097955) in inode 328897.  CLEARED.
+Illegal block #9 (4001625378) in inode 328897.  CLEARED.
+Illegal block #10 (1422192624) in inode 328897.  CLEARED.
+Too many illegal blocks in inode 328897.
+Clear inode<y>? yes
+
+Inode 328907 has illegal block(s).  Clear<y>? yes
+
+Illegal block #0 (880856325) in inode 328907.  CLEARED.
+Illegal block #1 (3138519423) in inode 328907.  CLEARED.
+Illegal block #2 (303682281) in inode 328907.  CLEARED.
+Illegal block #3 (351229189) in inode 328907.  CLEARED.
+Illegal block #4 (168967413) in inode 328907.  CLEARED.
+Illegal block #5 (920785427) in inode 328907.  CLEARED.
+Illegal block #6 (2733646821) in inode 328907.  CLEARED.
+Illegal block #7 (607380579) in inode 328907.  CLEARED.
+Illegal block #8 (3833787818) in inode 328907.  CLEARED.
+Illegal block #9 (2213926708) in inode 328907.  CLEARED.
+Illegal block #10 (2431648992) in inode 328907.  CLEARED.
+Too many illegal blocks in inode 328907.
+Clear inode<y>? yes
+
+Inode 328904 has compression flag set on filesystem without compression support.  Clear<y>? yes
+
+Inode 328904, i_size is 1298022311761903630, should be 0.  Fix<y>? yes
+
+Inode 328904, i_blocks is 17109592, should be 0.  Fix<y>? yes
+
+Inode 328903 has compression flag set on filesystem without compression support.  Clear<y>? yes
+
+Inode 328903 has INDEX_FL flag set but is not a directory.
+Clear HTree index<y>? yes
+
+Inode 328903, i_size is 4634368754045078648, should be 0.  Fix<y>? yes
+
+Inode 328903, i_blocks is 33775633, should be 0.  Fix<y>? yes
+
+Inode 328902 has INDEX_FL flag set but is not a directory.
+Clear HTree index<y>? yes
+
+Inode 328902, i_size is 17719074603564334822, should be 0.  Fix<y>? yes
+
+Inode 328902, i_blocks is 1342215186, should be 0.  Fix<y>? yes
+
+Inode 328908 has INDEX_FL flag set but is not a directory.
+Clear HTree index<y>? yes
+
+Inode 328908, i_size is 266945914413200612, should be 0.  Fix<y>? yes
+
+Inode 328908, i_blocks is 3792889567, should be 0.  Fix<y>? yes
+
+Inode 328906, i_size is 17222592312736442656, should be 0.  Fix<y>? yes
+
+Inode 328906, i_blocks is 55615200, should be 0.  Fix<y>? yes
+
+Inode 328901 has compression flag set on filesystem without compression support.  Clear<y>? yes
+
+Inode 328901, i_size is 367595204451501376, should be 0.  Fix<y>? yes
+
+Inode 328901, i_blocks is 4293787104, should be 0.  Fix<y>? yes
+
+Inode 328905 has compression flag set on filesystem without compression support.  Clear<y>? yes
+
+Inode 328905 has INDEX_FL flag set but is not a directory.
+Clear HTree index<y>? yes
+
+Inode 328905, i_size is 8427850164134760656, should be 0.  Fix<y>? yes
+
+Inode 328905, i_blocks is 58744799, should be 0.  Fix<y>? yes
+
+Inodes thInode 328905, i_blocks is 58744799, should be 0.  Fix<y>? yes
+
+Inodes that were part of a corrupted orphan linked list found.  Fix<y>? yes
+
+Inode 474215 was part of the orphaned inode list.  FIXED.
+Inode 474216 was part of the orphaned inode list.  FIXED.
+Inode 474217 was part of the orphaned inode list.  FIXED.
+Inode 474218 was part of the orphaned inode list.  FIXED.
+Restarting e2fsck from the beginning...
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+at were part of a corrupted orphan linked list found.  Fix<y>? yes
+Entry 'GMT+7' in /usr/share/zoneinfo/Etc (328890) has deleted/unused inode 328897.  Clear<y>? yes
+
+Entry 'GMT-4' in /usr/share/zoneinfo/Etc (328890) has deleted/unused inode 328898.  Clear<y>? yes
+
+Entry 'GMT-6' in /usr/share/zoneinfo/Etc (328890) has deleted/unused inode 328899.  Clear<y>? yes
+
+Entry 'GMT+12' in /usr/share/zoneinfo/Etc (328890) has deleted/unused inode 328900.  Clear<y>? yes
+
+i_file_acl for inode 328901 (/usr/share/zoneinfo/Etc/GMT+8) is 1474433559, should be zero.
+Clear<y>? yes
+
+Inode 328901 (/usr/share/zoneinfo/Etc/GMT+8) has invalid mode (0150002).
+Clear<y>? yes
+
+i_file_acl for inode 328902 (/usr/share/zoneinfo/Etc/GMT-9) is 1474433580, should be zero.
+Clear<y>? yes
+
+Inode 328902 (/usr/share/zoneinfo/Etc/GMT-9) is an illegal FIFO.
+Clear<y>? yes
+
+i_file_acl for inode 328903 (/usr/share/zoneinfo/Etc/GMT+3) is 1340408912, should be zero.
+Clear<y>? yes
+
+Inode 328903 (/usr/share/zoneinfo/Etc/GMT+3) is an illegal socket.
+Clear<y>? yes
+i_file_acl for inode 328904 (/usr/share/zoneinfo/Etc/GMT-11) is 3541173534, should be zero.
+Clear<y>? yes
+
+Inode 328904 (/usr/share/zoneinfo/Etc/GMT-11) has invalid mode (070460).
+Clear<y>? yes
+
+i_file_acl for inode 328905 (/usr/share/zoneinfo/Etc/GMT-2) is 3671200259, should be zero.
+Clear<y>? yes
+
+Inode 328905 (/usr/share/zoneinfo/Etc/GMT-2) has invalid mode (02402).
+Clear<y>? yes
+
+i_file_acl for inode 328906 (/usr/share/zoneinfo/Etc/GMT-14) is 1775436291, should be zero.
+Clear<y>? yes
+
+Inode 328906 (/usr/share/zoneinfo/Etc/GMT-14) has invalid mode (0160072).
+Clear<y>? yes
+
+Entry 'GMT-13' in /usr/share/zoneinfo/Etc (328890) has deleted/unused inode 328907.  Clear<y>? yes
+
+i_file_acl for inode 328908 (/usr/share/zoneinfo/Etc/UTC) is 1627779327, should be zero.
+Clear<y>? yes
+
+i_faddr for inode 328908 (/usr/share/zoneinfo/Etc/UTC) is 1643504863, should be zero.
+Clear<y>? yes
+
+i_blocks_hi for inode 328908 (/usr/share/zoneinfo/Etc/UTC) is 34, should be zero.
+Clear<y>? yes
+
+Entry 'UTC' in /usr/share/zoneinfo/Etc (328890) has an incorrect filetype (was 1, should be 4).
+Fix<y>? yes
+
+Entry 'Universal' in /usr/share/zoneinfo/Etc (328890) has an incorrect filetype (was 1, should be 4).
+Fix<y>? yes
+
+Entry 'Zulu' in /usr/share/zoneinfo/Etc (328890) has an incorrect filetype (was 1, should be 4).
+Fix<y>? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Inode 328908 ref count is 36903, should be 3.  Fix<y>? yes
+
+Pass 5: Checking group summary information
+Block bitmap differences:  -(683136--683147)
+Fix<y>? yes
+
+Free blocks count wrong for group #20 (19709, counted=19721).
+Fix<y>? yes
+
+Free blocks count wrong (383277, counted=383289).
+Fix<y>? yes
+
+Inode bitmap differences:  -(328897--328900) -328907
+Fix<y>? yes
+
+Free inodes count wrong for group #20 (8392, counted=8397).
+Fix<y>? yes
+
+Free inodes count wrong (379610, counted=379615).
+Fix<y>? yes
+
+
+/dev/sdb1: ***** FILE SYSTEM WAS MODIFIED *****
+/dev/sdb1: 110945/490560 files (0.1% non-contiguous), 597151/980440 blocks
 
