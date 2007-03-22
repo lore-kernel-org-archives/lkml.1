@@ -1,111 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933386AbXCVXXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934131AbXCVX1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933386AbXCVXXY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 19:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbXCVXXX
+	id S934131AbXCVX1L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 19:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbXCVX1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 19:23:23 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:44104 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933386AbXCVXXW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 19:23:22 -0400
-Date: Fri, 23 Mar 2007 00:23:21 +0100
-Message-Id: <1696002332@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Subject: Re: max_loop limit
-Organization: http://freemail.web.de/
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Thu, 22 Mar 2007 19:27:10 -0400
+Received: from vena.lwn.net ([206.168.112.25]:43352 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934131AbXCVX1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 19:27:09 -0400
+X-Greylist: delayed 2009 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Mar 2007 19:27:09 EDT
+To: akpm@linux-foundation.org
+Subject: [PATCH] Fix up PCI power management doc
+cc: linux-kernel@vger.kernel.org
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Thu, 22 Mar 2007 16:53:40 -0600
+Message-ID: <24815.1174604020@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-wondering that here are 13 postings about loopdevice limitation, but nobody giving any comment about dm-loop ( http://sources.redhat.com/lvm2/wiki/DMLoop ), which is a solution for this problem ......
+I noticed that the PCI power management document file had fallen a
+little behind the times, so I fixed it up.
 
-tomas, you should spend that money to bryn! ;)
+jon
 
-regards
-roland
+Update the documentation of PCI power management functions.
 
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 
-> -----Ursprüngliche Nachricht-----
-> Von: devzero@web.de
-> Gesendet: 22.03.07 14:53:19
-> An: linux-kernel@vger.kernel.org
-> Betreff: Re: max_loop limit
-
-> oh - i forgot sending this to the list, since this was copy&paste via webmailer.....
-> 
-> 
-> > -----Ursprüngliche Nachricht-----
-> > Von: devzero@web.de
-> > Gesendet: 22.03.07 14:42:45
-> > An: tomas@slax.org
-> > CC: breeves@redhat.com
-> > Betreff: Re: max_loop limit
-> 
-> > Hi Tomas, 
-> > 
-> > you`re completely right.
-> > 
-> > I have had this problem of loopdev number limitation for years, but i think there is a better solution besides your patch.
-> > 
-> > Some new module has been created for this and being announced on dm-devel mailinglist : 
-> > 
-> > dm-loop - the device mapper loopback target.
-> > 
-> > See http://sources.redhat.com/lvm2/wiki/DMLoop  for further information.
-> > 
-> > It can be used as a 1:1 replacement for classic loop and should (?) probably be ready for mainline in the not too far future. (i cannot tell, but it works good for me!)
-> > 
-> > Typically, you need to use dm-setup to setup device-mapper targets, but dm-setup has got support for dm-loop,  so it`s as easy as 1-2-3 to replace "losetup ...." with "dmlosetup" alias for dm-setup.
-> > 
-> > Feel free to test it and give feedback !
-> > 
-> > regards
-> > Roland
-> > 
-> > ps:
-> > dm-loop-config.patch is being linked wrong in the wiki - this is the right one:  http://sources.redhat.com/lvm2/wiki/DMLoop?action=AttachFile&do=get&target=dm-loop-config.patch
-> > 
-> > 
-> > 
-> > > 255 loop devices are insufficient? What kind of scenario do you have
-> > > in mind?
-> > > 
-> > > 
-> > 
-> > Thank you very much for replying.
-> > 
-> > In 1981, Bill Gates said that 64KB of memory is enough for everybody.
-> > And you know how much RAM do you have right now. :)
-> > 
-> > Every limit is bad. The limit of 255 loop devices has been introduced 
-> > years ago, in the times when minor device number has been limited by 
-> > 255. Nowadays, there is no such limitation.
-> > 
-> > There are many possible/reasonable uses for more than 255 loop devices. 
-> > For example CD/ISO server. My project, Slax Linux live, is based on 
-> > modular approach where many parts of the root filesystem are stored 
-> > separately in compressed read-only loop files, and are mounted and 
-> > unioned to a single root by using union fs (aufs).
-> > 
-> > The question is not "Why do we need more than 255 loops?".
-> > The question should be "Why do we need the hardcoded 255-limit in kernel 
-> > while there is no reason for it at all?"
-> > 
-> > My patch simply removes the hardcoded limitation.
-> > 
-> > 
-> > Tomas M
-> > slax.org
-> 
-> 
-
-
-_______________________________________________________________
-SMS schreiben mit WEB.DE FreeMail - einfach, schnell und
-kostenguenstig. Jetzt gleich testen! http://f.web.de/?mc=021192
+diff --git a/Documentation/power/pci.txt b/Documentation/power/pci.txt
+index c750f9f..b6a3cbf 100644
+--- a/Documentation/power/pci.txt
++++ b/Documentation/power/pci.txt
+@@ -102,31 +102,28 @@ pci_save_state
+ --------------
+ 
+ Usage:
+-	pci_save_state(dev, buffer);
++	pci_save_state(struct pci_dev *dev);
+ 
+ Description:
+-	Save first 64 bytes of PCI config space. Buffer must be allocated by
+-	caller.
++	Save first 64 bytes of PCI config space, along with any additional
++	PCI-Express or PCI-X information.
+ 
+ 
+ pci_restore_state
+ -----------------
+ 
+ Usage:
+-	pci_restore_state(dev, buffer);
++	pci_restore_state(struct pci_dev *dev);
+ 
+ Description:
+-	Restore previously saved config space. (First 64 bytes only);
+-
+-	If buffer is NULL, then restore what information we know about the
+-	device from bootup: BARs and interrupt line.
++	Restore previously saved config space.
+ 
+ 
+ pci_set_power_state
+ -------------------
+ 
+ Usage:
+-	pci_set_power_state(dev, state);
++	pci_set_power_state(struct pci_dev *dev, pci_power_t state);
+ 
+ Description:
+ 	Transition device to low power state using PCI PM Capabilities
+@@ -142,7 +139,7 @@ pci_enable_wake
+ ---------------
+ 
+ Usage:
+-	pci_enable_wake(dev, state, enable);
++	pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
+ 
+ Description:
+ 	Enable device to generate PME# during low power state using PCI PM 
 
