@@ -1,52 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945899AbXCWOur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945896AbXCWOu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945899AbXCWOur (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 10:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945896AbXCWOur
+	id S1945896AbXCWOu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 10:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945908AbXCWOu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 10:50:47 -0400
-Received: from graphe.net ([209.204.138.32]:45751 "EHLO graphe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945899AbXCWOuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 10:50:46 -0400
-Date: Fri, 23 Mar 2007 07:50:28 -0700 (PDT)
-From: Christoph Lameter <christoph@lameter.com>
-X-X-Sender: christoph@graphe.net
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Andi Kleen <andi@firstfloor.org>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] NUMA : could we introduce virt_to_nid() ?
-In-Reply-To: <20070323121512.c287ddef.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0703230749130.29603@graphe.net>
-References: <20070321102231.7288f231.dada1@cosmosbay.com>
- <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com>
- <Pine.LNX.4.64.0703210742080.1573@graphe.net>
- <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI>
- <20070321160929.GB25583@one.firstfloor.org> <20070323121512.c287ddef.dada1@cosmosbay.com>
+	Fri, 23 Mar 2007 10:50:59 -0400
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:55853 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945896AbXCWOu5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 10:50:57 -0400
+Message-ID: <4603E85B.4030901@hitachi.com>
+Date: Fri, 23 Mar 2007 23:46:51 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Organization: Systems Development Lab., Hitachi, Ltd., Japan
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>
+Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       SystemTAP <systemtap@sources.redhat.com>,
+       Satoshi Oshima <soshima@redhat.com>, Hideo Aoki <haoki@redhat.com>,
+       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: [RFC][Patch 3/4] jprobe fast unregisteration
+References: <4603E7A4.50300@hitachi.com>
+In-Reply-To: <4603E7A4.50300@hitachi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Mar 2007, Eric Dumazet wrote:
 
-> Checking Christoph quicklist implementation, I found the same cache miss in free() than SLAB has.
-> 
-> /* common implementation *
-> int virt_to_nid(const void *addr)
-> {
-> 	struct page *page = virt_to_page(addr); 
-> 	return page_to_nid(page);
-> }
-> 
-> On some platforms (x86_64 for example), could we have a better 
-> implementation, not accessing struct page, but using phys_to_nid() ?
+This patch introduces unregister_jprobe_fast() for jprobe.
 
-This is going to pollute the caches since we then use multiple ways to 
-determine the node of a page. Its better to stay with the same approach 
-for all pages. The page struct is used for many other purposes as well. 
-Its likely to be in the cpu cache.
+Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 
+---
+ This patch introduces unregister_jprobe_fast() for jprobe.
+
+ include/linux/kprobes.h |   12 +++++++++++-
+ kernel/kprobes.c        |    6 ------
+ 2 files changed, 11 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.21-rc4-mm1/include/linux/kprobes.h
+===================================================================
+--- linux-2.6.21-rc4-mm1.orig/include/linux/kprobes.h
++++ linux-2.6.21-rc4-mm1/include/linux/kprobes.h
+@@ -198,7 +198,14 @@ void commit_kprobes(void);
+ int setjmp_pre_handler(struct kprobe *, struct pt_regs *);
+ int longjmp_break_handler(struct kprobe *, struct pt_regs *);
+ int register_jprobe(struct jprobe *p);
+-void unregister_jprobe(struct jprobe *p);
++static inline void unregister_jprobe(struct jprobe *jp)
++{
++	unregister_kprobe(&jp->kp);
++}
++static inline void unregister_jprobe_fast(struct jprobe *jp)
++{
++	unregister_kprobe_fast(&jp->kp);
++}
+ void jprobe_return(void);
+
+ int register_kretprobe(struct kretprobe *rp);
+@@ -242,6 +249,9 @@ static inline int register_jprobe(struct
+ static inline void unregister_jprobe(struct jprobe *p)
+ {
+ }
++static inline void unregister_jprobe_fast(struct jprobe *p)
++{
++}
+ static inline void jprobe_return(void)
+ {
+ }
+Index: linux-2.6.21-rc4-mm1/kernel/kprobes.c
+===================================================================
+--- linux-2.6.21-rc4-mm1.orig/kernel/kprobes.c
++++ linux-2.6.21-rc4-mm1/kernel/kprobes.c
+@@ -797,11 +797,6 @@ int __kprobes register_jprobe(struct jpr
+ 		(unsigned long)__builtin_return_address(0));
+ }
+
+-void __kprobes unregister_jprobe(struct jprobe *jp)
+-{
+-	unregister_kprobe(&jp->kp);
+-}
+-
+ #ifdef ARCH_SUPPORTS_KRETPROBES
+
+ /*
+@@ -1013,6 +1008,5 @@ EXPORT_SYMBOL_GPL(unregister_kprobe);
+ EXPORT_SYMBOL_GPL(unregister_kprobe_fast);
+ EXPORT_SYMBOL_GPL(commit_kprobes);
+ EXPORT_SYMBOL_GPL(register_jprobe);
+-EXPORT_SYMBOL_GPL(unregister_jprobe);
+ EXPORT_SYMBOL_GPL(jprobe_return);
+ EXPORT_SYMBOL_GPL(register_kretprobe);
 
