@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992621AbXCWXI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992627AbXCWXI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992621AbXCWXI5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 19:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992627AbXCWXI5
+	id S2992627AbXCWXI7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 19:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992617AbXCWXI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 19:08:57 -0400
-Received: from mail.kroah.org ([69.55.234.183]:48940 "EHLO perch.kroah.org"
+	Fri, 23 Mar 2007 19:08:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53043 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992621AbXCWXIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 19:08:55 -0400
-Date: Fri, 23 Mar 2007 15:49:17 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>, bk@suse.de
-Cc: Francis Moreau <francis.moro@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: PCI probing failure in 2.6.21-rc3
-Message-ID: <20070323224917.GC23534@kroah.com>
-References: <38b2ab8a0703140147s24bfc656o1bbff4abc405d61d@mail.gmail.com> <20070315110647.710bff5f.akpm@linux-foundation.org>
+	id S2992627AbXCWXI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 19:08:58 -0400
+Message-ID: <46045D8B.8020201@redhat.com>
+Date: Fri, 23 Mar 2007 19:06:51 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070315110647.710bff5f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.21-rc regression in mptbase
+References: <Pine.LNX.4.61.0703232322030.10028@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0703232322030.10028@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 11:06:47AM -0800, Andrew Morton wrote:
-> > On Wed, 14 Mar 2007 09:47:42 +0100 "Francis Moreau" <francis.moro@gmail.com> wrote:
-> > I already posted this issue but it was on a 2.6.19.7 kernel
-> > (2.6.19-1.2911.6.5.fc6 to be accurate). So it doesn't seem to be a
-> > regression.
-> > 
-> > During boot the console shows up this:
-> > 
-> > [...]
-> > PCI: Probing PCI hardware (bus 00)
-> > PCI quirk: region 1000-107f claimed by ICH6 ACPI/GPIO/TCO
-> > PCI quirk: region 1180-11bf claimed by ICH6 GPIO
-> > 0000:00:1f.2: trying to change BAR0 from 0000 to 01F0
-> > 0000:00:1f.2: trying to change BAR1 from 0000 to 03F4
-> > 0000:00:1f.2: trying to change BAR2 from 0000 to 0170
-> > 0000:00:1f.2: trying to change BAR3 from 0000 to 0374
-> > Boot video device is 0000:01:00.0
-> > PCI: Transparent bridge - 0000:00:1e.0
-> > PCI: Bus #07 (-#0a) is hidden behind transparent bridge #06 (-#07)
-> > (try 'pci=assign-busses')
-> > Please report the result to linux-kernel to fix this permanently
-> > [...]
-> > 
-> > I haven't time to test 'pci=assign-busses' option, I'll do it later,
-> > but I wanted to report this ASAP.
+Jan Engelhardt wrote:
+> Hello world,
 > 
-> Greg, could we please either 
 > 
-> a) start doing something about these reports or
-> b) publish sufficient info to permit others to do something about these
->    reports or 
-> c) remove the printk?
+> in at least 2.6.21-rc4, one or more of the mptscsi scsi modules is 
+> broken with respect to not detecting any harddisk (VMware provides that 
+> virtual LSI MPT controller), which means no working system.
+> No problems in 2.6.20.2.
+> 
+> I will be trying 2.6.21-rc1 shortly.
+> 
 
-Ugh, I'm getting really tired of it too.  Bernhard, any plans on
-addressing these constant reports?  You sent me this patch and then seem
-to have disappered when dealing with the fallout of the different
-messages :(
+Also try 2.6.20.4. There are reports of this problem there as well.
 
-Should I just revert your original patch all-together?
 
-thanks,
-
-greg k-h
