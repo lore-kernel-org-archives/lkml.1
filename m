@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934323AbXCWVBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992572AbXCWVKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934323AbXCWVBx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 17:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934322AbXCWVBx
+	id S2992572AbXCWVKv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 17:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992573AbXCWVKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 17:01:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:53080 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934323AbXCWVBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 17:01:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=m3PuzijpwNJv0zwOCFl72Q3uiahdwaKgt/BahtMzwD5pXjIQf9fOfTiFXmapm9lpscARlaSs+SVJiYfBb6XIhv3EucsEfHb7ntB2hHFB6i+yCVfMrvzOZZ8kErcq5uFelEVgn9R1v2AzE8jsS+QfHglfiva2022uQYGxIqMGo/I=
-Message-ID: <46043EB7.7060608@gmail.com>
-Date: Fri, 23 Mar 2007 22:55:19 +0200
-From: Yan Burman <burman.yan@gmail.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-kernel@vger.kernel.org, khali@linux-fr.org
-Subject: Re: [PATCH 2.6.21-rc4] hwmon: HP Mobile Data Protection System 3D
- ACPI driver
-References: <1174661503.5373.16.camel@lapot> <d120d5000703231332q1c4a2e0epcba5c8b6c18d41fa@mail.gmail.com>
-In-Reply-To: <d120d5000703231332q1c4a2e0epcba5c8b6c18d41fa@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 23 Mar 2007 17:10:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54270 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992572AbXCWVKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 17:10:50 -0400
+Subject: Re: [patch] rfc: introduce /dev/hugetlb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ken Chen <kenchen@google.com>
+Cc: Adam Litke <agl@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
+References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 24 Mar 2007 08:08:54 +1100
+Message-Id: <1174684134.10836.74.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> Hi Yan,
->
-> On 3/23/07, Yan Burman <burman.yan@gmail.com> wrote:
->> +
->> +static unsigned int input_3d;
->> +module_param(input_3d, bool, S_IRUGO);
->> +MODULE_PARM_DESC(input_3d, "Operate as a 3D joystick instead of 2D");
->
-> Why do you need that? Just have the driver always report all 3 events
-> and have applications decide if they want to use ABS_Z events...
->
-Getting the coordinates goes through ACPI, so it eats up CPU. I think I 
-remember seeing
-up to 15-16% CPU usage with all 3 events.
-That is why you probably want to disable it in most cases.
+
+> -#ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+> -unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+> -		unsigned long len, unsigned long pgoff, unsigned long flags);
+> -#else
+> -static unsigned long
+> +unsigned long
+>  hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+>  		unsigned long len, unsigned long pgoff, unsigned long flags)
+>  {
+> @@ -150,7 +145,6 @@ full_search:
+>  		addr = ALIGN(vma->vm_end, HPAGE_SIZE);
+>  	}
+>  }
+> -#endif
+
+WTF ? get_unmapped_area() -has- to be arch in some platforms like
+power...
+
+I'm trying to improve the whole get_unmapped_area() to better handle
+multiple constraints (cacheability, page size, ...) though I haven't
+quite yet settled on an interface I like.
+
+Ben.
+
+
