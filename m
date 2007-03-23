@@ -1,112 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422782AbXCWKlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422783AbXCWKr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422782AbXCWKlh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 06:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422783AbXCWKlg
+	id S1422783AbXCWKr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 06:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422787AbXCWKr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 06:41:36 -0400
-Received: from smtp-out02.email.it ([80.247.70.62]:35825 "EHLO
-	smtp-out02.email.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422782AbXCWKlf (ORCPT
+	Fri, 23 Mar 2007 06:47:56 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:29282 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1422783AbXCWKr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 06:41:35 -0400
-X-Greylist: delayed 1506 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Mar 2007 06:41:35 EDT
-Date: Fri, 23 Mar 2007 11:16:25 +0100
-To: linux-kernel@vger.kernel.org
-From: Jack Malmostoso <malmostoso@email.it>
-Reply-to: Jack Malmostoso <malmostoso@email.it>
-Subject: MCE on an NForce4 board (again)
-Message-ID: <87bed1533206ce7ce9bf4753d2a042f5@129.129.233.87>
-X-Priority: 
-X-Mailer: Webmail-Email.it [Mailer version 1.70]
-X-SenderIP: 129.129.233.87
+	Fri, 23 Mar 2007 06:47:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=vMpODRKINvDN+f0t/DfhBIv4pnDoHFWF5iQd9IyFBubf7gIiDwGxBuI5AMA802TpFZtYGQqX++MPQ4eqL7kSFEsCZfnalOzr9meBQx+0ImM1neZFKwej5VoZU/FajcggEiCgp56IQqSeO1SqtRyoudJDgqBKkcJchUtfoX9Bwpo=  ;
+X-YMail-OSG: G7X5Cp4VM1nC.F852L77PIVIvcDn5BjvKxYCZRbkZj2u9EuaYpyH8tFIABW_Mrbr85sLpG5FGDVZDzvPDvrfwLM75rmvuq9cnfa.v9vZX9HtAGpcZyrSEHUlB0UxuCrO9ZIdXK8XBih3Q6i3MAiqfk_LNw--
+Message-ID: <4603B051.8000108@yahoo.com.au>
+Date: Fri, 23 Mar 2007 21:47:45 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="iso-8859-1"
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Dave Hansen <hansendc@us.ibm.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       menage@google.com, Andrew Morton <akpm@linux-foundation.org>,
+       xemul@sw.ru
+Subject: Re: controlling mmap()'d vs read/write() pages
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>	<20070306140036.4e85bd2f.akpm@linux-foundation.org>	<45F3F581.9030503@sw.ru>	<20070311045111.62d3e9f9.akpm@linux-foundation.org>	<20070312010039.GC21861@MAIL.13thfloor.at>	<1173724979.11945.103.camel@localhost.localdomain>	<20070312224129.GC21258@MAIL.13thfloor.at>	<20070312220439.677b4787.akpm@linux-foundation.org>	<1173806793.6680.44.camel@localhost.localdomain>	<20070313190931.1417c012@lxorguk.ukuu.org.uk>	<m1mz2enh0u.fsf@ebiederm.dsl.xmission.com>	<1174062660.8184.8.camel@localhost.localdomain>	<m1tzwlm33i.fsf@ebiederm.dsl.xmission.com>	<1174074412.8184.29.camel@localhost.localdomain>	<m1zm6ajvns.fsf@ebiederm.dsl.xmission.com>	<1174407335.26166.146.camel@localhost.localdomain>	<m13b3zmx4b.fsf@ebiederm.dsl.xmission.com>	<46036C54.6030502@yahoo.com.au> <m1tzwc5kw6.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1tzwc5kw6.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there list,
+Eric W. Biederman wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> 
+> 
+>>Eric W. Biederman wrote:
+>>
+>>>Dave Hansen <hansendc@us.ibm.com> writes:
+>>>
+>>>
+>>>
+>>>>So, I think we have a difference of opinion.  I think it's _all_ about
+>>>>memory pressure, and you think it is _not_ about accounting for memory
+>>>>pressure. :)  Perhaps we mean different things, but we appear to
+>>>>disagree greatly on the surface.
+>>>
+>>>
+>>>I think it is about preventing a badly behaved container from having a
+>>>significant effect on the rest of the system, and in particular other
+>>>containers on the system.
+>>
+>>That's Dave's point, I believe. Limiting mapped memory may be
+>>mostly OK for well behaved applications, but it doesn't do anything
+>>to stop bad ones from effectively DoSing the system or ruining any
+>>guarantees you might proclaim (not that hard guarantees are always
+>>possible without using virtualisation anyway).
+>>
+>>This is why I'm surprised at efforts that go to such great lengths
+>>to get accounting "just right" (but only for mmaped memory). You
+>>may as well not even bother, IMO.
+>>
+>>Give me an RSS limit big enough to run a couple of system calls and
+>>a loop...
+> 
+> 
+> Would any of them work on a system on which every filesystem was on
+> ramfs, and there was no swap?  If not then they are not memory attacks
+> but I/O attacks.
+> 
+> I completely concede that you can DOS the system with I/O if that is
+> not limited as well.
+> 
+> My point is that is not a memory problem but a disk I/O problem which is
+> much easier to and cheaper to solve.  Disk I/O is fundamentally a slow
+> path which makes it hard to modify it in a way that negatively affects
+> system performance.
+> 
+> I don't think with a memory RSS limit you can DOS the system in a way
+> that is purely about memory.  You have to pick a different kind of DOS
+> attack.
 
-this is a repost from the x86-64.org discuss list. I think it could be
-relevant here too, if not please excuse me and forget this message. I am not
-subscribed to the LKML, but I can follow the thread on usenet, so no need to
-CC. Feel free to do it if you think it's relevant!
+It can be done trivially without performing any IO or swap, yes.
 
-Since a couple of days I have been experiencing weird lockups on my AMD64
-machine running Debian Sid.
-The computer is composed like this:
-
-Asus A8N-E (NForce4 socket 939)
-Athlon64 X2 3800+
-2x512MB Corsair TwinX
-2x250GB Sata Western Digital
-2xDVD/DVDRW on PATA channels
-
-None of the components has *ever* been overclocked and the whole is one year
-old.
-
-I have logged on in single mode and tried to find a way to reproduce the
-crash. It has been enough to do a stupid script like
-
-while true; do
-tar -xjvf linux-2.6.20.3.tar.bz2 && rm -fr linux-2.6.20.3
-done
-
-and regularly, after one or two cycles, the system would lockup with this
-error:
-
-CPU 0: Machine Check Exception:		4 Bank 4: b200000000070f0f
-TSC 185ef6d81ca
-
-It also gave me the hint to use mcelog, so I rebooted and installed it. The
-decoded error read:
-
-CPU 0 4 northbridge TSC 185ef6d81ca 
-  Northbridge Watchdog error
-       bit57 = processor context corrupt
-       bit61 = error uncorrected
-  bus error 'generic participation, request timed out
-      generic error mem transaction
-      generic access, level generic'
-STATUS b200000000070f0f MCGSTATUS 4
-
-I googled and found a thread on the x86-64.org discuss list [1] that blamed
-the RAM for the
-problem. So I have started doing some tests:
-
-1) If I use only 512MB of my RAM, alternatively, I don't get the error.
-2) Memtest+ has been running for 10hrs and no errors have been detected.
-I'll have it running for the day just to be sure.
-
-Additionally, right before the MCE, I could read another error:
-
-ata3: CPB flags CMD err, flags=0x11
-
-Googling this brought up some threads in the LKML about the sata_nv driver
-(the ADMA bit, I think).
-
-Since I am running a 2.6.20 kernel (a testing version from the Debian kernel
-team) I have tried booting older kernels but looks like anything I have
-tried does not work (but this is not your problem).
-
-So I have booted a livecd (I had around an Ubuntu with a 2.6.12 kernel) and
-with my great surprise the machine worked without problems.
-
-Now, do you think it would be even slightly possible that some regression in
-the sata_nv module could trigger an MCE? If not, would you put your money on
-the RAM, or could the motherboard be blamed? I hope it's not the CPU ;)
-
-Thanks for your help, I hope the information I gave you is enough. Please
-feel free to suggest any more tests and diagnostics!
-
-[1] https://www.x86-64.org/pipermail/discuss/2005-March/005902.html 
- --
- Email.it, the professional e-mail, gratis per te: http://www.email.it/f
- 
- Sponsor:
- Finalmente il design sposa il riscaldamento…vieni a scoprire i prodotti
-Tubor
- Clicca qui: http://adv.email.it/cgi-bin/foclick.cgi?mid=6164&d=20070323
-
-
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
