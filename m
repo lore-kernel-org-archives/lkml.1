@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbXCWU70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbXCWVBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932564AbXCWU70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 16:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934321AbXCWU70
+	id S932470AbXCWVBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 17:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934319AbXCWVBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 16:59:26 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:52592 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932564AbXCWU7Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 16:59:25 -0400
-Message-ID: <46043F96.8030800@zytor.com>
-Date: Fri, 23 Mar 2007 13:59:02 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Kyle Moffett <mrmacman_g4@mac.com>,
-       Andrew Morton <akpm@linux-foundation.org>, "J.H." <warthog9@kernel.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysctl: vfs_cache_divisor
-References: <20061214223718.GA3816@elf.ucw.cz> <20061216094421.416a271e.randy.dunlap@oracle.com> <20061216095702.3e6f1d1f.akpm@osdl.org> <458434B0.4090506@oracle.com> <1166297434.26330.34.camel@localhost.localdomain> <20061219063413.GI24090@1wt.eu> <1166511171.26330.120.camel@localhost.localdomain> <20070106103331.48150aed.randy.dunlap@oracle.com> <459FF60D.7080901@zytor.com> <1168112266.2821.2.camel@entropy> <20070106121301.d07de0c9.akpm@osdl.org> <45A0041F.4060903@zytor.com> <20070319122740.286f602e.randy.dunlap@oracle.com> <20070319133613.9f4881db.akpm@linux-foundation.org> <45FEF5BC.90809@oracle.com> <45FF6189.9080508@zytor.com> <20070321160132.983812ac.randy.dunlap@oracle.com> <20070321161140.457a3cd7.akpm@linux-foundation.org> <CDF579E6-342C-4B99-916A-3CE118ABD02F@mac.com> <46043A66.7030102@oracle.com>
-In-Reply-To: <46043A66.7030102@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 23 Mar 2007 17:01:20 -0400
+Received: from www.osadl.org ([213.239.205.134]:44975 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932470AbXCWVBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 17:01:19 -0400
+Subject: Re: [2/5] 2.6.21-rc4: known regressions (v2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ray Lee <ray-lk@madrabbit.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070323184828.GP752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323184828.GP752@stusta.de>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 22:08:41 +0100
+Message-Id: <1174684121.10840.366.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> 
-> Hi,
-> That makes a lot of sense to me.  It gives us finer-grained control
-> without having to support fixed-point data.
-> 
-> I've been working on the fixed-point data patch, but I'm going to give
-> this method some time also, to see how it looks in code (instead of just
-> thinking about it).
-> 
+On Fri, 2007-03-23 at 19:48 +0100, Adrian Bunk wrote:
+> Subject    : x86_64: ACPI regression with noapic  (APICTIMER_STOPS_ON_C3?)
+> References : http://lkml.org/lkml/2007/3/8/468
+>              http://lkml.org/lkml/2007/3/22/156
+> Submitter  : Ray Lee <ray-lk@madrabbit.org>
+> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> Status     : problem is being debugged
 
-Well, to be specific, it actually is the same thing with different 
-syntax (38.55 or 3855/100).
+Ray,
 
-	-hpa
+can you please test the patch below ?
+
+Thanks,
+
+	tglx
+
+------------------>
+Subject: [PATCH] x86_64: avoid sending LOCAL_TIMER_VECTOR IPI to itself
+
+Ray Lee reported, that on an UP kernel with "noapic" commandline option
+set, the box locks hard during boot.
+
+Adding some debug printks revieled, that the last action on the box
+before stalling was "Send IPI" - a debug printk which was put into
+smp_send_timer_broadcast_ipi().
+
+It seems that send_IPI_mask(mask, LOCAL_TIMER_VECTOR) fails when
+"noapic" is set on the commandline on an UP kernel.
+
+Aside of that it does not make much sense to trigger an interrupt
+instead of calling the function directly on the CPU which gets the
+PIT/HPET interrupt in case of broadcasting.
+
+Reported-by: Ray Lee <ray-lk@madrabbit.org>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
+index 723417d..83328e1 100644
+--- a/arch/x86_64/kernel/apic.c
++++ b/arch/x86_64/kernel/apic.c
+@@ -930,9 +930,17 @@ EXPORT_SYMBOL(switch_APIC_timer_to_ipi);
+ 
+ void smp_send_timer_broadcast_ipi(void)
+ {
++	int cpu = smp_processor_id();
+ 	cpumask_t mask;
+ 
+ 	cpus_and(mask, cpu_online_map, timer_interrupt_broadcast_ipi_mask);
++
++	if (cpu_isset(cpu, mask)) {
++		cpu_clear(cpu, mask);
++		add_pda(apic_timer_irqs, 1);
++		smp_local_timer_interrupt();
++	}
++
+ 	if (!cpus_empty(mask)) {
+ 		send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
+ 	}
+
+
