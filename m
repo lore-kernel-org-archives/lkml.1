@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934154AbXCWUAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992551AbXCWUBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934154AbXCWUAn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 16:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbXCWUAn
+	id S2992551AbXCWUBO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 16:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992549AbXCWUBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 16:00:43 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:57277 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934154AbXCWUAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 16:00:42 -0400
-Date: Fri, 23 Mar 2007 15:00:39 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] utsns: fix !CONFIG_UTS_NS behavior
-Message-ID: <20070323200039.GA15775@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 23 Mar 2007 16:01:14 -0400
+Received: from www.osadl.org ([213.239.205.134]:35796 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934194AbXCWUA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 16:00:58 -0400
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <20070323185028.GR752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185028.GR752@stusta.de>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 21:08:20 +0100
+Message-Id: <1174680500.10840.346.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: [PATCH] utsns: fix !CONFIG_UTS_NS behavior
+On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
+> Subject    : soft lockup detected on CPU#0
+> References : http://lkml.org/lkml/2007/3/3/152
+> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+>              Ingo Molnar <mingo@elte.hu>
+> Status     : unknown
 
-When CONFIG_UTS_NS=n, clone(CLONE_NEWUTS) quietly refuses.  So correctly does
-not unshare a new uts namespace, but also does not return -EINVAL.
+Michal,
 
-Fix this to return -EINVAL so the caller knows his request was denied.
+any news on that one ? 
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+You said the same problem exists in 2.6.20.1. Has this been resolved in
+2.6.20.2/3
 
----
+Thanks,
 
- include/linux/utsname.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+	tglx
 
-bc350994ac67df8f1b917f9979c065d87757eabe
-diff --git a/include/linux/utsname.h b/include/linux/utsname.h
-index a4555fe..e10267d 100644
---- a/include/linux/utsname.h
-+++ b/include/linux/utsname.h
-@@ -70,6 +70,8 @@ static inline int unshare_utsname(unsign
- 
- static inline int copy_utsname(int flags, struct task_struct *tsk)
- {
-+	if (flags & CLONE_NEWUTS)
-+		return -EINVAL;
- 	return 0;
- }
- static inline void put_uts_ns(struct uts_namespace *ns)
--- 
-1.1.6
+
