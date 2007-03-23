@@ -1,88 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751711AbXCWOOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbXCWOPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751711AbXCWOOo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 10:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945897AbXCWOOn
+	id S1751965AbXCWOPM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 10:15:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXCWOPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 10:14:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44634 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbXCWOOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 10:14:41 -0400
-Date: Fri, 23 Mar 2007 09:37:31 -0300
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
-Subject: [PATCH] Fix x86_64 compilation with DEBUG_SIG on
-Message-ID: <20070323123731.GA13310@redhat.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
+	Fri, 23 Mar 2007 10:15:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53521 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbXCWOPJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 10:15:09 -0400
+Date: Fri, 23 Mar 2007 15:15:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: =?iso-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386 GDT cleanups: Rename boot_gdt_table to boot_gdt
+Message-ID: <20070323141508.GC20548@one.firstfloor.org>
+References: <1174458636.11680.143.camel@localhost.localdomain> <1174458730.11680.145.camel@localhost.localdomain> <1174458938.11680.150.camel@localhost.localdomain> <m1aby7c59k.fsf@ebiederm.dsl.xmission.com> <1174478153.11680.183.camel@localhost.localdomain> <m1wt1abkuo.fsf@ebiederm.dsl.xmission.com> <1174521510.2713.61.camel@localhost.localdomain> <20070322091031.33a753fe@frecb000686.frec.bull.fr> <1174555451.2713.139.camel@localhost.localdomain> <20070322165925.3630fce9@frecb000686.frec.bull.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070322165925.3630fce9@frecb000686.frec.bull.fr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>  Rename boot_gdt_table to boot_gdt to avoid the duplicate
+> T(able).
 
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+We already have so much code churn in this area now, please
+no pointless renames for at least two releases.
 
-Setting the DEBUG_SIG flag breaks compilation due to a wrong
-struct access. Aditionally, it raises two warnings. This is one
-patch to fix them all.
+Thanks.
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-
--- 
-Glauber de Oliveira Costa
-Red Hat Inc.
-"Free as in Freedom"
-
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="signal.patch"
-
-commit ff9d841995b6055b74017306f30485c2b4a9ea70
-Author: Glauber de Oliveira Costa <gcosta@redhat.com>
-Date:   Fri Mar 23 07:13:38 2007 -0300
-
-    [PATCH] Fix x86_64 compilation with DEBUG_SIG on
-    
-    Setting the DEBUG_SIG flag breaks compilation due to a wrong
-    struct access. Aditionally, it raises two warnings. This is one
-    patch to fix them all.
-    
-    Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-
-diff --git a/arch/x86_64/kernel/signal.c b/arch/x86_64/kernel/signal.c
-index 49ec324..c819625 100644
---- a/arch/x86_64/kernel/signal.c
-+++ b/arch/x86_64/kernel/signal.c
-@@ -141,7 +141,7 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
- 		goto badframe;
- 
- #ifdef DEBUG_SIG
--	printk("%d sigreturn rip:%lx rsp:%lx frame:%p rax:%lx\n",current->pid,regs.rip,regs.rsp,frame,eax);
-+	printk("%d sigreturn rip:%lx rsp:%lx frame:%p rax:%lx\n",current->pid,regs->rip,regs->rsp,frame,eax);
- #endif
- 
- 	if (do_sigaltstack(&frame->uc.uc_stack, NULL, regs->rsp) == -EFAULT)
-@@ -301,7 +301,7 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	if (test_thread_flag(TIF_SINGLESTEP))
- 		ptrace_notify(SIGTRAP);
- #ifdef DEBUG_SIG
--	printk("SIG deliver (%s:%d): sp=%p pc=%p ra=%p\n",
-+	printk("SIG deliver (%s:%d): sp=%p pc=%lx ra=%p\n",
- 		current->comm, current->pid, frame, regs->rip, frame->pretcode);
- #endif
- 
-@@ -463,7 +463,7 @@ void
- do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
- {
- #ifdef DEBUG_SIG
--	printk("do_notify_resume flags:%x rip:%lx rsp:%lx caller:%lx pending:%lx\n",
-+	printk("do_notify_resume flags:%x rip:%lx rsp:%lx caller:%p pending:%x\n",
- 	       thread_info_flags, regs->rip, regs->rsp, __builtin_return_address(0),signal_pending(current)); 
- #endif
- 	       
-
---ZPt4rx8FFjLCG7dd--
+-Andi
