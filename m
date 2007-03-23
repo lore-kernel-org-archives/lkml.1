@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992545AbXCWTvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992546AbXCWTxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992545AbXCWTvF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992546AbXCWTvF
+	id S2992546AbXCWTxA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbXCWTxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:51:05 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:20762 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992545AbXCWTvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:51:04 -0400
-Message-ID: <46042FA2.20303@tls.msk.ru>
-Date: Fri, 23 Mar 2007 22:50:58 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Jiri Kosina <jikos@jikos.cz>, Tomas M <tomas@slax.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] [bugfix] loop.c
-References: <4603DE86.1090009@slax.org>	<20070323151956.1ac6a47b.dada1@cosmosbay.com>	<Pine.LNX.4.64.0703231522200.5030@twin.jikos.cz> <20070323155115.89f86b3b.dada1@cosmosbay.com>
-In-Reply-To: <20070323155115.89f86b3b.dada1@cosmosbay.com>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 23 Mar 2007 15:53:00 -0400
+Received: from www.osadl.org ([213.239.205.134]:32814 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934088AbXCWTw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:52:59 -0400
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Stephane Casset <sept@logidee.com>,
+       John Stultz <johnstul@us.ibm.com>
+In-Reply-To: <20070323185028.GR752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185028.GR752@stusta.de>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 21:00:21 +0100
+Message-Id: <1174680021.10840.339.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-[]
-> 
-> MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-16384)");
+On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
+> Subject    : Dynticks and High resolution Timer hanging the system
+>              workaround: clocksource=acpi_pm
+> References : http://lkml.org/lkml/2007/3/7/504
+> Submitter  : Stephane Casset <sept@logidee.com>
+> Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+> Status     : unknown
 
-Speaking of which, I wonder...  Here, and in many other places.
+Stephane, does the problem still exists with Linus latest ?
 
-If some variable is marked as MODULE_PARAM (or whatever it is called
-nowadays), used in module init routine, AND subsequently used for various
-bound checks and loops...
+Thanks,
 
-Consider this:
+	tglx
 
-  MODULE_PARAM(n);
-  foo_init() {
-    mem = kmalloc(n * sizeof(void*));
-    ..
-  }
-  foo_func() {
-    for (i = 0; i < n; ++i)
-      do_something_with_mem(mem[i])
-  }
 
-and so on.  Together with:
-
-  # modprobe foo n=10
-  # echo 20 > /sys/module/foo/parameters/n
-
-After that, we have 10 entries in mem[], and
-n is equal to 20, so the for-loop above will be
-up to i=19.  Which will reference unallocated
-memory....
-
-Amd I dreaming?
-
-Thanks.
-
-/mjt
