@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934329AbXCWWZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbXCWWZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934329AbXCWWZf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 18:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932738AbXCWWZf
+	id S932074AbXCWWZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 18:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934331AbXCWWZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 18:25:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39978 "EHLO mx1.redhat.com"
+	Fri, 23 Mar 2007 18:25:57 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57838 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932074AbXCWWZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 18:25:34 -0400
-Message-ID: <46045355.1020105@redhat.com>
-Date: Fri, 23 Mar 2007 18:23:17 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S932074AbXCWWZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 18:25:51 -0400
+Date: Fri, 23 Mar 2007 23:25:49 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Andrew Morton <akpm@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 0/7] Add IRQF_IRQPOLL_IRQ flag to allow irqpoll
+Message-ID: <20070323222549.GA19772@strauss.suse.de>
+Mail-Followup-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Andrew Morton <akpm@linuxfoundation.org>,
+	linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@elte.hu>
+References: <20070323164447.659982000@strauss.suse.de> <Pine.LNX.4.60.0703232312180.5971@poirot.grange>
 MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, David L <idht4n@hotmail.com>
-Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>	 <20070323185028.GR752@stusta.de> <1174677338.10840.321.camel@localhost.localdomain>
-In-Reply-To: <1174677338.10840.321.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.60.0703232312180.5971@poirot.grange>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
->> Subject    : gettimeofday increments too slowly
->> References : http://bugzilla.kernel.org/show_bug.cgi?id=8027
->> Submitter  : David L <idht4n@hotmail.com>
->> Caused-By  : Thomas Gleixner <tglx@linutronix.de>
->>              commit 92c7e00254b2d0efc1e36ac3e45474ce1871b6b2
->> Handled-By : Thomas Gleixner <tglx@linutronix.de>
->> Status     : problem is being debugged
+* Guennadi Liakhovetski <g.liakhovetski@gmx.de> [2007-03-23 23:15]:
+> On Fri, 23 Mar 2007, Bernhard Walle wrote:
 > 
-> Patch available: http://lkml.org/lkml/2007/3/22/301
+> > irqpoll is broken on some architectures that don't use the IRQ 0 for the timer
+> > interrupt like IA64. This patch adds a IRQF_IRQPOLL_IRQ flag.
 > 
-> commit 6b3964cde70cfe6db79d35b42137431ef7d2f7e4
-> 
+> emn, please, cannot we come up with a better name - one that doesn't have 
+> "IRQ" 3 (!) times in it?...
 
-For the other issue raised there, clock running too slow, I now
-realize there is a similar report:
+Well, it was suggested by Andrew. What's your suggestion?
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=231626
 
+Thanks,
+   Bernhard
