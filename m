@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbXCWTFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbXCWTH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932173AbXCWTFJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932275AbXCWTFI
+	id S1752434AbXCWTH4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbXCWTH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:05:08 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:60147 "EHLO lxorguk.ukuu.org.uk"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932067AbXCWTFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:05:05 -0400
-Date: Fri, 23 Mar 2007 20:08:19 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       kyle@canonical.com
-Subject: Re: HPA patches
-Message-ID: <20070323200819.4e734f4f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070323112411.f6a8a762.randy.dunlap@oracle.com>
-References: <20070323191321.5d00887a@lxorguk.ukuu.org.uk>
-	<20070323112411.f6a8a762.randy.dunlap@oracle.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 Mar 2007 15:07:56 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:53355 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbXCWTHx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:07:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Z4kWBp6j4p1etgCo+qz37HxRRXjN+pYVXuAlhyIjhUM3T9vDf8JGVkbPkFXfDxpLNwlK2ASgsfXa9QueFEbpUwe8VIYwY4S6gCy9xP+Rb/zYe5ynZWiAftJfZ02bN6BNIiSqNZX+iUEL6SVT5H8/ztQn5HoEM7Xi1UXeYAyw76c=
+From: Maxim <maximlevitsky@gmail.com>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+Date: Fri, 23 Mar 2007 21:07:33 +0200
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.c, pavel@suse.cz,
+       linux-pm@lists.osdl.org,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric_RISS?= <frederic.riss@gmail.com>,
+       Tino Keitel <tino.keitel@gmx.de>, Bob Moore <robert.moore@intel.com>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org,
+       Tobias Doerffel <tobias.doerffel@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       Mike Harris <atarimike@wavecable.com>, Marcus Better <marcus@better.se>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Meyer <thomas@m3y3r.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Soeren Sonnenburg <kernel@nn7.de>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323185022.GQ752@stusta.de>
+In-Reply-To: <20070323185022.GQ752@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703232107.34020.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +static int ata_ignore_hpa = 0;
+On Friday 23 March 2007 20:50:22 Adrian Bunk wrote:
+
+> Subject    : suspend to disk hangs
+> References : http://lkml.org/lkml/2007/3/16/126
+> Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
+> Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+>              commit e3c7db621bed4afb8e231cb005057f2feb5db557
+>              commit ed746e3b18f4df18afa3763155972c5835f284c5
+>              commit 259130526c267550bc365d3015917d90667732f1
+> Status     : unknown
 > 
-> Don't init to 0.  Not needed, bloats binary files.
-
-It'll be one for the final release 8)
-
-> > +module_param_named(ignore_hpa, ata_ignore_hpa, int, 0644);
-> > +MODULE_PARM_DESC(ignore_hpa, "Ignore HPA (0=off 1=on)");
 > 
-> So 1 = on = ignore, right?
 
-Yes.
+Hello, 
+	It is fixed
 
-> > +	tf.command = ATA_CMD_READ_NATIVE_MAX_EXT;
-> > +	tf.flags |= ATA_TFLAG_DEVICE | ATA_TFLAG_LBA48 | ATA_TFLAG_ISADDR;
-> > +	tf.protocol |= ATA_PROT_NODATA;
-> > +	tf.device = 0x40;
-> 
-> What is 0x40?  can it be #defined (or enum-ed) instead of a magic
-> value?  please?  (more of same below)
+	The problem is that now cpu_up/cpu_down is called with tasks frozen,
+	and this can lead to deadlock if some driver that registered cpu up/down notifier, sleeps,
 
-It's 0x40. Its a "command dependant bit" - no useful name.
+	On my system it froze in two places, one in XFS due to freezable workqueues, and in
+	microcode update driver that ask the "frozen" userspace for firmware.
 
-> > +	u64 sectors = dev->n_sectors;
-> > +	u64 hpa_sectors;
-> > +	
-> > +	if (ata_id_has_lba48(dev->id))
-> > +		hpa_sectors = ata_read_native_max_address_ext(dev);
-> > +	else
-> > +		hpa_sectors = ata_read_native_max_address(dev);
-> > +
-> > +	/* if no hpa, both should be equal */
-> > +	ata_dev_printk(dev, KERN_INFO, "%s 1: sectors = %lld, hpa_sectors = %lld\n",
-> > +		__FUNCTION__, sectors, hpa_sectors);
-> 
-> (long long) or (unsigned long long) on sectors and hpa_sectors...
+	Fix for XFS is already in mainline, and Rafael J. Wysocki. already posted a patch that fixes microcode issue,
+	I will test it.
 
-u64 is always unsigned long long (and its debug anyway)
+	But I feel that there are more drivers that can deadlock system in same way, on my system S3/S4 works perfect :-)
+	Even the weird  hang i had disappeared.
 
-> 
-> > +
-> > +	if (hpa_sectors > sectors) {
-> > +		ata_dev_printk(dev, KERN_INFO,
-> > +			"Host Protected Area detected:\n"
-> > +			"\tcurrent size: %lld sectors\n"
-> > +			"\tnative size: %lld sectors\n",
-> > +			sectors, hpa_sectors);
-> 
-> printk format types ok?
+	Big thanks to Rafael J. Wysocki.
 
-Yes
 
-> > +			if (hpa_sectors) {
-> > +				ata_dev_printk(dev, KERN_INFO,
-> > +					"native size increased to %lld sectors\n", hpa_sectors);
-> 
-> Line lengths < 80 and printk format types?
-
-See above, and the 80 column fascists can suffer in the name of
-readability. 
-
-Alan
+	Best regards,
+		Maxim Levitsky
