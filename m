@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934182AbXCWTqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992545AbXCWTvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934182AbXCWTqA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbXCWTqA
+	id S2992545AbXCWTvF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992546AbXCWTvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:46:00 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:41935 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934182AbXCWTp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:45:59 -0400
-Subject: Re: [Bluez-devel] 2.6.21-rc4-mm1
-From: Zan Lynx <zlynx@acm.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: BlueZ development <bluez-devel@lists.sourceforge.net>,
+	Fri, 23 Mar 2007 15:51:05 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:20762 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992545AbXCWTvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:51:04 -0400
+Message-ID: <46042FA2.20303@tls.msk.ru>
+Date: Fri, 23 Mar 2007 22:50:58 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Jiri Kosina <jikos@jikos.cz>, Tomas M <tomas@slax.org>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <1174486370.15638.29.camel@aeonflux.holtmann.net>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	 <1174433034.62033.16.camel@localhost>
-	 <20070320223643.d8cbc3f6.akpm@linux-foundation.org>
-	 <1174486370.15638.29.camel@aeonflux.holtmann.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-sucEl6uUGBYi+kYCiXwt"
-Date: Fri, 23 Mar 2007 13:45:54 -0600
-Message-Id: <1174679154.289400.22.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-X-Envelope-From: zlynx@acm.org
+Subject: Re: [patch] [bugfix] loop.c
+References: <4603DE86.1090009@slax.org>	<20070323151956.1ac6a47b.dada1@cosmosbay.com>	<Pine.LNX.4.64.0703231522200.5030@twin.jikos.cz> <20070323155115.89f86b3b.dada1@cosmosbay.com>
+In-Reply-To: <20070323155115.89f86b3b.dada1@cosmosbay.com>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Dumazet wrote:
+[]
+> 
+> MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-16384)");
 
---=-sucEl6uUGBYi+kYCiXwt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Speaking of which, I wonder...  Here, and in many other places.
 
-On Wed, 2007-03-21 at 15:12 +0100, Marcel Holtmann wrote:
-> Hi Andrew,
->=20
-> > >       * Freezes immediately if I allow Bluetooth to configure.
-> >=20
-> > cc bluez-devel
->=20
-> is the -mm specific or does this also happens with 2.6.21-rc4?
+If some variable is marked as MODULE_PARAM (or whatever it is called
+nowadays), used in module init routine, AND subsequently used for various
+bound checks and loops...
 
-Bluetooth works now, so it isn't entirely -mm's fault. =20
+Consider this:
 
-I applied a posted patch for the Sonic Silicon Backplane.  I also set
-all the older BCM43xx driver modules to N, and my freeze with wireless
-went away.
+  MODULE_PARAM(n);
+  foo_init() {
+    mem = kmalloc(n * sizeof(void*));
+    ..
+  }
+  foo_func() {
+    for (i = 0; i < n; ++i)
+      do_something_with_mem(mem[i])
+  }
 
-On this laptop (a Compaq R3000) the Bluetooth and the wireless are
-controlled by the same front panel button, so I wonder if they are
-related in other ways as well.
+and so on.  Together with:
 
-If I get a chance to play with it this weekend I will see if I can
-isolate the change that fixes/breaks it.
---=20
-Zan Lynx <zlynx@acm.org>
+  # modprobe foo n=10
+  # echo 20 > /sys/module/foo/parameters/n
 
---=-sucEl6uUGBYi+kYCiXwt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+After that, we have 10 entries in mem[], and
+n is equal to 20, so the for-loop above will be
+up to i=19.  Which will reference unallocated
+memory....
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
+Amd I dreaming?
 
-iD8DBQBGBC5yG8fHaOLTWwgRAlVtAKCSCnUhdf8C7zpWj4jSq8yWkmh+5QCfR6p6
-d98lBKF95LpOMJRkXkEpZ8c=
-=0Z65
------END PGP SIGNATURE-----
+Thanks.
 
---=-sucEl6uUGBYi+kYCiXwt--
-
+/mjt
