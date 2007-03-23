@@ -1,78 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXCWV0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934319AbXCWV05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932768AbXCWV0k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 17:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbXCWV0k
+	id S934319AbXCWV05 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 17:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933862AbXCWV05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 17:26:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50758 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932356AbXCWV0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 17:26:39 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] i386: clear segment register padding in core dumps
-Message-Id: <20070323212633.44D631801C4@magilla.sf.frob.com>
-Date: Fri, 23 Mar 2007 14:26:33 -0700 (PDT)
+	Fri, 23 Mar 2007 17:26:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44391 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934319AbXCWV0z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 17:26:55 -0400
+Subject: Re: [PATCH 2.6.21-rc4] hwmon: HP Mobile Data Protection System 3D
+	ACPI driver
+From: Arjan van de Ven <arjan@infradead.org>
+To: Yan Burman <burman.yan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, khali@linux-fr.org
+In-Reply-To: <1174661503.5373.16.camel@lapot>
+References: <1174661503.5373.16.camel@lapot>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Fri, 23 Mar 2007 22:26:44 +0100
+Message-Id: <1174685204.1158.255.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The segment register slots in struct pt_regs are padded to 32 bits.
-Some of these are stored with instructions like "pushl %es", which
-leaves the high 16 bits as they were.  So the high bits of these
-fields in struct pt_regs contain kernel stack garbage.  These bits are
-ignored by everything and never leak to user space, except in core
-dumps.  The user struct pt_regs is always at the base of the thread's
-kernel stack and so it seems unlikely the information that leaks from
-here is ever worthwhile so as to be a security concern, but I'm not
-sure about that.  It has been this way for ages; userland consumers of
-core dumps all mask off these high bits themselves.  So it is not urgent.
+Hi,
 
-This change masks off the padding bits of the segment register slots
-in core dumps.  ptrace already masks off these high bits, so this
-makes the values in core dumps consistent with what ptrace would
-report just before the process died.
+your code looks very nice and clean, only few comments, see below
 
-As I read the processor manuals, the cs and ss values will always be
-padded with zero bits rather than stack garbage.  But unlike "pushl %es",
-this is not simple to test with a userland program.  So I added the two
-instructions rather than wonder if they are really never necessary.
+> +static int mdps_joystick_kthread(void *data)
+> +{
+> +	int x = 0, y = 0, z = 0;
+> +
+> +	while (!kthread_should_stop()) {
+> +		if (input_3d) {
+> +			mdps_get_xyz(mdps.device->handle, &x, &y, &z);
+> +			input_report_abs(mdps.idev, ABS_Z, z - mdps.zcalib);
+> +		} else
+> +			mdps_get_xy(mdps.device->handle, &x, &y);
+> +
+> +		input_report_abs(mdps.idev, ABS_X, x - mdps.xcalib);
+> +		input_report_abs(mdps.idev, ABS_Y, y - mdps.ycalib);
+> +
+> +		input_sync(mdps.idev);
+> +
+> +		try_to_freeze();
+> +		msleep_interruptible(MDPS_POLL_INTERVAL);
+> +	}
 
-I think that x86_64 does not have this problem (for either 32-bit or
-64-bit processes).  It only uses "mov" instructions from segment
-registers, which zero-extend.
+what if you get a signal? you probably at least want to handle that
+somehow. Also, waking up every 30 miliseconds is going to suck up
+power ... but that might not be avoidable I suppose if you have to poll
+the hardware.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- include/asm-i386/elf.h |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+> +static int mdps_misc_open(struct inode *inode, struct file *file)
+> +{
+> +	int ret;
+> +
+> +	if (!atomic_dec_and_test(&mdps.available)) {
+> +		atomic_inc(&mdps.available);
+> +		return -EBUSY; /* already open */
+> +	}
+I often get a bit nervous at seeing such "open me once" code, but it
+might well be ok ... I'll let others comment
 
-diff --git a/include/asm-i386/elf.h b/include/asm-i386/elf.h
-index 8d33c9b..793bbd1 100644  
---- a/include/asm-i386/elf.h
-+++ b/include/asm-i386/elf.h
-@@ -88,16 +88,16 @@ typedef struct user_fxsr_struct elf_fpxr
- 	pr_reg[4] = regs->edi;				\
- 	pr_reg[5] = regs->ebp;				\
- 	pr_reg[6] = regs->eax;				\
--	pr_reg[7] = regs->xds;				\
--	pr_reg[8] = regs->xes;				\
--	pr_reg[9] = regs->xfs;				\
-+	pr_reg[7] = regs->xds & 0xffff;			\
-+	pr_reg[8] = regs->xes & 0xffff;			\
-+	pr_reg[9] = regs->xfs & 0xffff;			\
- 	savesegment(gs,pr_reg[10]);			\
- 	pr_reg[11] = regs->orig_eax;			\
- 	pr_reg[12] = regs->eip;				\
--	pr_reg[13] = regs->xcs;				\
-+	pr_reg[13] = regs->xcs & 0xffff;		\
- 	pr_reg[14] = regs->eflags;			\
- 	pr_reg[15] = regs->esp;				\
--	pr_reg[16] = regs->xss;
-+	pr_reg[16] = regs->xss & 0xffff;
- 
- /* This yields a mask that user programs can use to figure out what
-    instruction set this CPU supports.  This could be done in user space,
+> +
+> +	atomic_set(&mdps.count, 0);
+> +
+> +	ret = request_irq(mdps.irq, mdps_irq, 0, "mdps", mdps_irq);
+
+don't you want to allow shared interrupts?
+
+> +	if (ret) {
+> +		printk(KERN_ERR "mdps: IRQ%d allocation failed\n", mdps.irq);
+> +		return -ENODEV;
+> +	}
+
+wouldn't you want to inc the atomic in this case?
+
+
+
+> +static ssize_t mdps_misc_read(struct file *file, char __user *buf,
+> +                              size_t count, loff_t *pos)
+> +{
+> +	DECLARE_WAITQUEUE(wait, current);
+> +	u32 data;
+> +	ssize_t retval = count;
+> +
+> +	if (count != sizeof(u32))
+> +		return -EINVAL;
+> +
+> +	add_wait_queue(&mdps.misc_wait, &wait);
+> +	for (;;) {
+> +		set_current_state(TASK_INTERRUPTIBLE);
+> +		data = atomic_xchg(&mdps.count, 0);
+> +		if (data)
+> +			break;
+> +
+> +		if (file->f_flags & O_NONBLOCK) {
+> +			retval = -EAGAIN;
+> +			goto out;
+> +		}
+> +
+> +		if (signal_pending(current)) {
+> +			retval = -ERESTARTSYS;
+> +			goto out;
+> +		}
+> +
+> +		schedule();
+> +	}
+> +
+> +	if (copy_to_user(buf, &data, sizeof(data)))
+
+I'm not entirely sure you want to go into copy_to_user() with a
+TASK_INTERRUPTIBLE state, I would feel a lot better if you did an
+explicit __set_current_state(TASK_RUNNING) just before this.
+
+> +		retval = -EFAULT;
+> +
+> +out:
+> +	set_current_state(TASK_RUNNING);
+
+.. which you do here anyway
+
+> mdps_get_resource(struct acpi_resource *resource, void *context)
+> +{
+> +	if (resource->type == ACPI_RESOURCE_TYPE_EXTENDED_IRQ) {
+> +		struct acpi_resource_extended_irq *irq;
+> +		u32 *device_irq = context;
+> +
+> +		irq = &resource->data.extended_irq;
+> +		*device_irq = irq->interrupts[0];
+
+
+eh wait.. if this thing gives you an interrupt.. why do you need to poll
+every 30 msec? am I missing something?
+
+
