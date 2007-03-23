@@ -1,112 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbXCWP3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945915AbXCWPaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752022AbXCWP3M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 11:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXCWP3M
+	id S1945915AbXCWPaS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 11:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945918AbXCWPaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 11:29:12 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32810 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752022AbXCWP3K (ORCPT
+	Fri, 23 Mar 2007 11:30:18 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:60043 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945915AbXCWPaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 11:29:10 -0400
-Date: Fri, 23 Mar 2007 16:29:13 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Phy Prabab <phyprabab@gmail.com>, neilb@suse.de
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: Re: Opps in 2.6.21-rc4 nfsd
-Message-ID: <20070323152913.GH752@stusta.de>
-References: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
+	Fri, 23 Mar 2007 11:30:15 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Fri, 23 Mar 2007 11:27:01 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH] MTD: Delete unused header file linux/mtd/iflash.h.
+Message-ID: <Pine.LNX.4.64.0703231125210.29985@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.569, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_DW 0.08, TW_WM 0.08, TW_XF 0.08,
+	UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 12:24:12PM -0700, Phy Prabab wrote:
-> Hello,
-> 
-> I have a recent oopps on a small file server I have running.  The
-> machine in question is a dual, dual core AMD Opteron 2.2GHz w/4G RAM,
-> 3Ware 9650SE (14 drive RAID 10), using XFS, LVM2 (latest), exported
-> via knfsd.  Kernel is 2.6.21-rc4 64b.  Here is the bt:
-> 
-> Mar 22 12:09:01 rcfs05 kernel: Modules linked in:
-> Mar 22 12:09:01 rcfs05 kernel: Pid: 3102, comm: nfsd Not tainted
-> 2.6.21-rc4-smp #3
-> Mar 22 12:09:01 rcfs05 kernel: RIP: 0010:[<ffffffff80350613>]
-> [<ffffffff80350613>] fh_compose+0x3e3/0x4d0
-> Mar 22 12:09:01 rcfs05 kernel: RSP: 0018:ffff8101197fdd70  EFLAGS: 00010297
-> Mar 22 12:09:01 rcfs05 kernel: RAX: 0000000000000006 RBX:
-> 000000000ee00004 RCX: 0000000000000000
-> Mar 22 12:09:01 rcfs05 kernel: RDX: 0000000000000018 RSI:
-> ffff81011975a940 RDI: 0000000000000080
-> Mar 22 12:09:01 rcfs05 kernel: RBP: 0000000000000001 R08:
-> 00000000ffffffff R09: 00002ba24f06ca50
-> Mar 22 12:09:01 rcfs05 kernel: R10: ffff81011975a808 R11:
-> ffffffff8022f500 R12: ffff81011975a938
-> Mar 22 12:09:01 rcfs05 kernel: R13: 0000000000000006 R14:
-> ffff81010eaab0c0 R15: ffff8100cc714940
-> Mar 22 12:09:01 rcfs05 kernel: FS:  00002b020c71b6d0(0000)
-> GS:ffff81011dcf56c0(0000) knlGS:0000000000000000
-> Mar 22 12:09:01 rcfs05 kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 
-> 000000008005003b
-> Mar 22 12:09:01 rcfs05 kernel: CR2: 0000000000000000 CR3:
-> 00000001173d1000 CR4: 00000000000006e0
-> Mar 22 12:09:01 rcfs05 kernel: Process nfsd (pid: 3102, threadinfo
-> ffff8101197fc000, task ffff81011b7ef020)
-> Mar 22 12:09:01 rcfs05 kernel: Stack:  ffff81010fa7b868
-> ffffffff80239d8a 0000000000000286 ffff810111aee5e8
-> Mar 22 12:09:01 rcfs05 kernel:  ffff810105af2890 ffff81011975a808
-> ffff810105af2890 000000000eaab0c0
-> Mar 22 12:09:01 rcfs05 kernel:  ffff810105af2890 ffff81011975a808
-> ffff810105af2890 000000000000000a
-> Mar 22 12:09:01 rcfs05 kernel: Call Trace:
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80239d8a>] 
-> __lookup_hash+0x7a/0x160
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff803547a5>] nfsd_lookup+0x435/0x4d0
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8035aaa8>]
-> nfsd3_proc_lookup+0xe8/0x110
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034d69d>] 
-> nfsd_dispatch+0xfd/0x1f0
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80608094>] svc_process+0x3e4/0x730
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8026bbf2>] __down_read+0x12/0xa2
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034dd00>] nfsd+0x1a0/0x2d0
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80264f38>] child_rip+0xa/0x12
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034db60>] nfsd+0x0/0x2d0
-> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80264f2e>] child_rip+0x0/0x12
-> Mar 22 12:09:01 rcfs05 kernel:
-> Mar 22 12:09:01 rcfs05 kernel:
-> Mar 22 12:09:01 rcfs05 kernel: Code: 48 8b 01 ba 10 00 00 00 bf 10 00
-> 00 00 48 89 06 48 8b 41 08
-> Mar 22 12:09:01 rcfs05 kernel: RIP  [<ffffffff80350613>] 
-> fh_compose+0x3e3/0x4d0
-> Mar 22 12:09:01 rcfs05 kernel:  RSP <ffff8101197fdd70>
-> Mar 22 12:09:01 rcfs05 kernel: CR2: 0000000000000000
-> 
-> Once this oops happens, the machine is still usable, however NFS
-> crawls to a halt (in fact one of the machines with a mount point of
-> this machine, failed to respond anymore - I assume that thread is the
-> one that ooops'ed).
-> 
-> Any more information or debugging, please let me know.
 
+Delete the unreferenced header file include/linux/mtd/iflash.h.
 
-Does it work with kernel 2.6.20?
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
+---
 
-> TIA!
-> Phy
-
-cu
-Adrian
-
+diff --git a/include/linux/mtd/iflash.h b/include/linux/mtd/iflash.h
+deleted file mode 100644
+index 9aa5b4f..0000000
+--- a/include/linux/mtd/iflash.h
++++ /dev/null
+@@ -1,98 +0,0 @@
+-/* $Id: iflash.h,v 1.2 2000/11/13 18:01:54 dwmw2 Exp $ */
+-
+-#ifndef __MTD_IFLASH_H__
+-#define __MTD_IFLASH_H__
+-
+-/* Extended CIS registers for Series 2 and 2+ cards */
+-/* The registers are all offsets from 0x4000 */
+-#define CISREG_CSR		0x0100
+-#define CISREG_WP		0x0104
+-#define CISREG_RDYBSY		0x0140
+-
+-/* Extended CIS registers for Series 2 cards */
+-#define CISREG_SLEEP		0x0118
+-#define CISREG_RDY_MASK		0x0120
+-#define CISREG_RDY_STATUS	0x0130
+-
+-/* Extended CIS registers for Series 2+ cards */
+-#define CISREG_VCR		0x010c
+-
+-/* Card Status Register */
+-#define CSR_SRESET		0x20	/* Soft reset */
+-#define CSR_CMWP		0x10	/* Common memory write protect */
+-#define CSR_PWRDOWN		0x08	/* Power down status */
+-#define CSR_CISWP		0x04	/* Common memory CIS WP */
+-#define CSR_WP			0x02	/* Mechanical write protect */
+-#define CSR_READY		0x01	/* Ready/busy status */
+-
+-/* Write Protection Register */
+-#define WP_BLKEN		0x04	/* Enable block locking */
+-#define WP_CMWP			0x02	/* Common memory write protect */
+-#define WP_CISWP		0x01	/* Common memory CIS WP */
+-
+-/* Voltage Control Register */
+-#define VCR_VCC_LEVEL		0x80	/* 0 = 5V, 1 = 3.3V */
+-#define VCR_VPP_VALID		0x02	/* Vpp Valid */
+-#define VCR_VPP_GEN		0x01	/* Integrated Vpp generator */
+-
+-/* Ready/Busy Mode Register */
+-#define RDYBSY_RACK		0x02	/* Ready acknowledge */
+-#define RDYBSY_MODE		0x01	/* 1 = high performance */
+-
+-#define LOW(x) ((x) & 0xff)
+-
+-/* 28F008SA-Compatible Command Set */
+-#define IF_READ_ARRAY		0xffff
+-#define IF_INTEL_ID		0x9090
+-#define IF_READ_CSR		0x7070
+-#define IF_CLEAR_CSR		0x5050
+-#define IF_WRITE		0x4040
+-#define IF_BLOCK_ERASE		0x2020
+-#define IF_ERASE_SUSPEND	0xb0b0
+-#define IF_CONFIRM		0xd0d0
+-
+-/* 28F016SA Performance Enhancement Commands */
+-#define IF_READ_PAGE		0x7575
+-#define IF_PAGE_SWAP		0x7272
+-#define IF_SINGLE_LOAD		0x7474
+-#define IF_SEQ_LOAD		0xe0e0
+-#define IF_PAGE_WRITE		0x0c0c
+-#define IF_RDY_MODE		0x9696
+-#define IF_RDY_LEVEL		0x0101
+-#define IF_RDY_PULSE_WRITE	0x0202
+-#define IF_RDY_PULSE_ERASE	0x0303
+-#define IF_RDY_DISABLE		0x0404
+-#define IF_LOCK_BLOCK		0x7777
+-#define IF_UPLOAD_STATUS	0x9797
+-#define IF_READ_ESR		0x7171
+-#define IF_ERASE_UNLOCKED	0xa7a7
+-#define IF_SLEEP		0xf0f0
+-#define IF_ABORT		0x8080
+-#define IF_UPLOAD_DEVINFO	0x9999
+-
+-/* Definitions for Compatible Status Register */
+-#define CSR_WR_READY		0x8080	/* Write state machine status */
+-#define CSR_ERA_SUSPEND		0x4040	/* Erase suspend status */
+-#define CSR_ERA_ERR		0x2020	/* Erase status */
+-#define CSR_WR_ERR		0x1010	/* Data write status */
+-#define CSR_VPP_LOW		0x0808	/* Vpp status */
+-
+-/* Definitions for Global Status Register */
+-#define GSR_WR_READY		0x8080	/* Write state machine status */
+-#define GSR_OP_SUSPEND		0x4040	/* Operation suspend status */
+-#define GSR_OP_ERR		0x2020	/* Device operation status */
+-#define GSR_SLEEP		0x1010	/* Device sleep status */
+-#define GSR_QUEUE_FULL		0x0808	/* Queue status */
+-#define GSR_PAGE_AVAIL		0x0404	/* Page buffer available status */
+-#define GSR_PAGE_READY		0x0202	/* Page buffer status */
+-#define GSR_PAGE_SELECT		0x0101	/* Page buffer select status */
+-
+-/* Definitions for Block Status Register */
+-#define BSR_READY		0x8080	/* Block status */
+-#define BSR_UNLOCK		0x4040	/* Block lock status */
+-#define BSR_FAILED		0x2020	/* Block operation status */
+-#define BSR_ABORTED		0x1010	/* Operation abort status */
+-#define BSR_QUEUE_FULL		0x0808	/* Queue status */
+-#define BSR_VPP_LOW		0x0404	/* Vpp status */
+-
+-#endif /* __MTD_IFLASH_H__ */
 -- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
