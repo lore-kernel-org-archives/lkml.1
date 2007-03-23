@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbXCWSXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbXCWSYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753287AbXCWSXx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 14:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXCWSXx
+	id S1753286AbXCWSYJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 14:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbXCWSYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 14:23:53 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:59407 "EHLO smtp.osdl.org"
+	Fri, 23 Mar 2007 14:24:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48933 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753287AbXCWSXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 14:23:51 -0400
-Date: Fri, 23 Mar 2007 11:16:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: [1/6] 2.6.21-rc4: known regressions
-In-Reply-To: <Pine.LNX.4.64.0703231112350.6730@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703231115090.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> 
- <20070318184908.GU752@stusta.de>  <Pine.LNX.4.64.0703212023550.6730@woody.linux-foundation.org>
-  <46020385.50301@yahoo.com.au>  <Pine.LNX.4.64.0703220813340.6730@woody.linux-foundation.org>
-  <1174612132.16068.114.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org> 
- <20070323114223.GA23483@elte.hu> <1174650969.10840.274.camel@localhost.localdomain>
- <Pine.LNX.4.64.0703231112350.6730@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753286AbXCWSYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 14:24:06 -0400
+Date: Fri, 23 Mar 2007 14:22:48 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: "Stone, Joshua I" <joshua.i.stone@intel.com>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       SystemTAP <systemtap@sources.redhat.com>,
+       Satoshi Oshima <soshima@redhat.com>, Hideo Aoki <haoki@redhat.com>,
+       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, hch@infradead.org
+Subject: Re: [RFC][Patch 1/4] kprobe fast unregistration
+Message-ID: <20070323182248.GA32364@redhat.com>
+References: <20070323180527.GA13728@bambi.jf.intel.com> <16D5B9AB904B0B46B22A27002EE3A8C82793BB@scsmsx415.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <16D5B9AB904B0B46B22A27002EE3A8C82793BB@scsmsx415.amr.corp.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi -
 
+Keshavamurthy, Anil S wrote:
+> I agree with Christoph that the interface is horrible and error prone.
 
-On Fri, 23 Mar 2007, Linus Torvalds wrote:
-> 
-> I really wish we had an x86-64 maintainer that understood that it's 
-> confusing that files in arch/i386/ are also used for arch/x86-64.
+Really?  What possible problems can occur?  The worst that occurs to
+me is that if someone forgets to call the commit function, the kprobes
+will still be disabled, but memory won't be recycled for a while.  Is
+this really so bad, considering that a kprobe_unregister is to imply a
+commit?  Maybe if kprobe_register can also implied a commit, we can
+bound the conceivable memory leak.
 
-Sorry, that was unfair. The patch was simply buggy. It added the test to 
-drivers/acpi/ *without* adding it to the architectures that used it, it 
-wasn't an i386/x86-64 thing.
+Would it be possible to allay even that concern with an automated
+deferred/periodic commit?
 
-Thomas, please fix.
-
-		Linus
+- FChE
