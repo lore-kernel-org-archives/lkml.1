@@ -1,142 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933592AbXCWTfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933926AbXCWTkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933592AbXCWTfr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933664AbXCWTfr
+	id S933926AbXCWTkn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933940AbXCWTkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:35:47 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56840 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933592AbXCWTfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:35:46 -0400
-X-Authenticated: #17142692
-X-Provags-ID: V01U2FsdGVkX18jzDAZLw8jvEsCzLHtlQWdqt42VkWaNetGS/qxu2
-	BygEqwc7zZkMua
-Message-ID: <46042C10.3080407@gmx.de>
-Date: Fri, 23 Mar 2007 20:35:44 +0100
-From: thomas schorpp <t.schorpp@gmx.de>
-Reply-To: t.schorpp@gmx.de
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070217 Iceape/1.0.8 (Debian-1.0.8-3)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [BUG][x86_64]pci layer may report wrong iomem resources data to drivers
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Fri, 23 Mar 2007 15:40:42 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:41928 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933926AbXCWTkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:40:41 -0400
+Subject: Re: 2.6.21-rc4-mm1
+From: Zan Lynx <zlynx@acm.org>
+To: Larry Finger <larry.finger@lwfinger.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, bluez-devel@lists.sourceforge.net,
+       reiserfs-dev@namesys.com
+In-Reply-To: <46015990.0@lwfinger.net>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	 <1174433034.62033.16.camel@localhost>
+	 <20070320223643.d8cbc3f6.akpm@linux-foundation.org>
+	 <46015990.0@lwfinger.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-T9xAHRaGXU5aa4okKXwV"
+Date: Fri, 23 Mar 2007 13:40:32 -0600
+Message-Id: <1174678832.289400.16.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+X-Envelope-From: zlynx@acm.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lo,
 
-aic7xxx driver mmio / dma on x86_64 linux broken here.
+--=-T9xAHRaGXU5aa4okKXwV
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-i need some comments and further investigation advice on this:
+On Wed, 2007-03-21 at 11:13 -0500, Larry Finger wrote:
+> Andrew Morton wrote:
+> > On Tue, 20 Mar 2007 17:23:54 -0600 Zan Lynx <zlynx@acm.org> wrote:
+> >> First impressions:
+> >> Several of the same bugs as rc3-mm*:
+> >>       * Freezes immediately if I touch the wlan0 device after loading
+> >>         the new Broadcom wireless driver.
+>=20
+> --snip--
+>=20
+> >> 02:02.0 Network controller: Broadcom Corporation BCM4303 802.11b Wirel=
+ess LAN Controller (rev 02)
+>=20
+> I'm a little confused. The bcm43xx-mac80211 driver does not handle 802.11=
+b devices, and the
+> bcm43xx-softmac driver should not freeze. Which one was configured here?
 
-(resend, mozilla misconfig )
+It may have partly been a problem of having half of softmac and half
+devicescape.  I'm not entirely sure what udev did.
 
-> thomas schorpp wrote:
->> James Bottomley wrote:
->>> On Fri, 2007-03-23 at 17:28 +0100, thomas schorpp wrote:
->>>>> i agree for this to be a 32bit dma busmaster chip,
->>>>> since pci_resource_flags and lspci say 64bit mem resource type
->>>>>
->>>>> aic7xxx: pci_resource_start fffff000 *maddr 20000 mem64 4
->>>>>
->>
->> static int
->> ahc_linux_pci_reserve_mem_region(struct ahc_softc *ahc,
->>                                 u_long *bus_addr,
->>                                 uint8_t __iomem **maddr)
->> {
->> //      u_long  start;
->>        u_long  len;
->>        int     error;
->>        uint64_t start;
->> ...
->>        printk(KERN_WARNING "aic7xxx: pci_resource_start 0x%llx mem64 0x%lx\n", start, pci_resource_flags(ahc->dev_softc, 1) & PCI_BASE_ADDRESS_MEM_TYPE_64 ); //schorpp
->>        return (error);
->>
->> aic7xxx: pci_resource_start 0xffffff000 mem64 0x4
->> -----------------------------------------------^
->>
->> just to doublecheck the situation, posted lspci already.
->>
->> will check next, if
->>       len = pci_resource_len(ahc->dev_softc, 1);
->>        if (start != 0) {
->>                *bus_addr = start;
->> //              if (request_mem_region(start, 0x1000, "aic7xxx") == 0)
->>                if (request_mem_region(start, len, "aic7xxx") == 0)
->>
->> succeeds.
-> 
-> no. so the pci layer reports wrong start:
-> 
->        start = pci_resource_start(ahc->dev_softc, 1);
->        len = pci_resource_len(ahc->dev_softc, 1);
->        if (start != 0) {
->                *bus_addr = start;
-> //              if (request_mem_region(start, 0x1000, "aic7xxx") == 0)
->                if (request_mem_region(start, len, "aic7xxx") == 0)
->                        error = ENOMEM;
->        printk(KERN_WARNING "aic7xxx: req_mem_region 0x%x memlen 0x%lx \n", error, len ); //schorpp
-> 
-> tom1:~# dmesg |grep aic
-> aic7xxx: DMA_32BIT_MASK
-> aic7xxx: req_mem_region 0x0 memlen 0x1000
-> aic7xxx: pci_resource_start 0xffffff000 *maddr 0x20000 mem64 0x4
-> aic7xxx: PCI Device 0:6:0 failed memory mapped test.  Using PIO.
->        aic7892: Ultra160 Wide Channel A, SCSI Id=7, 32/253 SCBs
-> 
-> 
->>
->>>>> we've a bug in the x86_64 linux pci config, BIOS is ok, the hardware worked fine in a winxp_x64 test setup a few months ago.
->>>>>
->>>>> will ask LKML.
->>>>>
->>>>> y
->>>>> tom
->>>> sorry, wrong according to http://download.adaptec.com/pdfs/aic7892.pdf.
->>>>
->>>> "66 MHz, 64-bit, PCI interface that
->>>> supports zero wait-state memory;
->>>> also operates on 33 MHz, 32-bit
->>>> PCI busses"
->>>>
->>>> this chip is capable of 64bit addressing, as pci_resource_nnnn (checking this) on x86_64 platform and lspci on x86_64 *and* AMDK7 configured kernels reports, even on PCI/32, right?
->>>> or is it impossible to do multiplexed 64bit mem addressing on PCI/32?
->>>
->>> It can only do 37 bit addressing ... only the aic79xx can do the full 64
->>> bits, so I suspect it should never get a 64 bit BAR, since it wouldn't
->>> be able to decode the full 32 bits.  I can fix the mmio check not to
->>> hang, but the card won't actually work mmio until whatever's assigning
->>> the BAR above 32 bits is fixed (that could either be a kernel PCI bug or
->>> a BIOS bug).
->>>
->>
->> ok, i trust in that. adaptor bios and mainboard bios *are* out, winxp_x64 driver handled all.
->> so agree on kernel pci hal issue.
->> but what for         const uint64_t   mask_39bit = 0x7FFFFFFFFFULL;
->> then?
->>
->>>>
->>>> can adaptec.inc pls comment? since the aha19160 card is still in production state, i assume they want to have a linux x86_64 dma capable driver. so far it is not, or can other users having this card pls confirm my pci system broken?
->>>
->>> James
->>>
->>>
->>
->> y
->> tom
->>
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I tried a patch for the Sonic Silicon that was posted and I turned off
+all the configuration for the softmac driver.
+
+It isn't crashing right now but 802.11 isn't working either.  I may get
+a chance this weekend to try some things with it, and some different
+firmware sets.
+
+If the new bcm43xx drivers do not support 802.11b at all and never will,
+I missed the documentation.  Someone should add that to Kconfig.
+--=20
+Zan Lynx <zlynx@acm.org>
+
+--=-T9xAHRaGXU5aa4okKXwV
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQBGBC0wG8fHaOLTWwgRAjx2AKCV/CK0iBVpck/IjTXzpqEuxdykUwCeNS6N
+r3/AJOR7cLYuU2WHk6F+ZSU=
+=dMzn
+-----END PGP SIGNATURE-----
+
+--=-T9xAHRaGXU5aa4okKXwV--
 
