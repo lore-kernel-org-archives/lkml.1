@@ -1,122 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934286AbXCWQxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992518AbXCWQxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934286AbXCWQxY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 12:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934281AbXCWQxY
+	id S2992518AbXCWQxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 12:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992527AbXCWQxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 12:53:24 -0400
-Received: from smtp.nokia.com ([131.228.20.172]:52031 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934286AbXCWQxX (ORCPT
+	Fri, 23 Mar 2007 12:53:35 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:35789 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992518AbXCWQxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 12:53:23 -0400
-From: Artem Bityutskiy <dedekind@infradead.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Frank Haverkamp <haver@vnet.ibm.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Artem Bityutskiy <dedekind@infradead.org>
-Date: Fri, 23 Mar 2007 18:44:27 +0200
-Message-Id: <20070323164427.8958.54336.sendpatchset@localhost.localdomain>
-In-Reply-To: <20070323164256.8958.58377.sendpatchset@localhost.localdomain>
-References: <20070323164256.8958.58377.sendpatchset@localhost.localdomain>
-Subject: [PATCH 18/20 take 4] UBI: JFFS2 UBI support
-X-OriginalArrivalTime: 23 Mar 2007 16:44:27.0633 (UTC) FILETIME=[8574BE10:01C76D6A]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070323184442-22E1FBB0-6909E2B7/0-0/0-1
-X-Nokia-AV: Clean
+	Fri, 23 Mar 2007 12:53:33 -0400
+Subject: [Patch -mm 1/1] SLIM Integrity Patch
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: safford@watson.ibm.com, serue@linux.vnet.ibm.com,
+       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com, akpm@osdl.org
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 12:52:01 -0400
+Message-Id: <1174668721.18725.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/fs/jffs2/fs.c tmp-to/fs/jffs2/fs.c
---- tmp-from/fs/jffs2/fs.c	2007-03-23 18:20:01.000000000 +0200
-+++ tmp-to/fs/jffs2/fs.c	2007-03-23 18:20:02.000000000 +0200
-@@ -672,6 +672,13 @@ static int jffs2_flash_setup(struct jffs
- 			return ret;
- 	}
+This is a minor patch to SLIM that only addresses the integrity service
+issues, to be reviewed in conjuction with the integrity service 
+framework and provider that were just posted.
+
+(A major patch will be released to address the other issues previously 
+discussed on the lkml mailing list shortly.)
+
+signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+---
+
+Index: linux-2.6.21-rc4-mm1/security/slim/slm_main.c
+===================================================================
+--- linux-2.6.21-rc4-mm1.orig/security/slim/slm_main.c
++++ linux-2.6.21-rc4-mm1/security/slim/slm_main.c
+@@ -1,7 +1,7 @@
+ /*
+  * SLIM - Simple Linux Integrity Module
+  *
+- * Copyright (C) 2005,2006 IBM Corporation
++ * Copyright (C) 2005,2006,2007 IBM Corporation
+  * Author: Mimi Zohar <zohar@us.ibm.com>
+  * 	   Kylene Hall <kjhall@us.ibm.com>
+  *
+@@ -32,6 +32,29 @@
+ extern struct security_operations dummy_security_ops;
  
-+	/* and an UBI volume */
-+	if (jffs2_ubivol(c)) {
-+		ret = jffs2_ubivol_setup(c);
-+		if (ret)
-+			return ret;
-+	}
+ unsigned int slm_debug = SLM_BASE;
 +
- 	return ret;
- }
- 
-@@ -690,4 +697,9 @@ void jffs2_flash_cleanup(struct jffs2_sb
- 	if (jffs2_nor_wbuf_flash(c)) {
- 		jffs2_nor_wbuf_flash_cleanup(c);
- 	}
++#ifdef CONFIG_SECURITY_SLIM_BOOTPARAM
++int slim_enabled = CONFIG_SECURITY_SLIM_BOOTPARAM_VALUE;
 +
-+	/* and an UBI volume */
-+	if (jffs2_ubivol(c)) {
-+		jffs2_ubivol_cleanup(c);
-+	}
- }
-diff -auNrp tmp-from/fs/jffs2/os-linux.h tmp-to/fs/jffs2/os-linux.h
---- tmp-from/fs/jffs2/os-linux.h	2007-03-23 18:20:01.000000000 +0200
-+++ tmp-to/fs/jffs2/os-linux.h	2007-03-23 18:20:02.000000000 +0200
-@@ -98,6 +98,9 @@ static inline void jffs2_init_inode_info
- #define jffs2_nor_wbuf_flash(c) (0)
- #define jffs2_nor_wbuf_flash_setup(c) (0)
- #define jffs2_nor_wbuf_flash_cleanup(c) do {} while (0)
-+#define jffs2_ubivol(c) (0)
-+#define jffs2_ubivol_setup(c) (0)
-+#define jffs2_ubivol_cleanup(c) do {} while (0)
- 
- #else /* NAND and/or ECC'd NOR support present */
- 
-@@ -133,6 +136,9 @@ void jffs2_nand_flash_cleanup(struct jff
- #define jffs2_dataflash(c) (c->mtd->type == MTD_DATAFLASH)
- int jffs2_dataflash_setup(struct jffs2_sb_info *c);
- void jffs2_dataflash_cleanup(struct jffs2_sb_info *c);
-+#define jffs2_ubivol(c) (c->mtd->type == MTD_UBIVOLUME)
-+int jffs2_ubivol_setup(struct jffs2_sb_info *c);
-+void jffs2_ubivol_cleanup(struct jffs2_sb_info *c);
- 
- #define jffs2_nor_wbuf_flash(c) (c->mtd->type == MTD_NORFLASH && ! (c->mtd->flags & MTD_BIT_WRITEABLE))
- int jffs2_nor_wbuf_flash_setup(struct jffs2_sb_info *c);
-diff -auNrp tmp-from/fs/jffs2/wbuf.c tmp-to/fs/jffs2/wbuf.c
---- tmp-from/fs/jffs2/wbuf.c	2007-03-23 18:20:01.000000000 +0200
-+++ tmp-to/fs/jffs2/wbuf.c	2007-03-23 18:20:02.000000000 +0200
-@@ -1274,3 +1274,27 @@ int jffs2_nor_wbuf_flash_setup(struct jf
- void jffs2_nor_wbuf_flash_cleanup(struct jffs2_sb_info *c) {
- 	kfree(c->wbuf);
- }
++static int __init slim_enabled_setup(char *str)
++{
++	slim_enabled = simple_strtol(str, NULL, 0);
++	return 1;
++}
++__setup("slim=", slim_enabled_setup);
++#else
++int slim_enabled = 1;
++#endif
 +
-+int jffs2_ubivol_setup(struct jffs2_sb_info *c) {
-+	c->cleanmarker_size = 0;
-+
-+	if (c->mtd->writesize == 1)
-+		/* We do not need write-buffer */
-+		return 0;
-+
-+	init_rwsem(&c->wbuf_sem);
-+
-+	c->wbuf_pagesize =  c->mtd->writesize;
-+	c->wbuf_ofs = 0xFFFFFFFF;
-+	c->wbuf = kmalloc(c->wbuf_pagesize, GFP_KERNEL);
-+	if (!c->wbuf)
-+		return -ENOMEM;
-+
-+	printk(KERN_INFO "JFFS2 write-buffering enabled buffer (%d) erasesize (%d)\n", c->wbuf_pagesize, c->sector_size);
-+
-+	return 0;
++unsigned int integrity_enforce = 0;
++static int __init integrity_enforce_setup(char *str)
++{
++	integrity_enforce = simple_strtol(str, NULL, 0);
++	return 1;
 +}
 +
-+void jffs2_ubivol_cleanup(struct jffs2_sb_info *c) {
-+	kfree(c->wbuf);
-+}
-diff -auNrp tmp-from/include/mtd/mtd-abi.h tmp-to/include/mtd/mtd-abi.h
---- tmp-from/include/mtd/mtd-abi.h	2007-03-23 18:20:01.000000000 +0200
-+++ tmp-to/include/mtd/mtd-abi.h	2007-03-23 18:20:02.000000000 +0200
-@@ -24,6 +24,7 @@ struct mtd_oob_buf {
- #define MTD_NORFLASH		3
- #define MTD_NANDFLASH		4
- #define MTD_DATAFLASH		6
-+#define MTD_UBIVOLUME		7
++__setup("slim_integrity_enforce=", integrity_enforce_setup);
++
+ #define XATTR_NAME "security.slim.level"
  
- #define MTD_WRITEABLE		0x400	/* Device is writeable */
- #define MTD_BIT_WRITEABLE	0x800	/* Single bits can be flipped */
+ #define ZERO_STR "0"
+@@ -319,16 +342,13 @@ static int slm_get_xattr(struct dentry *
+ 			"(rc: %d - status: %d)\n",
+ 			dentry->d_name.name, rc, *status);
+ 
+-	} else if (rc >=0 && *status == INTEGRITY_PASS && xattr_value) {
+-		rc = slm_parse_xattr(xattr_value, xattr_len, level);
++	} else {
++		if (!integrity_enforce)
++			*status = INTEGRITY_PASS;
++
++		if (rc >= 0 && xattr_value && *status != INTEGRITY_FAIL)
++			rc = slm_parse_xattr(xattr_value, xattr_len, level);
+ 		kfree(xattr_value);
+-		if (rc == 0 && level->iac_level != SLM_IAC_UNTRUSTED) {
+-			rc = integrity_verify_data(dentry, status);
+-			if ((rc < 0) || (*status != INTEGRITY_PASS))
+-				dprintk(SLM_BASE, "%s integrity_verify_data failed "
+-				" (rc: %d status: %d)\n", dentry->d_name.name,
+-					rc, *status);
+-		}
+ 	}
+ 	return rc;
+ }
+@@ -392,13 +412,12 @@ static void update_level(struct dentry *
+ 			break;
+ 		}
+ 	} else {
+-		switch(status) {
+-			case INTEGRITY_FAIL:
+-			case INTEGRITY_NOLABEL:
+-				dprintk(SLM_INTEGRITY, "%s: %s FAIL/NOLABEL (%d)\n",
++		switch (status) {
++		case INTEGRITY_FAIL:
++			dprintk(SLM_INTEGRITY, "%s: %s FAIL(%d)\n",
+ 				__FUNCTION__, dentry->d_name.name, rc);
+-				set_level_untrusted(level);
+-				break;
++			set_level_untrusted(level);
++			break;
+ 		}
+ 	}
+ }
+@@ -699,8 +718,28 @@ static int slm_inode_permission(struct i
+ 
+ 	slm_get_level(dentry, &level);
+ 
+-	/* measure all SYSTEM level integrity objects */
+-	if (level.iac_level == SLM_IAC_SYSTEM)
++	/* verify data for all trusted integrity objects */
++	if (level.iac_level != SLM_IAC_UNTRUSTED) {
++		int status;
++
++		rc = integrity_verify_data(dentry, &status);
++		switch (status) {
++		case INTEGRITY_FAIL:
++			dprintk(SLM_INTEGRITY, "%s: %s (Integrity status: "
++				" FAIL)\n", __FUNCTION__, fname);
++			if (integrity_enforce)
++				set_level_untrusted(&level);
++			break;
++		case INTEGRITY_NOLABEL:
++			dprintk(SLM_INTEGRITY, "%s: %s (Integrity status: "
++				" NOLABEL)\n", __FUNCTION__, fname);
++		default:
++			break;
++		}
++	}
++
++	/* measure all SYSTEM level integrity objects to be read */
++	if ((level.iac_level == SLM_IAC_SYSTEM) && (mask == MAY_READ))
+ 		integrity_measure(dentry, fname, mask);
+ 
+ 	rc = slm_set_taskperm(mask, &level, fname);
+@@ -789,7 +828,6 @@ static int slm_set_xattr(struct slm_file
+ 		memcpy(bufp, slm_iac_str[level->iac_level], len);
+ 		bufp += len;
+ 	}
+-	*bufp++ = ' ';
+ 	xattr_len = bufp - buf;
+ 
+ 	/* point after 'security.' */
+@@ -1410,23 +1448,25 @@ static int slm_bprm_check_security(struc
+ 
+ 	/* Possible return codes: PERMIT, DENY, NOLABEL */
+ 	rc = integrity_verify_data(dentry, &status);
+-	if (rc < 0)
++	if ((rc < 0) && integrity_enforce)
+ 		return rc;
+ 
+-	switch(status) {
++	switch (status) {
+ 	case INTEGRITY_FAIL:
+ 		if (!is_kernel_thread(current)) {
+ 			dprintk(SLM_BASE,
+ 				"%s: %s (Integrity status: FAIL)\n",
+ 				__FUNCTION__, bprm->filename);
+-			return -EACCES;
++			if (integrity_enforce)
++				return -EACCES;
+ 		}
+ 		break;
+ 	case INTEGRITY_NOLABEL:
+ 		dprintk(SLM_BASE,
+ 			"%s: %s (Integrity status: NOLABEL)\n",
+ 			__FUNCTION__, bprm->filename);
+-		level.iac_level = SLM_IAC_UNTRUSTED;
++		if (integrity_enforce)
++			level.iac_level = SLM_IAC_UNTRUSTED;
+ 	}
+ 
+ 	rc = enforce_integrity_execute(bprm, &level, cur_tsec);
+@@ -1609,18 +1649,6 @@ static struct security_operations slm_se
+ 	.d_instantiate = slm_d_instantiate
+ };
+ 
+-#ifdef CONFIG_SECURITY_SLIM_BOOTPARAM
+-int slim_enabled = CONFIG_SECURITY_SLIM_BOOTPARAM_VALUE;
+-
+-static int __init slim_enabled_setup(char *str)
+-{
+-	slim_enabled = simple_strtol(str, NULL, 0);
+-	return 1;
+-}
+-__setup("slim=", slim_enabled_setup);
+-#else
+-int slim_enabled = 1;
+-#endif
+ static int __init init_slm(void)
+ {
+ 	int rc;
+Index: linux-2.6.21-rc4-mm1/security/slim/Kconfig
+===================================================================
+--- linux-2.6.21-rc4-mm1.orig/security/slim/Kconfig
++++ linux-2.6.21-rc4-mm1/security/slim/Kconfig
+@@ -23,7 +23,7 @@ config SECURITY_SLIM_BOOTPARAM_VALUE
+ 	int "SLIM boot parameter default value"
+ 	depends on SECURITY_SLIM_BOOTPARAM
+ 	range 0 1
+-	default 1
++	default 0
+ 	help
+ 	  This option sets the default value for the kernel parameter
+ 	  'slim', which allows SLIM to be disabled at boot.  If this
+@@ -32,5 +32,5 @@ config SECURITY_SLIM_BOOTPARAM_VALUE
+ 	  set to 1 (one), the SLIM kernel parameter will default to 1,
+ 	  enabling SLIM at bootup.
+ 
+-	  If you are unsure how to answer this question, answer 1.
++	  If you are unsure how to answer this question, answer 0.
+ 
+
+
+
