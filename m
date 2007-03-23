@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992567AbXCWUsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992570AbXCWUu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992567AbXCWUsT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 16:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992572AbXCWUsT
+	id S2992570AbXCWUu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 16:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992571AbXCWUu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 16:48:19 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44475 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992567AbXCWUsS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 16:48:18 -0400
-Date: Fri, 23 Mar 2007 21:51:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, kyle@canonical.com
-Subject: Re: HPA patches
-Message-ID: <20070323215140.6a79868c@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070323.122232.85421062.davem@davemloft.net>
-References: <20070323191321.5d00887a@lxorguk.ukuu.org.uk>
-	<20070323112411.f6a8a762.randy.dunlap@oracle.com>
-	<20070323200819.4e734f4f@lxorguk.ukuu.org.uk>
-	<20070323.122232.85421062.davem@davemloft.net>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 Mar 2007 16:50:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41073 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992570AbXCWUu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 16:50:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+Date: Fri, 23 Mar 2007 21:53:51 +0100
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Maxim Levitsky <maximlevitsky@gmail.com>,
+       Mike Harris <atarimike@wavecable.com>, Marcus Better <marcus@better.se>,
+       Jeff Chua <jeff.chua.linux@gmail.com>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323185022.GQ752@stusta.de>
+In-Reply-To: <20070323185022.GQ752@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703232153.53239.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Mar 2007 12:22:32 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
-
-> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Date: Fri, 23 Mar 2007 20:08:19 +0000
+On Friday, 23 March 2007 19:50, Adrian Bunk wrote:
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
 > 
-> > u64 is always unsigned long long (and its debug anyway)
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way
+> possibly involved with one or more of these issues.
 > 
-> It's plain "unsigned long" on sparc64 and some other 64-bit platforms.
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> 
+[--snip--]
+> Subject    : suspend to disk hangs
+> References : http://lkml.org/lkml/2007/3/16/126
+> Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
+> Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+>              commit e3c7db621bed4afb8e231cb005057f2feb5db557
+>              commit ed746e3b18f4df18afa3763155972c5835f284c5
+>              commit 259130526c267550bc365d3015917d90667732f1
+> Status     : unknown
 
-I stand corrected. In which case Randy is right and I do need to go fix
-that formatting.
+The problem has been identified as the known issue related to the XFS freezable
+workqueues.  There is a patch available (http://lkml.org/lkml/2007/3/21/328),
+that has been merged.
 
-Thanks
+Still, there is a problem with the microcode update driver that's being worked
+on.
 
-Alan
+The reporters of the resume problems who use the microcode driver, please
+check if the problems go away if you unload the driver before the suspend.
+
+Greetings,
+Rafael
