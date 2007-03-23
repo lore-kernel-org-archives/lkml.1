@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbXCWTLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbXCWTNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752368AbXCWTLF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbXCWTLF
+	id S1752489AbXCWTNv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbXCWTNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:11:05 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:53053 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752368AbXCWTLD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:11:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=nsg8MJFkkgvSx0oIlqBX6RdganK6wGsygZoik2NC0G1+188JEOpw+ez53RPbqwm89f5MA1VtIu3HRIxy5qUWXYrDsDHu9/z9ZXRalwZEzIsIev46uCH5CMhvlNhzQipbOkmdKH8cwqzwQEgO8oRpF2D43z1fpK1MD/C7ANtcyhU=
-Message-ID: <88df6dda0703231211j509bc95eu5bf51d4c1e8fe24e@mail.gmail.com>
-Date: Sat, 24 Mar 2007 00:41:00 +0530
-From: "Ameya Mitragotri" <ameya.mitragotri@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: in-kernel data transfer between devices
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 23 Mar 2007 15:13:50 -0400
+Received: from www.osadl.org ([213.239.205.134]:38608 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752489AbXCWTNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:13:49 -0400
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, David L <idht4n@hotmail.com>,
+       john stultz <johnstul@us.ibm.com>
+In-Reply-To: <1174677338.10840.321.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185028.GR752@stusta.de>
+	 <1174677338.10840.321.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 20:21:11 +0100
+Message-Id: <1174677671.10840.325.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I'm trying to write data from device memory (VRAM in this case) to the
-HDD with a kernel module. I want to avoid using the cache so i tried
-to do a direct-io. Reading the code i figured it used 'get_user_pages'
-and since VRAM is io mapped, those pages are marked VM_IO and hence
-directio fails. Why is it taboo to write VM_IO pages using directio?
-(is it because Device -> Device DMA is not possible?)
+On Fri, 2007-03-23 at 20:15 +0100, Thomas Gleixner wrote:
+> On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
+> > Subject    : gettimeofday increments too slowly
+> > References : http://bugzilla.kernel.org/show_bug.cgi?id=8027
+> > Submitter  : David L <idht4n@hotmail.com>
+> > Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+> >              commit 92c7e00254b2d0efc1e36ac3e45474ce1871b6b2
+> > Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> > Status     : problem is being debugged
+> 
+> Patch available: http://lkml.org/lkml/2007/3/22/301
+> 
+> commit 6b3964cde70cfe6db79d35b42137431ef7d2f7e4
 
-Now attempting to still do the same, im trying to copy VRAM data to a
-buffer and still try and use the directio path. it will mean bypassing
-the get_user_pages and may mean ugly hacking, but then i also read a
-little about splice.  Wondering if splice is the way to go for a
-device memory to disk in kernel data transfer?
+Oops. That fixed only the one half of the problem. The timeofday one
+persists.
 
-I'm doing the above as an experiment. My actual goal is to transfer
-data between devices in-kernel.
+John, any idea ?
 
-Thanks
-Ameya
+	tglx
+
+
+
+
