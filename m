@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422811AbXCWLZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422813AbXCWLZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422811AbXCWLZu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 07:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422809AbXCWLZu
+	id S1422813AbXCWLZw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 07:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422817AbXCWLZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 07:25:50 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:50648 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422811AbXCWLZt (ORCPT
+	Fri, 23 Mar 2007 07:25:52 -0400
+Received: from a222036.upc-a.chello.nl ([62.163.222.36]:58657 "EHLO
+	laptopd505.fenrus.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422813AbXCWLZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 07:25:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=SLZNpFhE+AgZMSFkh6zim4l/yZ8dTIu+ScMfZ6tgtBfNyeeko4hl1iZhNxxjxpsmr3aDpVki27DRWJC2+UgwnF4Komy9NulruZUilYw7ynufGexMh1L+lOnb9GdZo15c2TF7jBDUSEGu3ZdcXOpOtrTy765e92RwBF97iOtMTRs=
-Message-ID: <4603B937.9080008@gmail.com>
-Date: Fri, 23 Mar 2007 14:25:43 +0300
-From: Sergey Smirnov <svs1957@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: HELP!!! SD and suspend damage i-node.
-References: <4602781C.9060804@gmail.com> <200703222255.20167.rjw@sisk.pl>
-In-Reply-To: <200703222255.20167.rjw@sisk.pl>
-Content-Type: text/plain; charset=KOI8-R
+	Fri, 23 Mar 2007 07:25:50 -0400
+Subject: Re: Question about CPU flags detection
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: hutuworm <hutuworm@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <f4e165120703230304p333124abmf7cce66d73a170fa@mail.gmail.com>
+References: <f4e165120703230304p333124abmf7cce66d73a170fa@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 23 Mar 2007 12:25:40 +0100
+Message-Id: <1174649140.1158.230.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's happen only with 4G SD. I made the same test in 512Mb SD.
-After suspend/resume there is no errors on fs.
-
-If I resume PDA with 4G SD it go back to suspend after few seconds.
-
-Rafael J. Wysocki wrote:
-> On Thursday, 22 March 2007 13:35, Sergey Smirnov wrote:
->> I use 2.6.20.2 kernel with ext3 rootfs on 4Gb SD on sharp zaurus sl-750 (PXA255).
->> After suspend/resume filesystem stay clean. But some i-nodes become broken.
->> Some files looks like block device or pipe with strange permissions, owner etc.
->> I'm sure that there is no bad blocks on SD.
->> I'll send any additional information. Just say me what you need to help me.
->> I had i lot of tries. Apply patches, remove its, change fstype etc.
->> output of fsck -f
+On Fri, 2007-03-23 at 18:04 +0800, hutuworm wrote:
+> Hi all,
 > 
-> I assume this is the suspend to RAM?
-> 
-> Rafael
-> 
+> I just installed Red Hat Enterprise Linux AS release 4 (Nahant Update
+> 4) on a Dell PE1950 server, which has two of dual-core Xeon 5110
+> 1.6GHz CPUs. According to the processor spec @
+> http://processorfinder.intel.com/details.aspx?sSpec=SL9RZ , it doesn't
+> support Hyper-threading technology, but both 'cat /proc/cpuinfo | grep
+> ' and 'dmidecode | grep -A 30 Flags' commands show there're "ht" or
+> "HTT (Hyper-threading technology)" available.
 
+
+the "ht" flag there ONLY means "we support reporting the number of
+threads/cores/etc via the MSRs". It does not mean that you actually have
+hyperthreading, only that your cpu knows how to report what it
+supports...
+
+
+I hope this answer helps,
+   Arjan van de Ven
