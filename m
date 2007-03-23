@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbXCWSsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbXCWStQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbXCWSsb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 14:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbXCWSs0
+	id S1753326AbXCWStQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 14:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbXCWStQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 14:48:26 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32864 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753317AbXCWSsZ (ORCPT
+	Fri, 23 Mar 2007 14:49:16 -0400
+Received: from mga07.intel.com ([143.182.124.22]:11889 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753326AbXCWStP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 14:48:25 -0400
-Date: Fri, 23 Mar 2007 19:48:28 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, Ray Lee <ray-lk@madrabbit.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu =?utf-8?Q?B=C3=A9rard?= <Mathieu.Berard@crans.org>,
-       Tejun Heo <htejun@gmail.com>, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, Fabio Comolli <fabio.comolli@gmail.com>,
-       Plamen Petrov <plamen.petrov@tk.ru.acad.bg>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Lukas Hejtmanek <xhejtman@mail.muni.cz>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [2/5] 2.6.21-rc4: known regressions (v2)
-Message-ID: <20070323184828.GP752@stusta.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 23 Mar 2007 14:49:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,320,1170662400"; 
+   d="scan'208"; a="201686755:sNHT839938813"
+Subject: Re: RSDL 0.31 causes slowdown
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Reply-To: tim.c.chen@linux.intel.com
+To: Con Kolivas <ckolivas@gmail.com>
+Cc: ck@vds.kolivas.org, linux-kernel@vger.kernel.org, kernel@kolivas.org,
+       wli@holomorphy.com, suresh.b.siddha@intel.com, arjan@infradead.org
+In-Reply-To: <8cd998d50703221940naec0905y56ec708eb11b81a2@mail.gmail.com>
+References: <1174598506.23795.62.camel@localhost.localdomain>
+	 <8cd998d50703221940naec0905y56ec708eb11b81a2@mail.gmail.com>
+Content-Type: text/plain
+Organization: Intel
+Date: Fri, 23 Mar 2007 09:57:30 -0800
+Message-Id: <1174672650.23795.67.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email lists some known regressions in Linus' tree compared to 2.6.20.
+On Fri, 2007-03-23 at 13:40 +1100, Con Kolivas wrote:
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way
-possibly involved with one or more of these issues.
+> 
+> Volanomark is a purely yield() semantic dependant workload (as
+> discussed many times previously). In the earlier form of RSDL I
+> softened the effect of sched_yield but other changes since then have
+> made that softness bordering on a noop. Obviously when sched_yield is
+> relied upon that will not be enough. Extending the rr interval simply
+> makes the yield slightly more effective and is not the proper
+> workaround. Since expiration of arrays is a regular frequent
+> occurrence in RSDL then changing yield semantics back to expiration
+> should cause a massive improvement in these values, without making the
+> yields as long as in mainline. It's impossible to know exactly what
+> the final result will be since java uses this timing sensitive yield
+> for locking but we can improve it drastically from this. I'll make a
+> patch soon to change yield again.
+> 
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+Con, 
 
+The new RSDL 0.33 has fully recovered the loss in performance for
+Volanomark.  The throughput for Volanomark is at the same level as
+mainline 2.6.21-rc4 kernel.
 
-Subject    : kernels fail to boot with drives on ATIIXP controller
-             (ACPI/IRQ related)
-References : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229621
-             http://lkml.org/lkml/2007/3/4/257
-Submitter  : Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
-Status     : unknown
-
-
-Subject    : x86_64: ACPI regression with noapic  (APICTIMER_STOPS_ON_C3?)
-References : http://lkml.org/lkml/2007/3/8/468
-             http://lkml.org/lkml/2007/3/22/156
-Submitter  : Ray Lee <ray-lk@madrabbit.org>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-Status     : problem is being debugged
-
-
-Subject    : NCQ problem with ahci and Hitachi drive  (ACPI related)
-References : http://lkml.org/lkml/2007/3/4/178
-             http://lkml.org/lkml/2007/3/9/475
-Submitter  : Mathieu Bérard <Mathieu.Berard@crans.org>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Status     : problem is being debugged
-
-
-Subject    : libata: PATA UDMA/100 configured as UDMA/33
-References : http://lkml.org/lkml/2007/2/20/294
-             http://www.mail-archive.com/linux-ide@vger.kernel.org/msg04115.html
-             http://bugzilla.kernel.org/show_bug.cgi?id=8133
-             http://bugzilla.kernel.org/show_bug.cgi?id=8164
-             http://lkml.org/lkml/2007/3/21/330
-Submitter  : Fabio Comolli <fabio.comolli@gmail.com>
-             Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
-             Laurent Riffard <laurent.riffard@free.fr>
-             Lukas Hejtmanek <xhejtman@mail.muni.cz>
-Handled-By : Tejun Heo <htejun@gmail.com>
-             Alan Cox <alan@lxorguk.ukuu.org.uk>
-Status     : Alan: Some cases should be fixed now but probably not all
-                   (eg the Nvidia one)
-
-
+Tim
