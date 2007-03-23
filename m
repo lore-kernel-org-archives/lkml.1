@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbXCWAbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934164AbXCWAdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753003AbXCWAbR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 20:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbXCWAbR
+	id S934164AbXCWAdb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 20:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934218AbXCWAdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 20:31:17 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:25271 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752844AbXCWAbQ (ORCPT
+	Thu, 22 Mar 2007 20:33:31 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:62214 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932563AbXCWAd3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 20:31:16 -0400
+	Thu, 22 Mar 2007 20:33:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ds3+kjD9xdHnaTHYuNFciNbCFap7QahEzV4T46qpBBFpHRhzHO3XG1mu+qc0as/nCaPZmKb8jknYXp2Uzqvv3JDi32A2einzQG0Yj991o+fPGspNJxrRApOO2HgpAulGTJLdA/jTDb5XBdaWNvwvtvbwbXsmx0aUQFNnNBL43kY=
-Message-ID: <e9c3a7c20703221731p2eeb727eo44eb12ec9287d2c0@mail.gmail.com>
-Date: Thu, 22 Mar 2007 17:31:14 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=T4X2V69Pi4muZeOvopgypUT7Z+43I/CbdAOlI/eHyejxkX+wRuPIu6mm3NYUA4FSA0nR6FPIlmzD3EibjHguX9LgdCidrv3zCNiplL5bE4+MRL1VGRhxhsn4FVuf8bVODInZ7V5Le2o6n01ZVHivAZGWERxPfMe5F/DlyItxHeA=
+Message-ID: <e9c3a7c20703221733r37618483i1a5994b8a0224ba3@mail.gmail.com>
+Date: Thu, 22 Mar 2007 17:33:27 -0700
+From: "Dan Williams" <dan.j.williams@gmail.com>
 To: "Neil Brown" <neilb@suse.de>
 Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
 Cc: "Jens Axboe" <jens.axboe@oracle.com>, linux@horizon.com,
        linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
        linux-kernel@dale.us, cebbert@redhat.com
-In-Reply-To: <17923.6258.855467.589548@notabene.brown>
+In-Reply-To: <e9c3a7c20703221731p2eeb727eo44eb12ec9287d2c0@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -31,118 +31,117 @@ References: <20070322184155.GY19922@kernel.dk>
 	 <20070322185413.13929.qmail@science.horizon.com>
 	 <20070322190052.GA19922@kernel.dk>
 	 <17923.6258.855467.589548@notabene.brown>
-X-Google-Sender-Auth: 65de241aa423d3b0
+	 <e9c3a7c20703221731p2eeb727eo44eb12ec9287d2c0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/22/07, Neil Brown <neilb@suse.de> wrote:
-> On Thursday March 22, jens.axboe@oracle.com wrote:
-> > On Thu, Mar 22 2007, linux@horizon.com wrote:
-> > > > 3 (I think) seperate instances of this, each involving raid5. Is your
-> > > > array degraded or fully operational?
+On 3/22/07, Dan Williams <dan.j.williams@intel.com> wrote:
+> On 3/22/07, Neil Brown <neilb@suse.de> wrote:
+> > On Thursday March 22, jens.axboe@oracle.com wrote:
+> > > On Thu, Mar 22 2007, linux@horizon.com wrote:
+> > > > > 3 (I think) seperate instances of this, each involving raid5. Is your
+> > > > > array degraded or fully operational?
+> > > >
+> > > > Ding! A drive fell out the other day, which is why the problems only
+> > > > appeared recently.
+> > > >
+> > > > md5 : active raid5 sdf4[5] sdd4[3] sdc4[2] sdb4[1] sda4[0]
+> > > >       1719155200 blocks level 5, 64k chunk, algorithm 2 [6/5] [UUUU_U]
+> > > >       bitmap: 149/164 pages [596KB], 1024KB chunk
+> > > >
+> > > > H'm... this means that my alarm scripts aren't working.  Well, that's
+> > > > good to know.  The drive is being re-integrated now.
 > > >
-> > > Ding! A drive fell out the other day, which is why the problems only
-> > > appeared recently.
-> > >
-> > > md5 : active raid5 sdf4[5] sdd4[3] sdc4[2] sdb4[1] sda4[0]
-> > >       1719155200 blocks level 5, 64k chunk, algorithm 2 [6/5] [UUUU_U]
-> > >       bitmap: 149/164 pages [596KB], 1024KB chunk
-> > >
-> > > H'm... this means that my alarm scripts aren't working.  Well, that's
-> > > good to know.  The drive is being re-integrated now.
+> > > Heh, at least something good came out of this bug then :-)
+> > > But that's reaffirming. Neil, are you following this? It smells somewhat
+> > > fishy wrt raid5.
 > >
-> > Heh, at least something good came out of this bug then :-)
-> > But that's reaffirming. Neil, are you following this? It smells somewhat
-> > fishy wrt raid5.
+> > Yes, I've been trying to pay attention....
+> >
+> > The evidence does seem to point to raid5 and degraded arrays being
+> > implicated.  However I'm having trouble finding how the fact that an array
+> > is degraded would be visible down in the elevator except for having a
+> > slightly different distribution of reads and writes.
+> >
+> > One possible way is that if an array is degraded, then some read
+> > requests will go through the stripe cache rather than direct to the
+> > device.  However I would more expect the direct-to-device path to have
+> > problems as it is much newer code.  Going through the cache for reads
+> > is very well tested code - and reads come from the cache for most
+> > writes anyway, so the elevator will still see lots of single-page.
+> > reads.  It only ever sees single-page write.
+> >
+> > There might be more pressure on the stripe cache when running
+> > degraded, so we might call the ->unplug_fn a little more often, but I
+> > doubt that would be noticeable.
+> >
+> > As you seem to suggest by the patch, it does look like some sort of
+> > unlocked access to the cfq_queue structure.  However apart from the
+> > comment before cfq_exit_single_io_context being in the wrong place
+> > (should be before __cfq_exit_single_io_context) I cannot see anything
+> > obviously wrong with the locking around that structure.
+> >
+> > So I'm afraid I'm stumped too.
+> >
+> > NeilBrown
 >
-> Yes, I've been trying to pay attention....
+> Not a cfq failure, but I have been able to reproduce a different oops
+> at array stop time while i/o's were pending.  I have not dug into it
+> enough to suggest a patch, but I wonder if it is somehow related to
+> the cfq failure since it involves congestion and drives going away:
 >
-> The evidence does seem to point to raid5 and degraded arrays being
-> implicated.  However I'm having trouble finding how the fact that an array
-> is degraded would be visible down in the elevator except for having a
-> slightly different distribution of reads and writes.
+> md: md0: recovery done.
+> Unable to handle kernel NULL pointer dereference at virtual address 000000bc
+> pgd = 40004000
+> [000000bc] *pgd=00000000
+> Internal error: Oops: 17 [#1]
+> Modules linked in:
+> CPU: 0
+> PC is at raid5_congested+0x14/0x5c
+> LR is at sync_sb_inodes+0x278/0x2ec
+> pc : [<402801cc>]    lr : [<400a39e8>]    Not tainted
+> sp : 8a3e3ec4  ip : 8a3e3ed4  fp : 8a3e3ed0
+> r10: 40474878  r9 : 40474870  r8 : 40439710
+> r7 : 8a3e3f30  r6 : bfa76b78  r5 : 4161dc08  r4 : 40474800
+> r3 : 402801b8  r2 : 00000004  r1 : 00000001  r0 : 00000000
+> Flags: nzCv  IRQs on  FIQs on  Mode SVC_32  Segment kernel
+> Control: 400397F
+> Table: 7B7D4018  DAC: 00000035
+> Process pdflush (pid: 1371, stack limit = 0x8a3e2250)
+> Stack: (0x8a3e3ec4 to 0x8a3e4000)
+> 3ec0:          8a3e3f04 8a3e3ed4 400a39e8 402801c4 8a3e3f24 000129f9 40474800
+> 3ee0: 4047483c 40439a44 8a3e3f30 40439710 40438a48 4045ae68 8a3e3f24 8a3e3f08
+> 3f00: 400a3ca0 400a377c 8a3e3f30 00001162 00012bed 40438a48 8a3e3f78 8a3e3f28
+> 3f20: 40069b58 400a3bfc 00011e41 8a3e3f38 00000000 00000000 8a3e3f28 00000400
+> 3f40: 00000000 00000000 00000000 00000000 00000000 00000025 8a3e3f80 8a3e3f8c
+> 3f60: 40439750 8a3e2000 40438a48 8a3e3fc0 8a3e3f7c 4006ab68 40069a8c 00000001
+> 3f80: bfae2ac0 40069a80 00000000 8a3e3f8c 8a3e3f8c 00012805 00000000 8a3e2000
+> 3fa0: 9e7e1f1c 4006aa40 00000001 00000000 fffffffc 8a3e3ff4 8a3e3fc4 4005461c
+> 3fc0: 4006aa4c 00000001 ffffffff ffffffff 00000000 00000000 00000000 00000000
+> 3fe0: 00000000 00000000 00000000 8a3e3ff8 40042320 40054520 00000000 00000000
+> Backtrace:
+> [<402801b8>] (raid5_congested+0x0/0x5c) from [<400a39e8>]
+> (sync_sb_inodes+0x278/0x2ec)
+> [<400a3770>] (sync_sb_inodes+0x0/0x2ec) from [<400a3ca0>]
+> (writeback_inodes+0xb0/0xb8)
+> [<400a3bf0>] (writeback_inodes+0x0/0xb8) from [<40069b58>]
+> (wb_kupdate+0xd8/0x160)
+>  r7 = 40438A48  r6 = 00012BED  r5 = 00001162  r4 = 8A3E3F30
+> [<40069a80>] (wb_kupdate+0x0/0x160) from [<4006ab68>] (pdflush+0x128/0x204)
+>  r8 = 40438A48  r7 = 8A3E2000  r6 = 40439750  r5 = 8A3E3F8C
+>  r4 = 8A3E3F80
+> [<4006aa40>] (pdflush+0x0/0x204) from [<4005461c>] (kthread+0x108/0x134)
+> [<40054514>] (kthread+0x0/0x134) from [<40042320>] (do_exit+0x0/0x844)
+> Code: e92dd800 e24cb004 e5900000 e3a01001 (e59030bc)
+> md: md0 stopped.
+> md: unbind<sda>
+> md: export_rdev(sda)
+> md: unbind<sdd>
+> md: export_rdev(sdd)
+> md: unbind<sdc>
+> md: export_rdev(sdc)
+> md: unbind<sdb>
+> md: export_rdev(sdb)
 >
-> One possible way is that if an array is degraded, then some read
-> requests will go through the stripe cache rather than direct to the
-> device.  However I would more expect the direct-to-device path to have
-> problems as it is much newer code.  Going through the cache for reads
-> is very well tested code - and reads come from the cache for most
-> writes anyway, so the elevator will still see lots of single-page.
-> reads.  It only ever sees single-page write.
->
-> There might be more pressure on the stripe cache when running
-> degraded, so we might call the ->unplug_fn a little more often, but I
-> doubt that would be noticeable.
->
-> As you seem to suggest by the patch, it does look like some sort of
-> unlocked access to the cfq_queue structure.  However apart from the
-> comment before cfq_exit_single_io_context being in the wrong place
-> (should be before __cfq_exit_single_io_context) I cannot see anything
-> obviously wrong with the locking around that structure.
->
-> So I'm afraid I'm stumped too.
->
-> NeilBrown
-
-Not a cfq failure, but I have been able to reproduce a different oops
-at array stop time while i/o's were pending.  I have not dug into it
-enough to suggest a patch, but I wonder if it is somehow related to
-the cfq failure since it involves congestion and drives going away:
-
-md: md0: recovery done.
-Unable to handle kernel NULL pointer dereference at virtual address 000000bc
-pgd = 40004000
-[000000bc] *pgd=00000000
-Internal error: Oops: 17 [#1]
-Modules linked in:
-CPU: 0
-PC is at raid5_congested+0x14/0x5c
-LR is at sync_sb_inodes+0x278/0x2ec
-pc : [<402801cc>]    lr : [<400a39e8>]    Not tainted
-sp : 8a3e3ec4  ip : 8a3e3ed4  fp : 8a3e3ed0
-r10: 40474878  r9 : 40474870  r8 : 40439710
-r7 : 8a3e3f30  r6 : bfa76b78  r5 : 4161dc08  r4 : 40474800
-r3 : 402801b8  r2 : 00000004  r1 : 00000001  r0 : 00000000
-Flags: nzCv  IRQs on  FIQs on  Mode SVC_32  Segment kernel
-Control: 400397F
-Table: 7B7D4018  DAC: 00000035
-Process pdflush (pid: 1371, stack limit = 0x8a3e2250)
-Stack: (0x8a3e3ec4 to 0x8a3e4000)
-3ec0:          8a3e3f04 8a3e3ed4 400a39e8 402801c4 8a3e3f24 000129f9 40474800
-3ee0: 4047483c 40439a44 8a3e3f30 40439710 40438a48 4045ae68 8a3e3f24 8a3e3f08
-3f00: 400a3ca0 400a377c 8a3e3f30 00001162 00012bed 40438a48 8a3e3f78 8a3e3f28
-3f20: 40069b58 400a3bfc 00011e41 8a3e3f38 00000000 00000000 8a3e3f28 00000400
-3f40: 00000000 00000000 00000000 00000000 00000000 00000025 8a3e3f80 8a3e3f8c
-3f60: 40439750 8a3e2000 40438a48 8a3e3fc0 8a3e3f7c 4006ab68 40069a8c 00000001
-3f80: bfae2ac0 40069a80 00000000 8a3e3f8c 8a3e3f8c 00012805 00000000 8a3e2000
-3fa0: 9e7e1f1c 4006aa40 00000001 00000000 fffffffc 8a3e3ff4 8a3e3fc4 4005461c
-3fc0: 4006aa4c 00000001 ffffffff ffffffff 00000000 00000000 00000000 00000000
-3fe0: 00000000 00000000 00000000 8a3e3ff8 40042320 40054520 00000000 00000000
-Backtrace:
-[<402801b8>] (raid5_congested+0x0/0x5c) from [<400a39e8>]
-(sync_sb_inodes+0x278/0x2ec)
-[<400a3770>] (sync_sb_inodes+0x0/0x2ec) from [<400a3ca0>]
-(writeback_inodes+0xb0/0xb8)
-[<400a3bf0>] (writeback_inodes+0x0/0xb8) from [<40069b58>]
-(wb_kupdate+0xd8/0x160)
- r7 = 40438A48  r6 = 00012BED  r5 = 00001162  r4 = 8A3E3F30
-[<40069a80>] (wb_kupdate+0x0/0x160) from [<4006ab68>] (pdflush+0x128/0x204)
- r8 = 40438A48  r7 = 8A3E2000  r6 = 40439750  r5 = 8A3E3F8C
- r4 = 8A3E3F80
-[<4006aa40>] (pdflush+0x0/0x204) from [<4005461c>] (kthread+0x108/0x134)
-[<40054514>] (kthread+0x0/0x134) from [<40042320>] (do_exit+0x0/0x844)
-Code: e92dd800 e24cb004 e5900000 e3a01001 (e59030bc)
-md: md0 stopped.
-md: unbind<sda>
-md: export_rdev(sda)
-md: unbind<sdd>
-md: export_rdev(sdd)
-md: unbind<sdc>
-md: export_rdev(sdc)
-md: unbind<sdb>
-md: export_rdev(sdb)
-
-2.6.20-rc3-iop1 on an iop348 platform.  SATA controller is sata_vsc.
-
---
-Dan
+> 2.6.20-rc3-iop1 on an iop348 platform.  SATA controller is sata_vsc.
+Sorry, that's 2.6.21-rc3-iop1.
