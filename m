@@ -1,101 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933638AbXCWFZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbXCWFf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933638AbXCWFZJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 01:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933681AbXCWFZJ
+	id S1752264AbXCWFf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 01:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbXCWFf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 01:25:09 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:44494 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933638AbXCWFZG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 01:25:06 -0400
-Date: Fri, 23 Mar 2007 10:55:01 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc4-rt0-kdump (was: Re: [patch] setup_boot_APIC_clock() irq-enable fix)
-Message-ID: <20070323052501.GA1421@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <6bffcb0e0703211338i2aa6f933ube53c6604c78e285@mail.gmail.com> <20070322093119.GA19394@elte.hu> <6bffcb0e0703220557h7ff64282qf378623452c07d03@mail.gmail.com> <4602843D.9000306@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4602843D.9000306@googlemail.com>
-User-Agent: Mutt/1.5.11
+	Fri, 23 Mar 2007 01:35:28 -0400
+Received: from tapsys.com ([72.36.178.242]:37453 "EHLO tapsys.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751326AbXCWFf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 01:35:26 -0400
+Message-ID: <46036718.7060502@madrabbit.org>
+Date: Thu, 22 Mar 2007 22:35:20 -0700
+From: Ray Lee <ray-lk@madrabbit.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: tglx@linutronix.de
+Cc: Adrian Bunk <bunk@stusta.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Len Brown <len.brown@intel.com>, Andi Kleen <ak@suse.de>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.21-rc[123] regression with NOAPIC
+References: <4601573A.8070602@madrabbit.org>	 <20070322134238.GY752@stusta.de>	 <1174572603.10840.162.camel@localhost.localdomain>	 <20070322141630.GA752@stusta.de> <1174576601.10840.189.camel@localhost.localdomain>
+In-Reply-To: <1174576601.10840.189.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 02:27:25PM +0100, Michal Piotrowski wrote:
-> Michal Piotrowski napisał(a):
-> > On 22/03/07, Ingo Molnar <mingo@elte.hu> wrote:
-> >>
-> >> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> >>
-> >> > Hi Ingo,
-> >>
-> >> > 2.6.21-rc4-rt0
-> >>
-> >> > BUG: at kernel/fork.c:1033 copy_process()
-> >>
-> >> thanks Michal - this is a real bug that affects upstream too. Find the
-> >> fix below - i've test-booted it and it fixes the warning.
-> > 
-> > Problem is fixed, thanks.
+Thomas Gleixner wrote:
+> On Thu, 2007-03-22 at 15:16 +0100, Adrian Bunk wrote:
+>>>> Does it work if you do _not_ revert the commits, and instead replace in
+>>>> drivers/acpi/processor_idle.c the
+>>>>   #ifdef ARCH_APICTIMER_STOPS_ON_C3
+>>>> with an
+>>>>   #if 0
+>>>> ?
+>>> Then NOAPIC probably works again, but booting w/o NOAPIC fails.
+>> But we'll know that it's this code that has a problen with noapic
+>> in the CONFIG_GENERIC_CLOCKEVENTS=n case.
 > 
-> BTW. It seems that nobody uses -rt as a crash dump kernel ;)
+> Nope. This code does not have a problem. It causes a problem elsewhere:
+
+I can still try the above if it ends up being a useful data point.
+
 > 
-> BUG: unable to handle kernel paging request at virtual address f7ebf8c4
->  printing eip:
-> c1610192
-> *pde = 00000000
-> stopped custom tracer.
-> Oops: 0000 [#1]
-> PREEMPT 
-> Modules linked in:
-> CPU:    0
-> EIP:    0060:[<c1610192>]    Not tainted VLI
-> EFLAGS: 00010206   (2.6.21-rc4-rt0-kdump #3)
-> EIP is at copy_oldmem_page+0x4a/0xd0
-> eax: 000008c4   ebx: f7ebf000   ecx: 00000100   edx: 00000246
-> esi: f7ebf8c4   edi: c4c520fc   ebp: c4d54e30   esp: c4d54e18
-> ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068  preempt:00000001
-> Process swapper (pid: 1, ti=c4d54000 task=c4d52c20 task.ti=c4d54000)
-> Stack: c17ab7e0 c183f982 c1969658 00000400 00000400 00037ebf c4d54e5c c16af187 
->        00037ebf c4c520fc 00000400 000008c4 00000000 00000000 c4c696e0 00000400 
->        c4c520fc c4d54f94 c19a9cfd c4c520fc 00000400 c4d54f78 00000000 c1840996 
-> Call Trace:
->  [<c16af187>] read_from_oldmem+0x73/0x98
->  [<c19a9cfd>] vmcore_init+0x26c/0xab7
->  [<c199979b>] init+0xaa/0x287
->  [<c16044eb>] kernel_thread_helper+0x7/0x10
->  =======================
+> It calls switch_ipi_to_APIC_timer() or switch_APIC_timer_to_ipi(), which
+> sets/clears a bit in the broadcast mask and enables / disables the local
+> APIC timer.
 > 
-> l *copy_oldmem_page+0x4a/0xd0
-> 0xc1610148 is in copy_oldmem_page (arch/i386/kernel/crash_dump.c:35).
-> 30       * copying the data to a pre-allocated kernel page and then copying to user
-> 31       * space in non-atomic context.
-> 32       */
-> 33      ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
-> 34                                     size_t csize, unsigned long offset, int userbuf)
-> 35      {
-> 36              void  *vaddr;
-> 37
-> 38              if (!csize)
-> 39                      return 0;
+> I don't see right now, why this causes the box to lock up hard, but
+> maybe the debug printk's below give us some hint.
+> 
+> 	tglx
+> 
+> diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
+> index 723417d..29376e2 100644
+> --- a/arch/x86_64/kernel/apic.c
+> +++ b/arch/x86_64/kernel/apic.c
+> @@ -886,6 +886,8 @@ void disable_APIC_timer(void)
+>  	if (using_apic_timer) {
+>  		unsigned long v;
+>  
+> +		printk("Disabling local APIC timer %d\n", apic_runs_main_timer);
+> +
+>  		v = apic_read(APIC_LVTT);
+>  		/*
+>  		 * When an illegal vector value (0-15) is written to an LVT
+> @@ -910,6 +912,7 @@ void enable_APIC_timer(void)
+>  	    !cpu_isset(cpu, timer_interrupt_broadcast_ipi_mask)) {
+>  		unsigned long v;
+>  
+> +		printk("Enabling local APIC timer: %d\n", apic_runs_main_timer);
+>  		v = apic_read(APIC_LVTT);
+>  		apic_write(APIC_LVTT, v & ~APIC_LVT_MASKED);
+>  	}
+> @@ -934,6 +937,7 @@ void smp_send_timer_broadcast_ipi(void)
+>  
+>  	cpus_and(mask, cpu_online_map, timer_interrupt_broadcast_ipi_mask);
+>  	if (!cpus_empty(mask)) {
+> +		printk("Send IPI\n");
+>  		send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
+>  	}
+>  }
+> 
 > 
 
-Can you please paste the disassembly of copy_oldmem_page() on your system.
-Not sure from where this faulting address 0xf7ebf8c4 is coming. We are still
-in vmcore_init(), so we should be copying the data to kernel buffers only.
-This looks like a valid kernel address.
+I didn't see the first two print, but I'm having to watch the bad
+bootups (with NOAPIC) by eyesight alone, as I don't have a second system
+to run netconsole on at the moment.
 
-Can you also put some printk() here to find out from where 0xf7ebf8c4 has
-come? It does not look like a fixed kernel virutual address returned by
-kmap_atomic_pfn(). Then is it passed by kernel as a parameter to
-copy_oldmem_page()?
+However, on the NOAPIC, locking boot, the last thing that prints out is
+the final printk, Send IPI.
 
-Thanks
-Vivek
+On the boots without NOAPIC, at the same spot roughly a thousand
+(estimated) "Send IPI" messages hit the screen before transitioning to
+the initramfs and continuing normally.
+
+In the morning, I can rework the patch to set a global in the first two
+cases (Disabling/Enabling local APIC timer), and print the result of
+those in the last case, as we know the system will hang there. (I would
+have done this before sending the message, but given our timezone
+difference, figured this was a good start.)
+
+Ray
