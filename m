@@ -1,46 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751626AbXCWOOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751711AbXCWOOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751626AbXCWOOK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 10:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXCWOOJ
+	id S1751711AbXCWOOo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 10:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945897AbXCWOOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 10:14:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53516 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbXCWOOI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 10:14:08 -0400
-Date: Fri, 23 Mar 2007 15:14:07 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <christoph@lameter.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of virt_to_slab(objp); nodeid = slabp->nodeid;)
-Message-ID: <20070323141407.GB20548@one.firstfloor.org>
-References: <20070320181235.77d28864.dada1@cosmosbay.com> <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org> <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org> <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com> <4602FF57.7030001@cosmosbay.com> <20070322224045.GA3200@linux-os.sc.intel.com> <Pine.LNX.4.64.0703221825050.13376@graphe.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Mar 2007 10:14:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44634 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751728AbXCWOOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 10:14:41 -0400
+Date: Fri, 23 Mar 2007 09:37:31 -0300
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
+Subject: [PATCH] Fix x86_64 compilation with DEBUG_SIG on
+Message-ID: <20070323123731.GA13310@redhat.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703221825050.13376@graphe.net>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 06:25:16PM -0700, Christoph Lameter wrote:
-> On Thu, 22 Mar 2007, Siddha, Suresh B wrote:
-> 
-> > > You should check num_possible_nodes(), or nr_node_ids (this one is cheaper, 
-> > > its a variable instead of a function call)
-> > 
-> > But that is based on compile time option, isn't it? Perhaps I need
-> > to use some other mechanism to find out the platform is not NUMA capable..
-> 
-> No its runtime.
 
-I don't see any code that would ever change the mask from the compile
-default. But that is easy to fix.
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
--Andi
+Setting the DEBUG_SIG flag breaks compilation due to a wrong
+struct access. Aditionally, it raises two warnings. This is one
+patch to fix them all.
 
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+
+-- 
+Glauber de Oliveira Costa
+Red Hat Inc.
+"Free as in Freedom"
+
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="signal.patch"
+
+commit ff9d841995b6055b74017306f30485c2b4a9ea70
+Author: Glauber de Oliveira Costa <gcosta@redhat.com>
+Date:   Fri Mar 23 07:13:38 2007 -0300
+
+    [PATCH] Fix x86_64 compilation with DEBUG_SIG on
+    
+    Setting the DEBUG_SIG flag breaks compilation due to a wrong
+    struct access. Aditionally, it raises two warnings. This is one
+    patch to fix them all.
+    
+    Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+
+diff --git a/arch/x86_64/kernel/signal.c b/arch/x86_64/kernel/signal.c
+index 49ec324..c819625 100644
+--- a/arch/x86_64/kernel/signal.c
++++ b/arch/x86_64/kernel/signal.c
+@@ -141,7 +141,7 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
+ 		goto badframe;
+ 
+ #ifdef DEBUG_SIG
+-	printk("%d sigreturn rip:%lx rsp:%lx frame:%p rax:%lx\n",current->pid,regs.rip,regs.rsp,frame,eax);
++	printk("%d sigreturn rip:%lx rsp:%lx frame:%p rax:%lx\n",current->pid,regs->rip,regs->rsp,frame,eax);
+ #endif
+ 
+ 	if (do_sigaltstack(&frame->uc.uc_stack, NULL, regs->rsp) == -EFAULT)
+@@ -301,7 +301,7 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	if (test_thread_flag(TIF_SINGLESTEP))
+ 		ptrace_notify(SIGTRAP);
+ #ifdef DEBUG_SIG
+-	printk("SIG deliver (%s:%d): sp=%p pc=%p ra=%p\n",
++	printk("SIG deliver (%s:%d): sp=%p pc=%lx ra=%p\n",
+ 		current->comm, current->pid, frame, regs->rip, frame->pretcode);
+ #endif
+ 
+@@ -463,7 +463,7 @@ void
+ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
+ {
+ #ifdef DEBUG_SIG
+-	printk("do_notify_resume flags:%x rip:%lx rsp:%lx caller:%lx pending:%lx\n",
++	printk("do_notify_resume flags:%x rip:%lx rsp:%lx caller:%p pending:%x\n",
+ 	       thread_info_flags, regs->rip, regs->rsp, __builtin_return_address(0),signal_pending(current)); 
+ #endif
+ 	       
+
+--ZPt4rx8FFjLCG7dd--
