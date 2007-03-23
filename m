@@ -1,147 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934164AbXCWAdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934215AbXCWAmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934164AbXCWAdb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 20:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934218AbXCWAdb
+	id S934215AbXCWAmP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 20:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934219AbXCWAmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 20:33:31 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:62214 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932563AbXCWAd3 (ORCPT
+	Thu, 22 Mar 2007 20:42:15 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:37574 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934215AbXCWAmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 20:33:29 -0400
+	Thu, 22 Mar 2007 20:42:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=T4X2V69Pi4muZeOvopgypUT7Z+43I/CbdAOlI/eHyejxkX+wRuPIu6mm3NYUA4FSA0nR6FPIlmzD3EibjHguX9LgdCidrv3zCNiplL5bE4+MRL1VGRhxhsn4FVuf8bVODInZ7V5Le2o6n01ZVHivAZGWERxPfMe5F/DlyItxHeA=
-Message-ID: <e9c3a7c20703221733r37618483i1a5994b8a0224ba3@mail.gmail.com>
-Date: Thu, 22 Mar 2007 17:33:27 -0700
-From: "Dan Williams" <dan.j.williams@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
-Cc: "Jens Axboe" <jens.axboe@oracle.com>, linux@horizon.com,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-kernel@dale.us, cebbert@redhat.com
-In-Reply-To: <e9c3a7c20703221731p2eeb727eo44eb12ec9287d2c0@mail.gmail.com>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=PDKujzjvQYbHaGwMf/MMj6IuHnzZLkQOuWgfFrXJfMvSsMYJ7ycuSTQywM/X9Xm3cDXU7a4LP+R9dqlAV50ec94pwoGLd3NVj0bdVUyqWNv4OtrNAv54D9lSTA9zybxkBcGDUyBGT6jdM3xICS1FQSxEBbXlT0PpM8mAPODuJWE=
+Message-ID: <2a12af650703221742p6691f4b5i21667a5c98217fb6@mail.gmail.com>
+Date: Fri, 23 Mar 2007 02:42:12 +0200
+From: "Marti Raudsepp" <marti@juffo.org>
+To: "Alasdair G Kergon" <agk@redhat.com>,
+       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
+Subject: Re: [dm-devel] Fw: BUG: Files corrupt after moving LVM volume to USB disk
+Cc: "device-mapper development" <dm-devel@redhat.com>,
+       "Kernel hackers" <linux-kernel@vger.kernel.org>,
+       "Milan Broz" <mbroz@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20070322153301.GN27600@agk.surrey.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070322184155.GY19922@kernel.dk>
-	 <20070322185413.13929.qmail@science.horizon.com>
-	 <20070322190052.GA19922@kernel.dk>
-	 <17923.6258.855467.589548@notabene.brown>
-	 <e9c3a7c20703221731p2eeb727eo44eb12ec9287d2c0@mail.gmail.com>
+References: <20070322000348.92631512.akpm@linux-foundation.org>
+	 <20070322153301.GN27600@agk.surrey.redhat.com>
+X-Google-Sender-Auth: 72e937fd38975c2d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/22/07, Dan Williams <dan.j.williams@intel.com> wrote:
-> On 3/22/07, Neil Brown <neilb@suse.de> wrote:
-> > On Thursday March 22, jens.axboe@oracle.com wrote:
-> > > On Thu, Mar 22 2007, linux@horizon.com wrote:
-> > > > > 3 (I think) seperate instances of this, each involving raid5. Is your
-> > > > > array degraded or fully operational?
-> > > >
-> > > > Ding! A drive fell out the other day, which is why the problems only
-> > > > appeared recently.
-> > > >
-> > > > md5 : active raid5 sdf4[5] sdd4[3] sdc4[2] sdb4[1] sda4[0]
-> > > >       1719155200 blocks level 5, 64k chunk, algorithm 2 [6/5] [UUUU_U]
-> > > >       bitmap: 149/164 pages [596KB], 1024KB chunk
-> > > >
-> > > > H'm... this means that my alarm scripts aren't working.  Well, that's
-> > > > good to know.  The drive is being re-integrated now.
-> > >
-> > > Heh, at least something good came out of this bug then :-)
-> > > But that's reaffirming. Neil, are you following this? It smells somewhat
-> > > fishy wrt raid5.
-> >
-> > Yes, I've been trying to pay attention....
-> >
-> > The evidence does seem to point to raid5 and degraded arrays being
-> > implicated.  However I'm having trouble finding how the fact that an array
-> > is degraded would be visible down in the elevator except for having a
-> > slightly different distribution of reads and writes.
-> >
-> > One possible way is that if an array is degraded, then some read
-> > requests will go through the stripe cache rather than direct to the
-> > device.  However I would more expect the direct-to-device path to have
-> > problems as it is much newer code.  Going through the cache for reads
-> > is very well tested code - and reads come from the cache for most
-> > writes anyway, so the elevator will still see lots of single-page.
-> > reads.  It only ever sees single-page write.
-> >
-> > There might be more pressure on the stripe cache when running
-> > degraded, so we might call the ->unplug_fn a little more often, but I
-> > doubt that would be noticeable.
-> >
-> > As you seem to suggest by the patch, it does look like some sort of
-> > unlocked access to the cfq_queue structure.  However apart from the
-> > comment before cfq_exit_single_io_context being in the wrong place
-> > (should be before __cfq_exit_single_io_context) I cannot see anything
-> > obviously wrong with the locking around that structure.
-> >
-> > So I'm afraid I'm stumped too.
-> >
-> > NeilBrown
+Summary of what I've managed to rule out so far:
+1. this problem does not occur without dm-crypt
+2. this problem does not occur when the file system hasn't been moved from
+   the SATA disk to USB
+3. Both reiserfs and ext3 are affected by this problem, but ext3
+merely slows down.
+4. Unmounting and re-mounting has no effect.
+
+My initial report contains more details.
+
+On 3/22/07, Alasdair G Kergon <agk@redhat.com> wrote:
+> A couple of patches to try:
+> dm-io-fix-bi_max_vecs.patch
+> dm-merge-max_hw_sector.patch
 >
-> Not a cfq failure, but I have been able to reproduce a different oops
-> at array stop time while i/o's were pending.  I have not dug into it
-> enough to suggest a patch, but I wonder if it is somehow related to
-> the cfq failure since it involves congestion and drives going away:
->
-> md: md0: recovery done.
-> Unable to handle kernel NULL pointer dereference at virtual address 000000bc
-> pgd = 40004000
-> [000000bc] *pgd=00000000
-> Internal error: Oops: 17 [#1]
-> Modules linked in:
-> CPU: 0
-> PC is at raid5_congested+0x14/0x5c
-> LR is at sync_sb_inodes+0x278/0x2ec
-> pc : [<402801cc>]    lr : [<400a39e8>]    Not tainted
-> sp : 8a3e3ec4  ip : 8a3e3ed4  fp : 8a3e3ed0
-> r10: 40474878  r9 : 40474870  r8 : 40439710
-> r7 : 8a3e3f30  r6 : bfa76b78  r5 : 4161dc08  r4 : 40474800
-> r3 : 402801b8  r2 : 00000004  r1 : 00000001  r0 : 00000000
-> Flags: nzCv  IRQs on  FIQs on  Mode SVC_32  Segment kernel
-> Control: 400397F
-> Table: 7B7D4018  DAC: 00000035
-> Process pdflush (pid: 1371, stack limit = 0x8a3e2250)
-> Stack: (0x8a3e3ec4 to 0x8a3e4000)
-> 3ec0:          8a3e3f04 8a3e3ed4 400a39e8 402801c4 8a3e3f24 000129f9 40474800
-> 3ee0: 4047483c 40439a44 8a3e3f30 40439710 40438a48 4045ae68 8a3e3f24 8a3e3f08
-> 3f00: 400a3ca0 400a377c 8a3e3f30 00001162 00012bed 40438a48 8a3e3f78 8a3e3f28
-> 3f20: 40069b58 400a3bfc 00011e41 8a3e3f38 00000000 00000000 8a3e3f28 00000400
-> 3f40: 00000000 00000000 00000000 00000000 00000000 00000025 8a3e3f80 8a3e3f8c
-> 3f60: 40439750 8a3e2000 40438a48 8a3e3fc0 8a3e3f7c 4006ab68 40069a8c 00000001
-> 3f80: bfae2ac0 40069a80 00000000 8a3e3f8c 8a3e3f8c 00012805 00000000 8a3e2000
-> 3fa0: 9e7e1f1c 4006aa40 00000001 00000000 fffffffc 8a3e3ff4 8a3e3fc4 4005461c
-> 3fc0: 4006aa4c 00000001 ffffffff ffffffff 00000000 00000000 00000000 00000000
-> 3fe0: 00000000 00000000 00000000 8a3e3ff8 40042320 40054520 00000000 00000000
-> Backtrace:
-> [<402801b8>] (raid5_congested+0x0/0x5c) from [<400a39e8>]
-> (sync_sb_inodes+0x278/0x2ec)
-> [<400a3770>] (sync_sb_inodes+0x0/0x2ec) from [<400a3ca0>]
-> (writeback_inodes+0xb0/0xb8)
-> [<400a3bf0>] (writeback_inodes+0x0/0xb8) from [<40069b58>]
-> (wb_kupdate+0xd8/0x160)
->  r7 = 40438A48  r6 = 00012BED  r5 = 00001162  r4 = 8A3E3F30
-> [<40069a80>] (wb_kupdate+0x0/0x160) from [<4006ab68>] (pdflush+0x128/0x204)
->  r8 = 40438A48  r7 = 8A3E2000  r6 = 40439750  r5 = 8A3E3F8C
->  r4 = 8A3E3F80
-> [<4006aa40>] (pdflush+0x0/0x204) from [<4005461c>] (kthread+0x108/0x134)
-> [<40054514>] (kthread+0x0/0x134) from [<40042320>] (do_exit+0x0/0x844)
-> Code: e92dd800 e24cb004 e5900000 e3a01001 (e59030bc)
-> md: md0 stopped.
-> md: unbind<sda>
-> md: export_rdev(sda)
-> md: unbind<sdd>
-> md: export_rdev(sdd)
-> md: unbind<sdc>
-> md: export_rdev(sdc)
-> md: unbind<sdb>
-> md: export_rdev(sdb)
->
-> 2.6.20-rc3-iop1 on an iop348 platform.  SATA controller is sata_vsc.
-Sorry, that's 2.6.21-rc3-iop1.
+> and perhaps these three:
+> dm-crypt-fix-call-to-clone_init.patch
+> dm-crypt-fix-avoid-cloned-bio-ref-after-free.patch
+> dm-crypt-fix-remove-first_clone.patch
+
+No luck. :(
+
+And thanks for reminding me how annoying reboots are...
+
+On 3/21/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
+> Does this happen only with this combination, or can you elliminate
+> something as the cause?
+
+Doesn't occur if dm-crypt is not involved (e.g., when placing reiserfs or
+ext3 straight on top of /dev/primary/punchbag). I don't know if LVM is
+necessary, as I don't have any unallocated space for "oldschool" partitions
+left.
+
+Nor do these problems occur when creating either file system directly on the
+USB disk -- so, only when they have been lvmoved from the SATA disk, or when
+the volume is physically dd'ed to the USB disk.
+
+On 3/21/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
+> Does it happen with ext3 or only reiserfs?
+
+Tried with ext3 (LVM+dm-crypt+ext3), and the files didn't appear corrupt,
+however, I could still see those messages in my dmesg, and disk access was
+*extremely* slow, causing around 10k context switches per second (!?) reading
+below 5 MB/s. Normally, I can get read speeds around 12-22 MB/s with this
+particular USB disk. However, it's not CPU-bound, as over >80% of CPU is still
+spent in iowait.
+
+When the ext3 file system is created directly on a volume that is located on
+the USB disk, however, these problems do not occur, just like with reiserfs.
+
+However, when I copied the same files to a reiserfs volume when the LV had
+already been pvmoved to /dev/sdb, the files were readable (as pointed out in
+my initial post). Interestingly, it did not introduce the same slowdown as
+with ext3, reading around 13-14 MB/s with ~3k context switches per second.
+
+To clarify (I double-checked all these scenarios):
+(1) files written *before* pvmove are corrupt with reiserfs
+(2) files written *after*  pvmove read fast with reiserfs
+(3) files written *before* pvmove read slowly with ext3
+(4) files written *after*  pvmove read slowly with ext3
+(5) files written to an ext3 volume that was formatted on the USB disk and not
+    pvmoved are fast and don't report these dmesg warnings.
+
+This is purely my speculation, and I can't pretend to know much about the
+inner workings of device-mapper/file systems, but it appears that ext3
+statically derives some attributes during the creation of a file system,
+while reiserfs gets them runtime. ext3 contains a slow workaround if these
+attributes don't match (and still posts a warning), but reiserfs
+returns outright I/O errors.
+
+(P.S. does the LKML archive randomly omit some double-newlines in posts, or
+is this a problem on my end?)
+
+Marti Raudsepp
