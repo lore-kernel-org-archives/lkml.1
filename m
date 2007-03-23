@@ -1,37 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992517AbXCWQuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934298AbXCWQvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992517AbXCWQuF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 12:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934286AbXCWQt4
+	id S934298AbXCWQvF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 12:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934297AbXCWQvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 12:49:56 -0400
-Received: from smtp.nokia.com ([131.228.20.172]:51582 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934290AbXCWQtr (ORCPT
+	Fri, 23 Mar 2007 12:51:04 -0400
+Received: from smtp.nokia.com ([131.228.20.173]:58433 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934286AbXCWQvA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 12:49:47 -0400
+	Fri, 23 Mar 2007 12:51:00 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Frank Haverkamp <haver@vnet.ibm.com>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Artem Bityutskiy <dedekind@infradead.org>
-Date: Fri, 23 Mar 2007 18:43:01 +0200
-Message-Id: <20070323164301.8958.25741.sendpatchset@localhost.localdomain>
+Date: Fri, 23 Mar 2007 18:44:07 +0200
+Message-Id: <20070323164407.8958.19988.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070323164256.8958.58377.sendpatchset@localhost.localdomain>
 References: <20070323164256.8958.58377.sendpatchset@localhost.localdomain>
-Subject: [PATCH 01/20 take 4] UBI: on-flash data structures header
-X-OriginalArrivalTime: 23 Mar 2007 16:43:01.0992 (UTC) FILETIME=[5268F680:01C76D6A]
+Subject: [PATCH 14/20 take 4] UBI: character devices functionality
+X-OriginalArrivalTime: 23 Mar 2007 16:44:07.0524 (UTC) FILETIME=[79785A40:01C76D6A]
 X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070323184303-14E28BB0-430DBB71/0-0/0-1
+X-eXpurgate-ID: 149371::070323184414-030CBBB0-20A9192B/0-0/0-1
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/include/mtd/ubi-header.h tmp-to/include/mtd/ubi-header.h
---- tmp-from/include/mtd/ubi-header.h	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/include/mtd/ubi-header.h	2007-03-23 18:20:01.000000000 +0200
-@@ -0,0 +1,360 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/cdev.c tmp-to/drivers/mtd/ubi/cdev.c
+--- tmp-from/drivers/mtd/ubi/cdev.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/cdev.c	2007-03-23 18:20:02.000000000 +0200
+@@ -0,0 +1,724 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
 + *
@@ -49,346 +49,710 @@ diff -auNrp tmp-from/include/mtd/ubi-header.h tmp-to/include/mtd/ubi-header.h
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 + *
-+ * Authors: Artem Bityutskiy (Битюцкий Артём)
-+ *          Thomas Gleixner
-+ *          Frank Haverkamp
-+ *          Oliver Lohmann
-+ *          Andreas Arnez
++ * Author: Artem Bityutskiy (Битюцкий Артём)
 + */
 +
 +/*
-+ * This file defines the layout of UBI headers and all the other UBI on-flash
-+ * data structures. May be included by user-space.
-+ */
-+
-+#ifndef __UBI_HEADER_H__
-+#define __UBI_HEADER_H__
-+
-+#include <asm/byteorder.h>
-+
-+/* The version of UBI images supported by this implementation */
-+#define UBI_VERSION 1
-+
-+/* The highest erase counter value supported by this implementation */
-+#define UBI_MAX_ERASECOUNTER 0x7FFFFFFF
-+
-+/* The initial CRC32 value used when calculating CRC checksums */
-+#define UBI_CRC32_INIT 0xFFFFFFFFU
-+
-+/* Erase counter header magic number (ASCII "UBI#") */
-+#define UBI_EC_HDR_MAGIC  0x55424923
-+/* Volume identifier header magic number (ASCII "UBI!") */
-+#define UBI_VID_HDR_MAGIC 0x55424921
-+
-+/*
-+ * Volume type constants used in the volume identifier header.
++ * This file includes implementation of UBI character device operations.
 + *
-+ * @UBI_VID_DYNAMIC: dynamic volume
-+ * @UBI_VID_STATIC: static volume
++ * There are two kinds of character devices in UBI: UBI character devices and
++ * UBI volume character devices. UBI character devices allow users to
++ * manipulate whole volumes: create, remove, and re-size them. Volume character
++ * devices provide volume I/O capabilities.
++ *
++ * Major and minor numbers are assigned dynamically to both UBI and volume
++ * character devices.
 + */
-+enum {
-+	UBI_VID_DYNAMIC = 1,
-+	UBI_VID_STATIC  = 2
++
++#include <linux/module.h>
++#include <linux/stat.h>
++#include <linux/ioctl.h>
++#include <linux/capability.h>
++#include <mtd/ubi-user.h>
++#include <asm/uaccess.h>
++#include <asm/div64.h>
++#include "ubi.h"
++
++/*
++ * Maximum sequence numbers of UBI and volume character device IOCTLs (direct
++ * logical eraseblock erase is a debug-only feature).
++ */
++#define UBI_CDEV_IOC_MAX_SEQ 2
++#ifndef CONFIG_MTD_UBI_DEBUG_USERSPACE_IO
++#define VOL_CDEV_IOC_MAX_SEQ 1
++#else
++#define VOL_CDEV_IOC_MAX_SEQ 2
++#endif
++
++/**
++ * major_to_device - get UBI device object by character device major number.
++ * @major: major number
++ *
++ * This function returns a pointer to the UBI device object.
++ */
++static struct ubi_device *major_to_device(int major)
++{
++	int i;
++
++	for (i = 0; i < ubi_devices_cnt; i++)
++		if (ubi_devices[i] && ubi_devices[i]->major == major)
++			return ubi_devices[i];
++	BUG();
++}
++
++/**
++ * get_exclusive - get exclusive access to an UBI volume.
++ * @desc: volume descriptor
++ *
++ * This function changes UBI volume open mode to "exclusive". Returns previous
++ * mode value (positive integer) in case of success and a negative error code
++ * in case of failure.
++ */
++static int get_exclusive(struct ubi_volume_desc *desc)
++{
++	int users, err;
++	struct ubi_volume *vol = desc->vol;
++
++	spin_lock(&vol->ubi->volumes_lock);
++	users = vol->readers + vol->writers + vol->exclusive;
++	ubi_assert(users > 0);
++	if (users > 1) {
++		dbg_err("%d users for volume %d", users, vol->vol_id);
++		err = -EBUSY;
++	} else {
++		vol->readers = vol->writers = 0;
++		vol->exclusive = 1;
++		err = desc->mode;
++		desc->mode = UBI_EXCLUSIVE;
++	}
++	spin_unlock(&vol->ubi->volumes_lock);
++
++	return err;
++}
++
++/**
++ * revoke_exclusive - revoke exclusive mode.
++ * @desc: volume descriptor
++ * @mode: new mode to switch to
++ */
++static void revoke_exclusive(struct ubi_volume_desc *desc, int mode)
++{
++	struct ubi_volume *vol = desc->vol;
++
++	spin_lock(&vol->ubi->volumes_lock);
++	ubi_assert(vol->readers == 0 && vol->writers == 0);
++	ubi_assert(vol->exclusive == 1 && desc->mode == UBI_EXCLUSIVE);
++	vol->exclusive = 0;
++	if (mode == UBI_READONLY)
++		vol->readers = 1;
++	else if (mode == UBI_READWRITE)
++		vol->writers = 1;
++	else
++		vol->exclusive = 1;
++	spin_unlock(&vol->ubi->volumes_lock);
++
++	desc->mode = mode;
++}
++
++static int vol_cdev_open(struct inode *inode, struct file *file)
++{
++	struct ubi_volume_desc *desc;
++	const struct ubi_device *ubi = major_to_device(imajor(inode));
++	int vol_id = iminor(inode) - 1;
++	int mode;
++
++	if (file->f_mode & FMODE_WRITE)
++		mode = UBI_READWRITE;
++	else
++		mode = UBI_READONLY;
++
++	dbg_msg("open volume %d, mode %d", vol_id, mode);
++
++	desc = ubi_open_volume(ubi->ubi_num, vol_id, mode);
++	if (IS_ERR(desc))
++		return PTR_ERR(desc);
++
++	file->private_data = desc;
++	return 0;
++}
++
++static int vol_cdev_release(struct inode *inode, struct file *file)
++{
++	struct ubi_volume_desc *desc = file->private_data;
++	struct ubi_volume *vol = desc->vol;
++
++	dbg_msg("release volume %d, mode %d", vol->vol_id, desc->mode);
++
++	if (vol->updating) {
++		ubi_warn("update of volume %d not finished, volume is damaged",
++			 vol->vol_id);
++		vol->updating = 0;
++		kfree(vol->upd_buf);
++	}
++
++	ubi_close_volume(desc);
++	return 0;
++}
++
++static loff_t vol_cdev_llseek(struct file *file, loff_t offset, int origin)
++{
++	struct ubi_volume_desc *desc = file->private_data;
++	struct ubi_volume *vol = desc->vol;
++	loff_t new_offset;
++
++	if (vol->updating) {
++		 /* Update is in progress, seeking is prohibited */
++		dbg_err("updating");
++		return -EBUSY;
++	}
++
++	switch (origin) {
++	case 0: /* SEEK_SET */
++		new_offset = offset;
++		break;
++	case 1: /* SEEK_CUR */
++		new_offset = file->f_pos + offset;
++		break;
++	case 2: /* SEEK_END */
++		new_offset = vol->used_bytes + offset;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (new_offset < 0 || new_offset > vol->used_bytes) {
++		dbg_err("bad seek %lld", new_offset);
++		return -EINVAL;
++	}
++
++	dbg_msg("seek volume %d, offset %lld, origin %d, new offset %lld",
++		vol->vol_id, offset, origin, new_offset);
++
++	file->f_pos = new_offset;
++	return new_offset;
++}
++
++static ssize_t vol_cdev_read(struct file *file, __user char *buf, size_t count,
++			     loff_t *offp)
++{
++	struct ubi_volume_desc *desc = file->private_data;
++	struct ubi_volume *vol = desc->vol;
++	struct ubi_device *ubi = vol->ubi;
++	int err, lnum, off, len,  vol_id = desc->vol->vol_id, tbuf_size;
++	size_t count_save = count;
++	void *tbuf;
++	uint64_t tmp;
++
++	dbg_msg("read %zd bytes from offset %lld of volume %d",
++		count, *offp, vol_id);
++
++	if (vol->updating) {
++		dbg_err("updating");
++		return -EBUSY;
++	}
++	if (vol->upd_marker) {
++		dbg_err("damaged volume, update marker is set");
++		return -EBADF;
++	}
++	if (*offp == vol->used_bytes || count == 0)
++		return 0;
++
++	if (vol->corrupted)
++		dbg_msg("read from corrupted volume %d", vol_id);
++
++	if (*offp + count > vol->used_bytes)
++		count_save = count = vol->used_bytes - *offp;
++
++	tbuf_size = vol->usable_leb_size;
++	if (count < tbuf_size)
++		tbuf_size = ubi_align_up(count, ubi->min_io_size);
++	tbuf = kmalloc(tbuf_size, GFP_KERNEL);
++	if (!tbuf)
++		return -ENOMEM;
++
++	len = count > tbuf_size ? tbuf_size : count;
++
++	tmp = *offp;
++	off = do_div(tmp, vol->usable_leb_size);
++	lnum = tmp;
++
++	do {
++		cond_resched();
++
++		if (off + len >= vol->usable_leb_size)
++			len = vol->usable_leb_size - off;
++
++		err = ubi_eba_read_leb(ubi, vol_id, lnum, tbuf, off, len, 0);
++		if (unlikely(err))
++			break;
++
++		off += len;
++		if (off == vol->usable_leb_size) {
++			lnum += 1;
++			off -= vol->usable_leb_size;
++		}
++
++		count -= len;
++		*offp += len;
++
++		err = copy_to_user(buf, tbuf, len);
++		if (unlikely(err)) {
++			err = -EFAULT;
++			break;
++		}
++
++		buf += len;
++		len = count > tbuf_size ? tbuf_size : count;
++	} while (count);
++
++	kfree(tbuf);
++	return err ? err : count_save - count;
++}
++
++#ifdef CONFIG_MTD_UBI_DEBUG_USERSPACE_IO
++
++/*
++ * This function allows to directly write to dynamic UBI volumes, without
++ * issuing the volume update operation. Available only as a debugging feature.
++ * Very useful for testing UBI.
++ */
++static ssize_t vol_cdev_direct_write(struct file *file, const char __user *buf,
++				     size_t count, loff_t *offp)
++{
++	struct ubi_volume_desc *desc = file->private_data;
++	struct ubi_volume *vol = desc->vol;
++	struct ubi_device *ubi = vol->ubi;
++	int lnum, off, len, tbuf_size, vol_id = vol->vol_id, err = 0;
++	size_t count_save = count;
++	char *tbuf;
++	uint64_t tmp;
++
++	dbg_msg("requested: write %zd bytes to offset %lld of volume %u",
++		count, *offp, desc->vol->vol_id);
++
++	if (vol->vol_type == UBI_STATIC_VOLUME)
++		return -EROFS;
++
++	tmp = *offp;
++	off = do_div(tmp, vol->usable_leb_size);
++	lnum = tmp;
++
++	if (off % ubi->min_io_size) {
++		dbg_err("unaligned position");
++		return -EINVAL;
++	}
++
++	if (*offp + count > vol->used_bytes)
++		count_save = count = vol->used_bytes - *offp;
++
++	/* We can write only in fractions of the minimum I/O unit */
++	if (count % ubi->min_io_size) {
++		dbg_err("unaligned write length");
++		return -EINVAL;
++	}
++
++	tbuf_size = vol->usable_leb_size;
++	if (count < tbuf_size)
++		tbuf_size = ubi_align_up(count, ubi->min_io_size);
++	tbuf = kmalloc(tbuf_size, GFP_KERNEL);
++	if (!tbuf)
++		return -ENOMEM;
++
++	len = count > tbuf_size ? tbuf_size : count;
++
++	while (count) {
++		cond_resched();
++
++		if (off + len >= vol->usable_leb_size)
++			len = vol->usable_leb_size - off;
++
++		err = copy_from_user(tbuf, buf, len);
++		if (err) {
++			err = -EFAULT;
++			break;
++		}
++
++		err = ubi_eba_write_leb(ubi, vol_id, lnum, tbuf, off, len,
++					UBI_DATA_UNKNOWN);
++		if (unlikely(err))
++			break;
++
++		off += len;
++		if (off == vol->usable_leb_size) {
++			lnum += 1;
++			off -= vol->usable_leb_size;
++		}
++
++		count -= len;
++		*offp += len;
++		buf += len;
++		len = count > tbuf_size ? tbuf_size : count;
++	}
++
++	kfree(tbuf);
++	return err ? err : count_save - count;
++}
++
++#else
++#define vol_cdev_direct_write(file, buf, count, offp) -EPERM
++#endif /* CONFIG_MTD_UBI_DEBUG_USERSPACE_IO */
++
++static ssize_t vol_cdev_write(struct file *file, const char __user *buf,
++			      size_t count, loff_t *offp)
++{
++	int err = 0;
++	struct ubi_volume_desc *desc = file->private_data;
++	struct ubi_volume *vol = desc->vol;
++	struct ubi_device *ubi = vol->ubi;
++
++	if (!vol->updating)
++		return vol_cdev_direct_write(file, buf, count, offp);
++
++	err = ubi_more_update_data(ubi, vol->vol_id, buf, count);
++	if (err < 0) {
++		ubi_err("cannot write %zd bytes of update data", count);
++		return err;
++	}
++
++	if (err) {
++		/*
++		 * Update is finished, @err contains number of actually written
++		 * bytes now.
++		 */
++		count = err;
++
++		err = ubi_check_volume(ubi, vol->vol_id);
++		if (err < 0)
++			return err;
++
++		if (err) {
++			ubi_warn("volume %d on UBI device %d is corrupted",
++				 vol->vol_id, ubi->ubi_num);
++			vol->corrupted = 1;
++		}
++		vol->checked = 1;
++		revoke_exclusive(desc, UBI_READWRITE);
++	}
++
++	*offp += count;
++	return count;
++}
++
++static int vol_cdev_ioctl(struct inode *inode, struct file *file,
++			  unsigned int cmd, unsigned long arg)
++{
++	int err = 0;
++	struct ubi_volume_desc *desc = file->private_data;
++	struct ubi_volume *vol = desc->vol;
++	struct ubi_device *ubi = vol->ubi;
++	void __user *argp = (void __user *)arg;
++
++	if (_IOC_NR(cmd) > VOL_CDEV_IOC_MAX_SEQ ||
++	    _IOC_TYPE(cmd) != UBI_VOL_IOC_MAGIC)
++		return -ENOTTY;
++
++	if (_IOC_DIR(cmd) && _IOC_READ)
++		err = !access_ok(VERIFY_WRITE, argp, _IOC_SIZE(cmd));
++	else if (_IOC_DIR(cmd) && _IOC_WRITE)
++		err = !access_ok(VERIFY_READ, argp, _IOC_SIZE(cmd));
++	if (err)
++		return -EFAULT;
++
++	switch (cmd) {
++
++	/* Volume update command */
++	case UBI_IOCVOLUP:
++	{
++		int64_t bytes, rsvd_bytes;
++
++		if (!capable(CAP_SYS_RESOURCE)) {
++			err = -EPERM;
++			break;
++		}
++
++		err = copy_from_user(&bytes, argp, sizeof(int64_t));
++		if (err) {
++			err = -EFAULT;
++			break;
++		}
++
++		if (desc->mode == UBI_READONLY) {
++			err = -EROFS;
++			break;
++		}
++
++		rsvd_bytes = vol->reserved_pebs * (ubi->leb_size-vol->data_pad);
++		if (bytes < 0 || bytes > rsvd_bytes) {
++			err = -EINVAL;
++			break;
++		}
++
++		err = get_exclusive(desc);
++		if (err < 0)
++			break;
++
++		err = ubi_start_update(ubi, vol->vol_id, bytes);
++		if (bytes == 0)
++			revoke_exclusive(desc, UBI_READWRITE);
++
++		file->f_pos = 0;
++		break;
++	}
++
++#ifdef CONFIG_MTD_UBI_DEBUG_USERSPACE_IO
++	/* Logical eraseblock erasure command */
++	case UBI_IOCEBER:
++	{
++		int32_t lnum;
++
++		err = __get_user(lnum, (__user int32_t *)argp);
++		if (err) {
++			err = -EFAULT;
++			break;
++		}
++
++		if (desc->mode == UBI_READONLY) {
++			err = -EROFS;
++			break;
++		}
++
++		if (lnum < 0 || lnum >= vol->reserved_pebs) {
++			err = -EINVAL;
++			break;
++		}
++
++		if (vol->vol_type != UBI_DYNAMIC_VOLUME) {
++			err = -EROFS;
++			break;
++		}
++
++		dbg_msg("erase LEB %d:%d", vol->vol_id, lnum);
++		err = ubi_eba_unmap_leb(ubi, vol->vol_id, lnum);
++		if (err)
++			break;
++
++		err = ubi_wl_flush(ubi);
++		break;
++	}
++#endif
++
++	default:
++		err = -ENOTTY;
++		break;
++	}
++
++	return err;
++}
++
++/**
++ * verify_mkvol_req - verify volume creation request.
++ * @ubi: UBI device description object
++ * @req: the request to check
++ *
++ * This function zero if the request is correct, and %-EINVAL if not.
++ */
++static int verify_mkvol_req(const struct ubi_device *ubi,
++			    const struct ubi_mkvol_req *req)
++{
++	int n;
++
++	if (req->bytes < 0 || req->alignment < 0 || req->vol_type < 0 ||
++	    req->name_len < 0)
++		goto bad;
++
++	if ((req->vol_id < 0 || req->vol_id >= ubi->vtbl_slots) &&
++	    req->vol_id != UBI_VOL_NUM_AUTO)
++		goto bad;
++
++	if (req->alignment == 0)
++		goto bad;
++
++	if (req->bytes == 0)
++		goto bad;
++
++	if (req->vol_type != UBI_DYNAMIC_VOLUME &&
++	    req->vol_type != UBI_STATIC_VOLUME)
++		goto bad;
++
++	if (req->alignment > ubi->leb_size)
++		goto bad;
++
++	n = req->alignment % ubi->min_io_size;
++	if (req->alignment != 1 && n)
++		goto bad;
++
++	if (req->name_len > UBI_VOL_NAME_MAX)
++		goto bad;
++
++	return 0;
++
++bad:
++	dbg_err("bad volume creation request");
++	ubi_dbg_dump_mkvol_req(req);
++	return -EINVAL;
++}
++
++/**
++ * verify_rsvol_req - verify volume re-size request.
++ * @ubi: UBI device description object
++ * @req: the request to check
++ *
++ * This function returns zero if the request is correct, and %-EINVAL if not.
++ */
++static int verify_rsvol_req(const struct ubi_device *ubi,
++			    const struct ubi_rsvol_req *req)
++{
++	if (req->bytes <= 0)
++		return -EINVAL;
++
++	if (req->vol_id < 0 || req->vol_id >= ubi->vtbl_slots)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
++			  unsigned int cmd, unsigned long arg)
++{
++	int err = 0;
++	struct ubi_device *ubi;
++	struct ubi_volume_desc *desc;
++	void __user *argp = (void __user *)arg;
++
++	if (_IOC_NR(cmd) > UBI_CDEV_IOC_MAX_SEQ ||
++	    _IOC_TYPE(cmd) != UBI_IOC_MAGIC)
++		return -ENOTTY;
++
++	if (_IOC_DIR(cmd) && _IOC_READ)
++		err = !access_ok(VERIFY_WRITE, argp, _IOC_SIZE(cmd));
++	else if (_IOC_DIR(cmd) && _IOC_WRITE)
++		err = !access_ok(VERIFY_READ, argp, _IOC_SIZE(cmd));
++	if (err)
++		return -EFAULT;
++
++	if (!capable(CAP_SYS_RESOURCE))
++		return -EPERM;
++
++	ubi = major_to_device(imajor(inode));
++	if (IS_ERR(ubi))
++		return PTR_ERR(ubi);
++
++	switch (cmd) {
++	/* Create volume command */
++	case UBI_IOCMKVOL:
++	{
++		struct ubi_mkvol_req req;
++
++		dbg_msg("create volume");
++		err = __copy_from_user(&req, argp,
++				       sizeof(struct ubi_mkvol_req));
++		if (err) {
++			err = -EFAULT;
++			break;
++		}
++
++		err = verify_mkvol_req(ubi, &req);
++		if (err)
++			break;
++
++		req.name[req.name_len] = '\0';
++
++		err = ubi_create_volume(ubi, &req);
++		if (err)
++			break;
++
++		err = __put_user(req.vol_id, (__user int32_t *)argp);
++		if (err)
++			err = -EFAULT;
++
++		break;
++	}
++
++	/* Remove volume command */
++	case UBI_IOCRMVOL:
++	{
++		int vol_id;
++
++		dbg_msg("remove volume");
++		err = __get_user(vol_id, (__user int32_t *)argp);
++		if (err) {
++			err = -EFAULT;
++			break;
++		}
++
++		desc = ubi_open_volume(ubi->ubi_num, vol_id, UBI_EXCLUSIVE);
++		if (IS_ERR(desc)) {
++			err = PTR_ERR(desc);
++			break;
++		}
++
++		err = ubi_remove_volume(desc);
++		if (err)
++			ubi_close_volume(desc);
++
++		break;
++	}
++
++	/* Re-size volume command */
++	case UBI_IOCRSVOL:
++	{
++		int pebs;
++		uint64_t tmp;
++		struct ubi_rsvol_req req;
++
++		dbg_msg("re-size volume");
++		err = __copy_from_user(&req, argp,
++				       sizeof(struct ubi_rsvol_req));
++		if (err) {
++			err = -EFAULT;
++			break;
++		}
++
++		err = verify_rsvol_req(ubi, &req);
++		if (err)
++			break;
++
++		desc = ubi_open_volume(ubi->ubi_num, req.vol_id, UBI_EXCLUSIVE);
++		if (IS_ERR(desc)) {
++			err = PTR_ERR(desc);
++			break;
++		}
++
++		tmp = req.bytes;
++		pebs = !!do_div(tmp, desc->vol->usable_leb_size);
++		pebs += tmp;
++
++dbg_msg("desc %p", desc);
++dbg_msg("desc->vol %p", desc->vol);
++dbg_msg("desc->vol->vol_id %d", desc->vol->vol_id);
++dbg_msg("desc->vol->ubi %d", desc->vol->ubi);
++		err = ubi_resize_volume(desc, pebs);
++		ubi_close_volume(desc);
++		break;
++	}
++
++	default:
++		err = -ENOTTY;
++		break;
++	}
++
++	return err;
++}
++
++/* UBI character device operations */
++struct file_operations ubi_cdev_operations = {
++	.owner = THIS_MODULE,
++	.ioctl = ubi_cdev_ioctl,
++	.llseek = no_llseek
 +};
 +
-+/*
-+ * Compatibility constants used by internal volumes.
-+ *
-+ * @UBI_COMPAT_DELETE: delete this internal volume before anything is written
-+ * to the flash
-+ * @UBI_COMPAT_RO: attach this device in read-only mode
-+ * @UBI_COMPAT_PRESERVE: preserve this internal volume - do not touch its
-+ * physical eraseblocks, don't allow the wear-leveling unit to move them
-+ * @UBI_COMPAT_REJECT: reject this UBI image
-+ */
-+enum {
-+	UBI_COMPAT_DELETE   = 1,
-+	UBI_COMPAT_RO       = 2,
-+	UBI_COMPAT_PRESERVE = 4,
-+	UBI_COMPAT_REJECT   = 5
++/* UBI volume character device operations */
++struct file_operations ubi_vol_cdev_operations = {
++	.owner   = THIS_MODULE,
++	.open    = vol_cdev_open,
++	.release = vol_cdev_release,
++	.llseek  = vol_cdev_llseek,
++	.read    = vol_cdev_read,
++	.write   = vol_cdev_write,
++	.ioctl   = vol_cdev_ioctl
 +};
-+
-+/*
-+ * ubi16_t/ubi32_t/ubi64_t - 16, 32, and 64-bit integers used in UBI on-flash
-+ * data structures.
-+ */
-+typedef struct {
-+	uint16_t int16;
-+} __attribute__ ((packed)) ubi16_t;
-+
-+typedef struct {
-+	uint32_t int32;
-+} __attribute__ ((packed)) ubi32_t;
-+
-+typedef struct {
-+	uint64_t int64;
-+} __attribute__ ((packed)) ubi64_t;
-+
-+/*
-+ * In this implementation of UBI uses the big-endian format for on-flash
-+ * integers. The below are the corresponding conversion macros.
-+ */
-+#define cpu_to_ubi16(x) ((ubi16_t){__cpu_to_be16(x)})
-+#define ubi16_to_cpu(x) ((uint16_t)__be16_to_cpu((x).int16))
-+
-+#define cpu_to_ubi32(x) ((ubi32_t){__cpu_to_be32(x)})
-+#define ubi32_to_cpu(x) ((uint32_t)__be32_to_cpu((x).int32))
-+
-+#define cpu_to_ubi64(x) ((ubi64_t){__cpu_to_be64(x)})
-+#define ubi64_to_cpu(x) ((uint64_t)__be64_to_cpu((x).int64))
-+
-+/* Sizes of UBI headers */
-+#define UBI_EC_HDR_SIZE  sizeof(struct ubi_ec_hdr)
-+#define UBI_VID_HDR_SIZE sizeof(struct ubi_vid_hdr)
-+
-+/* Sizes of UBI headers without the ending CRC */
-+#define UBI_EC_HDR_SIZE_CRC  (UBI_EC_HDR_SIZE  - sizeof(ubi32_t))
-+#define UBI_VID_HDR_SIZE_CRC (UBI_VID_HDR_SIZE - sizeof(ubi32_t))
-+
-+/**
-+ * struct ubi_ec_hdr - UBI erase counter header.
-+ * @magic: erase counter header magic number (%UBI_EC_HDR_MAGIC)
-+ * @version: version of UBI implementation which is supposed to accept this
-+ * UBI image
-+ * @padding1: reserved for future, zeroes
-+ * @ec: the erase counter
-+ * @vid_hdr_offset: where the VID header starts
-+ * @data_offset: where the user data start
-+ * @padding2: reserved for future, zeroes
-+ * @hdr_crc: erase counter header CRC checksum
-+ *
-+ * The erase counter header takes 64 bytes and has a plenty of unused space for
-+ * future usage. The unused fields are zeroed. The @version field is used to
-+ * indicate the version of UBI implementation which is supposed to be able to
-+ * work with this UBI image. If @version is greater then the current UBI
-+ * version, the image is rejected. This may be useful in future if something
-+ * is changed radically. This field is duplicated in the volume identifier
-+ * header.
-+ *
-+ * The @vid_hdr_offset and @data_offset fields contain the offset of the the
-+ * volume identifier header and user data, relative to the beginning of the
-+ * physical eraseblock. These values have to be the same for all physical
-+ * eraseblocks.
-+ */
-+struct ubi_ec_hdr {
-+	ubi32_t magic;
-+	uint8_t version;
-+	uint8_t padding1[3];
-+	ubi64_t ec; /* Warning: the current limit is 31-bit anyway! */
-+	ubi32_t vid_hdr_offset;
-+	ubi32_t data_offset;
-+	uint8_t padding2[36];
-+	ubi32_t hdr_crc;
-+} __attribute__ ((packed));
-+
-+/**
-+ * struct ubi_vid_hdr - on-flash UBI volume identifier header.
-+ * @magic: volume identifier header magic number (%UBI_VID_HDR_MAGIC)
-+ * @version: UBI implementation version which is supposed to accept this UBI
-+ * image (%UBI_VERSION)
-+ * @vol_type: volume type (%UBI_VID_DYNAMIC or %UBI_VID_STATIC)
-+ * @copy_flag: if this logical eraseblock was copied from another physical
-+ * eraseblock (for wear-leveling reasons)
-+ * @compat: compatibility of this volume (%0, %UBI_COMPAT_DELETE,
-+ * %UBI_COMPAT_IGNORE, %UBI_COMPAT_PRESERVE, or %UBI_COMPAT_REJECT)
-+ * @vol_id: ID of this volume
-+ * @lnum: logical eraseblock number
-+ * @leb_ver: version of this logical eraseblock (IMPORTANT: obsolete, to be
-+ * removed, kept only for not breaking older UBI users)
-+ * @data_size: how many bytes of data this logical eraseblock contains
-+ * @used_ebs: total number of used logical eraseblocks in this volume
-+ * @data_pad: how many bytes at the end of this physical eraseblock are not
-+ * used
-+ * @data_crc: CRC checksum of the data stored in this logical eraseblock
-+ * @padding1: reserved for future, zeroes
-+ * @sqnum: sequence number
-+ * @padding2: reserved for future, zeroes
-+ * @hdr_crc: volume identifier header CRC checksum
-+ *
-+ * The @sqnum is the value of the global sequence counter at the time when this
-+ * VID header was created. The global sequence counter is incremented each time
-+ * UBI writes a new VID header to the flash, i.e. when it maps a logical
-+ * eraseblock to a new physical eraseblock. The global sequence counter is an
-+ * unsigned 64-bit integer and we assume it never overflows. The @sqnum
-+ * (sequence number) is used to distinguish between older and newer versions of
-+ * logical eraseblocks.
-+ *
-+ * There are 2 situations when there may be more then one physical eraseblock
-+ * corresponding to the same logical eraseblock, i.e., having the same @vol_id
-+ * and @lnum values in the volume identifier header. Suppose we have a logical
-+ * eraseblock L and it is mapped to the physical eraseblock P.
-+ *
-+ * 1. Because UBI may erase physical eraseblocks asynchronously, the following
-+ * situation is possible: L is asynchronously erased, so P is scheduled for
-+ * erasure, then L is written to,i.e. mapped to another physical eraseblock P1,
-+ * so P1 is written to, then an unclean reboot happens. Result - there are 2
-+ * physical eraseblocks P and P1 corresponding to the same logical eraseblock
-+ * L. But P1 has greater sequence number, so UBI picks P1 when it attaches the
-+ * flash.
-+ *
-+ * 2. From time to time UBI moves logical eraseblocks to other physical
-+ * eraseblocks for wear-leveling reasons. If, for example, UBI moves L from P
-+ * to P1, and an unclean reboot happens before P is physically erased, there
-+ * are two physical eraseblocks P and P1 corresponding to L and UBI has to
-+ * select one of them when the flash is attached. The @sqnum field says which
-+ * PEB is the original (obviously P will have lower @sqnum) and the copy. But
-+ * it is not enough to select the physical eraseblock with the higher sequence
-+ * number, because the unclean reboot could have happen in the middle of the
-+ * copying process, so the data in P is corrupted. It is also not enough to
-+ * just select the physical eraseblock with lower sequence number, because the
-+ * data there may be old (consider a case if more data was added to P1 after
-+ * the copying). Moreover, the unclean reboot may happen when the erasure of P
-+ * was just started, so it result in unstable P, which is "mostly" OK, but
-+ * still has unstable bits.
-+ *
-+ * UBI uses the @copy_flag field to indicate that this logical eraseblock is a
-+ * copy. UBI also calculates data CRC when the data is moved and stores it at
-+ * the @data_crc field of the copy (P1). So when UBI needs to pick one physical
-+ * eraseblock of two (P or P1), the @copy_flag of the newer one (P1) is
-+ * examined. If it is cleared, the situation* is simple and the newer one is
-+ * picked. If it is set, the data CRC of the copy (P1) is examined. If the CRC
-+ * checksum is correct, this physical eraseblock is selected (P1). Otherwise
-+ * the older one (P) is selected.
-+ *
-+ * Note, there is an obsolete @leb_ver field which was used instead of @sqnum
-+ * in the past. But it is not used anymore and we keep it in order to be able
-+ * to deal with old UBI images. It will be removed at some point.
-+ *
-+ * There are 2 sorts of volumes in UBI: user volumes and internal volumes.
-+ * Internal volumes are not seen from outside and are used for various internal
-+ * UBI purposes. In this implementation there is only one internal volume - the
-+ * layout volume. Internal volumes are the main mechanism of UBI extensions.
-+ * For example, in future one may introduce a journal internal volume. Internal
-+ * volumes have their own reserved range of IDs.
-+ *
-+ * The @compat field is only used for internal volumes and contains the "degree
-+ * of their compatibility". It is always zero for user volumes. This field
-+ * provides a mechanism to introduce UBI extensions and to be still compatible
-+ * with older UBI binaries. For example, if someone introduced a journal in
-+ * future, he would probably use %UBI_COMPAT_DELETE compatibility for the
-+ * journal volume.  And in this case, older UBI binaries, which know nothing
-+ * about the journal volume, would just delete this volume and work perfectly
-+ * fine. This is similar to what Ext2fs does when it is fed by an Ext3fs image
-+ * - it just ignores the Ext3fs journal.
-+ *
-+ * The @data_crc field contains the CRC checksum of the contents of the logical
-+ * eraseblock if this is a static volume. In case of dynamic volumes, it does
-+ * not contain the CRC checksum as a rule. The only exception is when the
-+ * data of the physical eraseblock was moved by the wear-leveling unit, then
-+ * the wear-leveling unit calculates the data CRC and stores it in the
-+ * @data_crc field. And of course, the @copy_flag is %in this case.
-+ *
-+ * The @data_size field is used only for static volumes because UBI has to know
-+ * how many bytes of data are stored in this eraseblock. For dynamic volumes,
-+ * this field usually contains zero. The only exception is when the data of the
-+ * physical eraseblock was moved to another physical eraseblock for
-+ * wear-leveling reasons. In this case, UBI calculates CRC checksum of the
-+ * contents and uses both @data_crc and @data_size fields. In this case, the
-+ * @data_size field contains data size.
-+ *
-+ * The @used_ebs field is used only for static volumes and indicates how many
-+ * eraseblocks the data of the volume takes. For dynamic volumes this field is
-+ * not used and always contains zero.
-+ *
-+ * The @data_pad is calculated when volumes are created using the alignment
-+ * parameter. So, effectively, the @data_pad field reduces the size of logical
-+ * eraseblocks of this volume. This is very handy when one uses block-oriented
-+ * software (say, cramfs) on top of the UBI volume.
-+ */
-+struct ubi_vid_hdr {
-+	ubi32_t magic;
-+	uint8_t version;
-+	uint8_t vol_type;
-+	uint8_t copy_flag;
-+	uint8_t compat;
-+	ubi32_t vol_id;
-+	ubi32_t lnum;
-+	ubi32_t leb_ver; /* obsolete, to be removed, don't use */
-+	ubi32_t data_size;
-+	ubi32_t used_ebs;
-+	ubi32_t data_pad;
-+	ubi32_t data_crc;
-+	uint8_t padding1[4];
-+	ubi64_t sqnum;
-+	uint8_t padding2[12];
-+	ubi32_t hdr_crc;
-+} __attribute__ ((packed));
-+
-+/* Internal UBI volumes count */
-+#define UBI_INT_VOL_COUNT 1
-+
-+/*
-+ * Starting ID of internal volumes. There is reserved room for 4096 internal
-+ * volumes.
-+ */
-+#define UBI_INTERNAL_VOL_START (0x7FFFFFFF - 4096)
-+
-+/* The layout volume contains the volume table */
-+
-+#define UBI_LAYOUT_VOL_ID        UBI_INTERNAL_VOL_START
-+#define UBI_LAYOUT_VOLUME_EBS    2
-+#define UBI_LAYOUT_VOLUME_NAME   "layout volume"
-+#define UBI_LAYOUT_VOLUME_COMPAT UBI_COMPAT_REJECT
-+
-+/* The maximum number of volumes per one UBI device */
-+#define UBI_MAX_VOLUMES 128
-+
-+/* The maximum volume name length */
-+#define UBI_VOL_NAME_MAX 127
-+
-+/* Size of the volume table record */
-+#define UBI_VTBL_RECORD_SIZE sizeof(struct ubi_vtbl_record)
-+
-+/* Size of the volume table record without the ending CRC */
-+#define UBI_VTBL_RECORD_SIZE_CRC (UBI_VTBL_RECORD_SIZE - sizeof(ubi32_t))
-+
-+/**
-+ * struct ubi_vtbl_record - a record in the volume table.
-+ * @reserved_pebs: how many physical eraseblocks are reserved for this volume
-+ * @alignment: volume alignment
-+ * @data_pad: how many bytes are unused at the end of the each physical
-+ * eraseblock to satisfy the requested alignment
-+ * @vol_type: volume type (%UBI_DYNAMIC_VOLUME or %UBI_STATIC_VOLUME)
-+ * @upd_marker: if volume update was started but not finished
-+ * @name_len: volume name length
-+ * @name: the volume name
-+ * @padding2: reserved, zeroes
-+ * @crc: a CRC32 checksum of the record
-+ *
-+ * The volume table records are stored in the volume table, which is stored in
-+ * the layout volume. The layout volume consists of 2 logical eraseblock, each
-+ * of which contains a copy of the volume table (i.e., the volume table is
-+ * duplicated). The volume table is an array of &struct ubi_vtbl_record
-+ * objects indexed by the volume ID.
-+ *
-+ * If the size of the logical eraseblock is large enough to fit
-+ * %UBI_MAX_VOLUMES records, the volume table contains %UBI_MAX_VOLUMES
-+ * records. Otherwise, it contains as many records as it can fit (i.e., size of
-+ * logical eraseblock divided by sizeof(struct ubi_vtbl_record)).
-+ *
-+ * The @upd_marker flag is used to implement volume update. It is set to %1
-+ * before update and set to %0 after the update. So if the update operation was
-+ * interrupted, UBI knows that the volume is corrupted.
-+ *
-+ * The @alignment field is specified when the volume is created and cannot be
-+ * later changed. It may be useful, for example, when a block-oriented file
-+ * system works on top of UBI. The @data_pad field is calculated using the
-+ * logical eraseblock size and @alignment. The alignment must be multiple to the
-+ * minimal flash I/O unit. If @alignment is 1, all the available space of
-+ * the physical eraseblocks is used.
-+ *
-+ * Empty records contain all zeroes and the CRC checksum of those zeroes.
-+ */
-+struct ubi_vtbl_record {
-+	ubi32_t reserved_pebs;
-+	ubi32_t alignment;
-+	ubi32_t data_pad;
-+	uint8_t vol_type;
-+	uint8_t upd_marker;
-+	ubi16_t name_len;
-+	uint8_t name[UBI_VOL_NAME_MAX+1];
-+	uint8_t padding2[24];
-+	ubi32_t crc;
-+} __attribute__ ((packed));
-+
-+#endif /* !__UBI_HEADER_H__ */
