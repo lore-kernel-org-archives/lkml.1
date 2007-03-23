@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422856AbXCWMs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422857AbXCWMzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422856AbXCWMs1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 08:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422858AbXCWMs1
+	id S1422857AbXCWMzm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 08:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422862AbXCWMzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 08:48:27 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:1159 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422857AbXCWMs0 (ORCPT
+	Fri, 23 Mar 2007 08:55:42 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48576 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422857AbXCWMzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 08:48:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=OAQ0QVvHQglWmnTzSgKEtFck86XY4Dg/FISTWJYzxYREqYSHgVRFyOjpbbEVJB5mehOClT/EOvI07BcdDiGkG07LN9GRcf6Vl+0iV4Wx0/n+fxPjzIPt+3KuUpPLGpJh2WElerf1gmlM6o57NeYyA0SPDAAKb3GVzWlP/DJZNZw=
-Message-ID: <84144f020703230548g4bd2f8b1y4610bb2886860@mail.gmail.com>
-Date: Fri, 23 Mar 2007 14:48:24 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: [RFC] NUMA : could we introduce virt_to_nid() ?
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Christoph Lameter" <christoph@lameter.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070323121512.c287ddef.dada1@cosmosbay.com>
+	Fri, 23 Mar 2007 08:55:41 -0400
+X-Greylist: delayed 124677 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Mar 2007 08:55:40 EDT
+Date: Fri, 23 Mar 2007 21:54:29 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: 2.6.21-rc4-mm1 + 3 hot-fixes -- WARNING: could not find versions for .tmp_versions/built-in.mod
+Cc: Miles Lane <miles.lane@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070320212705.GB13349@uranus.ravnborg.org>
+References: <a44ae5cd0703200735k197bc50cqeb2856f9f50f88c9@mail.gmail.com> <20070320212705.GB13349@uranus.ravnborg.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070323214418.3F04.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070321102231.7288f231.dada1@cosmosbay.com>
-	 <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com>
-	 <Pine.LNX.4.64.0703210742080.1573@graphe.net>
-	 <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI>
-	 <20070321160929.GB25583@one.firstfloor.org>
-	 <20070323121512.c287ddef.dada1@cosmosbay.com>
-X-Google-Sender-Auth: 6c32315b2ed72fd4
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/23/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> Checking Christoph quicklist implementation, I found the same cache miss in
-> free() than SLAB has.
->
-> /* common implementation *
-> int virt_to_nid(const void *addr)
-> {
->         struct page *page = virt_to_page(addr);
->         return page_to_nid(page);
-> }
->
-> On some platforms (x86_64 for example), could we have a better implementation,
-> not accessing struct page, but using phys_to_nid() ?
+Hello.
 
-Sounds good to me. At least cache_free_alien() in mm/slab.c to should
-be converted to use it.
+> > WARNING: mm/built-in.o - Section mismatch: reference to
+> > .init.text:__alloc_bootmem_node from .text between 'sparse_init' (at
+> > offset 0x15c8f) and '__section_nr'
+> I took a look at this one.
+> You have SPARSEMEM enabled in your config.
+> And then I see that in sparse.c we call alloc_bootmem_node()
+> from a function I thought should be marked __devinit (it
+> is used by memory_hotplug.c).
+> But I am not familiar enough to judge if __alloc_bootmen_node
+> are marked correct with __init or __devinit (to say
+> this is used in the HOTPLUG case) is more correct.
+> Anyone?
+> 
+> > WARNING: mm/built-in.o - Section mismatch: reference to
+> > .init.text:__alloc_bootmem_node from .text between 'sparse_init' (at
+> > offset 0x15d02) and '__section_nr'
+> Same as above....
+
+Memory hotplug code has __meminit for its purpose.
+But, I suspect that many other places of memory hotplug code may have
+same issue. I will chase them.
+
+BTW, does -mm code checks more strict than stock kernel? I can't see
+these warnings in 2.6.21-rc4.....
+
+Bye.
+
+-- 
+Yasunori Goto 
+
+
