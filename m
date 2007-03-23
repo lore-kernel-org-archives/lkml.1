@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933960AbXCWHZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934024AbXCWH27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933960AbXCWHZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 03:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934024AbXCWHZ4
+	id S934024AbXCWH27 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 03:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934037AbXCWH27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 03:25:56 -0400
-Received: from ozlabs.org ([203.10.76.45]:42927 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933960AbXCWHZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 03:25:56 -0400
-Subject: Re: [PATCH] lguest: clean rest of linkage warnings (bar one)
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@osdl.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070322114549.GC29453@uranus.ravnborg.org>
-References: <1174532243.2713.95.camel@localhost.localdomain>
-	 <1174558182.2713.151.camel@localhost.localdomain>
-	 <20070322114549.GC29453@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Fri, 23 Mar 2007 18:25:39 +1100
-Message-Id: <1174634740.29496.12.camel@localhost.localdomain>
+	Fri, 23 Mar 2007 03:28:59 -0400
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:3123 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934024AbXCWH26 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 03:28:58 -0400
+Date: Fri, 23 Mar 2007 08:27:19 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Bryan Wu <bryan.wu@analog.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm try#2] Blackfin: on-chip Two Wire Interface I2C
+ driver
+Message-Id: <20070323082719.82c02731.khali@linux-fr.org>
+In-Reply-To: <1174628817.18866.21.camel@roc-desktop>
+References: <1174471688.5648.56.camel@roc-desktop>
+	<20070321202231.2eac1cf9.khali@linux-fr.org>
+	<8bd0f97a0703212239n3edb9a44waa0994e3cffe48d8@mail.gmail.com>
+	<20070322084806.8bf0f231.khali@linux-fr.org>
+	<8bd0f97a0703220112y7d6cef2ax612ea5ece3df9740@mail.gmail.com>
+	<20070322102431.b55f7ecd.khali@linux-fr.org>
+	<1174628817.18866.21.camel@roc-desktop>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-22 at 12:45 +0100, Sam Ravnborg wrote:
-> On Thu, Mar 22, 2007 at 09:09:42PM +1100, Rusty Russell wrote:
-> > It also fixes the remaining warnings, except one.  The code in
-> > modpost.c which needs to be taught that it's legal to link from
-> > .paravirtprobe to .init.text is horrible, and I'm pretty sure I'd just
-> > make it worse.
+Hi Bryan,
+
+On Fri, 23 Mar 2007 13:46:57 +0800, Wu, Bryan wrote:
+> Changlogs:
 > 
-> If you drop me a sample of the exact warning I will add this one too.
-> Current kbuild.git contains a lot of fixes in this area so I refer to
-> do so on top of that tree.
+> a) Fixed issues according to Jean's review.
+> b) Add MAINTAINS infomation
+> c) add I2C_HW_B_BLACKFIN to i2c-id.h
 
-WARNING: vmlinux - Section mismatch: reference to .init.text: from .paravirtprobe between '__start_paravirtprobe' (at offset 0xc0464c7c) and '__stop_paravirtprobe'
+I2C_HW_B_* is traditionally used for drivers built on top of the
+i2c-algo-bit driver, which isn't the case of your driver, so it's a bit
+confusing. Please instead use:
 
-Sam, you're always so polite and damn helpful: I'm pretty sure that
-violates the core tenets of Linux etiquette.
+#define I2C_HW_BLACKFIN		0x190001
 
-Perhaps you could work on that?
-Rusty.
+I hope we'll be able to get rid of these IDs soon, so we no longer have
+to care about this mess.
 
+Other than that I'm OK with the patch this time, I'll push it on my
+stack. I'll fix the ID issue myself, no need to resend. This also means
+that, from now on, any change to this driver should be provided as an
+incremental patch on top of this version.
 
+Thanks,
+-- 
+Jean Delvare
