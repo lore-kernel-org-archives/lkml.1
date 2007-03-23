@@ -1,182 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbXCWP2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbXCWP3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752021AbXCWP2G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 11:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945915AbXCWP2G
+	id S1752022AbXCWP3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 11:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXCWP3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 11:28:06 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:39852 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752021AbXCWP2E (ORCPT
+	Fri, 23 Mar 2007 11:29:12 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32810 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752022AbXCWP3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 11:28:04 -0400
-X-Greylist: delayed 1146 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Mar 2007 11:28:04 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=hQBhpKP32TP4KD5ZtIOfGVASBapJ+VY/HlE2EumUM9/VL8yFlb69SrX8fD6zQ
-	zuHemKiy1SwxDVsCg4QnwbFYg==
-Date: Fri, 23 Mar 2007 16:08:53 +0100
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org, paulmck@us.ibm.com
-Subject: Re: I/O memory barriers vs SMP memory barriers
-Message-ID: <20070323150853.GJ3980@xi.wantstofly.org>
-References: <20070323111350.GD3980@xi.wantstofly.org> <e9c3a7c20703021312y5f7aa228i5d1c84a8e9ea5676@mail.gmail.com> <20070303111427.GB16944@xi.wantstofly.org> <20070303113305.GB10515@flint.arm.linux.org.uk> <20070321221134.GA22497@xi.wantstofly.org> <tnxlkhpgslz.fsf@arm.com> <16051.1174657433@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Mar 2007 11:29:10 -0400
+Date: Fri, 23 Mar 2007 16:29:13 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Phy Prabab <phyprabab@gmail.com>, neilb@suse.de
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Subject: Re: Opps in 2.6.21-rc4 nfsd
+Message-ID: <20070323152913.GH752@stusta.de>
+References: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <16051.1174657433@redhat.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, 2007 at 01:43:53PM +0000, David Howells wrote:
-
-> > [ background: On ARM, SMP synchronisation does need barriers but device
-> >   synchronisation does not.  The question is that given this, whether
-> >   mb() and friends can be NOPs on ARM or not (i.e. whether mb() is
-> >   supposed to sync against other CPUs or not, or whether only smp_mb()
-> >   can be used for this.)  ]
+On Thu, Mar 22, 2007 at 12:24:12PM -0700, Phy Prabab wrote:
+> Hello,
 > 
-> Hmmmm...
+> I have a recent oopps on a small file server I have running.  The
+> machine in question is a dual, dual core AMD Opteron 2.2GHz w/4G RAM,
+> 3Ware 9650SE (14 drive RAID 10), using XFS, LVM2 (latest), exported
+> via knfsd.  Kernel is 2.6.21-rc4 64b.  Here is the bt:
 > 
-> I see your problem.  I think the right way to deal with this is to get
-> rid of mb(), rmb(), wmb() and read_barrier_depends() and replace them
-> with io_mb(), io_rmb(), ...
-
-There's actually three different cases of interest on ARM:
-1. direct-mapped and vmalloc()ed kernel memory
-2. coherent DMA memory
-3. I/O memory (device mappings)
-
-smp_*() only make sense on (1).  Here, you'd want a hardware barrier
-on SMP systems, and just a compiler barrier on UP systems.
-
-For (2), most ARM systems use uncached mappings of kernel memory, which
-are strongly ordered, and you don't need hardware barriers.  However,
-some ARM systems are cache coherent, and they can use ordinary mappings
-for (2) (i.e. kmalloc), _but_, such ordinary mappings are weakly ordered,
-and so on those systems, you _would_ need hardware barriers for (2).
-
-For (3), Device memory (i.e. I/O mappings) are strongly ordered on all
-ARM platforms.
-
-(And of course, then there's the synchronisation issues _between_ the
-different mapping types.)
-
-Anyway, we could split the barrier types into three groups, or even
-more groups (I bet that on, say, ia64, there's at least a couple more
-different scenarios of interest), however, I'm really worried that the
-Average Joe Driver Writer's head is just going to explode.
-
-
-> > [4] says that mandatory barriers (i.e. from [3]: mb(), wmb(), rmb(),
-> > read_barrier_depends()) SHOULD not be used to control SMP effects, but
-> > it does not say that they MUST not.
+> Mar 22 12:09:01 rcfs05 kernel: Modules linked in:
+> Mar 22 12:09:01 rcfs05 kernel: Pid: 3102, comm: nfsd Not tainted
+> 2.6.21-rc4-smp #3
+> Mar 22 12:09:01 rcfs05 kernel: RIP: 0010:[<ffffffff80350613>]
+> [<ffffffff80350613>] fh_compose+0x3e3/0x4d0
+> Mar 22 12:09:01 rcfs05 kernel: RSP: 0018:ffff8101197fdd70  EFLAGS: 00010297
+> Mar 22 12:09:01 rcfs05 kernel: RAX: 0000000000000006 RBX:
+> 000000000ee00004 RCX: 0000000000000000
+> Mar 22 12:09:01 rcfs05 kernel: RDX: 0000000000000018 RSI:
+> ffff81011975a940 RDI: 0000000000000080
+> Mar 22 12:09:01 rcfs05 kernel: RBP: 0000000000000001 R08:
+> 00000000ffffffff R09: 00002ba24f06ca50
+> Mar 22 12:09:01 rcfs05 kernel: R10: ffff81011975a808 R11:
+> ffffffff8022f500 R12: ffff81011975a938
+> Mar 22 12:09:01 rcfs05 kernel: R13: 0000000000000006 R14:
+> ffff81010eaab0c0 R15: ffff8100cc714940
+> Mar 22 12:09:01 rcfs05 kernel: FS:  00002b020c71b6d0(0000)
+> GS:ffff81011dcf56c0(0000) knlGS:0000000000000000
+> Mar 22 12:09:01 rcfs05 kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 
+> 000000008005003b
+> Mar 22 12:09:01 rcfs05 kernel: CR2: 0000000000000000 CR3:
+> 00000001173d1000 CR4: 00000000000006e0
+> Mar 22 12:09:01 rcfs05 kernel: Process nfsd (pid: 3102, threadinfo
+> ffff8101197fc000, task ffff81011b7ef020)
+> Mar 22 12:09:01 rcfs05 kernel: Stack:  ffff81010fa7b868
+> ffffffff80239d8a 0000000000000286 ffff810111aee5e8
+> Mar 22 12:09:01 rcfs05 kernel:  ffff810105af2890 ffff81011975a808
+> ffff810105af2890 000000000eaab0c0
+> Mar 22 12:09:01 rcfs05 kernel:  ffff810105af2890 ffff81011975a808
+> ffff810105af2890 000000000000000a
+> Mar 22 12:09:01 rcfs05 kernel: Call Trace:
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80239d8a>] 
+> __lookup_hash+0x7a/0x160
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff803547a5>] nfsd_lookup+0x435/0x4d0
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8035aaa8>]
+> nfsd3_proc_lookup+0xe8/0x110
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034d69d>] 
+> nfsd_dispatch+0xfd/0x1f0
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80608094>] svc_process+0x3e4/0x730
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8026bbf2>] __down_read+0x12/0xa2
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034dd00>] nfsd+0x1a0/0x2d0
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80264f38>] child_rip+0xa/0x12
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034db60>] nfsd+0x0/0x2d0
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80264f2e>] child_rip+0x0/0x12
+> Mar 22 12:09:01 rcfs05 kernel:
+> Mar 22 12:09:01 rcfs05 kernel:
+> Mar 22 12:09:01 rcfs05 kernel: Code: 48 8b 01 ba 10 00 00 00 bf 10 00
+> 00 00 48 89 06 48 8b 41 08
+> Mar 22 12:09:01 rcfs05 kernel: RIP  [<ffffffff80350613>] 
+> fh_compose+0x3e3/0x4d0
+> Mar 22 12:09:01 rcfs05 kernel:  RSP <ffff8101197fdd70>
+> Mar 22 12:09:01 rcfs05 kernel: CR2: 0000000000000000
 > 
-> As it stands, mb() is a superset of smp_mb(), and rmb() of smp_rmb(),
-> etc.,
-
-Not (anymore) on ARM:
-
-	http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9623b3732d11b0a18d9af3419f680d27ea24b014
-
-The question is whether this change was correct.
-
-
-> so, yes, currently, mb() implies smp_mb().  However, mb() shouldn't
-> be used if smb_mb() is sufficient as that may impact performance on
-> a UP system.
-
-There's two different statements that can be made about mb():
-
-1. You shouldn't use mb() to synchronise with other CPUs as that is
-   unnecessarily slow.
-
-2. You must not use mb() to synchronise with other CPUs as that is
-   wrong.
-
-Which is it, (1) or (2)?  The memory-barriers.txt document confuses
-these two issues, and you confuse these two issues, but there is a
-_fundamental_ _semantic_ _difference_ between these two statements.
-Let's not confuse them.
-
-
-> Really, mb() should only be used with respect to I/O.
-
-OK.  Can we clarify the docs on this point, please?
-
-
-> > > The memory-barriers.txt doc says that smp_* must be used for the SMP
-> > > case.
-> > 
-> > The exact wording is:
-> > 
-> > 	[!] Note that SMP memory barriers _must_ be used to control the
-> > 	ordering of references to shared memory on SMP systems, though
-> > 	the use of locking instead is sufficient.
-> > 
-> > This can IMHO be interpreted in two ways:
-> > 1. If you want to control ordering of references to shared memory on
-> >    SMP systems, you must use SMP memory barriers and not any other kind
-> >    of memory barrier.
+> Once this oops happens, the machine is still usable, however NFS
+> crawls to a halt (in fact one of the machines with a mount point of
+> this machine, failed to respond anymore - I assume that thread is the
+> one that ooops'ed).
 > 
-> If the shared memory is purely an inter-CPU effect, yes.  If the shared
-> memory is actually a device with side effects, then I/O safe memory
-> barriers are required - mb() and co.  Note that there must _also_ be
-> safety wrt to other CPUs in the system, as other CPUs may also try to
-> access the device.
-
-I was not making any statement, I was just giving two possible
-interpretations of the above-quoted snippet from memory-barriers.txt.
-
-Yes, I'm aware of the issues you mention, and yes, all the other
-necessary guarantees are provided on the ARM platform.
+> Any more information or debugging, please let me know.
 
 
-> > 2. If you want to control ordering of references to shared memory on
-> >    SMP systems, you must use memory barriers, and the SMP memory barrier
-> >    is the most appropriate barrier type to use.
-> 
-> You may use locking instead to control inter-CPU effects.  Locks imply
-> one-way permeable SMP-class memory barriers.
-
-Again, I was not trying to make a statement here, just giving a
-possible interpretation of a statement in memory-barriers.txt.
+Does it work with kernel 2.6.20?
 
 
-> > I'm thinking that [2] is what was intended.  [1] doesn't seem
-> > consistent with the rest of the document, but if [1] _is_ what
-> > is what was intended, we're off the hook and mb() and friends
-> > can be NOPs on ARM.  (But it'd probably still need a thorough
-> > audit... :-/ )
-> 
-> I think the best way to do an audit would be to make mb() and co.
-> deprecated, pending obsolete, and to replace them with io_mb() and
-> co.  That way people would have to eyeball any usages of mb() and
-> co.
+> TIA!
+> Phy
 
-Sounds OK to me.  Then again, I have an idea of what all the different
-types of barriers do.. Joe Driver Writer might not.
+cu
+Adrian
 
+-- 
 
-> > > This means that if code uses mb() to control SMP sharing, it is
-> > > broken.
-> > 
-> > I'm not so sure.
-> 
-> If it's _purely_ to control inter-CPU SMP sharing, then yes, it's
-> broken.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Bah.  Until the docs are changed to be utterly and unambiguously
-clear on this point, that's just rubbish.
-
-
-cheers,
-Lennert
