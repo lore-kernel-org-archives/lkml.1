@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945896AbXCWOu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945905AbXCWOvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945896AbXCWOu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 10:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945908AbXCWOu7
+	id S1945905AbXCWOvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 10:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945916AbXCWOvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 10:50:59 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:55853 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945896AbXCWOu5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 10:50:57 -0400
-Message-ID: <4603E85B.4030901@hitachi.com>
-Date: Fri, 23 Mar 2007 23:46:51 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Organization: Systems Development Lab., Hitachi, Ltd., Japan
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>
-Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       SystemTAP <systemtap@sources.redhat.com>,
-       Satoshi Oshima <soshima@redhat.com>, Hideo Aoki <haoki@redhat.com>,
-       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: [RFC][Patch 3/4] jprobe fast unregisteration
-References: <4603E7A4.50300@hitachi.com>
-In-Reply-To: <4603E7A4.50300@hitachi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 23 Mar 2007 10:51:16 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:36105 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945905AbXCWOvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 10:51:14 -0400
+Date: Fri, 23 Mar 2007 15:51:15 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Tomas M <tomas@slax.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] [bugfix] loop.c
+Message-Id: <20070323155115.89f86b3b.dada1@cosmosbay.com>
+In-Reply-To: <Pine.LNX.4.64.0703231522200.5030@twin.jikos.cz>
+References: <4603DE86.1090009@slax.org>
+	<20070323151956.1ac6a47b.dada1@cosmosbay.com>
+	<Pine.LNX.4.64.0703231522200.5030@twin.jikos.cz>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 23 Mar 2007 15:25:23 +0100 (CET)
+Jiri Kosina <jikos@jikos.cz> wrote:
 
-This patch introduces unregister_jprobe_fast() for jprobe.
+> On Fri, 23 Mar 2007, Eric Dumazet wrote:
+> 
+> > -	if (max_loop < 1 || max_loop > 256) {
+> > -		printk(KERN_WARNING "loop: invalid max_loop (must be between"
+> > -				    " 1 and 256), using default (8)\n");
+> > +	if (max_loop < 1) {
+> > +		printk(KERN_WARNING "loop: invalid max_loop (must be > 1)"
+> > +				    ", using default (8)\n");
+> >  		max_loop = 8;
+> >  	}
+> [...]
+> > +	loop_dev = kmalloc(max_loop * sizeof(struct loop_device *), GFP_KERNEL);
+> > +	if (!loop_dev) {
+> > +		loop_dev = vmalloc(max_loop * sizeof(struct loop_device *));
+> > +		if (!loop_dev)
+> > +			goto out_mem;
+> > +		loop_dev_vmalloced = 1;
+> >  	}
+> 
+> Why did you remove the upper bound check for max_loop value? Now you 
+> effectively allow to max_loop * sizeof(struct loop_device *) to overflow, 
+> when passed value of max_loop which is large enough. Or am I just blind?
 
-Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Yes, I forgot to change this, but the new limit was 16384 in my mind
 
----
- This patch introduces unregister_jprobe_fast() for jprobe.
-
- include/linux/kprobes.h |   12 +++++++++++-
- kernel/kprobes.c        |    6 ------
- 2 files changed, 11 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.21-rc4-mm1/include/linux/kprobes.h
-===================================================================
---- linux-2.6.21-rc4-mm1.orig/include/linux/kprobes.h
-+++ linux-2.6.21-rc4-mm1/include/linux/kprobes.h
-@@ -198,7 +198,14 @@ void commit_kprobes(void);
- int setjmp_pre_handler(struct kprobe *, struct pt_regs *);
- int longjmp_break_handler(struct kprobe *, struct pt_regs *);
- int register_jprobe(struct jprobe *p);
--void unregister_jprobe(struct jprobe *p);
-+static inline void unregister_jprobe(struct jprobe *jp)
-+{
-+	unregister_kprobe(&jp->kp);
-+}
-+static inline void unregister_jprobe_fast(struct jprobe *jp)
-+{
-+	unregister_kprobe_fast(&jp->kp);
-+}
- void jprobe_return(void);
-
- int register_kretprobe(struct kretprobe *rp);
-@@ -242,6 +249,9 @@ static inline int register_jprobe(struct
- static inline void unregister_jprobe(struct jprobe *p)
- {
- }
-+static inline void unregister_jprobe_fast(struct jprobe *p)
-+{
-+}
- static inline void jprobe_return(void)
- {
- }
-Index: linux-2.6.21-rc4-mm1/kernel/kprobes.c
-===================================================================
---- linux-2.6.21-rc4-mm1.orig/kernel/kprobes.c
-+++ linux-2.6.21-rc4-mm1/kernel/kprobes.c
-@@ -797,11 +797,6 @@ int __kprobes register_jprobe(struct jpr
- 		(unsigned long)__builtin_return_address(0));
- }
-
--void __kprobes unregister_jprobe(struct jprobe *jp)
--{
--	unregister_kprobe(&jp->kp);
--}
--
- #ifdef ARCH_SUPPORTS_KRETPROBES
-
- /*
-@@ -1013,6 +1008,5 @@ EXPORT_SYMBOL_GPL(unregister_kprobe);
- EXPORT_SYMBOL_GPL(unregister_kprobe_fast);
- EXPORT_SYMBOL_GPL(commit_kprobes);
- EXPORT_SYMBOL_GPL(register_jprobe);
--EXPORT_SYMBOL_GPL(unregister_jprobe);
- EXPORT_SYMBOL_GPL(jprobe_return);
- EXPORT_SYMBOL_GPL(register_kretprobe);
+MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-16384)");
 
