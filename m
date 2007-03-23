@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbXCWGsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933764AbXCWGvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933455AbXCWGsb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 02:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbXCWGsb
+	id S933764AbXCWGvk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 02:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964769AbXCWGvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 02:48:31 -0400
-Received: from smtp001.mail.ukl.yahoo.com ([217.12.11.32]:23723 "HELO
-	smtp001.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933455AbXCWGs0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 02:48:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ur8R6pEPBOmuJQRwxoXy5SinecVvCUXiFpldkkutTmpEI32trNzCtIdp3vYUMuG3xhEJPYM6WtnsAO/FBULK3JDK5ncDsXj1dx0ofOM8FbFyo0CDT3S+0Qj9ryRGno5X7tyPn/GYo/baOtkKFCsC189WT+b2ljC1UAYsCWqN7qc=  ;
-X-YMail-OSG: pOPqehkVM1m_KcUTzCuK9FGlWj.LrmRB34qYumzfW.W3ci8gpO9rh4ZhYTZMHSl8aWrpSOCCsORa4SPpfz79MvVQV9zKrdrOXhy1r4y5PfJNyjKhd60fq6NYLOh2sKox9puH8fTmVaPE
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [ PATCH 4/7 ] UML - create as-layout.h
-Date: Fri, 23 Mar 2007 07:47:50 +0100
-User-Agent: KMail/1.9.5
-Cc: Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>
-References: <20070322160643.GA7012@c2.user-mode-linux.org>
-In-Reply-To: <20070322160643.GA7012@c2.user-mode-linux.org>
+	Fri, 23 Mar 2007 02:51:40 -0400
+Received: from mga02.intel.com ([134.134.136.20]:48262 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933764AbXCWGvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 02:51:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,317,1170662400"; 
+   d="scan'208"; a="214678261:sNHT19275144"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [PATCH 2.6.21-rc4 00/15] md raid5 acceleration and async_tx
+To: neilb@suse.de, christopher.leech@intel.com, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, yur@emcraft.com,
+       wd@denx.de, arjan@linux.intel.com, rmk+kernel@arm.linux.org.uk
+Date: Thu, 22 Mar 2007 23:51:37 -0700
+Message-ID: <20070323064856.15570.45052.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703230747.50306.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 March 2007 17:06, Jeff Dike wrote:
-> This patch moves all the the symbols defined in um_arch.c, which are
-> mostly boundaries between different parts of the UML kernel address
-> space, to a new header, as-layout.h.  There are also a few things here
-> which aren't really related to address space layout, but which don't
-> really have a better place to go.
-
-Hey, I do like _these_ patches! A nice picture in that header could then be 
-added (in the very future ;-) ), but at least one knows there are so much of 
-them. And user_util.h is no more!
-
-;-)
-
-Bye!
--- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
-Chiacchiera con i tuoi amici in tempo reale! 
- http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
+The following patch set implements the async_tx api and modifies
+md-raid5 to issue memory copies and xor calculations asynchronously.
+Async_tx is an extension of the existing dmaengine interface in the
+kernel.  Async_tx allows kernel code to utilize application specific
+acceleration engines when present and fall back to software routines
+otherwise.  Further details can be found in the individual patch
+headers. 
+ 
+The implementation has been in -mm since 2.6.20-mm1 and has been
+released in various forms to IOP users since 2.6.18
+(http://sourceforge.net/projects/xscaleiop).  This release includes
+cleanups to the iop-adma driver.  The md-raid5 patches are just rebased
+versions of the 2.6.20-rc5 release. 
+ 
+Given the release of an acceleration engine driver for another platform
+(440spe http://marc.info/?l=linux-raid&m=117400143317440&w=2), I feel
+more comfortable broaching the subject of 2.6.22 inclusion.
+ 
+Regards, 
+Dan
+ 
+ 
+Dan Williams (15):
+        dmaengine: add base support for the async_tx api
+        ARM: Add drivers/dma to arch/arm/Kconfig
+        dmaengine: add the async_tx api
+        md: add raid5_run_ops and support routines
+        md: use raid5_run_ops for stripe cache operations
+        md: move write operations to raid5_run_ops
+        md: move raid5 compute block operations to raid5_run_ops
+        md: move raid5 parity checks to raid5_run_ops
+        md: satisfy raid5 read requests via raid5_run_ops
+        md: use async_tx and raid5_run_ops for raid5 expansion operations
+        md: move raid5 io requests to raid5_run_ops
+        md: remove raid5 compute_block and compute_parity5
+        dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
+        iop13xx: Surface the iop13xx adma units to the iop-adma driver
+        iop3xx: Surface the iop3xx DMA and AAU units to the iop-adma driver
+ 
