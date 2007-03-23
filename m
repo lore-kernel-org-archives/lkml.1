@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422636AbXCWBQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934263AbXCWBZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422636AbXCWBQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 21:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422638AbXCWBQ0
+	id S934263AbXCWBZM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 21:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934257AbXCWBZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 21:16:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56278 "EHLO mx1.redhat.com"
+	Thu, 22 Mar 2007 21:25:11 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:57937 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422636AbXCWBQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 21:16:25 -0400
-Date: Thu, 22 Mar 2007 21:16:17 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Cestonaro, Thilo (external)" 
-	<Thilo.Cestonaro.external@fujitsu-siemens.com>,
-       Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
-Subject: Re: how can I touch softlockup watchdog on all cpus?
-Message-ID: <20070323011617.GB1367@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	"Cestonaro, Thilo (external)" <Thilo.Cestonaro.external@fujitsu-siemens.com>,
-	Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
-References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB6F2A@ABGEX01E.abg.fsc.net> <20070321164404.GF13218@redhat.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FB710B@ABGEX01E.abg.fsc.net> <75b66ecd0703220830wdb4a612u86c80e71d4918cc4@mail.gmail.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FEB060@ABGEX01E.abg.fsc.net> <75b66ecd0703220917w2fa7c6afs4817b689f8a2e98f@mail.gmail.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF04FEB0F5@ABGEX01E.abg.fsc.net> <4603075E.4090001@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4603075E.4090001@goop.org>
-User-Agent: Mutt/1.4.2.2i
+	id S934265AbXCWBZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 21:25:10 -0400
+Date: Fri, 23 Mar 2007 02:24:46 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Greg KH <greg@kroah.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sysfs q [was: sysfs ugly timer interface]
+In-Reply-To: <20070322152842.GA6054@kroah.com>
+Message-ID: <Pine.LNX.4.61.0703230221350.9555@yvahk01.tjqt.qr>
+References: <200703161230.03712.maximlevitsky@gmail.com> <200703161919.44458.lenb@kernel.org>
+ <200703180100.01889.maximlevitsky@gmail.com> <20070320115403.GA3983@ucw.cz>
+ <20070322152842.GA6054@kroah.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 03:46:54PM -0700, Jeremy Fitzhardinge wrote:
- > Cestonaro, Thilo (external) wrote:
- > > It's a condition of a customer of us, so I can't change it.
- > >
- > > But it happens not often that my part is used. So I thought there is a mechanism to disable or reset the watchdog
- > > because it is a legal pause for it. And there is one "touch_softlockup_watchdog()", that does what I want,
- > > BUT just for the current cpu. And so the watchdog blats from the other cpu.
- > >   
- > 
- > on_each_cpu(touch_softlockup_watchdog, NULL, 0, 0)?
 
-He wants to do this with interrupts off. on_each_cpu won't work in
-that situation.
+On Mar 22 2007 08:28, Greg KH wrote:
+>> 
+>> > root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered
+>> > lapic                F:0007 M:3(periodic) C: 1
+>> > hpet                 F:0003 M:1(shutdown) C: 0
+>> > lapic                F:0007 M:3(periodic) C: 0
+>> > root@MAIN:/home/maxim#   
+>> 
+>> Now... this file needs to die, before 2.6.21 is released. It tries to
+>> bring /proc-like parsing nightmare to sysfs. Kill it before it becomes
+>> part of stable ABI!
+>
+>Eeek!
 
- > Or patch the softlockup watchdog to add a way to temporarily disable it.
+Question regarding sysfs files: How would you do something like
+/proc/net/nf_conntrack with sysfs? Have directories named like 0000, 
+0001, 0002, ..?
 
-Seems pretty much the only way you could make this work.
 
-	Dave
-
+Jan
 -- 
-http://www.codemonkey.org.uk
