@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422820AbXCWMYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422850AbXCWM2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422820AbXCWMYP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 08:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422844AbXCWMYP
+	id S1422850AbXCWM2z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 08:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422847AbXCWM2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 08:24:15 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56380 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422841AbXCWMYO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 08:24:14 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Dave Hansen <hansendc@us.ibm.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       menage@google.com, Andrew Morton <akpm@linux-foundation.org>,
-       xemul@sw.ru
-Subject: Re: controlling mmap()'d vs read/write() pages
-References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>
-	<20070306140036.4e85bd2f.akpm@linux-foundation.org>
-	<45F3F581.9030503@sw.ru>
-	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
-	<20070312010039.GC21861@MAIL.13thfloor.at>
-	<1173724979.11945.103.camel@localhost.localdomain>
-	<20070312224129.GC21258@MAIL.13thfloor.at>
-	<20070312220439.677b4787.akpm@linux-foundation.org>
-	<1173806793.6680.44.camel@localhost.localdomain>
-	<20070313190931.1417c012@lxorguk.ukuu.org.uk>
-	<m1mz2enh0u.fsf@ebiederm.dsl.xmission.com>
-	<1174062660.8184.8.camel@localhost.localdomain>
-	<m1tzwlm33i.fsf@ebiederm.dsl.xmission.com>
-	<1174074412.8184.29.camel@localhost.localdomain>
-	<m1zm6ajvns.fsf@ebiederm.dsl.xmission.com>
-	<1174407335.26166.146.camel@localhost.localdomain>
-	<m13b3zmx4b.fsf@ebiederm.dsl.xmission.com>
-	<46036C54.6030502@yahoo.com.au>
-	<m1tzwc5kw6.fsf@ebiederm.dsl.xmission.com>
-	<4603B051.8000108@yahoo.com.au>
-Date: Fri, 23 Mar 2007 06:21:01 -0600
-In-Reply-To: <4603B051.8000108@yahoo.com.au> (Nick Piggin's message of "Fri,
-	23 Mar 2007 21:47:45 +1100")
-Message-ID: <m1hcsc5exe.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Fri, 23 Mar 2007 08:28:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57660 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422844AbXCWM2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 08:28:54 -0400
+Date: Fri, 23 Mar 2007 13:27:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [1/6] 2.6.21-rc4: known regressions
+Message-ID: <20070323122739.GA5178@elte.hu>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070318184908.GU752@stusta.de> <Pine.LNX.4.64.0703212023550.6730@woody.linux-foundation.org> <46020385.50301@yahoo.com.au> <Pine.LNX.4.64.0703220813340.6730@woody.linux-foundation.org> <1174612132.16068.114.camel@localhost.localdomain> <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
->> Would any of them work on a system on which every filesystem was on
->> ramfs, and there was no swap?  If not then they are not memory attacks
->> but I/O attacks.
->>
->> I completely concede that you can DOS the system with I/O if that is
->> not limited as well.
->>
->> My point is that is not a memory problem but a disk I/O problem which is
->> much easier to and cheaper to solve.  Disk I/O is fundamentally a slow
->> path which makes it hard to modify it in a way that negatively affects
->> system performance.
->>
->> I don't think with a memory RSS limit you can DOS the system in a way
->> that is purely about memory.  You have to pick a different kind of DOS
->> attack.
->
-> It can be done trivially without performing any IO or swap, yes.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Please give me a rough sketch of how to do so.
+> [ Ok, I think it's those timers again...
 
-Or is this about DOS'ing the system by getting the kernel to allocate
-a large number of data structures (struct file, struct inode, or the like)?
+agreed - this seems to be a genuine CONFIG_HIGH_RES_TIMERS=y bug. (which 
+has probably not been fixed since -rc4 either, we have no bugfix in this 
+area that could explain the expires_next==KTIME_MAX timer state visible 
+in SysRq-Q.)
 
-Eric
+there seems to be a trend in the reports: HT P4 CPUs.
+
+>   Ingo: let me just state how *happy* I am that I told you off when 
+>   you wanted to merge the hires timers and NO_HZ before 2.6.20 because 
+>   they were "stable". You were wrong, and 2.6.20 is at least in 
+>   reasonable shape. [...]
+
+yes - i was quite wrong pushing it so hard. (and doubly so given your 
+stated focus of making v2.6.20 a quiet release) Sorry :-/
+
+> [...] Now we just need to make sure that 2.6.21 will be too.. ]
+
+yeah - we are working hard on it.
+
+	Ingo
