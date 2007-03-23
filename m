@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932854AbXCWTOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbXCWTOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932854AbXCWTOV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932143AbXCWTOU
+	id S1753399AbXCWTOn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXCWTOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:14:20 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:43198 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753409AbXCWTOT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:14:19 -0400
-Date: Fri, 23 Mar 2007 20:14:28 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: request_queue_t depends on CONFIG_BLOCK
-Message-ID: <20070323191428.GA23413@aepfle.de>
-References: <20070322215234.GA13219@aepfle.de> <20070322215351.GA7216@infradead.org> <20070323001002.GA14583@aepfle.de> <200703231929.19406.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200703231929.19406.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 23 Mar 2007 15:14:43 -0400
+Received: from www.osadl.org ([213.239.205.134]:38616 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753399AbXCWTOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:14:41 -0400
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Emil Karlson <jkarlson@cc.hut.fi>
+In-Reply-To: <20070323185028.GR752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185028.GR752@stusta.de>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 20:22:03 +0100
+Message-Id: <1174677724.10840.328.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, Bartlomiej Zolnierkiewicz wrote:
+On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
+> Subject    : dynticks makes ksoftirqd1 use unreasonable amount of cpu time
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=8100
+> Submitter  : Emil Karlson <jkarlson@cc.hut.fi>
+> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> Status     : problem is being debugged
 
-> > Because it is needed in a few places.
-> 
-> Is there really any PPC64 specific code which needs <linux/ide.h>
-> (ppc_ide_md is used only by PPC32)?
+The problem is not reproducible on any of my machines.
 
-This is about CONFIG_BLOCK=n, not about arch/... Is all non-driver
-code which has to poke into ide code supposed to put an #ifdef
-CONFIG_IDE around #include <linux/ide.h>?
+Emil, is it still there with Linus latest ?
+
+	tglx
+
 
