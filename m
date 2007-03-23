@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992431AbXCWO40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992432AbXCWO5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992431AbXCWO40 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 10:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992434AbXCWO40
+	id S2992432AbXCWO5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 10:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992435AbXCWO5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 10:56:26 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45956 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992431AbXCWO4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 10:56:25 -0400
-Date: Fri, 23 Mar 2007 14:56:22 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Tomas M <tomas@slax.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] [bugfix] loop.c
-Message-ID: <20070323145622.GC4095@ftp.linux.org.uk>
-References: <4603DE86.1090009@slax.org> <20070323151956.1ac6a47b.dada1@cosmosbay.com> <20070323143605.GA4095@ftp.linux.org.uk> <20070323154809.238d8fe2.dada1@cosmosbay.com>
-Mime-Version: 1.0
+	Fri, 23 Mar 2007 10:57:17 -0400
+Received: from holomorphy.com ([66.93.40.71]:46508 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992434AbXCWO5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 10:57:16 -0400
+Date: Fri, 23 Mar 2007 07:57:07 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V4
+Message-ID: <20070323145707.GT2986@holomorphy.com>
+References: <20070323062843.19502.19827.sendpatchset@schroedinger.engr.sgi.com> <20070322223927.bb4caf43.akpm@linux-foundation.org> <Pine.LNX.4.64.0703222339560.19630@schroedinger.engr.sgi.com> <20070322234848.100abb3d.akpm@linux-foundation.org> <20070323112920.GR2986@holomorphy.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070323154809.238d8fe2.dada1@cosmosbay.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070323112920.GR2986@holomorphy.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, 2007 at 03:48:09PM +0100, Eric Dumazet wrote:
-> On Fri, 23 Mar 2007 14:36:05 +0000
-> Al Viro <viro@ftp.linux.org.uk> wrote:
-> 
-> > On Fri, Mar 23, 2007 at 03:19:56PM +0100, Eric Dumazet wrote:
-> > > I cooked the following patch (untested), feel free to test it.
-> > 
-> > Please, get the cleanup into saner shape.  This is too ugly.
-> 
-> out_mem:
->         while (nba--)
->                 blk_cleanup_queue(loop_dev[nba]->lo_queue);
->         while (nbl--) {
->                 put_disk(loop_dev[nbl]->lo_disk);
->                 kfree(loop_dev[nbl]);
->         }
->         if (loop_dev_vmalloced)
->                 vfree(loop_dev);
->         else
->                 kfree(loop_dev);
->         unregister_blkdev(LOOP_MAJOR, "loop");
-> 
-> 
-> What is ugly in this code ?
+On Thu, Mar 22, 2007 at 11:48:48PM -0800, Andrew Morton wrote:
+>> afacit that two-year-old, totally-different patch has nothing to do with my
+>> repeatedly-asked question.  It appears to be consolidating three separate
+>> quicklist allocators into one common implementation.
+>> In an attempt to answer my own question (and hence to justify the retention
+>> of this custom allocator) I did this:
+> [... patch changing allocator alloc()/free() to bare page allocations ...]
+>> but it crashes early in the page allocator (i386) and I don't see why.  It
+>> makes me wonder if we have a use-after-free which is hidden by the presence
+>> of the quicklist buffering or something.
 
-Your counters.  Two loops instead of one (no reason to allocate queues in
-a a separate loop).  vmalloc conditional on kmalloc failure.
+On Fri, Mar 23, 2007 at 04:29:20AM -0700, William Lee Irwin III wrote:
+> Sorry I flubbed the first message. Anyway this does mean something is
+> seriously wrong and needs to be debugged. Looking into it now.
+
+I know what's happening. I just need to catch the culprit.
+
+
+-- wli
