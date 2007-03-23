@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbXCVXp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbXCVXvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752347AbXCVXp2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 19:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXCVXp2
+	id S1752784AbXCVXvm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 19:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXCVXvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 19:45:28 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:13806 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752347AbXCVXp1 (ORCPT
+	Thu, 22 Mar 2007 19:51:41 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:44417 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752784AbXCVXvl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 19:45:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=kDImap8JBhYZdY7hD4QKY1fcYpVv9l1MocovnXsLQX9woKctnmWnaWtGYh4EvheGPLV34AYL/vlYUIRL+rvW4i3DBmNcisuEHv61wheO9cY+UhMpgDkiIAbw6kyOVgfJwnmnXWxi5JKImx1n5BWAl99FvN35kWkqxpfZerp2vpw=
-Message-ID: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com>
-Date: Thu, 22 Mar 2007 23:45:24 +0000
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Shaohua Li" <shaohua.li@intel.com>
-Subject: New format Intel microcode...
-Cc: jamagallon@ono.com, tigran@aivazian.fsnet.co.uk,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Thu, 22 Mar 2007 19:51:41 -0400
+Message-ID: <460324A7.3010604@vmware.com>
+Date: Thu, 22 Mar 2007 16:51:51 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dan Hecht <dhecht@vmware.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Akinobu Mita <mita@miraclelinux.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH RFC] Change softlockup watchdog to ignore stolen time
+References: <460311FA.6070400@goop.org>
+In-Reply-To: <460311FA.6070400@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Shao-hua,
+Jeremy Fitzhardinge wrote:
+> The softlockup watchdog is currently a nuisance in a virtual machine,
+> since the whole system could have the CPU stolen from it for a long
+> period of time.  While it would be unlikely for a guest domain to be
+> denied timer interrupts for over 10s, it could happen and any softlockup
+> message would be completely spurious.
+>   
 
-Is the tool you mentioned last June [1] available for splitting up the
-old firmware files to the new format (eg
-/lib/firmware/intel-ucode/06-0d-06), or are updates available from
-Intel (or otherwise) in this new format?
+No, it is not unlikely.  4-way SMP VMs idling exhibit this behavior with 
+NO_HZ or NO_IDLE_HZ because they get quiet enough to schedule nothing on 
+the APs.
 
-Thanks,
-  Dan
+And that can happen on native hardware as well.
 
---- [1]
+> Earlier I proposed that sched_clock() return time in unstolen
+> nanoseconds, which is how Xen and VMI currently implement it.  If the
+> softlockup watchdog uses sched_clock() to measure time, it would
+> automatically ignore stolen time, and therefore only report when the
+> guest itself locked up.  When running native, sched_clock() returns
+> real-time nanoseconds, so the behaviour would be unchanged.
+>
+> Does this seem sound?
+>
+> Also, softlockup.c's use of jiffies seems archaic now.  Should it be
+> converted to use timers?  Mightn't it report lockups just because there
+> was no timer event?
+>   
 
-http://lwn.net/Articles/189377/
--- 
-Daniel J Blueman
+This looks good to me, as a first order approximation.  But on native 
+hardware, with NO_HZ, this is just broken to begin with.  Perhaps we 
+should make SOFTLOCKUP depend on !NO_HZ.
+
+Zach
