@@ -1,104 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992600AbXCWWx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934324AbXCWW4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992600AbXCWWx2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 18:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992603AbXCWWx2
+	id S934324AbXCWW4P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 18:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934330AbXCWW4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 18:53:28 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:42902 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992600AbXCWWx1 (ORCPT
+	Fri, 23 Mar 2007 18:56:15 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:45512 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934324AbXCWW4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 18:53:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=x47VVf5sPUrQQFRzjfiklmVfvx13EtqrNAtiD5ewwAEpGtg4HIW0Befy69/nRhjXY
-	gvsHI+FXqhHWd/ug9CtAg==
-Message-ID: <b040c32a0703231553k6e1790c0v22de49af2e437675@mail.gmail.com>
-Date: Fri, 23 Mar 2007 15:53:17 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-Subject: Re: [patch 1/2] hugetlb: add resv argument to hugetlb_file_setup
-Cc: "Adam Litke" <agl@us.ibm.com>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <29495f1d0703231548k377e3f8ds5f2ae529c34e4380@mail.gmail.com>
+	Fri, 23 Mar 2007 18:56:14 -0400
+Message-ID: <06e401c76d9e$f0920430$eeeea8c0@aldipc>
+From: "roland" <devzero@web.de>
+To: "Oliver Neukum" <oneukum@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <bunk@stusta.de>
+References: <052c01c76c62$78f7f7a0$eeeea8c0@aldipc> <200703221035.19832.oneukum@suse.de>
+Subject: Re: [RFC] - Schedule mcdx for removal ? was:  warning: #warning You have not edited mcdx.h
+Date: Fri, 23 Mar 2007 23:59:40 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b040c32a0703231542r77030723o214255a5fa591dec@mail.gmail.com>
-	 <29495f1d0703231548k377e3f8ds5f2ae529c34e4380@mail.gmail.com>
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 8bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2869
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/23/07, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
-> Comment needs updating too.
+why not?
 
-Thanks.  How could I miss that :-(
+why should unused code be maintained to death ?
 
-updated patch:
+if there are discussions about removing features people are still using, i 
+think it should be legitimate to discuss about removing drivers nobody needs 
+anymore....
+
+----- Original Message ----- 
+From: "Oliver Neukum" <oneukum@suse.de>
+To: "roland" <devzero@web.de>
+Cc: <linux-kernel@vger.kernel.org>; <bunk@stusta.de>
+Sent: Thursday, March 22, 2007 10:35 AM
+Subject: Re: [RFC] - Schedule mcdx for removal ? was: warning: #warning You 
+have not edited mcdx.h
 
 
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 8c718a3..981886f 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -734,7 +734,7 @@ static int can_do_hugetlb_shm(void)
- 			can_do_mlock());
- }
+Am Donnerstag, 22. März 2007 10:14 schrieb roland:
+> i wonder if there still exist any of those devices in functional state in
+> this world, at least not attached to some system being able to boot
+> 2.6.21+ - so, maybe mcdx driver is something for
+> Documentation/feature-removal-schedule.txt , being removed in 2.6.25 or so
+> after being announced for some time (i.e. driver telling "i will be gone
+> soon, go spend those $15 to get a new drive") ?
 
--struct file *hugetlb_zero_setup(size_t size)
-+struct file *hugetlb_file_setup(size_t size, int resv)
- {
- 	int error = -ENOMEM;
- 	struct file *file;
-@@ -771,7 +771,7 @@ struct file *hugetlb_zero_setup(size_t s
- 		goto out_file;
+Why? For the sake of sheer removal?
 
- 	error = -ENOMEM;
--	if (hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
-+	if (resv && hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
- 		goto out_inode;
+Regards
+Oliver
+-- 
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+This signature is a legal requirement 
 
- 	d_instantiate(dentry, inode);
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 3f3e7a6..55cccd8 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -163,7 +163,7 @@ static inline struct hugetlbfs_sb_info *
-
- extern const struct file_operations hugetlbfs_file_operations;
- extern struct vm_operations_struct hugetlb_vm_ops;
--struct file *hugetlb_zero_setup(size_t);
-+struct file *hugetlb_file_setup(size_t, int);
- int hugetlb_get_quota(struct address_space *mapping);
- void hugetlb_put_quota(struct address_space *mapping);
-
-@@ -185,7 +185,7 @@ #else /* !CONFIG_HUGETLBFS */
-
- #define is_file_hugepages(file)		0
- #define set_file_hugepages(file)	BUG()
--#define hugetlb_zero_setup(size)	ERR_PTR(-ENOSYS)
-+#define hugetlb_file_setup(size, resv)	ERR_PTR(-ENOSYS)
-
- #endif /* !CONFIG_HUGETLBFS */
-
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 4fefbad..81c8344 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -365,8 +365,8 @@ static int newseg (struct ipc_namespace
- 	}
-
- 	if (shmflg & SHM_HUGETLB) {
--		/* hugetlb_zero_setup takes care of mlock user accounting */
--		file = hugetlb_zero_setup(size);
-+		/* hugetlb_file_setup takes care of mlock user accounting */
-+		file = hugetlb_file_setup(size, 1);
- 		shp->mlock_user = current->user;
- 	} else {
- 		int acctflag = VM_ACCOUNT;
