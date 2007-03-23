@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933764AbXCWGvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbXCWGvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933764AbXCWGvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 02:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964769AbXCWGvk
+	id S933793AbXCWGvw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 02:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933812AbXCWGvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 02:51:40 -0400
-Received: from mga02.intel.com ([134.134.136.20]:48262 "EHLO mga02.intel.com"
+	Fri, 23 Mar 2007 02:51:51 -0400
+Received: from mga09.intel.com ([134.134.136.24]:22072 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933764AbXCWGvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 02:51:39 -0400
+	id S933798AbXCWGvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 02:51:49 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,317,1170662400"; 
-   d="scan'208"; a="214678261:sNHT19275144"
+   d="scan'208"; a="62774540:sNHT16788717"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 2.6.21-rc4 00/15] md raid5 acceleration and async_tx
+Subject: [PATCH 2.6.21-rc4 02/15] ARM: Add drivers/dma to arch/arm/Kconfig
 To: neilb@suse.de, christopher.leech@intel.com, linux-raid@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, yur@emcraft.com,
        wd@denx.de, arjan@linux.intel.com, rmk+kernel@arm.linux.org.uk
-Date: Thu, 22 Mar 2007 23:51:37 -0700
-Message-ID: <20070323064856.15570.45052.stgit@dwillia2-linux.ch.intel.com>
+Date: Thu, 22 Mar 2007 23:51:47 -0700
+Message-ID: <20070323065147.15570.56413.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20070323064856.15570.45052.stgit@dwillia2-linux.ch.intel.com>
+References: <20070323064856.15570.45052.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,42 +29,22 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch set implements the async_tx api and modifies
-md-raid5 to issue memory copies and xor calculations asynchronously.
-Async_tx is an extension of the existing dmaengine interface in the
-kernel.  Async_tx allows kernel code to utilize application specific
-acceleration engines when present and fall back to software routines
-otherwise.  Further details can be found in the individual patch
-headers. 
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+
+ arch/arm/Kconfig |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index e7baca2..74077e3 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -997,6 +997,8 @@ source "drivers/mmc/Kconfig"
  
-The implementation has been in -mm since 2.6.20-mm1 and has been
-released in various forms to IOP users since 2.6.18
-(http://sourceforge.net/projects/xscaleiop).  This release includes
-cleanups to the iop-adma driver.  The md-raid5 patches are just rebased
-versions of the 2.6.20-rc5 release. 
+ source "drivers/rtc/Kconfig"
  
-Given the release of an acceleration engine driver for another platform
-(440spe http://marc.info/?l=linux-raid&m=117400143317440&w=2), I feel
-more comfortable broaching the subject of 2.6.22 inclusion.
++source "drivers/dma/Kconfig"
++
+ endmenu
  
-Regards, 
-Dan
- 
- 
-Dan Williams (15):
-        dmaengine: add base support for the async_tx api
-        ARM: Add drivers/dma to arch/arm/Kconfig
-        dmaengine: add the async_tx api
-        md: add raid5_run_ops and support routines
-        md: use raid5_run_ops for stripe cache operations
-        md: move write operations to raid5_run_ops
-        md: move raid5 compute block operations to raid5_run_ops
-        md: move raid5 parity checks to raid5_run_ops
-        md: satisfy raid5 read requests via raid5_run_ops
-        md: use async_tx and raid5_run_ops for raid5 expansion operations
-        md: move raid5 io requests to raid5_run_ops
-        md: remove raid5 compute_block and compute_parity5
-        dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
-        iop13xx: Surface the iop13xx adma units to the iop-adma driver
-        iop3xx: Surface the iop3xx DMA and AAU units to the iop-adma driver
- 
+ source "fs/Kconfig"
