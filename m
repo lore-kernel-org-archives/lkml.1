@@ -1,140 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992443AbXCWPAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992450AbXCWPEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992443AbXCWPAn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 11:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992439AbXCWPAn
+	id S2992450AbXCWPEA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 11:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992449AbXCWPEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 11:00:43 -0400
-Received: from www.osadl.org ([213.239.205.134]:41678 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992426AbXCWPAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 11:00:41 -0400
-Subject: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>,
-       Len Brown <len.brown@intel.com>
-In-Reply-To: <1174650969.10840.274.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070318184908.GU752@stusta.de>
-	 <Pine.LNX.4.64.0703212023550.6730@woody.linux-foundation.org>
-	 <46020385.50301@yahoo.com.au>
-	 <Pine.LNX.4.64.0703220813340.6730@woody.linux-foundation.org>
-	 <1174612132.16068.114.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org>
-	 <20070323114223.GA23483@elte.hu>
-	 <1174650969.10840.274.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 23 Mar 2007 16:08:01 +0100
-Message-Id: <1174662481.10840.292.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Mar 2007 11:04:00 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:54280 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992450AbXCWPD7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 11:03:59 -0400
+Date: Fri, 23 Mar 2007 15:03:57 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Ken Chen <kenchen@google.com>
+Cc: Adam Litke <agl@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] rfc: introduce /dev/hugetlb
+In-Reply-To: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0703231457360.4133@skynet.skynet.ie>
+References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 12:56 +0100, Thomas Gleixner wrote:
-> We should revert that patch and add a "trust_lapic_timer_in_c2"
-> commandline option instead. So we are on the safe side.
+On Fri, 23 Mar 2007, Ken Chen wrote:
 
-Here is a patch which applies after reverting 
-25496caec111481161e7f06bbfa12a533c43cc6f
+> On 3/21/07, Adam Litke <agl@us.ibm.com> wrote:
+>> The main reason I am advocating a set of pagetable_operations is to
+>> enable the development of a new hugetlb interface.  During the hugetlb
+>> BOFS at OLS last year, we talked about a character device that would
+>> behave like /dev/zero.  Many of the people were talking about how they
+>> just wanted to create MAP_PRIVATE hugetlb mappings without all the fuss
+>> about the hugetlbfs filesystem.  /dev/zero is a familiar interface for
+>> getting anonymous memory so bringing that model to huge pages would make
+>> programming for anonymous huge pages easier.
+>
+> I think we have enough infrastructure currently in hugetlbfs to
+> implement what Adam wants for something like a /dev/hugetlb char
+> device (except we can't afford to have a zero hugetlb page since it
+> will be too costly on some arch).
+>
+> I really like the idea of having something similar to /dev/zero for
+> hugetlb page.  So I coded it up on top of existing hugetlbfs.  The
+> core change is really small and half of the patch is really just
+> moving things around.  I think this at least can partially fulfill the
+> goal.
+>
 
-It turned out that it is almost impossible to trust ACPI, BIOS & Co.
-regarding the C states. This was the reason to switch the local apic
-timer off in C2 state already. OTOH there are sane and well behaving
-systems, which get punished by that decision.
+Good stuff. Lets take a look
 
-Allow the user to confirm that the local apic timer is trustworthy in C2
-state. This keeps the default behaviour on the safe side.
+>
+> Signed-off-by: Ken Chen <kenchen@google.com>
+>
+> diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+> index f5c160c..56e58f5 100644
+> --- a/drivers/char/mem.c
+> +++ b/drivers/char/mem.c
+> @@ -27,6 +27,7 @@
+> #include <linux/bootmem.h>
+> #include <linux/pipe_fs_i.h>
+> #include <linux/pfn.h>
+> +#include <linux/hugetlb.h>
+>
+> #include <asm/uaccess.h>
+> #include <asm/io.h>
+> @@ -872,6 +873,13 @@ static const struct file_operations oldmem_fops = {
+> };
+> #endif
+>
+> +#ifdef CONFIG_HUGETLBFS
+> +static const struct file_operations hugetlb_fops = {
+> +	.mmap			= hugetlb_zero_setup,
+> +	.get_unmapped_area	= hugetlb_get_unmapped_area,
+> +};
+> +#endif
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Ok, so we'd behave similar to shared memory and use the internal mount. 
+Seems reasonable
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e39ab0c..09640a8 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -780,6 +780,9 @@ and is between 256 and 4096 characters. It is defined in the file
- 	lapic		[IA-32,APIC] Enable the local APIC even if BIOS
- 			disabled it.
- 
-+	lapic_timer_c2_ok	[IA-32,APIC] trust the local apic timer in
-+			C2 power state.
-+
- 	lasi=		[HW,SCSI] PARISC LASI driver for the 53c700 chip
- 			Format: addr:<io>,irq:<irq>
- 
-diff --git a/arch/i386/kernel/apic.c b/arch/i386/kernel/apic.c
-index 244c3fe..e884152 100644
---- a/arch/i386/kernel/apic.c
-+++ b/arch/i386/kernel/apic.c
-@@ -64,6 +64,9 @@ static int enable_local_apic __initdata = 0;
- static int local_apic_timer_verify_ok;
- /* Disable local APIC timer from the kernel commandline or via dmi quirk */
- static int local_apic_timer_disabled;
-+/* Local APIC timer works in C2 */
-+int local_apic_timer_c2_ok;
-+EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
- 
- /*
-  * Debug level, exported for io_apic.c
-@@ -1232,6 +1235,13 @@ static int __init parse_disable_lapic_timer(char *arg)
- }
- early_param("nolapic_timer", parse_disable_lapic_timer);
- 
-+static int __init parse_lapic_timer_c2_ok(char *arg)
-+{
-+	local_apic_timer_c2_ok = 1;
-+	return 0;
-+}
-+early_param("lapic_timer_c2_ok", parse_lapic_timer_c2_ok);
-+
- static int __init apic_set_verbosity(char *str)
- {
- 	if (strcmp("debug", str) == 0)
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 6077300..cdf7894 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -268,6 +268,7 @@ static void acpi_timer_check_state(int state, struct acpi_processor *pr,
- 				   struct acpi_processor_cx *cx)
- {
- 	struct acpi_processor_power *pwr = &pr->power;
-+	u8 type = local_apic_timer_c2_ok ? ACPI_STATE_C3 : ACPI_STATE_C2;
- 
- 	/*
- 	 * Check, if one of the previous states already marked the lapic
-@@ -276,7 +277,7 @@ static void acpi_timer_check_state(int state, struct acpi_processor *pr,
- 	if (pwr->timer_broadcast_on_state < state)
- 		return;
- 
--	if (cx->type >= ACPI_STATE_C2)
-+	if (cx->type >= type)
- 		pr->power.timer_broadcast_on_state = state;
- }
- 
-diff --git a/include/asm-i386/apic.h b/include/asm-i386/apic.h
-index cc6b165..a19810a 100644
---- a/include/asm-i386/apic.h
-+++ b/include/asm-i386/apic.h
-@@ -117,6 +117,7 @@ extern void enable_NMI_through_LVT0 (void * dummy);
- #define ARCH_APICTIMER_STOPS_ON_C3	1
- 
- extern int timer_over_8254;
-+extern int local_apic_timer_c2_ok;
- 
- #else /* !CONFIG_X86_LOCAL_APIC */
- static inline void lapic_shutdown(void) { }
+> +
+> static ssize_t kmsg_write(struct file * file, const char __user * buf,
+> 			  size_t count, loff_t *ppos)
+> {
+> @@ -939,6 +947,11 @@ static int memory_open(struct inode *
+> 			filp->f_op = &oldmem_fops;
+> 			break;
+> #endif
+> +#ifdef CONFIG_HUGETLBFS
+> +		case 13:
+> +			filp->f_op = &hugetlb_fops;
+> +			break;
+> +#endif
+> 		default:
+> 			return -ENXIO;
+> 	}
+> @@ -971,6 +984,9 @@ static const struct {
+> #ifdef CONFIG_CRASH_DUMP
+> 	{12,"oldmem",    S_IRUSR | S_IWUSR | S_IRGRP, &oldmem_fops},
+> #endif
+> +#ifdef CONFIG_HUGETLBFS
+> +	{13, "hugetlb",S_IRUGO | S_IWUGO,	    &hugetlb_fops},
+> +#endif
+> };
+>
+> static struct class *mem_class;
+> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+> index 8c718a3..af24664 100644
+> --- a/fs/hugetlbfs/inode.c
+> +++ b/fs/hugetlbfs/inode.c
+> @@ -97,12 +97,7 @@ out:
+> /*
+> * Called under down_write(mmap_sem).
+> */
+> -
+> -#ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+> -unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long 
+> addr,
+> -		unsigned long len, unsigned long pgoff, unsigned long flags);
+> -#else
+> -static unsigned long
+> +unsigned long
+> hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+> 		unsigned long len, unsigned long pgoff, unsigned long flags)
 
+What is going on here? Why do arches not get to specify a 
+get_unmapped_area any more?
 
+> {
+> @@ -150,7 +145,6 @@ full_search:
+> 		addr = ALIGN(vma->vm_end, HPAGE_SIZE);
+> 	}
+> }
+> -#endif
+>
+> /*
+> * Read a page. Again trivial. If it didn't already exist
+> @@ -734,7 +728,7 @@ static int can_do_hugetlb_shm(void)
+> 			can_do_mlock());
+> }
+>
+> -struct file *hugetlb_zero_setup(size_t size)
+> +struct file *hugetlb_file_setup(size_t size, int resv)
+> {
+> 	int error = -ENOMEM;
+> 	struct file *file;
+> @@ -771,7 +765,7 @@ struct file *hugetlb_zero_setup(size_t size)
+> 		goto out_file;
+>
+> 	error = -ENOMEM;
+> -	if (hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
+> +	if (resv && hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
+> 		goto out_inode;
+>
+
+This looks like it should be a separate patch altogether. At first glance, 
+it seems reasonable enough - just not jammed in with a char device.
+
+> 	d_instantiate(dentry, inode);
+> @@ -795,6 +789,18 @@ out_shm_unlock:
+> 	return ERR_PTR(error);
+> }
+>
+> +int hugetlb_zero_setup(struct file *file, struct vm_area_struct *vma)
+> +{
+> +	file = hugetlb_file_setup(vma->vm_end - vma->vm_start, 0);
+> +	if (IS_ERR(file))
+> +		return PTR_ERR(file);
+> +
+> +	if (vma->vm_file)
+> +		fput(vma->vm_file);
+> +	vma->vm_file = file;
+> +	return hugetlbfs_file_mmap(file, vma);
+> +}
+> +
+> static int __init init_hugetlbfs_fs(void)
+> {
+> 	int error;
+> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+> index 3f3e7a6..d2a2190 100644
+> --- a/include/linux/hugetlb.h
+> +++ b/include/linux/hugetlb.h
+> @@ -163,9 +163,12 @@ static inline struct hugetlbfs_sb_info *
+>
+> extern const struct file_operations hugetlbfs_file_operations;
+> extern struct vm_operations_struct hugetlb_vm_ops;
+> -struct file *hugetlb_zero_setup(size_t);
+> +struct file *hugetlb_file_setup(size_t, int);
+> +int hugetlb_zero_setup(struct file *, struct vm_area_struct *);
+> int hugetlb_get_quota(struct address_space *mapping);
+> void hugetlb_put_quota(struct address_space *mapping);
+> +unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long 
+> addr,
+> +		unsigned long len, unsigned long pgoff, unsigned long flags);
+>
+
+Still not clear why hugetlb_get_unmapped_area() is moving around.
+
+> static inline int is_file_hugepages(struct file *file)
+> {
+> @@ -185,7 +188,7 @@ static inline void set_file_hugepages(struct file *file)
+>
+> #define is_file_hugepages(file)		0
+> #define set_file_hugepages(file)	BUG()
+> -#define hugetlb_zero_setup(size)	ERR_PTR(-ENOSYS)
+> +#define hugetlb_file_setup(size, resv)	ERR_PTR(-ENOSYS)
+>
+> #endif /* !CONFIG_HUGETLBFS */
+>
+> diff --git a/ipc/shm.c b/ipc/shm.c
+> index 4fefbad..c64643f 100644
+> --- a/ipc/shm.c
+> +++ b/ipc/shm.c
+> @@ -366,7 +366,7 @@ static int newseg (struct ipc_namespace *ns
+>
+> 	if (shmflg & SHM_HUGETLB) {
+> 		/* hugetlb_zero_setup takes care of mlock user accounting */
+> -		file = hugetlb_zero_setup(size);
+> +		file = hugetlb_file_setup(size, 1);
+> 		shp->mlock_user = current->user;
+> 	} else {
+> 		int acctflag = VM_ACCOUNT;
+>
+
+Otherwise, seems promising.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
