@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751968AbXCWHgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934023AbXCWHqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751968AbXCWHgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 03:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbXCWHgV
+	id S934023AbXCWHqA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 03:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXCWHqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 03:36:21 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:33675 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751867AbXCWHgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 03:36:21 -0400
-X-IronPort-AV: i="4.14,317,1170651600"; 
-   d="scan'208"; a="25253731:sNHT23345609"
-Subject: Re: [PATCH -mm try#2] Blackfin: on-chip Two Wire Interface I2C
-	driver
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Bryan Wu <bryan.wu@analog.com>, Mike Frysinger <vapier.adi@gmail.com>,
-       David Brownell <david-b@pacbell.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070323082719.82c02731.khali@linux-fr.org>
-References: <1174471688.5648.56.camel@roc-desktop>
-	 <20070321202231.2eac1cf9.khali@linux-fr.org>
-	 <8bd0f97a0703212239n3edb9a44waa0994e3cffe48d8@mail.gmail.com>
-	 <20070322084806.8bf0f231.khali@linux-fr.org>
-	 <8bd0f97a0703220112y7d6cef2ax612ea5ece3df9740@mail.gmail.com>
-	 <20070322102431.b55f7ecd.khali@linux-fr.org>
-	 <1174628817.18866.21.camel@roc-desktop>
-	 <20070323082719.82c02731.khali@linux-fr.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Fri, 23 Mar 2007 15:36:30 +0800
-Message-Id: <1174635390.18866.28.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 23 Mar 2007 03:46:00 -0400
+Received: from sp604005mt.neufgp.fr ([84.96.92.11]:40116 "EHLO smtp.Neuf.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752674AbXCWHqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 03:46:00 -0400
+Date: Fri, 23 Mar 2007 08:45:49 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH] slab: NUMA kmem_cache diet
+In-reply-to: <Pine.LNX.4.64.0703230907010.17666@sbz-30.cs.Helsinki.FI>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, apw@shadowen.org, hch@lst.de,
+       manfred@colorfullife.com, christoph@lameter.com, pj@sgi.com
+Message-id: <460385AD.10502@cosmosbay.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 8BIT
+References: <Pine.LNX.4.64.0701021545290.21477@sbz-30.cs.Helsinki.FI>
+ <4603047C.4070904@cosmosbay.com>
+ <Pine.LNX.4.64.0703230907010.17666@sbz-30.cs.Helsinki.FI>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 08:27 +0100, Jean Delvare wrote:
-> Hi Bryan,
+Pekka J Enberg a écrit :
+> (Please inline patches to the mail, makes it easier to review.)
 > 
-> On Fri, 23 Mar 2007 13:46:57 +0800, Wu, Bryan wrote:
-> > Changlogs:
-> > 
-> > a) Fixed issues according to Jean's review.
-> > b) Add MAINTAINS infomation
-> > c) add I2C_HW_B_BLACKFIN to i2c-id.h
+> On Thu, 22 Mar 2007, Eric Dumazet wrote:
+>> Some NUMA machines have a big MAX_NUMNODES (possibly 1024), but fewer possible
+>> nodes. This patch dynamically sizes the 'struct kmem_cache' to allocate only
+>> needed space.
+>>
+>> I moved nodelists[] field at the end of struct kmem_cache, and use the
+>> following computation in kmem_cache_init()
 > 
-> I2C_HW_B_* is traditionally used for drivers built on top of the
-> i2c-algo-bit driver, which isn't the case of your driver, so it's a bit
-> confusing. Please instead use:
+> Hmm, what seems bit worrying is:
 > 
-> #define I2C_HW_BLACKFIN		0x190001
+> diff --git a/mm/slab.c b/mm/slab.c
+> index abf46ae..b187618 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -389,7 +389,6 @@ struct kmem_cache {
+>         unsigned int buffer_size;
+>         u32 reciprocal_buffer_size;
+>  /* 3) touched by every alloc & free from the backend */
+> -       struct kmem_list3 *nodelists[MAX_NUMNODES];
 > 
-> I hope we'll be able to get rid of these IDs soon, so we no longer have
-> to care about this mess.
+> I think nodelists is placed at the beginning of the struct for a reason. 
+> But I have no idea if it actually makes any difference...
 
-Thanks, I appreciate. When you want to get rid of these IDs, I will do
-the removing ID job related to this patch.
+It might make a difference if STATS is on, because freehit/freemiss might 
+share a cache line with nodelists. Apart that, a kmem_cache struct is 
+read_mostly : All changes are done outside of it, via array_cache or nodelists[].
 
-> 
-> Other than that I'm OK with the patch this time, I'll push it on my
-> stack. I'll fix the ID issue myself, no need to resend. This also means
-> that, from now on, any change to this driver should be provided as an
-> incremental patch on top of this version.
-> 
-> Thanks,
 
-OK, I will follow this rule definitely.
-Thanks again
--Bryan Wu
+Anyway slab STATS is already a SMP/NUMA nightmare because of cache line ping 
+pongs. We might place STATS counter in a/some dedicated cache line(s)...
+
