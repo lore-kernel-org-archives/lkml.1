@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbXCWRTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbXCWRXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbXCWRTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 13:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbXCWRTu
+	id S1753257AbXCWRXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 13:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXCWRXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 13:19:50 -0400
-Received: from graphe.net ([209.204.138.32]:34081 "EHLO graphe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753245AbXCWRTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 13:19:43 -0400
-Date: Fri, 23 Mar 2007 10:19:32 -0700 (PDT)
-From: Christoph Lameter <christoph@lameter.com>
-X-X-Sender: christoph@graphe.net
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Andi Kleen <andi@firstfloor.org>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] NUMA : could we introduce virt_to_nid() ?
-In-Reply-To: <20070323172212.6648412d.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0703231017250.1434@graphe.net>
-References: <20070321102231.7288f231.dada1@cosmosbay.com>
- <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com>
- <Pine.LNX.4.64.0703210742080.1573@graphe.net>
- <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI>
- <20070321160929.GB25583@one.firstfloor.org> <20070323121512.c287ddef.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0703230749130.29603@graphe.net> <20070323172212.6648412d.dada1@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+	Fri, 23 Mar 2007 13:23:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35273 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753257AbXCWRXo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 13:23:44 -0400
+Date: Fri, 23 Mar 2007 17:23:34 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       SystemTAP <systemtap@sources.redhat.com>,
+       Satoshi Oshima <soshima@redhat.com>, Hideo Aoki <haoki@redhat.com>,
+       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [RFC][Patch 1/4] kprobe fast unregistration
+Message-ID: <20070323172334.GA7442@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+	Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+	"Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+	Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	SystemTAP <systemtap@sources.redhat.com>,
+	Satoshi Oshima <soshima@redhat.com>, Hideo Aoki <haoki@redhat.com>,
+	Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
+	"Frank Ch. Eigler" <fche@redhat.com>
+References: <4603E7A4.50300@hitachi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4603E7A4.50300@hitachi.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Mar 2007, Eric Dumazet wrote:
+On Fri, Mar 23, 2007 at 11:43:48PM +0900, Masami Hiramatsu wrote:
+> I'd like to suggest introducing following two interfaces for this issue.
+> The first interface is unregister_*probe_fast(). This removes
+> breakpoint instruction from kernel code and adds specified probe
+> to the unregistering list.
+> The second interface is commit_kprobes(). This waits the rcu
+> synchronization and clean up each probe on the unregistering list.
+> This patch also adds a list_head member to the kprobe data structure
+> for linking to the unregistering list.
+> 
+> If using these interfaces, the probe handlers of unregistering probes
+> might be called after unregister_*probe_fast() is called. So, you MUST
+> call commit_kprobes() after calling unregisnter_*probe_fast() for all
+> probes.
 
-> Sorry ? page structs are not in cpu cache at all.
+Speeding up the unregistration is a very good idea, but this interface
+is rather horrible.  It's almost a receipe for users to get it wrong.
 
-They are if they are in any way handled by the VM.
- 
-> You carefully commented your alloc() function saying it is touching two cache lines.
-> But you omited to say that free() function needs 3 cache lines if CONFIG_NUMA
+Instead just changes the register and unregister functions to take
+a NULL-terminated array of probes that get registered and unregisters
+at the same time (and renames them from *probe* to *probes*, please)
 
-Yes it needs the third cacheline to check the node of the page in the NUMA 
-case.
-
-> For SLAB use, page struct is needed because we use lru.{next|prev} to 
-> store slab/cachep pointers, but for a pure page allocator, unless I 
-> misread your patch, we dont need it, if virt_to_nid() can do its job 
-> without it.
-
-The page allocator is only handling page_structs.
- 
