@@ -1,63 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932684AbXCWRl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933822AbXCWRqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932684AbXCWRl0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 13:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933822AbXCWRl0
+	id S933822AbXCWRqf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 13:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932330AbXCWRqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 13:41:26 -0400
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:41421 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932684AbXCWRlZ (ORCPT
+	Fri, 23 Mar 2007 13:46:35 -0400
+Received: from science.horizon.com ([192.35.100.1]:12109 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933822AbXCWRqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 13:41:25 -0400
-Date: Fri, 23 Mar 2007 18:42:14 +0100
-From: markus reichelt <ml@mareichelt.de>
-Subject: Re: race condition in dm-crypt?
-In-reply-to: <20070323170535.GA3057@hejre.minidns.net>
-To: linux-kernel@vger.kernel.org
-Mail-followup-to: linux-kernel@vger.kernel.org
-Message-id: <20070323174214.GA14179@tatooine.rebelbase.local>
-Organization: still stuck in reorganization mode
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=9amGYk9869ThD9tj
-Content-disposition: inline
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-References: <20070323170535.GA3057@hejre.minidns.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 23 Mar 2007 13:46:33 -0400
+Date: 23 Mar 2007 13:46:30 -0400
+Message-ID: <20070323174630.31051.qmail@science.horizon.com>
+From: linux@horizon.com
+To: dan.j.williams@intel.com, linux-ide@vger.kernel.org, neilb@suse.de
+Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
+Cc: cebbert@redhat.com, jens.axboe@oracle.com, linux-kernel@dale.us,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux@horizon.com
+In-Reply-To: <17923.8970.917375.917772@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As an additional data point, here's a libata problem I'm having trying to
+rebuild the array.
 
---9amGYk9869ThD9tj
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I have six identical 400 GB drives (ST3400832AS), and one is giving
+me hassles.  I've run SMART short and long diagnostics, badblocks, and
+Seagate's "seatools" diagnostic software, and none of these find problems.
+It is the only one of the six with a non-zero reallocated sector count
+(it's 26).
 
-* "Jan C. Nordholz" <jckn@gmx.net> wrote:
+Anyway, the drive is partitioned into a 45G RAID-10 part and a 350G RAID-5
+part.  The RAID-10 part integrated successfully, but the RAID-5 got to
+about 60% and then puked:
 
-> I'm seeing this for quite a while now (since 2.6.16 at least), but
-> without any obvious indicator to what might be causing it... where
-> should I continue debugging this?
+ata5.00: exception Emask 0x0 SAct 0x1ef SErr 0x0 action 0x2 frozen
+ata5.00: cmd 61/c0:00:d2:d0:b9/00:00:1c:00:00/40 tag 0 cdb 0x0 data 98304 out
+         res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: cmd 61/40:08:92:d1:b9/00:00:1c:00:00/40 tag 1 cdb 0x0 data 32768 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: cmd 61/00:10:d2:d1:b9/01:00:1c:00:00/40 tag 2 cdb 0x0 data 131072 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: cmd 61/00:18:d2:d2:b9/01:00:1c:00:00/40 tag 3 cdb 0x0 data 131072 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: cmd 61/00:28:d2:d3:b9/01:00:1c:00:00/40 tag 5 cdb 0x0 data 131072 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: cmd 61/00:30:d2:d4:b9/01:00:1c:00:00/40 tag 6 cdb 0x0 data 131072 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: cmd 61/00:38:d2:d5:b9/01:00:1c:00:00/40 tag 7 cdb 0x0 data 131072 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5.00: cmd 61/00:40:d2:d6:b9/01:00:1c:00:00/40 tag 8 cdb 0x0 data 131072 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5: soft resetting port
+ata5: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata5.00: configured for UDMA/100
+ata5: EH complete
+SCSI device sde: 781422768 512-byte hdwr sectors (400088 MB)
+sde: Write Protect is off
+SCSI device sde: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata5.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0 
+         res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata5: soft resetting port
+ata5: softreset failed (timeout)
+ata5: softreset failed, retrying in 5 secs
+ata5: hard resetting port
+ata5: softreset failed (timeout)
+ata5: follow-up softreset failed, retrying in 5 secs
+ata5: hard resetting port
+ata5: softreset failed (timeout)
+ata5: reset failed, giving up
+ata5.00: disabled
+ata5: EH complete
+sd 4:0:0:0: SCSI error: return code = 0x00040000
+end_request: I/O error, dev sde, sector 91795259
+md: super_written gets error=-5, uptodate=0
+raid10: Disk failure on sde3, disabling device. 
+        Operation continuing on 5 devices
+sd 4:0:0:0: SCSI error: return code = 0x00040000
+end_request: I/O error, dev sde, sector 481942994
+raid5: Disk failure on sde4, disabling device. Operation continuing on 5 devices
+sd 4:0:0:0: SCSI error: return code = 0x00040000
+end_request: I/O error, dev sde, sector 481944018
+md: md5: recovery done.
+RAID10 conf printout:
+ --- wd:5 rd:6
+ disk 0, wo:0, o:1, dev:sdb3
+ disk 1, wo:0, o:1, dev:sdc3
+ disk 2, wo:0, o:1, dev:sdd3
+ disk 3, wo:1, o:0, dev:sde3
+ disk 4, wo:0, o:1, dev:sdf3
+ disk 5, wo:0, o:1, dev:sda3
+RAID10 conf printout:
+ --- wd:5 rd:6
+ disk 0, wo:0, o:1, dev:sdb3
+ disk 1, wo:0, o:1, dev:sdc3
+ disk 2, wo:0, o:1, dev:sdd3
+ disk 4, wo:0, o:1, dev:sdf3
+ disk 5, wo:0, o:1, dev:sda3
+RAID5 conf printout:
+ --- rd:6 wd:5
+ disk 0, o:1, dev:sda4
+ disk 1, o:1, dev:sdb4
+ disk 2, o:1, dev:sdc4
+ disk 3, o:1, dev:sdd4
+ disk 4, o:0, dev:sde4
+ disk 5, o:1, dev:sdf4
+RAID5 conf printout:
+ --- rd:6 wd:5
+ disk 0, o:1, dev:sda4
+ disk 1, o:1, dev:sdb4
+ disk 2, o:1, dev:sdc4
+ disk 3, o:1, dev:sdd4
+ disk 5, o:1, dev:sdf4
 
-I bet folks at dm-crypt@saout.de would love to hear about this.
+The first error address is just barely inside the RAID-10 part (which ends at
+sector 91,795,410), while the second and third errors (at 481,942,994)
+look like where the reconstruction was working.
 
---=20
-left blank, right bald
 
---9amGYk9869ThD9tj
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Anyway, what's annoying is that I can't figure out how to bring the
+drive back on line without resetting the box.  It's in a hot-swap enclosure,
+but power cycling the drive doesn't seem to help.  I thought libata hotplug
+was working?  (SiI3132 card, using the sil24 driver.)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFGBBF2LMyTO8Kj/uQRAo5GAJ0QJVYdc1AG8/0PNkBKUfCOQZSstgCbBzF8
-u84n954ZPBq8TwhWTvK1x1M=
-=nSCD
------END PGP SIGNATURE-----
-
---9amGYk9869ThD9tj--
-
+(H'm... after rebooting, reallocated sectors jumped from 26 to 39.
+Something is up with that drive.)
