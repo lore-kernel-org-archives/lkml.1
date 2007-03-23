@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422638AbXCWGvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbXCWG4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422638AbXCWGvt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 02:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933812AbXCWGvt
+	id S1753077AbXCWG4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 02:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422653AbXCWGwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 02:51:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:1087 "EHLO mga03.intel.com"
+	Fri, 23 Mar 2007 02:52:20 -0400
+Received: from mga02.intel.com ([134.134.136.20]:32493 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933793AbXCWGvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 02:51:45 -0400
+	id S933808AbXCWGv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 02:51:59 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,317,1170662400"; 
-   d="scan'208"; a="201278127:sNHT30748977"
+   d="scan'208"; a="214678461:sNHT24233160"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 2.6.21-rc4 01/15] dmaengine: add base support for the async_tx
-	api
+Subject: [PATCH 2.6.21-rc4 04/15] md: add raid5_run_ops and support routines
 To: neilb@suse.de, christopher.leech@intel.com, linux-raid@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, yur@emcraft.com,
        wd@denx.de, arjan@linux.intel.com, rmk+kernel@arm.linux.org.uk
-Date: Thu, 22 Mar 2007 23:51:42 -0700
-Message-ID: <20070323065142.15570.98231.stgit@dwillia2-linux.ch.intel.com>
+Date: Thu, 22 Mar 2007 23:51:57 -0700
+Message-ID: <20070323065157.15570.48292.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20070323064856.15570.45052.stgit@dwillia2-linux.ch.intel.com>
 References: <20070323064856.15570.45052.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.12.1
@@ -30,1071 +29,669 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The async_tx api provides methods for describing a chain of asynchronous
-bulk memory transfers/transforms with support for inter-transactional
-dependencies.  It is implemented as a dmaengine client
-that smooths over the details of different hardware offload engine
-implementations.  Code that is written to the api can optimize for
-asynchrnous operation and the api will fit the chain of operations to the
-available offload resources.
-
-Currently the raid5 implementation in the MD raid456 driver has been
-converted to the async_tx api.  A driver for the offload engines on the
-Intel Xscale series of I/O processors, iop-adma, is provided.  With the
-iop-adma driver and async_txi, raid456 is able to offload copy, xor, and
-xor-zero-sum operations to hardware engines.
-
-On iop342 tiobench showed higher throughput for sequential writes (20 - 30%
-improvement) and sequential reads to a degraded array (40 - 55%
-improvement).  For the other cases performance was roughly equal, +/- a few
-percentage points.  On a x86-smp platform the performance of the async_tx
-implementation (in synchronous mode) was also +/- a few percentage points
-of the original implementation.  According to 'top' CPU utilization was
-positively affected in the offload case, but exact measurements have yet to
-be taken.
-
-The tiobench command line used for testing was:
-tiobench --size 2048 --block 4096 --block 131072 --dir /mnt/raid --numruns 5
-* iop342 had 1GB of memory available
-
-This patch:
-1/ introduces struct dma_async_tx_descriptor as a common field for all dmaengine
-software descriptors
-2/ converts the device_memcpy_* methods into separate prep, set src/dest, and
-submit stages
-3/ adds support for capabilities beyond memcpy (xor, memset, xor zero sum, completion
-interrupts)
-4/ converts ioatdma to the new semantics
+Prepare the raid5 implementation to use async_tx for running stripe
+operations:
+* biofill (copy data into request buffers to satisfy a read request)
+* compute block (generate a missing block in the cache from the other
+blocks)
+* prexor (subtract existing data as part of the read-modify-write process)
+* biodrain (copy data out of request buffers to satisfy a write request)
+* postxor (recalculate parity for new data that has entered the cache)
+* check (verify that the parity is correct)
+* io (submit i/o to the member disks)
 
 Changelog:
-* drop dma mapping methods, suggested by Chris Leech
-* fix ioat_dma_dependency_added, also caught by Andrew Morton
-* fix dma_sync_wait, change from Andrew Morton
-* uninline large functions, change from Andrew Morton
-* add tx->callback = NULL to dmaengine calls to interoperate with async_tx
-  calls
+* removed ops_complete_biodrain in favor of ops_complete_postxor and
+ops_complete_write.
+* removed the workqueue
+* call bi_end_io for reads in ops_complete_biofill
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
 
- drivers/dma/dmaengine.c   |  194 ++++++++++++++++++++++++++++++++++-
- drivers/dma/ioatdma.c     |  248 ++++++++++++++++++++-------------------------
- drivers/dma/ioatdma.h     |    8 +
- include/linux/dmaengine.h |  237 ++++++++++++++++++++++++-------------------
- 4 files changed, 439 insertions(+), 248 deletions(-)
+ drivers/md/raid5.c         |  520 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/raid/raid5.h |   63 +++++
+ 2 files changed, 580 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 322ee29..2285f33 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -59,6 +59,7 @@
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index 6386814..b7185a1 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -52,6 +52,7 @@
+ #include "raid6.h"
  
- #include <linux/init.h>
- #include <linux/module.h>
-+#include <linux/mm.h>
- #include <linux/device.h>
- #include <linux/dmaengine.h>
- #include <linux/hardirq.h>
-@@ -66,6 +67,7 @@
- #include <linux/percpu.h>
- #include <linux/rcupdate.h>
- #include <linux/mutex.h>
-+#include <linux/jiffies.h>
- 
- static DEFINE_MUTEX(dma_list_mutex);
- static LIST_HEAD(dma_device_list);
-@@ -165,6 +167,24 @@ static struct dma_chan *dma_client_chan_alloc(struct dma_client *client)
- 	return NULL;
- }
- 
-+enum dma_status dma_sync_wait(struct dma_chan *chan, dma_cookie_t cookie)
-+{
-+	enum dma_status status;
-+	unsigned long dma_sync_wait_timeout = jiffies + msecs_to_jiffies(5000);
-+
-+	dma_async_issue_pending(chan);
-+	do {
-+		status = dma_async_is_tx_complete(chan, cookie, NULL, NULL);
-+		if (time_after_eq(jiffies, dma_sync_wait_timeout)) {
-+			printk(KERN_ERR "dma_sync_wait_timeout!\n");
-+			return DMA_ERROR;
-+		}
-+	} while (status == DMA_IN_PROGRESS);
-+
-+	return status;
-+}
-+EXPORT_SYMBOL(dma_sync_wait);
-+
- /**
-  * dma_chan_cleanup - release a DMA channel's resources
-  * @kref: kernel reference structure that contains the DMA channel device
-@@ -211,7 +231,8 @@ static void dma_chans_rebalance(void)
- 	mutex_lock(&dma_list_mutex);
- 
- 	list_for_each_entry(client, &dma_client_list, global_node) {
--		while (client->chans_desired > client->chan_count) {
-+		while (client->chans_desired < 0 ||
-+			client->chans_desired > client->chan_count) {
- 			chan = dma_client_chan_alloc(client);
- 			if (!chan)
- 				break;
-@@ -220,7 +241,8 @@ static void dma_chans_rebalance(void)
- 	                                       chan,
- 	                                       DMA_RESOURCE_ADDED);
- 		}
--		while (client->chans_desired < client->chan_count) {
-+		while (client->chans_desired >= 0 &&
-+			client->chans_desired < client->chan_count) {
- 			spin_lock_irqsave(&client->lock, flags);
- 			chan = list_entry(client->channels.next,
- 			                  struct dma_chan,
-@@ -297,12 +319,12 @@ EXPORT_SYMBOL(dma_async_client_unregister);
-  * @number: count of DMA channels requested
-  *
-  * Clients call dma_async_client_chan_request() to specify how many
-- * DMA channels they need, 0 to free all currently allocated.
-+ * DMA channels they need, 0 to free all currently allocated. A request
-+ * < 0 indicates the client wants to handle all engines in the system.
-  * The resulting allocations/frees are indicated to the client via the
-  * event callback.
-  */
--void dma_async_client_chan_request(struct dma_client *client,
--			unsigned int number)
-+void dma_async_client_chan_request(struct dma_client *client, int number)
- {
- 	client->chans_desired = number;
- 	dma_chans_rebalance();
-@@ -322,6 +344,28 @@ int dma_async_device_register(struct dma_device *device)
- 	if (!device)
- 		return -ENODEV;
- 
-+	/* validate device routines */
-+	BUG_ON(test_bit(DMA_MEMCPY, &device->capabilities) &&
-+		!device->device_prep_dma_memcpy);
-+	BUG_ON(test_bit(DMA_XOR, &device->capabilities) &&
-+		!device->device_prep_dma_xor);
-+	BUG_ON(test_bit(DMA_ZERO_SUM, &device->capabilities) &&
-+		!device->device_prep_dma_zero_sum);
-+	BUG_ON(test_bit(DMA_MEMSET, &device->capabilities) &&
-+		!device->device_prep_dma_memset);
-+	BUG_ON(test_bit(DMA_ZERO_SUM, &device->capabilities) &&
-+		!device->device_prep_dma_interrupt);
-+
-+	BUG_ON(!device->device_alloc_chan_resources);
-+	BUG_ON(!device->device_free_chan_resources);
-+	BUG_ON(!device->device_tx_submit);
-+	BUG_ON(!device->device_set_dest);
-+	BUG_ON(!device->device_set_src);
-+	BUG_ON(!device->device_dependency_added);
-+	BUG_ON(!device->device_is_tx_complete);
-+	BUG_ON(!device->device_issue_pending);
-+	BUG_ON(!device->dev);
-+
- 	init_completion(&device->done);
- 	kref_init(&device->refcount);
- 	device->dev_id = id++;
-@@ -397,6 +441,146 @@ void dma_async_device_unregister(struct dma_device *device)
- }
- EXPORT_SYMBOL(dma_async_device_unregister);
- 
-+/**
-+ * dma_async_memcpy_buf_to_buf - offloaded copy between virtual addresses
-+ * @chan: DMA channel to offload copy to
-+ * @dest: destination address (virtual)
-+ * @src: source address (virtual)
-+ * @len: length
-+ *
-+ * Both @dest and @src must be mappable to a bus address according to the
-+ * DMA mapping API rules for streaming mappings.
-+ * Both @dest and @src must stay memory resident (kernel memory or locked
-+ * user space pages).
-+ */
-+dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
-+        void *dest, void *src, size_t len)
-+{
-+	struct dma_device *dev = chan->device;
-+	struct dma_async_tx_descriptor *tx;
-+	dma_addr_t addr;
-+	dma_cookie_t cookie;
-+	int cpu;
-+
-+	tx = dev->device_prep_dma_memcpy(chan, len, 0);
-+	if (!tx)
-+		return -ENOMEM;
-+
-+	tx->ack = 1;
-+	tx->callback = NULL;
-+	addr = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
-+	dev->device_set_src(addr, tx, 0);
-+	addr = dma_map_single(dev->dev, dest, len, DMA_FROM_DEVICE);
-+	dev->device_set_dest(addr, tx, 0);
-+	cookie = dev->device_tx_submit(tx);
-+
-+	cpu = get_cpu();
-+	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
-+	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
-+	put_cpu();
-+
-+	return cookie;
-+}
-+EXPORT_SYMBOL(dma_async_memcpy_buf_to_buf);
-+
-+/**
-+ * dma_async_memcpy_buf_to_pg - offloaded copy from address to page
-+ * @chan: DMA channel to offload copy to
-+ * @page: destination page
-+ * @offset: offset in page to copy to
-+ * @kdata: source address (virtual)
-+ * @len: length
-+ *
-+ * Both @page/@offset and @kdata must be mappable to a bus address according
-+ * to the DMA mapping API rules for streaming mappings.
-+ * Both @page/@offset and @kdata must stay memory resident (kernel memory or
-+ * locked user space pages)
-+ */
-+dma_cookie_t dma_async_memcpy_buf_to_pg(struct dma_chan *chan,
-+        struct page *page, unsigned int offset, void *kdata, size_t len)
-+{
-+	struct dma_device *dev = chan->device;
-+	struct dma_async_tx_descriptor *tx;
-+	dma_addr_t addr;
-+	dma_cookie_t cookie;
-+	int cpu;
-+
-+	tx = dev->device_prep_dma_memcpy(chan, len, 0);
-+	if (!tx)
-+		return -ENOMEM;
-+
-+	tx->ack = 1;
-+	tx->callback = NULL;
-+	addr = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
-+	dev->device_set_src(addr, tx, 0);
-+	addr = dma_map_page(dev->dev, page, offset, len, DMA_FROM_DEVICE);
-+	dev->device_set_dest(addr, tx, 0);
-+	cookie = dev->device_tx_submit(tx);
-+
-+	cpu = get_cpu();
-+	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
-+	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
-+	put_cpu();
-+
-+	return cookie;
-+}
-+EXPORT_SYMBOL(dma_async_memcpy_buf_to_pg);
-+
-+/**
-+ * dma_async_memcpy_pg_to_pg - offloaded copy from page to page
-+ * @chan: DMA channel to offload copy to
-+ * @dest_pg: destination page
-+ * @dest_off: offset in page to copy to
-+ * @src_pg: source page
-+ * @src_off: offset in page to copy from
-+ * @len: length
-+ *
-+ * Both @dest_page/@dest_off and @src_page/@src_off must be mappable to a bus
-+ * address according to the DMA mapping API rules for streaming mappings.
-+ * Both @dest_page/@dest_off and @src_page/@src_off must stay memory resident
-+ * (kernel memory or locked user space pages).
-+ */
-+dma_cookie_t dma_async_memcpy_pg_to_pg(struct dma_chan *chan,
-+        struct page *dest_pg, unsigned int dest_off, struct page *src_pg,
-+        unsigned int src_off, size_t len)
-+{
-+	struct dma_device *dev = chan->device;
-+	struct dma_async_tx_descriptor *tx;
-+	dma_addr_t addr;
-+	dma_cookie_t cookie;
-+	int cpu;
-+
-+	tx = dev->device_prep_dma_memcpy(chan, len, 0);
-+	if (!tx)
-+		return -ENOMEM;
-+
-+	tx->ack = 1;
-+	tx->callback = NULL;
-+	addr = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
-+	dev->device_set_src(addr, tx, 0);
-+	addr = dma_map_page(dev->dev, dest_pg, dest_off, len, DMA_FROM_DEVICE);
-+	dev->device_set_dest(addr, tx, 0);
-+	cookie = dev->device_tx_submit(tx);
-+
-+	cpu = get_cpu();
-+	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
-+	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
-+	put_cpu();
-+
-+	return cookie;
-+}
-+EXPORT_SYMBOL(dma_async_memcpy_pg_to_pg);
-+
-+void dma_async_tx_descriptor_init(struct dma_async_tx_descriptor *tx,
-+	struct dma_chan *chan)
-+{
-+	tx->chan = chan;
-+	spin_lock_init(&tx->lock);
-+	INIT_LIST_HEAD(&tx->depend_node);
-+	INIT_LIST_HEAD(&tx->depend_list);
-+}
-+EXPORT_SYMBOL(dma_async_tx_descriptor_init);
-+
- static int __init dma_bus_init(void)
- {
- 	mutex_init(&dma_list_mutex);
-diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
-index 8e87261..6d0f32e 100644
---- a/drivers/dma/ioatdma.c
-+++ b/drivers/dma/ioatdma.c
-@@ -31,6 +31,7 @@
- #include <linux/dmaengine.h>
- #include <linux/delay.h>
- #include <linux/dma-mapping.h>
+ #include <linux/raid/bitmap.h>
 +#include <linux/async_tx.h>
- #include "ioatdma.h"
- #include "ioatdma_io.h"
- #include "ioatdma_registers.h"
-@@ -39,6 +40,7 @@
- #define to_ioat_chan(chan) container_of(chan, struct ioat_dma_chan, common)
- #define to_ioat_device(dev) container_of(dev, struct ioat_device, common)
- #define to_ioat_desc(lh) container_of(lh, struct ioat_desc_sw, node)
-+#define tx_to_ioat_desc(tx) container_of(tx, struct ioat_desc_sw, async_tx)
  
- /* internal functions */
- static int __devinit ioat_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
-@@ -99,6 +101,8 @@ static struct ioat_desc_sw *ioat_dma_alloc_descriptor(
- 	}
- 
- 	memset(desc, 0, sizeof(*desc));
-+	dma_async_tx_descriptor_init(&desc_sw->async_tx, &ioat_chan->common);
-+	INIT_LIST_HEAD(&desc_sw->group_list);
- 	desc_sw->hw = desc;
- 	desc_sw->phys = phys;
- 
-@@ -215,45 +219,25 @@ static void ioat_dma_free_chan_resources(struct dma_chan *chan)
- 	ioatdma_chan_write16(ioat_chan, IOAT_CHANCTRL_OFFSET, chanctrl);
+ /*
+  * Stripe cache
+@@ -324,6 +325,525 @@ static struct stripe_head *get_active_stripe(raid5_conf_t *conf, sector_t sector
+ 	return sh;
  }
  
--/**
-- * do_ioat_dma_memcpy - actual function that initiates a IOAT DMA transaction
-- * @ioat_chan: IOAT DMA channel handle
-- * @dest: DMA destination address
-- * @src: DMA source address
-- * @len: transaction length in bytes
-- */
--
--static dma_cookie_t do_ioat_dma_memcpy(struct ioat_dma_chan *ioat_chan,
--                                       dma_addr_t dest,
--                                       dma_addr_t src,
--                                       size_t len)
-+static struct dma_async_tx_descriptor *
-+ioat_dma_prep_memcpy(struct dma_chan *chan, size_t len, int int_en)
- {
--	struct ioat_desc_sw *first;
--	struct ioat_desc_sw *prev;
--	struct ioat_desc_sw *new;
--	dma_cookie_t cookie;
-+	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-+	struct ioat_desc_sw *first, *prev, *new;
- 	LIST_HEAD(new_chain);
- 	u32 copy;
- 	size_t orig_len;
--	dma_addr_t orig_src, orig_dst;
--	unsigned int desc_count = 0;
--	unsigned int append = 0;
--
--	if (!ioat_chan || !dest || !src)
--		return -EFAULT;
-+	int desc_count = 0;
- 
- 	if (!len)
--		return ioat_chan->common.cookie;
-+		return NULL;
- 
- 	orig_len = len;
--	orig_src = src;
--	orig_dst = dest;
- 
- 	first = NULL;
- 	prev = NULL;
- 
- 	spin_lock_bh(&ioat_chan->desc_lock);
--
- 	while (len) {
- 		if (!list_empty(&ioat_chan->free_desc)) {
- 			new = to_ioat_desc(ioat_chan->free_desc.next);
-@@ -270,9 +254,8 @@ static dma_cookie_t do_ioat_dma_memcpy(struct ioat_dma_chan *ioat_chan,
- 
- 		new->hw->size = copy;
- 		new->hw->ctl = 0;
--		new->hw->src_addr = src;
--		new->hw->dst_addr = dest;
--		new->cookie = 0;
-+		new->async_tx.cookie = 0;
-+		new->async_tx.ack = 1;
- 
- 		/* chain together the physical address list for the HW */
- 		if (!first)
-@@ -281,129 +264,90 @@ static dma_cookie_t do_ioat_dma_memcpy(struct ioat_dma_chan *ioat_chan,
- 			prev->hw->next = (u64) new->phys;
- 
- 		prev = new;
--
- 		len  -= copy;
--		dest += copy;
--		src  += copy;
--
- 		list_add_tail(&new->node, &new_chain);
- 		desc_count++;
- 	}
--	new->hw->ctl = IOAT_DMA_DESCRIPTOR_CTL_CP_STS;
--	new->hw->next = 0;
- 
--	/* cookie incr and addition to used_list must be atomic */
-+	list_splice(&new_chain, &new->group_list);
- 
--	cookie = ioat_chan->common.cookie;
--	cookie++;
--	if (cookie < 0)
--		cookie = 1;
--	ioat_chan->common.cookie = new->cookie = cookie;
-+	new->hw->ctl = IOAT_DMA_DESCRIPTOR_CTL_CP_STS;
-+	new->hw->next = 0;
-+	new->group_count = desc_count;
-+	new->async_tx.ack = 0; /* client is in control of this ack */
-+	new->async_tx.cookie = -EBUSY;
-+	new->async_tx.type = DMA_MEMCPY;
- 
--	pci_unmap_addr_set(new, src, orig_src);
--	pci_unmap_addr_set(new, dst, orig_dst);
- 	pci_unmap_len_set(new, src_len, orig_len);
- 	pci_unmap_len_set(new, dst_len, orig_len);
--
--	/* write address into NextDescriptor field of last desc in chain */
--	to_ioat_desc(ioat_chan->used_desc.prev)->hw->next = first->phys;
--	list_splice_init(&new_chain, ioat_chan->used_desc.prev);
--
--	ioat_chan->pending += desc_count;
--	if (ioat_chan->pending >= 20) {
--		append = 1;
--		ioat_chan->pending = 0;
--	}
--
- 	spin_unlock_bh(&ioat_chan->desc_lock);
- 
--	if (append)
--		ioatdma_chan_write8(ioat_chan,
--		                    IOAT_CHANCMD_OFFSET,
--		                    IOAT_CHANCMD_APPEND);
--	return cookie;
-+	return new ? &new->async_tx : NULL;
- }
- 
--/**
-- * ioat_dma_memcpy_buf_to_buf - wrapper that takes src & dest bufs
-- * @chan: IOAT DMA channel handle
-- * @dest: DMA destination address
-- * @src: DMA source address
-- * @len: transaction length in bytes
-- */
--
--static dma_cookie_t ioat_dma_memcpy_buf_to_buf(struct dma_chan *chan,
--                                               void *dest,
--                                               void *src,
--                                               size_t len)
-+static void
-+ioat_set_src(dma_addr_t addr, struct dma_async_tx_descriptor *tx, int index)
- {
--	dma_addr_t dest_addr;
--	dma_addr_t src_addr;
--	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-+	struct ioat_desc_sw *iter, *desc = tx_to_ioat_desc(tx);
-+	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
- 
--	dest_addr = pci_map_single(ioat_chan->device->pdev,
--		dest, len, PCI_DMA_FROMDEVICE);
--	src_addr = pci_map_single(ioat_chan->device->pdev,
--		src, len, PCI_DMA_TODEVICE);
-+	pci_unmap_addr_set(desc, src, addr);
- 
--	return do_ioat_dma_memcpy(ioat_chan, dest_addr, src_addr, len);
--}
-+	list_for_each_entry(iter, &desc->group_list, node) {
-+		iter->hw->src_addr = addr;
-+		addr += ioat_chan->xfercap;
-+	}
- 
--/**
-- * ioat_dma_memcpy_buf_to_pg - wrapper, copying from a buf to a page
-- * @chan: IOAT DMA channel handle
-- * @page: pointer to the page to copy to
-- * @offset: offset into that page
-- * @src: DMA source address
-- * @len: transaction length in bytes
-- */
-+}
- 
--static dma_cookie_t ioat_dma_memcpy_buf_to_pg(struct dma_chan *chan,
--                                              struct page *page,
--                                              unsigned int offset,
--                                              void *src,
--                                              size_t len)
-+static void
-+ioat_set_dest(dma_addr_t addr, struct dma_async_tx_descriptor *tx, int index)
- {
--	dma_addr_t dest_addr;
--	dma_addr_t src_addr;
--	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-+	struct ioat_desc_sw *iter, *desc = tx_to_ioat_desc(tx);
-+	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
- 
--	dest_addr = pci_map_page(ioat_chan->device->pdev,
--		page, offset, len, PCI_DMA_FROMDEVICE);
--	src_addr = pci_map_single(ioat_chan->device->pdev,
--		src, len, PCI_DMA_TODEVICE);
-+	pci_unmap_addr_set(desc, dst, addr);
- 
--	return do_ioat_dma_memcpy(ioat_chan, dest_addr, src_addr, len);
-+	list_for_each_entry(iter, &desc->group_list, node) {
-+		iter->hw->dst_addr = addr;
-+		addr += ioat_chan->xfercap;
-+	}
- }
- 
--/**
-- * ioat_dma_memcpy_pg_to_pg - wrapper, copying between two pages
-- * @chan: IOAT DMA channel handle
-- * @dest_pg: pointer to the page to copy to
-- * @dest_off: offset into that page
-- * @src_pg: pointer to the page to copy from
-- * @src_off: offset into that page
-- * @len: transaction length in bytes. This is guaranteed not to make a copy
-- *	 across a page boundary.
-- */
--
--static dma_cookie_t ioat_dma_memcpy_pg_to_pg(struct dma_chan *chan,
--                                             struct page *dest_pg,
--                                             unsigned int dest_off,
--                                             struct page *src_pg,
--                                             unsigned int src_off,
--                                             size_t len)
-+static dma_cookie_t
-+ioat_tx_submit(struct dma_async_tx_descriptor *tx)
- {
--	dma_addr_t dest_addr;
--	dma_addr_t src_addr;
--	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-+	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
-+	struct ioat_desc_sw *desc = tx_to_ioat_desc(tx);
-+	struct ioat_desc_sw *group_start = list_entry(desc->group_list.next,
-+		struct ioat_desc_sw, node);
-+	int append = 0;
-+	dma_cookie_t cookie;
++static int
++raid5_end_read_request(struct bio * bi, unsigned int bytes_done, int error);
++static int
++raid5_end_write_request (struct bio *bi, unsigned int bytes_done, int error);
 +
-+	spin_lock_bh(&ioat_chan->desc_lock);
-+	/* cookie incr and addition to used_list must be atomic */
-+	cookie = ioat_chan->common.cookie;
-+	cookie++;
-+	if (cookie < 0)
-+		cookie = 1;
-+	ioat_chan->common.cookie = desc->async_tx.cookie = cookie;
- 
--	dest_addr = pci_map_page(ioat_chan->device->pdev,
--		dest_pg, dest_off, len, PCI_DMA_FROMDEVICE);
--	src_addr = pci_map_page(ioat_chan->device->pdev,
--		src_pg, src_off, len, PCI_DMA_TODEVICE);
-+	/* write address into NextDescriptor field of last desc in chain */
-+	to_ioat_desc(ioat_chan->used_desc.prev)->hw->next = group_start->phys;
-+	list_splice_init(&desc->group_list, ioat_chan->used_desc.prev);
-+
-+	ioat_chan->pending += desc->group_count;
-+	if (ioat_chan->pending >= 20) {
-+		append = 1;
-+		ioat_chan->pending = 0;
-+	}
-+	spin_unlock_bh(&ioat_chan->desc_lock);
- 
--	return do_ioat_dma_memcpy(ioat_chan, dest_addr, src_addr, len);
-+	if (append)
-+		ioatdma_chan_write8(ioat_chan,
-+		                    IOAT_CHANCMD_OFFSET,
-+		                    IOAT_CHANCMD_APPEND);
-+	return cookie;
- }
- 
- /**
-@@ -467,8 +411,8 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *chan)
- 		 * exceeding xfercap, perhaps. If so, only the last one will
- 		 * have a cookie, and require unmapping.
- 		 */
--		if (desc->cookie) {
--			cookie = desc->cookie;
-+		if (desc->async_tx.cookie) {
-+			cookie = desc->async_tx.cookie;
- 
- 			/* yes we are unmapping both _page and _single alloc'd
- 			   regions with unmap_page. Is this *really* that bad?
-@@ -484,13 +428,18 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *chan)
- 		}
- 
- 		if (desc->phys != phys_complete) {
--			/* a completed entry, but not the last, so cleanup */
--			list_del(&desc->node);
--			list_add_tail(&desc->node, &chan->free_desc);
-+			/* a completed entry, but not the last, so cleanup
-+			 * if the client is done with the descriptor
-+			 */
-+			if (desc->async_tx.ack) {
-+				list_del(&desc->node);
-+				list_add_tail(&desc->node, &chan->free_desc);
-+			} else
-+				desc->async_tx.cookie = 0;
- 		} else {
- 			/* last used desc. Do not remove, so we can append from
- 			   it, but don't look at it next time, either */
--			desc->cookie = 0;
-+			desc->async_tx.cookie = 0;
- 
- 			/* TODO check status bits? */
- 			break;
-@@ -506,6 +455,17 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *chan)
- 	spin_unlock(&chan->cleanup_lock);
- }
- 
-+static void ioat_dma_dependency_added(struct dma_chan *chan)
++static void ops_run_io(struct stripe_head *sh)
 +{
-+	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-+	spin_lock_bh(&ioat_chan->desc_lock);
-+	if (ioat_chan->pending == 0) {
-+		spin_unlock_bh(&ioat_chan->desc_lock);
-+		ioat_dma_memcpy_cleanup(ioat_chan);
-+	} else
-+		spin_unlock_bh(&ioat_chan->desc_lock);
++	raid5_conf_t *conf = sh->raid_conf;
++	int i, disks = sh->disks;
++
++	might_sleep();
++
++	for (i=disks; i-- ;) {
++		int rw;
++		struct bio *bi;
++		mdk_rdev_t *rdev;
++		if (test_and_clear_bit(R5_Wantwrite, &sh->dev[i].flags))
++			rw = WRITE;
++		else if (test_and_clear_bit(R5_Wantread, &sh->dev[i].flags))
++			rw = READ;
++		else
++			continue;
++
++		bi = &sh->dev[i].req;
++
++		bi->bi_rw = rw;
++		if (rw == WRITE)
++			bi->bi_end_io = raid5_end_write_request;
++		else
++			bi->bi_end_io = raid5_end_read_request;
++
++		rcu_read_lock();
++		rdev = rcu_dereference(conf->disks[i].rdev);
++		if (rdev && test_bit(Faulty, &rdev->flags))
++			rdev = NULL;
++		if (rdev)
++			atomic_inc(&rdev->nr_pending);
++		rcu_read_unlock();
++
++		if (rdev) {
++			if (test_bit(STRIPE_SYNCING, &sh->state) ||
++				test_bit(STRIPE_EXPAND_SOURCE, &sh->state) ||
++				test_bit(STRIPE_EXPAND_READY, &sh->state))
++				md_sync_acct(rdev->bdev, STRIPE_SECTORS);
++
++			bi->bi_bdev = rdev->bdev;
++			PRINTK("%s: for %llu schedule op %ld on disc %d\n",
++				__FUNCTION__, (unsigned long long)sh->sector,
++				bi->bi_rw, i);
++			atomic_inc(&sh->count);
++			bi->bi_sector = sh->sector + rdev->data_offset;
++			bi->bi_flags = 1 << BIO_UPTODATE;
++			bi->bi_vcnt = 1;
++			bi->bi_max_vecs = 1;
++			bi->bi_idx = 0;
++			bi->bi_io_vec = &sh->dev[i].vec;
++			bi->bi_io_vec[0].bv_len = STRIPE_SIZE;
++			bi->bi_io_vec[0].bv_offset = 0;
++			bi->bi_size = STRIPE_SIZE;
++			bi->bi_next = NULL;
++			if (rw == WRITE &&
++			    test_bit(R5_ReWrite, &sh->dev[i].flags))
++				atomic_add(STRIPE_SECTORS, &rdev->corrected_errors);
++			generic_make_request(bi);
++		} else {
++			if (rw == WRITE)
++				set_bit(STRIPE_DEGRADED, &sh->state);
++			PRINTK("skip op %ld on disc %d for sector %llu\n",
++				bi->bi_rw, i, (unsigned long long)sh->sector);
++			clear_bit(R5_LOCKED, &sh->dev[i].flags);
++			set_bit(STRIPE_HANDLE, &sh->state);
++		}
++	}
 +}
 +
- /**
-  * ioat_dma_is_complete - poll the status of a IOAT DMA transaction
-  * @chan: IOAT DMA channel handle
-@@ -607,6 +567,7 @@ static void ioat_start_null_desc(struct ioat_dma_chan *ioat_chan)
- 
- 	desc->hw->ctl = IOAT_DMA_DESCRIPTOR_NUL;
- 	desc->hw->next = 0;
-+	desc->async_tx.ack = 1;
- 
- 	list_add_tail(&desc->node, &ioat_chan->used_desc);
- 	spin_unlock_bh(&ioat_chan->desc_lock);
-@@ -633,6 +594,8 @@ static int ioat_self_test(struct ioat_device *device)
- 	u8 *src;
- 	u8 *dest;
- 	struct dma_chan *dma_chan;
++static struct dma_async_tx_descriptor *
++async_copy_data(int frombio, struct bio *bio, struct page *page, sector_t sector,
++	struct dma_async_tx_descriptor *tx)
++{
++	struct bio_vec *bvl;
++	struct page *bio_page;
++	int i;
++	int page_offset;
++
++	if (bio->bi_sector >= sector)
++		page_offset = (signed)(bio->bi_sector - sector) * 512;
++	else
++		page_offset = (signed)(sector - bio->bi_sector) * -512;
++	bio_for_each_segment(bvl, bio, i) {
++		int len = bio_iovec_idx(bio,i)->bv_len;
++		int clen;
++		int b_offset = 0;
++
++		if (page_offset < 0) {
++			b_offset = -page_offset;
++			page_offset += b_offset;
++			len -= b_offset;
++		}
++
++		if (len > 0 && page_offset + len > STRIPE_SIZE)
++			clen = STRIPE_SIZE - page_offset;
++		else clen = len;
++
++		if (clen > 0) {
++			b_offset += bio_iovec_idx(bio,i)->bv_offset;
++			bio_page = bio_iovec_idx(bio,i)->bv_page;
++			if (frombio)
++				tx = async_memcpy(page, bio_page, page_offset,
++					b_offset, clen,
++					ASYNC_TX_DEP_ACK | ASYNC_TX_KMAP_SRC,
++					tx, NULL, NULL);
++			else
++				tx = async_memcpy(bio_page, page, b_offset,
++					page_offset, clen,
++					ASYNC_TX_DEP_ACK | ASYNC_TX_KMAP_DST,
++					tx, NULL, NULL);
++		}
++		if (clen < len) /* hit end of page */
++			break;
++		page_offset +=  len;
++	}
++
++	return tx;
++}
++
++static void ops_complete_biofill(void *stripe_head_ref)
++{
++	struct stripe_head *sh = stripe_head_ref;
++	struct bio *return_bi = NULL, *bi;
++	int i;
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	/* clear completed biofills */
++	spin_lock(&sh->lock);
++	BUG_ON(!test_and_clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack));
++	BUG_ON(!test_and_clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending));
++	for (i=sh->disks ; i-- ;) {
++		struct r5dev *dev = &sh->dev[i];
++		/* acknowledge completion of a biofill operation */
++		if (test_bit(R5_Wantfill, &dev->flags) && !dev->toread)
++			clear_bit(R5_Wantfill, &dev->flags);
++
++		/* reply to the read */
++		if (dev->read && !test_bit(R5_Wantfill, &dev->flags) &&
++			!test_bit(STRIPE_OP_BIOFILL, &sh->ops.pending)) {
++			return_bi = dev->read;
++			dev->read = NULL;
++		}
++	}
++	spin_unlock(&sh->lock);
++
++	while ((bi=return_bi)) {
++		int bytes = bi->bi_size;
++
++		return_bi = bi->bi_next;
++		bi->bi_next = NULL;
++		bi->bi_size = 0;
++		bi->bi_end_io(bi, bytes,
++			      test_bit(BIO_UPTODATE, &bi->bi_flags)
++			        ? 0 : -EIO);
++	}
++	
++	release_stripe(sh);
++}
++
++static void ops_run_biofill(struct stripe_head *sh)
++{
++	struct bio *return_bi = NULL;
++	struct dma_async_tx_descriptor *tx = NULL;
++	raid5_conf_t *conf = sh->raid_conf;
++	int i;
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	for (i=sh->disks ; i-- ;) {
++		struct r5dev *dev = &sh->dev[i];
++		if (test_bit(R5_Wantfill, &dev->flags)) {
++			struct bio *rbi, *rbi2;
++			spin_lock_irq(&conf->device_lock);
++			rbi = dev->toread;
++			dev->toread = NULL;
++			spin_unlock_irq(&conf->device_lock);
++			while (rbi && rbi->bi_sector < dev->sector + STRIPE_SECTORS) {
++				tx = async_copy_data(0, rbi, dev->page,
++					dev->sector, tx);
++				rbi2 = r5_next_bio(rbi, dev->sector);
++				spin_lock_irq(&conf->device_lock);
++				if (--rbi->bi_phys_segments == 0) {
++					rbi->bi_next = return_bi;
++					return_bi = rbi;
++				}
++				spin_unlock_irq(&conf->device_lock);
++				rbi = rbi2;
++			}
++			dev->read = return_bi;
++		}
++	}
++
++	atomic_inc(&sh->count);
++	async_interrupt(ASYNC_TX_DEP_ACK | ASYNC_TX_ACK, tx,
++		ops_complete_biofill, sh);
++}
++
++static void ops_complete_compute5(void *stripe_head_ref)
++{
++	struct stripe_head *sh = stripe_head_ref;
++	int target = sh->ops.target;
++	struct r5dev *tgt = &sh->dev[target];
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	set_bit(R5_UPTODATE, &tgt->flags);
++	BUG_ON(!test_and_clear_bit(R5_Wantcompute, &tgt->flags));
++	BUG_ON(test_and_set_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete));
++	set_bit(STRIPE_HANDLE, &sh->state);
++	release_stripe(sh);
++}
++
++static struct dma_async_tx_descriptor *
++ops_run_compute5(struct stripe_head *sh, unsigned long pending)
++{
++	/* kernel stack size limits the total number of disks */
++	int disks = sh->disks;
++	struct page *xor_srcs[disks];
++	int target = sh->ops.target;
++	struct r5dev *tgt = &sh->dev[target];
++	struct page *xor_dest = tgt->page;
++	int count = 0;
 +	struct dma_async_tx_descriptor *tx;
-+	dma_addr_t addr;
- 	dma_cookie_t cookie;
- 	int err = 0;
- 
-@@ -658,7 +621,13 @@ static int ioat_self_test(struct ioat_device *device)
- 		goto out;
- 	}
- 
--	cookie = ioat_dma_memcpy_buf_to_buf(dma_chan, dest, src, IOAT_TEST_SIZE);
-+	tx = ioat_dma_prep_memcpy(dma_chan, IOAT_TEST_SIZE, 0);
-+	async_tx_ack(tx);
-+	addr = dma_map_single(dma_chan->device->dev, src, IOAT_TEST_SIZE, DMA_TO_DEVICE);
-+	ioat_set_src(addr, tx, 0);
-+	addr = dma_map_single(dma_chan->device->dev, dest, IOAT_TEST_SIZE, DMA_FROM_DEVICE);
-+	ioat_set_dest(addr, tx, 0);
-+	cookie = ioat_tx_submit(tx);
- 	ioat_dma_memcpy_issue_pending(dma_chan);
- 	msleep(1);
- 
-@@ -754,13 +723,16 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
- 	INIT_LIST_HEAD(&device->common.channels);
- 	enumerate_dma_channels(device);
- 
-+	set_bit(DMA_MEMCPY, &device->common.capabilities);
- 	device->common.device_alloc_chan_resources = ioat_dma_alloc_chan_resources;
- 	device->common.device_free_chan_resources = ioat_dma_free_chan_resources;
--	device->common.device_memcpy_buf_to_buf = ioat_dma_memcpy_buf_to_buf;
--	device->common.device_memcpy_buf_to_pg = ioat_dma_memcpy_buf_to_pg;
--	device->common.device_memcpy_pg_to_pg = ioat_dma_memcpy_pg_to_pg;
--	device->common.device_memcpy_complete = ioat_dma_is_complete;
--	device->common.device_memcpy_issue_pending = ioat_dma_memcpy_issue_pending;
-+	device->common.device_prep_dma_memcpy = ioat_dma_prep_memcpy;
-+	device->common.device_set_src = ioat_set_src;
-+	device->common.device_set_dest = ioat_set_dest;
-+	device->common.device_is_tx_complete = ioat_dma_is_complete;
-+	device->common.device_issue_pending = ioat_dma_memcpy_issue_pending;
-+	device->common.device_dependency_added = ioat_dma_dependency_added;
-+	device->common.dev = &pdev->dev;
- 	printk(KERN_INFO "Intel(R) I/OAT DMA Engine found, %d channels\n",
- 		device->common.chancnt);
- 
-diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
-index 62b26a9..fed259a 100644
---- a/drivers/dma/ioatdma.h
-+++ b/drivers/dma/ioatdma.h
-@@ -105,15 +105,20 @@ struct ioat_dma_chan {
- /**
-  * struct ioat_desc_sw - wrapper around hardware descriptor
-  * @hw: hardware DMA descriptor
-+ * @async_tx:
-  * @node:
-+ * @group_list:
-+ * @group_cnt:
-  * @cookie:
-  * @phys:
-  */
- 
- struct ioat_desc_sw {
- 	struct ioat_dma_descriptor *hw;
-+	struct dma_async_tx_descriptor async_tx;
- 	struct list_head node;
--	dma_cookie_t cookie;
-+	struct list_head group_list;
-+	int group_count;
- 	dma_addr_t phys;
- 	DECLARE_PCI_UNMAP_ADDR(src)
- 	DECLARE_PCI_UNMAP_LEN(src_len)
-@@ -122,4 +127,3 @@ struct ioat_desc_sw {
- };
- 
- #endif /* IOATDMA_H */
--
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index c94d8f1..a35040d 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -21,13 +21,12 @@
- #ifndef DMAENGINE_H
- #define DMAENGINE_H
- 
--#ifdef CONFIG_DMA_ENGINE
--
- #include <linux/device.h>
- #include <linux/uio.h>
- #include <linux/kref.h>
- #include <linux/completion.h>
- #include <linux/rcupdate.h>
-+#include <linux/dma-mapping.h>
- 
- /**
-  * enum dma_event - resource PNP/power managment events
-@@ -65,6 +64,47 @@ enum dma_status {
- };
- 
- /**
-+ * enum dma_transaction_type - DMA transaction types/indexes
-+ */
-+enum dma_transaction_type {
-+	DMA_MEMCPY,
-+	DMA_XOR,
-+	DMA_PQ_XOR,
-+	DMA_DUAL_XOR,
-+	DMA_PQ_UPDATE,
-+	DMA_ZERO_SUM,
-+	DMA_PQ_ZERO_SUM,
-+	DMA_MEMSET,
-+	DMA_MEMCPY_CRC32C,
-+	DMA_INTERRUPT,
-+};
++	int i;
 +
-+#define DMA_TX_TYPE_START (DMA_MEMCPY)
-+#define DMA_TX_TYPE_END (DMA_INTERRUPT)
-+#define dma_async_for_each_tx_type(index) for (\
-+	 index = (unsigned long) DMA_TX_TYPE_START;\
-+	 index <= (unsigned long) DMA_TX_TYPE_END;\
-+	 index++)
++	PRINTK("%s: stripe %llu block: %d\n",
++		__FUNCTION__, (unsigned long long)sh->sector, target);
++	BUG_ON(!test_bit(R5_Wantcompute, &tgt->flags));
 +
-+#define DMA_CHAN_REQUEST_ALL (-1)
++	for (i=disks ; i-- ; )
++		if (i != target)
++			xor_srcs[count++] = sh->dev[i].page;
 +
-+/**
-+ * enum dma_capability - DMA transfer/transform capabilities
-+ */
-+enum dma_capability {
-+	DMA_CAP_MEMCPY	      = (1 << DMA_MEMCPY),
-+	DMA_CAP_XOR	      = (1 << DMA_XOR),
-+	DMA_CAP_PQ_XOR	      = (1 << DMA_PQ_XOR),
-+	DMA_CAP_DUAL_XOR      = (1 << DMA_DUAL_XOR),
-+	DMA_CAP_PQ_UPDATE     = (1 << DMA_PQ_UPDATE),
-+	DMA_CAP_ZERO_SUM      = (1 << DMA_ZERO_SUM),
-+	DMA_CAP_PQ_ZERO_SUM   = (1 << DMA_PQ_ZERO_SUM),
-+	DMA_CAP_MEMSET	      = (1 << DMA_MEMSET),
-+	DMA_CAP_MEMCPY_CRC32C = (1 << DMA_MEMCPY_CRC32C),
-+	DMA_CAP_INTERRUPT     = (1 << DMA_INTERRUPT),
-+};
++	atomic_inc(&sh->count);
 +
-+/**
-  * struct dma_chan_percpu - the per-CPU part of struct dma_chan
-  * @refcount: local_t used for open-coded "bigref" counting
-  * @memcpy_count: transaction counter
-@@ -149,154 +189,142 @@ typedef void (*dma_event_callback) (struct dma_client *client,
-  */
- struct dma_client {
- 	dma_event_callback	event_callback;
--	unsigned int		chan_count;
--	unsigned int		chans_desired;
-+	int			chan_count;
-+	int			chans_desired;
- 
- 	spinlock_t		lock;
- 	struct list_head	channels;
- 	struct list_head	global_node;
- };
- 
-+typedef void (*dma_async_tx_callback)(void *dma_async_param);
-+/**
-+ * struct dma_async_tx_descriptor - async transaction descriptor
-+ * @cookie: tracking cookie for this transaction, set to -EBUSY if
-+ *	this tx is sitting on a dependency list
-+ * @ack: the descriptor can not be reused until the client acknowledges
-+ *	receipt, i.e. has has a chance to establish any dependency chains
-+ * @type: allows backend implementations to key off the tx_type
-+ * @callback: routine to call after this operation is complete
-+ * @callback_param: general parameter to pass to the callback routine
-+ * @chan: target channel for this operation
-+ * @depend_list: at completion this list of transactions are submitted
-+ * @depend_node: allow this transaction to be executed after another
-+ *	transaction has completed
-+ * @parent: pointer to the next level up in the dependency chain
-+ * @lock: protect the dependency list
-+ */
-+struct dma_async_tx_descriptor {
-+	dma_cookie_t cookie;
-+	int ack;
-+	enum dma_transaction_type type;
++	tx = async_xor(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
++		ASYNC_TX_XOR_ZERO_DST | ASYNC_TX_INT_EN, NULL,
++		ops_complete_compute5, sh);
++
++	/* ack now if postxor is not set to be run */
++	if (tx && !test_bit(STRIPE_OP_POSTXOR, &pending))
++		async_tx_ack(tx);
++
++	return tx;
++}
++
++static void ops_complete_prexor(void *stripe_head_ref)
++{
++	struct stripe_head *sh = stripe_head_ref;
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	set_bit(STRIPE_OP_PREXOR, &sh->ops.complete);
++}
++
++static struct dma_async_tx_descriptor *
++ops_run_prexor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
++{
++	/* kernel stack size limits the total number of disks */
++	int disks = sh->disks;
++	struct page *xor_srcs[disks];
++	int count = 0, pd_idx = sh->pd_idx, i;
++
++	/* existing parity data subtracted */
++	struct page *xor_dest = xor_srcs[count++] = sh->dev[pd_idx].page;
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	for (i=disks ; i-- ;) {
++		struct r5dev *dev = &sh->dev[i];
++		/* Only process blocks that are known to be uptodate */
++		if (dev->towrite && test_bit(R5_Wantprexor, &dev->flags))
++			xor_srcs[count++] = dev->page;
++	}
++
++	tx = async_xor(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
++		ASYNC_TX_DEP_ACK | ASYNC_TX_XOR_DROP_DST, tx,
++		ops_complete_prexor, sh);
++
++	/* trigger a channel switch if necesary */
++	tx = async_interrupt_cond(DMA_MEMCPY, ASYNC_TX_DEP_ACK, tx);
++
++	return tx;
++}
++
++static struct dma_async_tx_descriptor *
++ops_run_biodrain(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
++{
++	int disks = sh->disks;
++	int pd_idx = sh->pd_idx, i;
++
++	/* check if prexor is active which means only process blocks
++	 * that are part of a read-modify-write (Wantprexor)
++	 */
++	int prexor = test_bit(STRIPE_OP_PREXOR, &sh->ops.pending);
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	for (i=disks ; i-- ;) {
++		struct r5dev *dev = &sh->dev[i];
++		struct bio *chosen;
++		int towrite;
++
++		towrite = 0;
++		if (prexor) { /* rmw */
++			if (dev->towrite && test_bit(R5_Wantprexor, &dev->flags))
++				towrite = 1;
++		} else { /* rcw */
++			if (i!=pd_idx && dev->towrite &&
++				test_bit(R5_LOCKED, &dev->flags))
++				towrite = 1;
++		}
++
++		if (towrite) {
++			struct bio *wbi;
++
++			spin_lock(&sh->lock);
++			chosen = dev->towrite;
++			dev->towrite = NULL;
++			BUG_ON(dev->written);
++			wbi = dev->written = chosen;
++			spin_unlock(&sh->lock);
++
++			while (wbi && wbi->bi_sector < dev->sector + STRIPE_SECTORS) {
++				tx = async_copy_data(1, wbi, dev->page,
++					dev->sector, tx);
++				wbi = r5_next_bio(wbi, dev->sector);
++			}
++		}
++	}
++
++	return tx;
++}
++
++static void ops_complete_postxor(void *stripe_head_ref)
++{
++	struct stripe_head *sh = stripe_head_ref;
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	BUG_ON(test_and_set_bit(STRIPE_OP_POSTXOR, &sh->ops.complete));
++	set_bit(STRIPE_HANDLE, &sh->state);
++	release_stripe(sh);
++}
++
++static void ops_complete_write(void *stripe_head_ref)
++{
++	struct stripe_head *sh = stripe_head_ref;
++	int disks = sh->disks, i, pd_idx = sh->pd_idx;
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	for (i=disks ; i-- ;) {
++		struct r5dev *dev = &sh->dev[i];
++		if (dev->written || i == pd_idx)
++			set_bit(R5_UPTODATE, &dev->flags);
++	}
++
++	BUG_ON(test_and_set_bit(STRIPE_OP_BIODRAIN, &sh->ops.complete));
++	BUG_ON(test_and_set_bit(STRIPE_OP_POSTXOR, &sh->ops.complete));
++
++	set_bit(STRIPE_HANDLE, &sh->state);
++	release_stripe(sh);
++}
++
++static void
++ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
++{
++	/* kernel stack size limits the total number of disks */
++	int disks = sh->disks;
++	struct page *xor_srcs[disks];
++
++	int count = 0, pd_idx = sh->pd_idx, i;
++	struct page *xor_dest;
++	int prexor = test_bit(STRIPE_OP_PREXOR, &sh->ops.pending);
++	unsigned long flags;
 +	dma_async_tx_callback callback;
-+	void *callback_param;
-+	struct dma_chan *chan;
-+	struct list_head depend_list;
-+	struct list_head depend_node;
-+	struct dma_async_tx_descriptor *parent;
-+	spinlock_t lock;
-+};
 +
- /**
-  * struct dma_device - info on the entity supplying DMA services
-  * @chancnt: how many DMA channels are supported
-  * @channels: the list of struct dma_chan
-  * @global_node: list_head for global dma_device_list
-+ * @capabilities: one or more dma_capability flags
-+ * @max_xor: maximum number of xor sources, 0 if no capability
-  * @refcount: reference count
-  * @done: IO completion struct
-  * @dev_id: unique device ID
-+ * @dev: struct device reference for dma mapping api
-  * @device_alloc_chan_resources: allocate resources and return the
-  *	number of allocated descriptors
-  * @device_free_chan_resources: release DMA channel's resources
-- * @device_memcpy_buf_to_buf: memcpy buf pointer to buf pointer
-- * @device_memcpy_buf_to_pg: memcpy buf pointer to struct page
-- * @device_memcpy_pg_to_pg: memcpy struct page/offset to struct page/offset
-- * @device_memcpy_complete: poll the status of an IOAT DMA transaction
-- * @device_memcpy_issue_pending: push appended descriptors to hardware
-+ * @device_prep_dma_memcpy: prepares a memcpy operation
-+ * @device_prep_dma_xor: prepares a xor operation
-+ * @device_prep_dma_zero_sum: prepares a zero_sum operation
-+ * @device_prep_dma_memset: prepares a memset operation
-+ * @device_prep_dma_interrupt: prepares an end of chain interrupt operation
-+ * @device_tx_submit: execute an operation
-+ * @device_set_dest: set a destination address in a hardware descriptor
-+ * @device_set_src: set a source address in a hardware descriptor
-+ * @device_dependency_added: async_tx notifies the channel about new deps
-+ * @device_issue_pending: push pending transactions to hardware
-  */
- struct dma_device {
- 
- 	unsigned int chancnt;
- 	struct list_head channels;
- 	struct list_head global_node;
-+	unsigned long capabilities;
-+	unsigned int max_xor;
- 
- 	struct kref refcount;
- 	struct completion done;
- 
- 	int dev_id;
-+	struct device *dev;
- 
- 	int (*device_alloc_chan_resources)(struct dma_chan *chan);
- 	void (*device_free_chan_resources)(struct dma_chan *chan);
--	dma_cookie_t (*device_memcpy_buf_to_buf)(struct dma_chan *chan,
--			void *dest, void *src, size_t len);
--	dma_cookie_t (*device_memcpy_buf_to_pg)(struct dma_chan *chan,
--			struct page *page, unsigned int offset, void *kdata,
--			size_t len);
--	dma_cookie_t (*device_memcpy_pg_to_pg)(struct dma_chan *chan,
--			struct page *dest_pg, unsigned int dest_off,
--			struct page *src_pg, unsigned int src_off, size_t len);
--	enum dma_status (*device_memcpy_complete)(struct dma_chan *chan,
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
 +
-+	struct dma_async_tx_descriptor *(*device_prep_dma_memcpy)(
-+		struct dma_chan *chan, size_t len, int int_en);
-+	struct dma_async_tx_descriptor *(*device_prep_dma_xor)(
-+		struct dma_chan *chan, unsigned int src_cnt, size_t len,
-+		int int_en);
-+	struct dma_async_tx_descriptor *(*device_prep_dma_zero_sum)(
-+		struct dma_chan *chan, unsigned int src_cnt, size_t len,
-+		u32 *result, int int_en);
-+	struct dma_async_tx_descriptor *(*device_prep_dma_memset)(
-+		struct dma_chan *chan, int value, size_t len, int int_en);
-+	struct dma_async_tx_descriptor *(*device_prep_dma_interrupt)(
-+		struct dma_chan *chan);
++	/* check if prexor is active which means only process blocks
++	 * that are part of a read-modify-write (written)
++	 */
++	if (prexor) {
++		xor_dest = xor_srcs[count++] = sh->dev[pd_idx].page;
++		for (i=disks; i--;) {
++			struct r5dev *dev = &sh->dev[i];
++			if (dev->written)
++				xor_srcs[count++] = dev->page;
++		}
++	} else {
++		xor_dest = sh->dev[pd_idx].page;
++		for (i=disks; i--;) {
++			struct r5dev *dev = &sh->dev[i];
++			if (i!=pd_idx)
++				xor_srcs[count++] = dev->page;
++		}
++	}
 +
-+	dma_cookie_t (*device_tx_submit)(struct dma_async_tx_descriptor *tx);
-+	void (*device_set_dest)(dma_addr_t addr,
-+		struct dma_async_tx_descriptor *tx, int index);
-+	void (*device_set_src)(dma_addr_t addr,
-+		struct dma_async_tx_descriptor *tx, int index);
-+	void (*device_dependency_added)(struct dma_chan *chan);
-+	enum dma_status (*device_is_tx_complete)(struct dma_chan *chan,
- 			dma_cookie_t cookie, dma_cookie_t *last,
- 			dma_cookie_t *used);
--	void (*device_memcpy_issue_pending)(struct dma_chan *chan);
-+	void (*device_issue_pending)(struct dma_chan *chan);
- };
- 
- /* --- public DMA engine API --- */
- 
- struct dma_client *dma_async_client_register(dma_event_callback event_callback);
- void dma_async_client_unregister(struct dma_client *client);
--void dma_async_client_chan_request(struct dma_client *client,
--		unsigned int number);
--
--/**
-- * dma_async_memcpy_buf_to_buf - offloaded copy between virtual addresses
-- * @chan: DMA channel to offload copy to
-- * @dest: destination address (virtual)
-- * @src: source address (virtual)
-- * @len: length
-- *
-- * Both @dest and @src must be mappable to a bus address according to the
-- * DMA mapping API rules for streaming mappings.
-- * Both @dest and @src must stay memory resident (kernel memory or locked
-- * user space pages).
-- */
--static inline dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
--	void *dest, void *src, size_t len)
--{
--	int cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
--
--	return chan->device->device_memcpy_buf_to_buf(chan, dest, src, len);
--}
--
--/**
-- * dma_async_memcpy_buf_to_pg - offloaded copy from address to page
-- * @chan: DMA channel to offload copy to
-- * @page: destination page
-- * @offset: offset in page to copy to
-- * @kdata: source address (virtual)
-- * @len: length
-- *
-- * Both @page/@offset and @kdata must be mappable to a bus address according
-- * to the DMA mapping API rules for streaming mappings.
-- * Both @page/@offset and @kdata must stay memory resident (kernel memory or
-- * locked user space pages)
-- */
--static inline dma_cookie_t dma_async_memcpy_buf_to_pg(struct dma_chan *chan,
--	struct page *page, unsigned int offset, void *kdata, size_t len)
--{
--	int cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
--
--	return chan->device->device_memcpy_buf_to_pg(chan, page, offset,
--	                                             kdata, len);
--}
--
--/**
-- * dma_async_memcpy_pg_to_pg - offloaded copy from page to page
-- * @chan: DMA channel to offload copy to
-- * @dest_pg: destination page
-- * @dest_off: offset in page to copy to
-- * @src_pg: source page
-- * @src_off: offset in page to copy from
-- * @len: length
-- *
-- * Both @dest_page/@dest_off and @src_page/@src_off must be mappable to a bus
-- * address according to the DMA mapping API rules for streaming mappings.
-- * Both @dest_page/@dest_off and @src_page/@src_off must stay memory resident
-- * (kernel memory or locked user space pages).
-- */
--static inline dma_cookie_t dma_async_memcpy_pg_to_pg(struct dma_chan *chan,
--	struct page *dest_pg, unsigned int dest_off, struct page *src_pg,
--	unsigned int src_off, size_t len)
--{
--	int cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
--
--	return chan->device->device_memcpy_pg_to_pg(chan, dest_pg, dest_off,
--	                                            src_pg, src_off, len);
--}
-+void dma_async_client_chan_request(struct dma_client *client, int number);
-+dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
-+        void *dest, void *src, size_t len);
-+dma_cookie_t dma_async_memcpy_buf_to_pg(struct dma_chan *chan,
-+        struct page *page, unsigned int offset, void *kdata, size_t len);
-+dma_cookie_t dma_async_memcpy_pg_to_pg(struct dma_chan *chan,
-+        struct page *dest_pg, unsigned int dest_off, struct page *src_pg,
-+        unsigned int src_off, size_t len);
-+void dma_async_tx_descriptor_init(struct dma_async_tx_descriptor *tx,
-+	struct dma_chan *chan);
- 
- /**
-- * dma_async_memcpy_issue_pending - flush pending copies to HW
-+ * dma_async_issue_pending - flush pending transactions to HW
-  * @chan: target DMA channel
++	/* check whether this postxor is part of a write */
++	callback = test_bit(STRIPE_OP_BIODRAIN, &sh->ops.pending) ?
++		ops_complete_write : ops_complete_postxor;
++
++	/* 1/ if we prexor'd then the dest is reused as a source
++	 * 2/ if we did not prexor then we are redoing the parity
++	 * set ASYNC_TX_XOR_DROP_DST and ASYNC_TX_XOR_ZERO_DST
++	 * for the synchronous xor case
++	 */
++	flags = ASYNC_TX_DEP_ACK | ASYNC_TX_ACK | ASYNC_TX_INT_EN |
++		(prexor ? ASYNC_TX_XOR_DROP_DST : ASYNC_TX_XOR_ZERO_DST);
++
++	atomic_inc(&sh->count);
++	tx = async_xor(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
++		flags, tx, callback, sh);
++}
++
++static void ops_complete_check(void *stripe_head_ref)
++{
++	struct stripe_head *sh = stripe_head_ref;
++	int pd_idx = sh->pd_idx;
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	if (test_and_clear_bit(STRIPE_OP_MOD_DMA_CHECK, &sh->ops.pending) &&
++		sh->ops.zero_sum_result == 0)
++		set_bit(R5_UPTODATE, &sh->dev[pd_idx].flags);
++
++	BUG_ON(test_and_set_bit(STRIPE_OP_CHECK, &sh->ops.complete));
++	set_bit(STRIPE_HANDLE, &sh->state);
++	release_stripe(sh);
++}
++
++static void ops_run_check(struct stripe_head *sh)
++{
++	/* kernel stack size limits the total number of disks */
++	int disks = sh->disks;
++	struct page *xor_srcs[disks];
++	struct dma_async_tx_descriptor *tx;
++
++	int count = 0, pd_idx = sh->pd_idx, i;
++	struct page *xor_dest = xor_srcs[count++] = sh->dev[pd_idx].page;
++
++	PRINTK("%s: stripe %llu\n", __FUNCTION__,
++		(unsigned long long)sh->sector);
++
++	for (i=disks; i--;) {
++		struct r5dev *dev = &sh->dev[i];
++		if (i != pd_idx)
++			xor_srcs[count++] = dev->page;
++	}
++
++	tx = async_xor_zero_sum(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
++		&sh->ops.zero_sum_result, 0, NULL, NULL, NULL);
++
++	if (tx)
++		set_bit(STRIPE_OP_MOD_DMA_CHECK, &sh->ops.pending);
++	else
++		clear_bit(STRIPE_OP_MOD_DMA_CHECK, &sh->ops.pending);
++
++	atomic_inc(&sh->count);
++	tx = async_interrupt(ASYNC_TX_DEP_ACK | ASYNC_TX_ACK, tx,
++		ops_complete_check, sh);
++}
++
++static void raid5_run_ops(struct stripe_head *sh, unsigned long pending)
++{
++	int overlap_clear=0, i, disks = sh->disks;
++	struct dma_async_tx_descriptor *tx = NULL;
++
++	if (test_bit(STRIPE_OP_BIOFILL, &pending)) {
++		ops_run_biofill(sh);
++		overlap_clear++;
++	}
++
++	if (test_bit(STRIPE_OP_COMPUTE_BLK, &pending))
++		tx = ops_run_compute5(sh, pending);
++
++	if (test_bit(STRIPE_OP_PREXOR, &pending))
++		tx = ops_run_prexor(sh, tx);
++
++	if (test_bit(STRIPE_OP_BIODRAIN, &pending)) {
++		tx = ops_run_biodrain(sh, tx);
++		overlap_clear++;
++	}
++
++	if (test_bit(STRIPE_OP_POSTXOR, &pending))
++		ops_run_postxor(sh, tx);
++
++	if (test_bit(STRIPE_OP_CHECK, &pending))
++		ops_run_check(sh);
++
++	if (test_bit(STRIPE_OP_IO, &pending))
++		ops_run_io(sh);
++
++	if (overlap_clear)
++		for (i=disks; i-- ;) {
++			struct r5dev *dev = &sh->dev[i];
++			if (test_and_clear_bit(R5_Overlap, &dev->flags))
++				wake_up(&sh->raid_conf->wait_for_overlap);
++		}
++}
++
+ static int grow_one_stripe(raid5_conf_t *conf)
+ {
+ 	struct stripe_head *sh;
+diff --git a/include/linux/raid/raid5.h b/include/linux/raid/raid5.h
+index d8286db..3541d2c 100644
+--- a/include/linux/raid/raid5.h
++++ b/include/linux/raid/raid5.h
+@@ -116,13 +116,42 @@
+  *  attach a request to an active stripe (add_stripe_bh())
+  *     lockdev attach-buffer unlockdev
+  *  handle a stripe (handle_stripe())
+- *     lockstripe clrSTRIPE_HANDLE ... (lockdev check-buffers unlockdev) .. change-state .. record io needed unlockstripe schedule io
++ *     lockstripe clrSTRIPE_HANDLE ... (lockdev check-buffers unlockdev) .. change-state .. record io/ops needed unlockstripe schedule io/ops
+  *  release an active stripe (release_stripe())
+  *     lockdev if (!--cnt) { if  STRIPE_HANDLE, add to handle_list else add to inactive-list } unlockdev
   *
-  * This allows drivers to push copies to HW in batches,
-  * reducing MMIO writes where possible.
+  * The refcount counts each thread that have activated the stripe,
+  * plus raid5d if it is handling it, plus one for each active request
+- * on a cached buffer.
++ * on a cached buffer, and plus one if the stripe is undergoing stripe
++ * operations.
++ *
++ * Stripe operations are performed outside the stripe lock,
++ * the stripe operations are:
++ * -copying data between the stripe cache and user application buffers
++ * -computing blocks to save a disk access, or to recover a missing block
++ * -updating the parity on a write operation (reconstruct write and read-modify-write)
++ * -checking parity correctness
++ * -running i/o to disk
++ * These operations are carried out by raid5_run_ops which uses the async_tx
++ * api to (optionally) offload operations to dedicated hardware engines.
++ * When requesting an operation handle_stripe sets the pending bit for the
++ * operation and increments the count.  raid5_run_ops is then run whenever
++ * the count is non-zero.
++ * There are some critical dependencies between the operations that prevent some
++ * from being requested while another is in flight.
++ * 1/ Parity check operations destroy the in cache version of the parity block,
++ *    so we prevent parity dependent operations like writes and compute_blocks
++ *    from starting while a check is in progress.  Some dma engines can perform
++ *    the check without damaging the parity block, in these cases the parity block
++ *    is re-marked up to date (assuming the check was successful) and is not
++ *    re-read from disk.
++ * 2/ When a write operation is requested we immediately lock the affected blocks,
++ *    and mark them as not up to date.  This causes new read requests to be held
++ *    off, as well as parity checks and compute block operations.
++ * 3/ Once a compute block operation has been requested handle_stripe treats that
++ *    block as if it is up to date.  raid5_run_ops
++ *    guaruntees that any operation that is dependent on the
++ *    compute block result is initiated after the compute block completes.
   */
--static inline void dma_async_memcpy_issue_pending(struct dma_chan *chan)
-+static inline void dma_async_issue_pending(struct dma_chan *chan)
- {
--	return chan->device->device_memcpy_issue_pending(chan);
-+	return chan->device->device_issue_pending(chan);
- }
  
-+#define dma_async_memcpy_issue_pending(chan) dma_async_issue_pending(chan)
+ struct stripe_head {
+@@ -136,11 +165,19 @@ struct stripe_head {
+ 	spinlock_t		lock;
+ 	int			bm_seq;	/* sequence number for bitmap flushes */
+ 	int			disks;			/* disks in stripe */
++	struct stripe_operations {
++		unsigned long	   pending;  /* pending operations (set for request->issue->complete) */
++		unsigned long	   ack;	     /* submitted operations (set for issue->complete */
++		unsigned long	   complete; /* completed operations flags (set for complete) */
++		int		   target;   /* STRIPE_OP_COMPUTE_BLK target */
++		int		   count;    /* raid5_runs_ops is set to run when this is non-zero */
++		u32		   zero_sum_result;
++	} ops;
+ 	struct r5dev {
+ 		struct bio	req;
+ 		struct bio_vec	vec;
+ 		struct page	*page;
+-		struct bio	*toread, *towrite, *written;
++		struct bio	*toread, *read, *towrite, *written;
+ 		sector_t	sector;			/* sector of this page */
+ 		unsigned long	flags;
+ 	} dev[1]; /* allocated with extra space depending of RAID geometry */
+@@ -158,6 +195,10 @@ struct stripe_head {
+ #define	R5_ReWrite	9	/* have tried to over-write the readerror */
+ 
+ #define	R5_Expanded	10	/* This block now has post-expand data */
++#define	R5_Wantcompute	11	/* compute_block in progress treat as uptodate */
++#define	R5_Wantfill	12	/* dev->toread contains a bio that needs filling */
++#define	R5_Wantprexor	13	/* distinguish blocks ready for rmw from other "towrites" */
 +
- /**
-- * dma_async_memcpy_complete - poll for transaction completion
-+ * dma_async_is_tx_complete - poll for transaction completion
-  * @chan: DMA channel
-  * @cookie: transaction identifier to check status of
-  * @last: returns last completed cookie, can be NULL
-@@ -306,12 +334,15 @@ static inline void dma_async_memcpy_issue_pending(struct dma_chan *chan)
-  * internal state and can be used with dma_async_is_complete() to check
-  * the status of multiple cookies without re-checking hardware state.
+ /*
+  * Write method
   */
--static inline enum dma_status dma_async_memcpy_complete(struct dma_chan *chan,
-+static inline enum dma_status dma_async_is_tx_complete(struct dma_chan *chan,
- 	dma_cookie_t cookie, dma_cookie_t *last, dma_cookie_t *used)
- {
--	return chan->device->device_memcpy_complete(chan, cookie, last, used);
-+	return chan->device->device_is_tx_complete(chan, cookie, last, used);
- }
- 
-+#define dma_async_memcpy_complete(chan, cookie, last, used)\
-+	dma_async_is_tx_complete(chan, cookie, last, used)
+@@ -179,6 +220,22 @@ struct stripe_head {
+ #define	STRIPE_EXPANDING	9
+ #define	STRIPE_EXPAND_SOURCE	10
+ #define	STRIPE_EXPAND_READY	11
 +
- /**
-  * dma_async_is_complete - test a cookie against chan state
-  * @cookie: transaction identifier to test status of
-@@ -334,6 +365,7 @@ static inline enum dma_status dma_async_is_complete(dma_cookie_t cookie,
- 	return DMA_IN_PROGRESS;
- }
- 
-+enum dma_status dma_sync_wait(struct dma_chan *chan, dma_cookie_t cookie);
- 
- /* --- DMA device --- */
- 
-@@ -362,5 +394,4 @@ dma_cookie_t dma_memcpy_pg_to_iovec(struct dma_chan *chan, struct iovec *iov,
- 	struct dma_pinned_list *pinned_list, struct page *page,
- 	unsigned int offset, size_t len);
- 
--#endif /* CONFIG_DMA_ENGINE */
- #endif /* DMAENGINE_H */
++/*
++ * Operations flags (in issue order)
++ */
++#define STRIPE_OP_BIOFILL	0
++#define STRIPE_OP_COMPUTE_BLK	1
++#define STRIPE_OP_PREXOR	2
++#define STRIPE_OP_BIODRAIN	3
++#define STRIPE_OP_POSTXOR	4
++#define STRIPE_OP_CHECK	5
++#define STRIPE_OP_IO		6
++
++/* modifiers to the base operations */
++#define STRIPE_OP_MOD_REPAIR_PD	7 /* compute the parity block and write it back */
++#define STRIPE_OP_MOD_DMA_CHECK	8 /* parity is not corrupted by the check */
++
+ /*
+  * Plugging:
+  *
