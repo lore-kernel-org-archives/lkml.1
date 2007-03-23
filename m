@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934292AbXCWDVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933543AbXCWERj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934292AbXCWDVQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 23:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934291AbXCWDVQ
+	id S933543AbXCWERj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 00:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933463AbXCWERj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 23:21:16 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55500 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934284AbXCWDVO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 23:21:14 -0400
-Date: Fri, 23 Mar 2007 12:21:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Cc: "tony.luck@intel.com" <tony.luck@intel.com>,
-       "dmosberger@gmail.com" <dmosberger@gmail.com>,
-       surinder.kumar@oracle.com, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH][2/2] double stack limit (rfc)
-Message-Id: <20070323122129.555a87fd.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Fri, 23 Mar 2007 00:17:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:49454 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933543AbXCWERi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 00:17:38 -0400
+Subject: Re: [PATCH 0/21] MSI rework
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Greg KH <greg@kroah.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, daniel.e.wolstenholme@intel.com
+In-Reply-To: <20070322220837.GD20713@kroah.com>
+References: <1174560686.307511.956605711793.qpush@cradle>
+	 <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com>
+	 <20070322190834.GA14802@kroah.com>
+	 <1174600936.10836.53.camel@localhost.localdomain>
+	 <20070322220837.GD20713@kroah.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qcFmlYradbrcybATOf4J"
+Date: Fri, 23 Mar 2007 15:17:23 +1100
+Message-Id: <1174623443.5401.21.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.8.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, ia64's hard-stack-size (rlimit.max) is sum of register-stack size and
-memory-stack size. But soft-stack-size (rlimit.cur) accounitng is not sum..
-they are accounted independently. This is inconsistent.
 
-I hear some people says that "When I set stack-size-limit to 32M,
-I want to use 32M of memory stack..." and register-stack expansion can
-fail because stack is used up by memory-stack.
+--=-qcFmlYradbrcybATOf4J
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This patch moves register-stack's base address to lower address.
-By this patch, meaning of hard-stack-size can be equal to soft-stack-size and
-we can avoid the case "register-backing store cannot be expanded because the
-memory stack uses the whole stack".
+On Thu, 2007-03-22 at 15:08 -0700, Greg KH wrote:
+> On Fri, Mar 23, 2007 at 09:02:16AM +1100, Benjamin Herrenschmidt wrote:
+> > > > i.e.  First the simple bug fixes that should purely be restructure =
+of
+> > > > msi.c with no affect on anything outside of it.
+> > > >=20
+> > > > And then get into the architecture enhancements.
+> > >=20
+> > > I agree, care to break these down into a smaller series of patches th=
+at
+> > > can go into -mm for testing?
+> >=20
+> > I don't see the point in breaking the serie... you can bisect half way
+> > through if necessary... it's made of small patches that are done, afaik=
+,
+> > in such a way that the whole thing should still work at any level in th=
+e
+> > serie.
+> >=20
+> > The serie just expresses the dependency between them.
+>=20
+> Ok, then which patches in the series should be acceptable to take right
+> now for 2.6.22?  The "clean up the BUG" ones?
 
-How about this ?
+The series is already very verbose, I don't think I can split most of
+them any smaller without producing an unbuildable kernel.
 
-Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+I think 1 up to and including 11 are safe as houses, they shouldn't have
+any effect other than to clean up the code.
 
-Index: linux-2.6.21-rc4/arch/ia64/mm/init.c
-===================================================================
---- linux-2.6.21-rc4.orig/arch/ia64/mm/init.c
-+++ linux-2.6.21-rc4/arch/ia64/mm/init.c
-@@ -152,7 +152,7 @@ inline void
- ia64_set_rbs_bot (void)
- {
- 	unsigned long stack_size = current->signal->rlim[RLIMIT_STACK].rlim_max & -16;
--
-+	stack_size *= 2;
- 	if (stack_size > MAX_USER_STACK_SIZE)
- 		stack_size = MAX_USER_STACK_SIZE;
- 	current->thread.rbs_bot = PAGE_ALIGN(current->mm->start_stack - stack_size);
+The rest make functional changes, but they're all quite small, self
+contained, and easily bisectable. I'd certainly like Eric to have a look
+at them, but at some point I think we're just going to have to bite the
+bullet and merge them, and see what we get in the way of bug reports.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-qcFmlYradbrcybATOf4J
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBGA1TTdSjSd0sB4dIRApgeAKC3XIW28ZOuctyNk6Z7TZ0OpadwUwCeMT37
+tCqD8CJV7yNHpGF0PvSI0p4=
+=qPKe
+-----END PGP SIGNATURE-----
+
+--=-qcFmlYradbrcybATOf4J--
 
