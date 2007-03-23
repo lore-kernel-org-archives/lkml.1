@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933940AbXCWTlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934182AbXCWTqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933940AbXCWTlo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934134AbXCWTln
+	id S934182AbXCWTqA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbXCWTqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:41:43 -0400
-Received: from www.osadl.org ([213.239.205.134]:42452 "EHLO mail.tglx.de"
+	Fri, 23 Mar 2007 15:46:00 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:41935 "EHLO zlynx.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933940AbXCWTlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:41:42 -0400
-Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Soeren Sonnenburg <kernel@nn7.de>, Ingo Molnar <mingo@elte.hu>,
-       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       John Stultz <johnstul@us.ibm.com>
-In-Reply-To: <20070323185028.GR752@stusta.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323185028.GR752@stusta.de>
-Content-Type: text/plain
-Date: Fri, 23 Mar 2007 20:49:03 +0100
-Message-Id: <1174679344.10840.334.camel@localhost.localdomain>
+	id S934182AbXCWTp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:45:59 -0400
+Subject: Re: [Bluez-devel] 2.6.21-rc4-mm1
+From: Zan Lynx <zlynx@acm.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: BlueZ development <bluez-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1174486370.15638.29.camel@aeonflux.holtmann.net>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	 <1174433034.62033.16.camel@localhost>
+	 <20070320223643.d8cbc3f6.akpm@linux-foundation.org>
+	 <1174486370.15638.29.camel@aeonflux.holtmann.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-sucEl6uUGBYi+kYCiXwt"
+Date: Fri, 23 Mar 2007 13:45:54 -0600
+Message-Id: <1174679154.289400.22.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.8.3 
+X-Envelope-From: zlynx@acm.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
-> This email lists some known regressions in Linus' tree compared to 2.6.20.
-> 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you caused a breakage or I'm considering you in any other way
-> possibly involved with one or more of these issues.
-> 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> 
-> 
-> Subject    : system doesn't come out of suspend  (CONFIG_NO_HZ)
-> References : http://lkml.org/lkml/2007/2/22/391
-> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
->              Soeren Sonnenburg <kernel@nn7.de>
-> Handled-By : Thomas Gleixner <tglx@linutronix.de>
->              Ingo Molnar <mingo@elte.hu>
->              Tejun Heo <htejun@gmail.com>
->              Rafael J. Wysocki <rjw@sisk.pl>
-> Status     : problem is being debugged
-> 
-> 
-> Subject    : first disk access after resume takes several minutes
->              ('date' does not advance after resume from RAM, CONFIG_NO_HZ=n)
-> References : http://lkml.org/lkml/2007/3/8/117
-> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-> Handled-By : Thomas Gleixner <tglx@linutronix.de>
->              Ingo Molnar <mingo@elte.hu>
-> Status     : problem is being debugged
 
-I lost track of Michaels various nested problems.
+--=-sucEl6uUGBYi+kYCiXwt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Michael can you please give a summary on _all_ entries in the
-regressions list against Linus latest ?
+On Wed, 2007-03-21 at 15:12 +0100, Marcel Holtmann wrote:
+> Hi Andrew,
+>=20
+> > >       * Freezes immediately if I allow Bluetooth to configure.
+> >=20
+> > cc bluez-devel
+>=20
+> is the -mm specific or does this also happens with 2.6.21-rc4?
 
-Thanks,
+Bluetooth works now, so it isn't entirely -mm's fault. =20
 
-	tglx
+I applied a posted patch for the Sonic Silicon Backplane.  I also set
+all the older BCM43xx driver modules to N, and my freeze with wireless
+went away.
 
+On this laptop (a Compaq R3000) the Bluetooth and the wireless are
+controlled by the same front panel button, so I wonder if they are
+related in other ways as well.
+
+If I get a chance to play with it this weekend I will see if I can
+isolate the change that fixes/breaks it.
+--=20
+Zan Lynx <zlynx@acm.org>
+
+--=-sucEl6uUGBYi+kYCiXwt
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQBGBC5yG8fHaOLTWwgRAlVtAKCSCnUhdf8C7zpWj4jSq8yWkmh+5QCfR6p6
+d98lBKF95LpOMJRkXkEpZ8c=
+=0Z65
+-----END PGP SIGNATURE-----
+
+--=-sucEl6uUGBYi+kYCiXwt--
 
