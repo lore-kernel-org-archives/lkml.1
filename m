@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422843AbXCWMRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbXCWMWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422843AbXCWMRp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 08:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422841AbXCWMRp
+	id S1752869AbXCWMWJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 08:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXCWMWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 08:17:45 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54410 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1422833AbXCWMRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 08:17:44 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19zz0oK/aBzT8ruV/R45mVtzK2R2hmwTrZApvAQmB
-	XU+iS9lngqnqGO
-Subject: Re: RSDL v0.31
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Willy Tarreau <w@1wt.eu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Xavier Bestel <xavier.bestel@free.fr>, Mark Lord <lkml@rtr.ca>,
-       Al Boldi <a1426z@gawab.com>, ck@vds.kolivas.org,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Nicholas Miell <nmiell@comcast.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703231659.20291.kernel@kolivas.org>
-References: <200703042335.26785.a1426z@gawab.com>
-	 <200703230950.51716.kernel@kolivas.org>
-	 <1174624794.6554.64.camel@Homer.simpson.net>
-	 <200703231659.20291.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Fri, 23 Mar 2007 13:17:39 +0100
-Message-Id: <1174652259.11028.9.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Fri, 23 Mar 2007 08:22:09 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60069 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752595AbXCWMWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 08:22:07 -0400
+Date: Fri, 23 Mar 2007 13:21:58 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <andrew@sanpeople.com>
+Subject: Re: [linux-pm] [patch 2/2] clk_must_disable() implementation on AT91
+Message-ID: <20070323122158.GE9667@elf.ucw.cz>
+References: <200703221108.21861.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703221108.21861.david-b@pacbell.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 16:59 +1100, Con Kolivas wrote:
+Hi!
+
+> This supports the new clk_must_disable() interface for AT91 systems:
 > 
-> The deadline mechanism is easy to hit and works. Try printk'ing it.
+>  - Implement the call, replacing at91_suspend_entering_slow_clock()
+>    and eliminating various "that's not exported" build warnings;
+> 
+>  - Use it in three drivers: USB Host, USB Peripheral, and RS232 serial.
+> 
+> Briefly, those are three of the drivers that need to act differently when
+> going into deeper sleep states (suspend-to-RAM, vs standby), since among
+> other things they can't act as wakeup event sources without using the
+> clocks which are disabled in those deeper sleep states.
+> 
+> (The at91_ethernet driver would be another such driver, but it doesn't
+> currently implement wake-on-LAN even in the "standby" mode.)
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-I tried rc4-rsdl.33, and in a log that's 782kb, there is only one
-instance of an overrun, which I created.  On my box, it's dead code.  
+FWIW, it looks okay to me. But you probably need to cc akpm if you
+want it merged...
 
-	-Mike
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
