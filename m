@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbXCWINy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422688AbXCWIRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934031AbXCWINy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 04:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934257AbXCWINy
+	id S1422688AbXCWIRn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 04:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422692AbXCWIRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 04:13:54 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:12455 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934031AbXCWINw (ORCPT
+	Fri, 23 Mar 2007 04:17:42 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:38082 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422688AbXCWIRl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 04:13:52 -0400
-X-IronPort-AV: i="4.14,318,1170651600"; 
-   d="scan'208"; a="25256181:sNHT6348536068"
-Subject: Re: [PATCH -mm try#2] Blackfin: architecture update patch
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: bryan.wu@analog.com, Arnd Bergmann <arnd@arndb.de>,
-       Paul Mundt <lethal@linux-sh.org>,
-       bert hubert <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070322235923.be143ea9.akpm@linux-foundation.org>
-References: <1174471618.5648.50.camel@roc-desktop>
-	 <20070321125631.GA13192@linux-sh.org>
-	 <1174629871.18866.22.camel@roc-desktop>
-	 <20070322235923.be143ea9.akpm@linux-foundation.org>
-Content-Type: text/plain
+	Fri, 23 Mar 2007 04:17:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pw+7pS3GUhaja8Qhbp9lx/+WFEmTYcbim0isdR3pee159hoc7MCdQzHLpFy1vSJl8dCF/Hdf7w7BCTDBsbtkjG6tY7RL9xe5oulCVaSNQM2dRAMdQapsd+QqOvsZBr4GKBtQ1B8EW3gRZmijGNkmpSos+ms9+DHWUe6yDQvBn7g=
+Message-ID: <6bffcb0e0703230117i5b01d13frc2d7798276e70bab@mail.gmail.com>
+Date: Fri, 23 Mar 2007 09:17:34 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.21-rc4-rt0-kdump (was: Re: [patch] setup_boot_APIC_clock() irq-enable fix)
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070323080252.GA11668@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Fri, 23 Mar 2007 16:14:00 +0800
-Message-Id: <1174637640.18866.37.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Disposition: inline
+References: <6bffcb0e0703211338i2aa6f933ube53c6604c78e285@mail.gmail.com>
+	 <20070322093119.GA19394@elte.hu>
+	 <6bffcb0e0703220557h7ff64282qf378623452c07d03@mail.gmail.com>
+	 <4602843D.9000306@googlemail.com> <20070323071502.GA2090@elte.hu>
+	 <6bffcb0e0703230058i6ec926cch76b86f47eb0e5383@mail.gmail.com>
+	 <20070323080252.GA11668@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-22 at 23:59 -0800, Andrew Morton wrote:
-> On Fri, 23 Mar 2007 14:04:30 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
-> 
-> > This is the latest blackfin update patch.
-> 
-> I think I'm going to give up on the present set of blackfin patches.  I don't
-> know whether what I have is up-to-date and various versions of various random
-> patches keep on flying past.
-> 
+On 23/03/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+>
+> > >> Hibernation is still broken.
+> > >>
+> > >>
+> > >http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc4-rt0/console.log
+> > >>
+> > >http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc4-rt0/rt-config
+> > >
+> > >what's the failure mode besides the lockdep + other debug messages -
+> > >it doesnt resume? Your log seems to have at least one sequence of
+> > >resume related messages - those seem to have worked fine.
+> >
+> > Kernel has crashed after
+>
+> crashed == 'hung hard' or 'spontaneous reboot' or 'other'?
 
-Sorry for this mess up. You know, this is a big patch. After Arnd and
-Paul's review, it took lots of time to fix their request. But I think
-this update patch is the patch to satisfy Arnd and Paul's review and
-they almost think this one is fine to add to -mm.
+It means 'nothing has happened for a five minutes'.
 
-> So I think it's best if I drop everything and, when people have finished reviewing
-> everything, you resend it all.
+>
+> > Read 497936 kbytes in 23.09 seconds (21.56 MB/s)
+> > swsusp: Reading resume file was successful
+> > PM: Preparing devices for restore.
+> > Suspending console(s)
+>
+> i havent used sw-suspend for a while, so here's a stupid question: why
+> does it try to suspend the consoles in the resume path? I assume the
+> messages above mean that we are already in the resume path?
 
-If this one is merged into -mm, I will follow the rule to send small and
-fixed patches. But you know incremental patch should have a base. I hope
-you can add this to -mm. And if Arnd, Paul or other kernel maintainers
-find some issues, we fix them and send small patches one by one.
+Yes. (I'm not sure, but "Suspending console(s)" might come from PM_DEBUG.)
 
-Thanks Andrew.
--Bryan
+>
+>         Ingo
+>
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
