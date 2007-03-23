@@ -1,67 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933879AbXCWRwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbXCWRx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933879AbXCWRwv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 13:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933899AbXCWRwu
+	id S933859AbXCWRx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 13:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933890AbXCWRx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 13:52:50 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35165 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933879AbXCWRwt (ORCPT
+	Fri, 23 Mar 2007 13:53:29 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:40673 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933911AbXCWRx1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 13:52:49 -0400
-Date: Fri, 23 Mar 2007 18:54:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com
-Subject: [PATCH] libata: Misc minor merge fixups
-Message-ID: <20070323185440.5544c04d@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Mar 2007 13:53:27 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Fri, 23 Mar 2007 13:50:12 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, mike.mclagan@linux.org
+Subject: [PATCH] Delete unused header file linux/if_wanpipe_common.h.
+Message-ID: <Pine.LNX.4.64.0703231343530.7168@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing terribly exciting here just odd glitches from the merge
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc4-mm1/drivers/ata/pata_hpt366.c linux-2.6.21-rc4-mm1/drivers/ata/pata_hpt366.c
---- linux.vanilla-2.6.21-rc4-mm1/drivers/ata/pata_hpt366.c	2007-03-23 11:49:49.000000000 +0000
-+++ linux-2.6.21-rc4-mm1/drivers/ata/pata_hpt366.c	2007-03-23 13:07:13.000000000 +0000
-@@ -169,7 +169,6 @@
- 
- /**
-  *	hpt366_filter	-	mode selection filter
-- *	@ap: ATA interface
-  *	@adev: ATA device
-  *
-  *	Block UDMA on devices that cause trouble with this controller.
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc4-mm1/drivers/ata/pata_serverworks.c linux-2.6.21-rc4-mm1/drivers/ata/pata_serverworks.c
---- linux.vanilla-2.6.21-rc4-mm1/drivers/ata/pata_serverworks.c	2007-03-23 11:49:49.000000000 +0000
-+++ linux-2.6.21-rc4-mm1/drivers/ata/pata_serverworks.c	2007-03-23 13:22:56.000000000 +0000
-@@ -139,7 +139,6 @@
- /**
-  *	serverworks_cable_detect	-	cable detection
-  *	@ap: ATA port
-- *	@deadline: deadline jiffies for the operation
-  *
-  *	Perform cable detection according to the device and subvendor
-  *	identifications
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc4-mm1/drivers/ata/pata_sis.c linux-2.6.21-rc4-mm1/drivers/ata/pata_sis.c
---- linux.vanilla-2.6.21-rc4-mm1/drivers/ata/pata_sis.c	2007-03-23 11:49:49.000000000 +0000
-+++ linux-2.6.21-rc4-mm1/drivers/ata/pata_sis.c	2007-03-23 13:24:23.000000000 +0000
-@@ -88,7 +88,6 @@
- /**
-  *	sis_133_cable_detect	-	check for 40/80 pin
-  *	@ap: Port
-- *	@deadline: deadline jiffies for the operation
-  *
-  *	Perform cable detection for the later UDMA133 capable
-  *	SiS chipset.
-@@ -109,7 +108,6 @@
- /**
-  *	sis_66_cable_detect	-	check for 40/80 pin
-  *	@ap: Port
-- *	@deadline: deadline jiffies for the operation
-  *
-  *	Perform cable detection on the UDMA66, UDMA100 and early UDMA133
-  *	SiS IDE controllers.
+Delete the unreferenced header file include/linux/if_wanpipe_common.h,
+as well as the reference to it in the Doc file.
+
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+  there is a related header file, linux/if_wanpipe.h, that is unused
+in the source tree but is still exported to userspace.  if that file
+is also unnecessary, i can resubmit the patch to take out both of
+them.
+
+
+ Documentation/networking/wan-router.txt |    1
+ include/linux/if_wanpipe_common.h       |   58 ----------------------
+ 2 files changed, 59 deletions(-)
+
+diff --git a/Documentation/networking/wan-router.txt b/Documentation/networking/wan-router.txt
+index 653978d..07dd6d9 100644
+--- a/Documentation/networking/wan-router.txt
++++ b/Documentation/networking/wan-router.txt
+@@ -250,7 +250,6 @@ PRODUCT COMPONENTS AND RELATED FILES
+ 	sdladrv.h	SDLA support module API definitions
+ 	sdlasfm.h	SDLA firmware module definitions
+ 	if_wanpipe.h	WANPIPE Socket definitions
+-	if_wanpipe_common.h	WANPIPE Socket/Driver common definitions.
+ 	sdlapci.h	WANPIPE PCI definitions
+
+
+diff --git a/include/linux/if_wanpipe_common.h b/include/linux/if_wanpipe_common.h
+deleted file mode 100644
+index 6e5461d..0000000
+--- a/include/linux/if_wanpipe_common.h
++++ /dev/null
+@@ -1,58 +0,0 @@
+-/*****************************************************************************
+-* if_wanipe_common.h   Sangoma Driver/Socket common area definitions.
+-*
+-* Author:       Nenad Corbic <ncorbic@sangoma.com>
+-*
+-* Copyright:    (c) 2000 Sangoma Technologies Inc.
+-*
+-*               This program is free software; you can redistribute it and/or
+-*               modify it under the terms of the GNU General Public License
+-*               as published by the Free Software Foundation; either version
+-*               2 of the License, or (at your option) any later version.
+-* ============================================================================
+-* Jan 13, 2000  Nenad Corbic      Initial version
+-*****************************************************************************/
+-
+-
+-#ifndef _WANPIPE_SOCK_DRIVER_COMMON_H
+-#define _WANPIPE_SOCK_DRIVER_COMMON_H
+-
+-typedef struct {
+-	struct net_device *slave;
+-	atomic_t packet_sent;
+-	atomic_t receive_block;
+-	atomic_t command;
+-	atomic_t disconnect;
+-	atomic_t driver_busy;
+-	long common_critical;
+-	struct timer_list *tx_timer;
+-	struct sock *sk;		/* Wanpipe Sock bind's here */
+-	int (*func)(struct sk_buff *skb, struct net_device *dev,
+-		    struct sock *sk);
+-
+-	struct work_struct wanpipe_work;    /* deferred keventd work */
+-	unsigned char rw_bind;			  /* Sock bind state */
+-	unsigned char usedby;
+-	unsigned char state;
+-	unsigned char svc;
+-	unsigned short lcn;
+-	void *mbox;
+-} wanpipe_common_t;
+-
+-
+-enum {
+-	WANSOCK_UNCONFIGURED,	/* link/channel is not configured */
+-	WANSOCK_DISCONNECTED,	/* link/channel is disconnected */
+-	WANSOCK_CONNECTING,		/* connection is in progress */
+-	WANSOCK_CONNECTED,		/* link/channel is operational */
+-	WANSOCK_LIMIT,		/* for verification only */
+-	WANSOCK_DUALPORT,		/* for Dual Port cards */
+-	WANSOCK_DISCONNECTING,
+-	WANSOCK_BINDED,
+-	WANSOCK_BIND_LISTEN,
+-	WANSOCK_LISTEN
+-};
+-
+-#endif
+-
+-
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
