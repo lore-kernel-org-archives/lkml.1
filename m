@@ -1,98 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXCWTE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbXCWTFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751385AbXCWTE1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbXCWTE1
+	id S932173AbXCWTFJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932275AbXCWTFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:04:27 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33035 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752316AbXCWTEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:04:25 -0400
-Date: Fri, 23 Mar 2007 20:05:02 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@osdl.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] lguest: clean rest of linkage warnings (bar one)
-Message-ID: <20070323190502.GA8512@uranus.ravnborg.org>
-References: <1174532243.2713.95.camel@localhost.localdomain> <1174558182.2713.151.camel@localhost.localdomain> <20070322114549.GC29453@uranus.ravnborg.org> <1174634740.29496.12.camel@localhost.localdomain>
+	Fri, 23 Mar 2007 15:05:08 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:60147 "EHLO lxorguk.ukuu.org.uk"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932067AbXCWTFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:05:05 -0400
+Date: Fri, 23 Mar 2007 20:08:19 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       kyle@canonical.com
+Subject: Re: HPA patches
+Message-ID: <20070323200819.4e734f4f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070323112411.f6a8a762.randy.dunlap@oracle.com>
+References: <20070323191321.5d00887a@lxorguk.ukuu.org.uk>
+	<20070323112411.f6a8a762.randy.dunlap@oracle.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1174634740.29496.12.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, 2007 at 06:25:39PM +1100, Rusty Russell wrote:
-> On Thu, 2007-03-22 at 12:45 +0100, Sam Ravnborg wrote:
-> > On Thu, Mar 22, 2007 at 09:09:42PM +1100, Rusty Russell wrote:
-> > > It also fixes the remaining warnings, except one.  The code in
-> > > modpost.c which needs to be taught that it's legal to link from
-> > > .paravirtprobe to .init.text is horrible, and I'm pretty sure I'd just
-> > > make it worse.
-> > 
-> > If you drop me a sample of the exact warning I will add this one too.
-> > Current kbuild.git contains a lot of fixes in this area so I refer to
-> > do so on top of that tree.
+> > +static int ata_ignore_hpa = 0;
 > 
-> WARNING: vmlinux - Section mismatch: reference to .init.text: from .paravirtprobe between '__start_paravirtprobe' (at offset 0xc0464c7c) and '__stop_paravirtprobe'
+> Don't init to 0.  Not needed, bloats binary files.
+
+It'll be one for the final release 8)
+
+> > +module_param_named(ignore_hpa, ata_ignore_hpa, int, 0644);
+> > +MODULE_PARM_DESC(ignore_hpa, "Ignore HPA (0=off 1=on)");
 > 
-> Sam, you're always so polite and damn helpful: I'm pretty sure that
-> violates the core tenets of Linux etiquette.
-I get this strange feeling that you are planning to ask me to do much more....
+> So 1 = on = ignore, right?
 
-Anyway I have added following path to kbuild.git.
-Two small unrelated changes sneaked in (deleting a wrong part of a 
-comment and adding an empty line)
+Yes.
 
-It should apply on top of latest -mm
+> > +	tf.command = ATA_CMD_READ_NATIVE_MAX_EXT;
+> > +	tf.flags |= ATA_TFLAG_DEVICE | ATA_TFLAG_LBA48 | ATA_TFLAG_ISADDR;
+> > +	tf.protocol |= ATA_PROT_NODATA;
+> > +	tf.device = 0x40;
+> 
+> What is 0x40?  can it be #defined (or enum-ed) instead of a magic
+> value?  please?  (more of same below)
 
-	Sam
+It's 0x40. Its a "command dependant bit" - no useful name.
 
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 06a16ac..1e578fd 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -626,7 +626,6 @@ static int strrcmp(const char *s, const char *sub)
-  *   tosec   = .init.text
-  *   fromsec = .text
-  *   atsym = kernel_init
-- *   Some symbols belong to init section but still it is ok to reference
-  *
-  * Pattern 7:
-  *  Logos used in drivers/video/logo reside in __initdata but the
-@@ -643,6 +642,13 @@ static int strrcmp(const char *s, const char *sub)
-  *  The pattern is:
-  *  tosec    = .init.text
-  *  fromsec  = __ksymtab*
-+ *
-+ * Pattern 9:
-+ *  Symbols contained in .paravirtprobe amy safely reference
-+ *  .init.text.
-+ *  The pattern is:
-+ *  tosec   = .init.text
-+ *  fromsec  = .paravirtprobe
-  **/
- static int secref_whitelist(const char *modname, const char *tosec,
- 			    const char *fromsec, const char *atsym,
-@@ -720,10 +726,17 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 	    (strncmp(fromsec, ".text", strlen(".text")) == 0) &&
- 	    (strncmp(refsymname, "logo_", strlen("logo_")) == 0))
- 		return 1;
-+
- 	/* Check for pattern 8 */
- 	if ((strcmp(tosec, ".init.text") == 0) &&
- 	    (strncmp(fromsec, "__ksymtab", strlen("__ksymtab")) == 0))
- 		return 1;
-+
-+	/* Check for pattern 9 */
-+	if ((strcmp(tosec, ".init.text") == 0) &&
-+	    (strcmp(fromsec, ".paravirtprobe") == 0))
-+		return 1;
-+
- 	return 0;
- }
- 
+> > +	u64 sectors = dev->n_sectors;
+> > +	u64 hpa_sectors;
+> > +	
+> > +	if (ata_id_has_lba48(dev->id))
+> > +		hpa_sectors = ata_read_native_max_address_ext(dev);
+> > +	else
+> > +		hpa_sectors = ata_read_native_max_address(dev);
+> > +
+> > +	/* if no hpa, both should be equal */
+> > +	ata_dev_printk(dev, KERN_INFO, "%s 1: sectors = %lld, hpa_sectors = %lld\n",
+> > +		__FUNCTION__, sectors, hpa_sectors);
+> 
+> (long long) or (unsigned long long) on sectors and hpa_sectors...
+
+u64 is always unsigned long long (and its debug anyway)
+
+> 
+> > +
+> > +	if (hpa_sectors > sectors) {
+> > +		ata_dev_printk(dev, KERN_INFO,
+> > +			"Host Protected Area detected:\n"
+> > +			"\tcurrent size: %lld sectors\n"
+> > +			"\tnative size: %lld sectors\n",
+> > +			sectors, hpa_sectors);
+> 
+> printk format types ok?
+
+Yes
+
+> > +			if (hpa_sectors) {
+> > +				ata_dev_printk(dev, KERN_INFO,
+> > +					"native size increased to %lld sectors\n", hpa_sectors);
+> 
+> Line lengths < 80 and printk format types?
+
+See above, and the 80 column fascists can suffer in the name of
+readability. 
+
+Alan
