@@ -1,151 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945915AbXCWPaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992456AbXCWPcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945915AbXCWPaS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 11:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945918AbXCWPaS
+	id S2992456AbXCWPcJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 11:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945918AbXCWPcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 11:30:18 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:60043 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945915AbXCWPaP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 11:30:15 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Fri, 23 Mar 2007 11:27:01 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH] MTD: Delete unused header file linux/mtd/iflash.h.
-Message-ID: <Pine.LNX.4.64.0703231125210.29985@CPE00045a9c397f-CM001225dbafb6>
+	Fri, 23 Mar 2007 11:32:09 -0400
+Received: from holomorphy.com ([66.93.40.71]:42933 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945920AbXCWPcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 11:32:08 -0400
+Date: Fri, 23 Mar 2007 08:30:06 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Ken Chen <kenchen@google.com>, Adam Litke <agl@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] rfc: introduce /dev/hugetlb
+Message-ID: <20070323153006.GW2986@holomorphy.com>
+References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com> <Pine.LNX.4.64.0703231457360.4133@skynet.skynet.ie> <20070323150924.GV2986@holomorphy.com> <Pine.LNX.4.64.0703231514370.4133@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.569, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, TW_DW 0.08, TW_WM 0.08, TW_XF 0.08,
-	UPPERCASE_25_50 0.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703231514370.4133@skynet.skynet.ie>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 23 Mar 2007, William Lee Irwin III wrote:
+>> Lack of compiletesting beyond x86-64 in all probability.
 
-Delete the unreferenced header file include/linux/mtd/iflash.h.
+On Fri, Mar 23, 2007 at 03:15:55PM +0000, Mel Gorman wrote:
+> Ok, this will go kablamo on Power then even if it compiles. I don't 
+> consider it a fundamental problem though. For the purposes of an RFC, it's 
+> grand and something that can be worked with.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+He needs to un-#ifdef the prototype (which he already does), but he
+needs to leave the definition under #ifdef while removing the static
+qualifier. A relatively minor fixup.
 
----
 
-diff --git a/include/linux/mtd/iflash.h b/include/linux/mtd/iflash.h
-deleted file mode 100644
-index 9aa5b4f..0000000
---- a/include/linux/mtd/iflash.h
-+++ /dev/null
-@@ -1,98 +0,0 @@
--/* $Id: iflash.h,v 1.2 2000/11/13 18:01:54 dwmw2 Exp $ */
--
--#ifndef __MTD_IFLASH_H__
--#define __MTD_IFLASH_H__
--
--/* Extended CIS registers for Series 2 and 2+ cards */
--/* The registers are all offsets from 0x4000 */
--#define CISREG_CSR		0x0100
--#define CISREG_WP		0x0104
--#define CISREG_RDYBSY		0x0140
--
--/* Extended CIS registers for Series 2 cards */
--#define CISREG_SLEEP		0x0118
--#define CISREG_RDY_MASK		0x0120
--#define CISREG_RDY_STATUS	0x0130
--
--/* Extended CIS registers for Series 2+ cards */
--#define CISREG_VCR		0x010c
--
--/* Card Status Register */
--#define CSR_SRESET		0x20	/* Soft reset */
--#define CSR_CMWP		0x10	/* Common memory write protect */
--#define CSR_PWRDOWN		0x08	/* Power down status */
--#define CSR_CISWP		0x04	/* Common memory CIS WP */
--#define CSR_WP			0x02	/* Mechanical write protect */
--#define CSR_READY		0x01	/* Ready/busy status */
--
--/* Write Protection Register */
--#define WP_BLKEN		0x04	/* Enable block locking */
--#define WP_CMWP			0x02	/* Common memory write protect */
--#define WP_CISWP		0x01	/* Common memory CIS WP */
--
--/* Voltage Control Register */
--#define VCR_VCC_LEVEL		0x80	/* 0 = 5V, 1 = 3.3V */
--#define VCR_VPP_VALID		0x02	/* Vpp Valid */
--#define VCR_VPP_GEN		0x01	/* Integrated Vpp generator */
--
--/* Ready/Busy Mode Register */
--#define RDYBSY_RACK		0x02	/* Ready acknowledge */
--#define RDYBSY_MODE		0x01	/* 1 = high performance */
--
--#define LOW(x) ((x) & 0xff)
--
--/* 28F008SA-Compatible Command Set */
--#define IF_READ_ARRAY		0xffff
--#define IF_INTEL_ID		0x9090
--#define IF_READ_CSR		0x7070
--#define IF_CLEAR_CSR		0x5050
--#define IF_WRITE		0x4040
--#define IF_BLOCK_ERASE		0x2020
--#define IF_ERASE_SUSPEND	0xb0b0
--#define IF_CONFIRM		0xd0d0
--
--/* 28F016SA Performance Enhancement Commands */
--#define IF_READ_PAGE		0x7575
--#define IF_PAGE_SWAP		0x7272
--#define IF_SINGLE_LOAD		0x7474
--#define IF_SEQ_LOAD		0xe0e0
--#define IF_PAGE_WRITE		0x0c0c
--#define IF_RDY_MODE		0x9696
--#define IF_RDY_LEVEL		0x0101
--#define IF_RDY_PULSE_WRITE	0x0202
--#define IF_RDY_PULSE_ERASE	0x0303
--#define IF_RDY_DISABLE		0x0404
--#define IF_LOCK_BLOCK		0x7777
--#define IF_UPLOAD_STATUS	0x9797
--#define IF_READ_ESR		0x7171
--#define IF_ERASE_UNLOCKED	0xa7a7
--#define IF_SLEEP		0xf0f0
--#define IF_ABORT		0x8080
--#define IF_UPLOAD_DEVINFO	0x9999
--
--/* Definitions for Compatible Status Register */
--#define CSR_WR_READY		0x8080	/* Write state machine status */
--#define CSR_ERA_SUSPEND		0x4040	/* Erase suspend status */
--#define CSR_ERA_ERR		0x2020	/* Erase status */
--#define CSR_WR_ERR		0x1010	/* Data write status */
--#define CSR_VPP_LOW		0x0808	/* Vpp status */
--
--/* Definitions for Global Status Register */
--#define GSR_WR_READY		0x8080	/* Write state machine status */
--#define GSR_OP_SUSPEND		0x4040	/* Operation suspend status */
--#define GSR_OP_ERR		0x2020	/* Device operation status */
--#define GSR_SLEEP		0x1010	/* Device sleep status */
--#define GSR_QUEUE_FULL		0x0808	/* Queue status */
--#define GSR_PAGE_AVAIL		0x0404	/* Page buffer available status */
--#define GSR_PAGE_READY		0x0202	/* Page buffer status */
--#define GSR_PAGE_SELECT		0x0101	/* Page buffer select status */
--
--/* Definitions for Block Status Register */
--#define BSR_READY		0x8080	/* Block status */
--#define BSR_UNLOCK		0x4040	/* Block lock status */
--#define BSR_FAILED		0x2020	/* Block operation status */
--#define BSR_ABORTED		0x1010	/* Operation abort status */
--#define BSR_QUEUE_FULL		0x0808	/* Queue status */
--#define BSR_VPP_LOW		0x0404	/* Vpp status */
--
--#endif /* __MTD_IFLASH_H__ */
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+-- wli
