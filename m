@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992571AbXCWU5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbXCWU70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992571AbXCWU5G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 16:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992572AbXCWU5G
+	id S932564AbXCWU70 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 16:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934321AbXCWU70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 16:57:06 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:45699 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992571AbXCWU5F (ORCPT
+	Fri, 23 Mar 2007 16:59:26 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:52592 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932564AbXCWU7Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 16:57:05 -0400
-Date: Fri, 23 Mar 2007 20:56:53 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       kyle@canonical.com
-Message-ID: <20070323205652.GA9965@srcf.ucam.org>
-References: <20070323191321.5d00887a@lxorguk.ukuu.org.uk>
+	Fri, 23 Mar 2007 16:59:25 -0400
+Message-ID: <46043F96.8030800@zytor.com>
+Date: Fri, 23 Mar 2007 13:59:02 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070323191321.5d00887a@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: HPA patches
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Kyle Moffett <mrmacman_g4@mac.com>,
+       Andrew Morton <akpm@linux-foundation.org>, "J.H." <warthog9@kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysctl: vfs_cache_divisor
+References: <20061214223718.GA3816@elf.ucw.cz> <20061216094421.416a271e.randy.dunlap@oracle.com> <20061216095702.3e6f1d1f.akpm@osdl.org> <458434B0.4090506@oracle.com> <1166297434.26330.34.camel@localhost.localdomain> <20061219063413.GI24090@1wt.eu> <1166511171.26330.120.camel@localhost.localdomain> <20070106103331.48150aed.randy.dunlap@oracle.com> <459FF60D.7080901@zytor.com> <1168112266.2821.2.camel@entropy> <20070106121301.d07de0c9.akpm@osdl.org> <45A0041F.4060903@zytor.com> <20070319122740.286f602e.randy.dunlap@oracle.com> <20070319133613.9f4881db.akpm@linux-foundation.org> <45FEF5BC.90809@oracle.com> <45FF6189.9080508@zytor.com> <20070321160132.983812ac.randy.dunlap@oracle.com> <20070321161140.457a3cd7.akpm@linux-foundation.org> <CDF579E6-342C-4B99-916A-3CE118ABD02F@mac.com> <46043A66.7030102@oracle.com>
+In-Reply-To: <46043A66.7030102@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, 2007 at 07:13:21PM +0000, Alan Cox wrote:
-> +static int ata_ignore_hpa = 0;
-> +module_param_named(ignore_hpa, ata_ignore_hpa, int, 0644);
-> +MODULE_PARM_DESC(ignore_hpa, "Ignore HPA (0=off 1=on)");
+Randy Dunlap wrote:
+> 
+> Hi,
+> That makes a lot of sense to me.  It gives us finer-grained control
+> without having to support fixed-point data.
+> 
+> I've been working on the fixed-point data patch, but I'm going to give
+> this method some time also, to see how it looks in code (instead of just
+> thinking about it).
+> 
 
-I'm not sure I like the language here. "Ignore HPA" appears to mean 
-"Explicitly disable the HPA", which I guess is one interpretation of 
-"ignore" - however, naively I'd expect "Ignore HPA" to mean "Don't touch 
-the HPA" with the result that it would remain inaccessible to userspace.
+Well, to be specific, it actually is the same thing with different 
+syntax (38.55 or 3855/100).
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	-hpa
