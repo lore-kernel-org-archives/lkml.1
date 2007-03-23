@@ -1,209 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422720AbXCWIou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422723AbXCWIp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422720AbXCWIou (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 04:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422723AbXCWIou
+	id S1422723AbXCWIp5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 04:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422696AbXCWIp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 04:44:50 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:34109 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422720AbXCWIot (ORCPT
+	Fri, 23 Mar 2007 04:45:57 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3371 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422723AbXCWIp4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 04:44:49 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:mime-version:
-	content-type:content-transfer-encoding:content-disposition;
-	b=UNK7Jk3EO3xa3nLjiv4Cd6kbNIh0UO6Z18a1eJGFUV6YvbCtX8o/mF1svq85vsfCz
-	+sPUlslZmlfzeQx8GdAKQ==
-Message-ID: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
-Date: Fri, 23 Mar 2007 01:44:38 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "Adam Litke" <agl@us.ibm.com>
-Subject: [patch] rfc: introduce /dev/hugetlb
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
+	Fri, 23 Mar 2007 04:45:56 -0400
+Message-ID: <460393A3.60502@shadowen.org>
+Date: Fri, 23 Mar 2007 08:45:23 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Con Kolivas <kernel@kolivas.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, "Martin J. Bligh" <mbligh@mbligh.org>
+Subject: Re: 2.6.21-rc4-mm1
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <4602B7D3.4030108@shadowen.org> <4602C83B.20608@shadowen.org> <200703231718.20647.kernel@kolivas.org>
+In-Reply-To: <200703231718.20647.kernel@kolivas.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/21/07, Adam Litke <agl@us.ibm.com> wrote:
-> The main reason I am advocating a set of pagetable_operations is to
-> enable the development of a new hugetlb interface.  During the hugetlb
-> BOFS at OLS last year, we talked about a character device that would
-> behave like /dev/zero.  Many of the people were talking about how they
-> just wanted to create MAP_PRIVATE hugetlb mappings without all the fuss
-> about the hugetlbfs filesystem.  /dev/zero is a familiar interface for
-> getting anonymous memory so bringing that model to huge pages would make
-> programming for anonymous huge pages easier.
+Con Kolivas wrote:
+> On Friday 23 March 2007 05:17, Andy Whitcroft wrote:
+>> Ok, I have yet a third x86_64 machine is is blowing up with the latest
+>> 2.6.21-rc4-mm1+hotfixes+rsdl-0.32 but working with
+>> 2.6.21-rc4-mm1+hotfixes-RSDL.  I have results on various hotfix levels
+>> so I have just fired off a set of tests across the affected machines on
+>> that latest hotfix stack plus the RSDL backout and the results should be
+>> in in the next hour or two.
+>>
+>> I think there is a strong correlation between RSDL and these hangs.  Any
+>> suggestions as to the next step.
+> 
+> Found a nasty in requeue_task
+> +	if (list_empty(old_array->queue + old_prio))
+> +		__clear_bit(old_prio, p->array->prio_bitmap);
+> 
+> see anything wrong there? I do :P
+> 
+> I'll queue that up with the other changes pending and hopefully that will fix 
+> your bug.
 
-I think we have enough infrastructure currently in hugetlbfs to
-implement what Adam wants for something like a /dev/hugetlb char
-device (except we can't afford to have a zero hugetlb page since it
-will be too costly on some arch).
+Tests queued with your rdsl-0.33 patch (I am assuming its in there).
+Will let you know how it looks.
 
-I really like the idea of having something similar to /dev/zero for
-hugetlb page.  So I coded it up on top of existing hugetlbfs.  The
-core change is really small and half of the patch is really just
-moving things around.  I think this at least can partially fulfill the
-goal.
+-apw
 
-
-Signed-off-by: Ken Chen <kenchen@google.com>
-
-diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index f5c160c..56e58f5 100644
---- a/drivers/char/mem.c
-+++ b/drivers/char/mem.c
-@@ -27,6 +27,7 @@
- #include <linux/bootmem.h>
- #include <linux/pipe_fs_i.h>
- #include <linux/pfn.h>
-+#include <linux/hugetlb.h>
-
- #include <asm/uaccess.h>
- #include <asm/io.h>
-@@ -872,6 +873,13 @@ static const struct file_operations oldmem_fops = {
- };
- #endif
-
-+#ifdef CONFIG_HUGETLBFS
-+static const struct file_operations hugetlb_fops = {
-+	.mmap			= hugetlb_zero_setup,
-+	.get_unmapped_area	= hugetlb_get_unmapped_area,
-+};
-+#endif
-+
- static ssize_t kmsg_write(struct file * file, const char __user * buf,
- 			  size_t count, loff_t *ppos)
- {
-@@ -939,6 +947,11 @@ static int memory_open(struct inode *
- 			filp->f_op = &oldmem_fops;
- 			break;
- #endif
-+#ifdef CONFIG_HUGETLBFS
-+		case 13:
-+			filp->f_op = &hugetlb_fops;
-+			break;
-+#endif
- 		default:
- 			return -ENXIO;
- 	}
-@@ -971,6 +984,9 @@ static const struct {
- #ifdef CONFIG_CRASH_DUMP
- 	{12,"oldmem",    S_IRUSR | S_IWUSR | S_IRGRP, &oldmem_fops},
- #endif
-+#ifdef CONFIG_HUGETLBFS
-+	{13, "hugetlb",S_IRUGO | S_IWUGO,	    &hugetlb_fops},
-+#endif
- };
-
- static struct class *mem_class;
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 8c718a3..af24664 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -97,12 +97,7 @@ out:
- /*
-  * Called under down_write(mmap_sem).
-  */
--
--#ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
--unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--		unsigned long len, unsigned long pgoff, unsigned long flags);
--#else
--static unsigned long
-+unsigned long
- hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 		unsigned long len, unsigned long pgoff, unsigned long flags)
- {
-@@ -150,7 +145,6 @@ full_search:
- 		addr = ALIGN(vma->vm_end, HPAGE_SIZE);
- 	}
- }
--#endif
-
- /*
-  * Read a page. Again trivial. If it didn't already exist
-@@ -734,7 +728,7 @@ static int can_do_hugetlb_shm(void)
- 			can_do_mlock());
- }
-
--struct file *hugetlb_zero_setup(size_t size)
-+struct file *hugetlb_file_setup(size_t size, int resv)
- {
- 	int error = -ENOMEM;
- 	struct file *file;
-@@ -771,7 +765,7 @@ struct file *hugetlb_zero_setup(size_t size)
- 		goto out_file;
-
- 	error = -ENOMEM;
--	if (hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
-+	if (resv && hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
- 		goto out_inode;
-
- 	d_instantiate(dentry, inode);
-@@ -795,6 +789,18 @@ out_shm_unlock:
- 	return ERR_PTR(error);
- }
-
-+int hugetlb_zero_setup(struct file *file, struct vm_area_struct *vma)
-+{
-+	file = hugetlb_file_setup(vma->vm_end - vma->vm_start, 0);
-+	if (IS_ERR(file))
-+		return PTR_ERR(file);
-+
-+	if (vma->vm_file)
-+		fput(vma->vm_file);
-+	vma->vm_file = file;
-+	return hugetlbfs_file_mmap(file, vma);
-+}
-+
- static int __init init_hugetlbfs_fs(void)
- {
- 	int error;
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 3f3e7a6..d2a2190 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -163,9 +163,12 @@ static inline struct hugetlbfs_sb_info *
-
- extern const struct file_operations hugetlbfs_file_operations;
- extern struct vm_operations_struct hugetlb_vm_ops;
--struct file *hugetlb_zero_setup(size_t);
-+struct file *hugetlb_file_setup(size_t, int);
-+int hugetlb_zero_setup(struct file *, struct vm_area_struct *);
- int hugetlb_get_quota(struct address_space *mapping);
- void hugetlb_put_quota(struct address_space *mapping);
-+unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
-+		unsigned long len, unsigned long pgoff, unsigned long flags);
-
- static inline int is_file_hugepages(struct file *file)
- {
-@@ -185,7 +188,7 @@ static inline void set_file_hugepages(struct file *file)
-
- #define is_file_hugepages(file)		0
- #define set_file_hugepages(file)	BUG()
--#define hugetlb_zero_setup(size)	ERR_PTR(-ENOSYS)
-+#define hugetlb_file_setup(size, resv)	ERR_PTR(-ENOSYS)
-
- #endif /* !CONFIG_HUGETLBFS */
-
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 4fefbad..c64643f 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -366,7 +366,7 @@ static int newseg (struct ipc_namespace *ns
-
- 	if (shmflg & SHM_HUGETLB) {
- 		/* hugetlb_zero_setup takes care of mlock user accounting */
--		file = hugetlb_zero_setup(size);
-+		file = hugetlb_file_setup(size, 1);
- 		shp->mlock_user = current->user;
- 	} else {
- 		int acctflag = VM_ACCOUNT;
