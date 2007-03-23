@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbXCWOPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbXCWOQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751965AbXCWOPM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 10:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXCWOPL
+	id S1753074AbXCWOQg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 10:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbXCWOQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 10:15:11 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53521 "EHLO
+	Fri, 23 Mar 2007 10:16:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53535 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbXCWOPJ (ORCPT
+	with ESMTP id S1752861AbXCWOQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 10:15:09 -0400
-Date: Fri, 23 Mar 2007 15:15:08 +0100
+	Fri, 23 Mar 2007 10:16:35 -0400
+Date: Fri, 23 Mar 2007 15:16:33 +0100
 From: Andi Kleen <andi@firstfloor.org>
-To: =?iso-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i386 GDT cleanups: Rename boot_gdt_table to boot_gdt
-Message-ID: <20070323141508.GC20548@one.firstfloor.org>
-References: <1174458636.11680.143.camel@localhost.localdomain> <1174458730.11680.145.camel@localhost.localdomain> <1174458938.11680.150.camel@localhost.localdomain> <m1aby7c59k.fsf@ebiederm.dsl.xmission.com> <1174478153.11680.183.camel@localhost.localdomain> <m1wt1abkuo.fsf@ebiederm.dsl.xmission.com> <1174521510.2713.61.camel@localhost.localdomain> <20070322091031.33a753fe@frecb000686.frec.bull.fr> <1174555451.2713.139.camel@localhost.localdomain> <20070322165925.3630fce9@frecb000686.frec.bull.fr>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <christoph@lameter.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] NUMA : could we introduce virt_to_nid() ?
+Message-ID: <20070323141633.GD20548@one.firstfloor.org>
+References: <20070321102231.7288f231.dada1@cosmosbay.com> <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com> <Pine.LNX.4.64.0703210742080.1573@graphe.net> <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI> <20070321160929.GB25583@one.firstfloor.org> <20070323121512.c287ddef.dada1@cosmosbay.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070322165925.3630fce9@frecb000686.frec.bull.fr>
+In-Reply-To: <20070323121512.c287ddef.dada1@cosmosbay.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  Rename boot_gdt_table to boot_gdt to avoid the duplicate
-> T(able).
+On Fri, Mar 23, 2007 at 12:15:12PM +0100, Eric Dumazet wrote:
+> Hi Andi
+> 
+> Checking Christoph quicklist implementation, I found the same cache miss in free() than SLAB has.
+> 
+> /* common implementation *
+> int virt_to_nid(const void *addr)
+> {
+> 	struct page *page = virt_to_page(addr); 
+> 	return page_to_nid(page);
+> }
+> 
+> On some platforms (x86_64 for example), could we have a better implementation, not accessing struct page, but using phys_to_nid() ?
 
-We already have so much code churn in this area now, please
-no pointless renames for at least two releases.
-
-Thanks.
+Sure why not. Please send a patch.
 
 -Andi
