@@ -1,594 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992532AbXCWQzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992529AbXCWQ4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992532AbXCWQzJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 12:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992527AbXCWQzJ
+	id S2992529AbXCWQ4Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 12:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992527AbXCWQ4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 12:55:09 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:59098 "EHLO
+	Fri, 23 Mar 2007 12:56:24 -0400
+Received: from smtp.nokia.com ([131.228.20.173]:59331 "EHLO
 	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934296AbXCWQzE (ORCPT
+	with ESMTP id S2992529AbXCWQ4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 12:55:04 -0400
+	Fri, 23 Mar 2007 12:56:23 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Frank Haverkamp <haver@vnet.ibm.com>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Artem Bityutskiy <dedekind@infradead.org>
-Date: Fri, 23 Mar 2007 18:43:17 +0200
-Message-Id: <20070323164317.8958.41070.sendpatchset@localhost.localdomain>
+Date: Fri, 23 Mar 2007 18:44:37 +0200
+Message-Id: <20070323164437.8958.26624.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070323164256.8958.58377.sendpatchset@localhost.localdomain>
 References: <20070323164256.8958.58377.sendpatchset@localhost.localdomain>
-Subject: [PATCH 04/20 take 4] UBI: internal header
-X-OriginalArrivalTime: 23 Mar 2007 16:43:17.0088 (UTC) FILETIME=[5B686E00:01C76D6A]
+Subject: [PATCH 20/20 take 4] UBI: linux build integration
+X-OriginalArrivalTime: 23 Mar 2007 16:44:37.0695 (UTC) FILETIME=[8B7414F0:01C76D6A]
 X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070323184320-7B0C0BB0-47DA60FA/0-0/0-1
+X-eXpurgate-ID: 149371::070323184443-030CBBB0-3578E08D/0-0/0-1
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/ubi.h tmp-to/drivers/mtd/ubi/ubi.h
---- tmp-from/drivers/mtd/ubi/ubi.h	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/ubi.h	2007-03-23 18:20:01.000000000 +0200
-@@ -0,0 +1,560 @@
-+/*
-+ * Copyright (c) International Business Machines Corp., 2006
-+ * Copyright (c) Nokia Corporation, 2006, 2007
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-+ * the GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ *
-+ * Author: Artem Bityutskiy (Битюцкий Артём)
-+ */
+diff -auNrp tmp-from/drivers/mtd/Kconfig tmp-to/drivers/mtd/Kconfig
+--- tmp-from/drivers/mtd/Kconfig	2007-03-23 18:20:01.000000000 +0200
++++ tmp-to/drivers/mtd/Kconfig	2007-03-23 18:20:01.000000000 +0200
+@@ -292,5 +292,7 @@ source "drivers/mtd/nand/Kconfig"
+ 
+ source "drivers/mtd/onenand/Kconfig"
+ 
++source "drivers/mtd/ubi/Kconfig"
 +
-+#ifndef __UBI_UBI_H__
-+#define __UBI_UBI_H__
+ endmenu
+ 
+diff -auNrp tmp-from/drivers/mtd/Makefile tmp-to/drivers/mtd/Makefile
+--- tmp-from/drivers/mtd/Makefile	2007-03-23 18:20:01.000000000 +0200
++++ tmp-to/drivers/mtd/Makefile	2007-03-23 18:20:01.000000000 +0200
+@@ -28,3 +28,5 @@ nftl-objs		:= nftlcore.o nftlmount.o
+ inftl-objs		:= inftlcore.o inftlmount.o
+ 
+ obj-y		+= chips/ maps/ devices/ nand/ onenand/
 +
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/list.h>
-+#include <linux/rbtree.h>
-+#include <linux/sched.h>
-+#include <linux/wait.h>
-+#include <linux/mutex.h>
-+#include <linux/rwsem.h>
-+#include <linux/spinlock.h>
-+#include <linux/fs.h>
-+#include <linux/cdev.h>
-+#include <linux/device.h>
-+#include <linux/string.h>
-+#include <linux/mtd/mtd.h>
++obj-$(CONFIG_MTD_UBI)		+= ubi/
+diff -auNrp tmp-from/drivers/mtd/ubi/Kconfig tmp-to/drivers/mtd/ubi/Kconfig
+--- tmp-from/drivers/mtd/ubi/Kconfig	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/Kconfig	2007-03-23 18:20:01.000000000 +0200
+@@ -0,0 +1,58 @@
++# drivers/mtd/ubi/Kconfig
 +
-+#include <mtd/ubi-header.h>
-+#include <linux/mtd/ubi.h>
++menu "UBI - Unsorted block images"
++	depends on MTD
 +
-+#include "scan.h"
-+#include "debug.h"
++config MTD_UBI
++	tristate "Enable UBI"
++	depends on MTD
++	select CRC32
++	help
++	  UBI is a software layer above MTD layer which admits of LVM-like
++	  logical volumes on top of MTD devices, hides some complexities of
++	  flash chips like wear and bad blocks and provides some other useful
++	  capabilities. Please, consult the MTD web site for more details
++	  (www.linux-mtd.infradead.org).
 +
-+/* Maximum number of supported UBI devices */
-+#define UBI_MAX_DEVICES 32
++config MTD_UBI_WL_THRESHOLD
++	int "UBI wear-leveling threshold"
++	default 4096
++	range 2 65536
++	depends on MTD_UBI
++	help
++	  This parameter defines the maximum difference between the highest
++	  erase counter value and the lowest erase counter value of eraseblocks
++	  of UBI devices. When this threshold is exceeded, UBI starts performing
++	  wear leveling by means of moving data from eraseblock with low erase
++	  counter to eraseblocks with high erase counter. Leave the default
++	  value if unsure.
 +
-+/* UBI name used for character devices, sysfs, etc */
-+#define UBI_NAME_STR "ubi"
++config MTD_UBI_BEB_RESERVE
++	int "Percentage of reserved eraseblocks for bad eraseblocks handling"
++	default 1
++	range 0 25
++	depends on MTD_UBI
++	help
++	  If the MTD device admits of bad eraseblocks (e.g. NAND flash), UBI
++	  reserves some amount of physical eraseblocks to handle new bad
++	  eraseblocks. For example, if a flash physical eraseblock becomes bad,
++	  UBI uses these reserved physical eraseblocks to relocate the bad one.
++	  This option specifies how many physical eraseblocks will be reserved
++	  for bad eraseblock handling (percents of total number of good flash
++	  eraseblocks). If the underlying flash does not admit of bad
++	  eraseblocks (e.g. NOR flash), this value is ignored and nothing is
++	  reserved. Leave the default value if unsure.
 +
-+/* Normal UBI messages */
-+#define ubi_msg(fmt, ...) printk(KERN_NOTICE "UBI: " fmt "\n", ##__VA_ARGS__)
-+/* UBI warning messages */
-+#define ubi_warn(fmt, ...) printk(KERN_WARNING "UBI warning: %s: " fmt "\n", \
-+				  __FUNCTION__, ##__VA_ARGS__)
-+/* UBI error messages */
-+#define ubi_err(fmt, ...) printk(KERN_ERR "UBI error: %s: " fmt "\n", \
-+				 __FUNCTION__, ##__VA_ARGS__)
++config MTD_UBI_GLUEBI
++	bool "Emulate MTD devices"
++	default n
++	depends on MTD_UBI
++	help
++	   This option enables MTD devices emulation on top of UBI volumes: for
++	   each UBI volumes an MTD device is created, and all I/O to this MTD
++	   device is redirected to the UBI volume. This is handy to make
++	   MTD-oriented software (like JFFS2) work on top of UBI. Do not enable
++	   this if no legacy software will be used.
 +
-+/* Lowest number PEBs reserved for bad PEB handling */
-+#define MIN_RESEVED_PEBS 2
++source "drivers/mtd/ubi/Kconfig.debug"
++endmenu
+diff -auNrp tmp-from/drivers/mtd/ubi/Kconfig.debug tmp-to/drivers/mtd/ubi/Kconfig.debug
+--- tmp-from/drivers/mtd/ubi/Kconfig.debug	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/Kconfig.debug	2007-03-23 18:20:01.000000000 +0200
+@@ -0,0 +1,104 @@
++comment "UBI debugging options"
++	depends on MTD_UBI
 +
-+/* Background thread name pattern */
-+#define UBI_BGT_NAME_PATTERN "ubi_bgt%dd"
++config MTD_UBI_DEBUG
++	bool "UBI debugging"
++	depends on SYSFS
++	depends on MTD_UBI
++	select DEBUG_FS
++	select KALLSYMS_ALL
++	help
++	  This option enables UBI debugging.
 +
-+/* This marker in the EBA table means that the LEB is um-mapped */
-+#define UBI_LEB_UNMAPPED -1
++config MTD_UBI_DEBUG_MSG
++	bool "UBI debugging messages"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option enables UBI debugging messages.
 +
-+/*
-+ * In case of errors, UBI tries to repeat the operation several times before
-+ * returning error. The below constant defines how many times UBI re-tries.
-+ */
-+#define UBI_IO_RETRIES 3
++config MTD_UBI_DEBUG_PARANOID
++	bool "Extra self-checks"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables extra checks in UBI code. Note this slows UBI down
++	  significantly.
 +
-+/*
-+ * Error codes returned by the I/O unit.
-+ *
-+ * UBI_IO_PEB_EMPTY: the physical eraseblock is empty, i.e. it contains only
-+ * 0xFF bytes
-+ * UBI_IO_PEB_FREE: the physical eraseblock is free, i.e. it contains only a
-+ * valid erase counter header, and the rest are %0xFF bytes
-+ * UBI_IO_BAD_EC_HDR: the erase counter header is corrupted (bad magic or CRC)
-+ * UBI_IO_BAD_VID_HDR: the volume identifier header is corrupted (bad magic or
-+ * CRC)
-+ * UBI_IO_BITFLIPS: bit-flips were detected and corrected
-+ */
-+enum {
-+	UBI_IO_PEB_EMPTY = 1,
-+	UBI_IO_PEB_FREE,
-+	UBI_IO_BAD_EC_HDR,
-+	UBI_IO_BAD_VID_HDR,
-+	UBI_IO_BITFLIPS
-+};
++config MTD_UBI_DEBUG_DISABLE_BGT
++	bool "Do not enable the UBI background thread"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option switches the background thread off by default. The thread
++	  may be also be enabled/disabled via UBI sysfs.
 +
-+extern int ubi_devices_cnt;
-+extern struct ubi_device *ubi_devices[];
++config MTD_UBI_DEBUG_USERSPACE_IO
++	bool "Direct user-space write/erase support"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  By default, users cannot directly write and erase individual
++	  eraseblocks of dynamic volumes, and have to use update operation
++	  instead. This option enables this capability - it is very useful for
++	  debugging and testing.
 +
-+struct ubi_volume_desc;
++config MTD_UBI_DEBUG_EMULATE_BITFLIPS
++	bool "Emulate flash bit-flips"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option emulates bit-flips with probability 1/50, which in turn
++	  causes scrubbing. Useful for debugging and stressing UBI.
 +
-+/**
-+ * struct ubi_volume - UBI volume description data structure.
-+ * @dev: device object to make use of the the Linux device model
-+ * @cdev: character device object to create character device
-+ * @ubi: reference to the UBI device description object
-+ * @vol_id: volume ID
-+ * @readers: number of users holding this volume in read-only mode
-+ * @writers: number of users holding this volume in read-write mode
-+ * @exclusive: whether somebody holds this volume in exclusive mode
-+ * @removed: if the volume was removed
-+ * @checked: if this static volume was checked
-+ *
-+ * @reserved_pebs: how many physical eraseblocks are reserved for this volume
-+ * @vol_type: volume type (%UBI_DYNAMIC_VOLUME or %UBI_STATIC_VOLUME)
-+ * @usable_leb_size: logical eraseblock size without padding
-+ * @used_ebs: how many logical eraseblocks in this volume contain data
-+ * @last_eb_bytes: how many bytes are stored in the last logical eraseblock
-+ * @used_bytes: how many bytes of data this volume contains
-+ * @upd_marker: non-zero if the update marker is set for this volume
-+ * @corrupted: non-zero if the volume is corrupted (static volumes only)
-+ * @alignment: volume alignment
-+ * @data_pad: how many bytes are not used at the end of physical eraseblocks to
-+ * satisfy the requested alignment
-+ * @name_len: volume name length
-+ * @name: volume name
-+ *
-+ * @updating: whether the volume is being updated
-+ * @upd_ebs: how many eraseblocks are expected to be updated
-+ * @upd_bytes: how many bytes are expected to be received
-+ * @upd_received: how many update bytes were already received
-+ * @upd_buf: update buffer which is used to collect update data
-+ *
-+ * @eba_tbl: EBA table of this volume (LEB->PEB mapping)
-+ *
-+ * @gluebi_desc: gluebi UBI volume descriptor
-+ * @gluebi_refcount: reference count of the gluebi MTD device
-+ * @gluebi_mtd: MTD device description object of the gluebi MTD device
-+ *
-+ * The @corrupted field indicates that the volume's contents is corrupted.
-+ * Since UBI protects only static volumes, this field is not relevant to
-+ * dynamic volumes - it is user's responsibility to assure their data
-+ * integrity.
-+ *
-+ * The @upd_marker flag indicates that this volume is either being updated at
-+ * the moment or is damaged because of an unclean reboot.
-+ */
-+struct ubi_volume {
-+	struct device dev;
-+	struct cdev cdev;
-+	struct ubi_device *ubi;
-+	int vol_id;
-+	int readers;
-+	int writers;
-+	int exclusive;
-+	int removed;
-+	int checked;
++config MTD_UBI_DEBUG_EMULATE_WRITE_FAILURES
++	bool "Emulate flash write failures"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option emulates write failures with probability 1/100. Useful for
++	  debugging and testing how UBI handlines errors.
 +
-+	int reserved_pebs;
-+	int vol_type;
-+	int usable_leb_size;
-+	int used_ebs;
-+	int last_eb_bytes;
-+	long long used_bytes;
-+	int upd_marker;
-+	int corrupted;
-+	int alignment;
-+	int data_pad;
-+	int name_len;
-+	char name[UBI_VOL_NAME_MAX+1];
++config MTD_UBI_DEBUG_EMULATE_ERASE_FAILURES
++	bool "Emulate flash erase failures"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option emulates erase failures with probability 1/100. Useful for
++	  debugging and testing how UBI handlines errors.
 +
-+	int updating;
-+	int upd_ebs;
-+	long long upd_bytes;
-+	long long upd_received;
-+	void *upd_buf;
++menu "Additional UBI debugging messages"
++	depends on MTD_UBI_DEBUG
 +
-+	int *eba_tbl;
++config MTD_UBI_DEBUG_MSG_BLD
++	bool "Additional UBI initialization and build messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables detailed UBI initialization and device build
++	  debugging messages.
 +
-+#ifdef CONFIG_MTD_UBI_GLUEBI
-+	/* Gluebi-related stuff may be compiled out */
-+	struct ubi_volume_desc *gluebi_desc;
-+	int gluebi_refcount;
-+	struct mtd_info gluebi_mtd;
-+#endif
-+};
++config MTD_UBI_DEBUG_MSG_EBA
++	bool "Eraseblock association unit messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables debugging messages from the UBI eraseblock
++	  association unit.
 +
-+/**
-+ * struct ubi_volume_desc - descriptor of the UBI volume returned when it is
-+ * opened.
-+ * @vol: reference to the corresponding volume description object
-+ * @mode: open mode (%UBI_READONLY, %UBI_READWRITE, or %UBI_EXCLUSIVE)
-+ */
-+struct ubi_volume_desc {
-+	struct ubi_volume *vol;
-+	int mode;
-+};
++config MTD_UBI_DEBUG_MSG_WL
++	bool "Wear-leveling unit messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables debugging messages from the UBI wear-leveling
++	  unit.
 +
-+struct ubi_wl_entry;
++config MTD_UBI_DEBUG_MSG_IO
++	bool "Input/output unit messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables debugging messages from the UBI input/output unit.
 +
-+/**
-+ * struct ubi_device - UBI device description structure
-+ * @dev: class device object to use the the Linux device model
-+ * @cdev: character device object to create character device
-+ * @ubi_num: UBI device number
-+ * @ubi_name: UBI device name
-+ * @major: character device major number
-+ * @vol_count: number of volumes in this UBI device
-+ * @volumes: volumes of this UBI device
-+ * @volumes_lock: protects @volumes, @rsvd_pebs, @avail_pebs, beb_rsvd_pebs,
-+ * @beb_rsvd_level, @bad_peb_count, @good_peb_count, @vol_count, @vol->readers,
-+ * @vol->writers, @vol->exclusive, @vol->removed, @vol->mapping and
-+ * @vol->eba_tbl.
-+ *
-+ * @rsvd_pebs: count of reserved physical eraseblocks
-+ * @avail_pebs: count of available physical eraseblocks
-+ * @beb_rsvd_pebs: how many physical eraseblocks are reserved for bad PEB
-+ * handling
-+ * @beb_rsvd_level: normal level of PEBs reserved for bad PEB handling
-+ *
-+ * @vtbl_slots: how many slots are available in the volume table
-+ * @vtbl_size: size of the volume table in bytes
-+ * @vtbl: in-RAM volume table copy
-+ *
-+ * @max_ec: current highest erase counter value
-+ * @mean_ec: current mean erase counter value
-+ *
-+ * global_sqnum: global sequence number
-+ * @ltree_lock: protects the lock tree and @global_sqnum
-+ * @ltree: the lock tree
-+ * @vtbl_mutex: protects on-flash volume table
-+ *
-+ * @used: RB-tree of used physical eraseblocks
-+ * @free: RB-tree of free physical eraseblocks
-+ * @scrub: RB-tree of physical eraseblocks which need scrubbing
-+ * @prot: protection trees
-+ * @prot.pnum: protection tree indexed by physical eraseblock numbers
-+ * @prot.aec: protection tree indexed by absolute erase counter value
-+ * @wl_lock: protects the @used, @free, @prot, @lookuptbl, @abs_ec, @move_from,
-+ * @move_to, @move_to_put @erase_pending, @wl_scheduled, and @works
-+ * fields
-+ * @wl_scheduled: non-zero if the wear-leveling was scheduled
-+ * @lookuptbl: a table to quickly find a &struct ubi_wl_entry object for any
-+ * physical eraseblock
-+ * @abs_ec: absolute erase counter
-+ * @move_from: physical eraseblock from where the data is being moved
-+ * @move_to: physical eraseblock where the data is being moved to
-+ * @move_from_put: if the "from" PEB was put
-+ * @move_to_put: if the "to" PEB was put
-+ * @works: list of pending works
-+ * @works_count: count of pending works
-+ * @bgt_thread: background thread description object
-+ * @thread_enabled: if the background thread is enabled
-+ * @bgt_name: background thread name
-+ *
-+ * @flash_size: underlying MTD device size (in bytes)
-+ * @peb_count: count of physical eraseblocks on the MTD device
-+ * @peb_size: physical eraseblock size
-+ * @bad_peb_count: count of bad physical eraseblocks
-+ * @good_peb_count: count of good physical eraseblocks
-+ * @min_io_size: minimal input/output unit size of the underlying MTD device
-+ * @hdrs_min_io_size: minimal I/O unit size used for VID and EC headers
-+ * @ro_mode: if the UBI device is in read-only mode
-+ * @leb_size: logical eraseblock size
-+ * @leb_start: starting offset of logical eraseblocks within physical
-+ * eraseblocks
-+ * @ec_hdr_alsize: size of the EC header aligned to @hdrs_min_io_size
-+ * @vid_hdr_alsize: size of the VID header aligned to @hdrs_min_io_size
-+ * @vid_hdr_offset: starting offset of the volume identifier header (might be
-+ * unaligned)
-+ * @vid_hdr_aloffset: starting offset of the VID header aligned to
-+ * @hdrs_min_io_size
-+ * @vid_hdr_shift: contains @vid_hdr_offset - @vid_hdr_aloffset
-+ * @bad_allowed: whether the MTD device admits of bad physical eraseblocks or
-+ * not
-+ * @mtd: MTD device descriptor
-+ */
-+struct ubi_device {
-+	struct cdev cdev;
-+	struct device dev;
-+	int ubi_num;
-+	char ubi_name[sizeof(UBI_NAME_STR)+5];
-+	int major;
-+	int vol_count;
-+	struct ubi_volume *volumes[UBI_MAX_VOLUMES+UBI_INT_VOL_COUNT];
-+	spinlock_t volumes_lock;
++endmenu # UBI debugging messages
+diff -auNrp tmp-from/drivers/mtd/ubi/Makefile tmp-to/drivers/mtd/ubi/Makefile
+--- tmp-from/drivers/mtd/ubi/Makefile	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/Makefile	2007-03-23 18:20:01.000000000 +0200
+@@ -0,0 +1,7 @@
++obj-$(CONFIG_MTD_UBI) += ubi.o
 +
-+	int rsvd_pebs;
-+	int avail_pebs;
-+	int beb_rsvd_pebs;
-+	int beb_rsvd_level;
++ubi-y += vtbl.o vmt.o upd.o build.o cdev.o kapi.o eba.o io.o wl.o scan.o
++ubi-y += misc.o
 +
-+	int vtbl_slots;
-+	int vtbl_size;
-+	struct ubi_vtbl_record *vtbl;
-+	struct mutex vtbl_mutex;
-+
-+	int max_ec;
-+	int mean_ec;
-+
-+	/* EBA unit's stuff */
-+	unsigned long long global_sqnum;
-+	spinlock_t ltree_lock;
-+	struct rb_root ltree;
-+
-+	/* Wear-leveling unit's stuff */
-+	struct rb_root used;
-+	struct rb_root free;
-+	struct rb_root scrub;
-+	struct {
-+		struct rb_root pnum;
-+		struct rb_root aec;
-+	} prot;
-+	spinlock_t wl_lock;
-+	int wl_scheduled;
-+	struct ubi_wl_entry **lookuptbl;
-+	unsigned long long abs_ec;
-+	struct ubi_wl_entry *move_from;
-+	struct ubi_wl_entry *move_to;
-+	int move_from_put;
-+	int move_to_put;
-+	struct list_head works;
-+	int works_count;
-+	struct task_struct *bgt_thread;
-+	int thread_enabled;
-+	char bgt_name[sizeof(UBI_BGT_NAME_PATTERN)+2];
-+
-+	/* I/O unit's stuff */
-+	long long flash_size;
-+	int peb_count;
-+	int peb_size;
-+	int bad_peb_count;
-+	int good_peb_count;
-+	int min_io_size;
-+	int hdrs_min_io_size;
-+	int ro_mode;
-+	int leb_size;
-+	int leb_start;
-+	int ec_hdr_alsize;
-+	int vid_hdr_alsize;
-+	int vid_hdr_offset;
-+	int vid_hdr_aloffset;
-+	int vid_hdr_shift;
-+	int bad_allowed;
-+	struct mtd_info *mtd;
-+};
-+
-+extern struct file_operations ubi_cdev_operations;
-+extern struct file_operations ubi_vol_cdev_operations;
-+extern struct class *ubi_class;
-+
-+/* vtbl.c */
-+int ubi_change_vtbl_record(struct ubi_device *ubi, int idx,
-+			   struct ubi_vtbl_record *vtbl_rec);
-+int ubi_read_volume_table(struct ubi_device *ubi, struct ubi_scan_info *si);
-+
-+/* vmt.c */
-+int ubi_create_volume(struct ubi_device *ubi, struct ubi_mkvol_req *req);
-+int ubi_remove_volume(struct ubi_volume_desc *desc);
-+int ubi_resize_volume(struct ubi_volume_desc *desc, int reserved_pebs);
-+int ubi_add_volume(struct ubi_device *ubi, int vol_id);
-+void ubi_free_volume(struct ubi_device *ubi, int vol_id);
-+
-+/* upd.c */
-+int ubi_start_update(struct ubi_device *ubi, int vol_id, long long bytes);
-+int ubi_more_update_data(struct ubi_device *ubi, int vol_id,
-+			 const void __user *buf, int count);
-+
-+/* misc.c */
-+int ubi_calc_data_len(const struct ubi_device *ubi, const void *buf, int length);
-+int ubi_check_volume(struct ubi_device *ubi, int vol_id);
-+void ubi_calculate_reserved(struct ubi_device *ubi);
-+
-+/* gluebi.c */
-+#ifdef CONFIG_MTD_UBI_GLUEBI
-+int ubi_create_gluebi(struct ubi_device *ubi, struct ubi_volume *vol);
-+int ubi_destroy_gluebi(struct ubi_volume *vol);
-+#else
-+#define ubi_create_gluebi(ubi, vol) 0
-+#define ubi_destroy_gluebi(vol) 0
-+#endif
-+
-+/* eba.c */
-+int ubi_eba_unmap_leb(struct ubi_device *ubi, int vol_id, int lnum);
-+int ubi_eba_read_leb(struct ubi_device *ubi, int vol_id, int lnum, void *buf,
-+		     int offset, int len, int check);
-+int ubi_eba_write_leb(struct ubi_device *ubi, int vol_id, int lnum,
-+		      const void *buf, int offset, int len,
-+		      enum ubi_data_type dtype);
-+int ubi_eba_write_leb_st(struct ubi_device *ubi, int vol_id, int lnum,
-+			 const void *buf, int len, enum ubi_data_type dtype,
-+			 int used_ebs);
-+int ubi_eba_copy_leb(struct ubi_device *ubi, int from, int to,
-+		     struct ubi_vid_hdr *vid_hdr);
-+int ubi_eba_init_scan(struct ubi_device *ubi, struct ubi_scan_info *si);
-+void ubi_eba_close(const struct ubi_device *ubi);
-+
-+/* wl.c */
-+int ubi_wl_get_peb(struct ubi_device *ubi, enum ubi_data_type dtype);
-+int ubi_wl_put_peb(struct ubi_device *ubi, int pnum, int torture);
-+int ubi_wl_flush(struct ubi_device *ubi);
-+int ubi_wl_scrub_peb(struct ubi_device *ubi, int pnum);
-+int ubi_wl_init_scan(struct ubi_device *ubi, struct ubi_scan_info *si);
-+void ubi_wl_close(struct ubi_device *ubi);
-+
-+/* io.c */
-+int ubi_io_read(const struct ubi_device *ubi, void *buf, int pnum, int offset,
-+		int len);
-+int ubi_io_write(const struct ubi_device *ubi, const void *buf, int pnum,
-+		 int offset, int len);
-+int ubi_io_sync_erase(const struct ubi_device *ubi, int pnum, int torture);
-+int ubi_io_is_bad(const struct ubi_device *ubi, int pnum);
-+int ubi_io_mark_bad(const struct ubi_device *ubi, int pnum);
-+int ubi_io_read_ec_hdr(const struct ubi_device *ubi, int pnum,
-+		       struct ubi_ec_hdr *ec_hdr, int verbose);
-+int ubi_io_write_ec_hdr(const struct ubi_device *ubi, int pnum,
-+			struct ubi_ec_hdr *ec_hdr);
-+int ubi_io_read_vid_hdr(const struct ubi_device *ubi, int pnum,
-+			struct ubi_vid_hdr *vid_hdr, int verbose);
-+int ubi_io_write_vid_hdr(const struct ubi_device *ubi, int pnum,
-+			 struct ubi_vid_hdr *vid_hdr);
-+
-+/*
-+ * ubi_rb_for_each_entry - walk an RB-tree.
-+ * @rb: a pointer to type 'struct rb_node' to to use as a loop counter
-+ * @pos: a pointer to RB-tree entry type to use as a loop counter
-+ * @root: RB-tree's root
-+ * @member: the name of the 'struct rb_node' within the RB-tree entry
-+ */
-+#define ubi_rb_for_each_entry(rb, pos, root, member)                         \
-+	for (rb = rb_first(root),                                            \
-+	     pos = (rb ? container_of(rb, typeof(*pos), member) : NULL);     \
-+	     rb;                                                             \
-+	     rb = rb_next(rb), pos = container_of(rb, typeof(*pos), member))
-+
-+/**
-+ * ubi_align_up - align an integer to another integer.
-+ * @x: the integer to align
-+ * @y: the integer to align to
-+ *
-+ * This function returns the lowest number which is multiple to @y and not less
-+ * then @x.
-+ */
-+static inline int ubi_align_up(int x, int y)
-+{
-+	return y*(x/y) + (!!(x % y)) * y;
-+}
-+
-+/**
-+ * ubi_align_down - align an integer to another integer.
-+ * @x: the integer to align
-+ * @y: the integer to align to
-+ *
-+ * This function returns the highest number which is multiple to @y and not
-+ * greater then @x.
-+ */
-+static inline int ubi_align_down(int x, int y)
-+{
-+	return y*(x/y);
-+}
-+
-+/**
-+ * ubi_zalloc_vid_hdr - allocate a volume identifier header object.
-+ * @ubi: UBI device description object
-+ *
-+ * This function returns a pointer to the newly allocated and zero-filled
-+ * volume identifier header object in case of success and %NULL in case of
-+ * failure.
-+ */
-+static inline struct ubi_vid_hdr *ubi_zalloc_vid_hdr(const struct ubi_device *ubi)
-+{
-+	void *vid_hdr;
-+
-+	vid_hdr = kzalloc(ubi->vid_hdr_alsize, GFP_KERNEL);
-+	if (unlikely(!vid_hdr))
-+		return NULL;
-+
-+	/*
-+	 * VID headers may be stored at un-aligned flash offsets, so we shift
-+	 * the pointer.
-+	 */
-+	return vid_hdr + ubi->vid_hdr_shift;
-+}
-+
-+/**
-+ * ubi_free_vid_hdr - free a volume identifier header object.
-+ * @ubi: UBI device description object
-+ * @vid_hdr: the object to free
-+ */
-+static inline void ubi_free_vid_hdr(const struct ubi_device *ubi,
-+				    struct ubi_vid_hdr *vid_hdr)
-+{
-+	void *p = vid_hdr;
-+
-+	if (unlikely(!p))
-+		return;
-+
-+	kfree(p - ubi->vid_hdr_shift);
-+}
-+
-+/*
-+ * This function is equivalent to 'ubi_io_read()', but @offset is relative to
-+ * the beginning of the logical eraseblock, not to the beginning of the
-+ * physical eraseblock.
-+ */
-+static inline int ubi_io_read_data(const struct ubi_device *ubi, void *buf,
-+				   int pnum, int offset, int len)
-+{
-+	ubi_assert(offset >= 0);
-+	return ubi_io_read(ubi, buf, pnum, offset + ubi->leb_start, len);
-+}
-+
-+/*
-+ * This function is equivalent to 'ubi_io_write()', but @offset is relative to
-+ * the beginning of the logical eraseblock, not to the beginning of the
-+ * physical eraseblock.
-+ */
-+static inline int ubi_io_write_data(const struct ubi_device *ubi, const void *buf,
-+				    int pnum, int offset, int len)
-+{
-+	ubi_assert(offset >= 0);
-+	return ubi_io_write(ubi, buf, pnum, offset + ubi->leb_start, len);
-+}
-+
-+/**
-+ * ubi_ro_mode - switch to read-only mode.
-+ * @ubi: UBI device description object
-+ */
-+static inline void ubi_ro_mode(struct ubi_device *ubi)
-+{
-+	ubi->ro_mode = 1;
-+	ubi_warn("switch to read-only mode");
-+}
-+
-+/**
-+ * vol_id2idx - get table index by volume ID.
-+ * @ubi: UBI device description object
-+ * @vol_id: volume ID
-+ */
-+static inline int vol_id2idx(const struct ubi_device *ubi, int vol_id)
-+{
-+	if (vol_id >= UBI_INTERNAL_VOL_START)
-+		return vol_id - UBI_INTERNAL_VOL_START + ubi->vtbl_slots;
-+	else
-+		return vol_id;
-+}
-+
-+/**
-+ * idx2vol_id - get volume ID by table index.
-+ * @ubi: UBI device description object
-+ * @idx: table index
-+ */
-+static inline int idx2vol_id(const struct ubi_device *ubi, int idx)
-+{
-+	if (idx >= ubi->vtbl_slots)
-+		return idx - ubi->vtbl_slots + UBI_INTERNAL_VOL_START;
-+	else
-+		return idx;
-+}
-+
-+#endif /* !__UBI_UBI_H__ */
++ubi-$(CONFIG_MTD_UBI_DEBUG) += debug.o
++ubi-$(CONFIG_MTD_UBI_GLUEBI) += gluebi.o
+diff -auNrp tmp-from/include/mtd/Kbuild tmp-to/include/mtd/Kbuild
+--- tmp-from/include/mtd/Kbuild	2007-03-23 18:20:01.000000000 +0200
++++ tmp-to/include/mtd/Kbuild	2007-03-23 18:20:01.000000000 +0200
+@@ -3,3 +3,5 @@ header-y += jffs2-user.h
+ header-y += mtd-abi.h
+ header-y += mtd-user.h
+ header-y += nftl-user.h
++header-y += ubi-header.h
++header-y += ubi-user.h
