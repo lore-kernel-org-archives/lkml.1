@@ -1,100 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933543AbXCWERj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933463AbXCWEkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933543AbXCWERj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 00:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933463AbXCWERj
+	id S933463AbXCWEkJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 00:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933569AbXCWEkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 00:17:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:49454 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933543AbXCWERi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 00:17:38 -0400
-Subject: Re: [PATCH 0/21] MSI rework
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Greg KH <greg@kroah.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, daniel.e.wolstenholme@intel.com
-In-Reply-To: <20070322220837.GD20713@kroah.com>
-References: <1174560686.307511.956605711793.qpush@cradle>
-	 <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com>
-	 <20070322190834.GA14802@kroah.com>
-	 <1174600936.10836.53.camel@localhost.localdomain>
-	 <20070322220837.GD20713@kroah.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qcFmlYradbrcybATOf4J"
-Date: Fri, 23 Mar 2007 15:17:23 +1100
-Message-Id: <1174623443.5401.21.camel@concordia.ozlabs.ibm.com>
+	Fri, 23 Mar 2007 00:40:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42184 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933463AbXCWEkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 00:40:07 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+ngSMoCBCnIQBn4dCREEdWOTUZ2fqenIhwNfeuia
+	SSbsNSBno/n+d+
+Subject: Re: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Willy Tarreau <w@1wt.eu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Xavier Bestel <xavier.bestel@free.fr>, Mark Lord <lkml@rtr.ca>,
+       Al Boldi <a1426z@gawab.com>, ck@vds.kolivas.org,
+       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Nicholas Miell <nmiell@comcast.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200703230950.51716.kernel@kolivas.org>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <1174492966.16411.1.camel@twins>
+	 <1174547256.7414.129.camel@Homer.simpson.net>
+	 <200703230950.51716.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 05:39:54 +0100
+Message-Id: <1174624794.6554.64.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-03-23 at 09:50 +1100, Con Kolivas wrote:
 
---=-qcFmlYradbrcybATOf4J
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Now to figure out some meaningful cheap way of improving this accounting.
 
-On Thu, 2007-03-22 at 15:08 -0700, Greg KH wrote:
-> On Fri, Mar 23, 2007 at 09:02:16AM +1100, Benjamin Herrenschmidt wrote:
-> > > > i.e.  First the simple bug fixes that should purely be restructure =
-of
-> > > > msi.c with no affect on anything outside of it.
-> > > >=20
-> > > > And then get into the architecture enhancements.
-> > >=20
-> > > I agree, care to break these down into a smaller series of patches th=
-at
-> > > can go into -mm for testing?
-> >=20
-> > I don't see the point in breaking the serie... you can bisect half way
-> > through if necessary... it's made of small patches that are done, afaik=
-,
-> > in such a way that the whole thing should still work at any level in th=
-e
-> > serie.
-> >=20
-> > The serie just expresses the dependency between them.
->=20
-> Ok, then which patches in the series should be acceptable to take right
-> now for 2.6.22?  The "clean up the BUG" ones?
+The accounting is easy iff tick resolution is good enough, the deadline
+mechanism is harder.  I did the "quota follows task" thing, but nothing
+good happens.  That just ensured that the deadline mechanism kicks in
+constantly because tick theft is a fact of tick-based life.  A
+reasonable fudge factor would help, but...
 
-The series is already very verbose, I don't think I can split most of
-them any smaller without producing an unbuildable kernel.
+I see problems wrt with trying to implement the deadline mechanism.
 
-I think 1 up to and including 11 are safe as houses, they shouldn't have
-any effect other than to clean up the code.
+As implemented, it can't identify who is doing the stealing (which
+happens constantly, even if userland if 100% hog) because of tick
+resolution accounting.  If you can't identify the culprit, you can't
+enforce the quota, and quotas which are not enforced are, strictly
+speaking, not quotas.  At tick time, you can only close the barn door
+after the cow has been stolen, and the thief can theoretically visit
+your barn an infinite number of times while you aren't watching the
+door.  ("don't blink" scenarios, and tick is backward-assward blink)
 
-The rest make functional changes, but they're all quite small, self
-contained, and easily bisectable. I'd certainly like Eric to have a look
-at them, but at some point I think we're just going to have to bite the
-bullet and merge them, and see what we get in the way of bug reports.
+You can count nanoseconds in schedule, and store the actual usage, but
+then you still have the problem of inaccuracies in sched_clock() from
+cross-cpu wakeup and migration.  Cross-cpu wakeups happen quite a lot.
+If sched_clock() _were_ absolutely accurate, you wouldn't need the
+runqueue deadline mechanism, because at slice tick time you can see
+everything you will ever see without moving enforcement directly into
+the most critical of paths.
 
-cheers
+IMHO, unless it can be demonstrated that timeslice theft is a problem
+with a real-life scenario, you'd be better off dropping the queue
+ticking.  Time slices are a deadline mechanism, and in practice the god
+of randomness ensures that even fast movers do get caught often enough
+to make ticking tasks sufficient.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+(that was a very long-winded reply to one sentence because I spent a lot
+of time looking into this very subject and came to the conclusion that
+you can't get there from here.  fwiw, ymmv and all that of course;)
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+> Thanks again!
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+You're welcome.
 
---=-qcFmlYradbrcybATOf4J
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGA1TTdSjSd0sB4dIRApgeAKC3XIW28ZOuctyNk6Z7TZ0OpadwUwCeMT37
-tCqD8CJV7yNHpGF0PvSI0p4=
-=qPKe
------END PGP SIGNATURE-----
-
---=-qcFmlYradbrcybATOf4J--
+	-Mike
 
