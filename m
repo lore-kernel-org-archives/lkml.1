@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933609AbXCWElN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751673AbXCWE4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933609AbXCWElN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 00:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933601AbXCWElN
+	id S1751673AbXCWE4K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 00:56:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422672AbXCWE4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 00:41:13 -0400
-Received: from wip-ec-wd.wipro.com ([203.91.193.32]:42305 "EHLO
-	wip-ec-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422681AbXCWElM (ORCPT
+	Fri, 23 Mar 2007 00:56:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:15056 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751643AbXCWE4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 00:41:12 -0400
-Subject: Re: kmalloc() with size zero
-From: Vignesh Babu BM <vignesh.babu@wipro.com>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>
-In-Reply-To: <Pine.LNX.4.61.0703230237390.9555@yvahk01.tjqt.qr>
-References: <20070323001824.GA26540@frankl.hpl.hp.com>
-	 <Pine.LNX.4.61.0703230237390.9555@yvahk01.tjqt.qr>
-Content-Type: text/plain
+	Fri, 23 Mar 2007 00:56:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=kI61RqnLqdheKU15GgSO9dZ6p/2gtCXy18iz1ovXOeQSkjgPFT45dorxl4RNBvVKaYoLmn82QpE2fdew9Z2OZj2ghLyy1dV82fhX+YN4yux+IW/u2Wa8Bo2LzsEd1EqxF3HFXjzqxiJpgS3nRH9joAwEdjb45B6JQ3aocyKMRGg=
+Message-ID: <12c511ca0703222156u3cc09833rec636b47ad156029@mail.gmail.com>
+Date: Thu, 22 Mar 2007 21:56:03 -0700
+From: "Tony Luck" <tony.luck@intel.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH][2/2] double stack limit (rfc)
+Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "dmosberger@gmail.com" <dmosberger@gmail.com>,
+       surinder.kumar@oracle.com, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070323122129.555a87fd.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Fri, 23 Mar 2007 10:09:30 +0530
-Message-Id: <1174624770.10742.2.camel@wriver-t81fb058.linuxcoe>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-X-OriginalArrivalTime: 23 Mar 2007 04:41:08.0589 (UTC) FILETIME=[799C29D0:01C76D05]
+Content-Disposition: inline
+References: <20070323122129.555a87fd.kamezawa.hiroyu@jp.fujitsu.com>
+X-Google-Sender-Auth: 396c451602ce4494
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 07:08 +0530, Jan Engelhardt wrote:
-> 
-> On Mar 22 2007 16:18, Stephane Eranian wrote:
-> >
-> I'd say "feature", glibc's malloc also returns an address on
-> malloc(0).
-> 
-This is implementation defined-the standard allows for return of either
-null or an address.
-> 
-> Jan
-> --
-> -
-> To unsubscribe from this list: send the line "unsubscribe
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
--- 
-Regards,  
-Vignesh Babu BM  
-_____________________________________________________________  
-"Why is it that every time I'm with you, makes me believe in magic?"
+On 3/22/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> I hear some people says that "When I set stack-size-limit to 32M,
+> I want to use 32M of memory stack..." and register-stack expansion can
+> fail because stack is used up by memory-stack.
+
+An interesting dilemma.  If you apply this patch though, you might
+get someone complain that they set the stack limit to 32M, but
+execution continued as the program ran all the way to 64M!
+
+Possibly you might argue that each of the memory stack and the
+RBS stack should be allowed to grow to the stacklimit ... in which
+case you'd need a more invasive patch that made separate vma
+for each of the stack and the RBS stack, and checked at fault
+time each would be allowed to grow to the stack limit.  But I'm
+not sure that I like that ... ia64 happens to split different objects
+in the stack between the RBS and the memory stack depending
+on whether they happen to be allocated by the compiler to
+stack registers (r32-r127) or to actual memory locations.  Both
+types of allocation contribute to the total "stack" size of the
+process so the existing behaivour of keeping the sum of the
+size of the RBS stack and the memory stack below the
+stack limit seems quite reasonable.  I'm willing to listen to
+opposing arguments though.
+
+-Tony
