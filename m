@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674AbXCWWfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992597AbXCWWgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751674AbXCWWfu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 18:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbXCWWfu
+	id S2992597AbXCWWgN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 18:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992594AbXCWWgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 18:35:50 -0400
-Received: from www.osadl.org ([213.239.205.134]:49396 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751674AbXCWWft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 18:35:49 -0400
-Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, David L <idht4n@hotmail.com>,
-       john stultz <johnstul@us.ibm.com>
-In-Reply-To: <46045355.1020105@redhat.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323185028.GR752@stusta.de>
-	 <1174677338.10840.321.camel@localhost.localdomain>
-	 <46045355.1020105@redhat.com>
-Content-Type: text/plain
-Date: Fri, 23 Mar 2007 23:43:11 +0100
-Message-Id: <1174689791.10840.377.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 23 Mar 2007 18:36:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41326 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992597AbXCWWgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 18:36:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Sergey Smirnov <svs1957@gmail.com>
+Subject: Re: HELP!!! SD and suspend damage i-node.
+Date: Fri, 23 Mar 2007 23:38:57 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>
+References: <4602781C.9060804@gmail.com> <200703222255.20167.rjw@sisk.pl> <4603B937.9080008@gmail.com>
+In-Reply-To: <4603B937.9080008@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="koi8-r"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703232338.57958.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 18:23 -0400, Chuck Ebbert wrote:
-> Thomas Gleixner wrote:
-> > On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
-> >> Subject    : gettimeofday increments too slowly
-> >> References : http://bugzilla.kernel.org/show_bug.cgi?id=8027
-> >> Submitter  : David L <idht4n@hotmail.com>
-> >> Caused-By  : Thomas Gleixner <tglx@linutronix.de>
-> >>              commit 92c7e00254b2d0efc1e36ac3e45474ce1871b6b2
-> >> Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> >> Status     : problem is being debugged
+On Friday, 23 March 2007 12:25, Sergey Smirnov wrote:
+> It's happen only with 4G SD. I made the same test in 512Mb SD.
+> After suspend/resume there is no errors on fs.
+> 
+> If I resume PDA with 4G SD it go back to suspend after few seconds.
+
+Well, I believe the problem is related to the SD driver (maintainer added to
+the Cc list) or to the zaurus-specific code.
+
+Rafael
+
+
+> Rafael J. Wysocki wrote:
+> > On Thursday, 22 March 2007 13:35, Sergey Smirnov wrote:
+> >> I use 2.6.20.2 kernel with ext3 rootfs on 4Gb SD on sharp zaurus sl-750 (PXA255).
+> >> After suspend/resume filesystem stay clean. But some i-nodes become broken.
+> >> Some files looks like block device or pipe with strange permissions, owner etc.
+> >> I'm sure that there is no bad blocks on SD.
+> >> I'll send any additional information. Just say me what you need to help me.
+> >> I had i lot of tries. Apply patches, remove its, change fstype etc.
+> >> output of fsck -f
 > > 
-> > Patch available: http://lkml.org/lkml/2007/3/22/301
+> > I assume this is the suspend to RAM?
 > > 
-> > commit 6b3964cde70cfe6db79d35b42137431ef7d2f7e4
+> > Rafael
 > > 
 > 
-> For the other issue raised there, clock running too slow, I now
-> realize there is a similar report:
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=231626
+> 
 
-That's a different one, AFAICT. Davids problem is probably caused by me
-breaking the TSC watchdog. 
-
-/me orders paperbags prophylactically and goes back to look at the code
-
-	tglx
-
-
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
