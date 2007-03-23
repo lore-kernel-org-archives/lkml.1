@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933947AbXCWTlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933940AbXCWTlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933947AbXCWTlT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934088AbXCWTlT
+	id S933940AbXCWTlo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934134AbXCWTln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:41:19 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:58832 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933947AbXCWTlS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:41:18 -0400
-Date: Fri, 23 Mar 2007 15:37:30 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: stable@kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH] UML - host VDSO fix
-Message-ID: <20070323193730.GA9519@c2.user-mode-linux.org>
+	Fri, 23 Mar 2007 15:41:43 -0400
+Received: from www.osadl.org ([213.239.205.134]:42452 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933940AbXCWTlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:41:42 -0400
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Soeren Sonnenburg <kernel@nn7.de>, Ingo Molnar <mingo@elte.hu>,
+       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       John Stultz <johnstul@us.ibm.com>
+In-Reply-To: <20070323185028.GR752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185028.GR752@stusta.de>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 20:49:03 +0100
+Message-Id: <1174679344.10840.334.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a problem seen by a number of people running UML on newer host
-kernels.  init would hang with an infinite segfault loop.
+On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
+> 
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way
+> possibly involved with one or more of these issues.
+> 
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> 
+> 
+> Subject    : system doesn't come out of suspend  (CONFIG_NO_HZ)
+> References : http://lkml.org/lkml/2007/2/22/391
+> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+>              Soeren Sonnenburg <kernel@nn7.de>
+> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+>              Ingo Molnar <mingo@elte.hu>
+>              Tejun Heo <htejun@gmail.com>
+>              Rafael J. Wysocki <rjw@sisk.pl>
+> Status     : problem is being debugged
+> 
+> 
+> Subject    : first disk access after resume takes several minutes
+>              ('date' does not advance after resume from RAM, CONFIG_NO_HZ=n)
+> References : http://lkml.org/lkml/2007/3/8/117
+> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+>              Ingo Molnar <mingo@elte.hu>
+> Status     : problem is being debugged
 
-It turns out that the host kernel was providing a AT_SYSINFO_EHDR of
-0xffffe000, which faked UML into believing that the host VDSO page could be
-reused.  However, AT_SYSINFO pointed into the middle of the address space, and
-was unmapped as a result.  Because UML was providing AT_SYSINFO_EHDR and
-AT_SYSINFO to its own processes, these would branch to nowhere when trying to
-use the VDSO.
+I lost track of Michaels various nested problems.
 
-The fix is to also check the location of AT_SYSINFO when deciding whether to
-use the host's VDSO.
+Michael can you please give a summary on _all_ entries in the
+regressions list against Linus latest ?
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/os-Linux/elf_aux.c |    3 +++
- 1 file changed, 3 insertions(+)
+Thanks,
 
-Index: linux-2.6.17/arch/um/os-Linux/elf_aux.c
-===================================================================
---- linux-2.6.17.orig/arch/um/os-Linux/elf_aux.c	2007-02-23 15:00:51.000000000 -0500
-+++ linux-2.6.17/arch/um/os-Linux/elf_aux.c	2007-02-23 15:09:58.000000000 -0500
-@@ -39,6 +39,9 @@ __init void scan_elf_aux( char **envp)
- 		switch ( auxv->a_type ) {
- 			case AT_SYSINFO:
- 				__kernel_vsyscall = auxv->a_un.a_val;
-+				/* See if the page is under TASK_SIZE */
-+				if (__kernel_vsyscall < (unsigned long) envp)
-+					__kernel_vsyscall = 0;
- 				break;
- 			case AT_SYSINFO_EHDR:
- 				vsyscall_ehdr = auxv->a_un.a_val;
+	tglx
+
+
