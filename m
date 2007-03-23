@@ -1,66 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934326AbXCWWEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934328AbXCWWPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934326AbXCWWEr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 18:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934327AbXCWWEr
+	id S934328AbXCWWPw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 18:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934329AbXCWWPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 18:04:47 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:49080 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934326AbXCWWEq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 18:04:46 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=AS/QjuXBE048i49CLdmOXtlbeLk1s+NmWRcvC5HCLBEMzYLhnHp0aER4FrUbjsGIb
-	q2YZBKUxMAxJJKq5frdiw==
-Message-ID: <b040c32a0703231504n1bc68dfblaebcd210b079f89b@mail.gmail.com>
-Date: Fri, 23 Mar 2007 15:04:33 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "William Lee Irwin III" <wli@holomorphy.com>
-Subject: Re: [patch] rfc: introduce /dev/hugetlb
-Cc: "Mel Gorman" <mel@csn.ul.ie>, "Adam Litke" <agl@us.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-In-Reply-To: <20070323153006.GW2986@holomorphy.com>
+	Fri, 23 Mar 2007 18:15:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54580 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S934328AbXCWWPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 18:15:52 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+8/QtvOEK8qZW/znJ1F11Dmd5ldVJC9aXRiEQrUj
+	O/rJP//qEUZM8g
+Date: Fri, 23 Mar 2007 23:15:50 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Bernhard Walle <bwalle@suse.de>
+cc: Andrew Morton <akpm@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 0/7] Add IRQF_IRQPOLL_IRQ flag to allow irqpoll
+In-Reply-To: <20070323164447.659982000@strauss.suse.de>
+Message-ID: <Pine.LNX.4.60.0703232312180.5971@poirot.grange>
+References: <20070323164447.659982000@strauss.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
-	 <Pine.LNX.4.64.0703231457360.4133@skynet.skynet.ie>
-	 <20070323150924.GV2986@holomorphy.com>
-	 <Pine.LNX.4.64.0703231514370.4133@skynet.skynet.ie>
-	 <20070323153006.GW2986@holomorphy.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/23/07, William Lee Irwin III <wli@holomorphy.com> wrote:
-> On Fri, 23 Mar 2007, William Lee Irwin III wrote:
-> >> Lack of compiletesting beyond x86-64 in all probability.
->
-> On Fri, Mar 23, 2007 at 03:15:55PM +0000, Mel Gorman wrote:
-> > Ok, this will go kablamo on Power then even if it compiles. I don't
-> > consider it a fundamental problem though. For the purposes of an RFC, it's
-> > grand and something that can be worked with.
->
-> He needs to un-#ifdef the prototype (which he already does), but he
-> needs to leave the definition under #ifdef while removing the static
-> qualifier. A relatively minor fixup.
+On Fri, 23 Mar 2007, Bernhard Walle wrote:
 
-Yes, sorry about that for lack of access to non-x86-64 machines.  I
-needed to move the function prototype to hugetlb.h and evidently
-removed the #ifdef by mistake.  I'm not going to touch this in my next
-clean up patch, instead I will just declare char specific
-file_operations struct in hugetlbfs and then have char device
-reference it.
+> irqpoll is broken on some architectures that don't use the IRQ 0 for the timer
+> interrupt like IA64. This patch adds a IRQF_IRQPOLL_IRQ flag.
 
-But nevertheless, hugetlb_get_unmapped_area function prototype  better
-be in a header file somewhere.
+emn, please, cannot we come up with a better name - one that doesn't have 
+"IRQ" 3 (!) times in it?...
 
-- Ken
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
