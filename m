@@ -1,47 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbXCWTIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbXCWTI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753406AbXCWTIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 15:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXCWTIS
+	id S1753358AbXCWTI2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 15:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXCWTI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 15:08:18 -0400
-Received: from www.osadl.org ([213.239.205.134]:47441 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753406AbXCWTIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 15:08:16 -0400
-Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, David L <idht4n@hotmail.com>
-In-Reply-To: <20070323185028.GR752@stusta.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323185028.GR752@stusta.de>
-Content-Type: text/plain
-Date: Fri, 23 Mar 2007 20:15:38 +0100
-Message-Id: <1174677338.10840.321.camel@localhost.localdomain>
+	Fri, 23 Mar 2007 15:08:28 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40666 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbXCWTI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 15:08:27 -0400
+Date: Fri, 23 Mar 2007 20:09:04 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Anton Blanchard <anton@samba.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] small documentation fix in Documentation/kbuild/modules.txt
+Message-ID: <20070323190904.GB8512@uranus.ravnborg.org>
+References: <20070320144747.GF31173@kryten>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070320144747.GF31173@kryten>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
-> Subject    : gettimeofday increments too slowly
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=8027
-> Submitter  : David L <idht4n@hotmail.com>
-> Caused-By  : Thomas Gleixner <tglx@linutronix.de>
->              commit 92c7e00254b2d0efc1e36ac3e45474ce1871b6b2
-> Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> Status     : problem is being debugged
+On Tue, Mar 20, 2007 at 09:47:47AM -0500, Anton Blanchard wrote:
+> 
+> The Makefile fragment in Documentation/kbuild/modules.txt looks to be 
+> missing some braces.
+Applied - thanks,
 
-Patch available: http://lkml.org/lkml/2007/3/22/301
-
-commit 6b3964cde70cfe6db79d35b42137431ef7d2f7e4
-
-	tglx
-
-
+	Sam
