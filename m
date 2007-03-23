@@ -1,92 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbXCWVBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934323AbXCWVBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932470AbXCWVBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 17:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934319AbXCWVBU
+	id S934323AbXCWVBx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 17:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934322AbXCWVBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 17:01:20 -0400
-Received: from www.osadl.org ([213.239.205.134]:44975 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932470AbXCWVBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 17:01:19 -0400
-Subject: Re: [2/5] 2.6.21-rc4: known regressions (v2)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ray Lee <ray-lk@madrabbit.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20070323184828.GP752@stusta.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323184828.GP752@stusta.de>
-Content-Type: text/plain
-Date: Fri, 23 Mar 2007 22:08:41 +0100
-Message-Id: <1174684121.10840.366.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 23 Mar 2007 17:01:53 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:53080 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934323AbXCWVBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 17:01:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=m3PuzijpwNJv0zwOCFl72Q3uiahdwaKgt/BahtMzwD5pXjIQf9fOfTiFXmapm9lpscARlaSs+SVJiYfBb6XIhv3EucsEfHb7ntB2hHFB6i+yCVfMrvzOZZ8kErcq5uFelEVgn9R1v2AzE8jsS+QfHglfiva2022uQYGxIqMGo/I=
+Message-ID: <46043EB7.7060608@gmail.com>
+Date: Fri, 23 Mar 2007 22:55:19 +0200
+From: Yan Burman <burman.yan@gmail.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-kernel@vger.kernel.org, khali@linux-fr.org
+Subject: Re: [PATCH 2.6.21-rc4] hwmon: HP Mobile Data Protection System 3D
+ ACPI driver
+References: <1174661503.5373.16.camel@lapot> <d120d5000703231332q1c4a2e0epcba5c8b6c18d41fa@mail.gmail.com>
+In-Reply-To: <d120d5000703231332q1c4a2e0epcba5c8b6c18d41fa@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 19:48 +0100, Adrian Bunk wrote:
-> Subject    : x86_64: ACPI regression with noapic  (APICTIMER_STOPS_ON_C3?)
-> References : http://lkml.org/lkml/2007/3/8/468
->              http://lkml.org/lkml/2007/3/22/156
-> Submitter  : Ray Lee <ray-lk@madrabbit.org>
-> Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> Status     : problem is being debugged
-
-Ray,
-
-can you please test the patch below ?
-
-Thanks,
-
-	tglx
-
------------------->
-Subject: [PATCH] x86_64: avoid sending LOCAL_TIMER_VECTOR IPI to itself
-
-Ray Lee reported, that on an UP kernel with "noapic" commandline option
-set, the box locks hard during boot.
-
-Adding some debug printks revieled, that the last action on the box
-before stalling was "Send IPI" - a debug printk which was put into
-smp_send_timer_broadcast_ipi().
-
-It seems that send_IPI_mask(mask, LOCAL_TIMER_VECTOR) fails when
-"noapic" is set on the commandline on an UP kernel.
-
-Aside of that it does not make much sense to trigger an interrupt
-instead of calling the function directly on the CPU which gets the
-PIT/HPET interrupt in case of broadcasting.
-
-Reported-by: Ray Lee <ray-lk@madrabbit.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
-index 723417d..83328e1 100644
---- a/arch/x86_64/kernel/apic.c
-+++ b/arch/x86_64/kernel/apic.c
-@@ -930,9 +930,17 @@ EXPORT_SYMBOL(switch_APIC_timer_to_ipi);
- 
- void smp_send_timer_broadcast_ipi(void)
- {
-+	int cpu = smp_processor_id();
- 	cpumask_t mask;
- 
- 	cpus_and(mask, cpu_online_map, timer_interrupt_broadcast_ipi_mask);
-+
-+	if (cpu_isset(cpu, mask)) {
-+		cpu_clear(cpu, mask);
-+		add_pda(apic_timer_irqs, 1);
-+		smp_local_timer_interrupt();
-+	}
-+
- 	if (!cpus_empty(mask)) {
- 		send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
- 	}
-
-
+Dmitry Torokhov wrote:
+> Hi Yan,
+>
+> On 3/23/07, Yan Burman <burman.yan@gmail.com> wrote:
+>> +
+>> +static unsigned int input_3d;
+>> +module_param(input_3d, bool, S_IRUGO);
+>> +MODULE_PARM_DESC(input_3d, "Operate as a 3D joystick instead of 2D");
+>
+> Why do you need that? Just have the driver always report all 3 events
+> and have applications decide if they want to use ABS_Z events...
+>
+Getting the coordinates goes through ACPI, so it eats up CPU. I think I 
+remember seeing
+up to 15-16% CPU usage with all 3 events.
+That is why you probably want to disable it in most cases.
