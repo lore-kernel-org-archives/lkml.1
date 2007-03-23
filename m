@@ -1,97 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbXCWOFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676AbXCWOMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751110AbXCWOFH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 10:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbXCWOFH
+	id S1751676AbXCWOMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 10:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXCWOMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 10:05:07 -0400
-Received: from hosting4p.com ([81.0.235.160]:51659 "EHLO micron1.hosting4p.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751110AbXCWOFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 10:05:05 -0400
-Message-ID: <4603DE86.1090009@slax.org>
-Date: Fri, 23 Mar 2007 15:04:54 +0100
-From: Tomas M <tomas@slax.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [patch] [bugfix] loop.c
-Content-Type: multipart/mixed;
- boundary="------------020902010905030705000707"
+	Fri, 23 Mar 2007 10:12:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35368 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbXCWOMQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 10:12:16 -0400
+Date: Fri, 23 Mar 2007 15:12:10 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Christoph Lameter <christoph@lameter.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA cache_free_alien() very expensive because of virt_to_slab(objp); nodeid = slabp->nodeid;)
+Message-ID: <20070323141210.GA20548@one.firstfloor.org>
+References: <20070320181235.77d28864.dada1@cosmosbay.com> <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org> <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org> <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com> <4602FF57.7030001@cosmosbay.com> <20070322224045.GA3200@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070322224045.GA3200@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020902010905030705000707
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+> But that is based on compile time option, isn't it? Perhaps I need
+> to use some other mechanism to find out the platform is not NUMA capable..
 
-I posted this yesterday but it seems people didn't understand the real 
-goal of my patch. So I will explain once more again:
+We can probably make it runtime on x86. That will be needed sooner or 
+later for correct NUMA hotplug support anyways.
 
-This is a bugfix for loop.c block driver, as it currently allocates more 
-memory then it needs, without any further use.
-
-If 'max_loop=255' parameter is given, the loop.c driver allocates this 
-amount of memory:
-
-   kmalloc(max_loop * sizeof(struct loop_device))
-
-But in this case, (max_loop * sizeof) is greater than 65536, and thus 
-kmalloc must allocate the next bigger size (which is 128KB of RAM).
-
-Unfortunately the loop.c driver doesn't allow users to use bigger 
-max_loop then 255 (for reasons which are completely obsolete) so the 
-rest of memory is *unused*.
-
-This patch doesn't fix unused memory in the case of max_loop=255, but 
-rather it allows user to specify bigger max_loop (up to 455 on 386), so 
-  the user can fully use all the memory, which would be allocated anyway.
-
-Thank you for your consideration
-
-Tomas M
-slax.org
-
---------------020902010905030705000707
-Content-Type: text/x-patch;
- name="loop.c.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="loop.c.diff"
-
---- linux/drivers/block/loop.c_old	2007-03-23 14:27:04.000000000 +0000
-+++ linux/drivers/block/loop.c	2007-03-23 14:31:18.098458759 +0000
-@@ -1358,7 +1358,7 @@
-  * And now the modules code and kernel interface.
-  */
- module_param(max_loop, int, 0);
--MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-256)");
-+MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (455/355 on x86/x86_64)");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
- 
-@@ -1402,9 +1402,9 @@
- {
- 	int	i;
- 
--	if (max_loop < 1 || max_loop > 256) {
--		printk(KERN_WARNING "loop: invalid max_loop (must be between"
--				    " 1 and 256), using default (8)\n");
-+	if (max_loop < 1) {
-+		printk(KERN_WARNING "loop: invalid max_loop (must be at least 1"
-+				    ", using default (8)\n");
- 		max_loop = 8;
- 	}
- 
-@@ -1465,7 +1465,7 @@
- 	kfree(loop_dev);
- out_mem1:
- 	unregister_blkdev(LOOP_MAJOR, "loop");
--	printk(KERN_ERR "loop: ran out of memory\n");
-+	printk(KERN_ERR "loop: ran out of memory for max_loop=%d\n", max_loop);
- 	return -ENOMEM;
- }
- 
-
---------------020902010905030705000707--
+-Andi
