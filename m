@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422857AbXCWMzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422863AbXCWM4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422857AbXCWMzm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 08:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422862AbXCWMzm
+	id S1422863AbXCWM4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 08:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422867AbXCWM4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 08:55:42 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48576 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422857AbXCWMzl (ORCPT
+	Fri, 23 Mar 2007 08:56:19 -0400
+Received: from 142.163.233.220.exetel.com.au ([220.233.163.142]:36673 "EHLO
+	idefix.homelinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422863AbXCWM4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 08:55:41 -0400
-X-Greylist: delayed 124677 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Mar 2007 08:55:40 EDT
-Date: Fri, 23 Mar 2007 21:54:29 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: 2.6.21-rc4-mm1 + 3 hot-fixes -- WARNING: could not find versions for .tmp_versions/built-in.mod
-Cc: Miles Lane <miles.lane@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070320212705.GB13349@uranus.ravnborg.org>
-References: <a44ae5cd0703200735k197bc50cqeb2856f9f50f88c9@mail.gmail.com> <20070320212705.GB13349@uranus.ravnborg.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070323214418.3F04.Y-GOTO@jp.fujitsu.com>
+	Fri, 23 Mar 2007 08:56:18 -0400
+X-Greylist: delayed 1311 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Mar 2007 08:56:17 EDT
+Message-ID: <4603C950.30001@usherbrooke.ca>
+Date: Fri, 23 Mar 2007 23:34:24 +1100
+From: Jean-Marc Valin <jean-marc.valin@usherbrooke.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Pavel Machek <pavel@ucw.cz>
+CC: nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org
+Subject: Re: Suspend to RAM generates oops and general protection fault
+References: <45B422D3.9040409@usherbrooke.ca> <1169436221.2190.13.camel@nigel.suspend2.net> <45B448BA.70800@usherbrooke.ca> <20070122132545.GA4493@ucw.cz>
+In-Reply-To: <20070122132545.GA4493@ucw.cz>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi,
 
-> > WARNING: mm/built-in.o - Section mismatch: reference to
-> > .init.text:__alloc_bootmem_node from .text between 'sparse_init' (at
-> > offset 0x15c8f) and '__section_nr'
-> I took a look at this one.
-> You have SPARSEMEM enabled in your config.
-> And then I see that in sparse.c we call alloc_bootmem_node()
-> from a function I thought should be marked __devinit (it
-> is used by memory_hotplug.c).
-> But I am not familiar enough to judge if __alloc_bootmen_node
-> are marked correct with __init or __devinit (to say
-> this is used in the HOTPLUG case) is more correct.
-> Anyone?
-> 
-> > WARNING: mm/built-in.o - Section mismatch: reference to
-> > .init.text:__alloc_bootmem_node from .text between 'sparse_init' (at
-> > offset 0x15d02) and '__section_nr'
-> Same as above....
+Sorry I haven't replied recently about that bug, but I have to admit I
+have no idea where to start. There actually seems to be much more
+fundamental problems with the kernel on my machines. I initially
+realised that even without using suspend to RAM, I was still getting
+crashes when docking. So I stopped docking and realised my machine would
+sometimes just crash when I plug/unplug the AC adaptor. Just to give an
+idea, I've experienced about 10-15 crashes in the past two months -- I
+don't think I've even done a single clean shutdown during that period.
 
-Memory hotplug code has __meminit for its purpose.
-But, I suspect that many other places of memory hotplug code may have
-same issue. I will chase them.
+To make things worse, the behaviour is always different. Sometimes I get
+a panic with keyboard LEDs flashing. Sometimes I get nothing at all and
+the machine is just frozen (doesn't respond to pings or to Alt-SysRq
+commands). Sometimes, I just lose my keyboard and/or mouse but the
+machine stays up. I'm running a vanilla 2.6.20 kernel (not tainted) with
+the following configuration: http://jmspeex.livejournal.com/1090.html
 
-BTW, does -mm code checks more strict than stock kernel? I can't see
-these warnings in 2.6.21-rc4.....
-
-Bye.
-
--- 
-Yasunori Goto 
+	Jean-Marc
 
 
