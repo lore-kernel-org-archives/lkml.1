@@ -1,146 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422653AbXCWG4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422682AbXCWG5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422653AbXCWG4z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 02:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbXCWG43
+	id S1422682AbXCWG5G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 02:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965225AbXCWG40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 02:56:29 -0400
-Received: from mga09.intel.com ([134.134.136.24]:18531 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422656AbXCWGwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 02:52:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,317,1170662400"; 
-   d="scan'208"; a="62774650:sNHT20907648"
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 2.6.21-rc4 08/15] md: move raid5 parity checks to raid5_run_ops
-To: neilb@suse.de, christopher.leech@intel.com, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, yur@emcraft.com,
-       wd@denx.de, arjan@linux.intel.com, rmk+kernel@arm.linux.org.uk
-Date: Thu, 22 Mar 2007 23:52:18 -0700
-Message-ID: <20070323065218.15570.19058.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20070323064856.15570.45052.stgit@dwillia2-linux.ch.intel.com>
-References: <20070323064856.15570.45052.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGIT/0.12.1
+	Fri, 23 Mar 2007 02:56:26 -0400
+Received: from smtp008.mail.ukl.yahoo.com ([217.12.11.62]:34040 "HELO
+	smtp008.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1422657AbXCWGwX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 02:52:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=hbJkTlBdQofPxLBijhBQfDX8iI3fKXkdBqtNFgc2UiT/1ai88z+FefRUWeIbdFfxRcePEJASVO8r84DIgemNTY1lWrPJnG9KfQ8kh11vpfV4uTPtwNkBx02F+MbXg9AjnqmUzpp6JQt3mfMzIULTDlzRGD//ztBz2G5xmohLjKA=  ;
+X-YMail-OSG: pfMUgA0VM1lc1LSc3zoqHVxcq6Zooj52WfoRhS_X8Vnel8zqwXWNfkBiPbsInnn7GW3Lvu1OcPqOt4LHsajyLDUB9eF72m4I0M81Sd8cj_jjujZnYAXhCDVu1NC0pytX4LtLnScwQXNnoXQGAHNRBOH2cOxa1xFuEh1NKGRbEtFDnQDe_A--
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: akpm@linux-foundation.org, "LKML, " <linux-kernel@vger.kernel.org>
+Subject: Re: + uml-create-archh.patch added to -mm tree
+Date: Fri, 23 Mar 2007 07:51:47 +0100
+User-Agent: KMail/1.9.5
+Cc: mm-commits@vger.kernel.org
+References: <200703222144.l2MLiXrA031093@shell0.pdx.osdl.net>
+In-Reply-To: <200703222144.l2MLiXrA031093@shell0.pdx.osdl.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703230751.47355.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-handle_stripe sets STRIPE_OP_CHECK to request a check operation in
-raid5_run_ops.  If raid5_run_ops is able to perform the check with a
-dma engine the parity will be preserved in memory removing the need to
-re-read it from disk, as is necessary in the synchronous case.
+On Thursday 22 March 2007 22:44, akpm@linux-foundation.org wrote:
+> The patch titled
+>      uml: mreate arch.h
+	   ^
+> has been added to the -mm tree.  Its filename is
+>      uml-create-archh.patch
+mreate? I've also seen this in all other patches of this batch (examples 
+below), and both Jeff's original mails and patch filenames are correct. What 
+are your scripts doing here?
 
-'Repair' operations re-use the same logic as compute block, with the caveat
-that the results of the compute block are immediately written back to the
-parity disk.  To differentiate these operations the STRIPE_OP_MOD_REPAIR_PD
-flag is added.
+> The patch titled
+>      uml: mreate as-layout.h
+...
+> The patch titled
+>      uml: memove user_util.h
+...
+> The patch titled
+>      uml: mdd missing __init declarations
+...
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
-
- drivers/md/raid5.c |   81 ++++++++++++++++++++++++++++++++++++++++------------
- 1 files changed, 62 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 9856742..17a114c 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -2411,32 +2411,75 @@ static void handle_stripe5(struct stripe_head *sh)
- 			locked += handle_write_operations5(sh, rcw, 0);
- 	}
- 
--	/* maybe we need to check and possibly fix the parity for this stripe
--	 * Any reads will already have been scheduled, so we just see if enough data
--	 * is available
-+	/* 1/ Maybe we need to check and possibly fix the parity for this stripe.
-+	 *    Any reads will already have been scheduled, so we just see if enough data
-+	 *    is available.
-+	 * 2/ Hold off parity checks while parity dependent operations are in flight
-+	 *    (conflicting writes are protected by the 'locked' variable)
- 	 */
--	if (syncing && locked == 0 &&
--	    !test_bit(STRIPE_INSYNC, &sh->state)) {
-+	if ((syncing && locked == 0 && !test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending) &&
-+		!test_bit(STRIPE_INSYNC, &sh->state)) ||
-+	    	test_bit(STRIPE_OP_CHECK, &sh->ops.pending) ||
-+	    	test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
-+
- 		set_bit(STRIPE_HANDLE, &sh->state);
--		if (failed == 0) {
--			BUG_ON(uptodate != disks);
--			compute_parity5(sh, CHECK_PARITY);
--			uptodate--;
--			if (page_is_zero(sh->dev[sh->pd_idx].page)) {
--				/* parity is correct (on disc, not in buffer any more) */
--				set_bit(STRIPE_INSYNC, &sh->state);
--			} else {
--				conf->mddev->resync_mismatches += STRIPE_SECTORS;
--				if (test_bit(MD_RECOVERY_CHECK, &conf->mddev->recovery))
--					/* don't try to repair!! */
-+		/* Take one of the following actions:
-+		 * 1/ start a check parity operation if (uptodate == disks)
-+		 * 2/ finish a check parity operation and act on the result
-+		 * 3/ skip to the writeback section if we previously
-+		 *    initiated a recovery operation
-+		 */
-+		if (failed == 0 && !test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
-+			if (!test_and_set_bit(STRIPE_OP_CHECK, &sh->ops.pending)) {
-+				BUG_ON(uptodate != disks);
-+				clear_bit(R5_UPTODATE, &sh->dev[sh->pd_idx].flags);
-+				sh->ops.count++;
-+				uptodate--;
-+			} else if (test_and_clear_bit(STRIPE_OP_CHECK, &sh->ops.complete)) {
-+				clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
-+				clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
-+
-+				if (sh->ops.zero_sum_result == 0)
-+					/* parity is correct (on disc, not in buffer any more) */
- 					set_bit(STRIPE_INSYNC, &sh->state);
- 				else {
--					compute_block(sh, sh->pd_idx);
--					uptodate++;
-+					conf->mddev->resync_mismatches += STRIPE_SECTORS;
-+					if (test_bit(MD_RECOVERY_CHECK, &conf->mddev->recovery))
-+						/* don't try to repair!! */
-+						set_bit(STRIPE_INSYNC, &sh->state);
-+					else {
-+						BUG_ON(test_and_set_bit(
-+							STRIPE_OP_COMPUTE_BLK,
-+							&sh->ops.pending));
-+						set_bit(STRIPE_OP_MOD_REPAIR_PD,
-+							&sh->ops.pending);
-+						BUG_ON(test_and_set_bit(R5_Wantcompute,
-+							&sh->dev[sh->pd_idx].flags));
-+						sh->ops.target = sh->pd_idx;
-+						sh->ops.count++;
-+						uptodate++;
-+					}
- 				}
- 			}
- 		}
--		if (!test_bit(STRIPE_INSYNC, &sh->state)) {
-+
-+		/* check if we can clear a parity disk reconstruct */
-+		if (test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete) &&
-+			test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
-+
-+			clear_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending);
-+			clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete);
-+			clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.ack);
-+			clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
-+		}
-+
-+		/* Wait for check parity and compute block operations to complete
-+		 * before write-back
-+		 */
-+		if (!test_bit(STRIPE_INSYNC, &sh->state) &&
-+			!test_bit(STRIPE_OP_CHECK, &sh->ops.pending) &&
-+			!test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending)) {
-+
- 			/* either failed parity check, or recovery is happening */
- 			if (failed==0)
- 				failed_num = sh->pd_idx;
+Bye
+-- 
+Inform me of my mistakes, so I can add them to my list!
+Paolo Giarrusso, aka Blaisorblade
+http://www.user-mode-linux.org/~blaisorblade
+Chiacchiera con i tuoi amici in tempo reale! 
+ http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
