@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422813AbXCWLZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422808AbXCWL30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422813AbXCWLZw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 07:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422817AbXCWLZw
+	id S1422808AbXCWL30 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 07:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422809AbXCWL30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 07:25:52 -0400
-Received: from a222036.upc-a.chello.nl ([62.163.222.36]:58657 "EHLO
-	laptopd505.fenrus.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422813AbXCWLZu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 07:25:50 -0400
-Subject: Re: Question about CPU flags detection
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: hutuworm <hutuworm@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <f4e165120703230304p333124abmf7cce66d73a170fa@mail.gmail.com>
-References: <f4e165120703230304p333124abmf7cce66d73a170fa@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 23 Mar 2007 12:25:40 +0100
-Message-Id: <1174649140.1158.230.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Fri, 23 Mar 2007 07:29:26 -0400
+Received: from holomorphy.com ([66.93.40.71]:45255 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422808AbXCWL3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 07:29:24 -0400
+Date: Fri, 23 Mar 2007 04:29:20 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V4
+Message-ID: <20070323112920.GR2986@holomorphy.com>
+References: <20070323062843.19502.19827.sendpatchset@schroedinger.engr.sgi.com> <20070322223927.bb4caf43.akpm@linux-foundation.org> <Pine.LNX.4.64.0703222339560.19630@schroedinger.engr.sgi.com> <20070322234848.100abb3d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070322234848.100abb3d.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-23 at 18:04 +0800, hutuworm wrote:
-> Hi all,
-> 
-> I just installed Red Hat Enterprise Linux AS release 4 (Nahant Update
-> 4) on a Dell PE1950 server, which has two of dual-core Xeon 5110
-> 1.6GHz CPUs. According to the processor spec @
-> http://processorfinder.intel.com/details.aspx?sSpec=SL9RZ , it doesn't
-> support Hyper-threading technology, but both 'cat /proc/cpuinfo | grep
-> ' and 'dmidecode | grep -A 30 Flags' commands show there're "ht" or
-> "HTT (Hyper-threading technology)" available.
+On Thu, Mar 22, 2007 at 11:48:48PM -0800, Andrew Morton wrote:
+> afacit that two-year-old, totally-different patch has nothing to do with my
+> repeatedly-asked question.  It appears to be consolidating three separate
+> quicklist allocators into one common implementation.
+> In an attempt to answer my own question (and hence to justify the retention
+> of this custom allocator) I did this:
+[... patch changing allocator alloc()/free() to bare page allocations ...]
+> but it crashes early in the page allocator (i386) and I don't see why.  It
+> makes me wonder if we have a use-after-free which is hidden by the presence
+> of the quicklist buffering or something.
+
+Sorry I flubbed the first message. Anyway this does mean something is
+seriously wrong and needs to be debugged. Looking into it now.
 
 
-the "ht" flag there ONLY means "we support reporting the number of
-threads/cores/etc via the MSRs". It does not mean that you actually have
-hyperthreading, only that your cpu knows how to report what it
-supports...
-
-
-I hope this answer helps,
-   Arjan van de Ven
+-- wli
