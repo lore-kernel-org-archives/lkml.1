@@ -1,129 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933822AbXCWRqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbXCWRsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933822AbXCWRqf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 13:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932330AbXCWRqf
+	id S932330AbXCWRsI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 13:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992537AbXCWRsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 13:46:35 -0400
-Received: from science.horizon.com ([192.35.100.1]:12109 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933822AbXCWRqd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 13:46:33 -0400
-Date: 23 Mar 2007 13:46:30 -0400
-Message-ID: <20070323174630.31051.qmail@science.horizon.com>
-From: linux@horizon.com
-To: dan.j.williams@intel.com, linux-ide@vger.kernel.org, neilb@suse.de
-Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
-Cc: cebbert@redhat.com, jens.axboe@oracle.com, linux-kernel@dale.us,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux@horizon.com
-In-Reply-To: <17923.8970.917375.917772@notabene.brown>
+	Fri, 23 Mar 2007 13:48:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34321 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933875AbXCWRsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 13:48:06 -0400
+Message-ID: <460412CE.8020404@redhat.com>
+Date: Fri, 23 Mar 2007 13:47:58 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Phy Prabab <phyprabab@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Opps in 2.6.21-rc4 nfsd
+References: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
+In-Reply-To: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As an additional data point, here's a libata problem I'm having trying to
-rebuild the array.
+Phy Prabab wrote:
+> Hello,
+> 
+> I have a recent oopps on a small file server I have running.  The
+> machine in question is a dual, dual core AMD Opteron 2.2GHz w/4G RAM,
+> 3Ware 9650SE (14 drive RAID 10), using XFS, LVM2 (latest), exported
+> via knfsd.  Kernel is 2.6.21-rc4 64b.  Here is the bt:
+> 
+> Mar 22 12:09:01 rcfs05 kernel: Modules linked in:
+> Mar 22 12:09:01 rcfs05 kernel: Pid: 3102, comm: nfsd Not tainted
+> 2.6.21-rc4-smp #3
+> Mar 22 12:09:01 rcfs05 kernel: RIP: 0010:[<ffffffff80350613>]
+> [<ffffffff80350613>] fh_compose+0x3e3/0x4d0
+> Mar 22 12:09:01 rcfs05 kernel: RSP: 0018:ffff8101197fdd70  EFLAGS: 00010297
+> Mar 22 12:09:01 rcfs05 kernel: RAX: 0000000000000006 RBX:
+> 000000000ee00004 RCX: 0000000000000000
+> Mar 22 12:09:01 rcfs05 kernel: RDX: 0000000000000018 RSI:
+> ffff81011975a940 RDI: 0000000000000080
+> Mar 22 12:09:01 rcfs05 kernel: RBP: 0000000000000001 R08:
+> 00000000ffffffff R09: 00002ba24f06ca50
+> Mar 22 12:09:01 rcfs05 kernel: R10: ffff81011975a808 R11:
+> ffffffff8022f500 R12: ffff81011975a938
+> Mar 22 12:09:01 rcfs05 kernel: R13: 0000000000000006 R14:
+> ffff81010eaab0c0 R15: ffff8100cc714940
+> Mar 22 12:09:01 rcfs05 kernel: FS:  00002b020c71b6d0(0000)
+> GS:ffff81011dcf56c0(0000) knlGS:0000000000000000
+> Mar 22 12:09:01 rcfs05 kernel: CS:  0010 DS: 0000 ES: 0000 CR0:
+> 000000008005003b
+> Mar 22 12:09:01 rcfs05 kernel: CR2: 0000000000000000 CR3:
+> 00000001173d1000 CR4: 00000000000006e0
+> Mar 22 12:09:01 rcfs05 kernel: Process nfsd (pid: 3102, threadinfo
+> ffff8101197fc000, task ffff81011b7ef020)
+> Mar 22 12:09:01 rcfs05 kernel: Stack:  ffff81010fa7b868
+> ffffffff80239d8a 0000000000000286 ffff810111aee5e8
+> Mar 22 12:09:01 rcfs05 kernel:  ffff810105af2890 ffff81011975a808
+> ffff810105af2890 000000000eaab0c0
+> Mar 22 12:09:01 rcfs05 kernel:  ffff810105af2890 ffff81011975a808
+> ffff810105af2890 000000000000000a
+> Mar 22 12:09:01 rcfs05 kernel: Call Trace:
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80239d8a>]
+> __lookup_hash+0x7a/0x160
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff803547a5>]
+> nfsd_lookup+0x435/0x4d0
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8035aaa8>]
+> nfsd3_proc_lookup+0xe8/0x110
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034d69d>]
+> nfsd_dispatch+0xfd/0x1f0
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80608094>]
+> svc_process+0x3e4/0x730
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8026bbf2>] __down_read+0x12/0xa2
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034dd00>] nfsd+0x1a0/0x2d0
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80264f38>] child_rip+0xa/0x12
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff8034db60>] nfsd+0x0/0x2d0
+> Mar 22 12:09:01 rcfs05 kernel:  [<ffffffff80264f2e>] child_rip+0x0/0x12
+> Mar 22 12:09:01 rcfs05 kernel:
+> Mar 22 12:09:01 rcfs05 kernel:
+> Mar 22 12:09:01 rcfs05 kernel: Code: 48 8b 01 ba 10 00 00 00 bf 10 00
+> 00 00 48 89 06 48 8b 41 08
+> Mar 22 12:09:01 rcfs05 kernel: RIP  [<ffffffff80350613>]
+> fh_compose+0x3e3/0x4d0
+> Mar 22 12:09:01 rcfs05 kernel:  RSP <ffff8101197fdd70>
+> Mar 22 12:09:01 rcfs05 kernel: CR2: 0000000000000000
+> 
+> Once this oops happens, the machine is still usable, however NFS
+> crawls to a halt (in fact one of the machines with a mount point of
+> this machine, failed to respond anymore - I assume that thread is the
+> one that ooops'ed).
+> 
+> Any more information or debugging, please let me know.
 
-I have six identical 400 GB drives (ST3400832AS), and one is giving
-me hassles.  I've run SMART short and long diagnostics, badblocks, and
-Seagate's "seatools" diagnostic software, and none of these find problems.
-It is the only one of the six with a non-zero reallocated sector count
-(it's 26).
+The first few lines of the oops are missing.
 
-Anyway, the drive is partitioned into a 45G RAID-10 part and a 350G RAID-5
-part.  The RAID-10 part integrated successfully, but the RAID-5 got to
-about 60% and then puked:
-
-ata5.00: exception Emask 0x0 SAct 0x1ef SErr 0x0 action 0x2 frozen
-ata5.00: cmd 61/c0:00:d2:d0:b9/00:00:1c:00:00/40 tag 0 cdb 0x0 data 98304 out
-         res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5.00: cmd 61/40:08:92:d1:b9/00:00:1c:00:00/40 tag 1 cdb 0x0 data 32768 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5.00: cmd 61/00:10:d2:d1:b9/01:00:1c:00:00/40 tag 2 cdb 0x0 data 131072 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5.00: cmd 61/00:18:d2:d2:b9/01:00:1c:00:00/40 tag 3 cdb 0x0 data 131072 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5.00: cmd 61/00:28:d2:d3:b9/01:00:1c:00:00/40 tag 5 cdb 0x0 data 131072 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5.00: cmd 61/00:30:d2:d4:b9/01:00:1c:00:00/40 tag 6 cdb 0x0 data 131072 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5.00: cmd 61/00:38:d2:d5:b9/01:00:1c:00:00/40 tag 7 cdb 0x0 data 131072 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5.00: cmd 61/00:40:d2:d6:b9/01:00:1c:00:00/40 tag 8 cdb 0x0 data 131072 out
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5: soft resetting port
-ata5: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata5.00: configured for UDMA/100
-ata5: EH complete
-SCSI device sde: 781422768 512-byte hdwr sectors (400088 MB)
-sde: Write Protect is off
-SCSI device sde: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata5.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0 
-         res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata5: soft resetting port
-ata5: softreset failed (timeout)
-ata5: softreset failed, retrying in 5 secs
-ata5: hard resetting port
-ata5: softreset failed (timeout)
-ata5: follow-up softreset failed, retrying in 5 secs
-ata5: hard resetting port
-ata5: softreset failed (timeout)
-ata5: reset failed, giving up
-ata5.00: disabled
-ata5: EH complete
-sd 4:0:0:0: SCSI error: return code = 0x00040000
-end_request: I/O error, dev sde, sector 91795259
-md: super_written gets error=-5, uptodate=0
-raid10: Disk failure on sde3, disabling device. 
-        Operation continuing on 5 devices
-sd 4:0:0:0: SCSI error: return code = 0x00040000
-end_request: I/O error, dev sde, sector 481942994
-raid5: Disk failure on sde4, disabling device. Operation continuing on 5 devices
-sd 4:0:0:0: SCSI error: return code = 0x00040000
-end_request: I/O error, dev sde, sector 481944018
-md: md5: recovery done.
-RAID10 conf printout:
- --- wd:5 rd:6
- disk 0, wo:0, o:1, dev:sdb3
- disk 1, wo:0, o:1, dev:sdc3
- disk 2, wo:0, o:1, dev:sdd3
- disk 3, wo:1, o:0, dev:sde3
- disk 4, wo:0, o:1, dev:sdf3
- disk 5, wo:0, o:1, dev:sda3
-RAID10 conf printout:
- --- wd:5 rd:6
- disk 0, wo:0, o:1, dev:sdb3
- disk 1, wo:0, o:1, dev:sdc3
- disk 2, wo:0, o:1, dev:sdd3
- disk 4, wo:0, o:1, dev:sdf3
- disk 5, wo:0, o:1, dev:sda3
-RAID5 conf printout:
- --- rd:6 wd:5
- disk 0, o:1, dev:sda4
- disk 1, o:1, dev:sdb4
- disk 2, o:1, dev:sdc4
- disk 3, o:1, dev:sdd4
- disk 4, o:0, dev:sde4
- disk 5, o:1, dev:sdf4
-RAID5 conf printout:
- --- rd:6 wd:5
- disk 0, o:1, dev:sda4
- disk 1, o:1, dev:sdb4
- disk 2, o:1, dev:sdc4
- disk 3, o:1, dev:sdd4
- disk 5, o:1, dev:sdf4
-
-The first error address is just barely inside the RAID-10 part (which ends at
-sector 91,795,410), while the second and third errors (at 481,942,994)
-look like where the reconstruction was working.
-
-
-Anyway, what's annoying is that I can't figure out how to bring the
-drive back on line without resetting the box.  It's in a hot-swap enclosure,
-but power cycling the drive doesn't seem to help.  I thought libata hotplug
-was working?  (SiI3132 card, using the sil24 driver.)
-
-(H'm... after rebooting, reallocated sectors jumped from 26 to 39.
-Something is up with that drive.)
