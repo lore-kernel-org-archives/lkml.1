@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbXCWOQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXCWOSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753074AbXCWOQg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 10:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbXCWOQg
+	id S1752072AbXCWOSq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 10:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXCWOSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 10:16:36 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53535 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752861AbXCWOQf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 10:16:35 -0400
-Date: Fri, 23 Mar 2007 15:16:33 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <christoph@lameter.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] NUMA : could we introduce virt_to_nid() ?
-Message-ID: <20070323141633.GD20548@one.firstfloor.org>
-References: <20070321102231.7288f231.dada1@cosmosbay.com> <84144f020703210521q10ad95d4g760010bd4388c71f@mail.gmail.com> <Pine.LNX.4.64.0703210742080.1573@graphe.net> <Pine.LNX.4.64.0703211740460.19583@sbz-30.cs.Helsinki.FI> <20070321160929.GB25583@one.firstfloor.org> <20070323121512.c287ddef.dada1@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070323121512.c287ddef.dada1@cosmosbay.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 23 Mar 2007 10:18:45 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:56376 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752072AbXCWOSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 10:18:45 -0400
+Date: Fri, 23 Mar 2007 15:18:33 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Tomas M <tomas@slax.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] [bugfix] loop.c
+In-Reply-To: <4603DE86.1090009@slax.org>
+Message-ID: <Pine.LNX.4.64.0703231514000.5030@twin.jikos.cz>
+References: <4603DE86.1090009@slax.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, 2007 at 12:15:12PM +0100, Eric Dumazet wrote:
-> Hi Andi
-> 
-> Checking Christoph quicklist implementation, I found the same cache miss in free() than SLAB has.
-> 
-> /* common implementation *
-> int virt_to_nid(const void *addr)
-> {
-> 	struct page *page = virt_to_page(addr); 
-> 	return page_to_nid(page);
-> }
-> 
-> On some platforms (x86_64 for example), could we have a better implementation, not accessing struct page, but using phys_to_nid() ?
+On Fri, 23 Mar 2007, Tomas M wrote:
 
-Sure why not. Please send a patch.
+> This is a bugfix for loop.c block driver, as it currently allocates more 
+> memory then it needs, without any further use.
+> If 'max_loop=255' parameter is given, the loop.c driver allocates this 
+> amount of memory:
+>   kmalloc(max_loop * sizeof(struct loop_device))
+> But in this case, (max_loop * sizeof) is greater than 65536, and thus kmalloc
+> must allocate the next bigger size (which is 128KB of RAM).
 
--Andi
+Which is very unlikely to work after some time of uptime, as the memory 
+will be too fragmented to successfully kmalloc(128k). I guess that the 
+code should be rather rewritten not to allocate such large contignuous 
+chunks of memory through kmalloc().
+
+-- 
+Jiri Kosina
