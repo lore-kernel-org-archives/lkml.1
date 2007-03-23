@@ -1,101 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbXCWCLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXCWCVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933102AbXCWCLn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Mar 2007 22:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbXCWCLm
+	id S933112AbXCWCVu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Mar 2007 22:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXCWCVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Mar 2007 22:11:42 -0400
-Received: from mx2.suse.de ([195.135.220.15]:43179 "EHLO mx2.suse.de"
+	Thu, 22 Mar 2007 22:21:50 -0400
+Received: from holomorphy.com ([66.93.40.71]:53219 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933102AbXCWCLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Mar 2007 22:11:42 -0400
-Date: Fri, 23 Mar 2007 03:11:15 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [1/6] 2.6.21-rc4: known regressions
-Message-ID: <20070323021115.GA11147@wotan.suse.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070318184908.GU752@stusta.de> <Pine.LNX.4.64.0703212023550.6730@woody.linux-foundation.org> <46020385.50301@yahoo.com.au> <Pine.LNX.4.64.0703220813340.6730@woody.linux-foundation.org> <1174612132.16068.114.camel@localhost.localdomain> <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org>
-Mime-Version: 1.0
+	id S933112AbXCWCVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Mar 2007 22:21:49 -0400
+Date: Thu, 22 Mar 2007 19:21:40 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: ck@vds.kolivas.org, linux-kernel@vger.kernel.org
+Subject: Re: RSDL 0.31 causes slowdown
+Message-ID: <20070323022140.GO2986@holomorphy.com>
+References: <1174598506.23795.62.camel@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1174598506.23795.62.camel@localhost.localdomain>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 06:40:41PM -0700, Linus Torvalds wrote:
-> 
-> [ Ok, I think it's those timers again...
-> 
->   Ingo: let me just state how *happy* I am that I told you off when you 
->   wanted to merge the hires timers and NO_HZ before 2.6.20 because they 
->   were "stable". You were wrong, and 2.6.20 is at least in reasonable 
->   shape. Now we just need to make sure that 2.6.21 will be too.. ]
-> 
-> On Thu, 22 Mar 2007, Mingming Cao wrote:
-> > 
-> > I might missed something, so far I can't see a deadlock yet.
-> > If there is a deadlock, I think we should see ext3_xattr_release_block()
-> > and ext3_forget() on the stack. Is this the case?
-> 
-> No. What's strange is that two (maybe more, I didn't check) processes seem 
-> to be stuck in
-> 
-> 	 [<c0318981>] schedule_timeout+0x70/0x8e
-> 	 [<c03189b4>] schedule_timeout_uninterruptible+0x15/0x17
-> 	 [<c01b964a>] journal_stop+0xe2/0x1e6
-> 	 [<c01ba2b0>] journal_force_commit+0x1d/0x1f
-> 	 [<c01b29fb>] ext3_force_commit+0x22/0x24
-> 	 [<c01ad607>] ext3_write_inode+0x34/0x3a
-> 	 [<c0189f74>] __writeback_single_inode+0x1c5/0x2cb
-> 	 [<c018a096>] sync_inode+0x1c/0x2e
-> 	 [<c01a9ff7>] ext3_sync_file+0xab/0xc0
-> 	 [<c018c8c5>] do_fsync+0x4b/0x98
-> 	 [<c018c932>] __do_fsync+0x20/0x2f
-> 	 [<c018c960>] sys_fsync+0xd/0xf
-> 	 [<c0104064>] syscall_call+0x7/0xb
-> 
-> but that that thing is literally:
-> 
-> 		...
->                 do {
->                         old_handle_count = transaction->t_handle_count;
->                         schedule_timeout_uninterruptible(1);
->                 } while (old_handle_count != transaction->t_handle_count);
-> 		...
-> 
-> and especially if nothing is happening, I'd not expect 
-> "transaction->t_handle_count" to keep changing, so it should stop very 
-> quickly.
-> 
-> Maybe it's CONFIG_NO_HZ again, and the problem is that timeout, and simply 
-> no timer tick happening?
-> 
-> Bingo. I think that's it.
-> 
-> 	active timers:
-> 	 #0: hardirq_stack, tick_sched_timer, S:01
-> 	 # expires at 9530893000000 nsecs [in -2567889 nsecs]
-> 	 #1: hardirq_stack, hrtimer_wakeup, S:01
-> 	 # expires at 10858649798503 nsecs [in 1327754230614 nsecs]
-> 	  .expires_next   : 9530893000000 nsecs
-> 
-> See
-> 
-> 	http://lkml.org/lkml/2007/3/16/288
-> 
-> and that in turn points to the kernel log:
-> 
-> 	http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc4/git-console.log
+On Thu, Mar 22, 2007 at 01:21:46PM -0800, Tim Chen wrote:
+> I've tried running Volanomark and found a 80% regression
+> with RSDL 0.31 scheduler on 2.6.21-rc4 on a 2 socket Core 2 quad cpu
+> system (4 cpus per socket, 8 cpus for system). 
+> The results are sensitive to rr_interval. Using Con's patch to increase
+> rr_interval to a large value of 100, 
+> the regression reduced to 30% instead of 80%.
+> I ran Volanomark in loopback mode with 10 chatrooms 
+> (20 clients per chatroom) configuration, with each client sending
+> out 10000 messages. 
+> http://www.volano.com/benchmarks.html
+> There are significant differences in the vmstat runqueue profile 
+> between the 2.6.21-rc4 and the one with RSDL.  
+> There are a lot less runnable jobs (see col 2) with RSDL 0.31 
+> (rr_interval=15) and higher idle time.
 
-Seems convincing. Michal, can you post your .config, and if you had
-dynticks and hrtimers enabled, try reproducing without them?
+This would be yield() semantics. A flag or alternate syscall for "hard"
+yield() semantics would resolve this (likely trapped into via LD_PRELOAD).
+It may also be useful to have a few variants of yield_to() (a.k.a.
+directed yields), such as ones donating timeslices by pid, by owner of
+sysv semaphore, by owner of futex, and to other ends of pipes and UNIX
+domain sockets if unique or otherwise able to be made sense of. It's
+unclear how easily the latter could be utilized by userspace, though,
+given the number of applications and libraries needing to be updated.
+
+
+-- wli
