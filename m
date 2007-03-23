@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992627AbXCWXI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992631AbXCWXJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992627AbXCWXI7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 19:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992617AbXCWXI7
+	id S2992631AbXCWXJb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 19:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992628AbXCWXJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 19:08:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53043 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992627AbXCWXI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 19:08:58 -0400
-Message-ID: <46045D8B.8020201@redhat.com>
-Date: Fri, 23 Mar 2007 19:06:51 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 23 Mar 2007 19:09:31 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33063 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992617AbXCWXJB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 19:09:01 -0400
+Date: Sat, 24 Mar 2007 00:09:04 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: roland <devzero@web.de>
+Cc: Oliver Neukum <oneukum@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] - Schedule mcdx for removal ? was:  warning: #warning You have not edited mcdx.h
+Message-ID: <20070323230904.GY752@stusta.de>
+References: <052c01c76c62$78f7f7a0$eeeea8c0@aldipc> <200703221035.19832.oneukum@suse.de> <06e401c76d9e$f0920430$eeeea8c0@aldipc>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.21-rc regression in mptbase
-References: <Pine.LNX.4.61.0703232322030.10028@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0703232322030.10028@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <06e401c76d9e$f0920430$eeeea8c0@aldipc>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> Hello world,
+On Fri, Mar 23, 2007 at 11:59:40PM +0100, roland wrote:
+> why not?
 > 
-> 
-> in at least 2.6.21-rc4, one or more of the mptscsi scsi modules is 
-> broken with respect to not detecting any harddisk (VMware provides that 
-> virtual LSI MPT controller), which means no working system.
-> No problems in 2.6.20.2.
-> 
-> I will be trying 2.6.21-rc1 shortly.
-> 
+> why should unused code be maintained to death ?
 
-Also try 2.6.20.4. There are reports of this problem there as well.
+This driver hasn't been actively maintained for years - it's nearly 
+zero-cost to carry such a driver in the kernel sources.
 
+> if there are discussions about removing features people are still using, i 
+> think it should be legitimate to discuss about removing drivers nobody 
+> needs anymore....
+
+There's a difference between obsolete features and drivers for old 
+hardware: There's usually a replacement for the obsolete features.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
