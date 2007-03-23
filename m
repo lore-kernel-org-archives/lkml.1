@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934324AbXCWW4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934331AbXCWXAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934324AbXCWW4P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 18:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934330AbXCWW4P
+	id S934331AbXCWXAU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 19:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992611AbXCWXAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 18:56:15 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:45512 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934324AbXCWW4O (ORCPT
+	Fri, 23 Mar 2007 19:00:20 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33057 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992607AbXCWXAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 18:56:14 -0400
-Message-ID: <06e401c76d9e$f0920430$eeeea8c0@aldipc>
-From: "roland" <devzero@web.de>
-To: "Oliver Neukum" <oneukum@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <bunk@stusta.de>
-References: <052c01c76c62$78f7f7a0$eeeea8c0@aldipc> <200703221035.19832.oneukum@suse.de>
-Subject: Re: [RFC] - Schedule mcdx for removal ? was:  warning: #warning You have not edited mcdx.h
-Date: Fri, 23 Mar 2007 23:59:40 +0100
+	Fri, 23 Mar 2007 19:00:19 -0400
+Date: Sat, 24 Mar 2007 00:00:21 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: tglx@linutronix.de, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, David L <idht4n@hotmail.com>
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+Message-ID: <20070323230021.GX752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323185028.GR752@stusta.de> <1174677338.10840.321.camel@localhost.localdomain> <46045355.1020105@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 8bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2869
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46045355.1020105@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-why not?
+On Fri, Mar 23, 2007 at 06:23:17PM -0400, Chuck Ebbert wrote:
+> Thomas Gleixner wrote:
+> > On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
+> >> Subject    : gettimeofday increments too slowly
+> >> References : http://bugzilla.kernel.org/show_bug.cgi?id=8027
+> >> Submitter  : David L <idht4n@hotmail.com>
+> >> Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+> >>              commit 92c7e00254b2d0efc1e36ac3e45474ce1871b6b2
+> >> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> >> Status     : problem is being debugged
+> > 
+> > Patch available: http://lkml.org/lkml/2007/3/22/301
+> > 
+> > commit 6b3964cde70cfe6db79d35b42137431ef7d2f7e4
+> > 
+> 
+> For the other issue raised there, clock running too slow, I now
+> realize there is a similar report:
+> 
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=231626
 
-why should unused code be maintained to death ?
+It shouldn't be the same issue:
+2.6.20-1.2925.fc6 is based in 2.6.20.3-rc1 while this issue is a
+2.6.21-rc regression.
+Or do the -rc kernels include parts of the -rt patchsets?
 
-if there are discussions about removing features people are still using, i 
-think it should be legitimate to discuss about removing drivers nobody needs 
-anymore....
+cu
+Adrian
 
------ Original Message ----- 
-From: "Oliver Neukum" <oneukum@suse.de>
-To: "roland" <devzero@web.de>
-Cc: <linux-kernel@vger.kernel.org>; <bunk@stusta.de>
-Sent: Thursday, March 22, 2007 10:35 AM
-Subject: Re: [RFC] - Schedule mcdx for removal ? was: warning: #warning You 
-have not edited mcdx.h
-
-
-Am Donnerstag, 22. März 2007 10:14 schrieb roland:
-> i wonder if there still exist any of those devices in functional state in
-> this world, at least not attached to some system being able to boot
-> 2.6.21+ - so, maybe mcdx driver is something for
-> Documentation/feature-removal-schedule.txt , being removed in 2.6.25 or so
-> after being announced for some time (i.e. driver telling "i will be gone
-> soon, go spend those $15 to get a new drive") ?
-
-Why? For the sake of sheer removal?
-
-Regards
-Oliver
 -- 
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-This signature is a legal requirement 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
