@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbXCWGFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933753AbXCWGMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166AbXCWGFw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 02:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422627AbXCWGFw
+	id S933753AbXCWGMA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 02:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbXCWGMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 02:05:52 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:42209 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753166AbXCWGFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 02:05:51 -0400
-Date: Fri, 23 Mar 2007 07:05:31 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Greg KH <greg@kroah.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sysfs q [was: sysfs ugly timer interface]
-In-Reply-To: <20070323044823.GA8881@kroah.com>
-Message-ID: <Pine.LNX.4.61.0703230700030.9555@yvahk01.tjqt.qr>
-References: <200703161230.03712.maximlevitsky@gmail.com> <200703161919.44458.lenb@kernel.org>
- <200703180100.01889.maximlevitsky@gmail.com> <20070320115403.GA3983@ucw.cz>
- <20070322152842.GA6054@kroah.com> <Pine.LNX.4.61.0703230221350.9555@yvahk01.tjqt.qr>
- <20070323044823.GA8881@kroah.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Fri, 23 Mar 2007 02:12:00 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42472 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751446AbXCWGL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 02:11:59 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/usLcEMCnutCXKRA5Lyy7cI1dbng+VK8Jj9oXJ8j
+	INDa1i83TC87dS
+Subject: Re: RSDL v0.31
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Willy Tarreau <w@1wt.eu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Xavier Bestel <xavier.bestel@free.fr>, Mark Lord <lkml@rtr.ca>,
+       Al Boldi <a1426z@gawab.com>, ck@vds.kolivas.org,
+       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Nicholas Miell <nmiell@comcast.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200703231659.20291.kernel@kolivas.org>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703230950.51716.kernel@kolivas.org>
+	 <1174624794.6554.64.camel@Homer.simpson.net>
+	 <200703231659.20291.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 07:11:51 +0100
+Message-Id: <1174630311.7616.3.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-03-23 at 16:59 +1100, Con Kolivas wrote:
 
-On Mar 22 2007 21:48, Greg KH wrote:
->On Fri, Mar 23, 2007 at 02:24:46AM +0100, Jan Engelhardt wrote:
->> On Mar 22 2007 08:28, Greg KH wrote:
->> 
->> Question regarding sysfs files: How would you do something like 
->> /proc/net/nf_conntrack with sysfs? Have directories named like 0000, 
->> 0001, 0002, ..?
->
->I don't know, I've never said that _all_ proc files can move to sysfs. 
->For some things, like possibly the netfilter stuff, proc files make 
->more sense.
+> The deadline mechanism is easy to hit and works. Try printk'ing it.
 
-But proc is for procs. (At least its name indicates.)
+Hm.  I did (.30), and it didn't in an hours time doing this and that.
+After I did the take your quota with you, it did kick in.  Lots.
 
->Were you thinking of moving this file to sysfs?
+	-Mike
 
-No, not that one. But new modules. Everyone says "please no new /proc 
-files"[some examples, 1,2]. On the other hand,
-
-[1] http://lkml.org/lkml/2007/1/21/34
-[2] http://lkml.org/lkml/2005/2/3/285
-
->>>> root@MAIN:/home/maxim# cat /sys/devices/system/clockevents/clockevents0/registered                         
->>>> lapic                F:0007 M:3(periodic) C: 1
->>>> hpet                 F:0003 M:1(shutdown) C: 0
->>>> lapic                F:0007 M:3(periodic) C: 0
->>>> root@MAIN:/home/maxim#
->>>                                                                            
->>> Now... this file needs to die, before 2.6.21 is released. It tries to
->>> bring /proc-like parsing nightmare to sysfs. Kill it before it becomes
->>> part of stable ABI!
-
-when there's a proc-style multi-line file like that clockevents thing in 
-sysfs, people raise objections too (see above), which leads me to the 
-question: if neither procfs nor sysfs are appropriate for such files, 
-what is?
-
-
->What does the information in it represent?
-
-A list of the currently tracked connections.
-
-
-
-Jan
--- 
