@@ -1,104 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751220AbXCXWrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbXCXW5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751220AbXCXWrk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 18:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932875AbXCXWrk
+	id S932962AbXCXW5I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 18:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932910AbXCXW5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 18:47:40 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33681 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751220AbXCXWrj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 18:47:39 -0400
-Date: Sat, 24 Mar 2007 23:47:42 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.45-rc1
-Message-ID: <20070324224742.GB16477@stusta.de>
+	Sat, 24 Mar 2007 18:57:08 -0400
+Received: from mout0.freenet.de ([194.97.50.131]:56194 "EHLO mout0.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932869AbXCXW5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 18:57:06 -0400
+Message-ID: <4605ACBA.6040902@freenet.de>
+Date: Sat, 24 Mar 2007 23:56:58 +0100
+From: Patrick Ringl <patrick_@freenet.de>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+CC: torvalds@linux-foundation.org, johannes@sipsolutions.net,
+       netdev@vger.kernel.org
+Subject: [PATCH] fix typo in net/ieee80211/Kconfig
+Content-Type: multipart/mixed;
+ boundary="------------090604060306070800080007"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
+This is a multi-part message in MIME format.
+--------------090604060306070800080007
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+Hello,
+this is just a QA / cosmetic fix .. nevertheless the documentation about 
+modules / drivers should be appropriate to the great work of those who 
+write all the real important stuff. :-)
 
-
-Changes since 2.6.16.44:
-
-Adrian Bunk (1):
-      Linux 2.6.16.45-rc1
-
-Alexey Dobriyan (1):
-      [NET]: Copy mac_len in skb_clone() as well
-
-Bart De Schuymer (1):
-      NETFILTER: arp_tables: fix userspace compilation
-
-David S. Miller (1):
-      [SPARC64]: Add missing HPAGE_MASK masks on address parameters.
-
-Ed Swierk (1):
-      load_module: no BUG if module_subsys uninitialized
-
-Joy Latten (1):
-      [XFRM]: Fix missing protocol comparison of larval SAs.
-
-Keith Mannthey (1):
-      i386 bootioremap / kexec fix
-
-Masayuki Nakagawa (1):
-      [IPV6]: ipv6_fl_socklist is inadvertently shared.
-
-Michał Mirosław (5):
-      Fix reference counting (memory leak) problem in __nfulnl_send() and callers related to packet queueing.
-      [NETFILTER]: nfnetlink_log: fix NULL pointer dereference
-      [NETFILTER]: nfnetlink_log: fix possible NULL pointer dereference
-      [NETFILTER]: nfnetlink_log: fix reference leak
-      [NETFILTER]: nfnetlink_log: fix use after free
-
-Pablo Neira Ayuso (1):
-      NETFILTER: ctnetlink: check for status attribute existence on conntrack creation
-
-Patrick McHardy (8):
-      NETFILTER: Kconfig: fix xt_physdev dependencies
-      NETFILTER: Fix iptables ABI breakage on (at least) CRIS
-      NETFILTER: nf_conntrack_ipv6: fix crash when handling fragments
-      NETFILTER: tcp conntrack: fix IP_CT_TCP_FLAG_CLOSE_INIT value
-      NETFILTER: xt_connbytes: fix division by zero
-      [NETFILTER]: nf_conntrack: fix incorrect classification of IPv6 fragments as ESTABLISHED
-      [NETFILTER]: nfnetlink_log: fix crash on bridged packet
-      [NETFILTER]: tcp conntrack: accept SYN|URG as valid
-
-Robert Olsson (1):
-      [IPV4]: Do not disable preemption in trie_leaf_remove().
+The following patch is against 2.6.21-rc4:
 
 
- Makefile                                       |    2 -
- arch/i386/mm/boot_ioremap.c                    |    7 ++-
- arch/sparc64/mm/hugetlbpage.c                  |   29 ++++++++++-----
- include/linux/netfilter/nf_conntrack_tcp.h     |    2 -
- include/linux/netfilter_arp/arp_tables.h       |    1 
- include/linux/netfilter_ipv4/ip_tables.h       |    2 -
- kernel/module.c                                |    6 +++
- net/core/skbuff.c                              |    1 
- net/ipv4/fib_trie.c                            |    2 -
- net/ipv4/netfilter/ip_conntrack_netlink.c      |    8 ++--
- net/ipv4/netfilter/ip_conntrack_proto_tcp.c    |    4 +-
- net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |    1 
- net/ipv6/netfilter/nf_conntrack_reasm.c        |    2 +
- net/ipv6/tcp_ipv6.c                            |    1 
- net/netfilter/Kconfig                          |    2 -
- net/netfilter/nf_conntrack_netlink.c           |    8 ++--
- net/netfilter/nf_conntrack_proto_tcp.c         |    4 +-
- net/netfilter/nfnetlink_log.c                  |   31 ++++++++++++-----
- net/netfilter/xt_connbytes.c                   |   29 ++++++---------
- net/xfrm/xfrm_state.c                          |    3 +
- 20 files changed, 93 insertions(+), 52 deletions(-)
+--- /root/dev/linux-2.6.20-o/net/ieee80211/Kconfig    2007-02-04 
+19:44:54.000000000 +0100
++++ /root/dev/linux-2.6.20/net/ieee80211/Kconfig    2007-03-24 
+23:43:22.000000000 +0100
+@@ -38,7 +38,7 @@
+     Include software based cipher suites in support of IEEE
+     802.11's WEP.  This is needed for WEP as well as 802.1x.
+ 
+-    This can be compiled as a modules and it will be called
++    This can be compiled as a module and it will be called
+     "ieee80211_crypt_wep".
+ 
+ config IEEE80211_CRYPT_CCMP
+@@ -51,7 +51,7 @@
+     (aka TGi, WPA, WPA2, WPA-PSK, etc.) for use with CCMP enabled
+     networks.
+ 
+-    This can be compiled as a modules and it will be called
++    This can be compiled as a module and it will be called
+     "ieee80211_crypt_ccmp".
+ 
+ config IEEE80211_CRYPT_TKIP
+@@ -66,7 +66,7 @@
+     (aka TGi, WPA, WPA2, WPA-PSK, etc.) for use with TKIP enabled
+     networks.
+ 
+-    This can be compiled as a modules and it will be called
++    This can be compiled as a module and it will be called
+     "ieee80211_crypt_tkip".
+ 
+ source "net/ieee80211/softmac/Kconfig"
 
+---
+
+regards,
+Patrick
+
+
+
+--------------090604060306070800080007
+Content-Type: text/plain;
+ name="ieee80211_Kconfig_typo"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ieee80211_Kconfig_typo"
+
+--- /root/dev/linux-2.6.20-o/net/ieee80211/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ /root/dev/linux-2.6.20/net/ieee80211/Kconfig	2007-03-24 23:43:22.000000000 +0100
+@@ -38,7 +38,7 @@
+ 	Include software based cipher suites in support of IEEE
+ 	802.11's WEP.  This is needed for WEP as well as 802.1x.
+ 
+-	This can be compiled as a modules and it will be called
++	This can be compiled as a module and it will be called
+ 	"ieee80211_crypt_wep".
+ 
+ config IEEE80211_CRYPT_CCMP
+@@ -51,7 +51,7 @@
+ 	(aka TGi, WPA, WPA2, WPA-PSK, etc.) for use with CCMP enabled
+ 	networks.
+ 
+-	This can be compiled as a modules and it will be called
++	This can be compiled as a module and it will be called
+ 	"ieee80211_crypt_ccmp".
+ 
+ config IEEE80211_CRYPT_TKIP
+@@ -66,7 +66,7 @@
+ 	(aka TGi, WPA, WPA2, WPA-PSK, etc.) for use with TKIP enabled
+ 	networks.
+ 
+-	This can be compiled as a modules and it will be called
++	This can be compiled as a module and it will be called
+ 	"ieee80211_crypt_tkip".
+ 
+ source "net/ieee80211/softmac/Kconfig"
+
+--------------090604060306070800080007--
