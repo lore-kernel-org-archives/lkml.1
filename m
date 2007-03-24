@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbXCXE6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbXCXFBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbXCXE6l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 00:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbXCXE6k
+	id S1752191AbXCXFBm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 01:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbXCXFBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 00:58:40 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:33395 "EHLO e1.ny.us.ibm.com"
+	Sat, 24 Mar 2007 01:01:42 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:54695 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753266AbXCXE62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 00:58:28 -0400
-Date: Sat, 24 Mar 2007 10:35:37 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: menage@google.com
-Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
-       rohitseth@google.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
-Message-ID: <20070324050537.GA27040@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com>
+	id S1752191AbXCXFBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 01:01:41 -0400
+Date: Fri, 23 Mar 2007 20:58:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ken Chen" <kenchen@google.com>
+Cc: "Adam Litke" <agl@us.ibm.com>, "Arjan van de Ven" <arjan@infradead.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "Christoph Hellwig" <hch@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] rfc: introduce /dev/hugetlb
+Message-Id: <20070323205810.3860886d.akpm@linux-foundation.org>
+In-Reply-To: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
+References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070212085105.170265000@menage.corp.google.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 12:15:28AM -0800, menage@google.com wrote:
-> +/*
-> + * Rules: you can only create a container if
-> + *     1. you are capable(CAP_SYS_ADMIN)
-> + *     2. the target container is a descendant of your own container
-> + */
-> +static int ns_create(struct container_subsys *ss, struct container *cont)
-> +{
-> +	struct nscont *ns;
-> +
-> +	if (!capable(CAP_SYS_ADMIN))
-> +		return -EPERM;
+On Fri, 23 Mar 2007 01:44:38 -0700 "Ken Chen" <kenchen@google.com> wrote:
 
-Does this check break existing namespace semantics in a subtle way?
-It now requires that unshare() of namespaces by any task requires
-CAP_SYS_ADMIN capabilities.
+> On 3/21/07, Adam Litke <agl@us.ibm.com> wrote:
+> > The main reason I am advocating a set of pagetable_operations is to
+> > enable the development of a new hugetlb interface.  During the hugetlb
+> > BOFS at OLS last year, we talked about a character device that would
+> > behave like /dev/zero.  Many of the people were talking about how they
+> > just wanted to create MAP_PRIVATE hugetlb mappings without all the fuss
+> > about the hugetlbfs filesystem.  /dev/zero is a familiar interface for
+> > getting anonymous memory so bringing that model to huge pages would make
+> > programming for anonymous huge pages easier.
+> 
+> I think we have enough infrastructure currently in hugetlbfs to
+> implement what Adam wants for something like a /dev/hugetlb char
+> device (except we can't afford to have a zero hugetlb page since it
+> will be too costly on some arch).
+> 
+> I really like the idea of having something similar to /dev/zero for
+> hugetlb page.  So I coded it up on top of existing hugetlbfs.  The
+> core change is really small and half of the patch is really just
+> moving things around.  I think this at least can partially fulfill the
+> goal.
 
-clone(.., CLONE_NEWUTS, ..)->copy_namespaces()->ns_container_clone()->
-	->container_clone()-> .. -> container_create() -> ns_create()
+Standing back and looking at this...
 
-Earlier, one could unshare his uts namespace w/o CAP_SYS_ADMIN
-capabilities. Now it is required. Is that fine? Don't know.
+afaict the whole reason for this work is to provide a quick-n-easy way to
+get private mappings of hugetlb pages.  With the emphasis on quick-n-easy.
 
-I feel we can avoid this check totally and let the directory permissions
-take care of these checks.
+We can do the same with hugetlbfs, but that involves (horror) "fuss".
 
-Serge, what do you think?
+The way to avoid "fuss" is of course to do it once, do it properly then stick
+it in a library which everyone uses.
 
--- 
-Regards,
-vatsa
+But libraries are hard, for a number of distributional reasons.  It is
+easier for us to distribute this functionality within the kernel.  In fact,
+if Linus's tree included a ./userspace/libkernel/libhugetlb/ then we'd
+probably provide this functionality in there.
+
+This comes up regularly, and it's pretty sad.
+
+Probably the kernel team should be maintaining, via existing processes, a
+separate libkernel project, to fix these distributional problems.  The
+advantage in this case is of course that our new hugetlb functionality
+would be available to people on 2.6.18 kernels, not only on 2.6.22 and
+later.
+
+Am I wrong?
