@@ -1,70 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751691AbXCXNkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751750AbXCXNtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751691AbXCXNkG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 09:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXCXNkF
+	id S1751750AbXCXNtq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 09:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbXCXNtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 09:40:05 -0400
-Received: from www.osadl.org ([213.239.205.134]:34981 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751691AbXCXNkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 09:40:03 -0400
-Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
+	Sat, 24 Mar 2007 09:49:46 -0400
+Received: from mx.melware.net ([217.91.97.190]:2428 "EHLO mx.melware.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751750AbXCXNtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 09:49:45 -0400
+Date: Sat, 24 Mar 2007 14:49:42 +0100 (CET)
+From: Armin Schindler <armin@melware.de>
+X-X-Sender: armin@phoenix.one.melware.de
 To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Emil Karlson <jkarlson@cc.hut.fi>
-In-Reply-To: <1174677724.10840.328.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323185028.GR752@stusta.de>
-	 <1174677724.10840.328.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 24 Mar 2007 14:47:26 +0100
-Message-Id: <1174744046.10840.428.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Cc: kkeil@suse.de, kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] fix ISDN_CAPI<->ISDN_DIVAS
+In-Reply-To: <20070324130622.GE752@stusta.de>
+Message-ID: <Pine.LNX.4.61.0703241442220.28244@phoenix.one.melware.de>
+References: <20070324130622.GE752@stusta.de>
+Organization: Cytronics & Melware
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emil,
-
-On Fri, 2007-03-23 at 20:22 +0100, Thomas Gleixner wrote:
-> On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
-> > Subject    : dynticks makes ksoftirqd1 use unreasonable amount of cpu time
-> > References : http://bugzilla.kernel.org/show_bug.cgi?id=8100
-> > Submitter  : Emil Karlson <jkarlson@cc.hut.fi>
-> > Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> > Status     : problem is being debugged
+On Sat, 24 Mar 2007, Adrian Bunk wrote:
+> Randy Dunlap reported in kernel Bugzilla #8241 the following compile 
+> error with CONFIG_ISDN_CAPI=m, CONFIG_ISDN_DIVAS=y:
 > 
-> The problem is not reproducible on any of my machines.
+> <--  snip  -->
 > 
+> ...
+> WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/divacapi.ko] undefined!
+> WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_mnt.ko] undefined!
+> WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
+> WARNING: "proc_net_eicon" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> 
+> <--  snip  -->
+> 
+> 
+> Kconfig contains the following strange thing:
+> 
+> menu "Active Eicon DIVA Server cards"
+>         depends on NET && ISDN && ISDN_CAPI!=n
+> 
+> 
+> It seems that except for ISDN_DIVAS_DIVACAPI (that already has a proper 
+> dependency), nothing here actually requires ISDN_CAPI?
 
-I've uploaded a patch against 2.6.21-rc4 to
+Not quite true. Yes, the base modules for the divas driver do not require 
+ISDN_CAPI, but without ISDN_CAPI it doesn't make any sense.
 
-http://tglx.de/private/tglx/2.6.21-rc4-trace/2.6.21-rc4-trace.patch.bz2
+The patch below (go into /hardware even for non ISDN_CAPI) is wrong. The
+subdir /hardware was created for new drivers using CAPI. So it is correct to
+go there when ISDN_CAPI != n only.
 
-It contains all changes in Linus tree since -rc4 plus the two pending
-fixes (http://tglx.de/private/tglx/2.6.21-rc4-pending/) along with a
-backport of the latency tracer from the realtime preemption patch.
+I don't understand the warnings above. The symbols are exported by divas 
+modules, so why is it causing warnings? There have been no change in the 
+divas modules for this. Any change in the kernel module creation structure
+which may causing this?
 
-Can you please apply the patch on top of -rc4 and build it with the
-configuration, which exposes this strange behaviour. Please enable also
-CONFIG_LATENCY_TRACE in the Kernel hacking menu.
-
-When the problem is visible, then run trace-it
-(http://tglx.de/private/tglx/2.6.21-rc4-trace/trace-it.c) as root:
-
-# trace-it >trace.txt
-
-This captures roughly one second of kernel code pathes. Please stick
-trace.txt into Bugzilla.
-
-Thanks,
-
-	tglx
-
-
+Armin
+ 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> 
+>  drivers/isdn/Makefile               |    2 +-
+>  drivers/isdn/hardware/eicon/Kconfig |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6.21-rc4-mm1/drivers/isdn/hardware/eicon/Kconfig.old	2007-03-23 21:30:30.000000000 +0100
+> +++ linux-2.6.21-rc4-mm1/drivers/isdn/hardware/eicon/Kconfig	2007-03-23 21:26:09.000000000 +0100
+> @@ -3,7 +3,7 @@
+>  #
+>  
+>  menu "Active Eicon DIVA Server cards"
+> -	depends on NET && ISDN && ISDN_CAPI!=n
+> +	depends on NET && ISDN
+>  
+>  config CAPI_EICON
+>  	bool "Support Eicon cards"
+> --- linux-2.6.21-rc4-mm1/drivers/isdn/Makefile.old	2007-03-23 21:27:19.000000000 +0100
+> +++ linux-2.6.21-rc4-mm1/drivers/isdn/Makefile	2007-03-23 21:27:38.000000000 +0100
+> @@ -4,7 +4,7 @@
+>  
+>  obj-$(CONFIG_ISDN_I4L)			+= i4l/
+>  obj-$(CONFIG_ISDN_CAPI)			+= capi/
+> -obj-$(CONFIG_ISDN_CAPI)			+= hardware/
+> +obj-$(CONFIG_ISDN)			+= hardware/
+>  obj-$(CONFIG_ISDN_DIVERSION)		+= divert/
+>  obj-$(CONFIG_ISDN_DRV_HISAX)		+= hisax/
+>  obj-$(CONFIG_ISDN_DRV_ICN)		+= icn/
+> 
