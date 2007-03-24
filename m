@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751602AbXCXNG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751037AbXCXNG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751602AbXCXNG4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 09:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbXCXNGz
+	id S1751037AbXCXNG7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 09:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbXCXNG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 09:06:55 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33360 "EHLO
+	Sat, 24 Mar 2007 09:06:57 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33358 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751036AbXCXNGo (ORCPT
+	with ESMTP id S1751037AbXCXNGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 09:06:44 -0400
-Date: Sat, 24 Mar 2007 14:06:47 +0100
+	Sat, 24 Mar 2007 09:06:41 -0400
+Date: Sat, 24 Mar 2007 14:06:44 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [-mm patch] drivers/scsi/constants.c: make 2 functions static
-Message-ID: <20070324130647.GI752@stusta.de>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] #if 0 dmi_name_in_vendors()
+Message-ID: <20070324130644.GH752@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070319205623.299d0378.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 19, 2007 at 08:56:23PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.21-rc3-mm1:
->...
->  git-scsi-misc.patch
->...
->  git trees
->...
-
-
-This patch makes two needlessly global functions static.
+dmi_name_in_vendors() is no longer used.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/scsi/constants.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/firmware/dmi_scan.c |    2 ++
+ include/linux/dmi.h         |    2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- linux-2.6.21-rc4-mm1/drivers/scsi/constants.c.old	2007-03-23 23:26:39.000000000 +0100
-+++ linux-2.6.21-rc4-mm1/drivers/scsi/constants.c	2007-03-23 23:26:55.000000000 +0100
-@@ -1235,7 +1235,7 @@
- }
- EXPORT_SYMBOL(scsi_print_sense_hdr);
+--- linux-2.6.21-rc4-mm1/include/linux/dmi.h.old	2007-03-23 23:22:41.000000000 +0100
++++ linux-2.6.21-rc4-mm1/include/linux/dmi.h	2007-03-23 23:22:48.000000000 +0100
+@@ -69,7 +69,6 @@
+ 	struct dmi_device *from);
+ extern void dmi_scan_machine(void);
+ extern int dmi_get_year(int field);
+-extern int dmi_name_in_vendors(char *str);
  
--void
-+static void
- scsi_decode_sense_buffer(const unsigned char *sense_buffer, int sense_len,
- 		       struct scsi_sense_hdr *sshdr)
- {
-@@ -1258,7 +1258,7 @@
- 	}
- }
+ #else
  
--void
-+static void
- scsi_decode_sense_extras(const unsigned char *sense_buffer, int sense_len,
- 			 struct scsi_sense_hdr *sshdr)
- {
+@@ -78,7 +77,6 @@
+ static inline struct dmi_device * dmi_find_device(int type, const char *name,
+ 	struct dmi_device *from) { return NULL; }
+ static inline int dmi_get_year(int year) { return 0; }
+-static inline int dmi_name_in_vendors(char *s) { return 0; }
+ 
+ #endif
+ 
+--- linux-2.6.21-rc4-mm1/drivers/firmware/dmi_scan.c.old	2007-03-23 23:22:59.000000000 +0100
++++ linux-2.6.21-rc4-mm1/drivers/firmware/dmi_scan.c	2007-03-23 23:23:12.000000000 +0100
+@@ -327,6 +327,7 @@
+ EXPORT_SYMBOL(dmi_get_system_info);
+ 
+ 
++#if 0
+ /**
+  *	dmi_name_in_vendors - Check if string is anywhere in the DMI vendor information.
+  *	@str: 	Case sensitive Name
+@@ -345,6 +346,7 @@
+ 	return 0;
+ }
+ EXPORT_SYMBOL(dmi_name_in_vendors);
++#endif  /*  0  */
+ 
+ /**
+  *	dmi_find_device - find onboard device by type/name
 
