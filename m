@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750929AbXCXT0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbXCXUUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750929AbXCXT0H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 15:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbXCXT0H
+	id S933055AbXCXUUj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 16:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933078AbXCXUUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 15:26:07 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38543 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750929AbXCXT0F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 15:26:05 -0400
-Date: Sat, 24 Mar 2007 12:25:59 -0700
-From: Paul Jackson <pj@sgi.com>
-To: vatsa@in.ibm.com
-Cc: menage@google.com, akpm@osdl.org, sekharan@us.ibm.com, dev@sw.ru,
-       xemul@sw.ru, serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
-       rohitseth@google.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container
- system abstracted from cpusets code
-Message-Id: <20070324122559.11b9ba34.pj@sgi.com>
-In-Reply-To: <20070324150505.GB9475@in.ibm.com>
-References: <20070212081521.808338000@menage.corp.google.com>
-	<20070212085104.130746000@menage.corp.google.com>
-	<20070324150505.GB9475@in.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Sat, 24 Mar 2007 16:20:39 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58240 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933055AbXCXUUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 16:20:38 -0400
+Subject: Re: I/O memory barriers vs SMP memory barriers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Lennert Buytenhek <buytenh@wantstofly.org>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org, paulmck@us.ibm.com
+In-Reply-To: <16051.1174657433@redhat.com>
+References: <20070323111350.GD3980@xi.wantstofly.org>
+	 <e9c3a7c20703021312y5f7aa228i5d1c84a8e9ea5676@mail.gmail.com>
+	 <20070303111427.GB16944@xi.wantstofly.org>
+	 <20070303113305.GB10515@flint.arm.linux.org.uk>
+	 <20070321221134.GA22497@xi.wantstofly.org> <tnxlkhpgslz.fsf@arm.com>
+	 <16051.1174657433@redhat.com>
+Content-Type: text/plain
+Date: Sun, 25 Mar 2007 06:16:27 +1000
+Message-Id: <1174767387.10836.107.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> IMO, we need to use task_lock() in container_exit() to avoid this race.
+On Fri, 2007-03-23 at 13:43 +0000, David Howells wrote:
+> [Resend - this time with a comma in the addresses, not a dot]
 > 
-> (I think this race already exists in mainline cpuset.c?)
+> Lennert Buytenhek <buytenh@wantstofly.org> wrote:
 > 
-> P.S : cpuset.c checks for PF_EXITING twice in attach_task(), while this
-> patch seems to be checking only once. Is that fine?
+> > [ background: On ARM, SMP synchronisation does need barriers but device
+> >   synchronisation does not.  The question is that given this, whether
+> >   mb() and friends can be NOPs on ARM or not (i.e. whether mb() is
+> >   supposed to sync against other CPUs or not, or whether only smp_mb()
+> >   can be used for this.)  ]
+> 
+> Hmmmm...
+> 
+> I see your problem.  I think the right way to deal with this is to get rid of
+> mb(), rmb(), wmb() and read_barrier_depends() and replace them with io_mb(),
+> io_rmb(), ...
 
-I think the cpuset code is ok, because, as you note, it locks the task,
-picks off the cpuset pointer, and then checks a second time that the
-task still does not have PF_EXITING set:
+Hrm... I'm not sure I like the io_* name, I think it's even more
+confusing, people will never know when to use what ...
 
-In the kernel/cpuset.c code for attach_task():
+Maybe we should dig out again my attempt at properly defining semantics
+of IO accessors and related barriers and extend it to include CPU vs.
+DMA barriers.
 
-        task_lock(tsk);
-        oldcs = tsk->cpuset;
-        /*
-         * After getting 'oldcs' cpuset ptr, be sure still not exiting.
-         * If 'oldcs' might be the top_cpuset due to the_top_cpuset_hack
-         * then fail this attach_task(), to avoid breaking top_cpuset.count.
-         */
-        if (tsk->flags & PF_EXITING) {
-                task_unlock(tsk);
-                mutex_unlock(&callback_mutex);
-                put_task_struct(tsk);
-                return -ESRCH;
-        }
+Ben.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+
