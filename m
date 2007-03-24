@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750992AbXCXNGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751529AbXCXNGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750992AbXCXNGE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 09:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXCXNGD
+	id S1751529AbXCXNGb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 09:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXCXNGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 09:06:03 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33347 "EHLO
+	Sat, 24 Mar 2007 09:06:30 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33349 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750992AbXCXNGA (ORCPT
+	with ESMTP id S1751529AbXCXNGT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 09:06:00 -0400
-Date: Sat, 24 Mar 2007 14:06:02 +0100
+	Sat, 24 Mar 2007 09:06:19 -0400
+Date: Sat, 24 Mar 2007 14:06:22 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6.22 patch] more scheduled OSS driver removal
-Message-ID: <20070324130602.GD752@stusta.de>
+To: kkeil@suse.de, kai.germaschewski@gmx.de, mac@melware.de
+Cc: isdn4linux@listserv.isdn4linux.de, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] fix ISDN_CAPI<->ISDN_DIVAS
+Message-ID: <20070324130622.GE752@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,85 +24,59 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the scheduled removal of OSS drivers that:
-- have ALSA drivers for the same hardware without known regressions and
-- whose Kconfig options have been removed in 2.6.20.
+Randy Dunlap reported in kernel Bugzilla #8241 the following compile 
+error with CONFIG_ISDN_CAPI=m, CONFIG_ISDN_DIVAS=y:
+
+<--  snip  -->
+
+...
+WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/divacapi.ko] undefined!
+WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_mnt.ko] undefined!
+WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
+WARNING: "proc_net_eicon" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
+make[1]: *** [__modpost] Error 1
+
+<--  snip  -->
+
+
+Kconfig contains the following strange thing:
+
+menu "Active Eicon DIVA Server cards"
+        depends on NET && ISDN && ISDN_CAPI!=n
+
+
+It seems that except for ISDN_DIVAS_DIVACAPI (that already has a proper 
+dependency), nothing here actually requires ISDN_CAPI?
+
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
-Due to its size, the patch is available at
-ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/misc/patch-remove-oss.gz
+ drivers/isdn/Makefile               |    2 +-
+ drivers/isdn/hardware/eicon/Kconfig |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-
- Documentation/feature-removal-schedule.txt |    7 
- Documentation/kernel-parameters.txt        |   10 
- Documentation/sound/oss/AD1816             |   84 
- Documentation/sound/oss/NM256              |  280 -
- Documentation/sound/oss/OPL3-SA2           |  210 
- Documentation/sound/oss/VIA-chipset        |   43 
- Documentation/sound/oss/cs46xx             |  138 
- MAINTAINERS                                |   35 
- drivers/media/radio/Makefile               |    4 
- drivers/media/radio/miropcm20-radio.c      |  266 -
- drivers/media/radio/miropcm20-rds-core.c   |  211 
- drivers/media/radio/miropcm20-rds-core.h   |   19 
- drivers/media/radio/miropcm20-rds.c        |  132 
- sound/oss/Makefile                         |   13 
- sound/oss/ac97.c                           |  432 -
- sound/oss/ac97.h                           |  201 
- sound/oss/aci.c                            |  712 --
- sound/oss/aci.h                            |   57 
- sound/oss/ad1816.c                         | 1368 -----
- sound/oss/ad1889.c                         | 1101 ----
- sound/oss/ad1889.h                         |  135 
- sound/oss/adlib_card.c                     |   73 
- sound/oss/cs461x.h                         | 1691 ------
- sound/oss/cs461x_image.h                   |  322 -
- sound/oss/cs46xx.c                         | 5444 ---------------------
- sound/oss/cs46xx_wrapper-24.h              |   56 
- sound/oss/cs46xxpm.h                       |   70 
- sound/oss/emu10k1/8010.h                   |  737 --
- sound/oss/emu10k1/Makefile                 |   17 
- sound/oss/emu10k1/audio.c                  | 1595 ------
- sound/oss/emu10k1/audio.h                  |   44 
- sound/oss/emu10k1/cardmi.c                 |  832 ---
- sound/oss/emu10k1/cardmi.h                 |   97 
- sound/oss/emu10k1/cardmo.c                 |  229 
- sound/oss/emu10k1/cardmo.h                 |   62 
- sound/oss/emu10k1/cardwi.c                 |  384 -
- sound/oss/emu10k1/cardwi.h                 |   91 
- sound/oss/emu10k1/cardwo.c                 |  643 --
- sound/oss/emu10k1/cardwo.h                 |   90 
- sound/oss/emu10k1/ecard.c                  |  157 
- sound/oss/emu10k1/ecard.h                  |  113 
- sound/oss/emu10k1/efxmgr.c                 |  220 
- sound/oss/emu10k1/efxmgr.h                 |  270 -
- sound/oss/emu10k1/emuadxmg.c               |  104 
- sound/oss/emu10k1/hwaccess.c               |  507 -
- sound/oss/emu10k1/hwaccess.h               |  247 
- sound/oss/emu10k1/icardmid.h               |  163 
- sound/oss/emu10k1/icardwav.h               |   53 
- sound/oss/emu10k1/irqmgr.c                 |  113 
- sound/oss/emu10k1/irqmgr.h                 |   52 
- sound/oss/emu10k1/main.c                   | 1471 -----
- sound/oss/emu10k1/midi.c                   |  614 --
- sound/oss/emu10k1/midi.h                   |   78 
- sound/oss/emu10k1/mixer.c                  |  690 --
- sound/oss/emu10k1/passthrough.c            |  240 
- sound/oss/emu10k1/passthrough.h            |   99 
- sound/oss/emu10k1/recmgr.c                 |  147 
- sound/oss/emu10k1/recmgr.h                 |   48 
- sound/oss/emu10k1/timer.c                  |  176 
- sound/oss/emu10k1/timer.h                  |   54 
- sound/oss/emu10k1/voicemgr.c               |  398 -
- sound/oss/emu10k1/voicemgr.h               |  103 
- sound/oss/nm256.h                          |  292 -
- sound/oss/nm256_audio.c                    | 1662 ------
- sound/oss/nm256_coeff.h                    | 4697 ------------------
- sound/oss/opl3.c                           |   14 
- sound/oss/opl3.h                           |    5 
- sound/oss/opl3sa2.c                        | 1020 ---
- 68 files changed, 4 insertions(+), 31738 deletions(-)
+--- linux-2.6.21-rc4-mm1/drivers/isdn/hardware/eicon/Kconfig.old	2007-03-23 21:30:30.000000000 +0100
++++ linux-2.6.21-rc4-mm1/drivers/isdn/hardware/eicon/Kconfig	2007-03-23 21:26:09.000000000 +0100
+@@ -3,7 +3,7 @@
+ #
+ 
+ menu "Active Eicon DIVA Server cards"
+-	depends on NET && ISDN && ISDN_CAPI!=n
++	depends on NET && ISDN
+ 
+ config CAPI_EICON
+ 	bool "Support Eicon cards"
+--- linux-2.6.21-rc4-mm1/drivers/isdn/Makefile.old	2007-03-23 21:27:19.000000000 +0100
++++ linux-2.6.21-rc4-mm1/drivers/isdn/Makefile	2007-03-23 21:27:38.000000000 +0100
+@@ -4,7 +4,7 @@
+ 
+ obj-$(CONFIG_ISDN_I4L)			+= i4l/
+ obj-$(CONFIG_ISDN_CAPI)			+= capi/
+-obj-$(CONFIG_ISDN_CAPI)			+= hardware/
++obj-$(CONFIG_ISDN)			+= hardware/
+ obj-$(CONFIG_ISDN_DIVERSION)		+= divert/
+ obj-$(CONFIG_ISDN_DRV_HISAX)		+= hisax/
+ obj-$(CONFIG_ISDN_DRV_ICN)		+= icn/
 
