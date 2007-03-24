@@ -1,45 +1,452 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbXCXNPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXCXNZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751597AbXCXNPe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 09:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXCXNPe
+	id S1751672AbXCXNZS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 09:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbXCXNZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 09:15:34 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:5250 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbXCXNPd (ORCPT
+	Sat, 24 Mar 2007 09:25:18 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:33040 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbXCXNZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 09:15:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=lK+R57E4xyQXddQiOqFNaSZcNYT/bqQFfVg0g2Cql4nE05NQQm/l/42xa+Jx0omczmJxS6bvcyxjxvqD29OCVeOIPVXW7Gcg1tUmIiX21elJAKNXAGLagdQZOTixXl1IH4EzMhn08ZAyn6JL74oclS2Vla/q9dbuTRrhhmWtabU=
-Message-ID: <84144f020703240615p98766f9o2f1533f62c061ce4@mail.gmail.com>
-Date: Sat, 24 Mar 2007 15:15:30 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [-mm patch] fs/revoke.c: cleanups (and bugfix for 64bit systems)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070324130708.GK752@stusta.de>
+	Sat, 24 Mar 2007 09:25:15 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 24 Mar 2007 09:21:52 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH]  Delete unused header file math-emu/extended.h.
+Message-ID: <Pine.LNX.4.64.0703240919160.23345@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	 <20070324130708.GK752@stusta.de>
-X-Google-Sender-Auth: 87d91222a9833533
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/24/07, Adrian Bunk <bunk@stusta.de> wrote:
-> This patch contains the following:
-> - every file should #include the headers containing the prototypes for
->   it's global functions
-> - fix the wrong return value of sys_frevoke() gcc was now able to detect
-> - make 2 needlessly global structs static
->
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Looks good. Thanks!
+Delete the unreferenced header file include/math-emu/extended.h.
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+  one more header file that absolutely no one refers to but i'm sure
+*someone* is going to defend to the death.
+
+
+diff --git a/include/math-emu/extended.h b/include/math-emu/extended.h
+deleted file mode 100644
+index 84770fc..0000000
+--- a/include/math-emu/extended.h
++++ /dev/null
+@@ -1,396 +0,0 @@
+-/* Software floating-point emulation.
+-   Definitions for IEEE Extended Precision.
+-   Copyright (C) 1999 Free Software Foundation, Inc.
+-   This file is part of the GNU C Library.
+-   Contributed by Jakub Jelinek (jj@ultra.linux.cz).
+-
+-   The GNU C Library is free software; you can redistribute it and/or
+-   modify it under the terms of the GNU Library General Public License as
+-   published by the Free Software Foundation; either version 2 of the
+-   License, or (at your option) any later version.
+-
+-   The GNU C Library is distributed in the hope that it will be useful,
+-   but WITHOUT ANY WARRANTY; without even the implied warranty of
+-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-   Library General Public License for more details.
+-
+-   You should have received a copy of the GNU Library General Public
+-   License along with the GNU C Library; see the file COPYING.LIB.  If
+-   not, write to the Free Software Foundation, Inc.,
+-   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+-
+-
+-#ifndef    __MATH_EMU_EXTENDED_H__
+-#define    __MATH_EMU_EXTENDED_H__
+-
+-#if _FP_W_TYPE_SIZE < 32
+-#error "Here's a nickel, kid. Go buy yourself a real computer."
+-#endif
+-
+-#if _FP_W_TYPE_SIZE < 64
+-#define _FP_FRACTBITS_E         (4*_FP_W_TYPE_SIZE)
+-#else
+-#define _FP_FRACTBITS_E		(2*_FP_W_TYPE_SIZE)
+-#endif
+-
+-#define _FP_FRACBITS_E		64
+-#define _FP_FRACXBITS_E		(_FP_FRACTBITS_E - _FP_FRACBITS_E)
+-#define _FP_WFRACBITS_E		(_FP_WORKBITS + _FP_FRACBITS_E)
+-#define _FP_WFRACXBITS_E	(_FP_FRACTBITS_E - _FP_WFRACBITS_E)
+-#define _FP_EXPBITS_E		15
+-#define _FP_EXPBIAS_E		16383
+-#define _FP_EXPMAX_E		32767
+-
+-#define _FP_QNANBIT_E		\
+-	((_FP_W_TYPE)1 << (_FP_FRACBITS_E-2) % _FP_W_TYPE_SIZE)
+-#define _FP_IMPLBIT_E		\
+-	((_FP_W_TYPE)1 << (_FP_FRACBITS_E-1) % _FP_W_TYPE_SIZE)
+-#define _FP_OVERFLOW_E		\
+-	((_FP_W_TYPE)1 << (_FP_WFRACBITS_E % _FP_W_TYPE_SIZE))
+-
+-#if _FP_W_TYPE_SIZE < 64
+-
+-union _FP_UNION_E
+-{
+-   long double flt;
+-   struct
+-   {
+-#if __BYTE_ORDER == __BIG_ENDIAN
+-      unsigned long pad1 : _FP_W_TYPE_SIZE;
+-      unsigned long pad2 : (_FP_W_TYPE_SIZE - 1 - _FP_EXPBITS_E);
+-      unsigned long sign : 1;
+-      unsigned long exp : _FP_EXPBITS_E;
+-      unsigned long frac1 : _FP_W_TYPE_SIZE;
+-      unsigned long frac0 : _FP_W_TYPE_SIZE;
+-#else
+-      unsigned long frac0 : _FP_W_TYPE_SIZE;
+-      unsigned long frac1 : _FP_W_TYPE_SIZE;
+-      unsigned exp : _FP_EXPBITS_E;
+-      unsigned sign : 1;
+-#endif /* not bigendian */
+-   } bits __attribute__((packed));
+-};
+-
+-
+-#define FP_DECL_E(X)		_FP_DECL(4,X)
+-
+-#define FP_UNPACK_RAW_E(X, val)				\
+-  do {							\
+-    union _FP_UNION_E _flo; _flo.flt = (val);		\
+-							\
+-    X##_f[2] = 0; X##_f[3] = 0;				\
+-    X##_f[0] = _flo.bits.frac0;				\
+-    X##_f[1] = _flo.bits.frac1;				\
+-    X##_e  = _flo.bits.exp;				\
+-    X##_s  = _flo.bits.sign;				\
+-    if (!X##_e && (X##_f[1] || X##_f[0])		\
+-        && !(X##_f[1] & _FP_IMPLBIT_E))			\
+-      {							\
+-        X##_e++;					\
+-        FP_SET_EXCEPTION(FP_EX_DENORM);			\
+-      }							\
+-  } while (0)
+-
+-#define FP_UNPACK_RAW_EP(X, val)			\
+-  do {							\
+-    union _FP_UNION_E *_flo =				\
+-    (union _FP_UNION_E *)(val);				\
+-							\
+-    X##_f[2] = 0; X##_f[3] = 0;				\
+-    X##_f[0] = _flo->bits.frac0;			\
+-    X##_f[1] = _flo->bits.frac1;			\
+-    X##_e  = _flo->bits.exp;				\
+-    X##_s  = _flo->bits.sign;				\
+-    if (!X##_e && (X##_f[1] || X##_f[0])		\
+-        && !(X##_f[1] & _FP_IMPLBIT_E))			\
+-      {							\
+-        X##_e++;					\
+-        FP_SET_EXCEPTION(FP_EX_DENORM);			\
+-      }							\
+-  } while (0)
+-
+-#define FP_PACK_RAW_E(val, X)				\
+-  do {							\
+-    union _FP_UNION_E _flo;				\
+-							\
+-    if (X##_e) X##_f[1] |= _FP_IMPLBIT_E;		\
+-    else X##_f[1] &= ~(_FP_IMPLBIT_E);			\
+-    _flo.bits.frac0 = X##_f[0];				\
+-    _flo.bits.frac1 = X##_f[1];				\
+-    _flo.bits.exp   = X##_e;				\
+-    _flo.bits.sign  = X##_s;				\
+-							\
+-    (val) = _flo.flt;					\
+-  } while (0)
+-
+-#define FP_PACK_RAW_EP(val, X)				\
+-  do {							\
+-    if (!FP_INHIBIT_RESULTS)				\
+-      {							\
+-	union _FP_UNION_E *_flo =			\
+-	  (union _FP_UNION_E *)(val);			\
+-							\
+-	if (X##_e) X##_f[1] |= _FP_IMPLBIT_E;		\
+-	else X##_f[1] &= ~(_FP_IMPLBIT_E);		\
+-	_flo->bits.frac0 = X##_f[0];			\
+-	_flo->bits.frac1 = X##_f[1];			\
+-	_flo->bits.exp   = X##_e;			\
+-	_flo->bits.sign  = X##_s;			\
+-      }							\
+-  } while (0)
+-
+-#define FP_UNPACK_E(X,val)		\
+-  do {					\
+-    FP_UNPACK_RAW_E(X,val);		\
+-    _FP_UNPACK_CANONICAL(E,4,X);	\
+-  } while (0)
+-
+-#define FP_UNPACK_EP(X,val)		\
+-  do {					\
+-    FP_UNPACK_RAW_2_P(X,val);		\
+-    _FP_UNPACK_CANONICAL(E,4,X);	\
+-  } while (0)
+-
+-#define FP_PACK_E(val,X)		\
+-  do {					\
+-    _FP_PACK_CANONICAL(E,4,X);		\
+-    FP_PACK_RAW_E(val,X);		\
+-  } while (0)
+-
+-#define FP_PACK_EP(val,X)		\
+-  do {					\
+-    _FP_PACK_CANONICAL(E,4,X);		\
+-    FP_PACK_RAW_EP(val,X);		\
+-  } while (0)
+-
+-#define FP_ISSIGNAN_E(X)	_FP_ISSIGNAN(E,4,X)
+-#define FP_NEG_E(R,X)		_FP_NEG(E,4,R,X)
+-#define FP_ADD_E(R,X,Y)		_FP_ADD(E,4,R,X,Y)
+-#define FP_SUB_E(R,X,Y)		_FP_SUB(E,4,R,X,Y)
+-#define FP_MUL_E(R,X,Y)		_FP_MUL(E,4,R,X,Y)
+-#define FP_DIV_E(R,X,Y)		_FP_DIV(E,4,R,X,Y)
+-#define FP_SQRT_E(R,X)		_FP_SQRT(E,4,R,X)
+-
+-/*
+- * Square root algorithms:
+- * We have just one right now, maybe Newton approximation
+- * should be added for those machines where division is fast.
+- * This has special _E version because standard _4 square
+- * root would not work (it has to start normally with the
+- * second word and not the first), but as we have to do it
+- * anyway, we optimize it by doing most of the calculations
+- * in two UWtype registers instead of four.
+- */
+-
+-#define _FP_SQRT_MEAT_E(R, S, T, X, q)			\
+-  do {							\
+-    q = (_FP_W_TYPE)1 << (_FP_W_TYPE_SIZE - 1);		\
+-    _FP_FRAC_SRL_4(X, (_FP_WORKBITS));			\
+-    while (q)						\
+-      {							\
+-	T##_f[1] = S##_f[1] + q;			\
+-	if (T##_f[1] <= X##_f[1])			\
+-	  {						\
+-	    S##_f[1] = T##_f[1] + q;			\
+-	    X##_f[1] -= T##_f[1];			\
+-	    R##_f[1] += q;				\
+-	  }						\
+-	_FP_FRAC_SLL_2(X, 1);				\
+-	q >>= 1;					\
+-      }							\
+-    q = (_FP_W_TYPE)1 << (_FP_W_TYPE_SIZE - 1);		\
+-    while (q)						\
+-      {							\
+-	T##_f[0] = S##_f[0] + q;			\
+-	T##_f[1] = S##_f[1];				\
+-	if (T##_f[1] < X##_f[1] || 			\
+-	    (T##_f[1] == X##_f[1] &&			\
+-	     T##_f[0] <= X##_f[0]))			\
+-	  {						\
+-	    S##_f[0] = T##_f[0] + q;			\
+-	    S##_f[1] += (T##_f[0] > S##_f[0]);		\
+-	    _FP_FRAC_DEC_2(X, T);			\
+-	    R##_f[0] += q;				\
+-	  }						\
+-	_FP_FRAC_SLL_2(X, 1);				\
+-	q >>= 1;					\
+-      }							\
+-    _FP_FRAC_SLL_4(R, (_FP_WORKBITS));			\
+-    if (X##_f[0] | X##_f[1])				\
+-      {							\
+-	if (S##_f[1] < X##_f[1] || 			\
+-	    (S##_f[1] == X##_f[1] &&			\
+-	     S##_f[0] < X##_f[0]))			\
+-	  R##_f[0] |= _FP_WORK_ROUND;			\
+-	R##_f[0] |= _FP_WORK_STICKY;			\
+-      }							\
+-  } while (0)
+-
+-#define FP_CMP_E(r,X,Y,un)	_FP_CMP(E,4,r,X,Y,un)
+-#define FP_CMP_EQ_E(r,X,Y)	_FP_CMP_EQ(E,4,r,X,Y)
+-
+-#define FP_TO_INT_E(r,X,rsz,rsg)	_FP_TO_INT(E,4,r,X,rsz,rsg)
+-#define FP_TO_INT_ROUND_E(r,X,rsz,rsg)	_FP_TO_INT_ROUND(E,4,r,X,rsz,rsg)
+-#define FP_FROM_INT_E(X,r,rs,rt)	_FP_FROM_INT(E,4,X,r,rs,rt)
+-
+-#define _FP_FRAC_HIGH_E(X)	(X##_f[2])
+-#define _FP_FRAC_HIGH_RAW_E(X)	(X##_f[1])
+-
+-#else   /* not _FP_W_TYPE_SIZE < 64 */
+-union _FP_UNION_E
+-{
+-  long double flt /* __attribute__((mode(TF))) */ ;
+-  struct {
+-#if __BYTE_ORDER == __BIG_ENDIAN
+-    unsigned long pad : (_FP_W_TYPE_SIZE - 1 - _FP_EXPBITS_E);
+-    unsigned sign  : 1;
+-    unsigned exp   : _FP_EXPBITS_E;
+-    unsigned long frac : _FP_W_TYPE_SIZE;
+-#else
+-    unsigned long frac : _FP_W_TYPE_SIZE;
+-    unsigned exp   : _FP_EXPBITS_E;
+-    unsigned sign  : 1;
+-#endif
+-  } bits;
+-};
+-
+-#define FP_DECL_E(X)		_FP_DECL(2,X)
+-
+-#define FP_UNPACK_RAW_E(X, val)					\
+-  do {								\
+-    union _FP_UNION_E _flo; _flo.flt = (val);			\
+-								\
+-    X##_f0 = _flo.bits.frac;					\
+-    X##_f1 = 0;							\
+-    X##_e = _flo.bits.exp;					\
+-    X##_s = _flo.bits.sign;					\
+-    if (!X##_e && X##_f0 && !(X##_f0 & _FP_IMPLBIT_E))		\
+-      {								\
+-        X##_e++;						\
+-        FP_SET_EXCEPTION(FP_EX_DENORM);				\
+-      }								\
+-  } while (0)
+-
+-#define FP_UNPACK_RAW_EP(X, val)				\
+-  do {								\
+-    union _FP_UNION_E *_flo =					\
+-      (union _FP_UNION_E *)(val);				\
+-								\
+-    X##_f0 = _flo->bits.frac;					\
+-    X##_f1 = 0;							\
+-    X##_e = _flo->bits.exp;					\
+-    X##_s = _flo->bits.sign;					\
+-    if (!X##_e && X##_f0 && !(X##_f0 & _FP_IMPLBIT_E))		\
+-      {								\
+-        X##_e++;						\
+-        FP_SET_EXCEPTION(FP_EX_DENORM);				\
+-      }								\
+-  } while (0)
+-
+-#define FP_PACK_RAW_E(val, X)					\
+-  do {								\
+-    union _FP_UNION_E _flo;					\
+-								\
+-    if (X##_e) X##_f0 |= _FP_IMPLBIT_E;				\
+-    else X##_f0 &= ~(_FP_IMPLBIT_E);				\
+-    _flo.bits.frac = X##_f0;					\
+-    _flo.bits.exp  = X##_e;					\
+-    _flo.bits.sign = X##_s;					\
+-								\
+-    (val) = _flo.flt;						\
+-  } while (0)
+-
+-#define FP_PACK_RAW_EP(fs, val, X)				\
+-  do {								\
+-    if (!FP_INHIBIT_RESULTS)					\
+-      {								\
+-	union _FP_UNION_E *_flo =				\
+-	  (union _FP_UNION_E *)(val);				\
+-								\
+-	if (X##_e) X##_f0 |= _FP_IMPLBIT_E;			\
+-	else X##_f0 &= ~(_FP_IMPLBIT_E);			\
+-	_flo->bits.frac = X##_f0;				\
+-	_flo->bits.exp  = X##_e;				\
+-	_flo->bits.sign = X##_s;				\
+-      }								\
+-  } while (0)
+-
+-
+-#define FP_UNPACK_E(X,val)		\
+-  do {					\
+-    FP_UNPACK_RAW_E(X,val);		\
+-    _FP_UNPACK_CANONICAL(E,2,X);	\
+-  } while (0)
+-
+-#define FP_UNPACK_EP(X,val)		\
+-  do {					\
+-    FP_UNPACK_RAW_EP(X,val);		\
+-    _FP_UNPACK_CANONICAL(E,2,X);	\
+-  } while (0)
+-
+-#define FP_PACK_E(val,X)		\
+-  do {					\
+-    _FP_PACK_CANONICAL(E,2,X);		\
+-    FP_PACK_RAW_E(val,X);		\
+-  } while (0)
+-
+-#define FP_PACK_EP(val,X)		\
+-  do {					\
+-    _FP_PACK_CANONICAL(E,2,X);		\
+-    FP_PACK_RAW_EP(val,X);		\
+-  } while (0)
+-
+-#define FP_ISSIGNAN_E(X)	_FP_ISSIGNAN(E,2,X)
+-#define FP_NEG_E(R,X)		_FP_NEG(E,2,R,X)
+-#define FP_ADD_E(R,X,Y)		_FP_ADD(E,2,R,X,Y)
+-#define FP_SUB_E(R,X,Y)		_FP_SUB(E,2,R,X,Y)
+-#define FP_MUL_E(R,X,Y)		_FP_MUL(E,2,R,X,Y)
+-#define FP_DIV_E(R,X,Y)		_FP_DIV(E,2,R,X,Y)
+-#define FP_SQRT_E(R,X)		_FP_SQRT(E,2,R,X)
+-
+-/*
+- * Square root algorithms:
+- * We have just one right now, maybe Newton approximation
+- * should be added for those machines where division is fast.
+- * We optimize it by doing most of the calculations
+- * in one UWtype registers instead of two, although we don't
+- * have to.
+- */
+-#define _FP_SQRT_MEAT_E(R, S, T, X, q)			\
+-  do {							\
+-    q = (_FP_W_TYPE)1 << (_FP_W_TYPE_SIZE - 1);		\
+-    _FP_FRAC_SRL_2(X, (_FP_WORKBITS));			\
+-    while (q)						\
+-      {							\
+-        T##_f0 = S##_f0 + q;				\
+-        if (T##_f0 <= X##_f0)				\
+-          {						\
+-            S##_f0 = T##_f0 + q;			\
+-            X##_f0 -= T##_f0;				\
+-            R##_f0 += q;				\
+-          }						\
+-        _FP_FRAC_SLL_1(X, 1);				\
+-        q >>= 1;					\
+-      }							\
+-    _FP_FRAC_SLL_2(R, (_FP_WORKBITS));			\
+-    if (X##_f0)						\
+-      {							\
+-	if (S##_f0 < X##_f0)				\
+-	  R##_f0 |= _FP_WORK_ROUND;			\
+-	R##_f0 |= _FP_WORK_STICKY;			\
+-      }							\
+-  } while (0)
+-
+-#define FP_CMP_E(r,X,Y,un)	_FP_CMP(E,2,r,X,Y,un)
+-#define FP_CMP_EQ_E(r,X,Y)	_FP_CMP_EQ(E,2,r,X,Y)
+-
+-#define FP_TO_INT_E(r,X,rsz,rsg)	_FP_TO_INT(E,2,r,X,rsz,rsg)
+-#define FP_TO_INT_ROUND_E(r,X,rsz,rsg)	_FP_TO_INT_ROUND(E,2,r,X,rsz,rsg)
+-#define FP_FROM_INT_E(X,r,rs,rt)	_FP_FROM_INT(E,2,X,r,rs,rt)
+-
+-#define _FP_FRAC_HIGH_E(X)	(X##_f1)
+-#define _FP_FRAC_HIGH_RAW_E(X)	(X##_f0)
+-
+-#endif /* not _FP_W_TYPE_SIZE < 64 */
+-
+-#endif /* __MATH_EMU_EXTENDED_H__ */
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
