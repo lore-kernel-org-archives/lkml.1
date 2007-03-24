@@ -1,56 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbXCXHLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbXCXHSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753473AbXCXHLj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 03:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbXCXHLj
+	id S1753474AbXCXHSY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 03:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXCXHSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 03:11:39 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:5386 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753473AbXCXHLi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 03:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=vJtMYCuTjwyWki5bfrM5FXZbgN1s3njNDeEbbR1KoeA+mwsBOPUJrSSTN8VgUGhCf
-	IFCLxGkDfNT2WSUiNgv4g==
-Message-ID: <b040c32a0703240011ib9a66f3l1701b8adda94401d@mail.gmail.com>
-Date: Sat, 24 Mar 2007 00:11:32 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch] rfc: introduce /dev/hugetlb
-Cc: "Nish Aravamudan" <nish.aravamudan@gmail.com>,
-       "Adam Litke" <agl@us.ibm.com>, "Arjan van de Ven" <arjan@infradead.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070323221225.bdadae16.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 24 Mar 2007 03:18:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49050 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750703AbXCXHSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 03:18:22 -0400
+Date: Sat, 24 Mar 2007 00:16:10 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: <dmitry.torokhov@gmail.com>
+Cc: zaitcev@redhat.com, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Fix sudden warps in mousedev
+Message-Id: <20070324001610.724a820a.zaitcev@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
-	 <20070323205810.3860886d.akpm@linux-foundation.org>
-	 <29495f1d0703232232o3e436c62lddccc82c4dd17b51@mail.gmail.com>
-	 <20070323221225.bdadae16.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/23/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> a) Ken observes that obtaining private hugetlb memory via hugetlbfs
->    involves "fuss".
->
-> b) the libhugetlbfs maintainers then go off and implement a no-fuss way of
->    doing this.
+Here's another one of those soon-to-be-obsoleted patches to mousedev.
+But if it lives just in 2.6.21, it's good, right? It's a pure bugfix.
 
-Hmm, what started this thread was libhugetlbfs maintainer complained
-how "fuss" it was to create private hugetlb mapping and suggested an
-even bigger kernel change with pagetable_operations API.  The new API
-was designed with an end goal of introduce /dev/hugetlb (as one of the
-feature, they might be thinking more).  What motivated me here is to
-point out that we can achieve the same goal of having a /dev/hugetlb
-with existing hugetlbfs infrastructure and the implementation is
-relatively straightforward.  What it also buys us is a bit more
-flexibility to the end user who wants to use the interface directly.
+On my laptop with Synaptics, if I lift the finger and place it elsewhere,
+the pointer sometimes warps dramatically. Here's the evtest trace
+which illustrates what happens:
+
+Event: time 1174703240.830555, type 3 (Absolute), code 0 (X), value 3907
+Event: time 1174703240.830557, type 3 (Absolute), code 1 (Y), value 3684
+Event: time 1174703240.830561, -------------- Report Sync ------------
+Event: time 1174703240.842205, type 3 (Absolute), code 0 (X), value 3909
+Event: time 1174703240.842208, type 3 (Absolute), code 1 (Y), value 3687
+         <---- value used by fy(2) later
+Event: time 1174703240.842211, -------------- Report Sync ------------
+Event: time 1174703240.854912, type 3 (Absolute), code 24 (Pressure), value 30
+Event: time 1174703240.854917, -------------- Report Sync ------------
+Event: time 1174703240.867130, type 1 (Key), code 330 (Touch), value 0
+         <---- touch=0 now, we drop pkt_count here
+Event: time 1174703240.867133, type 3 (Absolute), code 0 (X), value 3913
+Event: time 1174703240.867135, type 3 (Absolute), code 1 (Y), value 3699
+Event: time 1174703240.867137, type 3 (Absolute), code 24 (Pressure), value 17
+Event: time 1174703240.867139, -------------- Report Sync ------------
+Event: time 1174703240.877716, type 3 (Absolute), code 0 (X), value 3899
+Event: time 1174703240.877718, type 3 (Absolute), code 1 (Y), value 3720
+Event: time 1174703240.877721, type 3 (Absolute), code 24 (Pressure), value 8
+Event: time 1174703240.877723, type 3 (Absolute), code 28 (Tool Width), value 5
+Event: time 1174703240.877725, -------------- Report Sync ------------
+Event: time 1174703240.891954, type 3 (Absolute), code 0 (X), value 3898
+Event: time 1174703240.891957, type 3 (Absolute), code 1 (Y), value 3746
+Event: time 1174703240.891959, type 3 (Absolute), code 24 (Pressure), value 5
+Event: time 1174703240.891960, type 3 (Absolute), code 28 (Tool Width), value 6
+Event: time 1174703240.891965, -------------- Report Sync ------------
+Event: time 1174703240.918746, type 3 (Absolute), code 0 (X), value 1
+Event: time 1174703240.918749, type 3 (Absolute), code 1 (Y), value 5855
+Event: time 1174703240.918751, type 3 (Absolute), code 24 (Pressure), value 3
+Event: time 1174703240.918753, type 3 (Absolute), code 28 (Tool Width), value 5
+Event: time 1174703240.918756, type 1 (Key), code 325 (ToolFinger), value 0
+Event: time 1174703240.918758, type 1 (Key), code 333 (Tool Doubletap), value 1
+Event: time 1174703240.918760, -------------- Report Sync ------------
+Event: time 1174703240.929545, type 3 (Absolute), code 24 (Pressure), value 2
+Event: time 1174703240.929549, -------------- Report Sync ------------
+Event: time 1174703241.137650, type 3 (Absolute), code 24 (Pressure), value 1
+Event: time 1174703241.137655, -------------- Report Sync ------------
+Event: time 1174703241.386150, type 3 (Absolute), code 24 (Pressure), value 0
+Event: time 1174703241.386153, type 3 (Absolute), code 28 (Tool Width), value 0
+Event: time 1174703241.386155, type 1 (Key), code 333 (Tool Doubletap), value 0
+Event: time 1174703241.386158, -------------- Report Sync ------------
+Event: time 1174703243.119979, type 3 (Absolute), code 0 (X), value 4763
+Event: time 1174703243.119982, type 3 (Absolute), code 1 (Y), value 1964
+Event: time 1174703243.119984, type 3 (Absolute), code 24 (Pressure), value 8
+Event: time 1174703243.119985, type 3 (Absolute), code 28 (Tool Width), value 5
+Event: time 1174703243.119987, type 1 (Key), code 325 (ToolFinger), value 1
+Event: time 1174703243.119990, -------------- Report Sync ------------
+Event: time 1174703243.131696, type 3 (Absolute), code 0 (X), value 4760
+Event: time 1174703243.131699, type 3 (Absolute), code 1 (Y), value 1961
+Event: time 1174703243.131701, type 3 (Absolute), code 24 (Pressure), value 9
+Event: time 1174703243.131703, -------------- Report Sync ------------
+Event: time 1174703243.143436, type 3 (Absolute), code 24 (Pressure), value 12
+Event: time 1174703243.143440, type 3 (Absolute), code 28 (Tool Width), value 4
+Event: time 1174703243.143442, -------------- Report Sync ------------
+Event: time 1174703243.157148, type 3 (Absolute), code 24 (Pressure), value 15
+Event: time 1174703243.157153, -------------- Report Sync ------------
+Event: time 1174703243.169804, type 3 (Absolute), code 0 (X), value 4757
+Event: time 1174703243.169806, type 3 (Absolute), code 1 (Y), value 1999
+Event: time 1174703243.169808, type 3 (Absolute), code 24 (Pressure), value 18
+Event: time 1174703243.169811, -------------- Report Sync ------------
+Event: time 1174703243.181728, type 3 (Absolute), code 0 (X), value 4753
+Event: time 1174703243.181731, type 3 (Absolute), code 24 (Pressure), value 20
+Event: time 1174703243.181735, -------------- Report Sync ------------
+Event: time 1174703243.193445, type 3 (Absolute), code 24 (Pressure), value 21
+Event: time 1174703243.193448, -------------- Report Sync ------------
+Event: time 1174703243.206640, type 3 (Absolute), code 0 (X), value 4748
+Event: time 1174703243.206643, type 3 (Absolute), code 1 (Y), value 1997
+Event: time 1174703243.206645, type 3 (Absolute), code 24 (Pressure), value 23
+Event: time 1174703243.206647, -------------- Report Sync ------------
+Event: time 1174703243.219358, type 3 (Absolute), code 24 (Pressure), value 24
+Event: time 1174703243.219362, -------------- Report Sync ------------
+Event: time 1174703243.231448, type 3 (Absolute), code 0 (X), value 4752
+Event: time 1174703243.231450, type 3 (Absolute), code 1 (Y), value 1993
+Event: time 1174703243.231452, type 3 (Absolute), code 24 (Pressure), value 25
+Event: time 1174703243.231455, -------------- Report Sync ------------
+Event: time 1174703243.243435, type 3 (Absolute), code 1 (Y), value 1989
+Event: time 1174703243.243438, type 3 (Absolute), code 24 (Pressure), value 27
+Event: time 1174703243.243440, -------------- Report Sync ------------
+Event: time 1174703243.255193, type 3 (Absolute), code 0 (X), value 4748
+Event: time 1174703243.255197, type 3 (Absolute), code 24 (Pressure), value 28
+Event: time 1174703243.255201, -------------- Report Sync ------------
+Event: time 1174703243.268904, type 3 (Absolute), code 0 (X), value 4746
+Event: time 1174703243.268907, type 3 (Absolute), code 1 (Y), value 1990
+Event: time 1174703243.268909, type 3 (Absolute), code 24 (Pressure), value 29
+Event: time 1174703243.268911, -------------- Report Sync ------------
+Event: time 1174703243.293295, type 3 (Absolute), code 1 (Y), value 1986
+Event: time 1174703243.293298, type 3 (Absolute), code 24 (Pressure), value 30
+Event: time 1174703243.293301, -------------- Report Sync ------------
+Event: time 1174703243.305535, type 1 (Key), code 330 (Touch), value 1
+          <---- touch!=0 now, we're on
+Event: time 1174703243.305538, type 3 (Absolute), code 24 (Pressure), value 31
+Event: time 1174703243.305541, -------------- Report Sync ------------
+          <---- We increment the pkt_count, leaving value of 3687 in old_y
+Event: time 1174703243.342452, type 3 (Absolute), code 0 (X), value 4747
+Event: time 1174703243.342455, type 3 (Absolute), code 1 (Y), value 1988
+          <----- Later to be fy(1), not used for warping purposes :-)
+Event: time 1174703243.342459, -------------- Report Sync ------------
+Event: time 1174703243.356225, type 3 (Absolute), code 0 (X), value 4749
+Event: time 1174703243.356237, type 3 (Absolute), code 1 (Y), value 1987
+          <----- warp here, by the difference of 3687 and 1987, plus
+                 some small frac_dy value. Easily jumps half the screen.
+Event: time 1174703243.356246, -------------- Report Sync ------------
+
+Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
+
+--- linux-2.6/drivers/input/mousedev.c	2007-02-11 12:38:54.000000000 -0800
++++ linux-2.6.21-input/drivers/input/mousedev.c	2007-03-23 23:47:51.000000000 -0700
+@@ -274,6 +279,8 @@ static void mousedev_notify_readers(stru
+ 
+ static void mousedev_touchpad_touch(struct mousedev *mousedev, int value)
+ {
++	struct input_dev *dev;
++
+ 	if (!value) {
+ 		if (mousedev->touch &&
+ 		    time_before(jiffies, mousedev->touch + msecs_to_jiffies(tap_time))) {
+@@ -293,8 +300,22 @@ static void mousedev_touchpad_touch(stru
+ 		mousedev->frac_dx = 0;
+ 		mousedev->frac_dy = 0;
+ 
+-	} else if (!mousedev->touch)
++	} else if (!mousedev->touch) {
+ 		mousedev->touch = jiffies;
++		/*
++		 * Seed the ring with new position where finger has just landed.
++		 *
++		 * Without this, a touchpad may report an unchanged position,
++		 * then a sync. The input_event() eats the position report, but
++		 * lets the sync through. We increment pkt_count and leave 
++		 * a stale position in the ring. If a future reference to fx(2)
++		 * hits the stale position, a large dx is reported, and the
++		 * pointer warps across the screen.
++		 */
++		dev = mousedev->handle.dev;
++		fx(0) = dev->abs[ABS_X];
++		fy(0) = dev->abs[ABS_Y];
++	}
+ }
+ 
+ static void mousedev_event(struct input_handle *handle, unsigned int type, unsigned int code, int value)
