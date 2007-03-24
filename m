@@ -1,282 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751553AbXCXM6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXCXNAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751553AbXCXM6h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 08:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbXCXM6h
+	id S1751690AbXCXNAi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 09:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXCXNAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 08:58:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:37454 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751537AbXCXM6f (ORCPT
+	Sat, 24 Mar 2007 09:00:38 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:38565 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbXCXNAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 08:58:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=mRFJ12qppwWLxHUJ1BO+gquJ8dvB7NwB/29cNB0l5RBzFstXNnvQCJXjEA5RYkHS2z6pPAGdyyg2ojeoy5+z5SXB2XFDGk86+fUn5UcsVAgcqwuoTQ8A5DojkXEpCvytUrjoc1DQNd0vSQONKBm9yYQCxWtc5wpW2zO7WxzgJN8=
-Date: Sat, 24 Mar 2007 15:58:12 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: wim@iguana.be
-Cc: linux-kernel@vger.kernel.org
-Subject: Semi-typical watchdog bug re early misc_register()
-Message-ID: <20070324125811.GA30017@martell.zuzino.mipt.ru>
+	Sat, 24 Mar 2007 09:00:36 -0400
+Message-ID: <003701c76e14$e68007a0$eeeea8c0@aldipc>
+From: "roland" <devzero@web.de>
+To: <kr@cybsft.com>
+Cc: <linux-kernel@vger.kernel.org>, <tilman@imap.cc>,
+       <mailinglist@promodata.de>
+Subject: Re: Problem with 2.6.20 based kernels on SUSE 9.3
+Date: Sat, 24 Mar 2007 14:03:56 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2869
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Wim.
+>Waiting for mandatory devices:  eth-id-00:01:6c:ad:2b:c9
+>19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 1 0
+>    eth-id-00:01:6c:ad:2b:c9            No interface found
+>failedSetting up service network  .  .  .  .  .  .  .
 
-It seems that some watchdog drivers are doing following mistake:
+I had such issues when using suse 9.3  inside vmware very often - typically 
+removing network configuration completely in yast and re-adding it fixed it 
+for me - but sometimes it re-appeared, though - and i never knew, why.
 
-	rv = misc_register();
-	if (rv < 0)
-		return rv;
-	rv = request_region();
-	if (rv < 0) {
-		misc_deregister();
-		return rv;
-	}
+Due to lack of time, i never dug into the device detection routines in 
+depth, but i assume there must be some issue in older suse with that 
+routines around "Waiting for mandatory devices" .....
+It seems, that this has gone better in more recent distros, but i see that 
+problem from time to time.
 
-But, right after misc_register() returns, misc device can be opened and
-ioctls interacting with hardware issued, and driver can do outb() to
-port it doesn't own yet, because request_region() is still pending.
+You may also try setting MODULE_LOADED_ON_BOOT in /etc/sysconfig/kernel , 
+please report if this helps
 
-Also, is there similar ordering between register_reboot_notifier() and
-misc_register() ? Some drivers do misc_register() last, some register
-reboot notifiers.
+## Path:                System/Kernel
+## Description:         Modules to load after initial boot
+## Type:                string
+## ServiceRestart:      boot.loadmodules
+#
+# This variable contains the list of modules to be loaded
+# once the main filesystem is active
+#
+MODULES_LOADED_ON_BOOT=""
 
 
-Here is my patch, compile-tested only.
+Just came across this one - maybe it`s worth taking a look: 
+http://en.opensuse.org/SDB:Waiting_for_Mandatory_Device
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+regards
+roland
 
- drivers/char/watchdog/cpu5wdt.c     |   14 +++++++-------
- drivers/char/watchdog/eurotechwdt.c |   22 +++++++++++-----------
- drivers/char/watchdog/ibmasr.c      |   11 +++++------
- drivers/char/watchdog/machzwd.c     |   18 +++++++++---------
- drivers/char/watchdog/sbc8360.c     |   28 ++++++++++++++--------------
- 5 files changed, 46 insertions(+), 47 deletions(-)
 
---- a/drivers/char/watchdog/cpu5wdt.c
-+++ b/drivers/char/watchdog/cpu5wdt.c
-@@ -220,17 +220,17 @@ static int __devinit cpu5wdt_init(void)
- 	if ( verbose )
- 		printk(KERN_DEBUG PFX "port=0x%x, verbose=%i\n", port, verbose);
- 
--	if ( (err = misc_register(&cpu5wdt_misc)) < 0 ) {
--		printk(KERN_ERR PFX "misc_register failed\n");
--		goto no_misc;
--	}
--
- 	if ( !request_region(port, CPU5WDT_EXTENT, PFX) ) {
- 		printk(KERN_ERR PFX "request_region failed\n");
- 		err = -EBUSY;
- 		goto no_port;
- 	}
- 
-+	if ( (err = misc_register(&cpu5wdt_misc)) < 0 ) {
-+		printk(KERN_ERR PFX "misc_register failed\n");
-+		goto no_misc;
-+	}
-+
- 	/* watchdog reboot? */
- 	val = inb(port + CPU5WDT_STATUS_REG);
- 	val = (val >> 2) & 1;
-@@ -250,9 +250,9 @@ static int __devinit cpu5wdt_init(void)
- 
- 	return 0;
- 
--no_port:
--	misc_deregister(&cpu5wdt_misc);
- no_misc:
-+	release_region(port, CPU5WDT_EXTENT);
-+no_port:
- 	return err;
- }
- 
---- a/drivers/char/watchdog/eurotechwdt.c
-+++ b/drivers/char/watchdog/eurotechwdt.c
-@@ -413,17 +413,10 @@ static int __init eurwdt_init(void)
- {
- 	int ret;
- 
--	ret = misc_register(&eurwdt_miscdev);
--	if (ret) {
--		printk(KERN_ERR "eurwdt: can't misc_register on minor=%d\n",
--		WATCHDOG_MINOR);
--		goto out;
--	}
--
- 	ret = request_irq(irq, eurwdt_interrupt, IRQF_DISABLED, "eurwdt", NULL);
- 	if(ret) {
- 		printk(KERN_ERR "eurwdt: IRQ %d is not free.\n", irq);
--		goto outmisc;
-+		goto out;
- 	}
- 
- 	if (!request_region(io, 2, "eurwdt")) {
-@@ -438,6 +431,13 @@ static int __init eurwdt_init(void)
- 		goto outreg;
- 	}
- 
-+	ret = misc_register(&eurwdt_miscdev);
-+	if (ret) {
-+		printk(KERN_ERR "eurwdt: can't misc_register on minor=%d\n",
-+		WATCHDOG_MINOR);
-+		goto outreboot;
-+	}
-+
- 	eurwdt_unlock_chip();
- 
- 	ret = 0;
-@@ -448,14 +448,14 @@ static int __init eurwdt_init(void)
- out:
- 	return ret;
- 
-+outreboot:
-+	unregister_reboot_notifier(&eurwdt_notifier);
-+
- outreg:
- 	release_region(io, 2);
- 
- outirq:
- 	free_irq(irq, NULL);
--
--outmisc:
--	misc_deregister(&eurwdt_miscdev);
- 	goto out;
- }
- 
---- a/drivers/char/watchdog/ibmasr.c
-+++ b/drivers/char/watchdog/ibmasr.c
-@@ -367,18 +367,17 @@ static int __init ibmasr_init(void)
- 	if (!asr_type)
- 		return -ENODEV;
- 
-+	rc = asr_get_base_address();
-+	if (rc)
-+		return rc;
-+
- 	rc = misc_register(&asr_miscdev);
- 	if (rc < 0) {
-+		release_region(asr_base, asr_length);
- 		printk(KERN_ERR PFX "failed to register misc device\n");
- 		return rc;
- 	}
- 
--	rc = asr_get_base_address();
--	if (rc) {
--		misc_deregister(&asr_miscdev);
--		return rc;
--	}
--
- 	return 0;
- }
- 
---- a/drivers/char/watchdog/machzwd.c
-+++ b/drivers/char/watchdog/machzwd.c
-@@ -440,13 +440,6 @@ static int __init zf_init(void)
- 	spin_lock_init(&zf_lock);
- 	spin_lock_init(&zf_port_lock);
- 
--	ret = misc_register(&zf_miscdev);
--	if (ret){
--		printk(KERN_ERR "can't misc_register on minor=%d\n",
--							WATCHDOG_MINOR);
--		goto out;
--	}
--
- 	if(!request_region(ZF_IOBASE, 3, "MachZ ZFL WDT")){
- 		printk(KERN_ERR "cannot reserve I/O ports at %d\n",
- 							ZF_IOBASE);
-@@ -461,16 +454,23 @@ static int __init zf_init(void)
- 		goto no_reboot;
- 	}
- 
-+	ret = misc_register(&zf_miscdev);
-+	if (ret){
-+		printk(KERN_ERR "can't misc_register on minor=%d\n",
-+							WATCHDOG_MINOR);
-+		goto no_misc;
-+	}
-+
- 	zf_set_status(0);
- 	zf_set_control(0);
- 
- 	return 0;
- 
-+no_misc:
-+	unregister_reboot_notifier(&zf_notifier);
- no_reboot:
- 	release_region(ZF_IOBASE, 3);
- no_region:
--	misc_deregister(&zf_miscdev);
--out:
- 	return ret;
- }
- 
---- a/drivers/char/watchdog/sbc8360.c
-+++ b/drivers/char/watchdog/sbc8360.c
-@@ -333,18 +333,17 @@ static int __init sbc8360_init(void)
- 	int res;
- 	unsigned long int mseconds = 60000;
- 
--	spin_lock_init(&sbc8360_lock);
--	res = misc_register(&sbc8360_miscdev);
--	if (res) {
--		printk(KERN_ERR PFX "failed to register misc device\n");
--		goto out_nomisc;
-+	if (timeout < 0 || timeout > 63) {
-+		printk(KERN_ERR PFX "Invalid timeout index (must be 0-63).\n");
-+		res = -EINVAL;
-+		goto out;
- 	}
- 
- 	if (!request_region(SBC8360_ENABLE, 1, "SBC8360")) {
- 		printk(KERN_ERR PFX "ENABLE method I/O %X is not available.\n",
- 		       SBC8360_ENABLE);
- 		res = -EIO;
--		goto out_noenablereg;
-+		goto out;
- 	}
- 	if (!request_region(SBC8360_BASETIME, 1, "SBC8360")) {
- 		printk(KERN_ERR PFX
-@@ -360,10 +359,11 @@ static int __init sbc8360_init(void)
- 		goto out_noreboot;
- 	}
- 
--	if (timeout < 0 || timeout > 63) {
--		printk(KERN_ERR PFX "Invalid timeout index (must be 0-63).\n");
--		res = -EINVAL;
--		goto out_noreboot;
-+	spin_lock_init(&sbc8360_lock);
-+	res = misc_register(&sbc8360_miscdev);
-+	if (res) {
-+		printk(KERN_ERR PFX "failed to register misc device\n");
-+		goto out_nomisc;
- 	}
- 
- 	wd_margin = wd_times[timeout][0];
-@@ -383,13 +383,13 @@ static int __init sbc8360_init(void)
- 
- 	return 0;
- 
-+      out_nomisc:
-+	unregister_reboot_notifier(&sbc8360_notifier);
-       out_noreboot:
--	release_region(SBC8360_ENABLE, 1);
- 	release_region(SBC8360_BASETIME, 1);
--      out_noenablereg:
-       out_nobasetimereg:
--	misc_deregister(&sbc8360_miscdev);
--      out_nomisc:
-+	release_region(SBC8360_ENABLE, 1);
-+      out:
- 	return res;
- }
- 
+
+
+
+
+List:       linux-kernel
+Subject:    Problem with 2.6.20 based kernels on SUSE 9.3
+From:       "K.R. Foley" <kr () cybsft ! com>
+Date:       2007-02-12 15:51:51
+Message-ID: 45D08D17.8050808 () cybsft ! com
+[Download message RAW]
+
+I am having a problem with 2.6.20 based kernels on SUSE 9.3. It boots
+fine except that the network card is not detected at boot time. After
+the system boots I can "modprobe <nic module>" and the network comes up
+fine.
+
+I am having this same problem on two different Suse 9.3 systems, one is
+a a dual Xeon the other is an AMD Athlon. I have no such problems on
+Suse 10.1 systems on similar hardware. Kernels prior to 2.6.20-rc? work
+fine on these systems.
+
+The dual Xeon is using a 3Com card with the sk98lin driver.
+0000:06:00.0 Ethernet controller: 3Com Corporation 3c940
+10/100/1000Base-T [Marvell] (rev 10)
+
+The Athlon is using a SIS900 with the sis900 driver.
+0000:00:04.0 Ethernet controller: Silicon Integrated Systems [SiS]
+SiS900 PCI Fast Ethernet (rev 91)
+
+I get the following when the system is booting:
+
+Setting up network interfaces:
+    lo
+    lo        IP address: 127.0.0.1/8
+doneWaiting for mandatory devices:  eth-id-00:01:6c:ad:2b:c9
+19 18 17 <notice>startproc: execve (/opt/kde3/bin/kdm) [
+/opt/kde3/bin/kdm ], [ LC_MONETARY= CONSOLE=/dev/console
+ROOTFS_FSTYPE=reiserfs SHELL=/bin/sh TERM=linux ROOTFS_FSCK=0
+LC_NUMERIC= QTDIR=/usr/lib/qt3 LC_ALL= INIT_VERSION=sysvinit-2.85
+INIT=/sbin/init KDEROOTHOME=/root/.kdm REDIRECT=/dev/tty1 COLUMNS=128
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/lib/klibc/bin LC_MESSAGES= vga=0x317
+RUNLEVEL=5 LC_COLLATE= SPLASHCFG= PWD=/ LANG=en_US.UTF-8
+ROOTFS_REALDEV=/lib/klibc//dev/hda2 PREVLEVEL=N LINES=48 SHLVL=2 HOME=/
+XCURSOR_THEME=crystalwhite WINDOWMANAGER=/usr/X11R6/bin/kde
+LC_CTYPE=en_US.UTF-8 SPLASH=no splash=silent LC_TIME=
+ROOTFS_BLKDEV=/dev/hda2 _=/sbin/startproc DAEMON=/opt/kde3/bin/kdm ]
+<notice>checkproc: /opt/kde3/bin/kdm 4094
+16 15 14 13 12 11 10 9 8 7 6 5 4 3 1 0
+    eth-id-00:01:6c:ad:2b:c9            No interface found
+failedSetting up service network  .  .  .  .  .  .  .  .  .  .  .  .  .
+ .  .  .failed
+
+
+I am attaching my config for the SMP system. Any ideas? Pointers?
+
+Thanks,
+
+-- 
+   kr
 
