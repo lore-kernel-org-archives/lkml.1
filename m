@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932641AbXCXHli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbXCXHpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932641AbXCXHli (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 03:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932406AbXCXHli
+	id S932309AbXCXHpa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 03:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932368AbXCXHpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 03:41:38 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60597 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932368AbXCXHlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 03:41:37 -0400
-Date: Sat, 24 Mar 2007 07:41:29 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Ken Chen <kenchen@google.com>
-Cc: Adam Litke <agl@us.ibm.com>, William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+	Sat, 24 Mar 2007 03:45:30 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:59280 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932309AbXCXHp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 03:45:29 -0400
+Date: Fri, 23 Mar 2007 23:41:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Nish Aravamudan <nish.aravamudan@gmail.com>, Ken Chen <kenchen@google.com>,
+       Adam Litke <agl@us.ibm.com>, Arjan van de Ven <arjan@infradead.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] hugetlb: add /dev/hugetlb char device
-Message-ID: <20070324074129.GB18408@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Ken Chen <kenchen@google.com>, Adam Litke <agl@us.ibm.com>,
-	William Lee Irwin III <wli@holomorphy.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-References: <b040c32a0703231545h79d45d0eof1edd225ef3d8ee9@mail.gmail.com>
+Subject: Re: [patch] rfc: introduce /dev/hugetlb
+Message-Id: <20070323234156.72b955e9.akpm@linux-foundation.org>
+In-Reply-To: <20070324065752.GA13810@uranus.ravnborg.org>
+References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
+	<20070323205810.3860886d.akpm@linux-foundation.org>
+	<29495f1d0703232232o3e436c62lddccc82c4dd17b51@mail.gmail.com>
+	<20070323221225.bdadae16.akpm@linux-foundation.org>
+	<20070324065752.GA13810@uranus.ravnborg.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b040c32a0703231545h79d45d0eof1edd225ef3d8ee9@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +int hugetlb_zero_setup(struct file *file, struct vm_area_struct *vma)
-> +{
-> +	file = hugetlb_file_setup(vma->vm_end - vma->vm_start, 0);
-> +	if (IS_ERR(file))
-> +		return PTR_ERR(file);
-> +
-> +	if (vma->vm_file)
-> +		fput(vma->vm_file);
-> +	vma->vm_file = file;
-> +	return hugetlbfs_file_mmap(file, vma);
-> +}
+On Sat, 24 Mar 2007 07:57:52 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Setting vma->vm_file to something that is not the file we called mmap
-on and even refers to a different inode seems rather dangerous.
+> > 
+> > But for non-programming reasons, we're just not there yet: people want to
+> > program direct to the kernel interfaces simply because of the
+> > distribution/coordination problems with libraries.  It would be nice to fix
+> > that problem.
+> 
+> What is then needed to get a small subset of user-space in the kernel-development cycle?
+
+Someone to lead the work, mainly.  It would be a large effort, a lot of
+time and email traffic.
+
+> Maybe a topic worth to take up at LKS...
+
+Well, perhaps.  But unless someone with suitable experience has enough time
+and energy to spare to make it happen, it won't be happening.
 
