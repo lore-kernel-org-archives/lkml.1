@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932702AbXCXTMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750929AbXCXT0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932702AbXCXTMb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 15:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932403AbXCXTMb
+	id S1750929AbXCXT0H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 15:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbXCXT0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 15:12:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59965 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932702AbXCXTMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 15:12:30 -0400
-Date: Sat, 24 Mar 2007 20:11:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: tglx@linutronix.de, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] x86_64: avoid sending LOCAL_TIMER_VECTOR IPI to itself
-Message-ID: <20070324191112.GA1626@elte.hu>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323184828.GP752@stusta.de> <46046D6D.3030202@madrabbit.org>
+	Sat, 24 Mar 2007 15:26:07 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38543 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750929AbXCXT0F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 15:26:05 -0400
+Date: Sat, 24 Mar 2007 12:25:59 -0700
+From: Paul Jackson <pj@sgi.com>
+To: vatsa@in.ibm.com
+Cc: menage@google.com, akpm@osdl.org, sekharan@us.ibm.com, dev@sw.ru,
+       xemul@sw.ru, serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container
+ system abstracted from cpusets code
+Message-Id: <20070324122559.11b9ba34.pj@sgi.com>
+In-Reply-To: <20070324150505.GB9475@in.ibm.com>
+References: <20070212081521.808338000@menage.corp.google.com>
+	<20070212085104.130746000@menage.corp.google.com>
+	<20070324150505.GB9475@in.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46046D6D.3030202@madrabbit.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ray Lee <ray-lk@madrabbit.org> wrote:
-
-> Subject: [PATCH] x86_64: avoid sending LOCAL_TIMER_VECTOR IPI to 
-> itself
+> IMO, we need to use task_lock() in container_exit() to avoid this race.
 > 
-> Ray Lee reported, that on an UP kernel with "noapic" command line 
-> option set, the box locks hard during boot.
+> (I think this race already exists in mainline cpuset.c?)
+> 
+> P.S : cpuset.c checks for PF_EXITING twice in attach_task(), while this
+> patch seems to be checking only once. Is that fine?
 
-i think this bug deserves a bit more attention, because similar problems 
-could be in other codepaths too.
+I think the cpuset code is ok, because, as you note, it locks the task,
+picks off the cpuset pointer, and then checks a second time that the
+task still does not have PF_EXITING set:
 
-the problem here is that we tried to send an IPI to ourselves - which 
-confused Ray's system which has an IO-APIC, but where due to noapic we 
-keep the IO-APIC in its BIOS default.
+In the kernel/cpuset.c code for attach_task():
 
-this isnt a new problem: the new time code just exposed it more 
-prominently that it was visible before. (the SMP kernel probably would 
-hang in a similar way on Ray's system)
+        task_lock(tsk);
+        oldcs = tsk->cpuset;
+        /*
+         * After getting 'oldcs' cpuset ptr, be sure still not exiting.
+         * If 'oldcs' might be the top_cpuset due to the_top_cpuset_hack
+         * then fail this attach_task(), to avoid breaking top_cpuset.count.
+         */
+        if (tsk->flags & PF_EXITING) {
+                task_unlock(tsk);
+                mutex_unlock(&callback_mutex);
+                put_task_struct(tsk);
+                return -ESRCH;
+        }
 
-i dont see any clear debugging in the IPI code that excludes self-IPIs. 
-I think the only valid way to do that is to use DEST_SELF. Andi?
-
-	Ingo
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
