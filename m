@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbXCXRSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbXCXRau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932433AbXCXRSq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 13:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932339AbXCXRSq
+	id S932339AbXCXRau (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 13:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932372AbXCXRau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 13:18:46 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:17501 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932433AbXCXRSp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 13:18:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qE/u/E8bkOhyoYPQxPWEdFg1gxicNtMceu0MWlrNfOe2kfFQ7Hw+6fcd5gvz0rgU0N/WS1gatXGY37l/FRQTov5cS0ddR2fDwJOOXBwaBB/6kHSjwzbF1oLdKmtPrq+HJR2blA3xhVxGnBYGiZPXv6CKU8aMbVD5KpMgY1jmYmg=
-Message-ID: <6bffcb0e0703241018h6761df0oe3a7dea0bab8be78@mail.gmail.com>
-Date: Sat, 24 Mar 2007 18:18:42 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: mm snapshot broken-out-2007-03-24-00-14.tar.gz uploaded
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200703240816.l2O8GLLS001929@shell0.pdx.osdl.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Mar 2007 13:30:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58281 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932339AbXCXRat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 13:30:49 -0400
+Date: Sat, 24 Mar 2007 18:29:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nikita Danilov <nikita@clusterfs.com>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ravikiran G Thirumalai <kiran@scalex86.org>
+Subject: Re: [rfc][patch] queued spinlocks (i386)
+Message-ID: <20070324172959.GB542@elte.hu>
+References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200703240816.l2O8GLLS001929@shell0.pdx.osdl.net>
+In-Reply-To: <17925.18904.820106.145029@gargle.gargle.HOWL>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/03/07, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-> The mm snapshot broken-out-2007-03-24-00-14.tar.gz has been uploaded to
->
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-03-24-00-14.tar.gz
->
 
-My network doesn't work
-"RTNETLINK answers: Invalid argument"
+* Nikita Danilov <nikita@clusterfs.com> wrote:
 
-git-net* patches?
+> Indeed, this technique is very well known. E.g., 
+> http://citeseer.ist.psu.edu/anderson01sharedmemory.html has a whole 
+> section (3. Local-spin Algorithms) on them, citing papers from the 
+> 1990 onward.
 
-Regards,
-Michal
+that is a cool reference! So i'd suggest to do (redo?) the patch based 
+on those concepts and that terminology and not use 'queued spinlocks' 
+that are commonly associated with MS's stuff. And as a result the 
+contended case would be optimized some more via local-spin algorithms. 
+(which is not a key thing for us, but which would be nice to have 
+nevertheless)
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+	Ingo
