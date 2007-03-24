@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbXCXPij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbXCXPqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932152AbXCXPij (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 11:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932183AbXCXPij
+	id S932183AbXCXPqI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 11:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932207AbXCXPqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 11:38:39 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:42438 "EHLO smtp.osdl.org"
+	Sat, 24 Mar 2007 11:46:08 -0400
+Received: from smtp21.orange.fr ([80.12.242.46]:44237 "EHLO smtp21.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932152AbXCXPii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 11:38:38 -0400
-Date: Sat, 24 Mar 2007 07:38:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Bryan Wu <bryan.wu@analog.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: mm snapshot broken-out-2007-03-24-00-14.tar.gz uploaded
-Message-Id: <20070324073833.af78ddb4.akpm@linux-foundation.org>
-In-Reply-To: <46050D05.1000205@googlemail.com>
-References: <200703240816.l2O8GLLS001929@shell0.pdx.osdl.net>
-	<46050D05.1000205@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	id S932183AbXCXPqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 11:46:07 -0400
+X-ME-UUID: 20070324154605340.532C91C00095@mwinf2129.orange.fr
+Message-ID: <460547AA.80309@wanadoo.fr>
+Date: Sat, 24 Mar 2007 16:45:46 +0100
+From: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: error in compilation kernel 2.6.19 - internal compiler error
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007 12:35:33 +0100 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+Hello !
 
-> 
-> akpm@linux-foundation.org napisaÅ‚(a):
-> > The mm snapshot broken-out-2007-03-24-00-14.tar.gz has been uploaded to
-> > 
-> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-03-24-00-14.tar.gz
-> > 
-> > It contains the following patches against 2.6.21-rc4:
-> 
-> Bryan, your patch (blackfin-arch-2.6.21-rc4-mm1-update.patch) doesn't apply
-> clean. I've got a lot of "1 out of 1 hunk FAILED -- rejects in file".
-> 
-> Applying patch patches/blackfin-arch-2.6.21-rc4-mm1-update.patch
-> patching file arch/blackfin/Kconfig
-> patching file arch/blackfin/Makefile
-> patching file arch/blackfin/kernel/Makefile
-> patching file arch/blackfin/kernel/asm-offsets.c
-> Hunk #1 FAILED at 6.
-> 1 out of 1 hunk FAILED -- rejects in file arch/blackfin/kernel/asm-offsets.c
-> patching file arch/blackfin/kernel/bfin_dma_5xx.c
+I'm triyng to compile the kernel 2.6.19 on Debian Testing 4.0
+Unfortunately, I can't success.
+This is my error message :
 
-That's because it contains CVS control strings.  I fixed it locally,
-but please don't add CVS control strings to the kernel.
+CC [M]  drivers/scsi/lpfc/lpfc_sli.o
+In file included from drivers/scsi/lpfc/lpfc_sli.c:23:
+include/linux/pci.h:251: internal compiler error: in build_int_cst_wide, 
+at tree.c:803
+Please submit a full bug report,
+with preprocessed source if appropriate.
+See <URL:http://gcc.gnu.org/bugs.html> for instructions.
+For Debian GNU/Linux specific bug reporting instructions,
+see <URL:file:///usr/share/doc/gcc-4.1/README.Bugs>.
+The bug is not reproducible, so it is likely a hardware or OS problem.
+make[4]: *** [drivers/scsi/lpfc/lpfc_sli.o] Erreur 1
+make[3]: *** [drivers/scsi/lpfc] Erreur 2
+make[2]: *** [drivers/scsi] Erreur 2
+make[1]: *** [drivers] Erreur 2
+make[1]: quittant le répertoire « /home/hulin/src_hitachi/linux-2.6.19 »
+make: *** [debian/stamp-build-kernel] Erreur 2
+
+
+Thanks for help,
+Thibaud.
+
