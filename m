@@ -1,134 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbXCXVz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751480AbXCXV6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752185AbXCXVz7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 17:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbXCXVz6
+	id S1751480AbXCXV6A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 17:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXCXV6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 17:55:58 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:48536 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbXCXVz5 (ORCPT
+	Sat, 24 Mar 2007 17:58:00 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:32837 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751480AbXCXV57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 17:55:57 -0400
+	Sat, 24 Mar 2007 17:57:59 -0400
 To: akpm@linux-foundation.org
 CC: dgc@sgi.com, linux-kernel@vger.kernel.org
-Subject: [patch 1/3] fix illogical behavior in balance_dirty_pages()
-Message-Id: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu>
+In-reply-to: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Sat, 24 Mar 2007 22:55:29 +0100)
+Subject: [patch 2/3] remove throttle_vm_writeout()
+References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu>
+Message-Id: <E1HVEEw-0006cP-00@dorka.pomaz.szeredi.hu>
 From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 24 Mar 2007 22:55:29 +0100
+Date: Sat, 24 Mar 2007 22:57:34 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a slightly different take on the fix for the deadlock in fuse
-with dirty balancing.  David Chinner convinced me, that per-bdi
-counters are too expensive, and that it's not worth trying to account
-the number of pages under writeback, as they will be limited by the
-queue anyway.
-
-----
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Current behavior of balance_dirty_pages() is to try to start writeout
-into the specified queue for at least "write_chunk" number of pages.
-If "write_chunk" pages have been submitted, then return.
+Remove this function.  It's purpose was to limit the global number of
+writeback pages from submitted by direct reclaim.  But this is equally
+well accomplished by limited queue lengths.  When this function was
+added, the device queues had much larger default lengths (8192
+requests, now it's 128), causing problems.
 
-However if there are less than "write_chunk" dirty pages for this
-queue, then it doesn't return, waiting for the global dirty+writeback
-counters to subside, but without doing any actual work.
-
-This is illogical behavior: it allows more dirtyings while there are
-dirty pages, but stops further dirtying completely if there are no
-more dirty pages.
-
-It also makes a deadlock possible when one filesystem is writing data
-through another, and the balance_dirty_pages() for the lower
-filesystem is stalling the writeback for the upper filesystem's
-data (*).
-
-So the exit condition should instead be:
-
-  submitted at least "write_chunk" number of pages
-OR
-    submitted ALL the dirty pages destined for this backing dev
-  AND
-    backing dev is not congested
-
-To do this, introduce a new counter in writeback_control, which counts
-the number of dirty pages encountered during writeback.  This includes
-all dirty pages, even those which are already under writeback but have
-been dirtied again, and those which have been skipped due to having
-locked buffers.
-
-If this counter is zero after trying to submit some pages for
-writeback, and the backing dev is uncongested, then don't wait any
-more.  After this, newly dirtied pages can quickly be written back to
-this backing dev.
-
-If there are globally no more pages to submit for writeback
-(nr_reclaimable == 0), then also don't wait for ever, only while this
-backing dev is congested.
-
-(*) For more info on this deadlock, see the following discussions:
-
-  http://lkml.org/lkml/2007/3/1/9
-  http://lkml.org/lkml/2007/3/12/16
+When writable shared mapping support is added to fuse, this function
+would be able to cause a deadlock if the userspace filesystem needs to
+allocate memory while writing back dirty pages.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
 Index: linux/include/linux/writeback.h
 ===================================================================
---- linux.orig/include/linux/writeback.h	2007-03-24 22:06:56.000000000 +0100
-+++ linux/include/linux/writeback.h	2007-03-24 22:29:02.000000000 +0100
-@@ -44,6 +44,7 @@ struct writeback_control {
- 	long nr_to_write;		/* Write this many pages, and decrement
- 					   this for each page written */
- 	long pages_skipped;		/* Pages which were not written */
-+	long nr_dirty;			/* Number of dirty pages encountered */
+--- linux.orig/include/linux/writeback.h	2007-03-24 22:07:00.000000000 +0100
++++ linux/include/linux/writeback.h	2007-03-24 22:28:52.000000000 +0100
+@@ -85,7 +85,6 @@ static inline void wait_on_inode(struct 
+ int wakeup_pdflush(long nr_pages);
+ void laptop_io_completion(void);
+ void laptop_sync_completion(void);
+-void throttle_vm_writeout(gfp_t gfp_mask);
  
- 	/*
- 	 * For a_ops->writepages(): is start or end are non-zero then this is
+ /* These are exported to sysctl. */
+ extern int dirty_background_ratio;
 Index: linux/mm/page-writeback.c
 ===================================================================
---- linux.orig/mm/page-writeback.c	2007-03-24 22:06:56.000000000 +0100
-+++ linux/mm/page-writeback.c	2007-03-24 22:29:02.000000000 +0100
-@@ -207,7 +207,15 @@ static void balance_dirty_pages(struct a
- 		 * written to the server's write cache, but has not yet
- 		 * been flushed to permanent storage.
- 		 */
--		if (nr_reclaimable) {
-+		if (!nr_reclaimable) {
-+			/*
-+			 * If there's nothing more to write back and this queue
-+			 * is uncongested,  then it is possible to quickly
-+			 * write out some more data, so let's not wait
-+			 */
-+			if (!bdi_write_congested(bdi))
-+				break;
-+		} else {
- 			writeback_inodes(&wbc);
- 			get_dirty_limits(&background_thresh,
- 					 	&dirty_thresh, mapping);
-@@ -220,6 +228,14 @@ static void balance_dirty_pages(struct a
- 			pages_written += write_chunk - wbc.nr_to_write;
- 			if (pages_written >= write_chunk)
- 				break;		/* We've done our duty */
-+
-+			/*
-+			 * If there are no more dirty pages for this backing
-+			 * backing dev, and the queue is not congested, then
-+			 * it is possible to quickly write out some more data
-+			 */
-+			if (!wbc.nr_dirty && !bdi_write_congested(bdi))
-+				break;
- 		}
- 		congestion_wait(WRITE, HZ/10);
- 	}
-@@ -619,6 +635,7 @@ retry:
- 					      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1))) {
- 		unsigned i;
+--- linux.orig/mm/page-writeback.c	2007-03-24 22:07:00.000000000 +0100
++++ linux/mm/page-writeback.c	2007-03-24 22:28:52.000000000 +0100
+@@ -312,37 +312,6 @@ void balance_dirty_pages_ratelimited_nr(
+ }
+ EXPORT_SYMBOL(balance_dirty_pages_ratelimited_nr);
  
-+		wbc->nr_dirty += nr_pages;
- 		scanned = 1;
- 		for (i = 0; i < nr_pages; i++) {
- 			struct page *page = pvec.pages[i];
+-void throttle_vm_writeout(gfp_t gfp_mask)
+-{
+-	long background_thresh;
+-	long dirty_thresh;
+-
+-	if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
+-		/*
+-		 * The caller might hold locks which can prevent IO completion
+-		 * or progress in the filesystem.  So we cannot just sit here
+-		 * waiting for IO to complete.
+-		 */
+-		congestion_wait(WRITE, HZ/10);
+-		return;
+-	}
+-
+-        for ( ; ; ) {
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
+-
+-                /*
+-                 * Boost the allowable dirty threshold a bit for page
+-                 * allocators so they don't get DoS'ed by heavy writers
+-                 */
+-                dirty_thresh += dirty_thresh / 10;      /* wheeee... */
+-
+-                if (global_page_state(NR_UNSTABLE_NFS) +
+-			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+-                        	break;
+-                congestion_wait(WRITE, HZ/10);
+-        }
+-}
+-
+ /*
+  * writeback at least _min_pages, and keep writing until the amount of dirty
+  * memory is less than the background threshold, or until we're all clean.
+Index: linux/mm/vmscan.c
+===================================================================
+--- linux.orig/mm/vmscan.c	2007-03-24 22:06:53.000000000 +0100
++++ linux/mm/vmscan.c	2007-03-24 22:07:03.000000000 +0100
+@@ -952,8 +952,6 @@ static unsigned long shrink_zone(int pri
+ 		}
+ 	}
+ 
+-	throttle_vm_writeout(sc->gfp_mask);
+-
+ 	atomic_dec(&zone->reclaim_in_progress);
+ 	return nr_reclaimed;
+ }
