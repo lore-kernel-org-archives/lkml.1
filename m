@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXCXKGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbXCXLZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbXCXKGc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 06:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbXCXKGc
+	id S1751048AbXCXLZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 07:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbXCXLZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 06:06:32 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2702 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbXCXKGb (ORCPT
+	Sat, 24 Mar 2007 07:25:44 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33280 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751012AbXCXLZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 06:06:31 -0400
-Date: Sat, 24 Mar 2007 10:06:14 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Keith Owens <kaos@ocs.com.au>, linux-kernel@vger.kernel.org,
-       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PNPACPI probes serial twice, messes up serial console
-Message-ID: <20070324100614.GA13764@flint.arm.linux.org.uk>
-Mail-Followup-To: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	Keith Owens <kaos@ocs.com.au>, linux-kernel@vger.kernel.org,
-	len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>
-References: <17887.1174373206@kao2.melbourne.sgi.com> <200703211035.39340.bjorn.helgaas@hp.com> <20070321163758.GB28239@flint.arm.linux.org.uk> <200703211040.54380.bjorn.helgaas@hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 24 Mar 2007 07:25:42 -0400
+Date: Sat, 24 Mar 2007 12:25:44 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, tigran@aivazian.fsnet.co.uk,
+       David L <idht4n@hotmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Bob Tracy <rct@gherkin.frus.com>, John Stultz <johnstul@us.ibm.com>,
+       bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       Albert Hopkins <kernel@marduk.letterboxes.org>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, jgarzik@pobox.com,
+       netdev@vger.kernel.org
+Subject: 2.6.21-rc4: known regressions with patches (v2)
+Message-ID: <20070324112544.GB752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200703211040.54380.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 10:40:54AM -0600, Bjorn Helgaas wrote:
-> On Wednesday 21 March 2007 10:37, Russell King wrote:
-> > On Wed, Mar 21, 2007 at 10:35:38AM -0600, Bjorn Helgaas wrote:
-> > > On Tuesday 20 March 2007 08:32, Bjorn Helgaas wrote:
-> > > > On Tuesday 20 March 2007 00:46, Keith Owens wrote:
-> > > > > Booting with 'console=tty console=ttyS0,9600'.  The serial console on
-> > > > > ttyS0 (0x3f8, irq 4) is probed twice, once from serial8250_init() and
-> > > > > again from serial_pnp_probe().
-> > > > 
-> > > > I played with this last summer, but was too timid to finish it
-> > > > and post it.  My plan was to remove the legacy SERIAL_PORT_DFNS,
-> > > > make platform devices for them, and only register the platform
-> > > > devices in the absence of PNP.
-> > > > 
-> > > > My motivation at the time was to prevent 8250 from claiming IRDA
-> > > > devices that happened to live at legacy UART addresses.  I also
-> > > > wanted to make IRDA (smsc-ircc2 in my case) smart enough to use
-> > > > PNP to locate its devices, since 8250 would no longer claim them.
-> > > > 
-> > > > Here's the dusty patch (against 2.6.18-rc1-mm2).  If it seems
-> > > > like a reasonable thing to do, I can update it, polish it up,
-> > > > add a changelog, and post it.
-> > > 
-> > > Keith, does this patch help?  Russell didn't complain about it, so
-> > > if it fixes your problem, maybe we could put it in -mm and see if
-> > > it breaks anything else.
-> > 
-> > Yes I did.
-> 
-> Sorry.  What I should have said was "Russell gave constructive
-> feedback for a minor improvement, but didn't complain about the
-> overall approach of converting to platform devices, so if the
-> patch solves your (Keith's) problem, I'll incorporate Russell's
-> feedback and send an updated patch to Andrew."
+This email lists some known regressions in Linus' tree compared to 2.6.20
+with patches available.
 
-I did also point out that the autoconfig should be transparent, and if
-it isn't there's probably a bug in there somewhere.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way
+possibly involved with one or more of these issues.
 
-So I partly view this patch as a papering over of the real problem, but
-for other reasons it's more or less the right direction for stuff to go.
-Except that the x86 definitions should be in arch/i386 rather than
-drivers/serial, like the other architectures which have been converted
-to this model already do.
+Due to the huge amount of recipients, please trim the Cc when answering.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+Subject    : suspend to disk hangs  (microcode driver)
+References : http://lkml.org/lkml/2007/3/16/126
+Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
+Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+             commit e3c7db621bed4afb8e231cb005057f2feb5db557
+             commit ed746e3b18f4df18afa3763155972c5835f284c5
+             commit 259130526c267550bc365d3015917d90667732f1
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+Patch      : http://lkml.org/lkml/2007/3/23/179
+Status     : patch available
+
+
+Subject    : gettimeofday increments too slowly
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8027
+             http://lkml.org/lkml/2007/3/23/329
+Submitter  : David L <idht4n@hotmail.com>
+Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+             commit 92c7e00254b2d0efc1e36ac3e45474ce1871b6b2
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Patch      : http://lkml.org/lkml/2007/3/23/329
+Status     : patch available
+
+
+Subject    : boot hangs during IDE detection  (clocksource)
+References : http://lkml.org/lkml/2007/3/19/465
+Submitter  : Bob Tracy <rct@gherkin.frus.com>
+Caused-By  : John Stultz <johnstul@us.ibm.com>
+             commit 6bb74df481223731af6c7e0ff3adb31f6442cfcd
+Handled-By : John Stultz <johnstul@us.ibm.com>
+Patch      : http://lkml.org/lkml/2007/3/22/287
+Status     : workaround-patch available
+
+
+Subject    : forcedeth: skb_over_panic
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
+Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
+Handled-By : Ayaz Abdulla <aabdulla@nvidia.com>
+Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8058
+Status     : patch available
+
