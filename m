@@ -1,71 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbXCXQgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXCXQiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932134AbXCXQgz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 12:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226AbXCXQgy
+	id S932207AbXCXQiH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 12:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226AbXCXQiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 12:36:54 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:59337 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932134AbXCXQgx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 12:36:53 -0400
-Date: Sat, 24 Mar 2007 09:35:54 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Boris Andratzek <Boris.Andratzek@cation.de>
-Cc: linux-kernel@vger.kernel.org, scsi <linux-scsi@vger.kernel.org>
-Subject: Re: troubles with DAC960
-Message-Id: <20070324093554.89cee415.randy.dunlap@oracle.com>
-In-Reply-To: <460533DC.3010006@cation.de>
-References: <4602C062.6050406@cation.de>
-	<460533DC.3010006@cation.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Sat, 24 Mar 2007 12:38:06 -0400
+Received: from lucidpixels.com ([75.144.35.66]:47020 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932207AbXCXQiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 12:38:04 -0400
+Date: Sat, 24 Mar 2007 12:38:02 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+Subject: Why is NCQ enabled by default by libata? (2.6.20)
+Message-ID: <Pine.LNX.4.64.0703241232580.11608@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007 15:21:16 +0100 Boris Andratzek wrote:
+Without NCQ, performance is MUCH better on almost every operation, with 
+the exception of 2-3 items.
 
-> Boris Andratzek wrote:
-> > Hello members of the kernel-list,
-> > 
-> > 
-> > I'm new to this and hope I don't misuse the list in any way.
-> > 
-> > Doing the update from debian sarge to etch on my server I ran into the
-> > bug documented here: bugzilla.kernel.org/show_bug.cgi?id=7177
-> > I already made some comments there. I tried to contact the maintainer of
-> > the DAC960 driver but as far as I found out, Leonard N. Zubkoff
-> > unfortunatly died in a helicopter crash.
-> > 
-> > Without being impious, I want to ask if anybody can give me an idea of
-> > how this thing will go on. Is there anybody new doing the maintaining?
-> > Is there hope for a fix? Where can I find more information? Can I do
-> > anything to help (testing, logging)?
-> > 
-> > regards,
-> > 
-> > Boris Andratzek
-> > 
-> 
-> Hello!?
-> 
-> I didn't catch no reaction at all, so I am not sure if I sent my
-> question the right way! Could anybody respond, please, even without an
-> idea of solving my problem!?
-> 
-> Thanks,
+/usr/sbin/bonnie++ -d /x/bonnie -s 7952 -m p34 -n 16:100000:16:64 > run.txt;
 
-There is no current DAC960 maintainer.
+# Average of 3 runs with NCQ on for Quad Raptor ADFD 150 RAID 5 Software RAID:
+p34-ncq-on,7952M,43916.3,96.6667,151943,28.6667,75794.3,18.6667,48991.3,99,181687,24,558.033,0.333333,16:100000:16/64,867.667,9,29972.7,98.3333,2801.67,16,890.667,9.33333,27743,94.3333,2115.33,15.6667
+# Average of 3 runs with NCQ off for Quad Raptor ADFD 150 RAID 5 Software RAID:
+p34-ncq-off,7952M,42470,97.3333,200409,36.3333,90240.3,22.6667,48656,99,198853,27,546.467,0,16:100000:16/64,972.333,10,21833,72.3333,3697,21,995,10.6667,27901.7,95.6667,2681,20.6667
 
-I'd try asking on the linux-scsi mailing list (cc-ed there).
+http://home.comcast.net/~jpiszcz/ncq_vs_noncq/results.html
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+In general, for networking, etc, the kernel chooses 'optimized' defaults, 
+therefore, I was curious why is NCQ enabled by default?
+
+Justin.
