@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbXCXPHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbXCXPIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbXCXPHB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 11:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbXCXPHB
+	id S1752886AbXCXPIH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 11:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXCXPIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 11:07:01 -0400
-Received: from www.osadl.org ([213.239.205.134]:40470 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752680AbXCXPHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 11:07:00 -0400
-Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <6bffcb0e0703240659r2e5a5875i746ccbbd28d0045c@mail.gmail.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323185028.GR752@stusta.de>
-	 <1174680500.10840.346.camel@localhost.localdomain>
-	 <6bffcb0e0703240659r2e5a5875i746ccbbd28d0045c@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 24 Mar 2007 16:14:26 +0100
-Message-Id: <1174749266.10840.430.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Mar 2007 11:08:06 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33466 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752890AbXCXPIE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 11:08:04 -0400
+Date: Sat, 24 Mar 2007 16:08:06 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Armin Schindler <armin@melware.de>
+Cc: kkeil@suse.de, kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] fix ISDN_CAPI<->ISDN_DIVAS
+Message-ID: <20070324150806.GA2078@stusta.de>
+References: <20070324130622.GE752@stusta.de> <Pine.LNX.4.61.0703241442220.28244@phoenix.one.melware.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0703241442220.28244@phoenix.one.melware.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-24 at 14:59 +0100, Michal Piotrowski wrote:
-> On 23/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
-> > > Subject    : soft lockup detected on CPU#0
-> > > References : http://lkml.org/lkml/2007/3/3/152
-> > > Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-> > > Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> > >              Ingo Molnar <mingo@elte.hu>
-> > > Status     : unknown
-> >
-> > Michal,
-> >
-> > any news on that one ?
-> >
-> > You said the same problem exists in 2.6.20.1. Has this been resolved in
-> > 2.6.20.2/3
+On Sat, Mar 24, 2007 at 02:49:42PM +0100, Armin Schindler wrote:
+> On Sat, 24 Mar 2007, Adrian Bunk wrote:
+> > Randy Dunlap reported in kernel Bugzilla #8241 the following compile 
+> > error with CONFIG_ISDN_CAPI=m, CONFIG_ISDN_DIVAS=y:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/divacapi.ko] undefined!
+> > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_mnt.ko] undefined!
+> > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
+> > WARNING: "proc_net_eicon" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > 
+> > <--  snip  -->
+> > 
+> > 
+> > Kconfig contains the following strange thing:
+> > 
+> > menu "Active Eicon DIVA Server cards"
+> >         depends on NET && ISDN && ISDN_CAPI!=n
+> > 
+> > 
+> > It seems that except for ISDN_DIVAS_DIVACAPI (that already has a proper 
+> > dependency), nothing here actually requires ISDN_CAPI?
 > 
-> Yes, I tried 2.6.20.4 and it works fine.
+> Not quite true. Yes, the base modules for the divas driver do not require 
+> ISDN_CAPI, but without ISDN_CAPI it doesn't make any sense.
 
-Is it solved in Linus latest too ?
+Let me try to understand this:
 
-	tglx
+Does it make sense to have CONFIG_ISDN_DIVAS=y, CONFIG_ISDN_CAPI=m?
+And do CONFIG_ISDN_DIVAS=y/m, CONFIG_ISDN_DIVAS_DIVACAPI=n 
+configurations make sense?
 
+If not, what about:
+- let ISDN_DIVAS depend on ISDN_CAPI and
+- enable ISDN_DIVAS_DIVACAPI unconditionally (and perhaps even build 
+                                              it into the divas module)?
+
+> The patch below (go into /hardware even for non ISDN_CAPI) is wrong. The
+> subdir /hardware was created for new drivers using CAPI. So it is correct to
+> go there when ISDN_CAPI != n only.
+> 
+> I don't understand the warnings above. The symbols are exported by divas 
+> modules, so why is it causing warnings? There have been no change in the 
+> divas modules for this. Any change in the kernel module creation structure
+> which may causing this?
+
+These aren't warnings, these are errors.
+
+Due to
+  obj-$(CONFIG_ISDN_CAPI)                    += hardware/
+
+hardware/ isn't visited with CONFIG_ISDN_CAPI=m when building vmlinux.
+
+This means the modules were built, but the static code they were using 
+wasn't linkd into the kernel.
+
+This might not have occured before since CONFIG_ISDN_CAPI=m, 
+CONFIG_ISDN_DIVAS=y is an unusual configuration.
+
+> Armin
+>...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
