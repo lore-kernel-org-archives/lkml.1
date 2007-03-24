@@ -1,92 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbXCXQGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbXCXQLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbXCXQGd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 12:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbXCXQGd
+	id S1753157AbXCXQLp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 12:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXCXQLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 12:06:33 -0400
-Received: from mout1.freenet.de ([194.97.50.132]:49950 "EHLO mout1.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752998AbXCXQGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 12:06:32 -0400
-Message-ID: <46054C81.6060501@freenet.de>
-Date: Sat, 24 Mar 2007 17:06:25 +0100
-From: Patrick Ringl <patrick_@freenet.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Sat, 24 Mar 2007 12:11:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51265 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbXCXQLn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 12:11:43 -0400
+Message-ID: <46054D99.8070705@torque.net>
+Date: Sat, 24 Mar 2007 12:11:05 -0400
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH UPDATED][2] cosmetic adaption of drivers/ide/Kconfig concerning
- SATA
-References: <45FC763B.1010708@freenet.de> <200703180110.51303.bzolnier@gmail.com> <45FC8847.2060209@freenet.de> <200703232250.18937.bzolnier@gmail.com>
-In-Reply-To: <200703232250.18937.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [-mm patch] drivers/scsi/constants.c: make 2 functions static
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070324130647.GI752@stusta.de>
+In-Reply-To: <20070324130647.GI752@stusta.de>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> On Sunday 18 March 2007, Patrick Ringl wrote:
->   
->> Bartlomiej Zolnierkiewicz wrote:
->>
->> Hello,
->>     
->>> On Sunday 18 March 2007, Patrick Ringl wrote:
->>>       
->>>> Hello,
->>>>         
->>> Hi,
->>>
->>>       
->>>> since especially Serial ATA has it's own menu point now, I guess we can 
->>>> change the description of the deprecated SATA driver as well, since the 
->>>> new libATA subsystem is not configured through a SCSI low-level driver 
->>>> anymore, but has it's own menu point.
->>>>
->>>> The following patch is against 2.6.21-rc4:
->>>>
->>>> --- linux-2.6.20.old/drivers/ide/Kconfig	2007-03-18 00:05:11.000000000 +0100
->>>> +++ linux-2.6.20/drivers/ide/Kconfig	2007-03-18 00:09:47.000000000 +0100
->>>> @@ -103,7 +103,7 @@
->>>>   	---help---
->>>>   	  There are two drivers for Serial ATA controllers.
->>>>
->>>> -	  The main driver, "libata", exists inside the SCSI subsystem
->>>> +	  The main driver, "libata", exists inside the ATA subsystem
->>>>         
->>> Strictly speaking libata is not a separate subsystem (it still uses SCSI
->>> subsystem) and "ATA subsystem" may be misleading, since we now have:
->>>
->>> * "ATA/ATAPI/MFM/RLL support" menu for drivers/ide
->>>
->>> * "Serial ATA (prod) and Parallel ATA (experimental) drivers" menu for libata
->>>
->>> What about replacing "exists inside" into "uses" and adding info about
->>> the new menu instead?
->>>       
->> Well, that's even a better idea :-) I wasn't that sure about what to do 
->> .. it's just that it could be misleading since the new (s/p)ata drivers 
->> are not living in the scsi low-level subsystem anymore, but got their 
->> own menu point.
->>
->> Here's a different patch >:)
->>     
->
-> applied
->
-> [ The patch was whitespace damaged and didn't apply et all
->   so I had to manually change the Kconfig to merge your change. ]
->   
-D'Oh .. Probably due to the fact that I copied it and did not attach it 
-in plain/text.
+Adrian Bunk wrote:
+> On Mon, Mar 19, 2007 at 08:56:23PM -0800, Andrew Morton wrote:
+>> ...
+>> Changes since 2.6.21-rc3-mm1:
+>> ...
+>>  git-scsi-misc.patch
+>> ...
+>>  git trees
+>> ...
+> 
+> 
+> This patch makes two needlessly global functions static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> 
+>  drivers/scsi/constants.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6.21-rc4-mm1/drivers/scsi/constants.c.old	2007-03-23 23:26:39.000000000 +0100
+> +++ linux-2.6.21-rc4-mm1/drivers/scsi/constants.c	2007-03-23 23:26:55.000000000 +0100
+> @@ -1235,7 +1235,7 @@
+>  }
+>  EXPORT_SYMBOL(scsi_print_sense_hdr);
+>  
+> -void
+> +static void
+>  scsi_decode_sense_buffer(const unsigned char *sense_buffer, int sense_len,
+>  		       struct scsi_sense_hdr *sshdr)
+>  {
+> @@ -1258,7 +1258,7 @@
+>  	}
+>  }
+>  
+> -void
+> +static void
+>  scsi_decode_sense_extras(const unsigned char *sense_buffer, int sense_len,
+>  			 struct scsi_sense_hdr *sshdr)
+>  {
 
- Thanks
+Adrian,
+Who put those functions in?
 
-> Thanks,
-> Bart
->
->   
+The names and arguments look very similar to these
+exported functions in scsi_error.c *** :
+  scsi_normalize_sense
+  scsi_sense_desc_find
+  scsi_get_sense_info_fld
 
-regards,
-Patrick
+that I can see in 2.6.21-rc4
+
+The proposed scsi_decode_sense_buffer() looks broken because
+it can fail and should return an int reflecting that.
+How scsi_decode_sense_extras() works is intriguing, unless
+struct scsi_sense_hdr has been changed as well.
+
+
+*** Putting sense decode logic in scsi_error.c is wrong
+because:
+  - the ATA command set is proposing an ATA REQUEST SENSE
+    command to yield a sense buffer
+  - sense buffers don't necessarily indicate errors.
+
+So moving those functions out of scsi_error.c IMO is a
+good idea. Breaking them in the move isn't.
+
+Doug Gilbert
+
+
