@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbXCXE6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbXCXE6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752897AbXCXE6I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 00:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbXCXE6I
+	id S1753266AbXCXE6l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 00:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbXCXE6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 00:58:08 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:13411 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752897AbXCXE6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 00:58:07 -0400
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=Eet0WErT20ZjXl0M5/SeTSP1jdTJ2+M7qPy3Iyq1LX/M4LbnAJEE9y2vfFUsfNuuL7z9Q83ctclStxyCD793Y7PSF6fA6J8PgzRf0Jio6+qTdfru4baWSBlTNpu2I1cX;
-X-IronPort-AV: i="4.14,322,1170655200"; 
-   d="scan'208"; a="237951151:sNHT15794856"
-Date: Fri, 23 Mar 2007 23:58:07 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: akpm@linux-foundation.org, gregkh@suse.de
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       charles_rose@dell.com
-Subject: [PATCH 2.6.21-rc3] pci: set pci=bfsort for PowerEdge R900
-Message-ID: <20070324045807.GA11480@lists.us.dell.com>
+	Sat, 24 Mar 2007 00:58:40 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33395 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753266AbXCXE62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 00:58:28 -0400
+Date: Sat, 24 Mar 2007 10:35:37 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: menage@google.com
+Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070324050537.GA27040@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070212085105.170265000@menage.corp.google.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch automatically enables pci=bfsort for the Dell PowerEdge
-R900.  This is necessary to ensure the onboard NICs enumerate in the
-proper order, similar to the other systems already on the list.
+On Mon, Feb 12, 2007 at 12:15:28AM -0800, menage@google.com wrote:
+> +/*
+> + * Rules: you can only create a container if
+> + *     1. you are capable(CAP_SYS_ADMIN)
+> + *     2. the target container is a descendant of your own container
+> + */
+> +static int ns_create(struct container_subsys *ss, struct container *cont)
+> +{
+> +	struct nscont *ns;
+> +
+> +	if (!capable(CAP_SYS_ADMIN))
+> +		return -EPERM;
 
-I'd appreciate this being applied before 2.6.21-final if possible.
+Does this check break existing namespace semantics in a subtle way?
+It now requires that unshare() of namespaces by any task requires
+CAP_SYS_ADMIN capabilities.
 
-Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
+clone(.., CLONE_NEWUTS, ..)->copy_namespaces()->ns_container_clone()->
+	->container_clone()-> .. -> container_create() -> ns_create()
 
-Thanks,
-Matt
+Earlier, one could unshare his uts namespace w/o CAP_SYS_ADMIN
+capabilities. Now it is required. Is that fine? Don't know.
+
+I feel we can avoid this check totally and let the directory permissions
+take care of these checks.
+
+Serge, what do you think?
 
 -- 
-Matt Domsch
-Software Architect
-Dell Linux Solutions linux.dell.com & www.dell.com/linux
-Linux on Dell mailing lists @ http://lists.us.dell.com
-
-diff --git a/arch/i386/pci/common.c b/arch/i386/pci/common.c
-index 1bb0693..9484366 100644
---- a/arch/i386/pci/common.c
-+++ b/arch/i386/pci/common.c
-@@ -193,6 +193,14 @@ static struct dmi_system_id __devinitdat
- 	},
- 	{
- 		.callback = set_bf_sort,
-+		.ident = "Dell PowerEdge R900",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "PowerEdge R900"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
- 		.ident = "HP ProLiant BL20p G3",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+Regards,
+vatsa
