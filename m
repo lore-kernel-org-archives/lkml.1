@@ -1,35 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbXCXFHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbXCXFOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379AbXCXFHI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 01:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbXCXFHI
+	id S1752069AbXCXFOQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 01:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbXCXFOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 01:07:08 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:54846 "EHLO smtp.osdl.org"
+	Sat, 24 Mar 2007 01:14:16 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55034 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752757AbXCXFHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 01:07:03 -0400
-Date: Fri, 23 Mar 2007 21:06:18 -0800
+	id S1752069AbXCXFOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 01:14:15 -0400
+Date: Fri, 23 Mar 2007 21:14:10 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Larry Finger <larry.finger@lwfinger.net>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       Monakhov Dmitriy <dmonakhov@openvz.org>
-Subject: Re: 2.6.21-rc4-mm1
-Message-Id: <20070323210618.6a41f5da.akpm@linux-foundation.org>
-In-Reply-To: <20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<1174433034.62033.16.camel@localhost>
-	<20070320223643.d8cbc3f6.akpm@linux-foundation.org>
-	<4601761F.4000302@lwfinger.net>
-	<20070321185900.GC3801@tuxdriver.com>
-	<20070321202225.GN10459@waste.org>
-	<20070321233917.0393dfd1.akpm@linux-foundation.org>
-	<20070322123508.3785fd30@gondolin.boeblingen.de.ibm.com>
-	<4602752A.5050109@lwfinger.net>
-	<20070322181019.62fe78ed@gondolin.boeblingen.de.ibm.com>
-	<4602D137.4060402@lwfinger.net>
-	<20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V4
+Message-Id: <20070323211410.35e6ba4f.akpm@linux-foundation.org>
+In-Reply-To: <4603BC6C.4010902@yahoo.com.au>
+References: <20070323062843.19502.19827.sendpatchset@schroedinger.engr.sgi.com>
+	<20070322223927.bb4caf43.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703222339560.19630@schroedinger.engr.sgi.com>
+	<20070322234848.100abb3d.akpm@linux-foundation.org>
+	<4603BC6C.4010902@yahoo.com.au>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -37,66 +30,68 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Mar 2007 11:10:29 +0100 Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+On Fri, 23 Mar 2007 22:39:24 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> On Thu, 22 Mar 2007 13:55:51 -0500,
-> Larry Finger <larry.finger@lwfinger.net> wrote:
+> Andrew Morton wrote:
 > 
-> > Cornelia Huck wrote:
-> > > On Thu, 22 Mar 2007 07:23:06 -0500,
-> > > 
-> > > This would indicate that dev_uevent had been called. But how could
-> > > kobject_uevent then return an error without moaning about an uevent()
-> > > error code? Maybe the following debug patch could shed some light on
-> > > this (all moaning is prefixed with kobject_uevent_env, so it should be
-> > > easy to spot)...
-> > 
-> > I applied the debug patch, but I don't see any error codes being returned. This time I also got the
-> > General Protection Faults. An excerpt of the log is attached.
+> > but it crashes early in the page allocator (i386) and I don't see why.  It
+> > makes me wonder if we have a use-after-free which is hidden by the presence
+> > of the quicklist buffering or something.
 > 
-> Hm, I think I have an idea about what happened.
-> 
-> The firmware class tried to suppress the first KOBJ_ADD uevent by
-> returning -ENODEV in firmware_uevent if FW_STATUS_READY was not set.
-> This only worked as long as the return code of kobject_uevent was not
-> checked in device_add. hack-to-make-wireless-work.patch made that first
-> uevent return successfully, but this possible triggered some udev rule
-> too early, leading to firmware load failures.
-> 
-> The following (completely untested) patch uses uevent_suppress to stop
-> the uevent from being generated during device_add. Does this work for
-> you?
-> 
-> ---
->  drivers/base/firmware_class.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- linux-2.6.orig/drivers/base/firmware_class.c
-> +++ linux-2.6/drivers/base/firmware_class.c
-> @@ -333,6 +333,7 @@ static int fw_register_device(struct dev
->  	f_dev->parent = device;
->  	f_dev->class = &firmware_class;
->  	dev_set_drvdata(f_dev, fw_priv);
-> +	f_dev->uevent_suppress = 1;
->  	retval = device_register(f_dev);
->  	if (retval) {
->  		printk(KERN_ERR "%s: device_register failed\n",
-> @@ -385,6 +386,7 @@ static int fw_setup_device(struct firmwa
->                  set_bit(FW_STATUS_READY, &fw_priv->status);
->          else
->                  set_bit(FW_STATUS_READY_NOHOTPLUG, &fw_priv->status);
-> +	f_dev->uevent_suppress = 0;
->  	*dev_p = f_dev;
->  	goto out;
+> Does CONFIG_DEBUG_PAGEALLOC catch it?
 
-hm.
+It'll be a while before I can get onto doing anything with this.
+I do have an oops trace:
 
-Would I be right in guessing that this was all triggered by
-uevent-improve-error-checking-and-handling.patch?
 
-If so, do you think I should labour on with
-uevent-improve-error-checking-and-handling.patch plus your fix, or should I
-drop the lot?  (I'm inclined toward the latter, but I'm still not
-sure which patch(es) need to be dropped).
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: recovery complete.
+EXT3-fs: mounted filesystem with ordered data mode.
+VFS: Mounted root (ext3 filesystem) readonly.
+Freeing unused kernel memory: 296k freed
+Write protecting the kernel read-only data: 921k
+BUG: unable to handle kernel paging request at virtual address 00100104
+ printing eip:
+c015b676
+*pde = 00000000
+Oops: 0002 [#1]
+SMP 
+Modules linked in:
+CPU:    1
+EIP:    0060:[<c015b676>]    Not tainted VLI
+EFLAGS: 00010002   (2.6.21-rc4 #6)
+EIP is at get_page_from_freelist+0x166/0x3d0
+eax: c1b110bc   ebx: 00000001   ecx: 00100100   edx: 00200200
+esi: c1b11090   edi: c04cc500   ebp: f67d3b88   esp: f67d3b34
+ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+Process default.hotplug (pid: 872, ti=f67d2000 task=f6748030 task.ti=f67d2000)
+Stack: 00000001 00000044 c067eae8 00000001 00000001 00000000 c04cc6c0 c04cc4a0 
+       00000001 00000000 000284d0 c04ccb78 00000286 00000001 00000000 f67b6000 
+       00000000 00000001 c04cc4a0 f6748030 000084d0 f67d3bcc c015b92e 00000044 
+Call Trace:
+ [<c0103e6a>] show_trace_log_lvl+0x1a/0x30
+ [<c0103f29>] show_stack_log_lvl+0xa9/0xd0
+ [<c0104139>] show_registers+0x1e9/0x2f0
+ [<c0104355>] die+0x115/0x250
+ [<c011561e>] do_page_fault+0x27e/0x630
+ [<c03d5f64>] error_code+0x7c/0x84
+ [<c015b92e>] __alloc_pages+0x4e/0x2f0
+ [<c0114c84>] pte_alloc_one+0x14/0x20
+ [<c0163d1b>] __pte_alloc+0x1b/0xa0
+ [<c016459d>] __handle_mm_fault+0x7fd/0x940
+ [<c01154b9>] do_page_fault+0x119/0x630
+ [<c03d5f64>] error_code+0x7c/0x84
+ [<c01a5e8f>] padzero+0x1f/0x30
+ [<c01a744e>] load_elf_binary+0x76e/0x1a80
+ [<c017c2c7>] search_binary_handler+0x97/0x220
+ [<c01a5886>] load_script+0x1d6/0x220
+ [<c017c2c7>] search_binary_handler+0x97/0x220
+ [<c017dd0f>] do_execve+0x14f/0x200
+ [<c010140e>] sys_execve+0x2e/0x80
+ [<c0102dcc>] sysenter_past_esp+0x5d/0x99
+ =======================
+Code: 06 8b 4d c0 8b 7d c8 8d 04 81 8d 44 82 20 01 c7 9c 8f 45 dc fa e8 4b f4 fd ff 8b 07 85 c0 74 7b 8b 47 0c 8b 08 8d 70 d4 8b 50 04 <89> 51 04 89 0a c7 40 04 00 02 20 00 c7 00 00 01 10 00 ff 0f 8b 
+EIP: [<c015b676>] get_page_from_freelist+0x166/0x3d0 SS:ESP 0068:f67d3b34
 
-Thanks.
+Not pretty.  That was bare mainline+christoph's patches+that patch which I sent.
+Using http://userweb.kernel.org/~akpm/config-vmm.txt
