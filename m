@@ -1,74 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751840AbXCXN7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750930AbXCXOGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751840AbXCXN7X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 09:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXCXN7X
+	id S1750930AbXCXOGg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 10:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXCXOGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 09:59:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:30437 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751840AbXCXN7W (ORCPT
+	Sat, 24 Mar 2007 10:06:36 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:29173 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750930AbXCXOGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 09:59:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a1SRge7Vmd4YI9efXebh8JAS+3ywTNl6bvdwpyN86muQHjEbPrFXg53XpZpJwgjP32HQnSrxJIvjTb+Tt5fEBiYD2uu4I9pp77meOJ7IjphkRp0omAGJXVkwPI2lDehfcpfRfoED6CiaBTPLzyzJWtcptJTNEKt8Di57pMRE6Pc=
-Message-ID: <6bffcb0e0703240659r2e5a5875i746ccbbd28d0045c@mail.gmail.com>
-Date: Sat, 24 Mar 2007 14:59:19 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
-Cc: "Adrian Bunk" <bunk@stusta.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1174680500.10840.346.camel@localhost.localdomain>
+	Sat, 24 Mar 2007 10:06:34 -0400
+Message-ID: <46053091.9090307@ru.mvista.com>
+Date: Sat, 24 Mar 2007 17:07:13 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
+Subject: Re: [PATCH 3/3] Use correct IDE error recovery
+References: <20070221012304.GC1777@freefall.freebsd.org> <200703072216.08295.bzolnier@gmail.com> <B2D4536E-D449-4D10-B745-30D25CAC40A4@freebsd.org> <200703240053.42845.bzolnier@gmail.com>
+In-Reply-To: <200703240053.42845.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323185028.GR752@stusta.de>
-	 <1174680500.10840.346.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello.
 
-On 23/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
-> > Subject    : soft lockup detected on CPU#0
-> > References : http://lkml.org/lkml/2007/3/3/152
-> > Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-> > Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> >              Ingo Molnar <mingo@elte.hu>
-> > Status     : unknown
->
-> Michal,
->
-> any news on that one ?
->
-> You said the same problem exists in 2.6.20.1. Has this been resolved in
-> 2.6.20.2/3
+Bartlomiej Zolnierkiewicz wrote:
 
-Yes, I tried 2.6.20.4 and it works fine.
+> Since I think that it's worth to have it in 2.6.21-final and respin didn't
+> happen I did the required changes myself (it also turned out that I missed
+> few things during initial review), then applied the patch...
 
->
-> Thanks,
->
->         tglx
->
->
->
+> Please let my know whether you are fine with my changes, thanks.
 
-Regards,
-Michal
+> [PATCH] ide: use correct IDE error recovery
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+> From: Suleiman Souhlal <suleiman@google.com>
+
+> IDE error recovery is using IDLE IMMEDIATE if the drive is busy or has DRQ set.
+> This violates the ATA spec (can only send IDLE IMMEDIATE when drive is not
+> busy) and really hoses up some drives (modern drives will not be able to
+
+    I wonder if that really ever worked...
+
+> recover using this error handling).  The correct thing to do is issue a SRST
+> followed by a SET FEATURES command.  This is what Western Digital recommends
+> for error recovery and what Western Digital says Windows does.  It also does
+> not violate the ATA spec as far as I can tell.
+
+    The patch even does things *not* required by the spec. :-)
+
+> Index: b/drivers/ide/ide-io.c
+> ===================================================================
+> --- a/drivers/ide/ide-io.c
+> +++ b/drivers/ide/ide-io.c
+> @@ -519,21 +519,24 @@ static ide_startstop_t ide_ata_error(ide
+>  	if ((stat & DRQ_STAT) && rq_data_dir(rq) == READ && hwif->err_stops_fifo == 0)
+>  		try_to_flush_leftover_data(drive);
+>  
+> +	if (rq->errors >= ERROR_MAX || blk_noretry_request(rq)) {
+> +		ide_kill_rq(drive, rq);
+> +		return ide_stopped;
+> +	}
+> +
+>  	if (hwif->INB(IDE_STATUS_REG) & (BUSY_STAT|DRQ_STAT))
+> -		/* force an abort */
+> -		hwif->OUTB(WIN_IDLEIMMEDIATE, IDE_COMMAND_REG);
+> +		rq->errors |= ERROR_RESET;
+>  
+> -	if (rq->errors >= ERROR_MAX || blk_noretry_request(rq))
+> -		ide_kill_rq(drive, rq);
+> -	else {
+> -		if ((rq->errors & ERROR_RESET) == ERROR_RESET) {
+> -			++rq->errors;
+> -			return ide_do_reset(drive);
+> -		}
+> -		if ((rq->errors & ERROR_RECAL) == ERROR_RECAL)
+> -			drive->special.b.recalibrate = 1;
+> +	if ((rq->errors & ERROR_RESET) == ERROR_RESET) {
+>  		++rq->errors;
+> +		return ide_do_reset(drive);
+>  	}
+> +
+> +	if ((rq->errors & ERROR_RECAL) == ERROR_RECAL)
+
+    Hm, is there any need for ==?
+
+> +		drive->special.b.recalibrate = 1;
+> +
+> +	++rq->errors;
+> +
+>  	return ide_stopped;
+>  }
+>  
+> @@ -1025,6 +1028,13 @@ static ide_startstop_t start_request (id
+>  	if (!drive->special.all) {
+>  		ide_driver_t *drv;
+>  
+> +		/*
+> +		 * We reset the drive so we need to issue a SETFEATURES.
+> +		 * Do it _after_ do_special() restored device parameters.
+> +		 */
+> +		if (drive->current_speed == 0xff)
+> +			ide_config_drive_speed(drive, drive->desired_speed);
+> +
+
+    Hmm, IIRC, drive's UltraDMA mode shall *not* be cleared by reset, 
+therefore there's no need to restore it.
+
+>  		if (rq->cmd_type == REQ_TYPE_ATA_CMD ||
+>  		    rq->cmd_type == REQ_TYPE_ATA_TASK ||
+>  		    rq->cmd_type == REQ_TYPE_ATA_TASKFILE)
+> Index: b/drivers/ide/ide-iops.c
+> ===================================================================
+> --- a/drivers/ide/ide-iops.c
+> +++ b/drivers/ide/ide-iops.c
+> @@ -1094,6 +1094,9 @@ static void pre_reset(ide_drive_t *drive
+>  	if (HWIF(drive)->pre_reset != NULL)
+>  		HWIF(drive)->pre_reset(drive);
+>  
+> +	if (drive->current_speed != 0xff)
+> +		drive->desired_speed = drive->current_speed;
+> +	drive->current_speed = 0xff;
+>  }
+>  /*
+> Index: b/include/linux/ide.h
+> ===================================================================
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> @@ -615,6 +615,7 @@ typedef struct ide_drive_s {
+>          u8	init_speed;	/* transfer rate set at boot */
+>          u8	pio_speed;      /* unused by core, used by some drivers for fallback from DMA */
+>          u8	current_speed;	/* current transfer rate set */
+> +	u8	desired_speed;	/* desired transfer rate set */
+
+    Oh, more of that *_speed crap. :-)
+
+>          u8	dn;		/* now wide spread use */
+>          u8	wcache;		/* status of write cache */
+>  	u8	acoustic;	/* acoustic management */
+
+MBR, Sergei
