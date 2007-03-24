@@ -1,165 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992544AbXCXHcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992663AbXCXHcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992544AbXCXHcB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 03:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965352AbXCXHbi
+	id S2992663AbXCXHcC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 03:32:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965225AbXCXHbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 03:31:38 -0400
-Received: from peabody.ximian.com ([130.57.169.10]:36814 "EHLO
+	Sat, 24 Mar 2007 03:31:40 -0400
+Received: from peabody.ximian.com ([130.57.169.10]:36816 "EHLO
 	peabody.ximian.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965225AbXCXHb3 (ORCPT
+	with ESMTP id S965320AbXCXHbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 03:31:29 -0400
-Subject: [RFC][PATCH 2/3] export time until next timer interrupt using NOHZ
+	Sat, 24 Mar 2007 03:31:32 -0400
+Subject: [RFC][PATCH 3/3] add the 'menu' cpuidle governor
 From: Adam Belay <abelay@novell.com>
 To: Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
        Shaohua Li <shaohua.li@intel.com>, Pallipadi@vger.kernel.org,
        Venkatesh <venkatesh.pallipadi@intel.com>, linux-acpi@vger.kernel.org
 Content-Type: text/plain
-Date: Sat, 24 Mar 2007 03:47:03 -0400
-Message-Id: <1174722423.32554.83.camel@localhost.localdomain>
+Date: Sat, 24 Mar 2007 03:47:07 -0400
+Message-Id: <1174722427.32554.84.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch exposes information about the time remaining until the next
-timer interrupt expires by utilizing the dynticks infrastructure.  It
-also modifies the main idle loop to allow dynticks to handle
-non-interrupt break events (e.g. DMA).  Finally, it exposes sleep ticks
-information to external code.  Thomas Gleixner is responsible for much
-of the code in this patch.  However, I've made some additional changes,
-so I'm probably responsible if there are any bugs or oversights :)
+This patch adds the 'menu' governor, as was described in my first email.
 
 Thanks,
 Adam
 
- arch/i386/kernel/process.c |    3 ++-
- include/linux/tick.h       |   10 ++++++++++
- kernel/softirq.c           |    5 -----
- kernel/time/tick-sched.c   |   24 ++++++++++++++++++++++++
- 4 files changed, 36 insertions(+), 6 deletions(-)
+ Kconfig            |   11 +++
+ governors/Makefile |    1
+ governors/menu.c   |  152 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 164 insertions(+)
 
 
-diff -urN a/arch/i386/kernel/process.c b/arch/i386/kernel/process.c
---- a/arch/i386/kernel/process.c	2007-03-23 23:02:16.000000000 -0400
-+++ b/arch/i386/kernel/process.c	2007-03-24 01:48:33.000000000 -0400
-@@ -174,13 +174,14 @@
+diff -urN a/drivers/cpuidle/governors/Makefile b/drivers/cpuidle/governors/Makefile
+--- a/drivers/cpuidle/governors/Makefile	2007-03-23 23:09:45.000000000 -0400
++++ b/drivers/cpuidle/governors/Makefile	2007-03-24 02:10:29.000000000 -0400
+@@ -3,3 +3,4 @@
+ #
  
- 	/* endless idle loop with no priority at all */
- 	while (1) {
--		tick_nohz_stop_sched_tick();
- 		while (!need_resched()) {
- 			void (*idle)(void);
- 
- 			if (__get_cpu_var(cpu_idle_state))
- 				__get_cpu_var(cpu_idle_state) = 0;
- 
-+			tick_nohz_stop_sched_tick();
-+
- 			rmb();
- 			idle = pm_idle;
- 
-diff -urN a/include/linux/tick.h b/include/linux/tick.h
---- a/include/linux/tick.h	2007-03-23 23:03:03.000000000 -0400
-+++ b/include/linux/tick.h	2007-03-24 01:39:03.000000000 -0400
-@@ -40,6 +40,7 @@
-  * @idle_sleeps:	Number of idle calls, where the sched tick was stopped
-  * @idle_entrytime:	Time when the idle call was entered
-  * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
-+ * @sleep_length:	Duration of the current idle sleep
-  */
- struct tick_sched {
- 	struct hrtimer			sched_timer;
-@@ -52,6 +53,7 @@
- 	unsigned long			idle_sleeps;
- 	ktime_t				idle_entrytime;
- 	ktime_t				idle_sleeptime;
-+	ktime_t				sleep_length;
- 	unsigned long			last_jiffies;
- 	unsigned long			next_jiffies;
- 	ktime_t				idle_expires;
-@@ -100,10 +102,18 @@
- extern void tick_nohz_stop_sched_tick(void);
- extern void tick_nohz_restart_sched_tick(void);
- extern void tick_nohz_update_jiffies(void);
-+extern ktime_t tick_nohz_get_sleep_length(void);
-+extern unsigned long tick_nohz_get_idle_jiffies(void);
- # else
- static inline void tick_nohz_stop_sched_tick(void) { }
- static inline void tick_nohz_restart_sched_tick(void) { }
- static inline void tick_nohz_update_jiffies(void) { }
-+static inline ktime_t tick_nohz_get_sleep_length(void)
-+{
-+	ktime_t len = { .tv64 = NSEC_PER_SEC/HZ };
-+
-+	return len;
-+}
- # endif /* !NO_HZ */
- 
- #endif
-diff -urN a/kernel/softirq.c b/kernel/softirq.c
---- a/kernel/softirq.c	2007-03-23 23:03:03.000000000 -0400
-+++ b/kernel/softirq.c	2007-03-24 01:54:11.000000000 -0400
-@@ -303,11 +303,6 @@
- 	if (!in_interrupt() && local_softirq_pending())
- 		invoke_softirq();
- 
--#ifdef CONFIG_NO_HZ
--	/* Make sure that timer wheel updates are propagated */
--	if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
--		tick_nohz_stop_sched_tick();
--#endif
- 	preempt_enable_no_resched();
- }
- 
-diff -urN a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
---- a/kernel/time/tick-sched.c	2007-03-23 23:03:03.000000000 -0400
-+++ b/kernel/time/tick-sched.c	2007-03-24 01:44:55.000000000 -0400
-@@ -153,6 +153,7 @@
- 	unsigned long seq, last_jiffies, next_jiffies, delta_jiffies, flags;
- 	struct tick_sched *ts;
- 	ktime_t last_update, expires, now, delta;
-+	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
- 	int cpu;
- 
- 	local_irq_save(flags);
-@@ -250,11 +251,34 @@
- out:
- 	ts->next_jiffies = next_jiffies;
- 	ts->last_jiffies = last_jiffies;
-+	ts->sleep_length = ktime_sub(dev->next_event, now);
- end:
- 	local_irq_restore(flags);
- }
- 
- /**
-+ * tick_nohz_get_sleep_length - return the length of the current sleep
+ obj-$(CONFIG_CPU_IDLE_GOV_LADDER) += ladder.o
++obj-$(CONFIG_CPU_IDLE_GOV_MENU) += menu.o
+diff -urN a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+--- a/drivers/cpuidle/governors/menu.c	1969-12-31 19:00:00.000000000 -0500
++++ b/drivers/cpuidle/governors/menu.c	2007-03-23 23:51:15.000000000 -0400
+@@ -0,0 +1,152 @@
++/*
++ * menu.c - the menu idle governor
 + *
-+ * Called from power state control code with interrupts disabled
++ * Copyright (C) 2006-2007 Adam Belay <abelay@novell.com>
++ *
++ * This code is licenced under the GPL.
 + */
-+ktime_t tick_nohz_get_sleep_length(void)
-+{
-+       struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
 +
-+       return ts->sleep_length;
++#include <linux/kernel.h>
++#include <linux/cpuidle.h>
++#include <linux/latency.h>
++#include <linux/time.h>
++#include <linux/ktime.h>
++#include <linux/tick.h>
++#include <linux/hrtimer.h>
++
++#define BM_HOLDOFF	20000	/* 20 ms */
++
++struct menu_device {
++	int		last_state_idx;
++	int		deepest_bm_state;
++
++	int		break_last_us;
++	int		break_elapsed_us;
++
++	int		bm_elapsed_us;
++	int		bm_holdoff_us;
++
++	unsigned long	idle_jiffies;
++};
++
++static DEFINE_PER_CPU(struct menu_device, menu_devices);
++
++/**
++ * menu_select - selects the next idle state to enter
++ * @dev: the CPU
++ */
++static int menu_select(struct cpuidle_device *dev)
++{
++	struct menu_device *data = &__get_cpu_var(menu_devices);
++	int i, expected_us, max_state = dev->state_count;
++
++	/* discard BM history because it is sticky */
++	cpuidle_get_bm_activity();
++
++	/* determine the expected residency time */
++	expected_us = (s32) ktime_to_ns(tick_nohz_get_sleep_length()) / 1000;
++	expected_us = min(expected_us, data->break_last_us);
++
++	/* determine the maximum state compatible with current BM status */
++	if (cpuidle_get_bm_activity())
++		data->bm_elapsed_us = 0;
++	if (data->bm_elapsed_us <= data->bm_holdoff_us)
++		max_state = data->deepest_bm_state + 1;
++
++	/* find the deepest idle state that satisfies our constraints */
++	for (i = 1; i < max_state; i++) {
++		struct cpuidle_state *s = &dev->states[i];
++		if (s->target_residency > expected_us)
++			break;
++		if (s->exit_latency > system_latency_constraint())
++			break;
++	}
++
++	data->last_state_idx = i - 1;
++	data->idle_jiffies = tick_nohz_get_idle_jiffies();
++	return i - 1;
 +}
 +
 +/**
-+ * tick_nohz_get_idle_jiffies - returns the current idle jiffie count
++ * menu_reflect - attempts to guess what happened after entry
++ * @dev: the CPU
++ *
++ * NOTE: it's important to be fast here because this operation will add to
++ *       the overall exit latency.
 + */
-+unsigned long tick_nohz_get_idle_jiffies(void)
++static void menu_reflect(struct cpuidle_device *dev)
 +{
-+       struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
++	struct menu_device *data = &__get_cpu_var(menu_devices);
++	int last_idx = data->last_state_idx;
++	int measured_us = cpuidle_get_last_residency(dev);
++	struct cpuidle_state *target = &dev->states[last_idx];
 +
-+       return ts->idle_jiffies;
++	/*
++	 * Ugh, this idle state doesn't support residency measurements, so we
++	 * are basically lost in the dark.  As a compromise, assume we slept
++	 * for one full standard timer tick.  However, be aware that this
++	 * could potentially result in a suboptimal state transition.
++	 */
++	if (!(target->flags & CPUIDLE_FLAG_TIME_VALID))
++		measured_us = USEC_PER_SEC / HZ;
++
++	data->bm_elapsed_us += measured_us;
++	data->break_elapsed_us += measured_us;
++
++	/*
++	 * Did something other than the timer interrupt cause the break event?
++	 */
++	if (tick_nohz_get_idle_jiffies() == data->idle_jiffies) {
++		data->break_last_us = data->break_elapsed_us;
++		data->break_elapsed_us = 0;
++	}
 +}
 +
 +/**
-  * nohz_restart_sched_tick - restart the idle tick from the idle task
-  *
-  * Restart the idle tick when the CPU is woken up from idle
++ * menu_scan_device - scans a CPU's states and does setup
++ * @dev: the CPU
++ */
++static void menu_scan_device(struct cpuidle_device *dev)
++{
++	struct menu_device *data = &per_cpu(menu_devices, dev->cpu);
++	int i;
++
++	data->last_state_idx = 0;
++	data->break_last_us = 0;
++	data->break_elapsed_us = 0;
++	data->bm_elapsed_us = 0;
++	data->bm_holdoff_us = BM_HOLDOFF;
++
++	for (i = 1; i < dev->state_count; i++)
++		if (dev->states[i].flags & CPUIDLE_FLAG_CHECK_BM)
++			break;
++	data->deepest_bm_state = i - 1;
++}
++
++struct cpuidle_governor menu_governor = {
++	.name =		"menu",
++	.scan =		menu_scan_device,
++	.select =	menu_select,
++	.reflect =	menu_reflect,
++	.owner =	THIS_MODULE,
++};
++
++/**
++ * init_menu - initializes the governor
++ */
++static int __init init_menu(void)
++{
++	return cpuidle_register_governor(&menu_governor);
++}
++
++/**
++ * exit_menu - exits the governor
++ */
++static void __exit exit_menu(void)
++{
++	cpuidle_unregister_governor(&menu_governor);
++}
++
++MODULE_LICENSE("GPL");
++module_init(init_menu);
++module_exit(exit_menu);
+diff -urN a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+--- a/drivers/cpuidle/Kconfig	2007-03-23 23:09:45.000000000 -0400
++++ b/drivers/cpuidle/Kconfig	2007-03-24 02:18:19.000000000 -0400
+@@ -23,6 +23,17 @@
+ 	  states using residency time and bus master activity as metrics.  This
+ 	  algorithm was originally introduced in the old ACPI processor driver.
+ 
++config CPU_IDLE_GOV_MENU
++	tristate "'menu' governor"
++	depends on CPU_IDLE && NO_HZ
++	default y
++	help
++	  This cpuidle governor evaluates all available states and chooses the
++	  deepest state that meets all of the following constraints: BM activity,
++	  expected time until next timer interrupt, and last break event time
++	  delta.  It is designed to minimize power consumption.  Currently
++	  dynticks is required.
++
+ endif	# CPU_IDLE
+ 
+ endmenu
 
 
