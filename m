@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902AbXCXFnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbXCXGMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752902AbXCXFnR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 01:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbXCXFnQ
+	id S1753461AbXCXGMn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 02:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXCXGMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 01:43:16 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55765 "EHLO smtp.osdl.org"
+	Sat, 24 Mar 2007 02:12:43 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56561 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752900AbXCXFnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 01:43:15 -0400
-Date: Fri, 23 Mar 2007 21:42:35 -0800
+	id S1753461AbXCXGMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 02:12:42 -0400
+Date: Fri, 23 Mar 2007 22:12:25 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Herbert Poetzl <herbert@13thfloor.at>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Dave Hansen <hansendc@us.ibm.com>
-Subject: Re: Linux-VServer example results for sharing vs. separate mappings
- ...
-Message-Id: <20070323214235.94a3e899.akpm@linux-foundation.org>
-In-Reply-To: <20070323193000.GB17007@MAIL.13thfloor.at>
-References: <20070323193000.GB17007@MAIL.13thfloor.at>
+To: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+Cc: "Ken Chen" <kenchen@google.com>, "Adam Litke" <agl@us.ibm.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "Christoph Hellwig" <hch@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] rfc: introduce /dev/hugetlb
+Message-Id: <20070323221225.bdadae16.akpm@linux-foundation.org>
+In-Reply-To: <29495f1d0703232232o3e436c62lddccc82c4dd17b51@mail.gmail.com>
+References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
+	<20070323205810.3860886d.akpm@linux-foundation.org>
+	<29495f1d0703232232o3e436c62lddccc82c4dd17b51@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,60 +30,74 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Mar 2007 20:30:00 +0100 Herbert Poetzl <herbert@13thfloor.at> wrote:
+On Fri, 23 Mar 2007 22:32:31 -0700 "Nish Aravamudan" <nish.aravamudan@gmail.com> wrote:
 
+> > Probably the kernel team should be maintaining, via existing processes, a
+> > separate libkernel project, to fix these distributional problems.  The
+> > advantage in this case is of course that our new hugetlb functionality
+> > would be available to people on 2.6.18 kernels, not only on 2.6.22 and
+> > later.
 > 
-> Hi Eric!
-> Hi Folks!
-> 
-> here is a real world example result from one of my tests
-> regarding the benefit of sharing over separate memory
-> 
-> the setup is quite simple, a typical machine used by
-> providers all over the world, a dual Pentium D 3.2GHz
-> with 4GB of memory and a single 160GB SATA disk running
-> a Linux-VServer kernel (2.6.19.7-vs2.2.0-rc18)
-> 
-> the Guest systems used are Mandriva 2007 guests with
-> syslog, crond, sshd, apache, postfix and postgresql
-> installed and running (all in all 17 processes per guest)
-> 
-> the disk space used by one guests is roughly 148MB
-> 
-> in addition to that, a normal host system is running
-> with a few daemons (like sshd, httpd, postfix ...)
-> 
-> 
-> the first test setup is starting 200 of those guests
-> one after the other and measuring the memory usage
-> before and after the guest did start, as well as 
-> recording the time used to start them ...
-> 
-> this is done right after the machine was rebooted, in
-> one test with 200 separate guests (i.e. 200 x 148MB) 
-> and in a second run with 200 unified guests (which
-> means roughly 138MB of shared files)
+> That sounds like a good idea. For this hugetlb stuff, though, I plan
+> on simply taking advantage of /dev/hugetlb (or whatever it is called)
+> if it exists, and otherwise falling back to hugetlbfs (which
+> admittedly requires some admin intervention (mounting hugetlbfs,
+> permissions, and such), but then again, so does using hugepages in the
+> first place (either at boot-time or via /proc/sys/vm/nr_hugepages)).
+> Is that what you mean by available to 2.6.18 (falling back to
+> hugetlbfs) and 2.6.22 (using the chardev)?
 
-Please define your terms.  What is a "separated guest", what is a "unified
-guest" and how do they differ?
+My point is:
 
-If a "separated" guest is something in which separate guests will use
-distinct physical pages to cache the contents of /etc/passwd (ie: a separate
-filesystem per guest) then I don't think that's interesting information,
-frankly.
+a) Ken observes that obtaining private hugetlb memory via hugetlbfs
+   involves "fuss".
 
-Because nobody (afaik) is proposing that pagecache be duplicated across
-instances in this fashion.
+b) the libhugetlbfs maintainers then go off and implement a no-fuss way of
+   doing this.
 
-We obviously must share pagecache across instances - if we didn't want to
-do that then we could do something completely dumb such as use
-xen/kvm/vmware/etc ;)
+c) voila, people can now use the new no-fuss interface on older kernels.
+   Whereas Ken's kernel patch would require that they upgrade to a new
+   kernel.
 
-The issue with pagecache (afaik) is that if we use containers based on
-physical pages (an approach which is much preferred by myself) then we can
-get in a situation where a pagecache page is physically in container A, is
-not actually used by any process in container A, but is being releatedly
-referenced by processes which are in other containers and hence unjustly
-consumes resources in container A.   How significant a problem this is likely
-to be I do not know.  And there are perhaps things which we can do about it.
+It wasn't a vary big point ;) I'm assuming that users find that upgrading
+libhugetlb is less costly than upgrading their kernel.
+
+
+> > Am I wrong?
+> 
+> I don't think so. And hugepages are hard enough to use (and with
+> enough architecture specific quirks) that it was worth creating
+> libhugetlbfs. While having some nice features like segment remapping
+> and overriding malloc, it is also meant to provide an API that is
+> useful for general use of hugepages: we currently export
+> gethugepagesize(), hugetlbfs_test_path() (verify a path is a valid
+> hugetlbfs mount), hugetlbfs_find_path() (gives you the hugetlbfs
+> mount) and hugetlbfs_unlinked_fd() (gives you an unlinked file in the
+> hugetlbfs mount).
+> 
+> Then again, maybe I'm missing some much bigger picture here and you
+> meant something completely different -- sorry for the noise in that
+> case :/
+
+You got it.
+
+The fact that a kernel interface is "hard to use" really shouldn't be an
+issue for us, because that hardness can be addressed in libraries.  Kernel
+interfaces should be good, and complete, and maintainable, and etcetera. 
+If that means that they end up hard to use, well, that's not necessarily a
+bad thing.  I'm not sure that in all cases we want to be optimising for
+ease-of-use just because libraries-are-hard.
+
+
+But for non-programming reasons, we're just not there yet: people want to
+program direct to the kernel interfaces simply because of the
+distribution/coordination problems with libraries.  It would be nice to fix
+that problem.
+
+
+For a counter-example, look at futexes.  Their kernel interfaces are
+*damned* hard to use.  But practically nobody is affected by that because
+glibc solved the problem and programmers just use the pthread API.
+
+More of this, please ;)
 
