@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752253AbXCXMEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750874AbXCXMoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752253AbXCXMEv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 08:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbXCXMEv
+	id S1750874AbXCXMoY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 08:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbXCXMoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 08:04:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:51890 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbXCXMEt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 08:04:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a3iRF/n5zOU1hhNeMX+8LZyYlkTbCA32eP/b42pykdQPe/pybyPZ4JTEdakE2w50Qd+MAquY7Z+vi6z8MC06pC0aZxB6f5VVwcxD+FYtOv8YHBIRyx45Dafn4DEs7IIFQxcLriyhZ/9djXEhpdhcQoH72atEfFqdrDsa6I3Li6E=
-Message-ID: <1a297b360703240504u2c9e705m5601d150f15e3c45@mail.gmail.com>
-Date: Sat, 24 Mar 2007 16:04:46 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [v4l-dvb-maintainer] [PATCH] DVB: Delete unused header file linux/dvb/version.h.
-Cc: "Marcel Siegert" <mws@linuxtv.org>, "Andrew Morton" <akpm@osdl.org>,
-       v4l-dvb-maintainer@linuxtv.org,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1174665764.1158.241.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Mar 2007 08:44:24 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:44009 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750874AbXCXMoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 08:44:23 -0400
+Date: Sat, 24 Mar 2007 18:21:31 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: menage@google.com
+Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 3/7] containers (V7): Add generic multi-subsystem API to containers
+Message-ID: <20070324125131.GA9475@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.485337000@menage.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0703231130480.30201@CPE00045a9c397f-CM001225dbafb6>
-	 <200703231647.53780.mws@linuxtv.org>
-	 <1174665764.1158.241.camel@laptopd505.fenrus.org>
+In-Reply-To: <20070212085104.485337000@menage.corp.google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/23/07, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Fri, 2007-03-23 at 16:47 +0100, Marcel Siegert wrote:
-> > On Friday 23 March 2007, Robert P. J. Day wrote:
-> > >
-> > > Delete the unreferenced header file include/linux/dvb/version.h.
-> > >
-> > > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> > >
-> > NACK
-> > this header is unreferenced in kernel, but used for applications that compile for userspace
-> > to determine the api version.
->
->
-> btw that is something extremely evil to do. Either you have varying apis
-> between kernels (which is naughty, but I suppose you can go up in
-> capabilities) or it's fully static.
->
+On Mon, Feb 12, 2007 at 12:15:24AM -0800, menage@google.com wrote:
+> +static int attach_task(struct container *cont, struct task_struct *tsk)
+>  {
 
+[snip]
 
-There are cases where we need an API update since newer systems do show up.
-In such a case, the only way is to provide backward compatibility
-while adding in newer stuff.
+> +	for_each_subsys(h, ss) {
+> +		if (ss->can_attach) {
+> +			retval = ss->can_attach(ss, cont, tsk);
+> +			if (retval) {
+> +				put_task_struct(tsk);
 
-Currently we use the version major/minor for the userspace to identify
-the in kernel API, while the userspace apps can remain binary
-compatible
+We don't need this put_task_struct(), since our caller
+attach_task_by_pid() would do it for us.
 
+> +				return retval;
+> +			}
+> +		}
+>  	}
+> -}
+> 
+> +	/* Locate or allocate a new container_group for this task,
+> +	 * based on its final set of containers */
+> + 	oldcg = tsk->containers;
+> +	newcg = find_container_group(oldcg, cont);
+> +	if (!newcg) {
+> +		put_task_struct(tsk);
 
+Ditto
 
+> +		return -ENOMEM;
+> +	}
+
+-- 
 Regards,
-Manu
+vatsa
