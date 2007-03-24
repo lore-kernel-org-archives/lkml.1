@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932567AbXCXWd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbXCXWpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932567AbXCXWd1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 18:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932869AbXCXWd1
+	id S932899AbXCXWpK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 18:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXCXWpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 18:33:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57044 "EHLO mx2.mail.elte.hu"
+	Sat, 24 Mar 2007 18:45:10 -0400
+Received: from waste.org ([66.93.16.53]:45061 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932567AbXCXWd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 18:33:26 -0400
-Date: Sat, 24 Mar 2007 23:32:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: tglx@linutronix.de, Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] i386: Prevent early access to TSC to avoid crash on TSCless systems
-Message-ID: <20070324223243.GA30060@elte.hu>
-References: <1174773769.10840.450.camel@localhost.localdomain> <3d8471ca0703241530x79149b20sfb146fd77188c342@mail.gmail.com>
+	id S932869AbXCXWpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 18:45:08 -0400
+Date: Sat, 24 Mar 2007 17:32:28 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       Monakhov Dmitriy <dmonakhov@openvz.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070324223228.GP10459@waste.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <1174433034.62033.16.camel@localhost> <20070320223643.d8cbc3f6.akpm@linux-foundation.org> <4601761F.4000302@lwfinger.net> <20070321185900.GC3801@tuxdriver.com> <20070321202225.GN10459@waste.org> <20070321233917.0393dfd1.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3d8471ca0703241530x79149b20sfb146fd77188c342@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070321233917.0393dfd1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
-
-> >+static int tsc_enabled;
+On Wed, Mar 21, 2007 at 11:39:17PM -0800, Andrew Morton wrote:
+> On Wed, 21 Mar 2007 15:22:25 -0500 Matt Mackall <mpm@selenic.com> wrote:
 > 
-> So, now we have tsc_disable, tsc_enabled and tsc_unstable. I can 
-> understand the latter, but this lacks orthogonality IMHO.
+> > With the latest -mm, I'm now getting this:
+> > 
+> > Mar 21 15:06:52 cinder kernel: ipw2200: Detected Intel PRO/Wireless
+> > 2200BG Network Connection
+> > Mar 21 15:06:52 cinder kernel: firmware_loading_store: unexpected
+> > value (0)
+> > Mar 21 15:06:52 cinder kernel: ipw2200: ipw2200-bss.fw
+> > request_firmware failed:
+> > Reason -2
+> > Mar 21 15:06:52 cinder kernel: ipw2200: Unable to load firmware: -2
+> > Mar 21 15:06:52 cinder kernel: ipw2200: failed to register network
+> > device
+> 
+> The firmware loading bug is caused by
+> driver-core-handles-kobject_uevent-failure-while-device_add.patch
+> 
+> I've uploaded a revert patch to
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/hot-fixes/
 
-tsc_disable should be renamed to tsc_disable_override or so, to signal 
-that it's only the mirror of the 'notsc' flag the user passed in over 
-the boot line.
+For the record, with the following patches:
 
-	Ingo
+# hotfixes
+mm-debug-check-for-the-fault-vs-invalidate-race.patch
+mm-fix-fault-vs-invalidate-race-for-linear-mappings-fix-2.patch
+mm-fix-fault-vs-invalidate-race-for-linear-mappings-fix.patch
+revert-driver-core-handles-kobject_uevent-failure-while-device_add.patch
+tty-in-tiocsctty-when-we-steal-a-tty-hang-it-up-fix.patch
+
+...I just had a boot where firmware loading failed again. rmmod+insmod
+fixed it.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
