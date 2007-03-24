@@ -1,98 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXCXO1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbXCXO5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751998AbXCXO1u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 10:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbXCXO1t
+	id S1752169AbXCXO5w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 10:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbXCXO5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 10:27:49 -0400
-Received: from smtp3.nextra.sk ([195.168.1.142]:4137 "EHLO mailhub3.nextra.sk"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751998AbXCXO1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 10:27:49 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: daniel.ritz@gmx.ch
-Subject: Invert X or Y axis options for usbtouchscreen
-Date: Sat, 24 Mar 2007 15:27:39 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_bVTBGbIIIOayUIy"
-Message-Id: <200703241527.39792.linux@rainbow-software.org>
+	Sat, 24 Mar 2007 10:57:51 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:45540 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbXCXO5u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 10:57:50 -0400
+Date: Sat, 24 Mar 2007 20:35:05 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: menage@google.com
+Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container system abstracted from cpusets code
+Message-ID: <20070324150505.GB9475@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.130746000@menage.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070212085104.130746000@menage.corp.google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_bVTBGbIIIOayUIy
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, Feb 12, 2007 at 12:15:22AM -0800, menage@google.com wrote:
+> +static int attach_task(struct container *cont, char *pidbuf, char **ppathbuf)
+> +{
+> +	pid_t pid;
+> +	struct task_struct *tsk;
+> +	struct container *oldcont;
+> +	int retval;
+> +
+> +	if (sscanf(pidbuf, "%d", &pid) != 1)
+> +		return -EIO;
+> +
+> +	if (pid) {
+> +		read_lock(&tasklist_lock);
+> +
+> +		tsk = find_task_by_pid(pid);
+> +		if (!tsk || tsk->flags & PF_EXITING) {
 
-Hello,
-this patch adds support for inverting X or Y axis (or both) to the 
-usbtouchscreen driver. Invert Y is needed (together with swap XY) for 
-LeadingTouch screens (at least for some of them).
+This is probably carrying over code from cpuset.c, but :
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+/me thinks that there is a ugly race here with 'tsk' exiting.
+What happens if the tsk is marked PF_EXITING just after this check?
+If that happens, then:
+
+> +			read_unlock(&tasklist_lock);
+> +			return -ESRCH;
+> +		}
+> +
+> +		get_task_struct(tsk);
+> +		read_unlock(&tasklist_lock);
+> +
+> +		if ((current->euid) && (current->euid != tsk->uid)
+> +		    && (current->euid != tsk->suid)) {
+> +			put_task_struct(tsk);
+> +			return -EACCES;
+> +		}
+> +	} else {
+> +		tsk = current;
+> +		get_task_struct(tsk);
+> +	}
+> +
+> +	retval = security_task_setscheduler(tsk, 0, NULL);
+> +	if (retval) {
+> +		put_task_struct(tsk);
+> +		return retval;
+> +	}
+> +
+> +	mutex_lock(&callback_mutex);
+> +
+> +	task_lock(tsk);
+> +	oldcont = tsk->container;
+> +	if (!oldcont) {
+> +		task_unlock(tsk);
+> +		mutex_unlock(&callback_mutex);
+> +		put_task_struct(tsk);
+> +		return -ESRCH;
+> +	}
+> +	atomic_inc(&cont->count);
+> +	rcu_assign_pointer(tsk->container, cont);
+
+Above assignment A1 can race with below assignment A2 in container_exit() :
+
+	tsk->container = &top_container; /* the_top_container_hack - see above */
+
+What happens if A1 follows after A2? I feel very uncomfortable abt it.
+
+IMO, we need to use task_lock() in container_exit() to avoid this race.
+
+(I think this race already exists in mainline cpuset.c?)
+
+P.S : cpuset.c checks for PF_EXITING twice in attach_task(), while this
+patch seems to be checking only once. Is that fine?
+
 
 -- 
-Ondrej Zary
-
---Boundary-00=_bVTBGbIIIOayUIy
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="usbtouchscreen-invert.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="usbtouchscreen-invert.patch"
-
---- linux-2.6.20-orig/drivers/usb/input/usbtouchscreen.c	2007-03-23 15:49:35.000000000 +0100
-+++ linux/drivers/usb/input/usbtouchscreen.c	2007-03-23 15:52:02.000000000 +0100
-@@ -54,6 +54,12 @@
- static int swap_xy;
- module_param(swap_xy, bool, 0644);
- MODULE_PARM_DESC(swap_xy, "If set X and Y axes are swapped.");
-+static int invert_x;
-+module_param(invert_x, bool, 0644);
-+MODULE_PARM_DESC(invert_x, "Invert X axis.");
-+static int invert_y;
-+module_param(invert_y, bool, 0644);
-+MODULE_PARM_DESC(invert_y, "Invert Y axis.");
- 
- /* device specifc data/functions */
- struct usbtouch_usb;
-@@ -514,6 +520,7 @@
-                                  unsigned char *pkt, int len)
- {
- 	struct usbtouch_device_info *type = usbtouch->type;
-+	int x, y;
- 
- 	if (!type->read_data(usbtouch, pkt))
- 			return;
-@@ -521,12 +528,20 @@
- 	input_report_key(usbtouch->input, BTN_TOUCH, usbtouch->touch);
- 
- 	if (swap_xy) {
--		input_report_abs(usbtouch->input, ABS_X, usbtouch->y);
--		input_report_abs(usbtouch->input, ABS_Y, usbtouch->x);
-+		x = usbtouch->y;
-+		y = usbtouch->x;
- 	} else {
--		input_report_abs(usbtouch->input, ABS_X, usbtouch->x);
--		input_report_abs(usbtouch->input, ABS_Y, usbtouch->y);
-+		x = usbtouch->x;
-+		y = usbtouch->y;
- 	}
-+	if (invert_x)
-+		x = type->max_xc - x + type->min_xc;
-+	if (invert_y)
-+		y = type->max_yc - y + type->min_yc;
-+
-+	input_report_abs(usbtouch->input, ABS_X, x);
-+	input_report_abs(usbtouch->input, ABS_Y, y);
-+
- 	if (type->max_press)
- 		input_report_abs(usbtouch->input, ABS_PRESSURE, usbtouch->press);
- 	input_sync(usbtouch->input);
-
---Boundary-00=_bVTBGbIIIOayUIy--
+Regards,
+vatsa
