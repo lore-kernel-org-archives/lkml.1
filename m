@@ -1,80 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933140AbXCXXtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964770AbXCXX7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933140AbXCXXtW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 19:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932910AbXCXXtW
+	id S964770AbXCXX7F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 19:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964780AbXCXX7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 19:49:22 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:11047 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933140AbXCXXtV (ORCPT
+	Sat, 24 Mar 2007 19:59:04 -0400
+Received: from 70-91-206-233-BusName-SFBA.hfc.comcastbusiness.net ([70.91.206.233]:44227
+	"EHLO winkc2d1.saville.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S964770AbXCXX7D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 19:49:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=FgUAZqJ5TH9RDlg7Hx/t8aD74SvI4r9eaMBAcC9Z8xZ6Wi0LHh+U5YxyIOc4x17pFDLpuycrQYvDjSWw07UtoAFrfRUKXPuOty9xOh4h3+dBW13DSdV4LD442I3Z4qWYg+KjL6USyf0h+hRapmua2uhHeanw72vwMLXUT8GcYPI=
-Message-ID: <5800c1cc0703241649q27157d9aid3d9d51b52efbf65@mail.gmail.com>
-Date: Sun, 25 Mar 2007 07:49:20 +0800
-From: "Bin Chen" <binary.chen@gmail.com>
+	Sat, 24 Mar 2007 19:59:03 -0400
+X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Mar 2007 19:59:03 EDT
+From: Wink Saville <wink@saville.com>
 To: linux-kernel@vger.kernel.org
-Subject: kmem_cache_create loop for find the proper gfporder
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Cc: Wink Saville <wink@saville.com>
+Subject: [PATCH 1/3] Documention for trace records (trec).
+Date: Sat, 24 Mar 2007 16:51:37 -0700
+Message-Id: <11747802992043-git-send-email-wink@saville.com>
+X-Mailer: git-send-email 1.5.0.rc2
+In-Reply-To: trec-take2
+References: trec-take2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have some doubts about the loop to find the gfporder of a cache. For
-the code below, its main purpose is to find a gfporder value that can
-make the internal fragmentation less that 1/8 of the total slab size.
-It is done by increase gfporder for low number to high(possibly 0 to
-MAX_GFP_ORDER). But why increase the gfporder(or slab size) can
-decrease the internal fragmentation?)
+Trec is a light weight tracing mechanism that places
+trace information into a buffer. The contents of the
+buffer is dumped when errors occurs or when enabled
+via SYSRQ commands.
 
-A simple example, suppose the slab management stuff is kept off-slab,
-if the gfporder is zero, and the object size in slab is 1000, the
-wasted space is 4096 mod 1000 = 96, but with 4096 * 2(increase
-gfporder by 1), the space is 8192 mod 1000 = 192, 192 > 96.
+Signed-off-by: Wink Saville <wink@saville.com>
+---
+ Documentation/trec.txt |   87 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 87 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/trec.txt
 
-Is it right?
+diff --git a/Documentation/trec.txt b/Documentation/trec.txt
+new file mode 100644
+index 0000000..2275edd
+--- /dev/null
++++ b/Documentation/trec.txt
+@@ -0,0 +1,87 @@
++Title	: Trace Records
++Authors	: Wink Saville <wink@saville.com>
++
++CONTENTS
++
++1. Concepts
++2. Architectures Supported
++3. Configuring
++4. API Reference
++5. Overhead
++6. TODO
++
++
++1. Concepts
++
++Trace records are a light weight tracing technique that time stamps
++small amounts of information and stores them in a buffer. TREC's are
++light enough that they may be sprinkled most anywhere in the kernel
++and have very little performance impact.
++
++For instance they can be placed in the scheduler and ISR's to watch
++the interaction between ISR's and the scheduler. They can be placed
++in memory handling routines to determine how and when memory is
++allocated and freed.
++
++In the current default configuration the trec's are dumped by calling
++trec_print_snapshot when die() or panic() are called as well as when
++the kernel itself page faults in do_page_fault.
++
++If CONFIG_MAGIC_SYSRQ is the 'y' command will execute trec_snapshot
++and the 'z' command will print the current snapshot.
++
++A general macro TREC allows trec_write to be invoked as a macro and
++TRECC allows it to be invoked conditionally. See include/linux/trec.h
++for the current set of macros.
++
++2. Architectures Supported
++
++Should support all architectures has been tested only on:
++
++- X86_64
++
++
++3. Configuring
++
++Since trec's are implemented as a device driver they are configured
++by enabling support in the "Device Drivers" section of as they could
++be used early being a module is not supported.
++
++
++4. API Reference
++
++Trec supports the following API:
++
++void trec_init(void):
++
++  Initialize the module, this may be called before the driver is loaded
++  if it is desired to use trec's early.
++
++void trec_write(unsigned long pc, int pid, unsigned long v1, unsigned long v2);
++
++  This is the routine used to write into the buffer. pc is the program counter
++  pid is the process id and v1 and v2 are two parameters.
++
++void trec_snapshot(void);
++
++  Calling this function takes a snapshot of the current trec buffer so that it
++  will not be modified. This is called prior to printing the snapshot via
++  trec_print_snapshot.
++
++void trec_print_snapshot(void);
++
++  Print the snapshot.
++
++5. Overhead
++
++Measured on a 2.4GHZ Core 2 Duo the readings between two TREC's is
++270 tics of the rdtsc or about 0.1us. No attempt has been made to
++optimize and less information can be collected if the overhead
++is still to high.
++
++
++6. TODO
++
++a. Add code to dump trec to user space
++b. Enhance to allow runtime registration and runtime enable disable.
++
+-- 
+1.5.0.rc2
 
-By the way, is the first time gfporder is 0? Who initialized it in
-cache_cache?
-
-        /* Cal size (in pages) of slabs, and the num of objs per slab.
-         * This could be made much more intelligent.  For now, try to avoid
-         * using high page-orders for slabs.  When the gfp() funcs are more
-         * friendly towards high-order requests, this should be changed.
-         */
-        do {
-                unsigned int break_flag = 0;
-cal_wastage:
-                kmem_cache_estimate(cachep->gfporder, size, flags,
-                                                &left_over, &cachep->num);
-                if (break_flag)
-                        break;
-                if (cachep->gfporder >= MAX_GFP_ORDER)
-                        break;
-                if (!cachep->num)
-                        goto next;
-                if (flags & CFLGS_OFF_SLAB && cachep->num > offslab_limit) {
-                        /* Oops, this num of objs will cause problems. */
-                        cachep->gfporder--;
-                        break_flag++;
-                        goto cal_wastage;
-                }
-
-                /*
-                 * Large num of objs is good, but v. large slabs are currently
-                 * bad for the gfp()s.
-                 */
-                if (cachep->gfporder >= slab_break_gfp_order)
-                        break;
-
-                if ((left_over*8) <= (PAGE_SIZE<<cachep->gfporder))
-                        break;  /* Acceptable internal fragmentation. */
-next:
-                cachep->gfporder++;
-        } while (1);
