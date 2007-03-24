@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbXCXLZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751049AbXCXLfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751048AbXCXLZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 07:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbXCXLZo
+	id S1751049AbXCXLfw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 07:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbXCXLfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 07:25:44 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33280 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751012AbXCXLZm (ORCPT
+	Sat, 24 Mar 2007 07:35:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:26250 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbXCXLfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 07:25:42 -0400
-Date: Sat, 24 Mar 2007 12:25:44 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, tigran@aivazian.fsnet.co.uk,
-       David L <idht4n@hotmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Bob Tracy <rct@gherkin.frus.com>, John Stultz <johnstul@us.ibm.com>,
-       bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       Albert Hopkins <kernel@marduk.letterboxes.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, jgarzik@pobox.com,
-       netdev@vger.kernel.org
-Subject: 2.6.21-rc4: known regressions with patches (v2)
-Message-ID: <20070324112544.GB752@stusta.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	Sat, 24 Mar 2007 07:35:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=qgRD03tYIOyZxcgUMNQETXXN0PfhK1Zq4okbERJfjP3LDUxBOFZCmiYaB9X087WV3sNpnNUkx6wEFYUFAtV6FtXxAW6trKJwOkjkSOhht12Reup6oGfRsXx+vPjiOoF9cs/S6odGb1vdWjK8a3r0LwMouFA9odPVXyVz85befc0=
+Message-ID: <46050D05.1000205@googlemail.com>
+Date: Sat, 24 Mar 2007 12:35:33 +0100
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Bryan Wu <bryan.wu@analog.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: mm snapshot broken-out-2007-03-24-00-14.tar.gz uploaded
+References: <200703240816.l2O8GLLS001929@shell0.pdx.osdl.net>
+In-Reply-To: <200703240816.l2O8GLLS001929@shell0.pdx.osdl.net>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email lists some known regressions in Linus' tree compared to 2.6.20
-with patches available.
+Hi,
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way
-possibly involved with one or more of these issues.
+akpm@linux-foundation.org napisa³(a):
+> The mm snapshot broken-out-2007-03-24-00-14.tar.gz has been uploaded to
+> 
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-03-24-00-14.tar.gz
+> 
+> It contains the following patches against 2.6.21-rc4:
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+Bryan, your patch (blackfin-arch-2.6.21-rc4-mm1-update.patch) doesn't apply
+clean. I've got a lot of "1 out of 1 hunk FAILED -- rejects in file".
 
+Applying patch patches/blackfin-arch-2.6.21-rc4-mm1-update.patch
+patching file arch/blackfin/Kconfig
+patching file arch/blackfin/Makefile
+patching file arch/blackfin/kernel/Makefile
+patching file arch/blackfin/kernel/asm-offsets.c
+Hunk #1 FAILED at 6.
+1 out of 1 hunk FAILED -- rejects in file arch/blackfin/kernel/asm-offsets.c
+patching file arch/blackfin/kernel/bfin_dma_5xx.c
+Hunk #1 FAILED at 6.
+1 out of 17 hunks FAILED -- rejects in file arch/blackfin/kernel/bfin_dma_5xx.c
+patching file arch/blackfin/kernel/bfin_gpio.c
+Hunk #1 FAILED at 6.
+1 out of 12 hunks FAILED -- rejects in file arch/blackfin/kernel/bfin_gpio.c
+patching file arch/blackfin/kernel/bfin_ksyms.c
+Hunk #1 FAILED at 6.
+1 out of 1 hunk FAILED -- rejects in file arch/blackfin/kernel/bfin_ksyms.c
+patching file arch/blackfin/kernel/dma-mapping.c
+Hunk #1 FAILED at 6.
+1 out of 5 hunks FAILED -- rejects in file arch/blackfin/kernel/dma-mapping.c
+patching file arch/blackfin/kernel/dualcore_test.c
+Hunk #1 FAILED at 6.
+1 out of 1 hunk FAILED -- rejects in file arch/blackfin/kernel/dualcore_test.c
+patching file arch/blackfin/kernel/entry.S
+Hunk #1 FAILED at 6.
+1 out of 2 hunks FAILED -- rejects in file arch/blackfin/kernel/entry.S
+patching file arch/blackfin/kernel/flat.c
+patching file arch/blackfin/kernel/init_task.c
+Hunk #1 FAILED at 6.
+1 out of 3 hunks FAILED -- rejects in file arch/blackfin/kernel/init_task.c
 
-Subject    : suspend to disk hangs  (microcode driver)
-References : http://lkml.org/lkml/2007/3/16/126
-Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
-Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
-             commit e3c7db621bed4afb8e231cb005057f2feb5db557
-             commit ed746e3b18f4df18afa3763155972c5835f284c5
-             commit 259130526c267550bc365d3015917d90667732f1
-Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
-Patch      : http://lkml.org/lkml/2007/3/23/179
-Status     : patch available
+Regards,
+Michal
 
-
-Subject    : gettimeofday increments too slowly
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8027
-             http://lkml.org/lkml/2007/3/23/329
-Submitter  : David L <idht4n@hotmail.com>
-Caused-By  : Thomas Gleixner <tglx@linutronix.de>
-             commit 92c7e00254b2d0efc1e36ac3e45474ce1871b6b2
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-Patch      : http://lkml.org/lkml/2007/3/23/329
-Status     : patch available
-
-
-Subject    : boot hangs during IDE detection  (clocksource)
-References : http://lkml.org/lkml/2007/3/19/465
-Submitter  : Bob Tracy <rct@gherkin.frus.com>
-Caused-By  : John Stultz <johnstul@us.ibm.com>
-             commit 6bb74df481223731af6c7e0ff3adb31f6442cfcd
-Handled-By : John Stultz <johnstul@us.ibm.com>
-Patch      : http://lkml.org/lkml/2007/3/22/287
-Status     : workaround-patch available
-
-
-Subject    : forcedeth: skb_over_panic
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
-Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
-Handled-By : Ayaz Abdulla <aabdulla@nvidia.com>
-Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8058
-Status     : patch available
-
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
