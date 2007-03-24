@@ -1,126 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbXCXFcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902AbXCXFnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbXCXFcg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 01:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbXCXFcg
+	id S1752902AbXCXFnR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 01:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbXCXFnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 01:32:36 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:17083 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753449AbXCXFcf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 01:32:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=anXKw0wPtMsm09lXIljiYLVT1j+uhgq2ytKhSC27Xb0Aiu6F/XOsD4vYstmyyY/DXE9Ai8v8RIU3S6CYu5vkrxr/lrRQN0yQ4Efq/Kbrq34q/hrmkv3p6nK4uQA5bMDHCn8G5iP7jIZLqEQ3DPuje7IksZpNngZYwxXfbRdMepg=
-Message-ID: <29495f1d0703232232o3e436c62lddccc82c4dd17b51@mail.gmail.com>
-Date: Fri, 23 Mar 2007 22:32:31 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch] rfc: introduce /dev/hugetlb
-Cc: "Ken Chen" <kenchen@google.com>, "Adam Litke" <agl@us.ibm.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070323205810.3860886d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 24 Mar 2007 01:43:16 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55765 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752900AbXCXFnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 01:43:15 -0400
+Date: Fri, 23 Mar 2007 21:42:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Herbert Poetzl <herbert@13thfloor.at>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, Dave Hansen <hansendc@us.ibm.com>
+Subject: Re: Linux-VServer example results for sharing vs. separate mappings
+ ...
+Message-Id: <20070323214235.94a3e899.akpm@linux-foundation.org>
+In-Reply-To: <20070323193000.GB17007@MAIL.13thfloor.at>
+References: <20070323193000.GB17007@MAIL.13thfloor.at>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b040c32a0703230144r635d7902g2c36ecd7f412be31@mail.gmail.com>
-	 <20070323205810.3860886d.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/23/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 23 Mar 2007 01:44:38 -0700 "Ken Chen" <kenchen@google.com> wrote:
->
-> > On 3/21/07, Adam Litke <agl@us.ibm.com> wrote:
-> > > The main reason I am advocating a set of pagetable_operations is to
-> > > enable the development of a new hugetlb interface.  During the hugetlb
-> > > BOFS at OLS last year, we talked about a character device that would
-> > > behave like /dev/zero.  Many of the people were talking about how they
-> > > just wanted to create MAP_PRIVATE hugetlb mappings without all the fuss
-> > > about the hugetlbfs filesystem.  /dev/zero is a familiar interface for
-> > > getting anonymous memory so bringing that model to huge pages would make
-> > > programming for anonymous huge pages easier.
-> >
-> > I think we have enough infrastructure currently in hugetlbfs to
-> > implement what Adam wants for something like a /dev/hugetlb char
-> > device (except we can't afford to have a zero hugetlb page since it
-> > will be too costly on some arch).
-> >
-> > I really like the idea of having something similar to /dev/zero for
-> > hugetlb page.  So I coded it up on top of existing hugetlbfs.  The
-> > core change is really small and half of the patch is really just
-> > moving things around.  I think this at least can partially fulfill the
-> > goal.
->
-> Standing back and looking at this...
->
-> afaict the whole reason for this work is to provide a quick-n-easy way to
-> get private mappings of hugetlb pages.  With the emphasis on quick-n-easy.
+On Fri, 23 Mar 2007 20:30:00 +0100 Herbert Poetzl <herbert@13thfloor.at> wrote:
 
-I agree.
+> 
+> Hi Eric!
+> Hi Folks!
+> 
+> here is a real world example result from one of my tests
+> regarding the benefit of sharing over separate memory
+> 
+> the setup is quite simple, a typical machine used by
+> providers all over the world, a dual Pentium D 3.2GHz
+> with 4GB of memory and a single 160GB SATA disk running
+> a Linux-VServer kernel (2.6.19.7-vs2.2.0-rc18)
+> 
+> the Guest systems used are Mandriva 2007 guests with
+> syslog, crond, sshd, apache, postfix and postgresql
+> installed and running (all in all 17 processes per guest)
+> 
+> the disk space used by one guests is roughly 148MB
+> 
+> in addition to that, a normal host system is running
+> with a few daemons (like sshd, httpd, postfix ...)
+> 
+> 
+> the first test setup is starting 200 of those guests
+> one after the other and measuring the memory usage
+> before and after the guest did start, as well as 
+> recording the time used to start them ...
+> 
+> this is done right after the machine was rebooted, in
+> one test with 200 separate guests (i.e. 200 x 148MB) 
+> and in a second run with 200 unified guests (which
+> means roughly 138MB of shared files)
 
-> We can do the same with hugetlbfs, but that involves (horror) "fuss".
+Please define your terms.  What is a "separated guest", what is a "unified
+guest" and how do they differ?
 
-Yes.
+If a "separated" guest is something in which separate guests will use
+distinct physical pages to cache the contents of /etc/passwd (ie: a separate
+filesystem per guest) then I don't think that's interesting information,
+frankly.
 
-> The way to avoid "fuss" is of course to do it once, do it properly then stick
-> it in a library which everyone uses.
+Because nobody (afaik) is proposing that pagecache be duplicated across
+instances in this fashion.
 
-That's sort of what libhugetlbfs
-(http://sourceforge.net/projects/libhugetlbfs for stable releases,
-http://libhugetlbfs.ozlabs.org/ for development snapshots/git tree) is
-for; while it currently only tries to abstract/provide functionality
-via hugetlbfs, that's mostly because that is the only interface
-available (or was, pending some sort of char dev being merged).
+We obviously must share pagecache across instances - if we didn't want to
+do that then we could do something completely dumb such as use
+xen/kvm/vmware/etc ;)
 
-> But libraries are hard, for a number of distributional reasons.  It is
-> easier for us to distribute this functionality within the kernel.  In fact,
-> if Linus's tree included a ./userspace/libkernel/libhugetlb/ then we'd
-> probably provide this functionality in there.
+The issue with pagecache (afaik) is that if we use containers based on
+physical pages (an approach which is much preferred by myself) then we can
+get in a situation where a pagecache page is physically in container A, is
+not actually used by any process in container A, but is being releatedly
+referenced by processes which are in other containers and hence unjustly
+consumes resources in container A.   How significant a problem this is likely
+to be I do not know.  And there are perhaps things which we can do about it.
 
-libhugetlbfs is available for both SLES10 and RHEL5.
-
-> This comes up regularly, and it's pretty sad.
-
-I agree. There is simply some functionality that is *very* closely
-tied to the kernel.
-
-> Probably the kernel team should be maintaining, via existing processes, a
-> separate libkernel project, to fix these distributional problems.  The
-> advantage in this case is of course that our new hugetlb functionality
-> would be available to people on 2.6.18 kernels, not only on 2.6.22 and
-> later.
-
-That sounds like a good idea. For this hugetlb stuff, though, I plan
-on simply taking advantage of /dev/hugetlb (or whatever it is called)
-if it exists, and otherwise falling back to hugetlbfs (which
-admittedly requires some admin intervention (mounting hugetlbfs,
-permissions, and such), but then again, so does using hugepages in the
-first place (either at boot-time or via /proc/sys/vm/nr_hugepages)).
-Is that what you mean by available to 2.6.18 (falling back to
-hugetlbfs) and 2.6.22 (using the chardev)?
-
-> Am I wrong?
-
-I don't think so. And hugepages are hard enough to use (and with
-enough architecture specific quirks) that it was worth creating
-libhugetlbfs. While having some nice features like segment remapping
-and overriding malloc, it is also meant to provide an API that is
-useful for general use of hugepages: we currently export
-gethugepagesize(), hugetlbfs_test_path() (verify a path is a valid
-hugetlbfs mount), hugetlbfs_find_path() (gives you the hugetlbfs
-mount) and hugetlbfs_unlinked_fd() (gives you an unlinked file in the
-hugetlbfs mount).
-
-Then again, maybe I'm missing some much bigger picture here and you
-meant something completely different -- sorry for the noise in that
-case :/
-
-Thanks,
-Nish
