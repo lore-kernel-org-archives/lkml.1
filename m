@@ -1,85 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750894AbXCXVzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbXCXVz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750894AbXCXVzX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 17:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbXCXVzX
+	id S1752185AbXCXVz7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 17:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbXCXVz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 17:55:23 -0400
-Received: from www.osadl.org ([213.239.205.134]:36131 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750897AbXCXVzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 17:55:22 -0400
-Subject: [PATCH] i386: Prevent early access to TSC to avoid crash on
-	TSCless systems
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Sat, 24 Mar 2007 23:02:49 +0100
-Message-Id: <1174773769.10840.450.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Mar 2007 17:55:58 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:48536 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbXCXVz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 17:55:57 -0400
+To: akpm@linux-foundation.org
+CC: dgc@sgi.com, linux-kernel@vger.kernel.org
+Subject: [patch 1/3] fix illogical behavior in balance_dirty_pages()
+Message-Id: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 24 Mar 2007 22:55:29 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit f9690982b8c2f9a2c65acdc113e758ec356676a3 removed the check for
-cpu_khz from sched_clock(), which prevented early access to the TSC by
-non obvious magic.
+This is a slightly different take on the fix for the deadlock in fuse
+with dirty balancing.  David Chinner convinced me, that per-bdi
+counters are too expensive, and that it's not worth trying to account
+the number of pages under writeback, as they will be limited by the
+queue anyway.
 
-This is harmless as long as the CPU has a TSC. On TSCless systems this
-results in an illegal instruction trap.
+----
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-Replace tsc_disabled and tsc_unstable by tsc_enabled, which is only set
-when the tsc is available and not unstable.
+Current behavior of balance_dirty_pages() is to try to start writeout
+into the specified queue for at least "write_chunk" number of pages.
+If "write_chunk" pages have been submitted, then return.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+However if there are less than "write_chunk" dirty pages for this
+queue, then it doesn't return, waiting for the global dirty+writeback
+counters to subside, but without doing any actual work.
 
-diff --git a/arch/i386/kernel/tsc.c b/arch/i386/kernel/tsc.c
-index 0e65f7a..6cb8f53 100644
---- a/arch/i386/kernel/tsc.c
-+++ b/arch/i386/kernel/tsc.c
-@@ -18,6 +18,8 @@
+This is illogical behavior: it allows more dirtyings while there are
+dirty pages, but stops further dirtying completely if there are no
+more dirty pages.
+
+It also makes a deadlock possible when one filesystem is writing data
+through another, and the balance_dirty_pages() for the lower
+filesystem is stalling the writeback for the upper filesystem's
+data (*).
+
+So the exit condition should instead be:
+
+  submitted at least "write_chunk" number of pages
+OR
+    submitted ALL the dirty pages destined for this backing dev
+  AND
+    backing dev is not congested
+
+To do this, introduce a new counter in writeback_control, which counts
+the number of dirty pages encountered during writeback.  This includes
+all dirty pages, even those which are already under writeback but have
+been dirtied again, and those which have been skipped due to having
+locked buffers.
+
+If this counter is zero after trying to submit some pages for
+writeback, and the backing dev is uncongested, then don't wait any
+more.  After this, newly dirtied pages can quickly be written back to
+this backing dev.
+
+If there are globally no more pages to submit for writeback
+(nr_reclaimable == 0), then also don't wait for ever, only while this
+backing dev is congested.
+
+(*) For more info on this deadlock, see the following discussions:
+
+  http://lkml.org/lkml/2007/3/1/9
+  http://lkml.org/lkml/2007/3/12/16
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux/include/linux/writeback.h
+===================================================================
+--- linux.orig/include/linux/writeback.h	2007-03-24 22:06:56.000000000 +0100
++++ linux/include/linux/writeback.h	2007-03-24 22:29:02.000000000 +0100
+@@ -44,6 +44,7 @@ struct writeback_control {
+ 	long nr_to_write;		/* Write this many pages, and decrement
+ 					   this for each page written */
+ 	long pages_skipped;		/* Pages which were not written */
++	long nr_dirty;			/* Number of dirty pages encountered */
  
- #include "mach_timer.h"
- 
-+static int tsc_enabled;
-+
- /*
-  * On some systems the TSC frequency does not
-  * change with the cpu frequency. So we need
-@@ -105,7 +107,7 @@ unsigned long long sched_clock(void)
  	/*
- 	 * Fall back to jiffies if there's no TSC available:
- 	 */
--	if (tsc_unstable || unlikely(tsc_disable))
-+	if (unlikely(!tsc_enabled))
- 		/* No locking but a rare wrong value is not a big deal: */
- 		return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
- 
-@@ -283,6 +285,7 @@ void mark_tsc_unstable(void)
- {
- 	if (!tsc_unstable) {
- 		tsc_unstable = 1;
-+		tsc_enabled = 0;
- 		/* Can be called before registration */
- 		if (clocksource_tsc.mult)
- 			clocksource_change_rating(&clocksource_tsc, 0);
-@@ -383,7 +386,9 @@ void __init tsc_init(void)
- 	if (check_tsc_unstable()) {
- 		clocksource_tsc.rating = 0;
- 		clocksource_tsc.flags &= ~CLOCK_SOURCE_IS_CONTINUOUS;
--	}
-+	} else
-+		tsc_enabled = 1;
+ 	 * For a_ops->writepages(): is start or end are non-zero then this is
+Index: linux/mm/page-writeback.c
+===================================================================
+--- linux.orig/mm/page-writeback.c	2007-03-24 22:06:56.000000000 +0100
++++ linux/mm/page-writeback.c	2007-03-24 22:29:02.000000000 +0100
+@@ -207,7 +207,15 @@ static void balance_dirty_pages(struct a
+ 		 * written to the server's write cache, but has not yet
+ 		 * been flushed to permanent storage.
+ 		 */
+-		if (nr_reclaimable) {
++		if (!nr_reclaimable) {
++			/*
++			 * If there's nothing more to write back and this queue
++			 * is uncongested,  then it is possible to quickly
++			 * write out some more data, so let's not wait
++			 */
++			if (!bdi_write_congested(bdi))
++				break;
++		} else {
+ 			writeback_inodes(&wbc);
+ 			get_dirty_limits(&background_thresh,
+ 					 	&dirty_thresh, mapping);
+@@ -220,6 +228,14 @@ static void balance_dirty_pages(struct a
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			if (pages_written >= write_chunk)
+ 				break;		/* We've done our duty */
 +
- 	clocksource_register(&clocksource_tsc);
++			/*
++			 * If there are no more dirty pages for this backing
++			 * backing dev, and the queue is not congested, then
++			 * it is possible to quickly write out some more data
++			 */
++			if (!wbc.nr_dirty && !bdi_write_congested(bdi))
++				break;
+ 		}
+ 		congestion_wait(WRITE, HZ/10);
+ 	}
+@@ -619,6 +635,7 @@ retry:
+ 					      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1))) {
+ 		unsigned i;
  
- 	return;
-
-
-
-
++		wbc->nr_dirty += nr_pages;
+ 		scanned = 1;
+ 		for (i = 0; i < nr_pages; i++) {
+ 			struct page *page = pvec.pages[i];
