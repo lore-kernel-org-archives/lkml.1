@@ -1,67 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751786AbXCXAeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbXCXAkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751786AbXCXAeE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Mar 2007 20:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXCXAeE
+	id S1752053AbXCXAkj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Mar 2007 20:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXCXAkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Mar 2007 20:34:04 -0400
-Received: from ns.suse.de ([195.135.220.2]:36374 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751786AbXCXAeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Mar 2007 20:34:03 -0400
-Date: Fri, 23 Mar 2007 17:30:30 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Williams, Mitch A" <mitch.a.williams@intel.com>
-Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, "Ronciak, John" <john.ronciak@intel.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Subject: Re: [PATCH 2.6.20.3] Flush writes to MSI-X table
-Message-ID: <20070324003030.GA18615@suse.de>
-References: <20070323222207.GB22500@suse.de> <08FE5CC30C9A3F41BF819A502CF7BF6EF55DD2@fmsmsx411.amr.corp.intel.com> <20070324002802.GA18061@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070324002802.GA18061@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 23 Mar 2007 20:40:39 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:45951 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053AbXCXAki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Mar 2007 20:40:38 -0400
+Subject: [PATCH] Avoid time_offset overflows
+From: john stultz <johnstul@us.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 17:40:34 -0700
+Message-Id: <1174696834.5690.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, 2007 at 05:28:02PM -0700, Greg KH wrote:
-> On Fri, Mar 23, 2007 at 05:24:23PM -0700, Williams, Mitch A wrote:
-> > Greg KH wrote:
-> > >Well, I'm sure you can agree that it is _very_ late in the 2.6.21
-> > >release cycle to expect to get this in for that kernel.  How about
-> > >waiting for 2.6.22 and if it's a big deal, getting it into the
-> > >2.6.21-stable tree if needed.
-> > >
-> > >So far I have not seen any bug reports that this patch would fix, have
-> > >you?
-> > 
-> > Well, I've seen several bug reports on this issue -- but they're all
-> > internal to Intel.
-> > 
-> > However, we do have here a real bug, which shows up on real hardware,
-> > which will be released soon.  Obviously, I can't discuss release
-> > schedules, but "soon" is a good word to use.  You might find out more if
-> > you read The Register (wink, wink).
-> 
-> Ok, but again, as this is something that no one outside of a company can
-> see, it doesn't really make sense to rush it into the kernel.
-> 
-> > Given the time frame for release of 2.6.21, I'd be fine with skipping
-> > 2.6.20.x, and putting this in 2.6.21.  But we really don't want to wait
-> > for 2.6.22.
-> 
-> I think it needs to wait, especially given that there is no public
-> hardware yet.
-> 
-> I'll add this to my queue.
+I've been seeing some odd NTP behavior recently on a few boxes and
+finally narrowed it down to time_offset overflowing when converted to
+SHIFT_UPDATE units (which was a side effect from my HZfreeNTP patch).
 
-No, nevermind, I'll wait till it hits linux-pci and gets review from the
-people there, as there are a _ton_ of other pending MSI patches that you
-will need to be aware of, as they might conflict with this patch.
-Please see the linux-pci archives for details of them.
+This patch converts time_offset from a long to a s64 which resolves the
+issue.
 
-thanks,
+thanks
+-john
 
-greg k-h
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
+index eb12509..eaa3d24 100644
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -32,7 +32,7 @@ #define MAX_TICKADJ_SCALED	(((u64)(MAX_T
+ /* TIME_ERROR prevents overwriting the CMOS clock */
+ static int time_state = TIME_OK;	/* clock synchronization status	*/
+ int time_status = STA_UNSYNC;		/* clock status bits		*/
+-static long time_offset;		/* time adjustment (ns)		*/
++static s64 time_offset;		/* time adjustment (ns)		*/
+ static long time_constant = 2;		/* pll time constant		*/
+ long time_maxerror = NTP_PHASE_LIMIT;	/* maximum error (us)		*/
+ long time_esterror = NTP_PHASE_LIMIT;	/* estimated error (us)		*/
+@@ -196,7 +196,7 @@ void __attribute__ ((weak)) notify_arch_
+  */
+ int do_adjtimex(struct timex *txc)
+ {
+-	long ltemp, mtemp, save_adjust;
++	long mtemp, save_adjust;
+ 	s64 freq_adj, temp64;
+ 	int result;
+ 
+@@ -277,14 +277,14 @@ #endif
+ 		    time_adjust = txc->offset;
+ 		}
+ 		else if (time_status & STA_PLL) {
+-		    ltemp = txc->offset * NSEC_PER_USEC;
++		    time_offset = txc->offset * NSEC_PER_USEC;
+ 
+ 		    /*
+ 		     * Scale the phase adjustment and
+ 		     * clamp to the operating range.
+ 		     */
+-		    time_offset = min(ltemp, MAXPHASE * NSEC_PER_USEC);
+-		    time_offset = max(time_offset, -MAXPHASE * NSEC_PER_USEC);
++		    time_offset = min(time_offset, (s64)MAXPHASE * NSEC_PER_USEC);
++		    time_offset = max(time_offset, (s64)-MAXPHASE * NSEC_PER_USEC);
+ 
+ 		    /*
+ 		     * Select whether the frequency is to be controlled
+@@ -297,11 +297,11 @@ #endif
+ 		    mtemp = xtime.tv_sec - time_reftime;
+ 		    time_reftime = xtime.tv_sec;
+ 
+-		    freq_adj = (s64)time_offset * mtemp;
++		    freq_adj = time_offset * mtemp;
+ 		    freq_adj = shift_right(freq_adj, time_constant * 2 +
+ 					   (SHIFT_PLL + 2) * 2 - SHIFT_NSEC);
+ 		    if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC)) {
+-			temp64 = (s64)time_offset << (SHIFT_NSEC - SHIFT_FLL);
++			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
+ 			if (time_offset < 0) {
+ 			    temp64 = -temp64;
+ 			    do_div(temp64, mtemp);
+@@ -314,8 +314,8 @@ #endif
+ 		    freq_adj += time_freq;
+ 		    freq_adj = min(freq_adj, (s64)MAXFREQ_NSEC);
+ 		    time_freq = max(freq_adj, (s64)-MAXFREQ_NSEC);
+-		    time_offset = (time_offset / NTP_INTERVAL_FREQ)
+-		    			<< SHIFT_UPDATE;
++		    do_div(time_offset, NTP_INTERVAL_FREQ);
++		    time_offset <<= SHIFT_UPDATE;
+ 		} /* STA_PLL */
+ 	    } /* txc->modes & ADJ_OFFSET */
+ 	    if (txc->modes & ADJ_TICK)
+@@ -330,7 +330,7 @@ leave:	if ((time_status & (STA_UNSYNC|ST
+ 	if ((txc->modes & ADJ_OFFSET_SINGLESHOT) == ADJ_OFFSET_SINGLESHOT)
+ 	    txc->offset	   = save_adjust;
+ 	else
+-	    txc->offset    = shift_right(time_offset, SHIFT_UPDATE)
++	    txc->offset    = ((long)shift_right(time_offset, SHIFT_UPDATE))
+ 	    			* NTP_INTERVAL_FREQ / 1000;
+ 	txc->freq	   = (time_freq / NSEC_PER_USEC)
+ 				<< (SHIFT_USEC - SHIFT_NSEC);
+
+
+
