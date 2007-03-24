@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbXCXQLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbXCXQNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbXCXQLp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 12:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXCXQLp
+	id S1753159AbXCXQNd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 12:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXCXQNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 12:11:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51265 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157AbXCXQLn (ORCPT
+	Sat, 24 Mar 2007 12:13:33 -0400
+Received: from wr-out-0506.google.com ([64.233.184.236]:30168 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbXCXQNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 12:11:43 -0400
-Message-ID: <46054D99.8070705@torque.net>
-Date: Sat, 24 Mar 2007 12:11:05 -0400
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 24 Mar 2007 12:13:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iVQcsTimLFrfoiKDhxAE2UlHJB/HyBsW1LQFH0/nrDFuLKSQM5hccEzH/F5rhvfNk8iO6ud86G4D7kwTSD176/LroatvtcaicBCTnth4wT/VO2T+DwAEiEWXhUA7vqbx0IXEAoMvIHPASDkrVO8WC5pvNYxEwNcOlCoGg0ucxs0=
+Message-ID: <6bffcb0e0703240913u59840654ua5f651370f3a6ae1@mail.gmail.com>
+Date: Sat, 24 Mar 2007 17:13:30 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: tglx@linutronix.de
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+Cc: "Adrian Bunk" <bunk@stusta.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1174749266.10840.430.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [-mm patch] drivers/scsi/constants.c: make 2 functions static
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070324130647.GI752@stusta.de>
-In-Reply-To: <20070324130647.GI752@stusta.de>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185028.GR752@stusta.de>
+	 <1174680500.10840.346.camel@localhost.localdomain>
+	 <6bffcb0e0703240659r2e5a5875i746ccbbd28d0045c@mail.gmail.com>
+	 <1174749266.10840.430.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Mon, Mar 19, 2007 at 08:56:23PM -0800, Andrew Morton wrote:
->> ...
->> Changes since 2.6.21-rc3-mm1:
->> ...
->>  git-scsi-misc.patch
->> ...
->>  git trees
->> ...
-> 
-> 
-> This patch makes two needlessly global functions static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> ---
-> 
->  drivers/scsi/constants.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- linux-2.6.21-rc4-mm1/drivers/scsi/constants.c.old	2007-03-23 23:26:39.000000000 +0100
-> +++ linux-2.6.21-rc4-mm1/drivers/scsi/constants.c	2007-03-23 23:26:55.000000000 +0100
-> @@ -1235,7 +1235,7 @@
->  }
->  EXPORT_SYMBOL(scsi_print_sense_hdr);
->  
-> -void
-> +static void
->  scsi_decode_sense_buffer(const unsigned char *sense_buffer, int sense_len,
->  		       struct scsi_sense_hdr *sshdr)
->  {
-> @@ -1258,7 +1258,7 @@
->  	}
->  }
->  
-> -void
-> +static void
->  scsi_decode_sense_extras(const unsigned char *sense_buffer, int sense_len,
->  			 struct scsi_sense_hdr *sshdr)
->  {
+On 24/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Sat, 2007-03-24 at 14:59 +0100, Michal Piotrowski wrote:
+> > On 23/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > On Fri, 2007-03-23 at 19:50 +0100, Adrian Bunk wrote:
+> > > > Subject    : soft lockup detected on CPU#0
+> > > > References : http://lkml.org/lkml/2007/3/3/152
+> > > > Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> > > > Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> > > >              Ingo Molnar <mingo@elte.hu>
+> > > > Status     : unknown
+> > >
+> > > Michal,
+> > >
+> > > any news on that one ?
+> > >
+> > > You said the same problem exists in 2.6.20.1. Has this been resolved in
+> > > 2.6.20.2/3
+> >
+> > Yes, I tried 2.6.20.4 and it works fine.
+>
+> Is it solved in Linus latest too ?
 
-Adrian,
-Who put those functions in?
+Yes, it's solved.
 
-The names and arguments look very similar to these
-exported functions in scsi_error.c *** :
-  scsi_normalize_sense
-  scsi_sense_desc_find
-  scsi_get_sense_info_fld
+Adrian, please remove this bug from known regressions list.
+It's fixed in the latest -git and -stable.
 
-that I can see in 2.6.21-rc4
+Regards,
+Michal
 
-The proposed scsi_decode_sense_buffer() looks broken because
-it can fail and should return an int reflecting that.
-How scsi_decode_sense_extras() works is intriguing, unless
-struct scsi_sense_hdr has been changed as well.
-
-
-*** Putting sense decode logic in scsi_error.c is wrong
-because:
-  - the ATA command set is proposing an ATA REQUEST SENSE
-    command to yield a sense buffer
-  - sense buffers don't necessarily indicate errors.
-
-So moving those functions out of scsi_error.c IMO is a
-good idea. Breaking them in the move isn't.
-
-Doug Gilbert
-
-
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
