@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbXCXPzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbXCXP56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbXCXPzK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 11:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbXCXPzK
+	id S1752943AbXCXP56 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 11:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbXCXP56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 11:55:10 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:55495 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752596AbXCXPzI (ORCPT
+	Sat, 24 Mar 2007 11:57:58 -0400
+Received: from linux6.nezu.wide.ad.jp ([203.178.142.218]:60703 "EHLO
+	nezu.linux-ipv6.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752943AbXCXP55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 11:55:08 -0400
-From: Nikita Danilov <nikita@clusterfs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 24 Mar 2007 11:57:57 -0400
+X-Greylist: delayed 324 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Mar 2007 11:57:57 EDT
+Date: Sun, 25 Mar 2007 00:57:53 +0900 (JST)
+Message-Id: <20070325.005753.497716904.takamiya@linux-ipv6.org>
+To: linux-usb-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, usagi-core@linux-ipv6.org
+Subject: Re: (usagi-core 32634) [PATCH 2/2] [USB] [SERIAL]: fixed to skip
+ NULL port entry in struct usb_serial_port.
+From: Noriaki TAKAMIYA <takamiya@linux-ipv6.org>
+In-Reply-To: <20070325.005507.424245753.takamiya@linux-ipv6.org>
+References: <20070325.005227.432838064.takamiya@linux-ipv6.org>
+	<20070325.005507.424245753.takamiya@linux-ipv6.org>
+X-Face: +<)&j!Ce24nM@a.\f6TA,]^9Q76[_QN_[QR-(bT&>b40Oo[:`R(>b7!b-|q5k&.8CO[_Oh_
+ !9Nk0rikK70~?|08EFH|:]iF6pwPlnfEn-wo-voY:rP?%7p%cxjnbf'hglO'se&QwZN7/RVX!U7*P%
+ cTV('HfHp+?g1+hx7\+J.W]<O~hbwx[4hPPO=T<7aV2^7["&p^h4:YbY6,bS,ecZ7S5<pIUTnT''}k
+ ={TEs)bN%-8Jdo~.Q_lpa-fN^.Fo9dFB*}\@=PK@0pmvZ3k0p-5hMQ<bjyK{enk/sOQ[<(k]}Q\p>G
+ zYWv%LsDc
+X-Mailer: Mew version 5.1 on XEmacs 21.4.17 (Jumbo Shrimp)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <17925.18904.820106.145029@gargle.gargle.HOWL>
-Date: Sat, 24 Mar 2007 18:55:04 +0300
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-Newsgroups: gmane.linux.kernel
-In-Reply-To: <20070323103243.GE11577@wotan.suse.de>
-References: <20070323085910.GA11577@wotan.suse.de>
-	<20070323100418.GA30740@elte.hu>
-	<20070323103243.GE11577@wotan.suse.de>
-X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
-X-SystemSpamProbe: GOOD 0.0000621 8c11c36c52d7cd313eb66bc9ceeb27e9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin writes:
- > On Fri, Mar 23, 2007 at 11:04:18AM +0100, Ingo Molnar wrote:
- > > 
- > > * Nick Piggin <npiggin@suse.de> wrote:
- > > 
- > > > Implement queued spinlocks for i386. [...]
- > > 
- > > isnt this patented by MS? (which might not worry you SuSE/Novell guys, 
- > > but it might be a worry for the rest of the world ;-)
- > 
- > Hmm, it looks like they have implemented a system where the spinning
- > cpu sleeps on a per-CPU variable rather than the lock itself, and
- > the releasing cpu writes to that variable to wake it.  They do this
- > so that spinners don't continually perform exclusive->shared
- > transitions on the lock cacheline. They call these things queued
- > spinlocks.  They don't seem to be very patent worthy either, but
+Sorry for resending.
 
-Indeed, this technique is very well known. E.g.,
-http://citeseer.ist.psu.edu/anderson01sharedmemory.html has a whole
-section (3. Local-spin Algorithms) on them, citing papers from the 1990
-onward.
+Hi,
 
-Nikita.
+  This patch fixes to skip serial->port[i] if it is set NULL.
 
+Signed-off-by: Noriaki TAKAMIYA <takamiya@po.ntts.co.jp>
+
+---
+ include/linux/usb/serial.h |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/usb/serial.h b/include/linux/usb/serial.h
+index 32acbae..85ed5ef 100644
+--- a/include/linux/usb/serial.h
++++ b/include/linux/usb/serial.h
+@@ -99,7 +99,10 @@ struct usb_serial_port {
+ /* get and set the port private data pointer helper functions */
+ static inline void *usb_get_serial_port_data (struct usb_serial_port *port)
+ {
+-	return dev_get_drvdata(&port->dev);
++	if (port)
++		return dev_get_drvdata(&port->dev);
++	else
++		return NULL;
+ }
+ 
+ static inline void usb_set_serial_port_data (struct usb_serial_port *port, void *data)
+-- 
+1.4.4
+
+--
+Noriaki TAKAMIYA
