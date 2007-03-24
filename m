@@ -1,131 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXCXRCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932314AbXCXRD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbXCXRCH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 13:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932314AbXCXRCH
+	id S932314AbXCXRD5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 13:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbXCXRD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 13:02:07 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33518 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932286AbXCXRCE (ORCPT
+	Sat, 24 Mar 2007 13:03:57 -0400
+Received: from www17.your-server.de ([213.133.104.17]:1650 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932314AbXCXRD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 13:02:04 -0400
-Date: Sat, 24 Mar 2007 18:02:06 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Douglas Gilbert <dougg@torque.net>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [-mm patch] drivers/scsi/constants.c: make 2 functions static
-Message-ID: <20070324170206.GB2078@stusta.de>
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070324130647.GI752@stusta.de> <46054D99.8070705@torque.net>
+	Sat, 24 Mar 2007 13:03:56 -0400
+Message-ID: <46055A3B.6050107@m3y3r.de>
+Date: Sat, 24 Mar 2007 18:04:59 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46054D99.8070705@torque.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-ide@vger.kernel.org
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323185022.GQ752@stusta.de>
+In-Reply-To: <20070323185022.GQ752@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 24, 2007 at 12:11:05PM -0400, Douglas Gilbert wrote:
-> Adrian Bunk wrote:
-> > On Mon, Mar 19, 2007 at 08:56:23PM -0800, Andrew Morton wrote:
-> >> ...
-> >> Changes since 2.6.21-rc3-mm1:
-> >> ...
-> >>  git-scsi-misc.patch
-> >> ...
-> >>  git trees
-> >> ...
-> > 
-> > 
-> > This patch makes two needlessly global functions static.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> > 
-> > ---
-> > 
-> >  drivers/scsi/constants.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > --- linux-2.6.21-rc4-mm1/drivers/scsi/constants.c.old	2007-03-23 23:26:39.000000000 +0100
-> > +++ linux-2.6.21-rc4-mm1/drivers/scsi/constants.c	2007-03-23 23:26:55.000000000 +0100
-> > @@ -1235,7 +1235,7 @@
-> >  }
-> >  EXPORT_SYMBOL(scsi_print_sense_hdr);
-> >  
-> > -void
-> > +static void
-> >  scsi_decode_sense_buffer(const unsigned char *sense_buffer, int sense_len,
-> >  		       struct scsi_sense_hdr *sshdr)
-> >  {
-> > @@ -1258,7 +1258,7 @@
-> >  	}
-> >  }
-> >  
-> > -void
-> > +static void
-> >  scsi_decode_sense_extras(const unsigned char *sense_buffer, int sense_len,
-> >  			 struct scsi_sense_hdr *sshdr)
-> >  {
-> 
-> Adrian,
-> Who put those functions in?
+Adrian Bunk schrieb:
+> Subject    : second suspend to disk in a row results in an oops  (libata?)
+> References : http://lkml.org/lkml/2007/3/17/43
+> Submitter  : Thomas Meyer <thomas@m3y3r.de>
+> Status     : unknown
+>   
+
+The problem is identified: http://lkml.org/lkml/2007/3/22/150
 
 
-
-[SCSI] constants.c: cleanup, verbose result printing
-
-From: Martin K. Petersen
-
-Clean up constants.c and make result printing more user friendly:
-
- - Refactor the command and sense functions so that the actual
-   formatting can be called from the various helper functions with the
-   correct prefix.
-
- - Replace scsi_print_hostbyte() and scsi_print_driverbyte() with
-   scsi_print_result() which is verbose when CONFIG_SCSI_CONSTANTS is
-   on.
-
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
-
-
-
-> The names and arguments look very similar to these
-> exported functions in scsi_error.c *** :
->   scsi_normalize_sense
->   scsi_sense_desc_find
->   scsi_get_sense_info_fld
-> 
-> that I can see in 2.6.21-rc4
-> 
-> The proposed scsi_decode_sense_buffer() looks broken because
-> it can fail and should return an int reflecting that.
-> How scsi_decode_sense_extras() works is intriguing, unless
-> struct scsi_sense_hdr has been changed as well.
-> 
-> 
-> *** Putting sense decode logic in scsi_error.c is wrong
-> because:
->   - the ATA command set is proposing an ATA REQUEST SENSE
->     command to yield a sense buffer
->   - sense buffers don't necessarily indicate errors.
-> 
-> So moving those functions out of scsi_error.c IMO is a
-> good idea. Breaking them in the move isn't.
-> 
-> Doug Gilbert
-> 
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
