@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbXCXOV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXCXO1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751932AbXCXOV3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 10:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXCXOV2
+	id S1751998AbXCXO1u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 10:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbXCXO1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 10:21:28 -0400
-Received: from mail.cation.de ([217.91.111.229]:58894 "EHLO mail.cation.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751932AbXCXOVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 10:21:20 -0400
-Message-ID: <460533DC.3010006@cation.de>
-Date: Sat, 24 Mar 2007 15:21:16 +0100
-From: Boris Andratzek <Boris.Andratzek@cation.de>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Sat, 24 Mar 2007 10:27:49 -0400
+Received: from smtp3.nextra.sk ([195.168.1.142]:4137 "EHLO mailhub3.nextra.sk"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751998AbXCXO1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 10:27:49 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: daniel.ritz@gmx.ch
+Subject: Invert X or Y axis options for usbtouchscreen
+Date: Sat, 24 Mar 2007 15:27:39 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: troubles with DAC960
-References: <4602C062.6050406@cation.de>
-In-Reply-To: <4602C062.6050406@cation.de>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_bVTBGbIIIOayUIy"
+Message-Id: <200703241527.39792.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boris Andratzek wrote:
-> Hello members of the kernel-list,
-> 
-> 
-> I'm new to this and hope I don't misuse the list in any way.
-> 
-> Doing the update from debian sarge to etch on my server I ran into the
-> bug documented here: bugzilla.kernel.org/show_bug.cgi?id=7177
-> I already made some comments there. I tried to contact the maintainer of
-> the DAC960 driver but as far as I found out, Leonard N. Zubkoff
-> unfortunatly died in a helicopter crash.
-> 
-> Without being impious, I want to ask if anybody can give me an idea of
-> how this thing will go on. Is there anybody new doing the maintaining?
-> Is there hope for a fix? Where can I find more information? Can I do
-> anything to help (testing, logging)?
-> 
-> regards,
-> 
-> Boris Andratzek
-> 
+--Boundary-00=_bVTBGbIIIOayUIy
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hello!?
+Hello,
+this patch adds support for inverting X or Y axis (or both) to the 
+usbtouchscreen driver. Invert Y is needed (together with swap XY) for 
+LeadingTouch screens (at least for some of them).
 
-I didn't catch no reaction at all, so I am not sure if I sent my
-question the right way! Could anybody respond, please, even without an
-idea of solving my problem!?
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-Thanks,
+-- 
+Ondrej Zary
 
-Boris
+--Boundary-00=_bVTBGbIIIOayUIy
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="usbtouchscreen-invert.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="usbtouchscreen-invert.patch"
+
+--- linux-2.6.20-orig/drivers/usb/input/usbtouchscreen.c	2007-03-23 15:49:35.000000000 +0100
++++ linux/drivers/usb/input/usbtouchscreen.c	2007-03-23 15:52:02.000000000 +0100
+@@ -54,6 +54,12 @@
+ static int swap_xy;
+ module_param(swap_xy, bool, 0644);
+ MODULE_PARM_DESC(swap_xy, "If set X and Y axes are swapped.");
++static int invert_x;
++module_param(invert_x, bool, 0644);
++MODULE_PARM_DESC(invert_x, "Invert X axis.");
++static int invert_y;
++module_param(invert_y, bool, 0644);
++MODULE_PARM_DESC(invert_y, "Invert Y axis.");
+ 
+ /* device specifc data/functions */
+ struct usbtouch_usb;
+@@ -514,6 +520,7 @@
+                                  unsigned char *pkt, int len)
+ {
+ 	struct usbtouch_device_info *type = usbtouch->type;
++	int x, y;
+ 
+ 	if (!type->read_data(usbtouch, pkt))
+ 			return;
+@@ -521,12 +528,20 @@
+ 	input_report_key(usbtouch->input, BTN_TOUCH, usbtouch->touch);
+ 
+ 	if (swap_xy) {
+-		input_report_abs(usbtouch->input, ABS_X, usbtouch->y);
+-		input_report_abs(usbtouch->input, ABS_Y, usbtouch->x);
++		x = usbtouch->y;
++		y = usbtouch->x;
+ 	} else {
+-		input_report_abs(usbtouch->input, ABS_X, usbtouch->x);
+-		input_report_abs(usbtouch->input, ABS_Y, usbtouch->y);
++		x = usbtouch->x;
++		y = usbtouch->y;
+ 	}
++	if (invert_x)
++		x = type->max_xc - x + type->min_xc;
++	if (invert_y)
++		y = type->max_yc - y + type->min_yc;
++
++	input_report_abs(usbtouch->input, ABS_X, x);
++	input_report_abs(usbtouch->input, ABS_Y, y);
++
+ 	if (type->max_press)
+ 		input_report_abs(usbtouch->input, ABS_PRESSURE, usbtouch->press);
+ 	input_sync(usbtouch->input);
+
+--Boundary-00=_bVTBGbIIIOayUIy--
