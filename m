@@ -1,36 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbXCXSGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXCXSHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753373AbXCXSGF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 14:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXCXSGF
+	id S1753413AbXCXSHW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 14:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbXCXSHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 14:06:05 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:58888 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753373AbXCXSGE (ORCPT
+	Sat, 24 Mar 2007 14:07:21 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49745 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753413AbXCXSHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 14:06:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=bzk9zyqY1wZbCTQamjTF2N7IxGLBEGTgGp7hMrWHudOsUx7yGwl1KgOl6eoIvqO91WlwmzCs+k8xL5FujcMqIQH4R8KEu4SlHwR+4Q0ROBBsdv64zjpK+zqbDbyCEblzOJ9ZBX1NgDoRVEgN3W2Otv15yBydfL9LG4mL6prgmRA=
-Message-ID: <f36b08ee0703241106n7b8dd952p46d16a7c41abb4cd@mail.gmail.com>
-Date: Sat, 24 Mar 2007 20:06:00 +0200
-From: "Yakov Lerner" <iler.ml@gmail.com>
-To: "Kernel Linux" <linux-kernel@vger.kernel.org>
-Subject: glibc vs 2.6/2.4
+	Sat, 24 Mar 2007 14:07:19 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-ide@vger.kernel.org
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<20070323185022.GQ752@stusta.de> <46055A3B.6050107@m3y3r.de>
+Date: Sat, 24 Mar 2007 12:02:30 -0600
+In-Reply-To: <46055A3B.6050107@m3y3r.de> (Thomas Meyer's message of "Sat, 24
+	Mar 2007 18:04:59 +0100")
+Message-ID: <m1slbu4j0p.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can I build recent glibc such that it will work both on
-2.6 and on 2.4 ? (multithreading-wise, I suppose). I tried
-to boot recent 2.6-based distro with 2.4 kernel and it did not work.
+Thomas Meyer <thomas@m3y3r.de> writes:
 
-Do I need to set some env.vars maybe (LD_ASSUME_KERNEL ?
-GNU_LIBPTHREAD_VERSION ?) for glibc when I switch kernels ?
+> Adrian Bunk schrieb:
+>> Subject    : second suspend to disk in a row results in an oops  (libata?)
+>> References : http://lkml.org/lkml/2007/3/17/43
+>> Submitter  : Thomas Meyer <thomas@m3y3r.de>
+>> Status     : unknown
+>>   
+>
+> The problem is identified: http://lkml.org/lkml/2007/3/22/150
 
-Yakov Lerner
+Given the description above I'm a little confused.  Doesn't this
+happen every time now?
+
+Or was this happening only the second time before I started my msi
+fixes... 
+
+Eric
