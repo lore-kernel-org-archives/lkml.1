@@ -1,462 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbXCYUka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbXCYUmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbXCYUka (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 16:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbXCYUka
+	id S1752578AbXCYUmK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 16:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbXCYUmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 16:40:30 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60267 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbXCYUk1 (ORCPT
+	Sun, 25 Mar 2007 16:42:10 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:42644 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbXCYUmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 16:40:27 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Meyer <thomas@m3y3r.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <gregkh@suse.de>,
-       Tony Luck <tony.luck@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
-Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	<200703251428.03382.rjw@sisk.pl>
-	<m1wt1532jb.fsf@ebiederm.dsl.xmission.com>
-	<200703252114.16436.rjw@sisk.pl>
-Date: Sun, 25 Mar 2007 14:37:44 -0600
-In-Reply-To: <200703252114.16436.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sun, 25 Mar 2007 21:14:15 +0200")
-Message-ID: <m1ps6x2h5z.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 25 Mar 2007 16:42:09 -0400
+To: a.p.zijlstra@chello.nl
+CC: akpm@linux-foundation.org, dgc@sgi.com, linux-kernel@vger.kernel.org
+In-reply-to: <1174823454.5149.13.camel@lappy> (message from Peter Zijlstra on
+	Sun, 25 Mar 2007 13:50:54 +0200)
+Subject: Re: [patch 1/3] fix illogical behavior in balance_dirty_pages()
+References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu>
+	 <1174816995.5149.4.camel@lappy> <E1HVQe9-0007ga-00@dorka.pomaz.szeredi.hu>
+	 <E1HVQzy-0007jO-00@dorka.pomaz.szeredi.hu> <1174823454.5149.13.camel@lappy>
+Message-Id: <E1HVZX5-0008QB-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 25 Mar 2007 22:41:43 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
-
-> On Sunday, 25 March 2007 14:56, Eric W. Biederman wrote:
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> 
->> > Yes, in kernel/power/disk.c:power_down() .
->> >
->> > Please comment out the disable_nonboot_cpus() in there and retest (but
-> please
->> > test the latest Linus' tree).
->> 
->> <rant>
->> 
->> Why do we even need a disable_nonboot_cpus in that path?  machine_shutdown
->> on i386 and x86_64 should take care of that.  Further the code that computes
->> the boot cpu is bogus (not all architectures require cpu == 0 to be
->> the boot cpu), and disabling non boot cpus appears to be a strong
->> x86ism, in the first place.
->
-> Yes.
->  
->> If the only reason for disable_nonboot_cpus there is to avoid the
->> WARN_ON in init_low_mappings() we should seriously consider killing
->> it.
->
-> We have considered it, but no one was sure that it was a good idea.
-
-The problem with the current init_low_mappings is that it hacks the
-current page table.  If we can instead use a different page table
-the code becomes SMP safe.
-
-I have extracted the patch that addresses this from the relocatable
-patchset and appended it for sparking ideas.  It goes a little
-farther than we need to solve this issue but the basics are there.
-
->> If we can wait for 2.6.22 the relocatable x86_64 patchset that 
->> Andi has queued, has changes that kill the init_low_mapping() hack.
->
-> I think we should kill the WARN_ON() right now, perhaps replacing it with
-> a FIXME comment.
-
-Reasonable.
-
->> I'm not very comfortable with calling cpu_down in a common code path
->> right now either.  I'm fairly certain we still don't have that
->> correct.  So if we confine the mess that is cpu_down to #if
->> defined(CPU_HOTPLUG) && defined(CONFIG_EXPERIMENTAL) I don't care.
->> If we start using it everywhere I'm very nervous.
->> migration when bringing a cpu down is strongly racy, and I don't think
->> we actually put cpus to sleep properly either.
->
-> I'm interested in all of the details, please.  I seriously consider dropping
-> cpu_up()/cpu_down() from the suspend code paths.
-
-
-So I'm not certain if in a multiple cpu context we can avoid all of the
-issues with cpu hotplug but there is a reasonable chance so I will
-explain as best I can.
-
-Yanking the appropriate code out of linuxbios the way a processor should stop
-itself is to send an INIT IPI to itself.  This puts a cpu into an optimized
-wait for startup IPI state where it is otherwise disabled.  This is the state
-any sane BIOS will put the cpus into before control is handed off to the kernel.
-
-> static inline void stop_this_cpu(void)
-> {
->         unsigned apicid;
->         apicid = lapicid();
+>         for (;;) {
+>                 struct writeback_control wbc = {
+>                         .bdi            = bdi,
+>                         .sync_mode      = WB_SYNC_NONE,
+>                         .older_than_this = NULL,
+>                         .nr_to_write    = write_chunk,
+>                         .range_cyclic   = 1,
+>                 };
 > 
->         /* Send an APIC INIT to myself */
->         lapic_write(LAPIC_ICR2, SET_LAPIC_DEST_FIELD(apicid));
->         lapic_write(LAPIC_ICR, LAPIC_INT_LEVELTRIG | LAPIC_INT_ASSERT | LAPIC_DM_INIT);
->         /* Wait for the ipi send to finish */
->         lapic_wait_icr_idle();
+>                 get_dirty_limits(&background_thresh, &dirty_thresh,
+>                                 &bdi_thresh, bdi);
+>                 bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY) +
+>                                         bdi_stat(bdi, BDI_UNSTABLE);
+> (A)             if (bdi_nr_reclaimable + bdi_stat(bdi, BDI_WRITEBACK) <=
+>                         bdi_thresh)
+>                                 break;
 > 
->         /* Deassert the APIC INIT */
->         lapic_write(LAPIC_ICR2, SET_LAPIC_DEST_FIELD(apicid));
->         lapic_write(LAPIC_ICR,  LAPIC_INT_LEVELTRIG | LAPIC_DM_INIT);
->         /* Wait for the ipi send to finish */
->         lapic_wait_icr_idle();
+>                 /* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
+>                  * Unstable writes are a feature of certain networked
+>                  * filesystems (i.e. NFS) in which data may have been
+>                  * written to the server's write cache, but has not yet
+>                  * been flushed to permanent storage.
+>                  */
+> (B)              if (bdi_nr_reclaimable) {
+>                         writeback_inodes(&wbc);
 > 
->         /* If I haven't halted spin forever */
->         for(;;) {
->                 hlt();
+>                         get_dirty_limits(&background_thresh, &dirty_thresh,
+>                                        &bdi_thresh, bdi);
+>                         bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY) +
+>                                                 bdi_stat(bdi, BDI_UNSTABLE);
+> (C)                     if (bdi_nr_reclaimable + bdi_stat(bdi, BDI_WRITEBACK) <=
+>                                 bdi_thresh)
+>                                 break;
+> 
+>                         pages_written += write_chunk - wbc.nr_to_write;
+>                         if (pages_written >= write_chunk)
+>                                 break;          /* We've done our duty */
+>                 }
+>                 congestion_wait(WRITE, HZ/10);
 >         }
-> }
+> 
+> I'm thinking that if bdi_nr_reclaimable == 0, A reduces to
+> bdi_stat(bdi, BDI_WRITEBACK) <= bdi_thresh and we're still out of the
+> loop, no?
+> 
 
-I'm not certain what to do with the interrupt races.  But I will see
-if I can explain what I know.
+Yep, sorry.
 
-<braindump>
+I'll review this patch, there seem to be odd things, like calculating
+dirty_thresh, then not ever using it...
 
-- Most ioapics are buggy.
-- Most ioapics do not follow pci-ordering rules with respect to
-  interrupt message deliver so ensuring all in-flight irqs have
-  arrived somewhere is very hard.
-- To avoid bugs we always limit ourselves to reprogramming the ioapics
-  in the interrupt handler, and not considering an interrupt
-  successfully reprogrammed until we have received an irq in the new
-  location.
-- On x86 we have two basic interrupt handling modes.
-  o logical addressing with lowest priority delivery.
-  o physical addressing with delivery to a single cpu.
-- With logical addressing as long as the cpu is not available for
-  having an interrupt delivered to it the interrupt will be
-  never be delivered to a particular cpu.  Ideally we also update
-  the mask in the ioapic to not target that cpu.
-- With physical addressing targeting a single cpu we need to reprogram
-  the ioapics not to target that specific cpu.  This needs to happen
-  in the interrupt handler and we need to wait for the next interrupt
-  before we tear down our data structures for handling the interrupt.
+Btw, would you mind measuring the performance of my patch with the
+slow/fast device mix, to see how it compares to your patchset and the
+vanila kernel?
 
-  The current cpu hotplug code attempts to reprogram the ioapics from
-  process context which is just wrong.
-
-Now as part of suspend/resume I think we should be programming the
-hardware not to generate interrupts in the first place at the actual
-hardware devices so we can likely avoid all of the code that
-reprograms interrupts while they are active.  If we can use things
-like pci ordering rules to ensure the device will never fire the
-interrupt until resumed we should be able to disable interrupts
-synchronously.  Something that we can not safely do in the current
-cpu hotplug scenario.  Which should make the problem of doing the
-work race free much easier.
-
-I don't know if other architectures need to disable cpus or not before
-doing a suspend to ram or a suspend to disk.
-
-I also don't know if we have any code that brings up the other cpus
-after we have been suspended.  In either the cpu hotplug paths or the
-architecture specific paths.
-
-The bottom line is after the partial review of the irq handling during
-cpu shutdown a little while ago that I consider the current cpu
-hotplug code to be something that works when you are lucky.  There are
-to many hardware bugs to support the general case it tries to
-implement.
-
-I have not reviewed the entire cpu hotplug path nor have I even tried
-suspend/resume.  But I have been all and down the boot and shutdown
-code paths so I understand the general problem.
-
-The other part I know is that cpu numbers are assigned at the
-architectures discretion.  So unless the architecture code or the
-early boot code sets a variable remembering which was the boot cpu
-there is no reason to believe we can deduce it.  In addition I don't
-know if any other architectures have anything resembling the x86
-requirement to disable non-boot cpus.  I do know machine_shutdown
-on i386 and x86_64 performs that action (if not perfectly) so at
-least currently we should be able to do this in architecture
-specific code.
-
-</braindump>
-
-Eric
-
-
-
-From: Vivek Goyal <vgoyal@in.ibm.com>
-Subject: [PATCH 12/20] x86_64: 64bit ACPI wakeup trampoline
-
-o Moved wakeup_level4_pgt into the wakeup routine so we can
-  run the kernel above 4G.
-
-o Now we first go to 64bit mode and continue to run from trampoline and
-  then then start accessing kernel symbols and restore processor context.
-  This enables us to resume even in relocatable kernel context when 
-  kernel might not be loaded at physical addr it has been compiled for.
-
-o Removed the need for modifying any existing kernel page table.
-
-o Increased the size of the wakeup routine to 8K. This is required as
-  wake page tables are on trampoline itself and they got to be at 4K
-  boundary, hence one page is not sufficient.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
----
-
- arch/x86_64/kernel/acpi/sleep.c  |   22 ++------------
- arch/x86_64/kernel/acpi/wakeup.S | 59 ++++++++++++++++++++++++---------------
- arch/x86_64/kernel/head.S        |    9 -----
- 3 files changed, 41 insertions(+), 49 deletions(-)
-
-diff -puN arch/x86_64/kernel/acpi/sleep.c~x86_64-64bit-ACPI-wakeup-trampoline
-arch/x86_64/kernel/acpi/sleep.c
----
-linux-2.6.21-rc2-reloc/arch/x86_64/kernel/acpi/sleep.c~x86_64-64bit-ACPI-wakeup-trampoline
-2007-03-07 01:28:11.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/acpi/sleep.c 2007-03-07
-01:28:11.000000000 +0530
-@@ -60,17 +60,6 @@ extern char wakeup_start, wakeup_end;
- 
- extern unsigned long acpi_copy_wakeup_routine(unsigned long);
- 
--static pgd_t low_ptr;
--
--static void init_low_mapping(void)
--{
--	pgd_t *slot0 = pgd_offset(current->mm, 0UL);
--	low_ptr = *slot0;
--	set_pgd(slot0, *pgd_offset(current->mm, PAGE_OFFSET));
--	WARN_ON(num_online_cpus() != 1);
--	local_flush_tlb();
--}
--
- /**
-  * acpi_save_state_mem - save kernel state
-  *
-@@ -79,8 +68,6 @@ static void init_low_mapping(void)
-  */
- int acpi_save_state_mem(void)
- {
--	init_low_mapping();
--
- 	memcpy((void *)acpi_wakeup_address, &wakeup_start,
- 	       &wakeup_end - &wakeup_start);
- 	acpi_copy_wakeup_routine(acpi_wakeup_address);
-@@ -93,8 +80,6 @@ int acpi_save_state_mem(void)
-  */
- void acpi_restore_state_mem(void)
- {
--	set_pgd(pgd_offset(current->mm, 0UL), low_ptr);
--	local_flush_tlb();
- }
- 
- /**
-@@ -107,10 +92,11 @@ void acpi_restore_state_mem(void)
-  */
- void __init acpi_reserve_bootmem(void)
- {
--	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE);
--	if ((&wakeup_end - &wakeup_start) > PAGE_SIZE)
-+	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE*2);
-+	if ((&wakeup_end - &wakeup_start) > (PAGE_SIZE*2))
- 		printk(KERN_CRIT
-- "ACPI: Wakeup code way too big, will crash on attempt to suspend\n");
-+		       "ACPI: Wakeup code way too big, will crash on attempt"
-+		       " to suspend\n");
- }
- 
- static int __init acpi_sleep_setup(char *str)
-diff -puN arch/x86_64/kernel/acpi/wakeup.S~x86_64-64bit-ACPI-wakeup-trampoline
-arch/x86_64/kernel/acpi/wakeup.S
----
-linux-2.6.21-rc2-reloc/arch/x86_64/kernel/acpi/wakeup.S~x86_64-64bit-ACPI-wakeup-trampoline
-2007-03-07 01:28:11.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/acpi/wakeup.S 2007-03-07
-01:28:11.000000000 +0530
-@@ -1,6 +1,7 @@
- .text
- #include <linux/linkage.h>
- #include <asm/segment.h>
-+#include <asm/pgtable.h>
- #include <asm/page.h>
- #include <asm/msr.h>
- 
-@@ -62,12 +63,15 @@ wakeup_code:
- 
- 	movb	$0xa2, %al	;  outb %al, $0x80
- 	
--	lidt	%ds:idt_48a - wakeup_code
--	xorl	%eax, %eax
-- movw %ds, %ax # (Convert %ds:gdt to a linear ptr)
--	shll	$4, %eax
--	addl	$(gdta - wakeup_code), %eax
--	movl	%eax, gdt_48a +2 - wakeup_code
-+	mov	%ds, %ax			# Find 32bit wakeup_code addr
-+ movzx %ax, %esi # (Convert %ds:gdt to a liner ptr)
-+	shll    $4, %esi
-+						# Fix up the vectors
-+	addl    %esi, wakeup_32_vector - wakeup_code
-+	addl    %esi, wakeup_long64_vector - wakeup_code
-+	addl    %esi, gdt_48a + 2 - wakeup_code # Fixup the gdt pointer
-+
-+	lidtl	%ds:idt_48a - wakeup_code
- 	lgdtl	%ds:gdt_48a - wakeup_code	# load gdt with whatever is
- 						# appropriate
- 
-@@ -80,7 +84,7 @@ wakeup_code:
- 
- 	.balign 4
- wakeup_32_vector:
--	.long   wakeup_32 - __START_KERNEL_map
-+	.long   wakeup_32 - wakeup_code
- 	.word   __KERNEL32_CS, 0
- 
- 	.code32
-@@ -103,10 +107,6 @@ wakeup_32:
- 	movl	$__KERNEL_DS, %eax
- 	movl	%eax, %ds
- 
--	movl	saved_magic - __START_KERNEL_map, %eax
--	cmpl	$0x9abcdef0, %eax
--	jne	bogus_32_magic
--
- 	movw	$0x0e00 + 'i', %ds:(0xb8012)
- 	movb	$0xa8, %al	;  outb %al, $0x80;
- 
-@@ -120,7 +120,7 @@ wakeup_32:
- 	movl	%eax, %cr4
- 
- 	/* Setup early boot stage 4 level pagetables */
--	movl	$(wakeup_level4_pgt - __START_KERNEL_map), %eax
-+	leal    (wakeup_level4_pgt - wakeup_code)(%esi), %eax
- 	movl	%eax, %cr3
- 
- 	/* Enable Long Mode */
-@@ -159,11 +159,11 @@ wakeup_32:
- 	 */
- 
- 	/* Finally jump in 64bit mode */
--	ljmp	*(wakeup_long64_vector - __START_KERNEL_map)
-+        ljmp    *(wakeup_long64_vector - wakeup_code)(%esi)
- 
- 	.balign 4
- wakeup_long64_vector:
--	.long   wakeup_long64 - __START_KERNEL_map
-+	.long   wakeup_long64 - wakeup_code
- 	.word   __KERNEL_CS, 0
- 
- .code64
-@@ -178,11 +178,16 @@ wakeup_long64:
- 	 * addresses where we're currently running on. We have to do that here
- 	 * because in 32bit we couldn't load a 64bit linear address.
- 	 */
--	lgdt	cpu_gdt_descr - __START_KERNEL_map
-+	lgdt	cpu_gdt_descr
- 
- 	movw	$0x0e00 + 'n', %ds:(0xb8014)
- 	movb	$0xa9, %al	;  outb %al, $0x80
- 
-+	movq    saved_magic, %rax
-+	movq    $0x123456789abcdef0, %rdx
-+	cmpq    %rdx, %rax
-+	jne     bogus_64_magic
-+
- 	movw	$0x0e00 + 'u', %ds:(0xb8016)
- 	
- 	nop
-@@ -223,20 +228,21 @@ idt_48a:
- gdt_48a:
- 	.word	0x800				# gdt limit=2048,
- 						#  256 GDT entries
--	.word	0, 0				# gdt base (filled in later)
--	
-+	.long   gdta - wakeup_code              # gdt base (relocated in later)
- 	
- real_magic:	.quad 0
- video_mode:	.quad 0
- video_flags:	.quad 0
- 
-+.code16
- bogus_real_magic:
- 	movb	$0xba,%al	;  outb %al,$0x80
- 	jmp bogus_real_magic
- 
--bogus_32_magic:
-+.code64
-+bogus_64_magic:
- 	movb	$0xb3,%al	;  outb %al,$0x80
--	jmp bogus_32_magic
-+	jmp bogus_64_magic
- 
- bogus_cpu:
- 	movb	$0xbc,%al	;  outb %al,$0x80
-@@ -263,6 +269,7 @@ bogus_cpu:
- #define VIDEO_FIRST_V7 0x0900
- 
- # Setting of user mode (AX=mode ID) => CF=success
-+.code16
- mode_seta:
- 	movw	%ax, %bx
- #if 0
-@@ -313,6 +320,13 @@ wakeup_stack_begin:	# Stack grows down
- .org	0xff0
- wakeup_stack:		# Just below end of page
- 
-+.org   0x1000
-+ENTRY(wakeup_level4_pgt)
-+	.quad   level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
-+	.fill   510,8,0
-+	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
-+	.quad   level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
-+
- ENTRY(wakeup_end)
- 	
- ##
-@@ -338,9 +352,10 @@ ENTRY(acpi_copy_wakeup_routine)
- 	movq	$0x123456789abcdef0, %rdx
- 	movq	%rdx, saved_magic
- 
--	movl	saved_magic - __START_KERNEL_map, %eax
--	cmpl	$0x9abcdef0, %eax
--	jne	bogus_32_magic
-+	movq    saved_magic, %rax
-+	movq    $0x123456789abcdef0, %rdx
-+	cmpq    %rdx, %rax
-+	jne     bogus_64_magic
- 
- 	# restore the regs we used
- 	popq	%rdx
-diff -puN arch/x86_64/kernel/head.S~x86_64-64bit-ACPI-wakeup-trampoline
-arch/x86_64/kernel/head.S
----
-linux-2.6.21-rc2-reloc/arch/x86_64/kernel/head.S~x86_64-64bit-ACPI-wakeup-trampoline
-2007-03-07 01:28:11.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/head.S 2007-03-07
-01:28:11.000000000 +0530
-@@ -308,15 +308,6 @@ NEXT_PAGE(level2_kernel_pgt)
- 
- 	.data
- 
--#ifdef CONFIG_ACPI_SLEEP
--	.align PAGE_SIZE
--ENTRY(wakeup_level4_pgt)
--	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
--	.fill	510,8,0
--	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
--	.quad	level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
--#endif
--
- #ifndef CONFIG_HOTPLUG_CPU
- 	__INITDATA
- #endif
-_
-
-
+Thanks,
+Miklos
