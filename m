@@ -1,237 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbXCYMS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbXCYMWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752808AbXCYMS3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 08:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXCYMS2
+	id S1753348AbXCYMWG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 08:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXCYMWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 08:18:28 -0400
-Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:1468 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752808AbXCYMS1 (ORCPT
+	Sun, 25 Mar 2007 08:22:06 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33945 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753348AbXCYMWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 08:18:27 -0400
-Date: Sun, 25 Mar 2007 14:18:23 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Rudolf Marek <r.marek@assembler.cz>,
-       Alexey Dobriyan <adobriyan@openvz.org>, Dave Jones <davej@redhat.com>
-Subject: [PATCH 1/2] MSR: Add support for safe variants
-Message-Id: <20070325141823.c0e9c4c7.khali@linux-fr.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Mar 2007 08:22:04 -0400
+Date: Sun, 25 Mar 2007 14:22:07 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jareguero@telefonica.net,
+       oliver.pntr@gmail.com, g3vbv@blueyonder.co.uk
+Subject: Re: [1/5] 2.6.21-rc4: known regressions (v2)
+Message-ID: <20070325122207.GC16477@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323184816.GO752@stusta.de> <20070324.214509.98750566.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="+QahgC5+KEYLbs62"
+Content-Disposition: inline
+In-Reply-To: <20070324.214509.98750566.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rudolf Marek <r.marek@assembler.cz>
 
-Add support for _safe (exception handled) variants of rdmsr_on_cpu 
-and wrmsr_on_cpu.  This is needed for the upcoming coretemp hardware
-monitoring driver, which might step into non-existing (poorly
-documented) MSR.
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 
-Signed-off-by: Rudolf Marek <r.marek@assembler.cz>
-Cc: Alexey Dobriyan <adobriyan@openvz.org>
-Cc: Dave Jones <davej@redhat.com>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
-Andrew, can you please pick this patch? I don't want to keep it in my
-hwmon tree, as it might useful for others as well.
+On Sat, Mar 24, 2007 at 09:45:09PM -0700, David Miller wrote:
+> From: Adrian Bunk <bunk@stusta.de>
+> Date: Fri, 23 Mar 2007 19:48:17 +0100
+> 
+> > Subject    : problem with sockets
+> > References : http://lkml.org/lkml/2007/3/21/248
+> > Submitter  : Jose Alberto Reguero <jareguero@telefonica.net>
+> > Status     : unknown
+> 
+> Not enough information in his report, for example for the
+> case he says does not work he fails to indicate what kernel
+> or system type the Client runs on.
+> 
+> Furthermore, his scripts don't even execute properly when
+> I try to run them myself, for example server.py gives me
+> this syntax error when python tries to parse the script:
+> 
+> davem@sunset:~/src/GIT/net-2.6$ /usr/bin/python server.py
+>   File "server.py", line 9
+>     struct sockaddr_in ServerAddr;
+>                      ^
+> SyntaxError: invalid syntax
+> 
+> Can someone help de-crapify this bug report?
 
- arch/i386/lib/msr-on-cpu.c |   71 ++++++++++++++++++++++++++++++++++++++++----
- include/asm-i386/msr.h     |   12 +++++++
- include/asm-x86_64/msr.h   |   11 +++++++
- 3 files changed, 87 insertions(+), 7 deletions(-)
+He described one Python and one C example, and attached 2+2 programs.
 
---- linux-2.6.21-rc4.orig/arch/i386/lib/msr-on-cpu.c	2007-02-28 09:48:18.000000000 +0100
-+++ linux-2.6.21-rc4/arch/i386/lib/msr-on-cpu.c	2007-03-24 20:50:05.000000000 +0100
-@@ -6,6 +6,7 @@
- struct msr_info {
- 	u32 msr_no;
- 	u32 l, h;
-+	int err;
- };
- 
- static void __rdmsr_on_cpu(void *info)
-@@ -15,20 +16,38 @@ static void __rdmsr_on_cpu(void *info)
- 	rdmsr(rv->msr_no, rv->l, rv->h);
- }
- 
--void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+static void __rdmsr_safe_on_cpu(void *info)
- {
-+	struct msr_info *rv = info;
-+
-+	rv->err = rdmsr_safe(rv->msr_no, &rv->l, &rv->h);
-+}
-+
-+static int _rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h, int safe)
-+{
-+	int err = 0;
- 	preempt_disable();
- 	if (smp_processor_id() == cpu)
--		rdmsr(msr_no, *l, *h);
-+		if (safe)
-+			err = rdmsr_safe(msr_no, l, h);
-+		else
-+			rdmsr(msr_no, *l, *h);
- 	else {
- 		struct msr_info rv;
- 
- 		rv.msr_no = msr_no;
--		smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 0, 1);
-+		if (safe) {
-+			smp_call_function_single(cpu, __rdmsr_safe_on_cpu,
-+						 &rv, 0, 1);
-+			err = rv.err;
-+		} else {
-+			smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 0, 1);
-+		}
- 		*l = rv.l;
- 		*h = rv.h;
- 	}
- 	preempt_enable();
-+	return err;
- }
- 
- static void __wrmsr_on_cpu(void *info)
-@@ -38,21 +57,61 @@ static void __wrmsr_on_cpu(void *info)
- 	wrmsr(rv->msr_no, rv->l, rv->h);
- }
- 
--void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+static void __wrmsr_safe_on_cpu(void *info)
- {
-+	struct msr_info *rv = info;
-+
-+	rv->err = wrmsr_safe(rv->msr_no, rv->l, rv->h);
-+}
-+
-+static int _wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h, int safe)
-+{
-+	int err = 0;
- 	preempt_disable();
- 	if (smp_processor_id() == cpu)
--		wrmsr(msr_no, l, h);
-+		if (safe)
-+			err = wrmsr_safe(msr_no, l, h);
-+		else
-+			wrmsr(msr_no, l, h);
- 	else {
- 		struct msr_info rv;
- 
- 		rv.msr_no = msr_no;
- 		rv.l = l;
- 		rv.h = h;
--		smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 0, 1);
-+		if (safe) {
-+			smp_call_function_single(cpu, __wrmsr_safe_on_cpu,
-+						 &rv, 0, 1);
-+			err = rv.err;
-+		} else {
-+			smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 0, 1);
-+		}
- 	}
- 	preempt_enable();
-+	return err;
-+}
-+
-+void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	_wrmsr_on_cpu(cpu, msr_no, l, h, 0);
-+}
-+
-+void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	_rdmsr_on_cpu(cpu, msr_no, l, h, 0);
-+}
-+
-+int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	return _wrmsr_on_cpu(cpu, msr_no, l, h, 1);
-+}
-+
-+int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	return _rdmsr_on_cpu(cpu, msr_no, l, h, 1);
- }
- 
- EXPORT_SYMBOL(rdmsr_on_cpu);
- EXPORT_SYMBOL(wrmsr_on_cpu);
-+EXPORT_SYMBOL(rdmsr_safe_on_cpu);
-+EXPORT_SYMBOL(wrmsr_safe_on_cpu);
---- linux-2.6.21-rc4.orig/include/asm-i386/msr.h	2007-02-28 09:48:21.000000000 +0100
-+++ linux-2.6.21-rc4/include/asm-i386/msr.h	2007-03-24 20:50:05.000000000 +0100
-@@ -4,7 +4,7 @@
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt.h>
- #else
--
-+#include <linux/errno.h>
- /*
-  * Access to machine-specific registers (available on 586 and better only)
-  * Note: the rd* operations modify the parameters directly (without using
-@@ -86,6 +86,8 @@ static inline void wrmsrl (unsigned long
- #ifdef CONFIG_SMP
- void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-+int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
-+int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
- #else  /*  CONFIG_SMP  */
- static inline void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
- {
-@@ -95,6 +97,14 @@ static inline void wrmsr_on_cpu(unsigned
- {
- 	wrmsr(msr_no, l, h);
- }
-+static inline int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	return rdmsr_safe(msr_no, l, h);
-+}
-+static inline int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	return wrmsr_safe(msr_no, l, h);
-+}
- #endif  /*  CONFIG_SMP  */
- 
- /* symbolic names for some interesting MSRs */
---- linux-2.6.21-rc4.orig/include/asm-x86_64/msr.h	2007-02-28 09:48:21.000000000 +0100
-+++ linux-2.6.21-rc4/include/asm-x86_64/msr.h	2007-03-24 20:50:05.000000000 +0100
-@@ -2,6 +2,7 @@
- #define X86_64_MSR_H 1
- 
- #ifndef __ASSEMBLY__
-+#include <linux/errno.h>
- /*
-  * Access to machine-specific registers (available on 586 and better only)
-  * Note: the rd* operations modify the parameters directly (without using
-@@ -163,6 +164,8 @@ static inline unsigned int cpuid_edx(uns
- #ifdef CONFIG_SMP
- void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-+int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
-+int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
- #else  /*  CONFIG_SMP  */
- static inline void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
- {
-@@ -172,6 +175,14 @@ static inline void wrmsr_on_cpu(unsigned
- {
- 	wrmsr(msr_no, l, h);
- }
-+static inline int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	return rdmsr_safe(msr_no, l, h);
-+}
-+static inline int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	return wrmsr_safe(msr_no, l, h);
-+}
- #endif  /*  CONFIG_SMP  */
- 
- #endif
+The mailing list archive I quoted only contains the C files and doesn't 
+display the Python files with the error message
+"unhandled content-type:application/x-python" - but that's not the fault 
+of the submitter, the bug report itself is OK.
 
+I've attached all 4 files to this email.
+
+cu
+Adrian
 
 -- 
-Jean Delvare
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
+
+--+QahgC5+KEYLbs62
+Content-Type: text/x-python; charset=utf-8
+Content-Disposition: attachment; filename="client.py"
+
+# Echo client program
+import socket
+
+mcast_adress = "227.234.253.9"
+port = 15922
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+s.sendto('Hello, world', (mcast_adress, port))
+s.close()
+
+--+QahgC5+KEYLbs62
+Content-Type: text/x-python; charset=utf-8
+Content-Disposition: attachment; filename="server.py"
+
+# Echo server program
+import socket
+import struct
+
+HOST = ''                 # Symbolic name meaning the local host
+PORT = 15922              # Arbitrary non-privileged port
+mcast_adress = "227.234.253.9"
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind((HOST, PORT))
+mreq = struct.pack('4si', socket.inet_aton(mcast_adress), socket.INADDR_ANY)
+s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+data = s.recv(1024)
+if (data):
+    print (data)
+s.close()
+
+--+QahgC5+KEYLbs62
+Content-Type: text/x-csrc; charset=utf-8
+Content-Disposition: attachment; filename="client.c"
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <string.h>
+
+main()
+{
+	int sock = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	struct sockaddr_in ClientAddr;
+	memset(&ClientAddr, 0, sizeof(ClientAddr));
+	ClientAddr.sin_family = AF_INET;
+	ClientAddr.sin_addr.s_addr = inet_addr("227.234.253.9");
+	int port = 15922;
+	ClientAddr.sin_port = htons((short) port);
+	char str[] = "Hello, world";
+	sendto(sock, str, strlen(str), 0, (struct sockaddr *)&ClientAddr, sizeof(ClientAddr));
+	close(sock);
+}
+
+--+QahgC5+KEYLbs62
+Content-Type: text/x-csrc; charset=utf-8
+Content-Disposition: attachment; filename="server.c"
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <stdio.h>
+
+main()
+{
+        struct sockaddr_in ServerAddr;
+        int sock = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        int reuse = 1;
+        setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int));
+        memset(&ServerAddr, 0, sizeof(ServerAddr));
+        ServerAddr.sin_family = AF_INET;
+        ServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        int port = 15922;
+        ServerAddr.sin_port = htons((short) port);
+        bind(sock, (struct sockaddr *)&ServerAddr, sizeof(ServerAddr));
+        struct ip_mreq mreq;
+	memset(&mreq, 0, sizeof(mreq));
+        mreq.imr_multiaddr.s_addr = inet_addr("227.234.253.9");
+	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+        setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+        char str[100];
+	memset(&str, 0, sizeof(str));
+        recv(sock, str, 100, 0);
+        printf(":%s:\n", str);
+	close (sock);
+}
+
+--+QahgC5+KEYLbs62--
