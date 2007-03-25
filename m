@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751260AbXCYKSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbXCYKUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751260AbXCYKSy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 06:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXCYKSy
+	id S1751894AbXCYKUM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 06:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXCYKUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 06:18:54 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:47575 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751260AbXCYKSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 06:18:53 -0400
-Date: Sun, 25 Mar 2007 12:18:49 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: CIJOML <cijoml@volny.cz>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: HID OOPS running hid2hci on logitech diNovo dongle
-In-Reply-To: <200703251027.41441.cijoml@volny.cz>
-Message-ID: <Pine.LNX.4.64.0703251214421.29565@twin.jikos.cz>
-References: <200703251027.41441.cijoml@volny.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 25 Mar 2007 06:20:12 -0400
+Received: from www.osadl.org ([213.239.205.134]:39998 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751894AbXCYKUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 06:20:10 -0400
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Soeren Sonnenburg <kernel@nn7.de>, Ingo Molnar <mingo@elte.hu>,
+       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       John Stultz <johnstul@us.ibm.com>
+In-Reply-To: <20070325101548.GI24225@mellanox.co.il>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185028.GR752@stusta.de>
+	 <1174679344.10840.334.camel@localhost.localdomain>
+	 <20070325071023.GL17532@mellanox.co.il>
+	 <1174808247.10840.467.camel@localhost.localdomain>
+	 <20070325085705.GB24225@mellanox.co.il>
+	 <1174817872.10840.478.camel@localhost.localdomain>
+	 <20070325101548.GI24225@mellanox.co.il>
+Content-Type: text/plain
+Date: Sun, 25 Mar 2007 12:27:38 +0200
+Message-Id: <1174818459.10840.481.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Mar 2007, CIJOML wrote:
+On Sun, 2007-03-25 at 12:15 +0200, Michael S. Tsirkin wrote:
+> > Quoting Thomas Gleixner <tglx@linutronix.de>:
+> > Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+> > 
+> > On Sun, 2007-03-25 at 10:57 +0200, Michael S. Tsirkin wrote:
+> > > > Can you please test the following:
+> > > > 
+> > > > Add "clocksource=acpi_pm" to the kernel commandline.
+> > > > 
+> > > > If this does not change anything, then disable CONFIG_HPET and retry.
+> > > 
+> > > I have:
+> > > $ grep CONFIG_HPET .config
+> > > CONFIG_HPET_TIMER=y
+> > > CONFIG_HPET_EMULATE_RTC=y
+> > > # CONFIG_HPET is not set
+> > > 
+> > > so I think all these tests were done with CONFIG_HPET=n.
+> > 
+> > Gack. Please turn off CONFIG_HPET_TIMER and CONFIG_HPET_EMULATE_RTC
+> 
+> Okay ... although they are in defconfig for i386, and they did not create
+> problems in 2.6.20.
 
-> in combination of kernel 2.6.20-mh1 and hid2hci from bluez-utils-3.9 I 
-> am getting following OOPS:
-> BUG: at drivers/hid/hid-core.c:785 implement()
->  [<c027a9c3>] hid_output_report+0x213/0x2be
->  [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
->  [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
->  [<fcaf7970>] usbhid_init_reports+0x60/0xbb [usbhid]
->  [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
->  [<c01b4dd1>] avc_has_perm+0x4e/0x58
->  [<c01b5595>] inode_has_perm+0x5b/0x63
->  [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
->  [<c01b5626>] file_has_perm+0x89/0x91
->  [<c0161158>] do_ioctl+0x4c/0x62
->  [<c01613aa>] vfs_ioctl+0x23c/0x24f
->  [<c0161409>] sys_ioctl+0x4c/0x67
->  [<c0102cc8>] syscall_call+0x7/0xb
->  [<c02d0033>] __sched_text_start+0x43/0x546
+I know, but we are looking for a regression and the hpet related code
+_has_ changed.
 
-This is known bug that happens with recent Logitech dongles. Please see 
-http://lkml.org/lkml/2007/2/16/215 and http://lkml.org/lkml/2007/3/5/274
+> > > Given this, does it still make sense to test clocksource=acpi_pm?
+> > 
+> > Yes.
+> 
+> With or without CONFIG_HPET_TIMER?
 
-The problem here is that Logitech probably changed the way how the dongle 
-is switched from HID to HCI mode, and bluez-utils don't support it (and 
-send report that is not compliant with report descriptor of the dongle, 
-which triggers this warning).
+with, as a first test.
 
-Are you able to verify whether this could be possibly caused solely by 
-newer versions of bluez-utils, as Amedee stated in some of the threads 
-above?
+	tglx
 
--- 
-Jiri Kosina
+
