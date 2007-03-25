@@ -1,101 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964804AbXCYCOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964789AbXCYCPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964804AbXCYCOz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 22:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964789AbXCYCOz
+	id S964789AbXCYCPI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 22:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964806AbXCYCPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 22:14:55 -0400
-Received: from mail10.syd.optusnet.com.au ([211.29.132.191]:42039 "EHLO
-	mail10.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964804AbXCYCOy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 22:14:54 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [RFC] sched: accurate user accounting
-Date: Sun, 25 Mar 2007 12:14:04 +1000
-User-Agent: KMail/1.9.5
-Cc: malc <av1474@comtv.ru>, zwane@infradead.org, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>
-References: <200703251159.03616.kernel@kolivas.org>
-In-Reply-To: <200703251159.03616.kernel@kolivas.org>
+	Sat, 24 Mar 2007 22:15:07 -0400
+Received: from mout2.freenet.de ([194.97.50.155]:48042 "EHLO mout2.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964789AbXCYCPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 22:15:06 -0400
+Message-ID: <4605DB21.30403@freenet.de>
+Date: Sun, 25 Mar 2007 04:14:57 +0200
+From: Patrick Ringl <patrick_@freenet.de>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703251214.05058.kernel@kolivas.org>
+To: linux-kernel@vger.kernel.org
+CC: torvalds@linux-foundation.org, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de
+Subject: [PATCH] cosmetic - minor typos in drivers/isdn/capi/Kconfig
+Content-Type: multipart/mixed;
+ boundary="------------060701080604000701020907"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 March 2007 11:59, Con Kolivas wrote:
-> For an rsdl 0.33 patched kernel. Comments? Overhead worth it?
->
-> ---
-> Currently we only do cpu accounting to userspace based on what is actually
-> happening precisely on each tick. The accuracy of that accounting gets
-> progressively worse the lower HZ is. As we already keep accounting of
-> nanosecond resolution we can accurately track user cpu, nice cpu and idle
-> cpu if we move the accounting to update_cpu_clock with a nanosecond
-> cpu_usage_stat entry. This increases overhead slightly but avoids the
-> problem of tick aliasing errors making accounting unreliable.
+This is a multi-part message in MIME format.
+--------------060701080604000701020907
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Vale, this fixes your testcase you sent. Attached below for reference. 
+Hello,
 
-P.S. Sorry about one of the cc email addresses in the first email; I succumbed 
-to a silly practical joke unwittingly so you'll have to remove it when 
-replying to all.
+[ ... fixed one minor typo and adapted the word order ... ]
 
-/* gcc -o hog smallhog.c */
-#include <time.h>
-#include <limits.h>
-#include <signal.h>
-#include <sys/time.h>
 
-#define HIST 10
+--- linux-2.6.20-o/drivers/isdn/capi/Kconfig    2007-03-18 
+00:04:54.000000000 +0100
++++ linux-2.6.20/drivers/isdn/capi/Kconfig    2007-03-25 
+04:10:24.000000000 +0200
+@@ -17,7 +17,7 @@
+     help
+       If you say Y here, the kernelcapi driver can make verbose traces
+       of CAPI messages. This feature can be enabled/disabled via IOCTL for
+-      every controler (default disabled).
++      every controller (disabled by default).
+       This will increase the size of the kernelcapi module by 20 KB.
+       If unsure, say Y.
 
-static sig_atomic_t stop;
 
-static void sighandler (int signr)
-{
-     (void) signr;
-     stop = 1;
-}
 
-static unsigned long hog (unsigned long niters)
-{
-     stop = 0;
-     while (!stop && --niters);
-     return niters;
-}
+---
 
-int main (void)
-{
-     int i;
-     struct itimerval it = { .it_interval = { .tv_sec = 0, .tv_usec = 1 },
-                             .it_value = { .tv_sec = 0, .tv_usec = 1 } };
-     sigset_t set;
-     unsigned long v[HIST];
-     double tmp = 0.0;
-     unsigned long n;
 
-     signal (SIGALRM, &sighandler);
-     setitimer (ITIMER_REAL, &it, NULL);
+regards,
+Patrick
 
-     for (i = 0; i < HIST; ++i) v[i] = ULONG_MAX - hog (ULONG_MAX);
-     for (i = 0; i < HIST; ++i) tmp += v[i];
-     tmp /= HIST;
-     n = tmp - (tmp / 3.0);
+--------------060701080604000701020907
+Content-Type: text/plain;
+ name="isdn_capi_typo_fix"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="isdn_capi_typo_fix"
 
-     sigemptyset (&set);
-     sigaddset (&set, SIGALRM);
+--- linux-2.6.20-o/drivers/isdn/capi/Kconfig	2007-03-18 00:04:54.000000000 +0100
++++ linux-2.6.20/drivers/isdn/capi/Kconfig	2007-03-25 04:10:24.000000000 +0200
+@@ -17,7 +17,7 @@
+ 	help
+ 	  If you say Y here, the kernelcapi driver can make verbose traces
+ 	  of CAPI messages. This feature can be enabled/disabled via IOCTL for
+-	  every controler (default disabled).
++	  every controller (disabled by default).
+ 	  This will increase the size of the kernelcapi module by 20 KB.
+ 	  If unsure, say Y.
+ 
 
-     for (;;) {
-         hog (n);
-         sigwait (&set, &i);
-     }
-     return 0;
-}
-
--- 
--ck
+--------------060701080604000701020907--
