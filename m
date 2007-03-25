@@ -1,121 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751073AbXCYNmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750951AbXCYNyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751073AbXCYNmc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 09:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXCYNmc
+	id S1750951AbXCYNyL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 09:54:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbXCYNyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 09:42:32 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:5126 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbXCYNmb (ORCPT
+	Sun, 25 Mar 2007 09:54:11 -0400
+Received: from www17.your-server.de ([213.133.104.17]:3741 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbXCYNyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 09:42:31 -0400
-X-AuditID: d80ac287-91523bb000000c42-6a-46067c46d619 
-Date: Sun, 25 Mar 2007 14:42:21 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Bruce Dubbs <bruce.dubbs@gmail.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add additional error check to mm/mincore.c
-In-Reply-To: <4605D4EB.5060205@gmail.com>
-Message-ID: <Pine.LNX.4.64.0703251416470.11785@blonde.wat.veritas.com>
-References: <4605D4EB.5060205@gmail.com>
+	Sun, 25 Mar 2007 09:54:10 -0400
+Message-ID: <46067F33.4030608@m3y3r.de>
+Date: Sun, 25 Mar 2007 15:54:59 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 25 Mar 2007 13:42:30.0414 (UTC) FILETIME=[6F1CD2E0:01C76EE3]
-X-Brightmail-Tracker: AAAAAA==
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <gregkh@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>	<20070323185022.GQ752@stusta.de> <46055A3B.6050107@m3y3r.de>	<m1slbu4j0p.fsf@ebiederm.dsl.xmission.com> <46056BF3.3070707@m3y3r.de>	<m1odmi4gx5.fsf@ebiederm.dsl.xmission.com> <46058B47.60204@m3y3r.de>	<m1fy7u3sas.fsf@ebiederm.dsl.xmission.com> <46065FED.8030206@m3y3r.de> <m11wjd4jiq.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m11wjd4jiq.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007, Bruce Dubbs wrote:
-
-> I some circumstances, mincore can succeed when it shouldn't.
-> 
-> Example:
->   Two files are mmapped to a process and they are adjacent in memory.
-> If mincore is run with a requested length that is too large, the
-> function does not differentiate between the different file pointers
-> within the different vma structures and inappropriately returns success.
-
-You've got this the wrong way round.  mincore should succeed in
-these cases: just like munmap, mprotect, msync, madvise etc do.
-
-> 
-> The attached patch, against 2.6.20.3, fixes this behavior.
-
-NAK, sorry.
-
-> 
-> This behavior was found when running the Linux Test Project's mincore01
-> on an IA32 system.  Test 3 "unexpectedly" succeeds.
-
-Please follow that up with the LTP guys: I expect they'll quickly
-agree that the test is wrong and correct it.
-
-It probably dates from when mmap addresses were commonly allocated in
-ascending order, whereas now they're commonly allocated in descending
-order: neither being a rule, neither to be assumed.  (Ah, I see Nick
-has already suggested this memory layout issue to you.)
-
-Another thing to keep in mind is that 2.6.21-rc fixes mincore to
-succeed on anonymous areas, where before it failed for no very good
-reason.  That can't be the issue here, since your report is against
-earlier releases; but it is something for the test fixer to note.
-
-Thanks,
-Hugh
-
-> 
->   -- Bruce
-> 
-> 
-> --- mm/mincore.c.old	2007-03-24 19:55:01.000000000 -0500
-> +++ mm/mincore.c	2007-03-24 20:13:43.000000000 -0500
-> @@ -43,7 +43,8 @@
->   * all the arguments, we hold the mmap semaphore: we should
->   * just return the amount of info we're asked for.
->   */
-> -static long do_mincore(unsigned long addr, unsigned char *vec, unsigned long pages)
-> +static long do_mincore(unsigned long addr, unsigned char *vec, unsigned long pages,
-> +        struct file** file_struct)
->  {
->  	unsigned long i, nr, pgoff;
->  	struct vm_area_struct *vma = find_vma(current->mm, addr);
-> @@ -64,7 +65,19 @@
->  	 * this is what we've traditionally done, so we'll just
->  	 * continue doing it.
->  	 */
-> -	if (!vma->vm_file)
-> +
-> +    /* 
-> +     * Initialize file pointer to the value in the first vma structure
-> +     */
-> +
-> +    if ( *file_struct == NULL && vma->vm_file )
-> +        *file_struct = vma->vm_file;
-> +
-> +    /*
-> +     * Return an error if the is no file mapped of the file is different
-> +     */
-> + 
-> +	if (!vma->vm_file || vma->vm_file != *file_struct)
->  		return -ENOMEM;
->  
->  	/*
-> @@ -115,6 +128,7 @@
->  	long retval;
->  	unsigned long pages;
->  	unsigned char *tmp;
-> +    static struct file* file = NULL;
->  
->  	/* Check the start address: needs to be page-aligned.. */
->   	if (start & ~PAGE_CACHE_MASK)
-> @@ -142,7 +156,7 @@
->  		 * the temporary buffer size.
->  		 */
->  		down_read(&current->mm->mmap_sem);
-> -		retval = do_mincore(start, tmp, min(pages, PAGE_SIZE));
-> +		retval = do_mincore(start, tmp, min(pages, PAGE_SIZE), &file);
->  		up_read(&current->mm->mmap_sem);
->  
->  		if (retval <= 0)
+Eric W. Biederman schrieb:
+> Sounds possible.  You could probably verify it isn't my patch but running
+> an unpatched kernel without msi support.  As I think the crash you saw should
+> only be reproducible when using devices that support msi.
+>   
+Without your patch and with pci=nomsi option the same error occur. But i
+think this is not an acpi error, because every interrupt seems to
+trigger the shutdown, like moving the mouse, or pressing a key.
+> Unless I hear different I'm going to assume that this second case is a
+> completely different problem.  You might check to see if the acpi
+> interrupt is stuck after a suspend/resume cycle.
+>   
+D'accord.
