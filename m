@@ -1,114 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXCYIan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbXCYIkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933224AbXCYIan (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 04:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbXCYIan
+	id S1753488AbXCYIkP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 04:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbXCYIkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 04:30:43 -0400
-Received: from smtpout09-04.prod.mesa1.secureserver.net ([64.202.165.17]:35242
-	"HELO smtpout09.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S933224AbXCYIam (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 04:30:42 -0400
-Message-ID: <460632E9.5030508@bristyle.com>
-Date: Sun, 25 Mar 2007 01:29:29 -0700
-From: Brian Braunstein <brian@bristyle.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070306)
+	Sun, 25 Mar 2007 04:40:15 -0400
+Received: from hosting4p.com ([81.0.235.160]:48243 "EHLO micron1.hosting4p.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753488AbXCYIkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 04:40:14 -0400
+Message-ID: <4606356A.7070403@slax.org>
+Date: Sun, 25 Mar 2007 10:40:10 +0200
+From: Tomas M <tomas@slax.org>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Max Krasnyansky <maxk@qualcomm.com>
-CC: vtun@office.satix.net, akpm@osdl.org, jgarzik@pobox.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] net: tun/tap: fixed hw address handling
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] max_loop limit
+References: <460236CE.1030303@slax.org> <20070322110058.GB23664@tatooine.rebelbase.local> <46026A92.4020106@slax.org> <20070322144210.73dfaf83.dada1@cosmosbay.com> <Pine.LNX.4.61.0703230232320.9555@yvahk01.tjqt.qr> <Pine.LNX.4.61.0703240023220.10028@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0703240023220.10028@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> here's one. Allocates all the fluff dynamically. It does not create any
+> dev nodes by itself, so you need to do it (à la mdadm)
 
-From: Brian Braunstein <linuxkernel@bristyle.com>
+I'm afraid that this would break a lot of things, for example mount -o 
+loop will not work anymore unless you create /dev/loop* manually first, 
+am I correct? In this case, this is unusable for many as it is not 
+backward compatible with old loop.c, am I correct?
 
-Fixed tun/tap driver's handling of hw addresses. The hw address is stored in
-both the net_device.dev_addr and tun.dev_addr fields.  These fields were not
-kept synchronized, and in fact weren't even initialized to the same value.
-Now during both init and when performing SIOCSIFHWADDR on the tun device
-these values are both updated.  However, if SIOCSIFHWADDR is performed on the
-net device directly (for instance, setting the hw address using ifconfig),
-the tun device does not get updated.  Perhaps the tun.dev_addr field should
-be removed completely at some point, as it is redundant and
-net_device.dev_addr can be used anywhere it is used. 
 
-Signed-off-by: Brian Braunstein <linuxkernel@bristyle.com>
-
----
-
-Kernel Version: 2.6.20.4
-
---- linux-2.6.20.4-ORIG/drivers/net/tun.c	2007-03-23 12:52:51.000000000 -0700
-+++ linux-2.6.20.4/drivers/net/tun.c	2007-03-25 00:44:20.000000000 -0700
-@@ -18,6 +18,10 @@
- /*
-  *  Changes:
-  *
-+ *  Brian Braunstein <linuxkernel@bristyle.com> 2007/03/23
-+ *    Fixed hw address handling.  Now net_device.dev_addr is kept consistent
-+ *    with tun.dev_addr when the address is set by this module.
-+ *
-  *  Mike Kershaw <dragorn@kismetwireless.net> 2005/08/14
-  *    Add TUNSETLINK ioctl to set the link encapsulation
-  *
-@@ -196,7 +200,10 @@ static void tun_net_init(struct net_devi
- 		dev->set_multicast_list = tun_net_mclist;
- 
- 		ether_setup(dev);
--		random_ether_addr(dev->dev_addr);
-+
-+		/* random address already created for us by tun_set_iff, use it */
-+		memcpy(dev->dev_addr, tun->dev_addr, min(sizeof(tun->dev_addr), sizeof(dev->dev_addr)) );
-+
- 		dev->tx_queue_len = TUN_READQ_SIZE;  /* We prefer our own queue length */
- 		break;
- 	}
-@@ -636,6 +643,7 @@ static int tun_chr_ioctl(struct inode *i
- 		return 0;
- 
- 	case SIOCGIFHWADDR:
-+		/* Note: the actual net device's address may be different */
- 		memcpy(ifr.ifr_hwaddr.sa_data, tun->dev_addr,
- 				min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
- 		if (copy_to_user( argp, &ifr, sizeof ifr))
-@@ -643,16 +651,24 @@ static int tun_chr_ioctl(struct inode *i
- 		return 0;
- 
- 	case SIOCSIFHWADDR:
--		/** Set the character device's hardware address. This is used when
--		 * filtering packets being sent from the network device to the character
--		 * device. */
--		memcpy(tun->dev_addr, ifr.ifr_hwaddr.sa_data,
--				min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
--		DBG(KERN_DEBUG "%s: set hardware address: %x:%x:%x:%x:%x:%x\n",
--				tun->dev->name,
--				tun->dev_addr[0], tun->dev_addr[1], tun->dev_addr[2],
--				tun->dev_addr[3], tun->dev_addr[4], tun->dev_addr[5]);
--		return 0;
-+	{
-+		/* try to set the actual net device's hw address */
-+		int ret = dev_set_mac_address(tun->dev, &ifr.ifr_hwaddr);
-+
-+		if (ret == 0) {
-+			/** Set the character device's hardware address. This is used when
-+			 * filtering packets being sent from the network device to the character
-+			 * device. */
-+			memcpy(tun->dev_addr, ifr.ifr_hwaddr.sa_data,
-+					min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
-+			DBG(KERN_DEBUG "%s: set hardware address: %x:%x:%x:%x:%x:%x\n",
-+					tun->dev->name,
-+					tun->dev_addr[0], tun->dev_addr[1], tun->dev_addr[2],
-+					tun->dev_addr[3], tun->dev_addr[4], tun->dev_addr[5]);
-+		}
-+
-+		return  ret;
-+	}
- 
- 	case SIOCADDMULTI:
- 		/** Add the specified group to the character device's multicast filter
+Tomas M
+slax.org
 
