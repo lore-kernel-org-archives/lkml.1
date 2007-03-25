@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751526AbXCYTYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751612AbXCYTZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751526AbXCYTYY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 15:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXCYTYY
+	id S1751612AbXCYTZz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 15:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXCYTZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 15:24:24 -0400
-Received: from tapsys.com ([72.36.178.242]:39681 "EHLO tapsys.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526AbXCYTYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 15:24:22 -0400
-Message-ID: <4606CC62.6000006@madrabbit.org>
-Date: Sun, 25 Mar 2007 12:24:18 -0700
-From: Ray Lee <ray-lk@madrabbit.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
+	Sun, 25 Mar 2007 15:25:55 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:42853 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612AbXCYTZy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 15:25:54 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 25 Mar 2007 21:24:43 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 2.6.20.4] ieee1394: dv1394: fix CardBus card ejection
+To: stable@kernel.org
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.7af9edf7b7c51abd@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] x86_64: avoid sending LOCAL_TIMER_VECTOR IPI to itself
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323184828.GP752@stusta.de> <46046D6D.3030202@madrabbit.org> <20070324191112.GA1626@elte.hu>
-In-Reply-To: <20070324191112.GA1626@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ray Lee <ray-lk@madrabbit.org> wrote:
-> 
->> Subject: [PATCH] x86_64: avoid sending LOCAL_TIMER_VECTOR IPI to 
->> itself
->>
->> Ray Lee reported, that on an UP kernel with "noapic" command line 
->> option set, the box locks hard during boot.
-> 
-> i think this bug deserves a bit more attention, because similar problems 
-> could be in other codepaths too.
-> 
-> the problem here is that we tried to send an IPI to ourselves - which 
-> confused Ray's system which has an IO-APIC, but where due to noapic we 
-> keep the IO-APIC in its BIOS default.
-> 
-> this isnt a new problem: the new time code just exposed it more 
-> prominently that it was visible before. (the SMP kernel probably would 
-> hang in a similar way on Ray's system)
+Fix NULL pointer dereference on hot ejection of a FireWire card while
+dv1394 was loaded.  http://bugzilla.kernel.org/show_bug.cgi?id=7121
+I did not test card ejection with open /dev/dv1394 files yet.
 
-Taking the hint, yes it does. (I'd never had a reason to test it before.)
-Booting an SMP kernel without NOAPIC works, with NOAPIC hangs fairly early
-on, implying a real fix to my problem belongs down at the arch level, I
-suppose.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+Picked from 2.6.21-rc1.
 
-> i dont see any clear debugging in the IPI code that excludes self-IPIs. 
-> I think the only valid way to do that is to use DEST_SELF. Andi?
+ drivers/ieee1394/dv1394.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-Ray
+Index: linux-2.6.20.4/drivers/ieee1394/dv1394.c
+===================================================================
+--- linux-2.6.20.4.orig/drivers/ieee1394/dv1394.c
++++ linux-2.6.20.4/drivers/ieee1394/dv1394.c
+@@ -2267,11 +2267,7 @@ static void dv1394_remove_host (struct h
+ {
+ 	struct video_card *video;
+ 	unsigned long flags;
+-	int id = host->id;
+-
+-	/* We only work with the OHCI-1394 driver */
+-	if (strcmp(host->driver->name, OHCI1394_DRIVER_NAME))
+-		return;
++	int id = host->id, found_ohci_card = 0;
+ 
+ 	/* find the corresponding video_cards */
+ 	do {
+@@ -2284,6 +2280,7 @@ static void dv1394_remove_host (struct h
+ 			if ((tmp_vid->id >> 2) == id) {
+ 				list_del(&tmp_vid->list);
+ 				video = tmp_vid;
++				found_ohci_card = 1;
+ 				break;
+ 			}
+ 		}
+@@ -2293,8 +2290,9 @@ static void dv1394_remove_host (struct h
+ 			dv1394_un_init(video);
+ 	} while (video != NULL);
+ 
+-	class_device_destroy(hpsb_protocol_class,
+-		MKDEV(IEEE1394_MAJOR, IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id<<2)));
++	if (found_ohci_card)
++		class_device_destroy(hpsb_protocol_class, MKDEV(IEEE1394_MAJOR,
++				IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id << 2)));
+ }
+ 
+ static void dv1394_add_host (struct hpsb_host *host)
+
+-- 
+Stefan Richter
+-=====-=-=== --== ==--=
+http://arcgraph.de/sr/
+
