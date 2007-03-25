@@ -1,95 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbXCYRHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXCYRPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932096AbXCYRHp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 13:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbXCYRHp
+	id S932097AbXCYRPT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 13:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbXCYRPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 13:07:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:57977 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751958AbXCYRHo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 13:07:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=KCIwQZgrnou9apGDtY8H4BujflXq4dVDg9Tvbo12Aqfaw6G1BO2CaNfZ8kcFYQLUfsx457DJeP4+Se6XV2rj5oC3UIvdXjFoXkqekJDRXb9jYH+ssCUbiCUOi/ME5sQKaFEcuUE91NB0NIvM4goXmED2RQzon4dWOuKyY8eqpMQ=
-Message-ID: <82e4877d0703251007p390f4ed5g850dc5014fbeb66b@mail.gmail.com>
-Date: Sun, 25 Mar 2007 13:07:41 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: apm.c: get rid of unused variables
-Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       "John Stultz" <johnstul@us.ibm.com>
-In-Reply-To: <20070325162505.GN16477@stusta.de>
+	Sun, 25 Mar 2007 13:15:18 -0400
+Received: from comtv.ru ([217.10.32.17]:34469 "EHLO comtv.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbXCYRPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 13:15:16 -0400
+X-UCL: actv
+Date: Sun, 25 Mar 2007 21:14:11 +0400 (MSD)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Con Kolivas <kernel@kolivas.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
+       zwane@infradead.org, ck list <ck@vds.kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] sched: accurate user accounting
+In-Reply-To: <200703260128.09856.kernel@kolivas.org>
+Message-ID: <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru>
+References: <200703251159.03616.kernel@kolivas.org> <200703260108.22239.kernel@kolivas.org>
+ <Pine.LNX.4.64.0703251914110.9659@linmac.oyster.ru> <200703260128.09856.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_135362_31960997.1174842461820"
-References: <Pine.LNX.4.64.0703251158400.17623@paragw-desktop>
-	 <20070325162505.GN16477@stusta.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_135362_31960997.1174842461820
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, 26 Mar 2007, Con Kolivas wrote:
 
-On 3/25/07, Adrian Bunk <bunk@stusta.de> wrote:
-> On Sun, Mar 25, 2007 at 12:06:19PM -0400, Parag Warudkar wrote:
-> You could also remove the APM_RTC_IS_GMT config option.
+> On Monday 26 March 2007 01:19, malc wrote:
+>> On Mon, 26 Mar 2007, Con Kolivas wrote:
+>>> So before we go any further with this patch, can you try the following
+>>> one and see if this simple sanity check is enough?
+>>
+>> Sure (compiling the kernel now), too bad old axiom that testing can not
+>> confirm absence of bugs holds.
+>>
+>> I have one nit and one request from clarification. Question first (i
+>> admit i haven't looked at the surroundings of the patch maybe things
+>> would have been are self evident if i did):
+>>
+>> What this patch amounts to is that the accounting logic is moved from
+>> timer interrupt to the place where scheduler switches task (or something
+>> to that effect)?
 >
+> Both the scheduler tick and context switch now. So yes it adds overhead as I
+> said, although we already do update_cpu_clock on context switch, but it's not
+> this complex.
+>
+>> [..snip..]
+>>
+>>>  * These are the 'tuning knobs' of the scheduler:
+>>> @@ -3017,8 +3018,53 @@ EXPORT_PER_CPU_SYMBOL(kstat);
+>>> static inline void
+>>> update_cpu_clock(struct task_struct *p, struct rq *rq, unsigned long long
+>>> now) {
+>>> -	p->sched_time += now - p->last_ran;
+>>> +	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
+>>> +	cputime64_t time_diff;
+>>> +
+>>> 	p->last_ran = rq->most_recent_timestamp = now;
+>>> +	/* Sanity check. It should never go backwards or ruin accounting */
+>>> +	if (unlikely(now < p->last_ran))
+>>> +		return;
+>>> +	time_diff = now - p->last_ran;
+>>
+>> A nit. Anything wrong with:
+>>
+>> time_diff = now - p->last_ran;
+>> if (unlikeley (LESS_THAN_ZERO (time_diff))
+>>          return;
+>
+> Does LESS_THAN_ZERO work on a cputime64_t on all arches? I can't figure that
+> out just by looking myself which is why I did it the other way.
 
-Yep, that isn't used anymore. Separate Kconfig patch below and also attached.
+I have no idea what type cputime64_t really is, so used this imaginary
+LESS_THAN_ZERO thing.
 
-Parag
+Erm... i just looked at the code and suddenly it stopped making any sense
+at all:
 
-Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+         p->last_ran = rq->most_recent_timestamp = now;
+         /* Sanity check. It should never go backwards or ruin accounting */
+         if (unlikely(now < p->last_ran))
+                 return;
+         time_diff = now - p->last_ran;
 
---- linux-2.6/arch/i386/Kconfig 2007-03-24 21:43:35.000000000 -0400
-+++ linux-2.6-wk/arch/i386/Kconfig      2007-03-25 12:58:18.000000000 -0400
-@@ -1029,19 +1029,6 @@
-          backlight at all, or it might print a lot of errors to the console,
-          especially if you are using gpm.
+First `now' is assigned to `p->last_ran' and the very next line
+compares those two values, and then the difference is taken.. I quite
+frankly am either very tired or fail to see the point.. time_diff is
+either always zero or there's always a race here.
 
--config APM_RTC_IS_GMT
--       bool "RTC stores time in GMT"
--       depends on APM
--       help
--         Say Y here if your RTC (Real Time Clock a.k.a. hardware clock)
--         stores the time in GMT (Greenwich Mean Time). Say N if your RTC
--         stores localtime.
--
--         It is in fact recommended to store GMT in your RTC, because then you
--         don't have to worry about daylight savings time changes. The only
--         reason not to use GMT in your RTC is if you also run a broken OS
--         that doesn't understand GMT.
--
- config APM_ALLOW_INTS
-        bool "Allow interrupts during APM BIOS calls"
-        depends on APM
-
-------=_Part_135362_31960997.1174842461820
-Content-Type: text/x-patch; name=i386-kconfig-remove-apm_rtc_is_gmt.patch; 
-	charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ezpqua97
-Content-Disposition: attachment; filename="i386-kconfig-remove-apm_rtc_is_gmt.patch"
-
-LS0tIGxpbnV4LTIuNi9hcmNoL2kzODYvS2NvbmZpZwkyMDA3LTAzLTI0IDIxOjQzOjM1LjAwMDAw
-MDAwMCAtMDQwMAorKysgbGludXgtMi42LXdrL2FyY2gvaTM4Ni9LY29uZmlnCTIwMDctMDMtMjUg
-MTI6NTg6MTguMDAwMDAwMDAwIC0wNDAwCkBAIC0xMDI5LDE5ICsxMDI5LDYgQEAKIAkgIGJhY2ts
-aWdodCBhdCBhbGwsIG9yIGl0IG1pZ2h0IHByaW50IGEgbG90IG9mIGVycm9ycyB0byB0aGUgY29u
-c29sZSwKIAkgIGVzcGVjaWFsbHkgaWYgeW91IGFyZSB1c2luZyBncG0uCiAKLWNvbmZpZyBBUE1f
-UlRDX0lTX0dNVAotCWJvb2wgIlJUQyBzdG9yZXMgdGltZSBpbiBHTVQiCi0JZGVwZW5kcyBvbiBB
-UE0KLQloZWxwCi0JICBTYXkgWSBoZXJlIGlmIHlvdXIgUlRDIChSZWFsIFRpbWUgQ2xvY2sgYS5r
-LmEuIGhhcmR3YXJlIGNsb2NrKQotCSAgc3RvcmVzIHRoZSB0aW1lIGluIEdNVCAoR3JlZW53aWNo
-IE1lYW4gVGltZSkuIFNheSBOIGlmIHlvdXIgUlRDCi0JICBzdG9yZXMgbG9jYWx0aW1lLgotCi0J
-ICBJdCBpcyBpbiBmYWN0IHJlY29tbWVuZGVkIHRvIHN0b3JlIEdNVCBpbiB5b3VyIFJUQywgYmVj
-YXVzZSB0aGVuIHlvdQotCSAgZG9uJ3QgaGF2ZSB0byB3b3JyeSBhYm91dCBkYXlsaWdodCBzYXZp
-bmdzIHRpbWUgY2hhbmdlcy4gVGhlIG9ubHkKLQkgIHJlYXNvbiBub3QgdG8gdXNlIEdNVCBpbiB5
-b3VyIFJUQyBpcyBpZiB5b3UgYWxzbyBydW4gYSBicm9rZW4gT1MKLQkgIHRoYXQgZG9lc24ndCB1
-bmRlcnN0YW5kIEdNVC4KLQogY29uZmlnIEFQTV9BTExPV19JTlRTCiAJYm9vbCAiQWxsb3cgaW50
-ZXJydXB0cyBkdXJpbmcgQVBNIEJJT1MgY2FsbHMiCiAJZGVwZW5kcyBvbiBBUE0K
-------=_Part_135362_31960997.1174842461820--
+--
+vale
