@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbXCYMfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXCYMnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753501AbXCYMfW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 08:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbXCYMfW
+	id S1753507AbXCYMnD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 08:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbXCYMnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 08:35:22 -0400
-Received: from www.osadl.org ([213.239.205.134]:57542 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753501AbXCYMfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 08:35:21 -0400
-Subject: [PATCH] clocksource: Fix thinko in watchdog selection
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       David L <idht4n@hotmail.com>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <1174692936.10840.392.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323185028.GR752@stusta.de>
-	 <1174677338.10840.321.camel@localhost.localdomain>
-	 <46045355.1020105@redhat.com>
-	 <1174689791.10840.377.camel@localhost.localdomain>
-	 <1174692936.10840.392.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 25 Mar 2007 14:42:51 +0200
-Message-Id: <1174826571.10840.512.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Sun, 25 Mar 2007 08:43:03 -0400
+Received: from mail24.syd.optusnet.com.au ([211.29.133.165]:58995 "EHLO
+	mail24.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753507AbXCYMnB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 08:43:01 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] sched: accurate user accounting
+Date: Sun, 25 Mar 2007 22:41:54 +1000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, malc <av1474@comtv.ru>,
+       Ingo Molnar <mingo@elte.hu>, zwane@infradead.org,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200703251159.03616.kernel@kolivas.org> <200703252202.48022.kernel@kolivas.org> <200703250832.36818.gene.heskett@gmail.com>
+In-Reply-To: <200703250832.36818.gene.heskett@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703252241.55431.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The watchdog implementation excludes low res / non continuous
-clocksources from being selected as a watchdog reference
-unintentionally.
+On Sunday 25 March 2007 22:32, Gene Heskett wrote:
+> On Sunday 25 March 2007, Con Kolivas wrote:
+> >On Sunday 25 March 2007 21:46, Con Kolivas wrote:
+> >> On Sunday 25 March 2007 21:34, malc wrote:
+> >> > On Sun, 25 Mar 2007, Ingo Molnar wrote:
+> >> > > * Con Kolivas <kernel@kolivas.org> wrote:
+> >> > >> For an rsdl 0.33 patched kernel. Comments? Overhead worth it?
+> >> > >
+> >> > > we want to do this - and we should do this to the vanilla
+> >> > > scheduler first and check the results. I've back-merged the patch
+> >> > > to before RSDL and have tested it - find the patch below. Vale,
+> >> > > could you try this patch against a 2.6.21-rc4-ish kernel and
+> >> > > re-test your testcase?
+> >> >
+> >> > [..snip..]
+> >> >
+> >> > Compilation failed with:
+> >> > kernel/built-in.o(.sched.text+0x564): more undefined references to
+> >> > `__udivdi3' follow
+> >> >
+> >> > $ gcc --version | head -1
+> >> > gcc (GCC) 3.4.6
+> >> >
+> >> > $ cat /proc/cpuinfo | grep cpu
+> >> > cpu             : 7447A, altivec supported
+> >> >
+> >> > Can't say i really understand why 64bit arithmetics suddenly became
+> >> > an issue here.
+> >>
+> >> Probably due to use of:
+> >>
+> >> #define NS_TO_JIFFIES(TIME)	((TIME) / (1000000000 / HZ))
+> >> #define JIFFIES_TO_NS(TIME)	((TIME) * (1000000000 / HZ))
+> >>
+> >> Excuse our 64bit world while we strive to correct our 32bit blindness
+> >> and fix this bug.
+> >
+> >Please try this (akpm please don't include till we confirm it builds on
+> > ppc, sorry). For 2.6.21-rc4
+> >
+> >---
+> >Currently we only do cpu accounting to userspace based on what is
+> >actually happening precisely on each tick. The accuracy of that
+> >accounting gets progressively worse the lower HZ is. As we already keep
+> >accounting of nanosecond resolution we can accurately track user cpu,
+> >nice cpu and idle cpu if we move the accounting to update_cpu_clock with
+> >a nanosecond cpu_usage_stat entry. This increases overhead slightly but
+> >avoids the problem of tick aliasing errors making accounting unreliable.
 
-Allow using jiffies/PIT as a watchdog reference as long as no better
-clocksource is available. This is necessary to detect TSC breakage on
-systems, which have no pmtimer/hpet.
+>
+> I'm playing again because the final 2.6.20.4 does NOT break amanda, where
+> 2.6.20.4-rc1 did.
 
-The main goal of the initial patch (preventing to switch to highres/nohz
-when no reliable fallback clocksource is available) is still guaranteed
-by the checks in clocksource_watchdog().
+Yes only the original version I posted on this email thread was for an RSDL 
+0.33 patched kernel. That original patch should build fine on i386 and x86_64 
+(where I tried it). This version I sent out following Ingo's lead has 
+2.6.21-rc4 in mind (without rsdl).
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 5b0e46b..fe5c7db 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -151,7 +151,8 @@ static void clocksource_check_watchdog(struct clocksource *cs)
- 			watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
- 			add_timer(&watchdog_timer);
- 		}
--	} else if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS) {
-+	} else {
-+		if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
- 			cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
- 
- 		if (!watchdog || cs->rating > watchdog->rating) {
-
-
+-- 
+-ck
