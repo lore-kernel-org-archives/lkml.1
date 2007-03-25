@@ -1,174 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbXCYRF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbXCYRHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751955AbXCYRF4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 13:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932096AbXCYRF4
+	id S932096AbXCYRHp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 13:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbXCYRHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 13:05:56 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:36855 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbXCYRFz (ORCPT
+	Sun, 25 Mar 2007 13:07:45 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:57977 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbXCYRHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 13:05:55 -0400
-Date: Sun, 25 Mar 2007 13:01:44 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>, stable@kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Davide Brini <brini@geomin.unibo.it>
-Subject: [PATCH] UML - use correct register file size everywhere
-Message-ID: <20070325170144.GB6232@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Sun, 25 Mar 2007 13:07:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=KCIwQZgrnou9apGDtY8H4BujflXq4dVDg9Tvbo12Aqfaw6G1BO2CaNfZ8kcFYQLUfsx457DJeP4+Se6XV2rj5oC3UIvdXjFoXkqekJDRXb9jYH+ssCUbiCUOi/ME5sQKaFEcuUE91NB0NIvM4goXmED2RQzon4dWOuKyY8eqpMQ=
+Message-ID: <82e4877d0703251007p390f4ed5g850dc5014fbeb66b@mail.gmail.com>
+Date: Sun, 25 Mar 2007 13:07:41 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: apm.c: get rid of unused variables
+Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       "John Stultz" <johnstul@us.ibm.com>
+In-Reply-To: <20070325162505.GN16477@stusta.de>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_135362_31960997.1174842461820"
+References: <Pine.LNX.4.64.0703251158400.17623@paragw-desktop>
+	 <20070325162505.GN16477@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses MAX_REG_NR consistently to refer to the register file
-size.  FRAME_SIZE isn't sufficient because on x86_64, it is smaller
-than the ptrace register file size.  MAX_REG_NR was introduced as a
-consistent way to get the number of registers, but wasn't used
-everywhere it should be.
+------=_Part_135362_31960997.1174842461820
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-When this causes a problem, it makes PTRACE_SETREGS fail on x86_64
-because of a corrupted segment register value in the known-good
-register file. The patch also adds a register dump at that point in
-case there are any future problems here.
+On 3/25/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Sun, Mar 25, 2007 at 12:06:19PM -0400, Parag Warudkar wrote:
+> You could also remove the APM_RTC_IS_GMT config option.
+>
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/include/sysdep-x86_64/ptrace.h  |    4 ----
- arch/um/os-Linux/skas/mem.c             |   10 +++++++---
- arch/um/os-Linux/skas/process.c         |    6 +++---
- arch/um/os-Linux/sys-i386/registers.c   |    5 +++--
- arch/um/os-Linux/sys-x86_64/registers.c |    4 ++--
- 5 files changed, 15 insertions(+), 14 deletions(-)
+Yep, that isn't used anymore. Separate Kconfig patch below and also attached.
 
-Index: linux-2.6.21-mm/arch/um/include/sysdep-x86_64/ptrace.h
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/include/sysdep-x86_64/ptrace.h	2007-03-22 11:18:04.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/include/sysdep-x86_64/ptrace.h	2007-03-23 20:31:37.000000000 -0400
-@@ -104,10 +104,6 @@ union uml_pt_regs {
- #endif
- #ifdef UML_CONFIG_MODE_SKAS
- 	struct skas_regs {
--		/* x86_64 ptrace uses sizeof(user_regs_struct) as its register
--		 * file size, while i386 uses FRAME_SIZE.  Therefore, we need
--		 * to use UM_FRAME_SIZE here instead of HOST_FRAME_SIZE.
--		 */
- 		unsigned long regs[MAX_REG_NR];
- 		unsigned long fp[HOST_FP_SIZE];
-                 struct faultinfo faultinfo;
-Index: linux-2.6.21-mm/arch/um/os-Linux/skas/mem.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/skas/mem.c	2007-03-23 15:05:31.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/skas/mem.c	2007-03-25 10:33:30.000000000 -0400
-@@ -48,7 +48,7 @@ int multi_op_count = 0;
- static inline long do_syscall_stub(struct mm_id * mm_idp, void **addr)
- {
- 	unsigned long regs[MAX_REG_NR];
--	int n;
-+	int n, i;
- 	long ret, offset;
- 	unsigned long * data;
- 	unsigned long * syscall;
-@@ -66,9 +66,13 @@ static inline long do_syscall_stub(struc
- 		 (unsigned long) &__syscall_stub_start);
- 
- 	n = ptrace_setregs(pid, regs);
--	if(n < 0)
-+	if(n < 0){
-+		printk("Registers - \n");
-+		for(i = 0; i < MAX_REG_NR; i++)
-+			printk("\t%d\t0x%lx\n", i, regs[i]);
- 		panic("do_syscall_stub : PTRACE_SETREGS failed, errno = %d\n",
--		      n);
-+		      -n);
-+	}
- 
- 	wait_stub_done(pid, 0, "do_syscall_stub");
- 
-Index: linux-2.6.21-mm/arch/um/os-Linux/skas/process.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/skas/process.c	2007-03-23 15:05:31.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/skas/process.c	2007-03-25 10:33:30.000000000 -0400
-@@ -67,7 +67,7 @@ void wait_stub_done(int pid, int sig, ch
- 
- 	if((n < 0) || !WIFSTOPPED(status) ||
- 	   (WSTOPSIG(status) != SIGUSR1 && WSTOPSIG(status) != SIGTRAP)){
--		unsigned long regs[HOST_FRAME_SIZE];
-+		unsigned long regs[MAX_REG_NR];
- 
- 		if(ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
- 			printk("Failed to get registers from stub, "
-@@ -76,7 +76,7 @@ void wait_stub_done(int pid, int sig, ch
- 			int i;
- 
- 			printk("Stub registers -\n");
--			for(i = 0; i < HOST_FRAME_SIZE; i++)
-+			for(i = 0; i < ARRAY_SIZE(regs); i++)
- 				printk("\t%d - %lx\n", i, regs[i]);
- 		}
- 		panic("%s : failed to wait for SIGUSR1/SIGTRAP, "
-@@ -328,7 +328,7 @@ void userspace(union uml_pt_regs *regs)
- int copy_context_skas0(unsigned long new_stack, int pid)
- {
- 	int err;
--	unsigned long regs[HOST_FRAME_SIZE];
-+	unsigned long regs[MAX_REG_NR];
- 	unsigned long fp_regs[HOST_FP_SIZE];
- 	unsigned long current_stack = current_stub_stack();
- 	struct stub_data *data = (struct stub_data *) current_stack;
-Index: linux-2.6.21-mm/arch/um/os-Linux/sys-i386/registers.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/sys-i386/registers.c	2007-03-23 15:04:22.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/sys-i386/registers.c	2007-03-23 20:31:37.000000000 -0400
-@@ -15,7 +15,7 @@
- 
- /* These are set once at boot time and not changed thereafter */
- 
--static unsigned long exec_regs[HOST_FRAME_SIZE];
-+static unsigned long exec_regs[MAX_REG_NR];
- static unsigned long exec_fp_regs[HOST_FP_SIZE];
- static unsigned long exec_fpx_regs[HOST_XFP_SIZE];
- static int have_fpx_regs = 1;
-@@ -101,6 +101,7 @@ void init_registers(int pid)
- {
- 	int err;
- 
-+	memset(exec_regs, 0, sizeof(exec_regs));
- 	err = ptrace(PTRACE_GETREGS, pid, 0, exec_regs);
- 	if(err)
- 		panic("check_ptrace : PTRACE_GETREGS failed, errno = %d",
-@@ -124,7 +125,7 @@ void init_registers(int pid)
- 
- void get_safe_registers(unsigned long *regs, unsigned long *fp_regs)
- {
--	memcpy(regs, exec_regs, HOST_FRAME_SIZE * sizeof(unsigned long));
-+	memcpy(regs, exec_regs, sizeof(exec_regs));
- 	if(fp_regs != NULL)
- 		memcpy(fp_regs, exec_fp_regs,
- 		       HOST_FP_SIZE * sizeof(unsigned long));
-Index: linux-2.6.21-mm/arch/um/os-Linux/sys-x86_64/registers.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/sys-x86_64/registers.c	2007-03-20 15:02:25.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/sys-x86_64/registers.c	2007-03-25 10:33:48.000000000 -0400
-@@ -14,7 +14,7 @@
- 
- /* These are set once at boot time and not changed thereafter */
- 
--static unsigned long exec_regs[HOST_FRAME_SIZE];
-+static unsigned long exec_regs[MAX_REG_NR];
- static unsigned long exec_fp_regs[HOST_FP_SIZE];
- 
- void init_thread_registers(union uml_pt_regs *to)
-@@ -72,7 +72,7 @@ void init_registers(int pid)
- 
- void get_safe_registers(unsigned long *regs, unsigned long *fp_regs)
- {
--	memcpy(regs, exec_regs, HOST_FRAME_SIZE * sizeof(unsigned long));
-+	memcpy(regs, exec_regs, sizeof(exec_regs));
- 	if(fp_regs != NULL)
- 		memcpy(fp_regs, exec_fp_regs,
- 		       HOST_FP_SIZE * sizeof(unsigned long));
+Parag
+
+Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+
+--- linux-2.6/arch/i386/Kconfig 2007-03-24 21:43:35.000000000 -0400
++++ linux-2.6-wk/arch/i386/Kconfig      2007-03-25 12:58:18.000000000 -0400
+@@ -1029,19 +1029,6 @@
+          backlight at all, or it might print a lot of errors to the console,
+          especially if you are using gpm.
+
+-config APM_RTC_IS_GMT
+-       bool "RTC stores time in GMT"
+-       depends on APM
+-       help
+-         Say Y here if your RTC (Real Time Clock a.k.a. hardware clock)
+-         stores the time in GMT (Greenwich Mean Time). Say N if your RTC
+-         stores localtime.
+-
+-         It is in fact recommended to store GMT in your RTC, because then you
+-         don't have to worry about daylight savings time changes. The only
+-         reason not to use GMT in your RTC is if you also run a broken OS
+-         that doesn't understand GMT.
+-
+ config APM_ALLOW_INTS
+        bool "Allow interrupts during APM BIOS calls"
+        depends on APM
+
+------=_Part_135362_31960997.1174842461820
+Content-Type: text/x-patch; name=i386-kconfig-remove-apm_rtc_is_gmt.patch; 
+	charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ezpqua97
+Content-Disposition: attachment; filename="i386-kconfig-remove-apm_rtc_is_gmt.patch"
+
+LS0tIGxpbnV4LTIuNi9hcmNoL2kzODYvS2NvbmZpZwkyMDA3LTAzLTI0IDIxOjQzOjM1LjAwMDAw
+MDAwMCAtMDQwMAorKysgbGludXgtMi42LXdrL2FyY2gvaTM4Ni9LY29uZmlnCTIwMDctMDMtMjUg
+MTI6NTg6MTguMDAwMDAwMDAwIC0wNDAwCkBAIC0xMDI5LDE5ICsxMDI5LDYgQEAKIAkgIGJhY2ts
+aWdodCBhdCBhbGwsIG9yIGl0IG1pZ2h0IHByaW50IGEgbG90IG9mIGVycm9ycyB0byB0aGUgY29u
+c29sZSwKIAkgIGVzcGVjaWFsbHkgaWYgeW91IGFyZSB1c2luZyBncG0uCiAKLWNvbmZpZyBBUE1f
+UlRDX0lTX0dNVAotCWJvb2wgIlJUQyBzdG9yZXMgdGltZSBpbiBHTVQiCi0JZGVwZW5kcyBvbiBB
+UE0KLQloZWxwCi0JICBTYXkgWSBoZXJlIGlmIHlvdXIgUlRDIChSZWFsIFRpbWUgQ2xvY2sgYS5r
+LmEuIGhhcmR3YXJlIGNsb2NrKQotCSAgc3RvcmVzIHRoZSB0aW1lIGluIEdNVCAoR3JlZW53aWNo
+IE1lYW4gVGltZSkuIFNheSBOIGlmIHlvdXIgUlRDCi0JICBzdG9yZXMgbG9jYWx0aW1lLgotCi0J
+ICBJdCBpcyBpbiBmYWN0IHJlY29tbWVuZGVkIHRvIHN0b3JlIEdNVCBpbiB5b3VyIFJUQywgYmVj
+YXVzZSB0aGVuIHlvdQotCSAgZG9uJ3QgaGF2ZSB0byB3b3JyeSBhYm91dCBkYXlsaWdodCBzYXZp
+bmdzIHRpbWUgY2hhbmdlcy4gVGhlIG9ubHkKLQkgIHJlYXNvbiBub3QgdG8gdXNlIEdNVCBpbiB5
+b3VyIFJUQyBpcyBpZiB5b3UgYWxzbyBydW4gYSBicm9rZW4gT1MKLQkgIHRoYXQgZG9lc24ndCB1
+bmRlcnN0YW5kIEdNVC4KLQogY29uZmlnIEFQTV9BTExPV19JTlRTCiAJYm9vbCAiQWxsb3cgaW50
+ZXJydXB0cyBkdXJpbmcgQVBNIEJJT1MgY2FsbHMiCiAJZGVwZW5kcyBvbiBBUE0K
+------=_Part_135362_31960997.1174842461820--
