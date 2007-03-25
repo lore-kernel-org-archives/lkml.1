@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933215AbXCYJHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXCYJKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933215AbXCYJHR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 05:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXCYJHR
+	id S933262AbXCYJKI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 05:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933265AbXCYJKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 05:07:17 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:36983 "EHLO smtp.osdl.org"
+	Sun, 25 Mar 2007 05:10:08 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:37039 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933215AbXCYJHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 05:07:15 -0400
-Date: Sun, 25 Mar 2007 01:07:09 -0800
+	id S933262AbXCYJKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 05:10:06 -0400
+Date: Sun, 25 Mar 2007 01:09:03 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] utsns: fix !CONFIG_UTS_NS behavior
-Message-Id: <20070325010709.5d801f1c.akpm@linux-foundation.org>
-In-Reply-To: <20070323200039.GA15775@sergelap.austin.ibm.com>
-References: <20070323200039.GA15775@sergelap.austin.ibm.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Avoid time_offset overflows
+Message-Id: <20070325010903.a0e6e624.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703240153220.14457@scrub.home>
+References: <1174696834.5690.14.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0703240153220.14457@scrub.home>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -24,37 +27,29 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Mar 2007 15:00:39 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+On Sat, 24 Mar 2007 06:20:45 +0100 (CET) Roman Zippel <zippel@linux-m68k.org> wrote:
 
-> When CONFIG_UTS_NS=n, clone(CLONE_NEWUTS) quietly refuses.  So correctly does
-> not unshare a new uts namespace, but also does not return -EINVAL.
+> Hi,
 > 
-> Fix this to return -EINVAL so the caller knows his request was denied.
+> On Fri, 23 Mar 2007, john stultz wrote:
 > 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> > @@ -314,8 +314,8 @@ #endif
+> >  		    freq_adj += time_freq;
+> >  		    freq_adj = min(freq_adj, (s64)MAXFREQ_NSEC);
+> >  		    time_freq = max(freq_adj, (s64)-MAXFREQ_NSEC);
+> > -		    time_offset = (time_offset / NTP_INTERVAL_FREQ)
+> > -		    			<< SHIFT_UPDATE;
+> > +		    do_div(time_offset, NTP_INTERVAL_FREQ);
+> > +		    time_offset <<= SHIFT_UPDATE;
+> >  		} /* STA_PLL */
+> >  	    } /* txc->modes & ADJ_OFFSET */
+> >  	    if (txc->modes & ADJ_TICK)
 > 
-> ---
+> This is wrong, time_offset is signed and do_div is unsigned.
+> In general I planned to do the same change, but the do_div API could use a 
+> little cleanup to provide some clear function for signed/unsigned divide 
+> (hopefully with a better name than div_long_long_rem_signed or 
+> do_div_llr).
 > 
->  include/linux/utsname.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> bc350994ac67df8f1b917f9979c065d87757eabe
-> diff --git a/include/linux/utsname.h b/include/linux/utsname.h
-> index a4555fe..e10267d 100644
-> --- a/include/linux/utsname.h
-> +++ b/include/linux/utsname.h
-> @@ -70,6 +70,8 @@ static inline int unshare_utsname(unsign
->  
->  static inline int copy_utsname(int flags, struct task_struct *tsk)
->  {
-> +	if (flags & CLONE_NEWUTS)
-> +		return -EINVAL;
->  	return 0;
->  }
->  static inline void put_uts_ns(struct uts_namespace *ns)
 
-I'm assuming that this is 2.6.21 material.
-
-Please review -mm's merge-sys_clone-sys_unshare-nsproxy-and-namespace.patch
-- it probably needs to propagate this fix.
-
+Can we do a minimal thing for 2.6.21, worry about API beautification later?
