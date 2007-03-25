@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753014AbXCYAiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbXCYAit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753014AbXCYAiV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 20:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbXCYAiV
+	id S1753010AbXCYAit (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 20:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXCYAid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 20:38:21 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:48520 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751856AbXCYAiU (ORCPT
+	Sat, 24 Mar 2007 20:38:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59372 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753010AbXCYAic (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 20:38:20 -0400
-Date: Sun, 25 Mar 2007 06:15:29 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
-       rohitseth@google.com, ebiederm@xmission.com, mbligh@google.com,
-       winget@google.com, containers@lists.osdl.org, serue@us.ibm.com,
-       menage@google.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container system abstracted from cpusets code
-Message-ID: <20070325004529.GD11794@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.130746000@menage.corp.google.com> <20070324150505.GB9475@in.ibm.com> <20070324122559.11b9ba34.pj@sgi.com>
-Mime-Version: 1.0
+	Sat, 24 Mar 2007 20:38:32 -0400
+Date: Sat, 24 Mar 2007 17:35:57 -0700
+From: Greg KH <greg@kroah.com>
+To: Ryan Hope <rmh3093@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: pciehp: Cannot get control of hotplug hardware
+Message-ID: <20070325003557.GA22484@kroah.com>
+References: <48f7fe350703100755i75d2a56al981da1fbda645ddc@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070324122559.11b9ba34.pj@sgi.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <48f7fe350703100755i75d2a56al981da1fbda645ddc@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 24, 2007 at 12:25:59PM -0700, Paul Jackson wrote:
-> > P.S : cpuset.c checks for PF_EXITING twice in attach_task(), while this
-> > patch seems to be checking only once. Is that fine?
+On Sat, Mar 10, 2007 at 10:55:16AM -0500, Ryan Hope wrote:
+> Ever since I started playing with suspend I started turning on PCI Hot
+> Plug support.... since then I have been seeing messages like whats
+> below from dmesg.... I'm not exactly sure how this actually impacts me
+> if it does at all. I just thought it didn't look exactly right so I
+> wanted to inquire about it. Does anyone know what is going on here?
 > 
-> I think the cpuset code is ok, because, as you note, it locks the task,
-> picks off the cpuset pointer, and then checks a second time that the
-> task still does not have PF_EXITING set:
-
-Well afaics, PF_EXITING is set for the exiting task w/o taking any lock, which
-makes this racy always.
-
-> In the kernel/cpuset.c code for attach_task():
+> -Ryan
 > 
->         task_lock(tsk);
->         oldcs = tsk->cpuset;
->         /*
->          * After getting 'oldcs' cpuset ptr, be sure still not exiting.
->          * If 'oldcs' might be the top_cpuset due to the_top_cpuset_hack
->          * then fail this attach_task(), to avoid breaking top_cpuset.count.
->          */
->         if (tsk->flags & PF_EXITING) {
+> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+> decode_hpp: Could not get hotplug parameters. Use defaults
+> pciehp: HPC vendor_id 8086 device_id 27d0 ss_vid 0 ss_did 0
+> Evaluate _OSC Set fails. Status = 0x0005
+> Evaluate _OSC Set fails. Status = 0x0005
+> pciehp: Cannot get control of hotplug hardware for pci 0000:00:1c.0
 
-What if PF_EXITING is set after this check? If that happens then,
+Your pci express hotplug controller does not support the proper hotplug
+capabilities.  It's probably a bios issue as Windows doesn't support
+this just yet (I think Vista now does), so those functions were usually
+never tested.
 
->                 task_unlock(tsk);
->                 mutex_unlock(&callback_mutex);
->                 put_task_struct(tsk);
->                 return -ESRCH;
->         }
+You should be able to just ignore them, unless you want to use your pci
+express hotplug functionality.  What kind of hardware is this, a laptop
+with expresscard?  Or something else?
 
-the following code becomes racy with cpuset_exit() ...
+thanks,
 
-        atomic_inc(&cs->count);
-        rcu_assign_pointer(tsk->cpuset, cs);
-        task_unlock(tsk);
-
-
--- 
-Regards,
-vatsa
+greg k-h
