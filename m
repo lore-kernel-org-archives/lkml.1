@@ -1,76 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXCYXAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbXCYXDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbXCYXAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 19:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXCYXAY
+	id S932794AbXCYXDF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 19:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXCYXDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 19:00:24 -0400
-Received: from lazybastard.de ([212.112.238.170]:56887 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932079AbXCYXAJ (ORCPT
+	Sun, 25 Mar 2007 19:03:05 -0400
+Received: from mail31.syd.optusnet.com.au ([211.29.132.102]:37406 "EHLO
+	mail31.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932794AbXCYXDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 19:00:09 -0400
-Date: Mon, 26 Mar 2007 00:55:28 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: David Lang <david.lang@digitalinsight.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Matt Mackall <mpm@selenic.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Artem Bityutskiy <dedekind@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-Message-ID: <20070325225528.GD19691@lazybastard.org>
-References: <20070319170838.GP4892@waste.org> <1174328188.30079.46.camel@zod.rchland.ibm.com> <20070319195442.GT4892@waste.org> <1174338329.13341.633.camel@localhost.localdomain> <20070319223205.GZ4892@waste.org> <1174351366.13341.739.camel@localhost.localdomain> <20070321110528.GC3785@lazybastard.org> <1174476334.10840.49.camel@localhost.localdomain> <20070325200826.GA19691@lazybastard.org> <Pine.LNX.4.63.0703251338580.13765@qynat.qvtvafvgr.pbz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 25 Mar 2007 19:03:03 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: malc <av1474@comtv.ru>
+Subject: Re: [patch] sched: accurate user accounting
+Date: Mon, 26 Mar 2007 09:01:54 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
+       zwane@infradead.org, ck list <ck@vds.kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200703251159.03616.kernel@kolivas.org> <200703260128.09856.kernel@kolivas.org> <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru>
+In-Reply-To: <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.63.0703251338580.13765@qynat.qvtvafvgr.pbz>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200703260901.54943.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 March 2007 13:49:58 -0800, David Lang wrote:
-> On Sun, 25 Mar 2007, Jörn Engel wrote:
-> 
-> >Logical volume management can just as easily move its management
-> >information into a table, instead of having it spread across all blocks.
-> >Blocks can keep their original size.  Since you have to scan flash
-> >anyway, you can also scan for a table, compare a magical number and do
-> >some extra check to protect yourself against a UBI image inside some
-> >logical volume.  No big deal.
-
-[ This was not a request for UBI to be changed.  The only purpose was to
-illustrate that LogFS is not broken.  The previous thread suggested
-otherwise and I just couldn't leave it at that. ]
-
-> if you are being paranoid about write cycles putting the write count in the 
-> block you are writing avoids doing an erase/write elsewhere
+On Monday 26 March 2007 03:14, malc wrote:
+> On Mon, 26 Mar 2007, Con Kolivas wrote:
+> > On Monday 26 March 2007 01:19, malc wrote:
+> >> On Mon, 26 Mar 2007, Con Kolivas wrote:
+> >>> So before we go any further with this patch, can you try the following
+> >>> one and see if this simple sanity check is enough?
+> >>
+> >> Sure (compiling the kernel now), too bad old axiom that testing can not
+> >> confirm absence of bugs holds.
+> >>
+> >> I have one nit and one request from clarification. Question first (i
+> >> admit i haven't looked at the surroundings of the patch maybe things
+> >> would have been are self evident if i did):
+> >>
+> >> What this patch amounts to is that the accounting logic is moved from
+> >> timer interrupt to the place where scheduler switches task (or something
+> >> to that effect)?
+> >
+> > Both the scheduler tick and context switch now. So yes it adds overhead
+> > as I said, although we already do update_cpu_clock on context switch, but
+> > it's not this complex.
+> >
+> >> [..snip..]
+> >>
+> >>>  * These are the 'tuning knobs' of the scheduler:
+> >>> @@ -3017,8 +3018,53 @@ EXPORT_PER_CPU_SYMBOL(kstat);
+> >>> static inline void
+> >>> update_cpu_clock(struct task_struct *p, struct rq *rq, unsigned long
+> >>> long now) {
+> >>> -	p->sched_time += now - p->last_ran;
+> >>> +	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
+> >>> +	cputime64_t time_diff;
+> >>> +
+> >>> 	p->last_ran = rq->most_recent_timestamp = now;
+> >>> +	/* Sanity check. It should never go backwards or ruin accounting */
+> >>> +	if (unlikely(now < p->last_ran))
+> >>> +		return;
+> >>> +	time_diff = now - p->last_ran;
+> >>
+> >> A nit. Anything wrong with:
+> >>
+> >> time_diff = now - p->last_ran;
+> >> if (unlikeley (LESS_THAN_ZERO (time_diff))
+> >>          return;
+> >
+> > Does LESS_THAN_ZERO work on a cputime64_t on all arches? I can't figure
+> > that out just by looking myself which is why I did it the other way.
 >
-> although, since you can flip bits to 1 without requireing an erase you 
-[ vice versa.  you can flip bits to 0 without erasing. ]
-> could sacrafice some space and say that your table has a normal counter for 
-> the number of times the block has been erased, but a 'tally counter' where 
-> you turn one bit on each time you erase the block, and when you fill up the 
-> tally block you re-write the entire table, clearing all the tallys. if you 
-> have relativly large eraseblocks it seems like you could afford to 
-> sacrafice the space in your master table to avoid erases of it
+> I have no idea what type cputime64_t really is, so used this imaginary
+> LESS_THAN_ZERO thing.
+>
+> Erm... i just looked at the code and suddenly it stopped making any sense
+> at all:
+>
+>          p->last_ran = rq->most_recent_timestamp = now;
+>          /* Sanity check. It should never go backwards or ruin accounting
+> */ if (unlikely(now < p->last_ran))
+>                  return;
+>          time_diff = now - p->last_ran;
+>
+> First `now' is assigned to `p->last_ran' and the very next line
+> compares those two values, and then the difference is taken.. I quite
+> frankly am either very tired or fail to see the point.. time_diff is
+> either always zero or there's always a race here.
 
-Or you could have a table and any number of updates to it.  Erase one
-block, append a small update marker to the table.  There are plenty of
-options.  All have in common that code would be more complicated.
-
-Another advantage is that erase counts don't get reset if the race
-against a power failure during erase is lost.
-
-Whether the advantaves of power-of-two blocksizes and safe erasecounts
-are worth it, I leave for others to decide.
-
-Jörn
+Bah major thinko error on my part! That will teach me to post patches untested 
+at 1:30 am. I'll try again shortly sorry.
 
 -- 
-Fools ignore complexity.  Pragmatists suffer it.
-Some can avoid it.  Geniuses remove it.
--- Perlis's Programming Proverb #58, SIGPLAN Notices, Sept.  1982
+-ck
