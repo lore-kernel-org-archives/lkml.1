@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933296AbXCYJUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751243AbXCYJrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933296AbXCYJUy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 05:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933290AbXCYJUy
+	id S1751243AbXCYJrf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 05:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXCYJrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 05:20:54 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37280 "EHLO smtp.osdl.org"
+	Sun, 25 Mar 2007 05:47:35 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38462 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933277AbXCYJUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 05:20:53 -0400
-Date: Sun, 25 Mar 2007 01:20:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Schwab <schwab@suse.de>
+	id S1751096AbXCYJre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 05:47:34 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
 Subject: Re: sata-vsc broken on SGI Prism
-Message-Id: <20070325012044.97dc14fc.akpm@linux-foundation.org>
-In-Reply-To: <je8xdnova3.fsf@sykes.suse.de>
 References: <je8xdnova3.fsf@sykes.suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	<20070325012044.97dc14fc.akpm@linux-foundation.org>
+X-Yow: This TOPS OFF my partygoing experience!  Someone I DON'T LIKE
+ is talking to me about a HEART-WARMING European film..
+Date: Sun, 25 Mar 2007 11:47:26 +0200
+In-Reply-To: <20070325012044.97dc14fc.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Sun, 25 Mar 2007 01:20:44 -0800")
+Message-ID: <jer6rdu029.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007 10:17:24 +0100 Andreas Schwab <schwab@suse.de> wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> I'm getting this panic when loading sata-vsc on a SGI Prism:
+> On Sat, 24 Mar 2007 10:17:24 +0100 Andreas Schwab <schwab@suse.de> wrote:
+>
+>> I'm getting this panic when loading sata-vsc on a SGI Prism:
+>
+> With what kernel?
 
-With what kernel?
+Linus' latest at this point in time.
 
-> Loading sata_vsc
-> ACPI: Unable to derive IRQ for device 0001:00:03.0
-> ACPI: PCI Interrupt 0001:00:03.0[A]: no GSI
-> FRZ XN request short error. 
-> FRZ XN error detail 1A:
-> 	Command word: 0x11
-> 	Supplemental: 0xff
-> 	Source node id: 0x0
-> 	Source chip id: 0x2
-> 	Destination chip id: 0x0
-> 	Data error: 0x0
-> 	Echo: 0x70
-> 	Valid: 0x0
-> 	Address: 0x1802000021
-> FRZ XN error detail 1B:
-> 	Command word: 0x0
-> 	Supplemental: 0x0
-> 	Source node id: 0x0
-> 	Source chip id: 0x0
-> 	Destination chip id: 0x0
-> 	Echo: 0x0
-> 	Valid: 0x0
-> 	Address: 0x0
-> Fatal ICE HW error
-> Kernel panic - not syncing: hub_eint_handler: Fatal TIO Error
-> 
-> Bisection has identified this patch (together with the follow-up patch to
-> fix the compilation failure):
-> 
-> commit 7cbaa86b937b0b1fab95c159989f6a3c00bbcf78
-> Author: Dan Wolstenholme <daniel@wolstenholme.net>
-> Date:   Tue Jan 9 05:59:21 2007 -0500
-> 
->     [libata] sata_vsc: support PCI MSI
->     
->     Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> 
+Andreas.
 
-It seems that little of that patch remains present in current mainline.
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
