@@ -1,124 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932563AbXCYW7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXCYXAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932563AbXCYW7v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 18:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbXCYW7v
+	id S932079AbXCYXAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 19:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXCYXAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 18:59:51 -0400
-Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:40536 "EHLO
-	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932563AbXCYW7u (ORCPT
+	Sun, 25 Mar 2007 19:00:24 -0400
+Received: from lazybastard.de ([212.112.238.170]:56887 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932079AbXCYXAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 18:59:50 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-Subject: Re: debug rsdl 0.33
-Date: Mon, 26 Mar 2007 08:59:26 +1000
-User-Agent: KMail/1.9.5
-Cc: "Andy Whitcroft" <apw@shadowen.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Steve Fox" <drfickle@us.ibm.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <64bb37e0703251128q3f9db894u24c4638dcf97224a@mail.gmail.com> <200703260849.07943.kernel@kolivas.org>
-In-Reply-To: <200703260849.07943.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Mar 2007 19:00:09 -0400
+Date: Mon, 26 Mar 2007 00:55:28 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: David Lang <david.lang@digitalinsight.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Matt Mackall <mpm@selenic.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
+Message-ID: <20070325225528.GD19691@lazybastard.org>
+References: <20070319170838.GP4892@waste.org> <1174328188.30079.46.camel@zod.rchland.ibm.com> <20070319195442.GT4892@waste.org> <1174338329.13341.633.camel@localhost.localdomain> <20070319223205.GZ4892@waste.org> <1174351366.13341.739.camel@localhost.localdomain> <20070321110528.GC3785@lazybastard.org> <1174476334.10840.49.camel@localhost.localdomain> <20070325200826.GA19691@lazybastard.org> <Pine.LNX.4.63.0703251338580.13765@qynat.qvtvafvgr.pbz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200703260859.27272.kernel@kolivas.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.63.0703251338580.13765@qynat.qvtvafvgr.pbz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 March 2007 08:49, Con Kolivas wrote:
-> On Monday 26 March 2007 04:28, Torsten Kaiser wrote:
-> > On 3/24/07, Con Kolivas <kernel@kolivas.org> wrote:
-> > >  kernel/sched.c |   51
-> > > +++++++++++++++++++++++++++++++++++++++++++++++++++ 1 file changed, 51
-> > > insertions(+)
-> >
-> > 2.6.21-rc4-mm1 also fails for me.
-> >
-> > I tried pure 2.6.21-rc4-mm1, +hotfixes, +hotfixes+rsdl33 and at last
-> > also added above debug patch.
->
-> Thank you very much for the effort!
->
-> > The oops from with the debug-patch added:
-> > [   65.426126] Freeing unused kernel memory: 312k freed
-> > (on the console the system is starting up, getting until "Letting udev
-> > process events ...")
-> > [   66.665611] Unable to handle kernel NULL pointer dereference at
-> > 0000000000000020 RIP:
-> > [   66.682030]  [<ffffffff8026167c>] __sched_text_start+0x4dc/0xa0e
->
-> The debug patch didn't do anything. This means it is not an unset bitmap
-> problem at all otherwise it should have self corrected itself.
->
-> > The system in x86_64, two 2218 on a MCP55 nvidia chipset.
-> >
-> > 2.6.21-rc3-mm1 works fine.
-> >
-> > (gdb) list *0xffffffff8026167c
-> > 0xffffffff8026167c is in schedule (kernel/sched.c:3619).
->
-> 	next = list_entry(queue->next, struct task_struct, run_list);
-> 	rq->prio_level = idx;
->
-> > 3614            /*
-> > 3615             * When the task is chosen it is checked to see if its
-> > quota has been
-> > 3616             * added to this runqueue level which is only performed
-> > once per 3617             * level per major rotation for each running
-> > task. 3618             */
-> > 3619            if (next->rotation != rq->prio_rotation) {
->
-> Urgh. Dereferencing there? That can only be next that's deferencing meaning
-> the run_list entry is bogus. That should only ever be done under runqueue
-> lock so I have a race somewhere where it's not. Time for more looking.
+On Sun, 25 March 2007 13:49:58 -0800, David Lang wrote:
+> On Sun, 25 Mar 2007, Jörn Engel wrote:
+> 
+> >Logical volume management can just as easily move its management
+> >information into a table, instead of having it spread across all blocks.
+> >Blocks can keep their original size.  Since you have to scan flash
+> >anyway, you can also scan for a table, compare a magical number and do
+> >some extra check to protect yourself against a UBI image inside some
+> >logical volume.  No big deal.
 
-This is about the only place I can see the run_list is looked at unlocked. Can
-you see if this simple patch helps? The debug patch is unnecessary now.
+[ This was not a request for UBI to be changed.  The only purpose was to
+illustrate that LogFS is not broken.  The previous thread suggested
+otherwise and I just couldn't leave it at that. ]
 
-Thanks!
+> if you are being paranoid about write cycles putting the write count in the 
+> block you are writing avoids doing an erase/write elsewhere
+>
+> although, since you can flip bits to 1 without requireing an erase you 
+[ vice versa.  you can flip bits to 0 without erasing. ]
+> could sacrafice some space and say that your table has a normal counter for 
+> the number of times the block has been erased, but a 'tally counter' where 
+> you turn one bit on each time you erase the block, and when you fill up the 
+> tally block you re-write the entire table, clearing all the tallys. if you 
+> have relativly large eraseblocks it seems like you could afford to 
+> sacrafice the space in your master table to avoid erases of it
 
---
-Ensure checking task_queued() is only done under runqueue lock.
+Or you could have a table and any number of updates to it.  Erase one
+block, append a small update marker to the table.  There are plenty of
+options.  All have in common that code would be more complicated.
 
-Signed-off-by: Con Kolivas <kernel@kolivas.org>
+Another advantage is that erase counts don't get reset if the race
+against a power failure during erase is lost.
 
----
- kernel/sched.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+Whether the advantaves of power-of-two blocksizes and safe erasecounts
+are worth it, I leave for others to decide.
 
-Index: linux-2.6.21-rc4-mm1/kernel/sched.c
-===================================================================
---- linux-2.6.21-rc4-mm1.orig/kernel/sched.c	2007-03-26 08:54:15.000000000 +1000
-+++ linux-2.6.21-rc4-mm1/kernel/sched.c	2007-03-26 08:55:21.000000000 +1000
-@@ -3421,16 +3421,16 @@ static inline void rotate_runqueue_prior
- 
- static void task_running_tick(struct rq *rq, struct task_struct *p, int tick)
- {
--	if (unlikely(!task_queued(p))) {
--		/* Task has expired but was not scheduled yet */
--		set_tsk_need_resched(p);
--		return;
--	}
- 	/* SCHED_FIFO tasks never run out of timeslice. */
- 	if (unlikely(p->policy == SCHED_FIFO))
- 		return;
- 
- 	spin_lock(&rq->lock);
-+	if (unlikely(!task_queued(p))) {
-+		/* Task has expired but was not scheduled off yet */
-+		set_tsk_need_resched(p);
-+		goto out_unlock;
-+	}
- 	/*
- 	 * Accounting is performed by both the task and the runqueue. This
- 	 * allows frequently sleeping tasks to get their proper quota of
-
+Jörn
 
 -- 
--ck
+Fools ignore complexity.  Pragmatists suffer it.
+Some can avoid it.  Geniuses remove it.
+-- Perlis's Programming Proverb #58, SIGPLAN Notices, Sept.  1982
