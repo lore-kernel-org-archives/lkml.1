@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbXCYMzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbXCYM6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbXCYMzN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 08:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXCYMzN
+	id S1753508AbXCYM6b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 08:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbXCYM6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 08:55:13 -0400
-Received: from dd3532.kasserver.com ([81.209.188.70]:36951 "EHLO
-	dd3532.kasserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753510AbXCYMzM (ORCPT
+	Sun, 25 Mar 2007 08:58:31 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51924 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753508AbXCYM6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 08:55:12 -0400
-X-Greylist: delayed 2000 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Mar 2007 08:55:12 EDT
-Message-ID: <46066970.20802@helmutauer.de>
-Date: Sun, 25 Mar 2007 14:22:08 +0200
-From: Helmut Auer <vdr@helmutauer.de>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sun, 25 Mar 2007 08:58:30 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Thomas Meyer <thomas@m3y3r.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <gregkh@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<46065FED.8030206@m3y3r.de> <m11wjd4jiq.fsf@ebiederm.dsl.xmission.com>
+	<200703251428.03382.rjw@sisk.pl>
+Date: Sun, 25 Mar 2007 06:56:08 -0600
+In-Reply-To: <200703251428.03382.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sun, 25 Mar 2007 14:28:02 +0200")
+Message-ID: <m1wt1532jb.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Kernel 2.6.20 takes a long time to load
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello List,
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-The kernel 2.6.20 makes a long delay during booting ( about 15 seconds ) after showing:
+> Yes, in kernel/power/disk.c:power_down() .
+>
+> Please comment out the disable_nonboot_cpus() in there and retest (but please
+> test the latest Linus' tree).
 
-NET: Registered protocol family 2
+<rant>
 
-then it goes along with:
+Why do we even need a disable_nonboot_cpus in that path?  machine_shutdown
+on i386 and x86_64 should take care of that.  Further the code that computes
+the boot cpu is bogus (not all architectures require cpu == 0 to be
+the boot cpu), and disabling non boot cpus appears to be a strong
+x86ism, in the first place.
 
-IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
-TCP established hash table entries: 8192 (order: 4, 98304 bytes)
-...
+If the only reason for disable_nonboot_cpus there is to avoid the
+WARN_ON in init_low_mappings() we should seriously consider killing
+it.  If we can wait for 2.6.22 the relocatable x86_64 patchset that
+Andi has queued, has changes that kill the init_low_mapping() hack.
 
-I am using the kernel parameter lpj to avoid calculating processor speed during kernel load.
-If I do not use the lpj parameter, the detection of cpu speed takes about 10 seconds, but then 
-there is no delay after:
-NET: Registered protocol family 2
+I'm not very comfortable with calling cpu_down in a common code path
+right now either.  I'm fairly certain we still don't have that
+correct.  So if we confine the mess that is cpu_down to #if
+defined(CPU_HOTPLUG) && defined(CONFIG_EXPERIMENTAL) I don't care.
+If we start using it everywhere I'm very nervous.  I know the irq
+migration when bringing a cpu down is strongly racy, and I don't think
+we actually put cpus to sleep properly either.
 
-Any hints what I can try to get a fast booting kernel ?
-I am using 2.6.20 with some gentoo patches ( plain 2.6.20-4 has the same problem ).
+</rant>
 
-My .config is here:
-http://www.helmutauer.de/.config-2.6.20.3.gz
 
--- 
-Helmut Auer, helmut@helmutauer.de
+Eric
