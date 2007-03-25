@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbXCYFHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933191AbXCYFMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933151AbXCYFHR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 01:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbXCYFHR
+	id S933191AbXCYFMO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 01:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933196AbXCYFMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 01:07:17 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2086 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933151AbXCYFHP (ORCPT
+	Sun, 25 Mar 2007 01:12:13 -0400
+Received: from jenny.ondioline.org ([66.220.1.122]:3233 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933191AbXCYFMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 01:07:15 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: About GCC4 Optimization
-Date: Sat, 24 Mar 2007 22:07:05 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMEEGCIAC.davids@webmaster.com>
+	Sun, 25 Mar 2007 01:12:13 -0400
+From: Paul Collins <paul@briny.ondioline.org>
+To: David Miller <davem@davemloft.net>
+Cc: bunk@stusta.de, torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jareguero@telefonica.net,
+       oliver.pntr@gmail.com, g3vbv@blueyonder.co.uk
+Subject: Re: [1/5] 2.6.21-rc4: known regressions (v2)
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<20070323184816.GO752@stusta.de>
+	<20070324.214509.98750566.davem@davemloft.net>
+Date: Sun, 25 Mar 2007 17:08:52 +1200
+In-Reply-To: <20070324.214509.98750566.davem@davemloft.net> (David Miller's
+	message of "Sat\, 24 Mar 2007 21\:45\:09 -0700 \(PDT\)")
+Message-ID: <877it59afv.fsf@briny.internal.ondioline.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.95 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <Pine.LNX.4.64.0703242123310.6730@woody.linux-foundation.org>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sat, 24 Mar 2007 22:07:14 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sat, 24 Mar 2007 22:07:15 -0800
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller <davem@davemloft.net> writes:
 
-> So what gcc does may be technically legal, but it's still a horribly
-> bad thing to do. Sadly, some gcc people seem to care more
-> about "letter
-> of the law" than "sanity and quality of implementation".
+> Furthermore, his scripts don't even execute properly when
+> I try to run them myself, for example server.py gives me
+> this syntax error when python tries to parse the script:
+>
+> davem@sunset:~/src/GIT/net-2.6$ /usr/bin/python server.py
+>   File "server.py", line 9
+>     struct sockaddr_in ServerAddr;
+>                      ^
+> SyntaxError: invalid syntax
 
-You know, it would be one thing if they were consistent. A policy that, by
-default, you get all the optimizations the relevant standards allow wouldn't
-be a problem. But they do this when they feel like it, and they disable
-significant optimizations even where the standards allow them when they feel
-like that.
+The reporter's client and server code seem to be C, but if the he thinks
+they should be Python, I guess they're not the correct ones anyway.
 
-See, for example:
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=20099
+-- 
+Paul Collins
+Wellington, New Zealand
 
-"You cannot create code that works with this option and doesn't work without
-it except by violating the POSIX standard. So POSIX code should not have
-this option enabled by default -- it's a pure pessimization." Yet the option
-is on by default when -pthreads is specified.
-
-DS
-
-PS: Yes, I'm still pissed about this. ;)
-
-
+Dag vijandelijk luchtschip de huismeester is dood
