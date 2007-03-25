@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751411AbXCYP2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbXCYPaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751411AbXCYP2e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 11:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXCYP2e
+	id S1751458AbXCYPaG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 11:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbXCYPaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 11:28:34 -0400
-Received: from mail25.syd.optusnet.com.au ([211.29.133.166]:33102 "EHLO
-	mail25.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751411AbXCYP2d (ORCPT
+	Sun, 25 Mar 2007 11:30:06 -0400
+Received: from smtpout08-04.prod.mesa1.secureserver.net ([64.202.165.12]:52977
+	"HELO smtpout08.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1751458AbXCYPaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 11:28:33 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: malc <av1474@comtv.ru>
-Subject: Re: [patch] sched: accurate user accounting
-Date: Mon, 26 Mar 2007 01:28:09 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
-       zwane@infradead.org, ck list <ck@vds.kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200703251159.03616.kernel@kolivas.org> <200703260108.22239.kernel@kolivas.org> <Pine.LNX.4.64.0703251914110.9659@linmac.oyster.ru>
-In-Reply-To: <Pine.LNX.4.64.0703251914110.9659@linmac.oyster.ru>
+	Sun, 25 Mar 2007 11:30:05 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Mar 2007 11:30:04 EDT
+Message-ID: <460693EB.9080203@kpfleming.us>
+Date: Sun, 25 Mar 2007 08:23:23 -0700
+From: "Kevin P. Fleming" <lkml@kpfleming.us>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: drivers/pci/probe.c patch in 2.6.20.4 causes 'cannot adjust BAR0
+ (not I/O)' on NVidia MCP51
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703260128.09856.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 March 2007 01:19, malc wrote:
-> On Mon, 26 Mar 2007, Con Kolivas wrote:
-> > So before we go any further with this patch, can you try the following
-> > one and see if this simple sanity check is enough?
->
-> Sure (compiling the kernel now), too bad old axiom that testing can not
-> confirm absence of bugs holds.
->
-> I have one nit and one request from clarification. Question first (i
-> admit i haven't looked at the surroundings of the patch maybe things
-> would have been are self evident if i did):
->
-> What this patch amounts to is that the accounting logic is moved from
-> timer interrupt to the place where scheduler switches task (or something
-> to that effect)?
+I just upgraded from 2.6.20.2 to 2.6.20.4 on my Compaq V6000 laptop,
+which has an NVidia core chipset. It has the MCP51 and uses it for PATA
+and SATA.
 
-Both the scheduler tick and context switch now. So yes it adds overhead as I 
-said, although we already do update_cpu_clock on context switch, but it's not 
-this complex.
+Booting the 2.6.20.4 kernel causes two messages (and a kernel lockup)
+like this:
 
-> [..snip..]
->
-> >  * These are the 'tuning knobs' of the scheduler:
-> > @@ -3017,8 +3018,53 @@ EXPORT_PER_CPU_SYMBOL(kstat);
-> > static inline void
-> > update_cpu_clock(struct task_struct *p, struct rq *rq, unsigned long long
-> > now) {
-> > -	p->sched_time += now - p->last_ran;
-> > +	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
-> > +	cputime64_t time_diff;
-> > +
-> > 	p->last_ran = rq->most_recent_timestamp = now;
-> > +	/* Sanity check. It should never go backwards or ruin accounting */
-> > +	if (unlikely(now < p->last_ran))
-> > +		return;
-> > +	time_diff = now - p->last_ran;
->
-> A nit. Anything wrong with:
->
-> time_diff = now - p->last_ran;
-> if (unlikeley (LESS_THAN_ZERO (time_diff))
->          return;
+0000:00:0d.0: cannot adjust BAR0 (not I/O)
+0000:00:0d.0: cannot adjust BAR1 (not I/O)
 
-Does LESS_THAN_ZERO work on a cputime64_t on all arches? I can't figure that 
-out just by looking myself which is why I did it the other way.
+Booting without ACPI, without APIC, without LAPIC makes no usable
+difference (although sometimes I will also receive a message about BAR2).
 
--- 
--ck
+This patch:
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ed8ccee0918ad063a4741c0656fda783e02df627;hp=9e5755bce00bb563739aeb0f09932a1907521167
+
+is the cause... backing it out results in a working 2.6.20.4 kernel on
+my laptop.
+
+I'll be happy to provide any assistance I can debugging this problem.
+Thanks.
