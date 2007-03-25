@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXCYJKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933273AbXCYJLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933262AbXCYJKI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 05:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933265AbXCYJKI
+	id S933273AbXCYJLq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 05:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXCYJLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 05:10:08 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37039 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933262AbXCYJKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 05:10:06 -0400
-Date: Sun, 25 Mar 2007 01:09:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Avoid time_offset overflows
-Message-Id: <20070325010903.a0e6e624.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703240153220.14457@scrub.home>
-References: <1174696834.5690.14.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0703240153220.14457@scrub.home>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Mar 2007 05:11:46 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36187 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933273AbXCYJLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 05:11:45 -0400
+Date: Sun, 25 Mar 2007 11:16:04 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: keyboard.c: Stop flooding dmesg with useless warnings
+In-Reply-To: <82e4877d0703242235r7c83a867hd4f3ec740e8627fb@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0703251113390.21880@jikos.suse.cz>
+References: <Pine.LNX.4.64.0703242315160.492@paragw-desktop> 
+ <200703250115.02029.dtor@insightbb.com>  <82e4877d0703242227q7961833aie851e14764002264@mail.gmail.com>
+  <200703250129.32877.dtor@insightbb.com> <82e4877d0703242235r7c83a867hd4f3ec740e8627fb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007 06:20:45 +0100 (CET) Roman Zippel <zippel@linux-m68k.org> wrote:
+On Sun, 25 Mar 2007, Parag Warudkar wrote:
 
-> Hi,
-> 
-> On Fri, 23 Mar 2007, john stultz wrote:
-> 
-> > @@ -314,8 +314,8 @@ #endif
-> >  		    freq_adj += time_freq;
-> >  		    freq_adj = min(freq_adj, (s64)MAXFREQ_NSEC);
-> >  		    time_freq = max(freq_adj, (s64)-MAXFREQ_NSEC);
-> > -		    time_offset = (time_offset / NTP_INTERVAL_FREQ)
-> > -		    			<< SHIFT_UPDATE;
-> > +		    do_div(time_offset, NTP_INTERVAL_FREQ);
-> > +		    time_offset <<= SHIFT_UPDATE;
-> >  		} /* STA_PLL */
-> >  	    } /* txc->modes & ADJ_OFFSET */
-> >  	    if (txc->modes & ADJ_TICK)
-> 
-> This is wrong, time_offset is signed and do_div is unsigned.
-> In general I planned to do the same change, but the do_div API could use a 
-> little cleanup to provide some clear function for signed/unsigned divide 
-> (hopefully with a better name than div_long_long_rem_signed or 
-> do_div_llr).
-> 
+> > > Yes this is a USB keyboard. Any hint as to where I should start 
+> > > looking to make the driver not emit input event for keycode==0?
+> > Was it always doing that? I'll add Jiri Kosina to the CC list as he's 
+> > involved with HID now.
+> Something (some keypress?) triggers it (by default it doesn't happen 
+> immediately after a boot) - but once it starts it doesn't seem to stop 
+> printing.
 
-Can we do a minimal thing for 2.6.21, worry about API beautification later?
+First, is there any specific kernel version where this started to happen 
+to you, or is this long-standing bug you have been experiencing with older 
+kernels too?
+
+It would be useful if you could compile your kernel with CONFIG_HID_DEBUG 
+and send the output both from the time the keyboard is connected and also 
+when things go wild.
+
+-- 
+Jiri Kosina
