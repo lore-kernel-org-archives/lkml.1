@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbXCYSy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbXCYS63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752029AbXCYSy3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 14:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbXCYSy2
+	id S1752016AbXCYS63 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 14:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXCYS63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 14:54:28 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:29910 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbXCYSyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 14:54:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=NU6o/Pa345ay950UaB9UYPGLuSoHHUySv6iXz0opopHMtdDgZIoYc8DJHEDe8XYNPzIADBzAmVenGfoVOiMcxzAtInp+9vX2cz8RDArQtZggzZ2424Ml6W4KAgzA5fJjgU4ApJ6FUzHPoWdyBRsSWLI4Oydq3OPTPumDvZGHfyA=
-Date: Sun, 25 Mar 2007 23:53:46 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: mchehab@infradead.org, video4linux-list@redhat.com
-Subject: Interesting locking in vivi driver
-Message-ID: <20070325195346.GB5308@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 25 Mar 2007 14:58:29 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:52807 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752016AbXCYS61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 14:58:27 -0400
+Date: Sun, 25 Mar 2007 10:51:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: balbir@in.ibm.com
+Cc: Herbert Poetzl <herbert@13thfloor.at>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, Dave Hansen <hansendc@us.ibm.com>
+Subject: Re: Linux-VServer example results for sharing vs. separate mappings
+ ...
+Message-Id: <20070325105109.b15c74ac.akpm@linux-foundation.org>
+In-Reply-To: <460645EB.3030201@in.ibm.com>
+References: <20070323193000.GB17007@MAIL.13thfloor.at>
+	<20070323214235.94a3e899.akpm@linux-foundation.org>
+	<20070324183806.GA7312@MAIL.13thfloor.at>
+	<20070324121906.aff91c93.akpm@linux-foundation.org>
+	<460645EB.3030201@in.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have some question: what's going on? How can it work?
+On Sun, 25 Mar 2007 15:20:35 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
 
-Local spinlock _on_stack_, initialized, acquired and dropped.
+> Andrew Morton wrote:
+> <snip>
+> > The problem is memory reclaim.  A number of schemes which have been
+> > proposed require a per-container page reclaim mechanism - basically a
+> > separate scanner.
+> > 
+> > This is a huge, huge, huge problem.  The present scanner has been under
+> > development for over a decade and has had tremendous amounts of work and
+> > testing put into it.  And it still has problems.  But those problems will
+> > be gradually addressed.
+> > 
+> > A per-container recaim scheme really really really wants to reuse all that
+> > stuff rather than creating a separate, parallel, new scanner which has the
+> > same robustness requirements, only has a decade less test and development
+> > done on it.  And which permanently doubles our maintenance costs.
+> > 
+> 
+> The current per-container reclaim scheme does reuse a lot of code. As far
+> as code maintenance is concerned, I think it should be easy to merge
+> some of the common functionality by abstracting them out as different
+> functions. The container smartness comes in only in the
+> container_isolate_pages(). This is an easy to understand function.
 
-drivers/media/video/vivi.c:
-   271	static void gen_line(struct sg_to_addr to_addr[],int inipos,int pages,int wmax,
-   272			     int hmax, int line, char *timestr)
-   273	#else
-   274	static void gen_line(char *basep,int inipos,int wmax,
-   275			     int hmax, int line, char *timestr)
-   276	#endif
-   277	{
-   278		int  w,i,j,pos=inipos,y;
-   279		char *p,*s;
-   280		u8   chr,r,g,b,color;
-   281	#ifdef CONFIG_VIVI_SCATTER
-   282		int pgpos,oldpg;
-   283		char *basep;
-   284		struct page *pg;
-   285
-   286		unsigned long flags;
-   287	===>	spinlock_t spinlock;			<===
-   288
-   289	===>	spin_lock_init(&spinlock);		<===
-   290
-   291		/* Get first addr pointed to pixel position */
-   292		oldpg=get_addr_pos(pos,pages,to_addr);
-   293		pg=pfn_to_page(sg_dma_address(to_addr[oldpg].sg) >> PAGE_SHIFT);
-   294	===>	spin_lock_irqsave(&spinlock,flags);	<===
-   295		basep = kmap_atomic(pg, KM_BOUNCE_READ)+to_addr[oldpg].sg->offset;
-   296	#endif
+err, I think I'd forgotten about container_isolate_pages().  Yes, that
+addresses my main concern.
+
+> > So how do we reuse our existing scanner?  With physical containers.  One
+> > can envisage several schemes:
+> > 
+> > a) slice the machine into 128 fake NUMA nodes, use each node as the
+> >    basic block of memory allocation, manage the binding between these
+> >    memory hunks and process groups with cpusets.
+> > 
+> >    This is what google are testing, and it works.
+> 
+> Don't we break the global LRU with this scheme?
+
+Sure, but that's deliberate!
+
+(And we don't have a global LRU - the LRUs are per-zone).
+
+> > 
+> > b) Create a new memory abstraction, call it the "software zone", which
+> >    is mostly decoupled from the present "hardware zones".  Most of the MM
+> >    is reworked to use "software zones".  The "software zones" are
+> >    runtime-resizeable, and obtain their pages via some means from the
+> >    hardware zones.  A container uses a software zone.
+> > 
+> 
+> I think the problem would be figuring out where to allocate memory from?
+> What happens if a software zone spans across many hardware zones?
+
+Yes, that would be the tricky part.  But we generally don't care what
+physical zone user pages come from, apart from NUMA optimisation.
+
+> The reclaim mechanism proposed *does not impact the non-container users*.
+
+Yup.  Let's keep plugging away with Pavel's approach, see where it gets us.
 
