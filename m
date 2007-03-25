@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbXCYHeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbXCYHec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbXCYHeH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 03:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbXCYHeH
+	id S1753486AbXCYHec (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 03:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbXCYHeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 03:34:07 -0400
-Received: from ozlabs.org ([203.10.76.45]:59210 "EHLO ozlabs.org"
+	Sun, 25 Mar 2007 03:34:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41611 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753457AbXCYHeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 03:34:05 -0400
-Subject: Re: [-mm patch] lguest: #if 0 check_bug_kill()
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070324130639.GG752@stusta.de>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	 <20070324130639.GG752@stusta.de>
-Content-Type: text/plain
-Date: Sun, 25 Mar 2007 17:33:45 +1000
-Message-Id: <1174808025.6281.4.camel@localhost.localdomain>
+	id S1753487AbXCYHea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 03:34:30 -0400
+Date: Sun, 25 Mar 2007 09:34:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Early hang with 2.6.21-rc4-rt1
+Message-ID: <20070325073424.GA14242@elte.hu>
+References: <adad52xnccs.fsf@cisco.com> <ada8xdlnb6f.fsf@cisco.com> <20070325072947.GA10734@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070325072947.GA10734@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-24 at 14:06 +0100, Adrian Bunk wrote:
-> On Mon, Mar 19, 2007 at 08:56:23PM -0800, Andrew Morton wrote:
-> >...
-> > Changes since 2.6.21-rc3-mm1:
-> >...
-> > +lguest-use-read-only-pages-rather-than-segments-to-protect-high-mapped-switcher.patch
-> >...
-> >  x86/x86_64 updates
-> >...
-> 
-> 
-> check_bug_kill() is no longer used.
 
-Thanks Adrian, that was actually an oversight.  However, this function
-is most useful in early bringup, so I didn't notice it was gone.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-I'd prefer a patch which eliminates it altogether, rather than #if 0 it
-out.
+> > OK, another data point.  The config below boots and works with 
+> > 2.6.21-rc4-rt1, but enabling CONFIG_CRITICAL_IRQSOFF_TIMING causes the 
+> > early boot hang.
+>
+> ah, i havent tried that option in quite some time, so bitrot is pretty 
+> likely. Does the problem go away if you disable CONFIG_FUNCTION_TRACE? 
 
-Thanks!
-Rusty.
+hm - on 32-bit, CRITICAL_IRQSOFF_TIMING+FUNCTION_TRACING works fine for 
+me. I'll try the 64-bit kernel too.
 
-
+	Ingo
