@@ -1,112 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750833AbXCYNeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751073AbXCYNmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750833AbXCYNeK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 09:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbXCYNeK
+	id S1751073AbXCYNmc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 09:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXCYNmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 09:34:10 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:48545 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbXCYNeI (ORCPT
+	Sun, 25 Mar 2007 09:42:32 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:5126 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbXCYNmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 09:34:08 -0400
-Date: Sun, 25 Mar 2007 09:33:25 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] sched: accurate user accounting
-In-reply-to: <200703252241.55431.kernel@kolivas.org>
-To: linux-kernel@vger.kernel.org
-Cc: Con Kolivas <kernel@kolivas.org>, malc <av1474@comtv.ru>,
-       Ingo Molnar <mingo@elte.hu>, zwane@infradead.org,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Message-id: <200703250933.25936.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703251159.03616.kernel@kolivas.org>
- <200703250832.36818.gene.heskett@gmail.com>
- <200703252241.55431.kernel@kolivas.org>
-User-Agent: KMail/1.9.6
+	Sun, 25 Mar 2007 09:42:31 -0400
+X-AuditID: d80ac287-91523bb000000c42-6a-46067c46d619 
+Date: Sun, 25 Mar 2007 14:42:21 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Bruce Dubbs <bruce.dubbs@gmail.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add additional error check to mm/mincore.c
+In-Reply-To: <4605D4EB.5060205@gmail.com>
+Message-ID: <Pine.LNX.4.64.0703251416470.11785@blonde.wat.veritas.com>
+References: <4605D4EB.5060205@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 25 Mar 2007 13:42:30.0414 (UTC) FILETIME=[6F1CD2E0:01C76EE3]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 March 2007, Con Kolivas wrote:
->On Sunday 25 March 2007 22:32, Gene Heskett wrote:
->> On Sunday 25 March 2007, Con Kolivas wrote:
->> >On Sunday 25 March 2007 21:46, Con Kolivas wrote:
->> >> On Sunday 25 March 2007 21:34, malc wrote:
->> >> > On Sun, 25 Mar 2007, Ingo Molnar wrote:
->> >> > > * Con Kolivas <kernel@kolivas.org> wrote:
->> >> > >> For an rsdl 0.33 patched kernel. Comments? Overhead worth it?
->> >> > >
->> >> > > we want to do this - and we should do this to the vanilla
->> >> > > scheduler first and check the results. I've back-merged the
->> >> > > patch to before RSDL and have tested it - find the patch below.
->> >> > > Vale, could you try this patch against a 2.6.21-rc4-ish kernel
->> >> > > and re-test your testcase?
->> >> >
->> >> > [..snip..]
->> >> >
->> >> > Compilation failed with:
->> >> > kernel/built-in.o(.sched.text+0x564): more undefined references
->> >> > to `__udivdi3' follow
->> >> >
->> >> > $ gcc --version | head -1
->> >> > gcc (GCC) 3.4.6
->> >> >
->> >> > $ cat /proc/cpuinfo | grep cpu
->> >> > cpu             : 7447A, altivec supported
->> >> >
->> >> > Can't say i really understand why 64bit arithmetics suddenly
->> >> > became an issue here.
->> >>
->> >> Probably due to use of:
->> >>
->> >> #define NS_TO_JIFFIES(TIME)	((TIME) / (1000000000 / HZ))
->> >> #define JIFFIES_TO_NS(TIME)	((TIME) * (1000000000 / HZ))
->> >>
->> >> Excuse our 64bit world while we strive to correct our 32bit
->> >> blindness and fix this bug.
->> >
->> >Please try this (akpm please don't include till we confirm it builds
->> > on ppc, sorry). For 2.6.21-rc4
->> >
->> >---
->> >Currently we only do cpu accounting to userspace based on what is
->> >actually happening precisely on each tick. The accuracy of that
->> >accounting gets progressively worse the lower HZ is. As we already
->> > keep accounting of nanosecond resolution we can accurately track
->> > user cpu, nice cpu and idle cpu if we move the accounting to
->> > update_cpu_clock with a nanosecond cpu_usage_stat entry. This
->> > increases overhead slightly but avoids the problem of tick aliasing
->> > errors making accounting unreliable.
->>
->> I'm playing again because the final 2.6.20.4 does NOT break amanda,
->> where 2.6.20.4-rc1 did.
->
->Yes only the original version I posted on this email thread was for an
-> RSDL 0.33 patched kernel. That original patch should build fine on i386
-> and x86_64 (where I tried it). This version I sent out following Ingo's
-> lead has 2.6.21-rc4 in mind (without rsdl).
+On Sat, 24 Mar 2007, Bruce Dubbs wrote:
 
-And since I have an amdump session running in the background using the 
-first 2.6.20.4-rdsl-0.33 patch I got from your web page about an hour 
-ago, I am very pleased with this, I still have a machine as gzip is being 
-restrained to a max of about 83% of the cpu.  And according to my 
-grepping of the /tmp/amanda-dbg/client/Daily/sendsize* files, this patch 
-does not break amanda.
+> I some circumstances, mincore can succeed when it shouldn't.
+> 
+> Example:
+>   Two files are mmapped to a process and they are adjacent in memory.
+> If mincore is run with a requested length that is too large, the
+> function does not differentiate between the different file pointers
+> within the different vma structures and inappropriately returns success.
 
-Also, to Ingo Molnar, I've removed that sched-batch thing from my scripts 
-as this feels considerably smoother in comparison.
+You've got this the wrong way round.  mincore should succeed in
+these cases: just like munmap, mprotect, msync, madvise etc do.
 
-Thank you very much, Con, and I hope you are improving.
+> 
+> The attached patch, against 2.6.20.3, fixes this behavior.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Aberdeen was so small that when the family with the car went
-on vacation, the gas station and drive-in theatre had to close.
+NAK, sorry.
+
+> 
+> This behavior was found when running the Linux Test Project's mincore01
+> on an IA32 system.  Test 3 "unexpectedly" succeeds.
+
+Please follow that up with the LTP guys: I expect they'll quickly
+agree that the test is wrong and correct it.
+
+It probably dates from when mmap addresses were commonly allocated in
+ascending order, whereas now they're commonly allocated in descending
+order: neither being a rule, neither to be assumed.  (Ah, I see Nick
+has already suggested this memory layout issue to you.)
+
+Another thing to keep in mind is that 2.6.21-rc fixes mincore to
+succeed on anonymous areas, where before it failed for no very good
+reason.  That can't be the issue here, since your report is against
+earlier releases; but it is something for the test fixer to note.
+
+Thanks,
+Hugh
+
+> 
+>   -- Bruce
+> 
+> 
+> --- mm/mincore.c.old	2007-03-24 19:55:01.000000000 -0500
+> +++ mm/mincore.c	2007-03-24 20:13:43.000000000 -0500
+> @@ -43,7 +43,8 @@
+>   * all the arguments, we hold the mmap semaphore: we should
+>   * just return the amount of info we're asked for.
+>   */
+> -static long do_mincore(unsigned long addr, unsigned char *vec, unsigned long pages)
+> +static long do_mincore(unsigned long addr, unsigned char *vec, unsigned long pages,
+> +        struct file** file_struct)
+>  {
+>  	unsigned long i, nr, pgoff;
+>  	struct vm_area_struct *vma = find_vma(current->mm, addr);
+> @@ -64,7 +65,19 @@
+>  	 * this is what we've traditionally done, so we'll just
+>  	 * continue doing it.
+>  	 */
+> -	if (!vma->vm_file)
+> +
+> +    /* 
+> +     * Initialize file pointer to the value in the first vma structure
+> +     */
+> +
+> +    if ( *file_struct == NULL && vma->vm_file )
+> +        *file_struct = vma->vm_file;
+> +
+> +    /*
+> +     * Return an error if the is no file mapped of the file is different
+> +     */
+> + 
+> +	if (!vma->vm_file || vma->vm_file != *file_struct)
+>  		return -ENOMEM;
+>  
+>  	/*
+> @@ -115,6 +128,7 @@
+>  	long retval;
+>  	unsigned long pages;
+>  	unsigned char *tmp;
+> +    static struct file* file = NULL;
+>  
+>  	/* Check the start address: needs to be page-aligned.. */
+>   	if (start & ~PAGE_CACHE_MASK)
+> @@ -142,7 +156,7 @@
+>  		 * the temporary buffer size.
+>  		 */
+>  		down_read(&current->mm->mmap_sem);
+> -		retval = do_mincore(start, tmp, min(pages, PAGE_SIZE));
+> +		retval = do_mincore(start, tmp, min(pages, PAGE_SIZE), &file);
+>  		up_read(&current->mm->mmap_sem);
+>  
+>  		if (retval <= 0)
