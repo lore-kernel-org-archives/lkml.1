@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751545AbXCYKDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbXCYKKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751545AbXCYKDx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 06:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbXCYKDx
+	id S1751707AbXCYKKY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 06:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbXCYKKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 06:03:53 -0400
-Received: from amsfep15-int.chello.nl ([62.179.120.10]:60493 "EHLO
-	amsfep15-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbXCYKDw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 06:03:52 -0400
-Subject: Re: [patch 1/3] fix illogical behavior in balance_dirty_pages()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, dgc@sgi.com, linux-kernel@vger.kernel.org
-In-Reply-To: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu>
-References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu>
+	Sun, 25 Mar 2007 06:10:24 -0400
+Received: from www.osadl.org ([213.239.205.134]:38833 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751608AbXCYKKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 06:10:23 -0400
+Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Soeren Sonnenburg <kernel@nn7.de>, Ingo Molnar <mingo@elte.hu>,
+       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       John Stultz <johnstul@us.ibm.com>
+In-Reply-To: <20070325085705.GB24225@mellanox.co.il>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185028.GR752@stusta.de>
+	 <1174679344.10840.334.camel@localhost.localdomain>
+	 <20070325071023.GL17532@mellanox.co.il>
+	 <1174808247.10840.467.camel@localhost.localdomain>
+	 <20070325085705.GB24225@mellanox.co.il>
 Content-Type: text/plain
-Date: Sun, 25 Mar 2007 12:03:14 +0200
-Message-Id: <1174816995.5149.4.camel@lappy>
+Date: Sun, 25 Mar 2007 12:17:51 +0200
+Message-Id: <1174817872.10840.478.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-24 at 22:55 +0100, Miklos Szeredi wrote:
-> This is a slightly different take on the fix for the deadlock in fuse
-> with dirty balancing.  David Chinner convinced me, that per-bdi
-> counters are too expensive, and that it's not worth trying to account
-> the number of pages under writeback, as they will be limited by the
-> queue anyway.
+On Sun, 2007-03-25 at 10:57 +0200, Michael S. Tsirkin wrote:
+> > Can you please test the following:
+> > 
+> > Add "clocksource=acpi_pm" to the kernel commandline.
+> > 
+> > If this does not change anything, then disable CONFIG_HPET and retry.
 > 
+> I have:
+> $ grep CONFIG_HPET .config
+> CONFIG_HPET_TIMER=y
+> CONFIG_HPET_EMULATE_RTC=y
+> # CONFIG_HPET is not set
+> 
+> so I think all these tests were done with CONFIG_HPET=n.
 
-Please have a look at this:
-  http://lkml.org/lkml/2007/3/19/220
+Gack. Please turn off CONFIG_HPET_TIMER and CONFIG_HPET_EMULATE_RTC
+
+> Given this, does it still make sense to test clocksource=acpi_pm?
+
+Yes.
+
+	tglx
 
 
