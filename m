@@ -1,384 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbXCYTR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbXCYTR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752040AbXCYTR0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 15:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXCYTR0
+	id S1752105AbXCYTR4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 15:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXCYTRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 15:17:26 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63700 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040AbXCYTRY (ORCPT
+	Sun, 25 Mar 2007 15:17:55 -0400
+Received: from 42.mail-out.ovh.net ([213.251.189.42]:50243 "HELO
+	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752063AbXCYTRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 15:17:24 -0400
-Date: Sun, 25 Mar 2007 12:17:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Wink Saville <wink@saville.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Trec driver.
-Message-Id: <20070325121729.f9e9be9e.randy.dunlap@oracle.com>
-In-Reply-To: <11747803002933-git-send-email-wink@saville.com>
-References: <11747802992043-git-send-email-wink@saville.com>
-	<11747803002933-git-send-email-wink@saville.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 25 Mar 2007 15:17:53 -0400
+Message-ID: <4606CA92.1000405@boichat.ch>
+Date: Mon, 26 Mar 2007 03:16:34 +0800
+From: Nicolas Boichat <nicolas@boichat.ch>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070309)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, alsa-devel@lists.sourceforge.net,
+       tiwai@suse.de
+Subject: [BUG] Patch "CPU hotplug: call check_tsc_sync_source() with irqs
+ off" breaks some drivers
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Ovh-Remote: 137.132.187.18 (nusnet-187-18.dynip.nus.edu.sg)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007 16:51:38 -0700 Wink Saville wrote:
+Hello,
 
-> This is the Trec driver, Makefile, header files.
-> Enable trec in Kernel hacking configuration menu.
-> 
-> Signed-off-by: Wink Saville <wink@saville.com>
-> ---
+I'm running a Macbook Pro first generation (Core Duo, so x86).
 
-> diff --git a/drivers/trec/trec.c b/drivers/trec/trec.c
-> new file mode 100644
-> index 0000000..0b04b71
-> --- /dev/null
-> +++ b/drivers/trec/trec.c
-> @@ -0,0 +1,404 @@
-...
-> +
-> +struct trec_dev_struct
-> +{
-> +	struct	cdev		cdev;			/* Character device structure */
+I ran accross these two problems while upgrading from 2.6.21-rc3 to the
+current git HEAD:
+ 1. appletouch cannot initialize the device properly at boot time (the
+module is automatically loaded by Gentoo), I have to reload the module
+to get it to work.
+ 2. ALSA hda_intel (patch_sigmatel) fails to read properly the subsystem
+id. "head  /proc/asound/card0/codec#0" returns:
+> Codec: SigmaTel STAC9221 A1
+> Address: 0
+> Vendor Id: 0x83847680
+> Subsystem Id: 0x100
+> Revision Id: 0x103401
+while I expect this subsystem id: 0x106b0200.
+This is due to a read failure in sound/pci/hda/hda_codec.c at line 553
+(I have to reboot on OS X to get the id correct again, and it seems to
+happen quite randomly, so I'm not absolutely certain this bug is
+related, but it's something i have never seen before...)
 
-Fit in 80 columns, please.
+I found out which commit seems to cause these bugs:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d04f41e35343f1d788551fd3f753f51794f4afcf
 
-> +};
-> +
-> +MODULE_AUTHOR("Wink Saville");
-> +MODULE_LICENSE("Dual BSD/GPL");
-> +
-> +/*
-> + * Module parameters
-> + */
-> +int major = 240;	/* 240 a "local/expermental" device number for the moment */
-> +int minor = 1;
-> +
-> +module_param(major, int, S_IRUGO);
-> +module_param(minor, int, S_IRUGO);
-> +
-> +/*
-> + * Forward declarations
-> + */
-> +static int trec_open(struct inode *inode, struct file *file);
-> +static int trec_release(struct inode *inode, struct file *file);
-> +
-> +/*
-> + * File operations
-> + */
-> +struct file_operations trec_f_ops = {
-> +	.owner		=	THIS_MODULE,
-> +	.open		=	trec_open,
-> +	.release	=	trec_release,
-> +};
-> +
-> +struct trec_struct {
-> +	uint64_t	tsc;
-> +	unsigned long	pc;
-> +	unsigned long	tsk;
-> +	unsigned int	pid;
-> +	unsigned long	v1;
-> +	unsigned long	v2;
-> +};
-> +
-> +/*
-> + * Change trec_buffer_struct.data to be a pointer to a PAGE in the future
-> + */
-> +#define TREC_DATA_SIZE 0x200
-> +struct trec_buffer_struct {
-> +	struct trec_buffer_struct *	next;
-> +	struct trec_struct *		cur;
-> +	struct trec_struct *		end;
-> +	struct trec_struct		data[TREC_DATA_SIZE];
+The latest GIT without this commit works fine, but doesn't with it.
 
-Kernel style is:
-	sturct trec_struct		*cur;
+See below for the relevant parts of a diff, with my comments where
+needed, of the dmesg output with and without this commit. You can get
+the raw dmesg outputs, and my .config there:
+http://www.boichat.ch/nicolas/linux/
 
-> +};
-> +
-> +/*
-> + * Number of buffers must be a multiple of two so we can
-> + * snapshot the buffers and the minimum should be 4.
-> + */
-> +#define	TREC_COUNT 2
-> +struct trec_buffer_struct 	trec_buffers[2][TREC_COUNT];
-> +int				trec_idx = 0;
-> +spinlock_t 			trec_lock = SPIN_LOCK_UNLOCKED;
-> +
-> +struct trec_buffer_struct *	trec_buffer_cur = NULL;
-> +struct trec_buffer_struct *	trec_buffer_snapshot = NULL;
+Best regards,
 
-Pointer style.  + don't init to NULL.
+Nicolas Boichat
 
-> +
-> +struct trec_dev_struct 		trec_dev;
-> +
-> +/**
-> + * Print an address symbol if available to the buffer
-> + * this is from traps.c
-> + */
+--- dmesg-2.6.21-rc4-head-notimestamp	2007-03-26 02:19:57.000000000 +0800
 
-Don't use kernel-doc indicator ("/**") unless the function block
-comment is actually in kernel-doc syntax (see
-Documentation/kernel-doc-nano-HOWTO.txt).
+Vanilla git
 
-> +static int snprint_address(char *b, int bsize, unsigned long address)
-> +{
-> +#ifdef CONFIG_KALLSYMS
-> +	unsigned long offset = 0, symsize;
-> +	const char *symname;
-> +	char *modname;
-> +	char *delim = ":";
-> +	int n;
-> +	char namebuf[128];
-> +
-> +	symname = kallsyms_lookup(address, &symsize, &offset, &modname, namebuf);
-> +	if (!symname) {
-> +		n = 0;
-> +	} else {
-> +		if (!modname)
-> +			modname = delim = ""; 		
-> +		n = snprintf(b, bsize, "0x%016lx %s%s%s%s+0x%lx/0x%lx",
-> +			address, delim, modname, delim, symname, offset, symsize);
-> +	}
-> +	return n;
-> +#else
-> +	return snprintf(b, bsize, "0x%016lx", address);
-> +#endif
-> +}
++++ dmesg-2.6.21-rc4-head-without-d04f41-notimestamp	2007-03-26 02:20:14.000000000 +0800
 
-> +/*
-> + * Snapshot the current trecs
-> + */
-> +void trec_snapshot(void)
-> +{
-> +	int flags;
-> +
-> +	spin_lock_irqsave(&trec_lock, flags);
-> +	trec_buffer_snapshot = trec_buffer_cur;
-> +	trec_idx = trec_idx ^ 1;
-> +	trec_buffer_cur = &trec_buffers[trec_idx][0];
-> +	spin_unlock_irqrestore(&trec_lock, flags);
-> +}
-> +EXPORT_SYMBOL(trec_snapshot);
+Vanilla git with commit d04f41e35343f1d788551fd3f753f51794f4afcf reverted.
 
-What (if anything) prevents multiple snapshots from overwriting
-each other, or from being overwritten while one is printing?
+@@ -1,4 +1,4 @@
+-Linux version 2.6.21-rc4 (nicolas@nunuche) (gcc version 4.1.2 (Gentoo 4.1.2)) #1 SMP PREEMPT Sun Mar 25 17:06:13 SGT 2007
++Linux version 2.6.21-rc4 (nicolas@nunuche) (gcc version 4.1.2 (Gentoo 4.1.2)) #2 SMP PREEMPT Sun Mar 25 18:16:15 SGT 2007
+ BIOS-provided physical RAM map:
+ sanitize start
+ sanitize end
+@@ -93,14 +93,14 @@
+ Enabling fast FPU save and restore... done.
+ Enabling unmasked SIMD FPU exception support... done.
+ Initializing CPU#0
+ PID hash table entries: 4096 (order: 12, 16384 bytes)
+-Detected 1952.371 MHz processor.
 
-> +/*
-> + * trec_print
-> + */
-> +void trec_print_snapshot(void)
-> +{
-> +	int i;
-> +	struct trec_buffer_struct *cur_buffer;
-> +
-> +	if (!trec_buffer_snapshot)
-> +		trec_snapshot();
-> +
-> +	cur_buffer = trec_buffer_snapshot->next;
-> +	for (i = 0; i < TREC_COUNT; i++) {
-> +		struct trec_struct *cur;
-> +
-> +		for (cur = &cur_buffer->data[0];
-> +			cur < cur_buffer->cur;
-> +			cur += 1) {
-> +			char b[256];
-> +			int n;
-> +			
-> +			n = snprintf(b, sizeof(b), KERN_ERR "t=%20llu pid=%5u tsk=%p v1=%p v2=%p ",
-> +				cur->tsc, cur->pid, (void *)cur->tsk, (void *)cur->v1, (void *)cur->v2);
-> +			n += snprint_address(b+n, sizeof(b)-n, cur->pc);
-> +			printk("%s\n", b);
-> +		}
-> +		cur_buffer = cur_buffer->next;
-> +	}
-> +}
-> +EXPORT_SYMBOL(trec_print_snapshot);
-> +
-> +/*
-> + * Sysrq support for trec's
-> + */
-> +#ifdef CONFIG_MAGIC_SYSRQ
-> +/*
-> + * trec print snapshot handler for sysrq
-> + */
-> +static void sysrq_handle_trec_print_snapshot(int key, struct tty_struct *tty) 
-> +{
-> +	trec_print_snapshot();
-> +}
-> +
-> +/*
-> + * trec snapshot handler for sysrq
-> + */
-> +static void sysrq_handle_trec_snapshot(int key, struct tty_struct *tty) 
-> +{
-> +	trec_snapshot();
-> +}
-> +
-> +static struct sysrq_key_op sysrq_trec_snapshot_op = 
-> +{
-> +	.handler =	sysrq_handle_trec_snapshot,
-> +	.help_msg =	"Trec snapshot(Y)",
-> +	.action_msg =	"Trec snapshot",
-> +};
-> +
-> +static struct sysrq_key_op sysrq_trec_print_snapshot_op = 
-> +{
-> +	.handler =	sysrq_handle_trec_print_snapshot,
-> +	.help_msg =	"Print current trec snapshot",
+This is WRONG. I have a 1.83 Ghz Core Duo.
 
-(Z) should be on the help_msg, not on the action_msg.
++Detected 1831.082 MHz processor.
 
-> +	.action_msg =	"Trec print snapshot(Z)",
-> +};
-> +
-> +/*
-> + * Initilize trec sysrq support
+This is right.
 
-      Initialize
-
-> + */
-> +static int __init setup_trec_sysrq(void)
-> +{
-> +	DPK("setup_trec_sysrq y=trec_snapshot z=trec_print_snapshot\n");
-> +	register_sysrq_key('y', &sysrq_trec_snapshot_op);
-> +	register_sysrq_key('z', &sysrq_trec_print_snapshot_op);
-> +	return 0;
-> +}
-> +__initcall(setup_trec_sysrq);
-> +#endif /* CONFIG_MAGIC_SYSRQ */
-
-> +/*
-> + * Init routine for the trec device
-> + */
-> +static int __init trec_device_init(void)
-> +{
-> +	int 		result;
-> +	dev_t 		dev_number = 0;
-> +	static struct 	class *trec_class;
-> +
-> +	DPK("trec_device_init: E\n");
-> +
-> +	if (major) {
-> +		dev_number = MKDEV(major, minor);
-> +		result = register_chrdev_region(dev_number, 1, "trec");
-> +		DPK("trec_device_init: static major result=%d\n", result);
-> +	} else {
-> +		result = alloc_chrdev_region(&dev_number, minor, 1, "trec");
-> +		major = MAJOR(dev_number);
-> +		DPK("trec_device_init: dynamic major result=%d\n", result);
-> +	}	
-> +
-> +	if (result < 0) {
-> +		printk(KERN_WARNING "trec: can't get major %d\n", major);
-> +		goto err;
-> +	}
-> +
-> +	cdev_init(&trec_dev.cdev, &trec_f_ops);
-> +	trec_dev.cdev.owner = THIS_MODULE;
-> +	trec_dev.cdev.ops = &trec_f_ops;
-> +	
-> +	result = cdev_add(&trec_dev.cdev, dev_number, 1);
-> +	if (result)
-> +	{
-> +		DPK("trec_device_init: cdev_add failed\n");
-> +		goto err;
-> +	}
-> +
-> +	/*
-> +	 * Make a trec class and create the device
-> +	 */
-> +	trec_class = class_create(THIS_MODULE, "trec");
-> +	class_device_create(trec_class, NULL, dev_number, NULL, "trec");
-> +
-> +	/*
-> +	 * If the trec buffers have not been initialized do so
-> +	 */
-> +	if (trec_buffer_cur == NULL) {
-> +		trec_init();
-> +	}
-
-Style: no braces on one-statement "blocks".
-
-> +}
-
-> diff --git a/include/asm-i386/trec.h b/include/asm-i386/trec.h
-> new file mode 100644
-> index 0000000..1de4dc6
-> --- /dev/null
-> +++ b/include/asm-i386/trec.h
-> @@ -0,0 +1,33 @@
-> +/*
-> + * Copyright (C) 2007 Saville Software, Inc.
-> + *
-> + * This code may be used for any purpose whatsoever, but
-> + * no warranty of any kind is provided.
-> + */
-> +
-> +#ifndef _ASM_I386_TREC_H
-> +#define _ASM_I386_TREC_H
-> +
-> +#ifndef __ASSEMBLY__
-> +
-> +#if CONFIG_X86_TSC 
-> +#include <asm/msr.h>
-> +
-> +/*
-> + * read x86 time stamp counter.
-> + */
-> +static uint64_t inline rd_tsc(void)
-> +{
-> +	volatile uint64_t value;
-> +
-> +	rdtscll(value);
-> +
-> +	return value;
-> +}
-> +#else
-> +	#define rd_tsc() (0)
-
-We don't typically indent (#if/) #else block contents like this.
-
-> +#endif /* CONFIG_X86_TSC */
-> +
-> +#endif /* !__ASSEMBLY__ */
-> +
-> +#endif /* _ASM_I386_TREC_H */
-
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index 3f3e740..db53fdb 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -303,6 +303,13 @@ config STACKTRACE
->  	depends on DEBUG_KERNEL
->  	depends on STACKTRACE_SUPPORT
->  
-> +config TREC
-> + 	def_bool n
-> + 	bool "Trace record support"
-> + 	depends on DEBUG_KERNEL
-> + 	help
-> + 	  Trace records are a light weight tracing facility
-
-                              lightweight   ...    facility.
-
-> +
->  config DEBUG_KOBJECT
->  	bool "kobject debugging"
->  	depends on DEBUG_KERNEL
+ Console: colour VGA+ 80x25
+ Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+ Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+@@ -114,7 +114,7 @@
+       .data : 0xc03457ab - 0xc041782c   ( 840 kB)
+       .text : 0xc0100000 - 0xc03457ab   (2325 kB)
+ Checking if this processor honours the WP bit even in supervisor mode... Ok.
+-Calibrating delay using timer specific routine.. 4945.92 BogoMIPS (lpj=2472960)
++Calibrating delay using timer specific routine.. 4689.63 BogoMIPS (lpj=2344818)
+ Mount-cache hash table entries: 512
+ CPU: After generic identify, caps: bfe9fbff 00100000 00000000 00000000 0000c1a9 00000000 00000000
+ monitor/mwait feature present.
+@@ -143,7 +143,7 @@
+ SMP alternatives: switching to SMP code
+ Booting processor 1/1 eip 3000
+ Initializing CPU#1
+-Calibrating delay using timer specific routine.. 3661.28 BogoMIPS (lpj=1830642)
++Calibrating delay using timer specific routine.. 3661.30 BogoMIPS (lpj=1830650)
+ CPU: After generic identify, caps: bfe9fbff 00100000 00000000 00000000 0000c1a9 00000000 00000000
+ monitor/mwait feature present.
+ CPU: L1 I cache: 32K, L1 D cache: 32K
+@@ -154,12 +154,12 @@
+ Intel machine check architecture supported.
+ Intel machine check reporting enabled on CPU#1.
+ CPU1: Intel Genuine Intel(R) CPU           T2400  @ 1.83GHz stepping 08
+-Total of 2 processors activated (8607.20 BogoMIPS).
++Total of 2 processors activated (8350.93 BogoMIPS).
+ ENABLING IO-APIC IRQs
+ ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+ checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+ Brought up 2 CPUs
+-migration_cost=34
++migration_cost=46
+ PM: Adding info for No Bus:platform
+ NET: Registered protocol family 16
+ PM: Adding info for No Bus:vtcon0
+@@ -336,9 +336,9 @@
+ pnp: 00:01: iomem range 0xfed14000-0xfed17fff could not be reserved
+ pnp: 00:01: iomem range 0xfed18000-0xfed18fff could not be reserved
+ pnp: 00:01: iomem range 0xfed19000-0xfed19fff could not be reserved
++Time: tsc clocksource has been installed.
+ pnp: 00:06: iomem range 0xfed00000-0xfed003ff has been reserved
+ PM: Adding info for No Bus:mem
+-Time: tsc clocksource has been installed.
+ PM: Adding info for No Bus:kmem
+ PM: Adding info for No Bus:null
+ PM: Adding info for No Bus:port
+@@ -385,7 +385,7 @@
+ Machine check exception polling timer started.
+ PM: Adding info for platform:pcspkr
+ audit: initializing netlink socket (disabled)
+-audit(1174817446.273:1): initialized
++audit(1174817951.346:1): initialized
+ highmem bounce pool size: 64 pages
+ Total HugeTLB memory allocated, 0
+ io scheduler noop registered
+@@ -755,66 +772,76 @@
+ sr0: scsi3-mmc drive: 24x/24x writer cd/rw xa/form2 cdda tray
+ Uniform CD-ROM driver Revision: 3.20
+ sr 0:0:0:0: Attached scsi CD-ROM sr0
+-drivers/usb/input/appletouch.c: Could not do mode read request from device (Geyser 3 mode)
+-appletouch: probe of 1-2:1.1 failed with error -12
+ usb 5-4: new high speed USB device using ehci_hcd and address 4
++Clocksource tsc unstable (delta = -288700753 ns)
+ PM: Adding info for usb:5-4
+ PM: Adding info for No Bus:usbdev5.4_ep00
+ usb 5-4: configuration #1 chosen from 1 choice
+ PM: Adding info for usb:5-4:1.0
+ PM: Adding info for No Bus:usbdev5.4
+-Clocksource tsc unstable (delta = -292504439 ns)
+ usbcore: registered new interface driver appletouch
+@@ -921,6 +948,7 @@
+ -> GSI 22 (level, low) -> IRQ 21
+ PCI: Setting latency timer of device 0000:00:1b.0 to 64
+ hda_codec: STAC922x, Apple subsys_id=100
++hda_intel: azx_get_response timeout, switching to polling mode...
+ PM: Adding info for No Bus:pcmC0D1p
+ PM: Adding info for No Bus:pcmC0D0p
+ PM: Adding info for No Bus:pcmC0D0c
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
