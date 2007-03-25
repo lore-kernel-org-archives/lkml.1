@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbXCYWgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbXCYWjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbXCYWgP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 18:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXCYWgP
+	id S1753512AbXCYWjt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 18:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXCYWjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 18:36:15 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:33107 "EHLO smtp.osdl.org"
+	Sun, 25 Mar 2007 18:39:49 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33470 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753512AbXCYWgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 18:36:14 -0400
-Date: Sun, 25 Mar 2007 14:36:09 -0800
+	id S1753512AbXCYWjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 18:39:48 -0400
+Date: Sun, 25 Mar 2007 14:39:38 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@lists.osdl.org
-Subject: Re: [PATCH] aoe, tb0219: fix late spin_lock_init() and friends
-Message-Id: <20070325143609.75165bf6.akpm@linux-foundation.org>
-In-Reply-To: <20070325190221.GA5308@martell.zuzino.mipt.ru>
-References: <20070325190221.GA5308@martell.zuzino.mipt.ru>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: [PATCH] INPUT: Delete unused source file drivers/input/power.c.
+Message-Id: <20070325143938.22c3b26d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703251624330.31635@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703251624330.31635@CPE00045a9c397f-CM001225dbafb6>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,55 +25,14 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Mar 2007 23:02:21 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Sun, 25 Mar 2007 16:28:39 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
 
-> Some drivers do register_chrdev() before lock or semaphore used in
-> corresponding file_operations is initialized.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
-> 
->  drivers/block/aoe/aoechr.c |    4 ++--
->  drivers/char/tb0219.c      |    4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> --- a/drivers/block/aoe/aoechr.c
-> +++ b/drivers/block/aoe/aoechr.c
-> @@ -246,13 +246,13 @@ aoechr_init(void)
->  {
->  	int n, i;
->  
-> +	sema_init(&emsgs_sema, 0);
-> +	spin_lock_init(&emsgs_lock);
->  	n = register_chrdev(AOE_MAJOR, "aoechr", &aoe_fops);
->  	if (n < 0) { 
->  		printk(KERN_ERR "aoe: can't register char device\n");
->  		return n;
->  	}
-> -	sema_init(&emsgs_sema, 0);
-> -	spin_lock_init(&emsgs_lock);
->  	aoe_class = class_create(THIS_MODULE, "aoe");
->  	if (IS_ERR(aoe_class)) {
->  		unregister_chrdev(AOE_MAJOR, "aoechr");
-> --- a/drivers/char/tb0219.c
-> +++ b/drivers/char/tb0219.c
-> @@ -287,6 +287,8 @@ static int __devinit tb0219_probe(struct
->  {
->  	int retval;
->  
-> +	spin_lock_init(&tb0219_lock);
-> +
->  	if (request_mem_region(TB0219_START, TB0219_SIZE, "TB0219") == NULL)
->  		return -EBUSY;
->  
-> @@ -304,8 +306,6 @@ static int __devinit tb0219_probe(struct
->  		return retval;
->  	}
->  
-> -	spin_lock_init(&tb0219_lock);
-> -
->  	old_machine_restart = _machine_restart;
->  	_machine_restart = tb0219_restart;
->  
+> Delete the never-compiled source file drivers/input/power.c, and
+> remove its entry from the corresponding Makefile, as there is no
+> Kconfig file that refers to the config option INPUT_POWER.
 
-These locks can and should be initialised at compile-time.
+Please cc the maintainer when he's this easy to find ;)
+
+There are significant-looking patches against input.c in the git-input
+tree - if it's presently dead I suspect that it'll be coming back to
+life soon.
