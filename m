@@ -1,77 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbXCYSVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbXCYS3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932386AbXCYSVg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 14:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbXCYSVg
+	id S932442AbXCYS3B (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 14:29:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932638AbXCYS3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 14:21:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50672 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932386AbXCYSVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 14:21:35 -0400
-Date: Sun, 25 Mar 2007 11:19:30 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
-       zaitcev@redhat.com
-Subject: Re: Fix sudden warps in mousedev
-Message-Id: <20070325111930.f6428509.zaitcev@redhat.com>
-In-Reply-To: <200703250134.03416.dtor@insightbb.com>
-References: <20070324001610.724a820a.zaitcev@redhat.com>
-	<200703250134.03416.dtor@insightbb.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 25 Mar 2007 14:29:00 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:35852 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932442AbXCYS27 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 14:28:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=F1mk7GQQejbrwED2TwB66TxCfWHQnVaZATNKIGoL80qnpeOIMquUVxq5RxmkJvKL+UERwiBJuPvz7ktXqEYLrUMCj1j4OPfXtsRQKQm2Pk/GEkONqOeiwoCTSUlG7GT2O/ZmPGNEQNP3CERfb13JsQI/aZ9CTIKTT/l7Z8QjjPo=
+Message-ID: <64bb37e0703251128q3f9db894u24c4638dcf97224a@mail.gmail.com>
+Date: Sun, 25 Mar 2007 19:28:57 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Con Kolivas" <kernel@kolivas.org>
+Subject: Re: debug rsdl 0.33
+Cc: "Andy Whitcroft" <apw@shadowen.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Steve Fox" <drfickle@us.ibm.com>,
+       "Martin J. Bligh" <mbligh@mbligh.org>
+In-Reply-To: <200703241026.57143.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	 <4603C7EC.6030906@shadowen.org>
+	 <200703240845.30484.kernel@kolivas.org>
+	 <200703241026.57143.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Mar 2007 01:34:02 -0400, Dmitry Torokhov <dtor@insightbb.com> wrote:
+On 3/24/07, Con Kolivas <kernel@kolivas.org> wrote:
+>  kernel/sched.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 51 insertions(+)
 
-> > +                * Without this, a touchpad may report an unchanged position,
-> > +                * then a sync. The input_event() eats the position report, but
-> > +                * lets the sync through. We increment pkt_count and leave 
-> > +                * a stale position in the ring. If a future reference to fx(2)
-> > +                * hits the stale position, a large dx is reported, and the
-> > +                * pointer warps across the screen.
-> > +                */
-> > +               dev = mousedev->handle.dev;
-> > +               fx(0) = dev->abs[ABS_X];
-> > +               fy(0) = dev->abs[ABS_Y];
-> 
-> I do not like input hanlders poking into input devices... Can't we just
-> reset pkt_count at the beginning of the touch to get rid of stale data?
+2.6.21-rc4-mm1 also fails for me.
 
-The pkt_count is zero at the moment of assignment above.
+I tried pure 2.6.21-rc4-mm1, +hotfixes, +hotfixes+rsdl33 and at last
+also added above debug patch.
 
-Please look at the included trace again:
+The oops from with the debug-patch added:
+[   65.426126] Freeing unused kernel memory: 312k freed
+(on the console the system is starting up, getting until "Letting udev
+process events ...")
+[   66.665611] Unable to handle kernel NULL pointer dereference at
+0000000000000020 RIP:
+[   66.682030]  [<ffffffff8026167c>] __sched_text_start+0x4dc/0xa0e
+[   66.707402] PGD 0
+[   66.713473] Oops: 0000 [1] SMP
+[   66.722968] last sysfs file:
+devices/pci0000:00/0000:00:05.0/host2/target2:0:0/2:0:0:0/type
+[   66.747954] CPU 0
+[   66.754025] Modules linked in:
+[   66.763209] Pid: 1200, comm: udevd Not tainted 2.6.21-rc4-mm1 #4
+[   66.781162] RIP: 0010:[<ffffffff8026167c>]  [<ffffffff8026167c>]
+__sched_text_start+0x4dc/0xa0e
+[   66.807236] RSP: 0018:ffff81007d38fe78  EFLAGS: 00010082
+[   66.823115] RAX: ffffffffffffffd0 RBX: 000000000000008c RCX: 000000000000058e
+[   66.844439] RDX: 0000000000000000 RSI: 000000000000000c RDI: 0000000000000000
+[   66.865767] RBP: ffff81007d38ff08 R08: 0000000000000064 R09: ffff810001014a58
+[   66.887092] R10: 000000000000001c R11: 0000000000000246 R12: ffff810001013700
+[   66.908418] R13: ffff810001014198 R14: 0000000000000001 R15: 0000000f859461fc
+[   66.929745] FS:  00002b67df90e6d0(0000) GS:ffffffff807aa000(0000)
+knlGS:0000000000000000
+[   66.953950] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[   66.971126] CR2: 0000000000000020 CR3: 0000000000201000 CR4: 00000000000006e0
+[   66.992451] Process udevd (pid: 1200, threadinfo ffff81007d38e000,
+task ffff81007e354100)
+[   67.016915] Stack:  00000000000004b0 0000000000000000
+0000000000000000 ffff81007e354100
+[   67.041097]  ffffffffffffffd0 ffff81007e354298 ffff81011d420680
+ffffffff802234b1
+[   67.063407]  0000000000000001 0000000000000000 0000000000000000
+0000000000000246
+[   67.085149] Call Trace:
+[   67.093037]  [<ffffffff802234b1>] filp_close+0x71/0x90
+[   67.108397]  [<ffffffff80214d97>] do_exit+0x7e7/0x800
+[   67.123495]  [<ffffffff80248372>] do_group_exit+0x82/0x90
+[   67.139634]  [<ffffffff8025c1de>] system_call+0x7e/0x83
+[   67.155277]
+[   67.159739]
+[   67.159740] Code: 48 39 48 50 0f 84 8b 00 00 00 48 c7 40 40 00 00 00 00 8b 52
+[   67.186877] RIP  [<ffffffff8026167c>] __sched_text_start+0x4dc/0xa0e
+[   67.205919]  RSP <ffff81007d38fe78>
+[   67.216348] CR2: 0000000000000020
+[   67.226260] Fixing recursive fault but reboot is needed!
 
-> > Event: time 1174703243.305535, type 1 (Key), code 330 (Touch), value 1
-> >           <---- touch!=0 now, we're on
-> > Event: time 1174703243.305538, type 3 (Absolute), code 24 (Pressure), value 31
-> > Event: time 1174703243.305541, -------------- Report Sync ------------
-> >           <---- We increment the pkt_count, leaving value of 3687 in old_y
-> > Event: time 1174703243.342452, type 3 (Absolute), code 0 (X), value 4747
-> > Event: time 1174703243.342455, type 3 (Absolute), code 1 (Y), value 1988
-> >           <----- Later to be fy(1), not used for warping purposes :-)
-> > Event: time 1174703243.342459, -------------- Report Sync ------------
-> > Event: time 1174703243.356225, type 3 (Absolute), code 0 (X), value 4749
-> > Event: time 1174703243.356237, type 3 (Absolute), code 1 (Y), value 1987
-> >           <----- warp here, by the difference of 3687 and 1987, plus
-> >                  some small frac_dy value. Easily jumps half the screen.
-> > Event: time 1174703243.356246, -------------- Report Sync ------------
+The system in x86_64, two 2218 on a MCP55 nvidia chipset.
 
-The assignment happens at .305535. The pkt_count is zero, and fy(0) contains
-stale data (ovewritten by the assignment). The touchpad reports a position
-next with input_report_abs(). If the position were different, we'd receive
-an event between .305535 and .305538 and it would be stored in fy(0).
+2.6.21-rc3-mm1 works fine.
 
-However, if position is the same, as in this case, input_report eats it.
-At .305541 we increment pkt_count. The fy(0) location becomes fy(1) at
-this point. Without the assignment it contains the stale position.
+(gdb) list *0xffffffff8026167c
+0xffffffff8026167c is in schedule (kernel/sched.c:3619).
+3614            /*
+3615             * When the task is chosen it is checked to see if its
+quota has been
+3616             * added to this runqueue level which is only performed once per
+3617             * level per major rotation for each running task.
+3618             */
+3619            if (next->rotation != rq->prio_rotation) {
+3620                            /* Task has moved during major rotation */
+3621                            task_new_array(next, rq);
+3622                            if (!entitled_slot(next->static_prio, idx))
+3623                                    exchange_slot(next, rq);
 
-I can explore alternatives, but for now using dev->abs[] seems to be most
-expedient.
 
--- Pete
+Torsten
