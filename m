@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbXCYMxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbXCYMzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbXCYMxd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 08:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXCYMxc
+	id S1753510AbXCYMzN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 08:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXCYMzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 08:53:32 -0400
-Received: from www.osadl.org ([213.239.205.134]:51049 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753506AbXCYMxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 08:53:32 -0400
-Subject: Re: [patch] ntp: avoid integer overflow in do_adjtimex()
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>, john stultz <johnstul@us.ibm.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070325111420.GA16988@elte.hu>
-References: <1174696834.5690.14.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703240153220.14457@scrub.home>
-	 <20070325010903.a0e6e624.akpm@linux-foundation.org>
-	 <1174820872.10840.494.camel@localhost.localdomain>
-	 <20070325111420.GA16988@elte.hu>
-Content-Type: text/plain
-Date: Sun, 25 Mar 2007 15:01:00 +0200
-Message-Id: <1174827661.10840.514.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Sun, 25 Mar 2007 08:55:13 -0400
+Received: from dd3532.kasserver.com ([81.209.188.70]:36951 "EHLO
+	dd3532.kasserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753510AbXCYMzM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 08:55:12 -0400
+X-Greylist: delayed 2000 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Mar 2007 08:55:12 EDT
+Message-ID: <46066970.20802@helmutauer.de>
+Date: Sun, 25 Mar 2007 14:22:08 +0200
+From: Helmut Auer <vdr@helmutauer.de>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Kernel 2.6.20 takes a long time to load
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-25 at 13:14 +0200, Ingo Molnar wrote:
-> * Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > Here you go. It's ugly, but it should do the trick for now.
-> > 
-> > 	tglx
-> 
-> here's your patch with proper metadata:
-> 
-> --------------------->
-> From: Thomas Gleixner <tglx@linutronix.de>
-> Subject: [patch] ntp: avoid integer overflow in do_adjtimex()
-> 
-> John Stultz traced back ntpd problems to the following issue: 
-> do_adjtimex() [used by ntpd] can overflow if there's a too long delay 
-> between timer interrupts - as it can happen on NO_HZ. Expand the 
-> time_adjust calculation/division from 32 bits to 64 bits.
+Hello List,
 
-Wrong metadata. This is a patch to fix John's patch vs. signedness.
+The kernel 2.6.20 makes a long delay during booting ( about 15 seconds ) after showing:
 
-	tglx
+NET: Registered protocol family 2
 
+then it goes along with:
 
+IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
+TCP established hash table entries: 8192 (order: 4, 98304 bytes)
+...
 
+I am using the kernel parameter lpj to avoid calculating processor speed during kernel load.
+If I do not use the lpj parameter, the detection of cpu speed takes about 10 seconds, but then 
+there is no delay after:
+NET: Registered protocol family 2
+
+Any hints what I can try to get a fast booting kernel ?
+I am using 2.6.20 with some gentoo patches ( plain 2.6.20-4 has the same problem ).
+
+My .config is here:
+http://www.helmutauer.de/.config-2.6.20.3.gz
+
+-- 
+Helmut Auer, helmut@helmutauer.de
