@@ -1,79 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbXCYQbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751872AbXCYQkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751934AbXCYQbU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 12:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbXCYQbU
+	id S1751872AbXCYQkb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 12:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbXCYQkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 12:31:20 -0400
-Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:40543 "HELO
-	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751892AbXCYQbR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 12:31:17 -0400
-X-YMail-OSG: 47NrJmsVM1lJIOXGtvITXIGI.MxyTzEmCmUrNm5H3HxTimlIy_Ph2ypAKk4GYxAwlhrJxTvwLRp2oGy_AD4_QKplGSnrJ6GMRAxDOXq8EBoSGxyGc0ceSPhtz6iH_HqhhnGAo5ZYMF1xN5w-
-Date: Sun, 25 Mar 2007 11:31:13 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com,
-       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com, akpm@osdl.org
-Subject: Re: [Patch 7/7] IBAC Patch
-Message-ID: <20070325163113.GB6753@vino.hallyn.com>
-References: <1174666224.11149.7.camel@localhost.localdomain> <20070325123849.GB8550@ucw.cz>
-MIME-Version: 1.0
+	Sun, 25 Mar 2007 12:40:31 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:38335 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751872AbXCYQka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 12:40:30 -0400
+Date: Sun, 25 Mar 2007 22:17:46 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: pj@sgi.com, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix race between attach_task and cpuset_exit
+Message-ID: <20070325164746.GI11794@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070325123849.GB8550@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Machek (pavel@ucw.cz):
-> Hi!
-> 
-> > This is a new Integrity Based Access Control(IBAC) LSM module which 
-> > bases access control decisions on the new integrity framework services. 
-> > IBAC is a sample LSM module to help clarify the interaction between 
-> > LSM and Linux Integrity Modules(LIM).
-> > 
-> >    - Updated Kconfig SECURITY_IBAC description
-> >      and SECURITY_IBAC_BOOTPARAM default value
-> >    - Prefixed all log messages with "ibac:"
-> >    - Redefined a couple of 'int' variables as 'static int'
-> > 
-> > signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> > ---
-> > Index: linux-2.6.21-rc4-mm1/security/ibac/Kconfig
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6.21-rc4-mm1/security/ibac/Kconfig
-> > @@ -0,0 +1,41 @@
-> > +config SECURITY_IBAC
-> > +	boolean "IBAC support"
-> > +	depends on SECURITY && SECURITY_NETWORK && INTEGRITY
-> > +	help
-> > +	  Integrity Based Access Control(IBAC) uses the Linux
-> > +	  Integrity Module(LIM) API calls to verify an executable's
-> > +	  metadata and data's integrity.  Based on the results,
-> > +	  execution permission is permitted/denied.  Integrity
-> > +	  providers may implement the LIM hooks differently.  For
-> > +	  more information on integrity verification refer to the
-> > +	  specific integrity provider documentation.
-> 
-> ...sounds like pseudosecurity piece of **** whose only purpose is to
-> prevent computer's owner to hack his own system?
-> 
-> Why do we want it?
+Currently cpuset_exit() changes the exiting task's ->cpuset pointer w/o
+taking task_lock(). This can lead to ugly races between attach_task and
+cpuset_exit. Details of the races are described at 
+http://lkml.org/lkml/2007/3/24/132.
 
-I assume, as it says not too far above, we want it as
+Patch below closes those races. It is against 2.6.21-rc4 and has undergone
+a simple compile/boot test on a x86_64 box.
 
-	"a sample LSM module to help clarify the interaction between LSM
-	and Linux Integrity Modules(LIM)"
+Signed-off-by : Srivatsa Vaddagiri <vatsa@in.ibm.com>
 
-Since the LIM stuff is infrastructure code, a simple user is nice of her
-to provide, like the root_plug LSM.
 
-Perhaps the comments should warn that using this for real by itself
-would be trivial to work around?
+---
 
--serge
+
+diff -puN kernel/cpuset.c~cpuset_race_fix kernel/cpuset.c
+--- linux-2.6.21-rc4/kernel/cpuset.c~cpuset_race_fix	2007-03-25 21:08:27.000000000 +0530
++++ linux-2.6.21-rc4-vatsa/kernel/cpuset.c	2007-03-25 21:25:05.000000000 +0530
+@@ -1182,6 +1182,7 @@ static int attach_task(struct cpuset *cs
+ 	pid_t pid;
+ 	struct task_struct *tsk;
+ 	struct cpuset *oldcs;
++	struct cpuset *oldcs_tobe_released = NULL;
+ 	cpumask_t cpus;
+ 	nodemask_t from, to;
+ 	struct mm_struct *mm;
+@@ -1237,6 +1238,8 @@ static int attach_task(struct cpuset *cs
+ 	}
+ 	atomic_inc(&cs->count);
+ 	rcu_assign_pointer(tsk->cpuset, cs);
++	if (atomic_dec_and_test(&oldcs->count))
++		oldcs_tobe_released = oldcs;
+ 	task_unlock(tsk);
+ 
+ 	guarantee_online_cpus(cs, &cpus);
+@@ -1257,8 +1260,8 @@ static int attach_task(struct cpuset *cs
+ 
+ 	put_task_struct(tsk);
+ 	synchronize_rcu();
+-	if (atomic_dec_and_test(&oldcs->count))
+-		check_for_release(oldcs, ppathbuf);
++	if (oldcs_tobe_released)
++		check_for_release(oldcs_tobe_released, ppathbuf);
+ 	return 0;
+ }
+ 
+@@ -2200,10 +2203,6 @@ void cpuset_fork(struct task_struct *chi
+  * it is holding that mutex while calling check_for_release(),
+  * which calls kmalloc(), so can't be called holding callback_mutex().
+  *
+- * We don't need to task_lock() this reference to tsk->cpuset,
+- * because tsk is already marked PF_EXITING, so attach_task() won't
+- * mess with it, or task is a failed fork, never visible to attach_task.
+- *
+  * the_top_cpuset_hack:
+  *
+  *    Set the exiting tasks cpuset to the root cpuset (top_cpuset).
+@@ -2242,19 +2241,20 @@ void cpuset_exit(struct task_struct *tsk
+ {
+ 	struct cpuset *cs;
+ 
++	task_lock(tsk);
+ 	cs = tsk->cpuset;
+ 	tsk->cpuset = &top_cpuset;	/* the_top_cpuset_hack - see above */
++	atomic_dec(&cs->count);
++	task_unlock(tsk);
+ 
+ 	if (notify_on_release(cs)) {
+ 		char *pathbuf = NULL;
+ 
+ 		mutex_lock(&manage_mutex);
+-		if (atomic_dec_and_test(&cs->count))
++		if (!atomic_read(&cs->count))
+ 			check_for_release(cs, &pathbuf);
+ 		mutex_unlock(&manage_mutex);
+ 		cpuset_release_agent(pathbuf);
+-	} else {
+-		atomic_dec(&cs->count);
+ 	}
+ }
+ 
+_
+
+
+
+
+-- 
+Regards,
+vatsa
