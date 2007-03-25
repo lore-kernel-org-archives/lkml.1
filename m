@@ -1,116 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751153AbXCYO5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbXCYO5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751153AbXCYO5Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 10:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbXCYO5Z
+	id S1751311AbXCYO5v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 10:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXCYO5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 10:57:25 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:34024 "EHLO
+	Sun, 25 Mar 2007 10:57:51 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34027 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751153AbXCYO5Y (ORCPT
+	with ESMTP id S1751234AbXCYO5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 10:57:24 -0400
-Date: Sun, 25 Mar 2007 16:57:28 +0200
+	Sun, 25 Mar 2007 10:57:38 -0400
+Date: Sun, 25 Mar 2007 16:57:42 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [-mm patch] lguest: remove check_bug_kill()
-Message-ID: <20070325145728.GE16477@stusta.de>
-References: <20070319205623.299d0378.akpm@linux-foundation.org> <20070324130639.GG752@stusta.de> <1174808025.6281.4.camel@localhost.localdomain>
+To: mchehab@infradead.org
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/media/video/cpia_pp.c: convert to module_{init,exit}
+Message-ID: <20070325145742.GF16477@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1174808025.6281.4.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 25, 2007 at 05:33:45PM +1000, Rusty Russell wrote:
-> On Sat, 2007-03-24 at 14:06 +0100, Adrian Bunk wrote:
-> > On Mon, Mar 19, 2007 at 08:56:23PM -0800, Andrew Morton wrote:
-> > >...
-> > > Changes since 2.6.21-rc3-mm1:
-> > >...
-> > > +lguest-use-read-only-pages-rather-than-segments-to-protect-high-mapped-switcher.patch
-> > >...
-> > >  x86/x86_64 updates
-> > >...
-> > 
-> > 
-> > check_bug_kill() is no longer used.
-> 
-> Thanks Adrian, that was actually an oversight.  However, this function
-> is most useful in early bringup, so I didn't notice it was gone.
-> 
-> I'd prefer a patch which eliminates it altogether, rather than #if 0 it
-> out.
-
-Patch below.
-
-> Thanks!
-> Rusty.
-
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-check_bug_kill() is no longer used.
+After looking at a section bug (in the non-modular case, clearly 
+non-init code referenced the __initdata parport_nr[]), I thought it was 
+time to convert this driver to module_{init,exit}.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- arch/i386/lguest/interrupts_and_traps.c |   27 ------------------------
- arch/i386/lguest/lg.h                   |    1 
- 2 files changed, 28 deletions(-)
+ drivers/media/video/cpia_pp.c |   46 ++++------------------------------
+ 1 file changed, 6 insertions(+), 40 deletions(-)
 
---- linux-2.6.21-rc4-mm1/arch/i386/lguest/lg.h.old	2007-03-25 14:38:22.000000000 +0200
-+++ linux-2.6.21-rc4-mm1/arch/i386/lguest/lg.h	2007-03-25 14:41:13.000000000 +0200
-@@ -195,7 +195,6 @@
- /* interrupts_and_traps.c: */
- void maybe_do_interrupt(struct lguest *lg);
- int deliver_trap(struct lguest *lg, unsigned int num);
--void check_bug_kill(struct lguest *lg);
- void load_guest_idt_entry(struct lguest *lg, unsigned int i, u32 low, u32 hi);
- void pin_stack_pages(struct lguest *lg);
- void pin_trap_pages(struct lguest *lg);
---- linux-2.6.21-rc4-mm1/arch/i386/lguest/interrupts_and_traps.c.old	2007-03-25 14:38:46.000000000 +0200
-+++ linux-2.6.21-rc4-mm1/arch/i386/lguest/interrupts_and_traps.c	2007-03-25 14:41:25.000000000 +0200
-@@ -118,33 +118,6 @@
- 	return 1;
+--- linux-2.6.21-rc4-mm1/drivers/media/video/cpia_pp.c.old	2007-03-24 23:35:19.000000000 +0100
++++ linux-2.6.21-rc4-mm1/drivers/media/video/cpia_pp.c	2007-03-25 00:00:16.000000000 +0100
+@@ -62,7 +62,6 @@
+ #define PPCPIA_PARPORT_OFF -2
+ #define PPCPIA_PARPORT_NONE -1
+ 
+-#ifdef MODULE
+ static int parport_nr[PARPORT_MAX] = {[0 ... PARPORT_MAX - 1] = PPCPIA_PARPORT_UNSPEC};
+ static char *parport[PARPORT_MAX] = {NULL,};
+ 
+@@ -72,11 +71,6 @@
+ 
+ module_param_array(parport, charp, NULL, 0);
+ MODULE_PARM_DESC(parport, "'auto' or a list of parallel port numbers. Just like lp.");
+-#else
+-static int parport_nr[PARPORT_MAX] __initdata =
+-	{[0 ... PARPORT_MAX - 1] = PPCPIA_PARPORT_UNSPEC};
+-static int parport_ptr = 0;
+-#endif
+ 
+ struct pp_cam_entry {
+ 	struct pardevice *pdev;
+@@ -819,7 +813,7 @@
+ 	.detach = cpia_pp_detach,
+ };
+ 
+-static int cpia_pp_init(void)
++static int __init cpia_pp_init(void)
+ {
+ 	printk(KERN_INFO "%s v%d.%d.%d\n",ABOUT,
+ 	       CPIA_PP_MAJ_VER,CPIA_PP_MIN_VER,CPIA_PP_PATCH_VER);
+@@ -838,8 +832,7 @@
+ 	return 0;
  }
  
--void check_bug_kill(struct lguest *lg)
--{
--#ifdef CONFIG_BUG
--	u32 eip = lg->regs->eip - PAGE_OFFSET;
--	u16 insn;
+-#ifdef MODULE
+-int init_module(void)
++static int __init cpia_init(void)
+ {
+ 	if (parport[0]) {
+ 		/* The user gave some parameters.  Let's see what they were. */
+@@ -866,38 +859,11 @@
+ 	return cpia_pp_init();
+ }
+ 
+-void cleanup_module(void)
++static void __exit cpia_cleanup(void)
+ {
+-	parport_unregister_driver (&cpia_pp_driver);
++	parport_unregister_driver(&cpia_pp_driver);
+ 	return;
+ }
+ 
+-#else /* !MODULE */
 -
--	/* This only works for addresses in linear mapping... */
--	if (lg->regs->eip < PAGE_OFFSET)
--		return;
--	lhread(lg, &insn, eip, sizeof(insn));
--	if (insn == 0x0b0f) {
--#ifdef CONFIG_DEBUG_BUGVERBOSE
--		u16 l;
--		u32 f;
--		char file[128];
--		lhread(lg, &l, eip+sizeof(insn), sizeof(l));
--		lhread(lg, &f, eip+sizeof(insn)+sizeof(l), sizeof(f));
--		lhread(lg, file, f - PAGE_OFFSET, sizeof(file));
--		file[sizeof(file)-1] = 0;
--		kill_guest(lg, "BUG() at %#x %s:%u", eip, file, l);
--#else
--		kill_guest(lg, "BUG() at %#x", eip);
--#endif	/* CONFIG_DEBUG_BUGVERBOSE */
+-static int __init cpia_pp_setup(char *str)
+-{
+-	int err;
+-
+-	if (!strncmp(str, "parport", 7)) {
+-		int n = simple_strtoul(str + 7, NULL, 10);
+-		if (parport_ptr < PARPORT_MAX) {
+-			parport_nr[parport_ptr++] = n;
+-		} else {
+-			LOG("too many ports, %s ignored.\n", str);
+-		}
+-	} else if (!strcmp(str, "auto")) {
+-		parport_nr[0] = PPCPIA_PARPORT_AUTO;
+-	} else if (!strcmp(str, "none")) {
+-		parport_nr[parport_ptr++] = PPCPIA_PARPORT_NONE;
 -	}
--#endif	/* CONFIG_BUG */
+-
+-	err=cpia_pp_init();
+-	if (err)
+-		return err;
+-
+-	return 1;
 -}
 -
- static int direct_trap(const struct lguest *lg,
- 		       const struct desc_struct *trap,
- 		       unsigned int num)
+-__setup("cpia_pp=", cpia_pp_setup);
+-
+-#endif /* !MODULE */
++module_init(cpia_init);
++module_exit(cpia_cleanup);
 
