@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbXCYPaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751593AbXCYPaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751458AbXCYPaG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 11:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbXCYPaG
+	id S1751593AbXCYPaJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 11:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbXCYPaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 11:30:06 -0400
-Received: from smtpout08-04.prod.mesa1.secureserver.net ([64.202.165.12]:52977
-	"HELO smtpout08.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1751458AbXCYPaF (ORCPT
+	Sun, 25 Mar 2007 11:30:09 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:31977 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbXCYPaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 11:30:05 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Mar 2007 11:30:04 EDT
-Message-ID: <460693EB.9080203@kpfleming.us>
-Date: Sun, 25 Mar 2007 08:23:23 -0700
-From: "Kevin P. Fleming" <lkml@kpfleming.us>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Sun, 25 Mar 2007 11:30:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=RWNjk/DiEPWY8S8yivqTHVtOkPgXhcb4UFh2c33t3Q+uIWF1vZ99zqtvPR4i6A7ggTMGs+D91XQHOAxb2kvrY6hYaE37buxx4sSYoEJpvt9Coh3q+OIJgHrgKWfiZvveS+CEM+e6vVaEIN4g6bGAPbVlGrGHT51rZmEJK6kl+Wg=
+Message-ID: <84144f020703250830k5fb3e2eo6145a88cbe5a859d@mail.gmail.com>
+Date: Sun, 25 Mar 2007 17:30:04 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Bin Chen" <binary.chen@gmail.com>
+Subject: Re: kmem_cache_create loop for find the proper gfporder
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <5800c1cc0703241649q27157d9aid3d9d51b52efbf65@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: drivers/pci/probe.c patch in 2.6.20.4 causes 'cannot adjust BAR0
- (not I/O)' on NVidia MCP51
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5800c1cc0703241649q27157d9aid3d9d51b52efbf65@mail.gmail.com>
+X-Google-Sender-Auth: e8306b7a2f91b06d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just upgraded from 2.6.20.2 to 2.6.20.4 on my Compaq V6000 laptop,
-which has an NVidia core chipset. It has the MCP51 and uses it for PATA
-and SATA.
+On 3/25/07, Bin Chen <binary.chen@gmail.com> wrote:
+> It is done by increase gfporder for low number to high(possibly 0 to
+> MAX_GFP_ORDER). But why increase the gfporder(or slab size) can
+> decrease the internal fragmentation?)
+>
+> A simple example, suppose the slab management stuff is kept off-slab,
+> if the gfporder is zero, and the object size in slab is 1000, the
+> wasted space is 4096 mod 1000 = 96, but with 4096 * 2(increase
+> gfporder by 1), the space is 8192 mod 1000 = 192, 192 > 96.
 
-Booting the 2.6.20.4 kernel causes two messages (and a kernel lockup)
-like this:
+You didn't simulate the algorithm long enough. If you had, you'd hit
+order five which wastes only 72 bytes in your example.
 
-0000:00:0d.0: cannot adjust BAR0 (not I/O)
-0000:00:0d.0: cannot adjust BAR1 (not I/O)
-
-Booting without ACPI, without APIC, without LAPIC makes no usable
-difference (although sometimes I will also receive a message about BAR2).
-
-This patch:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ed8ccee0918ad063a4741c0656fda783e02df627;hp=9e5755bce00bb563739aeb0f09932a1907521167
-
-is the cause... backing it out results in a working 2.6.20.4 kernel on
-my laptop.
-
-I'll be happy to provide any assistance I can debugging this problem.
-Thanks.
+                                 Pekka
