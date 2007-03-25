@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbXCYBjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbXCYBld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753312AbXCYBjb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Mar 2007 21:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXCYBjb
+	id S933001AbXCYBld (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Mar 2007 21:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXCYBld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Mar 2007 21:39:31 -0400
-Received: from mout2.freenet.de ([194.97.50.155]:59919 "EHLO mout2.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312AbXCYBja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Mar 2007 21:39:30 -0400
-Message-ID: <4605D2CA.5070607@freenet.de>
-Date: Sun, 25 Mar 2007 03:39:22 +0200
-From: Patrick Ringl <patrick_@freenet.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: torvalds@linux-foundation.org, axboe@kernel.dk
-Subject: [PATCH UPDATED] fix typo in drivers/block/Kconfig
-Content-Type: multipart/mixed;
- boundary="------------090302090501010409090502"
+	Sat, 24 Mar 2007 21:41:33 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47024 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753323AbXCYBlc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Mar 2007 21:41:32 -0400
+Date: Sat, 24 Mar 2007 18:41:28 -0700
+From: Paul Jackson <pj@sgi.com>
+To: vatsa@in.ibm.com
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
+       rohitseth@google.com, ebiederm@xmission.com, mbligh@google.com,
+       winget@google.com, containers@lists.osdl.org, serue@us.ibm.com,
+       menage@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container
+ system abstracted from cpusets code
+Message-Id: <20070324184128.e8b34a3e.pj@sgi.com>
+In-Reply-To: <20070325004529.GD11794@in.ibm.com>
+References: <20070212081521.808338000@menage.corp.google.com>
+	<20070212085104.130746000@menage.corp.google.com>
+	<20070324150505.GB9475@in.ibm.com>
+	<20070324122559.11b9ba34.pj@sgi.com>
+	<20070325004529.GD11794@in.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090302090501010409090502
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+vatsa wrote:
+> >         if (tsk->flags & PF_EXITING) {
+> 
+> What if PF_EXITING is set after this check? If that happens then,
+> 
+> >                 task_unlock(tsk);
+> >                 mutex_unlock(&callback_mutex);
+> >                 put_task_struct(tsk);
+> >                 return -ESRCH;
+> >         }
+> 
+> the following code becomes racy with cpuset_exit() ...
+> 
+>         atomic_inc(&cs->count);
+>         rcu_assign_pointer(tsk->cpuset, cs);
+>         task_unlock(tsk);
 
-Hello,
+eh ... so ... ?
 
-[ ... Fixed two minor typos. ...]
+I don't know of any sequence where that causes any problem.
 
-The following patch is against 2.6.21-rc4:
+Do you see one?
 
-
---- linux-2.6.20-o/drivers/block/Kconfig	2007-03-18 00:04:53.000000000 +0100
-+++ linux-2.6.20/drivers/block/Kconfig	2007-03-25 03:35:19.000000000 +0200
-@@ -383,7 +383,7 @@
-  	default "16"
-  	depends on BLK_DEV_RAM
-  	help
--	  The default value is 16 RAM disks. Change this if you know what
-+	  The default value is 16 RAM disks. Change this if you know what you
-  	  are doing. If you boot from a filesystem that needs to be extracted
-  	  in memory, you will need at least one RAM disk (e.g. root on cramfs).
-
-@@ -393,7 +393,7 @@
-  	default "4096"
-  	help
-  	  The default value is 4096 kilobytes. Only change this if you know
--	  what are you doing. If you are using IBM S/390, then set this to
-+	  what you are doing. If you are using IBM S/390, then set this to
-  	  8192.
-
-  config BLK_DEV_RAM_BLOCKSIZE
-
-
-
-
----
-
-regards,
-Patrick
-
-
-
-
-
---------------090302090501010409090502
-Content-Type: text/plain;
- name="drivers_block_amount-of-ram-disks_typo_fix2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="drivers_block_amount-of-ram-disks_typo_fix2"
-
---- linux-2.6.20-o/drivers/block/Kconfig	2007-03-18 00:04:53.000000000 +0100
-+++ linux-2.6.20/drivers/block/Kconfig	2007-03-25 03:35:19.000000000 +0200
-@@ -383,7 +383,7 @@
- 	default "16"
- 	depends on BLK_DEV_RAM
- 	help
--	  The default value is 16 RAM disks. Change this if you know what
-+	  The default value is 16 RAM disks. Change this if you know what you
- 	  are doing. If you boot from a filesystem that needs to be extracted
- 	  in memory, you will need at least one RAM disk (e.g. root on cramfs).
- 
-@@ -393,7 +393,7 @@
- 	default "4096"
- 	help
- 	  The default value is 4096 kilobytes. Only change this if you know
--	  what are you doing. If you are using IBM S/390, then set this to
-+	  what you are doing. If you are using IBM S/390, then set this to
- 	  8192.
- 
- config BLK_DEV_RAM_BLOCKSIZE
-
---------------090302090501010409090502--
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
