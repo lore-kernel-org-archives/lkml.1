@@ -1,166 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750881AbXCYTX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751208AbXCYTYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750881AbXCYTX3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 15:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXCYTX3
+	id S1751208AbXCYTYX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 15:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXCYTYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 15:23:29 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:50796 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbXCYTX2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 15:23:28 -0400
-Date: Sun, 25 Mar 2007 12:23:51 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Wink Saville <wink@saville.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Documention for trace records (trec).
-Message-Id: <20070325122351.6ce69dfd.randy.dunlap@oracle.com>
-In-Reply-To: <11747802992043-git-send-email-wink@saville.com>
-References: <11747802992043-git-send-email-wink@saville.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 25 Mar 2007 15:24:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47031 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751208AbXCYTYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 15:24:22 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maxim <maximlevitsky@gmail.com>
+Subject: Re: [BUG] Code reordering in swsusp breaks suspend on SMP systems
+Date: Sun, 25 Mar 2007 21:27:30 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+References: <200703211840.53242.maximlevitsky@gmail.com> <200703251413.07799.rjw@sisk.pl> <200703251710.12842.maximlevitsky@gmail.com>
+In-Reply-To: <200703251710.12842.maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200703252127.30895.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007 16:51:37 -0700 Wink Saville wrote:
-
-> Trec is a light weight tracing mechanism that places
-> trace information into a buffer. The contents of the
-> buffer is dumped when errors occurs or when enabled
-> via SYSRQ commands.
+On Sunday, 25 March 2007 17:10, Maxim wrote:
+> On Sunday 25 March 2007 14:13:07 Rafael J. Wysocki wrote:
+> > On Sunday, 25 March 2007 01:40, Maxim wrote:
+> > > On Friday 23 March 2007 16:42:44 Rafael J. Wysocki wrote:
+> > > > On Friday, 23 March 2007 00:30, Rafael J. Wysocki wrote:
+> > > > > On Thursday, 22 March 2007 00:53, Rafael J. Wysocki wrote:
+> > > > > > On Thursday, 22 March 2007 00:39, Maxim wrote:
+> > > > > > > On Thursday 22 March 2007 01:24:25 Rafael J. Wysocki wrote:
+> > > > > > > > On Thursday, 22 March 2007 00:09, Maxim wrote:
+> > > > > > > > > On Thursday 22 March 2007 00:39:02 you wrote:
+> > > > > > > > > > On Wednesday, 21 March 2007 23:21, Pavel Machek wrote: 
+> > > Hi,
+> > > 	I confirm that the above patch works,
+> > > 
+> > > 	At least system didn't hang on resume with microcode driver loaded,
+> > > 
+> > > 	I can't really test whenever it did update microcode because I almost sure there is nothing to update
+> > > 	(I use core 2 duo that I bought a month ago, and an intel motherboard with latest bios ( updated yesterday) )
+> > > 	I selected this driver just in case when I compiled kernel.
+> > 
+> > OK, thanks for testing.
+> > 
 > 
-> Signed-off-by: Wink Saville <wink@saville.com>
-> ---
->  Documentation/trec.txt |   87 ++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 87 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/trec.txt
 > 
-> diff --git a/Documentation/trec.txt b/Documentation/trec.txt
-> new file mode 100644
-> index 0000000..2275edd
-> --- /dev/null
-> +++ b/Documentation/trec.txt
-> @@ -0,0 +1,87 @@
-> +Title	: Trace Records
-> +Authors	: Wink Saville <wink@saville.com>
-> +
-> +CONTENTS
-> +
-> +1. Concepts
-> +2. Architectures Supported
-> +3. Configuring
-> +4. API Reference
-> +5. Overhead
-> +6. TODO
-> +
-> +
-> +1. Concepts
-> +
-> +Trace records are a light weight tracing technique that time stamps
+> Hello,
+> 	I tested this patch, and it does work too,
+> 	System suspended /resumed correctly, no errors in kernel log
 
-                       lightweight                 ...     timestamps
+Thanks for the confirmation.
 
-> +small amounts of information and stores them in a buffer. TREC's are
-> +light enough that they may be sprinkled most anywhere in the kernel
-> +and have very little performance impact.
-> +
-> +For instance they can be placed in the scheduler and ISR's to watch
-> +the interaction between ISR's and the scheduler. They can be placed
-> +in memory handling routines to determine how and when memory is
-> +allocated and freed.
-> +
-> +In the current default configuration the trec's are dumped by calling
-> +trec_print_snapshot when die() or panic() are called as well as when
+I wonder if someone who actually needs the microcode to be updated can test
+it ...
 
-                                             is
+> > -	first_cpu = first_cpu(cpu_present_map);
+> > -	if (!cpu_online(first_cpu)) {
+> > -		error = _cpu_up(first_cpu);
+> > -		if (error) {
+> > -			printk(KERN_ERR "Could not bring CPU%d up.\n",
+> > -				first_cpu);
+> > -			goto out;
+> > -		}
+> > -	}
+> > -
+> 
+> Nice, I once have seen those lines too, and they look ridiculous, but
+> could that be that they are still necessary on some systems, 
 
-> +the kernel itself page faults in do_page_fault.
-> +
-> +If CONFIG_MAGIC_SYSRQ is the 'y' command will execute trec_snapshot
-                           ^
-                           enabled,
+I think this was a mistake from the beginning.
 
-> +and the 'z' command will print the current snapshot.
-> +
-> +A general macro TREC allows trec_write to be invoked as a macro and
-> +TRECC allows it to be invoked conditionally. See include/linux/trec.h
-> +for the current set of macros.
-> +
-> +2. Architectures Supported
-> +
-> +Should support all architectures has been tested only on:
-                                   ^
-                                   ;
-> +
-> +- X86_64
-> +
-> +
-> +3. Configuring
-> +
-> +Since trec's are implemented as a device driver they are configured
-> +by enabling support in the "Device Drivers" section of as they could
-                                                         ^
-                                                         ??
-
-> +be used early being a module is not supported.
-> +
-> +
-> +4. API Reference
-> +
-> +Trec supports the following API:
-> +
-> +void trec_init(void):
-> +
-> +  Initialize the module, this may be called before the driver is loaded
-                          ^
-                          ; (or maybe :)
-
-> +  if it is desired to use trec's early.
-> +
-> +void trec_write(unsigned long pc, int pid, unsigned long v1, unsigned long v2);
-> +
-> +  This is the routine used to write into the buffer. pc is the program counter
-
-end above line with ,
-
-> +  pid is the process id and v1 and v2 are two parameters.
-> +
-> +void trec_snapshot(void);
-> +
-> +  Calling this function takes a snapshot of the current trec buffer so that it
-> +  will not be modified. This is called prior to printing the snapshot via
-> +  trec_print_snapshot.
-> +
-> +void trec_print_snapshot(void);
-> +
-> +  Print the snapshot.
-> +
-> +5. Overhead
-> +
-> +Measured on a 2.4GHZ Core 2 Duo the readings between two TREC's is
-> +270 tics of the rdtsc or about 0.1us. No attempt has been made to
-> +optimize and less information can be collected if the overhead
-> +is still to high.
-
-            too
-
-> +
-> +
-> +6. TODO
-> +
-> +a. Add code to dump trec to user space
-> +b. Enhance to allow runtime registration and runtime enable disable.
-> +
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Rafael
