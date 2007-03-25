@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932750AbXCYVeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbXCYVir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932750AbXCYVeg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 17:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932778AbXCYVeg
+	id S932806AbXCYVir (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 17:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXCYVir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 17:34:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:54744 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932750AbXCYVef (ORCPT
+	Sun, 25 Mar 2007 17:38:47 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:50322 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932806AbXCYViq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 17:34:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=YPSB3MKSqmMKmUZGeTCmMcACckE51U3TiXC7PcZuIuSkR+yUsfhsvh/0ssRFnroyG47GWrjQxvrGL6Qg0ZCJG3mzN2MqjYOdmCmGDphekdpPYXlU8xlkz9NR4cImdXtlIxB15b0P9l3IdQEHdtngKn96gF+XqzJZo7xWQO+d9VM=
-Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       Tino Keitel <tino.keitel@gmx.de>, Bob Moore <robert.moore@intel.com>,
-       lenb@kernel.org, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070323185022.GQ752@stusta.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070323185022.GQ752@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 25 Mar 2007 23:34:14 +0200
-Message-Id: <1174858456.5550.32.camel@funkylaptop>
+	Sun, 25 Mar 2007 17:38:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=oapr1V15Dr8FquG7O8CHDwYlO5FXTC3R5EI6OJkmnJHbAkRZy1yaesxE5lbuv
+	msXL9fgrIkffmP2/627/VZR3A==
+Date: Sun, 25 Mar 2007 23:38:43 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: David Howells <dhowells@redhat.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: Re: I/O memory barriers vs SMP memory barriers
+Message-ID: <20070325213843.GE22126@xi.wantstofly.org>
+References: <20070323111350.GD3980@xi.wantstofly.org> <e9c3a7c20703021312y5f7aa228i5d1c84a8e9ea5676@mail.gmail.com> <20070303111427.GB16944@xi.wantstofly.org> <20070303113305.GB10515@flint.arm.linux.org.uk> <20070321221134.GA22497@xi.wantstofly.org> <tnxlkhpgslz.fsf@arm.com> <16051.1174657433@redhat.com> <20070325211542.GD3593@linux.vnet.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070325211542.GD3593@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 23 mars 2007 à 19:50 +0100, Adrian Bunk a écrit :
-> Subject    : MacMini: doesn't come out of suspend to ram
-> References : http://lkml.org/lkml/2007/3/21/374
-> Submitter  : Frédéric RISS <frederic.riss@gmail.com>
->              Tino Keitel <tino.keitel@gmx.de>
-> Caused-By  : Bob Moore <robert.moore@intel.com>
->              commit c5a7156959e89b32260ad6072bbf5077bcdfbeee
-> Status     : unknown
+On Sun, Mar 25, 2007 at 02:15:42PM -0700, Paul E. McKenney wrote:
 
-I spent some time this weekend investigating this issue more thoroughly.
-In fact the regression caused by this commit has been corrected by
-f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 (ACPI: Disable wake GPEs only
-once.)  
+> > > [ background: On ARM, SMP synchronisation does need barriers but device
+> > >   synchronisation does not.  The question is that given this, whether
+> > >   mb() and friends can be NOPs on ARM or not (i.e. whether mb() is
+> > >   supposed to sync against other CPUs or not, or whether only smp_mb()
+> > >   can be used for this.)  ]
+> > 
+> > Hmmmm...
+> > 
+> > [snip]
+> 
+> 3.	Orders memory accesses and device accesses, but not necessarily
+> 	the union of the two -- mb(), rmb(), wmb().
 
-However, as I pointed out in the initial report, the MacMini doesn't
-come out of suspend to ram because a commit in another merged patchset
-broke it. I tracked it down to:
+If mb/rmb/wmb are required to order normal memory accesses, that means
+that the change made in commit 9623b3732d11b0a18d9af3419f680d27ea24b014
+to always define mb/rmb/wmb as barrier() on ARM systems was wrong.
 
-commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-parent 79bf2bb335b85db25d27421c798595a2fa2a0e82 
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Fri Feb 16 01:28:04 2007 -0800
+Does everybody agree on these semantics, though?  At least David seems
+to think that mb/rmb/wmb aren't required to order normal memory accesses
+against each other..
 
-    [PATCH] clockevents: i386 drivers
-    
-This patch has already been mentioned in regression reports, but AFAICS
-not related to suspend issues.
 
-To be totally clear about what works and what doesn't:
+> 4.	Orders only device accesses, which is what seems to be looked
+> 	for here.
 
-79bf2bb335b85db25d27421c798595a2fa2a0e82 
-   + cherry-pick f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38  ==> works
-
-e9e2cdb412412326c4827fc78ba27f410d837e6e
-   + cherry-pick f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38  ==> broken
-
-To try to get more information, I commented the call to
-do_suspend_lowlevel in drivers/acpi/sleep/main.c and used
-CONFIG_DISABLE_CONSOLE_SUSPEND. Interestingly, the suspend/resume cycle
-completes correctly in this mode.
-
-Fred.
-
+Yes.  (As above, on ARM, SMP synchronisation does need barriers but
+device synchronisation does not.  If mb/rmb/wmb were only required to
+synchronise device accesses, they could have been regular compiler
+barriers on ARM, but if they are also required to synchronise normal
+memory accesses against each other, they have to map to hardware
+barriers.)
