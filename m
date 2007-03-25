@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750940AbXCYLRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750998AbXCYLfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750940AbXCYLRQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 07:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbXCYLRQ
+	id S1750998AbXCYLfH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 07:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbXCYLfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 07:17:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40608 "EHLO mx2.mail.elte.hu"
+	Sun, 25 Mar 2007 07:35:07 -0400
+Received: from comtv.ru ([217.10.32.17]:34196 "EHLO comtv.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750782AbXCYLRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 07:17:15 -0400
-Date: Sun, 25 Mar 2007 13:16:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1750998AbXCYLfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 07:35:05 -0400
+X-UCL: actv
+Date: Sun, 25 Mar 2007 15:34:48 +0400 (MSD)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Ingo Molnar <mingo@elte.hu>
+cc: Con Kolivas <kernel@kolivas.org>,
+       linux list <linux-kernel@vger.kernel.org>, zwane@infradead.org,
+       ck list <ck@vds.kolivas.org>, ijuz@mannheim.wgermanyrulez.de,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, John Stultz <johnstul@us.ibm.com>
-Subject: Re: [4/5] 2.6.21-rc4: known regressions (v2)
-Message-ID: <20070325111602.GB16988@elte.hu>
-References: <20070323185028.GR752@stusta.de> <1174679344.10840.334.camel@localhost.localdomain> <20070325071023.GL17532@mellanox.co.il> <1174808247.10840.467.camel@localhost.localdomain> <20070325085705.GB24225@mellanox.co.il> <1174817872.10840.478.camel@localhost.localdomain> <20070325101548.GI24225@mellanox.co.il> <1174818459.10840.481.camel@localhost.localdomain> <20070325102543.GK24225@mellanox.co.il> <1174819103.10840.484.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1174819103.10840.484.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] sched: accurate user accounting
+In-Reply-To: <20070325075134.GA14453@elte.hu>
+Message-ID: <Pine.LNX.4.64.0703251521270.11555@linmac.oyster.ru>
+References: <200703251159.03616.kernel@kolivas.org> <20070325075134.GA14453@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 25 Mar 2007, Ingo Molnar wrote:
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> * Con Kolivas <kernel@kolivas.org> wrote:
+>
+>> For an rsdl 0.33 patched kernel. Comments? Overhead worth it?
+>
+> we want to do this - and we should do this to the vanilla scheduler
+> first and check the results. I've back-merged the patch to before RSDL
+> and have tested it - find the patch below. Vale, could you try this
+> patch against a 2.6.21-rc4-ish kernel and re-test your testcase?
 
-> > Sorry, now I'm confused.
-> > Could you pls list the full set of tests you want me to run,
-> > and what information to collect from each of them?
-> 
-> 1. Test:
+[..snip..]
 
-I suspect step 0 would be use Linus' latest tree, ontop of -rc4:
+Compilation failed with:
+kernel/built-in.o(.sched.text+0x564): more undefined references to `__udivdi3' follow
 
- http://kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-rc4-git11.bz2
+$ gcc --version | head -1
+gcc (GCC) 3.4.6
 
-to make sure all post-rc4 time fixes are included.
+$ cat /proc/cpuinfo | grep cpu
+cpu             : 7447A, altivec supported
 
-	Ingo
+Can't say i really understand why 64bit arithmetics suddenly became an
+issue here.
+
+Am i supposed to run the testcase and see if numbers in `/proc/stat'
+now match the reality closer? To be really accurate `/proc/stat'
+should be left alone methinks, because no matter how good you try the
+fundamential fact that time(and consequently load percentage) is not
+really devided in USER_HZ intervals will interfere with ones quest for
+accurate statistics. (Wonder what this patch will do to slightly modified
+hog that produced this: http://www.boblycat.org/~malc/apc/load-c2d-hog.png
+but this will have to wait till i get to the PC at work)
+
+-- 
+vale (this is not name/nick/alias, this is latin for farewell)
