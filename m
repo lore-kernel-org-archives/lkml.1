@@ -1,110 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbXCYQQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751778AbXCYQZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751773AbXCYQQv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 12:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXCYQQv
+	id S1751778AbXCYQZD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 12:25:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXCYQZC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 12:16:51 -0400
-Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:32895 "HELO
-	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751773AbXCYQQu (ORCPT
+	Sun, 25 Mar 2007 12:25:02 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34117 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751778AbXCYQZB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 12:16:50 -0400
-X-YMail-OSG: _IbbtxIVM1m0ZNPZExj3QmZUf5A9jsaQKPZizyUERoZHc.vRziC53Qew8N2CTJKfIHXMWB_FAFmhxXxsTZFye8XIEfsvaZbZRcxFLNdeTe.d6IwnzW8pzMsZuKQCsVF45OLr4TuTuw9irpF5FrgcrfwQU_ff.Q9x5B5TFsAxYJzw294_t.6l
-Date: Sun, 25 Mar 2007 11:16:47 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] utsns: fix !CONFIG_UTS_NS behavior
-Message-ID: <20070325161647.GA6753@vino.hallyn.com>
-References: <20070323200039.GA15775@sergelap.austin.ibm.com> <20070325010709.5d801f1c.akpm@linux-foundation.org>
+	Sun, 25 Mar 2007 12:25:01 -0400
+Date: Sun, 25 Mar 2007 18:25:05 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: apm.c: get rid of unused variables
+Message-ID: <20070325162505.GN16477@stusta.de>
+References: <Pine.LNX.4.64.0703251158400.17623@paragw-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070325010709.5d801f1c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703251158400.17623@paragw-desktop>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Fri, 23 Mar 2007 15:00:39 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+On Sun, Mar 25, 2007 at 12:06:19PM -0400, Parag Warudkar wrote:
 > 
-> > When CONFIG_UTS_NS=n, clone(CLONE_NEWUTS) quietly refuses.  So correctly does
-> > not unshare a new uts namespace, but also does not return -EINVAL.
-> > 
-> > Fix this to return -EINVAL so the caller knows his request was denied.
-> > 
-> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> > 
-> > ---
-> > 
-> >  include/linux/utsname.h |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > bc350994ac67df8f1b917f9979c065d87757eabe
-> > diff --git a/include/linux/utsname.h b/include/linux/utsname.h
-> > index a4555fe..e10267d 100644
-> > --- a/include/linux/utsname.h
-> > +++ b/include/linux/utsname.h
-> > @@ -70,6 +70,8 @@ static inline int unshare_utsname(unsign
-> >  
-> >  static inline int copy_utsname(int flags, struct task_struct *tsk)
-> >  {
-> > +	if (flags & CLONE_NEWUTS)
-> > +		return -EINVAL;
-> >  	return 0;
-> >  }
-> >  static inline void put_uts_ns(struct uts_namespace *ns)
+> The patch below (against latest git) gets rid of following unused 
+> variables - clock_cmos_diff and got_clock_diff.
 > 
-> I'm assuming that this is 2.6.21 material.
+> 2 less compiler warnings.
 > 
-> Please review -mm's merge-sys_clone-sys_unshare-nsproxy-and-namespace.patch
-> - it probably needs to propagate this fix.
+> Compile tested on i386.
+> 
+> Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+> 
+> --- linux-2.6/arch/i386/kernel/apm.c	2007-03-24 21:43:35.000000000 -0400
+> +++ linux-2.6-wk/arch/i386/kernel/apm.c	2007-03-25 
+> 11:50:16.000000000 -0400
+> @@ -384,13 +384,6 @@
+>  static int			ignore_normal_resume;
+>  static int			bounce_interval __read_mostly = 
+>  DEFAULT_BOUNCE_INTERVAL;
+> 
+> -#ifdef CONFIG_APM_RTC_IS_GMT
+> -#	define	clock_cmos_diff	0
+> -#	define	got_clock_diff	1
+> -#else
+> -static long			clock_cmos_diff;
+> -static int			got_clock_diff;
+> -#endif
+>  static int			debug __read_mostly;
+>  static int			smp __read_mostly;
+>  static int			apm_disabled = -1;
 
-Yes it does.  Here's a patch on top of 2.6.21-rc4-mm1.  (or do you prefer
-I integrate it into merge-sys_clone-sys_unshare-nsproxy-and-namespace.patch
-itself?)
+You could also remove the APM_RTC_IS_GMT config option.
 
-From: "Serge E. Hallyn" <serge@vino.hallyn.com>
-Subject: [PATCH] utsns [-mm]: fix !CONFIG_UTS_NS behavior
+cu
+Adrian
 
-When CONFIG_UTS_NS=n, clone(CLONE_NEWUTS) quietly refuses.  So correctly does
-not unshare a new uts namespace, but also does not return -EINVAL.
-
-Fix this to return -EINVAL so the caller knows his request was denied.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-
----
-
- arch/s390/boot/image    |  Bin
- include/linux/utsname.h |    3 +++
- 2 files changed, 3 insertions(+), 0 deletions(-)
-
-8b4ffb8d88f89f118751f05869613ee16d5c463f
-diff --git a/arch/s390/boot/image b/arch/s390/boot/image
-index da5b91f..2bab55e 100755
-Binary files a/arch/s390/boot/image and b/arch/s390/boot/image differ
-diff --git a/include/linux/utsname.h b/include/linux/utsname.h
-index 528a071..d63cdd8 100644
---- a/include/linux/utsname.h
-+++ b/include/linux/utsname.h
-@@ -35,6 +35,7 @@ struct new_utsname {
- #include <linux/sched.h>
- #include <linux/kref.h>
- #include <linux/nsproxy.h>
-+#include <linux/err.h>
- #include <asm/atomic.h>
- 
- struct uts_namespace {
-@@ -60,6 +61,8 @@ static inline void put_uts_ns(struct uts
- static inline struct uts_namespace *
- copy_utsname(int flags, struct uts_namespace *ns)
- {
-+	if (flags & CLONE_NEWUTS)
-+		return ERR_PTR(-EINVAL);
- 	return ns;
- }
- static inline void put_uts_ns(struct uts_namespace *ns)
 -- 
-1.1.6
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
