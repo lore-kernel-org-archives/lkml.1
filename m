@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751789AbXCYQMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbXCYQQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751789AbXCYQMa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 12:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbXCYQMa
+	id S1751773AbXCYQQv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 12:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXCYQQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 12:12:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35687 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbXCYQM3 (ORCPT
+	Sun, 25 Mar 2007 12:16:51 -0400
+Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:32895 "HELO
+	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751773AbXCYQQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 12:12:29 -0400
-Date: Sun, 25 Mar 2007 09:11:44 -0700
-From: Greg KH <greg@kroah.com>
-To: "Kevin P. Fleming" <lkml@kpfleming.us>, Jan Beulich <jbeulich@novell.com>,
-       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: drivers/pci/probe.c patch in 2.6.20.4 causes 'cannot adjust
-	BAR0 (not I/O)' on NVidia MCP51
-Message-ID: <20070325161144.GA12155@kroah.com>
-References: <460693EB.9080203@kpfleming.us>
+	Sun, 25 Mar 2007 12:16:50 -0400
+X-YMail-OSG: _IbbtxIVM1m0ZNPZExj3QmZUf5A9jsaQKPZizyUERoZHc.vRziC53Qew8N2CTJKfIHXMWB_FAFmhxXxsTZFye8XIEfsvaZbZRcxFLNdeTe.d6IwnzW8pzMsZuKQCsVF45OLr4TuTuw9irpF5FrgcrfwQU_ff.Q9x5B5TFsAxYJzw294_t.6l
+Date: Sun, 25 Mar 2007 11:16:47 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] utsns: fix !CONFIG_UTS_NS behavior
+Message-ID: <20070325161647.GA6753@vino.hallyn.com>
+References: <20070323200039.GA15775@sergelap.austin.ibm.com> <20070325010709.5d801f1c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <460693EB.9080203@kpfleming.us>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070325010709.5d801f1c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 25, 2007 at 08:23:23AM -0700, Kevin P. Fleming wrote:
-> I just upgraded from 2.6.20.2 to 2.6.20.4 on my Compaq V6000 laptop,
-> which has an NVidia core chipset. It has the MCP51 and uses it for PATA
-> and SATA.
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Fri, 23 Mar 2007 15:00:39 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
 > 
-> Booting the 2.6.20.4 kernel causes two messages (and a kernel lockup)
-> like this:
+> > When CONFIG_UTS_NS=n, clone(CLONE_NEWUTS) quietly refuses.  So correctly does
+> > not unshare a new uts namespace, but also does not return -EINVAL.
+> > 
+> > Fix this to return -EINVAL so the caller knows his request was denied.
+> > 
+> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> > 
+> > ---
+> > 
+> >  include/linux/utsname.h |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > bc350994ac67df8f1b917f9979c065d87757eabe
+> > diff --git a/include/linux/utsname.h b/include/linux/utsname.h
+> > index a4555fe..e10267d 100644
+> > --- a/include/linux/utsname.h
+> > +++ b/include/linux/utsname.h
+> > @@ -70,6 +70,8 @@ static inline int unshare_utsname(unsign
+> >  
+> >  static inline int copy_utsname(int flags, struct task_struct *tsk)
+> >  {
+> > +	if (flags & CLONE_NEWUTS)
+> > +		return -EINVAL;
+> >  	return 0;
+> >  }
+> >  static inline void put_uts_ns(struct uts_namespace *ns)
 > 
-> 0000:00:0d.0: cannot adjust BAR0 (not I/O)
-> 0000:00:0d.0: cannot adjust BAR1 (not I/O)
+> I'm assuming that this is 2.6.21 material.
 > 
-> Booting without ACPI, without APIC, without LAPIC makes no usable
-> difference (although sometimes I will also receive a message about BAR2).
-> 
-> This patch:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ed8ccee0918ad063a4741c0656fda783e02df627;hp=9e5755bce00bb563739aeb0f09932a1907521167
-> 
-> is the cause... backing it out results in a working 2.6.20.4 kernel on
-> my laptop.
-> 
-> I'll be happy to provide any assistance I can debugging this problem.
+> Please review -mm's merge-sys_clone-sys_unshare-nsproxy-and-namespace.patch
+> - it probably needs to propagate this fix.
 
-Jan, any thoughts about this?
+Yes it does.  Here's a patch on top of 2.6.21-rc4-mm1.  (or do you prefer
+I integrate it into merge-sys_clone-sys_unshare-nsproxy-and-namespace.patch
+itself?)
 
-Should this be backed out of the -stable releases?
+From: "Serge E. Hallyn" <serge@vino.hallyn.com>
+Subject: [PATCH] utsns [-mm]: fix !CONFIG_UTS_NS behavior
 
-Kevin, does 2.6.21-rc4 work properly for you?
+When CONFIG_UTS_NS=n, clone(CLONE_NEWUTS) quietly refuses.  So correctly does
+not unshare a new uts namespace, but also does not return -EINVAL.
 
-thanks,
+Fix this to return -EINVAL so the caller knows his request was denied.
 
-greg k-h
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+
+---
+
+ arch/s390/boot/image    |  Bin
+ include/linux/utsname.h |    3 +++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
+
+8b4ffb8d88f89f118751f05869613ee16d5c463f
+diff --git a/arch/s390/boot/image b/arch/s390/boot/image
+index da5b91f..2bab55e 100755
+Binary files a/arch/s390/boot/image and b/arch/s390/boot/image differ
+diff --git a/include/linux/utsname.h b/include/linux/utsname.h
+index 528a071..d63cdd8 100644
+--- a/include/linux/utsname.h
++++ b/include/linux/utsname.h
+@@ -35,6 +35,7 @@ struct new_utsname {
+ #include <linux/sched.h>
+ #include <linux/kref.h>
+ #include <linux/nsproxy.h>
++#include <linux/err.h>
+ #include <asm/atomic.h>
+ 
+ struct uts_namespace {
+@@ -60,6 +61,8 @@ static inline void put_uts_ns(struct uts
+ static inline struct uts_namespace *
+ copy_utsname(int flags, struct uts_namespace *ns)
+ {
++	if (flags & CLONE_NEWUTS)
++		return ERR_PTR(-EINVAL);
+ 	return ns;
+ }
+ static inline void put_uts_ns(struct uts_namespace *ns)
+-- 
+1.1.6
