@@ -1,48 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751793AbXCYQ0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751820AbXCYQ11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751793AbXCYQ0c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 12:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXCYQ0c
+	id S1751820AbXCYQ11 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 12:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXCYQ11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 12:26:32 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:50610 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbXCYQ0b (ORCPT
+	Sun, 25 Mar 2007 12:27:27 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:40981 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751820AbXCYQ10 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 12:26:31 -0400
-X-Greylist: delayed 1743 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Mar 2007 12:26:31 EDT
-Date: Sun, 25 Mar 2007 08:55:21 -0700
-From: Greg KH <greg@kroah.com>
-To: Noriaki TAKAMIYA <takamiya@linux-ipv6.org>
-Cc: usagi-core@linux-ipv6.org, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: (usagi-core 32638) Re: [linux-usb-devel] [PATCH 0/2] [SERIAL]
-	[USB] fixed to skip NULL entry in struct serial usb_serial_port.
-Message-ID: <20070325155521.GA11663@kroah.com>
-References: <20070325.005227.432838064.takamiya@linux-ipv6.org> <20070324212253.GA26215@kroah.com> <20070325.144740.432839277.takamiya@linux-ipv6.org>
+	Sun, 25 Mar 2007 12:27:26 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Early hang with 2.6.21-rc4-rt1
+X-Message-Flag: Warning: May contain useful information
+References: <adad52xnccs.fsf@cisco.com> <ada8xdlnb6f.fsf@cisco.com>
+	<20070325072947.GA10734@elte.hu> <20070325073424.GA14242@elte.hu>
+	<20070325080626.GA22223@elte.hu>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sun, 25 Mar 2007 09:27:22 -0700
+In-Reply-To: <20070325080626.GA22223@elte.hu> (Ingo Molnar's message of "Sun, 25 Mar 2007 10:06:26 +0200")
+Message-ID: <adazm61l251.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070325.144740.432839277.takamiya@linux-ipv6.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+X-OriginalArrivalTime: 25 Mar 2007 16:27:22.0214 (UTC) FILETIME=[7715B860:01C76EFA]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 25, 2007 at 02:47:40PM +0900, Noriaki TAKAMIYA wrote:
-> Hi,
-> 
-> >> Sat, 24 Mar 2007 14:22:53 -0700
-> >> [Subject: (usagi-core 32638) Re: [linux-usb-devel] [PATCH 0/2] [SERIAL] [USB] fixed to skip NULL entry in struct serial usb_serial_port.]
-> >> Greg KH <greg@kroah.com> wrote...
-> 
-> > This should already be fixed in the -git snapshots that have come out
-> > after 2.6.21-rc4.  Can you test them to verify this?
-> 
->   Yes, this problem was already fixed.
+ > the 64-bit kernel indeed hangs. Does the patch below fix it for you?
 
-Great, thanks for testing.  So I guess both of these patches are no
-longer necessary, right?
+Yes, that boots and seems to work fine.
 
-thanks,
-
-greg k-h
+Thanks.
