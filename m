@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXCYMnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbXCYMxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbXCYMnD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 08:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbXCYMnD
+	id S1753506AbXCYMxd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 08:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXCYMxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 08:43:03 -0400
-Received: from mail24.syd.optusnet.com.au ([211.29.133.165]:58995 "EHLO
-	mail24.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753507AbXCYMnB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 08:43:01 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] sched: accurate user accounting
-Date: Sun, 25 Mar 2007 22:41:54 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, malc <av1474@comtv.ru>,
-       Ingo Molnar <mingo@elte.hu>, zwane@infradead.org,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200703251159.03616.kernel@kolivas.org> <200703252202.48022.kernel@kolivas.org> <200703250832.36818.gene.heskett@gmail.com>
-In-Reply-To: <200703250832.36818.gene.heskett@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 25 Mar 2007 08:53:32 -0400
+Received: from www.osadl.org ([213.239.205.134]:51049 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753506AbXCYMxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 08:53:32 -0400
+Subject: Re: [patch] ntp: avoid integer overflow in do_adjtimex()
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, john stultz <johnstul@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070325111420.GA16988@elte.hu>
+References: <1174696834.5690.14.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703240153220.14457@scrub.home>
+	 <20070325010903.a0e6e624.akpm@linux-foundation.org>
+	 <1174820872.10840.494.camel@localhost.localdomain>
+	 <20070325111420.GA16988@elte.hu>
+Content-Type: text/plain
+Date: Sun, 25 Mar 2007 15:01:00 +0200
+Message-Id: <1174827661.10840.514.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703252241.55431.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 March 2007 22:32, Gene Heskett wrote:
-> On Sunday 25 March 2007, Con Kolivas wrote:
-> >On Sunday 25 March 2007 21:46, Con Kolivas wrote:
-> >> On Sunday 25 March 2007 21:34, malc wrote:
-> >> > On Sun, 25 Mar 2007, Ingo Molnar wrote:
-> >> > > * Con Kolivas <kernel@kolivas.org> wrote:
-> >> > >> For an rsdl 0.33 patched kernel. Comments? Overhead worth it?
-> >> > >
-> >> > > we want to do this - and we should do this to the vanilla
-> >> > > scheduler first and check the results. I've back-merged the patch
-> >> > > to before RSDL and have tested it - find the patch below. Vale,
-> >> > > could you try this patch against a 2.6.21-rc4-ish kernel and
-> >> > > re-test your testcase?
-> >> >
-> >> > [..snip..]
-> >> >
-> >> > Compilation failed with:
-> >> > kernel/built-in.o(.sched.text+0x564): more undefined references to
-> >> > `__udivdi3' follow
-> >> >
-> >> > $ gcc --version | head -1
-> >> > gcc (GCC) 3.4.6
-> >> >
-> >> > $ cat /proc/cpuinfo | grep cpu
-> >> > cpu             : 7447A, altivec supported
-> >> >
-> >> > Can't say i really understand why 64bit arithmetics suddenly became
-> >> > an issue here.
-> >>
-> >> Probably due to use of:
-> >>
-> >> #define NS_TO_JIFFIES(TIME)	((TIME) / (1000000000 / HZ))
-> >> #define JIFFIES_TO_NS(TIME)	((TIME) * (1000000000 / HZ))
-> >>
-> >> Excuse our 64bit world while we strive to correct our 32bit blindness
-> >> and fix this bug.
-> >
-> >Please try this (akpm please don't include till we confirm it builds on
-> > ppc, sorry). For 2.6.21-rc4
-> >
-> >---
-> >Currently we only do cpu accounting to userspace based on what is
-> >actually happening precisely on each tick. The accuracy of that
-> >accounting gets progressively worse the lower HZ is. As we already keep
-> >accounting of nanosecond resolution we can accurately track user cpu,
-> >nice cpu and idle cpu if we move the accounting to update_cpu_clock with
-> >a nanosecond cpu_usage_stat entry. This increases overhead slightly but
-> >avoids the problem of tick aliasing errors making accounting unreliable.
+On Sun, 2007-03-25 at 13:14 +0200, Ingo Molnar wrote:
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > Here you go. It's ugly, but it should do the trick for now.
+> > 
+> > 	tglx
+> 
+> here's your patch with proper metadata:
+> 
+> --------------------->
+> From: Thomas Gleixner <tglx@linutronix.de>
+> Subject: [patch] ntp: avoid integer overflow in do_adjtimex()
+> 
+> John Stultz traced back ntpd problems to the following issue: 
+> do_adjtimex() [used by ntpd] can overflow if there's a too long delay 
+> between timer interrupts - as it can happen on NO_HZ. Expand the 
+> time_adjust calculation/division from 32 bits to 64 bits.
 
->
-> I'm playing again because the final 2.6.20.4 does NOT break amanda, where
-> 2.6.20.4-rc1 did.
+Wrong metadata. This is a patch to fix John's patch vs. signedness.
 
-Yes only the original version I posted on this email thread was for an RSDL 
-0.33 patched kernel. That original patch should build fine on i386 and x86_64 
-(where I tried it). This version I sent out following Ingo's lead has 
-2.6.21-rc4 in mind (without rsdl).
+	tglx
 
--- 
--ck
+
+
