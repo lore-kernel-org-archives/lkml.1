@@ -1,114 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbXCYS3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752009AbXCYSbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932442AbXCYS3B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 14:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932638AbXCYS3A
+	id S1752009AbXCYSbg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 14:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXCYSbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 14:29:00 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:35852 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932442AbXCYS27 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 14:28:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=F1mk7GQQejbrwED2TwB66TxCfWHQnVaZATNKIGoL80qnpeOIMquUVxq5RxmkJvKL+UERwiBJuPvz7ktXqEYLrUMCj1j4OPfXtsRQKQm2Pk/GEkONqOeiwoCTSUlG7GT2O/ZmPGNEQNP3CERfb13JsQI/aZ9CTIKTT/l7Z8QjjPo=
-Message-ID: <64bb37e0703251128q3f9db894u24c4638dcf97224a@mail.gmail.com>
-Date: Sun, 25 Mar 2007 19:28:57 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Con Kolivas" <kernel@kolivas.org>
-Subject: Re: debug rsdl 0.33
-Cc: "Andy Whitcroft" <apw@shadowen.org>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Steve Fox" <drfickle@us.ibm.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>
-In-Reply-To: <200703241026.57143.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Mar 2007 14:31:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35392 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752009AbXCYSbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 14:31:34 -0400
+Date: Sun, 25 Mar 2007 20:30:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Stable Kernel Team <stable@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [BUG] __copy_to_user_inatomic broken on non Pentium machines
+Message-ID: <20070325183010.GA12676@elte.hu>
+References: <1174810024.10840.477.camel@localhost.localdomain> <Pine.LNX.4.64.0703251039170.6730@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	 <4603C7EC.6030906@shadowen.org>
-	 <200703240845.30484.kernel@kolivas.org>
-	 <200703241026.57143.kernel@kolivas.org>
+In-Reply-To: <Pine.LNX.4.64.0703251039170.6730@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/24/07, Con Kolivas <kernel@kolivas.org> wrote:
->  kernel/sched.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 51 insertions(+)
 
-2.6.21-rc4-mm1 also fails for me.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I tried pure 2.6.21-rc4-mm1, +hotfixes, +hotfixes+rsdl33 and at last
-also added above debug patch.
+> On Sun, 25 Mar 2007, Thomas Gleixner wrote:
+> >
+> > Environment: Pre Pentium systems, (boot_cpu_data.wp_works_ok == 0)
+> 
+> This shouldn't be "pre-pentium", afaik. WP-works-ok on i486 too. I 
+> think only the original i386 had this bug ("feature").
+> 
+> But I agree, it does seem to be broken on such machines (I assume you 
+> don't actually have one, but just tested by forcing it by hand ;)
 
-The oops from with the debug-patch added:
-[   65.426126] Freeing unused kernel memory: 312k freed
-(on the console the system is starting up, getting until "Letting udev
-process events ...")
-[   66.665611] Unable to handle kernel NULL pointer dereference at
-0000000000000020 RIP:
-[   66.682030]  [<ffffffff8026167c>] __sched_text_start+0x4dc/0xa0e
-[   66.707402] PGD 0
-[   66.713473] Oops: 0000 [1] SMP
-[   66.722968] last sysfs file:
-devices/pci0000:00/0000:00:05.0/host2/target2:0:0/2:0:0:0/type
-[   66.747954] CPU 0
-[   66.754025] Modules linked in:
-[   66.763209] Pid: 1200, comm: udevd Not tainted 2.6.21-rc4-mm1 #4
-[   66.781162] RIP: 0010:[<ffffffff8026167c>]  [<ffffffff8026167c>]
-__sched_text_start+0x4dc/0xa0e
-[   66.807236] RSP: 0018:ffff81007d38fe78  EFLAGS: 00010082
-[   66.823115] RAX: ffffffffffffffd0 RBX: 000000000000008c RCX: 000000000000058e
-[   66.844439] RDX: 0000000000000000 RSI: 000000000000000c RDI: 0000000000000000
-[   66.865767] RBP: ffff81007d38ff08 R08: 0000000000000064 R09: ffff810001014a58
-[   66.887092] R10: 000000000000001c R11: 0000000000000246 R12: ffff810001013700
-[   66.908418] R13: ffff810001014198 R14: 0000000000000001 R15: 0000000f859461fc
-[   66.929745] FS:  00002b67df90e6d0(0000) GS:ffffffff807aa000(0000)
-knlGS:0000000000000000
-[   66.953950] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[   66.971126] CR2: 0000000000000020 CR3: 0000000000201000 CR4: 00000000000006e0
-[   66.992451] Process udevd (pid: 1200, threadinfo ffff81007d38e000,
-task ffff81007e354100)
-[   67.016915] Stack:  00000000000004b0 0000000000000000
-0000000000000000 ffff81007e354100
-[   67.041097]  ffffffffffffffd0 ffff81007e354298 ffff81011d420680
-ffffffff802234b1
-[   67.063407]  0000000000000001 0000000000000000 0000000000000000
-0000000000000246
-[   67.085149] Call Trace:
-[   67.093037]  [<ffffffff802234b1>] filp_close+0x71/0x90
-[   67.108397]  [<ffffffff80214d97>] do_exit+0x7e7/0x800
-[   67.123495]  [<ffffffff80248372>] do_group_exit+0x82/0x90
-[   67.139634]  [<ffffffff8025c1de>] system_call+0x7e/0x83
-[   67.155277]
-[   67.159739]
-[   67.159740] Code: 48 39 48 50 0f 84 8b 00 00 00 48 c7 40 40 00 00 00 00 8b 52
-[   67.186877] RIP  [<ffffffff8026167c>] __sched_text_start+0x4dc/0xa0e
-[   67.205919]  RSP <ffff81007d38fe78>
-[   67.216348] CR2: 0000000000000020
-[   67.226260] Fixing recursive fault but reboot is needed!
+actually, AFAIK this is a genuine i386 box Thomas has (an embedded 
+board). Our hardware legacies and the resulting dependencies _really_ 
+stick around for quite long time :-/
 
-The system in x86_64, two 2218 on a MCP55 nvidia chipset.
-
-2.6.21-rc3-mm1 works fine.
-
-(gdb) list *0xffffffff8026167c
-0xffffffff8026167c is in schedule (kernel/sched.c:3619).
-3614            /*
-3615             * When the task is chosen it is checked to see if its
-quota has been
-3616             * added to this runqueue level which is only performed once per
-3617             * level per major rotation for each running task.
-3618             */
-3619            if (next->rotation != rq->prio_rotation) {
-3620                            /* Task has moved during major rotation */
-3621                            task_new_array(next, rq);
-3622                            if (!entitled_slot(next->static_prio, idx))
-3623                                    exchange_slot(next, rq);
-
-
-Torsten
+	Ingo
