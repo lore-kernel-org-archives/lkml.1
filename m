@@ -1,117 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752008AbXCYRw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbXCYSCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752008AbXCYRw1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 13:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXCYRw1
+	id S932227AbXCYSCw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 14:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbXCYSCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 13:52:27 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:43022 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752008AbXCYRw0 (ORCPT
+	Sun, 25 Mar 2007 14:02:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:44815 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932227AbXCYSCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 13:52:26 -0400
-Message-ID: <4606B6CF.6040306@in.ibm.com>
-Date: Sun, 25 Mar 2007 23:22:15 +0530
-From: Balbir Singh <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+	Sun, 25 Mar 2007 14:02:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=MY0etew/BU8VswQqW3QDDlyvJqf/rJ/hfosuMlJ4x+Zau2CRIQcgaY2jcog/n8VyKUGl71GCyjxDw8b56ZLNsoHg+z8AESclp8VvFVsFGIGKjYSDNtqqspsNM+tS+d4F+wlrrBafPaWTbzhSrahb3RIFKSsfdRK+LrkbuCIaaow=
+Date: Sun, 25 Mar 2007 23:02:21 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@lists.osdl.org
+Subject: [PATCH] aoe, tb0219: fix late spin_lock_init() and friends
+Message-ID: <20070325190221.GA5308@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-To: vatsa@in.ibm.com
-CC: pj@sgi.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix race between attach_task and cpuset_exit
-References: <20070325164746.GI11794@in.ibm.com>
-In-Reply-To: <20070325164746.GI11794@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Vatsa,
+Some drivers do register_chrdev() before lock or semaphore used in
+corresponding file_operations is initialized.
 
-Srivatsa Vaddagiri wrote:
-> 
-> diff -puN kernel/cpuset.c~cpuset_race_fix kernel/cpuset.c
-> --- linux-2.6.21-rc4/kernel/cpuset.c~cpuset_race_fix	2007-03-25 21:08:27.000000000 +0530
-> +++ linux-2.6.21-rc4-vatsa/kernel/cpuset.c	2007-03-25 21:25:05.000000000 +0530
-> @@ -1182,6 +1182,7 @@ static int attach_task(struct cpuset *cs
->  	pid_t pid;
->  	struct task_struct *tsk;
->  	struct cpuset *oldcs;
-> +	struct cpuset *oldcs_tobe_released = NULL;
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-How about oldcs_to_be_released?
+ drivers/block/aoe/aoechr.c |    4 ++--
+ drivers/char/tb0219.c      |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
->  	cpumask_t cpus;
->  	nodemask_t from, to;
->  	struct mm_struct *mm;
-> @@ -1237,6 +1238,8 @@ static int attach_task(struct cpuset *cs
->  	}
->  	atomic_inc(&cs->count);
->  	rcu_assign_pointer(tsk->cpuset, cs);
-> +	if (atomic_dec_and_test(&oldcs->count))
-> +		oldcs_tobe_released = oldcs;
->  	task_unlock(tsk);
-> 
->  	guarantee_online_cpus(cs, &cpus);
-> @@ -1257,8 +1260,8 @@ static int attach_task(struct cpuset *cs
-> 
->  	put_task_struct(tsk);
->  	synchronize_rcu();
-> -	if (atomic_dec_and_test(&oldcs->count))
-> -		check_for_release(oldcs, ppathbuf);
-> +	if (oldcs_tobe_released)
-> +		check_for_release(oldcs_tobe_released, ppathbuf);
->  	return 0;
->  }
-> 
-> @@ -2200,10 +2203,6 @@ void cpuset_fork(struct task_struct *chi
->   * it is holding that mutex while calling check_for_release(),
->   * which calls kmalloc(), so can't be called holding callback_mutex().
->   *
-> - * We don't need to task_lock() this reference to tsk->cpuset,
-> - * because tsk is already marked PF_EXITING, so attach_task() won't
-> - * mess with it, or task is a failed fork, never visible to attach_task.
-> - *
->   * the_top_cpuset_hack:
->   *
->   *    Set the exiting tasks cpuset to the root cpuset (top_cpuset).
-> @@ -2242,19 +2241,20 @@ void cpuset_exit(struct task_struct *tsk
->  {
->  	struct cpuset *cs;
-> 
-> +	task_lock(tsk);
->  	cs = tsk->cpuset;
->  	tsk->cpuset = &top_cpuset;	/* the_top_cpuset_hack - see above */
-> +	atomic_dec(&cs->count);
+--- a/drivers/block/aoe/aoechr.c
++++ b/drivers/block/aoe/aoechr.c
+@@ -246,13 +246,13 @@ aoechr_init(void)
+ {
+ 	int n, i;
+ 
++	sema_init(&emsgs_sema, 0);
++	spin_lock_init(&emsgs_lock);
+ 	n = register_chrdev(AOE_MAJOR, "aoechr", &aoe_fops);
+ 	if (n < 0) { 
+ 		printk(KERN_ERR "aoe: can't register char device\n");
+ 		return n;
+ 	}
+-	sema_init(&emsgs_sema, 0);
+-	spin_lock_init(&emsgs_lock);
+ 	aoe_class = class_create(THIS_MODULE, "aoe");
+ 	if (IS_ERR(aoe_class)) {
+ 		unregister_chrdev(AOE_MAJOR, "aoechr");
+--- a/drivers/char/tb0219.c
++++ b/drivers/char/tb0219.c
+@@ -287,6 +287,8 @@ static int __devinit tb0219_probe(struct
+ {
+ 	int retval;
+ 
++	spin_lock_init(&tb0219_lock);
++
+ 	if (request_mem_region(TB0219_START, TB0219_SIZE, "TB0219") == NULL)
+ 		return -EBUSY;
+ 
+@@ -304,8 +306,6 @@ static int __devinit tb0219_probe(struct
+ 		return retval;
+ 	}
+ 
+-	spin_lock_init(&tb0219_lock);
+-
+ 	old_machine_restart = _machine_restart;
+ 	_machine_restart = tb0219_restart;
+ 
 
-How about using a local variable like ref_count and using
-
-ref_count = atomic_dec_and_test(&cs->count); This will avoid the two
-atomic operations, atomic_dec() and atomic_read() below.
-
-> +	task_unlock(tsk);
-> 
->  	if (notify_on_release(cs)) {
->  		char *pathbuf = NULL;
-> 
->  		mutex_lock(&manage_mutex);
-> -		if (atomic_dec_and_test(&cs->count))
-> +		if (!atomic_read(&cs->count))
-
-if (ref_count == 0)
-
->  			check_for_release(cs, &pathbuf);
->  		mutex_unlock(&manage_mutex);
->  		cpuset_release_agent(pathbuf);
-> -	} else {
-> -		atomic_dec(&cs->count);
->  	}
->  }
-> 
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
