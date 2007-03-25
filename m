@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751244AbXCYFfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbXCYFg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751244AbXCYFfi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 01:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXCYFfi
+	id S1752654AbXCYFg2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 01:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbXCYFg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 01:35:38 -0400
-Received: from wx-out-0506.google.com ([66.249.82.225]:10398 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbXCYFfh (ORCPT
+	Sun, 25 Mar 2007 01:36:28 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:1303 "EHLO
+	asav12.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752654AbXCYFg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 01:35:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UviZF2DalJssklvXlluBOts0vkiBxzcyhI/0hv4MyTousHrx7hJbzXd0iGf4Wv9JQb/Mv0ydeS+QmoldQkPKMgsIqwJxicfkvEgNFO+HstQcDT2Q9AzNFNPXJ3gB1DF7nRCvI0wkBM6iDYrNGpaoPZmTYlsYLHAoQVfuzjJmDpE=
-Message-ID: <82e4877d0703242235r7c83a867hd4f3ec740e8627fb@mail.gmail.com>
-Date: Sun, 25 Mar 2007 01:35:35 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: keyboard.c: Stop flooding dmesg with useless warnings
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, "Jiri Kosina" <jkosina@suse.cz>
-In-Reply-To: <200703250129.32877.dtor@insightbb.com>
+	Sun, 25 Mar 2007 01:36:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAFqnBUZKhRO4dGdsb2JhbACPYQE
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Subject: Re: chrdev_open lifetime question
+Date: Sun, 25 Mar 2007 01:36:25 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org
+References: <d120d5000703071423n11ade9d7n1852296d70b53d62@mail.gmail.com> <20070319180225.4638bc80.zaitcev@redhat.com>
+In-Reply-To: <20070319180225.4638bc80.zaitcev@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0703242315160.492@paragw-desktop>
-	 <200703250115.02029.dtor@insightbb.com>
-	 <82e4877d0703242227q7961833aie851e14764002264@mail.gmail.com>
-	 <200703250129.32877.dtor@insightbb.com>
+Message-Id: <200703250136.26041.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/25/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> On Sunday 25 March 2007 01:27, Parag Warudkar wrote:
-> > >
-> > > Actually the keyboard driver should not emit input events for that key code.
-> > > Is this a USB keyboard?
-> > >
-> > > --
-> > > Dmitry
-> > >
-> >
-> > Yes this is a USB keyboard.
-> >
-> > Any hint as to where I should start looking to make the driver not
-> > emit input event for keycode==0?
-> >
->
-> Was it always doing that? I'll add Jiri Kosina to the CC list as he's
-> involved with HID now.
->
+Hi Pete,
 
-Something (some keypress?) triggers it (by default it doesn't happen
-immediately after a boot) - but once it starts it doesn't seem to stop
-printing.
+On Monday 19 March 2007 21:02, Pete Zaitcev wrote:
+> On Wed, 7 Mar 2007 17:23:05 -0500, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+> 
+> > It seems that if a process keeps a character device open then other
+> > processes will also be able to get into filp->f_op->open(inode,filp)
+> > in chrdev_open() even after a driver called cdev_del() as part of its
+> > unwind procedure. Is this correct or am I missing something?
+> 
+> I see no replies in the archives. Have you got any private ones?
 
-Parag
+No I have not.
+
+> 
+> Also, what's the context?
+
+I want to switch input handlers to cdevs to rip table of devices out
+of input core and lift limit on potential number of devices and was
+pondering locking implications.
+
+-- 
+Dmitry
