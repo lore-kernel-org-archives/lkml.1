@@ -1,168 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXCYI2C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXCYIan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932486AbXCYI2C (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 04:28:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933215AbXCYI2B
+	id S933224AbXCYIan (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 04:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbXCYIan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 04:28:01 -0400
-Received: from max.feld.cvut.cz ([147.32.192.36]:55366 "EHLO max.feld.cvut.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932486AbXCYI17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 04:27:59 -0400
-From: CIJOML <cijoml@volny.cz>
-To: linux-kernel@vger.kernel.org
-Subject: HID OOPS running hid2hci on logitech diNovo dongle
-Date: Sun, 25 Mar 2007 10:27:41 +0200
-User-Agent: KMail/1.9.5
+	Sun, 25 Mar 2007 04:30:43 -0400
+Received: from smtpout09-04.prod.mesa1.secureserver.net ([64.202.165.17]:35242
+	"HELO smtpout09.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S933224AbXCYIam (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 04:30:42 -0400
+Message-ID: <460632E9.5030508@bristyle.com>
+Date: Sun, 25 Mar 2007 01:29:29 -0700
+From: Brian Braunstein <brian@bristyle.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Max Krasnyansky <maxk@qualcomm.com>
+CC: vtun@office.satix.net, akpm@osdl.org, jgarzik@pobox.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] net: tun/tap: fixed hw address handling
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703251027.41441.cijoml@volny.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi hid guys,
 
-in combination of kernel 2.6.20-mh1 and hid2hci from bluez-utils-3.9
-I am getting following OOPS:
+From: Brian Braunstein <linuxkernel@bristyle.com>
 
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<c027a9c3>] hid_output_report+0x213/0x2be
- [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
- [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
- [<fcaf7970>] usbhid_init_reports+0x60/0xbb [usbhid]
- [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
- [<c01b4dd1>] avc_has_perm+0x4e/0x58
- [<c01b5595>] inode_has_perm+0x5b/0x63
- [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
- [<c01b5626>] file_has_perm+0x89/0x91
- [<c0161158>] do_ioctl+0x4c/0x62
- [<c01613aa>] vfs_ioctl+0x23c/0x24f
- [<c0161409>] sys_ioctl+0x4c/0x67
- [<c0102cc8>] syscall_call+0x7/0xb
- [<c02d0033>] __sched_text_start+0x43/0x546
- =======================
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<c027a9c3>] hid_output_report+0x213/0x2be
- [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
- [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
- [<fcaf7970>] usbhid_init_reports+0x60/0xbb [usbhid]
- [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
- [<c01b4dd1>] avc_has_perm+0x4e/0x58
- [<c01b5595>] inode_has_perm+0x5b/0x63
- [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
- [<c01b5626>] file_has_perm+0x89/0x91
- [<c0161158>] do_ioctl+0x4c/0x62
- [<c01613aa>] vfs_ioctl+0x23c/0x24f
- [<c0161409>] sys_ioctl+0x4c/0x67
- [<c0102cc8>] syscall_call+0x7/0xb
- [<c02d0033>] __sched_text_start+0x43/0x546
- =======================
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<c027a9c3>] hid_output_report+0x213/0x2be
- [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
- [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
- [<fcaf7970>] usbhid_init_reports+0x60/0xbb [usbhid]
- [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
- [<c01b4dd1>] avc_has_perm+0x4e/0x58
- [<c01b5595>] inode_has_perm+0x5b/0x63
- [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
- [<c01b5626>] file_has_perm+0x89/0x91
- [<c0161158>] do_ioctl+0x4c/0x62
- [<c01613aa>] vfs_ioctl+0x23c/0x24f
- [<c0161409>] sys_ioctl+0x4c/0x67
- [<c0102cc8>] syscall_call+0x7/0xb
- [<c02d0033>] __sched_text_start+0x43/0x546
- =======================
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<c027a9c3>] hid_output_report+0x213/0x2be
- [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
- [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
- [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
- [<c01b4dd1>] avc_has_perm+0x4e/0x58
- [<c01b5595>] inode_has_perm+0x5b/0x63
- [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
- [<c01b5626>] file_has_perm+0x89/0x91
- [<c0161158>] do_ioctl+0x4c/0x62
- [<c01613aa>] vfs_ioctl+0x23c/0x24f
- [<c0161409>] sys_ioctl+0x4c/0x67
- [<c0102cc8>] syscall_call+0x7/0xb
- [<c02d0033>] __sched_text_start+0x43/0x546
- =======================
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<c027a9c3>] hid_output_report+0x213/0x2be
- [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
- [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
- [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
- [<c01b4dd1>] avc_has_perm+0x4e/0x58
- [<c01b5595>] inode_has_perm+0x5b/0x63
- [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
- [<c01b5626>] file_has_perm+0x89/0x91
- [<c0161158>] do_ioctl+0x4c/0x62
- [<c01613aa>] vfs_ioctl+0x23c/0x24f
- [<c0161409>] sys_ioctl+0x4c/0x67
- [<c0102cc8>] syscall_call+0x7/0xb
- [<c02d0033>] __sched_text_start+0x43/0x546
- =======================
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<c027a9c3>] hid_output_report+0x213/0x2be
- [<c011bfb6>] irq_exit+0x25/0x30
- [<c0105190>] do_IRQ+0x87/0x9b
- [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
- [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
- [<c0127f9f>] autoremove_wake_function+0x0/0x35
- [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
- [<c01b4dd1>] avc_has_perm+0x4e/0x58
- [<c01b5595>] inode_has_perm+0x5b/0x63
- [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
- [<c01b5626>] file_has_perm+0x89/0x91
- [<c0161158>] do_ioctl+0x4c/0x62
- [<c01613aa>] vfs_ioctl+0x23c/0x24f
- [<c0161409>] sys_ioctl+0x4c/0x67
- [<c0102cc8>] syscall_call+0x7/0xb
- [<c02d0033>] __sched_text_start+0x43/0x546
- =======================
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<c027a9c3>] hid_output_report+0x213/0x2be
- [<c011bfb6>] irq_exit+0x25/0x30
- [<c0105190>] do_IRQ+0x87/0x9b
- [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
- [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
- [<c0127f9f>] autoremove_wake_function+0x0/0x35
- [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
- [<c01b4dd1>] avc_has_perm+0x4e/0x58
- [<c01b5595>] inode_has_perm+0x5b/0x63
- [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
- [<c01b5626>] file_has_perm+0x89/0x91
- [<c0161158>] do_ioctl+0x4c/0x62
- [<c01613aa>] vfs_ioctl+0x23c/0x24f
- [<c0161409>] sys_ioctl+0x4c/0x67
- [<c0102cc8>] syscall_call+0x7/0xb
- [<c02d0033>] __sched_text_start+0x43/0x546
- =======================
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<c027a9c3>] hid_output_report+0x213/0x2be
- [<c011bfb6>] irq_exit+0x25/0x30
- [<c0105190>] do_IRQ+0x87/0x9b
- [<fcaf73fb>] hid_submit_ctrl+0x52/0x1bc [usbhid]
- [<fcaf76b9>] usbhid_submit_report+0x154/0x187 [usbhid]
- [<c0127f9f>] autoremove_wake_function+0x0/0x35
- [<fcaf917d>] hiddev_ioctl+0x361/0x8e7 [usbhid]
- [<c01b4dd1>] avc_has_perm+0x4e/0x58
- [<c01b5595>] inode_has_perm+0x5b/0x63
- [<c0148652>] __handle_mm_fault+0x2c3/0x7b1
- [<c01b5626>] file_has_perm+0x89/0x91
- [<c0161158>] do_ioctl+0x4c/0x62
- [<c01613aa>] vfs_ioctl+0x23c/0x24f
- [<c0161409>] sys_ioctl+0x4c/0x67
- [<c0102cc8>] syscall_call+0x7/0xb
- [<c02d0033>] __sched_text_start+0x43/0x546
- =======================
-usb 7-1.1: new full speed USB device using ohci_hcd and address 5
-usb 7-1.1: configuration #1 chosen from 1 choice
+Fixed tun/tap driver's handling of hw addresses. The hw address is stored in
+both the net_device.dev_addr and tun.dev_addr fields.  These fields were not
+kept synchronized, and in fact weren't even initialized to the same value.
+Now during both init and when performing SIOCSIFHWADDR on the tun device
+these values are both updated.  However, if SIOCSIFHWADDR is performed on the
+net device directly (for instance, setting the hw address using ifconfig),
+the tun device does not get updated.  Perhaps the tun.dev_addr field should
+be removed completely at some point, as it is redundant and
+net_device.dev_addr can be used anywhere it is used. 
 
-Best regards
+Signed-off-by: Brian Braunstein <linuxkernel@bristyle.com>
 
-Michal
+---
+
+Kernel Version: 2.6.20.4
+
+--- linux-2.6.20.4-ORIG/drivers/net/tun.c	2007-03-23 12:52:51.000000000 -0700
++++ linux-2.6.20.4/drivers/net/tun.c	2007-03-25 00:44:20.000000000 -0700
+@@ -18,6 +18,10 @@
+ /*
+  *  Changes:
+  *
++ *  Brian Braunstein <linuxkernel@bristyle.com> 2007/03/23
++ *    Fixed hw address handling.  Now net_device.dev_addr is kept consistent
++ *    with tun.dev_addr when the address is set by this module.
++ *
+  *  Mike Kershaw <dragorn@kismetwireless.net> 2005/08/14
+  *    Add TUNSETLINK ioctl to set the link encapsulation
+  *
+@@ -196,7 +200,10 @@ static void tun_net_init(struct net_devi
+ 		dev->set_multicast_list = tun_net_mclist;
+ 
+ 		ether_setup(dev);
+-		random_ether_addr(dev->dev_addr);
++
++		/* random address already created for us by tun_set_iff, use it */
++		memcpy(dev->dev_addr, tun->dev_addr, min(sizeof(tun->dev_addr), sizeof(dev->dev_addr)) );
++
+ 		dev->tx_queue_len = TUN_READQ_SIZE;  /* We prefer our own queue length */
+ 		break;
+ 	}
+@@ -636,6 +643,7 @@ static int tun_chr_ioctl(struct inode *i
+ 		return 0;
+ 
+ 	case SIOCGIFHWADDR:
++		/* Note: the actual net device's address may be different */
+ 		memcpy(ifr.ifr_hwaddr.sa_data, tun->dev_addr,
+ 				min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
+ 		if (copy_to_user( argp, &ifr, sizeof ifr))
+@@ -643,16 +651,24 @@ static int tun_chr_ioctl(struct inode *i
+ 		return 0;
+ 
+ 	case SIOCSIFHWADDR:
+-		/** Set the character device's hardware address. This is used when
+-		 * filtering packets being sent from the network device to the character
+-		 * device. */
+-		memcpy(tun->dev_addr, ifr.ifr_hwaddr.sa_data,
+-				min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
+-		DBG(KERN_DEBUG "%s: set hardware address: %x:%x:%x:%x:%x:%x\n",
+-				tun->dev->name,
+-				tun->dev_addr[0], tun->dev_addr[1], tun->dev_addr[2],
+-				tun->dev_addr[3], tun->dev_addr[4], tun->dev_addr[5]);
+-		return 0;
++	{
++		/* try to set the actual net device's hw address */
++		int ret = dev_set_mac_address(tun->dev, &ifr.ifr_hwaddr);
++
++		if (ret == 0) {
++			/** Set the character device's hardware address. This is used when
++			 * filtering packets being sent from the network device to the character
++			 * device. */
++			memcpy(tun->dev_addr, ifr.ifr_hwaddr.sa_data,
++					min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
++			DBG(KERN_DEBUG "%s: set hardware address: %x:%x:%x:%x:%x:%x\n",
++					tun->dev->name,
++					tun->dev_addr[0], tun->dev_addr[1], tun->dev_addr[2],
++					tun->dev_addr[3], tun->dev_addr[4], tun->dev_addr[5]);
++		}
++
++		return  ret;
++	}
+ 
+ 	case SIOCADDMULTI:
+ 		/** Add the specified group to the character device's multicast filter
+
