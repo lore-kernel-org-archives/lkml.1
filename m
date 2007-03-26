@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbXCZKcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751289AbXCZKel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbXCZKcB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 06:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbXCZKcB
+	id S1751289AbXCZKel (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 06:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbXCZKel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 06:32:01 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:60056 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753631AbXCZKcA (ORCPT
+	Mon, 26 Mar 2007 06:34:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:50592 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbXCZKej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 06:32:00 -0400
-Message-ID: <4607A01D.1060401@hitachi.com>
-Date: Mon, 26 Mar 2007 19:27:41 +0900
-From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, yumiko.sugita.yf@hitachi.com,
-       masami.hiramatsu.pt@hitachi.com, hidehiro.kawai.ez@hitachi.com,
-       yuji.kakutani.uw@hitachi.com, soshima@redhat.com, haoki@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com, nikita@clusterfs.com,
-       leroy.vanlogchem@wldelft.nl
-Subject: Re: [PATCH 0/3] VM throttling: avoid blocking occasional writers
-References: <45F7EDC6.5090303@hitachi.com> <20070315110745.af867b10.akpm@linux-foundation.org> <45FD53DB.5000207@tmr.com> <460218D2.40701@hitachi.com> <46026B78.3080401@tmr.com>
-In-Reply-To: <46026B78.3080401@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Mar 2007 06:34:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=KTUqvo4UdpdEWlTIPXSRRzm7rkzcWq/b0Q9V8Vp1EZGOykD9Cbir9aRl9dvFGxtmN5Kt515t71ui68Gxkbb9UNBLX/U0/Eepg8nZ+LBYFRgfXQxs65JFqHAhAq1fCM5ERhn+nlfvfS6pI9oz4OiuNSa26ApezdDuR/VesmaTp68=
+Date: Mon, 26 Mar 2007 12:34:33 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Larry Finger <larry.finger@lwfinger.net>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Monakhov Dmitriy <dmonakhov@openvz.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070326103432.GB18799@zenigma>
+References: <20070321202225.GN10459@waste.org> <20070321233917.0393dfd1.akpm@linux-foundation.org> <20070322123508.3785fd30@gondolin.boeblingen.de.ibm.com> <4602752A.5050109@lwfinger.net> <20070322181019.62fe78ed@gondolin.boeblingen.de.ibm.com> <4602D137.4060402@lwfinger.net> <20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com> <20070323210618.6a41f5da.akpm@linux-foundation.org> <20070326110949.5301a571@gondolin.boeblingen.de.ibm.com> <20070326012232.0f0b9e09.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070326012232.0f0b9e09.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+From: Eric Rannaud <eric.rannaud@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Thanks for your reply.
+On Mon, Mar 26, 2007 at 01:22:32AM -0800, Andrew Morton wrote:
+> On Mon, 26 Mar 2007 11:09:49 +0200 Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> > > If so, do you think I should labour on with
+> > > uevent-improve-error-checking-and-handling.patch plus your fix, or should I
+> > > drop the lot?  (I'm inclined toward the latter, but I'm still not
+> > > sure which patch(es) need to be dropped).
+> > 
+> > This depends on what semantics uevent returning an error code should
+> > have. The firmware code was using it to suppress uevents, but
+> > uevent_suppress is a better idea now. So if we want uevent returning !=
+> > 0 to imply "something really bad happened", all uevent functions have
+> > to be audited and those that work like firmware_uevent have to be
+> > converted to uevent_suppress. This would be cleaner, but I'm not sure
+> > it's worth the work.
+> 
+> We're generally struggling to stay alive amongst all the bugs at present -
+> I'll drop all those patches.
 
->>3) Use "dirty_ratio" as the blocking ratio. And add
->>   "start_writeback_ratio", and start writeback at
->>   start_writeback_ratio(default:90) * dirty_ratio / 100 [%].
->>   In this way, specifying blocking ratio can be done in the same way
->>   as current kernel, but high/low watermark algorithm is enabled.
->I like 3 better, it should make tuning behavior more precise.
+My mistake, I wrote the guilty patch
+uevent-improve-error-checking-and-handling.patch assuming it was safe to
+treat the return value as an error code, since several uevent functions
+returns things like -ENOMEM.
 
-Then, what do you think of the following idea?
+Should I rework the patch as Cornelia suggests and resubmit later, when
+things have settled down a little?
 
-(4) add `dirty_start_writeback_ratio' as percentage of memory,
-    at which a generator of dirty pages itself starts writeback
-    (that is, non-blocking ratio).
-
-In this way, `dirty_ratio' is used as the blocking ratio, so we don't
-need to modify the sysctl.conf etc. I think it's easier to understand
-for administrators of systems, because the interface is similar as
-`dirty_background_ratio' and`dirty_ratio.'
-
-If this is OK, I'll repost the patch.
-
-> You can make an argument for absolute values for writeback,
-> if my disk will only write 70MB/s I may only want 203 sec of
-> pending writes, regardless of available memory.
-
-To realize tuning with absolute values, I consider that we need to
-modify handling of `dirty_background_ratio,' `dirty_ratio' and so on as
-well as `dirty_start_writeback_ratio.' I think this should be done in
-another patch if this feature is required.
-
-Regards,
---
-Tomoki Sekiyama
-Hitachi, Ltd., Systems Development Laboratory
-
-
+Thanks.
