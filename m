@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbXCZUuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbXCZUwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbXCZUuZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 16:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXCZUuZ
+	id S1753131AbXCZUwx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 16:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbXCZUww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 16:50:25 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43040 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753118AbXCZUuY (ORCPT
+	Mon, 26 Mar 2007 16:52:52 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:62736 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753131AbXCZUwv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 16:50:24 -0400
-Subject: Re: [Patch 5/7] integrity: mtime patch for mmap files
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com,
-       staubach@redhat.com
-In-Reply-To: <20070325002656.0a5ceff0.akpm@linux-foundation.org>
-References: <1174666198.11149.5.camel@localhost.localdomain>
-	 <20070325002656.0a5ceff0.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 26 Mar 2007 16:49:07 -0400
-Message-Id: <1174942147.5713.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Mar 2007 16:52:51 -0400
+Message-Id: <20070326205248.338724078@de.ibm.com>
+References: <20070326205225.438154546@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 26 Mar 2007 22:52:26 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Subject: [patch 1/6] dasd: Work around gcc bug.
+Content-Disposition: inline; filename=001-dasd-gcc-bug.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-25 at 00:26 -0800, Andrew Morton wrote: 
-> On Fri, 23 Mar 2007 12:09:58 -0400 Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
-> 
-> > mmaped files are hashed and hmac'ed properly by EVM after being modified
-> > when the file's mtime is updated correctly.  Peter Staubach's 'memory
-> > mapped files not updating timestamps v2' patch properly updates the
-> > mmapped file's mtime.  In those cases when an application does not
-> > first msync the file before calling munmap, the mtime is eventually
-> > updated, but not before file_close is called.  This patch forces the
-> > mtime for mmaped files to be updated in a timely manner.
-> 
-> I don't think we've ever had that patch in -mm?
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 
-We are basing the EVM code on Peter's '[PATCH] memory mapped files not 
-updating timestamps v2' patch http://lkml.org/lkml/2007/2/20/255 on the
-assumption that it would be accepted.  I guess that has not yet happened.
+gcc incorrectly removes initialization of register 0 in dasd diag
+inline assembly. Use different register to work around this compiler
+bug.
 
-Mimi Zohar
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
 
+ drivers/s390/block/dasd_diag.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/drivers/s390/block/dasd_diag.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/block/dasd_diag.c
++++ linux-2.6/drivers/s390/block/dasd_diag.c
+@@ -65,7 +65,7 @@ static const u8 DASD_DIAG_CMS1[] = { 0xc
+  * resulting condition code and DIAG return code. */
+ static inline int dia250(void *iob, int cmd)
+ {
+-	register unsigned long reg0 asm ("0") = (unsigned long) iob;
++	register unsigned long reg2 asm ("2") = (unsigned long) iob;
+ 	typedef union {
+ 		struct dasd_diag_init_io init_io;
+ 		struct dasd_diag_rw_io rw_io;
+@@ -74,15 +74,15 @@ static inline int dia250(void *iob, int 
+ 
+ 	rc = 3;
+ 	asm volatile(
+-		"	diag	0,%2,0x250\n"
++		"	diag	2,%2,0x250\n"
+ 		"0:	ipm	%0\n"
+ 		"	srl	%0,28\n"
+-		"	or	%0,1\n"
++		"	or	%0,3\n"
+ 		"1:\n"
+ 		EX_TABLE(0b,1b)
+ 		: "+d" (rc), "=m" (*(addr_type *) iob)
+-		: "d" (cmd), "d" (reg0), "m" (*(addr_type *) iob)
+-		: "1", "cc");
++		: "d" (cmd), "d" (reg2), "m" (*(addr_type *) iob)
++		: "3", "cc");
+ 	return rc;
+ }
+ 
+
+-- 
