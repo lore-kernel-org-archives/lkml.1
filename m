@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932507AbXCZVcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbXCZVee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932507AbXCZVcA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 17:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbXCZVcA
+	id S932697AbXCZVee (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 17:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXCZVee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 17:32:00 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:40817 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932507AbXCZVb7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 17:31:59 -0400
-Date: Mon, 26 Mar 2007 23:31:57 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] possible USB regression with 2.6.21-rc4: iPod doesn't work
-Message-ID: <20070326213157.GA3034@dose.home.local>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Oliver Neukum <oneukum@suse.de>,
-	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070326204744.GA24762@dose.home.local> <Pine.LNX.4.44L0.0703261712340.7079-100000@iolanthe.rowland.org>
+	Mon, 26 Mar 2007 17:34:34 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:45929 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932697AbXCZVed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 17:34:33 -0400
+Message-ID: <46083C79.1080108@cfl.rr.com>
+Date: Mon, 26 Mar 2007 17:34:49 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0703261712340.7079-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Mike Snitzer <snitzer@gmail.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: forced umount?
+References: <170fa0d20703162106v47dc13e1u1ae5381576f372ed@mail.gmail.com>  <45FB6E32.3050009@goop.org>  <170fa0d20703162237m1023cbd2o8ccf9e464c53f4a0@mail.gmail.com> <84144f020703170353y4490d0dcr24352c291c96300b@mail.gmail.com>
+In-Reply-To: <84144f020703170353y4490d0dcr24352c291c96300b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Mar 2007 21:34:45.0761 (UTC) FILETIME=[92B56710:01C76FEE]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15078.001
+X-TM-AS-Result: No--10.094800-5.000000-2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 17:15:53 -0400, Alan Stern wrote:
+Is this revoke system supported for the filesystem as a whole?  I 
+thought it was just to force specific files closed, not the whole 
+filesystem.  What if the filesystem itself has pending IO to say, update 
+inodes or block bitmaps?  Can these be aborted?
 
-[...]
+Pekka Enberg wrote:
+> FYI, the revoke implementation have since been changed to follow the
+> badfs-style approach of the forced unmount patches. However, there are
+> some problems with the forced unmount patches that are now fixed in
+> the revoke implementation:
+> 
+>  - You can't use munmap() to take down shared memory mappings because the
+>    application can accidentally remap something completely different
+> to that region.
+>  - The ->f_light bits slow down other fget_light() users and  there's
+> a race between
+>    fcheck_files() and set_f_light().
+>  - The operation can live-lock if a malicious process keeps forking. The 
+> revoke
+>    implementation solves this by revoking in two passes: (1) take
+> down the descriptors
+>    and (2) take down the actual inodes.
+> 
+>                           Pekka
 
-> The lack of messages from the iPod seems to indicate that the hub isn't
-> working right.  You could try plugging the iPod into a different hub or
-> directly into the computer.  Or maybe into a different port of that hub.
-
-Uh, I think I found the reason for the strange behaviour at
-shutdown/suspend. When I unload the usblp module, then the iPod is
-recognized.
-
-Regards,
-Tino
