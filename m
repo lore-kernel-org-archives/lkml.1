@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751019AbXCZKDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbXCZKFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751019AbXCZKDc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 06:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbXCZKDc
+	id S1753580AbXCZKFq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 06:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbXCZKFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 06:03:32 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:54277 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbXCZKDb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 06:03:31 -0400
-Date: Mon, 26 Mar 2007 11:03:29 +0100
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Do not disable interrupts when reading min_free_kbytes
-Message-ID: <20070326100329.GA19429@skynet.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+	Mon, 26 Mar 2007 06:05:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33152 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753560AbXCZKFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 06:05:45 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070325213843.GE22126@xi.wantstofly.org> 
+References: <20070325213843.GE22126@xi.wantstofly.org>  <20070323111350.GD3980@xi.wantstofly.org> <e9c3a7c20703021312y5f7aa228i5d1c84a8e9ea5676@mail.gmail.com> <20070303111427.GB16944@xi.wantstofly.org> <20070303113305.GB10515@flint.arm.linux.org.uk> <20070321221134.GA22497@xi.wantstofly.org> <tnxlkhpgslz.fsf@arm.com> <16051.1174657433@redhat.com> <20070325211542.GD3593@linux.vnet.ibm.com> 
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org, dhowells@redhat.com
+Subject: Re: I/O memory barriers vs SMP memory barriers 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Mon, 26 Mar 2007 11:04:11 +0100
+Message-ID: <3971.1174903451@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sysctl handler for min_free_kbytes calls setup_per_zone_pages_min()
-on read or write. This function iterates through every zone and calls
-spin_lock_irqsave() on the zone LRU lock. When reading min_free_kbytes, this
-is a total waste of time that disables interrupts on the local processor. It
-might even be noticable machines with large numbers of zones if a process
-started constantly reading min_free_kbytes.
+Lennert Buytenhek <buytenh@wantstofly.org> wrote:
 
-This patch only calls setup_per_zone_pages_min() only on write. Tested on
-an x86 laptop and it did the right thing.
+> Does everybody agree on these semantics, though?  At least David seems
+> to think that mb/rmb/wmb aren't required to order normal memory accesses
+> against each other..
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
+Ummm...  I've just realised that your statement here is ambiguous.  When you
+say "aren't required to", do you mean "aren't necessary to" or do you mean
+"don't have to"?  Isn't English a fun language?
 
- page_alloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Anyway, what I meant is that mb() and co. as they stand _must_ do everything
+smp_mb() and co do respectively, _in_ _addition_ to other side effects.
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc4-mm1-norsdl/mm/page_alloc.c linux-2.6.21-rc4-mm1-nodisable_on_read_minfree/mm/page_alloc.c
---- linux-2.6.21-rc4-mm1-norsdl/mm/page_alloc.c	2007-03-26 09:56:32.000000000 +0100
-+++ linux-2.6.21-rc4-mm1-nodisable_on_read_minfree/mm/page_alloc.c	2007-03-26 10:39:46.000000000 +0100
-@@ -3956,7 +3956,8 @@ int min_free_kbytes_sysctl_handler(ctl_t
- 	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
- {
- 	proc_dointvec(table, write, file, buffer, length, ppos);
--	setup_per_zone_pages_min();
-+	if (write)
-+		setup_per_zone_pages_min();
- 	return 0;
- }
- 
+	mb() implies smp_mb()
+	rmb() implies smp_rmb()
+	wmb() implies smp_wmb()
+	...
+
+David
