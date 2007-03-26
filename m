@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751289AbXCZKel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbXCZKgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751289AbXCZKel (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 06:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbXCZKel
+	id S1753640AbXCZKgc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 06:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbXCZKgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 06:34:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:50592 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbXCZKej (ORCPT
+	Mon, 26 Mar 2007 06:36:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:5521 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753639AbXCZKgb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 06:34:39 -0400
+	Mon, 26 Mar 2007 06:36:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=KTUqvo4UdpdEWlTIPXSRRzm7rkzcWq/b0Q9V8Vp1EZGOykD9Cbir9aRl9dvFGxtmN5Kt515t71ui68Gxkbb9UNBLX/U0/Eepg8nZ+LBYFRgfXQxs65JFqHAhAq1fCM5ERhn+nlfvfS6pI9oz4OiuNSa26ApezdDuR/VesmaTp68=
-Date: Mon, 26 Mar 2007 12:34:33 +0200
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Larry Finger <larry.finger@lwfinger.net>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, Monakhov Dmitriy <dmonakhov@openvz.org>
-Subject: Re: 2.6.21-rc4-mm1
-Message-ID: <20070326103432.GB18799@zenigma>
-References: <20070321202225.GN10459@waste.org> <20070321233917.0393dfd1.akpm@linux-foundation.org> <20070322123508.3785fd30@gondolin.boeblingen.de.ibm.com> <4602752A.5050109@lwfinger.net> <20070322181019.62fe78ed@gondolin.boeblingen.de.ibm.com> <4602D137.4060402@lwfinger.net> <20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com> <20070323210618.6a41f5da.akpm@linux-foundation.org> <20070326110949.5301a571@gondolin.boeblingen.de.ibm.com> <20070326012232.0f0b9e09.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NHDMUUjr7lZFXw7hmBaIdC7gNxk/ziiG6JD0RsNDJwZAGWUVfumJ7kS/JSBQV3dpOviRgvvzqpyQL17HnzATCm0zkb+W/NJHbcldF3puGLsPQVU4TO5IuqF435x9EaOaCRvx2BsYMzlRMWe1HCpblZJp8PFhJFj4ZiMfkfXKDhI=
+Message-ID: <87d3b2040703260336w47dafb9aoe00194a8de8dc05d@mail.gmail.com>
+Date: Mon, 26 Mar 2007 12:36:30 +0200
+From: "Frederic Riss" <frederic.riss@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+Cc: "Adrian Bunk" <bunk@stusta.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       "Tino Keitel" <tino.keitel@gmx.de>,
+       "Bob Moore" <robert.moore@intel.com>, lenb@kernel.org
+In-Reply-To: <1174900493.4182.14.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070326012232.0f0b9e09.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-From: Eric Rannaud <eric.rannaud@gmail.com>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070323185022.GQ752@stusta.de>
+	 <1174858456.5550.32.camel@funkylaptop>
+	 <1174891519.5550.36.camel@funkylaptop>
+	 <1174900493.4182.14.camel@chaos>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 01:22:32AM -0800, Andrew Morton wrote:
-> On Mon, 26 Mar 2007 11:09:49 +0200 Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> > > If so, do you think I should labour on with
-> > > uevent-improve-error-checking-and-handling.patch plus your fix, or should I
-> > > drop the lot?  (I'm inclined toward the latter, but I'm still not
-> > > sure which patch(es) need to be dropped).
-> > 
-> > This depends on what semantics uevent returning an error code should
-> > have. The firmware code was using it to suppress uevents, but
-> > uevent_suppress is a better idea now. So if we want uevent returning !=
-> > 0 to imply "something really bad happened", all uevent functions have
-> > to be audited and those that work like firmware_uevent have to be
-> > converted to uevent_suppress. This would be cleaner, but I'm not sure
-> > it's worth the work.
-> 
-> We're generally struggling to stay alive amongst all the bugs at present -
-> I'll drop all those patches.
+2007/3/26, Thomas Gleixner <tglx@linutronix.de>:
+> On Mon, 2007-03-26 at 08:45 +0200, Frédéric RISS wrote:
+> > Additional data point: I just tried with -rc5 and the issue is still
+> > present. The config I used for this test defines neither NO_HZ nor
+> > HIGH_RES_TIMERS.
+>
+> Do you have CONFIG_HPET_TIMER enabled and does the box have one ?
+> If yes, can you please turn it off and retry ?
 
-My mistake, I wrote the guilty patch
-uevent-improve-error-checking-and-handling.patch assuming it was safe to
-treat the return value as an error code, since several uevent functions
-returns things like -ENOMEM.
+IIRC the box has a HPET and it gets used. I'll test and confirm when I
+get home tonight.
 
-Should I rework the patch as Cornelia suggests and resubmit later, when
-things have settled down a little?
-
-Thanks.
+Thanks,
+Fred
