@@ -1,106 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933470AbXCZDWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933498AbXCZDYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933470AbXCZDWN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 23:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933498AbXCZDWN
+	id S933498AbXCZDYW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 23:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933504AbXCZDYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 23:22:13 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:47068 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933470AbXCZDWM (ORCPT
+	Sun, 25 Mar 2007 23:24:22 -0400
+Received: from pool-71-111-84-143.ptldor.dsl-w.verizon.net ([71.111.84.143]:52409
+	"EHLO paulmck-laptop" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933498AbXCZDYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 23:22:12 -0400
-Message-ID: <46073B5D.9090505@hitachi.com>
-Date: Mon, 26 Mar 2007 12:17:49 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Organization: Systems Development Lab., Hitachi, Ltd., Japan
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sun, 25 Mar 2007 23:24:21 -0400
+Date: Sun, 25 Mar 2007 20:24:18 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: David Howells <dhowells@redhat.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: Re: I/O memory barriers vs SMP memory barriers
+Message-ID: <20070326032418.GA14557@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070323111350.GD3980@xi.wantstofly.org> <e9c3a7c20703021312y5f7aa228i5d1c84a8e9ea5676@mail.gmail.com> <20070303111427.GB16944@xi.wantstofly.org> <20070303113305.GB10515@flint.arm.linux.org.uk> <20070321221134.GA22497@xi.wantstofly.org> <tnxlkhpgslz.fsf@arm.com> <16051.1174657433@redhat.com> <20070325211542.GD3593@linux.vnet.ibm.com> <20070325213843.GE22126@xi.wantstofly.org>
 MIME-Version: 1.0
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       hch@infradead.org
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       SystemTAP <systemtap@sources.redhat.com>,
-       Satoshi Oshima <soshima@redhat.com>, Hideo Aoki <haoki@redhat.com>,
-       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [RFC][Patch 1/4] kprobe fast unregistration
-References: <4603E7A4.50300@hitachi.com> <20070323180527.GA13728@bambi.jf.intel.com>
-In-Reply-To: <20070323180527.GA13728@bambi.jf.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070325213843.GE22126@xi.wantstofly.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph and Anil,
-
-Thank you for your comments.
-
-Christoph Hellwig wrote:
-> Speeding up the unregistration is a very good idea, but this interface
-> is rather horrible.  It's almost a receipe for users to get it wrong.
-Keshavamurthy, Anil S wrote:
-> I agree with Christop that the interface is horrible and error prone.
-
-OK, I agree. I had chosen a confusable name.
-
-> However, I see the use case where people want to disable the probes quickly and
-> would like to reenable them again. Looking closely at your patch,
-> I think this can be acheived.
-
-Thank you.
-
-> Here is my suggestion.
+On Sun, Mar 25, 2007 at 11:38:43PM +0200, Lennert Buytenhek wrote:
+> On Sun, Mar 25, 2007 at 02:15:42PM -0700, Paul E. McKenney wrote:
 > 
->> Here is an example code.
->> --
->> struct kprobes *p;
->> for_each_probe(p) {
->> 	unregister_kprobe_fast(p);
->         ^^^^^^^^^^^^^^^^^^^^^^
-> Change this to disable_kprobe(p), which is essentially the same as
-> what you have implemented. And also provide an opposite function
-> to reenable_kprobe(p) which enables the disabled probe again.
-
-I'd like to change that to prepare_to_unregister_kprobe(p) instead of
-disable_kprobe(p).
-
-I think Josh and other people want interfaces to disable/reenable all
-probes at once when the sysrq is pressed.
-So, IMHO, these interfaces should use a global (and per-cpu?) flag which
-controls whether kprobes calls user-defined handler or not, instead of
-self-modifying.
-For example,
-
-if (p && p->pre_handler && kprobe_enable) {
-                           ^^^^^^^^^^^^^
-   ...
-}
-
-But, I think this would be another story.
-I'd like to discuss this topic in other mails.
-
->> }
->> commit_kprobes();
->   ^^^^^^^^^^^^^^
-> Change this to unregister_disabled_kprobes(), which essentially 
-> unregisters all the disabled probes.
-
-And also, I'd like to change it to unregister_prepared_kprobes().
-What would you think about this idea?
-
-Thanks,
-
-
+> > > > [ background: On ARM, SMP synchronisation does need barriers but device
+> > > >   synchronisation does not.  The question is that given this, whether
+> > > >   mb() and friends can be NOPs on ARM or not (i.e. whether mb() is
+> > > >   supposed to sync against other CPUs or not, or whether only smp_mb()
+> > > >   can be used for this.)  ]
+> > > 
+> > > Hmmmm...
+> > > 
+> > > [snip]
+> > 
+> > 3.	Orders memory accesses and device accesses, but not necessarily
+> > 	the union of the two -- mb(), rmb(), wmb().
 > 
-> Thanks,
-> Anil Keshavamurthy
+> If mb/rmb/wmb are required to order normal memory accesses, that means
+> that the change made in commit 9623b3732d11b0a18d9af3419f680d27ea24b014
+> to always define mb/rmb/wmb as barrier() on ARM systems was wrong.
+
+This was on UP ARM systems, right?  Assuming that ARM CPUs respect the
+usual CPU-self-consistency semantics, and given the background that
+device accesses are ordered, then it might well be OK to have mb/rmb/wmb
+be barrier() on UP ARM systems.
+
+Most likely not on SMP ARM systems, however.
+
+> Does everybody agree on these semantics, though?  At least David seems
+> to think that mb/rmb/wmb aren't required to order normal memory accesses
+> against each other..
+
+Not on UP.  On SMP, ordering is (almost certainly) required.
+
+> > 4.	Orders only device accesses, which is what seems to be looked
+> > 	for here.
 > 
--- 
-Masami HIRAMATSU
-Linux Technology Center
-Hitachi, Ltd., Systems Development Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+> Yes.  (As above, on ARM, SMP synchronisation does need barriers but
+> device synchronisation does not.  If mb/rmb/wmb were only required to
+> synchronise device accesses, they could have been regular compiler
+> barriers on ARM, but if they are also required to synchronise normal
+> memory accesses against each other, they have to map to hardware
+> barriers.)
 
+Again, for kernels built for UP, you might well be able to make the
+mb() primitives be barrier().  I don't see it for SMP, though.
 
+						Thanx, Paul
