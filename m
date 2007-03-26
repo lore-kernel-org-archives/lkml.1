@@ -1,122 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbXCZIKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751229AbXCZI1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932893AbXCZIKX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 04:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933662AbXCZIKW
+	id S1751229AbXCZI1U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 04:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXCZI1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 04:10:22 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46724 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932893AbXCZIKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 04:10:18 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+HxKJ55/aHIHlP0z4CE+Sk2Tf7/IvWfJShk+bvev
-	15hgsVLsgrzPrA
-Subject: Re: rSDl cpu scheduler version 0.34-test patch
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703261719.01444.kernel@kolivas.org>
-References: <200703261100.22467.kernel@kolivas.org>
-	 <1174885253.7040.57.camel@Homer.simpson.net>
-	 <200703261719.01444.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Mon, 26 Mar 2007 10:10:13 +0200
-Message-Id: <1174896613.6664.30.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Mon, 26 Mar 2007 04:27:20 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:40560 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbXCZI1T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 04:27:19 -0400
+To: akpm@linux-foundation.org
+CC: dgc@sgi.com, linux-kernel@vger.kernel.org
+In-reply-to: <20070325153508.10922ebd.akpm@linux-foundation.org> (message from
+	Andrew Morton on Sun, 25 Mar 2007 15:35:08 -0800)
+Subject: Re: [patch 1/3] fix illogical behavior in balance_dirty_pages()
+References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu> <20070325153508.10922ebd.akpm@linux-foundation.org>
+Message-Id: <E1HVkWw-0000yj-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 26 Mar 2007 10:26:18 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-26 at 17:19 +1000, Con Kolivas wrote:
-> On Monday 26 March 2007 15:00, Mike Galbraith wrote:
-> > On Mon, 2007-03-26 at 11:00 +1000, Con Kolivas wrote:
-> > > This is just for testing at the moment! The reason is the size of this
-> > > patch.
-> >
-> > (no testing done yet, but I have a couple comments)
-> >
-> > > In the interest of evolution, I've taken the RSDL cpu scheduler and
-> > > increased the resolution of the task timekeeping to nanosecond
-> > > resolution.
-> >
-> > +	/* All the userspace visible cpu accounting is done here */
-> > +	time_diff = now - p->last_ran;
-> > ...
-> > +		/* cpu scheduler quota accounting is performed here */
-> > +		if (p->policy != SCHED_FIFO)
-> > +			p->time_slice -= time_diff;
-> >
-> > If we still have any jiffies resolution clocks out there, this could be
-> > a bit problematic.
+> > This is a slightly different take on the fix for the deadlock in fuse
+> > with dirty balancing.  David Chinner convinced me, that per-bdi
+> > counters are too expensive, and that it's not worth trying to account
+> > the number of pages under writeback, as they will be limited by the
+> > queue anyway.
+> > 
+> > ----
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > Current behavior of balance_dirty_pages() is to try to start writeout
+> > into the specified queue for at least "write_chunk" number of pages.
+> > If "write_chunk" pages have been submitted, then return.
+> > 
+> > However if there are less than "write_chunk" dirty pages for this
+> > queue, then it doesn't return, waiting for the global dirty+writeback
+> > counters to subside, but without doing any actual work.
+> > 
+> > This is illogical behavior: it allows more dirtyings while there are
+> > dirty pages, but stops further dirtying completely if there are no
+> > more dirty pages.
 > 
-> Works fine with jiffy only resolution. sched_clock just returns the change 
-> when it happens. This leaves us with the accuracy of the previous code on 
-> hardware that doesn't give higher resolution time from sched_clock.
+> That behaviour is perfectly logical.  It prevents the number of
+> dirty+writeback pages from exceeding dirty_ratio.
 
-I was thinking about how often you could zip through there with zero
-change to time_slice.  Yeah, I suppose the net effect may be about the
-same as dodged ticks.
+But it does it in an illogical way.  While it's cleaning your pages,
+it allows more dirtyings, but when it has cleaned ALL the pages
+destined for this queue, you hit a wall and stand still waiting for
+other queues to get their act together even if this queue is
+_completely idle_.
 
-> > +static inline void enqueue_pulled_task(struct rq *src_rq, struct rq *rq,
-> > +				       struct task_struct *p)
-> > +{
-> > +	int queue_prio;
-> > +
-> > +	p->array = rq->active; <== set
-> > +	if (!rt_task(p)) {
-> > +		if (p->rotation == src_rq->prio_rotation) {
-> > +			if (p->array == src_rq->expired) { <== evaluate
+I think this accounts for 90% of the problems experienced with copying
+to slow devices.
+
+> > It also makes a deadlock possible when one filesystem is writing data
+> > through another, and the balance_dirty_pages() for the lower
+> > filesystem is stalling the writeback for the upper filesystem's
+> > data (*).
 > 
-> I don't see a problem.
+> I still don't understand this one.  I got lost when belatedly told that
+> i_mutex had something to do with it.
 
-p->array can be set to rq->active and evaluate to src_rq->expired?
- 
-> > +static void recalc_task_prio(struct task_struct *p, struct rq *rq)
-> > +{
-> > +	struct prio_array *array = rq->active;
-> > +	int queue_prio;
-> > +
-> > +	if (p->rotation == rq->prio_rotation) {
-> > +		if (p->array == array) {
-> > +			if (p->time_slice > 0)
-> > +				return;
-> > +			p->time_slice = p->quota;
-> > +		} else if (p->array == rq->expired) {
-> > +			queue_expired(p, rq);
-> > +			return;
-> > +		} else
-> > +			task_new_array(p, rq);
-> > +	} else
-> >
-> > Dequeueing a task still leaves a stale p->array laying around to be
-> > possibly evaluated later.
-> 
-> I don't see quite why that's a problem. If there's memory of the last dequeue 
-> and it enqueues at a different rotation it gets ignored. If it enqueues 
-> during the same rotation then that memory proves useful for ensuring it 
-> doesn't get a new full quota. Either way the array is always updated on 
-> enqueue so it wont be trying to add it to the wrong runlist.
-> 
-> > try_to_wake_up() doesn't currently evaluate 
-> > and set p->rotation (but should per design doc),
-> 
-> try_to_wake_up->activate_task->enqueue_task->recalc_task_prio which updates 
-> p->rotation
+This deadlock only happens, if there's some bottleneck for writing
+data to the lower filesystem.   This bottleneck could be 
 
-As I read it, it's task_new_array() which sets p->rotation, _after_
-recalc_task_prio() has evaluated it to see if the task should continue
-it's rotation or not.  The mechanism which ensures that sleeping tasks
-can only get their fair share, as I understand it, is that they continue
-their rotation on wakeup with their bitmap intact.  That appears to
-indeed be the way same cpu wakeups are handled.  In the cross-cpu wakeup
-case, it can't do anything but call task_new_array(), because the
-chances that p->rotation being the same as the rotation number of the
-new queue is practically nil, wherein the tasks bitmap is zeroed, ie it
-starts over every time it changes cpu.  No?
+  - i_mutex, preventing parallel writes to the same inode
+  - limited number of filesystem threads
+  - limited request queue length in the upper filesystem
 
-	-Mike
+Imagine it this way: balance_dirty_pages() for the lower filesystem is
+stalling a write() because dirty pages in the upper filesystem are
+over the limit.  Because there's a bottleneck for writing to the lower
+filesystem, this is stalling _other_ writes from completing.  So
+there's no progress in writing back pages from the upper filesystem.
+
+The problem is not that dirty pages are not being submitted for
+writeback, rather that the writeback itself is stalling.
+
+Hmm?
+
+> > Index: linux/mm/page-writeback.c
+> > ===================================================================
+> > --- linux.orig/mm/page-writeback.c	2007-03-24 22:06:56.000000000 +0100
+> > +++ linux/mm/page-writeback.c	2007-03-24 22:29:02.000000000 +0100
+> > @@ -207,7 +207,15 @@ static void balance_dirty_pages(struct a
+> >  		 * written to the server's write cache, but has not yet
+> >  		 * been flushed to permanent storage.
+> >  		 */
+> > -		if (nr_reclaimable) {
+> > +		if (!nr_reclaimable) {
+> > +			/*
+> > +			 * If there's nothing more to write back and this queue
+> > +			 * is uncongested,  then it is possible to quickly
+> > +			 * write out some more data, so let's not wait
+> > +			 */
+> > +			if (!bdi_write_congested(bdi))
+> > +				break;
+> > +		} else {
+> 
+> This says "if there are no dirty pages in the machine at all, then go back
+> and dirty some more pages, regardless of the present number of
+> under-writeback pages".
+
+No, this says, that "there are no dirty pages in the machine at all,
+and this queue is uncongested, so you can safely go back and dirty
+some more data, because we are sure it can be written back quickly".
+
+Ditto for the case, when there are no more dirty pages destined for
+this queue.
+
+I understand, that this can fill up the memory with under writeback
+pages, but only if the data sitting in all the device queues is
+comparable to the total memory.  I don't know what the realistic
+chance of that is but David Chinner convinced me, that it's not
+something that happens in real life.  Quoting him from an earlier
+mail:
+
+| Right, and most ppl don't have enough devices in their system for
+| this to be a problem. Even those of us that do have enough devices
+| for this to potentially be a problem usually have enough RAM in
+| the machine so that it is not a problem....
+
+Miklos
 
