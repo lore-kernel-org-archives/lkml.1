@@ -1,138 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751747AbXCZHJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXCZHTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751747AbXCZHJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 03:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbXCZHJz
+	id S932178AbXCZHTf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 03:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbXCZHTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 03:09:55 -0400
-Received: from ozlabs.org ([203.10.76.45]:53791 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbXCZHJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 03:09:53 -0400
-Subject: Re: [PATCH 0/21] MSI rework
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg KH <greg@kroah.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, daniel.e.wolstenholme@intel.com
-In-Reply-To: <m1ps705ka1.fsf@ebiederm.dsl.xmission.com>
-References: <1174560686.307511.956605711793.qpush@cradle>
-	 <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com>
-	 <20070322190834.GA14802@kroah.com>
-	 <1174600936.10836.53.camel@localhost.localdomain>
-	 <20070322220837.GD20713@kroah.com>
-	 <1174623443.5401.21.camel@concordia.ozlabs.ibm.com>
-	 <m1ps705ka1.fsf@ebiederm.dsl.xmission.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-hcePlDmgFxpYcRg7jq5f"
-Date: Mon, 26 Mar 2007 17:09:51 +1000
-Message-Id: <1174892991.4782.11.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Mon, 26 Mar 2007 03:19:35 -0400
+Received: from mail17.syd.optusnet.com.au ([211.29.132.198]:44164 "EHLO
+	mail17.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932178AbXCZHTe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 03:19:34 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: rSDl cpu scheduler version 0.34-test patch
+Date: Mon, 26 Mar 2007 17:19:00 +1000
+User-Agent: KMail/1.9.5
+Cc: linux list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
+References: <200703261100.22467.kernel@kolivas.org> <1174885253.7040.57.camel@Homer.simpson.net>
+In-Reply-To: <1174885253.7040.57.camel@Homer.simpson.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703261719.01444.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 26 March 2007 15:00, Mike Galbraith wrote:
+> On Mon, 2007-03-26 at 11:00 +1000, Con Kolivas wrote:
+> > This is just for testing at the moment! The reason is the size of this
+> > patch.
+>
+> (no testing done yet, but I have a couple comments)
+>
+> > In the interest of evolution, I've taken the RSDL cpu scheduler and
+> > increased the resolution of the task timekeeping to nanosecond
+> > resolution.
+>
+> +	/* All the userspace visible cpu accounting is done here */
+> +	time_diff = now - p->last_ran;
+> ...
+> +		/* cpu scheduler quota accounting is performed here */
+> +		if (p->policy != SCHED_FIFO)
+> +			p->time_slice -= time_diff;
+>
+> If we still have any jiffies resolution clocks out there, this could be
+> a bit problematic.
 
---=-hcePlDmgFxpYcRg7jq5f
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Works fine with jiffy only resolution. sched_clock just returns the change 
+when it happens. This leaves us with the accuracy of the previous code on 
+hardware that doesn't give higher resolution time from sched_clock.
 
-On Fri, 2007-03-23 at 04:25 -0600, Eric W. Biederman wrote:
-> Michael Ellerman <michael@ellerman.id.au> writes:
->=20
-> > On Thu, 2007-03-22 at 15:08 -0700, Greg KH wrote:
-> >> On Fri, Mar 23, 2007 at 09:02:16AM +1100, Benjamin Herrenschmidt wrote=
-:
-> >> > > > i.e.  First the simple bug fixes that should purely be restructu=
-re of
-> >> > > > msi.c with no affect on anything outside of it.
-> >> > > >=20
-> >> > > > And then get into the architecture enhancements.
-> >> > >=20
-> >> > > I agree, care to break these down into a smaller series of patches=
- that
-> >> > > can go into -mm for testing?
-> >> >=20
-> >> > I don't see the point in breaking the serie... you can bisect half w=
-ay
-> >> > through if necessary... it's made of small patches that are done, af=
-aik,
-> >> > in such a way that the whole thing should still work at any level in=
- the
-> >> > serie.
-> >> >=20
-> >> > The serie just expresses the dependency between them.
-> >>=20
-> >> Ok, then which patches in the series should be acceptable to take righ=
-t
-> >> now for 2.6.22?  The "clean up the BUG" ones?
-> >
-> > The series is already very verbose, I don't think I can split most of
-> > them any smaller without producing an unbuildable kernel.
->=20
-> That wasn't the request.
->=20
-> > I think 1 up to and including 11 are safe as houses, they shouldn't hav=
-e
-> > any effect other than to clean up the code.
-> >
-> > The rest make functional changes, but they're all quite small, self
-> > contained, and easily bisectable. I'd certainly like Eric to have a loo=
-k
-> > at them, but at some point I think we're just going to have to bite the
-> > bullet and merge them, and see what we get in the way of bug reports.
->=20
-> What I wanted was the patches organized into functional groups that
-> were small enough to review as a unit.  (Feed the existing patches slower
-> please).
->=20
-> This seems to be to much change to read and review as a unit, I just get
-> bleary eyed, and start to get confused.
->=20
-> So far I have found one subtle bug.  Where admittedly my code wasn't as
-> obvious as it could be and you were proposing to use an irq that had alre=
-ady
-> been freed.
->=20
-> What I had hoped we can do is you would send a handful at a time I
-> would review them.  Then we could get the next handful.  I expect
-> doing it that way it should take about a week to get through them all.
->=20
-> I guess I can try going through the review that way as well.  Pick a
-> subset of what you have sent and review it very carefully, and the
-> next day pick a different subset. =20
+> +static inline void enqueue_pulled_task(struct rq *src_rq, struct rq *rq,
+> +				       struct task_struct *p)
+> +{
+> +	int queue_prio;
+> +
+> +	p->array = rq->active; <== set
+> +	if (!rt_task(p)) {
+> +		if (p->rotation == src_rq->prio_rotation) {
+> +			if (p->array == src_rq->expired) { <== evaluate
 
-OK. For starters, do you want to review the first eleven as I've sent
-them already, that saves spamming everyone again.
+I don't see a problem.
 
-If you're OK with those eleven, then I'll send the remaining 10 or so
-later in the week, broken up into (sort-of) functional groups.
+> +				queue_expired(p, rq);
+> +				goto out_queue;
+> +			}
+> +			if (p->time_slice < 0)
+> +				task_new_array(p, rq);
+> +		} else
+> +			task_new_array(p, rq);
+> +	}
+> +	queue_prio = next_entitled_slot(p, rq);
+>
+> (bug aside, this special function really shouldn't exist imho, because
+> there's nothing special going on.  we didn't need it before to do the
+> same thing, so we shouldn't need it now.)
 
-cheers
+As the comment says, the likelihood that both runqueues happen to be at the 
+same priority_level is very low so the exact position cannot be transposed in 
+my opinion. I'll see if I can simplify it though.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+> +static void recalc_task_prio(struct task_struct *p, struct rq *rq)
+> +{
+> +	struct prio_array *array = rq->active;
+> +	int queue_prio;
+> +
+> +	if (p->rotation == rq->prio_rotation) {
+> +		if (p->array == array) {
+> +			if (p->time_slice > 0)
+> +				return;
+> +			p->time_slice = p->quota;
+> +		} else if (p->array == rq->expired) {
+> +			queue_expired(p, rq);
+> +			return;
+> +		} else
+> +			task_new_array(p, rq);
+> +	} else
+>
+> Dequeueing a task still leaves a stale p->array laying around to be
+> possibly evaluated later.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+I don't see quite why that's a problem. If there's memory of the last dequeue 
+and it enqueues at a different rotation it gets ignored. If it enqueues 
+during the same rotation then that memory proves useful for ensuring it 
+doesn't get a new full quota. Either way the array is always updated on 
+enqueue so it wont be trying to add it to the wrong runlist.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+> try_to_wake_up() doesn't currently evaluate 
+> and set p->rotation (but should per design doc),
 
---=-hcePlDmgFxpYcRg7jq5f
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+try_to_wake_up->activate_task->enqueue_task->recalc_task_prio which updates 
+p->rotation
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
+> so when you get here, a 
+> cross-cpu waking task won't continue it's rotation.  If it did evaluate
+> and set, recalc_task_prio() would evaluate the guaranteed to fail these
+> tests array pointer, so the task will still not continue it's rotation.
 
-iD8DBQBGB3G/dSjSd0sB4dIRAveRAKDCLbkDi09Y35OUh8KpZ4e/onlspACgo8Z6
-wG+WllIcbAuIhT9LT0mdPyQ=
-=3tPp
------END PGP SIGNATURE-----
+> Stale pointers are evil.
 
---=-hcePlDmgFxpYcRg7jq5f--
+I prefer to use the array value as a memory in case it wakes up on the same 
+rotation and runqueue.
 
+>
+> 	-Mike
+
+Thanks.
+
+-- 
+-ck
