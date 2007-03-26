@@ -1,72 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932900AbXCZHhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933652AbXCZHtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932900AbXCZHhp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 03:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933637AbXCZHho
+	id S933652AbXCZHtY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 03:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933660AbXCZHtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 03:37:44 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:35886 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932900AbXCZHho (ORCPT
+	Mon, 26 Mar 2007 03:49:24 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1308 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933652AbXCZHtY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 03:37:44 -0400
-Message-ID: <460776B2.3070404@student.ltu.se>
-Date: Mon, 26 Mar 2007 09:30:58 +0200
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 26 Mar 2007 03:49:24 -0400
+Message-ID: <46077AEE.8060507@shadowen.org>
+Date: Mon, 26 Mar 2007 08:49:02 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Lee Revell <rlrevell@joe-job.com>
-CC: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22 patch] more scheduled OSS driver removal
-References: <20070324130602.GD752@stusta.de> <4607213B.9070005@student.ltu.se> <75b66ecd0703252116m5216ec8dy78528f512ae63747@mail.gmail.com>
-In-Reply-To: <75b66ecd0703252116m5216ec8dy78528f512ae63747@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Con Kolivas <kernel@kolivas.org>
+CC: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, "Martin J. Bligh" <mbligh@mbligh.org>
+Subject: Re: debug rsdl 0.33
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <64bb37e0703251128q3f9db894u24c4638dcf97224a@mail.gmail.com> <200703260849.07943.kernel@kolivas.org> <200703260859.27272.kernel@kolivas.org>
+In-Reply-To: <200703260859.27272.kernel@kolivas.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Revell wrote:
-> On 3/25/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
->> Adrian Bunk wrote:
->> > This patch contains the scheduled removal of OSS drivers that:
->> > - have ALSA drivers for the same hardware without known regressions 
->> and
->> > - whose Kconfig options have been removed in 2.6.20.
->> >
->> Sorry for this late respond
->>
->> Is sound/oss/emu10k1/ really ready to be replaced? According to a friend
->> of mine, who got the hardware, the ALSA still lacks feature provided by
->> the OSS-driver. He mentioned some sort of programmable memory (forgot
->> the name for that) with whom you can run small programs to manipulate
->> the sounds (adding echo and such).
->
-> He's referring to EMU DSP manager.  (emudspmgr I think it's called).
-> The ALSA equivalent is ld10k1.  It might not be as mature as the OSS
-> equivalent, but are we really going to keep obsolete drivers in the
-> kernel just because the userspace tools for the old driver are more
-> mature?
-Good! I forward that info to him.
-BTW, I did not mean to suggest we keep the OSS instead of ALSA. Just 
-voiced if it is _ready_ to be replaced. But since there is no regression 
-report filed (believed he already made one) I will pipe down :)
->
->> Also, he got problems with getting
->> more accurate control of the volume (guess this is more a userland 
->> issue).
->> He seems to have done his homework but only got to pages where other
->> peoples had the same problem.
->>
->
-> I guess he's referring to the well known "Master volume only controls
-> front output" problem.  This really does need to be resolved, as many
-> other ALSA drivers are effected.
-<rant_mode=on>
-Isn't this quite a basic feature?! Is there somewhere to monitor the 
-progress on this?
-<rant_mode=off>
+Con Kolivas wrote:
 
-Thanks for your help!
-Richard Knutsson
+> This is about the only place I can see the run_list is looked at unlocked. Can
+> you see if this simple patch helps? The debug patch is unnecessary now.
 
+Tests queued with this patch.  Will let you know.
+
+-apw
