@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbXCZPX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbXCZP3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752854AbXCZPX7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 11:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXCZPX7
+	id S1752842AbXCZP3J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 11:29:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXCZP3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 11:23:59 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:59340 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbXCZPX5 (ORCPT
+	Mon, 26 Mar 2007 11:29:09 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1611 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842AbXCZP3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 11:23:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=kQ7FSlnEBQkJoPsTzZsHD1qdhbjqHUyscFjYTtinHoqMRIorBfGA3OaybvNgu7aHBHPVXP2WpBDiOUq2Cj7337Cj/bM+0t9GZi8npGANLzCtUVjqohB7HRrY8jfdvRgZ9+2pRb/6DY64nOA/lR542WzvDrlgyPiUYMze6SxqXI0=
-Message-ID: <ee9e417a0703260823k55c6de8ay715be1db11692355@mail.gmail.com>
-Date: Mon, 26 Mar 2007 11:23:56 -0400
-From: "Russ Cox" <rsc@swtch.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add const to pointer qualifiers for __chk_user_ptr and __chk_io_ptr.
-Cc: linux-sparse@vger.kernel.org
+	Mon, 26 Mar 2007 11:29:08 -0400
+Message-ID: <4607E6A8.3040308@shadowen.org>
+Date: Mon, 26 Mar 2007 16:28:40 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Con Kolivas <kernel@kolivas.org>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, "Martin J. Bligh" <mbligh@mbligh.org>
+Subject: Re: debug rsdl 0.33
+References: <20070319205623.299d0378.akpm@linux-foundation.org> <64bb37e0703251128q3f9db894u24c4638dcf97224a@mail.gmail.com> <200703260849.07943.kernel@kolivas.org> <200703260859.27272.kernel@kolivas.org> <46077AEE.8060507@shadowen.org>
+In-Reply-To: <46077AEE.8060507@shadowen.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 8f676a686572f7bf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change prototypes for  __chk_user_ptr and __chk_io_ptr
-to take const void* instead of void*, so that code can pass
-const void* to them.  (Right now sparse does not warn
-about passing const void* to void* functions, but that
-is a separate bug that I believe Josh is working on,
-and once sparse does check this, the changed prototypes
-will be necessary.)
+Andy Whitcroft wrote:
+> Con Kolivas wrote:
+> 
+>> This is about the only place I can see the run_list is looked at unlocked. Can
+>> you see if this simple patch helps? The debug patch is unnecessary now.
+> 
+> Tests queued with this patch.  Will let you know.
 
-Signed-off-by: Russ Cox <rsc@swtch.com>
-Signed-off-by: Josh Triplett <josh@freedesktop.org>
+That patch had no effect on the problem.
 
----
+...
 
- include/linux/compiler.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Since then we have performed some more debugging on the issue and it
+appears that the first stanza in next_dynamic_task is tripping,
+triggering a "major_priority_rotation" and the resulting runq bitmap
+indicating there is nothing to run.  Discussions with Con seem to
+indicate that this is not possible :/.
 
-e5174dfa73190036ae1086110292594a3ffb3752
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index aca6698..3b6949b 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -15,8 +15,8 @@
- # define __acquire(x)	__context__(x,1)
- # define __release(x)	__context__(x,-1)
- # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
--extern void __chk_user_ptr(void __user *);
--extern void __chk_io_ptr(void __iomem *);
-+extern void __chk_user_ptr(const void __user *);
-+extern void __chk_io_ptr(const void __iomem *);
- #else
- # define __user
- # define __kernel
--- 
-1.1.3
+Subsequent to that Con suggested testing a refactored RSDL patch.  That
+patch seemed to work on the machine at hand, so tests have been
+submitted for all the affected machines.
+
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc4-mm1-rsdl-0.34-test.patch
+
+...
+
+Ok, the preliminary results are in and we seem to have good boots in the
+three machines I was hitting early boot oops.  So I think we can say
+that the new stack is a lot better than the old.
+
+Con, have a Tested-by:
+
+:/
+
+-apw
