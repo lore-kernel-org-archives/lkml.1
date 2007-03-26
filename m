@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932713AbXCZWV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbXCZWXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932713AbXCZWV1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 18:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933347AbXCZWV1
+	id S933351AbXCZWXH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 18:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933347AbXCZWXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 18:21:27 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:40856 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932713AbXCZWV0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 18:21:26 -0400
-Date: Tue, 27 Mar 2007 00:21:24 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] possible USB regression with 2.6.21-rc4: iPod doesn't work
-Message-ID: <20070326222124.GA2873@dose.home.local>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Oliver Neukum <oneukum@suse.de>,
-	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070326204744.GA24762@dose.home.local> <Pine.LNX.4.44L0.0703261712340.7079-100000@iolanthe.rowland.org> <20070326212614.GA15856@dose.home.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070326212614.GA15856@dose.home.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 26 Mar 2007 18:23:07 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55366 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933351AbXCZWXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 18:23:03 -0400
+Date: Mon, 26 Mar 2007 15:22:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-Id: <20070326152249.1d31458f.akpm@linux-foundation.org>
+In-Reply-To: <1174946277.16728.14.camel@dyn9047017100.beaverton.ibm.com>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<1174946277.16728.14.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 23:26:14 +0200, Tino Keitel wrote:
-> On Mon, Mar 26, 2007 at 17:15:53 -0400, Alan Stern wrote:
+On Mon, 26 Mar 2007 13:57:57 -0800
+Badari Pulavarty <pbadari@gmail.com> wrote:
+
+> On Mon, 2007-03-19 at 20:56 -0800, Andrew Morton wrote:
+> > Temporarily at
+> > 
+> >   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> > 
+> > Will appear later at
+> > 
+> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
+> > 
 > 
-> [...]
 > 
-> > The lack of messages from the iPod seems to indicate that the hub isn't
-> > working right.  You could try plugging the iPod into a different hub or
-> > directly into the computer.  Or maybe into a different port of that hub.
+> Panics my x86-64 box. 2.6.21-rc4 works fine.
+> Ideas on where to start ? Bisect ?
 > 
-> I already tried all of the above options, with the same result. Note
-> that all other USB devices (keyboard, mouse, hard disk with /home,
-> DVB-T box etc.) work fine.
+> Thanks,
+> Badari
 > 
-> I'm currently bisecting.
+> ..
+> ReiserFS: hda2: found reiserfs format "3.6" with standard journal
+> ReiserFS: hda2: using ordered data mode
+> ReiserFS: hda2: journal params: device hda2, size 8192, journal first
+> block 18, max trans len 1024, max batch 900, max commit age 30, max
+> trans age 30
+> ReiserFS: hda2: checking transaction log (hda2)
+> ReiserFS: hda2: Using r5 hash to sort names
+> VFS: Mounted root (reiserfs filesystem) readonly.
+> Freeing unused kernel memory: 376k freed
+> INIT: version 2.86 booting
+> Unable to handle kernel NULL pointer dereference at 0000000000000020
+> RIP:
+>  [<ffffffff804ec090>] __sched_text_start+0x460/0x889
+> PGD 1c1898067 PUD 1c1897067 PMD 0
+> Oops: 0000 [1] SMP
+> last sysfs file: block/hda/range
+> CPU 3
+> Modules linked in:
+> Pid: 900, comm: boot Not tainted 2.6.21-rc4-mm1 #1
+> RIP: 0010:[<ffffffff804ec090>]  [<ffffffff804ec090>] __sched_text_start
 
-Hi,
+This is a very popular oops, caused by the rsdl scheduler.  I don't _think_
+we yet know exactly why it is happening.  Con, did you get to the bottom
+of this?
 
-this is the bisect result:
+We don't know why it confused kallsyms either.
 
-$ git bisect good
-1d619f128ba911cd3e6d6ad3475f146eb92f5c27 is first bad commit
-commit 1d619f128ba911cd3e6d6ad3475f146eb92f5c27
-Author: Marcelo Tosatti <marcelo@kvack.org>
-Date:   Sun Jan 21 19:45:59 2007 -0200
-
-    USB: switch ehci-hcd to new polling scheme
-
-    Switch ehci-hcd to use the new polling scheme, which reports root
-    hub status changes via the interrupt handler, in an asynchronous
-    fashion. Doing so disables polling for status changes (whose
-    handler is
-    rh_timer_func).
-
-    Tested on a Geode GX machine, which is now capable of running at =~
-5
-    timer interrupts per second (in the -rt tree), resulting in
-significant
-    power savings.
-
-    Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
-    Cc: David Brownell <david-b@pacbell.net>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-:040000 040000 f8b11b3fe3cec62063d8da0f7be807341106f494
-78c5a156897b3ad7aef27823d48a546fdda2c0d2 M      drivers
-
-Regards,
-Tino
+I'll try to shove rc5-mm1 out the door this evening, minus rsdl.  And
+-mm2, with rsdl.
