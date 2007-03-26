@@ -1,24 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbXCZKmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbXCZKop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753568AbXCZKmM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 06:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbXCZKmM
+	id S1753644AbXCZKop (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 06:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbXCZKop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 06:42:12 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52794 "EHLO smtp.osdl.org"
+	Mon, 26 Mar 2007 06:44:45 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:53035 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752097AbXCZKmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 06:42:11 -0400
-Date: Mon, 26 Mar 2007 02:41:43 -0800
+	id S1753644AbXCZKoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 06:44:44 -0400
+Date: Mon, 26 Mar 2007 02:44:00 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: bryan.wu@analog.com
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH -mm] Revoke core code: fix nommu arch compiling error
- bug
-Message-Id: <20070326024143.a226c9b2.akpm@linux-foundation.org>
-In-Reply-To: <1174904637.32691.86.camel@roc-desktop>
-References: <1174904637.32691.86.camel@roc-desktop>
+To: Eric Rannaud <eric.rannaud@gmail.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Larry Finger <larry.finger@lwfinger.net>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Monakhov Dmitriy <dmonakhov@openvz.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-Id: <20070326024400.1ce3c6e4.akpm@linux-foundation.org>
+In-Reply-To: <20070326103432.GB18799@zenigma>
+References: <20070321202225.GN10459@waste.org>
+	<20070321233917.0393dfd1.akpm@linux-foundation.org>
+	<20070322123508.3785fd30@gondolin.boeblingen.de.ibm.com>
+	<4602752A.5050109@lwfinger.net>
+	<20070322181019.62fe78ed@gondolin.boeblingen.de.ibm.com>
+	<4602D137.4060402@lwfinger.net>
+	<20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com>
+	<20070323210618.6a41f5da.akpm@linux-foundation.org>
+	<20070326110949.5301a571@gondolin.boeblingen.de.ibm.com>
+	<20070326012232.0f0b9e09.akpm@linux-foundation.org>
+	<20070326103432.GB18799@zenigma>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,46 +37,36 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Mar 2007 18:23:57 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
+On Mon, 26 Mar 2007 12:34:33 +0200 Eric Rannaud <eric.rannaud@gmail.com> wrote:
 
-> Hi folks,
+> On Mon, Mar 26, 2007 at 01:22:32AM -0800, Andrew Morton wrote:
+> > On Mon, 26 Mar 2007 11:09:49 +0200 Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> > > > If so, do you think I should labour on with
+> > > > uevent-improve-error-checking-and-handling.patch plus your fix, or should I
+> > > > drop the lot?  (I'm inclined toward the latter, but I'm still not
+> > > > sure which patch(es) need to be dropped).
+> > > 
+> > > This depends on what semantics uevent returning an error code should
+> > > have. The firmware code was using it to suppress uevents, but
+> > > uevent_suppress is a better idea now. So if we want uevent returning !=
+> > > 0 to imply "something really bad happened", all uevent functions have
+> > > to be audited and those that work like firmware_uevent have to be
+> > > converted to uevent_suppress. This would be cleaner, but I'm not sure
+> > > it's worth the work.
+> > 
+> > We're generally struggling to stay alive amongst all the bugs at present -
+> > I'll drop all those patches.
 > 
-> As struct mm_struct vm_mm is hidden in struct vm_area_struct in NOMMU
-> arch, this is a fixing method when compiling failure on blackfin arch.
+> My mistake, I wrote the guilty patch
+> uevent-improve-error-checking-and-handling.patch assuming it was safe to
+> treat the return value as an error code, since several uevent functions
+> returns things like -ENOMEM.
 > 
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com> 
-> ---
-> 
->  fs/revoke.c |   22 +++++++++++++++-------
->  1 file changed, 15 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6/fs/revoke.c
-> ===================================================================
-> --- linux-2.6.orig/fs/revoke.c
-> +++ linux-2.6/fs/revoke.c
-> @@ -207,13 +207,21 @@
->  /*
->   *	LOCKING: spin_lock(&mapping->i_mmap_lock)
->   */
-> -static int revoke_mm(struct mm_struct *mm, struct address_space *mapping,
-> +static int revoke_mm(struct vm_area_struct *vma, struct address_space *mapping,
->  		     struct file *to_exclude)
->  {
-> -	struct vm_area_struct *vma;
-> +#ifdef CONFIG_MMU
-> +	struct mm_struct *mm = vma->vm_mm;
-> +#else
-> +	struct mm_struct *mm = 0;
-> +#endif
+> Should I rework the patch as Cornelia suggests and resubmit later, when
+> things have settled down a little?
 
-<looks>
+Sure, when we've fixed all the bugs ;)
 
-Offending patch is
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/broken-out/nommu-hide-vm_mm-in-nommu-mode.patch,
-which seems rather dumb.  Or at least, its changelog does a good job of
-making it look dumb.
-
-David, what on earth does "this isn't used there" mean?  Surely it is
-logical to have the mm backpointer in the vma in nommu mode?  What's going
-on here?
+I think we now know what to test for - firmware loading simply collapsed
+all over the place with these changes.
 
