@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751044AbXCZUgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752639AbXCZUia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751044AbXCZUgB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 16:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbXCZUgB
+	id S1752639AbXCZUia (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 16:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXCZUia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 16:36:01 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:50703 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751044AbXCZUgA (ORCPT
+	Mon, 26 Mar 2007 16:38:30 -0400
+Received: from smtp.ono.com ([62.42.230.12]:9690 "EHLO resmaa04.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752639AbXCZUi3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 16:36:00 -0400
-Subject: Re: some PCMCIA SCSI drivers can be built *only* as modules
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       "Robert P. J. Day" <rpjday@mindspring.com>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070326200257.GA28622@infradead.org>
-References: <Pine.LNX.4.64.0703250916090.22484@CPE00045a9c397f-CM001225dbafb6>
-	 <4607CA5A.4040906@s5r6.in-berlin.de> <20070326200257.GA28622@infradead.org>
-Content-Type: text/plain
-Date: Mon, 26 Mar 2007 15:35:47 -0500
-Message-Id: <1174941347.3549.41.camel@mulgrave.il.steeleye.com>
+	Mon, 26 Mar 2007 16:38:29 -0400
+Date: Mon, 26 Mar 2007 22:31:29 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070326223129.35970186@werewolf-wl>
+In-Reply-To: <20070323002709.3d45aa19@werewolf-wl>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<20070323002709.3d45aa19@werewolf-wl>
+X-Mailer: Claws Mail 2.8.1cvs51 (GTK+ 2.10.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-26 at 21:02 +0100, Christoph Hellwig wrote:
-> > >   it would seem to make no sense that the "depends on" clause for this
-> > > option includes "m", forcing this (and all other four entries in that
-> > > Kconfig file, by the way) to be built as modules, while the help text
-> > > for all five entries suggests you can select "y".
+On Fri, 23 Mar 2007 00:27:09 +0100, "J.A. Magallón" <jamagallon@ono.com> wrote:
+
+> On Mon, 19 Mar 2007 20:56:23 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> In the old days pcmcia drivers had to be modular because pcmcia required
-> a lot of userspace setup.  It's not needed anymore these days and the
-> dependencies can go.
+> > 
+> > Temporarily at
+> > 
+> >   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> > 
+> > Will appear later at
+> > 
+> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
+> > 
+> 
+> Is anybody having problems with optical drives and this kernel ?
+> I can't get my dvdrw to spit any events to udevmonitor. If I mount it
+> manually everything works fine.
+> 
+> Perhaps the problem is in hal/g-v-m or anything else, but I suppose that
+> udevmonitor receives events directly from kernel, isn't it ?
+> 
 
-I agree the non-legacy (CardBus and beyond) ones can be built in.  I
-thought the legacy 8 and 16 bit type I and II still had to be modular
-because they still need setting up.
+Finally, this was a userspace problem (hal):
 
-James
+http://lists.freedesktop.org/archives/hal/2007-March/007545.html
 
+What I don't understand is this: I supposed that udev (and so udevmonitor)
+is independent of hal, more or less hal monitors udev events and does things,
+like looking the disc label and so on.
 
+But I do not get any events in udevmonitor if I'm not logged in gnome.
+How's this ?
+
+TIA
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.20-jam05 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #2 SMP PREEMPT
