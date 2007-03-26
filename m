@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbXCZDI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbXCZDOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbXCZDI0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 23:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXCZDI0
+	id S1753075AbXCZDOZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 23:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbXCZDOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 23:08:26 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59066 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753088AbXCZDIZ (ORCPT
+	Sun, 25 Mar 2007 23:14:25 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49596 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751947AbXCZDOY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 23:08:25 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: michael@ellerman.id.au
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       daniel.e.wolstenholme@intel.com
-Subject: Re: [PATCH 17/21] MSI: Clear the irq_desc's msi pointer on free
-References: <20070322105344.A34C6DDF74@ozlabs.org>
-	<m1slbx8ihm.fsf@ebiederm.dsl.xmission.com>
-	<1174604508.5401.7.camel@concordia.ozlabs.ibm.com>
-	<m1y7lo64v4.fsf@ebiederm.dsl.xmission.com>
-	<1174877836.4782.6.camel@concordia.ozlabs.ibm.com>
-Date: Sun, 25 Mar 2007 21:07:31 -0600
-In-Reply-To: <1174877836.4782.6.camel@concordia.ozlabs.ibm.com> (Michael
-	Ellerman's message of "Mon, 26 Mar 2007 12:57:16 +1000")
-Message-ID: <m1lkhk3dos.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 25 Mar 2007 23:14:24 -0400
+Subject: Re: [Patch 3/7] integrity: EVM as an integrity service provider
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
+In-Reply-To: <20070325001605.31ed39e7.akpm@linux-foundation.org>
+References: <1174666176.11149.3.camel@localhost.localdomain>
+	 <20070325001605.31ed39e7.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 25 Mar 2007 23:13:02 -0400
+Message-Id: <1174878782.6487.0.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Ellerman <michael@ellerman.id.au> writes:
+On Sun, 2007-03-25 at 00:16 -0800, Andrew Morton wrote:
+> On Fri, 23 Mar 2007 12:09:36 -0400 Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+> 
+> > +++ linux-2.6.21-rc4-mm1/security/evm/Kconfig
+> > @@ -0,0 +1,17 @@
+> > +config INTEGRITY_EVM
+> > +	boolean "EVM support"
+> > +	depends on INTEGRITY && KEYS
+> > +	select CRYPTO_HMAC
+> > +	select CRYPTO_MD5
+> > +	select CRYPTO_SHA1
+> > +	default 0
+> > +	help
+> > +	  The Extended Verification Module is an integrity provider.
+> > +	  An extensible set of extended attributes, as defined in
+> > +	  /etc/evm.conf, are HMAC protected against modification
+> > +	  using the TPM's KERNEL ROOT KEY, if configured, or with a
+> > +	  pass-phrase.  Possible extended attributes include authenticity,
+> > +	  integrity, and revision level.
+> > +
+> > +	  If you are unsure how to answer this question, answer N.
+> > +
+> 
+> Is no dependency upon TPM needed?
 
-> We don't call dynamic_irq_cleanup(), so it never gets done. Perhaps we
-> should be using your dynamic_irq_init/cleanup.
+It's obviously preferable to have and use a TPM, but if one is not
+available you can use a pass-phrase.
 
-It depends.  If you are going through another irq controller etc.
-dynamic_irq_cleanup is probably excessive.
+Mimi Zoharar
 
->> Therefore you are doing this too late and we need to ensure the
->> architecture code does this in arch_teardown_msi_irq.
->
-> As long as the arch teardown routine somehow calls dynamic_irq_cleanup()
-> it should be fine. But I guess it's probably safer to just have all
-> archs do set_msi_irq(irq, NULL) in the teardown.
 
-Yes.  That sounds correct.
-
-Eric
