@@ -1,70 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933283AbXCZBAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933449AbXCZBIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933283AbXCZBAv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 21:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933290AbXCZBAv
+	id S933449AbXCZBIO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 21:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933454AbXCZBIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 21:00:51 -0400
-Received: from mail22.syd.optusnet.com.au ([211.29.133.160]:59275 "EHLO
-	mail22.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933283AbXCZBAu convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 21:00:50 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: rSDl cpu scheduler version 0.34-test patch
-Date: Mon, 26 Mar 2007 11:00:21 +1000
-User-Agent: KMail/1.9.5
+	Sun, 25 Mar 2007 21:08:14 -0400
+Received: from ns.suse.de ([195.135.220.2]:49725 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933449AbXCZBIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 21:08:13 -0400
+From: Neil Brown <neilb@suse.de>
+To: "Phy Prabab" <phyprabab@gmail.com>, "Adrian Bunk" <bunk@stusta.de>,
+       linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Date: Mon, 26 Mar 2007 11:08:06 +1000
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703261100.22467.kernel@kolivas.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17927.7414.722426.438730@notabene.brown>
+Subject: Re: Opps in 2.6.21-rc4 nfsd
+In-Reply-To: message from Neil Brown on Monday March 26
+References: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
+	<20070323152913.GH752@stusta.de>
+	<2fe399760703230845s4f652df0v9fd57e1aa7943e4e@mail.gmail.com>
+	<17927.6359.721594.133569@notabene.brown>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is just for testing at the moment! The reason is the size of this patch.
+On Monday March 26, neilb@suse.de wrote:
+> 
+> I'll try to have a patch for you to try on 2.6.21rc4 shortly.
+> 
 
-In the interest of evolution, I've taken the RSDL cpu scheduler and increased 
-the resolution of the task timekeeping to nanosecond resolution. This removes 
-the need for the runqueue rotation component entirely out of RSDL. The design 
-basically is mostly unchanged, minus over 150 lines of code for the rotation, 
-yet should be slightly better performing. It should be indistinguishable in 
-usage from v0.33.
+This patch should remove the Oops, but I have a suspicion that
+something else is wrong, so I'd be very interested if you could run
+with this for a few days and report the results.
 
-Other changes from v0.33:
--rr interval was not being properly scaled with HZ
--fix possible race in checking task_queued in task_running_tick
--scale down rr interval for niced tasks if HZ can tolerate it
--cull list_splice_tail
+NeilBrown
 
-What does this mean for the next version of RSDL?
+Signed-off-by: Neil Brown <neilb@suse.de>
 
-Assuming all works as expected on these test patches, it will be cleanest to 
-submit a new series of patches for -mm with the renamed Staircase-Deadline 
-scheduler and new documentation (when it's done).
+### Diffstat output
+ ./fs/nfsd/nfsfh.c |   37 +++++++++++++++++++++++++++++++++++--
+ 1 file changed, 35 insertions(+), 2 deletions(-)
 
-
-So for testing here are full rollups for 2.6.20.4 and 2.6.21-rc4:
-http://ck.kolivas.org/patches/staircase-deadline/2.6.20.4-sd-0.34-test.patch
-http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc4-sd-0.34-test.patch
-
-The patches available also include a rollup of sched: accurate user accounting 
-as this code touches the same area and it is most convenient to include them 
-together.
-
-(incrementals in each subdir of staircase-deadline/ for those interested).
-
-Thanks Mike for continuing to attempt to use the cluebat on me on this one. 
->From the start I wasn't sure if this was necessary or not but ends up being 
-less code than RSDL.
-
-While I'm still far from being well, luckily I am in much better shape to be 
-able to spend the time at the pc to have done this. Thanks to all those who 
-expressed their concern.
-
--- 
--ck
+diff .prev/fs/nfsd/nfsfh.c ./fs/nfsd/nfsfh.c
+--- .prev/fs/nfsd/nfsfh.c	2007-03-26 10:51:01.000000000 +1000
++++ ./fs/nfsd/nfsfh.c	2007-03-26 11:04:20.000000000 +1000
+@@ -324,7 +324,7 @@ fh_compose(struct svc_fh *fhp, struct sv
+ 	 *
+ 	 */
+ 
+-	u8 version = 1;
++	u8 version;
+ 	u8 fsid_type = 0;
+ 	struct inode * inode = dentry->d_inode;
+ 	struct dentry *parent = dentry->d_parent;
+@@ -342,12 +342,45 @@ fh_compose(struct svc_fh *fhp, struct sv
+ 	 * the reference filehandle (if it is in the same export)
+ 	 * or the export options.
+ 	 */
++ retry:
++	version = 1;
+ 	if (ref_fh && ref_fh->fh_export == exp) {
+ 		version = ref_fh->fh_handle.fh_version;
+ 		if (version == 0xca)
+ 			fsid_type = FSID_DEV;
+-		else
++		else {
+ 			fsid_type = ref_fh->fh_handle.fh_fsid_type;
++			/* need to check that this type works for this
++			 * export point.  As the lookup was done with
++			 * help from user-space, there is no guarantee
++			 */
++			if (ref_fh == fhp)
++				fh_put(ref_fh);
++			ref_fh = NULL;
++			switch(fsid_type) {
++			case FSID_DEV:
++				if (!old_valid_dev(ex_dev))
++					goto retry;
++				break;
++			case FSID_NUM:
++				if (! (exp->ex_flags & NFSEXP_FSID))
++					goto retry;
++				break;
++			case FSID_MAJOR_MINOR:
++			case FSID_ENCODE_DEV:
++				break;
++			case FSID_UUID8:
++			case FSID_UUID16:
++				if (!root_export)
++					goto retry;
++				/* fall through */
++			case FSID_UUID4_INUM:
++			case FSID_UUID16_INUM:
++				if (exp->ex_uuid == NULL)
++					goto retry;
++				break;
++			}
++		}
+ 		/* We know this version/type works for this export
+ 		 * so there is no need for further checks.
+ 		 */
