@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbXCZVoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbXCZVpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933054AbXCZVoO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 17:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933044AbXCZVoO
+	id S932963AbXCZVpT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 17:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbXCZVpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 17:44:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52763 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932969AbXCZVoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 17:44:12 -0400
-Date: Mon, 26 Mar 2007 14:42:06 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
-       zaitcev@redhat.com
-Subject: Re: Fix sudden warps in mousedev
-Message-Id: <20070326144206.93805eeb.zaitcev@redhat.com>
-In-Reply-To: <d120d5000703261230h1724e453je2c14769fc099ad3@mail.gmail.com>
-References: <20070324001610.724a820a.zaitcev@redhat.com>
-	<200703250134.03416.dtor@insightbb.com>
-	<20070325111930.f6428509.zaitcev@redhat.com>
-	<200703252319.39676.dtor@insightbb.com>
-	<20070326121718.3940a579.zaitcev@redhat.com>
-	<d120d5000703261230h1724e453je2c14769fc099ad3@mail.gmail.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 26 Mar 2007 17:45:19 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:61096 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932963AbXCZVpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 17:45:17 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: bryan.wu@analog.com
+Subject: Re: [PATCH -mm] Blackfin arch: add kdebug header file
+Date: Mon, 26 Mar 2007 23:45:08 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
+References: <1174903941.32691.72.camel@roc-desktop>
+In-Reply-To: <1174903941.32691.72.camel@roc-desktop>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703262345.09489.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/0QcxR+Lfw0uuol82QBtof+/5A3uioTPPpcHs
+ bvyBogmLEUwpE8QNet8k8Li7WXuSynalYIAYQk8AtvVT61zEUZ
+ NKzApsqPlwbwFsBJ0HhwQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Mar 2007 15:30:42 -0400, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+I can see nothing wrong with your patches, but you should make the
+patch descriptions a little clearer:
 
-> Regarding the synaptics driver and scroll problem. Yesterday I
-> scrolled twice through entire Remarque's "Spark of Life" off lib.ru
-> (once with 0.14.2 and once with latest git pull) and did not see any
-> scrollbar getting "stuck". Could it be newer xorg problem instead of
-> individual driver problem? I am using whatever xorg was installed in
-> FC3 which is somewhat dated... Also, could it be that the scroll issue
-> happens only in a certain application?
+On Monday 26 March 2007, Wu, Bryan wrote:
+> Hi folks,
 
-It's not a "scroll" issue. The issue is that the "up" event is getting
-lost. It can be observed with any GUI elements, such as buttons.
-However, since the event is delivered upon any motion, there's no
-harm done with a button. Needless to say, this is not application
-specific. It may be GNOME specific though.
+No need for this line, if it's there, Andrew just needs to remove
+it from the changelog.
 
-FC-3 is far too old to be a good reference. I don't even know if it
-has a usable synaptics module in its pre-modular X. You may be looking
-at very different software stack.
+> This patch adds kdebug.h header file to blackfin architecture.
 
-I don't think that you need to concern yourself with this too much
-at present. If X11 people (e.g. Kristian) present evidence that kernel
-fails to deliver an event, then we'll look at it. However it might
-help if evtest continued to work when X11 reads from /dev/input/eventN.
-It was an unpleasant surprise that it doesn't.
+This line is completely redundant, as it states the same information
+as the subject. You should give some background information here,
+like:
 
--- Pete
+kdebug.h is needed for kprobes.
+
+For trivial patches where the subject already tells the whole story
+(e.g. 'remove redundant declaration of foo'), just leave out the
+description entirely except for the Signed-off-by.
+
+	Arnd <><
+you can even leave out the description
