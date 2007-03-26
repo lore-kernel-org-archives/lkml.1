@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750987AbXCZU2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751547AbXCZUac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750987AbXCZU2l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 16:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbXCZU2l
+	id S1751547AbXCZUac (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 16:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbXCZUac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 16:28:41 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34832 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750987AbXCZU2k (ORCPT
+	Mon, 26 Mar 2007 16:30:32 -0400
+Received: from outmx012.isp.belgacom.be ([195.238.5.70]:59987 "EHLO
+	outmx012.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbXCZUab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 16:28:40 -0400
-Date: Mon, 26 Mar 2007 16:28:34 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tino Keitel <tino.keitel@gmx.de>
-cc: Oliver Neukum <oneukum@suse.de>, <linux-usb-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] possible USB regression with 2.6.21-rc4: iPod
- doesn't work
-In-Reply-To: <20070326185900.GA27068@dose.home.local>
-Message-ID: <Pine.LNX.4.44L0.0703261617110.4848-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 26 Mar 2007 16:30:31 -0400
+Date: Mon, 26 Mar 2007 22:30:17 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Semi-typical watchdog bug re early misc_register()
+Message-ID: <20070326203017.GA4014@infomag.infomag.iguana.be>
+References: <20070324125811.GA30017@martell.zuzino.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070324125811.GA30017@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Mar 2007, Tino Keitel wrote:
+Hi Alexey,
 
-> Attached is a dmesg output with CONFIG_USB_DEBUG and CONFIG_USB_SUSPEND
-> enabled.
+> It seems that some watchdog drivers are doing following mistake:
 > 
-> There are no messages from the iPod because, well, nothing happens when
-> I plug it in. I tried it 3 times.
+> 	rv = misc_register();
+> 	if (rv < 0)
+> 		return rv;
+> 	rv = request_region();
+> 	if (rv < 0) {
+> 		misc_deregister();
+> 		return rv;
+> 	}
+> 
+> But, right after misc_register() returns, misc device can be opened and
+> ioctls interacting with hardware issued, and driver can do outb() to
+> port it doesn't own yet, because request_region() is still pending.
 
-I don't understand.  The dmesg log you attached shows the iPod was
-detected and recognized as scsi5 (sdc).  Then some time later (can't tell
-how much later because you don't have CONFIG_PRINTK_TIME set) it was
-unplugged and plugged back in.  The second time it was detected and
-recognized as scsi6 (also sdc).  And then the log ends.
+Totally agree. patch has been added to linux-2.6-watchdog-mm tree.
 
-Why do you say there are no messages from the iPod?  Grepping for "iPod"
-in the log shows that the string appears 4 times.  If nothing happened
-when you plugged it in, how could the computer have known the device was
-an iPod?
+> Also, is there similar ordering between register_reboot_notifier() and
+> misc_register() ? Some drivers do misc_register() last, some register
+> reboot notifiers.
 
->  The strange thing is: when I trigger
-> a suspend or shutdown, 
+I prefer that the reboot notifiers are loaded before you give userspace the
+ability to communicate with the driver.
 
-You mean you suspend or shutdown the computer?  Or the iPod?
-
->  then the "Do not disconnect" message shows up on
-> the iPod, which means that the computer regognized it as a storage
-> device.
-
-What's so strange about that?  Isn't that exactly what's supposed to 
-happen?
-
-Alan Stern
+Greetings,
+Wim.
 
