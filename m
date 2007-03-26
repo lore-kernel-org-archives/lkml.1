@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXCZUTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750848AbXCZUVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932436AbXCZUTJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 16:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbXCZUTJ
+	id S1750848AbXCZUVy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 16:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbXCZUVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 16:19:09 -0400
-Received: from smtp.ono.com ([62.42.230.12]:15339 "EHLO resmaa05.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752691AbXCZUTG convert rfc822-to-8bit (ORCPT
+	Mon, 26 Mar 2007 16:21:53 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:16748 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751831AbXCZUVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 16:19:06 -0400
-Date: Mon, 26 Mar 2007 22:18:44 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Wrong IDE cable detection in libata [Re: 2.6.21-rc4-mm1]
-Message-ID: <20070326221844.38bf8840@werewolf-wl>
-In-Reply-To: <4607A820.60103@gmail.com>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<20070326022420.224cc4f2@werewolf-wl>
-	<4607A820.60103@gmail.com>
-X-Mailer: Claws Mail 2.8.1cvs51 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 26 Mar 2007 16:21:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=usRAqcfq90Zj0YgL74UThnEBH0RHbtAYEAj9NBquEXTkARpUVwYv/t4ZIkBWWAvcz6eMI1Gq9dPIOeHEcRfGFm/EuGP/cK282K8A1oJokS1321kU5vhbkQGo7/ZYFrE/HgWOrdSekqitpX3m2RQJGLUIVwV8y3WXSOOtoEXc6hY=
+Message-ID: <8bd0f97a0703261321h356a849am1ab617f0e732fa67@mail.gmail.com>
+Date: Mon, 26 Mar 2007 16:21:51 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH -mm] Revoke core code: fix nommu arch compiling error bug
+Cc: "Pekka J Enberg" <penberg@cs.helsinki.fi>,
+       "Andrew Morton" <akpm@linux-foundation.org>, bryan.wu@analog.com,
+       linux-kernel@vger.kernel.org, "Hugh Dickins" <hugh@veritas.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <22674.1174915478@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703261447190.13229@sbz-30.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0703261427490.12793@sbz-30.cs.Helsinki.FI>
+	 <20070326024143.a226c9b2.akpm@linux-foundation.org>
+	 <1174904637.32691.86.camel@roc-desktop> <6017.1174908318@redhat.com>
+	 <6791.1174909459@redhat.com> <11045.1174911764@redhat.com>
+	 <Pine.LNX.4.64.0703261525370.14158@sbz-30.cs.Helsinki.FI>
+	 <22674.1174915478@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Mar 2007 20:01:52 +0900, Tejun Heo <htejun@gmail.com> wrote:
+On 3/26/07, David Howells <dhowells@redhat.com> wrote:
+> [*] The FRV, for example, does have some limited protection capability - but
+> it is really limited and not really useful in this case.
 
-> J.A. Magallón wrote:
-> > Libata seems to misdetect my cable.
-> > I have double-checked and the cable is 80 pin...
-> 
-> Does the following patch fix your problem?
-> 
->   http://article.gmane.org/gmane.linux.ide/17444
-> 
-> (You can get the raw message by appending /raw to the URL).
-> 
+how so ?  the Blackfin processor lacks a MMU but it does have a MPU
+(memory protection unit) which allows granularity down to 1k page
+sizes ... so for future releases, we plan on integrating optional
+support for this so that you could have processes protected from each
+other and the kernel protected from all the processes ... so in our
+case, we might actually be able to support revoking of maps because we
+would have that region of memory ear marked as unaccessible ...
 
-Yes it works !!
-
-Disk is back at nice speed of 50 Mb/s.
-
-dmesg:
-
-ata_piix 0000:00:1f.1: version 2.10ac1
-ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 18 (level, low) -> IRQ 18
-PCI: Setting latency timer of device 0000:00:1f.1 to 64
-ata1: PATA max UDMA/133 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x0001f000 irq 14
-ata2: PATA max UDMA/133 cmd 0x00010170 ctl 0x00010376 bmdma 0x0001f008 irq 15
-scsi0 : ata_piix
-ata1.00: ATAPI, max UDMA/33
-ata1.01: ATAPI, max MWDMA0, CDB intr
-ata1.00: configured for UDMA/33
-ata1.01: configured for PIO3
-scsi1 : ata_piix
-ata2.00: ATA-6: ST3120022A, 3.06, max UDMA/100
-ata2.00: 234441648 sectors, multi 16: LBA48 
-ata2.01: ATAPI, max UDMA/33
-ata2.00: configured for UDMA/100    <=============
-ata2.01: configured for UDMA/33     <=============
-
-Thanks !!
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.20-jam05 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #2 SMP PREEMPT
+note that the Blackfin processor manuals confusingly call this aspect
+of the chip an "MMU" ... dont be fooled !
+-mike
