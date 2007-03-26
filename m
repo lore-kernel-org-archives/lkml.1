@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbXCZQkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbXCZQwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbXCZQkq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 12:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbXCZQkX
+	id S1752969AbXCZQwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 12:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbXCZQwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 12:40:23 -0400
-Received: from smtp112.sbc.mail.mud.yahoo.com ([68.142.198.211]:34035 "HELO
-	smtp112.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752964AbXCZQkT (ORCPT
+	Mon, 26 Mar 2007 12:52:17 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42618 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752967AbXCZQwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 12:40:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=hc7myjtujd3RP75BTmwlanpmRuP3xIrK44jq9fgzwsBJWL181WpTwXVVHrhtVMxPxGmvCyyJ7tncmVe8+jlSOnoL8+glek1v7nGrGa1Te4AZrmYmvuJ3082VgpMEhiL7NMOuMNkee9UgODd3VDnYHfPyUPov2UkRI5r3mYz5bTk=  ;
-X-YMail-OSG: 5zt1ovkVM1nFxYQgxukYAmo3ERY4dzHgq3ksHJV59y8KtKiqxSHwT.bLXP4fvR5ZSfBfbrGI.o6Go2aP.IF3TXaZvJWZttSBKmuXzIMTrnl.edtP_lYWPZvpcm0G55iv.Pwl2_JQ2ESZlfYpDFonKNe9zA--
-From: David Brownell <david-b@pacbell.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.21-rc5] arch/x86_64/kernel/early-quirks.c compiler warning
-Date: Mon, 26 Mar 2007 09:17:44 -0700
-User-Agent: KMail/1.7.1
-Cc: akpm@linux-foundation.org
+	Mon, 26 Mar 2007 12:52:16 -0400
+Date: Mon, 26 Mar 2007 09:52:17 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V4
+In-Reply-To: <20070323222133.f17090cf.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703260938520.3297@schroedinger.engr.sgi.com>
+References: <20070323062843.19502.19827.sendpatchset@schroedinger.engr.sgi.com>
+ <20070322223927.bb4caf43.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703222339560.19630@schroedinger.engr.sgi.com>
+ <20070322234848.100abb3d.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703230804120.21857@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0703231026490.23132@schroedinger.engr.sgi.com>
+ <20070323222133.f17090cf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703260917.44906.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix "unused variable" compiler warning on non-SMP x86_64 configs.
+On Fri, 23 Mar 2007, Andrew Morton wrote:
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> On Fri, 23 Mar 2007 10:54:12 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> 
+> > Here are the results of aim9 tests on x86_64. There are some minor performance 
+> > improvements and some fluctuations.
+> 
+> There are a lot of numbers there - what do they tell us?
 
---- a/arch/x86_64/kernel/early-quirks.c
-+++ b/arch/x86_64/kernel/early-quirks.c
-@@ -73,9 +73,9 @@ static void __init ati_bugs(void)
+That there are performance improvements because of quicklists.
+
+> So what has changed here?  From a quick look it appears that x86_64 is
+> using get_zeroed_page() for ptes, puds and pmds and is using a custom
+> quicklist for pgds.
+
+x86_64 is only using a list in order to track pgds. There is no 
+quicklist without this patchset.
  
- static void intel_bugs(void)
- {
-+#ifdef CONFIG_SMP
- 	u16 device = read_pci_config_16(0, 0, 0, PCI_DEVICE_ID);
- 
--#ifdef CONFIG_SMP
- 	if (device == PCI_DEVICE_ID_INTEL_E7320_MCH ||
- 	    device == PCI_DEVICE_ID_INTEL_E7520_MCH ||
- 	    device == PCI_DEVICE_ID_INTEL_E7525_MCH)
+> After your patches, x86_64 is using a common quicklist allocator for puds,
+> pmds and pgds and continues to use get_zeroed_page() for ptes.
+
+x86_64 should be using quicklists for all ptes after this patch. I did not 
+convert pte_free() since it is only used for freeing ptes during races 
+(see __pte_alloc). Since pte_free gets passed a page struct it would require 
+virt_to_page before being put onto the freelist. Not worth doing.
+
+Hmmm... Then how does x86_64 free the ptes? Seems that we do 
+free_page_and_swap_cache() in tlb_remove_pages. Yup so ptes are not 
+handled which limits the speed improvements that we see.
+
+> My question is pretty simple: how do we justify the retention of this
+> custom allocator?
+
+I would expect this functionality (never thought about it as an allocator) 
+to extract common code from many arches that use one or the other form of 
+preserving zeroed pages for page table pages. I saw lots of arches doing 
+the same with some getting into trouble with the page structs. Having a 
+common code base that does not have this issue would clean up the kernel 
+and deal with the slab issue.
+
+> Because simply removing it is the preferable way of fixing the SLUB
+> problem.
+
+That would reduce performance. I did not think that a common feature 
+that is used throughout many arches would need rejustification.
