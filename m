@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbXCZV6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933203AbXCZWAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751766AbXCZV6H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 17:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXCZV6H
+	id S933203AbXCZWAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 18:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933238AbXCZV77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 17:58:07 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:51360 "EHLO e5.ny.us.ibm.com"
+	Mon, 26 Mar 2007 17:59:59 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:54414 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbXCZV6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 17:58:05 -0400
-Date: Mon, 26 Mar 2007 16:57:55 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: menage@google.com, containers@lists.osdl.org, pj@sgi.com,
-       ebiederm@xmission.com, sekharan@us.ibm.com,
-       ckrm-tech@lists.sourceforge.net, rohitseth@google.com,
-       winget@google.com, linux-kernel@vger.kernel.org, xemul@sw.ru
-Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
-Message-ID: <20070326215755.GC10492@sergelap.austin.ibm.com>
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com> <20070324050537.GA27040@in.ibm.com> <20070324162326.GC11794@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070324162326.GC11794@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S933231AbXCZV76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 17:59:58 -0400
+Date: Mon, 26 Mar 2007 14:59:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: [patch 2.6.21-rc5 1/3] parport->dev driver model support
+Message-Id: <20070326145942.a090d277.akpm@linux-foundation.org>
+In-Reply-To: <200703260906.19442.david-b@pacbell.net>
+References: <200703260906.19442.david-b@pacbell.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Srivatsa Vaddagiri (vatsa@in.ibm.com):
-> On Sat, Mar 24, 2007 at 10:35:37AM +0530, Srivatsa Vaddagiri wrote:
-> > > +static int ns_create(struct container_subsys *ss, struct container *cont)
-> > > +{
-> > > +	struct nscont *ns;
-> > > +
-> > > +	if (!capable(CAP_SYS_ADMIN))
-> > > +		return -EPERM;
-> > 
-> > Does this check break existing namespace semantics in a subtle way?
-> > It now requires that unshare() of namespaces by any task requires
-> > CAP_SYS_ADMIN capabilities.
+On Mon, 26 Mar 2007 09:06:19 -0700
+David Brownell <david-b@pacbell.net> wrote:
+
+> Currently a parport_driver can't get a handle on the device node for the
+> underlying parport (PNPACPI, PCI, etc).  That prevents correct placement
+> of sysfs child nodes, which can affect things like power management.
 > 
-> I should clarify that I am referring to unshare thr' clone here (and not
-> thr' sys_unshare)
+> This patch adds a field to "struct parport" pointing to that device node,
+> and updates non-legacy port drivers to initialize that device pointer.
+> That field replaces the analagous PCI-only support in parport_pc.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+> NOTE this depends on an earlier patch to make pnp devices set up DMA,
+> parport is the primary user of legacy i8237 dma infrastructure.
 
-That is still not true, see kernel/utsname:copy_utsname().
+Confusion reigns.
 
-Now you might have run a userspace testcase in a kernel with
-CONFIG_UTS_NS=n, which at the moment erroneously returns 0 rather than
--EINVAL when you clone(CLONE_NEWUTS).  But you didn't get a new uts
-namespace, you were just lied to  :)
-
--serge
+To which "earlier patch" do you refer?
