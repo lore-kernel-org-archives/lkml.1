@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbXCZMmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXCZMqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752456AbXCZMmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 08:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbXCZMmj
+	id S1752490AbXCZMqQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 08:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbXCZMqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 08:42:39 -0400
-Received: from bigmama.rhoen.de ([62.80.125.185]:33752 "EHLO rhoen.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752456AbXCZMmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 08:42:38 -0400
-X-Greylist: delayed 1071 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Mar 2007 08:42:38 EDT
-Date: Mon, 26 Mar 2007 14:02:39 +0200
-To: Sid Boyce <g3vbv@blueyonder.co.uk>
-Cc: Adrian Bunk <bunk@stusta.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, auxsvr@gmail.com
-Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
-Message-ID: <20070326120238.GA16816@macbeth.rhoen.de>
-References: <200702281805.13822.auxsvr@gmail.com> <20070307214730.87859590.akpm@linux-foundation.org> <45EFBC73.2030005@blueyonder.co.uk> <46016EAF.6010801@blueyonder.co.uk> <20070321193420.GP752@stusta.de> <m17itabbbv.fsf@ebiederm.dsl.xmission.com> <4601DCB4.4060804@blueyonder.co.uk> <20070321184258.758a5a29.randy.dunlap@oracle.com> <20070322105908.GS752@stusta.de> <4602DDBC.5000106@blueyonder.co.uk>
+	Mon, 26 Mar 2007 08:46:16 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:34665 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752490AbXCZMqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 08:46:15 -0400
+Date: Mon, 26 Mar 2007 14:43:03 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Lee Revell <rlrevell@joe-job.com>
+cc: Richard Knutsson <ricknu-0@student.ltu.se>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22 patch] more scheduled OSS driver removal
+In-Reply-To: <75b66ecd0703252116m5216ec8dy78528f512ae63747@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0703261437280.26461@yvahk01.tjqt.qr>
+References: <20070324130602.GD752@stusta.de> <4607213B.9070005@student.ltu.se>
+ <75b66ecd0703252116m5216ec8dy78528f512ae63747@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4602DDBC.5000106@blueyonder.co.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: boris <boris@macbeth.rhoen.de>
-X-IN-Kompentent-e-V-MailScanner-Information: Please contact the ISP for more information
-X-IN-Kompentent-e-V-MailScanner: Found to be clean
-X-IN-Kompentent-e-V-MailScanner-From: boris@macbeth.rhoen.de
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 07:49:16PM +0000, Sid Boyce wrote:
 
-> Kernel built and installed, so I shall have something to report in the
-> next couple of days.
+On Mar 26 2007 00:16, Lee Revell wrote:
+>
+> I guess he's referring to the well known "Master volume only controls
+> front output" problem.  This really does need to be resolved, as many
+> other ALSA drivers are effected.
 
-I see this kwin bug too
-on a Thinkpad (x86_64) as well as on a Pmac (powerpc64).
-It is only triggerd when the screen is locked AND! set
-to standby mode (display/backlight is turned off - acpi).
+I don't see that as a bug. Mine is a TerraTec DMX XFire 1024 (snd-cs46xx).
 
-boris
+Master maps to front, Headphone to rear. PCM is the overall volume of 
+digital audio (i.e. everything I can count on my fingers). Of course PCM 
+is not "everything", it does not include Line Out for example. But it 
+does not either on Windows (where there also is no "everything" control 
+in sndvol32), so it is not a bug for me.
 
+Jan
+-- 
