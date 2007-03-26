@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933340AbXCZBdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXCZBsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933340AbXCZBdW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 21:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933339AbXCZBdW
+	id S933290AbXCZBsW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 21:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933291AbXCZBsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 21:33:22 -0400
-Received: from web36707.mail.mud.yahoo.com ([209.191.85.41]:31195 "HELO
-	web36707.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933340AbXCZBdV (ORCPT
+	Sun, 25 Mar 2007 21:48:22 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34452 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933290AbXCZBsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 21:33:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=3tT1zjzRrBJq3CNEKWai1sRwBFbhpmWpNyh3QT8n19xCtS15wlL0OG9jLYxATSz88T9mWKwAghAYLdXTqgprEb+P7HLwBeuXjFkqWrnzYDeLfiKpVtqvLzNv9l6FF5HjROlnj5ILnjploIQpL3bzu8c7cCgP2vQQXEya0CQK36s=;
-X-YMail-OSG: Wi2NDBUVM1lN1QjiEVi1Q1kpP4sjP.ueSAy_mOUcJuxxO_AOjZmRlG7r8iENZwa06fg2amXIYOcuO5ID2JHiLwp0mGkyl8LuRkSohfMU__g_hXNZTdhJo5rddofbSe_vOkubAR682RyqztwuJibTIdLv
-Date: Sun, 25 Mar 2007 18:33:20 -0700 (PDT)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [PATCH] tifm_sd: add missing \n
-To: Daniel Drake <dsd@gentoo.org>, drzeus-mmc@drzeus.cx
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070325222414.C16C57B409F@zog.reactivated.net>
+	Sun, 25 Mar 2007 21:48:16 -0400
+Date: Mon, 26 Mar 2007 03:48:19 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22 patch] more scheduled OSS driver removal
+Message-ID: <20070326014819.GS16477@stusta.de>
+References: <20070324130602.GD752@stusta.de> <4607213B.9070005@student.ltu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <302069.50522.qm@web36707.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4607213B.9070005@student.ltu.se>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In fact, this is fixed in already queued patch set.
-
---- Daniel Drake <dsd@gentoo.org> wrote:
-
-> Noticed this in user logs.
+On Mon, Mar 26, 2007 at 03:26:19AM +0200, Richard Knutsson wrote:
+> Adrian Bunk wrote:
+> >This patch contains the scheduled removal of OSS drivers that:
+> >- have ALSA drivers for the same hardware without known regressions and
+> >- whose Kconfig options have been removed in 2.6.20.
+> >  
+> Sorry for this late respond
 > 
-> Signed-off-by: Daniel Drake <dsd@gentoo.org>
-> 
-> Index: linux/drivers/mmc/tifm_sd.c
-> ===================================================================
-> --- linux.orig/drivers/mmc/tifm_sd.c
-> +++ linux/drivers/mmc/tifm_sd.c
-> @@ -676,7 +676,7 @@ static void tifm_sd_abort(unsigned long 
->  	struct tifm_sd *host = (struct tifm_sd*)data;
->  
->  	printk(KERN_ERR DRIVER_NAME
-> -	       ": card failed to respond for a long period of time");
-> +	       ": card failed to respond for a long period of time\n");
->  
->  	tifm_sd_terminate(host);
->  	tifm_eject(host->dev);
-> 
+> Is sound/oss/emu10k1/ really ready to be replaced? According to a friend 
+> of mine, who got the hardware, the ALSA still lacks feature provided by 
+> the OSS-driver. He mentioned some sort of programmable memory (forgot 
+> the name for that) with whom you can run small programs to manipulate 
+> the sounds (adding echo and such). Also, he got problems with getting 
+> more accurate control of the volume (guess this is more a userland issue).
+> He seems to have done his homework but only got to pages where other 
+> peoples had the same problem.
 
+Which bug numbers in the ALSA bugtracking system [1] are these?
 
+If there are regressions in an ALSA driver compared to the corresponding 
+OSS driver, the goal is to get the ALSA driver fixed.
 
- 
-____________________________________________________________________________________
-Food fight? Enjoy some healthy debate 
-in the Yahoo! Answers Food & Drink Q&A.
-http://answers.yahoo.com/dir/?link=list&sid=396545367
+Current number of regressions in the ALSA emu10k1 driver people gave me 
+numbers of open ALSA bugs for:
+  0
+
+> If this is really implemented, please let me know so I can forward it to 
+> him.
+>...
+
+You can monitor the bugs in the ALSA bugtracking system describing the 
+problems your friend has.
+
+> Thanks and good night
+> Richard Knutsson
+
+cu
+Adrian
+
+[1] http://bugtrack.alsa-project.org/alsa-bug/
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
