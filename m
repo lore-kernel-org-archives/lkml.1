@@ -1,100 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbXCZSoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbXCZSrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753681AbXCZSoL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 14:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbXCZSoL
+	id S1752725AbXCZSrc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 14:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbXCZSrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 14:44:11 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:42579 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753684AbXCZSoK (ORCPT
+	Mon, 26 Mar 2007 14:47:32 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:52554 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752725AbXCZSrb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 14:44:10 -0400
-Date: Mon, 26 Mar 2007 15:43:57 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Pete Zaitcev <zaitcev@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB Elan FTDI: check for driver registration status
-Message-ID: <20070326154357.025e4faf@localhost>
-In-Reply-To: <20070325072733.GA10257@cvg>
-References: <20070325072733.GA10257@cvg>
-Organization: Mandriva
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.3; i586-mandriva-linux-gnu)
+	Mon, 26 Mar 2007 14:47:31 -0400
+Subject: Re: 2.6.21-rc4-mm1
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, fenkes@de.ibm.com
+Cc: lkml <linux-kernel@vger.kernel.org>, paulus@samba.org,
+       benh@kernel.crashing.org
+In-Reply-To: <20070319205623.299d0378.akpm@linux-foundation.org>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 26 Mar 2007 11:47:30 -0800
+Message-Id: <1174938450.16728.8.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-03-19 at 20:56 -0800, Andrew Morton wrote:
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> 
+> Will appear later at
+> 
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
+> 
 
- Hi Cyrill,
 
-Em Sun, 25 Mar 2007 11:27:33 +0400
-Cyrill Gorcunov <gorcunov@gmail.com> escreveu:
+  CC      arch/powerpc/kernel/ibmebus.o
+arch/powerpc/kernel/ibmebus.c:463: error: ‘of_device_uevent’ undeclared
+here (not in a function)
+make[1]: *** [arch/powerpc/kernel/ibmebus.o] Error 1
+make: *** [arch/powerpc/kernel] Error 2
 
-| This patch adds checking of driver registration status
-| and if it fails release allocated resources.
-| 
-| Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-| 
-| ---
-| 
-| Pete, please review the patch and Ack it then.
-| 
-|  drivers/usb/misc/ftdi-elan.c |   37 +++++++++++++++++++++++--------------
-|  1 files changed, 23 insertions(+), 14 deletions(-)
-| 
-| diff --git a/drivers/usb/misc/ftdi-elan.c b/drivers/usb/misc/ftdi-elan.c
-| index bc3327e..3cd9ae3 100644
-| --- a/drivers/usb/misc/ftdi-elan.c
-| +++ b/drivers/usb/misc/ftdi-elan.c
-| @@ -2909,27 +2909,36 @@ static int __init ftdi_elan_init(void)
-|          init_MUTEX(&ftdi_module_lock);
-|          INIT_LIST_HEAD(&ftdi_static_list);
-|          status_queue = create_singlethread_workqueue("ftdi-status-control");
-| -	if (!status_queue)
-| -		goto err1;
-|          command_queue = create_singlethread_workqueue("ftdi-command-engine");
-| -	if (!command_queue)
-| -		goto err2;
-|          respond_queue = create_singlethread_workqueue("ftdi-respond-engine");
-| -	if (!respond_queue)
-| -		goto err3;
-| +	if (!status_queue || !command_queue || !respond_queue) {
-| +		printk(KERN_ERR "%s couldn't create workqueue\n",
-| +		       ftdi_elan_driver.name);
-| +		result = -ENOMEM;
-| +		goto err;
-| +	}
+Patch causing the problem in -mm:
+	ibmebus-uevent-support.patch
 
- The current version looks ok to me, why are you changing it?
+I don't see where ‘of_device_uevent’ is defined :(
 
- It's also smater, ie, if the first workqueue creation fails, it
-won't try to create the others.
+Thanks,
+Badari
 
-|          result = usb_register(&ftdi_elan_driver);
-| -        if (result)
-| +        if (result) {
-|                  printk(KERN_ERR "usb_register failed. Error number %d\n",
-|  		       result);
-| +		goto err;
-| +	}
-|          return result;
-
- This could be:
-
-"""
-if (result) {
-	printk(KERN_ERR "usb_register failed. Error number %d\n",
-	    result);
-	destroy_workqueue(respond_queue);
-	goto err3;
-}
-"""
-
- And you can change 'err1' to return 'result'.
-
--- 
-Luiz Fernando N. Capitulino
