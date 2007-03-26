@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXCZBOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbXCZB0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933212AbXCZBOK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 21:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbXCZBOK
+	id S933298AbXCZB0E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 21:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933325AbXCZBZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 21:14:10 -0400
-Received: from mail28.syd.optusnet.com.au ([211.29.133.169]:39802 "EHLO
-	mail28.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933212AbXCZBOJ (ORCPT
+	Sun, 25 Mar 2007 21:25:54 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:18458 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933318AbXCZBZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 21:14:09 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: tim.c.chen@linux.intel.com
-Subject: Re: RSDL 0.31 causes slowdown
-Date: Mon, 26 Mar 2007 11:13:47 +1000
-User-Agent: KMail/1.9.5
-Cc: Con Kolivas <ckolivas@gmail.com>, ck@vds.kolivas.org,
-       linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       suresh.b.siddha@intel.com, arjan@infradead.org
-References: <1174598506.23795.62.camel@localhost.localdomain> <8cd998d50703221940naec0905y56ec708eb11b81a2@mail.gmail.com> <1174672650.23795.67.camel@localhost.localdomain>
-In-Reply-To: <1174672650.23795.67.camel@localhost.localdomain>
+	Sun, 25 Mar 2007 21:25:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ty46UdU6Jm/SZWN2xkEIu5AZ1m7LQ9vnSHtdKpqbsBXG7t95t57ZOBQ/1h45PHUnQtVkr3Etm1ZwlfI0lR9vduNxmTeTFPJQgcaSglb/cApROd0LJG3p3JUdDyt/nYTpNnpxo8Z2rJgUZH87e7mbcNRwC+b40ruD65u3JkvCZSU=
+Message-ID: <b6a2187b0703251825l2b2ab9d3j43e17523cbca87ac@mail.gmail.com>
+Date: Mon, 26 Mar 2007 09:25:51 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: [3/6] 2.6.21-rc4: known regressions
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Dave Jones" <davej@redhat.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Maxim Levitsky" <maximlevitsky@gmail.com>,
+       "Mike Harris" <atarimike@wavecable.com>,
+       "Marcus Better" <marcus@better.se>, "Ray Lee" <ray-lk@madrabbit.org>,
+       "Alexey Starikovskiy" <alexey.y.starikovskiy@linux.intel.com>,
+       "Len Brown" <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       "Thomas Meyer" <thomas@m3y3r.de>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Soeren Sonnenburg" <kernel@nn7.de>
+In-Reply-To: <20070318184919.GW752@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703261113.47681.kernel@kolivas.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070318184919.GW752@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 24 March 2007 04:57, Tim Chen wrote:
-> On Fri, 2007-03-23 at 13:40 +1100, Con Kolivas wrote:
-> > Volanomark is a purely yield() semantic dependant workload (as
-> > discussed many times previously). In the earlier form of RSDL I
-> > softened the effect of sched_yield but other changes since then have
-> > made that softness bordering on a noop. Obviously when sched_yield is
-> > relied upon that will not be enough. Extending the rr interval simply
-> > makes the yield slightly more effective and is not the proper
-> > workaround. Since expiration of arrays is a regular frequent
-> > occurrence in RSDL then changing yield semantics back to expiration
-> > should cause a massive improvement in these values, without making the
-> > yields as long as in mainline. It's impossible to know exactly what
-> > the final result will be since java uses this timing sensitive yield
-> > for locking but we can improve it drastically from this. I'll make a
-> > patch soon to change yield again.
->
-> Con,
->
-> The new RSDL 0.33 has fully recovered the loss in performance for
-> Volanomark.  The throughput for Volanomark is at the same level as
-> mainline 2.6.21-rc4 kernel.
->
-> Tim
+On 3/19/07, Adrian Bunk <bunk@stusta.de> wrote:
 
-Thanks very much for testing. I'm quite happy with the yield semantics staying 
-the way they are in rSDl 0.33+.
+> Subject    : ThinkPad doesn't resume from suspend to RAM
+> References : http://lkml.org/lkml/2007/2/27/80
+>              http://lkml.org/lkml/2007/2/28/348
+> Submitter  : Jens Axboe <jens.axboe@oracle.com>
+>              Jeff Chua <jeff.chua.linux@gmail.com>
+> Status     : unknown
+>
+>
+> Subject    : suspend to disk hangs
+> References : http://lkml.org/lkml/2007/3/6/142
+> Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+> Status     : unknown
 
--- 
--ck
+The good news is on 2.6.21-rc5, suspend to disk, and resume from disk works.
+But, it only works with CONFIG_NO_HZ unset.
+
+Setting CONFIG_NO_HZ will cause suspend to disk to hang just before
+saving memory to disk.
+
+Resume from RAM (s2ram) still broke (tried with or without
+CONFIG_NO_HZ). Suspend to RAM seems ok, but upon resume, the screen
+will only display "inu" and only after pressing the power button will
+the system return to console. But "date" still doesn't advance.
+
+Thanks,
+Jeff.
