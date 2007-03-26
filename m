@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbXCZUru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbXCZUuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753108AbXCZUru (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 16:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXCZUru
+	id S1753118AbXCZUuZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 16:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXCZUuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 16:47:50 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:40746 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753108AbXCZUrt (ORCPT
+	Mon, 26 Mar 2007 16:50:25 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:43040 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753118AbXCZUuY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 16:47:49 -0400
-Date: Mon, 26 Mar 2007 22:47:44 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] possible USB regression with 2.6.21-rc4: iPod doesn't work
-Message-ID: <20070326204744.GA24762@dose.home.local>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Oliver Neukum <oneukum@suse.de>,
-	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070326185900.GA27068@dose.home.local> <Pine.LNX.4.44L0.0703261617110.4848-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0703261617110.4848-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 26 Mar 2007 16:50:24 -0400
+Subject: Re: [Patch 5/7] integrity: mtime patch for mmap files
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com,
+       staubach@redhat.com
+In-Reply-To: <20070325002656.0a5ceff0.akpm@linux-foundation.org>
+References: <1174666198.11149.5.camel@localhost.localdomain>
+	 <20070325002656.0a5ceff0.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 26 Mar 2007 16:49:07 -0400
+Message-Id: <1174942147.5713.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 16:28:34 -0400, Alan Stern wrote:
-> On Mon, 26 Mar 2007, Tino Keitel wrote:
+On Sun, 2007-03-25 at 00:26 -0800, Andrew Morton wrote: 
+> On Fri, 23 Mar 2007 12:09:58 -0400 Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
 > 
-> > Attached is a dmesg output with CONFIG_USB_DEBUG and CONFIG_USB_SUSPEND
-> > enabled.
-> > 
-> > There are no messages from the iPod because, well, nothing happens when
-> > I plug it in. I tried it 3 times.
+> > mmaped files are hashed and hmac'ed properly by EVM after being modified
+> > when the file's mtime is updated correctly.  Peter Staubach's 'memory
+> > mapped files not updating timestamps v2' patch properly updates the
+> > mmapped file's mtime.  In those cases when an application does not
+> > first msync the file before calling munmap, the mtime is eventually
+> > updated, but not before file_close is called.  This patch forces the
+> > mtime for mmaped files to be updated in a timely manner.
 > 
-> I don't understand.  The dmesg log you attached shows the iPod was
-> detected and recognized as scsi5 (sdc).  Then some time later (can't tell
-> how much later because you don't have CONFIG_PRINTK_TIME set) it was
-> unplugged and plugged back in.  The second time it was detected and
-> recognized as scsi6 (also sdc).  And then the log ends.
+> I don't think we've ever had that patch in -mm?
 
-Not in the attached dmesg output from the above mail. There are not
-iPod related messages it it, but I plugged it in 2 times. I rebootet
-with the same kernel version without CONFIG_USB_SUSPEND right after
-this and the iPod was recognized at the first try.
+We are basing the EVM code on Peter's '[PATCH] memory mapped files not 
+updating timestamps v2' patch http://lkml.org/lkml/2007/2/20/255 on the
+assumption that it would be accepted.  I guess that has not yet happened.
 
-> 
-> Why do you say there are no messages from the iPod?  Grepping for "iPod"
-> in the log shows that the string appears 4 times.  If nothing happened
-> when you plugged it in, how could the computer have known the device was
-> an iPod?
-> 
-> >  The strange thing is: when I trigger
-> > a suspend or shutdown, 
-> 
-> You mean you suspend or shutdown the computer?  Or the iPod?
+Mimi Zohar
 
-The computer.
-
-> 
-> >  then the "Do not disconnect" message shows up on
-> > the iPod, which means that the computer regognized it as a storage
-> > device.
-> 
-> What's so strange about that?  Isn't that exactly what's supposed to 
-> happen?
-
-Well, it isn't recognized by a normal running system, only during
-shutdown/suspend.
-
-Regards,
-Tino
