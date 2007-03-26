@@ -1,59 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933773AbXCZJqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933775AbXCZJs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933773AbXCZJqS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 05:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933775AbXCZJqS
+	id S933775AbXCZJs3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 05:48:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933784AbXCZJs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 05:46:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55531 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933773AbXCZJqR (ORCPT
+	Mon, 26 Mar 2007 05:48:29 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:45463 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933775AbXCZJs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 05:46:17 -0400
-Subject: Re: [PATCH 00/22 take 3] UBI: Unsorted Block Images
-From: David Woodhouse <dwmw2@infradead.org>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: David Lang <david.lang@digitalinsight.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Matt Mackall <mpm@selenic.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Artem Bityutskiy <dedekind@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20070326010443.GF19691@lazybastard.org>
-References: <20070319223205.GZ4892@waste.org>
-	 <1174351366.13341.739.camel@localhost.localdomain>
-	 <20070321110528.GC3785@lazybastard.org>
-	 <1174476334.10840.49.camel@localhost.localdomain>
-	 <20070325200826.GA19691@lazybastard.org>
-	 <Pine.LNX.4.63.0703251338580.13765@qynat.qvtvafvgr.pbz>
-	 <20070325225528.GD19691@lazybastard.org>
-	 <1174866394.2866.2.camel@shinybook.infradead.org>
-	 <20070326000149.GE19691@lazybastard.org>
-	 <1174868485.20505.284.camel@pmac.infradead.org>
-	 <20070326010443.GF19691@lazybastard.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 26 Mar 2007 10:45:57 +0100
-Message-Id: <1174902357.20505.292.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 26 Mar 2007 05:48:28 -0400
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, dgc@sgi.com, linux-kernel@vger.kernel.org
+In-reply-to: <20070326013226.786e5b4e.akpm@linux-foundation.org> (message from
+	Andrew Morton on Mon, 26 Mar 2007 01:32:26 -0800)
+Subject: Re: [patch 1/3] fix illogical behavior in balance_dirty_pages()
+References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu>
+	<20070325153508.10922ebd.akpm@linux-foundation.org>
+	<E1HVkWw-0000yj-00@dorka.pomaz.szeredi.hu>
+	<20070326010124.b4513ce2.akpm@linux-foundation.org>
+	<E1HVlN5-00016C-00@dorka.pomaz.szeredi.hu> <20070326013226.786e5b4e.akpm@linux-foundation.org>
+Message-Id: <E1HVlo5-0001AS-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 26 Mar 2007 11:48:05 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-26 at 03:04 +0200, Jörn Engel wrote:
-> That limitation stems from ECC and ECC is done in software.  Currently
-> everyone and his dog is doing ECC in chunks of 256 bytes on NAND.  So
-> your minimum write size is 256 bytes _if you care about ECC_.  If you
-> don't care, you can write single bits on NAND, just as you can on NOR.
+> > Well, not a picture, but a sort of indented call trace:
+> > 
+> >   [some process, which has a fuse file writably mmaped]
+> >   write fault on upper filesystem
+> >     balance_dirty_pages
+> >       loop...
+> >         submit write requests
+> 
+> This, I assume, is the upper fs
+> 
+> >   ---------------------------------
+> >   [fuse loopback fs thread 1]
+> >   read request from /dev/fuse
+> >   sys_write
+> >     mutex_lock(i_mutex)
+> >     ...
+> >        copy data to page cache
+> >        balance_dirty_pages
+> >           loop ...
+> >                 submit write requests
+> >                 write requests completed ...
+> >                 dirty still over limit ...
+> >            ... loop forever
+> > 
+> >   [fuse loopback fs thread 2]
+> >   read request from /dev/fuse
+> >   sys_write
+> >     mute_lock(i_mutex) blocks
+> 
+> And these, I assume, are handling what you term the lower fs.
 
-No, on NAND flash it's a limitation of the hardware. The number of write
-cycles you can perform to a given page is limited. Exceed it and the
-contents of that page become undefined due to leakage, until you next
-erase it. 
+All of this is actually the upper, fuse filesystem (maybe except the
+filemap/page-writeback parts, which could be argued to belong to the
+lower, ext3 filesystem).
 
--- 
-dwmw2
+Above the line is the kernel part, below the line is the userspace
+part.
 
+> > The lower filesystem (e.g. ext3) has completed the single write
+> > request that was sent to it, and then it's just looping in
+> > balance_dirty_pages.  The upper (fuse) filesystem has all the dirty
+> > data (over the threshold), either still dirty or waiting in the
+> > request queue as writeback.
+> > 
+> > Does this help?
+> 
+> yup.
+> 
+> Interesting problem.  I don't suppose that it'd be appreiated if I were to
+> commend the use of O_DIRECT for handling the lower fs ;)
+
+Not really ;)  One of the goals of fuse is to not restrict the
+filesystem daemon in any way.  There are zillions of ways to work
+around this deadlock, but I don't even want to make it even
+theoretically possible.
+
+> Let me think about that a bit, after I've made the latest shitpile people
+> have inflicted upon me begin to look like it has a chance of compiling.
+
+OK.
+
+Thanks,
+Miklos
