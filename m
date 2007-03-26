@@ -1,103 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbXCZC5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbXCZDIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751828AbXCZC5U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 22:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbXCZC5U
+	id S1752462AbXCZDIA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 23:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbXCZDIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 22:57:20 -0400
-Received: from ozlabs.org ([203.10.76.45]:50849 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751828AbXCZC5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 22:57:19 -0400
-Subject: Re: [PATCH 17/21] MSI: Clear the irq_desc's msi pointer on free
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       daniel.e.wolstenholme@intel.com
-In-Reply-To: <m1y7lo64v4.fsf@ebiederm.dsl.xmission.com>
-References: <20070322105344.A34C6DDF74@ozlabs.org>
-	 <m1slbx8ihm.fsf@ebiederm.dsl.xmission.com>
-	 <1174604508.5401.7.camel@concordia.ozlabs.ibm.com>
-	 <m1y7lo64v4.fsf@ebiederm.dsl.xmission.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HRsyqrBNuYLKopUsf4ra"
-Date: Mon, 26 Mar 2007 12:57:16 +1000
-Message-Id: <1174877836.4782.6.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Sun, 25 Mar 2007 23:08:00 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34475 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751947AbXCZDH7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 23:07:59 -0400
+Date: Mon, 26 Mar 2007 05:08:03 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Kevin P. Fleming" <lkml@kpfleming.us>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Jan Beulich <jbeulich@novell.com>, Alan Cox <alan@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/pci/probe.c patch in 2.6.20.4 causes 'cannot adjust BAR0 (not I/O)' on NVidia MCP51
+Message-ID: <20070326030803.GT16477@stusta.de>
+References: <460693EB.9080203@kpfleming.us> <20070325161144.GA12155@kroah.com> <20070325210846.05d3f2c8@the-village.bc.nu> <20070325192127.GR16477@stusta.de> <46072F2A.9060803@kpfleming.us>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46072F2A.9060803@kpfleming.us>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Mar 25, 2007 at 07:25:46PM -0700, Kevin P. Fleming wrote:
+> Adrian Bunk wrote:
+> > It also adds PCI_BASE_ADDRESS_SPACE_IO to the flags which it didn't 
+> > without the patch.
+> 
+> As an experiment I modified 2.6.20.4 to _only_ remove that value from
+> the combined value for the flags and it did not help in any noticeable
+> way. I can reliably boot and operate the machine with the original patch
+> reversed, though.
 
---=-HRsyqrBNuYLKopUsf4ra
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+OK thanks, then it's something else.
 
-On Thu, 2007-03-22 at 21:00 -0600, Eric W. Biederman wrote:
-> Michael Ellerman <michael@ellerman.id.au> writes:
->=20
-> > On Thu, 2007-03-22 at 08:23 -0600, Eric W. Biederman wrote:
-> >> Michael Ellerman <michael@ellerman.id.au> writes:
-> >>=20
-> >> > Currently we never clear the msi_desc pointer in the irq_desc. This
-> >> > leaves us with a pointer to free'ed memory hanging around. No one se=
-ems
-> >> > to have hit this, so presumably other parts of the code are protecti=
-ng
-> >> > us from ever using the stale pointer .. or we're just lucky, we shou=
-ld
-> >> > still clear it.
-> >>=20
-> >> Hmm.  Maybe.  Currently this is done in dynamic_irq_cleanup,
-> >> at least for everything except sparc64.
-> >
-> > OK, I missed that. I still think we should do it here, otherwise there'=
-s
-> > a window, however small, where the msi_desc pointer is pointing at free=
-d
-> > memory.
->=20
-> After following the code through the current cleanup happens before you a=
-re
-> proposing, and in fact the irq is return to the set of irq's that can
-> be allocated before you are calling set_irq_msi(irq, NULL).
+I see only one more thing that might make any difference:
+Perhaps we are not seeing the problematic operation due to the different 
+loglevel?
 
-We don't call dynamic_irq_cleanup(), so it never gets done. Perhaps we
-should be using your dynamic_irq_init/cleanup.
+Please change in the third printk() the patch adds the KERN_INFO to 
+KERN_WARNING.
 
-> Therefore you are doing this too late and we need to ensure the
-> architecture code does this in arch_teardown_msi_irq.
+If you get a "...trying to change BAR..." before it hangs, remove the 
+pci_write_config_dword() line - this should then fix it.
 
-As long as the arch teardown routine somehow calls dynamic_irq_cleanup()
-it should be fine. But I guess it's probably safer to just have all
-archs do set_msi_irq(irq, NULL) in the teardown.
+cu
+Adrian
 
-cheers
+-- 
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-HRsyqrBNuYLKopUsf4ra
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGBzaLdSjSd0sB4dIRAl9cAKCq/pHNG5dCV18MoLKweH2+MhNXRwCgjXgM
-n8fZeKvCLjUEttF9NXfRv/U=
-=u3M6
------END PGP SIGNATURE-----
-
---=-HRsyqrBNuYLKopUsf4ra--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
