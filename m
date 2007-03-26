@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXCZRzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbXCZR6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753634AbXCZRzp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 13:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbXCZRzo
+	id S1753647AbXCZR6Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 13:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbXCZR6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 13:55:44 -0400
-Received: from igw2.watson.ibm.com ([129.34.20.6]:34787 "EHLO
-	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753634AbXCZRzn (ORCPT
+	Mon, 26 Mar 2007 13:58:25 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50057 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753427AbXCZR6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 13:55:43 -0400
-Subject: Re: [Patch 3/7] integrity: EVM as an integrity service provider
-From: David Safford <safford@watson.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-In-Reply-To: <20070325121321.GA8550@ucw.cz>
-References: <1174666176.11149.3.camel@localhost.localdomain>
-	 <20070325001605.31ed39e7.akpm@linux-foundation.org>
-	 <20070325121321.GA8550@ucw.cz>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 26 Mar 2007 13:55:15 -0400
-Message-Id: <1174931715.3493.44.camel@localhost.localdomain>
+	Mon, 26 Mar 2007 13:58:24 -0400
+Date: Mon, 26 Mar 2007 10:58:13 -0700
+From: Paul Jackson <pj@sgi.com>
+To: vatsa@in.ibm.com
+Cc: balbir@in.ibm.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix race between attach_task and cpuset_exit
+Message-Id: <20070326105813.5678ea5d.pj@sgi.com>
+In-Reply-To: <20070326115046.GK11794@in.ibm.com>
+References: <20070325164746.GI11794@in.ibm.com>
+	<4606B6CF.6040306@in.ibm.com>
+	<20070326115046.GK11794@in.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-25 at 12:13 +0000, Pavel Machek wrote:
-> > > +	  The Extended Verification Module is an integrity provider.
-> > > +	  An extensible set of extended attributes, as defined in
-> > > +	  /etc/evm.conf, are HMAC protected against modification
-> > > +	  using the TPM's KERNEL ROOT KEY, if configured, or with a
-> > > +	  pass-phrase.  Possible extended attributes include authenticity,
-> > > +	  integrity, and revision level.
-> 
-> What is identity provider good for? Can you explain it a bit more, or
-> perhaps point to Doc*/ somewhere?
-> 							Pavel
+vatsa wrote:
+> Well, someone may have attached to this cpuset while we were waiting on the 
+> mutex_lock(). So we need to do a atomic_read again to ensure it is still
+> unused.
 
-There are some papers and related userspace code at
-   http://www.research.ibm.com/gsal/tcpa
-which describe the architecture in more detail, but basically this 
-integrity provider is designed to complement mandatory access control
-systems like selinux and slim. Such systems can protect a running system 
-against on-line attacks, but do not protect against off-line attacks  
-(booting Knoppix and changing executables or their selinux labels), or 
-against attacks which find weaknesses in the kernel or the LSM module 
-itself.
+I don't see how this could happen.  If we hold the task lock that now
+(thanks to your good work) guards this pointer, and if we decrement to
+zero the reference count on the cpuset to which it points and then
+-overwrite- this last remaining visible pointer to that cpuset with a
+pointer to a different cpuset, then aren't we guaranteed to be holding
+the last remaining reference to the old cpuset in our local variable,
+making it impossible for anyone else to attach to it in any way?
 
-Using a TPM or passphrase, EVM can verify the integrity of all files 
-(including the kernel and initrd) and their labels before they are 
-referenced. Using a TPM, EVM/IMA can attest to the integrity of all files 
-to a third party, even if the kernel or modules have been compromised.
-(An attack can block the attestation, but cannot forge valid TPM 
-signatures.)
-
-In response to customer demand, we are actively working to develop and 
-test this attestation in enterprise server environments, integrated 
-with both selinux and AppArmor.
-
-dave
-
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
