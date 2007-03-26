@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbXCZSrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbXCZSsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbXCZSrc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 14:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbXCZSrc
+	id S1753686AbXCZSsy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 14:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbXCZSsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 14:47:32 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:52554 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725AbXCZSrb (ORCPT
+	Mon, 26 Mar 2007 14:48:54 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35115 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752974AbXCZSsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 14:47:31 -0400
-Subject: Re: 2.6.21-rc4-mm1
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, fenkes@de.ibm.com
-Cc: lkml <linux-kernel@vger.kernel.org>, paulus@samba.org,
-       benh@kernel.crashing.org
-In-Reply-To: <20070319205623.299d0378.akpm@linux-foundation.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 26 Mar 2007 11:47:30 -0800
-Message-Id: <1174938450.16728.8.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 8bit
+	Mon, 26 Mar 2007 14:48:53 -0400
+Date: Mon, 26 Mar 2007 20:48:57 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Marcus Better <marcus@better.se>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, pavel@suse.cz,
+       linux-pm@lists.osdl.org
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+Message-ID: <20070326184857.GD16477@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703261200.25587.marcus@better.se> <20070326143433.GC16477@stusta.de> <200703261942.52126.marcus@better.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200703261942.52126.marcus@better.se>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-19 at 20:56 -0800, Andrew Morton wrote:
-> Temporarily at
+On Mon, Mar 26, 2007 at 07:42:51PM +0200, Marcus Better wrote:
+> Adrian Bunk wrote:
+> > > > Subject    : ThinkPad R60: suspend to disk broken
 > 
->   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> > Does setting CONFIG_PCI_MSI=n make any difference?
 > 
-> Will appear later at
-> 
->   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc4/2.6.21-rc4-mm1/
-> 
+> Yes, it does. The hanging resume problem went away. 
 
+Thanks for testing.
 
-  CC      arch/powerpc/kernel/ibmebus.o
-arch/powerpc/kernel/ibmebus.c:463: error: ‘of_device_uevent’ undeclared
-here (not in a function)
-make[1]: *** [arch/powerpc/kernel/ibmebus.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
+If you enable it again, does the patch from [1] also fix it?
 
-Patch causing the problem in -mm:
-	ibmebus-uevent-support.patch
+> (The display corruption and the instant resume were not affected.)
 
-I don't see where ‘of_device_uevent’ is defined :(
+Not a surprise - it's currently quite common that people run into 
+several distinct suspend regressions...
 
-Thanks,
-Badari
+> Marcus
+
+cu
+Adrian
+
+[1] http://lkml.org/lkml/2007/3/24/136 [2]
+[2] x86_64 uses arch/i386/pci/common.c
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
