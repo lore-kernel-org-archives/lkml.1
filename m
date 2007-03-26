@@ -1,102 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbXCZSXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbXCZSXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbXCZSXO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 14:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbXCZSXO
+	id S1753664AbXCZSXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 14:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbXCZSXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 14:23:14 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52390 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753664AbXCZSXN (ORCPT
+	Mon, 26 Mar 2007 14:23:24 -0400
+Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:23346 "HELO
+	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753664AbXCZSXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 14:23:13 -0400
-Date: Mon, 26 Mar 2007 11:23:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: ak@suse.de
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [x86_64] Use lru instead of page->index and page->private for pgd
- lists management.
-Message-ID: <Pine.LNX.4.64.0703261121520.13277@schroedinger.engr.sgi.com>
+	Mon, 26 Mar 2007 14:23:22 -0400
+X-YMail-OSG: Gkv.Jj8VM1kb9uEMBt0zinuLRPn1AhkYCb890I_piLmDONCfdR8V6UqoPuJjJMHazzSyaSLMGe6Ra16nYre6N0UKe2OfM9ZC5j_kG3pgHmvOcIomTfE.oMltwz_F9nwyak1ZtLHJudAMaOtr09OiQSMSu7WgHseVEsc-
+Date: Mon, 26 Mar 2007 13:23:15 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       safford@watson.ibm.com, serue@linux.vnet.ibm.com,
+       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
+Subject: Re: [Patch 3/7] integrity: EVM as an integrity service provider
+Message-ID: <20070326182315.GA31340@vino.hallyn.com>
+References: <1174666176.11149.3.camel@localhost.localdomain> <20070325001454.14ab63c2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070325001454.14ab63c2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_64 currently simulates a list using the index and private fields of the page struct.
-Seems that the code was inherited from i386. But x86_64 does not use the slab to
-allocate pgds and pmds etc. So the lru field is not used by the slab and therefore
-available.
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Fri, 23 Mar 2007 12:09:36 -0400 Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+> 
+> > This is a re-release of EVM as an integrity service provider.
+> 
+> What a huge set of patches.
+> 
+> Frankly, I don't know how we're going to get these reviewed and mergeable
+> and merged - there doesn't seem to be a lot of interest and personally
+> I only have a vague idea of what it all even does.
 
-This patch uses standard list operations on page->lru to realize pgd tracking.
+Mimi,
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+would it make sense to work with just the integrity subsystem first,
+then when they've been sitting for awhile without breaking anything
+and people are done giving comments, look at EVM, then after awhile at
+IMA?
 
-Index: linux-2.6.21-rc4/arch/x86_64/mm/fault.c
-===================================================================
---- linux-2.6.21-rc4.orig/arch/x86_64/mm/fault.c	2007-03-26 11:03:46.000000000 -0700
-+++ linux-2.6.21-rc4/arch/x86_64/mm/fault.c	2007-03-26 11:04:43.000000000 -0700
-@@ -585,7 +585,7 @@
- }
- 
- DEFINE_SPINLOCK(pgd_lock);
--struct page *pgd_list;
-+LIST_HEAD(pgd_list);
- 
- void vmalloc_sync_all(void)
- {
-@@ -605,8 +605,7 @@
- 			if (pgd_none(*pgd_ref))
- 				continue;
- 			spin_lock(&pgd_lock);
--			for (page = pgd_list; page;
--			     page = (struct page *)page->index) {
-+			list_for_each_entry(page, &pgd_list, lru) {
- 				pgd_t *pgd;
- 				pgd = (pgd_t *)page_address(page) + pgd_index(address);
- 				if (pgd_none(*pgd))
-Index: linux-2.6.21-rc4/include/asm-x86_64/pgtable.h
-===================================================================
---- linux-2.6.21-rc4.orig/include/asm-x86_64/pgtable.h	2007-03-26 11:03:46.000000000 -0700
-+++ linux-2.6.21-rc4/include/asm-x86_64/pgtable.h	2007-03-26 11:04:43.000000000 -0700
-@@ -403,7 +403,7 @@
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val })
- 
- extern spinlock_t pgd_lock;
--extern struct page *pgd_list;
-+extern struct list_head pgd_list;
- void vmalloc_sync_all(void);
- 
- #endif /* !__ASSEMBLY__ */
-Index: linux-2.6.21-rc4/include/asm-x86_64/pgalloc.h
-===================================================================
---- linux-2.6.21-rc4.orig/include/asm-x86_64/pgalloc.h	2007-03-26 11:04:52.000000000 -0700
-+++ linux-2.6.21-rc4/include/asm-x86_64/pgalloc.h	2007-03-26 11:08:11.000000000 -0700
-@@ -45,24 +45,16 @@
- 	struct page *page = virt_to_page(pgd);
- 
- 	spin_lock(&pgd_lock);
--	page->index = (pgoff_t)pgd_list;
--	if (pgd_list)
--		pgd_list->private = (unsigned long)&page->index;
--	pgd_list = page;
--	page->private = (unsigned long)&pgd_list;
-+	list_add(&page->lru, &pgd_list);
- 	spin_unlock(&pgd_lock);
- }
- 
- static inline void pgd_list_del(pgd_t *pgd)
- {
--	struct page *next, **pprev, *page = virt_to_page(pgd);
-+	struct page *page = virt_to_page(pgd);
- 
- 	spin_lock(&pgd_lock);
--	next = (struct page *)page->index;
--	pprev = (struct page **)page->private;
--	*pprev = next;
--	if (next)
--		next->private = (unsigned long)pprev;
-+	list_del(&page->lru);
- 	spin_unlock(&pgd_lock);
- }
- 
+You've sent out all the patches so you can point people back to this
+submission if they ask "why isn't there a user"  :)
+
+Just a thought.  Cause it *is* a lot of patches...
+
+-serge
+
+> This patch does worrisome-looking things with VFS internals (anything
+> which takes inode_lock is fishy).
+> 
+> 
+> Bunch of cleanups, pretty obvious:
+> 
+>  fs/sysfs/mount.c          |    3 ---
+>  include/linux/magic.h     |    1 +
+>  security/evm/evm.h        |    2 --
+>  security/evm/evm_config.c |   19 ++++++++++---------
+>  security/evm/evm_crypto.c |    8 +++-----
+>  security/evm/evm_main.c   |   10 ++++------
+>  6 files changed, 18 insertions(+), 25 deletions(-)
+> 
+> diff -puN fs/sysfs/mount.c~integrity-evm-as-an-integrity-service-provider-tidy fs/sysfs/mount.c
+> --- a/fs/sysfs/mount.c~integrity-evm-as-an-integrity-service-provider-tidy
+> +++ a/fs/sysfs/mount.c
+> @@ -12,9 +12,6 @@
+>  
+>  #include "sysfs.h"
+>  
+> -/* Random magic number */
+> -#define SYSFS_MAGIC 0x62656572
+> -
+>  struct vfsmount *sysfs_mount;
+>  struct super_block * sysfs_sb = NULL;
+>  struct kmem_cache *sysfs_dir_cachep;
+> diff -puN include/linux/magic.h~integrity-evm-as-an-integrity-service-provider-tidy include/linux/magic.h
+> --- a/include/linux/magic.h~integrity-evm-as-an-integrity-service-provider-tidy
+> +++ a/include/linux/magic.h
+> @@ -20,6 +20,7 @@
+>  #define MINIX2_SUPER_MAGIC	0x2468		/* minix V2 fs */
+>  #define MINIX2_SUPER_MAGIC2	0x2478		/* minix V2 fs, 30 char names */
+>  #define MINIX3_SUPER_MAGIC	0x4d5a		/* minix V3 fs */
+> +#define SYSFS_MAGIC		0x62656572
+>  
+>  #define MSDOS_SUPER_MAGIC	0x4d44		/* MD */
+>  #define NCP_SUPER_MAGIC		0x564c		/* Guess, what 0x564c is :-) */
+> diff -puN security/evm/evm.h~integrity-evm-as-an-integrity-service-provider-tidy security/evm/evm.h
+> --- a/security/evm/evm.h~integrity-evm-as-an-integrity-service-provider-tidy
+> +++ a/security/evm/evm.h
+> @@ -8,7 +8,6 @@
+>  #include <linux/spinlock_types.h>
+>  #include <linux/integrity.h>
+>  
+> -#define DEVFS_SUPER_MAGIC	0x1373
+>  #define MAX_DIGEST_SIZE 	20	/* 160-bits */
+>  
+>  extern char *evm_hmac, *evm_hash;
+> @@ -48,7 +47,6 @@ struct evm_iint_cache {
+>  	struct mutex mutex;
+>  };
+>  
+> -extern void display_config(const char *);
+>  extern struct evm_xattr_config *evm_parse_config(char *data,
+>  						 unsigned long datalen,
+>  						 int *datasize);
+> diff -puN security/evm/evm_config.c~integrity-evm-as-an-integrity-service-provider-tidy security/evm/evm_config.c
+> --- a/security/evm/evm_config.c~integrity-evm-as-an-integrity-service-provider-tidy
+> +++ a/security/evm/evm_config.c
+> @@ -18,17 +18,17 @@
+>   * Configuration data
+>   */
+>  struct evm_xattr_config *evm_config_xattrdata;
+> -int evm_config_xattrnum = 0;	/* number of extended attributes */
+> +int evm_config_xattrnum;	/* number of extended attributes */
+>  
+>  /*
+>   * inode->i_integrity information
+>   */
+> -void display_config(const char *name)
+> +static void display_config(const char *name)
+>  {
+>  	struct evm_xattr_config *config_p;
+>  
+>  	for_each_xattr(config_p, evm_config_xattrdata, evm_config_xattrnum)
+> -	    printk(KERN_INFO "%s: %s\n", name, config_p->xattr_name);
+> +		printk(KERN_INFO "%s: %s\n", name, config_p->xattr_name);
+>  }
+>  
+>  /*
+> @@ -42,7 +42,6 @@ int evm_init_config(struct evm_xattr_con
+>  		evm_config_xattrdata = evm_data;
+>  		evm_config_xattrnum = evm_datasize;
+>  		display_config(__FUNCTION__);
+> -
+>  	} else {
+>  		printk(KERN_INFO "%s: config file definition missing\n",
+>  		       __FUNCTION__);
+> @@ -60,9 +59,11 @@ static char *get_tag(char *buf_start, ch
+>  	/* Get start of tag */
+>  	while (bufp < buf_end) {
+>  		if (*bufp == ' ')	/* skip blanks */
+> -			while ((*bufp == ' ') && (bufp++ < buf_end)) ;
+> +			while ((*bufp == ' ') && (bufp++ < buf_end))
+> +				;
+>  		else if (*bufp == '#') {	/* skip comment */
+> -			while ((*bufp != '\n') && (bufp++ < buf_end)) ;
+> +			while ((*bufp != '\n') && (bufp++ < buf_end))
+> +				;
+>  			bufp++;
+>  		} else if (*bufp == '\n')	/* skip newline */
+>  			bufp++;
+> @@ -107,8 +108,8 @@ struct evm_xattr_config *evm_parse_confi
+>  	*xattrnum = num_xattr;
+>  
+>  	datap = data;
+> -	config_xattrdata =
+> -	    kmalloc(num_xattr * sizeof(struct evm_xattr_config), GFP_KERNEL);
+> +	config_xattrdata = kmalloc(num_xattr * sizeof(struct evm_xattr_config),
+> +				GFP_KERNEL);
+>  	if (!config_xattrdata)
+>  		return NULL;
+>  
+> @@ -123,7 +124,7 @@ struct evm_xattr_config *evm_parse_confi
+>  	return config_xattrdata;
+>  }
+>  
+> -inline void evm_cleanup_config(void)
+> +void evm_cleanup_config(void)
+>  {
+>  	kfree(evm_config_xattrdata);
+>  }
+> diff -puN security/evm/evm_crypto.c~integrity-evm-as-an-integrity-service-provider-tidy security/evm/evm_crypto.c
+> --- a/security/evm/evm_crypto.c~integrity-evm-as-an-integrity-service-provider-tidy
+> +++ a/security/evm/evm_crypto.c
+> @@ -33,7 +33,7 @@
+>  static unsigned char tpm_key[MAX_TPMKEY];
+>  static int tpm_keylen = MAX_TPMKEY;
+>  
+> -int update_file_hash(struct dentry *dentry, struct file *f,
+> +static int update_file_hash(struct dentry *dentry, struct file *f,
+>  		     struct hash_desc *desc)
+>  {
+>  	struct file *file = f;
+> @@ -217,11 +217,9 @@ int evm_calc_hmac(struct dentry *dentry,
+>  	struct scatterlist sg[1];
+>  	char *fname;
+>  	int error = 0;
+> -
+>  	struct evm_xattr_config *config_p;
+>  	int xattr_size = 0;
+>  	char *xattr_value = NULL;
+> -
+>  	struct h_misc {
+>  		unsigned long ino;
+>  		__u32 generation;
+> @@ -278,7 +276,7 @@ int evm_calc_hmac(struct dentry *dentry,
+>  					__FUNCTION__, fname,
+>  					config_p->xattr_name);
+>  		}
+> -	};
+> +	}
+>  	kfree(xattr_value);
+>  	memset(hmac_misc, 0, sizeof misc);
+>  	hmac_misc->ino = inode->i_ino;
+> @@ -331,7 +329,7 @@ int evm_init_tpmkernkey(void)
+>  
+>  	kmk = request_key(&key_type_user, TPMKEY, NULL);
+>  	if (IS_ERR(kmk)) {
+> -		return (-1);
+> +		return -1;
+>  	} else {
+>  		down_read(&kmk->sem);
+>  		ukp = kmk->payload.data;
+> diff -puN security/evm/evm_main.c~integrity-evm-as-an-integrity-service-provider-tidy security/evm/evm_main.c
+> --- a/security/evm/evm_main.c~integrity-evm-as-an-integrity-service-provider-tidy
+> +++ a/security/evm/evm_main.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/proc_fs.h>
+>  #include <linux/xattr.h>
+>  #include <linux/file.h>
+> +#include <linux/magic.h>
+>  #include <linux/writeback.h>
+>  #include "evm_integrity.h"
+>  #include "evm.h"
+> @@ -363,10 +364,7 @@ static int evm_verify_data(struct dentry
+>   */
+>  static int skip_measurement(struct inode *inode, int mask)
+>  {
+> -#define SYSFS_MAGIC 0x62656572
+> -
+> -	if ((inode->i_sb->s_magic == DEVFS_SUPER_MAGIC) ||
+> -	    (inode->i_sb->s_magic == PROC_SUPER_MAGIC) ||
+> +	if ((inode->i_sb->s_magic == PROC_SUPER_MAGIC) ||
+>  	    (inode->i_sb->s_magic == SYSFS_MAGIC)) {
+>  		return 1;	/*can't measure */
+>  	}
+> @@ -877,9 +875,9 @@ static void evm_enable_integrity(void)
+>  
+>  static void evm_cleanup_integrity(void)
+>  {
+> -	if (evm_install) {
+> +	if (evm_install)
+>  		unregister_integrity(&evm_install_ops);
+> -	} else
+> +	else
+>  		unregister_integrity(&evm_integrity_ops);
+>  }
+>  
+> _
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
