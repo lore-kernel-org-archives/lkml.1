@@ -1,119 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbXCZHHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751747AbXCZHJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750999AbXCZHHQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 03:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXCZHHQ
+	id S1751747AbXCZHJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 03:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbXCZHJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 03:07:16 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:37605 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbXCZHHO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 03:07:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HpfOxuEKLJJpxsGL7OgUAhgWG893PH0qX9x0UVUb2QZmu4//d4OWyDK5Kn6R16Slb0EQYknFLmSc82/KSkDQfIXRF7WcttdsF8HLl5AY1LNG7AFd9EjDYDYkR2jK/s5W3HDRqklaBRvhi6GEGSqhb78S23+fGG8lA694Sgs7iM4=
-Message-ID: <2fe399760703260007u7cea0599y7bcce8f779e02c71@mail.gmail.com>
-Date: Mon, 26 Mar 2007 00:07:13 -0700
-From: "Phy Prabab" <phyprabab@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: Opps in 2.6.21-rc4 nfsd
-Cc: "Adrian Bunk" <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net
-In-Reply-To: <17927.7414.722426.438730@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
-	 <20070323152913.GH752@stusta.de>
-	 <2fe399760703230845s4f652df0v9fd57e1aa7943e4e@mail.gmail.com>
-	 <17927.6359.721594.133569@notabene.brown>
-	 <17927.7414.722426.438730@notabene.brown>
+	Mon, 26 Mar 2007 03:09:55 -0400
+Received: from ozlabs.org ([203.10.76.45]:53791 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751747AbXCZHJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 03:09:53 -0400
+Subject: Re: [PATCH 0/21] MSI rework
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg KH <greg@kroah.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, daniel.e.wolstenholme@intel.com
+In-Reply-To: <m1ps705ka1.fsf@ebiederm.dsl.xmission.com>
+References: <1174560686.307511.956605711793.qpush@cradle>
+	 <m1lkhp8gqx.fsf@ebiederm.dsl.xmission.com>
+	 <20070322190834.GA14802@kroah.com>
+	 <1174600936.10836.53.camel@localhost.localdomain>
+	 <20070322220837.GD20713@kroah.com>
+	 <1174623443.5401.21.camel@concordia.ozlabs.ibm.com>
+	 <m1ps705ka1.fsf@ebiederm.dsl.xmission.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-hcePlDmgFxpYcRg7jq5f"
+Date: Mon, 26 Mar 2007 17:09:51 +1000
+Message-Id: <1174892991.4782.11.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Opps, forgot, this is for 2.6.20.x, guess I'll wait for the updated patch.
 
-Thanks!
-Phy
+--=-hcePlDmgFxpYcRg7jq5f
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On 3/25/07, Neil Brown <neilb@suse.de> wrote:
-> On Monday March 26, neilb@suse.de wrote:
+On Fri, 2007-03-23 at 04:25 -0600, Eric W. Biederman wrote:
+> Michael Ellerman <michael@ellerman.id.au> writes:
+>=20
+> > On Thu, 2007-03-22 at 15:08 -0700, Greg KH wrote:
+> >> On Fri, Mar 23, 2007 at 09:02:16AM +1100, Benjamin Herrenschmidt wrote=
+:
+> >> > > > i.e.  First the simple bug fixes that should purely be restructu=
+re of
+> >> > > > msi.c with no affect on anything outside of it.
+> >> > > >=20
+> >> > > > And then get into the architecture enhancements.
+> >> > >=20
+> >> > > I agree, care to break these down into a smaller series of patches=
+ that
+> >> > > can go into -mm for testing?
+> >> >=20
+> >> > I don't see the point in breaking the serie... you can bisect half w=
+ay
+> >> > through if necessary... it's made of small patches that are done, af=
+aik,
+> >> > in such a way that the whole thing should still work at any level in=
+ the
+> >> > serie.
+> >> >=20
+> >> > The serie just expresses the dependency between them.
+> >>=20
+> >> Ok, then which patches in the series should be acceptable to take righ=
+t
+> >> now for 2.6.22?  The "clean up the BUG" ones?
 > >
-> > I'll try to have a patch for you to try on 2.6.21rc4 shortly.
+> > The series is already very verbose, I don't think I can split most of
+> > them any smaller without producing an unbuildable kernel.
+>=20
+> That wasn't the request.
+>=20
+> > I think 1 up to and including 11 are safe as houses, they shouldn't hav=
+e
+> > any effect other than to clean up the code.
 > >
->
-> This patch should remove the Oops, but I have a suspicion that
-> something else is wrong, so I'd be very interested if you could run
-> with this for a few days and report the results.
->
-> NeilBrown
->
-> Signed-off-by: Neil Brown <neilb@suse.de>
->
-> ### Diffstat output
->  ./fs/nfsd/nfsfh.c |   37 +++++++++++++++++++++++++++++++++++--
->  1 file changed, 35 insertions(+), 2 deletions(-)
->
-> diff .prev/fs/nfsd/nfsfh.c ./fs/nfsd/nfsfh.c
-> --- .prev/fs/nfsd/nfsfh.c       2007-03-26 10:51:01.000000000 +1000
-> +++ ./fs/nfsd/nfsfh.c   2007-03-26 11:04:20.000000000 +1000
-> @@ -324,7 +324,7 @@ fh_compose(struct svc_fh *fhp, struct sv
->          *
->          */
->
-> -       u8 version = 1;
-> +       u8 version;
->         u8 fsid_type = 0;
->         struct inode * inode = dentry->d_inode;
->         struct dentry *parent = dentry->d_parent;
-> @@ -342,12 +342,45 @@ fh_compose(struct svc_fh *fhp, struct sv
->          * the reference filehandle (if it is in the same export)
->          * or the export options.
->          */
-> + retry:
-> +       version = 1;
->         if (ref_fh && ref_fh->fh_export == exp) {
->                 version = ref_fh->fh_handle.fh_version;
->                 if (version == 0xca)
->                         fsid_type = FSID_DEV;
-> -               else
-> +               else {
->                         fsid_type = ref_fh->fh_handle.fh_fsid_type;
-> +                       /* need to check that this type works for this
-> +                        * export point.  As the lookup was done with
-> +                        * help from user-space, there is no guarantee
-> +                        */
-> +                       if (ref_fh == fhp)
-> +                               fh_put(ref_fh);
-> +                       ref_fh = NULL;
-> +                       switch(fsid_type) {
-> +                       case FSID_DEV:
-> +                               if (!old_valid_dev(ex_dev))
-> +                                       goto retry;
-> +                               break;
-> +                       case FSID_NUM:
-> +                               if (! (exp->ex_flags & NFSEXP_FSID))
-> +                                       goto retry;
-> +                               break;
-> +                       case FSID_MAJOR_MINOR:
-> +                       case FSID_ENCODE_DEV:
-> +                               break;
-> +                       case FSID_UUID8:
-> +                       case FSID_UUID16:
-> +                               if (!root_export)
-> +                                       goto retry;
-> +                               /* fall through */
-> +                       case FSID_UUID4_INUM:
-> +                       case FSID_UUID16_INUM:
-> +                               if (exp->ex_uuid == NULL)
-> +                                       goto retry;
-> +                               break;
-> +                       }
-> +               }
->                 /* We know this version/type works for this export
->                  * so there is no need for further checks.
->                  */
->
+> > The rest make functional changes, but they're all quite small, self
+> > contained, and easily bisectable. I'd certainly like Eric to have a loo=
+k
+> > at them, but at some point I think we're just going to have to bite the
+> > bullet and merge them, and see what we get in the way of bug reports.
+>=20
+> What I wanted was the patches organized into functional groups that
+> were small enough to review as a unit.  (Feed the existing patches slower
+> please).
+>=20
+> This seems to be to much change to read and review as a unit, I just get
+> bleary eyed, and start to get confused.
+>=20
+> So far I have found one subtle bug.  Where admittedly my code wasn't as
+> obvious as it could be and you were proposing to use an irq that had alre=
+ady
+> been freed.
+>=20
+> What I had hoped we can do is you would send a handful at a time I
+> would review them.  Then we could get the next handful.  I expect
+> doing it that way it should take about a week to get through them all.
+>=20
+> I guess I can try going through the review that way as well.  Pick a
+> subset of what you have sent and review it very carefully, and the
+> next day pick a different subset. =20
+
+OK. For starters, do you want to review the first eleven as I've sent
+them already, that saves spamming everyone again.
+
+If you're OK with those eleven, then I'll send the remaining 10 or so
+later in the week, broken up into (sort-of) functional groups.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-hcePlDmgFxpYcRg7jq5f
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBGB3G/dSjSd0sB4dIRAveRAKDCLbkDi09Y35OUh8KpZ4e/onlspACgo8Z6
+wG+WllIcbAuIhT9LT0mdPyQ=
+=3tPp
+-----END PGP SIGNATURE-----
+
+--=-hcePlDmgFxpYcRg7jq5f--
+
