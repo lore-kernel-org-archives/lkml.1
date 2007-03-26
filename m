@@ -1,62 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXCZPTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbXCZPWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbXCZPTo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 11:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXCZPTo
+	id S1752852AbXCZPWa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 11:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXCZPWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 11:19:44 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52119 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752841AbXCZPTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 11:19:43 -0400
-Date: Mon, 26 Mar 2007 17:19:33 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: discuss@x86-64.org
-Cc: linux-kernel@vger.kernel.org, ak@suse.de
-Subject: [PATCH] Fix "Section mismatch" compile warning
-Message-ID: <20070326151933.GA8765@strauss.suse.de>
-Mail-Followup-To: discuss@x86-64.org, linux-kernel@vger.kernel.org,
-	ak@suse.de
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 26 Mar 2007 11:22:30 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:33933 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752852AbXCZPW3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 11:22:29 -0400
+Date: Mon, 26 Mar 2007 17:21:19 +0200
+From: Pierre Peiffer <Pierre.Peiffer@bull.net>
+To: akpm@linux-foundation.org
+Cc: mingo@elte.hu, drepper@redhat.com, jean-pierre.dion@bull.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] Fix: timeout not passed anymore to futex_lock_pi
+Message-Id: <20070326172119.a7c38bcd.Pierre.Peiffer@bull.net>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/03/2007 17:24:30,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/03/2007 17:24:35,
+	Serialize complete at 26/03/2007 17:24:35
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix "Section mismatch" warnings in arch/x86_64/kernel/time.c
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
+This is a fix for a bug introduced by the patch
+make-futex_wait-use-an-hrtimer-for-timeout.patch : the timeout value
+is not passed anymore to futex_lock_pi.
+
+Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
 
 ---
- arch/x86_64/kernel/time.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ kernel/futex.c        |    8 ++++++--
+ kernel/futex_compat.c |    4 +++-
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.21-rc4-mm1/arch/x86_64/kernel/time.c
+Index: b/kernel/futex.c
 ===================================================================
---- linux-2.6.21-rc4-mm1.orig/arch/x86_64/kernel/time.c
-+++ linux-2.6.21-rc4-mm1/arch/x86_64/kernel/time.c
-@@ -282,7 +282,7 @@ static unsigned int __init pit_calibrate
- #define PIT_MODE 0x43
- #define PIT_CH0  0x40
- 
--static void __init __pit_init(int val, u8 mode)
-+static void __pit_init(int val, u8 mode)
- {
- 	unsigned long flags;
- 
-@@ -298,12 +298,12 @@ void __init pit_init(void)
- 	__pit_init(LATCH, 0x34); /* binary, mode 2, LSB/MSB, ch 0 */
- }
- 
--void __init pit_stop_interrupt(void)
-+void pit_stop_interrupt(void)
- {
- 	__pit_init(0, 0x30); /* mode 0 */
- }
- 
--void __init stop_timer_interrupt(void)
-+void stop_timer_interrupt(void)
- {
- 	char *name;
- 	if (hpet_address) {
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -2383,8 +2383,10 @@ sys_futex64(u64 __user *uaddr, int op, u
+ 			return -EFAULT;
+ 		if (!timespec_valid(&ts))
+ 			return -EINVAL;
++
++		t = timespec_to_ktime(ts);
+ 		if (op == FUTEX_WAIT)
+-			t = ktime_add(ktime_get(), timespec_to_ktime(ts));
++			t = ktime_add(ktime_get(), t);
+ 		tp = &t;
+ 	}
+ 	/*
+@@ -2413,8 +2415,10 @@ asmlinkage long sys_futex(u32 __user *ua
+ 			return -EFAULT;
+ 		if (!timespec_valid(&ts))
+ 			return -EINVAL;
++
++		t = timespec_to_ktime(ts);
+ 		if (op == FUTEX_WAIT)
+-			t = ktime_add(ktime_get(), timespec_to_ktime(ts));
++			t = ktime_add(ktime_get(), t);
+ 		tp = &t;
+ 	}
+ 	/*
+Index: b/kernel/futex_compat.c
+===================================================================
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -150,8 +150,10 @@ asmlinkage long compat_sys_futex(u32 __u
+ 			return -EFAULT;
+ 		if (!timespec_valid(&ts))
+ 			return -EINVAL;
++
++		t = timespec_to_ktime(ts);
+ 		if (op == FUTEX_WAIT)
+-			t = ktime_add(ktime_get(), timespec_to_ktime(ts));
++			t = ktime_add(ktime_get(), t);
+ 		tp = &t;
+ 	}
+ 	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE
+
+
+-- 
+Pierre Peiffer
