@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbXCZVGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbXCZVHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752178AbXCZVGU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 17:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXCZVGU
+	id S932451AbXCZVHG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 17:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932444AbXCZVHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 17:06:20 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:16368 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752178AbXCZVGT (ORCPT
+	Mon, 26 Mar 2007 17:07:05 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:50969 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932194AbXCZVHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 17:06:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=sVV52gwyitzRUbCqJhCaWCKiI2CEsX6gO0dQQlOnYG5gkDtPaKJuut4frhqPY3qhVja/m+36gwARlQNM76kqv5g625tDwfMcbomJiwX4vXDTAA350J6rzSo2LRerpPiM1R6LRVnv+2GCbEzXLAsyQtuCK3sCNb+O4GUQer/oZV8=
-Date: Mon, 26 Mar 2007 23:05:58 +0200
-To: Brian Braunstein <brian@bristyle.com>
-Cc: Max Krasnyansky <maxk@qualcomm.com>, vtun@office.satix.net, akpm@osdl.org,
-       jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: tun/tap: fixed hw address handling
-Message-ID: <20070326210558.GC21991@Ahmed>
-References: <460632E9.5030508@bristyle.com> <20070326205511.GB21991@Ahmed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070326205511.GB21991@Ahmed>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Mon, 26 Mar 2007 17:07:03 -0400
+Subject: Re: some PCMCIA SCSI drivers can be built *only* as modules
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       "Robert P. J. Day" <rpjday@mindspring.com>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070326203824.GA1430@infradead.org>
+References: <Pine.LNX.4.64.0703250916090.22484@CPE00045a9c397f-CM001225dbafb6>
+	 <4607CA5A.4040906@s5r6.in-berlin.de> <20070326200257.GA28622@infradead.org>
+	 <1174941347.3549.41.camel@mulgrave.il.steeleye.com>
+	 <20070326203824.GA1430@infradead.org>
+Content-Type: text/plain
+Date: Mon, 26 Mar 2007 16:06:53 -0500
+Message-Id: <1174943213.3549.53.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 10:55:11PM +0200, ahmed wrote:
-> On Sun, Mar 25, 2007 at 01:29:29AM -0700, Brian Braunstein wrote:
-> > --- linux-2.6.20.4-ORIG/drivers/net/tun.c	2007-03-23 
-> > 12:52:51.000000000 -0700
-> > +++ linux-2.6.20.4/drivers/net/tun.c	2007-03-25 00:44:20.000000000 -0700
-> > @@ -18,6 +18,10 @@
-> > /*
-> >  *  Changes:
-> >  *
-> > + *  Brian Braunstein <linuxkernel@bristyle.com> 2007/03/23
-> > + *    Fixed hw address handling.  Now net_device.dev_addr is kept 
-> > consistent
+On Mon, 2007-03-26 at 21:38 +0100, Christoph Hellwig wrote:
+> On Mon, Mar 26, 2007 at 03:35:47PM -0500, James Bottomley wrote:
+> > I agree the non-legacy (CardBus and beyond) ones can be built in.  I
+> > thought the legacy 8 and 16 bit type I and II still had to be modular
+> > because they still need setting up.
 > 
-> Your mailer still wrap the long lines mistakenly as it did in the first
-> version of the patch.
-> 
+> nope.  While I don't have a pcmcia scsi card my 16 bit pcmcia wireless
+> cards work perfectly fine without any previous setup.
 
-It seems a bug in my mutt mail reader (not a feature, it displays other 
-mails long lines without wrapping), sorry.
+OK ... I had the opposite experience ... A ZoomAir 802.11b card wasn't
+working because I'd accidentally config'd it non-modular.  However, if
+Dominik confirms it's all supposed to work non-modular, I'm happy to
+conclude my experience was pilot error.
 
--- 
-Ahmed S. Darwish
-http://darwish.07.googlepages.com
+James
+
 
