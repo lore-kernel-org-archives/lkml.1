@@ -1,115 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXCZJVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbXCZJWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933760AbXCZJVN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 05:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbXCZJVN
+	id S933781AbXCZJWy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 05:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933779AbXCZJWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 05:21:13 -0400
-Received: from www.osadl.org ([213.239.205.134]:42287 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933760AbXCZJVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 05:21:11 -0400
-Subject: [PATCH] clockevents: remove bad designed sysfs support for now
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 26 Mar 2007 11:21:08 +0200
-Message-Id: <1174900868.4182.21.camel@chaos>
+	Mon, 26 Mar 2007 05:22:54 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:50545 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933771AbXCZJWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 05:22:52 -0400
+Date: Mon, 26 Mar 2007 01:22:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Larry Finger <larry.finger@lwfinger.net>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       Monakhov Dmitriy <dmonakhov@openvz.org>,
+       Eric Rannaud <eric.rannaud@gmail.com>
+Subject: Re: 2.6.21-rc4-mm1
+Message-Id: <20070326012232.0f0b9e09.akpm@linux-foundation.org>
+In-Reply-To: <20070326110949.5301a571@gondolin.boeblingen.de.ibm.com>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<1174433034.62033.16.camel@localhost>
+	<20070320223643.d8cbc3f6.akpm@linux-foundation.org>
+	<4601761F.4000302@lwfinger.net>
+	<20070321185900.GC3801@tuxdriver.com>
+	<20070321202225.GN10459@waste.org>
+	<20070321233917.0393dfd1.akpm@linux-foundation.org>
+	<20070322123508.3785fd30@gondolin.boeblingen.de.ibm.com>
+	<4602752A.5050109@lwfinger.net>
+	<20070322181019.62fe78ed@gondolin.boeblingen.de.ibm.com>
+	<4602D137.4060402@lwfinger.net>
+	<20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com>
+	<20070323210618.6a41f5da.akpm@linux-foundation.org>
+	<20070326110949.5301a571@gondolin.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current sysfs support of clockevents does not obey the "only one
-value per file" rule.
+On Mon, 26 Mar 2007 11:09:49 +0200 Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
 
-The real fix is not 2.6.21 material. Therefor remove the sysfs support
-for now.
+> On Fri, 23 Mar 2007 21:06:18 -0800,
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > Would I be right in guessing that this was all triggered by
+> > uevent-improve-error-checking-and-handling.patch?
+> 
+> Looks like it, since it passed the uevent failures to the upper layer.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+OK, thanks.
 
-diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-index 67932ea..76212b2 100644
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -274,72 +274,3 @@ void clockevents_notify(unsigned long reason, void *arg)
- }
- EXPORT_SYMBOL_GPL(clockevents_notify);
- 
--#ifdef CONFIG_SYSFS
--
--/**
-- * clockevents_show_registered - sysfs interface for listing clockevents
-- * @dev:	unused
-- * @buf:	char buffer to be filled with clock events list
-- *
-- * Provides sysfs interface for listing registered clock event devices
-- */
--static ssize_t clockevents_show_registered(struct sys_device *dev, char *buf)
--{
--	struct list_head *tmp;
--	char *p = buf;
--	int cpu;
--
--	spin_lock(&clockevents_lock);
--
--	list_for_each(tmp, &clockevent_devices) {
--		struct clock_event_device *ce;
--
--		ce = list_entry(tmp, struct clock_event_device, list);
--		p += sprintf(p, "%-20s F:%04x M:%d", ce->name,
--			     ce->features, ce->mode);
--		p += sprintf(p, " C:");
--		if (!cpus_equal(ce->cpumask, cpu_possible_map)) {
--			for_each_cpu_mask(cpu, ce->cpumask)
--				p += sprintf(p, " %d", cpu);
--		} else {
--			/*
--			 * FIXME: Add the cpu which is handling this sucker
--			 */
--		}
--		p += sprintf(p, "\n");
--	}
--
--	spin_unlock(&clockevents_lock);
--
--	return p - buf;
--}
--
--/*
-- * Sysfs setup bits:
-- */
--static SYSDEV_ATTR(registered, 0600,
--		   clockevents_show_registered, NULL);
--
--static struct sysdev_class clockevents_sysclass = {
--	set_kset_name("clockevents"),
--};
--
--static struct sys_device clockevents_sys_device = {
--	.id	= 0,
--	.cls	= &clockevents_sysclass,
--};
--
--static int __init clockevents_sysfs_init(void)
--{
--	int error = sysdev_class_register(&clockevents_sysclass);
--
--	if (!error)
--		error = sysdev_register(&clockevents_sys_device);
--	if (!error)
--		error = sysdev_create_file(
--				&clockevents_sys_device,
--				&attr_registered);
--	return error;
--}
--device_initcall(clockevents_sysfs_init);
--#endif
+> > If so, do you think I should labour on with
+> > uevent-improve-error-checking-and-handling.patch plus your fix, or should I
+> > drop the lot?  (I'm inclined toward the latter, but I'm still not
+> > sure which patch(es) need to be dropped).
+> 
+> This depends on what semantics uevent returning an error code should
+> have. The firmware code was using it to suppress uevents, but
+> uevent_suppress is a better idea now. So if we want uevent returning !=
+> 0 to imply "something really bad happened", all uevent functions have
+> to be audited and those that work like firmware_uevent have to be
+> converted to uevent_suppress. This would be cleaner, but I'm not sure
+> it's worth the work.
 
+We're generally struggling to stay alive amongst all the bugs at present -
+I'll drop all those patches.
 
