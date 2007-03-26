@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbXCZK2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbXCZKcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbXCZK2i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 06:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbXCZK2i
+	id S1753631AbXCZKcB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 06:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbXCZKcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 06:28:38 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52127 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753624AbXCZK2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 06:28:36 -0400
-Date: Mon, 26 Mar 2007 02:27:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-Subject: Re: [Patch 0/7] integrity service framework and provider
-Message-Id: <20070326022735.7d7c16f8.akpm@linux-foundation.org>
-In-Reply-To: <1174666139.11149.0.camel@localhost.localdomain>
-References: <1174666139.11149.0.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 26 Mar 2007 06:32:01 -0400
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:60056 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753631AbXCZKcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 06:32:00 -0400
+Message-ID: <4607A01D.1060401@hitachi.com>
+Date: Mon, 26 Mar 2007 19:27:41 +0900
+From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Bill Davidsen <davidsen@tmr.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, yumiko.sugita.yf@hitachi.com,
+       masami.hiramatsu.pt@hitachi.com, hidehiro.kawai.ez@hitachi.com,
+       yuji.kakutani.uw@hitachi.com, soshima@redhat.com, haoki@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com, nikita@clusterfs.com,
+       leroy.vanlogchem@wldelft.nl
+Subject: Re: [PATCH 0/3] VM throttling: avoid blocking occasional writers
+References: <45F7EDC6.5090303@hitachi.com> <20070315110745.af867b10.akpm@linux-foundation.org> <45FD53DB.5000207@tmr.com> <460218D2.40701@hitachi.com> <46026B78.3080401@tmr.com>
+In-Reply-To: <46026B78.3080401@tmr.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Mar 2007 12:08:59 -0400 Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+Hi,
+Thanks for your reply.
 
-> This is a set of updates to the integrity service framework, previously 
-> accepted into -mm, EVM a new integrity service provider, and a new LSM 
-> module called Integrity Based Access Control(IBAC), a sample consumer of
-> the integrity framework API.
+>>3) Use "dirty_ratio" as the blocking ratio. And add
+>>   "start_writeback_ratio", and start writeback at
+>>   start_writeback_ratio(default:90) * dirty_ratio / 100 [%].
+>>   In this way, specifying blocking ratio can be done in the same way
+>>   as current kernel, but high/low watermark algorithm is enabled.
+>I like 3 better, it should make tuning behavior more precise.
 
-I'll fix this:
+Then, what do you think of the following idea?
 
-security/integrity_dummy.c: In function 'dummy_inode_setxattr':
-security/integrity_dummy.c:94: warning: implicit declaration of function 'capable'
-security/integrity_dummy.c:94: error: 'CAP_SYS_ADMIN' undeclared (first use in this function)
-security/integrity_dummy.c:94: error: (Each undeclared identifier is reported only once
-security/integrity_dummy.c:94: error: for each function it appears in.)
+(4) add `dirty_start_writeback_ratio' as percentage of memory,
+    at which a generator of dirty pages itself starts writeback
+    (that is, non-blocking ratio).
 
-Then I'll ask you to fix these, some of which are real bugs:
+In this way, `dirty_ratio' is used as the blocking ratio, so we don't
+need to modify the sysctl.conf etc. I think it's easier to understand
+for administrators of systems, because the interface is similar as
+`dirty_background_ratio' and`dirty_ratio.'
 
-security/integrity_dummy.c: In function 'dummy_verify_metadata':
-security/integrity_dummy.c:30: warning: 'error' may be used uninitialized in this function
-security/integrity_dummy.c:28: warning: 'value' may be used uninitialized in this function
-security/integrity_dummy.c:29: warning: 'size' may be used uninitialized in this function
+If this is OK, I'll repost the patch.
 
-And then I'll probably end up fixing some of this lot too:
+> You can make an argument for absolute values for writeback,
+> if my disk will only write 70MB/s I may only want 203 sec of
+> pending writes, regardless of available memory.
 
-security/evm/evm_main.c: In function 'evm_verify_xattr':
-security/evm/evm_main.c:165: warning: format '%d' expects type 'int', but argument 5 has type 'ssize_t'
-security/evm/evm_crypto.c: In function 'update_link_hash':
-security/evm/evm_crypto.c:94: warning: implicit declaration of function 'kernel_readlink'
-security/evm/evm_crypto.c: In function 'evm_init_integrity':
-security/evm/evm_crypto.c:187: warning: format '%d' expects type 'int', but argument 4 has type 'size_t'
-security/evm/evm_main.c: In function 'init_evm':
-security/evm/evm_main.c:903: warning: control may reach end of non-void function 'evm_ima_init' being inlined
+To realize tuning with absolute values, I consider that we need to
+modify handling of `dirty_background_ratio,' `dirty_ratio' and so on as
+well as `dirty_start_writeback_ratio.' I think this should be done in
+another patch if this feature is required.
+
+Regards,
+--
+Tomoki Sekiyama
+Hitachi, Ltd., Systems Development Laboratory
 
 
-How does stuff like this get through?  It's just x86_64 allmodconfig.
