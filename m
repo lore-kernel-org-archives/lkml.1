@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbXCZOmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbXCZPGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbXCZOmX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 10:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXCZOmW
+	id S1752814AbXCZPGY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 11:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbXCZPGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 10:42:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:54788 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752791AbXCZOmV (ORCPT
+	Mon, 26 Mar 2007 11:06:23 -0400
+Received: from hammerhead.shentel.net ([204.111.1.228]:47109 "EHLO
+	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752829AbXCZPGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 10:42:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a1JjszyzbnncVykCWbec9eDv2/oiAaCk4fIqUHlvpW3pR/MjgycKAXWdvPfcJ2nOguA7avIjs9ehXgL11CR1TUjBMfsiaT/IViuPiC4yE1eVOlsvlspYCjQGvXrRnolzEzyGYgb7MiqOC4XqrF1TkBEYfFTI5M3aLgE7IyCstWc=
-Message-ID: <6bffcb0e0703260742m5fa8fa62td2a65490c1c4a50a@mail.gmail.com>
-Date: Mon, 26 Mar 2007 16:42:19 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch] hrtimers debug patch
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <npiggin@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Mingming Cao" <cmm@us.ibm.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       "Oliver Pinter" <oliver.pntr@gmail.com>,
-       "Sid Boyce" <g3vbv@blueyonder.co.uk>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <1174919635.4182.51.camel@chaos>
+	Mon, 26 Mar 2007 11:06:23 -0400
+X-Greylist: delayed 2642 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Mar 2007 11:06:23 EDT
+Date: Mon, 26 Mar 2007 10:22:13 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: axboe@kernel.dk
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fs/buffer.c: Loop rewrite within grow_buffers for finding
+ sizebits
+Message-ID: <alpine.DEB.0.83.0703260952560.20524@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0703220813340.6730@woody.linux-foundation.org>
-	 <1174612132.16068.114.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org>
-	 <20070323021115.GA11147@wotan.suse.de>
-	 <6bffcb0e0703230051i5accb180r7bd0fb16de85198a@mail.gmail.com>
-	 <20070323120148.GA27505@elte.hu> <4607BDD9.1010002@googlemail.com>
-	 <6bffcb0e0703260720i37bbb956o3d20019fe4ac9879@mail.gmail.com>
-	 <1174919635.4182.51.camel@chaos>
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Mon, 2007-03-26 at 16:20 +0200, Michal Piotrowski wrote:
-> > >
-> > > I've got a crash dump, I'll try to figure out what is causing it ;)
-> > >
-> >
-> > That might be useful
-> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5/
->
-> Can you please upload a disassembly of hrtimer_interrupt() ?
+From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5/dis_hrtimer_interrupt
+This patch alters the (do...while) construct to a simple (while) and saves 
+one increment operation. It's entirely possible that gcc optimizes away 
+the first iteration anyway, but in case it doesn't (and also because it's 
+easier to read this way), I think this is better.
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5/gdb.debug
+Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
->
-> I stared at hrtimer_interrupt() for quite a long time and I don't see
-> how it can leave without reprogramming the event, when there are timers
-> pending. And there are enough timers pending.
->
->         tglx
->
->
->
+---
 
-Regards,
-Michal
+--- linux-2.6.20.4/fs/buffer.c.orig	2007-03-26 09:42:15.000000000 -0400
++++ linux-2.6.20.4/fs/buffer.c	2007-03-26 10:10:25.000000000 -0400
+@@ -1045,10 +1045,10 @@ grow_buffers(struct block_device *bdev,
+  	pgoff_t index;
+  	int sizebits;
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+-	sizebits = -1;
+-	do {
++	sizebits = 0;
++	while ((size << sizebits) < PAGE_SIZE) {
+  		sizebits++;
+-	} while ((size << sizebits) < PAGE_SIZE);
++	}
+
+  	index = block >> sizebits;
+
