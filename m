@@ -1,98 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXCZUyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbXCZUzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753180AbXCZUyk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 16:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbXCZUx2
+	id S1752254AbXCZUzf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 16:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbXCZUze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 16:53:28 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:7803 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753154AbXCZUwz (ORCPT
+	Mon, 26 Mar 2007 16:55:34 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:50004 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753211AbXCZUzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 16:52:55 -0400
-Message-Id: <20070326205253.047933294@de.ibm.com>
-References: <20070326205225.438154546@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 26 Mar 2007 22:52:30 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ralph Wuerthner <rwuerthn@de.ibm.com>
-Subject: [patch 5/6] zcrypt: Fix possible dead lock in AP bus module.
-Content-Disposition: inline; filename=005-zcrypt-deadlock.diff
+	Mon, 26 Mar 2007 16:55:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=oDQV2vqmDBb1NfgzbkuM8p3sk7+0yNUNexcMEKQcMfHPQ+nNcCPoxaqADW2L/kIj2c005NZF4RPR2/opiH1aspGxzPvyjKpBP9QOOn032W2yLEGk9n1Ugzlb4QqJwTJC3lGaxTlUohs5Fuk5rxMXUoWbDXE5ncBEXvpA5vlB32k=
+Date: Mon, 26 Mar 2007 22:55:12 +0200
+To: Brian Braunstein <brian@bristyle.com>
+Cc: Max Krasnyansky <maxk@qualcomm.com>, vtun@office.satix.net, akpm@osdl.org,
+       jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: tun/tap: fixed hw address handling
+Message-ID: <20070326205511.GB21991@Ahmed>
+References: <460632E9.5030508@bristyle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <460632E9.5030508@bristyle.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ralph Wuerthner <rwuerthn@de.ibm.com>
+On Sun, Mar 25, 2007 at 01:29:29AM -0700, Brian Braunstein wrote:
+> 
+> From: Brian Braunstein <linuxkernel@bristyle.com>
+> 
 
-If a AP device is unconfigured __ap_poll_all() will call
-device_unregister() in software interrupt context which can cause
-dead locks. To fix this the device will be only marked as unconfigured
-and the device_unregister() call will be done later by either
-ap_scan_bus() or ap_queue_message() in process context.
+No need for this line. This line is used when you _forward_ another patch
+from others. Signed-off-by is enough
 
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Ralph Wuerthner <rwuerthn@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
+> 
+> Signed-off-by: Brian Braunstein <linuxkernel@bristyle.com>
+> 
+> ---
+> 
+> Kernel Version: 2.6.20.4
+> 
 
- drivers/s390/crypto/ap_bus.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
+It's always better to generate the patch against the latest -rc kernel.
 
-Index: linux-2.6/drivers/s390/crypto/ap_bus.c
-===================================================================
---- linux-2.6.orig/drivers/s390/crypto/ap_bus.c
-+++ linux-2.6/drivers/s390/crypto/ap_bus.c
-@@ -757,10 +757,16 @@ static void ap_scan_bus(struct work_stru
- 				      (void *)(unsigned long)qid,
- 				      __ap_scan_bus);
- 		rc = ap_query_queue(qid, &queue_depth, &device_type);
--		if (dev && rc) {
--			put_device(dev);
--			device_unregister(dev);
--			continue;
-+		if (dev) {
-+			ap_dev = to_ap_dev(dev);
-+			spin_lock_bh(&ap_dev->lock);
-+			if (rc || ap_dev->unregistered) {
-+				spin_unlock_bh(&ap_dev->lock);
-+				put_device(dev);
-+				device_unregister(dev);
-+				continue;
-+			} else
-+				spin_unlock_bh(&ap_dev->lock);
- 		}
- 		if (dev) {
- 			put_device(dev);
-@@ -994,7 +1000,7 @@ void ap_queue_message(struct ap_device *
- 			ap_dev->unregistered = 1;
- 	} else {
- 		ap_dev->drv->receive(ap_dev, ap_msg, ERR_PTR(-ENODEV));
--		rc = 0;
-+		rc = -ENODEV;
- 	}
- 	spin_unlock_bh(&ap_dev->lock);
- 	if (rc == -ENODEV)
-@@ -1044,18 +1050,12 @@ static void ap_poll_timeout(unsigned lon
-  */
- static int __ap_poll_all(struct ap_device *ap_dev, unsigned long *flags)
- {
--	int rc;
--
- 	spin_lock(&ap_dev->lock);
- 	if (!ap_dev->unregistered) {
--		rc = ap_poll_queue(ap_dev, flags);
--		if (rc)
-+		if (ap_poll_queue(ap_dev, flags))
- 			ap_dev->unregistered = 1;
--	} else
--		rc = 0;
-+	}
- 	spin_unlock(&ap_dev->lock);
--	if (rc)
--		device_unregister(&ap_dev->device);
- 	return 0;
- }
- 
+> --- linux-2.6.20.4-ORIG/drivers/net/tun.c	2007-03-23 
+> 12:52:51.000000000 -0700
+> +++ linux-2.6.20.4/drivers/net/tun.c	2007-03-25 00:44:20.000000000 -0700
+> @@ -18,6 +18,10 @@
+> /*
+>  *  Changes:
+>  *
+> + *  Brian Braunstein <linuxkernel@bristyle.com> 2007/03/23
+> + *    Fixed hw address handling.  Now net_device.dev_addr is kept 
+> consistent
+
+Your mailer still wrap the long lines mistakenly as it did in the first
+version of the patch.
+
+Regards,
 
 -- 
+Ahmed S. Darwish
+http://darwish.07.googlepages.com
+
