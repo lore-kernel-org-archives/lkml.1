@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbXCZUBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbXCZUDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbXCZUBJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 16:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbXCZUBJ
+	id S1753767AbXCZUDJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 16:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753769AbXCZUDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 16:01:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:42053 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753762AbXCZUBH convert rfc822-to-8bit (ORCPT
+	Mon, 26 Mar 2007 16:03:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49050 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753763AbXCZUDH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 16:01:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,330,1170662400"; 
-   d="scan'208"; a="64230078:sNHT17556867"
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [3/5] 2.6.21-rc4: known regressions (v2)
-Date: Mon, 26 Mar 2007 13:01:05 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A0148323B@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <m1fy7u3sas.fsf@ebiederm.dsl.xmission.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [3/5] 2.6.21-rc4: known regressions (v2)
-Thread-Index: Acduj0iIjSYwd5aYQEKIHYS+sMx/tgBUYsFw
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Thomas Meyer" <thomas@m3y3r.de>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Len Brown" <lenb@kernel.org>
-X-OriginalArrivalTime: 26 Mar 2007 20:01:06.0843 (UTC) FILETIME=[7D928EB0:01C76FE1]
+	Mon, 26 Mar 2007 16:03:07 -0400
+Date: Mon, 26 Mar 2007 21:02:57 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: some PCMCIA SCSI drivers can be built *only* as modules
+Message-ID: <20070326200257.GA28622@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	linux-scsi@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0703250916090.22484@CPE00045a9c397f-CM001225dbafb6> <4607CA5A.4040906@s5r6.in-berlin.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4607CA5A.4040906@s5r6.in-berlin.de>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What I'm proposing we do is move the irq allocation code out of
-> pci_enable_device and the irq freeing code out of pci_disable_device
-> in the future.
+> >   it would seem to make no sense that the "depends on" clause for this
+> > option includes "m", forcing this (and all other four entries in that
+> > Kconfig file, by the way) to be built as modules, while the help text
+> > for all five entries suggests you can select "y".
 
-Sounds rational ... in a world that wasn't dominated by PCI it would
-seem to be the logical approach (since the irq code would have much
-more utility independent of the PCI code).
+In the old days pcmcia drivers had to be modular because pcmcia required
+a lot of userspace setup.  It's not needed anymore these days and the
+dependencies can go.
 
-> Tony, Len before we merge any fixes for 2.6.21-rcX I'd like to at
-> least get an ack on the long term direction.
-
-Long-term-direction-acked-by: Tony Luck <tony.luck@intel.com>
-
--Tony
