@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXCZABB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbXCZAFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbXCZABB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 20:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933045AbXCZABA
+	id S933142AbXCZAFS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 20:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933156AbXCZAFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 20:01:00 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:36478 "EHLO smtp.osdl.org"
+	Sun, 25 Mar 2007 20:05:18 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42460 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933006AbXCZAA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 20:00:59 -0400
-Date: Sun, 25 Mar 2007 16:00:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 2/3] only allow nonlinear vmas for ram backed
- filesystems
-Message-Id: <20070325160050.fe7cb284.akpm@linux-foundation.org>
-In-Reply-To: <E1HVEQJ-0006gF-00@dorka.pomaz.szeredi.hu>
-References: <E1HVEOB-0006fX-00@dorka.pomaz.szeredi.hu>
-	<E1HVEQJ-0006gF-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S933142AbXCZAFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 20:05:16 -0400
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 26 Mar 2007 10:05:02 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17927.3630.414133.365527@notabene.brown>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] add file position info to proc
+In-Reply-To: message from Andrew Morton on Sunday March 25
+References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
+	<20070325154541.6dcbd291.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007 23:09:19 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> Dirty page accounting/limiting doesn't work for nonlinear mappings,
-
-Doesn't it?  iirc the problem is that we don't correctly re-clean the ptes
-while starting writeout.  And the dirty-page accounting is in fact correct
-(it'd darn well better be).
-
-> so
-> for non-ram backed filesystems emulate with linear mappings.  This
-> retains ABI compatibility with previous kernels at minimal code cost.
+On Sunday March 25, akpm@linux-foundation.org wrote:
+> On Sat, 24 Mar 2007 23:04:09 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
 > 
-> All known users of nonlinear mappings actually use tmpfs, so this
-> shouldn't have any negative effect.
+> > This patch adds support for finding out the current file position,
+> > open flags and possibly other info in the future.
+> > 
+> > These new entries are added:
+> > 
+> >   /proc/PID/fdinfo/FD
+> >   /proc/PID/task/TID/fdinfo/FD
+> > 
+> > For each fd the information is provided in the following format:
+> > 
+> > pos:	1234
+> > flags:	0100002
+> 
+> I've seen the idea mentioned once or twice, but not with any great
+> enthusiasm.  Why does Linux want this feature?
 
-Unless someone is using remap_file_pages() against an ext3 file, in which
-case their application stops working?
+Same reason we want ltrace and lsof.  To be able to look inside a
+process and see what it is doing.
+e.g. how far has that program got through reading that enormous file?
+is it really making progress, or is it going much more slowly than I
+would expect and so should I look more deeply.
 
-That would be a problem.  These guys:
-http://www.technovelty.org/code/linux/fremap.html, for example, will be in
-for a little surprise.
+I'm in favour.
 
+NeilBrown
