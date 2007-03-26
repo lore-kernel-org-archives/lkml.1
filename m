@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbXCZIe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbXCZIfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751605AbXCZIe7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 04:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbXCZIe6
+	id S1752631AbXCZIfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 04:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXCZIfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 04:34:58 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:34070 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbXCZIe5 (ORCPT
+	Mon, 26 Mar 2007 04:35:41 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:38440 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752631AbXCZIfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 04:34:57 -0400
-Subject: Re: New format Intel microcode...
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       Daniel J Blueman <daniel.blueman@gmail.com>, jamagallon@ono.com,
-       tigran@aivazian.fsnet.co.uk,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1174640590.1158.219.camel@laptopd505.fenrus.org>
-References: <6278d2220703221645j760a8816v4b8749ea2d60e493@mail.gmail.com>
-	 <1174610594.6598.3.camel@sli10-conroe.sh.intel.com>
-	 <1174642985.23136.51.camel@aeonflux.holtmann.net>
-	 <1174640590.1158.219.camel@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Mon, 26 Mar 2007 10:34:20 +0200
-Message-Id: <1174898060.5815.11.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Mar 2007 04:35:40 -0400
+To: akpm@linux-foundation.org
+CC: dgc@sgi.com, linux-kernel@vger.kernel.org
+In-reply-to: <20070325154143.54e40200.akpm@linux-foundation.org> (message from
+	Andrew Morton on Sun, 25 Mar 2007 15:41:43 -0800)
+Subject: Re: [patch 2/3] remove throttle_vm_writeout()
+References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu>
+	<E1HVEEw-0006cP-00@dorka.pomaz.szeredi.hu> <20070325154143.54e40200.akpm@linux-foundation.org>
+Message-Id: <E1HVkfj-0000zn-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 26 Mar 2007 10:35:23 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arjan,
-
-> > > > Is the tool you mentioned last June [1] available for splitting up the
-> > > > old firmware files to the new format (eg
-> > > > /lib/firmware/intel-ucode/06-0d-06), or are updates available from
-> > > > Intel (or otherwise) in this new format?
-> > > Yes, we are preparing the new format data files and maybe put it into a
-> > > new website. We will announce it when it's ready.
 > > 
-> > please do _NOT_ use any sub-directories in the request_firmware() call.
+> > Remove this function.  It's purpose was to limit the global number of
+> > writeback pages from submitted by direct reclaim.  But this is equally
+> > well accomplished by limited queue lengths.  When this function was
+> > added, the device queues had much larger default lengths (8192
+> > requests, now it's 128), causing problems.
 > 
-> it's not a strictly a subdirectory; there is a slash in the "metaname"
-> the kernel asks for, and you can in userspace see it as subdirectory or
-> you don't.. that's entirely upto the userspace side :)
+> This changelog is wrong.
+> 
+> Yes, the _default_ depth of CFQ was decreased.  But it is trivial for the
+> user to inrcrease the queue depth again, and we'd prefer that the VM not
+> shit itself in response.
+> 
+> Plus, more significantly, the queue is per-disk.  A system with many disks
+> will easily be able to cover all memory with under-writeback pages. 
+> Which is why the level of under-writeback memory is controlled at a higher
+> level.
+> 
+> These variables are why we must not reply upon per-queue throttling in
+> VFS/MM/VM.
+> 
+> 
+> All that being said, the patch (with a new, correct changlog) is OK.  This
+> is because we now control the amount of dirty memory in the machine by
+> running balance_dirty_pages() at first-write-fault time.  So we can no
+> longer get into the situation where all memory is dirty+writeback.
 
-that is the whole point. The slash was never meant to be used. It was
-designed to take a filename or a pattern that will be later matched by
-userspace. However some developers are now trying to abuse this since
-the simple firmware helper script matches this directly to a filename
-(and directory in this case) on the disk.
+Well, sort of.  I think you are not taking SwapCache pages into
+account, which just pop up out of nothing to be turned into writeback
+pages.
 
-Putting a slash in the request_firmware() call now enforces a
-subdirectory and that should be left up to the userspace. So the slash
-is actually a forbidden character here.
+So I think removing this function still relies on limited queues, or
+some other method of limiting writeback.
 
-Regards
-
-Marcel
-
-
+Miklos
