@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXCZMgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbXCZMhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbXCZMgP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 08:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbXCZMgP
+	id S1752449AbXCZMhZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 08:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXCZMhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 08:36:15 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4783 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752463AbXCZMgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 08:36:14 -0400
-Date: Mon, 26 Mar 2007 12:35:52 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Marcus Better <marcus@better.se>
-Cc: Adrian Bunk <bunk@stusta.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
-Message-ID: <20070326123552.GB11288@ucw.cz>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323185022.GQ752@stusta.de> <200703261200.25587.marcus@better.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703261200.25587.marcus@better.se>
-User-Agent: Mutt/1.5.9i
+	Mon, 26 Mar 2007 08:37:25 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:35935 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752449AbXCZMhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 08:37:24 -0400
+Subject: Re: 2.6.21-rc4: known regressions with patches (v2)
+In-Reply-To: <20070324112544.GB752@stusta.de> "from Adrian Bunk at Mar 24, 2007
+ 12:25:44 pm"
+To: Adrian Bunk <bunk@stusta.de>
+Date: Mon, 26 Mar 2007 07:37:22 -0500 (CDT)
+CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       tglx@linutronix.de, johnstul@us.ibm.com, bzolnier@gmail.com
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070326123722.4C17FDBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Adrian Bunk wrote:
+> Subject    : boot hangs during IDE detection  (clocksource)
+> References : http://lkml.org/lkml/2007/3/19/465
+> Submitter  : Bob Tracy <rct@gherkin.frus.com>
+> Caused-By  : John Stultz <johnstul@us.ibm.com>
+>              commit 6bb74df481223731af6c7e0ff3adb31f6442cfcd
+> Handled-By : John Stultz <johnstul@us.ibm.com>
+> Patch      : http://lkml.org/lkml/2007/3/22/287
+> Status     : workaround-patch available
 
-> > Subject    : ThinkPad R60: suspend to disk broken
-> > References : http://lkml.org/lkml/2007/3/23/74
-> > Submitter  : Marcus Better <marcus@better.se>
-> > Status     : submitter tries to bisect
-> 
-> I just tried -rc5. Now suspend to disk seems to work. I think the XFS 
-> workqueue patch fixed this.
-> 
-> It can also suspend to RAM, but resume is worse. The first time around it 
-> resumed but corrupted the vesafb console (greenish blinking character cells), 
-> something that used to work before. But the system responded to input, so I 
-> suspended to RAM again. This time the resume failed, it hung after 
-> printing "Linux!" in yellow at the top of the screen. (Seems to be some 
-> artifact, I have seen it before even with working suspend.)
-
-Yellow Linux! is my debugging trick. It should be there, but it should
-also disapear quickly.
-
-Try vga=0 ... text console seems to work for you.
-							Pavel
+The subject problem is fixed *without* the workaround patch in
+2.6.21-rc5.  The acpi_pm clocksource patch for the case where the
+PIIX4 bug is present should probably be included anyway.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-----------------------------------------------------------------------
+Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
+rct@frus.com
+-----------------------------------------------------------------------
