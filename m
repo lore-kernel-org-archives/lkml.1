@@ -1,85 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752945AbXCZQ1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbXCZQkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752945AbXCZQ1T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 12:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbXCZQ1T
+	id S1752955AbXCZQkT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 12:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXCZQkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 12:27:19 -0400
-Received: from www.osadl.org ([213.239.205.134]:42638 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752924AbXCZQ1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 12:27:17 -0400
-Subject: Re: [3/6] 2.6.21-rc4: known regressions
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <b6a2187b0703252237l4f662fb3n7f57dfb10360c4f6@mail.gmail.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070318184919.GW752@stusta.de>
-	 <b6a2187b0703251825l2b2ab9d3j43e17523cbca87ac@mail.gmail.com>
-	 <20070326040509.GU16477@stusta.de>
-	 <b6a2187b0703252237l4f662fb3n7f57dfb10360c4f6@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 26 Mar 2007 18:26:47 +0200
-Message-Id: <1174926407.7911.1.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Mon, 26 Mar 2007 12:40:19 -0400
+Received: from smtp112.sbc.mail.mud.yahoo.com ([68.142.198.211]:33994 "HELO
+	smtp112.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752955AbXCZQkQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 12:40:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=lSoo2JMHQwdiDz4zG+WaTpB71pBBbH/E5Ccbmn3bKLIX3bIJuGzQqKZeHRsVmsWrEo8Me4p1720nNLWMmsbqFf7h6l1ebodgcE3kULfXzuRdQPJsxEfdV2Xe3v54pAsSYvTEijbIjtgI7JIXDYcSb2D60a5pcXuBvM5WdCSNdcQ=  ;
+X-YMail-OSG: 8LRAq8cVM1nl8xlYI5qMgXT4sdgD1h6EdnsYb48YHZnoo3kXmE4W.9tejiY1skp0xL4Zk1V_0vxdmdoxhzpzGLZ9I8BOhWCqF7AgB8uRK_1wNd_F6Y_1DyiMVKZFt.wnWHmBCofK3Ndur3YR8eqKtv9GTbdRuIuJcv5MTkZtUqbO
+From: David Brownell <david-b@pacbell.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.21-rc5 1/3] parport->dev driver model support
+Date: Mon, 26 Mar 2007 09:06:19 -0700
+User-Agent: KMail/1.7.1
+Cc: akpm@linux-foundation.org, Jean Delvare <khali@linux-fr.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703260906.19442.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-26 at 13:37 +0800, Jeff Chua wrote:
-> On 3/26/07, Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> > > Resume from RAM (s2ram) still broke (tried with or without
-> > > CONFIG_NO_HZ). Suspend to RAM seems ok, but upon resume, the screen
-> > > will only display "inu" and only after pressing the power button will
-> > > the system return to console. But "date" still doesn't advance.
-> >
-> > This might be related to the following regression:
-> >
-> > Subject    : first disk access after resume takes several minutes
-> >              ('date' does not advance after resume from RAM, CONFIG_NO_HZ=n)
-> > References : http://lkml.org/lkml/2007/3/8/117
-> >              http://lkml.org/lkml/2007/3/25/20
-> > Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-> > Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> >              Ingo Molnar <mingo@elte.hu>
-> > Status     : problem is being debugged
-> 
-> Adrian,
-> 
-> It's related. I tested without CONFIG_HPET_TIMER, and now my X60 can
-> suspend and resume from RAM (s2ram). Even better, it works
-> with/without CONFIG_NO_HZ.
+Currently a parport_driver can't get a handle on the device node for the
+underlying parport (PNPACPI, PCI, etc).  That prevents correct placement
+of sysfs child nodes, which can affect things like power management.
 
-Does the patch below fix the HPET_TIMER=y case ?
+This patch adds a field to "struct parport" pointing to that device node,
+and updates non-legacy port drivers to initialize that device pointer.
+That field replaces the analagous PCI-only support in parport_pc.
 
-	tglx
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+NOTE this depends on an earlier patch to make pnp devices set up DMA,
+parport is the primary user of legacy i8237 dma infrastructure.
 
-diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
-index f3ab61e..76afea6 100644
---- a/arch/i386/kernel/hpet.c
-+++ b/arch/i386/kernel/hpet.c
-@@ -197,7 +197,7 @@ static int hpet_next_event(unsigned long delta,
- 	cnt += delta;
- 	hpet_writel(cnt, HPET_T0_CMP);
+ drivers/parport/parport_cs.c     |    2 +-
+ drivers/parport/parport_mfc3.c   |    1 +
+ drivers/parport/parport_pc.c     |   31 +++++++++++++++++--------------
+ drivers/parport/parport_serial.c |    2 +-
+ drivers/parport/parport_sunbpp.c |    1 +
+ drivers/parport/share.c          |    5 +++++
+ include/linux/parport.h          |    8 ++++++--
+ include/linux/parport_pc.h       |    3 +--
+ 8 files changed, 33 insertions(+), 20 deletions(-)
+
+Index: g26/include/linux/parport.h
+===================================================================
+--- g26.orig/include/linux/parport.h	2007-02-24 01:19:37.000000000 -0800
++++ g26/include/linux/parport.h	2007-02-24 01:24:19.000000000 -0800
+@@ -279,6 +279,10 @@ struct parport {
+ 	int dma;
+ 	int muxport;		/* which muxport (if any) this is */
+ 	int portnum;		/* which physical parallel port (not mux) */
++	struct device *dev;	/* Physical device associated with IO/DMA.
++				 * This may unfortulately be null if the
++				 * port has a legacy driver.
++				 */
  
--	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0);
-+	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0) ? -ETIME : 0;
- }
+ 	struct parport *physport;
+ 				/* If this is a non-default mux
+@@ -289,7 +293,7 @@ struct parport {
+ 				   following structure members are
+ 				   meaningless: devices, cad, muxsel,
+ 				   waithead, waittail, flags, pdir,
+-				   ieee1284, *_lock.
++				   dev, ieee1284, *_lock.
  
- /*
-
-
-
+ 				   It this is a default mux parport, or
+ 				   there is no mux involved, this points to
+@@ -302,7 +306,7 @@ struct parport {
+ 
+ 	struct pardevice *waithead;
+ 	struct pardevice *waittail;
+-	
++
+ 	struct list_head list;
+ 	unsigned int flags;
+ 
+Index: g26/include/linux/parport_pc.h
+===================================================================
+--- g26.orig/include/linux/parport_pc.h	2007-02-24 01:19:37.000000000 -0800
++++ g26/include/linux/parport_pc.h	2007-02-24 01:24:19.000000000 -0800
+@@ -38,7 +38,6 @@ struct parport_pc_private {
+ 	/* buffer suitable for DMA, if DMA enabled */
+ 	char *dma_buf;
+ 	dma_addr_t dma_handle;
+-	struct pci_dev *dev;
+ 	struct list_head list;
+ 	struct parport *port;
+ };
+@@ -232,7 +231,7 @@ extern int parport_pc_claim_resources(st
+ extern struct parport *parport_pc_probe_port (unsigned long base,
+ 					      unsigned long base_hi,
+ 					      int irq, int dma,
+-					      struct pci_dev *dev);
++					      struct device *dev);
+ extern void parport_pc_unregister_port (struct parport *p);
+ 
+ #endif
+Index: g26/drivers/parport/parport_pc.c
+===================================================================
+--- g26.orig/drivers/parport/parport_pc.c	2007-02-24 01:19:37.000000000 -0800
++++ g26/drivers/parport/parport_pc.c	2007-02-28 12:40:30.000000000 -0800
+@@ -620,6 +620,7 @@ static size_t parport_pc_fifo_write_bloc
+ 	unsigned long dmaflag;
+ 	size_t left = length;
+ 	const struct parport_pc_private *priv = port->physport->private_data;
++	struct device *dev = port->physport->dev;
+ 	dma_addr_t dma_addr, dma_handle;
+ 	size_t maxlen = 0x10000; /* max 64k per DMA transfer */
+ 	unsigned long start = (unsigned long) buf;
+@@ -631,8 +632,8 @@ dump_parport_state ("enter fifo_write_bl
+ 		if ((start ^ end) & ~0xffffUL)
+ 			maxlen = 0x10000 - (start & 0xffff);
+ 
+-		dma_addr = dma_handle = pci_map_single(priv->dev, (void *)buf, length,
+-						       PCI_DMA_TODEVICE);
++		dma_addr = dma_handle = dma_map_single(dev, (void *)buf, length,
++						       DMA_TO_DEVICE);
+         } else {
+ 		/* above 16 MB we use a bounce buffer as ISA-DMA is not possible */
+ 		maxlen   = PAGE_SIZE;          /* sizeof(priv->dma_buf) */
+@@ -728,9 +729,9 @@ dump_parport_state ("enter fifo_write_bl
+ 
+ 	/* Turn off DMA mode */
+ 	frob_econtrol (port, 1<<3, 0);
+-	
++
+ 	if (dma_handle)
+-		pci_unmap_single(priv->dev, dma_handle, length, PCI_DMA_TODEVICE);
++		dma_unmap_single(dev, dma_handle, length, DMA_TO_DEVICE);
+ 
+ dump_parport_state ("leave fifo_write_block_dma", port);
+ 	return length - left;
+@@ -2146,7 +2147,7 @@ static DEFINE_SPINLOCK(ports_lock);
+ struct parport *parport_pc_probe_port (unsigned long int base,
+ 				       unsigned long int base_hi,
+ 				       int irq, int dma,
+-				       struct pci_dev *dev)
++				       struct device *dev)
+ {
+ 	struct parport_pc_private *priv;
+ 	struct parport_operations *ops;
+@@ -2180,9 +2181,10 @@ struct parport *parport_pc_probe_port (u
+ 	priv->fifo_depth = 0;
+ 	priv->dma_buf = NULL;
+ 	priv->dma_handle = 0;
+-	priv->dev = dev;
+ 	INIT_LIST_HEAD(&priv->list);
+ 	priv->port = p;
++
++	p->dev = dev;
+ 	p->base_hi = base_hi;
+ 	p->modes = PARPORT_MODE_PCSPP | PARPORT_MODE_SAFEININT;
+ 	p->private_data = priv;
+@@ -2305,9 +2307,10 @@ struct parport *parport_pc_probe_port (u
+ 				p->dma = PARPORT_DMA_NONE;
+ 			} else {
+ 				priv->dma_buf =
+-				  pci_alloc_consistent(priv->dev,
++				  dma_alloc_coherent(dev,
+ 						       PAGE_SIZE,
+-						       &priv->dma_handle);
++						       &priv->dma_handle,
++						       GFP_KERNEL);
+ 				if (! priv->dma_buf) {
+ 					printk (KERN_WARNING "%s: "
+ 						"cannot get buffer for DMA, "
+@@ -2383,7 +2386,7 @@ void parport_pc_unregister_port (struct 
+ 		release_region(p->base_hi, 3);
+ #if defined(CONFIG_PARPORT_PC_FIFO) && defined(HAS_DMA)
+ 	if (priv->dma_buf)
+-		pci_free_consistent(priv->dev, PAGE_SIZE,
++		dma_free_coherent(p->physport->dev, PAGE_SIZE,
+ 				    priv->dma_buf,
+ 				    priv->dma_handle);
+ #endif
+@@ -2489,7 +2492,7 @@ static int __devinit sio_ite_8872_probe 
+ 	 */
+ 	release_resource(base_res);
+ 	if (parport_pc_probe_port (ite8872_lpt, ite8872_lpthi,
+-				   irq, PARPORT_DMA_NONE, NULL)) {
++				   irq, PARPORT_DMA_NONE, &pdev->dev)) {
+ 		printk (KERN_INFO
+ 			"parport_pc: ITE 8872 parallel port: io=0x%X",
+ 			ite8872_lpt);
+@@ -2672,7 +2675,7 @@ static int __devinit sio_via_probe (stru
+ 	}
+ 
+ 	/* finally, do the probe with values obtained */
+-	if (parport_pc_probe_port (port1, port2, irq, dma, NULL)) {
++	if (parport_pc_probe_port (port1, port2, irq, dma, &pdev->dev)) {
+ 		printk (KERN_INFO
+ 			"parport_pc: VIA parallel port: io=0x%X", port1);
+ 		if (irq != PARPORT_IRQ_NONE)
+@@ -2970,7 +2973,7 @@ static int parport_pc_pci_probe (struct 
+ 			parport_pc_pci_tbl[i + last_sio].device, io_lo, io_hi);
+ 		data->ports[count] =
+ 			parport_pc_probe_port (io_lo, io_hi, PARPORT_IRQ_NONE,
+-					       PARPORT_DMA_NONE, dev);
++					       PARPORT_DMA_NONE, &dev->dev);
+ 		if (data->ports[count])
+ 			count++;
+ 	}
+@@ -3077,8 +3080,8 @@ static int parport_pc_pnp_probe(struct p
+ 	} else
+ 		dma = PARPORT_DMA_NONE;
+ 
+-	printk(KERN_INFO "parport: PnPBIOS parport detected.\n");
+-	if (!(pdata = parport_pc_probe_port (io_lo, io_hi, irq, dma, NULL)))
++	dev_info(&dev->dev, "reported by %s\n", dev->protocol->name);
++	if (!(pdata = parport_pc_probe_port (io_lo, io_hi, irq, dma, &dev->dev)))
+ 		return -ENODEV;
+ 
+ 	pnp_set_drvdata(dev,pdata);
+Index: g26/drivers/parport/share.c
+===================================================================
+--- g26.orig/drivers/parport/share.c	2007-02-24 01:19:37.000000000 -0800
++++ g26/drivers/parport/share.c	2007-02-24 01:24:19.000000000 -0800
+@@ -365,6 +365,11 @@ void parport_announce_port (struct parpo
+ 	parport_daisy_init(port);
+ #endif
+ 
++	if (!port->dev)
++		printk(KERN_WARNING "%s: fix this legacy "
++				"no-device port driver!\n",
++				port->name);
++
+ 	parport_proc_register(port);
+ 	mutex_lock(&registration_lock);
+ 	spin_lock_irq(&parportlist_lock);
+Index: g26/drivers/parport/parport_mfc3.c
+===================================================================
+--- g26.orig/drivers/parport/parport_mfc3.c	2007-02-24 01:19:37.000000000 -0800
++++ g26/drivers/parport/parport_mfc3.c	2007-02-24 01:24:19.000000000 -0800
+@@ -356,6 +356,7 @@ static int __init parport_mfc3_init(void
+ 				if (request_irq(IRQ_AMIGA_PORTS, mfc3_interrupt, IRQF_SHARED, p->name, &pp_mfc3_ops))
+ 					goto out_irq;
+ 		}
++		p->dev = &z->dev;
+ 
+ 		this_port[pias++] = p;
+ 		printk(KERN_INFO "%s: Multiface III port using irq\n", p->name);
+Index: g26/drivers/parport/parport_sunbpp.c
+===================================================================
+--- g26.orig/drivers/parport/parport_sunbpp.c	2007-02-24 01:19:37.000000000 -0800
++++ g26/drivers/parport/parport_sunbpp.c	2007-02-24 01:24:19.000000000 -0800
+@@ -320,6 +320,7 @@ static int __devinit init_one_port(struc
+ 		goto out_free_ops;
+ 
+ 	p->size = size;
++	p->dev = &sdev->ofdev.dev;
+ 
+ 	if ((err = request_irq(p->irq, parport_sunbpp_interrupt,
+ 			       IRQF_SHARED, p->name, p)) != 0) {
+Index: g26/drivers/parport/parport_serial.c
+===================================================================
+--- g26.orig/drivers/parport/parport_serial.c	2007-02-24 01:19:37.000000000 -0800
++++ g26/drivers/parport/parport_serial.c	2007-02-24 01:24:19.000000000 -0800
+@@ -305,7 +305,7 @@ static int __devinit parport_register (s
+ 		dev_dbg(&dev->dev, "PCI parallel port detected: I/O at "
+ 			"%#lx(%#lx)\n", io_lo, io_hi);
+ 		port = parport_pc_probe_port (io_lo, io_hi, PARPORT_IRQ_NONE,
+-					      PARPORT_DMA_NONE, dev);
++					      PARPORT_DMA_NONE, &dev->dev);
+ 		if (port) {
+ 			priv->port[priv->num_par++] = port;
+ 			success = 1;
+Index: g26/drivers/parport/parport_cs.c
+===================================================================
+--- g26.orig/drivers/parport/parport_cs.c	2007-02-15 18:17:20.000000000 -0800
++++ g26/drivers/parport/parport_cs.c	2007-02-24 13:31:00.000000000 -0800
+@@ -201,7 +201,7 @@ static int parport_config(struct pcmcia_
+ 
+     p = parport_pc_probe_port(link->io.BasePort1, link->io.BasePort2,
+ 			      link->irq.AssignedIRQ, PARPORT_DMA_NONE,
+-			      NULL);
++			      &link->dev);
+     if (p == NULL) {
+ 	printk(KERN_NOTICE "parport_cs: parport_pc_probe_port() at "
+ 	       "0x%3x, irq %u failed\n", link->io.BasePort1,
