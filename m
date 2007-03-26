@@ -1,116 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932753AbXCZV3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXCZV3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932753AbXCZV3N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 17:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932812AbXCZV2b
+	id S932857AbXCZV3c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 17:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXCZV23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 17:28:31 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:63274 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932507AbXCZV0n (ORCPT
+	Mon, 26 Mar 2007 17:28:29 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35293 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932696AbXCZV1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 17:26:43 -0400
-Message-Id: <20070326212640.095897934@de.ibm.com>
-References: <20070326212459.711271424@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 26 Mar 2007 23:25:05 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Horst Hummel <horst.hummel@de.ibm.com>
-Subject: [patch 6/8] dasd: Add sysfs attribute status and generate uevents.
-Content-Disposition: inline; filename=114-dasd-status.diff
+	Mon, 26 Mar 2007 17:27:31 -0400
+Date: Mon, 26 Mar 2007 23:27:34 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.45
+Message-ID: <20070326212734.GG16477@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Horst Hummel <horst.hummel@de.ibm.com>
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
 
-This patch adds a sysfs-attribute 'status' to make the DASD device-status
-accessible from user-space. In addition, the DASD driver generates an
-uevent(CHANGE) for the ccw-device on each device-status change.
-This enables user-space applications (e.g. udev) to do related processing.
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Horst Hummel <horst.hummel@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
 
- drivers/s390/block/dasd.c        |    3 ++
- drivers/s390/block/dasd_devmap.c |   41 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 44 insertions(+)
+Changes since 2.6.16.44:
 
-Index: linux-2.6/drivers/s390/block/dasd.c
-===================================================================
---- linux-2.6.orig/drivers/s390/block/dasd.c
-+++ linux-2.6/drivers/s390/block/dasd.c
-@@ -398,6 +398,9 @@ dasd_change_state(struct dasd_device *de
- 
- 	if (device->state == device->target)
- 		wake_up(&dasd_init_waitq);
-+
-+	/* let user-space know that the device status changed */
-+	kobject_uevent(&device->cdev->dev.kobj, KOBJ_CHANGE);
- }
- 
- /*
-Index: linux-2.6/drivers/s390/block/dasd_devmap.c
-===================================================================
---- linux-2.6.orig/drivers/s390/block/dasd_devmap.c
-+++ linux-2.6/drivers/s390/block/dasd_devmap.c
-@@ -829,6 +829,46 @@ dasd_discipline_show(struct device *dev,
- static DEVICE_ATTR(discipline, 0444, dasd_discipline_show, NULL);
- 
- static ssize_t
-+dasd_device_status_show(struct device *dev, struct device_attribute *attr,
-+		     char *buf)
-+{
-+	struct dasd_device *device;
-+	ssize_t len;
-+
-+	device = dasd_device_from_cdev(to_ccwdev(dev));
-+	if (!IS_ERR(device)) {
-+		switch (device->state) {
-+		case DASD_STATE_NEW:
-+			len = snprintf(buf, PAGE_SIZE, "new\n");
-+			break;
-+		case DASD_STATE_KNOWN:
-+			len = snprintf(buf, PAGE_SIZE, "detected\n");
-+			break;
-+		case DASD_STATE_BASIC:
-+			len = snprintf(buf, PAGE_SIZE, "basic\n");
-+			break;
-+		case DASD_STATE_UNFMT:
-+			len = snprintf(buf, PAGE_SIZE, "unformatted\n");
-+			break;
-+		case DASD_STATE_READY:
-+			len = snprintf(buf, PAGE_SIZE, "ready\n");
-+			break;
-+		case DASD_STATE_ONLINE:
-+			len = snprintf(buf, PAGE_SIZE, "online\n");
-+			break;
-+		default:
-+			len = snprintf(buf, PAGE_SIZE, "no stat\n");
-+			break;
-+		}
-+		dasd_put_device(device);
-+	} else
-+		len = snprintf(buf, PAGE_SIZE, "unknown\n");
-+	return len;
-+}
-+
-+static DEVICE_ATTR(status, 0444, dasd_device_status_show, NULL);
-+
-+static ssize_t
- dasd_alias_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct dasd_devmap *devmap;
-@@ -939,6 +979,7 @@ static DEVICE_ATTR(eer_enabled, 0644, da
- static struct attribute * dasd_attrs[] = {
- 	&dev_attr_readonly.attr,
- 	&dev_attr_discipline.attr,
-+	&dev_attr_status.attr,
- 	&dev_attr_alias.attr,
- 	&dev_attr_vendor.attr,
- 	&dev_attr_uid.attr,
+Adrian Bunk (2):
+      Linux 2.6.16.45-rc1
+      Linux 2.6.16.45
 
--- 
+Alexey Dobriyan (1):
+      [NET]: Copy mac_len in skb_clone() as well
+
+Bart De Schuymer (1):
+      NETFILTER: arp_tables: fix userspace compilation
+
+David S. Miller (1):
+      [SPARC64]: Add missing HPAGE_MASK masks on address parameters.
+
+Ed Swierk (1):
+      load_module: no BUG if module_subsys uninitialized
+
+Joy Latten (1):
+      [XFRM]: Fix missing protocol comparison of larval SAs.
+
+Keith Mannthey (1):
+      i386 bootioremap / kexec fix
+
+Masayuki Nakagawa (1):
+      [IPV6]: ipv6_fl_socklist is inadvertently shared.
+
+Michał Mirosław (5):
+      Fix reference counting (memory leak) problem in __nfulnl_send() and callers related to packet queueing.
+      [NETFILTER]: nfnetlink_log: fix NULL pointer dereference
+      [NETFILTER]: nfnetlink_log: fix possible NULL pointer dereference
+      [NETFILTER]: nfnetlink_log: fix reference leak
+      [NETFILTER]: nfnetlink_log: fix use after free
+
+Pablo Neira Ayuso (1):
+      NETFILTER: ctnetlink: check for status attribute existence on conntrack creation
+
+Patrick McHardy (8):
+      NETFILTER: Kconfig: fix xt_physdev dependencies
+      NETFILTER: Fix iptables ABI breakage on (at least) CRIS
+      NETFILTER: nf_conntrack_ipv6: fix crash when handling fragments
+      NETFILTER: tcp conntrack: fix IP_CT_TCP_FLAG_CLOSE_INIT value
+      NETFILTER: xt_connbytes: fix division by zero
+      [NETFILTER]: nf_conntrack: fix incorrect classification of IPv6 fragments as ESTABLISHED
+      [NETFILTER]: nfnetlink_log: fix crash on bridged packet
+      [NETFILTER]: tcp conntrack: accept SYN|URG as valid
+
+Robert Olsson (1):
+      [IPV4]: Do not disable preemption in trie_leaf_remove().
+
+
+ Makefile                                       |    2 -
+ arch/i386/mm/boot_ioremap.c                    |    7 ++-
+ arch/sparc64/mm/hugetlbpage.c                  |   29 ++++++++++-----
+ include/linux/netfilter/nf_conntrack_tcp.h     |    2 -
+ include/linux/netfilter_arp/arp_tables.h       |    1 
+ include/linux/netfilter_ipv4/ip_tables.h       |    2 -
+ kernel/module.c                                |    6 +++
+ net/core/skbuff.c                              |    1 
+ net/ipv4/fib_trie.c                            |    2 -
+ net/ipv4/netfilter/ip_conntrack_netlink.c      |    8 ++--
+ net/ipv4/netfilter/ip_conntrack_proto_tcp.c    |    4 +-
+ net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |    1 
+ net/ipv6/netfilter/nf_conntrack_reasm.c        |    2 +
+ net/ipv6/tcp_ipv6.c                            |    1 
+ net/netfilter/Kconfig                          |    2 -
+ net/netfilter/nf_conntrack_netlink.c           |    8 ++--
+ net/netfilter/nf_conntrack_proto_tcp.c         |    4 +-
+ net/netfilter/nfnetlink_log.c                  |   31 ++++++++++++-----
+ net/netfilter/xt_connbytes.c                   |   29 ++++++---------
+ net/xfrm/xfrm_state.c                          |    3 +
+ 20 files changed, 93 insertions(+), 52 deletions(-)
+
