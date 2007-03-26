@@ -1,127 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751229AbXCZI1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbXCZI2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751229AbXCZI1U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 04:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXCZI1U
+	id S1751341AbXCZI2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 04:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbXCZI2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 04:27:20 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:40560 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbXCZI1T (ORCPT
+	Mon, 26 Mar 2007 04:28:42 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:34050 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbXCZI2l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 04:27:19 -0400
-To: akpm@linux-foundation.org
-CC: dgc@sgi.com, linux-kernel@vger.kernel.org
-In-reply-to: <20070325153508.10922ebd.akpm@linux-foundation.org> (message from
-	Andrew Morton on Sun, 25 Mar 2007 15:35:08 -0800)
-Subject: Re: [patch 1/3] fix illogical behavior in balance_dirty_pages()
-References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu> <20070325153508.10922ebd.akpm@linux-foundation.org>
-Message-Id: <E1HVkWw-0000yj-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 26 Mar 2007 10:26:18 +0200
+	Mon, 26 Mar 2007 04:28:41 -0400
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Li Yu <raise.sail@gmail.com>
+Cc: linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       ??? <hongzhiyi@ccoss.com.cn>, Jiri Kosina <jkosina@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>, ?? <yanghong@ccoss.com.cn>
+In-Reply-To: <45FE6971.6090503@gmail.com>
+References: <200703051532096508636@gmail.com>  <45FE6971.6090503@gmail.com>
+Content-Type: text/plain
+Date: Mon, 26 Mar 2007 10:27:56 +0200
+Message-Id: <1174897676.5815.6.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > This is a slightly different take on the fix for the deadlock in fuse
-> > with dirty balancing.  David Chinner convinced me, that per-bdi
-> > counters are too expensive, and that it's not worth trying to account
-> > the number of pages under writeback, as they will be limited by the
-> > queue anyway.
-> > 
-> > ----
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > Current behavior of balance_dirty_pages() is to try to start writeout
-> > into the specified queue for at least "write_chunk" number of pages.
-> > If "write_chunk" pages have been submitted, then return.
-> > 
-> > However if there are less than "write_chunk" dirty pages for this
-> > queue, then it doesn't return, waiting for the global dirty+writeback
-> > counters to subside, but without doing any actual work.
-> > 
-> > This is illogical behavior: it allows more dirtyings while there are
-> > dirty pages, but stops further dirtying completely if there are no
-> > more dirty pages.
+Hi Li,
+
+> --------------------------------------
+>     HID bus design overview.
+> --------------------------------------
 > 
-> That behaviour is perfectly logical.  It prevents the number of
-> dirty+writeback pages from exceeding dirty_ratio.
-
-But it does it in an illogical way.  While it's cleaning your pages,
-it allows more dirtyings, but when it has cleaned ALL the pages
-destined for this queue, you hit a wall and stand still waiting for
-other queues to get their act together even if this queue is
-_completely idle_.
-
-I think this accounts for 90% of the problems experienced with copying
-to slow devices.
-
-> > It also makes a deadlock possible when one filesystem is writing data
-> > through another, and the balance_dirty_pages() for the lower
-> > filesystem is stalling the writeback for the upper filesystem's
-> > data (*).
+> A. Terms.
 > 
-> I still don't understand this one.  I got lost when belatedly told that
-> i_mutex had something to do with it.
-
-This deadlock only happens, if there's some bottleneck for writing
-data to the lower filesystem.   This bottleneck could be 
-
-  - i_mutex, preventing parallel writes to the same inode
-  - limited number of filesystem threads
-  - limited request queue length in the upper filesystem
-
-Imagine it this way: balance_dirty_pages() for the lower filesystem is
-stalling a write() because dirty pages in the upper filesystem are
-over the limit.  Because there's a bottleneck for writing to the lower
-filesystem, this is stalling _other_ writes from completing.  So
-there's no progress in writing back pages from the upper filesystem.
-
-The problem is not that dirty pages are not being submitted for
-writeback, rather that the writeback itself is stalling.
-
-Hmm?
-
-> > Index: linux/mm/page-writeback.c
-> > ===================================================================
-> > --- linux.orig/mm/page-writeback.c	2007-03-24 22:06:56.000000000 +0100
-> > +++ linux/mm/page-writeback.c	2007-03-24 22:29:02.000000000 +0100
-> > @@ -207,7 +207,15 @@ static void balance_dirty_pages(struct a
-> >  		 * written to the server's write cache, but has not yet
-> >  		 * been flushed to permanent storage.
-> >  		 */
-> > -		if (nr_reclaimable) {
-> > +		if (!nr_reclaimable) {
-> > +			/*
-> > +			 * If there's nothing more to write back and this queue
-> > +			 * is uncongested,  then it is possible to quickly
-> > +			 * write out some more data, so let's not wait
-> > +			 */
-> > +			if (!bdi_write_congested(bdi))
-> > +				break;
-> > +		} else {
+>     The device of an driver: this mean the device that this driver matched.
 > 
-> This says "if there are no dirty pages in the machine at all, then go back
-> and dirty some more pages, regardless of the present number of
-> under-writeback pages".
+> B. Design.
+> 
+>     As we discussed before, The entire HID subsystem is divided into
+> three layers:
+>     
+>     1. HID Driver Layer (HIDDL).
+>         
+>         This layer is composite of all HID drivers, however, these
+> drivers are not equal each other, there are divided into three kinds:
+>         
+>         1.1 Fundamental driver.
+>                 
+>         This is the most natural driver for us, they control hardware or
+> other something that can effect hardware directly. In most cases, each
+> of this kind driver is one standard and extendible implementation of HID
+> specification for specific HID transport layer. For example, usbhid.ko
+> for HID/USB or hidp.ko for Bluetooth/HID. This should alway input-able
+> driver, i.e, it is able to allow HIDAL register input device for its device.
+>                     
+>         1.2 Shadow driver.
+>         
+>         These driver is created for those buggy/strange/extended HID
+> device which fundamental driver can't handle rightly/completely. this
+> driver does not share HID information with related fundamental driver,
+> but the HID information of their devices is derived from other device of
+> fundamental driver. These may not be input-able driver. The shadow
+> driver does not share the input device with the related fundamental
+> driver, even shadow driver is input-able, it have new input device in
+> such case.
+>         
+>         1.3 HIDDEV drvier.
+>         
+>         In fact, This isn't one public kind of driver. it just is one
+> optionally flag parameter while register driver (also include shadow
+> driver). When turn on this feature, the HIDAL will create one hiddev for
+> each device of driver, so the every such device also have one hiddev buddy.
+>     
+>     2. HID Abstract Layer (HIDAL).        
+>     
+>         This layer maintain HID bus, HID driver, HID device, HID hiddev
+> such logical feature, and interact with input subsystem.
+> 
+>     3. HID Transport Layer (HIDTL).
+> 
+>         This layer may be rather thin. Up to now, we should have two
+> implementation of transport layer, one for USB, one for Bluetooth.
+> 
+> C. Progress.
+> 
+> Status: USB Fundamental driver works for new HID API now.
+> Working: Shadow driver support.
+> TODO:
+>     1. Shadow driver support.
+>     2. Port some drivers to new HID API, includes:
+>         1) All HID ff drivers.
+>         2) iBook/PowerBook special keys driver.
+>     3. Bluetooth fundamental driver.
+>     4. Bluetooth transport layer.
+>     5. Port Other drivers.
+>     6. HIDDEV/USB driver support.
+>     7. HIDDEV/Bluetooth driver support.
+> 
+> I think that post this text earlier is better decision, well, I guess
+> the new controversy about HID may begin ...
 
-No, this says, that "there are no dirty pages in the machine at all,
-and this queue is uncongested, so you can safely go back and dirty
-some more data, because we are sure it can be written back quickly".
+please don't take the transport layers into account when designing the
+HID bus. They have nothing to do with the upper layer. Especially the
+upper layer shouldn't care at all if the actual HID reports are sent
+over USB or Bluetooth.
 
-Ditto for the case, when there are no more dirty pages destined for
-this queue.
+The transport drivers (usbhid and hidp) will only communicate with the
+HID core and for the bus it makes no difference. The current abstraction
+for HID transports works pretty fine and there is no need to change
+this.
 
-I understand, that this can fill up the memory with under writeback
-pages, but only if the data sitting in all the device queues is
-comparable to the total memory.  I don't know what the realistic
-chance of that is but David Chinner convinced me, that it's not
-something that happens in real life.  Quoting him from an earlier
-mail:
+I think that a HID bus driver should be able register to a specific HID
+report for a specific device. This would allow to have a generic driver
+that can handle all common keyboard and mouse functionality and then in
+addition a specific driver that handles vendor specific reports. It
+might also make sense to let the driver match on specific HUT codes.
 
-| Right, and most ppl don't have enough devices in their system for
-| this to be a problem. Even those of us that do have enough devices
-| for this to potentially be a problem usually have enough RAM in
-| the machine so that it is not a problem....
+Regards
 
-Miklos
+Marcel
+
 
