@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbXCZMAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752319AbXCZMJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752345AbXCZMAf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 08:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbXCZMAf
+	id S1752319AbXCZMJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 08:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbXCZMJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 08:00:35 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59280 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752314AbXCZMAe (ORCPT
+	Mon, 26 Mar 2007 08:09:28 -0400
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:4984 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752319AbXCZMJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 08:00:34 -0400
-Date: Mon, 26 Mar 2007 14:03:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Howells <dhowells@redhat.com>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, bryan.wu@analog.com,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       dhowells@redhat.com
-Subject: Re: [PATCH -mm] Revoke core code: fix nommu arch compiling error
- bug
-Message-ID: <20070326140350.3c465073@the-village.bc.nu>
-In-Reply-To: <6791.1174909459@redhat.com>
-References: <Pine.LNX.4.64.0703261427490.12793@sbz-30.cs.Helsinki.FI>
-	<20070326024143.a226c9b2.akpm@linux-foundation.org>
-	<1174904637.32691.86.camel@roc-desktop>
-	<6017.1174908318@redhat.com>
-	<6791.1174909459@redhat.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Mon, 26 Mar 2007 08:09:27 -0400
+Date: Mon, 26 Mar 2007 14:09:11 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org, Rudolf Marek <r.marek@assembler.cz>
+Subject: Re: [PATCH 1/2] MSR: Add support for safe variants
+Message-Id: <20070326140911.877430f5.khali@linux-fr.org>
+In-Reply-To: <200703261157.l2QBvTJg011821@harpo.it.uu.se>
+References: <200703261157.l2QBvTJg011821@harpo.it.uu.se>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> With NOMMU as it stands, private mappings are private copies of the data, and
-> have no impact on the page cache and get no updates from it.  It's as if you
-> took a private writable mapping, touched every page and then mprotect()'d it.
-> This isn't necessarily ideal, but we're limited by the lack on an MMU.
+Hi Mikael,
 
-Given the MMUless kernel has no security model the easiest is probably to
-simply not support revoke() of mmap areas on NOMMU (or maybe not to
-support revoke at all)
+On Mon, 26 Mar 2007 13:57:29 +0200 (MEST), Mikael Pettersson wrote:
+> On Mon, 26 Mar 2007 13:29:37 +0200, Jean Delvare wrote:
+> > * * * * * Updated patch * * * * *
+> > 
+> > From: Rudolf Marek <r.marek@assembler.cz>
+> > 
+> > Add safe (exception handled) variants of rdmsr_on_cpu and wrmsr_on_cpu.
+> > You should use these when the target MSR may not actually exist, as
+> > doing so could trigger an exception which the regular functions do not
+> > handle. The safe variants are slower, though.
+> > 
+> > The upcoming coretemp hardware monitoring driver will need this.
+> 
+> Maybe I'm in the minority here, but I for one strongly believe
+> that any attempt to access an MSR "which might not be there" is
+> inherently wrong. It implies that your HW detection is incomplete,
+> which in combination with MSR accesses means that you may end up
+> accessing MSRs that aren't at all what you think they should be.
 
-Alan
+Hopefully CPU manufacturers are not that stupid and don't implement
+MSRs using the same number and doing different things in CPU models
+which are otherwise similar enough for one driver to attempt to handle
+them both. But of course it's probably only a matter of time before I am
+proven wrong...
+
+I agree with you that accessing an MSR which might not be there should
+be avoided where possible and only used as a last resort. But until
+technical documentation is perfectly correct for all CPUs out there,
+there will always be cases where we need to do that.
+
+> Who supplies these imprecise MSR definitions anyway?
+> Intel manuals? ACPI?
+
+Intel. Rudolf will know the details better.
+
+-- 
+Jean Delvare
