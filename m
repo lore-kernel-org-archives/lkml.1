@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbXCZQLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbXCZQVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbXCZQLy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 12:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXCZQLy
+	id S1752905AbXCZQVE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 12:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbXCZQVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 12:11:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43268 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbXCZQLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 12:11:54 -0400
-Date: Mon, 26 Mar 2007 17:11:46 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: dm-crypt@saout.de
-Subject: Re: race condition in dm-crypt?
-Message-ID: <20070326161146.GA3535@agk.fab.redhat.com>
-Mail-Followup-To: linux-kernel@vger.kernel.org, dm-crypt@saout.de
-References: <20070323170535.GA3057@hejre.minidns.net> <20070323174214.GA14179@tatooine.rebelbase.local>
+	Mon, 26 Mar 2007 12:21:04 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:51644 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbXCZQVB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 12:21:01 -0400
+Date: Mon, 26 Mar 2007 09:21:19 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+Cc: <linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] remove pci_dac_dma_... APIs
+Message-Id: <20070326092119.2abce07c.randy.dunlap@oracle.com>
+In-Reply-To: <4607F0EF.76E4.0078.0@novell.com>
+References: <4607F0EF.76E4.0078.0@novell.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070323174214.GA14179@tatooine.rebelbase.local>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 23, 2007 at 06:42:14PM +0100, markus reichelt wrote:
-> * "Jan C. Nordholz" <jckn@gmx.net> wrote:
-> > I'm seeing this for quite a while now (since 2.6.16 at least), but
-> > without any obvious indicator to what might be causing it... where
-> > should I continue debugging this?
-> I bet folks at dm-crypt@saout.de would love to hear about this.
- 
-As mentioned in another thread, please try these patches if they aren't already
-in your kernel:
+On Mon, 26 Mar 2007 15:12:31 +0100 Jan Beulich wrote:
 
-  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/2.6.19/dm-io-fix-bi_max_vecs.patch                                                                                       
+> Based on replies to a respective query, remove the pci_dac_dma_...() APIs
+> (except for pci_dac_dma_supported() on Alpha, where this function is used
+> in non-DAC PCI DMA code).
+> 
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> Cc: Andi Kleen <ak@suse.de>
+> Cc: Jesse Barnes <jesse.barnes@intel.com>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: David Miller <davem@davemloft.net>
 
-  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-merge-max_hw_sector.patch            
+meta-comment:  while diffstats are not required (by
+Documentation/SubmittingPatches), they sure can be helpful
+to reviewers.
 
-  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-crypt-disable-barriers.patch
 
-  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-crypt-fix-call-to-clone_init.patch
-  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-crypt-fix-avoid-cloned-bio-ref-after-free.patch
-  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-crypt-fix-remove-first_clone.patch
-  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-crypt-use-smaller-bvecs-in-clones.patch
-
-Alasdair
--- 
-agk@redhat.com
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
