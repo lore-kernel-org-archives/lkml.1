@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbXCZAus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933283AbXCZBAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933223AbXCZAus (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 20:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933283AbXCZAus
+	id S933283AbXCZBAv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 21:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933290AbXCZBAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 20:50:48 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49176 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933223AbXCZAui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 20:50:38 -0400
-From: Neil Brown <neilb@suse.de>
-To: "Phy Prabab" <phyprabab@gmail.com>
-Date: Mon, 26 Mar 2007 10:50:31 +1000
+	Sun, 25 Mar 2007 21:00:51 -0400
+Received: from mail22.syd.optusnet.com.au ([211.29.133.160]:59275 "EHLO
+	mail22.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933283AbXCZBAu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 21:00:50 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ck list <ck@vds.kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: rSDl cpu scheduler version 0.34-test patch
+Date: Mon, 26 Mar 2007 11:00:21 +1000
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17927.6359.721594.133569@notabene.brown>
-Cc: "Adrian Bunk" <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net
-Subject: Re: Opps in 2.6.21-rc4 nfsd
-In-Reply-To: message from Phy Prabab on Friday March 23
-References: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
-	<20070323152913.GH752@stusta.de>
-	<2fe399760703230845s4f652df0v9fd57e1aa7943e4e@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703261100.22467.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday March 23, phyprabab@gmail.com wrote:
-> Adrian et al,
-> 
-> Under 2.6.20.2+3 I get a similar crash and more frequently.  At least
-> under 2.6.21rc4 I only get this about once every two hours under heavy
-> nfs testing.
+This is just for testing at the moment! The reason is the size of this patch.
 
-That is very odd.  The code where it is crashing in the trace you
-provide does not exist in 2.6.20 at all.
+In the interest of evolution, I've taken the RSDL cpu scheduler and increased 
+the resolution of the task timekeeping to nanosecond resolution. This removes 
+the need for the runqueue rotation component entirely out of RSDL. The design 
+basically is mostly unchanged, minus over 150 lines of code for the rotation, 
+yet should be slightly better performing. It should be indistinguishable in 
+usage from v0.33.
 
-Do you have an Oops trace from when it crashed under 2.6.20.x ??
+Other changes from v0.33:
+-rr interval was not being properly scaled with HZ
+-fix possible race in checking task_queued in task_running_tick
+-scale down rr interval for niced tasks if HZ can tolerate it
+-cull list_splice_tail
 
-I'll try to have a patch for you to try on 2.6.21rc4 shortly.
+What does this mean for the next version of RSDL?
 
-What version of nfs-utils are you using?
+Assuming all works as expected on these test patches, it will be cleanest to 
+submit a new series of patches for -mm with the renamed Staircase-Deadline 
+scheduler and new documentation (when it's done).
 
-Thanks,
-NeilBrown
+
+So for testing here are full rollups for 2.6.20.4 and 2.6.21-rc4:
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20.4-sd-0.34-test.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc4-sd-0.34-test.patch
+
+The patches available also include a rollup of sched: accurate user accounting 
+as this code touches the same area and it is most convenient to include them 
+together.
+
+(incrementals in each subdir of staircase-deadline/ for those interested).
+
+Thanks Mike for continuing to attempt to use the cluebat on me on this one. 
+>From the start I wasn't sure if this was necessary or not but ends up being 
+less code than RSDL.
+
+While I'm still far from being well, luckily I am in much better shape to be 
+able to spend the time at the pc to have done this. Thanks to all those who 
+expressed their concern.
+
+-- 
+-ck
