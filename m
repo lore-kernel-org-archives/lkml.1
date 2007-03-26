@@ -1,59 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbXCZUx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbXCZUyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbXCZUx7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 16:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbXCZUxd
+	id S1753205AbXCZUyF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 16:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbXCZUxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 16:53:33 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:7801 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbXCZUwx (ORCPT
+	Mon, 26 Mar 2007 16:53:30 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:49116 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753125AbXCZUwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 26 Mar 2007 16:52:53 -0400
-Message-Id: <20070326205250.559611310@de.ibm.com>
+Message-Id: <20070326205249.540976264@de.ibm.com>
 References: <20070326205225.438154546@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 26 Mar 2007 22:52:28 +0200
+Date: Mon, 26 Mar 2007 22:52:27 +0200
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       David Wilder <dwilder@us.ibm.com>
-Subject: [patch 3/6] kprobes: Align probe address.
-Content-Disposition: inline; filename=003-kprobes.diff
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 2/6] Fix TCP/UDP pseudo header checksum computation.
+Content-Disposition: inline; filename=002-tcpudp-fix.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Wilder <dwilder@us.ibm.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Running a probe on s390 with a probe address that is not 4 byte aligned
-results in a Kernel BUG.  The problem is that the stura instruction used
-by swap_instruction requires the destination address to be 4 byte aligned.
-As stura only writes 4 bytes, aligning to the next 4 byte aligned address
-results in the breakpoint instruction being stored past the probe address.
-The fix is to align the address backward (to the previous 4 byte aligned
-address) and writing the two byte breakpoint instruction in the appropriate
-bytes.
+git commit f994aae1bd8e4813d59a2ed64d17585fe42d03fc changed the
+function declaration of csum_tcpudp_nofold. Argument types were
+changed from unsigned long to __be32 (unsigned int). Therefore we
+lost the implicit type conversion that zeroed the upper half of the
+registers that are used to pass parameters. Since the inline assembly
+relied on this we ended up adding random values and wrong checksums
+were created.
+Showed only up on machines with more than 4GB since gcc produced code
+where the registers that are used to pass 'saddr' and 'daddr' previously
+contained addresses before calling this function.
+Fix this by using 32 bit arithmetics and convert code to C, since gcc
+produces better code than these hand-optimized versions.
 
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
 
- arch/s390/kernel/kprobes.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ include/asm-s390/checksum.h |   59 +++++++++++---------------------------------
+ 1 files changed, 15 insertions(+), 44 deletions(-)
 
-Index: linux-2.6/arch/s390/kernel/kprobes.c
+Index: linux-2.6/include/asm-s390/checksum.h
 ===================================================================
---- linux-2.6.orig/arch/s390/kernel/kprobes.c
-+++ linux-2.6/arch/s390/kernel/kprobes.c
-@@ -167,7 +167,7 @@ static int __kprobes swap_instruction(vo
- 	 * shall not cross any page boundaries (vmalloc area!) when writing
- 	 * the new instruction.
- 	 */
--	addr = (u32 *)ALIGN((unsigned long)args->ptr, 4);
-+	addr = (u32 *)((unsigned long)args->ptr & -4UL);
- 	if ((unsigned long)args->ptr & 2)
- 		instr = ((*addr) & 0xffff0000) | args->new;
- 	else
+--- linux-2.6.orig/include/asm-s390/checksum.h
++++ linux-2.6/include/asm-s390/checksum.h
+@@ -121,50 +121,21 @@ csum_tcpudp_nofold(__be32 saddr, __be32 
+                    unsigned short len, unsigned short proto,
+                    __wsum sum)
+ {
+-#ifndef __s390x__
+-	asm volatile(
+-		"	alr	%0,%1\n" /* sum += saddr */
+-		"	brc	12,0f\n"
+-		"	ahi	%0,1\n"  /* add carry */
+-		"0:"
+-		: "+&d" (sum) : "d" (saddr) : "cc");
+-	asm volatile(
+-		"	alr	%0,%1\n" /* sum += daddr */
+-		"	brc	12,1f\n"
+-		"	ahi	%0,1\n"  /* add carry */
+-		"1:"
+-		: "+&d" (sum) : "d" (daddr) : "cc");
+-	asm volatile(
+-		"	alr	%0,%1\n" /* sum += len + proto */
+-		"	brc	12,2f\n"
+-		"	ahi	%0,1\n"  /* add carry */
+-		"2:"
+-		: "+&d" (sum)
+-		: "d" (len + proto)
+-		: "cc");
+-#else /* __s390x__ */
+-	asm volatile(
+-		"	lgfr	%0,%0\n"
+-		"	algr	%0,%1\n"  /* sum += saddr */
+-		"	brc	12,0f\n"
+-		"	aghi	%0,1\n"   /* add carry */
+-		"0:	algr	%0,%2\n"  /* sum += daddr */
+-		"	brc	12,1f\n"
+-		"	aghi	%0,1\n"   /* add carry */
+-		"1:	algfr	%0,%3\n"  /* sum += len + proto */
+-		"	brc	12,2f\n"
+-		"	aghi	%0,1\n"   /* add carry */
+-		"2:	srlg	0,%0,32\n"
+-		"	alr	%0,0\n"   /* fold to 32 bits */
+-		"	brc	12,3f\n"
+-		"	ahi	%0,1\n"   /* add carry */
+-		"3:	llgfr	%0,%0"
+-		: "+&d" (sum)
+-		: "d" (saddr), "d" (daddr),
+-		  "d" (len + proto)
+-		: "cc", "0");
+-#endif /* __s390x__ */
+-	return sum;
++	__u32 csum = (__force __u32)sum;
++
++	csum += (__force __u32)saddr;
++	if (csum < (__force __u32)saddr)
++		csum++;
++
++	csum += (__force __u32)daddr;
++	if (csum < (__force __u32)daddr)
++		csum++;
++
++	csum += len + proto;
++	if (csum < len + proto)
++		csum++;
++
++	return (__force __wsum)csum;
+ }
+ 
+ /*
 
 -- 
