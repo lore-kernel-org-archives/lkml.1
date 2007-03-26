@@ -1,86 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbXCZMhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbXCZMmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbXCZMhe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 08:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXCZMhe
+	id S1752456AbXCZMmj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 08:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbXCZMmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 08:37:34 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54896 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbXCZMhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 08:37:32 -0400
-Date: Mon, 26 Mar 2007 15:37:30 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: David Howells <dhowells@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, bryan.wu@analog.com,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm] Revoke core code: fix nommu arch compiling error
- bug
-In-Reply-To: <11045.1174911764@redhat.com>
-Message-ID: <Pine.LNX.4.64.0703261525370.14158@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0703261447190.13229@sbz-30.cs.Helsinki.FI> 
- <Pine.LNX.4.64.0703261427490.12793@sbz-30.cs.Helsinki.FI>
- <20070326024143.a226c9b2.akpm@linux-foundation.org> <1174904637.32691.86.camel@roc-desktop>
- <6017.1174908318@redhat.com> <6791.1174909459@redhat.com>  <11045.1174911764@redhat.com>
-Mime-Version: 1.0
+	Mon, 26 Mar 2007 08:42:39 -0400
+Received: from bigmama.rhoen.de ([62.80.125.185]:33752 "EHLO rhoen.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752456AbXCZMmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 08:42:38 -0400
+X-Greylist: delayed 1071 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Mar 2007 08:42:38 EDT
+Date: Mon, 26 Mar 2007 14:02:39 +0200
+To: Sid Boyce <g3vbv@blueyonder.co.uk>
+Cc: Adrian Bunk <bunk@stusta.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, auxsvr@gmail.com
+Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
+Message-ID: <20070326120238.GA16816@macbeth.rhoen.de>
+References: <200702281805.13822.auxsvr@gmail.com> <20070307214730.87859590.akpm@linux-foundation.org> <45EFBC73.2030005@blueyonder.co.uk> <46016EAF.6010801@blueyonder.co.uk> <20070321193420.GP752@stusta.de> <m17itabbbv.fsf@ebiederm.dsl.xmission.com> <4601DCB4.4060804@blueyonder.co.uk> <20070321184258.758a5a29.randy.dunlap@oracle.com> <20070322105908.GS752@stusta.de> <4602DDBC.5000106@blueyonder.co.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4602DDBC.5000106@blueyonder.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: boris <boris@macbeth.rhoen.de>
+X-IN-Kompentent-e-V-MailScanner-Information: Please contact the ISP for more information
+X-IN-Kompentent-e-V-MailScanner: Found to be clean
+X-IN-Kompentent-e-V-MailScanner-From: boris@macbeth.rhoen.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Mar 22, 2007 at 07:49:16PM +0000, Sid Boyce wrote:
 
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> > revoke_mapping() is mostly same as munmap(2) except that it preserves the 
-> > vma but makes it VM_REVOKED. This means that if the process tries to 
-> > access the region it will SIGBUS and if it tries to remap the range it 
-> > will get EINVAL.
+> Kernel built and installed, so I shall have something to report in the
+> next couple of days.
 
-On Mon, 26 Mar 2007, David Howells wrote:
-> Yeah, that's not enforceable in NOMMU-mode situations.  I presume it differs
-> from munmap() also in that it can effectively be forced by one process upon
-> another.
+I see this kwin bug too
+on a Thinkpad (x86_64) as well as on a Pmac (powerpc64).
+It is only triggerd when the screen is locked AND! set
+to standby mode (display/backlight is turned off - acpi).
 
-Yes.
+boris
 
-On Mon, 26 Mar 2007, David Howells wrote:
-> In MMU-mode, how does this work with private mappings that have some private
-> copies of the pages that make up the mapping?  Are those still available to a
-> process that is using them?  Are they revoked when swapped out?  Or are they
-> forcibly evicted?
-
-We don't touch private mappings at all as they're a snapshot to the inode 
-_before_ it was revoked. So private mappings don't really matter all: you 
-don't see any new data after it has been revoked nor do you flush anything 
-to the disk.
-
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> >   - If there are shared mappings, always return -ENOENT for revoke(2).
- 
-On Mon, 26 Mar 2007, David Howells wrote:
-> That sounds feasible.  How about -ETXTBSY instead?
-
-Well, assuming we would use revoke for things like SAK, this doesn't 
-really work out too well because all a malicious process has to is create 
-a shared mapping and they've effectively blocked the whole thing.
-
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> >   - If there are shared mappings, immediately raise SIGBUS for those 
-> >     processes that are accessing it.
-
-On Mon, 26 Mar 2007, David Howells wrote:
-> Hmmm... maybe.  That sounds a bit antisocial though, but is also 
-> workable.
-
-It's antisocial for sure but the only way to guarantee revoke() succeeds 
-on a NOMMU setup. Oh well, lets disable it for now and see if anyone even 
-wants revoke() for NOMMU.
-
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> Does the SIGBUS raised have its own si_code, btw?  Perhaps BUS_REVOKED?
-
-That's a good idea. I'll add one.
-
-			Pekka
