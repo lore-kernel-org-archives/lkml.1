@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbXCZVee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932933AbXCZVnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932697AbXCZVee (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 17:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXCZVee
+	id S932933AbXCZVnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 17:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbXCZVnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 17:34:34 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:45929 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932697AbXCZVed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 17:34:33 -0400
-Message-ID: <46083C79.1080108@cfl.rr.com>
-Date: Mon, 26 Mar 2007 17:34:49 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Mike Snitzer <snitzer@gmail.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: forced umount?
-References: <170fa0d20703162106v47dc13e1u1ae5381576f372ed@mail.gmail.com>  <45FB6E32.3050009@goop.org>  <170fa0d20703162237m1023cbd2o8ccf9e464c53f4a0@mail.gmail.com> <84144f020703170353y4490d0dcr24352c291c96300b@mail.gmail.com>
-In-Reply-To: <84144f020703170353y4490d0dcr24352c291c96300b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Mar 2007 21:34:45.0761 (UTC) FILETIME=[92B56710:01C76FEE]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15078.001
-X-TM-AS-Result: No--10.094800-5.000000-2
+	Mon, 26 Mar 2007 17:43:33 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:33784 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932933AbXCZVnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 17:43:32 -0400
+To: akpm@linux-foundation.org
+CC: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <20070326140036.f3352f81.akpm@linux-foundation.org> (message from
+	Andrew Morton on Mon, 26 Mar 2007 14:00:36 -0700)
+Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
+References: <E1HVZyn-0008T8-00@dorka.pomaz.szeredi.hu> <20070326140036.f3352f81.akpm@linux-foundation.org>
+Message-Id: <E1HVwy4-0002UD-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 26 Mar 2007 23:43:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is this revoke system supported for the filesystem as a whole?  I 
-thought it was just to force specific files closed, not the whole 
-filesystem.  What if the filesystem itself has pending IO to say, update 
-inodes or block bitmaps?  Can these be aborted?
-
-Pekka Enberg wrote:
-> FYI, the revoke implementation have since been changed to follow the
-> badfs-style approach of the forced unmount patches. However, there are
-> some problems with the forced unmount patches that are now fixed in
-> the revoke implementation:
+> > This patch makes writing to shared memory mappings update st_ctime and
+> > st_mtime as defined by SUSv3:
 > 
->  - You can't use munmap() to take down shared memory mappings because the
->    application can accidentally remap something completely different
-> to that region.
->  - The ->f_light bits slow down other fget_light() users and  there's
-> a race between
->    fcheck_files() and set_f_light().
->  - The operation can live-lock if a malicious process keeps forking. The 
-> revoke
->    implementation solves this by revoking in two passes: (1) take
-> down the descriptors
->    and (2) take down the actual inodes.
-> 
->                           Pekka
+> Boy this is complicated.
 
+You tell me?
+
+> Is there a simpler way of doing all this?  Say, we define a new page flag
+> PG_dirtiedbywrite and we do SetPageDirtiedByWrite() inside write() and
+> ClearPageDirtiedByWrite() whenever we propagate pte-dirtiness into
+> page-dirtiness.  Then, when performing writeback we look to see if any of
+> the dirty pages are !PageDirtiedByWrite() and, if so, we update [mc]time to
+> current-time.
+
+I don't think a page flag gains anything over the address_space flag
+that this patch already has.
+
+The complexity is not about keeping track of the "data modified
+through mmap" state, but about msync() guarantees, that POSIX wants.
+
+And these requirements do in fact make some sense: msync() basically
+means:
+
+  "I want the data written through mmaps to be visible to the world"
+
+And that obviously includes updating the timestamps.
+
+So how do we know if the data was modified between two msync()
+invocations?  The only sane way I can think of is to walk the page
+tables in msync() and test/clear the pte dirty bit.
+
+Yes, this will make msync(MS_ASYNC) more heavyweight again.  But if an
+application doesn't want to update the timestamps, it should just omit
+this call, since it does nothing else.
+
+There shouldn't be any other side effect.
+
+Miklos
