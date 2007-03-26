@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933498AbXCZDYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933509AbXCZDk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933498AbXCZDYW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 23:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933504AbXCZDYW
+	id S933509AbXCZDk3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 23:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933535AbXCZDk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 23:24:22 -0400
-Received: from pool-71-111-84-143.ptldor.dsl-w.verizon.net ([71.111.84.143]:52409
-	"EHLO paulmck-laptop" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933498AbXCZDYV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 23:24:21 -0400
-Date: Sun, 25 Mar 2007 20:24:18 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: David Howells <dhowells@redhat.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: Re: I/O memory barriers vs SMP memory barriers
-Message-ID: <20070326032418.GA14557@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070323111350.GD3980@xi.wantstofly.org> <e9c3a7c20703021312y5f7aa228i5d1c84a8e9ea5676@mail.gmail.com> <20070303111427.GB16944@xi.wantstofly.org> <20070303113305.GB10515@flint.arm.linux.org.uk> <20070321221134.GA22497@xi.wantstofly.org> <tnxlkhpgslz.fsf@arm.com> <16051.1174657433@redhat.com> <20070325211542.GD3593@linux.vnet.ibm.com> <20070325213843.GE22126@xi.wantstofly.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070325213843.GE22126@xi.wantstofly.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 25 Mar 2007 23:40:28 -0400
+Received: from [64.62.148.172] ([64.62.148.172]:4926 "EHLO arnor.apana.org.au"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933509AbXCZDk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 23:40:27 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: zohar@linux.vnet.ibm.com (Mimi Zohar)
+Subject: Re: [RFC][Patch 3/6] integrity: EVM as an integrity service provider
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
+Organization: Core
+In-Reply-To: <1173369828.5981.3.camel@localhost.localdomain>
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1HVg4A-0002vq-00@gondolin.me.apana.org.au>
+Date: Mon, 26 Mar 2007 13:40:18 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 25, 2007 at 11:38:43PM +0200, Lennert Buytenhek wrote:
-> On Sun, Mar 25, 2007 at 02:15:42PM -0700, Paul E. McKenney wrote:
-> 
-> > > > [ background: On ARM, SMP synchronisation does need barriers but device
-> > > >   synchronisation does not.  The question is that given this, whether
-> > > >   mb() and friends can be NOPs on ARM or not (i.e. whether mb() is
-> > > >   supposed to sync against other CPUs or not, or whether only smp_mb()
-> > > >   can be used for this.)  ]
-> > > 
-> > > Hmmmm...
-> > > 
-> > > [snip]
-> > 
-> > 3.	Orders memory accesses and device accesses, but not necessarily
-> > 	the union of the two -- mb(), rmb(), wmb().
-> 
-> If mb/rmb/wmb are required to order normal memory accesses, that means
-> that the change made in commit 9623b3732d11b0a18d9af3419f680d27ea24b014
-> to always define mb/rmb/wmb as barrier() on ARM systems was wrong.
+Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+>
+> +int update_file_hash(struct dentry *dentry, struct file *f,
+> +                    struct hash_desc *desc)
+> +{
 
-This was on UP ARM systems, right?  Assuming that ARM CPUs respect the
-usual CPU-self-consistency semantics, and given the background that
-device accesses are ordered, then it might well be OK to have mb/rmb/wmb
-be barrier() on UP ARM systems.
+...
 
-Most likely not on SMP ARM systems, however.
+> +       while (offset < i_size) {
+> +               rbuf_len = kernel_read(file, offset, rbuf, PAGE_SIZE);
+> +               if (rbuf_len <= 0)
+> +                       break;
+> +               offset += rbuf_len;
+> +               sg[0].page = virt_to_page(rbuf);
+> +               sg[0].offset = ((long)rbuf & ~PAGE_MASK);
+> +               sg[0].length = rbuf_len;
+> +
+> +               crypto_hash_update(desc, sg, rbuf_len);
 
-> Does everybody agree on these semantics, though?  At least David seems
-> to think that mb/rmb/wmb aren't required to order normal memory accesses
-> against each other..
+You should check for errors here and on all calls to crypto_hash_*
+that return errors.
 
-Not on UP.  On SMP, ordering is (almost certainly) required.
+> +int evm_calc_hash(struct dentry *dentry, struct file *file, char *digest,
+> +                 int xattr_type)
+> +{
+> +       struct crypto_hash *tfm;
+> +       struct hash_desc desc;
+> +       int error = 0;
+> +
+> +       if (!dentry && !file)
+> +               return -ENOENT;
+> +
+> +       tfm = crypto_alloc_hash(evm_hash, 0, CRYPTO_ALG_ASYNC);
+> +       if (!tfm) {
 
-> > 4.	Orders only device accesses, which is what seems to be looked
-> > 	for here.
-> 
-> Yes.  (As above, on ARM, SMP synchronisation does need barriers but
-> device synchronisation does not.  If mb/rmb/wmb were only required to
-> synchronise device accesses, they could have been regular compiler
-> barriers on ARM, but if they are also required to synchronise normal
-> memory accesses against each other, they have to map to hardware
-> barriers.)
+That should be !IS_ERR(tfm).
 
-Again, for kernels built for UP, you might well be able to make the
-mb() primitives be barrier().  I don't see it for SMP, though.
+> +static int __init init_evm(void)
+> +{
+> +       int error;
+> +
+> +       if (strncmp(evm_hash, "sha1", 4) == 0) {
+> +               evm_hash_type = EVM_TYPE_SHA1;
+> +               hash_digest_size = SHA1_DIGEST_SIZE;
+> +               hash_str_size = SHA1_STR_SIZE;
 
-						Thanx, Paul
+This looks suspect.  Can you guarantee that only md5/sha1 are used?
+If not you should be getting these from the tfm.  If yes then you
+shouldn't allow arbitrary strings to be used.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
