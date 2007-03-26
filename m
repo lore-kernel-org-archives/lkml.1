@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932194AbXCZWLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbXCZWTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932194AbXCZWLp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 18:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932619AbXCZWLp
+	id S932710AbXCZWTe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 18:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932713AbXCZWTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 18:11:45 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:59457 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932194AbXCZWLo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 18:11:44 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Mon, 26 Mar 2007 18:08:23 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Greg KH <greg@kroah.com>, dtor@mail.ru
-Subject: [PATCH] Correct bad CONFIG names in drivers/usb/input/Makefile.
-Message-ID: <Pine.LNX.4.64.0703261804010.2211@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Mon, 26 Mar 2007 18:19:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38602 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932710AbXCZWTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 18:19:33 -0400
+Date: Mon, 26 Mar 2007 15:17:31 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] USB Elan FTDI: check for driver registration status
+Message-Id: <20070326151731.53cc080b.zaitcev@redhat.com>
+In-Reply-To: <20070325072733.GA10257@cvg>
+References: <20070325072733.GA10257@cvg>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 25 Mar 2007 11:27:33 +0400, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-Correct the incorrect CONFIG_ variables currently in
-drivers/usb/input/Makefile that prevent three of the touchscreen
-source files from being built.
+> This patch adds checking of driver registration status
+> and if it fails release allocated resources.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> +	if (status_queue) {
+> +		destroy_workqueue(status_queue);
+> +		status_queue = NULL;
+> +	}
+> +	if (command_queue) {
+> +		destroy_workqueue(command_queue);
+> +		command_queue = NULL;
+> +	}
+> +	if (respond_queue) {
+> +		destroy_workqueue(respond_queue);
+> +		respond_queue = NULL;
+> +	}
+> +	return result;
 
----
+I hate this style with passion, but I don't have cycles to argue.
+So, whatever works for you and Greg is fine with me.
 
-it *looks* like this is the right fix, but i'm just on my way out the
-door so i'll leave it to others to verify.
-
-diff --git a/drivers/usb/input/Makefile b/drivers/usb/input/Makefile
-index a9d206c..198337f 100644
---- a/drivers/usb/input/Makefile
-+++ b/drivers/usb/input/Makefile
-@@ -38,9 +38,9 @@ obj-$(CONFIG_USB_KBD)		+= usbkbd.o
- obj-$(CONFIG_USB_KBTAB)		+= kbtab.o
- obj-$(CONFIG_USB_KEYSPAN_REMOTE)	+= keyspan_remote.o
- obj-$(CONFIG_USB_MOUSE)		+= usbmouse.o
--obj-$(CONFIG_USB_MTOUCH)	+= mtouchusb.o
--obj-$(CONFIG_USB_ITMTOUCH)	+= itmtouch.o
--obj-$(CONFIG_USB_EGALAX)	+= touchkitusb.o
-+obj-$(CONFIG_USB_TOUCHSCREEN_3M)	+= mtouchusb.o
-+obj-$(CONFIG_USB_TOUCHSCREEN_ITM)	+= itmtouch.o
-+obj-$(CONFIG_USB_TOUCHSCREEN_EGALAX)	+= touchkitusb.o
- obj-$(CONFIG_USB_TOUCHSCREEN)	+= usbtouchscreen.o
- obj-$(CONFIG_USB_POWERMATE)	+= powermate.o
- obj-$(CONFIG_USB_WACOM)		+= wacom.o
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+-- Pete
