@@ -1,131 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbXCZJIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbXCZJOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbXCZJIx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 05:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbXCZJIx
+	id S1753549AbXCZJOF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 05:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbXCZJOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 05:08:53 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:50191 "EHLO smtp.osdl.org"
+	Mon, 26 Mar 2007 05:14:05 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:29512 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751523AbXCZJIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 05:08:52 -0400
-Date: Mon, 26 Mar 2007 01:08:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Zachary Amsden <zach@vmware.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] i386: use pte_update_defer in
- ptep_test_and_clear_{dirty,young}
-Message-Id: <20070326010842.345118a1.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753549AbXCZJOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 05:14:03 -0400
+Message-ID: <460791C3.7050607@sw.ru>
+Date: Mon, 26 Mar 2007 13:26:27 +0400
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: akpm@linux-foundation.org
+CC: Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       Dave Hansen <hansendc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       devel@openvz.org
+Subject: Re: [Devel] Re: Linux-VServer example results for sharing vs. separate
+ mappings ...
+References: <20070323193000.GB17007@MAIL.13thfloor.at>	<20070323214235.94a3e899.akpm@linux-foundation.org>	<20070324183806.GA7312@MAIL.13thfloor.at> <20070324121906.aff91c93.akpm@linux-foundation.org>
+In-Reply-To: <20070324121906.aff91c93.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Mar 2007 23:37:08 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
+Andrew Morton wrote:
 
-> 	Date: Sun, 25 Mar 2007 23:07:43 -0800
-> 	From: Zachary Amsden <zach@vmware.com>
+[...skip....]
+> The problem is memory reclaim.  A number of schemes which have been
+> proposed require a per-container page reclaim mechanism - basically a
+> separate scanner.
 > 
-> 	If you actually clear the bit, you need to:
+> This is a huge, huge, huge problem.  The present scanner has been under
+> development for over a decade and has had tremendous amounts of work and
+> testing put into it.  And it still has problems.  But those problems will
+> be gradually addressed.
+>
+> A per-container recaim scheme really really really wants to reuse all that
+> stuff rather than creating a separate, parallel, new scanner which has the
+> same robustness requirements, only has a decade less test and development
+> done on it.  And which permanently doubles our maintenance costs.
+
+So if we merge the global/container scanner code,
+"virtualizing" it and using abstract lists, it will be ok for you?
+
+> So how do we reuse our existing scanner?  With physical containers.  One
+> can envisage several schemes:
 > 
-> 	+         pte_update_defer(vma->vm_mm, addr, ptep);
+> a) slice the machine into 128 fake NUMA nodes, use each node as the
+>    basic block of memory allocation, manage the binding between these
+>    memory hunks and process groups with cpusets.
 > 
-> 	The reason is, when updating PTEs, the hypervisor must be notified.  Using
-> 	atomic operations to do this is fine for all hypervisors I am aware of.
-> 	However, for hypervisors which shadow page tables, if these PTE
-> 	modifications are not trapped, you need a post-modification call to fulfill
-> 	the update of the shadow page table.
+>    This is what google are testing, and it works.
 > 
-> Cc: Zachary Amsden <zach@vmware.com>
-> Cc: Hugh Dickins <hugh@veritas.com>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  include/asm-i386/pgtable.h |   26 ++++++++++++++------------
->  1 files changed, 14 insertions(+), 12 deletions(-)
+> b) Create a new memory abstraction, call it the "software zone", which
+>    is mostly decoupled from the present "hardware zones".  Most of the MM
+>    is reworked to use "software zones".  The "software zones" are
+>    runtime-resizeable, and obtain their pages via some means from the
+>    hardware zones.  A container uses a software zone.
 > 
-> diff --git a/include/asm-i386/pgtable.h b/include/asm-i386/pgtable.h
-> --- a/include/asm-i386/pgtable.h
-> +++ b/include/asm-i386/pgtable.h
-> @@ -287,18 +287,24 @@ do {									\
->  static inline int ptep_test_and_clear_dirty(struct vm_area_struct *vma,
->  					    unsigned long addr, pte_t *ptep)
->  {
-> -	if (!pte_dirty(*ptep))
-> -		return 0;
-> -	return test_and_clear_bit(_PAGE_BIT_DIRTY, &ptep->pte_low);
-> +	int ret = 0;
-> +	if (pte_dirty(*ptep))
-> +		ret = test_and_clear_bit(_PAGE_BIT_DIRTY, &ptep->pte_low);
-> +	if (ret)
-> +		pte_update_defer(vma->vm_mm, addr, ptep);
-> +	return ret;
->  }
->  
+> c) Something else, similar to the above.  Various schemes can be
+>    envisaged, it isn't terribly important for this discussion.
+> 
+> 
+> Let me repeat: this all has a huge upside in that it reuses the existing
+> page reclaimation logic.  And cpusets.  Yes, we do discover glitches, but
+> those glitches (such as Christoph's recent discovery of suboptimal
+> interaction between cpusets and the global dirty ratio) get addressed, and
+> we tend to strengthen the overall MM system as we address them.
+> 
+> 
+> So what are the downsides?  I think mainly the sharing issue:
 
-i386 allmodconfig:
+Honestly, I think there is another huge problem:
+*Effeciency*. Look, when you have a single hardware zone,
+kernel is able to do LRU shrinking efficiently when there is a global
+memory shortage. People tend to overcommit memory,
+so efficient behaviour in situations when none of the containers
+are over their limit, but we run out of memory - is important for us.
 
-include/asm/pgtable.h: In function 'ptep_test_and_clear_dirty':
-include/asm/pgtable.h:294: error: dereferencing pointer to incomplete type
-include/asm/pgtable.h: In function 'ptep_test_and_clear_young':
-include/asm/pgtable.h:306: error: dereferencing pointer to incomplete type
+I imagine how good it will work when we have 200 containers on the node
+and each should be scanned and shrinked one by one.
+Imho with zones approach it is a fundamental limitation
+which can not be overcome in efficient and
+fair (regarding to containers) manner.
 
-Due to vm_area_struct.
+>>>The issue with pagecache (afaik) is that if we use 
+>>>containers based on physical pages (an approach which 
+>>>is much preferred by myself) then we can get in a 
+>>>situation where a pagecache page is physically in 
+>>>container A, is not actually used by any process in 
+>>>container A, but is being releatedly referenced by 
+>>>processes which are in other containers and hence 
+>>>unjustly consumes resources in container A.  
+>>
+>>>How significant a problem this is likely to be I do 
+>>>not know. 
+>>
+>>well, with a little imagination, you can extrapolate
+>>that from the data you removed from this email, as one
+>>example case would be to start two unified guests one
+>>after the other, then shutdown almost everything in
+>>the first one, you will end up with the first one being
+>>accounted all the 'shared' data used by the second one
+>>while the second one will have roughly the resources
+>>accounted the first one actually uses ...
+> 
+> 
+> Right - that sort of thing.
+> 
+> But how much of a problem will it be *in practice*?  Probably a lot of
+> people just won't notice or care.  There will be a few situations where it
+> may be a problem, but perhaps we can address those?  Forced migration of
+> pages from one zone into another is possible.  Or change the reclaim code
+> so that a page which hasn't been referenced from a process within its
+> hardware container is considered unreferenced (so it gets reclaimed).  Or a
+> manual nuke-all-the-pages knob which system administration tools can use. 
+> All doable, if we indeed have a demonstrable problem which needs to be
+> addressed.
+> 
+> And I do think it's worth trying to address these things, because the
+> thought of implementing a brand new memory reclaim mechanism scares the
+> pants off me.
 
-Turning it into a stinky macro fixes it.
+I think code is mergeable. It requires some efforts, but imho
+it is better way to go. What do you think?
 
-
-diff -puN include/asm-i386/pgtable.h~i386-use-pte_update_defer-in-ptep_test_and_clear_dirtyyoung-fix include/asm-i386/pgtable.h
---- a/include/asm-i386/pgtable.h~i386-use-pte_update_defer-in-ptep_test_and_clear_dirtyyoung-fix
-+++ a/include/asm-i386/pgtable.h
-@@ -284,28 +284,24 @@ do {									\
- } while (0)
- 
- #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_DIRTY
--static inline int ptep_test_and_clear_dirty(struct vm_area_struct *vma,
--					    unsigned long addr, pte_t *ptep)
--{
--	int ret = 0;
--	if (pte_dirty(*ptep))
--		ret = test_and_clear_bit(_PAGE_BIT_DIRTY, &ptep->pte_low);
--	if (ret)
--		pte_update_defer(vma->vm_mm, addr, ptep);
--	return ret;
--}
-+#define ptep_test_and_clear_dirty(vma, addr, ptep) ({			\
-+	int ret = 0;							\
-+	if (pte_dirty(*ptep))						\
-+		ret = test_and_clear_bit(_PAGE_BIT_DIRTY, &ptep->pte_low); \
-+	if (ret)							\
-+		pte_update_defer(vma->vm_mm, addr, ptep);		\
-+	ret;								\
-+})
- 
- #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
--static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
--					    unsigned long addr, pte_t *ptep)
--{
--	int ret = 0;
--	if (pte_young(*ptep))
--		ret = test_and_clear_bit(_PAGE_BIT_ACCESSED, &ptep->pte_low);
--	if (ret)
--		pte_update_defer(vma->vm_mm, addr, ptep);
--	return ret;
--}
-+#define ptep_test_and_clear_young(vma, addr, ptep) ({			\
-+	int ret = 0;							\
-+	if (pte_young(*ptep))						\
-+		ret = test_and_clear_bit(_PAGE_BIT_ACCESSED, &ptep->pte_low); \
-+	if (ret)							\
-+		pte_update_defer(vma->vm_mm, addr, ptep);		\
-+	ret;								\
-+})
- 
- /*
-  * Rules for using ptep_establish: the pte MUST be a user pte, and
-_
-
+Thanks,
+Kirill
