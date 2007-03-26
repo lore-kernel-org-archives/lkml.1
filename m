@@ -1,81 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933509AbXCZDk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933379AbXCZEFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933509AbXCZDk3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 23:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933535AbXCZDk2
+	id S933379AbXCZEFJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 00:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933535AbXCZEFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 23:40:28 -0400
-Received: from [64.62.148.172] ([64.62.148.172]:4926 "EHLO arnor.apana.org.au"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933509AbXCZDk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 23:40:27 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: zohar@linux.vnet.ibm.com (Mimi Zohar)
-Subject: Re: [RFC][Patch 3/6] integrity: EVM as an integrity service provider
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-Organization: Core
-In-Reply-To: <1173369828.5981.3.camel@localhost.localdomain>
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1HVg4A-0002vq-00@gondolin.me.apana.org.au>
-Date: Mon, 26 Mar 2007 13:40:18 +1000
+	Mon, 26 Mar 2007 00:05:09 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34500 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933158AbXCZEFG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 00:05:06 -0400
+Date: Mon, 26 Mar 2007 06:05:09 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [3/6] 2.6.21-rc4: known regressions
+Message-ID: <20070326040509.GU16477@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070318184919.GW752@stusta.de> <b6a2187b0703251825l2b2ab9d3j43e17523cbca87ac@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <b6a2187b0703251825l2b2ab9d3j43e17523cbca87ac@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
->
-> +int update_file_hash(struct dentry *dentry, struct file *f,
-> +                    struct hash_desc *desc)
-> +{
+On Mon, Mar 26, 2007 at 09:25:51AM +0800, Jeff Chua wrote:
+> On 3/19/07, Adrian Bunk <bunk@stusta.de> wrote:
+> 
+> >Subject    : ThinkPad doesn't resume from suspend to RAM
+> >References : http://lkml.org/lkml/2007/2/27/80
+> >             http://lkml.org/lkml/2007/2/28/348
+> >Submitter  : Jens Axboe <jens.axboe@oracle.com>
+> >             Jeff Chua <jeff.chua.linux@gmail.com>
+> >Status     : unknown
+> >
+> >
+> >Subject    : suspend to disk hangs
+> >References : http://lkml.org/lkml/2007/3/6/142
+> >Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+> >Status     : unknown
+> 
+> The good news is on 2.6.21-rc5, suspend to disk, and resume from disk works.
+> But, it only works with CONFIG_NO_HZ unset.
 
-...
+Thanks for this information.
 
-> +       while (offset < i_size) {
-> +               rbuf_len = kernel_read(file, offset, rbuf, PAGE_SIZE);
-> +               if (rbuf_len <= 0)
-> +                       break;
-> +               offset += rbuf_len;
-> +               sg[0].page = virt_to_page(rbuf);
-> +               sg[0].offset = ((long)rbuf & ~PAGE_MASK);
-> +               sg[0].length = rbuf_len;
-> +
-> +               crypto_hash_update(desc, sg, rbuf_len);
+> Setting CONFIG_NO_HZ will cause suspend to disk to hang just before
+> saving memory to disk.
 
-You should check for errors here and on all calls to crypto_hash_*
-that return errors.
+Thanks, noted.
 
-> +int evm_calc_hash(struct dentry *dentry, struct file *file, char *digest,
-> +                 int xattr_type)
-> +{
-> +       struct crypto_hash *tfm;
-> +       struct hash_desc desc;
-> +       int error = 0;
-> +
-> +       if (!dentry && !file)
-> +               return -ENOENT;
-> +
-> +       tfm = crypto_alloc_hash(evm_hash, 0, CRYPTO_ALG_ASYNC);
-> +       if (!tfm) {
+> Resume from RAM (s2ram) still broke (tried with or without
+> CONFIG_NO_HZ). Suspend to RAM seems ok, but upon resume, the screen
+> will only display "inu" and only after pressing the power button will
+> the system return to console. But "date" still doesn't advance.
 
-That should be !IS_ERR(tfm).
+This might be related to the following regression:
 
-> +static int __init init_evm(void)
-> +{
-> +       int error;
-> +
-> +       if (strncmp(evm_hash, "sha1", 4) == 0) {
-> +               evm_hash_type = EVM_TYPE_SHA1;
-> +               hash_digest_size = SHA1_DIGEST_SIZE;
-> +               hash_str_size = SHA1_STR_SIZE;
+Subject    : first disk access after resume takes several minutes
+             ('date' does not advance after resume from RAM, CONFIG_NO_HZ=n)
+References : http://lkml.org/lkml/2007/3/8/117
+             http://lkml.org/lkml/2007/3/25/20
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+             Ingo Molnar <mingo@elte.hu>
+Status     : problem is being debugged
 
-This looks suspect.  Can you guarantee that only md5/sha1 are used?
-If not you should be getting these from the tfm.  If yes then you
-shouldn't allow arbitrary strings to be used.
+> Thanks,
+> Jeff.
 
-Cheers,
+cu
+Adrian
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
