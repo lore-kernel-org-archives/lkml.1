@@ -1,60 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbXCZVpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXCZVzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932963AbXCZVpT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 17:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbXCZVpT
+	id S932812AbXCZVzY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 17:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbXCZVzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 17:45:19 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:61096 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932963AbXCZVpR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 17:45:17 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH -mm] Blackfin arch: add kdebug header file
-Date: Mon, 26 Mar 2007 23:45:08 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-References: <1174903941.32691.72.camel@roc-desktop>
-In-Reply-To: <1174903941.32691.72.camel@roc-desktop>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Mon, 26 Mar 2007 17:55:24 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:54201 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932812AbXCZVzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 17:55:23 -0400
+Date: Mon, 26 Mar 2007 14:55:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCHES] V4L/DVB fixes
+In-Reply-To: <1174881954.4364.5.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0703261454340.6730@woody.linux-foundation.org>
+References: <1174881954.4364.5.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703262345.09489.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/0QcxR+Lfw0uuol82QBtof+/5A3uioTPPpcHs
- bvyBogmLEUwpE8QNet8k8Li7WXuSynalYIAYQk8AtvVT61zEUZ
- NKzApsqPlwbwFsBJ0HhwQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I can see nothing wrong with your patches, but you should make the
-patch descriptions a little clearer:
 
-On Monday 26 March 2007, Wu, Bryan wrote:
-> Hi folks,
 
-No need for this line, if it's there, Andrew just needs to remove
-it from the changelog.
+On Mon, 26 Mar 2007, Mauro Carvalho Chehab wrote:
+>
+> Please pull 'master' from:
+>         git://git.kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
 
-> This patch adds kdebug.h header file to blackfin architecture.
+"Already up-to-date".
 
-This line is completely redundant, as it states the same information
-as the subject. You should give some background information here,
-like:
+Forgot to push?
 
-kdebug.h is needed for kprobes.
-
-For trivial patches where the subject already tells the whole story
-(e.g. 'remove redundant declaration of foo'), just leave out the
-description entirely except for the Signed-off-by.
-
-	Arnd <><
-you can even leave out the description
+		Linus
