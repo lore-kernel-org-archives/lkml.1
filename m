@@ -1,33 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbXCZM0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752445AbXCZMaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752427AbXCZM0O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 08:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbXCZM0N
+	id S1752445AbXCZMaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 08:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbXCZMaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 08:26:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50971 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752427AbXCZM0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 08:26:12 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0703261512120.13921@sbz-30.cs.Helsinki.FI> 
-References: <Pine.LNX.4.64.0703261512120.13921@sbz-30.cs.Helsinki.FI> 
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       bryan.wu@analog.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: revoke: no revoke for nommu 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Mon, 26 Mar 2007 13:25:59 +0100
-Message-ID: <11139.1174911959@redhat.com>
+	Mon, 26 Mar 2007 08:30:07 -0400
+Received: from www.osadl.org ([213.239.205.134]:36245 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752440AbXCZMaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 08:30:05 -0400
+Subject: Re: Linux 2.6.21-rc5
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Bob Tracy <rct@gherkin.frus.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       johnstul@us.ibm.com
+In-Reply-To: <20070326122526.BD45DDBA1@gherkin.frus.com>
+References: <20070326122526.BD45DDBA1@gherkin.frus.com>
+Content-Type: text/plain
+Date: Mon, 26 Mar 2007 14:30:02 +0200
+Message-Id: <1174912202.4182.34.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+On Mon, 2007-03-26 at 07:25 -0500, Bob Tracy wrote:
+> Thomas Gleixner wrote:
+> > This fix from John Stultz is still missing:
+> > 
+> > http://lkml.org/lkml/2007/3/22/287
+> > 
+> > It's in Andrews queue already and waits to be sent to you.
+> 
+> In summary, that fix is a workaround to allow the acpi_pm clocksource
+> to be selected instead of the pit clocksource, thereby allowing my
+> Dell laptop with the PIIX4 bug to boot.  Other apic, clocksource, etc.
+> patches that were included in -rc5 fixed the problem that caused the
+> boot process to hang when the pit clocksource was selected, as I
+> suspected would be the case :-).
 
-> There's just no sane way to revoke shared memory mappings for NOMMU so lets
-> disable the thing completely when CONFIG_MMU=n.
+Ah. Ok
 
-I think that's reasonable for now - we can always add support as far as
-possible later.
+> Per John's message in the above URL, while the fix is no longer needed
+> for allowing the laptop to boot, it's probably still "a good thing" to
+> allow a better clocksource to be selected.
 
-David
+Yes. The read three times pmtimer is faster and more reliable than the
+PIT.
+
+	tglx
+
+
+
