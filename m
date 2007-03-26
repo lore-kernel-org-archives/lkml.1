@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933235AbXCZAgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXCZAuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933235AbXCZAgG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 20:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933258AbXCZAgG
+	id S933265AbXCZAuP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 20:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXCZAuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 20:36:06 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:33856 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933235AbXCZAgE (ORCPT
+	Sun, 25 Mar 2007 20:50:15 -0400
+Received: from mail2.ics.ntts.co.jp ([202.32.24.42]:51887 "EHLO
+	mail2.ics.ntts.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933265AbXCZAuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 20:36:04 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=t+rMMYJns24GkvA0pFGWXStqBAS3BEwDWx//yggV+hReAC3WDZV/pqIqpicA6O4kL
-	7tmExn6lh1WgALIz3mtlg==
-Date: Sun, 25 Mar 2007 17:35:54 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org
-Subject: [patch -mm 2/2] smaps: use ptep_test_and_clear_young
-In-Reply-To: <Pine.LNX.4.64.0703251731040.19025@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0703251733080.19025@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0703251731040.19025@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 25 Mar 2007 20:50:13 -0400
+X-Greylist: delayed 669 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Mar 2007 20:50:12 EDT
+Date: Mon, 26 Mar 2007 09:38:15 +0900 (JST)
+Message-Id: <20070326.093815.465778826.takamiya@po.ntts.co.jp>
+To: usagi-core@linux-ipv6.org, greg@kroah.com
+Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: (usagi-core 32640) Re: [linux-usb-devel] [PATCH 0/2] [SERIAL]
+ [USB] fixed to skip NULL entry in struct serial usb_serial_port.
+From: Noriaki TAKAMIYA <takamiya@po.ntts.co.jp>
+In-Reply-To: <20070325155521.GA11663@kroah.com>
+References: <20070324212253.GA26215@kroah.com>
+	<20070325.144740.432839277.takamiya@linux-ipv6.org>
+	<20070325155521.GA11663@kroah.com>
+X-Face: +<)&j!Ce24nM@a.\f6TA,]^9Q76[_QN_[QR-(bT&>b40Oo[:`R(>b7!b-|q5k&.8CO[_Oh_
+ !9Nk0rikK70~?|08EFH|:]iF6pwPlnfEn-wo-voY:rP?%7p%cxjnbf'hglO'se&QwZN7/RVX!U7*P%
+ cTV('HfHp+?g1+hx7\+J.W]<O~hbwx[4hPPO=T<7aV2^7["&p^h4:YbY6,bS,ecZ7S5<pIUTnT''}k
+ ={TEs)bN%-8Jdo~.Q_lpa-fN^.Fo9dFB*}\@=PK@0pmvZ3k0p-5hMQ<bjyK{enk/sOQ[<(k]}Q\p>G
+ zYWv%LsDc
+X-Mailer: Mew version 5.1 on XEmacs 21.4.17 (Jumbo Shrimp)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use arch-specified ptep_test_and_clear_young() to clear the pte accessed
-bits for /proc/pid/clear_refs.  This avoids a race condition if a pte is
-modified between pte_mkold() and set_pte_at().
+Hi,
 
-Cc: Hugh Dickins <hugh@veritas.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- fs/proc/task_mmu.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+>> Sun, 25 Mar 2007 08:55:21 -0700
+>> [Subject: (usagi-core 32640) Re: [linux-usb-devel] [PATCH 0/2] [SERIAL] [USB] fixed to skip NULL entry in struct serial usb_serial_port.]
+>> Greg KH <greg@kroah.com> wrote...
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -277,10 +277,7 @@ static void clear_refs_one_pmd(struct vm_area_struct *vma, pmd_t *pmd,
- 			continue;
- 
- 		/* Clear accessed and referenced bits. */
--		if (pte_young(ptent)) {
--			ptent = pte_mkold(ptent);
--			set_pte_at(vma->vm_mm, addr, pte, ptent);
--		}
-+		ptep_test_and_clear_young(vma, addr, pte);
- 		ClearPageReferenced(page);
- 	}
- 	pte_unmap_unlock(pte - 1, ptl);
+> >   Yes, this problem was already fixed.
+> 
+> Great, thanks for testing.  So I guess both of these patches are no
+> longer necessary, right?
+
+  I think so. But I wonder if usb_get_serial_port_data() should check
+  the argument for the other drivers.
+
+  Regards,
+
+--
+Noriaki TAKAMIYA
