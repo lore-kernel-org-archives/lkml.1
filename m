@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXCZAuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbXCZAus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933265AbXCZAuP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Mar 2007 20:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXCZAuP
+	id S933223AbXCZAus (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Mar 2007 20:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933283AbXCZAus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Mar 2007 20:50:15 -0400
-Received: from mail2.ics.ntts.co.jp ([202.32.24.42]:51887 "EHLO
-	mail2.ics.ntts.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933265AbXCZAuN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Mar 2007 20:50:13 -0400
-X-Greylist: delayed 669 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Mar 2007 20:50:12 EDT
-Date: Mon, 26 Mar 2007 09:38:15 +0900 (JST)
-Message-Id: <20070326.093815.465778826.takamiya@po.ntts.co.jp>
-To: usagi-core@linux-ipv6.org, greg@kroah.com
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: (usagi-core 32640) Re: [linux-usb-devel] [PATCH 0/2] [SERIAL]
- [USB] fixed to skip NULL entry in struct serial usb_serial_port.
-From: Noriaki TAKAMIYA <takamiya@po.ntts.co.jp>
-In-Reply-To: <20070325155521.GA11663@kroah.com>
-References: <20070324212253.GA26215@kroah.com>
-	<20070325.144740.432839277.takamiya@linux-ipv6.org>
-	<20070325155521.GA11663@kroah.com>
-X-Face: +<)&j!Ce24nM@a.\f6TA,]^9Q76[_QN_[QR-(bT&>b40Oo[:`R(>b7!b-|q5k&.8CO[_Oh_
- !9Nk0rikK70~?|08EFH|:]iF6pwPlnfEn-wo-voY:rP?%7p%cxjnbf'hglO'se&QwZN7/RVX!U7*P%
- cTV('HfHp+?g1+hx7\+J.W]<O~hbwx[4hPPO=T<7aV2^7["&p^h4:YbY6,bS,ecZ7S5<pIUTnT''}k
- ={TEs)bN%-8Jdo~.Q_lpa-fN^.Fo9dFB*}\@=PK@0pmvZ3k0p-5hMQ<bjyK{enk/sOQ[<(k]}Q\p>G
- zYWv%LsDc
-X-Mailer: Mew version 5.1 on XEmacs 21.4.17 (Jumbo Shrimp)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 25 Mar 2007 20:50:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49176 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933223AbXCZAui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Mar 2007 20:50:38 -0400
+From: Neil Brown <neilb@suse.de>
+To: "Phy Prabab" <phyprabab@gmail.com>
+Date: Mon, 26 Mar 2007 10:50:31 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17927.6359.721594.133569@notabene.brown>
+Cc: "Adrian Bunk" <bunk@stusta.de>, linux-kernel@vger.kernel.org,
+       nfs@lists.sourceforge.net
+Subject: Re: Opps in 2.6.21-rc4 nfsd
+In-Reply-To: message from Phy Prabab on Friday March 23
+References: <2fe399760703221224g40fc44ddof41d1fcd442612d5@mail.gmail.com>
+	<20070323152913.GH752@stusta.de>
+	<2fe399760703230845s4f652df0v9fd57e1aa7943e4e@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
->> Sun, 25 Mar 2007 08:55:21 -0700
->> [Subject: (usagi-core 32640) Re: [linux-usb-devel] [PATCH 0/2] [SERIAL] [USB] fixed to skip NULL entry in struct serial usb_serial_port.]
->> Greg KH <greg@kroah.com> wrote...
-
-> >   Yes, this problem was already fixed.
+On Friday March 23, phyprabab@gmail.com wrote:
+> Adrian et al,
 > 
-> Great, thanks for testing.  So I guess both of these patches are no
-> longer necessary, right?
+> Under 2.6.20.2+3 I get a similar crash and more frequently.  At least
+> under 2.6.21rc4 I only get this about once every two hours under heavy
+> nfs testing.
 
-  I think so. But I wonder if usb_get_serial_port_data() should check
-  the argument for the other drivers.
+That is very odd.  The code where it is crashing in the trace you
+provide does not exist in 2.6.20 at all.
 
-  Regards,
+Do you have an Oops trace from when it crashed under 2.6.20.x ??
 
---
-Noriaki TAKAMIYA
+I'll try to have a patch for you to try on 2.6.21rc4 shortly.
+
+What version of nfs-utils are you using?
+
+Thanks,
+NeilBrown
