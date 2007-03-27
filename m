@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXC0HIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965211AbXC0HJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965287AbXC0HIh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965280AbXC0HIh
+	id S965211AbXC0HJW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 03:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965289AbXC0HJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:08:37 -0400
-Received: from www.osadl.org ([213.239.205.134]:48398 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965277AbXC0HIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:08:36 -0400
-Subject: [PATCH] i386: Fix bogus return value in hpet_next_event()
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>
-In-Reply-To: <1174900868.4182.21.camel@chaos>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	 <1174900868.4182.21.camel@chaos>
-Content-Type: text/plain
-Date: Tue, 27 Mar 2007 09:08:26 +0200
-Message-Id: <1174979306.4023.7.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Mar 2007 03:09:22 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:45079 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965211AbXC0HJV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 03:09:21 -0400
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+In-reply-to: <20070326174535.4f21bed3.akpm@linux-foundation.org> (message from
+	Andrew Morton on Mon, 26 Mar 2007 17:45:35 -0700)
+Subject: Re: [patch] add file position info to proc
+References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu> <20070326174535.4f21bed3.akpm@linux-foundation.org>
+Message-Id: <E1HW5nH-0003P1-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 27 Mar 2007 09:08:35 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The clockevents / tick management code expects an error value, when the
-event is already expired. hpet_next_event() returns 1 in that case.
+> > This patch adds support for finding out the current file position,
+> > open flags and possibly other info in the future.
+> 
+> fs/proc/base.c: In function 'proc_lookupfdinfo':
+> fs/proc/base.c:1584: warning: passing argument 3 of 'proc_lookupfd_common' from incompatible pointer type
+> fs/proc/base.c: In function 'proc_readfdinfo':
+> fs/proc/base.c:1590: warning: passing argument 4 of 'proc_readfd_common' from incompatible pointer type
+> 
+> If taken, that callback into proc_lookupfd_common() will crash the kernel.
 
-Fix it to return the proper -ETIME error code.
+Ugh.  Some constification in -mm that I hadn't noticed.  Resending.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
-index f3ab61e..76afea6 100644
---- a/arch/i386/kernel/hpet.c
-+++ b/arch/i386/kernel/hpet.c
-@@ -197,7 +197,7 @@ static int hpet_next_event(unsigned long delta,
- 	cnt += delta;
- 	hpet_writel(cnt, HPET_T0_CMP);
- 
--	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0);
-+	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0) ? -ETIME : 0;
- }
- 
- /*
-
-
+Thanks,
+Miklos
