@@ -1,65 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbXC0DcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbXC0Dcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbXC0DcH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 23:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932293AbXC0DcH
+	id S1752982AbXC0Dcp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 23:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbXC0Dco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 23:32:07 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45744 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933963AbXC0DcF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 23:32:05 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "Thomas Meyer" <thomas@m3y3r.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Len Brown" <lenb@kernel.org>
-Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
-References: <617E1C2C70743745A92448908E030B2A0148323B@scsmsx411.amr.corp.intel.com>
-Date: Mon, 26 Mar 2007 21:29:43 -0600
-In-Reply-To: <617E1C2C70743745A92448908E030B2A0148323B@scsmsx411.amr.corp.intel.com>
-	(Tony Luck's message of "Mon, 26 Mar 2007 13:01:05 -0700")
-Message-ID: <m1r6rbz7mg.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 26 Mar 2007 23:32:44 -0400
+Received: from ozlabs.org ([203.10.76.45]:35871 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752982AbXC0Dcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 23:32:43 -0400
+Subject: Re: [patch 3/5] i386-gdt-pda Update lguest to initialize gdt
+	without pda
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       xen-devel@lists.xensource.com, virtualization@lists.osdl.org
+In-Reply-To: <20070327002841.672969672@goop.org>
+References: <20070327002129.240126099@goop.org>
+	 <20070327002841.672969672@goop.org>
+Content-Type: text/plain
+Date: Tue, 27 Mar 2007 13:32:18 +1000
+Message-Id: <1174966338.12230.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Luck, Tony" <tony.luck@intel.com> writes:
+On Mon, 2007-03-26 at 17:21 -0700, Jeremy Fitzhardinge wrote:
+> plain text document attachment (lguest-use-percpu.patch)
 
->> What I'm proposing we do is move the irq allocation code out of
->> pci_enable_device and the irq freeing code out of pci_disable_device
->> in the future.
->
-> Sounds rational ... in a world that wasn't dominated by PCI it would
-> seem to be the logical approach (since the irq code would have much
-> more utility independent of the PCI code).
+Thanks for the fixup Jeremy!
 
-Right.  We can even do this earlier in the pci code.  Just doing this
-on demand when the device driver needs it is problematic.  As devices
-drivers like to keep the requested over a pci_disable_device pci_enable_device
-pair.
+	Unfortunately that doesn't quite work.  But it turns out we don't need
+to load the GDT at all: we can run off the Host-supplied one until we
+load the gdt naturally.
 
-The big practical issue is that we will like wind up allocating an irq
-number to all usable irqs on ia64.  Which means we will like need many
-more irq numbers...  Although I guess if we keep it at the pci layer
-we should be fairly safe.
+So I prefer this patch:
+===
+Lguest now doesn't need to touch the GDT at all: it can run on the
+Host-supplied boot gdt until it reloads later in the boot process.
 
-I was afraid there was some hotplug reason for waiting until pci_enable_device
-to allocate the irq numbers.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>
+---
+ arch/i386/lguest/lguest.c |   15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
->> Tony, Len before we merge any fixes for 2.6.21-rcX I'd like to at
->> least get an ack on the long term direction.
->
-> Long-term-direction-acked-by: Tony Luck <tony.luck@intel.com>
+diff -r 3349222e5f58 arch/i386/lguest/lguest.c
+--- a/arch/i386/lguest/lguest.c	Tue Mar 27 12:57:46 2007 +1000
++++ b/arch/i386/lguest/lguest.c	Tue Mar 27 13:28:20 2007 +1000
+@@ -34,7 +34,6 @@
+ #include <asm/desc.h>
+ #include <asm/setup.h>
+ #include <asm/e820.h>
+-#include <asm/pda.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/mce.h>
+ 
+@@ -448,10 +447,6 @@ static void lguest_power_off(void)
+ {
+ 	hcall(LHCALL_CRASH, __pa("Power down"), 0, 0);
+ }
+-
+-/* From head.S */
+-extern void setup_pda(void);
+-extern struct Xgt_desc_struct early_gdt_descr;
+ 
+ static __attribute_used__ __init void lguest_init(void)
+ {
+@@ -513,11 +508,6 @@ static __attribute_used__ __init void lg
+ 	/* We use top of mem for initial pagetables. */
+ 	init_pg_tables_end = __pa(pg0);
+ 
+-	/* set up PDA descriptor */
+-	setup_pda();
+-	load_gdt(&early_gdt_descr);
+-	asm volatile ("mov %0, %%fs" : : "r" (__KERNEL_PDA) : "memory");
+-
+ 	reserve_top_address(lguest_data.reserve_mem);
+ 
+ 	cpu_detect(&new_cpu_data);
 
-Thanks.  Then small surgery will happen now, and I will start queuing up
-the major surgery patches.  Although I won't be able to do more than
-compile test and code review the ia64 changes.
 
-Eric
