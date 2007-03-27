@@ -1,69 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbXC0KtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXC0Kxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbXC0KtH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 06:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXC0KtH
+	id S1753797AbXC0Kxn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 06:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXC0Kxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 06:49:07 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:65374 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753789AbXC0KtD (ORCPT
+	Tue, 27 Mar 2007 06:53:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:11346 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753797AbXC0Kxm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 06:49:03 -0400
+	Tue, 27 Mar 2007 06:53:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=MyalkoI6TvUp/W4YkGi+Jjb0zwBBUUQUM11JsrgzU+iSlyCASvJpKwW1+hhyS2Y4H9OrT0eGOsVG/Hi0/FzGQQidhDgZ+IMsMrl4rYsjTR/6+8cJLpa3Ufj7qNYENx+7bS1hN4jM5oJ3IOTM9mvVIYDlXI4pJswoDyCYfiiwaOQ=
-Message-ID: <4608F699.9030102@gmail.com>
-Date: Tue, 27 Mar 2007 19:48:57 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XqVaI/zJPOc/eHv+NF0nFGlMpPC4+XAx2Ug3DIZEcBizIj+ST+NNLkyfws6Yn/mT4ECacdZOVz4d+JC4LZwpnQPT7ggU34zyf4/wcT22+Vis0iqmwIWmMXlMWyESh702SC8KIXuquS6TQhPYPuC6wTh7KUS7n4jsu9trXd0KCQQ=
+Message-ID: <6d6a94c50703270353w22c3c994t84dc4b964f221c4b@mail.gmail.com>
+Date: Tue, 27 Mar 2007 18:53:39 +0800
+From: "Aubrey Li" <aubreylee@gmail.com>
+To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3][RFC] Containers: Pagecache controller reclaim
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       ckrm-tech@lists.sourceforge.net, "Balbir Singh" <balbir@in.ibm.com>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, devel@openvz.org, xemul@sw.ru,
+       "Paul Menage" <menage@google.com>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <4608E799.2050801@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Conke Hu <conke.hu@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>, Alan <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] ahci.c: walkaround for SB600 SATA internal error issue
-References: <5767b9100703270333k71361b89n756281124fd78c80@mail.gmail.com>
-In-Reply-To: <5767b9100703270333k71361b89n756281124fd78c80@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45ED251C.2010400@linux.vnet.ibm.com>
+	 <45ED266E.7040107@linux.vnet.ibm.com>
+	 <6d6a94c50703262044q22e94538i5e79a32a82f7c926@mail.gmail.com>
+	 <4608C4F6.4020407@linux.vnet.ibm.com>
+	 <6d6a94c50703270141u5e59f73dj8bef0de0cfed1924@mail.gmail.com>
+	 <4608E799.2050801@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Conke Hu wrote:
->   There is a HW issue in ATI SB600 SATA that PxSERR.E should not be
-> set on some conditions, for example, when there is no media in SATA
-> CD/DVD drive or media is not ready, AHCI controller fails to execute
-> ATAPI commands and reports PORT_IRQ_TF_ERR, but ATI SB600 SATA
-> controller sets PxSERR.E at the
-> same time, which is not necessary.
->    This patch is just to ignore the INTERNAL ERROR in such case.
-> Without this patch, ahci error handler will report many errors as
-> below:
->    ----------- cut from dmesg -----------
-> ata9: soft resetting port
-> ata9: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata9.00: configured for UDMA/33
-> ata9: EH complete
-> ata9.00: exception Emask 0x40 SAct 0x0 SErr 0x800 action 0x2
-> ata9.00: (irq_stat 0x40000001)
-> ata9.00: cmd a0/00:00:00:00:20/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0
->        res 51/24:03:00:00:20/00:00:00:00:00/a0 Emask 0x40 (internal error)
-> ata9: soft resetting port
-> ata9: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata9.00: configured for UDMA/33
-> ata9: EH complete
-> ata9.00: exception Emask 0x40 SAct 0x0 SErr 0x800 action 0x2
-> ata9.00: (irq_stat 0x40000001)
-> ata9.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x43 data 12 in
->        res 51/24:03:00:00:00/00:00:00:00:00/a0 Emask 0x40 (internal error)
->    -------- end cut ---------
-> 
-> Signed-off-by: Conke Hu <conke.hu@amd.com>
+On 3/27/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+>
+>
+> Aubrey Li wrote:
+> > On 3/27/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> >> Correct, shrink_page_list() is called from shrink_inactive_list() but
+> >> the above code is patched in shrink_active_list().  The
+> >> 'force_reclaim_mapped' label is from function shrink_active_list() and
+> >> not in shrink_page_list() as it may seem in the patch file.
+> >>
+> >> While removing pages from active_list, we want to select only
+> >> pagecache pages and leave the remaining in the active_list.
+> >> page_mapped() pages are _not_ of interest to pagecache controller
+> >> (they will be taken care by rss controller) and hence we put it back.
+> >>  Also if the pagecache controller is below limit, no need to reclaim
+> >> so we put back all pages and come out.
+> >
+> > Oh, I just read the patch, not apply it to my local tree, I'm working
+> > on 2.6.19 now.
+> > So the question is, when vfs pagecache limit is hit, the current
+> > implementation just reclaim few pages, so it's quite possible the
+> > limit is hit again, and hence the reclaim code will be called again
+> > and again, that will impact application performance.
+>
+> Yes, you are correct.  So if we start reclaiming one page at a time,
+> then the cost of reclaim is very high and we would be calling the
+> reclaim code too often.  Hence we have a 'buffer zone' or 'reclaim
+> threshold' or 'push back' around the limit.  In the patch we have a 64
+> page (256KB) NR_PAGES_RECLAIM_THRESHOLD:
+>
+>  int pagecache_acct_shrink_used(unsigned long nr_pages)
+>  {
+>         unsigned long ret = 0;
+>         atomic_inc(&reclaim_count);
+> +
+> +       /* Don't call reclaim for each page above limit */
+> +       if (nr_pages > NR_PAGES_RECLAIM_THRESHOLD) {
+> +               ret += shrink_container_memory(
+> +                               RECLAIM_PAGECACHE_MEMORY, nr_pages, NULL);
+> +       }
+> +
+>         return 0;
+>  }
+>
+> Hence we do not call the reclaimer if the threshold is exceeded by
+> just 1 page... we wait for 64 pages or 256KB of pagecache memory to go
+>  overlimit and then call the reclaimer which will reclaim all 64 pages
+> in one shot.
+>
+> This prevents the reclaim code from being called too often and it also
+> keeps the cost of reclaim low.
+>
+> In future patches we are planing to have a percentage based reclaim
+> threshold so that it would scale well with the container size.
+>
+Actually it's not a good idea IMHO. No matter how big the threshold
+is, it's not suitable. If it's too small, application performance will
+be impacted seriously after pagecache limit is hit. If it's too large,
+Limiting pagecache is useless.
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+Why not reclaim pages as much as possible when the pagecache limit is hit?
 
--- 
-tejun
+-Aubrey
