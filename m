@@ -1,38 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934188AbXC0THA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934189AbXC0TNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934188AbXC0THA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 15:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934189AbXC0THA
+	id S934189AbXC0TNc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 15:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934191AbXC0TNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 15:07:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49647 "EHLO mx1.redhat.com"
+	Tue, 27 Mar 2007 15:13:31 -0400
+Received: from Mail.MNSU.EDU ([134.29.1.12]:48878 "EHLO mail.mnsu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934188AbXC0TG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 15:06:59 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <8bd0f97a0703271000x2910b2fan573fd37bb45a058d@mail.gmail.com> 
-References: <8bd0f97a0703271000x2910b2fan573fd37bb45a058d@mail.gmail.com>  <Pine.LNX.4.64.0703261447190.13229@sbz-30.cs.Helsinki.FI> <20070326024143.a226c9b2.akpm@linux-foundation.org> <1174904637.32691.86.camel@roc-desktop> <6017.1174908318@redhat.com> <6791.1174909459@redhat.com> <11045.1174911764@redhat.com> <Pine.LNX.4.64.0703261525370.14158@sbz-30.cs.Helsinki.FI> <22674.1174915478@redhat.com> <8bd0f97a0703261321h356a849am1ab617f0e732fa67@mail.gmail.com> <27782.1174989913@redhat.com> 
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Pekka J Enberg" <penberg@cs.helsinki.fi>,
-       "Andrew Morton" <akpm@linux-foundation.org>, bryan.wu@analog.com,
-       linux-kernel@vger.kernel.org, "Hugh Dickins" <hugh@veritas.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm] Revoke core code: fix nommu arch compiling error bug 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 27 Mar 2007 20:06:28 +0100
-Message-ID: <26771.1175022388@redhat.com>
+	id S934189AbXC0TNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 15:13:31 -0400
+Message-ID: <46096CD7.1010100@mnsu.edu>
+Date: Tue, 27 Mar 2007 14:13:27 -0500
+From: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Oliver Joa <oliver@j-o-a.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
+References: <46094344.4090007@j-o-a.de>
+In-Reply-To: <46094344.4090007@j-o-a.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger <vapier.adi@gmail.com> wrote:
+Oliver Joa wrote:
+>
+> I also often get a sata-bus-reset with the kernels 2.6.19.2
+> and 2.6.20.2.
+>
+> What can I do to find the problem? I think about to change
+> from xfs to ext2 but the filesystemcheck every 30 mounts lasts
+> a long time.
+>
+> Do you have any Idea?
+>
 
-> > That sounds reasonable.  However, I suspect that most NOMMU CPUs won't be
-> > able to do that.  In effect you're creating a third option, I think (MMU,
-> > NOMMU, MPU).
-> 
-> sure, but i'm not sure the MPU option would be mutually exclusive with
-> NOMMU ... in the Blackfin case, we'd want both ...
+In this whole message I can only help on this point.  Switching to ext2 
+will not help.  You've got *something* wrong with YOUR setup.  I have 
+used the kernels you mention in VERY large environments with excellent 
+and stable results.
 
-I imagine that MPU would be a superset of NOMMU.
+You need to find out what's up with the sata-bus-reset problem.  It 
+won't do *me* any good but people who can fix your problem will want the 
+entire .config and dmesg to even guess about what is going on with 
+*your* situation.
 
-David
+For more info on XFS.  This is a pretty nice FAQ:
+http://oss.sgi.com/projects/xfs/faq.html
+
+-- 
+Jeffrey Hundstad
