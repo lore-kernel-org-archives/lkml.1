@@ -1,294 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934232AbXC0W3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934231AbXC0W3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934232AbXC0W3K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 18:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934231AbXC0W2o
+	id S934231AbXC0W3M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 18:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934227AbXC0W2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 18:28:44 -0400
-Received: from 49.sub-75-208-212.myvzw.com ([75.208.212.49]:55531 "EHLO
+	Tue, 27 Mar 2007 18:28:47 -0400
+Received: from 49.sub-75-208-212.myvzw.com ([75.208.212.49]:55525 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934230AbXC0W2l (ORCPT
+	with ESMTP id S934226AbXC0W2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 18:28:41 -0400
-Message-Id: <20070327215828.171904908@goop.org>
+	Tue, 27 Mar 2007 18:28:42 -0400
+Message-Id: <20070327215827.871954359@goop.org>
 References: <20070327214919.800272641@goop.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 27 Mar 2007 14:49:23 -0700
+Date: Tue, 27 Mar 2007 14:49:20 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>, virtualization@lists.osdl.org,
        Prarit Bhargava <prarit@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Chris Lalancette <clalance@redhat.com>
-Subject: [patch 4/4] Add global disable/enable for softlockup watchdog
-Content-Disposition: inline; filename=softlockup-global-enable.patch
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Chris Lalancette <clalance@redhat.com>,
+       Rick Lindsley <ricklind@us.ibm.com>
+Subject: [patch 1/4] Ignore stolen time in the softlockup watchdog
+Content-Disposition: inline; filename=softlockup-ignore-stolen-time.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some machine-wide activities can cause spurious softlockup watchdog
-warnings, so add a mechanism to allow the watchdog to be disabled.
+The softlockup watchdog is currently a nuisance in a virtual machine,
+since the whole system could have the CPU stolen from it for a long
+period of time.  While it would be unlikely for a guest domain to be
+denied timer interrupts for over 10s, it could happen and any softlockup
+message would be completely spurious.
 
-The most obvious activity is suspend/resume, but long sysrq output can
-also stall the system long enough to cause problems.
+Earlier I proposed that sched_clock() return time in unstolen
+nanoseconds, which is how Xen and VMI currently implement it.  If the
+softlockup watchdog uses sched_clock() to measure time, it would
+automatically ignore stolen time, and therefore only report when the
+guest itself locked up.  When running native, sched_clock() returns
+real-time nanoseconds, so the behaviour would be unchanged.
+
+Note that sched_clock() used this way is inherently per-cpu, so this
+patch makes sure that the per-processor watchdog thread initialized
+its own timestamp.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: john stultz <johnstul@us.ibm.com>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: Dan Hecht <dhecht@vmware.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: Prarit Bhargava <prarit@redhat.com>
 Cc: Chris Lalancette <clalance@redhat.com>
+Cc: Rick Lindsley <ricklind@us.ibm.com>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
-
 ---
- drivers/char/sysrq.c  |    8 +++++
- include/linux/sched.h |   10 ++++++
- kernel/panic.c        |    3 +-
- kernel/power/swsusp.c |    3 +-
- kernel/softlockup.c   |   72 ++++++++++++++++++++++++++++++++++++++++++-------
- kernel/timer.c        |    4 ++
- 6 files changed, 87 insertions(+), 13 deletions(-)
+ kernel/softlockup.c |   37 ++++++++++++++++++++++++++++++-------
+ 1 file changed, 30 insertions(+), 7 deletions(-)
 
-===================================================================
---- a/drivers/char/sysrq.c
-+++ b/drivers/char/sysrq.c
-@@ -211,7 +211,11 @@ static struct sysrq_key_op sysrq_showreg
- 
- static void sysrq_handle_showstate(int key, struct tty_struct *tty)
- {
-+	softlockup_global_disable();  /* may take a while */
-+
- 	show_state();
-+
-+	softlockup_global_enable();
- }
- static struct sysrq_key_op sysrq_showstate_op = {
- 	.handler	= sysrq_handle_showstate,
-@@ -222,7 +226,11 @@ static struct sysrq_key_op sysrq_showsta
- 
- static void sysrq_handle_showstate_blocked(int key, struct tty_struct *tty)
- {
-+	softlockup_global_disable();  /* may take a while */
-+
- 	show_state_filter(TASK_UNINTERRUPTIBLE);
-+
-+	softlockup_global_enable();
- }
- static struct sysrq_key_op sysrq_showstate_blocked_op = {
- 	.handler	= sysrq_handle_showstate_blocked,
-===================================================================
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -243,6 +243,10 @@ extern int  softlockup_disable(void);
- extern int  softlockup_disable(void);
- extern void softlockup_enable(int state);
- 
-+/* Disable/re-enable softlockup watchdog on all CPUs */
-+extern void softlockup_global_disable(void);
-+extern void softlockup_global_enable(void);
-+
- extern void spawn_softlockup_task(void);
- extern void touch_softlockup_watchdog(void);
- #else
-@@ -263,6 +267,12 @@ static inline void softlockup_enable(int
- static inline void softlockup_enable(int state)
- {
- 	preempt_enable();
-+}
-+static inline void softlockup_global_enable(void)
-+{
-+}
-+static inline void softlockup_global_disable(void)
-+{
- }
- static inline void spawn_softlockup_task(void)
- {
-===================================================================
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -131,8 +131,9 @@ NORET_TYPE void panic(const char * fmt, 
-         disabled_wait(caller);
- #endif
- 	local_irq_enable();
-+	softlockup_global_disable();
-+
- 	for (i = 0;;) {
--		touch_softlockup_watchdog();
- 		i += panic_blink(i);
- 		mdelay(1);
- 		i++;
-===================================================================
---- a/kernel/power/swsusp.c
-+++ b/kernel/power/swsusp.c
-@@ -289,6 +289,7 @@ int swsusp_suspend(void)
- 	 * that suspended with irqs off ... no overall powerup.
- 	 */
- 	device_power_up();
-+	softlockup_global_disable();
-  Enable_irqs:
- 	local_irq_enable();
- 	return error;
-@@ -323,7 +324,7 @@ int swsusp_resume(void)
- 	 */
- 	swsusp_free();
- 	restore_processor_state();
--	touch_softlockup_watchdog();
-+	softlockup_global_enable();
- 	device_power_up();
- 	local_irq_enable();
- 	return error;
 ===================================================================
 --- a/kernel/softlockup.c
 +++ b/kernel/softlockup.c
-@@ -17,10 +17,21 @@
- 
- static DEFINE_SPINLOCK(print_lock);
+@@ -35,9 +35,19 @@ static struct notifier_block panic_block
+ 	.notifier_call = softlock_panic,
+ };
  
 +/*
-+ * Since sched_clock() is inherently per-cpu, its not possible to
-+ * update another CPU's timestamp.  To deal with this, we add an extra
-+ * state meaning "enabled, but timestamp needs update".
++ * Returns seconds, approximately.  We don't need nanosecond
++ * resolution, and we don't need to waste time with a big divide when
++ * 2^30ns == 1.074s.
 + */
-+enum state {
-+	SL_OFF = 0,		/* disabled */
-+	SL_UPDATE,		/* enabled, but timestamp old */
-+	SL_ON,			/* enabled */
-+};
++static unsigned long get_timestamp(void)
++{
++	return sched_clock() >> 30;  /* 2^30 ~= 10^9 */
++}
 +
- static DEFINE_PER_CPU(unsigned long, touch_timestamp);
- static DEFINE_PER_CPU(unsigned long, print_timestamp);
- static DEFINE_PER_CPU(struct task_struct *, watchdog_task);
--static DEFINE_PER_CPU(int, enabled);
-+static DEFINE_PER_CPU(enum state, softlock_state);
- 
- static int did_panic = 0;
- 
-@@ -48,7 +59,12 @@ static unsigned long get_timestamp(void)
- 
- void inline touch_softlockup_watchdog(void)
+ void touch_softlockup_watchdog(void)
  {
-+	if (__raw_get_cpu_var(softlock_state) == SL_OFF)
-+		return;
-+
- 	__raw_get_cpu_var(touch_timestamp) = get_timestamp();
-+	barrier();
-+	__raw_get_cpu_var(softlock_state) = SL_ON;
+-	__raw_get_cpu_var(touch_timestamp) = jiffies;
++	__raw_get_cpu_var(touch_timestamp) = get_timestamp();
  }
  EXPORT_SYMBOL(touch_softlockup_watchdog);
  
-@@ -58,7 +74,7 @@ EXPORT_SYMBOL(touch_softlockup_watchdog)
-  */
- void inline softlockup_tick_disable(void)
+@@ -48,10 +58,18 @@ void softlockup_tick(void)
+ void softlockup_tick(void)
  {
--	__get_cpu_var(enabled) = 0;
-+	__get_cpu_var(softlock_state) = SL_OFF;
- }
+ 	int this_cpu = smp_processor_id();
+-	unsigned long touch_timestamp = per_cpu(touch_timestamp, this_cpu);
++	unsigned long touch_timestamp = __get_cpu_var(touch_timestamp);
++	unsigned long print_timestamp;
++	unsigned long now;
  
- /*
-@@ -73,7 +89,7 @@ int softlockup_disable(void)
- 
- 	preempt_disable();
- 
--	ret = __get_cpu_var(enabled);
-+	ret = __get_cpu_var(softlock_state) == SL_OFF;
- 	softlockup_tick_disable();
- 
- 	return ret;
-@@ -86,7 +102,7 @@ EXPORT_SYMBOL(softlockup_disable);
-  */
- void inline softlockup_tick_enable(void)
- {
--	__get_cpu_var(enabled) = 1;
-+	__get_cpu_var(softlock_state) = SL_UPDATE;
- }
- 
- /*
-@@ -96,15 +112,41 @@ void softlockup_enable(int state)
- void softlockup_enable(int state)
- {
- 	if (state) {
--		touch_softlockup_watchdog();
--		/* update timestamp before enable */
--		barrier();
- 		softlockup_tick_enable();
-+		touch_softlockup_watchdog();
+-	/* prevent double reports: */
+-	if (per_cpu(print_timestamp, this_cpu) == touch_timestamp ||
++	/* watchdog task hasn't updated timestamp yet */
++	if (touch_timestamp == 0)
++		return;
++
++	print_timestamp = __get_cpu_var(print_timestamp);
++
++	/* report at most once a second */
++	if (print_timestamp < (touch_timestamp + 1) ||
+ 		did_panic ||
+ 			!per_cpu(watchdog_task, this_cpu))
+ 		return;
+@@ -62,12 +80,14 @@ void softlockup_tick(void)
+ 		return;
  	}
  
- 	preempt_enable();
- }
- EXPORT_SYMBOL(softlockup_enable);
++	now = get_timestamp();
 +
-+/*
-+ * Disable softlockup watchdog on all CPUs.  This is useful for
-+ * globally disruptive activities, like suspend/resume or large sysrq
-+ * debug outputs.
-+ */
-+void softlockup_global_disable()
-+{
-+	unsigned cpu;
+ 	/* Wake up the high-prio watchdog task every second: */
+-	if (time_after(jiffies, touch_timestamp + HZ))
++	if (now > (touch_timestamp + 1))
+ 		wake_up_process(per_cpu(watchdog_task, this_cpu));
+ 
+ 	/* Warn about unreasonable 10+ seconds delays: */
+-	if (time_after(jiffies, touch_timestamp + 10*HZ)) {
++	if (now > (touch_timestamp + 10)) {
+ 		per_cpu(print_timestamp, this_cpu) = touch_timestamp;
+ 
+ 		spin_lock(&print_lock);
+@@ -87,6 +107,9 @@ static int watchdog(void * __bind_cpu)
+ 
+ 	sched_setscheduler(current, SCHED_FIFO, &param);
+ 	current->flags |= PF_NOFREEZE;
 +
-+	for_each_online_cpu(cpu)
-+		per_cpu(softlock_state, cpu) = SL_OFF;
-+}
-+EXPORT_SYMBOL(softlockup_global_disable);
-+
-+/*
-+ * Globally re-enable soft lockups.  This will obviously interfere
-+ * with any CPU's local softlockup disable, but with luck that won't
-+ * matter.
-+ */
-+void softlockup_global_enable()
-+{
-+	unsigned cpu;
-+
-+	for_each_online_cpu(cpu)
-+		per_cpu(softlock_state, cpu) = SL_UPDATE;
-+}
-+EXPORT_SYMBOL(softlockup_global_enable);
++	/* initialize timestamp */
++	touch_softlockup_watchdog();
  
- /*
-  * This callback runs from the timer interrupt, and checks
-@@ -117,9 +159,19 @@ void softlockup_tick(void)
- 	unsigned long print_timestamp;
- 	unsigned long now;
- 
--	/* return if not enabled */
--	if (!__get_cpu_var(enabled))
--		return;
-+	switch(__get_cpu_var(softlock_state)) {
-+	case SL_OFF:
-+		/* not enabled */
-+		return;
-+
-+	case SL_UPDATE:
-+		/* update timestamp */
-+		touch_softlockup_watchdog();
-+		return;
-+
-+	case SL_ON:
-+		break;
-+	}
- 
- 	print_timestamp = __get_cpu_var(print_timestamp);
- 
-===================================================================
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -1011,7 +1011,7 @@ static int timekeeping_resume(struct sys
- 	timekeeping_suspended = 0;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
--	touch_softlockup_watchdog();
-+	softlockup_global_enable();
- 
- 	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- 
-@@ -1029,6 +1029,8 @@ static int timekeeping_suspend(struct sy
- 	timekeeping_suspended = 1;
- 	timekeeping_suspend_time = read_persistent_clock();
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
-+
-+	softlockup_global_disable();
- 
- 	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
- 
+ 	/*
+ 	 * Run briefly once per second to reset the softlockup timestamp.
+@@ -120,7 +143,7 @@ cpu_callback(struct notifier_block *nfb,
+ 			printk("watchdog for %i failed\n", hotcpu);
+ 			return NOTIFY_BAD;
+ 		}
+-  		per_cpu(touch_timestamp, hotcpu) = jiffies;
++  		per_cpu(touch_timestamp, hotcpu) = 0;
+   		per_cpu(watchdog_task, hotcpu) = p;
+ 		kthread_bind(p, hotcpu);
+  		break;
 
 -- 
 
