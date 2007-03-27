@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965397AbXC0UeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965410AbXC0Uiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965397AbXC0UeY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 16:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965404AbXC0UeY
+	id S965410AbXC0Uiy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 16:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965412AbXC0Uiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 16:34:24 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:61431 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965397AbXC0UeW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 16:34:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=VtYg30MO0DkFNIL+EzXKaVqG8Zxp04/c+HAidqW395o+Lrs41O7BMA7uwVPBiKBALxKM19A9EcKn6D64yxsCVLitVwd+LUl3qZNyxDm2/wAC06UBTZ2WHa1UbKtaCQDb/hRPLe5NDf+JUvmi5jfpEzaxFoXuB54RzO7Go7NGrGw=
-Message-ID: <2fe399760703271334j1fe56c9ctc83e1310620d7728@mail.gmail.com>
-Date: Tue, 27 Mar 2007 13:34:21 -0700
-From: "Phy Prabab" <phyprabab@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Issues with knfsd + solaris clients
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Tue, 27 Mar 2007 16:38:54 -0400
+Received: from sp604003mt.neufgp.fr ([84.96.92.56]:49910 "EHLO smTp.neuf.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965410AbXC0Uix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 16:38:53 -0400
+Date: Tue, 27 Mar 2007 22:30:26 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: 2.6.21-rc5-mm1
+In-reply-to: <20070327131214.656e1ad7.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Badari Pulavarty <pbadari@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Message-id: <46097EE2.6010206@cosmosbay.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 8BIT
+References: <20070326205706.a750bb35.akpm@linux-foundation.org>
+ <1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com>
+ <20070327084838.34dc1b84.akpm@linux-foundation.org>
+ <1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com>
+ <20070327131214.656e1ad7.akpm@linux-foundation.org>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello once again!
+Andrew Morton a écrit :
+> On Tue, 27 Mar 2007 09:57:50 -0800
+> Badari Pulavarty <pbadari@gmail.com> wrote:
+> 
+>> On Tue, 2007-03-27 at 08:48 -0800, Andrew Morton wrote:
+>>> On Tue, 27 Mar 2007 09:39:33 -0800 Badari Pulavarty <pbadari@gmail.com> wrote:
+>>>
+>>>> On Mon, 2007-03-26 at 20:57 -0800, Andrew Morton wrote:
+>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm1/
+>>>>>
+>>>>
+>>>>   LD      init/built-in.o
+>>>>   LD      .tmp_vmlinux1
+>>>> ld: section .vsyscall_1 [0000000000645400 -> 000000000064542e] overlaps
+>>>> section .jiffies [0000000000645400 -> 0000000000645407]
+>>>> ld: .tmp_vmlinux1: section .vsyscall_1 lma 0x645400 overlaps previous
+>>>> sections
+>>>> make: *** [.tmp_vmlinux1] Error 1
+>>>>
+>>> bah.  Please send .config.
+>> #
+>> # Automatically generated make config: don't edit
+>> # Linux kernel version: 2.6.21-rc5-mm1
+> 
+> The wheel spins around, slows then settles on.... 
+> time-smp-friendly-alignment-of-struct-clocksource.patch!
+> 
+> Presumably because the ____cacheline_aligned made vsyscall_gtod_data_t get
+> too big.  Or something.
+> 
 
-Here is a little bit more information on my issue with slowlaris and
-knfs 2.6.21-rc4/5 (actually appears in 2.4.20.x).  Running this from
-the client (x.org source code):
-> ls -l xc/lib/Xmu/Xct.h
--rw-rw-r-- 1 phy bdf 0 2006-01-09 06:59 xc/lib/Xmu/Xct.h
-> file xc/lib/Xmu/Xct.h
-xc/lib/Xmu/Xct.h:       cannot read: Is a directory
-> rm -rf xc/lib/Xmu/Xct.h
-rm: cannot remove `xc/lib/Xmu/Xct.h': Not owner
-> uname -a
-SunOS mm3 5.10 Generic_118855-14 i86pc i386 i86pc Solaris
->chmod 777 xc/lib/Xmu/Xct.h
-> rm -rf xc/lib/Xmu/Xct.h
-rm: cannot remove `xc/lib/Xmu/Xct.h': Not owner
->
+Maybe yes... 1024 bytes to code vsyscall0 is tricky.
 
-I would think the file would not be directory and if I tried to remove
-it, I should be able as owner and permissions are correct.  This is on
-a solaris 10 on intel, but I also see this problem on solaris 8, 9 and
-10 on sparc.  Again, AIX5303 and 04 and all linux clients (2.4.x,
-2.6.x) seem to be fine.
+But then I remember I posted a patch some time ago to remove __jiffie from 
+vsyscall page... no answer yet from Andi.
 
-The file server is a dual dual core Opteron running 2.6.21-rc4+5 (but
-also see this problem with 2.6.20.x), knfsd, XFS file system on LVM2
-partition, on a 3Ware 9650 14 disk RAID 10.  Using nfs-1.0.12 and
-LVM2.0.22 (?).
-
-Also posting to LKML.
-
-Any help is greatly appreciated.
-TIA,
-Phy
-
------ Original Message ----
-From: Phy Prabab <phyprabab@yahoo.com>
-To: nfs@lists.sourceforge.net
-Sent: Tuesday, March 27, 2007 12:32:16 PM
-Subject: Issues with 2.6.21-rc4/5 and slowlaris 8
-
-Hello,
-
-I am having some issues with slowlaris 8 sparc and linux 2.6.21-rc4/5
-(actually, 2.6.20.x as well) with directory permissions.  The client
-is the slowlaris box mounting a file system (XFS, LVM, DM, 3Ware 9650)
-from the linux box.  I extract some files from a tar ball and then try
-to delete them, I get permission denied, however, the files are owned
-by my uid and the file permissions are 775.  Any help figuring this
-out would be most welcome.  I can provide plenty of debugging if
-needed.
-
-TIA!
-Phy
