@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965338AbXC0UOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965345AbXC0UQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965338AbXC0UOq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 16:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXC0UOp
+	id S965345AbXC0UQK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 16:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965352AbXC0UQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 16:14:45 -0400
-Received: from mail.zelnet.ru ([80.92.97.13]:48179 "EHLO mail.zelnet.ru"
+	Tue, 27 Mar 2007 16:16:10 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:41304 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965338AbXC0UOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 16:14:44 -0400
-Message-ID: <46097B27.6090606@namesys.com>
-Date: Wed, 28 Mar 2007 00:14:31 +0400
-From: Edward Shishkin <edward@namesys.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Ignatich <ignatich@gmail.com>
-CC: reiserfs-list@namesys.com, linux-kernel@vger.kernel.org,
-       Jonathan Briggs <jbriggs@esoft.com>
-Subject: Re: [Fwd: reiser4 bugs in 2.6.21-rc4]
-References: <460974EE.8080006@gmail.com>
-In-Reply-To: <460974EE.8080006@gmail.com>
-X-Enigmail-Version: 0.86.0.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	id S965345AbXC0UQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 16:16:09 -0400
+Date: Tue, 27 Mar 2007 13:12:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: 2.6.21-rc5-mm1
+Message-Id: <20070327131214.656e1ad7.akpm@linux-foundation.org>
+In-Reply-To: <1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com>
+References: <20070326205706.a750bb35.akpm@linux-foundation.org>
+	<1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com>
+	<20070327084838.34dc1b84.akpm@linux-foundation.org>
+	<1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ignatich wrote:
+On Tue, 27 Mar 2007 09:57:50 -0800
+Badari Pulavarty <pbadari@gmail.com> wrote:
 
->
->
-> ------------------------------------------------------------------------
->
-> Subject:
-> reiser4 bugs in 2.6.21-rc4
-> From:
-> Ignatich <ignatich@gmail.com>
-> Date:
-> Tue, 27 Mar 2007 23:29:18 +0400
-> To:
-> linux-kernel@vger.kernel.org
->
-> To:
-> linux-kernel@vger.kernel.org
->
-> Message-ID:
-> <4609708E.5090908@gmail.com>
-> User-Agent:
-> Thunderbird 1.5.0.10 (Windows/20070221)
-> MIME-Version:
-> 1.0
-> Content-Type:
-> text/plain; charset=windows-1251; format=flowed
-> Content-Transfer-Encoding:
-> 7bit
->
->
-> There are two bugs I found in current -mm reiser4 code.
->
-> 1. Some files seem to be zeroed out randomly. Usually it's 
-> /lib/security/pam_limits.so and /lib/security/pam_deny.so. As 
-> fsck.reiser4 didn't find anything wrong I decided to create clean 
-> installation in vmware and see if this bug appears on newly formatted 
-> partition. It did.
->
-> 2. Sometimes I get oppses in reiser4_do_readpage_extent. Assert codes 
-> are vs-1426 and nikita-2688. A patch was posted on namesys list to 
-> address this problem, but it didn't help.
->
-> Kernel: 2.6.21-rc4 with manually applied reiser4 patches from -mm. 
-> Arch: x86-64
->
+> On Tue, 2007-03-27 at 08:48 -0800, Andrew Morton wrote:
+> > On Tue, 27 Mar 2007 09:39:33 -0800 Badari Pulavarty <pbadari@gmail.com> wrote:
+> > 
+> > > On Mon, 2007-03-26 at 20:57 -0800, Andrew Morton wrote:
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm1/
+> > > > 
+> > > 
+> > > 
+> > >   LD      init/built-in.o
+> > >   LD      .tmp_vmlinux1
+> > > ld: section .vsyscall_1 [0000000000645400 -> 000000000064542e] overlaps
+> > > section .jiffies [0000000000645400 -> 0000000000645407]
+> > > ld: .tmp_vmlinux1: section .vsyscall_1 lma 0x645400 overlaps previous
+> > > sections
+> > > make: *** [.tmp_vmlinux1] Error 1
+> > > 
+> > 
+> > bah.  Please send .config.
+> 
+> #
+> # Automatically generated make config: don't edit
+> # Linux kernel version: 2.6.21-rc5-mm1
 
-We are working on this.
-Thanks for reports,
+The wheel spins around, slows then settles on.... 
+time-smp-friendly-alignment-of-struct-clocksource.patch!
 
-Edward.
+Presumably because the ____cacheline_aligned made vsyscall_gtod_data_t get
+too big.  Or something.
 
