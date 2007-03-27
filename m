@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbXC0TtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965153AbXC0UJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650AbXC0TtN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 15:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbXC0TtM
+	id S965153AbXC0UJg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 16:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965336AbXC0UJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 15:49:12 -0400
-Received: from sccrmhc15.comcast.net ([63.240.77.85]:60869 "EHLO
-	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbXC0TtL (ORCPT
+	Tue, 27 Mar 2007 16:09:36 -0400
+Received: from science.horizon.com ([192.35.100.1]:15209 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965153AbXC0UJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 15:49:11 -0400
-Date: Tue, 27 Mar 2007 11:49:35 -0700
-From: Deepak Saxena <dsaxena@plexity.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH -rt] Remove duplicate CONFIG_CLOCKEVENTS in ARM kconfig
-Message-ID: <20070327184935.GA6437@plexity.net>
-Reply-To: dsaxena@plexity.net
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Plexity Networks
-User-Agent: Mutt/1.5.11
+	Tue, 27 Mar 2007 16:09:35 -0400
+Date: 27 Mar 2007 16:09:33 -0400
+Message-ID: <20070327200933.6321.qmail@science.horizon.com>
+From: linux@horizon.com
+To: akpm@linux-foundation.org, linux@horizon.com
+Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, miklos@szeredi.hu
+In-Reply-To: <20070327123422.d0bbc064.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Deepak Saxena <dsaxena@mvista.com>
+> Suggest you use msync(MS_ASYNC), then
+> sync_file_range(SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE).
 
-Index: linux-2.6.21-rc5/arch/arm/Kconfig
-===================================================================
---- linux-2.6.21-rc5.orig/arch/arm/Kconfig
-+++ linux-2.6.21-rc5/arch/arm/Kconfig
-@@ -33,10 +33,6 @@ config GENERIC_CLOCKEVENTS
- 	bool
- 	default n
- 
--config GENERIC_CLOCKEVENTS
--	bool
--	default n
--
- config MMU
- 	bool
- 	default y
+Thank you; I didn't know about that.  And I can handle -ENOSYS by falling
+back to the old behavior.
 
--- 
-Deepak Saxena - dsaxena@plexity.net - http://www.plexity.net
+> We can fix your application, and we'll break someone else's.
 
-In the end, they will not say, "those were dark times,"  they will ask
-"why were their poets silent?" - Bertolt Brecht
+If you can point to an application that it'll break, I'd be a lot more
+understanding.  Nobody did, last year.
+
+> I don't think it's solveable, really - the range of applications is so
+> broad, and the "standard" is so vague as to be useless.
+
+I agree that standards are sometimes vague, but that one seemed about
+as clear as it's possible to be without imposing unreasonably on
+the file system and device driver layers.
+
+What part of "The msync() function writes all modified data to
+permanent storage locations [...] For mappings to files, the msync()
+function ensures that all write operations are completed as defined
+for synchronised I/O data integrity completion." suggests that it's not
+supposed to do disk I/O?  How is that uselessly vague?
+
+It says to me that msync's raison d'être is to write data from RAM to
+stable storage.  If an application calls it too often, that's
+the application's fault just as if it called sync(2) too often.
+
+> This is why we've
+> been extending these things with linux-specific goodies which permit
+> applications to actually tell the kernel what they want to be done in a
+> more finely-grained fashion.
+
+Well, I still think the current Linux behavior is a bug, but there's a
+usable (and run-time compatible) workaround that doesn't unreasonably
+complicate the code, and that's good enough.
