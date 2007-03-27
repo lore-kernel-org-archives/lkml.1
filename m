@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750700AbXC0HuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750911AbXC0HvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750700AbXC0HuH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbXC0HuH
+	id S1750911AbXC0HvE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 03:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXC0HvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:50:07 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:43976 "EHLO smtp.osdl.org"
+	Tue, 27 Mar 2007 03:51:03 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:40936 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750700AbXC0HuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:50:05 -0400
-Date: Mon, 26 Mar 2007 23:49:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
-Message-Id: <20070326234957.6b287dda.akpm@linux-foundation.org>
-In-Reply-To: <E1HW6Ec-0003Tv-00@dorka.pomaz.szeredi.hu>
-References: <E1HVZyn-0008T8-00@dorka.pomaz.szeredi.hu>
-	<20070326140036.f3352f81.akpm@linux-foundation.org>
-	<E1HVwy4-0002UD-00@dorka.pomaz.szeredi.hu>
-	<20070326153153.817b6a82.akpm@linux-foundation.org>
-	<E1HW5am-0003Mc-00@dorka.pomaz.szeredi.hu>
-	<20070326232214.ee92d8c4.akpm@linux-foundation.org>
-	<E1HW6Ec-0003Tv-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1750911AbXC0HvA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 03:51:00 -0400
+Date: Tue, 27 Mar 2007 09:50:57 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       virtualization@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       Chris Lalancette <clalance@redhat.com>,
+       Rick Lindsley <ricklind@us.ibm.com>
+Subject: Re: [patch 1/2] Ignore stolen time in the softlockup watchdog
+Message-Id: <20070327095057.f4df0abc.dada1@cosmosbay.com>
+In-Reply-To: <4608C3F5.1030106@goop.org>
+References: <20070327053816.881735237@goop.org>
+	<20070327054106.664262413@goop.org>
+	<4608C121.4050309@cosmosbay.com>
+	<4608C3F5.1030106@goop.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 09:36:50 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Tue, 27 Mar 2007 00:12:53 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> > There is surely no need to duplicate all that.
+> Eric Dumazet wrote:
+> > Jeremy Fitzhardinge a écrit :
+> >
+> >> +static DEFINE_PER_CPU(unsigned long long, touch_timestamp);
+> >
+> > ...
+> >
+> >>  void touch_softlockup_watchdog(void)
+> >>  {
+> >> -    __raw_get_cpu_var(touch_timestamp) = jiffies;
+> >> +    __raw_get_cpu_var(touch_timestamp) = sched_clock();
+> >>  }
+> >
+> > Not very clear if this is safe on 32bit, since this is not anymore
+> > atomic.
 > 
-> Yeah, we could teach generic_writepages() to conditionally not submit
-> for io just test/clear pte dirtyness.
+> Hm, good point.  Don't think it matters very much.  These values are
+> per-cpu, and if an interrupt happens between the word updates and the
+> intermediate values causes a timeout, then it was pretty marginal
+> anyway.  I guess the worst case is if the low-word gets written first,
+> and it goes from a high value to low, then it could be sampled as if
+> time had gone back by up to ~4 seconds.
 > 
-> Maybe that would be somewhat cleaner, dunno.
-> 
-> Then there are the ram backed filesystems, which don't have dirty
-> accounting and radix trees, and for which this pte walking is still
-> needed to provide semantics consistent with normal filesystems.
+> I'll give it another look.
 
-hm.
+OK thanks. I noticed another 'not clear' bit in your second patch :
 
-I don't know how important all this is, really - we've had this bug for
-ever and presumably we've already trained everyone to work around it.
+void softlockup_enable(void)
+{
+	touch_softlockup_watchdog();
+	wmb();			/* update timestamp before enable */
+	__get_cpu_var(enabled) = 1;
+}
 
-What usage scenarios are people actually hurting from?  Is there anything
-interesting in the mysterious Novell Bugzilla #206431?
 
-Perhaps we can get away with doing something half-assed which covers most
-requirements...
+Are you sure wmb() is needed here ?
+
+I think a barrier() (compiler barrier) should be enough. If not, a nice comment would help too :)
+
