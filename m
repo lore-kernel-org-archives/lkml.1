@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751466AbXC0Aao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbXC0AbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751466AbXC0Aao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 20:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbXC0Aao
+	id S933832AbXC0AbB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 20:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbXC0AbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 20:30:44 -0400
-Received: from ozlabs.org ([203.10.76.45]:50799 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750978AbXC0Aan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 20:30:43 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown
-Content-Transfer-Encoding: 7bit
-Message-ID: <17928.22390.108151.757973@cargo.ozlabs.ibm.com>
-Date: Tue, 27 Mar 2007 09:29:58 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, fenkes@de.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org
-Subject: Re: 2.6.21-rc4-mm1
-In-Reply-To: <1174938450.16728.8.camel@dyn9047017100.beaverton.ibm.com>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<1174938450.16728.8.camel@dyn9047017100.beaverton.ibm.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Mon, 26 Mar 2007 20:31:01 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55918 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933855AbXC0Aa7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 20:30:59 -0400
+Date: Tue, 27 Mar 2007 11:30:45 +1100
+From: David Chinner <dgc@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, dgc@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] fix illogical behavior in balance_dirty_pages()
+Message-ID: <20070327003045.GV32597093@melbourne.sgi.com>
+References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu> <20070325153508.10922ebd.akpm@linux-foundation.org> <E1HVkWw-0000yj-00@dorka.pomaz.szeredi.hu> <20070326010124.b4513ce2.akpm@linux-foundation.org> <E1HVlZH-00018f-00@dorka.pomaz.szeredi.hu> <20070326020823.8630bb07.akpm@linux-foundation.org> <1174915828.6792.31.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174915828.6792.31.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty writes:
-
-> Patch causing the problem in -mm:
-> 	ibmebus-uevent-support.patch
+On Mon, Mar 26, 2007 at 03:30:27PM +0200, Peter Zijlstra wrote:
+> On Mon, 2007-03-26 at 02:08 -0800, Andrew Morton wrote:
+> > On Mon, 26 Mar 2007 11:32:47 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > 
+> > > Stopping writers which have idle queues is completely unproductive,
+> > > and that is basically what the current algorithm does.
+> > 
+> > This is because the kernel permits all of its allotment of dirty+writeback
+> > pages to be dirty+writeback against a single device.
+> > 
+> > A good way of solving the one-device-starves-another-one problem is to
+> > dynamically adjust the per-device dirty+writeback levels so that (for
+> > example) if two devices are being written to, each gets 50% of the
+> > allotment.
 > 
-> I don't see where $,1rx(Bof_device_uevent$,1ry(B is defined :(
+> This is exactly what happens with my patch if both devices write at the
+> same speed. (Or at least, that is what is supposed to happen ;-)
 
-That patch depends on another one from Sylvain Munaut that I haven't
-yet managed to get Ben H. to express an opinion on, and which isn't in
--mm.  I thought I mentioned that to Andrew, but maybe I only intended
-to...
+The testing that I did of Peter's patch showed that this cache
+splitting works as advertised for multiple devices writing at
+the same speed.
 
-Paul.
+(http://marc.info/?l=linux-kernel&m=117437686328396&w=2)
 
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
