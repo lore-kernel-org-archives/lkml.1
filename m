@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbXC0AL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933856AbXC0AXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933751AbXC0AL4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 20:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXC0ALz
+	id S933856AbXC0AXl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 20:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933851AbXC0AXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 20:11:55 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:54718 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933751AbXC0ALz (ORCPT
+	Mon, 26 Mar 2007 20:23:41 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55481 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933855AbXC0AXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 20:11:55 -0400
-Date: Mon, 26 Mar 2007 17:09:51 -0700
-From: Greg KH <greg@kroah.com>
-To: Mitch Williams <mitch.a.williams@intel.com>,
-       Michael Ellerman <michael@ellerman.id.au>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       auke-jan.h.kok@intel.com
-Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
-Message-ID: <20070327000951.GA11555@kroah.com>
-References: <1174951102.22190.15.camel@strongmad>
-MIME-Version: 1.0
+	Mon, 26 Mar 2007 20:23:40 -0400
+Date: Tue, 27 Mar 2007 11:23:24 +1100
+From: David Chinner <dgc@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, dgc@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] fix illogical behavior in balance_dirty_pages()
+Message-ID: <20070327002324.GU32597093@melbourne.sgi.com>
+References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu> <20070325153508.10922ebd.akpm@linux-foundation.org> <E1HVkWw-0000yj-00@dorka.pomaz.szeredi.hu> <20070326010124.b4513ce2.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1174951102.22190.15.camel@strongmad>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070326010124.b4513ce2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 04:18:22PM -0700, Mitch Williams wrote:
-> This patch fixes a kernel bug which is triggered when using the
-> irqbalance daemon with MSI-X hardware.
+On Mon, Mar 26, 2007 at 01:01:24AM -0800, Andrew Morton wrote:
+> On Mon, 26 Mar 2007 10:26:18 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > Ditto for the case, when there are no more dirty pages destined for
+> > this queue.
+> > 
+> > I understand, that this can fill up the memory with under writeback
+> > pages, but only if the data sitting in all the device queues is
+> > comparable to the total memory.  I don't know what the realistic
+> > chance of that is but David Chinner convinced me, that it's not
+> > something that happens in real life.  Quoting him from an earlier
+> > mail:
+> > 
+> > | Right, and most ppl don't have enough devices in their system for
+> > | this to be a problem. Even those of us that do have enough devices
+> > | for this to potentially be a problem usually have enough RAM in
+> > | the machine so that it is not a problem....
+> > 
 > 
-> Because both MSI-X interrupt messages and MSI-X table writes are posted,
-> it's possible for them to cross while in-flight.  This results in
-> interrupts being received long after the kernel thinks they're disabled,
-> and in interrupts being sent to stale vectors after rebalancing.
-> 
-> This patch performs a read flush after writes to the MSI-X table for
-> enable/disable and rebalancing operations.  Because this is an expensive
-> operation, we do not perform the read flush after mask/unmask
-> operations.  Hardware which supports MSI-X typically also supports some
-> sort of interrupt moderation, so a read-flush is not necessary for
-> mask/unmask operations.
-> 
-> This patch has been validated with (unreleased) network hardware which
-> uses MSI-X.
+> David is overoptimistic ;)
 
-How well does this play with the MSI core changes that Michael Ellerman
-has proposed on the linux-pci mailing list?
+My excuse is that I have trouble thinking in units of memory smaller
+than a GB. ;)
 
-thanks,
+Cheers,
 
-greg k-h
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
