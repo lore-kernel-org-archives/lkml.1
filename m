@@ -1,53 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965426AbXC0VL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965419AbXC0VPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965426AbXC0VL5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbXC0VL5
+	id S965419AbXC0VPL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965427AbXC0VPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:11:57 -0400
-Received: from mail.screens.ru ([213.234.233.54]:49755 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965426AbXC0VL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:11:56 -0400
-Date: Wed, 28 Mar 2007 01:11:45 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       davej@codemonkey.org.uk, johnstul@us.ibm.com, mingo@elte.hu,
-       tglx@linutronix.de
-Subject: Re: [PATCH] Add support for deferrable timers (respun)
-Message-ID: <20070327211145.GB216@tv-sign.ru>
-References: <200703212353.l2LNrNOj007453@shell0.pdx.osdl.net> <20070322140532.GA120@tv-sign.ru> <20070322151817.GA29840@linux-os.sc.intel.com> <20070322161355.GA160@tv-sign.ru> <20070327204344.GA21529@linux-os.sc.intel.com>
-Mime-Version: 1.0
+	Tue, 27 Mar 2007 17:15:11 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56585 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965419AbXC0VPJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 17:15:09 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Williams, Mitch A" <mitch.a.williams@intel.com>
+Cc: "Grant Grundler" <grundler@parisc-linux.org>,
+       <linux-pci@atrey.karlin.mff.cuni.cz>, <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
+References: <08FE5CC30C9A3F41BF819A502CF7BF6EF98178@fmsmsx411.amr.corp.intel.com>
+Date: Tue, 27 Mar 2007 15:13:59 -0600
+In-Reply-To: <08FE5CC30C9A3F41BF819A502CF7BF6EF98178@fmsmsx411.amr.corp.intel.com>
+	(Mitch A. Williams's message of "Tue, 27 Mar 2007 10:15:22 -0700")
+Message-ID: <m1ps6uwfs8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070327204344.GA21529@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/27, Venki Pallipadi wrote:
+"Williams, Mitch A" <mitch.a.williams@intel.com> writes:
+
+> Eric W. Biederman wrote: 
+>>
+>>> Because enabling and disabling the MSI interrupt is done through
+>>> config space, and config space writes are not posted.  So we won't
+>>> see the problem that we do with MSI-X.
+>>
+>>Normally this is true.  However when we have  memory mapped pci config
+>>space the writes could very easily be posted.  Even if there aren't
+>>any Intel platforms that do it today other architectures might.
 >
->  	for (;;) {
-> -		base = timer->base;
-> +		tvec_base_t *prelock_base = timer->base;
-> +		base = timer_get_base(timer);
->  		if (likely(base != NULL)) {
->  			spin_lock_irqsave(&base->lock, *flags);
-> -			if (likely(base == timer->base))
-> +			if (likely(prelock_base == timer->base))
->  				return base;
+>>From what I read in the spec, configuration writes are not ever posted.
+> They are a completely separate transaction type from memory writes, and
+> only memory writes are posted.  So there's no need to read-flush these.
 
-I don't think this is correct, at least in theory.
+You may have a point there.  It isn't important at this point, and
+it is easy enough to fix at this point.
 
-Suppose that
+>>The more I think about this the more I think we should make mask and
+>>unmask do the read and set enable/disable to mask/unmask in the msi
+>>case.
+>>
+>>I think being a little more paranoid will result in slightly simpler
+>>more maintainable code, and not measurably affect performance.  I
+>>don't expect you are migrating irqs in a fast path.
+>
+> Migrating IRQs happens in the fast path, but infrequently (every 10 
+> seconds or so).  
 
-	tvec_base_t *prelock_base = timer->base;
-	base = timer_get_base(timer);
+Migrating IRQS gets called from the irq handler.  So I guess in that
+sense it qualifies as a fast path operation.   The actual irq migration
+itself is time consuming even if the individual operations aren't.  In
+large part because ioapics don't appear to obey pci ordering rules so
+flushing pending irqs is black magic :(
 
-are re-ordered (the second LOAD happens after the first one), and the timer
-changes its base in between. Now, we lock the old base, and return it because
-"prelock_base == timer->base" == true.
+The comparative low frequency is important.
 
-Oleg.
+I guess what I meant is as soon as the test to for IRQ_MOVE_PENDING
+is true we need to migrate an irq so we branch off of the fast path,
+and irq handling path, where we do what we have to make things
+work and the cost is what it takes to be reliable.
 
+> However the mask function is called at EVERY interrupt,
+> so this change would be VERY expensive.
+
+If true I think that would be bad.  However I don't see it.
+Where in handle_edge_irq do we mask the interrupt?
+The only place I see us calling ->mask is from move_native_irq
+and that only if IRQ_MOVE_PENDING is true.
+
+All I can see is us routinely calling is ack_APIC_edge.
+
+> If the driver really needs to disable the interrupt, then it can call
+> irq_disable().
+
+Agreed.  However the driver should not have any access to the mask method
+in any shape or form.  That is an internal irq implementation helper.
+
+>  Otherwise, mask (as-is) should be fine -- it masks
+> the interrupt at the APIC, and the device's interrupt moderation
+> should take care of keeping it from generating interrupts right away.
+
+Please point at code because you are reading the code quite differently
+from myself, and I think I have been over that code enough times to see
+how it operates.
+
+Eric
