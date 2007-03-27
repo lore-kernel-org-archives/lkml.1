@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934144AbXC0SSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934146AbXC0SUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934144AbXC0SSM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 14:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934146AbXC0SSM
+	id S934146AbXC0SUJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 14:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934148AbXC0SUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 14:18:12 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:42803 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934143AbXC0SSK convert rfc822-to-8bit (ORCPT
+	Tue, 27 Mar 2007 14:20:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:24503 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934146AbXC0SUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 14:18:10 -0400
+	Tue, 27 Mar 2007 14:20:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:in-reply-to:references:mime-version:content-type:message-id:cc:content-transfer-encoding:subject:date:to:x-mailer:from;
-        b=O4ZeIG+U7JEb1+ju8VAW/SNadphKUjxZvkdEA4hGHjllF5ngwpixOpvomsYbtGmOQ4dG/wTqYSEeOCpNHZPt+Jy0lo1NAF6X4BXY7ZvFonuyZFZfD5FA7kZXVq8jPhgvGqpPFt0hcO47zYcDj15W789oQnOD6Ti7IpuFrgQ9rOA=
-In-Reply-To: <4608B2B9.7090503@garzik.org>
-References: <Pine.LNX.4.64.0703241232580.11608@p34.internal.lan> <4608B2B9.7090503@garzik.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <ACBD2F44-03C7-49BE-9A2F-ABF7078BCC5E@gmail.com>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-Subject: Re: Why is NCQ enabled by default by libata? (2.6.20)
-Date: Tue, 27 Mar 2007 13:18:05 -0500
-To: Jeff Garzik <jeff@garzik.org>
-X-Mailer: Apple Mail (2.752.2)
-From: Mark Rustad <mrustad@gmail.com>
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=X5MY/Cykbw3xLD7lMKlNDtWXdIAsR+Qw24Vf47Uaro2RqwrZlbNFSWh69+4ht+2ScLFr2NFHU5lE12kk8uI7SdniP7aYEkgSENJAtPka9Kvu98W44GsJILYJbDpnvaooTNnIadtT0uAzzxxgJgYlxDhegVDFy8jH9sMmG2CwLA4=
+Date: Tue, 27 Mar 2007 22:16:08 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel-list <linux-kernel@vger.kernel.org>,
+       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Subject: Re: [PATCH] USB Elan FTDI: check for driver registration status
+Message-ID: <20070327181608.GC11753@cvg>
+References: <20070325072733.GA10257@cvg> <20070326151731.53cc080b.zaitcev@redhat.com> <20070327151405.GA11491@cvg> <20070327105116.d3eea47a.zaitcev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070327105116.d3eea47a.zaitcev@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 27, 2007, at 12:59 AM, Jeff Garzik wrote:
+[Pete Zaitcev - Tue, Mar 27, 2007 at 10:51:16AM -0700]
+| On Tue, 27 Mar 2007 19:14:05 +0400, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > --- a/drivers/usb/misc/ftdi-elan.c
+| > @@ -2903,7 +2903,7 @@ static struct usb_driver ftdi_elan_driver = {
+| >  };
+| >  static int __init ftdi_elan_init(void)
+| >  {
+| > -        int result;
+| > +        int result = 0;
+| 
+| Why do you need this?
 
-> Justin Piszcz wrote:
->> Without NCQ, performance is MUCH better on almost every operation,  
->> with the exception of 2-3 items.
->
-> Variables to take into account:
->
-> * the drive (NCQ performance wildly varies)
-> * the IO scheduler
-> * the filesystem (if not measuring direct to blkdev)
-> * application workload (or in your case, benchmark tool)
-> 	* in particular, the threaded-ness of the apps
->
-> For the overwhelming majority of combinations, NCQ should not / 
-> hurt/ performance.
->
-> For the majority of combinations, NCQ helps (though it may not be  
-> often that you use more than 4-8 tags).
->
-> In some cases, NCQ firmware may be broken.  There is a Maxtor  
-> firmware id, and some Hitachi ids that people are leaning towards  
-> recommending be added to the libata 'horkage' list.
+Setting result to 0 indicate that there is no errors. Pete, look
+this init code does the following - 
 
-Some other variables that we have noticed: Some drive firmware goes  
-into "stupid" mode when write cache is turned off. Meaning that it  
-does not reorder any queued operations. Of course if you really care  
-about your data, you don't really want to turn write cache on.
+	1) creates 3 workqueues
+	2) register usb driver
 
-Also the controller used can have unfortunate interactions. For  
-example the Adaptec SAS controller firmware will never issue more  
-than two queued commands to a SATA drive (even though the firmware  
-will happily accept more from the driver), so even if an attached  
-drive is capable of reordering queued commands, its performance is  
-seriously crippled by not getting more commands queued up. In  
-addition, some drive firmware seems to try to bunch up queued command  
-completions which interacts very badly with a controller that queues  
-up so few commands. In this case turning NCQ off performs better  
-because the drive knows it can't hold off completions to reduce  
-interrupt load on the host – a good idea gone totally wrong when used  
-with the Adaptec controller.
+So we have:
+	- at each step of creating worqueue we have to check if it was
+	  succsessfull
+	- if all workqeues were successfully created we need to check if
+	  usb registration failed
 
-Today SATA NCQ seems to be an area where few combinations work well.  
-It seems so bad to me that a whitelist might be better than a  
-blacklist. That is probably overstating it, but NCQ performance is  
-certainly a big problem.
+So we can get error on any step and there is a question how to properly
+and eleganly handle them... the solution I proposed maybe is not ideal
+but you may help me supposing your own patch :)
 
--- 
-Mark Rustad, MRustad@gmail.com
+And as result I set 'results=0' to prevent from printing message about
+worqueue fails if the error _really_ occured in usb_register. Just
+review the function at whole and you will find the reason.
 
+| > @@ -2918,18 +2918,25 @@ static int __init ftdi_elan_init(void)
+| >  	if (!respond_queue)
+| >  		goto err3;
+| >          result = usb_register(&ftdi_elan_driver);
+| > -        if (result)
+| > +        if (result) {
+| >                  printk(KERN_ERR "usb_register failed. Error number %d\n",
+| >  		       result);
+| > +		goto err4;
+| > +	}
+| >          return result;
+| >  
+| > + err4:
+| > +	destroy_workqueue(respond_queue);
+| >   err3:
+| 
+| This is fine, although I do wish you wouldn't number the exception labels.
+| If anything is changed, someone might try to rearrange and renumber them
+| and that leads to bugs.
+
+Agree, may be the labels could be like:
+
+	err_respond_queue:
+
+and so on?
+
+| 
+| >   err1:
+| > -	printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
+| > -	return -ENOMEM;
+| > +	if (result == 0) {
+| > +		result = -ENOMEM;
+| > +		printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
+| > +	}
+| > +	return result;
+| 
+| What in the world is this supposed to do? Under what conditions can
+| result be zero here?
+
+If error was in worqueue creation then there will be 0.
+
+| 
+| Personally, I would get rid of the printk. If your modprobe fails,
+| it's a good enough indication. Or at least, change the text to
+| something more neutral, like "unable to initialize (%d)" and print
+| the error code. It's not just about workqueues now.
+| 
+| -- Pete
+| 
+
+Can't agree... if modprobe failed I wonna know _where_ it happens and
+why :) Or maybe I misunderstood you...
+
+		Cyrill
 
