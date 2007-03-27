@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933907AbXC0RTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933840AbXC0RYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933907AbXC0RTO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 13:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933980AbXC0RTO
+	id S933840AbXC0RYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 13:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934013AbXC0RYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 13:19:14 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:51703 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933907AbXC0RTM (ORCPT
+	Tue, 27 Mar 2007 13:24:40 -0400
+Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:58911 "EHLO
+	rpc.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933840AbXC0RYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 13:19:12 -0400
-Subject: [PATCH -rt] fix setting of preempt_max_latency and preempt_thresh
-	on 64 bit systems
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 27 Mar 2007 13:19:07 -0400
-Message-Id: <1175015947.19634.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Tue, 27 Mar 2007 13:24:39 -0400
+X-Greylist: delayed 848 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Mar 2007 13:24:39 EDT
+Message-ID: <46095006.2000306@xensource.com>
+Date: Tue, 27 Mar 2007 10:10:30 -0700
+From: Jeremy Fitzhardinge <jeremy@xensource.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Prarit Bhargava <prarit@redhat.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Rick Lindsley <ricklind@us.ibm.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       virtualization@lists.osdl.org, Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/2] Ignore stolen time in the softlockup watchdog
+References: <20070327053816.881735237@goop.org>	<20070327054106.664262413@goop.org>	<46092C9B.4030700@redhat.com> <46094861.7080400@goop.org> <46094C02.9050702@redhat.com>
+In-Reply-To: <46094C02.9050702@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Mar 2007 17:10:29.0893 (UTC) FILETIME=[D249B350:01C77092]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+Prarit Bhargava wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> Prarit Bhargava wrote:
+>>   
+>>     
+>>> I'd like to see this patch implement/fix touch_cpu_softlockup_watchdog
+>>> and touch_softlockup_watchdog to mimic touch_nmi_watchdog's behaviour.
+>>>     
+>>>       
+>> Why?  Is that more correct?  It seems to me that you're interested in
+>> whether a specific CPU has gone and locked up.  If touching the watchdog
+>>   
+>> makes it update all CPU timestamps, then you'll hide the fact that other
+>> CPUs have locked up, won't it?
+>>
+>>   
+>>     
+> In case of misuse, yes.  But there are cases where we know that all CPUs 
+> will have softlockup issues, such as when doing a "big" sysrq-t dump.  
+> When doing the sysrq-t we take the tasklist_lock which prevents all 
+> other CPUs from scheduling -- this leads to bogus softlockup messages, 
+> so we need to reset everyone's watchdog just before releasing the 
+> tasklist_lock.
+>
+> Another question -- are you going to expose disable/enable_watchdog to 
+> other subsystems?  Or are you going to expose touch_softlockup_watchdog?
 
-I wasn't able to turn on latency tracing on a x86_64 box. Using logdev
-to see what was happening, I found that echoing 0
-into /proc/sys/kernel/preempt_max_latency would only change the max from
--1ULL to 0xffffffff00000000. Which would keep the max pretty high still.
+Well, it depends on who turns up. 
 
-The problem is in sysctl.c where preempt_max_latency can be modified. On
-systems where cycle_t is greater than the size of int (x86_64) we only
-write to the 4 LSB.
+My first thought is to export both the global enable/disable interfaces
+and touch_softlockup_watchdog.  But on second thoughts maybe
+touch_softlockup_watchdog is completely redundant, since you'd only do
+it if you're holding off timer interrupts, but the lockup only gets
+reported if timer interrupts are enabled (in other words, the best it
+can tell you is "you locked up for a while there", which isn't terribly
+useful).  So perhaps this can just be dropped.  I haven't looked at the
+users to see what they're really trying to achieve.
 
-Here's the patch:
+The enable/disable interfaces are more generally useful in that you can
+say "I *know* I'm going to go away for a while, so don't bother
+reporting it".
 
--- Steve
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-Index: linux-2.6.21-rc5/kernel/sysctl.c
-===================================================================
---- linux-2.6.21-rc5.orig/kernel/sysctl.c
-+++ linux-2.6.21-rc5/kernel/sysctl.c
-@@ -287,17 +287,17 @@ static ctl_table kern_table[] = {
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "preempt_max_latency",
- 		.data		= &preempt_max_latency,
--		.maxlen		= sizeof(int),
-+		.maxlen		= sizeof(preempt_max_latency),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
-+		.proc_handler	= &proc_doulongvec_minmax,
- 	},
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "preempt_thresh",
- 		.data		= &preempt_thresh,
--		.maxlen		= sizeof(int),
-+		.maxlen		= sizeof(preempt_thresh),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
-+		.proc_handler	= &proc_doulongvec_minmax,
- 	},
- #endif
- #ifdef CONFIG_EVENT_TRACE
-
-
+    J
