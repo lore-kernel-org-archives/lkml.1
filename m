@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXC0Ee1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933974AbXC0Er5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932908AbXC0Ee1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 00:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXC0Ee1
+	id S933974AbXC0Er5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 00:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933977AbXC0Er5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 00:34:27 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:54754 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932396AbXC0Ee0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 00:34:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eZx+jsTeK3MKBvohWr/NIGBU+jU5GeAgVtQoUqiLeY+uOh6XXKmdSmyOYRhcXUF7htidkt/1zPTfJgVg+ef3P+dvXtNXH4Y6HYjS6mkN9xUvmv6sCU35ZzEJq0S3FaQ+RLawJALCp74N3GeZmM23dwerUVMxiW32osaxyADnQB0=
-Message-ID: <8bd0f97a0703262134h20bdf8dcqb1043ca176a7149c@mail.gmail.com>
-Date: Tue, 27 Mar 2007 00:34:25 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>, "Wu, Bryan" <bryan.wu@analog.com>,
-       "Arnd Bergmann" <arnd@arndb.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] Blackfin arch: add kdebug header file
-In-Reply-To: <20070327035734.GA25883@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Mar 2007 00:47:57 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:38178 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933974AbXC0Er4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 00:47:56 -0400
+Date: Mon, 26 Mar 2007 20:47:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][ 3/5] sched: implement staircase deadline cpu scheduler
+Message-Id: <20070326204723.af7203af.akpm@linux-foundation.org>
+In-Reply-To: <200703271210.39429.kernel@kolivas.org>
+References: <200703271210.39429.kernel@kolivas.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1174903941.32691.72.camel@roc-desktop>
-	 <200703262345.09489.arnd@arndb.de>
-	 <1174966837.6966.13.camel@roc-desktop>
-	 <20070327035734.GA25883@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/26/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> You should really consider the latter for getting updates merged in the future
+On Tue, 27 Mar 2007 13:10:39 +1100 Con Kolivas <kernel@kolivas.org> wrote:
 
-we're planning for this, but the short term it isnt doable for us
+> +	DECLARE_BITMAP(bitmap, PRIO_RANGE + 1);
+> +	/*
+> +	 * This bitmap shows what priorities this task has received quota
+> +	 * from for this major priority rotation on its current runqueue.
+> +	 */
+>  	struct prio_array *array;
+> +	unsigned long rotation;
+> +	/* Which major runqueue rotation did this task run */
+>  
+>  	unsigned short ioprio;
+>  #ifdef CONFIG_BLK_DEV_IO_TRACE
+>  	unsigned int btrace_seq;
+>  #endif
+> -	unsigned long sleep_avg;
+>  	unsigned long long timestamp, last_ran;
+>  	unsigned long long sched_time; /* sched_clock time spent running */
+> -	enum sleep_type sleep_type;
+>  
+>  	unsigned long policy;
+>  	cpumask_t cpus_allowed;
+> -	unsigned int time_slice, first_time_slice;
+> +	int time_slice;
+> +	/*
+> +	 * How much this task is entitled to run at the current priority
+> +	 * before being requeued at a lower priority.
+> +	 */
+> +	unsigned int first_time_slice;
+> +	/* Is this the very first time_slice this task has ever run. */
+> +	int quota;
+> +	/* How much this task receives at each priority level */
 
-> now that most of the initial troubles are resolved.
+This is nuts.  Nobody puts the description of the fields _below_ those fields.
 
-i would say initial troubles are resolved once we're in Linus' tree :)
--mike
+I fixed it in my copy (while fixing the usual reject storm).  Please fix it
+in your tree, wherever it occurs.
+
+Weird.
