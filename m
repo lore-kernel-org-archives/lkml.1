@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965233AbXC0HAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXC0HIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965233AbXC0HAz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965268AbXC0HAz
+	id S965287AbXC0HIh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 03:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965280AbXC0HIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:00:55 -0400
-Received: from sp604005mt.neufgp.fr ([84.96.92.11]:34215 "EHLO smtp.Neuf.fr"
+	Tue, 27 Mar 2007 03:08:37 -0400
+Received: from www.osadl.org ([213.239.205.134]:48398 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965233AbXC0HAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:00:54 -0400
-Date: Tue, 27 Mar 2007 09:00:49 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 1/2] Ignore stolen time in the softlockup watchdog
-In-reply-to: <20070327054106.664262413@goop.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Chris Lalancette <clalance@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>
-Message-id: <4608C121.4050309@cosmosbay.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <20070327053816.881735237@goop.org>
- <20070327054106.664262413@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	id S965277AbXC0HIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 03:08:36 -0400
+Subject: [PATCH] i386: Fix bogus return value in hpet_next_event()
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>
+In-Reply-To: <1174900868.4182.21.camel@chaos>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+	 <1174900868.4182.21.camel@chaos>
+Content-Type: text/plain
+Date: Tue, 27 Mar 2007 09:08:26 +0200
+Message-Id: <1174979306.4023.7.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge a écrit :
+The clockevents / tick management code expects an error value, when the
+event is already expired. hpet_next_event() returns 1 in that case.
 
-> +static DEFINE_PER_CPU(unsigned long long, touch_timestamp);
+Fix it to return the proper -ETIME error code.
 
-...
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
->  void touch_softlockup_watchdog(void)
->  {
-> -	__raw_get_cpu_var(touch_timestamp) = jiffies;
-> +	__raw_get_cpu_var(touch_timestamp) = sched_clock();
->  }
-
-Not very clear if this is safe on 32bit, since this is not anymore atomic.
-
-Maybe a comment would help ?
+diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
+index f3ab61e..76afea6 100644
+--- a/arch/i386/kernel/hpet.c
++++ b/arch/i386/kernel/hpet.c
+@@ -197,7 +197,7 @@ static int hpet_next_event(unsigned long delta,
+ 	cnt += delta;
+ 	hpet_writel(cnt, HPET_T0_CMP);
+ 
+-	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0);
++	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0) ? -ETIME : 0;
+ }
+ 
+ /*
 
 
