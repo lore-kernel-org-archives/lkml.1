@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXC0Qef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbXC0Qhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933036AbXC0Qef (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 12:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933092AbXC0Qef
+	id S933127AbXC0Qhw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 12:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933131AbXC0Qhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 12:34:35 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:59059 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933036AbXC0Qed (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 12:34:33 -0400
-Subject: Re: CONFIG_SCSI_WAIT_SCAN=m
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0703271658380.26754@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0703271658380.26754@blonde.wat.veritas.com>
-Content-Type: text/plain
-Date: Tue, 27 Mar 2007 11:34:17 -0500
-Message-Id: <1175013257.3737.21.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Tue, 27 Mar 2007 12:37:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:39772 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933127AbXC0Qhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 12:37:51 -0400
+Message-ID: <46094861.7080400@goop.org>
+Date: Tue, 27 Mar 2007 09:37:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Prarit Bhargava <prarit@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       virtualization@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Chris Lalancette <clalance@redhat.com>,
+       Rick Lindsley <ricklind@us.ibm.com>
+Subject: Re: [patch 1/2] Ignore stolen time in the softlockup watchdog
+References: <20070327053816.881735237@goop.org> <20070327054106.664262413@goop.org> <46092C9B.4030700@redhat.com>
+In-Reply-To: <46092C9B.4030700@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-27 at 17:25 +0100, Hugh Dickins wrote:
-> I'm not using an initrd, most of my kernel is builtin,
-> just a few modules for occasional filesystems.
-> 
-> CONFIG_MODULES=y
-> CONFIG_SCSI=y
-> CONFIG_SCSI_SCAN_ASYNC=y
-> CONFIG_SCSI_WAIT_SCAN=m
-> 
-> 2.6.21-rc5-mm2 VFS panics unable to find my root on /dev/sda2,
-> but boots okay if I change drivers/scsi/Kconfig to "default y"
-> instead of "default m" for SCSI_WAIT_SCAN.
+Prarit Bhargava wrote:
+> I'd like to see this patch implement/fix touch_cpu_softlockup_watchdog
+> and touch_softlockup_watchdog to mimic touch_nmi_watchdog's behaviour.
 
-Hmm ... it sounds like there's a missing scsi_complete_async_scans() in
-your environment?  What's your configuration ... which SCSI drivers, and
-which are modules?
+Why?  Is that more correct?  It seems to me that you're interested in
+whether a specific CPU has gone and locked up.  If touching the watchdog
+makes it update all CPU timestamps, then you'll hide the fact that other
+CPUs have locked up, won't it?
 
-scsi_wait_async_scan is supposed to be unnecessary unless you have
-modular SCSI drivers that the initrd needs to wait for root on.
-
-James
-
-
+    J
