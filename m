@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbXC0Vhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbXC0VlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbXC0Vhi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932418AbXC0Vhi
+	id S1753519AbXC0VlF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbXC0VlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:37:38 -0400
-Received: from lazybastard.de ([212.112.238.170]:35552 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753905AbXC0Vhh (ORCPT
+	Tue, 27 Mar 2007 17:41:05 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44077 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753519AbXC0VlC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:37:37 -0400
-Date: Tue, 27 Mar 2007 23:33:40 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] add file position info to proc
-Message-ID: <20070327213339.GG27290@lazybastard.org>
-References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu> <20070327212419.GA5817@ucw.cz>
+	Tue, 27 Mar 2007 17:41:02 -0400
+Date: Tue, 27 Mar 2007 14:40:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Badari Pulavarty <pbadari@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.21-rc5-mm1
+Message-Id: <20070327144031.ef75dd53.akpm@linux-foundation.org>
+In-Reply-To: <46098CBE.7010807@cosmosbay.com>
+References: <20070326205706.a750bb35.akpm@linux-foundation.org>
+	<1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com>
+	<20070327084838.34dc1b84.akpm@linux-foundation.org>
+	<1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com>
+	<20070327131214.656e1ad7.akpm@linux-foundation.org>
+	<46098CBE.7010807@cosmosbay.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070327212419.GA5817@ucw.cz>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 March 2007 21:24:20 +0000, Pavel Machek wrote:
-> > From: Miklos Szeredi <mszeredi@suse.cz>
+On Tue, 27 Mar 2007 23:29:34 +0200
+Eric Dumazet <dada1@cosmosbay.com> wrote:
+
+> Andrew Morton a écrit :
 > > 
-> > This patch adds support for finding out the current file position,
-> > open flags and possibly other info in the future.
+> > The wheel spins around, slows then settles on.... 
+> > time-smp-friendly-alignment-of-struct-clocksource.patch!
 > > 
-> > These new entries are added:
-> > 
-> >   /proc/PID/fdinfo/FD
-> >   /proc/PID/task/TID/fdinfo/FD
-> > 
-> > For each fd the information is provided in the following format:
-> > 
-> > pos:	1234
-> > flags:	0100002
+> > Presumably because the ____cacheline_aligned made vsyscall_gtod_data_t get
+> > too big.  Or something.
 > 
-> Octal? Maybe we should use more traditional hex here? Or even list
-> flags by name?
+> Very strange, since here I have plenty of available room (256 bytes) :
+> 
+> ffffffffff600000 T vgettimeofday
+> ffffffffff60004e t vsysc2
+> ffffffffff600140 t vread_hpet
+> ffffffffff600150 t vread_tsc
+> ffffffffff600180 D __vsyscall_gtod_data
+> ffffffffff600280 D __vgetcpu_mode
+> ffffffffff6002c0 D __jiffies
+> <lot of space (256 bytes)>
+> ffffffffff600400 T vtime
+> ffffffffff600413 t vsysc1
+> ffffffffff600800 T vgetcpu
+> ffffffffff600c00 T venosys_1
+> 
+> It must depends on the compiler, and/or CONFIG_XXX options...
 
-The flags are defined in octal.  Whether that choice makes sense or
-should be rethought is a different question.  I would definitely prefer
-hex.
+Badari's config triggered it for me.
 
-JÃ¶rn
+> Anyway, I think we can safely move __vgetcpu_mode & __jiffies to the 1024 
+> bytes area dedicated to vgetcpu() implementation. This saves 128 bytes from 
+> vsyscall_0 area.
+> 
+> Could we add this patch instead of dropping 
+> time-smp-friendly-alignment-of-struct-clocksource.patch ?
 
--- 
-You ain't got no problem, Jules. I'm on the motherfucker. Go back in
-there, chill them niggers out and wait for the Wolf, who should be
-coming directly.
--- Marsellus Wallace
+When you tell me it works OK with Badari's config ;)
