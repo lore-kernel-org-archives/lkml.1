@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbXC0Vn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXC0Voi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbXC0Vn7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbXC0Vn7
+	id S932418AbXC0Voi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXC0Voi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:43:59 -0400
-Received: from mga03.intel.com ([143.182.124.21]:16977 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbXC0Vn6 convert rfc822-to-8bit (ORCPT
+	Tue, 27 Mar 2007 17:44:38 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:36131 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932778AbXC0Voh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:43:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,335,1170662400"; 
-   d="scan'208"; a="203883465:sNHT21305473"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
-Date: Tue, 27 Mar 2007 14:43:55 -0700
-Message-ID: <08FE5CC30C9A3F41BF819A502CF7BF6EF98580@fmsmsx411.amr.corp.intel.com>
-In-Reply-To: <m1ps6uwfs8.fsf@ebiederm.dsl.xmission.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
-Thread-Index: AcdwtOa40FlgTSNNR6m4T0rXbjwjjAAArM4A
-From: "Williams, Mitch A" <mitch.a.williams@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Grant Grundler" <grundler@parisc-linux.org>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>, <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-X-OriginalArrivalTime: 27 Mar 2007 21:43:57.0028 (UTC) FILETIME=[05B3D240:01C770B9]
+	Tue, 27 Mar 2007 17:44:37 -0400
+To: akpm@linux-foundation.org
+CC: pavel@ucw.cz, miklos@szeredi.hu, linux-kernel@vger.kernel.org
+In-reply-to: <20070327143629.9c8953db.akpm@linux-foundation.org> (message from
+	Andrew Morton on Tue, 27 Mar 2007 14:36:29 -0700)
+Subject: Re: [patch] add file position info to proc
+References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
+	<20070327212419.GA5817@ucw.cz> <20070327143629.9c8953db.akpm@linux-foundation.org>
+Message-Id: <E1HWJRv-00052q-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 27 Mar 2007 23:43:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+> > Hi!
+> > 
+> > > From: Miklos Szeredi <mszeredi@suse.cz>
+> > > 
+> > > This patch adds support for finding out the current file position,
+> > > open flags and possibly other info in the future.
+> > > 
+> > > These new entries are added:
+> > > 
+> > >   /proc/PID/fdinfo/FD
+> > >   /proc/PID/task/TID/fdinfo/FD
+> > > 
+> > > For each fd the information is provided in the following format:
+> > > 
+> > > pos:	1234
+> > > flags:	0100002
+> > 
+> > Octal? Maybe we should use more traditional hex here?
 
->> However the mask function is called at EVERY interrupt,
->> so this change would be VERY expensive.
->
->If true I think that would be bad.  However I don't see it.
->Where in handle_edge_irq do we mask the interrupt?
->The only place I see us calling ->mask is from move_native_irq
->and that only if IRQ_MOVE_PENDING is true.
->
->All I can see is us routinely calling is ack_APIC_edge.
+It's octal in <fcntl.h>, so it's easier for a human to read.
 
-Doh!  I was reading the code wrong.  We only mask if we're still
-handling a previous interrupt on the same vector.  My bad.
+> Good point.  The O_foo flags are per-arch, so this field has the potential
+> to be subtly different on different architectures, which is unpleasing.
+> 
+> > Or even list flags by name?
+> 
+> urg.  Simple enough to do (lookup table, please).  But is it worth it? 
+> Perhaps just remove that field?
 
-However, I can't really see where mask() is used outside of that
-instance.  Which then leads us back to the question:  do we need
-a read flush on mask/unmask or just enable/disable?
+I wouldn't mind.  But leaving it to an application or for a human to
+sort out is OK I guess.  There are lots of non-portable numbers in
+proc.
 
+Miklos
