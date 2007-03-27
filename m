@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933217AbXC0Qqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933153AbXC0Qsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933217AbXC0Qqo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 12:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbXC0Qqo
+	id S933153AbXC0Qsm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 12:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbXC0Qsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 12:46:44 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:20911 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933217AbXC0Qqm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 12:46:42 -0400
-Date: Tue, 27 Mar 2007 09:46:23 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.21-rc5
-Message-Id: <20070327094623.417014db.randy.dunlap@oracle.com>
-In-Reply-To: <1175012677.3737.18.camel@mulgrave.il.steeleye.com>
-References: <1175012677.3737.18.camel@mulgrave.il.steeleye.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 27 Mar 2007 12:48:42 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33569 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933153AbXC0Qsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 12:48:41 -0400
+Date: Tue, 27 Mar 2007 08:48:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc5-mm1
+Message-Id: <20070327084838.34dc1b84.akpm@linux-foundation.org>
+In-Reply-To: <1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com>
+References: <20070326205706.a750bb35.akpm@linux-foundation.org>
+	<1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 11:24:37 -0500 James Bottomley wrote:
+On Tue, 27 Mar 2007 09:39:33 -0800 Badari Pulavarty <pbadari@gmail.com> wrote:
 
-> This is a fairly basic rollup of 3 basic double free or oops based bug
-> fixes.
+> On Mon, 2007-03-26 at 20:57 -0800, Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm1/
+> > 
+> 
+> 
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> ld: section .vsyscall_1 [0000000000645400 -> 000000000064542e] overlaps
+> section .jiffies [0000000000645400 -> 0000000000645407]
+> ld: .tmp_vmlinux1: section .vsyscall_1 lma 0x645400 overlaps previous
+> sections
+> make: *** [.tmp_vmlinux1] Error 1
+> 
 
-
-It's disappointing that kernel-doc fixes are not being merged.
-Yes, they are not code bug fixes, but they are doc bug fixes,
-and some of us do work to try to keep them in good shape.
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+bah.  Please send .config.
