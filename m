@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXC0POo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbXC0PRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753892AbXC0POo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 11:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXC0POo
+	id S1753896AbXC0PRY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 11:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXC0PRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 11:14:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48932 "EHLO mx1.redhat.com"
+	Tue, 27 Mar 2007 11:17:23 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:53803 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753892AbXC0POn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 11:14:43 -0400
-Message-ID: <460934D7.9030700@redhat.com>
-Date: Tue, 27 Mar 2007 11:14:31 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1753896AbXC0PRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 11:17:23 -0400
+Message-ID: <46093566.4040902@free.fr>
+Date: Tue, 27 Mar 2007 17:16:54 +0200
+From: John <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Dmitry Torokhov <dtor@insightbb.com>
-CC: Pete Zaitcev <zaitcev@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Peter Osterlund <petero2@telia.com>
-Subject: Re: Fix sudden warps in mousedev
-References: <20070324001610.724a820a.zaitcev@redhat.com> <d120d5000703261230h1724e453je2c14769fc099ad3@mail.gmail.com> <20070326144206.93805eeb.zaitcev@redhat.com> <200703262114.45287.dtor@insightbb.com>
-In-Reply-To: <200703262114.45287.dtor@insightbb.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: John <linux.kernel@free.fr>
+CC: linux-kernel@vger.kernel.org, tglx@timesys.com, mingo@elte.hu,
+       johnstul@us.ibm.com, akpm@osdl.org, linux.kernel@free.fr
+Subject: Re: 2.6.20.3-rt8 clock_nanosleep() sleeps 10 ms
+References: <460930BB.2050905@free.fr>
+In-Reply-To: <460930BB.2050905@free.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
+John wrote:
+
+> It seems the CPU was not switched to high-resolution mode?
 > 
-> The driver grabs tochpad with EVIOCGRAB ioctl to prevent input events
-> from bveing delivered to X through /dev/input/mice which is still in
-> whidespread use. That's why evtest does not work. We could as Peter
-> (CCed) to implement an option to turn off grabbing so users who don't
-> use mousedev multiplexor can use evtest and other commands.
+> # dmesg | grep resolution
+> /* NOTHING */
 > 
+> Do I need to enable ACPI?
 
-What should people be using instead of /dev/input/mice ?
+ACPI seems mandatory for high-resolution mode?
 
-And why did the mouse numbers all get rearranged in 2.6.20, e.g.
-mouse1 became mouse2 for many people?
+I added...
 
+CONFIG_ACPI=y
+CONFIG_ACPI_EC=y
+CONFIG_ACPI_POWER=y
+CONFIG_ACPI_SYSTEM=y
+CONFIG_X86_PM_TIMER=y
+
+# dmesg | grep resolution
+Switched to high resolution mode on CPU 0
+
+Ingo, Thomas, do you have time to explain why ACPI is needed?
+
+Regards.
