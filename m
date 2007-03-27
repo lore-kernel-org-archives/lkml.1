@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933975AbXC0FQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933978AbXC0FRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933975AbXC0FQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 01:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933979AbXC0FQb
+	id S933978AbXC0FRK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 01:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933994AbXC0FRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 01:16:31 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39202 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933975AbXC0FQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 01:16:29 -0400
-Date: Mon, 26 Mar 2007 21:16:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.21-rc5-mm2
-Message-Id: <20070326211627.c681af3b.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 Mar 2007 01:17:10 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:18883 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933978AbXC0FRH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 01:17:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gjw3N3wBUhsX7nXKwY+akQ3H7kxSVe9snOlGB3wcxqUOV6nC7Haghts/xXvKVUjv5fNXpuJe3M5MqN8BdB+Yxc1KxwWqVEEalZYHKyMWqPJ1JsdPxlWa0WWX7t3CdmQstu1xJsPjivERWjsbJdUbMihneVxqtVfXbm5uCpyv8LY=
+Message-ID: <8bd0f97a0703262217g16aa62d4g1221082deda0aed2@mail.gmail.com>
+Date: Tue, 27 Mar 2007 01:17:06 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>,
+       "Mike Frysinger" <vapier.adi@gmail.com>,
+       "Wu, Bryan" <bryan.wu@analog.com>, "Arnd Bergmann" <arnd@arndb.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] Blackfin arch: add kdebug header file
+In-Reply-To: <20070327044914.GA26099@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1174903941.32691.72.camel@roc-desktop>
+	 <200703262345.09489.arnd@arndb.de>
+	 <1174966837.6966.13.camel@roc-desktop>
+	 <20070327035734.GA25883@linux-sh.org>
+	 <8bd0f97a0703262134h20bdf8dcqb1043ca176a7149c@mail.gmail.com>
+	 <20070327044914.GA26099@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 3/27/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> On Tue, Mar 27, 2007 at 12:34:25AM -0400, Mike Frysinger wrote:
+> > On 3/26/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> > >You should really consider the latter for getting updates merged in the
+> > >future
+> >
+> > we're planning for this, but the short term it isnt doable for us
+>
+> If you think mangling patches by hand is a more effective use of time, no
+> one is stopping you -- some people even prefer that. On the other hand, if
+> you're struggling with an effective methodology before things are merged,
+> what reason is there to suspect that things will get better afterwards?
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/
+we have a lot of infrastructure that the SCM is part of and at the
+moment, git is not a supported SCM
 
-
-- This is the same as 2.6.12-rc5-mm1, except the staircase deadline CPU
-  scheduler has been added.
-
-
-Boilerplate:
-
-- See the `hot-fixes' directory for any important updates to this patchset.
-
-- To fetch an -mm tree using git, use (for example)
-
-  git-fetch git://git.kernel.org/pub/scm/linux/kernel/git/smurf/linux-trees.git tag v2.6.16-rc2-mm1
-  git-checkout -b local-v2.6.16-rc2-mm1 v2.6.16-rc2-mm1
-
-- -mm kernel commit activity can be reviewed by subscribing to the
-  mm-commits mailing list.
-
-        echo "subscribe mm-commits" | mail majordomo@vger.kernel.org
-
-- If you hit a bug in -mm and it is not obvious which patch caused it, it is
-  most valuable if you can perform a bisection search to identify which patch
-  introduced the bug.  Instructions for this process are at
-
-        http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
-
-  But beware that this process takes some time (around ten rebuilds and
-  reboots), so consider reporting the bug first and if we cannot immediately
-  identify the faulty patch, then perform the bisection search.
-
-- When reporting bugs, please try to Cc: the relevant maintainer and mailing
-  list on any email.
-
-- When reporting bugs in this kernel via email, please also rewrite the
-  email Subject: in some manner to reflect the nature of the bug.  Some
-  developers filter by Subject: when looking for messages to read.
-
-- Occasional snapshots of the -mm lineup are uploaded to
-  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/ and are announced on
-  the mm-commits list.
-
-
-
-Changes since 2.6.21-rc5-mm1:
-
-+sched-dont-renice-kernel-threads.patch
-+sched-remove-sleepavg-from-proc.patch
-+sched-implement-staircase-deadline-cpu-scheduler.patch
-+sched-remove-noninteractive-flag.patch
-+sched-document-sd-cpu-scheduler.patch
-
- scheduler-of-the-day.
-
-
-All 1082 patches:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/patch-series
-
+i'm not saying the current system is easy, just that we cant integrate
+git in the short term, so we'll continue spanking Bryan with the
+overhead :/
+-mike
