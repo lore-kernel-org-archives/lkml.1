@@ -1,176 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965277AbXC0HPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965297AbXC0HS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965277AbXC0HPG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbXC0HPF
+	id S965297AbXC0HS0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 03:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965301AbXC0HS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:15:05 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:46574 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965297AbXC0HO7 (ORCPT
+	Tue, 27 Mar 2007 03:18:26 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:52151 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965297AbXC0HSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:14:59 -0400
-Date: Tue, 27 Mar 2007 10:14:58 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] revoke: break cow for private mappings
-Message-ID: <Pine.LNX.4.64.0703271014100.793@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Mar 2007 03:18:24 -0400
+Message-ID: <4608C4F6.4020407@linux.vnet.ibm.com>
+Date: Tue, 27 Mar 2007 12:47:10 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+MIME-Version: 1.0
+To: Aubrey Li <aubreylee@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       ckrm-tech@lists.sourceforge.net, Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, devel@openvz.org, xemul@sw.ru,
+       Paul Menage <menage@google.com>, Christoph Lameter <clameter@sgi.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 3/3][RFC] Containers: Pagecache controller reclaim
+References: <45ED251C.2010400@linux.vnet.ibm.com> <45ED266E.7040107@linux.vnet.ibm.com> <6d6a94c50703262044q22e94538i5e79a32a82f7c926@mail.gmail.com>
+In-Reply-To: <6d6a94c50703262044q22e94538i5e79a32a82f7c926@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-We need to break COW for private mappings to make sure a process cannot
-read new data after an inode has been revoked.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- fs/revoke.c |   85 +++++++++++++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 73 insertions(+), 12 deletions(-)
+Aubrey Li wrote:
+> On 3/6/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+>> The reclaim code is similar to RSS memory controller.  Scan control is
+>> slightly different since we are targeting different type of pages.
+>>
+>> Additionally no mapped pages are touched when scanning for pagecache pages.
+>>
+>> RSS memory controller and pagecache controller share common code in reclaim
+>> and hence pagecache controller patches are dependent on RSS memory controller
+>> patch even though the features are independently configurable at compile time.
+>>
+>> --- linux-2.6.20.orig/mm/vmscan.c
+>> +++ linux-2.6.20/mm/vmscan.c
+>> @@ -43,6 +43,7 @@
+>>
+>>  #include <linux/swapops.h>
+>>  #include <linux/memcontrol.h>
+>> +#include <linux/pagecache_acct.h>
+>>
+>>  #include "internal.h"
+>>
+>> @@ -70,6 +71,8 @@ struct scan_control {
+>>
+>>         struct container *container;    /* Used by containers for reclaiming */
+>>                                         /* pages when the limit is exceeded  */
+>> +       int reclaim_pagecache_only;     /* Set when called from
+>> +                                          pagecache controller */
+>>  };
+>>
+>>  /*
+>> @@ -474,6 +477,15 @@ static unsigned long shrink_page_list(st
+>>                         goto keep;
+>>
+>>                 VM_BUG_ON(PageActive(page));
+>> +               /* Take it easy if we are doing only pagecache pages */
+>> +               if (sc->reclaim_pagecache_only) {
+>> +                       /* Check if this is a pagecache page they are not mapped */
+>> +                       if (page_mapped(page))
+>> +                               goto keep_locked;
+>> +                       /* Check if this container has exceeded pagecache limit */
+>> +                       if (!pagecache_acct_page_overlimit(page))
+>> +                               goto keep_locked;
+>> +               }
+>>
+>>                 sc->nr_scanned++;
+>>
+>> @@ -522,7 +534,8 @@ static unsigned long shrink_page_list(st
+>>                 }
+>>
+>>                 if (PageDirty(page)) {
+>> -                       if (referenced)
+>> +                       /* Reclaim even referenced pagecache pages if over limit */
+>> +                       if (!pagecache_acct_page_overlimit(page) && referenced)
+>>                                 goto keep_locked;
+>>                         if (!may_enter_fs)
+>>                                 goto keep_locked;
+>> @@ -869,6 +882,13 @@ force_reclaim_mapped:
+>>                 cond_resched();
+>>                 page = lru_to_page(&l_hold);
+>>                 list_del(&page->lru);
+>> +               /* While reclaiming pagecache make it easy */
+>> +               if (sc->reclaim_pagecache_only) {
+>> +                       if (page_mapped(page) || !pagecache_acct_page_overlimit(page)) {
+>> +                               list_add(&page->lru, &l_active);
+>> +                               continue;
+>> +                       }
+>> +               }
+> 
+> Please correct me if I'm wrong.
+> Here, if page type is mapped or not overlimit, why add it back to active list?
+> Did  shrink_page_list() is called by shrink_inactive_list()?
 
-Index: uml-2.6/fs/revoke.c
-===================================================================
---- uml-2.6.orig/fs/revoke.c	2007-03-26 18:10:24.000000000 +0300
-+++ uml-2.6/fs/revoke.c	2007-03-26 18:27:25.000000000 +0300
-@@ -174,12 +174,58 @@ static inline bool need_revoke(struct vm
- 	if (file->f_path.dentry->d_inode != inode)
- 		return false;
- 
--	if (!(vma->vm_flags & VM_SHARED))
--		return false;
--
- 	return file != to_exclude;
- }
- 
-+static int __revoke_break_cow(struct task_struct *tsk, struct inode *inode,
-+			      struct file *to_exclude)
-+{
-+	struct mm_struct *mm = tsk->mm;
-+	struct vm_area_struct *vma;
-+	int err = 0;
-+
-+	down_write(&mm->mmap_sem);
-+	for (vma = mm->mmap; vma != NULL; vma = vma->vm_next) {
-+		int ret;
-+
-+		if (vma->vm_flags & VM_SHARED)
-+			continue;
-+
-+		if (!need_revoke(vma, inode, to_exclude))
-+			continue;
-+
-+		ret = get_user_pages(tsk, tsk->mm, vma->vm_start,
-+				     vma->vm_end-vma->vm_start, 1, 1, NULL,
-+				     NULL);
-+		if (ret < 0) {
-+			err = ret;
-+			break;
-+		}
-+	}
-+	up_write(&mm->mmap_sem);
-+	return err;
-+}
-+
-+static int revoke_break_cow(struct revoke_table *table, struct inode *inode,
-+			    struct file *to_exclude)
-+{
-+	unsigned long i;
-+	int err = 0;
-+
-+	for (i = 0; i < table->end; i++) {
-+		struct revokefs_inode_info *info;
-+		struct file *this;
-+
-+		this = table->files[i];
-+		info = revokefs_i(this->f_dentry->d_inode);
-+
-+		err = __revoke_break_cow(info->owner, inode, to_exclude);
-+		if (err)
-+			break;
-+	}
-+	return err;
-+}
-+
- /*
-  *	 LOCKING: down_write(&mm->mmap_sem)
-  *	 	    -> spin_lock(&mapping->i_mmap_lock)
-@@ -235,6 +281,9 @@ 	int err = 0;
- 		goto out;
- 	}
- 	for (vma = mm->mmap; vma != NULL; vma = vma->vm_next) {
-+		if (!(vma->vm_flags & VM_SHARED))
-+			continue;
-+
- 		if (!need_revoke(vma, mapping->host, to_exclude))
- 			continue;
- 
-@@ -261,6 +310,9 @@ 	int try_again = 0;
- 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, 0, ULONG_MAX) {
- 		int err;
- 
-+		if (!(vma->vm_flags & VM_SHARED))
-+			continue;
-+
- 		if (likely(!need_revoke(vma, mapping->host, to_exclude)))
- 			continue;
- 
-@@ -380,12 +432,9 @@ 	for (i = 0; i < table->end; i++) {
- 		put_task_struct(info->owner);
- 		info->owner = NULL;	/* To avoid restoring closed file. */
- 		if (err)
--			goto failed;
-+			goto out;
- 	}
--	return 0;
--
--  failed:
--	restore_files(table);
-+  out:
- 	return err;
- }
- 
-@@ -527,10 +576,8 @@ 	int err = 0;
-   exit_loop:
- 	read_unlock(&tasklist_lock);
- 
--	if (err) {
--		restore_files(table);
--		goto out_free_table;
--	}
-+	if (err)
-+		goto out_restore;
- 
- 	/*
- 	 * Take down shared memory mappings.
-@@ -538,13 +585,27 @@ 	int err = 0;
- 	revoke_mapping(inode->i_mapping, to_exclude);
- 
- 	/*
-+ 	 * Break COW for private mappings.
-+ 	 */
-+	err = revoke_break_cow(table, inode, to_exclude);
-+	if (err)
-+		goto out_restore;
-+
-+	/*
- 	 * Now, revoke the files for good.
- 	 */
- 	err = revoke_files(table);
-+	if (err)
-+		goto out_restore;
-+
-   out_free_table:
- 	free_revoke_table(table);
-   out:
- 	return err;
-+
-+  out_restore:
-+	restore_files(table);
-+	goto out_free_table;
- }
- 
- asmlinkage long sys_revokeat(int dfd, const char __user * filename)
+Correct, shrink_page_list() is called from shrink_inactive_list() but
+the above code is patched in shrink_active_list().  The
+'force_reclaim_mapped' label is from function shrink_active_list() and
+not in shrink_page_list() as it may seem in the patch file.
+
+While removing pages from active_list, we want to select only
+pagecache pages and leave the remaining in the active_list.
+page_mapped() pages are _not_ of interest to pagecache controller
+(they will be taken care by rss controller) and hence we put it back.
+ Also if the pagecache controller is below limit, no need to reclaim
+so we put back all pages and come out.
+
+--Vaidy
