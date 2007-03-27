@@ -1,44 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965309AbXC0HgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965322AbXC0HhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965309AbXC0HgE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965322AbXC0HgE
+	id S965322AbXC0HhR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 03:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965331AbXC0HhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:36:04 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:43763 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965309AbXC0HgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:36:01 -0400
-Date: Mon, 26 Mar 2007 23:35:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] add file position info to proc
-Message-Id: <20070326233558.9254cdfc.akpm@linux-foundation.org>
-In-Reply-To: <E1HW5nH-0003P1-00@dorka.pomaz.szeredi.hu>
-References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
-	<20070326174535.4f21bed3.akpm@linux-foundation.org>
-	<E1HW5nH-0003P1-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Mar 2007 03:37:17 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:44225 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965322AbXC0HhP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 03:37:15 -0400
+To: akpm@linux-foundation.org
+CC: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <20070326232214.ee92d8c4.akpm@linux-foundation.org> (message from
+	Andrew Morton on Mon, 26 Mar 2007 23:22:14 -0800)
+Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
+References: <E1HVZyn-0008T8-00@dorka.pomaz.szeredi.hu>
+	<20070326140036.f3352f81.akpm@linux-foundation.org>
+	<E1HVwy4-0002UD-00@dorka.pomaz.szeredi.hu>
+	<20070326153153.817b6a82.akpm@linux-foundation.org>
+	<E1HW5am-0003Mc-00@dorka.pomaz.szeredi.hu> <20070326232214.ee92d8c4.akpm@linux-foundation.org>
+Message-Id: <E1HW6Ec-0003Tv-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 27 Mar 2007 09:36:50 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 09:08:35 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> > > This patch adds support for finding out the current file position,
-> > > open flags and possibly other info in the future.
+> > > clear_page_dirty_for_io() already does that.
+> > > 
+> > > So we should be able to test PageDirtiedByWrite() after running
+> > > clear_page_dirty_for_io() to discover whether this page was dirtied via
+> > > MAP_SHARED, and then update the inode times if so.
 > > 
-> > fs/proc/base.c: In function 'proc_lookupfdinfo':
-> > fs/proc/base.c:1584: warning: passing argument 3 of 'proc_lookupfd_common' from incompatible pointer type
-> > fs/proc/base.c: In function 'proc_readfdinfo':
-> > fs/proc/base.c:1590: warning: passing argument 4 of 'proc_readfd_common' from incompatible pointer type
-> > 
-> > If taken, that callback into proc_lookupfd_common() will crash the kernel.
+> > What do you need the page flag for?
 > 
-> Ugh.  Some constification in -mm that I hadn't noticed.  Resending.
+> To work out whether the page was dirtied via write (in which case the
+> timestamps were updated) or via mmap (in which case they were not).
 > 
+> >  The "modified through mmap" info
+> > is there in the ptes.
+> 
+> It might not be there any more - the ptes could have got taken down by, for
+> example, reclaim.
 
-OK, I misread the code.  I fixed it up.
+Yes, but then the "modified through mmap" is transferred to the
+per-address_space flag.  All this is already done by this patch.
+
+> I dunno - I'm not trying very hard.  I'm trying to encourage you to come up
+> with something less costly and less complex than this thing, but you appear
+> to be resisting.
+
+No, I'm just arguing that your suggestion is actually a complication,
+not a simplification ;)
+
+> >  And from the ptes it can be transfered to a
+> > per-address_space flag.  Nobody is interested through which page was
+> > the file modified.
+> > 
+> > Anyway, that's just MS_SYNC.  MS_ASYNC doesn't walk the pages, yet it
+> > should update the timestamp.  That's the difficult one.
+> > 
+> 
+> We can treat MS_ASYNC as we treat MS_SYNC.  Then, MS_ASYNC *does* walk the
+> pages.  Is does it in generic_writepages().  It also even walks the ptes
+> for you, in clear_page_dirty_for_io().
+
+Yes.  But that's not very useful semantic for MS_ASYNC vs. file time
+update.
+
+It would basically say:
+
+  "if you cann MS_ASYNC, and the file was modified then sometime in
+  the future you will get an updated c/mtime".
+
+But this is not what POSIX says, and it's not what applications want.
+
+For example "make" would want to know if a file was modified or not,
+and with your suggestion only msync(MS_SYNC) would reliably provide
+that info.  But msync(MS_SYNC) is unnecessary in many cases.
+
+> There is surely no need to duplicate all that.
+
+Yeah, we could teach generic_writepages() to conditionally not submit
+for io just test/clear pte dirtyness.
+
+Maybe that would be somewhat cleaner, dunno.
+
+Then there are the ram backed filesystems, which don't have dirty
+accounting and radix trees, and for which this pte walking is still
+needed to provide semantics consistent with normal filesystems.
+
+Miklos
