@@ -1,118 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934217AbXC0WWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934222AbXC0W2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934217AbXC0WWg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 18:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934219AbXC0WWg
+	id S934222AbXC0W2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 18:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934231AbXC0W2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 18:22:36 -0400
-Received: from mail.screens.ru ([213.234.233.54]:38746 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934217AbXC0WWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 18:22:35 -0400
-Date: Wed, 28 Mar 2007 02:22:27 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       davej@codemonkey.org.uk, johnstul@us.ibm.com, mingo@elte.hu,
-       tglx@linutronix.de
-Subject: Re: [PATCH] Add support for deferrable timers (respun)
-Message-ID: <20070327222227.GA279@tv-sign.ru>
-References: <200703212353.l2LNrNOj007453@shell0.pdx.osdl.net> <20070322140532.GA120@tv-sign.ru> <20070322151817.GA29840@linux-os.sc.intel.com> <20070322161355.GA160@tv-sign.ru> <20070327204344.GA21529@linux-os.sc.intel.com> <20070327211145.GB216@tv-sign.ru> <20070327215542.GA27408@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070327215542.GA27408@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.11
+	Tue, 27 Mar 2007 18:28:39 -0400
+Received: from 49.sub-75-208-212.myvzw.com ([75.208.212.49]:55530 "EHLO
+	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934222AbXC0W2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 18:28:38 -0400
+Message-Id: <20070327214919.800272641@goop.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 27 Mar 2007 14:49:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, virtualization@lists.osdl.org,
+       Prarit Bhargava <prarit@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 0/4] Revised softlockup watchdog improvement patches
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/27, Venki Pallipadi wrote:
->
-> Incremental patch below eliminates this race.
->
-> Index: new/kernel/timer.c
-> ===================================================================
-> --- new.orig/kernel/timer.c	2007-03-26 15:19:35.000000000 -0800
-> +++ new/kernel/timer.c	2007-03-27 13:00:33.000000000 -0800
-> @@ -96,9 +96,9 @@
->  	return tbase_get_deferrable(timer->base);
->  }
->  
-> -static inline struct tvec_t_base_s *timer_get_base(struct timer_list *timer)
-> +static inline struct tvec_t_base_s *tbase_get_base(struct tvec_t_base_s *base)
->  {
-> -	return ((struct tvec_t_base_s *)((unsigned long)(timer->base) &
-> +	return ((struct tvec_t_base_s *)((unsigned long)base &
->  	                                 ~TBASE_DEFERRABLE_FLAG));
->  }
->  
-> @@ -368,7 +368,7 @@
->  
->  	for (;;) {
->  		tvec_base_t *prelock_base = timer->base;
-> -		base = timer_get_base(timer);
-> +		base = tbase_get_base(prelock_base);
->  		if (likely(base != NULL)) {
->  			spin_lock_irqsave(&base->lock, *flags);
->  			if (likely(prelock_base == timer->base))
+Hi Ingo,
 
-Looks correct to me... Personally, I'd prefer
+This series of patches implements a number of improvements to the
+softlockup watchdog and its users.
 
-	static tvec_base_t *lock_timer_base(struct timer_list *timer,
-						unsigned long *flags)
-		__acquires(timer->base->lock)
-	{
-		tvec_base_t *base;
+They are:
 
-		for (;;) {
-			base = timer_get_base(timer);
-			if (likely(base != NULL)) {
-				spin_lock_irqsave(&base->lock, *flags);
-				if (likely(base == timer_get_base(timer))
-					return base;
-				/* The timer has migrated to another CPU */
-				spin_unlock_irqrestore(&base->lock, *flags);
-			}
-			cpu_relax();
-		}
-	}
+1. Make the watchdog ignore stolen time
 
-but this is a matter of taste.
+When running under a hypervisor, the kernel may lose an arbitrary amount
+of time as "stolen time".  This may cause the softlockup watchdog to
+trigger spruiously.  Xen and VMI implement sched_clock() as measuring
+unstolen time, so use that as the timebase for the softlockup watchdog.
+This also removes a dependency on jiffies.
 
-A minor nitpick,
+2. Add a per-cpu enable flag for the watchdog
 
-> +/* new_base is guaranteed to have last bit not set, in all callers below */
-> +static inline void timer_set_base(struct timer_list *timer,
-> +                                       struct tvec_t_base_s *old_base,
-> +                                       struct tvec_t_base_s *new_base)
-> +{
-> +       timer->base = (struct tvec_t_base_s *)((unsigned long)(new_base) |
-> +                                              tbase_get_deferrable(old_base));
-> +}
+When the scheduler disables ticks for a specific CPU, this allows the
+watchdog to be disabled as well.  This avoids spurious watchdog errors
+if a CPU has been tickless for a long time.  The existing tick-sched.c
+code tried to address this by periodically touching the watchdog, but
+this seems more direct.
 
-looks a little bit ugly, but may be this is just me. How about
+3. Use the per-cpu enable flags to temporarily disable the watchdog
 
-	void timer_set_base(struct timer_list *timer, struct tvec_t_base_s *new_base)
-	{
-		timer->base = (struct tvec_t_base_s *)
-			((unsigned long)(new_base) | tbase_get_deferrable(timer->base));
-	}
+Some drivers perform long operations which will cause the watchdog to
+time out.  If we know we're about to start such an operation, disable
+the watchdog timer for the interim.  This is more straightforward than
+trying to periodically tickle the watchdog timer during the operation, and
+safer than just doing it once at the start and hoping there's enough time.
 
-__mod_timer:
-	-	tvec_base_t *old_base = timer->base;
-	-	timer->base = NULL;
-	+	timer_set_base(timer, NULL);
+4. Add a global disable flag
 
-?
+Sometimes a long operation will affect all CPUs' ability to tickle the
+watchdog timer.  An obvious example is suspend/resume, but it can also
+happen while generating lots of sysrq output, or other specialized
+operations.  Add global enable/disable calls to deal with these case.
 
-> +                       /* Make sure that tvec_base is 2 byte aligned */
-> +                       if (tbase_get_deferrable(base)) {
-> +                               WARN_ON(1);
-> +                               kfree(base);
-> +                               return -ENOMEM;
-> +                       }
-
-Not a comment, but a question: do we really need this?
-
-Oleg.
+-- 
 
