@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965398AbXC0UeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965397AbXC0UeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965398AbXC0UeS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 16:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965397AbXC0UeS
+	id S965397AbXC0UeY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 16:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965404AbXC0UeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 16:34:18 -0400
-Received: from xdslea139.osnanet.de ([89.166.160.139]:3065 "EHLO
-	Marvin.DL8BCU.ampr.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965398AbXC0UeR (ORCPT
+	Tue, 27 Mar 2007 16:34:24 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:61431 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965397AbXC0UeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 16:34:17 -0400
-X-Greylist: delayed 3279 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Mar 2007 16:34:16 EDT
-Date: Tue, 27 Mar 2007 19:39:10 +0000
-From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
-To: Phy Prabab <phyprabab@gmail.com>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Odd log message associated with NFS
-Message-ID: <20070327193909.GA585@ds20.borg.net>
-Reply-To: dl8bcu@dl8bcu.de
-Mail-Followup-To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>,
-	Phy Prabab <phyprabab@gmail.com>, nfs@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
-References: <2fe399760703271140l703c2791oa84e9e1832487dcb@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Mar 2007 16:34:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=VtYg30MO0DkFNIL+EzXKaVqG8Zxp04/c+HAidqW395o+Lrs41O7BMA7uwVPBiKBALxKM19A9EcKn6D64yxsCVLitVwd+LUl3qZNyxDm2/wAC06UBTZ2WHa1UbKtaCQDb/hRPLe5NDf+JUvmi5jfpEzaxFoXuB54RzO7Go7NGrGw=
+Message-ID: <2fe399760703271334j1fe56c9ctc83e1310620d7728@mail.gmail.com>
+Date: Tue, 27 Mar 2007 13:34:21 -0700
+From: "Phy Prabab" <phyprabab@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Issues with knfsd + solaris clients
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <2fe399760703271140l703c2791oa84e9e1832487dcb@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 27, 2007 at 11:40:48AM -0700, Phy Prabab wrote:
-> Hello,
-> 
-> I am currently running 2.6.21-rc5 and I am seeing quite a bit of this
-> message in my log files:
-> kernel: rpcsvc: received unknown control message:-2144992132/-1
-> 
-> This machine is an dual dual core opteron with 3Ware 9650 (14 disk
-> RAID10), 4G RAM, 64bit kernel, nfsutils-1.0.12 running knfsd.  This
-> machine is a  file server.
+Hello once again!
 
-Just a 'me, too':
+Here is a little bit more information on my issue with slowlaris and
+knfs 2.6.21-rc4/5 (actually appears in 2.4.20.x).  Running this from
+the client (x.org source code):
+> ls -l xc/lib/Xmu/Xct.h
+-rw-rw-r-- 1 phy bdf 0 2006-01-09 06:59 xc/lib/Xmu/Xct.h
+> file xc/lib/Xmu/Xct.h
+xc/lib/Xmu/Xct.h:       cannot read: Is a directory
+> rm -rf xc/lib/Xmu/Xct.h
+rm: cannot remove `xc/lib/Xmu/Xct.h': Not owner
+> uname -a
+SunOS mm3 5.10 Generic_118855-14 i86pc i386 i86pc Solaris
+>chmod 777 xc/lib/Xmu/Xct.h
+> rm -rf xc/lib/Xmu/Xct.h
+rm: cannot remove `xc/lib/Xmu/Xct.h': Not owner
+>
 
-Mar 16 16:57:06 Marvin kernel: svc: bad direction 268435456, dropping request
-Mar 16 17:58:19 Marvin kernel: svc: bad direction 268435456, dropping request
-Mar 16 19:55:49 Marvin kernel: svc: bad direction 268435456, dropping request
-...
-Mar 17 04:30:03 Marvin kernel: svc: bad direction 268435456, dropping request
-Mar 17 06:28:52 Marvin kernel: pppd(795): unaligned trap at 0000020000207f90: 000000011fd8d33d 29 1
-Mar 17 06:28:55 Marvin kernel: inet_sk_reselect_saddr(): shifting inet->saddr from 82.149.xxx.xxx to 89.166.xxx.xxx
-Mar 17 09:05:21 Marvin kernel: rpcsvc: received unknown control message:-1024/186028080
-Mar 17 14:17:04 Marvin kernel: rpcsvc: received unknown control message:-1024/186028040
-Mar 17 14:17:31 Marvin kernel: rpcsvc: received unknown control message:-1024/186028040
-Mar 17 14:49:14 Marvin kernel: rpcsvc: received unknown control message:-1024/186028080
-Mar 17 14:49:15 Marvin kernel: rpcsvc: received unknown control message:-1024/186028040
+I would think the file would not be directory and if I tried to remove
+it, I should be able as owner and permissions are correct.  This is on
+a solaris 10 on intel, but I also see this problem on solaris 8, 9 and
+10 on sparc.  Again, AIX5303 and 04 and all linux clients (2.4.x,
+2.6.x) seem to be fine.
 
+The file server is a dual dual core Opteron running 2.6.21-rc4+5 (but
+also see this problem with 2.6.20.x), knfsd, XFS file system on LVM2
+partition, on a 3Ware 9650 14 disk RAID 10.  Using nfs-1.0.12 and
+LVM2.0.22 (?).
 
+Also posting to LKML.
 
-This is from my little 'server', alpha ev4 'noname', 2.6.21-rc3, compiled 
-with gcc 4.1.2
+Any help is greatly appreciated.
+TIA,
+Phy
 
-client is mostly an alpha ev6 2.6.21-rc3, gcc 4.1.2.
+----- Original Message ----
+From: Phy Prabab <phyprabab@yahoo.com>
+To: nfs@lists.sourceforge.net
+Sent: Tuesday, March 27, 2007 12:32:16 PM
+Subject: Issues with 2.6.21-rc4/5 and slowlaris 8
 
-Apart from the messages NFS seems to run just fine currently.
+Hello,
 
-Bye,
-Thorsten 
+I am having some issues with slowlaris 8 sparc and linux 2.6.21-rc4/5
+(actually, 2.6.20.x as well) with directory permissions.  The client
+is the slowlaris box mounting a file system (XFS, LVM, DM, 3Ware 9650)
+from the linux box.  I extract some files from a tar ball and then try
+to delete them, I get permission denied, however, the files are owned
+by my uid and the file permissions are 775.  Any help figuring this
+out would be most welcome.  I can provide plenty of debugging if
+needed.
 
-
-
--- 
-| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
-| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
-| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
+TIA!
+Phy
