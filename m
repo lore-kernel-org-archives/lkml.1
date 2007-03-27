@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965508AbXC0Vey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965496AbXC0VgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965508AbXC0Vey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965496AbXC0Vey
+	id S965496AbXC0VgH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXC0VgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:34:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:29641 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965509AbXC0Vex (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:34:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XR3m6j5eybhkhsZ2x6LDlUvPIsqF09mIa8zBCBhM0quDoqdNiSgTM78Wfm+KXzp2JMe7ZrlBOcF06Bm1tN2eYiMN8BWBVTawrk2LYvIURRtvJM/pXNYyu3UCgUcBM1uaMmus1TTue1XgBahbk8ZGe2xaCpEcCV1B1sIrouXV+0Q=
-Message-ID: <38b3b7c0703271434u2fddc4d1jc2b9af097e9c95b2@mail.gmail.com>
-Date: Tue, 27 Mar 2007 23:34:51 +0200
-From: "johann deneux" <johann.deneux@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom driver]
-Cc: "Dmitry Torokhov" <dtor@insightbb.com>,
-       "=?ISO-8859-1?Q?\"STenyaK_(Bruno_Gonz=E1lez)\"?=" <stenyak@gmail.com>,
-       "Anssi Hannula" <anssi.hannula@gmail.com>,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz
-In-Reply-To: <460983D6.7070409@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Mar 2007 17:36:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1095 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965496AbXC0VgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 17:36:03 -0400
+Date: Tue, 27 Mar 2007 21:35:29 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch 1/8] Processor degredation support.
+Message-ID: <20070327213529.GB5842@ucw.cz>
+References: <20070326212459.711271424@de.ibm.com> <20070326212634.931820139@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <2460126662758025813@fi.muni.cz> <46018FB8.1080601@gmail.com>
-	 <38b3b7c0703211503s3a8ee177v5b149cfd5975de8c@mail.gmail.com>
-	 <200703221150.12403.dtor@insightbb.com> <46090BF2.2000105@gmail.com>
-	 <38b3b7c0703271136s799114fcndfaa6de8db52fc70@mail.gmail.com>
-	 <46097A68.6080802@gmail.com>
-	 <38b3b7c0703271343p6a56fed8i950941e8cef196d8@mail.gmail.com>
-	 <460983D6.7070409@gmail.com>
+In-Reply-To: <20070326212634.931820139@de.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/27/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+Hi!
 
-> Ok, so how to deal with these devices? Does anybody have some idea? That's
-> what I was talking about somewhere in the beginning of this thread, the raw
-> values, because it seems too specific for letting kernel to cope with each
-> of these devices separately, but there might be a better idea in somebody's
-> head? But raw is ugly...
->
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> Emit a warning if cpu capability changes e.g. because the cpus are
+> overheating. The new cpu capability can be read via /proc/sysinfo.
+> 
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-What about adding a member to ff_effect which would be the number of the motor?
-We can't change the layout of ff_effect too much though, so we have to
-find unused bits and put them to work.
+> +++ linux-2.6/drivers/s390/char/sclp_confmgm.c
 
-For instance, we could replace
+Can we get less cyptic name?
 
-__u16 type;
 
-by
+> +#define SCLP_CONFMGM_PRINT_HEADER	"sclp_confmgm: "
 
-__u8 motor;
-__u8 type;
+Uah, define longer than text it expands to... 
 
-since 16 bits seems way more than needed for the effect type.
+> +static void sclp_conf_receiver_fn(struct evbuf_header *evbuf)
+> +{
+> +	struct conf_mgm_data *cdata;
+> +
+> +	cdata = (struct conf_mgm_data *)(evbuf + 1);
+> +	if (cdata->ev_qualifier == EV_QUAL_CAP_CHANGE)
+> +		/* Will be parsed. Don't change. */
+> +		printk(KERN_WARNING "sclp: CPU capability changed.\n");
+> +}
 
-Another possibility is to get rid of "trigger" and replace it by __u8
-motor and some padding, since that's I-Force specific (are there other
-drivers that implement that?). The goal of "trigger" is to start an
-effect when a button is pressed, which can be done from userland
-instead. It's not like we need micro-second latency when starting
-effects.
+What's that? I do not think printk provides guaranteed delivery.
 
-As a reminder, here is the current definition of ff_effect:
+> +static struct sclp_register sclp_conf_register =
+> +{
+> +	.receive_mask = EvTyp_ConfMgmData_Mask,
 
-struct ff_effect {
-       __u16 type;
-       __s16 id;
-       __u16 direction;
-       struct ff_trigger trigger;
-       struct ff_replay replay;
+NoCamelCasePlease.
 
-       union {
-               struct ff_constant_effect constant;
-               struct ff_ramp_effect ramp;
-               struct ff_periodic_effect periodic;
-               struct ff_condition_effect condition[2]; /* One for each axis */
-               struct ff_rumble_effect rumble;
-       } u;
-};
+> @@ -27,6 +27,7 @@
+>  #define EvTyp_CntlProgIdent	0x0B
+>  #define EvTyp_SigQuiesce	0x1D
+>  #define EvTyp_VT220Msg		0x1A
+> +#define EvTyp_ConfMgmData	0x04
+>  
+>  #define EvTyp_OpCmd_Mask	0x80000000
+>  #define EvTyp_Msg_Mask		0x40000000
+> @@ -36,6 +37,7 @@
+>  #define EvTyp_CtlProgIdent_Mask	0x00200000
+>  #define EvTyp_SigQuiesce_Mask	0x00000008
+>  #define EvTyp_VT220Msg_Mask	0x00000040
+> +#define EvTyp_ConfMgmData_Mask	0x10000000
+>  
+>  #define GnrlMsgFlgs_DOM		0x8000
+>  #define GnrlMsgFlgs_SndAlrm	0x4000
+
+Yep, you have more CamelCases to fix.
 
 -- 
-Johann
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
