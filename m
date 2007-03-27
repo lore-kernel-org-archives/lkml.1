@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750740AbXC0IEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbXC0IO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750740AbXC0IEH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 04:04:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXC0IEH
+	id S1751964AbXC0IO5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 04:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXC0IO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 04:04:07 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:48753 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbXC0IEE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 04:04:04 -0400
-To: akpm@linux-foundation.org
-CC: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <20070326234957.6b287dda.akpm@linux-foundation.org> (message from
-	Andrew Morton on Mon, 26 Mar 2007 23:49:57 -0800)
-Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
-References: <E1HVZyn-0008T8-00@dorka.pomaz.szeredi.hu>
-	<20070326140036.f3352f81.akpm@linux-foundation.org>
-	<E1HVwy4-0002UD-00@dorka.pomaz.szeredi.hu>
-	<20070326153153.817b6a82.akpm@linux-foundation.org>
-	<E1HW5am-0003Mc-00@dorka.pomaz.szeredi.hu>
-	<20070326232214.ee92d8c4.akpm@linux-foundation.org>
-	<E1HW6Ec-0003Tv-00@dorka.pomaz.szeredi.hu> <20070326234957.6b287dda.akpm@linux-foundation.org>
-Message-Id: <E1HW6eb-0003WX-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 27 Mar 2007 10:03:41 +0200
+	Tue, 27 Mar 2007 04:14:57 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36585 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752318AbXC0IOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 04:14:55 -0400
+Subject: Re: [PATCH] genirq: do not mask interrupts by default
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@osdl.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <20070327073227.GA26457@elte.hu>
+References: <200702161759.l1GHxsO8010669@hera.kernel.org>
+	 <1174972037.5329.5.camel@localhost.localdomain>
+	 <1174972685.5329.12.camel@localhost.localdomain>
+	 <20070327073227.GA26457@elte.hu>
+Content-Type: text/plain
+Date: Tue, 27 Mar 2007 18:04:24 +1000
+Message-Id: <1174982665.14065.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > There is surely no need to duplicate all that.
-> > 
-> > Yeah, we could teach generic_writepages() to conditionally not submit
-> > for io just test/clear pte dirtyness.
-> > 
-> > Maybe that would be somewhat cleaner, dunno.
-> > 
-> > Then there are the ram backed filesystems, which don't have dirty
-> > accounting and radix trees, and for which this pte walking is still
-> > needed to provide semantics consistent with normal filesystems.
+On Tue, 2007-03-27 at 09:32 +0200, Ingo Molnar wrote:
+> * Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> hm.
+> > Note that I'm not opposed to the change at all, I think it's a good 
+> > idea, I'm just worried I'm discovering it a bit late and I've seen 
+> > PICs broken in some many colorful ways that I'm a bit worried... Oh 
+> > well...
 > 
-> I don't know how important all this is, really - we've had this bug for
-> ever and presumably we've already trained everyone to work around it.
-> 
-> What usage scenarios are people actually hurting from?  Is there anything
-> interesting in the mysterious Novell Bugzilla #206431?
+> This change does not really change irq-flow semantics, what it does is 
+> that disable_irq()'s effect is delayed. The irq controller does not have 
+> to re-assert the irq, we've got the soft-resend mechanism. What am i 
+> missing? Are you worried about this change causing actual breakage? (and 
+> i'm sorry about not having Cc:-ed you explicitly, i could have sworn you 
+> were included in that discussion but apparently not!)
 
-That's just a failing LTP testcase, not quite real life ;)
+I'm worried about some broken controllers I know of that might indeed
+swallow the interrupt if it occurs, we ack it, then disable it, and
+later on re-enable it...
 
-But Peter Staubach says a RH custumer has files written thorugh mmap,
-which are not being backed up.
+I think the main case I have in mind (pmac-pic) has the necessary
+retrigger all over the place but there is definitely a change in the
+flow of disabling/enabling here.
 
-> Perhaps we can get away with doing something half-assed which covers most
-> requirements...
+Anyway, I'll run some tests tomorrow and make noise if I find something
+broken, though I can't test the various embedded thingies in
+arch/powerpc.
 
-OK.  At least I can split the patch into two half asses.
+Ben.
 
-The big question is tmpfs and friends.  Those won't get any timestamp
-update without additional page table walking.
 
-Miklos
