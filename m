@@ -1,129 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934059AbXC0RlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934066AbXC0RsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934059AbXC0RlK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 13:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934063AbXC0RlK
+	id S934066AbXC0RsL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 13:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934068AbXC0RsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 13:41:10 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:35722 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934059AbXC0RlI (ORCPT
+	Tue, 27 Mar 2007 13:48:10 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:4395 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934066AbXC0RsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 13:41:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=pvMIjxCygdPJLtAIflYLOhq3vpiwRfTMM6mQTwOaWC1ZP3EWLZEk58hszwMczvhStDZWuU1o5QNE/mhdti8m5VIDYn+dzf4RCs4Vi2cdRWF8RDKDBXGxe+qrywCynF8vgrAwi8J5CliVLwh/r2V0shfB9zfJxxPQQhTq3Pg+kvs=
-Date: Tue, 27 Mar 2007 21:37:09 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: Pete Zaitcev <zaitcev@redhat.com>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] USB Elan FTDI: check for driver registration status
-Message-ID: <20070327173709.GB11753@cvg>
-References: <20070325072733.GA10257@cvg> <20070326151731.53cc080b.zaitcev@redhat.com> <20070327151405.GA11491@cvg> <20070327132839.71169aed@localhost> <20070327170125.GA11753@cvg> <20070327142904.74af2456@localhost>
+	Tue, 27 Mar 2007 13:48:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=kYoFLDCYdYPh2xoh6ylbYwzsgx2BDALC0TBc43j6ygg2a7WSBk+/oOS0NwUU2rq8c
+	KfpHClmJ2xOczWOZNiq8A==
+Message-ID: <b040c32a0703271047vba81938q538d182c9c984f42@mail.gmail.com>
+Date: Tue, 27 Mar 2007 10:47:54 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [patch] cache pipe buf page address for non-highmem arch
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070326201552.b8ad7dda.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070327142904.74af2456@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <b040c32a0703221751x54417524l5237742f345eeda9@mail.gmail.com>
+	 <20070322170122.ee2589a1.akpm@linux-foundation.org>
+	 <b040c32a0703231748s112beda6i3d51ebcd658005c4@mail.gmail.com>
+	 <20070326201552.b8ad7dda.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Luiz Fernando N. Capitulino - Tue, Mar 27, 2007 at 02:29:04PM -0300]
-| Em Tue, 27 Mar 2007 21:01:25 +0400
-| Cyrill Gorcunov <gorcunov@gmail.com> escreveu:
-| 
-| | [Luiz Fernando N. Capitulino - Tue, Mar 27, 2007 at 01:28:39PM -0300]
-| | | Em Tue, 27 Mar 2007 19:14:05 +0400
-| | | Cyrill Gorcunov <gorcunov@gmail.com> escreveu:
-| | | 
-| | | | Pete, Luiz
-| | | | 
-| | | | what about this one?
-| | | | 
-| | | | Actually there is just a check for where is error coming from.
-| | | | Maybe that is not the best solution but it allows us to reduce
-| | | | the calls to 'printk' :)
-| | | | 
-| | | | P.S. Pete your patch is good but the message about
-| | | | worqueue creation fail was to print even if we've
-| | | | been faltered on the usb_register procedure.
-| | | | 
-| | | | ---
-| | | | 
-| | | |  drivers/usb/misc/ftdi-elan.c |   15 +++++++++++----
-| | | |  1 files changed, 11 insertions(+), 4 deletions(-)
-| | | | 
-| | | | diff --git a/drivers/usb/misc/ftdi-elan.c b/drivers/usb/misc/ftdi-elan.c
-| | | | index bc3327e..3cd54af 100644
-| | | | --- a/drivers/usb/misc/ftdi-elan.c
-| | | | +++ b/drivers/usb/misc/ftdi-elan.c
-| | | | @@ -2903,7 +2903,7 @@ static struct usb_driver ftdi_elan_driver = {
-| | | |  };
-| | | |  static int __init ftdi_elan_init(void)
-| | | |  {
-| | | | -        int result;
-| | | | +        int result = 0;
-| | | |          printk(KERN_INFO "driver %s built at %s on %s\n", ftdi_elan_driver.name,
-| | | |  	       __TIME__, __DATE__);
-| | | |          init_MUTEX(&ftdi_module_lock);
-| | | | @@ -2918,18 +2918,25 @@ static int __init ftdi_elan_init(void)
-| | | |  	if (!respond_queue)
-| | | |  		goto err3;
-| | | |          result = usb_register(&ftdi_elan_driver);
-| | | | -        if (result)
-| | | | +        if (result) {
-| | | |                  printk(KERN_ERR "usb_register failed. Error number %d\n",
-| | | |  		       result);
-| | | | +		goto err4;
-| | | | +	}
-| | | |          return result;
-| | | |  
-| | | | + err4:
-| | | | +	destroy_workqueue(respond_queue);
-| | | |   err3:
-| | | |  	destroy_workqueue(command_queue);
-| | | |   err2:
-| | | |  	destroy_workqueue(status_queue);
-| | | |   err1:
-| | | | -	printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
-| | | | -	return -ENOMEM;
-| | | | +	if (result == 0) {
-| | | | +		result = -ENOMEM;
-| | | | +		printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
-| | | | +	}
-| | | | +	return result;
-| | | |  }
-| | | 
-| | |  I still the prefer the version I sent you yesterday. :) It
-| | | changes the minimal amount of code.
-| | | 
-| | | -- 
-| | | Luiz Fernando N. Capitulino
-| | | 
-| | 
-| | Liuz,
-| | 
-| | but the patch you sent me does call
-| | 
-| | 	printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
-| | 
-| | even if error occured in usb_register and that is not good I think.
-| | Fix me if I'm wrong.
-| 
-|  No, you're right. I missed it.
-| 
-|  Signed-off-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
-| 
-|  But Greg is the right person to submit this.
-| 
-| -- 
-| Luiz Fernando N. Capitulino
-| 
+On 3/26/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> LTP's vmsplice01 triggers the below:
+>
+> Unable to handle kernel NULL pointer dereference at 0000000000000130 RIP:
+>  [<ffffffff8029e1b6>] pipe_to_file+0x1f3/0x2a6
 
-You mean Greg KH?
+Ouch, generic_pipe_buf_map() and unmap is used by both pipe and
+splice, I better constrain all changes within fs/pipe.c because from
+splice path, the page->private is not initialized.
 
-		Cyrill
+Double ouch for missing test that code path.  Here is an updated
+patch, tested with LTP and FIO.  I will write more test cases to make
+sure all code path are covered.
 
+
+diff --git a/fs/pipe.c b/fs/pipe.c
+index ebafde7..4b55452 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -21,6 +21,21 @@
+ #include <asm/uaccess.h>
+ #include <asm/ioctls.h>
+
++#ifdef CONFIG_HIGHMEM
++#define pipe_kmap		kmap
++#define pipe_kmap_atomic	kmap_atomic
++#define pipe_kunmap		kunmap
++#define pipe_kunmap_atomic	kunmap_atomic
++#else	/* CONFIG_HIGHMEM */
++static inline void *pipe_kmap(struct page *page)
++{
++	return (void *) page->private;
++}
++#define pipe_kmap_atomic(page, type)	pipe_kmap(page)
++#define pipe_kunmap(page)		do { } while (0)
++#define pipe_kunmap_atomic(page, type)	do { } while (0)
++#endif
++
+ /*
+  * We use a start+len construction, which provides full use of the
+  * allocated memory.
+@@ -185,6 +200,27 @@ void generic_pipe_buf_unmap
+ 		kunmap(buf->page);
+ }
+
++static void *pipe_buf_map(struct pipe_inode_info *pipe,
++			   struct pipe_buffer *buf, int atomic)
++{
++	if (atomic) {
++		buf->flags |= PIPE_BUF_FLAG_ATOMIC;
++		return pipe_kmap_atomic(buf->page, KM_USER0);
++	}
++
++	return pipe_kmap(buf->page);
++}
++
++static void pipe_buf_unmap(struct pipe_inode_info *pipe,
++			    struct pipe_buffer *buf, void *map_data)
++{
++	if (buf->flags & PIPE_BUF_FLAG_ATOMIC) {
++		buf->flags &= ~PIPE_BUF_FLAG_ATOMIC;
++		pipe_kunmap_atomic(map_data, KM_USER0);
++	} else
++		pipe_kunmap(buf->page);
++}
++
+ int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
+ 			   struct pipe_buffer *buf)
+ {
+@@ -210,8 +246,8 @@ int generic_pipe_buf_pin
+
+ static const struct pipe_buf_operations anon_pipe_buf_ops = {
+ 	.can_merge = 1,
+-	.map = generic_pipe_buf_map,
+-	.unmap = generic_pipe_buf_unmap,
++	.map = pipe_buf_map,
++	.unmap = pipe_buf_unmap,
+ 	.pin = generic_pipe_buf_pin,
+ 	.release = anon_pipe_buf_release,
+ 	.steal = generic_pipe_buf_steal,
+@@ -316,6 +352,7 @@ redo:
+ 		if (do_wakeup) {
+ 			wake_up_interruptible_sync(&pipe->wait);
+  			kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
++			do_wakeup = 0;
+ 		}
+ 		pipe_wait(pipe);
+ 	}
+@@ -423,6 +460,8 @@ redo1:
+ 					ret = ret ? : -ENOMEM;
+ 					break;
+ 				}
++				page->private = (unsigned long)
++							page_address(page);
+ 				pipe->tmp_page = page;
+ 			}
+ 			/* Always wake up, even if the copy fails. Otherwise
+@@ -438,16 +477,16 @@ redo1:
+ 			iov_fault_in_pages_read(iov, chars);
+ redo2:
+ 			if (atomic)
+-				src = kmap_atomic(page, KM_USER0);
++				src = pipe_kmap_atomic(page, KM_USER0);
+ 			else
+-				src = kmap(page);
++				src = pipe_kmap(page);
+
+ 			error = pipe_iov_copy_from_user(src, iov, chars,
+ 							atomic);
+ 			if (atomic)
+-				kunmap_atomic(src, KM_USER0);
++				pipe_kunmap_atomic(src, KM_USER0);
+ 			else
+-				kunmap(page);
++				pipe_kunmap(page);
+
+ 			if (unlikely(error)) {
+ 				if (atomic) {
