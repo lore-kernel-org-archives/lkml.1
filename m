@@ -1,46 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934242AbXC0W35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934233AbXC0Wal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934242AbXC0W35 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 18:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934230AbXC0W3y
+	id S934233AbXC0Wal (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 18:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934244AbXC0W35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 18:29:54 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:58972 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934236AbXC0W3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 18:29:18 -0400
-Date: Wed, 28 Mar 2007 00:24:41 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Jesse Huang <jesse@icplus.com.tw>, "Randy.Dunlap" <rdunlap@xenotime.net>,
-       penberg@cs.Helsinki.FI, akpm@osdl.org, dvrabel@cantab.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       david@pleyades.net
-Subject: Re: IP1000A: About IC Plus IP1000A Linux driver current status
-Message-ID: <20070327222441.GA20687@electric-eye.fr.zoreil.com>
-References: <1156268234.3622.1.camel@localhost.localdomain> <20060821231455.1ce9474d.rdunlap@xenotime.net> <001b01c7704f$4232a0d0$4964a8c0@icplus.com.tw> <46095A23.9090705@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Mar 2007 18:29:57 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36419 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934235AbXC0W3Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 18:29:16 -0400
+Date: Wed, 28 Mar 2007 00:29:19 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Thomas Meyer <thomas@m3y3r.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [4/5] 2.6.21-rc5: known regressions
+Message-ID: <20070327222919.GI16477@stusta.de>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015949.GB16477@stusta.de> <200703271209.14447.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <46095A23.9090705@garzik.org>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+In-Reply-To: <200703271209.14447.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> :
-> Jesse Huang wrote:
-> >Dear all:
-> >
-> >Would someone tell me the current status of IP1000A Linux Driver?
-> >Would it be putted into Linux Kernel or not?
+On Tue, Mar 27, 2007 at 12:09:13PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, 27 March 2007 03:59, Adrian Bunk wrote:
+> > This email lists some known regressions in Linus' tree compared to 2.6.20.
+> > 
+> > If you find your name in the Cc header, you are either submitter of one
+> > of the bugs, maintainer of an affectected subsystem or driver, a patch
+> > of you caused a breakage or I'm considering you in any other way
+> > possibly involved with one or more of these issues.
+> > 
+> > Due to the huge amount of recipients, please trim the Cc when answering.
 > 
-> I forgot what the status of this was?  Didn't it need some cleanups?
+> I think the following two:
+>  
+> > Subject    : suspend to disk: keypress required for power down
+> > References : http://lkml.org/lkml/2007/3/25/78
+> > Submitter  : Thomas Meyer <thomas@m3y3r.de>
+> > Status     : unknown
+>  
+> > Subject    : suspend to disk: non-boot cpus are disabled again
+> > References : http://lkml.org/lkml/2007/3/25/78
+> > Submitter  : Thomas Meyer <thomas@m3y3r.de>
+> > Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+> >              Eric W. Biederman <ebiederm@xmission.com>
+> > Status     : problem is being debugged
+> 
+> are related to the same issue.
+> 
+> The problem is that we call disable_nonboot_cpus() in swsusp before
+> powering down the system in order to avoid triggering the WARN_ON()
+> in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping() and this doesn't
+> work well on Thomas' system.
+> 
+> Since the problem has been introduced by commit
+> 94985134b7b46848267ed6b734320db01c974e72
+> (swsusp: disable nonboot CPUs before entering platform suspend), I think it's
+> better to revert this commit and remove the the WARN_ON() in
+> arch/x86_64/kernel/acpi/sleep.c:init_low_mapping() (appended is a patch that
+> removes the WARN_ON()).
 
-More cleanups than what it already had would be welcome.
+It's now in Linus' tree.
 
-I will not argue to delay further the inclusion of a driver for this
-device though.
+Thomas (Meyer), are there any regressions left with the latest -git tree 
+plus the MSI fix?
+
+> Greetings,
+> Rafael
+>...
+
+cu
+Adrian
 
 -- 
-Ueimor
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
