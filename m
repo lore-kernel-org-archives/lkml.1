@@ -1,55 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbXC0AeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbXC0Apk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750978AbXC0AeQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 20:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXC0AeQ
+	id S933853AbXC0Apk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 20:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933863AbXC0Apk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 20:34:16 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35455 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750978AbXC0AeP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 20:34:15 -0400
-Date: Tue, 27 Mar 2007 02:34:19 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: dead CONFIG variables in kernel Makefiles
-Message-ID: <20070327003419.GR16477@stusta.de>
-References: <Pine.LNX.4.64.0703261924470.26815@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703261924470.26815@CPE00045a9c397f-CM001225dbafb6>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 26 Mar 2007 20:45:40 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33772 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933853AbXC0Apj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 20:45:39 -0400
+Date: Mon, 26 Mar 2007 17:45:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] add file position info to proc
+Message-Id: <20070326174535.4f21bed3.akpm@linux-foundation.org>
+In-Reply-To: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
+References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 07:32:00PM -0400, Robert P. J. Day wrote:
-> 
->   the output from a short script i wrote, locating all CONFIG_
-> variables in makefiles that don't appear to exist in any Kconfig file
-> anywhere in the source tree.
-> 
->   first, from the drivers/ directory:
->...
-> ===== RADIO_MIROPCM20 =====
-> ./drivers/media/radio/Makefile:obj-$(CONFIG_RADIO_MIROPCM20) += miropcm20.o
-> ===== RADIO_MIROPCM20_RDS =====
-> ./drivers/media/radio/Makefile:obj-$(CONFIG_RADIO_MIROPCM20_RDS) += miropcm20-rds.o
->...
+On Sat, 24 Mar 2007 23:04:09 +0100
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-Part of an OSS driver removal, patch for 2.6.22 already submitted.
+> This patch adds support for finding out the current file position,
+> open flags and possibly other info in the future.
 
-> rday
+fs/proc/base.c: In function 'proc_lookupfdinfo':
+fs/proc/base.c:1584: warning: passing argument 3 of 'proc_lookupfd_common' from incompatible pointer type
+fs/proc/base.c: In function 'proc_readfdinfo':
+fs/proc/base.c:1590: warning: passing argument 4 of 'proc_readfd_common' from incompatible pointer type
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+If taken, that callback into proc_lookupfd_common() will crash the kernel.
