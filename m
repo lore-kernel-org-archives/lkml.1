@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbXC0PDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXC0POo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbXC0PDn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 11:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXC0PDn
+	id S1753892AbXC0POo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 11:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXC0POo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 11:03:43 -0400
-Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:61055 "EHLO
-	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751905AbXC0PDm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 11:03:42 -0400
-X-Greylist: delayed 4146 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Mar 2007 11:03:42 EDT
-Date: Tue, 27 Mar 2007 16:54:33 +0300
-From: Sami Farin <safari-kernel@safari.iki.fi>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
-Subject: Re: oprofile / selinux / security_port_sid
-Message-ID: <20070327135433.xh5mtwgey3pr7u3r@m.safari.iki.fi>
-Mail-Followup-To: Stephen Smalley <sds@tycho.nsa.gov>,
-	linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-	James Morris <jmorris@namei.org>,
-	Eric Paris <eparis@parisplace.org>
-References: <20070327100653.vtmuy64kgkikydlx@m.safari.iki.fi> <1175002823.3864.301.camel@moss-spartans.epoch.ncsc.mil>
+	Tue, 27 Mar 2007 11:14:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48932 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753892AbXC0POn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 11:14:43 -0400
+Message-ID: <460934D7.9030700@redhat.com>
+Date: Tue, 27 Mar 2007 11:14:31 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1175002823.3864.301.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Dmitry Torokhov <dtor@insightbb.com>
+CC: Pete Zaitcev <zaitcev@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       Peter Osterlund <petero2@telia.com>
+Subject: Re: Fix sudden warps in mousedev
+References: <20070324001610.724a820a.zaitcev@redhat.com> <d120d5000703261230h1724e453je2c14769fc099ad3@mail.gmail.com> <20070326144206.93805eeb.zaitcev@redhat.com> <200703262114.45287.dtor@insightbb.com>
+In-Reply-To: <200703262114.45287.dtor@insightbb.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 27, 2007 at 09:40:23 -0400, Stephen Smalley wrote:
-> On Tue, 2007-03-27 at 13:06 +0300, Sami Farin wrote:
-> > is there room for improvement in security_port_sid() ?
+Dmitry Torokhov wrote:
 > 
-> Yes, lots of room.  Also, it won't get called per-packet if you enable
-> secmark (echo 0 > /selinux/compat_net or boot with selinux_compat_net=0
-> or build with SECURITY_SELINUX_ENABLE_SECMARK_DEFAULT), although that
-> may require updating your policy.
+> The driver grabs tochpad with EVIOCGRAB ioctl to prevent input events
+> from bveing delivered to X through /dev/input/mice which is still in
+> whidespread use. That's why evtest does not work. We could as Peter
+> (CCed) to implement an option to turn off grabbing so users who don't
+> use mousedev multiplexor can use evtest and other commands.
+> 
 
-Hmm, test was done with
-CONFIG_NETWORK_SECMARK=y
-CONFIG_SECURITY_SELINUX_ENABLE_SECMARK_DEFAULT=y
-and /selinux/compat_net = 0
+What should people be using instead of /dev/input/mice ?
 
--- 
-Do what you love because life is too short for anything else.
+And why did the mouse numbers all get rearranged in 2.6.20, e.g.
+mouse1 became mouse2 for many people?
 
