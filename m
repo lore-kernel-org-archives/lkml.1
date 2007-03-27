@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXC0Voi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXC0Vpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932418AbXC0Voi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXC0Voi
+	id S932664AbXC0Vpk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932778AbXC0Vpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:44:38 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:36131 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932778AbXC0Voh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:44:37 -0400
-To: akpm@linux-foundation.org
-CC: pavel@ucw.cz, miklos@szeredi.hu, linux-kernel@vger.kernel.org
-In-reply-to: <20070327143629.9c8953db.akpm@linux-foundation.org> (message from
-	Andrew Morton on Tue, 27 Mar 2007 14:36:29 -0700)
-Subject: Re: [patch] add file position info to proc
-References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
-	<20070327212419.GA5817@ucw.cz> <20070327143629.9c8953db.akpm@linux-foundation.org>
-Message-Id: <E1HWJRv-00052q-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 27 Mar 2007 23:43:27 +0200
+	Tue, 27 Mar 2007 17:45:40 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44191 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932664AbXC0Vpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 17:45:39 -0400
+Date: Tue, 27 Mar 2007 14:34:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+cc: Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
+In-Reply-To: <200703271719.25795.lenb@kernel.org>
+Message-ID: <Pine.LNX.4.64.0703271430310.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+ <20070326123141.GA11288@ucw.cz> <1174917142.4182.39.camel@chaos>
+ <200703271719.25795.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Hi!
-> > 
-> > > From: Miklos Szeredi <mszeredi@suse.cz>
-> > > 
-> > > This patch adds support for finding out the current file position,
-> > > open flags and possibly other info in the future.
-> > > 
-> > > These new entries are added:
-> > > 
-> > >   /proc/PID/fdinfo/FD
-> > >   /proc/PID/task/TID/fdinfo/FD
-> > > 
-> > > For each fd the information is provided in the following format:
-> > > 
-> > > pos:	1234
-> > > flags:	0100002
-> > 
-> > Octal? Maybe we should use more traditional hex here?
 
-It's octal in <fcntl.h>, so it's easier for a human to read.
 
-> Good point.  The O_foo flags are per-arch, so this field has the potential
-> to be subtly different on different architectures, which is unpleasing.
+On Tue, 27 Mar 2007, Len Brown wrote:
 > 
-> > Or even list flags by name?
-> 
-> urg.  Simple enough to do (lookup table, please).  But is it worth it? 
-> Perhaps just remove that field?
+> I think the only fool-proof way to do this automatically is to
 
-I wouldn't mind.  But leaving it to an application or for a human to
-sort out is OK I guess.  There are lots of non-portable numbers in
-proc.
+Why not just take the known-good CPUID signature?
 
-Miklos
+Screw firmware or ACPI tables. They're going to be occasionally wrong.
+
+If we know that "Core 2, version X" has a good local APIC timer, we use 
+it. Otherwise we don't.
+
+That's generally how we handle other APIC bugs too (the read-after-write 
+thing, for example, or the differences between integrated and off-chip 
+APIC's). Sometimes we check the APIC version itself, sometimes we check 
+the CPUID information, and sometimes we check both ("modern_apic()").
+
+			Linus
