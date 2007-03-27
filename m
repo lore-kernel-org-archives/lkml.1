@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934136AbXC0SIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934144AbXC0SSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934136AbXC0SIr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 14:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934144AbXC0SIq
+	id S934144AbXC0SSM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 14:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934146AbXC0SSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 14:08:46 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:5409 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934136AbXC0SIp (ORCPT
+	Tue, 27 Mar 2007 14:18:12 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:42803 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934143AbXC0SSK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 14:08:45 -0400
+	Tue, 27 Mar 2007 14:18:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=fzmMkFq3z70vYKKJtTYx6etAInQH5bPYWz6RuVQHXvM+i5InWSHAsWVeOTE4DXdY4RR+93dUR5Fec2Xxs0AqqmKOJfwaIdbkXipsqStI25wnwVRhLfQHfPlGYYwnbgaU6Dua/UAx4iU2ifQcZaEWrZUi3ZnBUBZTKk3Y1uaY9q4=
-Date: Tue, 27 Mar 2007 22:08:36 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@lists.osdl.org
-Subject: Re: [PATCH] aoe, tb0219: fix late spin_lock_init() and friends
-Message-ID: <20070327180836.GA5308@martell.zuzino.mipt.ru>
-References: <20070325190221.GA5308@martell.zuzino.mipt.ru> <20070325143609.75165bf6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070325143609.75165bf6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+        h=received:in-reply-to:references:mime-version:content-type:message-id:cc:content-transfer-encoding:subject:date:to:x-mailer:from;
+        b=O4ZeIG+U7JEb1+ju8VAW/SNadphKUjxZvkdEA4hGHjllF5ngwpixOpvomsYbtGmOQ4dG/wTqYSEeOCpNHZPt+Jy0lo1NAF6X4BXY7ZvFonuyZFZfD5FA7kZXVq8jPhgvGqpPFt0hcO47zYcDj15W789oQnOD6Ti7IpuFrgQ9rOA=
+In-Reply-To: <4608B2B9.7090503@garzik.org>
+References: <Pine.LNX.4.64.0703241232580.11608@p34.internal.lan> <4608B2B9.7090503@garzik.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
+Message-Id: <ACBD2F44-03C7-49BE-9A2F-ABF7078BCC5E@gmail.com>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Content-Transfer-Encoding: 8BIT
+Subject: Re: Why is NCQ enabled by default by libata? (2.6.20)
+Date: Tue, 27 Mar 2007 13:18:05 -0500
+To: Jeff Garzik <jeff@garzik.org>
+X-Mailer: Apple Mail (2.752.2)
+From: Mark Rustad <mrustad@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 25, 2007 at 02:36:09PM -0800, Andrew Morton wrote:
-> On Sun, 25 Mar 2007 23:02:21 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > Some drivers do register_chrdev() before lock or semaphore used in
-> > corresponding file_operations is initialized.
+On Mar 27, 2007, at 12:59 AM, Jeff Garzik wrote:
 
-> > --- a/drivers/char/tb0219.c
-> > +++ b/drivers/char/tb0219.c
-> > @@ -287,6 +287,8 @@ static int __devinit tb0219_probe(struct
-> >  {
-> >  	int retval;
-> >
-> > +	spin_lock_init(&tb0219_lock);
-> > +
-> >  	if (request_mem_region(TB0219_START, TB0219_SIZE, "TB0219") == NULL)
-> >  		return -EBUSY;
-> >
-> > @@ -304,8 +306,6 @@ static int __devinit tb0219_probe(struct
-> >  		return retval;
-> >  	}
-> >
-> > -	spin_lock_init(&tb0219_lock);
-> > -
-> >  	old_machine_restart = _machine_restart;
-> >  	_machine_restart = tb0219_restart;
-> >
+> Justin Piszcz wrote:
+>> Without NCQ, performance is MUCH better on almost every operation,  
+>> with the exception of 2-3 items.
 >
-> These locks can and should be initialised at compile-time.
+> Variables to take into account:
+>
+> * the drive (NCQ performance wildly varies)
+> * the IO scheduler
+> * the filesystem (if not measuring direct to blkdev)
+> * application workload (or in your case, benchmark tool)
+> 	* in particular, the threaded-ness of the apps
+>
+> For the overwhelming majority of combinations, NCQ should not / 
+> hurt/ performance.
+>
+> For the majority of combinations, NCQ helps (though it may not be  
+> often that you use more than 4-8 tags).
+>
+> In some cases, NCQ firmware may be broken.  There is a Maxtor  
+> firmware id, and some Hitachi ids that people are leaning towards  
+> recommending be added to the libata 'horkage' list.
 
-Documentation mentions that
+Some other variables that we have noticed: Some drive firmware goes  
+into "stupid" mode when write cache is turned off. Meaning that it  
+does not reorder any queued operations. Of course if you really care  
+about your data, you don't really want to turn write cache on.
 
-	- it [dynamic spinlock initialization] hurts automatic lock validators
-	- it becomes intrusive for the realtime preemption patches
+Also the controller used can have unfortunate interactions. For  
+example the Adaptec SAS controller firmware will never issue more  
+than two queued commands to a SATA drive (even though the firmware  
+will happily accept more from the driver), so even if an attached  
+drive is capable of reordering queued commands, its performance is  
+seriously crippled by not getting more commands queued up. In  
+addition, some drive firmware seems to try to bunch up queued command  
+completions which interacts very badly with a controller that queues  
+up so few commands. In this case turning NCQ off performs better  
+because the drive knows it can't hold off completions to reduce  
+interrupt load on the host – a good idea gone totally wrong when used  
+with the Adaptec controller.
 
-First reason is clearly bogus, how relevant is the second one?
+Today SATA NCQ seems to be an area where few combinations work well.  
+It seems so bad to me that a whitelist might be better than a  
+blacklist. That is probably overstating it, but NCQ performance is  
+certainly a big problem.
+
+-- 
+Mark Rustad, MRustad@gmail.com
+
 
