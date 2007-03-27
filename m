@@ -1,44 +1,1083 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933955AbXC0C1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbXC0DCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933955AbXC0C1f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 22:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933956AbXC0C1f
+	id S932367AbXC0DCB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 23:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbXC0DCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 22:27:35 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34151 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933955AbXC0C1e (ORCPT
+	Mon, 26 Mar 2007 23:02:01 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:5392 "EHLO
+	asav15.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752512AbXC0DB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 22:27:34 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: Mitch Williams <mitch.a.williams@intel.com>,
-       Michael Ellerman <michael@ellerman.id.au>,
-       linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       auke-jan.h.kok@intel.com
-Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
-References: <1174951102.22190.15.camel@strongmad>
-	<20070327000951.GA11555@kroah.com>
-Date: Mon, 26 Mar 2007 20:26:57 -0600
-In-Reply-To: <20070327000951.GA11555@kroah.com> (Greg KH's message of "Mon, 26
-	Mar 2007 17:09:51 -0700")
-Message-ID: <m18xdj1kwe.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 26 Mar 2007 23:01:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAAYmCEZKhRO4dGdsb2JhbACPbAE
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH] Correct bad CONFIG names in drivers/usb/input/Makefile.
+Date: Mon, 26 Mar 2007 23:01:54 -0400
+User-Agent: KMail/1.9.3
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+References: <Pine.LNX.4.64.0703261804010.2211@CPE00045a9c397f-CM001225dbafb6>
+In-Reply-To: <Pine.LNX.4.64.0703261804010.2211@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703262301.54847.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+On Monday 26 March 2007 18:08, Robert P. J. Day wrote:
+> Correct the incorrect CONFIG_ variables currently in
+> drivers/usb/input/Makefile that prevent three of the touchscreen
+> source files from being built.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
 
-> How well does this play with the MSI core changes that Michael Ellerman
-> has proposed on the linux-pci mailing list?
+NAK. These modules should just go away.
 
-The patch looks reasonable and it is independent of those changes.
+-- 
+Dmitry
 
-This just modifies the helper code for using the msi capability itself as
-an interrupt controller.   Other architectures that mask/unmask the interrupt
-at an architecture specific interrupt controller  won't be affected.
+Input: remove old USB touchscreen drivers
 
-Eric
+itmtoch, mtouchusb and touchkitusb have been replaced with
+composite usbtouchscreen driver and can be removed now.
+
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ drivers/usb/input/itmtouch.c    |  271 ---------------------------
+ drivers/usb/input/mtouchusb.c   |  332 ---------------------------------
+ drivers/usb/input/touchkitusb.c |  392 ----------------------------------------
+ drivers/usb/input/Makefile      |    3 
+ 4 files changed, 998 deletions(-)
+
+Index: work/drivers/usb/input/Makefile
+===================================================================
+--- work.orig/drivers/usb/input/Makefile
++++ work/drivers/usb/input/Makefile
+@@ -38,9 +38,6 @@ obj-$(CONFIG_USB_KBD)		+= usbkbd.o
+ obj-$(CONFIG_USB_KBTAB)		+= kbtab.o
+ obj-$(CONFIG_USB_KEYSPAN_REMOTE)	+= keyspan_remote.o
+ obj-$(CONFIG_USB_MOUSE)		+= usbmouse.o
+-obj-$(CONFIG_USB_MTOUCH)	+= mtouchusb.o
+-obj-$(CONFIG_USB_ITMTOUCH)	+= itmtouch.o
+-obj-$(CONFIG_USB_EGALAX)	+= touchkitusb.o
+ obj-$(CONFIG_USB_TOUCHSCREEN)	+= usbtouchscreen.o
+ obj-$(CONFIG_USB_POWERMATE)	+= powermate.o
+ obj-$(CONFIG_USB_WACOM)		+= wacom.o
+Index: work/drivers/usb/input/itmtouch.c
+===================================================================
+--- work.orig/drivers/usb/input/itmtouch.c
++++ /dev/null
+@@ -1,271 +0,0 @@
+-/******************************************************************************
+- * itmtouch.c  --  Driver for ITM touchscreen panel
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License as
+- * published by the Free Software Foundation; either version 2 of the
+- * License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * Based upon original work by Chris Collins <xfire-itmtouch@xware.cx>.
+- *
+- * Kudos to ITM for providing me with the datasheet for the panel,
+- * even though it was a day later than I had finished writing this
+- * driver.
+- *
+- * It has meant that I've been able to correct my interpretation of the
+- * protocol packets however.
+- *
+- * CC -- 2003/9/29
+- *
+- * History
+- * 1.0 & 1.1  2003 (CC) vojtech@suse.cz
+- *   Original version for 2.4.x kernels
+- *
+- * 1.2  02/03/2005 (HCE) hc@mivu.no
+- *   Complete rewrite to support Linux 2.6.10, thanks to mtouchusb.c for hints.
+- *   Unfortunately no calibration support at this time.
+- *
+- * 1.2.1  09/03/2005 (HCE) hc@mivu.no
+- *   Code cleanup and adjusting syntax to start matching kernel standards
+- * 
+- * 1.2.2  10/05/2006 (MJA) massad@gmail.com
+- *   Flag for detecting if the screen was being touch was incorrectly 
+- *   inverted, so no touch events were being detected. 	
+- *   
+- *****************************************************************************/
+-
+-#include <linux/kernel.h>
+-#include <linux/slab.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/usb/input.h>
+-
+-/* only an 8 byte buffer necessary for a single packet */
+-#define ITM_BUFSIZE			8
+-#define PATH_SIZE			64
+-
+-#define USB_VENDOR_ID_ITMINC		0x0403
+-#define USB_PRODUCT_ID_TOUCHPANEL	0xf9e9
+-
+-#define DRIVER_AUTHOR "Hans-Christian Egtvedt <hc@mivu.no>"
+-#define DRIVER_VERSION "v1.2.2"
+-#define DRIVER_DESC "USB ITM Inc Touch Panel Driver"
+-#define DRIVER_LICENSE "GPL"
+-
+-MODULE_AUTHOR( DRIVER_AUTHOR );
+-MODULE_DESCRIPTION( DRIVER_DESC );
+-MODULE_LICENSE( DRIVER_LICENSE );
+-
+-struct itmtouch_dev {
+-	struct usb_device	*usbdev; /* usb device */
+-	struct input_dev	*inputdev; /* input device */
+-	struct urb		*readurb; /* urb */
+-	char			rbuf[ITM_BUFSIZE]; /* data */
+-	int			users;
+-	char name[128];
+-	char phys[64];
+-};
+-
+-static struct usb_device_id itmtouch_ids [] = {
+-	{ USB_DEVICE(USB_VENDOR_ID_ITMINC, USB_PRODUCT_ID_TOUCHPANEL) },
+-	{ }
+-};
+-
+-static void itmtouch_irq(struct urb *urb)
+-{
+-	struct itmtouch_dev *itmtouch = urb->context;
+-	unsigned char *data = urb->transfer_buffer;
+-	struct input_dev *dev = itmtouch->inputdev;
+-	int retval;
+-
+-	switch (urb->status) {
+-	case 0:
+-		/* success */
+-		break;
+-	case -ETIME:
+-		/* this urb is timing out */
+-		dbg("%s - urb timed out - was the device unplugged?",
+-		    __FUNCTION__);
+-		return;
+-	case -ECONNRESET:
+-	case -ENOENT:
+-	case -ESHUTDOWN:
+-		/* this urb is terminated, clean up */
+-		dbg("%s - urb shutting down with status: %d",
+-		    __FUNCTION__, urb->status);
+-		return;
+-	default:
+-		dbg("%s - nonzero urb status received: %d",
+-		    __FUNCTION__, urb->status);
+-		goto exit;
+-	}
+-
+-	/* if pressure has been released, then don't report X/Y */
+-	if (!(data[7] & 0x20)) {
+-		input_report_abs(dev, ABS_X, (data[0] & 0x1F) << 7 | (data[3] & 0x7F));
+-		input_report_abs(dev, ABS_Y, (data[1] & 0x1F) << 7 | (data[4] & 0x7F));
+-	}
+-
+-	input_report_abs(dev, ABS_PRESSURE, (data[2] & 1) << 7 | (data[5] & 0x7F));
+-	input_report_key(dev, BTN_TOUCH, ~data[7] & 0x20);
+-	input_sync(dev);
+-
+-exit:
+-	retval = usb_submit_urb (urb, GFP_ATOMIC);
+-	if (retval)
+-		printk(KERN_ERR "%s - usb_submit_urb failed with result: %d",
+-				__FUNCTION__, retval);
+-}
+-
+-static int itmtouch_open(struct input_dev *input)
+-{
+-	struct itmtouch_dev *itmtouch = input->private;
+-
+-	itmtouch->readurb->dev = itmtouch->usbdev;
+-
+-	if (usb_submit_urb(itmtouch->readurb, GFP_KERNEL))
+-		return -EIO;
+-
+-	return 0;
+-}
+-
+-static void itmtouch_close(struct input_dev *input)
+-{
+-	struct itmtouch_dev *itmtouch = input->private;
+-
+-	usb_kill_urb(itmtouch->readurb);
+-}
+-
+-static int itmtouch_probe(struct usb_interface *intf, const struct usb_device_id *id)
+-{
+-	struct itmtouch_dev *itmtouch;
+-	struct input_dev *input_dev;
+-	struct usb_host_interface *interface;
+-	struct usb_endpoint_descriptor *endpoint;
+-	struct usb_device *udev = interface_to_usbdev(intf);
+-	unsigned int pipe;
+-	unsigned int maxp;
+-
+-	interface = intf->cur_altsetting;
+-	endpoint = &interface->endpoint[0].desc;
+-
+-	itmtouch = kzalloc(sizeof(struct itmtouch_dev), GFP_KERNEL);
+-	input_dev = input_allocate_device();
+-	if (!itmtouch || !input_dev) {
+-		err("%s - Out of memory.", __FUNCTION__);
+-		goto fail;
+-	}
+-
+-	itmtouch->usbdev = udev;
+-	itmtouch->inputdev = input_dev;
+-
+-	if (udev->manufacturer)
+-		strlcpy(itmtouch->name, udev->manufacturer, sizeof(itmtouch->name));
+-
+-	if (udev->product) {
+-		if (udev->manufacturer)
+-			strlcat(itmtouch->name, " ", sizeof(itmtouch->name));
+-		strlcat(itmtouch->name, udev->product, sizeof(itmtouch->name));
+-	}
+-
+-	if (!strlen(itmtouch->name))
+-		sprintf(itmtouch->name, "USB ITM touchscreen");
+-
+-	usb_make_path(udev, itmtouch->phys, sizeof(itmtouch->phys));
+-	strlcpy(itmtouch->phys, "/input0", sizeof(itmtouch->phys));
+-
+-	input_dev->name = itmtouch->name;
+-	input_dev->phys = itmtouch->phys;
+-	usb_to_input_id(udev, &input_dev->id);
+-	input_dev->cdev.dev = &intf->dev;
+-	input_dev->private = itmtouch;
+-
+-	input_dev->open = itmtouch_open;
+-	input_dev->close = itmtouch_close;
+-
+-	input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_ABS);
+-	input_dev->absbit[0] = BIT(ABS_X) | BIT(ABS_Y) | BIT(ABS_PRESSURE);
+-	input_dev->keybit[LONG(BTN_TOUCH)] = BIT(BTN_TOUCH);
+-
+-	/* device limits */
+-	/* as specified by the ITM datasheet, X and Y are 12bit,
+-	 * Z (pressure) is 8 bit. However, the fields are defined up
+-	 * to 14 bits for future possible expansion.
+-	 */
+-	input_set_abs_params(input_dev, ABS_X, 0, 0x0FFF, 2, 0);
+-	input_set_abs_params(input_dev, ABS_Y, 0, 0x0FFF, 2, 0);
+-	input_set_abs_params(input_dev, ABS_PRESSURE, 0, 0xFF, 2, 0);
+-
+-	/* initialise the URB so we can read from the transport stream */
+-	pipe = usb_rcvintpipe(itmtouch->usbdev, endpoint->bEndpointAddress);
+-	maxp = usb_maxpacket(udev, pipe, usb_pipeout(pipe));
+-
+-	if (maxp > ITM_BUFSIZE)
+-		maxp = ITM_BUFSIZE;
+-
+-	itmtouch->readurb = usb_alloc_urb(0, GFP_KERNEL);
+-	if (!itmtouch->readurb) {
+-		dbg("%s - usb_alloc_urb failed: itmtouch->readurb", __FUNCTION__);
+-		goto fail;
+-	}
+-
+-	usb_fill_int_urb(itmtouch->readurb, itmtouch->usbdev, pipe, itmtouch->rbuf,
+-			 maxp, itmtouch_irq, itmtouch, endpoint->bInterval);
+-
+-	input_register_device(itmtouch->inputdev);
+-
+-	usb_set_intfdata(intf, itmtouch);
+-
+-	return 0;
+-
+- fail:	input_free_device(input_dev);
+-	kfree(itmtouch);
+-	return -ENOMEM;
+-}
+-
+-static void itmtouch_disconnect(struct usb_interface *intf)
+-{
+-	struct itmtouch_dev *itmtouch = usb_get_intfdata(intf);
+-
+-	usb_set_intfdata(intf, NULL);
+-
+-	if (itmtouch) {
+-		input_unregister_device(itmtouch->inputdev);
+-		usb_kill_urb(itmtouch->readurb);
+-		usb_free_urb(itmtouch->readurb);
+-		kfree(itmtouch);
+-	}
+-}
+-
+-MODULE_DEVICE_TABLE(usb, itmtouch_ids);
+-
+-static struct usb_driver itmtouch_driver = {
+-	.name =         "itmtouch",
+-	.probe =        itmtouch_probe,
+-	.disconnect =   itmtouch_disconnect,
+-	.id_table =     itmtouch_ids,
+-};
+-
+-static int __init itmtouch_init(void)
+-{
+-	info(DRIVER_DESC " " DRIVER_VERSION);
+-	info(DRIVER_AUTHOR);
+-	return usb_register(&itmtouch_driver);
+-}
+-
+-static void __exit itmtouch_exit(void)
+-{
+-	usb_deregister(&itmtouch_driver);
+-}
+-
+-module_init(itmtouch_init);
+-module_exit(itmtouch_exit);
+Index: work/drivers/usb/input/mtouchusb.c
+===================================================================
+--- work.orig/drivers/usb/input/mtouchusb.c
++++ /dev/null
+@@ -1,332 +0,0 @@
+-/******************************************************************************
+- * mtouchusb.c  --  Driver for Microtouch (Now 3M) USB Touchscreens
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License as
+- * published by the Free Software Foundation; either version 2 of the
+- * License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * Based upon original work by Radoslaw Garbacz (usb-support@ite.pl)
+- *  (http://freshmeat.net/projects/3mtouchscreendriver)
+- *
+- * History
+- *
+- *  0.3 & 0.4  2002 (TEJ) tejohnson@yahoo.com
+- *    Updated to 2.4.18, then 2.4.19
+- *    Old version still relied on stealing a minor
+- *
+- *  0.5  02/26/2004 (TEJ) tejohnson@yahoo.com
+- *    Complete rewrite using Linux Input in 2.6.3
+- *    Unfortunately no calibration support at this time
+- *
+- *  1.4 04/25/2004 (TEJ) tejohnson@yahoo.com
+- *    Changed reset from standard USB dev reset to vendor reset
+- *    Changed data sent to host from compensated to raw coordinates
+- *    Eliminated vendor/product module params
+- *    Performed multiple successful tests with an EXII-5010UC
+- *
+- *  1.5 02/27/2005 ddstreet@ieee.org
+- *    Added module parameter to select raw or hw-calibrated coordinate reporting
+- *
+- *****************************************************************************/
+-
+-#include <linux/kernel.h>
+-#include <linux/slab.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/usb/input.h>
+-
+-#define MTOUCHUSB_MIN_XC                0x0
+-#define MTOUCHUSB_MAX_RAW_XC            0x4000
+-#define MTOUCHUSB_MAX_CALIB_XC          0xffff
+-#define MTOUCHUSB_XC_FUZZ               0x0
+-#define MTOUCHUSB_XC_FLAT               0x0
+-#define MTOUCHUSB_MIN_YC                0x0
+-#define MTOUCHUSB_MAX_RAW_YC            0x4000
+-#define MTOUCHUSB_MAX_CALIB_YC          0xffff
+-#define MTOUCHUSB_YC_FUZZ               0x0
+-#define MTOUCHUSB_YC_FLAT               0x0
+-
+-#define MTOUCHUSB_ASYNC_REPORT          1
+-#define MTOUCHUSB_RESET                 7
+-#define MTOUCHUSB_REPORT_DATA_SIZE      11
+-#define MTOUCHUSB_REQ_CTRLLR_ID         10
+-
+-#define MTOUCHUSB_GET_RAW_XC(data)      (data[8]<<8 | data[7])
+-#define MTOUCHUSB_GET_CALIB_XC(data)    (data[4]<<8 | data[3])
+-#define MTOUCHUSB_GET_RAW_YC(data)      (data[10]<<8 | data[9])
+-#define MTOUCHUSB_GET_CALIB_YC(data)    (data[6]<<8 | data[5])
+-#define MTOUCHUSB_GET_XC(data)          (raw_coordinates ? \
+-                                         MTOUCHUSB_GET_RAW_XC(data) : \
+-                                         MTOUCHUSB_GET_CALIB_XC(data))
+-#define MTOUCHUSB_GET_YC(data)          (raw_coordinates ? \
+-                                         MTOUCHUSB_GET_RAW_YC(data) : \
+-                                         MTOUCHUSB_GET_CALIB_YC(data))
+-#define MTOUCHUSB_GET_TOUCHED(data)     ((data[2] & 0x40) ? 1:0)
+-
+-#define DRIVER_VERSION "v1.5"
+-#define DRIVER_AUTHOR "Todd E. Johnson, tejohnson@yahoo.com"
+-#define DRIVER_DESC "3M USB Touchscreen Driver"
+-#define DRIVER_LICENSE "GPL"
+-
+-static int raw_coordinates = 1;
+-
+-module_param(raw_coordinates, bool, S_IRUGO | S_IWUSR);
+-MODULE_PARM_DESC(raw_coordinates, "report raw coordinate values (y, default) or hardware-calibrated coordinate values (n)");
+-
+-struct mtouch_usb {
+-	unsigned char *data;
+-	dma_addr_t data_dma;
+-	struct urb *irq;
+-	struct usb_device *udev;
+-	struct input_dev *input;
+-	char name[128];
+-	char phys[64];
+-};
+-
+-static struct usb_device_id mtouchusb_devices[] = {
+-	{ USB_DEVICE(0x0596, 0x0001) },
+-	{ }
+-};
+-
+-static void mtouchusb_irq(struct urb *urb)
+-{
+-	struct mtouch_usb *mtouch = urb->context;
+-	int retval;
+-
+-	switch (urb->status) {
+-	case 0:
+-		/* success */
+-		break;
+-	case -ETIME:
+-		/* this urb is timing out */
+-		dbg("%s - urb timed out - was the device unplugged?",
+-		    __FUNCTION__);
+-		return;
+-	case -ECONNRESET:
+-	case -ENOENT:
+-	case -ESHUTDOWN:
+-		/* this urb is terminated, clean up */
+-		dbg("%s - urb shutting down with status: %d",
+-		    __FUNCTION__, urb->status);
+-		return;
+-	default:
+-		dbg("%s - nonzero urb status received: %d",
+-		    __FUNCTION__, urb->status);
+-		goto exit;
+-	}
+-
+-	input_report_key(mtouch->input, BTN_TOUCH,
+-			 MTOUCHUSB_GET_TOUCHED(mtouch->data));
+-	input_report_abs(mtouch->input, ABS_X, MTOUCHUSB_GET_XC(mtouch->data));
+-	input_report_abs(mtouch->input, ABS_Y,
+-			 (raw_coordinates ? MTOUCHUSB_MAX_RAW_YC : MTOUCHUSB_MAX_CALIB_YC)
+-			 - MTOUCHUSB_GET_YC(mtouch->data));
+-	input_sync(mtouch->input);
+-
+-exit:
+-	retval = usb_submit_urb(urb, GFP_ATOMIC);
+-	if (retval)
+-		err("%s - usb_submit_urb failed with result: %d",
+-		    __FUNCTION__, retval);
+-}
+-
+-static int mtouchusb_open(struct input_dev *input)
+-{
+-	struct mtouch_usb *mtouch = input->private;
+-
+-	mtouch->irq->dev = mtouch->udev;
+-
+-	if (usb_submit_urb(mtouch->irq, GFP_ATOMIC))
+-		return -EIO;
+-
+-	return 0;
+-}
+-
+-static void mtouchusb_close(struct input_dev *input)
+-{
+-	struct mtouch_usb *mtouch = input->private;
+-
+-	usb_kill_urb(mtouch->irq);
+-}
+-
+-static int mtouchusb_alloc_buffers(struct usb_device *udev, struct mtouch_usb *mtouch)
+-{
+-	dbg("%s - called", __FUNCTION__);
+-
+-	mtouch->data = usb_buffer_alloc(udev, MTOUCHUSB_REPORT_DATA_SIZE,
+-					GFP_ATOMIC, &mtouch->data_dma);
+-
+-	if (!mtouch->data)
+-		return -1;
+-
+-	return 0;
+-}
+-
+-static void mtouchusb_free_buffers(struct usb_device *udev, struct mtouch_usb *mtouch)
+-{
+-	dbg("%s - called", __FUNCTION__);
+-
+-	if (mtouch->data)
+-		usb_buffer_free(udev, MTOUCHUSB_REPORT_DATA_SIZE,
+-				mtouch->data, mtouch->data_dma);
+-}
+-
+-static int mtouchusb_probe(struct usb_interface *intf, const struct usb_device_id *id)
+-{
+-	struct mtouch_usb *mtouch;
+-	struct input_dev *input_dev;
+-	struct usb_host_interface *interface;
+-	struct usb_endpoint_descriptor *endpoint;
+-	struct usb_device *udev = interface_to_usbdev(intf);
+-	int nRet;
+-
+-	dbg("%s - called", __FUNCTION__);
+-
+-	dbg("%s - setting interface", __FUNCTION__);
+-	interface = intf->cur_altsetting;
+-
+-	dbg("%s - setting endpoint", __FUNCTION__);
+-	endpoint = &interface->endpoint[0].desc;
+-
+-	mtouch = kzalloc(sizeof(struct mtouch_usb), GFP_KERNEL);
+-	input_dev = input_allocate_device();
+-	if (!mtouch || !input_dev) {
+-		err("%s - Out of memory.", __FUNCTION__);
+-		goto fail1;
+-	}
+-
+-	dbg("%s - allocating buffers", __FUNCTION__);
+-	if (mtouchusb_alloc_buffers(udev, mtouch))
+-		goto fail2;
+-
+-	mtouch->udev = udev;
+-	mtouch->input = input_dev;
+-
+-	if (udev->manufacturer)
+-		strlcpy(mtouch->name, udev->manufacturer, sizeof(mtouch->name));
+-
+-	if (udev->product) {
+-		if (udev->manufacturer)
+-			strlcat(mtouch->name, " ", sizeof(mtouch->name));
+-		strlcat(mtouch->name, udev->product, sizeof(mtouch->name));
+-	}
+-
+-	if (!strlen(mtouch->name))
+-		snprintf(mtouch->name, sizeof(mtouch->name),
+-			"USB Touchscreen %04x:%04x",
+-			le16_to_cpu(udev->descriptor.idVendor),
+-			le16_to_cpu(udev->descriptor.idProduct));
+-
+-	usb_make_path(udev, mtouch->phys, sizeof(mtouch->phys));
+-	strlcpy(mtouch->phys, "/input0", sizeof(mtouch->phys));
+-
+-	input_dev->name = mtouch->name;
+-	input_dev->phys = mtouch->phys;
+-	usb_to_input_id(udev, &input_dev->id);
+-	input_dev->cdev.dev = &intf->dev;
+-	input_dev->private = mtouch;
+-
+-	input_dev->open = mtouchusb_open;
+-	input_dev->close = mtouchusb_close;
+-
+-	input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_ABS);
+-	input_dev->keybit[LONG(BTN_TOUCH)] = BIT(BTN_TOUCH);
+-	input_set_abs_params(input_dev, ABS_X, MTOUCHUSB_MIN_XC,
+-		raw_coordinates ? MTOUCHUSB_MAX_RAW_XC : MTOUCHUSB_MAX_CALIB_XC,
+-				MTOUCHUSB_XC_FUZZ, MTOUCHUSB_XC_FLAT);
+-	input_set_abs_params(input_dev, ABS_Y, MTOUCHUSB_MIN_YC,
+-		raw_coordinates ? MTOUCHUSB_MAX_RAW_YC : MTOUCHUSB_MAX_CALIB_YC,
+-		MTOUCHUSB_YC_FUZZ, MTOUCHUSB_YC_FLAT);
+-
+-	nRet = usb_control_msg(mtouch->udev, usb_rcvctrlpipe(udev, 0),
+-			       MTOUCHUSB_RESET,
+-			       USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+-			       1, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
+-	dbg("%s - usb_control_msg - MTOUCHUSB_RESET - bytes|err: %d",
+-	    __FUNCTION__, nRet);
+-
+-	dbg("%s - usb_alloc_urb: mtouch->irq", __FUNCTION__);
+-	mtouch->irq = usb_alloc_urb(0, GFP_KERNEL);
+-	if (!mtouch->irq) {
+-		dbg("%s - usb_alloc_urb failed: mtouch->irq", __FUNCTION__);
+-		goto fail2;
+-	}
+-
+-	dbg("%s - usb_fill_int_urb", __FUNCTION__);
+-	usb_fill_int_urb(mtouch->irq, mtouch->udev,
+-			 usb_rcvintpipe(mtouch->udev, 0x81),
+-			 mtouch->data, MTOUCHUSB_REPORT_DATA_SIZE,
+-			 mtouchusb_irq, mtouch, endpoint->bInterval);
+-
+-	dbg("%s - input_register_device", __FUNCTION__);
+-	input_register_device(mtouch->input);
+-
+-	nRet = usb_control_msg(mtouch->udev, usb_rcvctrlpipe(udev, 0),
+-			       MTOUCHUSB_ASYNC_REPORT,
+-			       USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
+-			       1, 1, NULL, 0, USB_CTRL_SET_TIMEOUT);
+-	dbg("%s - usb_control_msg - MTOUCHUSB_ASYNC_REPORT - bytes|err: %d",
+-	    __FUNCTION__, nRet);
+-
+-	usb_set_intfdata(intf, mtouch);
+-	return 0;
+-
+-fail2:	mtouchusb_free_buffers(udev, mtouch);
+-fail1:	input_free_device(input_dev);
+-	kfree(mtouch);
+-	return -ENOMEM;
+-}
+-
+-static void mtouchusb_disconnect(struct usb_interface *intf)
+-{
+-	struct mtouch_usb *mtouch = usb_get_intfdata(intf);
+-
+-	dbg("%s - called", __FUNCTION__);
+-	usb_set_intfdata(intf, NULL);
+-	if (mtouch) {
+-		dbg("%s - mtouch is initialized, cleaning up", __FUNCTION__);
+-		usb_kill_urb(mtouch->irq);
+-		input_unregister_device(mtouch->input);
+-		usb_free_urb(mtouch->irq);
+-		mtouchusb_free_buffers(interface_to_usbdev(intf), mtouch);
+-		kfree(mtouch);
+-	}
+-}
+-
+-MODULE_DEVICE_TABLE(usb, mtouchusb_devices);
+-
+-static struct usb_driver mtouchusb_driver = {
+-	.name		= "mtouchusb",
+-	.probe		= mtouchusb_probe,
+-	.disconnect	= mtouchusb_disconnect,
+-	.id_table	= mtouchusb_devices,
+-};
+-
+-static int __init mtouchusb_init(void)
+-{
+-	dbg("%s - called", __FUNCTION__);
+-	return usb_register(&mtouchusb_driver);
+-}
+-
+-static void __exit mtouchusb_cleanup(void)
+-{
+-	dbg("%s - called", __FUNCTION__);
+-	usb_deregister(&mtouchusb_driver);
+-}
+-
+-module_init(mtouchusb_init);
+-module_exit(mtouchusb_cleanup);
+-
+-MODULE_AUTHOR(DRIVER_AUTHOR);
+-MODULE_DESCRIPTION(DRIVER_DESC);
+-MODULE_LICENSE("GPL");
+Index: work/drivers/usb/input/touchkitusb.c
+===================================================================
+--- work.orig/drivers/usb/input/touchkitusb.c
++++ /dev/null
+@@ -1,392 +0,0 @@
+-/******************************************************************************
+- * touchkitusb.c  --  Driver for eGalax TouchKit USB Touchscreens
+- *
+- * Copyright (C) 2004-2005 by Daniel Ritz <daniel.ritz@gmx.ch>
+- * Copyright (C) by Todd E. Johnson (mtouchusb.c)
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License as
+- * published by the Free Software Foundation; either version 2 of the
+- * License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * Based upon mtouchusb.c
+- *
+- *****************************************************************************/
+-
+-//#define DEBUG
+-
+-#include <linux/kernel.h>
+-#include <linux/slab.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/usb/input.h>
+-
+-#define TOUCHKIT_MIN_XC			0x0
+-#define TOUCHKIT_MAX_XC			0x07ff
+-#define TOUCHKIT_XC_FUZZ		0x0
+-#define TOUCHKIT_XC_FLAT		0x0
+-#define TOUCHKIT_MIN_YC			0x0
+-#define TOUCHKIT_MAX_YC			0x07ff
+-#define TOUCHKIT_YC_FUZZ		0x0
+-#define TOUCHKIT_YC_FLAT		0x0
+-#define TOUCHKIT_REPORT_DATA_SIZE	16
+-
+-#define TOUCHKIT_DOWN			0x01
+-
+-#define TOUCHKIT_PKT_TYPE_MASK		0xFE
+-#define TOUCHKIT_PKT_TYPE_REPT		0x80
+-#define TOUCHKIT_PKT_TYPE_DIAG		0x0A
+-
+-#define DRIVER_VERSION			"v0.1"
+-#define DRIVER_AUTHOR			"Daniel Ritz <daniel.ritz@gmx.ch>"
+-#define DRIVER_DESC			"eGalax TouchKit USB HID Touchscreen Driver"
+-
+-static int swap_xy;
+-module_param(swap_xy, bool, 0644);
+-MODULE_PARM_DESC(swap_xy, "If set X and Y axes are swapped.");
+-
+-struct touchkit_usb {
+-	unsigned char *data;
+-	dma_addr_t data_dma;
+-	char buffer[TOUCHKIT_REPORT_DATA_SIZE];
+-	int buf_len;
+-	struct urb *irq;
+-	struct usb_device *udev;
+-	struct input_dev *input;
+-	char name[128];
+-	char phys[64];
+-};
+-
+-static struct usb_device_id touchkit_devices[] = {
+-	{USB_DEVICE(0x3823, 0x0001)},
+-	{USB_DEVICE(0x0123, 0x0001)},
+-	{USB_DEVICE(0x0eef, 0x0001)},
+-	{USB_DEVICE(0x0eef, 0x0002)},
+-	{}
+-};
+-
+-/* helpers to read the data */
+-static inline int touchkit_get_touched(char *data)
+-{
+-	return (data[0] & TOUCHKIT_DOWN) ? 1 : 0;
+-}
+-
+-static inline int touchkit_get_x(char *data)
+-{
+-	return ((data[3] & 0x0F) << 7) | (data[4] & 0x7F);
+-}
+-
+-static inline int touchkit_get_y(char *data)
+-{
+-	return ((data[1] & 0x0F) << 7) | (data[2] & 0x7F);
+-}
+-
+-
+-/* processes one input packet. */
+-static void touchkit_process_pkt(struct touchkit_usb *touchkit, char *pkt)
+-{
+-	int x, y;
+-
+-	/* only process report packets */
+-	if ((pkt[0] & TOUCHKIT_PKT_TYPE_MASK) != TOUCHKIT_PKT_TYPE_REPT)
+-		return;
+-
+-	if (swap_xy) {
+-		y = touchkit_get_x(pkt);
+-		x = touchkit_get_y(pkt);
+-	} else {
+-		x = touchkit_get_x(pkt);
+-		y = touchkit_get_y(pkt);
+-	}
+-
+-	input_report_key(touchkit->input, BTN_TOUCH, touchkit_get_touched(pkt));
+-	input_report_abs(touchkit->input, ABS_X, x);
+-	input_report_abs(touchkit->input, ABS_Y, y);
+-	input_sync(touchkit->input);
+-}
+-
+-
+-static int touchkit_get_pkt_len(char *buf)
+-{
+-	switch (buf[0] & TOUCHKIT_PKT_TYPE_MASK) {
+-	case TOUCHKIT_PKT_TYPE_REPT:
+-		return 5;
+-
+-	case TOUCHKIT_PKT_TYPE_DIAG:
+-		return buf[1] + 2;
+-	}
+-
+-	return 0;
+-}
+-
+-static void touchkit_process(struct touchkit_usb *touchkit, int len)
+-{
+-	char *buffer;
+-	int pkt_len, buf_len, pos;
+-
+-	/* if the buffer contains data, append */
+-	if (unlikely(touchkit->buf_len)) {
+-		int tmp;
+-
+-		/* if only 1 byte in buffer, add another one to get length */
+-		if (touchkit->buf_len == 1)
+-			touchkit->buffer[1] = touchkit->data[0];
+-
+-		pkt_len = touchkit_get_pkt_len(touchkit->buffer);
+-
+-		/* unknown packet: drop everything */
+-		if (!pkt_len)
+-			return;
+-
+-		/* append, process */
+-		tmp = pkt_len - touchkit->buf_len;
+-		memcpy(touchkit->buffer + touchkit->buf_len, touchkit->data, tmp);
+-		touchkit_process_pkt(touchkit, touchkit->buffer);
+-
+-		buffer = touchkit->data + tmp;
+-		buf_len = len - tmp;
+-	} else {
+-		buffer = touchkit->data;
+-		buf_len = len;
+-	}
+-
+-	/* only one byte left in buffer */
+-	if (unlikely(buf_len == 1)) {
+-		touchkit->buffer[0] = buffer[0];
+-		touchkit->buf_len = 1;
+-		return;
+-	}
+-
+-	/* loop over the buffer */
+-	pos = 0;
+-	while (pos < buf_len) {
+-		/* get packet len */
+-		pkt_len = touchkit_get_pkt_len(buffer + pos);
+-
+-		/* unknown packet: drop everything */
+-		if (unlikely(!pkt_len))
+-			return;
+-
+-		/* full packet: process */
+-		if (likely(pkt_len <= buf_len)) {
+-			touchkit_process_pkt(touchkit, buffer + pos);
+-		} else {
+-			/* incomplete packet: save in buffer */
+-			memcpy(touchkit->buffer, buffer + pos, buf_len - pos);
+-			touchkit->buf_len = buf_len - pos;
+-		}
+-		pos += pkt_len;
+-	}
+-}
+-
+-
+-static void touchkit_irq(struct urb *urb)
+-{
+-	struct touchkit_usb *touchkit = urb->context;
+-	int retval;
+-
+-	switch (urb->status) {
+-	case 0:
+-		/* success */
+-		break;
+-	case -ETIME:
+-		/* this urb is timing out */
+-		dbg("%s - urb timed out - was the device unplugged?",
+-		    __FUNCTION__);
+-		return;
+-	case -ECONNRESET:
+-	case -ENOENT:
+-	case -ESHUTDOWN:
+-		/* this urb is terminated, clean up */
+-		dbg("%s - urb shutting down with status: %d",
+-		    __FUNCTION__, urb->status);
+-		return;
+-	default:
+-		dbg("%s - nonzero urb status received: %d",
+-		    __FUNCTION__, urb->status);
+-		goto exit;
+-	}
+-
+-	touchkit_process(touchkit, urb->actual_length);
+-
+-exit:
+-	retval = usb_submit_urb(urb, GFP_ATOMIC);
+-	if (retval)
+-		err("%s - usb_submit_urb failed with result: %d",
+-		    __FUNCTION__, retval);
+-}
+-
+-static int touchkit_open(struct input_dev *input)
+-{
+-	struct touchkit_usb *touchkit = input->private;
+-
+-	touchkit->irq->dev = touchkit->udev;
+-
+-	if (usb_submit_urb(touchkit->irq, GFP_ATOMIC))
+-		return -EIO;
+-
+-	return 0;
+-}
+-
+-static void touchkit_close(struct input_dev *input)
+-{
+-	struct touchkit_usb *touchkit = input->private;
+-
+-	usb_kill_urb(touchkit->irq);
+-}
+-
+-static int touchkit_alloc_buffers(struct usb_device *udev,
+-				  struct touchkit_usb *touchkit)
+-{
+-	touchkit->data = usb_buffer_alloc(udev, TOUCHKIT_REPORT_DATA_SIZE,
+-	                                  GFP_ATOMIC, &touchkit->data_dma);
+-
+-	if (!touchkit->data)
+-		return -1;
+-
+-	return 0;
+-}
+-
+-static void touchkit_free_buffers(struct usb_device *udev,
+-				  struct touchkit_usb *touchkit)
+-{
+-	if (touchkit->data)
+-		usb_buffer_free(udev, TOUCHKIT_REPORT_DATA_SIZE,
+-		                touchkit->data, touchkit->data_dma);
+-}
+-
+-static int touchkit_probe(struct usb_interface *intf,
+-			  const struct usb_device_id *id)
+-{
+-	struct touchkit_usb *touchkit;
+-	struct input_dev *input_dev;
+-	struct usb_host_interface *interface;
+-	struct usb_endpoint_descriptor *endpoint;
+-	struct usb_device *udev = interface_to_usbdev(intf);
+-
+-	interface = intf->cur_altsetting;
+-	endpoint = &interface->endpoint[0].desc;
+-
+-	touchkit = kzalloc(sizeof(struct touchkit_usb), GFP_KERNEL);
+-	input_dev = input_allocate_device();
+-	if (!touchkit || !input_dev)
+-		goto out_free;
+-
+-	if (touchkit_alloc_buffers(udev, touchkit))
+-		goto out_free;
+-
+-	touchkit->irq = usb_alloc_urb(0, GFP_KERNEL);
+-	if (!touchkit->irq) {
+-		dbg("%s - usb_alloc_urb failed: touchkit->irq", __FUNCTION__);
+-		goto out_free_buffers;
+-	}
+-
+-	touchkit->udev = udev;
+-	touchkit->input = input_dev;
+-
+-	if (udev->manufacturer)
+-		strlcpy(touchkit->name, udev->manufacturer, sizeof(touchkit->name));
+-
+-	if (udev->product) {
+-		if (udev->manufacturer)
+-			strlcat(touchkit->name, " ", sizeof(touchkit->name));
+-		strlcat(touchkit->name, udev->product, sizeof(touchkit->name));
+-	}
+-
+-	if (!strlen(touchkit->name))
+-		snprintf(touchkit->name, sizeof(touchkit->name),
+-			"USB Touchscreen %04x:%04x",
+-			 le16_to_cpu(udev->descriptor.idVendor),
+-			 le16_to_cpu(udev->descriptor.idProduct));
+-
+-	usb_make_path(udev, touchkit->phys, sizeof(touchkit->phys));
+-	strlcpy(touchkit->phys, "/input0", sizeof(touchkit->phys));
+-
+-	input_dev->name = touchkit->name;
+-	input_dev->phys = touchkit->phys;
+-	usb_to_input_id(udev, &input_dev->id);
+-	input_dev->cdev.dev = &intf->dev;
+-	input_dev->private = touchkit;
+-	input_dev->open = touchkit_open;
+-	input_dev->close = touchkit_close;
+-
+-	input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_ABS);
+-	input_dev->keybit[LONG(BTN_TOUCH)] = BIT(BTN_TOUCH);
+-	input_set_abs_params(input_dev, ABS_X, TOUCHKIT_MIN_XC, TOUCHKIT_MAX_XC,
+-				TOUCHKIT_XC_FUZZ, TOUCHKIT_XC_FLAT);
+-	input_set_abs_params(input_dev, ABS_Y, TOUCHKIT_MIN_YC, TOUCHKIT_MAX_YC,
+-				TOUCHKIT_YC_FUZZ, TOUCHKIT_YC_FLAT);
+-
+-	usb_fill_int_urb(touchkit->irq, touchkit->udev,
+-			 usb_rcvintpipe(touchkit->udev, 0x81),
+-			 touchkit->data, TOUCHKIT_REPORT_DATA_SIZE,
+-			 touchkit_irq, touchkit, endpoint->bInterval);
+-
+-	touchkit->irq->transfer_dma = touchkit->data_dma;
+-	touchkit->irq->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
+-
+-	input_register_device(touchkit->input);
+-
+-	usb_set_intfdata(intf, touchkit);
+-	return 0;
+-
+-out_free_buffers:
+-	touchkit_free_buffers(udev, touchkit);
+-out_free:
+-	input_free_device(input_dev);
+-	kfree(touchkit);
+-	return -ENOMEM;
+-}
+-
+-static void touchkit_disconnect(struct usb_interface *intf)
+-{
+-	struct touchkit_usb *touchkit = usb_get_intfdata(intf);
+-
+-	dbg("%s - called", __FUNCTION__);
+-
+-	if (!touchkit)
+-		return;
+-
+-	dbg("%s - touchkit is initialized, cleaning up", __FUNCTION__);
+-	usb_set_intfdata(intf, NULL);
+-	usb_kill_urb(touchkit->irq);
+-	input_unregister_device(touchkit->input);
+-	usb_free_urb(touchkit->irq);
+-	touchkit_free_buffers(interface_to_usbdev(intf), touchkit);
+-	kfree(touchkit);
+-}
+-
+-MODULE_DEVICE_TABLE(usb, touchkit_devices);
+-
+-static struct usb_driver touchkit_driver = {
+-	.name		= "touchkitusb",
+-	.probe		= touchkit_probe,
+-	.disconnect	= touchkit_disconnect,
+-	.id_table	= touchkit_devices,
+-};
+-
+-static int __init touchkit_init(void)
+-{
+-	return usb_register(&touchkit_driver);
+-}
+-
+-static void __exit touchkit_cleanup(void)
+-{
+-	usb_deregister(&touchkit_driver);
+-}
+-
+-module_init(touchkit_init);
+-module_exit(touchkit_cleanup);
+-
+-MODULE_AUTHOR(DRIVER_AUTHOR);
+-MODULE_DESCRIPTION(DRIVER_DESC);
+-MODULE_LICENSE("GPL");
