@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933113AbXC0RA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933306AbXC0RBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933113AbXC0RA5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 13:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933344AbXC0RA5
+	id S933306AbXC0RBZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 13:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933761AbXC0RBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 13:00:57 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:16906 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933113AbXC0RAz (ORCPT
+	Tue, 27 Mar 2007 13:01:25 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57860 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933306AbXC0RBY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 13:00:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=k6iPIsvyqu5fPDSga60vjhtQOl5/ExhqT5ln9f1BggfgdbYpaRQ2W4nIK717DnoMIjohmAlrOW3qyNf8tBeOFmFvDTUY0iqiw0KxQHvfkM41v4kQ7Xxe4g3HzneNgZJB53im/xuH0EBKLvKzECFdG3068u7w/AYRNgfqyffBOTE=
-Message-ID: <8bd0f97a0703271000x2910b2fan573fd37bb45a058d@mail.gmail.com>
-Date: Tue, 27 Mar 2007 13:00:54 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: [PATCH -mm] Revoke core code: fix nommu arch compiling error bug
-Cc: "Pekka J Enberg" <penberg@cs.helsinki.fi>,
-       "Andrew Morton" <akpm@linux-foundation.org>, bryan.wu@analog.com,
-       linux-kernel@vger.kernel.org, "Hugh Dickins" <hugh@veritas.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <27782.1174989913@redhat.com>
+	Tue, 27 Mar 2007 13:01:24 -0400
+Date: Tue, 27 Mar 2007 13:01:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tino Keitel <tino.keitel@gmx.de>
+cc: Oliver Neukum <oneukum@suse.de>, <linux-usb-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] possible USB regression with 2.6.21-rc4: iPod
+ doesn't work
+In-Reply-To: <20070326223359.GA4942@dose.home.local>
+Message-ID: <Pine.LNX.4.44L0.0703271255120.2558-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703261447190.13229@sbz-30.cs.Helsinki.FI>
-	 <20070326024143.a226c9b2.akpm@linux-foundation.org>
-	 <1174904637.32691.86.camel@roc-desktop> <6017.1174908318@redhat.com>
-	 <6791.1174909459@redhat.com> <11045.1174911764@redhat.com>
-	 <Pine.LNX.4.64.0703261525370.14158@sbz-30.cs.Helsinki.FI>
-	 <22674.1174915478@redhat.com>
-	 <8bd0f97a0703261321h356a849am1ab617f0e732fa67@mail.gmail.com>
-	 <27782.1174989913@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/27/07, David Howells <dhowells@redhat.com> wrote:
-> Note that it's not possible to shift windows around in response to faults
-> because fault reporting is asynchronous - the entire remaining instruction
-> queue will be executed *before* the exception is actually raised to the
-> kernel.
+On Tue, 27 Mar 2007, Tino Keitel wrote:
 
-ah that would limit the usefulness of its application in the kernel
-... thanks for the info
+> On Tue, Mar 27, 2007 at 00:21:24 +0200, Tino Keitel wrote:
+> 
+> [...]
+> 
+> > this is the bisect result:
+> > 
+> > $ git bisect good
+> > 1d619f128ba911cd3e6d6ad3475f146eb92f5c27 is first bad commit
+> > commit 1d619f128ba911cd3e6d6ad3475f146eb92f5c27
+> 
+> I just tested 2.6.21-rc5 with this commit reverted and the iPod was
+> regognized with CONFIG_USB_SUSPEND enabled.
 
-> That sounds reasonable.  However, I suspect that most NOMMU CPUs won't be able
-> to do that.  In effect you're creating a third option, I think (MMU, NOMMU,
-> MPU).
+It's hard to figure out what's going on with your system for several 
+reasons.  For one thing, you've mentioned at least 3 different peculiar 
+behaviors.  For another, you posted logs with lots of extra information 
+that tends to hide the important parts.  And also you have lots of USB 
+devices, which makes it hard to see what's happening with the iPod.
 
-sure, but i'm not sure the MPU option would be mutually exclusive with
-NOMMU ... in the Blackfin case, we'd want both ...
--mike
+
+So here's what I want you to do.  To begin with, unplug _all_ your USB 
+devices.  Then do "dmesg -c >/dev/null" to clear the kernel log buffer.
+
+After waiting a few seconds, plug the iPod in to the computer.  After a 
+few seconds, make a copy of /sys/class/usb_host/usb_host1/registers.  Then 
+unplug the iPod.
+
+After waiting a few more seconds, plug in your hub.  Wait a few seconds 
+and then plug the iPod into the hub.  After a few seconds, make another 
+copy of /sys/class/usb_host/usb_host1/registers.  Then unplug the iPod and 
+the hub.  Finally, get a copy of the dmesg log.
+
+
+After having done all that, repeat it exactly but this time using a 
+version of ehci-hcd with that patch reverted.  Post everything and we'll 
+see how it looks.
+
+Alan Stern
+
