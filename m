@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750934AbXC0Tef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbXC0TkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750934AbXC0Tef (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 15:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbXC0Tef
+	id S1752404AbXC0TkI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 15:40:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXC0TkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 15:34:35 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39476 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbXC0Tee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 15:34:34 -0400
-Date: Tue, 27 Mar 2007 12:34:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux@horizon.com
-Cc: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org
-Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
-Message-Id: <20070327123422.d0bbc064.akpm@linux-foundation.org>
-In-Reply-To: <20070327192452.26486.qmail@science.horizon.com>
-References: <E1HWGpj-0004Yb-00@dorka.pomaz.szeredi.hu>
-	<20070327192452.26486.qmail@science.horizon.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 27 Mar 2007 15:40:07 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:50136 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbXC0TkG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 15:40:06 -0400
+Subject: Re: [PATCH -rt] fix setting of preempt_max_latency and
+	preempt_thresh on 64 bit systems
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070327191542.GA15514@rhlx01.hs-esslingen.de>
+References: <1175015947.19634.6.camel@localhost.localdomain>
+	 <20070327191542.GA15514@rhlx01.hs-esslingen.de>
+Content-Type: text/plain
+Date: Tue, 27 Mar 2007 15:39:52 -0400
+Message-Id: <1175024392.19634.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27 Mar 2007 15:24:52 -0400
-linux@horizon.com wrote:
+On Tue, 2007-03-27 at 21:15 +0200, Andreas Mohr wrote:
 
-> > * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-> 
-> Yes, I noticed.  See
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0602.1/0450.html
-> for a bug report on the subject February 2006.
+> Maybe fix up all the other myriads of sysctl entries which use a rather
+> non-precise generic sizeof(int) as well?
+> Or doesn't that make sense?
 
-Suggest you use msync(MS_ASYNC), then
-sync_file_range(SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE).
+No, it does make sense
 
-The new (post 2.6.17) MAP_SHARED dirty-page semantics mean that the msync()
-isn't actually needed.
+> Maybe this is because it's security relevant and you'd better make sure
+> to know *exactly* the number of integers a buffer's length is supposed to be?
 
-> That's why this application is still running on 2.4.
-> 
-> As I mentioned at the time, the SUS says:
-> (http://opengroup.org/onlinepubs/007908799/xsh/msync.html)
-> "When MS_ASYNC is specified, msync() returns immediately once all the
-> write operations are initiated or queued for servicing."
-> 
-> You can argue that putting it on the dirty list constitutes "queued for
-> servicing", but the intent seems pretty clear to me: MS_ASYNC is supposed
-> to start the I/O.  Although strict standards-ese parsing says that
-> either branch of an or is acceptable, it is a common English language
-> convention that the first alternative is preferred and the second
-> is a fallback.
-> 
-> It makes sense in this case: start the write or, if that's not possible
-> (the disk is already busy), queue it for service as soon as the disk
-> is available.
-> 
-> They perhaps didn't mandate it this strictly, but that's clearly the
-> intent.
+This is the problem. I was going to put some more time and clean up all
+the stuff in there, but it will take more time than I currently have.
+Since I would need to audit all the variables, and see how they would
+interact in every arch.
 
-We can fix your application, and we'll break someone else's.
+-- Steve
 
-I don't think it's solveable, really - the range of applications is so
-broad, and the "standard" is so vague as to be useless.  This is why we've
-been extending these things with linux-specific goodies which permit
-applications to actually tell the kernel what they want to be done in a
-more finely-grained fashion.
+
