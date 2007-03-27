@@ -1,119 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965297AbXC0HS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965291AbXC0HUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965297AbXC0HS0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965301AbXC0HS0
+	id S965291AbXC0HUf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 03:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965301AbXC0HUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:18:26 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:52151 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965297AbXC0HSY (ORCPT
+	Tue, 27 Mar 2007 03:20:35 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:42563 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965291AbXC0HUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:18:24 -0400
-Message-ID: <4608C4F6.4020407@linux.vnet.ibm.com>
-Date: Tue, 27 Mar 2007 12:47:10 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+	Tue, 27 Mar 2007 03:20:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=L8L9JPuYCalbuZqXC9S80Fry8X/dP9UZf4SZWrqoluwrZGfUqULB7eTsQFSJR1+hPcrDr9OMShbWrYBmpjEtMV2t4Lr9yDVjMOdfisG4xOs4tbtzPkEV0EOBT4PNH5uA36OduaknivnReZImjQCYU29dZU8NpxAN2/MSuN3fLnQ=
+Message-ID: <8bd0f97a0703270020m67821b90gb9d1cdfd6262887b@mail.gmail.com>
+Date: Tue, 27 Mar 2007 03:20:33 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH -mm] Revoke core code: fix nommu arch compiling error bug
+Cc: "Wu, Bryan" <bryan.wu@analog.com>, "David Howells" <dhowells@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Hugh Dickins" <hugh@veritas.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0703270955490.32526@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-To: Aubrey Li <aubreylee@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       ckrm-tech@lists.sourceforge.net, Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, devel@openvz.org, xemul@sw.ru,
-       Paul Menage <menage@google.com>, Christoph Lameter <clameter@sgi.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 3/3][RFC] Containers: Pagecache controller reclaim
-References: <45ED251C.2010400@linux.vnet.ibm.com> <45ED266E.7040107@linux.vnet.ibm.com> <6d6a94c50703262044q22e94538i5e79a32a82f7c926@mail.gmail.com>
-In-Reply-To: <6d6a94c50703262044q22e94538i5e79a32a82f7c926@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703261447190.13229@sbz-30.cs.Helsinki.FI>
+	 <1174904637.32691.86.camel@roc-desktop> <6017.1174908318@redhat.com>
+	 <6791.1174909459@redhat.com> <11045.1174911764@redhat.com>
+	 <Pine.LNX.4.64.0703261525370.14158@sbz-30.cs.Helsinki.FI>
+	 <22674.1174915478@redhat.com>
+	 <8bd0f97a0703261321h356a849am1ab617f0e732fa67@mail.gmail.com>
+	 <1174966174.6966.5.camel@roc-desktop>
+	 <Pine.LNX.4.64.0703270955490.32526@sbz-30.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 3/27/07, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+> On Tue, 27 Mar 2007, Wu, Bryan wrote:
+> > Agree. MPU of Blackfin can provide some processes protection. But maybe
+> > at this moment just disable revoke for NOMMU is easier for further
+> > development. When we provide the MPU stuff, maybe we can enable the
+> > revoke for NOMMU but MPU arch.
+>
+> Yeah, MPU should be sufficient for revoke(). Note that mmap() and mummap()
+> suffers from the same problem on NOMMU so perhaps we really should do
+> CONFIG_MPU.
 
-
-Aubrey Li wrote:
-> On 3/6/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
->> The reclaim code is similar to RSS memory controller.  Scan control is
->> slightly different since we are targeting different type of pages.
->>
->> Additionally no mapped pages are touched when scanning for pagecache pages.
->>
->> RSS memory controller and pagecache controller share common code in reclaim
->> and hence pagecache controller patches are dependent on RSS memory controller
->> patch even though the features are independently configurable at compile time.
->>
->> --- linux-2.6.20.orig/mm/vmscan.c
->> +++ linux-2.6.20/mm/vmscan.c
->> @@ -43,6 +43,7 @@
->>
->>  #include <linux/swapops.h>
->>  #include <linux/memcontrol.h>
->> +#include <linux/pagecache_acct.h>
->>
->>  #include "internal.h"
->>
->> @@ -70,6 +71,8 @@ struct scan_control {
->>
->>         struct container *container;    /* Used by containers for reclaiming */
->>                                         /* pages when the limit is exceeded  */
->> +       int reclaim_pagecache_only;     /* Set when called from
->> +                                          pagecache controller */
->>  };
->>
->>  /*
->> @@ -474,6 +477,15 @@ static unsigned long shrink_page_list(st
->>                         goto keep;
->>
->>                 VM_BUG_ON(PageActive(page));
->> +               /* Take it easy if we are doing only pagecache pages */
->> +               if (sc->reclaim_pagecache_only) {
->> +                       /* Check if this is a pagecache page they are not mapped */
->> +                       if (page_mapped(page))
->> +                               goto keep_locked;
->> +                       /* Check if this container has exceeded pagecache limit */
->> +                       if (!pagecache_acct_page_overlimit(page))
->> +                               goto keep_locked;
->> +               }
->>
->>                 sc->nr_scanned++;
->>
->> @@ -522,7 +534,8 @@ static unsigned long shrink_page_list(st
->>                 }
->>
->>                 if (PageDirty(page)) {
->> -                       if (referenced)
->> +                       /* Reclaim even referenced pagecache pages if over limit */
->> +                       if (!pagecache_acct_page_overlimit(page) && referenced)
->>                                 goto keep_locked;
->>                         if (!may_enter_fs)
->>                                 goto keep_locked;
->> @@ -869,6 +882,13 @@ force_reclaim_mapped:
->>                 cond_resched();
->>                 page = lru_to_page(&l_hold);
->>                 list_del(&page->lru);
->> +               /* While reclaiming pagecache make it easy */
->> +               if (sc->reclaim_pagecache_only) {
->> +                       if (page_mapped(page) || !pagecache_acct_page_overlimit(page)) {
->> +                               list_add(&page->lru, &l_active);
->> +                               continue;
->> +                       }
->> +               }
-> 
-> Please correct me if I'm wrong.
-> Here, if page type is mapped or not overlimit, why add it back to active list?
-> Did  shrink_page_list() is called by shrink_inactive_list()?
-
-Correct, shrink_page_list() is called from shrink_inactive_list() but
-the above code is patched in shrink_active_list().  The
-'force_reclaim_mapped' label is from function shrink_active_list() and
-not in shrink_page_list() as it may seem in the patch file.
-
-While removing pages from active_list, we want to select only
-pagecache pages and leave the remaining in the active_list.
-page_mapped() pages are _not_ of interest to pagecache controller
-(they will be taken care by rss controller) and hence we put it back.
- Also if the pagecache controller is below limit, no need to reclaim
-so we put back all pages and come out.
-
---Vaidy
+we would need both ... MPU gives us the ability to restrict access,
+but we'd still be unable to do fun things like COW
+-mike
