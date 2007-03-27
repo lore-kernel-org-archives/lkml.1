@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbXC0AbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbXC0AeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbXC0AbB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 20:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbXC0AbB
+	id S1750978AbXC0AeQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 20:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXC0AeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 20:31:01 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55918 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933855AbXC0Aa7 (ORCPT
+	Mon, 26 Mar 2007 20:34:16 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35455 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750978AbXC0AeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 20:30:59 -0400
-Date: Tue, 27 Mar 2007 11:30:45 +1100
-From: David Chinner <dgc@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, dgc@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] fix illogical behavior in balance_dirty_pages()
-Message-ID: <20070327003045.GV32597093@melbourne.sgi.com>
-References: <E1HVECv-0006bU-00@dorka.pomaz.szeredi.hu> <20070325153508.10922ebd.akpm@linux-foundation.org> <E1HVkWw-0000yj-00@dorka.pomaz.szeredi.hu> <20070326010124.b4513ce2.akpm@linux-foundation.org> <E1HVlZH-00018f-00@dorka.pomaz.szeredi.hu> <20070326020823.8630bb07.akpm@linux-foundation.org> <1174915828.6792.31.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 26 Mar 2007 20:34:15 -0400
+Date: Tue, 27 Mar 2007 02:34:19 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: dead CONFIG variables in kernel Makefiles
+Message-ID: <20070327003419.GR16477@stusta.de>
+References: <Pine.LNX.4.64.0703261924470.26815@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1174915828.6792.31.camel@twins>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0703261924470.26815@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 03:30:27PM +0200, Peter Zijlstra wrote:
-> On Mon, 2007-03-26 at 02:08 -0800, Andrew Morton wrote:
-> > On Mon, 26 Mar 2007 11:32:47 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
-> > 
-> > > Stopping writers which have idle queues is completely unproductive,
-> > > and that is basically what the current algorithm does.
-> > 
-> > This is because the kernel permits all of its allotment of dirty+writeback
-> > pages to be dirty+writeback against a single device.
-> > 
-> > A good way of solving the one-device-starves-another-one problem is to
-> > dynamically adjust the per-device dirty+writeback levels so that (for
-> > example) if two devices are being written to, each gets 50% of the
-> > allotment.
+On Mon, Mar 26, 2007 at 07:32:00PM -0400, Robert P. J. Day wrote:
 > 
-> This is exactly what happens with my patch if both devices write at the
-> same speed. (Or at least, that is what is supposed to happen ;-)
+>   the output from a short script i wrote, locating all CONFIG_
+> variables in makefiles that don't appear to exist in any Kconfig file
+> anywhere in the source tree.
+> 
+>   first, from the drivers/ directory:
+>...
+> ===== RADIO_MIROPCM20 =====
+> ./drivers/media/radio/Makefile:obj-$(CONFIG_RADIO_MIROPCM20) += miropcm20.o
+> ===== RADIO_MIROPCM20_RDS =====
+> ./drivers/media/radio/Makefile:obj-$(CONFIG_RADIO_MIROPCM20_RDS) += miropcm20-rds.o
+>...
 
-The testing that I did of Peter's patch showed that this cache
-splitting works as advertised for multiple devices writing at
-the same speed.
+Part of an OSS driver removal, patch for 2.6.22 already submitted.
 
-(http://marc.info/?l=linux-kernel&m=117437686328396&w=2)
+> rday
 
-Cheers,
+cu
+Adrian
 
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
