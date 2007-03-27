@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965373AbXC0UcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965398AbXC0UeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965373AbXC0UcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 16:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965378AbXC0UcU
+	id S965398AbXC0UeS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 16:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965397AbXC0UeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 16:32:20 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:46612 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965373AbXC0UcT (ORCPT
+	Tue, 27 Mar 2007 16:34:18 -0400
+Received: from xdslea139.osnanet.de ([89.166.160.139]:3065 "EHLO
+	Marvin.DL8BCU.ampr.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965398AbXC0UeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 16:32:19 -0400
-To: linux@horizon.com
-CC: akpm@linux-foundation.org, linux@horizon.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-reply-to: <20070327200933.6321.qmail@science.horizon.com>
-	(linux@horizon.com)
-Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
-References: <20070327200933.6321.qmail@science.horizon.com>
-Message-Id: <E1HWIKP-0004oj-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 27 Mar 2007 22:31:37 +0200
+	Tue, 27 Mar 2007 16:34:17 -0400
+X-Greylist: delayed 3279 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Mar 2007 16:34:16 EDT
+Date: Tue, 27 Mar 2007 19:39:10 +0000
+From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
+To: Phy Prabab <phyprabab@gmail.com>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: Odd log message associated with NFS
+Message-ID: <20070327193909.GA585@ds20.borg.net>
+Reply-To: dl8bcu@dl8bcu.de
+Mail-Followup-To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>,
+	Phy Prabab <phyprabab@gmail.com>, nfs@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <2fe399760703271140l703c2791oa84e9e1832487dcb@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2fe399760703271140l703c2791oa84e9e1832487dcb@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Suggest you use msync(MS_ASYNC), then
-> > sync_file_range(SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE).
+On Tue, Mar 27, 2007 at 11:40:48AM -0700, Phy Prabab wrote:
+> Hello,
 > 
-> Thank you; I didn't know about that.  And I can handle -ENOSYS by falling
-> back to the old behavior.
+> I am currently running 2.6.21-rc5 and I am seeing quite a bit of this
+> message in my log files:
+> kernel: rpcsvc: received unknown control message:-2144992132/-1
 > 
-> > We can fix your application, and we'll break someone else's.
-> 
-> If you can point to an application that it'll break, I'd be a lot more
-> understanding.  Nobody did, last year.
-> 
-> > I don't think it's solveable, really - the range of applications is so
-> > broad, and the "standard" is so vague as to be useless.
-> 
-> I agree that standards are sometimes vague, but that one seemed about
-> as clear as it's possible to be without imposing unreasonably on
-> the file system and device driver layers.
-> 
-> What part of "The msync() function writes all modified data to
-> permanent storage locations [...] For mappings to files, the msync()
-> function ensures that all write operations are completed as defined
-> for synchronised I/O data integrity completion." suggests that it's not
-> supposed to do disk I/O?  How is that uselessly vague?
+> This machine is an dual dual core opteron with 3Ware 9650 (14 disk
+> RAID10), 4G RAM, 64bit kernel, nfsutils-1.0.12 running knfsd.  This
+> machine is a  file server.
 
-Linux _will_ write all modified data to permanent storage locations.
-Since 2.6.17 it will do this regardless of msync().  Before 2.6.17 you
-do need msync() to enable data to be written back.
+Just a 'me, too':
 
-But it will not start I/O immediately, which is not a requirement in
-the standard, or at least it's pretty vague about that.
+Mar 16 16:57:06 Marvin kernel: svc: bad direction 268435456, dropping request
+Mar 16 17:58:19 Marvin kernel: svc: bad direction 268435456, dropping request
+Mar 16 19:55:49 Marvin kernel: svc: bad direction 268435456, dropping request
+...
+Mar 17 04:30:03 Marvin kernel: svc: bad direction 268435456, dropping request
+Mar 17 06:28:52 Marvin kernel: pppd(795): unaligned trap at 0000020000207f90: 000000011fd8d33d 29 1
+Mar 17 06:28:55 Marvin kernel: inet_sk_reselect_saddr(): shifting inet->saddr from 82.149.xxx.xxx to 89.166.xxx.xxx
+Mar 17 09:05:21 Marvin kernel: rpcsvc: received unknown control message:-1024/186028080
+Mar 17 14:17:04 Marvin kernel: rpcsvc: received unknown control message:-1024/186028040
+Mar 17 14:17:31 Marvin kernel: rpcsvc: received unknown control message:-1024/186028040
+Mar 17 14:49:14 Marvin kernel: rpcsvc: received unknown control message:-1024/186028080
+Mar 17 14:49:15 Marvin kernel: rpcsvc: received unknown control message:-1024/186028040
 
-Miklos
+
+
+This is from my little 'server', alpha ev4 'noname', 2.6.21-rc3, compiled 
+with gcc 4.1.2
+
+client is mostly an alpha ev6 2.6.21-rc3, gcc 4.1.2.
+
+Apart from the messages NFS seems to run just fine currently.
+
+Bye,
+Thorsten 
+
+
+
+-- 
+| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
+| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
+| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
