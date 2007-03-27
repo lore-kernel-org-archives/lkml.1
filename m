@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933897AbXC0BW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933909AbXC0BYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933897AbXC0BW1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 21:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933909AbXC0BW1
+	id S933909AbXC0BYY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 21:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933920AbXC0BYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 21:22:27 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59534 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933897AbXC0BW0 (ORCPT
+	Mon, 26 Mar 2007 21:24:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57187
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S933909AbXC0BYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 21:22:26 -0400
-Date: Mon, 26 Mar 2007 18:22:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V4
-In-Reply-To: <20070327010624.GA2986@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0703261817160.14048@schroedinger.engr.sgi.com>
-References: <20070323062843.19502.19827.sendpatchset@schroedinger.engr.sgi.com>
- <20070322223927.bb4caf43.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703222339560.19630@schroedinger.engr.sgi.com>
- <20070322234848.100abb3d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703230804120.21857@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0703231026490.23132@schroedinger.engr.sgi.com>
- <20070323222133.f17090cf.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703260938520.3297@schroedinger.engr.sgi.com>
- <20070326102651.6d59207b.akpm@linux-foundation.org> <20070327010624.GA2986@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 26 Mar 2007 21:24:24 -0400
+Date: Mon, 26 Mar 2007 18:24:22 -0700 (PDT)
+Message-Id: <20070326.182422.115910859.davem@davemloft.net>
+To: bunk@stusta.de
+Cc: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [RFC: 2.6.21 patch] let PCI_MSI depend on EXPERIMENTAL
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070327010247.GW16477@stusta.de>
+References: <20070327010247.GW16477@stusta.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Mar 2007, William Lee Irwin III wrote:
+From: Adrian Bunk <bunk@stusta.de>
+Date: Tue, 27 Mar 2007 03:02:47 +0200
 
-> Not that clameter really needs my help, but I agree with his position
-> on several fronts, and advocate accordingly, so here is where I'm at.
+> We had during the last months have quite a few MSI bugs and even 
+> regressions due to:
+> - core kernel bugs,
+> - device driver bugs and
+> - hardware bugs
+> 
+> OTOH, MSI doesn't bring any real advantages for most users.
+> 
+> Let's therefore mark PCI_MSI as EXPERIMENTAL.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Yes thank you. I386 is not my field, I have no interest per se in 
-improving i386 performance and without your help I would have to drop this 
-and keep the special casing in SLUB for i386. Generic tlb.h changes may 
-also help to introduce quicklists to x86_64. The current quicklist patches 
-can only work on higher levels due to the freeing of ptes via 
-tlb_remove_page().
-
+This is a good way to ensure that the code doesn't get tested
+enough to ever fix the problems.
