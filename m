@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbXC0PRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbXC0PSH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753896AbXC0PRY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 11:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXC0PRX
+	id S1753888AbXC0PSH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 11:18:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXC0PSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 11:17:23 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:53803 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753896AbXC0PRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 11:17:23 -0400
-Message-ID: <46093566.4040902@free.fr>
-Date: Tue, 27 Mar 2007 17:16:54 +0200
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Tue, 27 Mar 2007 11:18:07 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:46219 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753888AbXC0PSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 11:18:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=OA/7h2OSCmq6ralKs4ocsURcLeclkzJWONtKewMkRzFCALleb+7Y4CaOJNTMcd6FO/v5HSyVUoj3TIzmOiYpAqS5Q7t4ob6DzjAfJHx9g/kWtXAVRZjULW1aaztzrUtlx9+KcsE7FuhhhebYteBziVwXlrjmlvnNkjXbvNtjNt4=
+Date: Tue, 27 Mar 2007 19:14:05 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel-list <linux-kernel@vger.kernel.org>,
+       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Subject: Re: [PATCH] USB Elan FTDI: check for driver registration status
+Message-ID: <20070327151405.GA11491@cvg>
+References: <20070325072733.GA10257@cvg> <20070326151731.53cc080b.zaitcev@redhat.com>
 MIME-Version: 1.0
-To: John <linux.kernel@free.fr>
-CC: linux-kernel@vger.kernel.org, tglx@timesys.com, mingo@elte.hu,
-       johnstul@us.ibm.com, akpm@osdl.org, linux.kernel@free.fr
-Subject: Re: 2.6.20.3-rt8 clock_nanosleep() sleeps 10 ms
-References: <460930BB.2050905@free.fr>
-In-Reply-To: <460930BB.2050905@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070326151731.53cc080b.zaitcev@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John wrote:
+Pete, Luiz
 
-> It seems the CPU was not switched to high-resolution mode?
-> 
-> # dmesg | grep resolution
-> /* NOTHING */
-> 
-> Do I need to enable ACPI?
+what about this one?
 
-ACPI seems mandatory for high-resolution mode?
+Actually there is just a check for where is error coming from.
+Maybe that is not the best solution but it allows us to reduce
+the calls to 'printk' :)
 
-I added...
+P.S. Pete your patch is good but the message about
+worqueue creation fail was to print even if we've
+been faltered on the usb_register procedure.
 
-CONFIG_ACPI=y
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
+---
 
-# dmesg | grep resolution
-Switched to high resolution mode on CPU 0
+ drivers/usb/misc/ftdi-elan.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-Ingo, Thomas, do you have time to explain why ACPI is needed?
+diff --git a/drivers/usb/misc/ftdi-elan.c b/drivers/usb/misc/ftdi-elan.c
+index bc3327e..3cd54af 100644
+--- a/drivers/usb/misc/ftdi-elan.c
++++ b/drivers/usb/misc/ftdi-elan.c
+@@ -2903,7 +2903,7 @@ static struct usb_driver ftdi_elan_driver = {
+ };
+ static int __init ftdi_elan_init(void)
+ {
+-        int result;
++        int result = 0;
+         printk(KERN_INFO "driver %s built at %s on %s\n", ftdi_elan_driver.name,
+ 	       __TIME__, __DATE__);
+         init_MUTEX(&ftdi_module_lock);
+@@ -2918,18 +2918,25 @@ static int __init ftdi_elan_init(void)
+ 	if (!respond_queue)
+ 		goto err3;
+         result = usb_register(&ftdi_elan_driver);
+-        if (result)
++        if (result) {
+                 printk(KERN_ERR "usb_register failed. Error number %d\n",
+ 		       result);
++		goto err4;
++	}
+         return result;
+ 
++ err4:
++	destroy_workqueue(respond_queue);
+  err3:
+ 	destroy_workqueue(command_queue);
+  err2:
+ 	destroy_workqueue(status_queue);
+  err1:
+-	printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
+-	return -ENOMEM;
++	if (result == 0) {
++		result = -ENOMEM;
++		printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
++	}
++	return result;
+ }
+ 
+ static void __exit ftdi_elan_exit(void)
 
-Regards.
+
+		Cyrill
+
