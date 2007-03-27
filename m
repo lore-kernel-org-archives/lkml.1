@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965496AbXC0VgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965349AbXC0Vgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965496AbXC0VgH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXC0VgH
+	id S965349AbXC0Vgh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965522AbXC0Vgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:36:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1095 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965496AbXC0VgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:36:03 -0400
-Date: Tue, 27 Mar 2007 21:35:29 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch 1/8] Processor degredation support.
-Message-ID: <20070327213529.GB5842@ucw.cz>
-References: <20070326212459.711271424@de.ibm.com> <20070326212634.931820139@de.ibm.com>
+	Tue, 27 Mar 2007 17:36:37 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:43916 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965349AbXC0Vgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 17:36:36 -0400
+Date: Tue, 27 Mar 2007 14:36:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] add file position info to proc
+Message-Id: <20070327143629.9c8953db.akpm@linux-foundation.org>
+In-Reply-To: <20070327212419.GA5817@ucw.cz>
+References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
+	<20070327212419.GA5817@ucw.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070326212634.931820139@de.ibm.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 27 Mar 2007 21:24:20 +0000
+Pavel Machek <pavel@ucw.cz> wrote:
 
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Hi!
 > 
-> Emit a warning if cpu capability changes e.g. because the cpus are
-> overheating. The new cpu capability can be read via /proc/sysinfo.
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > This patch adds support for finding out the current file position,
+> > open flags and possibly other info in the future.
+> > 
+> > These new entries are added:
+> > 
+> >   /proc/PID/fdinfo/FD
+> >   /proc/PID/task/TID/fdinfo/FD
+> > 
+> > For each fd the information is provided in the following format:
+> > 
+> > pos:	1234
+> > flags:	0100002
 > 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Octal? Maybe we should use more traditional hex here?
 
-> +++ linux-2.6/drivers/s390/char/sclp_confmgm.c
+Good point.  The O_foo flags are per-arch, so this field has the potential
+to be subtly different on different architectures, which is unpleasing.
 
-Can we get less cyptic name?
+> Or even list flags by name?
 
-
-> +#define SCLP_CONFMGM_PRINT_HEADER	"sclp_confmgm: "
-
-Uah, define longer than text it expands to... 
-
-> +static void sclp_conf_receiver_fn(struct evbuf_header *evbuf)
-> +{
-> +	struct conf_mgm_data *cdata;
-> +
-> +	cdata = (struct conf_mgm_data *)(evbuf + 1);
-> +	if (cdata->ev_qualifier == EV_QUAL_CAP_CHANGE)
-> +		/* Will be parsed. Don't change. */
-> +		printk(KERN_WARNING "sclp: CPU capability changed.\n");
-> +}
-
-What's that? I do not think printk provides guaranteed delivery.
-
-> +static struct sclp_register sclp_conf_register =
-> +{
-> +	.receive_mask = EvTyp_ConfMgmData_Mask,
-
-NoCamelCasePlease.
-
-> @@ -27,6 +27,7 @@
->  #define EvTyp_CntlProgIdent	0x0B
->  #define EvTyp_SigQuiesce	0x1D
->  #define EvTyp_VT220Msg		0x1A
-> +#define EvTyp_ConfMgmData	0x04
->  
->  #define EvTyp_OpCmd_Mask	0x80000000
->  #define EvTyp_Msg_Mask		0x40000000
-> @@ -36,6 +37,7 @@
->  #define EvTyp_CtlProgIdent_Mask	0x00200000
->  #define EvTyp_SigQuiesce_Mask	0x00000008
->  #define EvTyp_VT220Msg_Mask	0x00000040
-> +#define EvTyp_ConfMgmData_Mask	0x10000000
->  
->  #define GnrlMsgFlgs_DOM		0x8000
->  #define GnrlMsgFlgs_SndAlrm	0x4000
-
-Yep, you have more CamelCases to fix.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+urg.  Simple enough to do (lookup table, please).  But is it worth it? 
+Perhaps just remove that field?
