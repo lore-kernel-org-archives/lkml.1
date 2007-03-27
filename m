@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933825AbXC0AC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbXC0AL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933825AbXC0AC0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 20:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933823AbXC0ACZ
+	id S933751AbXC0AL4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 20:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXC0ALz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 20:02:25 -0400
-Received: from holomorphy.com ([66.93.40.71]:37820 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933819AbXC0ACZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 20:02:25 -0400
-Date: Mon, 26 Mar 2007 17:02:10 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 2/3] only allow nonlinear vmas for ram backed filesystems
-Message-ID: <20070327000210.GZ2986@holomorphy.com>
-References: <E1HVEOB-0006fX-00@dorka.pomaz.szeredi.hu> <E1HVEQJ-0006gF-00@dorka.pomaz.szeredi.hu> <1174824752.5149.28.camel@lappy> <20070325155127.GR10459@waste.org>
+	Mon, 26 Mar 2007 20:11:55 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:54718 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933751AbXC0ALz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 20:11:55 -0400
+Date: Mon, 26 Mar 2007 17:09:51 -0700
+From: Greg KH <greg@kroah.com>
+To: Mitch Williams <mitch.a.williams@intel.com>,
+       Michael Ellerman <michael@ellerman.id.au>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       auke-jan.h.kok@intel.com
+Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
+Message-ID: <20070327000951.GA11555@kroah.com>
+References: <1174951102.22190.15.camel@strongmad>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070325155127.GR10459@waste.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1174951102.22190.15.camel@strongmad>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-24 at 23:09 +0100, Miklos Szeredi wrote:
->>> Dirty page accounting/limiting doesn't work for nonlinear mappings, so
->>> for non-ram backed filesystems emulate with linear mappings.  This
->>> retains ABI compatibility with previous kernels at minimal code cost.
->>> All known users of nonlinear mappings actually use tmpfs, so this
->>> shouldn't have any negative effect.
+On Mon, Mar 26, 2007 at 04:18:22PM -0700, Mitch Williams wrote:
+> This patch fixes a kernel bug which is triggered when using the
+> irqbalance daemon with MSI-X hardware.
+> 
+> Because both MSI-X interrupt messages and MSI-X table writes are posted,
+> it's possible for them to cross while in-flight.  This results in
+> interrupts being received long after the kernel thinks they're disabled,
+> and in interrupts being sent to stale vectors after rebalancing.
+> 
+> This patch performs a read flush after writes to the MSI-X table for
+> enable/disable and rebalancing operations.  Because this is an expensive
+> operation, we do not perform the read flush after mask/unmask
+> operations.  Hardware which supports MSI-X typically also supports some
+> sort of interrupt moderation, so a read-flush is not necessary for
+> mask/unmask operations.
+> 
+> This patch has been validated with (unreleased) network hardware which
+> uses MSI-X.
 
-On Sun, Mar 25, 2007 at 02:12:32PM +0200, Peter Zijlstra wrote:
+How well does this play with the MSI core changes that Michael Ellerman
+has proposed on the linux-pci mailing list?
 
-On Sun, Mar 25, 2007 at 10:51:27AM -0500, Matt Mackall wrote:
-> They do? I thought the whole point of nonlinear mappings was for
-> mapping files bigger than the address space (eg. databases). Is Oracle
-> instead using this to map >3G files on a tmpfs??
+thanks,
 
-It's used for > 3GB files on tmpfs and also ramfs, sometimes
-substantially larger than 3GB.
-
-It's not used for the database proper. It's used for the buffer pool,
-which is the in-core destination and source of direct I/O, the on-disk
-source and destination of the I/O being the database.
-
-
--- wli
+greg k-h
