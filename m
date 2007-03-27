@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965410AbXC0Uiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965414AbXC0UlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965410AbXC0Uiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 16:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965412AbXC0Uiy
+	id S965414AbXC0UlG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 16:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965417AbXC0UlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 16:38:54 -0400
-Received: from sp604003mt.neufgp.fr ([84.96.92.56]:49910 "EHLO smTp.neuf.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965410AbXC0Uix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 16:38:53 -0400
-Date: Tue, 27 Mar 2007 22:30:26 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: 2.6.21-rc5-mm1
-In-reply-to: <20070327131214.656e1ad7.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Badari Pulavarty <pbadari@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-Message-id: <46097EE2.6010206@cosmosbay.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <20070326205706.a750bb35.akpm@linux-foundation.org>
- <1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com>
- <20070327084838.34dc1b84.akpm@linux-foundation.org>
- <1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com>
- <20070327131214.656e1ad7.akpm@linux-foundation.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 27 Mar 2007 16:41:05 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:27143 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965416AbXC0UlD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 16:41:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=av07FTEvt04kHNk3n0Ynh7cSUXeiiwqZb7bWT8migcNmAZgU2inqsJIIDv1s+sxS9QafrXWQ2FTXTPO+JhFGklPUDojZ29jdSdGpEp7OWLK7bCeaFhSf9Yp7V+UX2Y+pd4p1L7ZiaciPOzU3H1d6Nk8SF/Xi5BF2bfzSQcKgtfo=
+Message-ID: <75b66ecd0703271341x34463c49w64bdac21a9741355@mail.gmail.com>
+Date: Tue, 27 Mar 2007 16:41:01 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: John <linux.kernel@free.fr>
+Subject: Re: 2.6.20.3-rt8 - DMA suffers excessive delay periodically
+Cc: linux-kernel@vger.kernel.org, tglx@timesys.com, mingo@elte.hu,
+       johnstul@us.ibm.com, akpm@osdl.org, linux-apps@vger.kernel.org
+In-Reply-To: <46094728.40300@free.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <46094728.40300@free.fr>
+X-Google-Sender-Auth: 090166f26b4f1be4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton a écrit :
-> On Tue, 27 Mar 2007 09:57:50 -0800
-> Badari Pulavarty <pbadari@gmail.com> wrote:
-> 
->> On Tue, 2007-03-27 at 08:48 -0800, Andrew Morton wrote:
->>> On Tue, 27 Mar 2007 09:39:33 -0800 Badari Pulavarty <pbadari@gmail.com> wrote:
->>>
->>>> On Mon, 2007-03-26 at 20:57 -0800, Andrew Morton wrote:
->>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm1/
->>>>>
->>>>
->>>>   LD      init/built-in.o
->>>>   LD      .tmp_vmlinux1
->>>> ld: section .vsyscall_1 [0000000000645400 -> 000000000064542e] overlaps
->>>> section .jiffies [0000000000645400 -> 0000000000645407]
->>>> ld: .tmp_vmlinux1: section .vsyscall_1 lma 0x645400 overlaps previous
->>>> sections
->>>> make: *** [.tmp_vmlinux1] Error 1
->>>>
->>> bah.  Please send .config.
->> #
->> # Automatically generated make config: don't edit
->> # Linux kernel version: 2.6.21-rc5-mm1
-> 
-> The wheel spins around, slows then settles on.... 
-> time-smp-friendly-alignment-of-struct-clocksource.patch!
-> 
-> Presumably because the ____cacheline_aligned made vsyscall_gtod_data_t get
-> too big.  Or something.
-> 
+On 3/27/07, John <linux.kernel@free.fr> wrote:
+> I'm runnning 2.6.20.3 patched with -rt8 (and glibc 2.3.6).
+> http://people.redhat.com/mingo/realtime-preempt/older/patch-2.6.20-rt8
+>
+> I've written a program to highlight a phenomenon I don't understand.
+>
+> This system includes a PCI board that provides data at ~38 Mbit/s.
+> I request data in lumps of 1316 bytes.
+> In other words, a new request should complete every 277 µs.
+>
+> However, if I time stamp each packet as soon as I receive it, I notice
+> that almost exactly every 2 seconds, the packet is received 30-100
+> microseconds late.
 
-Maybe yes... 1024 bytes to code vsyscall0 is tricky.
+Sounds like periodic SMM traps.  There's not much you can do about
+them other than to avoid such hardware if you have tight RT
+constraints.  The RTAI people have some code to disable SMM but it
+does not work on all chipsets and may render some of your hardware
+inoperable.
 
-But then I remember I posted a patch some time ago to remove __jiffie from 
-vsyscall page... no answer yet from Andi.
+Is this a laptop?  They are plagued with SMM problems...
 
+Lee
