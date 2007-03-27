@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965469AbXC0V0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965472AbXC0V0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965469AbXC0V0F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965445AbXC0V0E
+	id S965472AbXC0V0H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965445AbXC0V0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:26:04 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36336 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965469AbXC0V0D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:26:03 -0400
-Date: Tue, 27 Mar 2007 23:26:05 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, ak@suse.de
-Cc: linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: 2.6.21-rc5-mm1: i386/x86_64 register_die_notifier() change
-Message-ID: <20070327212605.GE16477@stusta.de>
-References: <20070326205706.a750bb35.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 27 Mar 2007 17:26:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2005 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965472AbXC0V0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 17:26:05 -0400
+Date: Tue, 27 Mar 2007 21:24:20 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] add file position info to proc
+Message-ID: <20070327212419.GA5817@ucw.cz>
+References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070326205706.a750bb35.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 08:57:06PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.21-rc4-mm1:
->...
-> +move-die-notifier-handling-to-common-code.patch
->...
->  Misc
->...
+Hi!
 
-Is the removal of the vmalloc_sync_all() call in register_die_notifier() 
-on i386 and x86_64 both intentional and correct?
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> This patch adds support for finding out the current file position,
+> open flags and possibly other info in the future.
+> 
+> These new entries are added:
+> 
+>   /proc/PID/fdinfo/FD
+>   /proc/PID/task/TID/fdinfo/FD
+> 
+> For each fd the information is provided in the following format:
+> 
+> pos:	1234
+> flags:	0100002
 
-cu
-Adrian
-
+Octal? Maybe we should use more traditional hex here? Or even list
+flags by name?
+							Pavel
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
