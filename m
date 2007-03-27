@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933386AbXC0XWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933416AbXC0X3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933386AbXC0XWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 19:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933364AbXC0XWn
+	id S933416AbXC0X3L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 19:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933452AbXC0X3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 19:22:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39799 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933386AbXC0XW2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 19:22:28 -0400
-Date: Tue, 27 Mar 2007 15:50:06 -0700
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: gregkh@suse.de, Adrian Bunk <bunk@stusta.de>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove the broken PCI_MULTITHREAD_PROBE option
-Message-ID: <20070327225006.GC4478@kroah.com>
-References: <20070327010251.GX16477@stusta.de> <20070327130351.51aff00e@gondolin.boeblingen.de.ibm.com>
+	Tue, 27 Mar 2007 19:29:11 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:43525 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933426AbXC0X3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 19:29:09 -0400
+Message-ID: <4609A8C4.6010803@us.ibm.com>
+Date: Tue, 27 Mar 2007 16:29:08 -0700
+From: Badari Pulavarty <pbadari@us.ibm.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:0.9.4.1) Gecko/20020508 Netscape6/6.2.3
+X-Accept-Language: en-us
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070327130351.51aff00e@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Badari Pulavarty <pbadari@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.21-rc5-mm1
+References: <20070326205706.a750bb35.akpm@linux-foundation.org> <1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com> <20070327084838.34dc1b84.akpm@linux-foundation.org> <1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com> <20070327131214.656e1ad7.akpm@linux-foundation.org> <46098CBE.7010807@cosmosbay.com> <20070327144031.ef75dd53.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 27, 2007 at 01:03:51PM +0200, Cornelia Huck wrote:
-> On Tue, 27 Mar 2007 03:02:51 +0200,
-> Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> > This patch removes the PCI_MULTITHREAD_PROBE option that had already 
-> > been marked as broken.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> > 
-> > ---
-> > 
-> >  Documentation/pci.txt    |    4 ---
-> >  drivers/base/dd.c        |   41 ++-------------------------------------
-> >  drivers/pci/Kconfig      |   25 -----------------------
-> >  drivers/pci/pci-driver.c |   15 --------------
-> >  include/linux/device.h   |    1 
-> >  5 files changed, 3 insertions(+), 83 deletions(-)
-> 
-> Greg, what about driver-core-per-subsystem-multithreaded-probing.patch?
-> PCI_MULTITHREAD_PROBE shoudn't be broken with that, only in mainline?
 
-Do you want to enable PCI multithreaded probing using your patch?  I
-don't think the world is ready for pci multithreaded probing as was
-determined by the zillion of bug reports from people who like to enable
-config options that state in big letters, "THIS WILL BREAK YOUR BOX"...
 
-And I'm still questioning if we should add your patch at all, as I don't
-think any other subsystems need it.  Do you?
+Andrew Morton wrote:
 
-thanks,
+>On Tue, 27 Mar 2007 23:29:34 +0200
+>Eric Dumazet <dada1@cosmosbay.com> wrote:
+>
+>>Andrew Morton a écrit :
+>>
+>>>The wheel spins around, slows then settles on.... 
+>>>time-smp-friendly-alignment-of-struct-clocksource.patch!
+>>>
+>>>Presumably because the ____cacheline_aligned made vsyscall_gtod_data_t get
+>>>too big.  Or something.
+>>>
+>>Very strange, since here I have plenty of available room (256 bytes) :
+>>
+>>ffffffffff600000 T vgettimeofday
+>>ffffffffff60004e t vsysc2
+>>ffffffffff600140 t vread_hpet
+>>ffffffffff600150 t vread_tsc
+>>ffffffffff600180 D __vsyscall_gtod_data
+>>ffffffffff600280 D __vgetcpu_mode
+>>ffffffffff6002c0 D __jiffies
+>><lot of space (256 bytes)>
+>>ffffffffff600400 T vtime
+>>ffffffffff600413 t vsysc1
+>>ffffffffff600800 T vgetcpu
+>>ffffffffff600c00 T venosys_1
+>>
+>>It must depends on the compiler, and/or CONFIG_XXX options...
+>>
+>
+>Badari's config triggered it for me.
+>
+>>Anyway, I think we can safely move __vgetcpu_mode & __jiffies to the 1024 
+>>bytes area dedicated to vgetcpu() implementation. This saves 128 bytes from 
+>>vsyscall_0 area.
+>>
+>>Could we add this patch instead of dropping 
+>>time-smp-friendly-alignment-of-struct-clocksource.patch ?
+>>
+>
+>When you tell me it works OK with Badari's config ;)
+>
+Yes. It did fix my problem.
 
-greg k-h
+Thanks,
+Badari
+
+>
+
+
+
