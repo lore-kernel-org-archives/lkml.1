@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXC0Pk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932370AbXC0PqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbXC0Pk4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 11:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXC0Pk4
+	id S932370AbXC0PqJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 11:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXC0PqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 11:40:56 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:1751 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932117AbXC0Pkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 11:40:55 -0400
-X-AuthUser: hirofumi@parknet.jp
-To: Paul Collins <paul@briny.ondioline.org>
-Cc: Hiroyuki Machida <Hiroyuki_Machida@hq.scei.sony.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fat/vfat: optionally ignore system timezone offset when reading/writing timestamps
-References: <OFE734E183.0E10CA2B-ON492572AA.00132685-492572AA.0016700F@hq.scei.sony.co.jp>
-	<87ps6whvh5.fsf@duaron.myhome.or.jp>
-	<87fy7rrp1i.fsf@briny.internal.ondioline.org>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Wed, 28 Mar 2007 00:40:44 +0900
-In-Reply-To: <87fy7rrp1i.fsf@briny.internal.ondioline.org> (Paul Collins's message of "Tue\, 27 Mar 2007 21\:52\:57 +1200")
-Message-ID: <873b3qheyr.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.95 (gnu/linux)
+	Tue, 27 Mar 2007 11:46:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:30303 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932370AbXC0PqH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 11:46:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=E55THC+2drMJkCwI+9m1NGS5sl20qW95E0RF38W5Vw5KC11mwLA3xlr/T4eY0wOjGJWOEZLkW92cYI64+pZg7Cy96rOkAgoX+8rTHWyI4wTGB7+HYCy4+SsW5eYqXr4DXFyTel8Q8Qjt6gDTEraAttOyUQVUIIbEu9C8F7BFdVk=
+Message-ID: <d120d5000703270846y87e4283m4009ff0a9f65dac4@mail.gmail.com>
+Date: Tue, 27 Mar 2007 11:46:04 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: Fix sudden warps in mousedev
+Cc: "Pete Zaitcev" <zaitcev@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Peter Osterlund" <petero2@telia.com>
+In-Reply-To: <460934D7.9030700@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070324001610.724a820a.zaitcev@redhat.com>
+	 <d120d5000703261230h1724e453je2c14769fc099ad3@mail.gmail.com>
+	 <20070326144206.93805eeb.zaitcev@redhat.com>
+	 <200703262114.45287.dtor@insightbb.com> <460934D7.9030700@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Collins <paul@briny.ondioline.org> writes:
-
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
+On 3/27/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+> Dmitry Torokhov wrote:
+> >
+> > The driver grabs tochpad with EVIOCGRAB ioctl to prevent input events
+> > from bveing delivered to X through /dev/input/mice which is still in
+> > whidespread use. That's why evtest does not work. We could as Peter
+> > (CCed) to implement an option to turn off grabbing so users who don't
+> > use mousedev multiplexor can use evtest and other commands.
+> >
 >
->> Thank you. I see. So we need "timezone" option to specify adjusted
->> time?  If so, I feel we can add it as "timezone=utc", then it'll can
->> be improved later...
->
-> I am happy to change the patch as needed.  However, since the kernel
-> does not have access to a timezone database and therefore cannot
-> convert timezone names to offsets, perhaps the mount option should be
-> something like "tzoffset=0", "tzoffset=1200" etc., with "tzoffset=0"
-> being equivalent to the "posixtime" option implemented by my patch.
+> What should people be using instead of /dev/input/mice ?
 
-Looks sane. The mount command would be able to convert the string
-timezone to it if needed.
+/dev/input/mice is most convenient source untill X gets hotplug ability.
+
+>
+> And why did the mouse numbers all get rearranged in 2.6.20, e.g.
+> mouse1 became mouse2 for many people?
+
+Input devices are not guaranteed to be stable.
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Dmitry
