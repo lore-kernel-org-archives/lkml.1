@@ -1,38 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbXC0Apk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933876AbXC0BBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933853AbXC0Apk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 20:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933863AbXC0Apk
+	id S933876AbXC0BBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 21:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933877AbXC0BBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 20:45:40 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:33772 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933853AbXC0Apj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 20:45:39 -0400
-Date: Mon, 26 Mar 2007 17:45:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
+	Mon, 26 Mar 2007 21:01:46 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35461 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933876AbXC0BBp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Mar 2007 21:01:45 -0400
+Date: Tue, 27 Mar 2007 03:01:47 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] add file position info to proc
-Message-Id: <20070326174535.4f21bed3.akpm@linux-foundation.org>
-In-Reply-To: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
-References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: [2.6 patch] include/linux/kprobes.h: always offer show_registers()
+Message-ID: <20070327010147.GS16477@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Mar 2007 23:04:09 +0100
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+Allow gcc to perform show_registers() type checking also with 
+CONFIG_KPROBES=n.
 
-> This patch adds support for finding out the current file position,
-> open flags and possibly other info in the future.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-fs/proc/base.c: In function 'proc_lookupfdinfo':
-fs/proc/base.c:1584: warning: passing argument 3 of 'proc_lookupfd_common' from incompatible pointer type
-fs/proc/base.c: In function 'proc_readfdinfo':
-fs/proc/base.c:1590: warning: passing argument 4 of 'proc_readfd_common' from incompatible pointer type
+---
 
-If taken, that callback into proc_lookupfd_common() will crash the kernel.
+ include/linux/kprobes.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- linux-2.6.21-rc4-mm1/include/linux/kprobes.h.old	2007-03-26 15:28:27.000000000 +0200
++++ linux-2.6.21-rc4-mm1/include/linux/kprobes.h	2007-03-26 15:32:23.000000000 +0200
+@@ -163,7 +163,6 @@
+ extern void arch_arm_kprobe(struct kprobe *p);
+ extern void arch_disarm_kprobe(struct kprobe *p);
+ extern int arch_init_kprobes(void);
+-extern void show_registers(struct pt_regs *regs);
+ extern kprobe_opcode_t *get_insn_slot(void);
+ extern void free_insn_slot(kprobe_opcode_t *slot, int dirty);
+ extern void kprobes_inc_nmissed_count(struct kprobe *p);
+@@ -241,4 +240,7 @@
+ {
+ }
+ #endif				/* CONFIG_KPROBES */
++
++void show_registers(struct pt_regs *regs);
++
+ #endif				/* _LINUX_KPROBES_H */
+
