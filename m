@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbXC0KFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbXC0KGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbXC0KFt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 06:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbXC0KFs
+	id S1753541AbXC0KGR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 06:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbXC0KGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 06:05:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53121 "EHLO mx1.redhat.com"
+	Tue, 27 Mar 2007 06:06:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53965 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbXC0KFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 06:05:47 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <8bd0f97a0703261321h356a849am1ab617f0e732fa67@mail.gmail.com> 
-References: <8bd0f97a0703261321h356a849am1ab617f0e732fa67@mail.gmail.com>  <Pine.LNX.4.64.0703261447190.13229@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0703261427490.12793@sbz-30.cs.Helsinki.FI> <20070326024143.a226c9b2.akpm@linux-foundation.org> <1174904637.32691.86.camel@roc-desktop> <6017.1174908318@redhat.com> <6791.1174909459@redhat.com> <11045.1174911764@redhat.com> <Pine.LNX.4.64.0703261525370.14158@sbz-30.cs.Helsinki.FI> <22674.1174915478@redhat.com> 
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Pekka J Enberg" <penberg@cs.helsinki.fi>,
-       "Andrew Morton" <akpm@linux-foundation.org>, bryan.wu@analog.com,
-       linux-kernel@vger.kernel.org, "Hugh Dickins" <hugh@veritas.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm] Revoke core code: fix nommu arch compiling error bug 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 27 Mar 2007 11:05:13 +0100
-Message-ID: <27782.1174989913@redhat.com>
+	id S1753541AbXC0KGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 06:06:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [4/5] 2.6.21-rc5: known regressions
+Date: Tue, 27 Mar 2007 12:09:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Thomas Meyer <thomas@m3y3r.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015949.GB16477@stusta.de>
+In-Reply-To: <20070327015949.GB16477@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703271209.14447.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger <vapier.adi@gmail.com> wrote:
-
-> > [*] The FRV, for example, does have some limited protection capability - but
-> > it is really limited and not really useful in this case.
+On Tuesday, 27 March 2007 03:59, Adrian Bunk wrote:
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
 > 
-> how so ?
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way
+> possibly involved with one or more of these issues.
+> 
+> Due to the huge amount of recipients, please trim the Cc when answering.
 
-There are a limited set of protection registers (At least 8 insn and 8 data)
-that can permit tiles of protection that are a power-of-2 megabytes in size.
-However, these also have to be used to grant the kernel access to h/w
-(including RAM).
+I think the following two:
+ 
+> Subject    : suspend to disk: keypress required for power down
+> References : http://lkml.org/lkml/2007/3/25/78
+> Submitter  : Thomas Meyer <thomas@m3y3r.de>
+> Status     : unknown
+ 
+> Subject    : suspend to disk: non-boot cpus are disabled again
+> References : http://lkml.org/lkml/2007/3/25/78
+> Submitter  : Thomas Meyer <thomas@m3y3r.de>
+> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+>              Eric W. Biederman <ebiederm@xmission.com>
+> Status     : problem is being debugged
 
-Note that it's not possible to shift windows around in response to faults
-because fault reporting is asynchronous - the entire remaining instruction
-queue will be executed *before* the exception is actually raised to the
-kernel.
+are related to the same issue.
 
-> the Blackfin processor lacks a MMU but it does have a MPU (memory protection
-> unit) which allows granularity down to 1k page sizes ... so for future
-> releases, we plan on integrating optional support for this so that you could
-> have processes protected from each other and the kernel protected from all
-> the processes ... so in our case, we might actually be able to support
-> revoking of maps because we would have that region of memory ear marked as
-> unaccessible ...
+The problem is that we call disable_nonboot_cpus() in swsusp before
+powering down the system in order to avoid triggering the WARN_ON()
+in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping() and this doesn't
+work well on Thomas' system.
 
-That sounds reasonable.  However, I suspect that most NOMMU CPUs won't be able
-to do that.  In effect you're creating a third option, I think (MMU, NOMMU,
-MPU).
+Since the problem has been introduced by commit
+94985134b7b46848267ed6b734320db01c974e72
+(swsusp: disable nonboot CPUs before entering platform suspend), I think it's
+better to revert this commit and remove the the WARN_ON() in
+arch/x86_64/kernel/acpi/sleep.c:init_low_mapping() (appended is a patch that
+removes the WARN_ON()).
 
-> note that the Blackfin processor manuals confusingly call this aspect
-> of the chip an "MMU" ... dont be fooled !
+Greetings,
+Rafael
 
-Same for FRV.  It is memory management - it just doesn't include virtual
-memory mapping.
 
-David
+---
+Remove the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping(),
+which triggers every time during the suspend to disk in the platform mode, as
+the potential problem it is related to doesn't seem to occur in practice.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86_64/kernel/acpi/sleep.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.21-rc5/arch/x86_64/kernel/acpi/sleep.c
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/x86_64/kernel/acpi/sleep.c
++++ linux-2.6.21-rc5/arch/x86_64/kernel/acpi/sleep.c
+@@ -66,8 +66,10 @@ static void init_low_mapping(void)
+ {
+ 	pgd_t *slot0 = pgd_offset(current->mm, 0UL);
+ 	low_ptr = *slot0;
++	/* FIXME: We're playing with the current task's page tables here, which
++	 * is potentially dangerous on SMP systems.
++	 */
+ 	set_pgd(slot0, *pgd_offset(current->mm, PAGE_OFFSET));
+-	WARN_ON(num_online_cpus() != 1);
+ 	local_flush_tlb();
+ }
+ 
