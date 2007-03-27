@@ -1,104 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXC0Kxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbXC0LCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbXC0Kxn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 06:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXC0Kxn
+	id S1753791AbXC0LCA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 07:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbXC0LCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 06:53:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:11346 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbXC0Kxm (ORCPT
+	Tue, 27 Mar 2007 07:02:00 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:25806 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753791AbXC0LB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 06:53:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XqVaI/zJPOc/eHv+NF0nFGlMpPC4+XAx2Ug3DIZEcBizIj+ST+NNLkyfws6Yn/mT4ECacdZOVz4d+JC4LZwpnQPT7ggU34zyf4/wcT22+Vis0iqmwIWmMXlMWyESh702SC8KIXuquS6TQhPYPuC6wTh7KUS7n4jsu9trXd0KCQQ=
-Message-ID: <6d6a94c50703270353w22c3c994t84dc4b964f221c4b@mail.gmail.com>
-Date: Tue, 27 Mar 2007 18:53:39 +0800
-From: "Aubrey Li" <aubreylee@gmail.com>
-To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3][RFC] Containers: Pagecache controller reclaim
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       ckrm-tech@lists.sourceforge.net, "Balbir Singh" <balbir@in.ibm.com>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, devel@openvz.org, xemul@sw.ru,
-       "Paul Menage" <menage@google.com>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Rik van Riel" <riel@redhat.com>
-In-Reply-To: <4608E799.2050801@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Mar 2007 07:01:59 -0400
+Date: Tue, 27 Mar 2007 13:03:51 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: gregkh@suse.de
+Cc: Adrian Bunk <bunk@stusta.de>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove the broken PCI_MULTITHREAD_PROBE option
+Message-ID: <20070327130351.51aff00e@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070327010251.GX16477@stusta.de>
+References: <20070327010251.GX16477@stusta.de>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45ED251C.2010400@linux.vnet.ibm.com>
-	 <45ED266E.7040107@linux.vnet.ibm.com>
-	 <6d6a94c50703262044q22e94538i5e79a32a82f7c926@mail.gmail.com>
-	 <4608C4F6.4020407@linux.vnet.ibm.com>
-	 <6d6a94c50703270141u5e59f73dj8bef0de0cfed1924@mail.gmail.com>
-	 <4608E799.2050801@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/27/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
->
->
-> Aubrey Li wrote:
-> > On 3/27/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> >> Correct, shrink_page_list() is called from shrink_inactive_list() but
-> >> the above code is patched in shrink_active_list().  The
-> >> 'force_reclaim_mapped' label is from function shrink_active_list() and
-> >> not in shrink_page_list() as it may seem in the patch file.
-> >>
-> >> While removing pages from active_list, we want to select only
-> >> pagecache pages and leave the remaining in the active_list.
-> >> page_mapped() pages are _not_ of interest to pagecache controller
-> >> (they will be taken care by rss controller) and hence we put it back.
-> >>  Also if the pagecache controller is below limit, no need to reclaim
-> >> so we put back all pages and come out.
-> >
-> > Oh, I just read the patch, not apply it to my local tree, I'm working
-> > on 2.6.19 now.
-> > So the question is, when vfs pagecache limit is hit, the current
-> > implementation just reclaim few pages, so it's quite possible the
-> > limit is hit again, and hence the reclaim code will be called again
-> > and again, that will impact application performance.
->
-> Yes, you are correct.  So if we start reclaiming one page at a time,
-> then the cost of reclaim is very high and we would be calling the
-> reclaim code too often.  Hence we have a 'buffer zone' or 'reclaim
-> threshold' or 'push back' around the limit.  In the patch we have a 64
-> page (256KB) NR_PAGES_RECLAIM_THRESHOLD:
->
->  int pagecache_acct_shrink_used(unsigned long nr_pages)
->  {
->         unsigned long ret = 0;
->         atomic_inc(&reclaim_count);
-> +
-> +       /* Don't call reclaim for each page above limit */
-> +       if (nr_pages > NR_PAGES_RECLAIM_THRESHOLD) {
-> +               ret += shrink_container_memory(
-> +                               RECLAIM_PAGECACHE_MEMORY, nr_pages, NULL);
-> +       }
-> +
->         return 0;
->  }
->
-> Hence we do not call the reclaimer if the threshold is exceeded by
-> just 1 page... we wait for 64 pages or 256KB of pagecache memory to go
->  overlimit and then call the reclaimer which will reclaim all 64 pages
-> in one shot.
->
-> This prevents the reclaim code from being called too often and it also
-> keeps the cost of reclaim low.
->
-> In future patches we are planing to have a percentage based reclaim
-> threshold so that it would scale well with the container size.
->
-Actually it's not a good idea IMHO. No matter how big the threshold
-is, it's not suitable. If it's too small, application performance will
-be impacted seriously after pagecache limit is hit. If it's too large,
-Limiting pagecache is useless.
+On Tue, 27 Mar 2007 03:02:51 +0200,
+Adrian Bunk <bunk@stusta.de> wrote:
 
-Why not reclaim pages as much as possible when the pagecache limit is hit?
+> This patch removes the PCI_MULTITHREAD_PROBE option that had already 
+> been marked as broken.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> 
+>  Documentation/pci.txt    |    4 ---
+>  drivers/base/dd.c        |   41 ++-------------------------------------
+>  drivers/pci/Kconfig      |   25 -----------------------
+>  drivers/pci/pci-driver.c |   15 --------------
+>  include/linux/device.h   |    1 
+>  5 files changed, 3 insertions(+), 83 deletions(-)
 
--Aubrey
+Greg, what about driver-core-per-subsystem-multithreaded-probing.patch?
+PCI_MULTITHREAD_PROBE shoudn't be broken with that, only in mainline?
