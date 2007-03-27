@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965267AbXC0GRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964893AbXC0GU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965267AbXC0GRu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 02:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965268AbXC0GRu
+	id S964893AbXC0GU2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 02:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964896AbXC0GU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 02:17:50 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:41614 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965267AbXC0GRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 02:17:49 -0400
-Date: Mon, 26 Mar 2007 22:17:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Jaroslav Kysela <perex@suse.cz>,
-       Takashi Iwai <tiwai@suse.de>, Ben Dooks <ben-linux@fluff.org>,
-       Greg KH <greg@kroah.com>, Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: Linux 2.6.21-rc5
-Message-Id: <20070326221731.f4792260.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 27 Mar 2007 02:20:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52708
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S964893AbXC0GU1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 02:20:27 -0400
+Date: Mon, 26 Mar 2007 23:20:26 -0700 (PDT)
+Message-Id: <20070326.232026.35016469.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc5-mm1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070326205706.a750bb35.akpm@linux-foundation.org>
+References: <20070326205706.a750bb35.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 26 Mar 2007 20:57:06 -0800
 
-I have a few fixes here which belong to subsystem trees, which were missed
-by the maintainers and which we probably want to get into 2.6.21.
+> - I dropped davem's net development tree due to a large collision with
+>   git-wireless.  I figured git-wireless would need more debugging ;)
 
+I sent some email to John Linville in order to discuss ways
+to resolve this so you can import all of our work.
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/make-aout-executables-work-again.patch
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/revert-ac97-fix-microphone-and-line_in-selection-logic.patch
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/drivers-mfd-sm501c-fix-an-off-by-one.patch
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/pci-set-pci=bfsort-for-poweredge-r900.patch
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/fix-sudden-warps-in-mousedev.patch
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/fix-sysfs-rom-file-creation-for-bios-rom-shadows.patch
-
-Maintainers are cc'ed.  Please promptly ack, nack or otherwise quack, else
-I'll be making my own decisions ;)
-
+I believe John is away for a few days so whenever he gets
+back to reading email we'll work this out.
