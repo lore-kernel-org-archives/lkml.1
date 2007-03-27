@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933913AbXC0RPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933984AbXC0RQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933913AbXC0RPr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 13:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933980AbXC0RPr
+	id S933984AbXC0RQH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 13:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933999AbXC0RQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 13:15:47 -0400
-Received: from mga02.intel.com ([134.134.136.20]:4688 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933913AbXC0RPp convert rfc822-to-8bit (ORCPT
+	Tue, 27 Mar 2007 13:16:04 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:41340 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933908AbXC0RP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 13:15:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,335,1170662400"; 
-   d="scan'208"; a="217319373:sNHT28355362"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
-Date: Tue, 27 Mar 2007 10:15:22 -0700
-Message-ID: <08FE5CC30C9A3F41BF819A502CF7BF6EF98178@fmsmsx411.amr.corp.intel.com>
-In-Reply-To: <m1ejnay8sx.fsf@ebiederm.dsl.xmission.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
-Thread-Index: AcdwiUW2gjOARs0pQfyf25kvBDj49QAAe7Tg
-From: "Williams, Mitch A" <mitch.a.williams@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Grant Grundler" <grundler@parisc-linux.org>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>, <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-X-OriginalArrivalTime: 27 Mar 2007 17:15:23.0675 (UTC) FILETIME=[816546B0:01C77093]
+	Tue, 27 Mar 2007 13:15:59 -0400
+Date: Tue, 27 Mar 2007 19:17:49 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Eric Rannaud" <eric.rannaud@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Larry Finger" <larry.finger@lwfinger.net>,
+       "Matt Mackall" <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org,
+       "Monakhov Dmitriy" <dmonakhov@openvz.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070327191749.28298069@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <3ae72650703270225k1db9c4a8w6e31b95e007336d7@mail.gmail.com>
+References: <20070321202225.GN10459@waste.org>
+	<20070322123508.3785fd30@gondolin.boeblingen.de.ibm.com>
+	<4602752A.5050109@lwfinger.net>
+	<20070322181019.62fe78ed@gondolin.boeblingen.de.ibm.com>
+	<4602D137.4060402@lwfinger.net>
+	<20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com>
+	<20070323210618.6a41f5da.akpm@linux-foundation.org>
+	<20070326110949.5301a571@gondolin.boeblingen.de.ibm.com>
+	<20070326012232.0f0b9e09.akpm@linux-foundation.org>
+	<20070326103432.GB18799@zenigma>
+	<3ae72650703270225k1db9c4a8w6e31b95e007336d7@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote: 
->
->> Because enabling and disabling the MSI interrupt is done through
->> config space, and config space writes are not posted.  So we won't
->> see the problem that we do with MSI-X.
->
->Normally this is true.  However when we have  memory mapped pci config
->space the writes could very easily be posted.  Even if there aren't
->any Intel platforms that do it today other architectures might.
+On Tue, 27 Mar 2007 11:25:57 +0200,
+"Kay Sievers" <kay.sievers@vrfy.org> wrote:
 
->From what I read in the spec, configuration writes are not ever posted.
-They are a completely separate transaction type from memory writes, and
-only memory writes are posted.  So there's no need to read-flush these.
+> I don't see any point in deregistering a kernel device, if the event
+> to userspace goes wrong, or a subsytem returns a non-zero value in the
+> filter.
 
->The more I think about this the more I think we should make mask and
->unmask do the read and set enable/disable to mask/unmask in the msi
->case.
->
->I think being a little more paranoid will result in slightly simpler
->more maintainable code, and not measurably affect performance.  I
->don't expect you are migrating irqs in a fast path.
+But if we filter the event, we just return 0?
+ 
+> Checking the uevent return value, will not prevent any malfunction,
+> usually this kind of "error handling" just prevents bringing up a
+> whole subsystem, or booting-up a box, because the needed device does
+> not exist at all.
 
-Migrating IRQs happens in the fast path, but infrequently (every 10 
-seconds or so).  However the mask function is called at EVERY interrupt,
-so this change would be VERY expensive.
+OK, if we consider uevents to be non-vital to a functioning device.
 
-If the driver really needs to disable the interrupt, then it can call
-irq_disable().  Otherwise, mask (as-is) should be fine -- it masks
-the interrupt at the APIC, and the device's interrupt moderation
-should take care of keeping it from generating interrupts right away.
-
--Mitch
+OTOH, I think using something like uevent_suppress (maybe via
+dev_uevent_filter?) is a saner way to suppress a uevent than to return
+an error code in the uevent function.
