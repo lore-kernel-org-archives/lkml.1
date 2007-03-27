@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965153AbXC0UJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965336AbXC0ULa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965153AbXC0UJg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 16:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965336AbXC0UJg
+	id S965336AbXC0ULa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 16:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965338AbXC0ULa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 16:09:36 -0400
-Received: from science.horizon.com ([192.35.100.1]:15209 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965153AbXC0UJf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 16:09:35 -0400
-Date: 27 Mar 2007 16:09:33 -0400
-Message-ID: <20070327200933.6321.qmail@science.horizon.com>
-From: linux@horizon.com
-To: akpm@linux-foundation.org, linux@horizon.com
-Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, miklos@szeredi.hu
-In-Reply-To: <20070327123422.d0bbc064.akpm@linux-foundation.org>
+	Tue, 27 Mar 2007 16:11:30 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:43050 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965336AbXC0UL3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 16:11:29 -0400
+Message-ID: <46097A68.6080802@gmail.com>
+Date: Tue, 27 Mar 2007 22:11:20 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: johann deneux <johann.deneux@gmail.com>
+CC: Dmitry Torokhov <dtor@insightbb.com>,
+       =?UTF-8?B?IlNUZW55YUsgKEJydW5vIA==?= =?UTF-8?B?R29uesOhbGV6KSI=?= 
+	<stenyak@gmail.com>,
+       Anssi Hannula <anssi.hannula@gmail.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom
+ driver]
+References: <2460126662758025813@fi.muni.cz> <46018FB8.1080601@gmail.com>	 <38b3b7c0703211503s3a8ee177v5b149cfd5975de8c@mail.gmail.com>	 <200703221150.12403.dtor@insightbb.com> <46090BF2.2000105@gmail.com> <38b3b7c0703271136s799114fcndfaa6de8db52fc70@mail.gmail.com>
+In-Reply-To: <38b3b7c0703271136s799114fcndfaa6de8db52fc70@mail.gmail.com>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 27 Mar 2007 22:11:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Suggest you use msync(MS_ASYNC), then
-> sync_file_range(SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE).
+johann deneux napsal(a):
+> On 3/27/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+>> Dmitry Torokhov napsal(a):
+>> > On Wednesday 21 March 2007 18:03, johann deneux wrote:
+>> >> I have forgotten the details of ioctl: Wouldn't the
+>> >> following work?
+>>
+>> No, at least, as far as I understand this. I have computed _torques_, not
+>> forces vector (this was misleading info in my first post), the
+>> question is
+>> "how can I pass torques through plane and direction entries into KS?".
+> 
+> Torques and forces are both represented as 3d vectors.
 
-Thank you; I didn't know about that.  And I can handle -ENOSYS by falling
-back to the old behavior.
+Yes, may be.
 
-> We can fix your application, and we'll break someone else's.
+> Are we
+> misunderstanding eachother maybe? By "vector" I mean a triplet of
+> numbers, when you say "torques" and "forces vector", do you mean that
+> each effect is composed of a bunch of torques?
 
-If you can point to an application that it'll break, I'd be a lot more
-understanding.  Nobody did, last year.
+Ok, let's make things a little bit clear. I need to put somehow 3 short
+values (torques -- to tell 3 motors how much to spin around) into the kernel
+space via ff layer. I computed them using FP in US from forces (3d vector)
+and the problem is, that I don't know how to transform torques to plane(s)
+and dir and then back to torques -- this is what I can't figure out, since I
+have no longer vector -- 3 values for each axis, which says how big is the
+force in each axis -- but I have values (no axis) specific to each motor.
 
-> I don't think it's solveable, really - the range of applications is so
-> broad, and the "standard" is so vague as to be useless.
-
-I agree that standards are sometimes vague, but that one seemed about
-as clear as it's possible to be without imposing unreasonably on
-the file system and device driver layers.
-
-What part of "The msync() function writes all modified data to
-permanent storage locations [...] For mappings to files, the msync()
-function ensures that all write operations are completed as defined
-for synchronised I/O data integrity completion." suggests that it's not
-supposed to do disk I/O?  How is that uselessly vague?
-
-It says to me that msync's raison d'être is to write data from RAM to
-stable storage.  If an application calls it too often, that's
-the application's fault just as if it called sync(2) too often.
-
-> This is why we've
-> been extending these things with linux-specific goodies which permit
-> applications to actually tell the kernel what they want to be done in a
-> more finely-grained fashion.
-
-Well, I still think the current Linux behavior is a bug, but there's a
-usable (and run-time compatible) workaround that doesn't unreasonably
-complicate the code, and that's good enough.
+thanks for notes,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
