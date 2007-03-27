@@ -1,129 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965458AbXC0VcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965508AbXC0Vey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965458AbXC0VcM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965494AbXC0VcL
+	id S965508AbXC0Vey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965496AbXC0Vey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:32:11 -0400
-Received: from sp604005mt.neufgp.fr ([84.96.92.11]:64227 "EHLO smtp.Neuf.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965458AbXC0VcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:32:09 -0400
-Date: Tue, 27 Mar 2007 23:29:34 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: 2.6.21-rc5-mm1
-In-reply-to: <20070327131214.656e1ad7.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Badari Pulavarty <pbadari@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Message-id: <46098CBE.7010807@cosmosbay.com>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_1GEPV/kaAp/+Adtk5AumIQ)"
-References: <20070326205706.a750bb35.akpm@linux-foundation.org>
- <1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com>
- <20070327084838.34dc1b84.akpm@linux-foundation.org>
- <1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com>
- <20070327131214.656e1ad7.akpm@linux-foundation.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 27 Mar 2007 17:34:54 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:29641 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965509AbXC0Vex (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 17:34:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XR3m6j5eybhkhsZ2x6LDlUvPIsqF09mIa8zBCBhM0quDoqdNiSgTM78Wfm+KXzp2JMe7ZrlBOcF06Bm1tN2eYiMN8BWBVTawrk2LYvIURRtvJM/pXNYyu3UCgUcBM1uaMmus1TTue1XgBahbk8ZGe2xaCpEcCV1B1sIrouXV+0Q=
+Message-ID: <38b3b7c0703271434u2fddc4d1jc2b9af097e9c95b2@mail.gmail.com>
+Date: Tue, 27 Mar 2007 23:34:51 +0200
+From: "johann deneux" <johann.deneux@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom driver]
+Cc: "Dmitry Torokhov" <dtor@insightbb.com>,
+       "=?ISO-8859-1?Q?\"STenyaK_(Bruno_Gonz=E1lez)\"?=" <stenyak@gmail.com>,
+       "Anssi Hannula" <anssi.hannula@gmail.com>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz
+In-Reply-To: <460983D6.7070409@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2460126662758025813@fi.muni.cz> <46018FB8.1080601@gmail.com>
+	 <38b3b7c0703211503s3a8ee177v5b149cfd5975de8c@mail.gmail.com>
+	 <200703221150.12403.dtor@insightbb.com> <46090BF2.2000105@gmail.com>
+	 <38b3b7c0703271136s799114fcndfaa6de8db52fc70@mail.gmail.com>
+	 <46097A68.6080802@gmail.com>
+	 <38b3b7c0703271343p6a56fed8i950941e8cef196d8@mail.gmail.com>
+	 <460983D6.7070409@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On 3/27/07, Jiri Slaby <jirislaby@gmail.com> wrote:
 
---Boundary_(ID_1GEPV/kaAp/+Adtk5AumIQ)
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
+> Ok, so how to deal with these devices? Does anybody have some idea? That's
+> what I was talking about somewhere in the beginning of this thread, the raw
+> values, because it seems too specific for letting kernel to cope with each
+> of these devices separately, but there might be a better idea in somebody's
+> head? But raw is ugly...
+>
 
-Andrew Morton a écrit :
-> 
-> The wheel spins around, slows then settles on.... 
-> time-smp-friendly-alignment-of-struct-clocksource.patch!
-> 
-> Presumably because the ____cacheline_aligned made vsyscall_gtod_data_t get
-> too big.  Or something.
+What about adding a member to ff_effect which would be the number of the motor?
+We can't change the layout of ff_effect too much though, so we have to
+find unused bits and put them to work.
 
-Very strange, since here I have plenty of available room (256 bytes) :
+For instance, we could replace
 
-ffffffffff600000 T vgettimeofday
-ffffffffff60004e t vsysc2
-ffffffffff600140 t vread_hpet
-ffffffffff600150 t vread_tsc
-ffffffffff600180 D __vsyscall_gtod_data
-ffffffffff600280 D __vgetcpu_mode
-ffffffffff6002c0 D __jiffies
-<lot of space (256 bytes)>
-ffffffffff600400 T vtime
-ffffffffff600413 t vsysc1
-ffffffffff600800 T vgetcpu
-ffffffffff600c00 T venosys_1
+__u16 type;
 
-It must depends on the compiler, and/or CONFIG_XXX options...
+by
 
-Anyway, I think we can safely move __vgetcpu_mode & __jiffies to the 1024 
-bytes area dedicated to vgetcpu() implementation. This saves 128 bytes from 
-vsyscall_0 area.
+__u8 motor;
+__u8 type;
 
-Could we add this patch instead of dropping 
-time-smp-friendly-alignment-of-struct-clocksource.patch ?
+since 16 bits seems way more than needed for the effect type.
 
-Thank you
+Another possibility is to get rid of "trigger" and replace it by __u8
+motor and some padding, since that's I-Force specific (are there other
+drivers that implement that?). The goal of "trigger" is to start an
+effect when a button is pressed, which can be done from userland
+instead. It's not like we need micro-second latency when starting
+effects.
 
-[PATCH] x86_64 : move __vgetcpu_mode & __jiffies  to the vsyscall_2 zone
+As a reminder, here is the current definition of ff_effect:
 
-We apparently hit the 1024 limit of vsyscall_0 zone when some debugging 
-options are set, or if __vsyscall_gtod_data is 64 bytes larger.
+struct ff_effect {
+       __u16 type;
+       __s16 id;
+       __u16 direction;
+       struct ff_trigger trigger;
+       struct ff_replay replay;
 
-In order to save 128 bytes from the vsyscall_0 zone, we move __vgetcpu_mode & 
-__jiffies to vsyscall_2 zone where they really belong, since they are used 
-only from vgetcpu() (which is in this vsyscall_2 area).
+       union {
+               struct ff_constant_effect constant;
+               struct ff_ramp_effect ramp;
+               struct ff_periodic_effect periodic;
+               struct ff_condition_effect condition[2]; /* One for each axis */
+               struct ff_rumble_effect rumble;
+       } u;
+};
 
-After patch is applied, new layout is :
-
-ffffffffff600000 T vgettimeofday
-ffffffffff60004e t vsysc2
-ffffffffff600140 t vread_hpet
-ffffffffff600150 t vread_tsc
-ffffffffff600180 D __vsyscall_gtod_data
-ffffffffff600400 T vtime
-ffffffffff600413 t vsysc1
-ffffffffff600800 T vgetcpu
-ffffffffff600870 D __vgetcpu_mode
-ffffffffff600880 D __jiffies
-ffffffffff600c00 T venosys_1
-
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
---Boundary_(ID_1GEPV/kaAp/+Adtk5AumIQ)
-Content-type: text/plain; name=x86_64_vmlinux_lds.patch
-Content-transfer-encoding: 7BIT
-Content-disposition: inline; filename=x86_64_vmlinux_lds.patch
-
---- linux-2.6.21-rc5/arch/x86_64/kernel/vmlinux.lds.S
-+++ linux-2.6.21-rc5-ed/arch/x86_64/kernel/vmlinux.lds.S
-@@ -94,6 +94,12 @@ SECTIONS
- 		{ *(.vsyscall_gtod_data) }
-   vsyscall_gtod_data = VVIRT(.vsyscall_gtod_data);
- 
-+
-+  .vsyscall_1 ADDR(.vsyscall_0) + 1024: AT(VLOAD(.vsyscall_1))
-+		{ *(.vsyscall_1) }
-+  .vsyscall_2 ADDR(.vsyscall_0) + 2048: AT(VLOAD(.vsyscall_2))
-+		{ *(.vsyscall_2) }
-+
-   .vgetcpu_mode : AT(VLOAD(.vgetcpu_mode)) { *(.vgetcpu_mode) }
-   vgetcpu_mode = VVIRT(.vgetcpu_mode);
- 
-@@ -101,10 +107,6 @@ SECTIONS
-   .jiffies : AT(VLOAD(.jiffies)) { *(.jiffies) }
-   jiffies = VVIRT(.jiffies);
- 
--  .vsyscall_1 ADDR(.vsyscall_0) + 1024: AT(VLOAD(.vsyscall_1))
--		{ *(.vsyscall_1) }
--  .vsyscall_2 ADDR(.vsyscall_0) + 2048: AT(VLOAD(.vsyscall_2))
--		{ *(.vsyscall_2) }
-   .vsyscall_3 ADDR(.vsyscall_0) + 3072: AT(VLOAD(.vsyscall_3))
- 		{ *(.vsyscall_3) }
- 
-
---Boundary_(ID_1GEPV/kaAp/+Adtk5AumIQ)--
+-- 
+Johann
