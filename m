@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934053AbXC0Rcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934054AbXC0RfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934053AbXC0Rcv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 13:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934054AbXC0Rcv
+	id S934054AbXC0RfW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 13:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934062AbXC0RfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 13:32:51 -0400
-Received: from igw2.watson.ibm.com ([129.34.20.6]:34450 "EHLO
-	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934053AbXC0Rcu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 13:32:50 -0400
-Subject: Re: [Patch 3/7] integrity: EVM as an integrity service provider
-From: David Safford <safford@watson.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-In-Reply-To: <20070322231917.GC4064@ucw.cz>
-References: <1174666176.11149.3.camel@localhost.localdomain>
-	 <20070325001605.31ed39e7.akpm@linux-foundation.org>
-	 <20070325121321.GA8550@ucw.cz>
-	 <1174931715.3493.44.camel@localhost.localdomain>
-	 <20070322231917.GC4064@ucw.cz>
-Content-Type: text/plain
+	Tue, 27 Mar 2007 13:35:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60555 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934059AbXC0RfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 13:35:20 -0400
+Message-ID: <460955CC.70006@redhat.com>
+Date: Tue, 27 Mar 2007 13:35:08 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       clalance@redhat.com, mingo@redhat.com, davej@redhat.com,
+       Thilo.Cestonaro.external@fujitsu-siemens.com
+Subject: Re: [PATCH]: Fix bogus softlockup warning with sysrq-t
+References: <20070315132247.11291.28827.sendpatchset@prarit.boston.redhat.com> <4608AF01.4060804@goop.org> <460902CF.1030202@redhat.com> <46094A70.9080901@goop.org>
+In-Reply-To: <46094A70.9080901@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 27 Mar 2007 13:32:48 -0400
-Message-Id: <1175016768.3533.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-22 at 23:19 +0000, Pavel Machek wrote:
-> > There are some papers and related userspace code at
-> >    http://www.research.ibm.com/gsal/tcpa
-> > which describe the architecture in more detail, but basically this 
-> > integrity provider is designed to complement mandatory access control
-> > systems like selinux and slim. Such systems can protect a running system 
-> > against on-line attacks, but do not protect against off-line attacks  
-> > (booting Knoppix and changing executables or their selinux labels), or 
-> > against attacks which find weaknesses in the kernel or the LSM module 
-> > itself.
-> 
-> Thanks. Can this go to Doc*/ somewhere?
 
-yes, we will add that.
-> 
-> ...but... If I can attack your system using knoppix, I can get at your
-> data, already, right? So you'll need to encrypt your data, anyway? 
 
-no reason to encrypt system files, which are public, and encryption
-by itself does not provide the desired integrity - you still end
-up having to verify the integrity. 
+Jeremy Fitzhardinge wrote:
+>
+> diff -r 4c81d8cafb67 drivers/char/sysrq.c
+> --- a/drivers/char/sysrq.c	Tue Mar 27 01:16:07 2007 -0700
+> +++ b/drivers/char/sysrq.c	Tue Mar 27 01:18:05 2007 -0700
+> @@ -408,6 +408,8 @@ void __handle_sysrq(int key, struct tty_
+>  	int i;
+>  	unsigned long flags;
+>  
+> +	softlockup_global_disable();
+> +
+>  	spin_lock_irqsave(&sysrq_key_table_lock, flags);
+>  	orig_log_level = console_loglevel;
+>  	console_loglevel = 7;
+> @@ -445,6 +447,8 @@ void __handle_sysrq(int key, struct tty_
+>  		console_loglevel = orig_log_level;
+>  	}
+>  	spin_unlock_irqrestore(&sysrq_key_table_lock, flags);
+> +
+> +	softlockup_global_enable();
+>  }
+>  
+>   
 
-> 
-> > Using a TPM or passphrase, EVM can verify the integrity of all files 
-> > (including the kernel and initrd) and their labels before they are 
-> 
-> How does passphrase work here?
+I wonder if that's too strong of a fix.  It's only the sysrq-t case that 
+is the problem.  AFAIK, none of the other sysrq-t operations hold the 
+tasklist_lock for a long time.  I'd move these around show_state.
 
-ah, misstated that - the passphrase can be used to HMAC all other files,
-but not the kernel and initrd. Only the TPM/BIOS/Loader can do that.
-
-> 
-> ...so you have your data encrypted, and you have bootloader that
-> verifies kernel/initrd (you need that, anyway). Because you data are
-> encrypted, knoppix attack will not work... assuming crypto does some
-> integrity checks, but IIRC crypto needs to do that.
-
-most encryption is slower than hmac, and does not provide integrity.
-There are some crypto modes (e.g. IAPM) which do both encryption and
-integrity, but they are patented, and have overhead above the cost of
-just encryption or integrity checking by themselves.
-> 
-> 							Pavel,
-
+P.
