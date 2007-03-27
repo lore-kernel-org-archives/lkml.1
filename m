@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbXC0IO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbXC0ISw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751964AbXC0IO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 04:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXC0IO5
+	id S1752318AbXC0ISw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 04:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXC0ISw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 04:14:57 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36585 "EHLO gate.crashing.org"
+	Tue, 27 Mar 2007 04:18:52 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44769 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbXC0IOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 04:14:55 -0400
-Subject: Re: [PATCH] genirq: do not mask interrupts by default
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <20070327073227.GA26457@elte.hu>
-References: <200702161759.l1GHxsO8010669@hera.kernel.org>
-	 <1174972037.5329.5.camel@localhost.localdomain>
-	 <1174972685.5329.12.camel@localhost.localdomain>
-	 <20070327073227.GA26457@elte.hu>
-Content-Type: text/plain
-Date: Tue, 27 Mar 2007 18:04:24 +1000
-Message-Id: <1174982665.14065.5.camel@localhost.localdomain>
+	id S1750977AbXC0ISv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 04:18:51 -0400
+Date: Tue, 27 Mar 2007 00:18:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
+Message-Id: <20070327001834.04dc375e.akpm@linux-foundation.org>
+In-Reply-To: <E1HW6eb-0003WX-00@dorka.pomaz.szeredi.hu>
+References: <E1HVZyn-0008T8-00@dorka.pomaz.szeredi.hu>
+	<20070326140036.f3352f81.akpm@linux-foundation.org>
+	<E1HVwy4-0002UD-00@dorka.pomaz.szeredi.hu>
+	<20070326153153.817b6a82.akpm@linux-foundation.org>
+	<E1HW5am-0003Mc-00@dorka.pomaz.szeredi.hu>
+	<20070326232214.ee92d8c4.akpm@linux-foundation.org>
+	<E1HW6Ec-0003Tv-00@dorka.pomaz.szeredi.hu>
+	<20070326234957.6b287dda.akpm@linux-foundation.org>
+	<E1HW6eb-0003WX-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-27 at 09:32 +0200, Ingo Molnar wrote:
-> * Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > Note that I'm not opposed to the change at all, I think it's a good 
-> > idea, I'm just worried I'm discovering it a bit late and I've seen 
-> > PICs broken in some many colorful ways that I'm a bit worried... Oh 
-> > well...
-> 
-> This change does not really change irq-flow semantics, what it does is 
-> that disable_irq()'s effect is delayed. The irq controller does not have 
-> to re-assert the irq, we've got the soft-resend mechanism. What am i 
-> missing? Are you worried about this change causing actual breakage? (and 
-> i'm sorry about not having Cc:-ed you explicitly, i could have sworn you 
-> were included in that discussion but apparently not!)
+On Tue, 27 Mar 2007 10:03:41 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-I'm worried about some broken controllers I know of that might indeed
-swallow the interrupt if it occurs, we ack it, then disable it, and
-later on re-enable it...
+> But Peter Staubach says a RH custumer has files written thorugh mmap,
+> which are not being backed up.
 
-I think the main case I have in mind (pmac-pic) has the necessary
-retrigger all over the place but there is definitely a change in the
-flow of disabling/enabling here.
+Yes, I expect the backup problem is the major real-world hurt arising from
+this bug.
 
-Anyway, I'll run some tests tomorrow and make noise if I find something
-broken, though I can't test the various embedded thingies in
-arch/powerpc.
+But I expect we could adequately plug that problem at munmap()-time.  Or,
+better, do_wp_page().  As I said - half-assed.
 
-Ben.
+It's a question if whether the backup problem is the only thing which is hurting
+in the real-world, or if people have other problems.
+
+(In fact, what's wrong with doing it in do_wp_page()?  The timestamp could
+be up to 30 seconds too early, but that's heaps better than what we have
+now..)
 
 
