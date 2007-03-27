@@ -1,150 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbXC0QoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXC0Qqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933227AbXC0QoJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 12:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933222AbXC0QoJ
+	id S933175AbXC0Qqj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 12:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933217AbXC0Qqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 12:44:09 -0400
-Received: from lucidpixels.com ([75.144.35.66]:44563 "EHLO lucidpixels.com"
+	Tue, 27 Mar 2007 12:46:39 -0400
+Received: from gw.goop.org ([64.81.55.164]:51851 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933192AbXC0QoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 12:44:07 -0400
-X-Greylist: delayed 1092 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Mar 2007 12:44:06 EDT
-Date: Tue, 27 Mar 2007 12:44:04 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux@horizon.com
-cc: htejun@gmail.com, jeff@garzik.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Why is NCQ enabled by default by libata? (2.6.20)
-In-Reply-To: <20070327164122.7677.qmail@science.horizon.com>
-Message-ID: <Pine.LNX.4.64.0703271242580.5965@p34.internal.lan>
-References: <20070327164122.7677.qmail@science.horizon.com>
+	id S933175AbXC0Qqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 12:46:38 -0400
+Message-ID: <46094A70.9080901@goop.org>
+Date: Tue, 27 Mar 2007 09:46:40 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Prarit Bhargava <prarit@redhat.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       clalance@redhat.com, mingo@redhat.com, davej@redhat.com,
+       Thilo.Cestonaro.external@fujitsu-siemens.com
+Subject: Re: [PATCH]: Fix bogus softlockup warning with sysrq-t
+References: <20070315132247.11291.28827.sendpatchset@prarit.boston.redhat.com> <4608AF01.4060804@goop.org> <460902CF.1030202@redhat.com>
+In-Reply-To: <460902CF.1030202@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Prarit Bhargava wrote:
+> I think that's a good idea -- I'll propose an add on patch to fix the
+> sysrq-t case ...
 
+I'm working on this patch at the moment.  I'm just wondering what
+happens if you do a global re-enable while a CPU is locally disabled.  I
+think it won't matter; it will end up in the "enabled but need to update
+timestamp" state, and the next time it gets a timer tick, it will simply
+update the timestamp and carry on.
 
-On Tue, 27 Mar 2007, linux@horizon.com wrote:
+(This is relative to the other two softlockup patches, but modified
+since I posted them.)
 
->> From jpiszcz@lucidpixels.com Tue Mar 27 16:25:58 2007
-> Date: Tue, 27 Mar 2007 12:25:52 -0400 (EDT)
-> From: Justin Piszcz <jpiszcz@lucidpixels.com>
-> X-X-Sender: jpiszcz@p34.internal.lan
-> To: linux@horizon.com
-> cc: htejun@gmail.com, jeff@garzik.org, linux-ide@vger.kernel.org,
->    linux-kernel@vger.kernel.org
-> Subject: Re: Why is NCQ enabled by default by libata? (2.6.20)
-> In-Reply-To: <20070327161616.31448.qmail@science.horizon.com>
-> References: <20070327161616.31448.qmail@science.horizon.com>
-> MIME-Version: 1.0
-> Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
->
-> On Tue, 27 Mar 2007, linux@horizon.com wrote:
->
->> Here's some more data.
->>
->> 6x ST3400832AS (Seagate 7200.8) 400 GB drives.
->> 3x SiI3232 PCIe SATA controllers
->> 2.2 GHz Athlon 64, 1024k cache (3700+), 2 GB RAM
->> Linux 2.6.20.4, 64-bit kernel
->>
->> Tested able to sustain reads at 60 MB/sec/drive simultaneously.
->>
->> RAID-10 is across 6 drives, first part of drive.
->> RAID-5 most of the drive, so depending on allocation policies,
->> may be a bit slower.
->>
->> The test sequence actually was:
->> 1) raid5ncq
->> 2) raid5noncq
->> 3) raid10noncq
->> 4) raid10ncq
->> 5) raid5ncq
->> 6) raid5noncq
->> but I rearranged things to make it easier to compare.
->>
->> Note that NCQ makes writes faster (oh... I have write cacheing turned off;
->> perhaps I should turn it on and do another round), but no-NCQ seems to have
->> a read advantage.  %$%@#$@#ing bonnie++ overflows and won't print file
->> read times; I haven't bothered to fix that yet.
->>
->> NCQ seems to have a pretty significant effect on the file operations,
->> especially deletes.
->>
->> Update: added
->> 7) wcache5noncq - RAID 5 with no NCQ but write cache enabled
->> 8) wcache5ncq - RAID 5 with NCQ and write cache enabled
->>
->>
->> RAID=5, NCQ
->> Version  1.03       ------Sequential Output------ --Sequential Input- --Random-
->>                    -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
->> Machine        Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
->> raid5ncq      7952M 31688  53  34760 10 25327   4 57908  86 167680 13 292.2   0
->> raid5ncq      7952M 30357  50  34154 10 24876   4 59692  89 165663 13 285.6   0
->> raid5noncq    7952M 29015  48  31627  9 24263   4 61154  91 185389 14 286.6   0
->> raid5noncq    7952M 28447  47  31163  9 23306   4 60456  89 198624 15 293.4   0
->> wcache5ncq    7952M 32433  54  35413 10 26139   4 59898  89 168032 13 303.6   0
->> wcache5noncq  7952M 31768  53  34597 10 25849   4 61049  90 193351 14 304.8   0
->> raid10ncq     7952M 54043  89 110804 32 48859   9 58809  87 142140 12 363.8   0
->> raid10noncq   7952M 48912  81  68428 21 38906   7 57824  87 146030 12 358.2   0
->>
->>                    ------Sequential Create------ --------Random Create--------
->>                    -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
->> files:max:min        /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
->>    16:100000:16/64  1351  25 +++++ +++   941   3  2887  42 31526  96   382   1
->>    16:100000:16/64  1400  18 +++++ +++   386   1  4959  69 32118  95   570   2
->>    16:100000:16/64   636   8 +++++ +++   176   0  1649  23 +++++ +++   245   1
->>    16:100000:16/64   715  12 +++++ +++   164   0   156   2 11023  32  2161   8
->>    16:100000:16/64  1291  26 +++++ +++  2778  10  2424  33 31127  93   483   2
->>    16:100000:16/64  1236  26 +++++ +++   840   3  2519  37 30366  91   445   2
->>    16:100000:16/64  1714  37 +++++ +++  1652   6   789  11  4700  14 12264  48
->>    16:100000:16/64   634  11 +++++ +++  1035   3   338   4 +++++ +++  1349   5
->>
->> raid5ncq,7952M,31688,53,34760,10,25327,4,57908,86,167680,13,292.2,0,16:100000:16/64,1351,25,+++++,+++,941,3,2887,42,31526,96,382,1
->> raid5ncq,7952M,30357,50,34154,10,24876,4,59692,89,165663,13,285.6,0,16:100000:16/64,1400,18,+++++,+++,386,1,4959,69,32118,95,570,2
->> raid5noncq,7952M,29015,48,31627,9,24263,4,61154,91,185389,14,286.6,0,16:100000:16/64,636,8,+++++,+++,176,0,1649,23,+++++,+++,245,1
->> raid5noncq,7952M,28447,47,31163,9,23306,4,60456,89,198624,15,293.4,0,16:100000:16/64,715,12,+++++,+++,164,0,156,2,11023,32,2161,8
->> wcache5ncq,7952M,32433,54,35413,10,26139,4,59898,89,168032,13,303.6,0,16:100000:16/64,1291,26,+++++,+++,2778,10,2424,33,31127,93,483,2
->> wcache5noncq,7952M,31768,53,34597,10,25849,4,61049,90,193351,14,304.8,0,16:100000:16/64,1236,26,+++++,+++,840,3,2519,37,30366,91,445,2
->> raid10ncq,7952M,54043,89,110804,32,48859,9,58809,87,142140,12,363.8,0,16:100000:16/64,1714,37,+++++,+++,1652,6,789,11,4700,14,12264,48
->> raid10noncq,7952M,48912,81,68428,21,38906,7,57824,87,146030,12,358.2,0,16:100000:16/64,634,11,+++++,+++,1035,3,338,4,+++++,+++,1349,5
->>
->
->> I would try with write-caching enabled.
->
-> I did.  See the "wcache5" lines?
->
->> Also, the RAID5/RAID10 you mention seems like each volume is on part of
->> the platter, a strange setup you got there :)
->
-> I don't quite understand.  "Each volume is on part of the platter" -
-> yes, it's called partitioning, and it's pretty common.
->
-> Basically, the first 50G of each drive is assembled with RAID-10 to make
-> a 150G "system" file system, where I appreciate the speed and greater
-> redundancy of RAID-10, and the last 250G are combined with RAID-5 to make
-> a 1.75 TB RAID-5 "data" file system.
->
->> Also you are disabling NCQ on/off via the /sys/block device, e.g., setting
->> it to 1 (off) and 31 (on) during testing, yes?
->
-> Yes, it's
-> for i in /sys/block/sd?/device/queue_depth; do echo 1 > $i ; done
-> for i in /sys/block/sd?/device/queue_depth; do echo 31 > $i ; done
->
+    J
 
-I meant you do not allocate the entire disk per raidset, which may alter 
-performance numbers.
+diff -r 4c81d8cafb67 drivers/char/sysrq.c
+--- a/drivers/char/sysrq.c	Tue Mar 27 01:16:07 2007 -0700
++++ b/drivers/char/sysrq.c	Tue Mar 27 01:18:05 2007 -0700
+@@ -408,6 +408,8 @@ void __handle_sysrq(int key, struct tty_
+ 	int i;
+ 	unsigned long flags;
+ 
++	softlockup_global_disable();
++
+ 	spin_lock_irqsave(&sysrq_key_table_lock, flags);
+ 	orig_log_level = console_loglevel;
+ 	console_loglevel = 7;
+@@ -445,6 +447,8 @@ void __handle_sysrq(int key, struct tty_
+ 		console_loglevel = orig_log_level;
+ 	}
+ 	spin_unlock_irqrestore(&sysrq_key_table_lock, flags);
++
++	softlockup_global_enable();
+ }
+ 
+ /*
+diff -r 4c81d8cafb67 include/linux/sched.h
+--- a/include/linux/sched.h	Tue Mar 27 01:16:07 2007 -0700
++++ b/include/linux/sched.h	Tue Mar 27 01:18:05 2007 -0700
+@@ -235,6 +235,8 @@ extern void softlockup_tick(void);
+ extern void softlockup_tick(void);
+ extern void softlockup_enable(void);
+ extern void softlockup_disable(void);
++extern void softlockup_global_enable(void);
++extern void softlockup_global_disable(void);
+ extern void spawn_softlockup_task(void);
+ extern void touch_softlockup_watchdog(void);
+ #else
+@@ -245,6 +247,12 @@ static inline void softlockup_enable(voi
+ {
+ }
+ static inline void softlockup_disable(void)
++{
++}
++static inline void softlockup_global_enable(void)
++{
++}
++static inline void softlockup_global_disable(void)
+ {
+ }
+ static inline void spawn_softlockup_task(void)
+diff -r 4c81d8cafb67 kernel/softlockup.c
+--- a/kernel/softlockup.c	Tue Mar 27 01:16:07 2007 -0700
++++ b/kernel/softlockup.c	Tue Mar 27 01:18:05 2007 -0700
+@@ -17,10 +17,16 @@
+ 
+ static DEFINE_SPINLOCK(print_lock);
+ 
++enum enable {
++	SL_OFF = 0,		/* disabled */
++	SL_UPDATE,		/* enabled, but timestamp old */
++	SL_ON,			/* enabled */
++};
++
+ static DEFINE_PER_CPU(unsigned long long, touch_timestamp);
+ static DEFINE_PER_CPU(unsigned long long, print_timestamp);
+ static DEFINE_PER_CPU(struct task_struct *, watchdog_task);
+-static DEFINE_PER_CPU(int, enabled);
++static DEFINE_PER_CPU(enum enable, enabled);
+ 
+ static int did_panic = 0;
+ 
+@@ -39,6 +45,8 @@ void touch_softlockup_watchdog(void)
+ void touch_softlockup_watchdog(void)
+ {
+ 	__raw_get_cpu_var(touch_timestamp) = sched_clock();
++	barrier();			/* update timestamp before enable */
++	__raw_get_cpu_var(enabled) = SL_ON;
+ }
+ EXPORT_SYMBOL(touch_softlockup_watchdog);
+ 
+@@ -57,13 +65,27 @@ void softlockup_enable(void)
+ void softlockup_enable(void)
+ {
+ 	touch_softlockup_watchdog();
+-	barrier();			/* update timestamp before enable */
+-	__get_cpu_var(enabled) = 1;
+ }
+ 
+ void softlockup_disable(void)
+ {
+-	__get_cpu_var(enabled) = 0;
++	__get_cpu_var(enabled) = SL_OFF;
++}
++
++void softlockup_global_enable()
++{
++	unsigned cpu;
++
++	for_each_online_cpu(cpu)
++		per_cpu(enabled, cpu) = SL_UPDATE;
++}
++
++void softlockup_global_disable()
++{
++	unsigned cpu;
++
++	for_each_online_cpu(cpu)
++		per_cpu(enabled, cpu) = SL_OFF;
+ }
+ 
+ /*
+@@ -79,9 +101,19 @@ void softlockup_tick(void)
+ 
+ 	touch_timestamp = get_timestamp(&__get_cpu_var(touch_timestamp));
+ 
+-	/* return if not enabled */
+-	if (!__get_cpu_var(enabled))
+-		return;
++	switch(__get_cpu_var(enabled)) {
++	case SL_OFF:
++		/* not enabled */
++		return;
++
++	case SL_UPDATE:
++		/* update timestamp */
++		touch_softlockup_watchdog();
++		break;
++
++	case SL_ON:
++		break;
++	}
+ 
+ 	print_timestamp = __get_cpu_var(print_timestamp);
+ 
 
-04:00.0 RAID bus controller: Silicon Image, Inc. SiI 3132 Serial ATA Raid 
-II Controller (rev 01)
-
-I assume you mean 3132 right?  I also have 6 seagates, I'd need to run one 
-of these tests on them as well, also you took the micro jumper off the 
-Seagate 400s in the back as well right?
-
-Justin.
