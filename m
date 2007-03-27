@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbXC0L6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbXC0MJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbXC0L6L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 07:58:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbXC0L6L
+	id S1753824AbXC0MJG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 08:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbXC0MJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 07:58:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42846 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbXC0L6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 07:58:10 -0400
-Subject: Re: [GIT PATCHES] V4L/DVB fixes
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0703261454340.6730@woody.linux-foundation.org>
-References: <1174881954.4364.5.camel@localhost>
-	 <Pine.LNX.4.64.0703261454340.6730@woody.linux-foundation.org>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 27 Mar 2007 08:57:53 -0300
-Message-Id: <1174996673.17641.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0-1mdv2007.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 27 Mar 2007 08:09:06 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46257 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753824AbXC0MJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 08:09:05 -0400
+Date: Tue, 27 Mar 2007 14:08:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Sergey Smirnov <svs1957@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: HELP!!! SD and suspend damage i-node.
+Message-ID: <20070327120854.GH5161@elf.ucw.cz>
+References: <4602781C.9060804@gmail.com> <20070323225820.GA5121@ucw.cz> <46076CB8.9000005@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46076CB8.9000005@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hi!
 
-Em Seg, 2007-03-26 às 14:55 -0700, Linus Torvalds escreveu:
-> 
-> On Mon, 26 Mar 2007, Mauro Carvalho Chehab wrote:
-> >
-> > Please pull 'master' from:
-> >         git://git.kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
-> 
-> "Already up-to-date".
-> 
-> Forgot to push?
+> Suspend damage filesystem each times on 4G SD.
+> I use bluetooth. But corruption doesn't depend on it.
+> I also test 2.6.21-rc4-git7 kernel. The same problem.
+> 512Mb SD works normal.
 
-Seems so :( I'm too tired those days...
-
-Ok, I've updated from your tree and re-pushed the patches. Please pull
-for the following patches:
-
-V4L/DVB (5332): Ir_rc5_timer_end decoder lockup fix
-V4L/DVB (5390): Radio: Fix error in Kbuild file
-V4L/DVB (5400): Core: fix several locking related problems
-V4L/DVB (5408): Fix SECAM handling on saa7115
-V4L/DVB (5415): Msp_attach must return 0 if no msp3400 was found.
-V4L/DVB (5421): Fix suspend/resume in msp3400 and tuner
-V4L/DVB (5441): Saa7146: Fix allocation of clipping memory
-V4L/DVB (5472): Isl6421: don't reference freed memory
-
-> 
-> 		Linus
+Try using smaller filesystem on 4G SD, and be sure to CC SD/MMC
+maintainer next time.
+									Pavel
 -- 
-Cheers,
-Mauro
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
