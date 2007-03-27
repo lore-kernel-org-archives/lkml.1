@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbXC0GgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965145AbXC0Goa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751833AbXC0GgF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 02:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbXC0GgF
+	id S965145AbXC0Goa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 02:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965055AbXC0Goa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 02:36:05 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:48791 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbXC0GgB (ORCPT
+	Tue, 27 Mar 2007 02:44:30 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:16050 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965145AbXC0Go3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 02:36:01 -0400
-Message-ID: <20070327023559.y7gvoty7ksg4kw44@imap.linux.ibm.com>
-Date: Tue, 27 Mar 2007 02:35:59 -0400
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: balbir@in.ibm.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix race between attach_task and cpuset_exit
-References: <20070325164746.GI11794@in.ibm.com>
-	<4606B6CF.6040306@in.ibm.com> <20070326115046.GK11794@in.ibm.com>
-	<20070326105813.5678ea5d.pj@sgi.com>
-In-Reply-To: <20070326105813.5678ea5d.pj@sgi.com>
+	Tue, 27 Mar 2007 02:44:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=bII9DHHSlvxq18GggZJvmPk9T1BGrNpc2i79wi9TSDJapTnCX4VewU09p64aZOjbFhNchPe5JxO66KV5eAeI3LWOXDWf5BOWMMTTnexObT91Z4tusq8dbsX6PQ5FXozRJ9FOOboyHa2ifI8aa40pmbqX/tTjbUP2JYfzY+TqH6g=
+Message-ID: <6eb6ed920703262344i5eec0dfdq169c14b8da2696c9@mail.gmail.com>
+Date: Tue, 27 Mar 2007 14:44:28 +0800
+From: "railroad seeker" <railroad.seeker@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: About Linux Socket Filter
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Jackson <pj@sgi.com>:
+Hi:
 
-> vatsa wrote:
->> Well, someone may have attached to this cpuset while we were waiting on the
->> mutex_lock(). So we need to do a atomic_read again to ensure it is still
->> unused.
->
-> I don't see how this could happen. If we hold the task lock that now
-> (thanks to your good work) guards this pointer, and if we decrement to
-> zero the reference count on the cpuset to which it points and then
-> -overwrite- this last remaining visible pointer to that cpuset with a
-> pointer to a different cpuset, then aren't we guaranteed to be holding
-> the last remaining reference to the old cpuset in our local variable,
-> making it impossible for anyone else to attach to it in any way?
+I am writing a socket filter program and using "tcpdump -dd vlan and arp"
+to filter out the arp packet whose protocol field is 8100(vlan). Everything
+is fine if I call recvfrom to receive the packet. However, if I open two
+packet socket in parallel (and use the select to demultiplex among them,
+then the program will sacrifice the arp protocol handling! My program get
+arp request/reply as usual, but the kernel cannot get any arp request
+anymore. And the linux kernel no longer receives any packet if I flush
+the arp table since kernel cannot get arp request.
 
-Yes, but the cpuset is not made invisible to userspace (in filesystem)  
-yet. So as cpuset_exit() discovers that cpuset B has zero refcount now  
-and blocks on mutex_lock(&manage_mutex) [ to do a check_for_release  
-later ], someone could have done a attach_task to that cpuset.
-
+I insert debug information (printk) next to the ptype handling loop,
+netif_receive_skb (ret = pt_prev->func(skb, skb->dev, pt_prev)),
+and the kernel exactly print out the information. Does that mean the
+packet is exactly inserted into the queue of the socket and kernel path
+returns to the processing loop? How could user space program steal
+the packet?  (Note that the two interface involved are the member of the
+bridge, but I think the ptype looping is after the handle bridge and should
+not sacrifice the arp handling.)
