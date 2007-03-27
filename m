@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934284AbXC0W54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbXC0XFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934284AbXC0W54 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 18:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934288AbXC0W54
+	id S933230AbXC0XFz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 19:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933258AbXC0XFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 18:57:56 -0400
-Received: from tetsuo.zabbo.net ([207.173.201.20]:60101 "EHLO tetsuo.zabbo.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934284AbXC0W5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 18:57:55 -0400
-In-Reply-To: <b040c32a0703271047vba81938q538d182c9c984f42@mail.gmail.com>
-References: <b040c32a0703221751x54417524l5237742f345eeda9@mail.gmail.com> <20070322170122.ee2589a1.akpm@linux-foundation.org> <b040c32a0703231748s112beda6i3d51ebcd658005c4@mail.gmail.com> <20070326201552.b8ad7dda.akpm@linux-foundation.org> <b040c32a0703271047vba81938q538d182c9c984f42@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3D4D126C-0B26-4B00-A2E4-68BD84555B51@oracle.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [patch] cache pipe buf page address for non-highmem arch
-Date: Tue, 27 Mar 2007 15:57:53 -0700
-To: Ken Chen <kenchen@google.com>
-X-Mailer: Apple Mail (2.752.3)
+	Tue, 27 Mar 2007 19:05:55 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:34929 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933230AbXC0XFy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 19:05:54 -0400
+To: pavel@ucw.cz
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-reply-to: <20070327223324.GB6752@elf.ucw.cz> (message from Pavel Machek on
+	Wed, 28 Mar 2007 00:33:24 +0200)
+Subject: Re: [patch] add file position info to proc
+References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu> <20070327212419.GA5817@ucw.cz> <20070327143629.9c8953db.akpm@linux-foundation.org> <E1HWJRv-00052q-00@dorka.pomaz.szeredi.hu> <20070327223324.GB6752@elf.ucw.cz>
+Message-Id: <E1HWKjO-0005FW-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 28 Mar 2007 01:05:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +#define pipe_kmap_atomic(page, type)	pipe_kmap(page)
-> +#define pipe_kunmap(page)		do { } while (0)
-> +#define pipe_kunmap_atomic(page, type)	do { } while (0)
+> > > > > For each fd the information is provided in the following format:
+> > > > > 
+> > > > > pos:	1234
+> > > > > flags:	0100002
+> > > > 
+> > > > Octal? Maybe we should use more traditional hex here?
+> > 
+> > It's octal in <fcntl.h>, so it's easier for a human to read.
+> > 
+> > > Good point.  The O_foo flags are per-arch, so this field has the potential
+> > > to be subtly different on different architectures, which is unpleasing.
+> > > 
+> > > > Or even list flags by name?
+> > > 
+> > > urg.  Simple enough to do (lookup table, please).  But is it worth it? 
+> > > Perhaps just remove that field?
+> > 
+> > I wouldn't mind.  But leaving it to an application or for a human to
+> > sort out is OK I guess.  There are lots of non-portable numbers in
+> > proc.
+> 
+> Hmm, I do not think we want non-portable numbers in proc. What are
+> other examples?
 
-Please don't drop arguments in stubs.  It can let completely broken  
-code compile, like:
+Signal masks in PID/status for example.  I'm sure there are others.
 
-	pipe_kunmap(SOME_COMPLETE_NONSENSE);
-
-Static inlines with empty bodies are the gold standard.
-
-- z
+Miklos
