@@ -1,63 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbXC0Jg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbXC0JnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbXC0Jg5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 05:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXC0Jg4
+	id S1753464AbXC0JnI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 05:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbXC0JnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 05:36:56 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53359 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbXC0Jg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 05:36:56 -0400
-Date: Tue, 27 Mar 2007 11:37:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] usb: call bdev_read_only() only on CONFIG_BLOCK
-Message-ID: <20070327093725.GA2481@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0703270201410.10410@chino.kir.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703270201410.10410@chino.kir.corp.google.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 27 Mar 2007 05:43:08 -0400
+Received: from iggypop2.siwnet.net ([81.216.65.12]:54592 "EHLO
+	iggypop2.siwnet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753464AbXC0JnG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 05:43:06 -0400
+From: Marcus Better <marcus@better.se>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+Date: Tue, 27 Mar 2007 11:42:46 +0200
+User-Agent: KMail/1.9.6
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, pavel@suse.cz,
+       linux-pm@lists.osdl.org
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703261942.52126.marcus@better.se> <20070326184857.GD16477@stusta.de>
+In-Reply-To: <20070326184857.GD16477@stusta.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1384114.uKSMRjCNLc";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703271142.50425.marcus@better.se>
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Tue Mar 27 11:43:03 2007
+X-DSPAM-Confidence: 0.6266
+X-DSPAM-Probability: 0.0863
+X-DSPAM-Signature: 4608e727744011284913811
+X-DSPAM-Factors: 27,
+	Received*(unknown, 0.94439,
+	went, 0.15440,
+	Received*11, 0.19184,
+	Received*11, 0.19184,
+	Yes, 0.20359,
+	Yes, 0.20359,
+	From*Marcus Better <marcus@better.se>, 0.22814,
+	Date*46, 0.68663,
+	Subject*Re, 0.67420,
+	Received*(Postfix)+with, 0.67386,
+	Received*(Postfix)+with, 0.67386,
+	Received*(Postfix), 0.67386,
+	Received*(Postfix), 0.67386,
+	Cc*vger.kernel.org>, 0.40000,
+	Subject*regressions+(v2), 0.40000,
+	Cc*linux+pm, 0.40000,
+	Cc*J., 0.40000,
+	Content-Type*micalg=pgp, 0.40000,
+	Received*Tue, 0.40000,
+	Received*Tue, 0.40000,
+	Cc*<rjw+sisk.pl>, 0.40000,
+	from, 0.40000,
+	Adrian+Bunk, 0.40000,
+	Received*ESMTP, 0.40000,
+	Received*ESMTP, 0.40000,
+	Subject*[3/5], 0.40000,
+	Content-Disposition*inline, 0.40000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 27, 2007 at 02:03:25AM -0700, David Rientjes wrote:
-> bdev_read_only() is only defined on CONFIG_BLOCK so we make sure not to
-> call it unless we have it.  A new static inline function,
-> is_inode_read_only(), is invoked to call bdev_read_only() on CONFIG_BLOCK
-> and return zero otherwise.
-> 
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  drivers/usb/gadget/file_storage.c |   10 +++++++++-
->  1 files changed, 9 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/file_storage.c b/drivers/usb/gadget/file_storage.c
-> --- a/drivers/usb/gadget/file_storage.c
-> +++ b/drivers/usb/gadget/file_storage.c
-> @@ -3493,6 +3493,14 @@ static int fsg_main_thread(void *fsg_)
->  	complete_and_exit(&fsg->thread_notifier, 0);
->  }
->  
-> +#ifdef CONFIG_BLOCK
-> +static inline int is_inode_read_only(struct inode *inode)
-> +{
-> +	return bdev_read_only(inode->i_bdev);
-> +}
-> +#else
-> +#define is_inode_read_only(inode)	(0)
-> +#endif
+--nextPart1384114.uKSMRjCNLc
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This looks like the wrong place to fix this.
-Like we do with for exampel the pci_ functions we should provide a dummy
-implementation in the kernel if configured without CONFIG_BLOCK.
+Adrian Bunk wrote:
+> > > Does setting CONFIG_PCI_MSI=n make any difference?
+> >
+> > Yes, it does. The hanging resume problem went away.
+>
+> Thanks for testing.
+>
+> If you enable it again, does the patch from [1] also fix it?
 
-In this way the decision to provide dummy functions are centralized
-and benefits all users.
+Yes, it appears to fix it.
 
-	Sam
+Marcus
+
+--nextPart1384114.uKSMRjCNLc
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGCOcaXjXn6TzcAQkRAut6AJ4gHdtuSC1CvXKPpsl53UWFGbY/GQCcDn0Q
+oZPC7R94a1R7BAdUMGmI3jE=
+=rGIL
+-----END PGP SIGNATURE-----
+
+--nextPart1384114.uKSMRjCNLc--
+
+
