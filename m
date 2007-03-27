@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbXC0Lmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbXC0L6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbXC0Lmd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 07:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbXC0Lmd
+	id S1753823AbXC0L6L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 07:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbXC0L6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 07:42:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53677 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753811AbXC0Lmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 07:42:33 -0400
-Message-ID: <460902CF.1030202@redhat.com>
-Date: Tue, 27 Mar 2007 07:41:03 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       clalance@redhat.com, mingo@redhat.com, davej@redhat.com,
-       Thilo.Cestonaro.external@fujitsu-siemens.com
-Subject: Re: [PATCH]: Fix bogus softlockup warning with sysrq-t
-References: <20070315132247.11291.28827.sendpatchset@prarit.boston.redhat.com> <4608AF01.4060804@goop.org>
-In-Reply-To: <4608AF01.4060804@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Mar 2007 07:58:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42846 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753823AbXC0L6K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 07:58:10 -0400
+Subject: Re: [GIT PATCHES] V4L/DVB fixes
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0703261454340.6730@woody.linux-foundation.org>
+References: <1174881954.4364.5.camel@localhost>
+	 <Pine.LNX.4.64.0703261454340.6730@woody.linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 27 Mar 2007 08:57:53 -0300
+Message-Id: <1174996673.17641.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0-1mdv2007.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-> I have another pair of softlockup patches in which I try to address:
->
->     * ignoring time stolen by hypervisors
->     * threads going to sleep tickless for long periods of time
->
->   
+Em Seg, 2007-03-26 às 14:55 -0700, Linus Torvalds escreveu:
+> 
+> On Mon, 26 Mar 2007, Mauro Carvalho Chehab wrote:
+> >
+> > Please pull 'master' from:
+> >         git://git.kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+> 
+> "Already up-to-date".
+> 
+> Forgot to push?
 
-I'm looking at the code now.  Your solution is definately better :)
+Seems so :( I'm too tired those days...
 
-> I could easy add a "global disable" function, which would allow long
-> sysrq messages, and it would help Thilo with his long flash update freezes.
->
->   
+Ok, I've updated from your tree and re-pushed the patches. Please pull
+for the following patches:
 
-I think that's a good idea -- I'll propose an add on patch to fix the 
-sysrq-t case ...
+V4L/DVB (5332): Ir_rc5_timer_end decoder lockup fix
+V4L/DVB (5390): Radio: Fix error in Kbuild file
+V4L/DVB (5400): Core: fix several locking related problems
+V4L/DVB (5408): Fix SECAM handling on saa7115
+V4L/DVB (5415): Msp_attach must return 0 if no msp3400 was found.
+V4L/DVB (5421): Fix suspend/resume in msp3400 and tuner
+V4L/DVB (5441): Saa7146: Fix allocation of clipping memory
+V4L/DVB (5472): Isl6421: don't reference freed memory
 
-P.
+> 
+> 		Linus
+-- 
+Cheers,
+Mauro
 
->     J
->   
