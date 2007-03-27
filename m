@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965320AbXC0Hdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965309AbXC0HgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965320AbXC0Hdc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965316AbXC0Hdc
+	id S965309AbXC0HgE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 03:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965322AbXC0HgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:33:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33741 "EHLO mx2.mail.elte.hu"
+	Tue, 27 Mar 2007 03:36:04 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:43763 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965310AbXC0HdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:33:17 -0400
-Date: Tue, 27 Mar 2007 09:32:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Andrew Morton <akpm@osdl.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] genirq: do not mask interrupts by default
-Message-ID: <20070327073227.GA26457@elte.hu>
-References: <200702161759.l1GHxsO8010669@hera.kernel.org> <1174972037.5329.5.camel@localhost.localdomain> <1174972685.5329.12.camel@localhost.localdomain>
+	id S965309AbXC0HgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 03:36:01 -0400
+Date: Mon, 26 Mar 2007 23:35:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] add file position info to proc
+Message-Id: <20070326233558.9254cdfc.akpm@linux-foundation.org>
+In-Reply-To: <E1HW5nH-0003P1-00@dorka.pomaz.szeredi.hu>
+References: <E1HVELJ-0006ed-00@dorka.pomaz.szeredi.hu>
+	<20070326174535.4f21bed3.akpm@linux-foundation.org>
+	<E1HW5nH-0003P1-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1174972685.5329.12.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 27 Mar 2007 09:08:35 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > > This patch adds support for finding out the current file position,
+> > > open flags and possibly other info in the future.
+> > 
+> > fs/proc/base.c: In function 'proc_lookupfdinfo':
+> > fs/proc/base.c:1584: warning: passing argument 3 of 'proc_lookupfd_common' from incompatible pointer type
+> > fs/proc/base.c: In function 'proc_readfdinfo':
+> > fs/proc/base.c:1590: warning: passing argument 4 of 'proc_readfd_common' from incompatible pointer type
+> > 
+> > If taken, that callback into proc_lookupfd_common() will crash the kernel.
+> 
+> Ugh.  Some constification in -mm that I hadn't noticed.  Resending.
+> 
 
-> Note that I'm not opposed to the change at all, I think it's a good 
-> idea, I'm just worried I'm discovering it a bit late and I've seen 
-> PICs broken in some many colorful ways that I'm a bit worried... Oh 
-> well...
-
-This change does not really change irq-flow semantics, what it does is 
-that disable_irq()'s effect is delayed. The irq controller does not have 
-to re-assert the irq, we've got the soft-resend mechanism. What am i 
-missing? Are you worried about this change causing actual breakage? (and 
-i'm sorry about not having Cc:-ed you explicitly, i could have sworn you 
-were included in that discussion but apparently not!)
-
-	Ingo
+OK, I misread the code.  I fixed it up.
