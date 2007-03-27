@@ -1,33 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751483AbXC0B72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933934AbXC0CAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751483AbXC0B72 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 21:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXC0B72
+	id S933934AbXC0CAs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 22:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933901AbXC0B74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 21:59:28 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35496 "EHLO
+	Mon, 26 Mar 2007 21:59:56 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35521 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751483AbXC0B71 (ORCPT
+	with ESMTP id S1752512AbXC0B7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 21:59:27 -0400
-Date: Tue, 27 Mar 2007 03:59:29 +0200
+	Mon, 26 Mar 2007 21:59:40 -0400
+Date: Tue, 27 Mar 2007 03:59:43 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>,
-       Boris Mogwitz <boris@macbeth.rhoen.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jose Alberto Reguero <jareguero@telefonica.net>,
-       Ingo Molnar <mingo@elte.hu>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Auke Kok <auke-jan.h.kok@intel.com>, e1000-devel@lists.sourceforge.net,
-       jgarzik@pobox.com, netdev@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>,
-       Albert Hopkins <kernel@marduk.letterboxes.org>
-Subject: [1/5] 2.6.21-rc5: known regressions
-Message-ID: <20070327015929.GY16477@stusta.de>
+       CIJOML <cijoml@volny.cz>, v4l-dvb-maintainer@linuxtv.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, perex@suse.cz,
+       alsa-devel@alsa-project.org, Tino Keitel <tino.keitel@gmx.de>,
+       Marcelo Tosatti <marcelo@kvack.org>, Oliver Neukum <oneukum@suse.de>,
+       greg@kroah.com, linux-usb-devel@lists.sourceforge.net
+Subject: [3/5] 2.6.21-rc5: known regressions
+Message-ID: <20070327015943.GA16477@stusta.de>
 References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -47,47 +41,24 @@ possibly involved with one or more of these issues.
 Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-Subject    : crashes in KDE
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8157
-Submitter  : Oliver Pinter <oliver.pntr@gmail.com>
+Subject    : Oops when changing DVB-T adapter
+References : http://lkml.org/lkml/2007/3/9/212
+Submitter  : CIJOML <cijoml@volny.cz>
 Status     : unknown
 
 
-Subject    : kwin dies silently  (sysctl related?)
-References : http://lkml.org/lkml/2007/2/28/112
-Submitter  : Sid Boyce <g3vbv@blueyonder.co.uk>
-             Boris Mogwitz <boris@macbeth.rhoen.de>
-Status     : submitter was asked to bisect further
-
-
-Subject    : problem with sockets
-References : http://lkml.org/lkml/2007/3/21/248
-Submitter  : Jose Alberto Reguero <jareguero@telefonica.net>
+Subject    : snd_intel8x0: divide error: 0000
+References : http://lkml.org/lkml/2007/3/5/252
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Status     : unknown
 
 
-Subject    : e1000 resume weirdness
-References : http://lkml.org/lkml/2007/3/26/91
-Submitter  : Ingo Molnar <mingo@elte.hu>
-Handled-By : Jesse Brandeburg <jesse.brandeburg@gmail.com>
-             Auke Kok <auke-jan.h.kok@intel.com>
-Status     : problem is being debugged
-
-
-Subject    : forcedeth: sporadic under-load crashes
-References : http://lkml.org/lkml/2007/3/26/63
-Submitter  : Ingo Molnar <mingo@elte.hu>
-Handled-By : Ingo Molnar <mingo@elte.hu>
-             Ayaz Abdulla <aabdulla@nvidia.com>
-Status     : problem is being debugged
-
-
-Subject    : forcedeth: skb_over_panic
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
-Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
-Handled-By : Ayaz Abdulla <aabdulla@nvidia.com>
-Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8058
-Status     : patch available
-
+Subject    : USB: iPod doesn't work  (CONFIG_USB_SUSPEND)
+References : http://lkml.org/lkml/2007/3/21/320
+Submitter  : Tino Keitel <tino.keitel@gmx.de>
+Caused-By  : Marcelo Tosatti <marcelo@kvack.org>
+             commit 1d619f128ba911cd3e6d6ad3475f146eb92f5c27
+Handled-By : Oliver Neukum <oneukum@suse.de>
+Status     : problem is being debuggged
 
 
