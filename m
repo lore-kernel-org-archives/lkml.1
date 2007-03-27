@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934135AbXC0SIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934136AbXC0SIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934135AbXC0SIm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 14:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934136AbXC0SIm
+	id S934136AbXC0SIr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 14:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934144AbXC0SIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 14:08:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50968 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934135AbXC0SIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 14:08:41 -0400
-Date: Tue, 27 Mar 2007 11:05:24 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, gregkh@suse.de,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       zaitcev@redhat.com, davidz@redhat.com
-Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
-Message-Id: <20070327110524.975e7113.zaitcev@redhat.com>
-In-Reply-To: <Pine.LNX.4.44L0.0703271306230.2558-100000@iolanthe.rowland.org>
-References: <200703271824.46804.maximlevitsky@gmail.com>
-	<Pine.LNX.4.44L0.0703271306230.2558-100000@iolanthe.rowland.org>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Mar 2007 14:08:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:5409 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934136AbXC0SIp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 14:08:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=fzmMkFq3z70vYKKJtTYx6etAInQH5bPYWz6RuVQHXvM+i5InWSHAsWVeOTE4DXdY4RR+93dUR5Fec2Xxs0AqqmKOJfwaIdbkXipsqStI25wnwVRhLfQHfPlGYYwnbgaU6Dua/UAx4iU2ifQcZaEWrZUi3ZnBUBZTKk3Y1uaY9q4=
+Date: Tue, 27 Mar 2007 22:08:36 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ecashin@coraid.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@lists.osdl.org
+Subject: Re: [PATCH] aoe, tb0219: fix late spin_lock_init() and friends
+Message-ID: <20070327180836.GA5308@martell.zuzino.mipt.ru>
+References: <20070325190221.GA5308@martell.zuzino.mipt.ru> <20070325143609.75165bf6.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070325143609.75165bf6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 13:15:14 -0400 (EDT), Alan Stern <stern@rowland.harvard.edu> wrote:
+On Sun, Mar 25, 2007 at 02:36:09PM -0800, Andrew Morton wrote:
+> On Sun, 25 Mar 2007 23:02:21 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> > Some drivers do register_chrdev() before lock or semaphore used in
+> > corresponding file_operations is initialized.
 
-> > Suspend to disk still causes "virtual replugging"  and I think that controller is reset and will unplug/replug devices anyway
-> > Resolving this problem is very difficult. Maybe it possible to check on unplugging event that this caused by suspend  if the same device is
-> > replugged then don't remove/reinstall driver, but this is very difficult to implement properly,
-> > Maybe just refuse to suspend if some valuable device is connected (sorry if it is done this way already)
-> 
-> Long ago I posted a patch that would take care of all this.  Not just for
-> UHCI, but for any USB controller.  Maybe I should dig it out, update it,
-> and submit it.
+> > --- a/drivers/char/tb0219.c
+> > +++ b/drivers/char/tb0219.c
+> > @@ -287,6 +287,8 @@ static int __devinit tb0219_probe(struct
+> >  {
+> >  	int retval;
+> >
+> > +	spin_lock_init(&tb0219_lock);
+> > +
+> >  	if (request_mem_region(TB0219_START, TB0219_SIZE, "TB0219") == NULL)
+> >  		return -EBUSY;
+> >
+> > @@ -304,8 +306,6 @@ static int __devinit tb0219_probe(struct
+> >  		return retval;
+> >  	}
+> >
+> > -	spin_lock_init(&tb0219_lock);
+> > -
+> >  	old_machine_restart = _machine_restart;
+> >  	_machine_restart = tb0219_restart;
+> >
+>
+> These locks can and should be initialised at compile-time.
 
-Alan, BTW, look at this please:
+Documentation mentions that
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=233697
+	- it [dynamic spinlock initialization] hurts automatic lock validators
+	- it becomes intrusive for the realtime preemption patches
 
-> From David Zeuthen
+First reason is clearly bogus, how relevant is the second one?
 
-> If I suspend my box, then on the resume path I see all my USB devices being
-> removed and then added back. This is a problem with storage devices connected
-> via USB.
-.....
-> The kernel not send an "remove" event if it's going to send an "add" right
-> after. Instead it should enumerate the bus on resume and only send the events
-> that represents how to get from the previous device tree to the current one.
-
-> From Pete Zaitcev
-
-> What does happen if a user suspends, unplugs a USB key, modifies its contents,
-> plugs it back, and resumes? In such a case, there would be no change between
-> the state of USB bus between the before-suspend state and after-resume state.
-
-> From David Zeuthen
-
-> In that case the user would see data corruption - just as if he mounts a piece
-> of removable media in a USB card reader; yanks out the card and modifies it
-> elsewhere, and then puts it back in.
-
-> I my opinion we can't really defend ourselves against such users... We can of
-> course add checks in the file system drivers in the resume hooks to validate the
-> super block and mount read-only if something change. 
-
-The GNOME hath spoken?
-
--- Pete
