@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934054AbXC0RfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934034AbXC0Rk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934054AbXC0RfW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 13:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934062AbXC0RfV
+	id S934034AbXC0Rk7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 13:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934015AbXC0Rk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 13:35:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60555 "EHLO mx1.redhat.com"
+	Tue, 27 Mar 2007 13:40:59 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45152 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934059AbXC0RfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 13:35:20 -0400
-Message-ID: <460955CC.70006@redhat.com>
-Date: Tue, 27 Mar 2007 13:35:08 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	id S934034AbXC0Rk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 13:40:58 -0400
+To: Tom Horsley <tom.horsley@ccur.com>
+Cc: linux-kernel@vger.kernel.org, bugsy <bugsy@ccur.com>
+Subject: Re: TLS info and core files?
+References: <20070327092041.40947947@tweety>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 27 Mar 2007 20:39:38 +0200
+In-Reply-To: <20070327092041.40947947@tweety>
+Message-ID: <p738xdi4jkl.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       clalance@redhat.com, mingo@redhat.com, davej@redhat.com,
-       Thilo.Cestonaro.external@fujitsu-siemens.com
-Subject: Re: [PATCH]: Fix bogus softlockup warning with sysrq-t
-References: <20070315132247.11291.28827.sendpatchset@prarit.boston.redhat.com> <4608AF01.4060804@goop.org> <460902CF.1030202@redhat.com> <46094A70.9080901@goop.org>
-In-Reply-To: <46094A70.9080901@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tom Horsley <tom.horsley@ccur.com> writes:
+> 
+> Should core files have NOTE entries added for some sort of
+> thread local storage info to be recorded? (Whatever the
+> kernel happens to know that won't be accessible anymore
+> after the process is gone, which would probably vary
+> from architecture to architecture.)
 
+I think that would be a good idea. Shouldn't be very hard 
+to implement. Please send a patch.
 
-Jeremy Fitzhardinge wrote:
->
-> diff -r 4c81d8cafb67 drivers/char/sysrq.c
-> --- a/drivers/char/sysrq.c	Tue Mar 27 01:16:07 2007 -0700
-> +++ b/drivers/char/sysrq.c	Tue Mar 27 01:18:05 2007 -0700
-> @@ -408,6 +408,8 @@ void __handle_sysrq(int key, struct tty_
->  	int i;
->  	unsigned long flags;
->  
-> +	softlockup_global_disable();
-> +
->  	spin_lock_irqsave(&sysrq_key_table_lock, flags);
->  	orig_log_level = console_loglevel;
->  	console_loglevel = 7;
-> @@ -445,6 +447,8 @@ void __handle_sysrq(int key, struct tty_
->  		console_loglevel = orig_log_level;
->  	}
->  	spin_unlock_irqrestore(&sysrq_key_table_lock, flags);
-> +
-> +	softlockup_global_enable();
->  }
->  
->   
+We also miss some other information in core files 
+I found useful in the past, like the CR3 and some other registers. 
+The printks on x86-64 actually give more information 
+than a core dump in some cases.
 
-I wonder if that's too strong of a fix.  It's only the sysrq-t case that 
-is the problem.  AFAIK, none of the other sysrq-t operations hold the 
-tasklist_lock for a long time.  I'd move these around show_state.
-
-P.
+-Andi
