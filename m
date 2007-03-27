@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932883AbXC0QTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbXC0QWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932883AbXC0QTN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 12:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933010AbXC0QTN
+	id S932943AbXC0QWs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 12:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933010AbXC0QWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 12:19:13 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:50304 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932883AbXC0QTL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 12:19:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qbDbmgsPdfLlPbneAkg5UALS/YbmQHhzI/y8GettiXY14shs4AoYYO+mpHCyd1Ynt6fLxAj6C6v74XlH2lX7KIHhXEHHY0LjaHwxkUJRU0nIcAWp7RKocfx9QQIj66lS6EEaeUYDs+PJa8ycgPLmZAP279SXDu88ua7xxCddjPs=
-Message-ID: <d120d5000703270919y16ae3e56kb7d2fbd293213939@mail.gmail.com>
-Date: Tue, 27 Mar 2007 12:19:10 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>
-Subject: Re: Fix sudden warps in mousedev
-Cc: "Pete Zaitcev" <zaitcev@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       "Peter Osterlund" <petero2@telia.com>
-In-Reply-To: <4609409F.2070203@redhat.com>
+	Tue, 27 Mar 2007 12:22:48 -0400
+Received: from mail.gatrixx.com ([217.111.11.44]:55138 "EHLO mail.gatrixx.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932943AbXC0QWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 12:22:47 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Mar 2007 12:22:47 EDT
+Message-ID: <46094344.4090007@j-o-a.de>
+Date: Tue, 27 Mar 2007 18:16:04 +0200
+From: Oliver Joa <oliver@j-o-a.de>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Corrupt XFS -Filesystems on new Hardware and Kernel
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070324001610.724a820a.zaitcev@redhat.com>
-	 <d120d5000703261230h1724e453je2c14769fc099ad3@mail.gmail.com>
-	 <20070326144206.93805eeb.zaitcev@redhat.com>
-	 <200703262114.45287.dtor@insightbb.com> <460934D7.9030700@redhat.com>
-	 <d120d5000703270846y87e4283m4009ff0a9f65dac4@mail.gmail.com>
-	 <4609409F.2070203@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/27/07, Chuck Ebbert <cebbert@redhat.com> wrote:
-> Dmitry Torokhov wrote:
-> >>
-> >> And why did the mouse numbers all get rearranged in 2.6.20, e.g.
-> >> mouse1 became mouse2 for many people?
-> >
-> > Input devices are not guaranteed to be stable.
-> >
->
-> So people with z-axis mice need to redo their X config for each
-> kernel release when the device numbers change? Or should they
-> be using some other configuration?
->
-> People using this now have X crashes on kernel upgrade because
-> event1 became event2:
->
->        Driver      "evdev"
->        Option      "Device" "/dev/input/event1"
->
+Hi,
 
-I'd recommend matching on "phys" or individual capabilities bits
-instead of device node. See "man evdev".
+since some weeks i try to get my new hardware running:
 
--- 
-Dmitry
+Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
+Intel DP965LT Mainboard
+Seagate SATA-Harddisk in AHCI-Mode
+
+After some hours of running or after some heavy file-i/o
+(find / | cpio -padm /test) I always get a corrupted
+XFS-filesystem.
+
+I used already the following Kernels:
+2.6.19.2
+2.6.19.7
+2.6.20.2
+2.6.20.4
+
+After xfs_repair I get damaged files in lost+found.
+
+I read in newsgroups that the write-cache of the harddisk
+should be turned of, but the messages are all very old.
+
+Is it still true, that it should be switched of? At startup
+I get the following line:
+
+[    6.820776] SCSI device sda: write cache: enabled, read cache: 
+enabled, doesn't support DPO or FUA
+
+So I wonder if it should be on or off.
+
+I also often get a sata-bus-reset with the kernels 2.6.19.2
+and 2.6.20.2.
+
+What can I do to find the problem? I think about to change
+from xfs to ext2 but the filesystemcheck every 30 mounts lasts
+a long time.
+
+Do you have any Idea?
+
+Which kernel is at the moment a so called stable? Stable enough
+for my hardware?
+
+Thanks a lot
+
+Oliver Joa
+
