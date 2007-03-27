@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965427AbXC0VPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965451AbXC0VVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965427AbXC0VPY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 17:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbXC0VPY
+	id S965451AbXC0VVh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965453AbXC0VVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 17:15:24 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:38523 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965427AbXC0VPX (ORCPT
+	Tue, 27 Mar 2007 17:21:37 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:43872 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965451AbXC0VVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 17:15:23 -0400
-Subject: Re: 2.6.21-rc5-mm1
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Eric Dumazet <dada1@cosmosbay.com>
-In-Reply-To: <20070327131214.656e1ad7.akpm@linux-foundation.org>
-References: <20070326205706.a750bb35.akpm@linux-foundation.org>
-	 <1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070327084838.34dc1b84.akpm@linux-foundation.org>
-	 <1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070327131214.656e1ad7.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 27 Mar 2007 14:15:26 -0800
-Message-Id: <1175033726.27011.3.camel@dyn9047017100.beaverton.ibm.com>
+	Tue, 27 Mar 2007 17:21:36 -0400
+Date: Tue, 27 Mar 2007 15:21:33 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] clarify CONFIG_DEBUG_INFO help text
+Message-ID: <20070327212133.GA22409@schatzie.adilger.int>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-27 at 13:12 -0700, Andrew Morton wrote:
-> On Tue, 27 Mar 2007 09:57:50 -0800
-> Badari Pulavarty <pbadari@gmail.com> wrote:
-> 
-> > On Tue, 2007-03-27 at 08:48 -0800, Andrew Morton wrote:
-> > > On Tue, 27 Mar 2007 09:39:33 -0800 Badari Pulavarty <pbadari@gmail.com> wrote:
-> > > 
-> > > > On Mon, 2007-03-26 at 20:57 -0800, Andrew Morton wrote:
-> > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm1/
-> > > > > 
-> > > > 
-> > > > 
-> > > >   LD      init/built-in.o
-> > > >   LD      .tmp_vmlinux1
-> > > > ld: section .vsyscall_1 [0000000000645400 -> 000000000064542e] overlaps
-> > > > section .jiffies [0000000000645400 -> 0000000000645407]
-> > > > ld: .tmp_vmlinux1: section .vsyscall_1 lma 0x645400 overlaps previous
-> > > > sections
-> > > > make: *** [.tmp_vmlinux1] Error 1
-> > > > 
-> > > 
-> > > bah.  Please send .config.
-> > 
-> > #
-> > # Automatically generated make config: don't edit
-> > # Linux kernel version: 2.6.21-rc5-mm1
-> 
-> The wheel spins around, slows then settles on.... 
-> time-smp-friendly-alignment-of-struct-clocksource.patch!
+The following patch adds some extra clarification to the CONFIG_DEBUG_INFO
+Kconfig help text.  The current text is mostly a recursive definition and
+doesn't really say much of anything.  When I first read this I thought it
+was going to enable extra verbosity in debug messages or something, but it
+is only enabling the "gcc -g" compile option in the Makefile.
 
-Yes. Backing out the patch completes the build and machine
-boots fine.
+Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
 
-Thanks,
-Badari
+--- ./lib/Kconfig.debug.orig	2007-02-07 17:10:34.000000000 -0700
++++ ./lib/Kconfig.debug	2007-03-27 13:32:17.000000000 -0600
+@@ -322,6 +322,9 @@
+ 	help
+           If you say Y here the resulting kernel image will include
+ 	  debugging info resulting in a larger kernel image.
++	  This adds debug symbols to the kernel and modules (gcc -g), and
++	  is needed if you intend to use kernel crashdump or binary object
++	  tools like crash, kgdb, LKCD, gdb, etc on the kernel.
+ 	  Say Y here only if you plan to debug the kernel.
+ 
+ 	  If unsure, say N.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
