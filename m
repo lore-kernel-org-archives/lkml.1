@@ -1,39 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXC0KSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbXC0Kaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbXC0KSb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 06:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXC0KSb
+	id S1753476AbXC0Kaj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 06:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbXC0Kaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 06:18:31 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:47561 "EHLO pfx2.jmh.fr"
+	Tue, 27 Mar 2007 06:30:39 -0400
+Received: from lucidpixels.com ([75.144.35.66]:57887 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbXC0KSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 06:18:30 -0400
-Date: Tue, 27 Mar 2007 12:18:29 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Agoston Horvath <agoston@ripe.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: IPv6: Connection reset/timeout under heavy load
-Message-Id: <20070327121829.596abb60.dada1@cosmosbay.com>
-In-Reply-To: <4608E7CA.3090001@ripe.net>
-References: <4608E7CA.3090001@ripe.net>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753476AbXC0Kai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 06:30:38 -0400
+Date: Tue, 27 Mar 2007 06:30:38 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Tejun Heo <htejun@gmail.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Why is NCQ enabled by default by libata? (2.6.20)
+In-Reply-To: <4608ED89.5040407@gmail.com>
+Message-ID: <Pine.LNX.4.64.0703270629180.31853@p34.internal.lan>
+References: <Pine.LNX.4.64.0703241232580.11608@p34.internal.lan>
+ <20070324184300.3250fab0@the-village.bc.nu> <Pine.LNX.4.64.0703270554320.31853@p34.internal.lan>
+ <4608ED89.5040407@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 11:45:46 +0200
-Agoston Horvath <agoston@ripe.net> wrote:
 
-> Hello,
-> 
-> I'm trying to add ipv6 support to the RIPE whois-server. I'm going with the dual-stack address familiy independent solution (/proc/sys/net/ipv6/bindv6only is set to 0).
-> I've written a small piece of code which tests how the server behaves under heavy load. It basically creates a specified number of threads and hammers the query port of the server with logged real-world queries. This works fine over ipv4. But if I switch to ipv6 (meaning, instead of the ipv4 address of eth0, I give the ipv6 one to getaddrinfo()), strange connection reset/timeout problems arise. This is especially strange because it's all AF-independent, so the very same piece of code runs fine for ipv4, but fails for ipv6.
+On Tue, 27 Mar 2007, Tejun Heo wrote:
 
-Hello Agoston
+> Justin Piszcz wrote:
+>> Checking the benchmarks on various hardware websites, anandtech, 
+>> hothardware and others, they generally all come to the same conclusion if 
+>> there is only 1 thread using I/O (single user system) then NCQ off is the 
+>> best.
+>
+> Are they testing using Linux?  I/O performance is highly dependent on 
+> workload and scheduling, so result on windows wouldn't be very useful. 
+> Posting some links here would be nice.
+>
+>> I see 30-50MB/s faster speeds with NCQ turned off on two different SW 
+>> RAID5s.
+>
+> You're testing raptors, right?  If the performance drop is that drastic and 
+> consistent over different workloads, we'll have to disable NCQ for raptors. 
+> I'm not sure about other drives.  Care to perform tests over more popular 
+> ones (e.g. recent seagates or 7200rpm wds)?
+>
+> -- 
+> tejun
+>
 
-Could you please repost your mail on netdev@vger.kernel.org, because this address is more appropriate to get in touch with networking guys :)
+You are correct, it definitely depends upon the workload, and a lot of the 
+benchmarks do use Windows; however, I will have to check later, I recall 
+finding a few that did test under Linux.
 
-Thank you
+For a plain untar with lots of small files, the benefit is not as big as 
+sequential reads/writes of big files; however, there is still an 
+improvement:
+
+Raid5 Quad 150 Raptor (NCQ)
+# time sh -c 'tar xf linux-2.6.20.tar; sync'
+
+real    0m21.721s
+user    0m0.174s
+sys     0m1.541s
+
+Raid5 Quad 150 Raptor (NO NCQ)
+# time sh -c 'tar xf linux-2.6.20.tar; sync'
+
+real    0m16.761s
+user    0m0.195s
+sys     0m1.361s
+
+Raid5 Six 400GB Sata Drives (NO NCQ)
+# time sh -c 'tar xf linux-2.6.20.tar; sync'
+real    0m54.844s
+user    0m0.189s
+sys     0m1.432s
+
+Raid5 Six 400GB Sata Drives (NCQ)
+# time sh -c 'tar xf linux-2.6.20.tar; sync'
+real    1m7.322s
+user    0m0.194s
+sys     0m1.492s
+
+Justin.
