@@ -1,86 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932699AbXC0Uvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934211AbXC0VBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932699AbXC0Uvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 16:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932778AbXC0Uvo
+	id S934211AbXC0VBg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 17:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934213AbXC0VBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 16:51:44 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:36504 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932699AbXC0Uvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 16:51:42 -0400
-Message-ID: <460983D6.7070409@gmail.com>
-Date: Tue, 27 Mar 2007 22:51:34 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Tue, 27 Mar 2007 17:01:36 -0400
+Received: from www17.your-server.de ([213.133.104.17]:4049 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934211AbXC0VBf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 17:01:35 -0400
+Message-ID: <4609866C.4060602@m3y3r.de>
+Date: Tue, 27 Mar 2007 23:02:36 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: johann deneux <johann.deneux@gmail.com>
-CC: Dmitry Torokhov <dtor@insightbb.com>,
-       =?UTF-8?B?IlNUZW55YUsgKEJydW5vIA==?= =?UTF-8?B?R29uesOhbGV6KSI=?= 
-	<stenyak@gmail.com>,
-       Anssi Hannula <anssi.hannula@gmail.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Soeren Sonnenburg <kernel@nn7.de>,
        linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom
- driver]
-References: <2460126662758025813@fi.muni.cz> <46018FB8.1080601@gmail.com>	 <38b3b7c0703211503s3a8ee177v5b149cfd5975de8c@mail.gmail.com>	 <200703221150.12403.dtor@insightbb.com> <46090BF2.2000105@gmail.com>	 <38b3b7c0703271136s799114fcndfaa6de8db52fc70@mail.gmail.com>	 <46097A68.6080802@gmail.com> <38b3b7c0703271343p6a56fed8i950941e8cef196d8@mail.gmail.com>
-In-Reply-To: <38b3b7c0703271343p6a56fed8i950941e8cef196d8@mail.gmail.com>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: appletouch quirk doesn't run at resume
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703162134.14265.rjw@sisk.pl> <1174078066.13341.279.camel@localhost.localdomain> <1174087552.13341.332.camel@localhost.localdomain> <45FBBDEA.9060708@m3y3r.de> <20070318004240.GO752@stusta.de> <Pine.LNX.4.64.0703181934530.4195@jikos.suse.cz> <45FD8CA3.10405@m3y3r.de> <Pine.LNX.4.64.0703182020070.4195@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0703182020070.4195@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 27 Mar 2007 22:51:37 +0200 (CEST)
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-johann deneux napsal(a):
-> On 3/27/07, Jiri Slaby <jirislaby@gmail.com> wrote:
->> johann deneux napsal(a):
->> > Are we
->> > misunderstanding eachother maybe? By "vector" I mean a triplet of
->> > numbers, when you say "torques" and "forces vector", do you mean that
->> > each effect is composed of a bunch of torques?
->>
->> Ok, let's make things a little bit clear. I need to put somehow 3 short
->> values (torques -- to tell 3 motors how much to spin around) into the
->> kernel
->> space via ff layer. I computed them using FP in US from forces (3d
->> vector)
->> and the problem is, that I don't know how to transform torques to
->> plane(s)
->> and dir and then back to torques -- this is what I can't figure out,
->> since I
->> have no longer vector -- 3 values for each axis, which says how big is
->> the
->> force in each axis -- but I have values (no axis) specific to each motor.
-> 
-> I think I'm starting to understand. Looking back at the url you gave,
-> it appears your device is some kind of articulated arm, possibly with
-> one or more motor(s) at each joint. You are not really dealing with a
-> single torque applied at one point in space, but several torques
-> applied at several points in space.
+Jiri Kosina schrieb:
+> On Sun, 18 Mar 2007, Thomas Meyer wrote:
+>
+>   
+>> Appletouch is bound to the device:
+>>     
+>
+> OK, so the quirk actually works fine ...
+>   
+Yes, it works fine, but...
+>   
+>> But the X server touchpad driver doesn't work anymore, that means i 
+>> can't emulte a right click by tapping with 3 fingers on the mouse pad. 
+>> after restarting x the mouse driver works again. So i think this is 
+>> maybe a problem in X?
+>>     
+>
+> ... but there is something apparently wrong either with the appletouch 
+> driver or X. Could you test via evtest whether the events are properly 
+> generated by the kernel? If they do, I'd say it is almost certainly X bug.
+>   
 
-Exactly as you write. Sorry for my previous bad definitions.
+It seems, that after the resume all usb devices gets removed and plug in
+again (virtually!). This results in a new input device name:
 
-> For this particular device you have three values, but for other
-> devices it could just as well be any other number, right?
+before suspend and resume:
 
-Correct.
+appletouch Geyser 3 inited.
+input: appletouch as /class/input/input2
 
-> A realistic example would be a robot arm with claws, there would be a
-> torque for each joint, and some more for the claws.
 
-For instance.
+after resume:
+Restarting tasks ... <6>usb 1-2: USB disconnect, address 3
+PM: Removing info for No Bus:usbdev1.3_ep83
+PM: Removing info for usb:1-2:1.0
+PM: Removing info for No Bus:usbdev1.3_ep81
+input: appletouch disconnected
+[cut]
+PM: Adding info for No Bus:usbdev1.4_ep83
+PM: Adding info for usb:1-2:1.1
+appletouch Geyser 3 inited.
+input: appletouch as /class/input/input15
 
-Ok, so how to deal with these devices? Does anybody have some idea? That's
-what I was talking about somewhere in the beginning of this thread, the raw
-values, because it seems too specific for letting kernel to cope with each
-of these devices separately, but there might be a better idea in somebody's
-head? But raw is ugly...
+This change confuses the X synaptics driver:
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Touchpad no synaptics event device found (checked 11 nodes)
+Touchpad The /dev/input/event* device nodes seem to be missing
+(EE) xf86OpenSerial: Cannot open device /dev/input/event2
+        No such file or directory.
+(WW) Touchpad: cannot open input device
+
+And so X falls back to my second pointer device which is a UsbMouse
+under /dev/input/mice
+
+One could say that the synaptics driver rightly complains about the
+missing event2 device!
+So is this a bug in the X synaptics driver?
+
+Comments are welcome.
+
