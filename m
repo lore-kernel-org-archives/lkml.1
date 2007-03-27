@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965322AbXC0HhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750700AbXC0HuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965322AbXC0HhR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965331AbXC0HhR
+	id S1750700AbXC0HuH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 03:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbXC0HuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:37:17 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:44225 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965322AbXC0HhP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:37:15 -0400
-To: akpm@linux-foundation.org
-CC: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <20070326232214.ee92d8c4.akpm@linux-foundation.org> (message from
-	Andrew Morton on Mon, 26 Mar 2007 23:22:14 -0800)
+	Tue, 27 Mar 2007 03:50:07 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:43976 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750700AbXC0HuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 03:50:05 -0400
+Date: Mon, 26 Mar 2007 23:49:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
+Message-Id: <20070326234957.6b287dda.akpm@linux-foundation.org>
+In-Reply-To: <E1HW6Ec-0003Tv-00@dorka.pomaz.szeredi.hu>
 References: <E1HVZyn-0008T8-00@dorka.pomaz.szeredi.hu>
 	<20070326140036.f3352f81.akpm@linux-foundation.org>
 	<E1HVwy4-0002UD-00@dorka.pomaz.szeredi.hu>
 	<20070326153153.817b6a82.akpm@linux-foundation.org>
-	<E1HW5am-0003Mc-00@dorka.pomaz.szeredi.hu> <20070326232214.ee92d8c4.akpm@linux-foundation.org>
-Message-Id: <E1HW6Ec-0003Tv-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 27 Mar 2007 09:36:50 +0200
+	<E1HW5am-0003Mc-00@dorka.pomaz.szeredi.hu>
+	<20070326232214.ee92d8c4.akpm@linux-foundation.org>
+	<E1HW6Ec-0003Tv-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > clear_page_dirty_for_io() already does that.
-> > > 
-> > > So we should be able to test PageDirtiedByWrite() after running
-> > > clear_page_dirty_for_io() to discover whether this page was dirtied via
-> > > MAP_SHARED, and then update the inode times if so.
-> > 
-> > What do you need the page flag for?
+On Tue, 27 Mar 2007 09:36:50 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> > There is surely no need to duplicate all that.
 > 
-> To work out whether the page was dirtied via write (in which case the
-> timestamps were updated) or via mmap (in which case they were not).
+> Yeah, we could teach generic_writepages() to conditionally not submit
+> for io just test/clear pte dirtyness.
 > 
-> >  The "modified through mmap" info
-> > is there in the ptes.
+> Maybe that would be somewhat cleaner, dunno.
 > 
-> It might not be there any more - the ptes could have got taken down by, for
-> example, reclaim.
+> Then there are the ram backed filesystems, which don't have dirty
+> accounting and radix trees, and for which this pte walking is still
+> needed to provide semantics consistent with normal filesystems.
 
-Yes, but then the "modified through mmap" is transferred to the
-per-address_space flag.  All this is already done by this patch.
+hm.
 
-> I dunno - I'm not trying very hard.  I'm trying to encourage you to come up
-> with something less costly and less complex than this thing, but you appear
-> to be resisting.
+I don't know how important all this is, really - we've had this bug for
+ever and presumably we've already trained everyone to work around it.
 
-No, I'm just arguing that your suggestion is actually a complication,
-not a simplification ;)
+What usage scenarios are people actually hurting from?  Is there anything
+interesting in the mysterious Novell Bugzilla #206431?
 
-> >  And from the ptes it can be transfered to a
-> > per-address_space flag.  Nobody is interested through which page was
-> > the file modified.
-> > 
-> > Anyway, that's just MS_SYNC.  MS_ASYNC doesn't walk the pages, yet it
-> > should update the timestamp.  That's the difficult one.
-> > 
-> 
-> We can treat MS_ASYNC as we treat MS_SYNC.  Then, MS_ASYNC *does* walk the
-> pages.  Is does it in generic_writepages().  It also even walks the ptes
-> for you, in clear_page_dirty_for_io().
-
-Yes.  But that's not very useful semantic for MS_ASYNC vs. file time
-update.
-
-It would basically say:
-
-  "if you cann MS_ASYNC, and the file was modified then sometime in
-  the future you will get an updated c/mtime".
-
-But this is not what POSIX says, and it's not what applications want.
-
-For example "make" would want to know if a file was modified or not,
-and with your suggestion only msync(MS_SYNC) would reliably provide
-that info.  But msync(MS_SYNC) is unnecessary in many cases.
-
-> There is surely no need to duplicate all that.
-
-Yeah, we could teach generic_writepages() to conditionally not submit
-for io just test/clear pte dirtyness.
-
-Maybe that would be somewhat cleaner, dunno.
-
-Then there are the ram backed filesystems, which don't have dirty
-accounting and radix trees, and for which this pte walking is still
-needed to provide semantics consistent with normal filesystems.
-
-Miklos
+Perhaps we can get away with doing something half-assed which covers most
+requirements...
