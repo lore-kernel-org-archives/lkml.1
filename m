@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbXC0OUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbXC0OWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbXC0OUX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 10:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbXC0OUX
+	id S1753877AbXC0OWK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 10:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbXC0OWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 10:20:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59950 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753876AbXC0OUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 10:20:22 -0400
-To: Wink Saville <wink@saville.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Documention for trace records (trec).
-References: <11747802992043-git-send-email-wink@saville.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 27 Mar 2007 17:19:02 +0200
-In-Reply-To: <11747802992043-git-send-email-wink@saville.com>
-Message-ID: <p73wt124sux.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Tue, 27 Mar 2007 10:22:10 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:39897 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877AbXC0OWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 10:22:08 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+Organization: IBM Corporation
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ibmebus: newline fix
+Date: Tue, 27 Mar 2007 15:18:55 +0100
+User-Agent: KMail/1.6.2
+Cc: pmac@au1.ibm.com, hnguyen@de.ibm.com, johnrose@austin.ibm.com,
+       johnrose@us.ibm.com, nfont@austin.ibm.com, paulus@samba.org,
+       themann@de.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703271618.55616.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wink Saville <wink@saville.com> writes:
+Stupid me forgot a newline in an error message.
 
-> Trec is a light weight tracing mechanism that places
-> trace information into a buffer. The contents of the
-> buffer is dumped when errors occurs or when enabled
-> via SYSRQ commands.
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
 
-relayfs was supposed to fill this purpose. Why do you want
-another one?
 
-It doesn't work for sysrq dumping on fatal errors, but in my 
-experience on such cases custom tracing is best.
+Applies on top of
+"ibmebus: change probe/remove interface from using loc-code to DT path"
 
--Andi
+
+ ibmebus.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+diff -Nurp 03b.path/arch/powerpc/kernel/ibmebus.c 03c.path/arch/powerpc/kernel/ibmebus.c
+--- 03b.path/arch/powerpc/kernel/ibmebus.c	2007-03-21 15:23:23.000000000 +0100
++++ 03c.path/arch/powerpc/kernel/ibmebus.c	2007-03-27 15:30:44.341143552 +0200
+@@ -421,7 +421,7 @@ static ssize_t ibmebus_store_probe(struc
+ 		of_node_put(dn);
+ 		rc = IS_ERR(dev) ? PTR_ERR(dev) : count;
+ 	} else {
+-		printk(KERN_WARNING "%s: no such device node: %s",
++		printk(KERN_WARNING "%s: no such device node: %s\n",
+ 		       __FUNCTION__, path);
+ 		rc = -ENODEV;
+ 	}
+
