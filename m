@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbXC0QZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXC0QZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbXC0QZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 12:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbXC0QZ3
+	id S933106AbXC0QZp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 12:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933083AbXC0QZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 12:25:29 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:60649 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933079AbXC0QZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 12:25:14 -0400
-Date: Tue, 27 Mar 2007 09:24:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCHES] V4L/DVB fixes
-In-Reply-To: <1174996673.17641.12.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0703270924200.6730@woody.linux-foundation.org>
-References: <1174881954.4364.5.camel@localhost> 
- <Pine.LNX.4.64.0703261454340.6730@woody.linux-foundation.org>
- <1174996673.17641.12.camel@localhost>
+	Tue, 27 Mar 2007 12:25:31 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:26265 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933068AbXC0QZJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 12:25:09 -0400
+X-AuditID: d80ac287-91f24bb000000c42-43-460945642c85 
+Date: Tue, 27 Mar 2007 17:25:06 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: James Bottomley <James.Bottomley@SteelEye.com>
+cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: CONFIG_SCSI_WAIT_SCAN=m
+Message-ID: <Pine.LNX.4.64.0703271658380.26754@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-1561508981-1175012692=:6730"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 27 Mar 2007 16:25:06.0246 (UTC) FILETIME=[7ADE2660:01C7708C]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+I'm not using an initrd, most of my kernel is builtin,
+just a few modules for occasional filesystems.
 
----1463790079-1561508981-1175012692=:6730
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+CONFIG_MODULES=y
+CONFIG_SCSI=y
+CONFIG_SCSI_SCAN_ASYNC=y
+CONFIG_SCSI_WAIT_SCAN=m
 
+2.6.21-rc5-mm2 VFS panics unable to find my root on /dev/sda2,
+but boots okay if I change drivers/scsi/Kconfig to "default y"
+instead of "default m" for SCSI_WAIT_SCAN.
 
+I'm sure that's not the right fix, but I don't know what is.
 
-On Tue, 27 Mar 2007, Mauro Carvalho Chehab wrote:
+I've had no trouble with SCSI_SCAN_ASYNC=y until now: I could
+turn it off, but others may have trouble with the same regression.
 
-> Hi Linus,
-> 
-> Em Seg, 2007-03-26 às 14:55 -0700, Linus Torvalds escreveu:
-> > 
-> > On Mon, 26 Mar 2007, Mauro Carvalho Chehab wrote:
-> > >
-> > > Please pull 'master' from:
-> > >         git://git.kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
-> > 
-> > "Already up-to-date".
-> > 
-> > Forgot to push?
-> 
-> Seems so :( I'm too tired those days...
-> 
-> Ok, I've updated from your tree and re-pushed the patches. Please pull
-> for the following patches:
-
-Ok. Got it. HOWEVER. Look at that URL again that you quoted me, and see 
-what is wrong?
-
-That's a bogus URL.
-
-		Linus
----1463790079-1561508981-1175012692=:6730--
+Hugh
