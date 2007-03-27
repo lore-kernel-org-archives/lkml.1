@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934072AbXC0Rx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934075AbXC0RyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934072AbXC0Rx6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 13:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934075AbXC0Rx6
+	id S934075AbXC0RyL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 13:54:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934080AbXC0RyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 13:53:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42821 "EHLO mx1.redhat.com"
+	Tue, 27 Mar 2007 13:54:10 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37616 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934072AbXC0Rx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 13:53:57 -0400
-Date: Tue, 27 Mar 2007 10:51:16 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       zaitcev@redhat.com
-Subject: Re: [PATCH] USB Elan FTDI: check for driver registration status
-Message-Id: <20070327105116.d3eea47a.zaitcev@redhat.com>
-In-Reply-To: <20070327151405.GA11491@cvg>
-References: <20070325072733.GA10257@cvg>
-	<20070326151731.53cc080b.zaitcev@redhat.com>
-	<20070327151405.GA11491@cvg>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S934075AbXC0RyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 13:54:09 -0400
+Message-ID: <46095A23.9090705@garzik.org>
+Date: Tue, 27 Mar 2007 13:53:39 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Jesse Huang <jesse@icplus.com.tw>, romieu@fr.zoreil.com
+CC: "Randy.Dunlap" <rdunlap@xenotime.net>, penberg@cs.Helsinki.FI,
+       akpm@osdl.org, dvrabel@cantab.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, david@pleyades.net
+Subject: Re: IP1000A: About IC Plus IP1000A Linux driver current status
+References: <1156268234.3622.1.camel@localhost.localdomain> <20060821231455.1ce9474d.rdunlap@xenotime.net> <001b01c7704f$4232a0d0$4964a8c0@icplus.com.tw>
+In-Reply-To: <001b01c7704f$4232a0d0$4964a8c0@icplus.com.tw>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 19:14:05 +0400, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+Jesse Huang wrote:
+> Dear all:
+> 
+> Would someone tell me the current status of IP1000A Linux Driver?
+> Would it be putted into Linux Kernel or not?
 
-> --- a/drivers/usb/misc/ftdi-elan.c
-> @@ -2903,7 +2903,7 @@ static struct usb_driver ftdi_elan_driver = {
->  };
->  static int __init ftdi_elan_init(void)
->  {
-> -        int result;
-> +        int result = 0;
+I forgot what the status of this was?  Didn't it need some cleanups?
 
-Why do you need this?
+Maybe Francois has a better memory than me.
 
-> @@ -2918,18 +2918,25 @@ static int __init ftdi_elan_init(void)
->  	if (!respond_queue)
->  		goto err3;
->          result = usb_register(&ftdi_elan_driver);
-> -        if (result)
-> +        if (result) {
->                  printk(KERN_ERR "usb_register failed. Error number %d\n",
->  		       result);
-> +		goto err4;
-> +	}
->          return result;
->  
-> + err4:
-> +	destroy_workqueue(respond_queue);
->   err3:
+	Jeff
 
-This is fine, although I do wish you wouldn't number the exception labels.
-If anything is changed, someone might try to rearrange and renumber them
-and that leads to bugs.
 
->   err1:
-> -	printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
-> -	return -ENOMEM;
-> +	if (result == 0) {
-> +		result = -ENOMEM;
-> +		printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
-> +	}
-> +	return result;
 
-What in the world is this supposed to do? Under what conditions can
-result be zero here?
-
-Personally, I would get rid of the printk. If your modprobe fails,
-it's a good enough indication. Or at least, change the text to
-something more neutral, like "unable to initialize (%d)" and print
-the error code. It's not just about workqueues now.
-
--- Pete
