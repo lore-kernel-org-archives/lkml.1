@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbXC0PSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbXC0PSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbXC0PSH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 11:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXC0PSH
+	id S1753898AbXC0PSQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 11:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbXC0PSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 11:18:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:46219 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753888AbXC0PSF (ORCPT
+	Tue, 27 Mar 2007 11:18:16 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59451 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753890AbXC0PSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 11:18:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=OA/7h2OSCmq6ralKs4ocsURcLeclkzJWONtKewMkRzFCALleb+7Y4CaOJNTMcd6FO/v5HSyVUoj3TIzmOiYpAqS5Q7t4ob6DzjAfJHx9g/kWtXAVRZjULW1aaztzrUtlx9+KcsE7FuhhhebYteBziVwXlrjmlvnNkjXbvNtjNt4=
-Date: Tue, 27 Mar 2007 19:14:05 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Subject: Re: [PATCH] USB Elan FTDI: check for driver registration status
-Message-ID: <20070327151405.GA11491@cvg>
-References: <20070325072733.GA10257@cvg> <20070326151731.53cc080b.zaitcev@redhat.com>
+	Tue, 27 Mar 2007 11:18:14 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Greg KH <greg@kroah.com>, Mitch Williams <mitch.a.williams@intel.com>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       auke-jan.h.kok@intel.com
+Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
+References: <1174951102.22190.15.camel@strongmad>
+	<20070327000951.GA11555@kroah.com>
+	<m14po6zupn.fsf@ebiederm.dsl.xmission.com>
+	<20070327145552.GB7157@colo.lackof.org>
+Date: Tue, 27 Mar 2007 09:15:03 -0600
+In-Reply-To: <20070327145552.GB7157@colo.lackof.org> (Grant Grundler's message
+	of "Tue, 27 Mar 2007 08:55:52 -0600")
+Message-ID: <m1mz1yyayw.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070326151731.53cc080b.zaitcev@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pete, Luiz
+Grant Grundler <grundler@parisc-linux.org> writes:
 
-what about this one?
+> On Tue, Mar 27, 2007 at 07:23:16AM -0600, Eric W. Biederman wrote:
+>> I guess I should add that I'm not certain that the code is exactly correct
+>> there are weird differences between enable/disable and mask.
+>
+> My understanding was "enable" would clear (or ignore) pending interrupts
+> and "unmask" would deliver pending interrupts. Disable and mask could
+> in many implementations be the same thing as long as the enable/unmask
+> difference was supported.
 
-Actually there is just a check for where is error coming from.
-Maybe that is not the best solution but it allows us to reduce
-the calls to 'printk' :)
+enable/disable are what are available to drivers.  When the call
+enable_irq or  disable_irq.  Frequently we have code to make up
+for deficiencies in the hardware irq controller implementations
+here.
 
-P.S. Pete your patch is good but the message about
-worqueue creation fail was to print even if we've
-been faltered on the usb_register procedure.
+mask/unmask are helper functions only used by the internals of the
+irq implementation, and actually are required to touch the hardware.
 
----
+The problem on x86 is that an ioapic will drop interrupts that come
+in while it is masked.    Thus we have to play software games not
+to loose pending interrupts (i.e. leave the irq enabled until we
+get a pending interrupt).
 
- drivers/usb/misc/ftdi-elan.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+So I think you had the general drift although you had a couple of
+details confused.
 
-diff --git a/drivers/usb/misc/ftdi-elan.c b/drivers/usb/misc/ftdi-elan.c
-index bc3327e..3cd54af 100644
---- a/drivers/usb/misc/ftdi-elan.c
-+++ b/drivers/usb/misc/ftdi-elan.c
-@@ -2903,7 +2903,7 @@ static struct usb_driver ftdi_elan_driver = {
- };
- static int __init ftdi_elan_init(void)
- {
--        int result;
-+        int result = 0;
-         printk(KERN_INFO "driver %s built at %s on %s\n", ftdi_elan_driver.name,
- 	       __TIME__, __DATE__);
-         init_MUTEX(&ftdi_module_lock);
-@@ -2918,18 +2918,25 @@ static int __init ftdi_elan_init(void)
- 	if (!respond_queue)
- 		goto err3;
-         result = usb_register(&ftdi_elan_driver);
--        if (result)
-+        if (result) {
-                 printk(KERN_ERR "usb_register failed. Error number %d\n",
- 		       result);
-+		goto err4;
-+	}
-         return result;
- 
-+ err4:
-+	destroy_workqueue(respond_queue);
-  err3:
- 	destroy_workqueue(command_queue);
-  err2:
- 	destroy_workqueue(status_queue);
-  err1:
--	printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
--	return -ENOMEM;
-+	if (result == 0) {
-+		result = -ENOMEM;
-+		printk(KERN_ERR "%s couldn't create workqueue\n", ftdi_elan_driver.name);
-+	}
-+	return result;
- }
- 
- static void __exit ftdi_elan_exit(void)
-
-
-		Cyrill
-
+Eric
