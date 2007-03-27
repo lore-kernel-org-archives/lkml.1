@@ -1,42 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933918AbXC0BpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751483AbXC0B72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933918AbXC0BpM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Mar 2007 21:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933920AbXC0BpM
+	id S1751483AbXC0B72 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Mar 2007 21:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXC0B72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 21:45:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60099
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933918AbXC0BpK (ORCPT
+	Mon, 26 Mar 2007 21:59:28 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35496 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751483AbXC0B71 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 21:45:10 -0400
-Date: Mon, 26 Mar 2007 18:45:08 -0700 (PDT)
-Message-Id: <20070326.184508.85687849.davem@davemloft.net>
-To: wli@holomorphy.com
-Cc: akpm@linux-foundation.org, clameter@sgi.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 1/5] Quicklists for page table pages V4
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070327010624.GA2986@holomorphy.com>
-References: <Pine.LNX.4.64.0703260938520.3297@schroedinger.engr.sgi.com>
-	<20070326102651.6d59207b.akpm@linux-foundation.org>
-	<20070327010624.GA2986@holomorphy.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Mar 2007 21:59:27 -0400
+Date: Tue, 27 Mar 2007 03:59:29 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>,
+       Boris Mogwitz <boris@macbeth.rhoen.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jose Alberto Reguero <jareguero@telefonica.net>,
+       Ingo Molnar <mingo@elte.hu>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Auke Kok <auke-jan.h.kok@intel.com>, e1000-devel@lists.sourceforge.net,
+       jgarzik@pobox.com, netdev@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>,
+       Albert Hopkins <kernel@marduk.letterboxes.org>
+Subject: [1/5] 2.6.21-rc5: known regressions
+Message-ID: <20070327015929.GY16477@stusta.de>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: William Lee Irwin III <wli@holomorphy.com>
-Date: Mon, 26 Mar 2007 18:06:24 -0700
+This email lists some known regressions in Linus' tree compared to 2.6.20.
 
-> On Mon, Mar 26, 2007 at 10:26:51AM -0800, Andrew Morton wrote:
-> > b) we understand why the below simple modification crashes i386.
-> 
-> Full eager zeroing patches not dependent on quicklist code don't crash,
-> so there is no latent use-after-free issue covered up by caching. I'll
-> help out more on the i386 front as-needed.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way
+possibly involved with one or more of these issues.
 
-I've looked into this a few times and I am quite mystified as
-to why that simple test patch crashes.
+Due to the huge amount of recipients, please trim the Cc when answering.
+
+
+Subject    : crashes in KDE
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8157
+Submitter  : Oliver Pinter <oliver.pntr@gmail.com>
+Status     : unknown
+
+
+Subject    : kwin dies silently  (sysctl related?)
+References : http://lkml.org/lkml/2007/2/28/112
+Submitter  : Sid Boyce <g3vbv@blueyonder.co.uk>
+             Boris Mogwitz <boris@macbeth.rhoen.de>
+Status     : submitter was asked to bisect further
+
+
+Subject    : problem with sockets
+References : http://lkml.org/lkml/2007/3/21/248
+Submitter  : Jose Alberto Reguero <jareguero@telefonica.net>
+Status     : unknown
+
+
+Subject    : e1000 resume weirdness
+References : http://lkml.org/lkml/2007/3/26/91
+Submitter  : Ingo Molnar <mingo@elte.hu>
+Handled-By : Jesse Brandeburg <jesse.brandeburg@gmail.com>
+             Auke Kok <auke-jan.h.kok@intel.com>
+Status     : problem is being debugged
+
+
+Subject    : forcedeth: sporadic under-load crashes
+References : http://lkml.org/lkml/2007/3/26/63
+Submitter  : Ingo Molnar <mingo@elte.hu>
+Handled-By : Ingo Molnar <mingo@elte.hu>
+             Ayaz Abdulla <aabdulla@nvidia.com>
+Status     : problem is being debugged
+
+
+Subject    : forcedeth: skb_over_panic
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
+Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
+Handled-By : Ayaz Abdulla <aabdulla@nvidia.com>
+Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8058
+Status     : patch available
+
+
+
