@@ -1,81 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933416AbXC0X3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933426AbXC0X3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933416AbXC0X3L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 19:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933452AbXC0X3L
+	id S933426AbXC0X3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 19:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933452AbXC0X3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 19:29:11 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43525 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933426AbXC0X3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 19:29:09 -0400
-Message-ID: <4609A8C4.6010803@us.ibm.com>
-Date: Tue, 27 Mar 2007 16:29:08 -0700
-From: Badari Pulavarty <pbadari@us.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:0.9.4.1) Gecko/20020508 Netscape6/6.2.3
-X-Accept-Language: en-us
+	Tue, 27 Mar 2007 19:29:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:37727 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933426AbXC0X3S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 19:29:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ozDGUKrP+UB5vp9SNQGeQNFCLaX1we5/H4j4Ftttn8oIABY2beFPon7sfEA3wdn3p3atRBiXHv4g4RI/isTWT4YECKt0774sXqDy5m5DRq2leN5uE7yJ9ja/mIl68h3OXtiItbvXJMLYnGOKU8yE+kBJJU2sYlOoTUGOuynmu0c=
+From: Maxim <maximlevitsky@gmail.com>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
+Date: Wed, 28 Mar 2007 01:29:10 +0200
+User-Agent: KMail/1.9.6
+Cc: Alan Stern <stern@rowland.harvard.edu>, gregkh@suse.de,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       davidz@redhat.com
+References: <200703271824.46804.maximlevitsky@gmail.com> <Pine.LNX.4.44L0.0703271306230.2558-100000@iolanthe.rowland.org> <20070327110524.975e7113.zaitcev@redhat.com>
+In-Reply-To: <20070327110524.975e7113.zaitcev@redhat.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Badari Pulavarty <pbadari@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.21-rc5-mm1
-References: <20070326205706.a750bb35.akpm@linux-foundation.org> <1175017173.16728.19.camel@dyn9047017100.beaverton.ibm.com> <20070327084838.34dc1b84.akpm@linux-foundation.org> <1175018270.16728.26.camel@dyn9047017100.beaverton.ibm.com> <20070327131214.656e1ad7.akpm@linux-foundation.org> <46098CBE.7010807@cosmosbay.com> <20070327144031.ef75dd53.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703280129.10197.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 27 March 2007 20:05:24 Pete Zaitcev wrote:
+> On Tue, 27 Mar 2007 13:15:14 -0400 (EDT), Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > > Suspend to disk still causes "virtual replugging"  and I think that controller is reset and will unplug/replug devices anyway
+> > > Resolving this problem is very difficult. Maybe it possible to check on unplugging event that this caused by suspend  if the same device is
+> > > replugged then don't remove/reinstall driver, but this is very difficult to implement properly,
+> > > Maybe just refuse to suspend if some valuable device is connected (sorry if it is done this way already)
+> > 
+> > Long ago I posted a patch that would take care of all this.  Not just for
+> > UHCI, but for any USB controller.  Maybe I should dig it out, update it,
+> > and submit it.
+> 
+> Alan, BTW, look at this please:
+> 
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=233697
+> 
+> > From David Zeuthen
+> 
+> > If I suspend my box, then on the resume path I see all my USB devices being
+> > removed and then added back. This is a problem with storage devices connected
+> > via USB.
+> .....
+> > The kernel not send an "remove" event if it's going to send an "add" right
+> > after. Instead it should enumerate the bus on resume and only send the events
+> > that represents how to get from the previous device tree to the current one.
+> 
+> > From Pete Zaitcev
+> 
+> > What does happen if a user suspends, unplugs a USB key, modifies its contents,
+> > plugs it back, and resumes? In such a case, there would be no change between
+> > the state of USB bus between the before-suspend state and after-resume state.
+> 
+> > From David Zeuthen
+> 
+> > In that case the user would see data corruption - just as if he mounts a piece
+> > of removable media in a USB card reader; yanks out the card and modifies it
+> > elsewhere, and then puts it back in.
+> 
+> > I my opinion we can't really defend ourselves against such users... We can of
+> > course add checks in the file system drivers in the resume hooks to validate the
+> > super block and mount read-only if something change. 
+> 
+> The GNOME hath spoken?
+> 
+> -- Pete
+> 
 
+Hi, 
+	I also thought about that,
+	
+	I think that the best solution is still to hide connect/disconnect of usb devices from userspace (now it also causes corruption)
+	But to refuse suspend with any usb mass storage device connected with mounted systems (and add a module param override
+	 for users who know what they are doing)
 
-Andrew Morton wrote:
+	What do you think ?
 
->On Tue, 27 Mar 2007 23:29:34 +0200
->Eric Dumazet <dada1@cosmosbay.com> wrote:
->
->>Andrew Morton a écrit :
->>
->>>The wheel spins around, slows then settles on.... 
->>>time-smp-friendly-alignment-of-struct-clocksource.patch!
->>>
->>>Presumably because the ____cacheline_aligned made vsyscall_gtod_data_t get
->>>too big.  Or something.
->>>
->>Very strange, since here I have plenty of available room (256 bytes) :
->>
->>ffffffffff600000 T vgettimeofday
->>ffffffffff60004e t vsysc2
->>ffffffffff600140 t vread_hpet
->>ffffffffff600150 t vread_tsc
->>ffffffffff600180 D __vsyscall_gtod_data
->>ffffffffff600280 D __vgetcpu_mode
->>ffffffffff6002c0 D __jiffies
->><lot of space (256 bytes)>
->>ffffffffff600400 T vtime
->>ffffffffff600413 t vsysc1
->>ffffffffff600800 T vgetcpu
->>ffffffffff600c00 T venosys_1
->>
->>It must depends on the compiler, and/or CONFIG_XXX options...
->>
->
->Badari's config triggered it for me.
->
->>Anyway, I think we can safely move __vgetcpu_mode & __jiffies to the 1024 
->>bytes area dedicated to vgetcpu() implementation. This saves 128 bytes from 
->>vsyscall_0 area.
->>
->>Could we add this patch instead of dropping 
->>time-smp-friendly-alignment-of-struct-clocksource.patch ?
->>
->
->When you tell me it works OK with Badari's config ;)
->
-Yes. It did fix my problem.
-
-Thanks,
-Badari
-
->
-
-
-
+	Regards,
+		Maxim Levitsky
