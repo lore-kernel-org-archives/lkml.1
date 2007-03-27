@@ -1,31 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbXC0CAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933928AbXC0CAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932238AbXC0CAA (ORCPT <rfc822;w@1wt.eu>);
+	id S933928AbXC0CAA (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 26 Mar 2007 22:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933925AbXC0CAA
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932238AbXC0B76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Mar 2007 22:00:00 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35556 "EHLO
+	Mon, 26 Mar 2007 21:59:58 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35539 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752641AbXC0B7u (ORCPT
+	with ESMTP id S1752876AbXC0B7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Mar 2007 21:59:50 -0400
-Date: Tue, 27 Mar 2007 03:59:54 +0200
+	Mon, 26 Mar 2007 21:59:46 -0400
+Date: Tue, 27 Mar 2007 03:59:49 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Thomas Meyer <thomas@m3y3r.de>,
        =?utf-8?B?RnLDqWTDqXJpYw==?= Riss <frederic.riss@gmail.com>,
-       Tino Keitel <tino.keitel@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       John Stultz <johnstul@us.ibm.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Mike Harris <atarimike@wavecable.com>,
-       Stephane Casset <sept@logidee.com>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [5/5] 2.6.21-rc5: known regressions
-Message-ID: <20070327015954.GC16477@stusta.de>
+       Marcus Better <marcus@better.se>,
+       Tobias Doerffel <tobias.doerffel@gmail.com>,
+       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Soeren Sonnenburg <kernel@nn7.de>,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, tigran@aivazian.fsnet.co.uk
+Subject: [4/5] 2.6.21-rc5: known regressions
+Message-ID: <20070327015949.GB16477@stusta.de>
 References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -46,70 +51,92 @@ possibly involved with one or more of these issues.
 Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-Subject    : MacMini doesn't come out of suspend to ram  (i386 clockevents)
-             (CONFIG_HPET_TIMER)
-References : http://lkml.org/lkml/2007/3/21/374
-Submitter  : Frédéric Riss <frederic.riss@gmail.com>
-             Tino Keitel <tino.keitel@gmx.de>
-Caused-By  : Thomas Gleixner <tglx@linutronix.de>
-             commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-Status     : unknown
-
-
-Subject    : MacBook Core Duo: suspend to disk hangs
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8224
-Submitter  : Mike Harris <atarimike@wavecable.com>
-Status     : unknown
-
-
-Subject    : Dynticks and High resolution Timer hang boot during IDE detection
-             workaround: clocksource=acpi_pm
-References : http://lkml.org/lkml/2007/3/7/504
-Submitter  : Stephane Casset <sept@logidee.com>
-Caused-By  : John Stultz <johnstul@us.ibm.com>
-             commit 6bb74df481223731af6c7e0ff3adb31f6442cfcd
-Handled-By : John Stultz <johnstul@us.ibm.com>
-Patch      : http://lkml.org/lkml/2007/3/22/287
-Status     : workaround-patch available
-
-
-Subject    : after resume: X hangs after drawing a couple of windows
-             workaround: clocksource=acpi_pm
-References : http://lkml.org/lkml/2007/3/8/117
-             http://lkml.org/lkml/2007/3/25/20
-             http://lkml.org/lkml/2007/3/26/151
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-Status     : problem is being debugged
-
-
-Subject    : first disk access after resume takes several minutes
-             resume from RAM broken
-             'date' does not advance after resume from RAM  (CONFIG_HPET_TIMER)
-References : http://lkml.org/lkml/2007/3/8/117
-             http://lkml.org/lkml/2007/3/25/20
-             http://lkml.org/lkml/2007/3/26/18
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-             Jeff Chua <jeff.chua.linux@gmail.com>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-             Ingo Molnar <mingo@elte.hu>
-Status     : problem is being debugged
-
-
-Subject    : system doesn't come out of suspend  (CONFIG_NO_HZ)
-References : http://lkml.org/lkml/2007/2/22/391
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-             Soeren Sonnenburg <kernel@nn7.de>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-             Ingo Molnar <mingo@elte.hu>
-             Tejun Heo <htejun@gmail.com>
+Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+References : http://lkml.org/lkml/2007/3/13/3
+Submitter  : Dave Jones <davej@redhat.com>
+             Jeremy Fitzhardinge <jeremy@goop.org>
+Caused-By  : PCI merge
+             commit 78149df6d565c36675463352d0bfe0000b02b7a7
+Handled-By : Eric W. Biederman <ebiederm@xmission.com>
              Rafael J. Wysocki <rjw@sisk.pl>
+Status     : problem is being debugged
+
+
+Subject    : second suspend to disk in a row results in an oops  (MSI)
+References : http://lkml.org/lkml/2007/3/17/43
+             http://lkml.org/lkml/2007/3/22/150
+             http://lkml.org/lkml/2007/3/26/205
+             http://lkml.org/lkml/2007/3/26/76
+Submitter  : Thomas Meyer <thomas@m3y3r.de>
+             Frédéric Riss <frederic.riss@gmail.com>
+             Marcus Better <marcus@better.se>
+Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+Patch      : http://lkml.org/lkml/2007/3/24/136
+Status     : patch was suggested
+
+
+Subject    : Suspend to RAM doesn't work anymore  (ACPI?)
+References : http://lkml.org/lkml/2007/3/19/128
+             http://bugzilla.kernel.org/show_bug.cgi?id=8247
+Submitter  : Tobias Doerffel <tobias.doerffel@gmail.com>
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+             Len Brown <len.brown@intel.com>
+Status     : problem is being debugged
+
+
+Subject    : s2ram autowake regression  (ACPI?)
+References : http://lkml.org/lkml/2007/3/20/96
+Submitter  : Pavel Machek <pavel@ucw.cz>
+Handled-By : Len Brown <lenb@kernel.org>
+Status     : submitter was asked to test a patch
+
+
+Subject    : SATA breakage on resume
+References : http://lkml.org/lkml/2007/3/7/233
+Submitter  : Thomas Gleixner <tglx@linutronix.de>
+             Soeren Sonnenburg <kernel@nn7.de>
 Status     : unknown
 
 
-Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
-References : http://lkml.org/lkml/2007/3/25/217
-Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+Subject    : suspend to disk: keypress required for power down
+References : http://lkml.org/lkml/2007/3/25/78
+Submitter  : Thomas Meyer <thomas@m3y3r.de>
 Status     : unknown
+
+
+Subject    : resume from RAM corrupts vesafb console
+References : http://lkml.org/lkml/2007/3/26/76
+Submitter  : Marcus Better <marcus@better.se>
+Handled-By : Pavel Machek <pavel@ucw.cz>
+Status     : problem is being debugged
+
+
+Subject    : suspend to disk: non-boot cpus are disabled again
+References : http://lkml.org/lkml/2007/3/25/78
+Submitter  : Thomas Meyer <thomas@m3y3r.de>
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+             Eric W. Biederman <ebiederm@xmission.com>
+Status     : problem is being debugged
+
+
+Subject    : ThinkPad doesn't resume from suspend to RAM
+References : http://lkml.org/lkml/2007/2/27/80
+             http://lkml.org/lkml/2007/2/28/348
+Submitter  : Jens Axboe <jens.axboe@oracle.com>
+             Jeff Chua <jeff.chua.linux@gmail.com>
+Status     : unknown
+
+
+Subject    : suspend to disk hangs  (microcode driver)
+References : http://lkml.org/lkml/2007/3/16/126
+Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
+Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+             commit e3c7db621bed4afb8e231cb005057f2feb5db557
+             commit ed746e3b18f4df18afa3763155972c5835f284c5
+             commit 259130526c267550bc365d3015917d90667732f1
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+Patch      : http://lkml.org/lkml/2007/3/23/179
+Status     : patch available
+
 
 
