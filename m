@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbXC0UsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbXC0Us2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbXC0UsI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 16:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXC0Urz
+	id S1753916AbXC0Us2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 16:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbXC0Urx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 16:47:55 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:42513 "EHLO smtp.osdl.org"
+	Tue, 27 Mar 2007 16:47:53 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56342 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbXC0Uri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 16:47:38 -0400
-Date: Tue, 27 Mar 2007 13:47:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux@horizon.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, miklos@szeredi.hu
-Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
-Message-Id: <20070327134700.f17e8b61.akpm@linux-foundation.org>
-In-Reply-To: <20070327200933.6321.qmail@science.horizon.com>
-References: <20070327123422.d0bbc064.akpm@linux-foundation.org>
-	<20070327200933.6321.qmail@science.horizon.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752848AbXC0Url (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 16:47:41 -0400
+Message-Id: <20070327204728.886538000@strauss.suse.de>
+References: <20070327202234.639415000@strauss.suse.de>
+User-Agent: quilt/0.46-14
+Date: Tue, 27 Mar 2007 22:22:38 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 4/7] Add IRQF_IRQPOLL flag on IA64
+Content-Disposition: inline; filename=add-irqf_irqpoll-flag-on-ia64.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27 Mar 2007 16:09:33 -0400
-linux@horizon.com wrote:
+Add IRQF_IRQPOLL for the timer interrupt on IA64.
 
-> What part of "The msync() function writes all modified data to
-> permanent storage locations [...] For mappings to files, the msync()
-> function ensures that all write operations are completed as defined
-> for synchronised I/O data integrity completion." suggests that it's not
-> supposed to do disk I/O?  How is that uselessly vague?
-> 
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+---
+ arch/ia64/kernel/time.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Because for MS_ASYNC, "msync() shall return immediately once all the write
-operations are initiated or queued for servicing".
+Index: linux-2.6.21-rc5-mm2/arch/ia64/kernel/time.c
+===================================================================
+--- linux-2.6.21-rc5-mm2.orig/arch/ia64/kernel/time.c
++++ linux-2.6.21-rc5-mm2/arch/ia64/kernel/time.c
+@@ -235,7 +235,7 @@ ia64_init_itm (void)
+ 
+ static struct irqaction timer_irqaction = {
+ 	.handler =	timer_interrupt,
+-	.flags =	IRQF_DISABLED,
++	.flags =	IRQF_DISABLED | IRQF_IRQPOLL,
+ 	.name =		"timer"
+ };
+ 
 
-ie: the writes can complete one millisecond or one week later.  We chose 30
-seconds.
-
-And this is not completely fatuous - before 2.6.17, MAP_SHARED pages could
-float about in memory in a dirty state for arbitrarily long periods -
-potentially for the entire application lifetime.  It was quite reasonable
-for our MS_ASYNC implementation to do what it did: tell the VM about the
-dirtiness of these pages so they get written back soon.
-
-Post-2.6.17 we preserved that behaviour.
+-- 
