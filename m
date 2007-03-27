@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964931AbXC0GUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965026AbXC0GUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964931AbXC0GUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 02:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965013AbXC0GUv
+	id S965026AbXC0GUx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 02:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965268AbXC0GUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 27 Mar 2007 02:20:53 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:41792 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965026AbXC0GUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 27 Mar 2007 02:20:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57278 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964931AbXC0GUu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 02:20:50 -0400
-Date: Mon, 26 Mar 2007 23:20:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+Date: Mon, 26 Mar 2007 22:20:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: James Simmons <jsimmons@infradead.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       Linux Fbdev development list 
+	<linux-fbdev-devel@lists.sourceforge.net>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Jaroslav Kysela <perex@suse.cz>,
-       Takashi Iwai <tiwai@suse.de>, Ben Dooks <ben-linux@fluff.org>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: Linux 2.6.21-rc5
-Message-ID: <20070327062042.GA29855@kroah.com>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070326221731.f4792260.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070326221731.f4792260.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+       Dave Airlie <airlied@linux.ie>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] fbdev sysfs imrovements
+Message-Id: <20070326222039.feb9216d.akpm@linux-foundation.org>
+In-Reply-To: <17928.46653.30238.153536@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0703192055090.27580@pentafluge.infradead.org>
+	<20070326195807.184474d7.akpm@linux-foundation.org>
+	<17928.46653.30238.153536@cargo.ozlabs.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 10:17:31PM -0800, Andrew Morton wrote:
+On Tue, 27 Mar 2007 16:14:21 +1000 Paul Mackerras <paulus@samba.org> wrote:
+
+> Andrew Morton writes:
 > 
-> I have a few fixes here which belong to subsystem trees, which were missed
-> by the maintainers and which we probably want to get into 2.6.21.
+> > http://userweb.kernel.org/~akpm/s5000489.jpg (the oops is the usual powerpc
+> > mess)
 > 
+> Why do you have xmon enabled if you don't have any way to talk to it?
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/pci-set-pci=bfsort-for-poweredge-r900.patch
 
-Already in Linus's tree.
+gawd knows - I've been dragging that config along for over a year.
 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/fix-sysfs-rom-file-creation-for-bios-rom-shadows.patch
-
-I'd prefer to wait until 2.6.22 for this one, I've had too many odd
-reports of problems in this area, and since no one has reported this
-issue, it's not a real rush at all.
-
-thanks,
-
-greg k-h
+Maybe I subconsciously like seeing the mess it makes?
