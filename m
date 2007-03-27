@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751570AbXC0Mnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbXC0NXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751570AbXC0Mnz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 08:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbXC0Mnz
+	id S1753844AbXC0NXz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 09:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbXC0NXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 08:43:55 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:29196 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbXC0Mny (ORCPT
+	Tue, 27 Mar 2007 09:23:55 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54734 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753844AbXC0NXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 08:43:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NQKS7UN04OZW8evg9JKORqj+JhbmzPU+LOr+I3lcD//keerYUZ0WA/X+4rLwRe7irXRH+NeudQmMyrKPbQeD9Gv0ayGVXSSEzikWkaFRpZ3WXC/0Vmf96nZSZrE0N9dF7pjbwe9laQ3J5HWzfpPIP5XmNsQyvyaTYKYmxr0Kzhg=
-Message-ID: <d120d5000703270543ic410d8qd5865a83d6cdba8e@mail.gmail.com>
-Date: Tue, 27 Mar 2007 08:43:52 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Linux 2.6.21-rc5
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <ak@suse.de>, "Jaroslav Kysela" <perex@suse.cz>,
-       "Takashi Iwai" <tiwai@suse.de>, "Ben Dooks" <ben-linux@fluff.org>,
-       "Greg KH" <greg@kroah.com>
-In-Reply-To: <20070326221731.f4792260.akpm@linux-foundation.org>
+	Tue, 27 Mar 2007 09:23:54 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: Mitch Williams <mitch.a.williams@intel.com>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       auke-jan.h.kok@intel.com
+Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
+References: <1174951102.22190.15.camel@strongmad>
+	<20070327000951.GA11555@kroah.com>
+Date: Tue, 27 Mar 2007 07:23:16 -0600
+In-Reply-To: <20070327000951.GA11555@kroah.com> (Greg KH's message of "Mon, 26
+	Mar 2007 17:09:51 -0700")
+Message-ID: <m14po6zupn.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	 <20070326221731.f4792260.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/27/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> I have a few fixes here which belong to subsystem trees, which were missed
-> by the maintainers and which we probably want to get into 2.6.21.
->
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/fix-sudden-warps-in-mousedev.patch
->
+Greg KH <greg@kroah.com> writes:
 
-Slightly different fix is already in input tree. I'd perfer waiting
-for 2.6.22 as this only affects touchpads when not using synaptics X
-driver (which most distributions use by default).
+> On Mon, Mar 26, 2007 at 04:18:22PM -0700, Mitch Williams wrote:
+>> This patch fixes a kernel bug which is triggered when using the
+>> irqbalance daemon with MSI-X hardware.
+>> 
+>> Because both MSI-X interrupt messages and MSI-X table writes are posted,
+>> it's possible for them to cross while in-flight.  This results in
+>> interrupts being received long after the kernel thinks they're disabled,
+>> and in interrupts being sent to stale vectors after rebalancing.
+>> 
+>> This patch performs a read flush after writes to the MSI-X table for
+>> enable/disable and rebalancing operations.  Because this is an expensive
+>> operation, we do not perform the read flush after mask/unmask
+>> operations.  Hardware which supports MSI-X typically also supports some
+>> sort of interrupt moderation, so a read-flush is not necessary for
+>> mask/unmask operations.
+>> 
+>> This patch has been validated with (unreleased) network hardware which
+>> uses MSI-X.
+>
+> How well does this play with the MSI core changes that Michael Ellerman
+> has proposed on the linux-pci mailing list?
 
--- 
-Dmitry
+I guess I should add that I'm not certain that the code is exactly correct
+there are weird differences between enable/disable and mask.  Where generally
+the mask/unmask methods do the work and enable/disable do some weird software
+thing.  Having them different and enable/disable not doing some software
+thing concerns me a little.  I think mask/unmask may been overoptimized
+in this case.
+
+So I expect someone will wind up refactor this code at some point.
+
+However the code is clearly better than what we have now, and it can't
+affect anything else.
+
+Eric
