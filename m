@@ -1,81 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750911AbXC0HvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750717AbXC0IAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750911AbXC0HvE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 03:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXC0HvD
+	id S1750717AbXC0IAT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 04:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbXC0IAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 03:51:03 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:40936 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbXC0HvA convert rfc822-to-8bit (ORCPT
+	Tue, 27 Mar 2007 04:00:19 -0400
+Received: from iggypop2.siwnet.net ([81.216.65.12]:58364 "EHLO
+	iggypop2.siwnet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbXC0IAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 03:51:00 -0400
-Date: Tue, 27 Mar 2007 09:50:57 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Chris Lalancette <clalance@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>
-Subject: Re: [patch 1/2] Ignore stolen time in the softlockup watchdog
-Message-Id: <20070327095057.f4df0abc.dada1@cosmosbay.com>
-In-Reply-To: <4608C3F5.1030106@goop.org>
-References: <20070327053816.881735237@goop.org>
-	<20070327054106.664262413@goop.org>
-	<4608C121.4050309@cosmosbay.com>
-	<4608C3F5.1030106@goop.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 Mar 2007 04:00:17 -0400
+From: Marcus Better <marcus@better.se>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [4/5] 2.6.21-rc5: known regressions
+Date: Tue, 27 Mar 2007 10:00:02 +0200
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       =?iso-8859-1?q?Fr=E9d=E9ric_Riss?= <frederic.riss@gmail.com>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015949.GB16477@stusta.de>
+In-Reply-To: <20070327015949.GB16477@stusta.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2095699.r7YZgHSTch";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703271000.05341.marcus@better.se>
+X-DSPAM-Result: Spam
+X-DSPAM-Processed: Tue Mar 27 10:00:14 2007
+X-DSPAM-Confidence: 0.6941
+X-DSPAM-Probability: 1.0000
+X-DSPAM-Signature: 4608cf0e744011719712363
+X-DSPAM-Factors: 15,
+	Content-Transfer-Encoding*quoted+printable, 0.99000,
+	Content-Transfer-Encoding*printable, 0.99000,
+	Content-Transfer-Encoding*quoted, 0.99000,
+	Received*(unknown, 0.94439,
+	Date*10, 0.18815,
+	From*Marcus Better <marcus@better.se>, 0.23173,
+	Subject*Re, 0.67420,
+	Received*(Postfix)+with, 0.67386,
+	Received*(Postfix), 0.67386,
+	Cc*vger.kernel.org>, 0.40000,
+	In-Reply-To*<20070327015949.GB16477, 0.40000,
+	Content-Type*micalg=pgp, 0.40000,
+	Received*Tue, 0.40000,
+	an, 0.40000,
+	Received*2007+10, 0.40000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 00:12:53 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+--nextPart2095699.r7YZgHSTch
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Eric Dumazet wrote:
-> > Jeremy Fitzhardinge a écrit :
-> >
-> >> +static DEFINE_PER_CPU(unsigned long long, touch_timestamp);
-> >
-> > ...
-> >
-> >>  void touch_softlockup_watchdog(void)
-> >>  {
-> >> -    __raw_get_cpu_var(touch_timestamp) = jiffies;
-> >> +    __raw_get_cpu_var(touch_timestamp) = sched_clock();
-> >>  }
-> >
-> > Not very clear if this is safe on 32bit, since this is not anymore
-> > atomic.
-> 
-> Hm, good point.  Don't think it matters very much.  These values are
-> per-cpu, and if an interrupt happens between the word updates and the
-> intermediate values causes a timeout, then it was pretty marginal
-> anyway.  I guess the worst case is if the low-word gets written first,
-> and it goes from a high value to low, then it could be sampled as if
-> time had gone back by up to ~4 seconds.
-> 
-> I'll give it another look.
+> Subject    : second suspend to disk in a row results in an oops  (MSI)
+> References : http://lkml.org/lkml/2007/3/17/43
+>              http://lkml.org/lkml/2007/3/22/150
+>              http://lkml.org/lkml/2007/3/26/205
+>              http://lkml.org/lkml/2007/3/26/76
+> Submitter  : Thomas Meyer <thomas@m3y3r.de>
+>              Fr=C3=A9d=C3=A9ric Riss <frederic.riss@gmail.com>
+>              Marcus Better <marcus@better.se>
+> Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+> Patch      : http://lkml.org/lkml/2007/3/24/136
+> Status     : patch was suggested
 
-OK thanks. I noticed another 'not clear' bit in your second patch :
+=46or the sake of completeness, my bisection resulted in this:
 
-void softlockup_enable(void)
-{
-	touch_softlockup_watchdog();
-	wmb();			/* update timestamp before enable */
-	__get_cpu_var(enabled) = 1;
-}
+392ee1e6dd901db6c4504617476f6442ed91f72d is first bad commit
+commit 392ee1e6dd901db6c4504617476f6442ed91f72d
+Author: Eric W. Biederman <ebiederm@xmission.com>
+Date:   Thu Mar 8 13:04:57 2007 -0700
 
+    [PATCH] msi: Safer state caching.
 
-Are you sure wmb() is needed here ?
+Marcus
 
-I think a barrier() (compiler barrier) should be enough. If not, a nice comment would help too :)
+--nextPart2095699.r7YZgHSTch
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGCM8FXjXn6TzcAQkRAuiGAJ9YdlNCzMXtbSKdaP8kljA9LQWArQCfeG5B
+V5C3dOV57uFiw6ueNsGc++0=
+=y4Jv
+-----END PGP SIGNATURE-----
+
+--nextPart2095699.r7YZgHSTch--
+
 
