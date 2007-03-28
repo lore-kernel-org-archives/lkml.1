@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbXC1GaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbXC1Gj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbXC1GaT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 02:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932796AbXC1GaS
+	id S1753166AbXC1Gj6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 02:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbXC1Gj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 02:30:18 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57847 "EHLO
+	Wed, 28 Mar 2007 02:39:58 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37568 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751322AbXC1GaQ (ORCPT
+	with ESMTP id S1753166AbXC1Gj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 02:30:16 -0400
+	Wed, 28 Mar 2007 02:39:57 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Michael Ellerman <michael@ellerman.id.au>
 Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
@@ -17,12 +17,12 @@ Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
        <daniel.e.wolstenholme@intel.com>
-Subject: Re: [PATCH 14/21] MSI: Use a list instead of the custom link structure
-References: <20070322105343.3B358DDF6D@ozlabs.org>
-Date: Wed, 28 Mar 2007 00:29:45 -0600
-In-Reply-To: <20070322105343.3B358DDF6D@ozlabs.org> (Michael Ellerman's
-	message of "Thu, 22 Mar 2007 21:51:41 +1100")
-Message-ID: <m13b3pswx2.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [PATCH 13/21] MSI: Do MSI masking in the arch code
+References: <20070322105342.B8317DDF6A@ozlabs.org>
+Date: Wed, 28 Mar 2007 00:39:21 -0600
+In-Reply-To: <20070322105342.B8317DDF6A@ozlabs.org> (Michael Ellerman's
+	message of "Thu, 22 Mar 2007 21:51:40 +1100")
+Message-ID: <m1y7lhrhwm.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -31,60 +31,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Michael Ellerman <michael@ellerman.id.au> writes:
 
-> The msi descriptors are linked together with what looks a lot like
-> a linked list, but isn't a struct list_head list. Make it one.
+> It's an arch detail whether MSI irqs need to be masked using the PCI
+> MSI registers.
+
+Agreed.  It isn't an arch detail that they need to be unmasked in
+the pci configuration space.
+
+I assume this patch is motivated just to make arch support easier
+and not for RTAS compatibility reason.
+
+> This changes behaviour in that previously we unconditionally masked
+> all MSIs, eventhough we only ever enable one, whereas now we only
+> mask the irqs we're using.
 >
-> The only complication is that previously we walked a list of irqs, and
-> got the descriptor for each with get_irq_msi(). Now we have a list of
-> descriptors and need to get the irq out of it, so it needs to be in the
-> actual struct msi_desc. We use 0 to indicate no irq is setup.
+> To be super paranoid I have the archs mask the irq before they write
+> the msi message, just in case the device doesn't respect the MSI enable
+> bit or MSI is already enabled or something else crazy.
 >
-> At some point after a pci_dev is created we need to initialise its
-> msi_list. pci_device_add() looks like the right place to do that, although
-> I'm not convinced it's 100% safe. In drivers/char/agp/alpha-agp.c we create
-> a pci_dev and I don't see that it ever gets passed to pci_device_add(), but
-> we probably don't care.
+> For MSI-X this might mean we mask the already masked MSI-X on the device,
+> but that should be harmless.
 
-Well that one appears to be a dummy place holder and probably should at
-least have a kzalloc to initialize all of the fields to know values.
+I don't think this patch really makes sense.  I think we should mask
+all possible vectors for msi and msi-x initially in the generic code
+and then unmask them.
 
-Regardless the normal pci device allocation does use kzalloc so we will
-have well defined if not beautiful behavior if we try and use it.
-
-Until we have a case where we need to use the msi_list outside of 
-where we enable and disable msi we should be perfectly fine initializing
-the list somewhere inside of pci_enable_msi, and pci_enable_msix.
-With dev->msi_enabled and dev->msix_enabled serving as flags to the
-rest of the world that it is safe to look at the list.
-
-It certainly sounds safer to me then becoming to closely coupled with
-code that doesn't really care about how msi works.  Heck even though
-we repeat the call twice I bet it will even be less code.
-
-> --- msi-new.orig/include/linux/msi.h
-> +++ msi-new/include/linux/msi.h
-> @@ -1,6 +1,8 @@
->  #ifndef LINUX_MSI_H
->  #define LINUX_MSI_H
->  
-> +#include <linux/list.h>
-> +
->  struct msi_msg {
->  	u32	address_lo;	/* low 32 bits of msi message address */
->  	u32	address_hi;	/* high 32 bits of msi message address */
-> @@ -24,10 +26,8 @@ struct msi_desc {
->  		unsigned default_irq;	/* default pre-assigned irq	  */
->  	}msi_attrib;
->  
-> -	struct {
-> -		__u16	head;
-> -		__u16	tail;
-> -	}link;
-> +	int irq;
-This should be "unsigned int irq"
-> +	struct list_head list;
->  
->  	void __iomem *mask_base;
->  	struct pci_dev *dev;
+If we were trying to support Dave Miller's example of hypervisors
+that don't let us touch the msi registers I think there would be a
+point.  As it is I think this just makes the code more brittle.
 
 Eric
