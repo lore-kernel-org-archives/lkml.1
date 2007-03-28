@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932881AbXC1UeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbXC1Ujb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932881AbXC1UeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 16:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXC1UeQ
+	id S1752801AbXC1Ujb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 16:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXC1Ujb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 16:34:16 -0400
-Received: from xdsler061.osnanet.de ([89.166.177.61]:1355 "EHLO
-	Marvin.DL8BCU.ampr.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932881AbXC1UeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 16:34:14 -0400
-Date: Wed, 28 Mar 2007 18:55:34 +0000
-From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
-To: Neil Brown <neilb@suse.de>
-Cc: Phy Prabab <phyprabab@gmail.com>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Odd log message associated with NFS
-Message-ID: <20070328185534.GA585@ds20.borg.net>
-Reply-To: dl8bcu@dl8bcu.de
-Mail-Followup-To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>,
-	Neil Brown <neilb@suse.de>, Phy Prabab <phyprabab@gmail.com>,
-	nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <2fe399760703271140l703c2791oa84e9e1832487dcb@mail.gmail.com> <20070327193909.GA585@ds20.borg.net> <17929.53448.506302.615732@notabene.brown>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 28 Mar 2007 16:39:31 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3281 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752801AbXC1Uja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 16:39:30 -0400
+From: Mariusz =?utf-8?q?Koz=C5=82owski?= <m.kozlowski@tuxland.pl>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.21-rc5-mm1
+Date: Wed, 28 Mar 2007 22:49:47 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>
+References: <20070326205706.a750bb35.akpm@linux-foundation.org> <20070328130234.c0a23572.akpm@linux-foundation.org> <20070328202542.GS16477@stusta.de>
+In-Reply-To: <20070328202542.GS16477@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <17929.53448.506302.615732@notabene.brown>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200703282249.48130.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 28, 2007 at 12:19:52PM +1000, Neil Brown wrote:
-> On Tuesday March 27, dl8bcu@dl8bcu.de wrote:
-> > On Tue, Mar 27, 2007 at 11:40:48AM -0700, Phy Prabab wrote:
-> > > kernel: rpcsvc: received unknown control message:-2144992132/-1
+Hello,
+
+> > > 	I run 2.6.21-rc4-mm1 with no hangs for a week.
+> > > Then when 2.6.21-rc5-mm1 showed up so I switched to it. Unfortunately
+> > > today my laptop hunged twice in a similar way as described here:
+> > > 
+> > > http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/index.html#1165
 > > 
-> > Just a 'me, too':
-> 
-> For the 'unknown control message' messages,
-> see:   "fix typo in svc_udp_recvfrom"  previously on
-> nfs@lists.sourceforge.net.
-> 
-> Fix is in -mm and below.
-
-will try, thanks.
- 
-> For "svc: bad direction" .... Don't know... garbage on the net maybe?
-> Or maybe not.  I have seen something like that before, but haven't
-
-I don't think so as it would mean corruption at other places, too. The
-Network is quite uninteresting: single ethernet segment, 2 switches
-involved, longest cable 8 meters ...
-
-> been able to pin it on anything yet.
-> NeilBrown
-
-I _had_ problems with the previous kernel (same version, same config, 
-different (older) compiler (gcc 3.4.5 instead of 4.1.2), on both client and server)
-It would randomly (usually within 30 mins) 'lock up' NFS, where the client
-sends out requests but doesn't get any answer (apart from tcp-ack) from the 
-server. Only a forced umount/remount recovered that (until the next lock-up). 
-But I'm willing to attribute that to a somehow broken gcc.
-
-again, thanks for commenting.
-
-bye,
-Thorsten
- 
-> --- linux-2.6.orig/net/sunrpc/svcsock.c
-> +++ linux-2.6/net/sunrpc/svcsock.c
-> @@ -779,7 +779,7 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
->  	}
->  
->  	clear_bit(SK_DATA, &svsk->sk_flags);
-> -	while ((err == kernel_recvmsg(svsk->sk_sock, &msg, NULL,
-> +	while ((err = kernel_recvmsg(svsk->sk_sock, &msg, NULL,
->  				      0, 0, MSG_PEEK | MSG_DONTWAIT)) < 0 ||
->  	       (skb = skb_recv_datagram(svsk->sk_sk, 0, 1, &err)) == NULL) {
->  		if (err == -EAGAIN) {
-> 
-> 
+> > It's not good that we went backwards between those two releases.
 > > 
-> > Mar 16 16:57:06 Marvin kernel: svc: bad direction 268435456, dropping request
-> > Mar 16 17:58:19 Marvin kernel: svc: bad direction 268435456, dropping request
-> > Mar 16 19:55:49 Marvin kernel: svc: bad direction 268435456, dropping request
-> > ...
-> > Mar 17 04:30:03 Marvin kernel: svc: bad direction 268435456, dropping request
+> > > The difference is that it happened when I closed the lid in my laptop.
+> > > When reopend it the box was frozen (ACPI?). Again disk I/O was dead
+> > > so nothing was found in syslog.
+> > 
+> > Adrian, does this look like any of the bugs whcih you're monitoring?
+> >...
+> 
+> Is it also present in 2.6.21-rc5?
 
--- 
-| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
-| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
-| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
+Don't know. I usualy test -mm series. Will test tommorow and let you know
+after some reasonable uptime.
+
+> Is it also present with CONFIG_NO_HZ=n?
+
+Don't know. Did not try recently. Will let you know.
+
+It takes time as these hangs are not easy to trigger. With 2.6.21-rc2-mm1
+it was easy -> push the system and watch it die in minutes. With
+2.6.21-rc5-mm1 it takes hours (3 hangs in ~15 hours) and not sure how to
+trigger it. It just happens from time to time.
+
+> cu
+> Adrian
+
+Regards,
+
+	Mariusz Kozlowski
