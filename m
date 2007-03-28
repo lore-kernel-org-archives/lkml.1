@@ -1,100 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbXC1IOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965148AbXC1IXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbXC1IOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 04:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbXC1IOU
+	id S965148AbXC1IXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 04:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbXC1IXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 04:14:20 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:45999
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752667AbXC1IOR (ORCPT
+	Wed, 28 Mar 2007 04:23:19 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:55291 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933960AbXC1IXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 04:14:17 -0400
-X-Greylist: delayed 1986 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Mar 2007 04:14:17 EDT
-Date: Wed, 28 Mar 2007 09:38:53 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Xin Zhao <uszhaoxin@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: Linux page cache issue?
-Message-ID: <20070328073853.GC14429@traven>
-References: <4ae3c140703272345y3b3cb3cexf4c4b63e0035d5b9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ae3c140703272345y3b3cb3cexf4c4b63e0035d5b9@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 28 Mar 2007 04:23:17 -0400
+Date: Wed, 28 Mar 2007 10:25:12 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Eric Rannaud <eric.rannaud@gmail.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Larry Finger <larry.finger@lwfinger.net>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Monakhov Dmitriy <dmonakhov@openvz.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070328102512.56ecd00a@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070328012635.GC18799@zenigma>
+References: <4602752A.5050109@lwfinger.net>
+	<20070322181019.62fe78ed@gondolin.boeblingen.de.ibm.com>
+	<4602D137.4060402@lwfinger.net>
+	<20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com>
+	<20070323210618.6a41f5da.akpm@linux-foundation.org>
+	<20070326110949.5301a571@gondolin.boeblingen.de.ibm.com>
+	<20070326012232.0f0b9e09.akpm@linux-foundation.org>
+	<20070326103432.GB18799@zenigma>
+	<3ae72650703270225k1db9c4a8w6e31b95e007336d7@mail.gmail.com>
+	<20070327191749.28298069@gondolin.boeblingen.de.ibm.com>
+	<20070328012635.GC18799@zenigma>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-according to the chapter "Linux Kernel Overview" of the
-kernelhacking-HOWTO the page cache holds pages associated with *open*
-files:
+On Wed, 28 Mar 2007 03:26:35 +0200,
+Eric Rannaud <eric.rannaud@gmail.com> wrote:
 
-The Page Cache
+> The reason for that original patch was that it is actually possible for the
+> uevent functions to return -ENOMEM, the uevent buffer being statically
+> allocated to BUFFER_SIZE (2048).
 
-The page cache is made up of pages, each of which refers to a 4kB
-portion of data associated with an open file. The data contained in a
-page may come from several disk blocks, which may or may not be
-physically neighbours on the disk. The page cache is largely used to
-interface the requirements of the memory management subsystem (which
-uses fixed, 4kB pages) to the VFS subsystem (which uses different size
-blocks for different devices).
+So maybe -ENOMEM should still be propagated? We just don't want to fail
+device_add because of it.
 
-The page cache has two important data structures, a page hash table
-and an inode queue. The page hash table is used to quickly find the
-page descriptor of the page holding data associated with an inode and
-offset within a file. The inode queue contains lists of page
-descriptors relating to open files.
+> It used to be 1024 but that was not
+> always enough and it was doubled a while ago [1]. Using add_uevent_var()
+> makes this less of a problem as such an overflow should be catched
+> cleanly [2].
 
-http://www.kernelhacking.org/docs/kernelhacking-HOWTO/indexs03.html
-
-m.
-
-El Wed, Mar 28, 2007 at 02:45:23AM -0400 Xin Zhao ha dit:
-
-> Hi,
-> 
-> If a Linux process opens and reads a file A, then it closes the file.
-> Will Linux keep the file A's data in cache for a while in case another
-> process opens and reads the same in a short time? I think that is what
-> I heard before.
-> 
-> But after I digged into the kernel code, I am confused.
-> 
-> When a process closes the file A, iput() will be called, which in turn
-> calls the follows two functions:
-> iput_final()->generic_drop_inode()
-> 
-> But from the following calling chain, we can see that file close will
-> eventually lead to evict and free all cached pages. Actually in
-> truncate_complete_page(), the pages will be freed.  This seems to
-> imply that Linux has to re-read the same data from disk even if
-> another process B read the same file right after process A closes the
-> file. That does not make sense to me.
-> 
-> /***calling chain ***/
-> generic_delete_inode/generic_forget_inode()->
-> truncate_inode_pages()->truncate_inode_pages_range()->
-> truncate_complete_page()->remove_from_page_cache()->
-> __remove_from_page_cache()->radix_tree_delete()
-> 
-> Am I missing something? Can someone please provide some advise?
-> 
-> Thanks a lot
-> -x
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-               For to be free is not merely to cast off
-               one's chains, but to live in a way that
-              respects and enhances the freedom of others
-                           (Nelson Mandela)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Reminds me that I need to look into ccw_uevent :)
