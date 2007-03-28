@@ -1,220 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933686AbXC1Wwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965786AbXC1Wxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933686AbXC1Wwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 18:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933699AbXC1Www
+	id S965786AbXC1Wxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 18:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965790AbXC1Wxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 18:52:52 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:60691 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933686AbXC1Wwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 18:52:51 -0400
-Subject: [PATCH] scsi: megaraid_sas - intercepts cmd timeout and throttle io
-From: Sumant Patro <sumant.patro@lsi.com>
-To: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
-       sumant.patro@lsi.com
-Content-Type: text/plain
-Date: Wed, 28 Mar 2007 10:43:54 -0700
-Message-Id: <1175103834.4130.17.camel@dumbo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-22) 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Mar 2007 18:53:35 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37366 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965786AbXC1Wxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 18:53:34 -0400
+Date: Thu, 29 Mar 2007 00:53:32 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.46-rc1
+Message-ID: <20070328225332.GA14134@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
 
-eh_timed_out call back (megasas_reset_timer) is used to throttle io to the adapter 
-when it is called the first time for a scmd.
-The MEGASAS_FW_BUSY flag is set and can_queue reduced to 16. The can_queue is restored 
-from completion routine in following two conditions : 5 seconds has elapsed and the # of
-outstanding cmds in FW is < 17.
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
----
- drivers/scsi/megaraid/megaraid_sas.c |   65 +++++++++++++++++++++++--
- drivers/scsi/megaraid/megaraid_sas.h |   13 +++--
- 2 files changed, 70 insertions(+), 8 deletions(-)
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
-This patch requires the patch submitted by James with subject line : 
 
-[PATCH] expose eh_timed_out to the host template
+Changes since 2.6.16.45:
 
-diff -uprN linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.c	2007-03-28 08:41:49.000000000 -0700
-+++ linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.c	2007-03-28 08:36:38.000000000 -0700
-@@ -10,7 +10,7 @@
-  *	   2 of the License, or (at your option) any later version.
-  *
-  * FILE		: megaraid_sas.c
-- * Version	: v00.00.03.10-rc1
-+ * Version	: v00.00.03.10-rc3
-  *
-  * Authors:
-  *	(email-id : megaraidlinux@lsi.com)
-@@ -886,6 +886,7 @@ megasas_queue_command(struct scsi_cmnd *
- 		goto out_return_cmd;
- 
- 	cmd->scmd = scmd;
-+	scmd->SCp.ptr = (char *)cmd;
- 
- 	/*
- 	 * Issue the command to the FW
-@@ -981,8 +982,8 @@ static int megasas_generic_reset(struct 
- 
- 	instance = (struct megasas_instance *)scmd->device->host->hostdata;
- 
--	scmd_printk(KERN_NOTICE, scmd, "megasas: RESET -%ld cmd=%x\n",
--	       scmd->serial_number, scmd->cmnd[0]);
-+	scmd_printk(KERN_NOTICE, scmd, "megasas: RESET -%ld cmd=%x retries=%x\n",
-+		 scmd->serial_number, scmd->cmnd[0], scmd->retries);
- 
- 	if (instance->hw_crit_error) {
- 		printk(KERN_ERR "megasas: cannot recover from previous reset "
-@@ -1000,6 +1001,40 @@ static int megasas_generic_reset(struct 
- }
- 
- /**
-+ * megasas_reset_timer - quiesce the adapter if required
-+ * @scmd:		scsi cmnd
-+ *
-+ * Sets the FW busy flag and reduces the host->can_queue if the
-+ * cmd has not been completed within the timeout period.
-+ */
-+static enum
-+scsi_eh_timer_return megasas_reset_timer(struct scsi_cmnd *scmd)
-+{
-+	struct megasas_cmd *cmd = (struct megasas_cmd *)scmd->SCp.ptr;
-+	struct megasas_instance *instance;
-+	unsigned long flags;
-+
-+	if (cmd) {
-+		if (time_after(jiffies, scmd->jiffies_at_alloc + 170 * HZ))
-+			return EH_NOT_HANDLED;
-+
-+		instance = cmd->instance;
-+		if (!(instance->flag & MEGASAS_FW_BUSY)) {
-+			/* FW is busy, throttle IO */
-+			spin_lock_irqsave(&instance->throttle_io_lock, flags);
-+
-+			instance->host->can_queue = 16;
-+			instance->last_time = jiffies;
-+			instance->flag |= MEGASAS_FW_BUSY;
-+
-+			spin_unlock_irqrestore(&instance->throttle_io_lock, flags);
-+		}
-+		return EH_RESET_TIMER;
-+	}
-+	return EH_HANDLED;
-+}
-+
-+/**
-  * megasas_reset_device -	Device reset handler entry point
-  */
- static int megasas_reset_device(struct scsi_cmnd *scmd)
-@@ -1112,6 +1147,7 @@ static struct scsi_host_template megasas
- 	.eh_device_reset_handler = megasas_reset_device,
- 	.eh_bus_reset_handler = megasas_reset_bus_host,
- 	.eh_host_reset_handler = megasas_reset_bus_host,
-+	.eh_timed_out = megasas_reset_timer,
- 	.bios_param = megasas_bios_param,
- 	.use_clustering = ENABLE_CLUSTERING,
- };
-@@ -1215,9 +1251,8 @@ megasas_complete_cmd(struct megasas_inst
- 	int exception = 0;
- 	struct megasas_header *hdr = &cmd->frame->hdr;
- 
--	if (cmd->scmd) {
-+	if (cmd->scmd)
- 		cmd->scmd->SCp.ptr = (char *)0;
--	}
- 
- 	switch (hdr->cmd) {
- 
-@@ -1806,6 +1841,7 @@ static void megasas_complete_cmd_dpc(uns
- 	u32 context;
- 	struct megasas_cmd *cmd;
- 	struct megasas_instance *instance = (struct megasas_instance *)instance_addr;
-+	unsigned long flags;
- 
- 	/* If we have already declared adapter dead, donot complete cmds */
- 	if (instance->hw_crit_error)
-@@ -1828,6 +1864,22 @@ static void megasas_complete_cmd_dpc(uns
- 	}
- 
- 	*instance->consumer = producer;
-+
-+	/*
-+	 * Check if we can restore can_queue
-+	 */
-+	if (instance->flag & MEGASAS_FW_BUSY
-+		&& time_after(jiffies, instance->last_time + 5 * HZ)
-+		&& atomic_read(&instance->fw_outstanding) < 17) {
-+
-+		spin_lock_irqsave(&instance->throttle_io_lock, flags);
-+
-+		instance->flag &= ~MEGASAS_FW_BUSY;
-+		instance->host->can_queue =
-+				instance->max_fw_cmds - MEGASAS_INT_CMDS;
-+
-+		spin_unlock_irqrestore(&instance->throttle_io_lock, flags);
-+	}
- }
- 
- /**
-@@ -2384,6 +2436,7 @@ megasas_probe_one(struct pci_dev *pdev, 
- 	init_waitqueue_head(&instance->int_cmd_wait_q);
- 	init_waitqueue_head(&instance->abort_cmd_wait_q);
- 
-+	spin_lock_init(&instance->throttle_io_lock);
- 	spin_lock_init(&instance->cmd_pool_lock);
- 
- 	sema_init(&instance->aen_mutex, 1);
-@@ -2398,6 +2451,8 @@ megasas_probe_one(struct pci_dev *pdev, 
- 	instance->init_id = MEGASAS_DEFAULT_INIT_ID;
- 
- 	megasas_dbg_lvl = 0;
-+	instance->flag = 0;
-+	instance->last_time = 0;
- 
- 	/*
- 	 * Initialize MFI Firmware
-diff -uprN linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.h	2007-03-28 08:41:49.000000000 -0700
-+++ linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.h	2007-03-28 08:36:39.000000000 -0700
-@@ -18,9 +18,9 @@
- /*
-  * MegaRAID SAS Driver meta data
-  */
--#define MEGASAS_VERSION				"00.00.03.10-rc1"
--#define MEGASAS_RELDATE				"Feb 14, 2007"
--#define MEGASAS_EXT_VERSION			"Wed Feb 14 10:14:25 PST 2007"
-+#define MEGASAS_VERSION				"00.00.03.10-rc3"
-+#define MEGASAS_RELDATE				"Mar 28, 2007"
-+#define MEGASAS_EXT_VERSION			"Wed Mar 28 10:25:52 PST 2007"
- 
- /*
-  * Device IDs
-@@ -539,6 +539,8 @@ struct megasas_ctrl_info {
- 
- #define MEGASAS_DBG_LVL				1
- 
-+#define MEGASAS_FW_BUSY				1
-+
- /*
-  * When SCSI mid-layer calls driver's reset routine, driver waits for
-  * MEGASAS_RESET_WAIT_TIME seconds for all outstanding IO to complete. Note
-@@ -1104,6 +1106,11 @@ struct megasas_instance {
- 
- 	struct megasas_instance_template *instancet;
- 	struct tasklet_struct isr_tasklet;
-+
-+	u8 flag;
-+	u8 rsvd[3];
-+	unsigned long last_time;
-+	spinlock_t throttle_io_lock;
- };
- 
- #define MEGASAS_IS_LOGICAL(scp)						\
+Adrian Bunk (1):
+      Linux 2.6.16.46-rc1
+
+Akinbou Mita (1):
+      md: fix /proc/mdstat refcounting
+
+Alan Stern (10):
+      usb-storage: unusual_devs entry for Nikon DSC D70s
+      USB: unusual_devs entry for Nokia N80
+      USB: unusual_devs entry for Nokia N91
+      USB: unusual_devs entry for Nokia E61
+      USB: unusual_devs entry for Lacie DVD+-RW
+      USB: unusual-devs entry for Nokia E60
+      USB: unusual_devs entry for Nokia 6131
+      USB: unusual_devs entry for Nokia 6234
+      unusual_devs update for UCR-61S2B
+      USB: unusual_devs update for Sony P990i phone
+
+Amol Lad (1):
+      sound/pci/au88x0/au88x0.c: ioremap balanced with iounmap
+
+Andrew Nayenko (1):
+      USB storage: Nokia 6288 unusual_devs entry
+
+Andy Isaacson (1):
+      fix read past end of array in md/linear.c
+
+Clemens Ladisch (1):
+      usb-audio: work around wrong frequency in CM6501 descriptors
+
+David Kuehling (1):
+      USB: unusual_devs entry for A-VOX WSX-300ER MP3 player
+
+Davide Perini (1):
+      usb-storage: unusual_devs entry for Motorola RAZR V3x
+
+Dylan Taft (1):
+      USB Storage: US_FL_IGNORE_RESIDUE needed for Aiptek MP3 Player
+
+Eric Sesterhenn (1):
+      [ALSA] fix NULL pointer dereference in sound/synth/emux/soundfont.c
+
+Ernis (1):
+      USB: unusual_devs entry for Samsung MP3 player
+
+Florin Malita (1):
+      [ALSA] Dereference after free in snd_hwdep_release()
+
+Guennadi Liakhovetski (1):
+      [PPP]: Don't leak an sk_buff on interface destruction.
+
+Jaco Kroon (1):
+      USB: add Digitech USB-Storage to unusual_devs.h
+
+Jürgen Mell (1):
+      USB floppy drive SAMSUNG SFD-321U/EP was detected 8 times
+
+Lars Ellenberg (1):
+      md: pass down BIO_RW_SYNC in raid{1,10}
+
+Lars Jacob (1):
+      USB: unusual_devs entry for Sony DSC-H5
+
+Luiz Fernando N. Capitulino (1):
+      USB: unusual_devs.h for Sony floppy
+
+Manuel Osdoba (1):
+      USB: unusual_devs.h entry for nokia 6233
+
+Mario Rettig (1):
+      USB: unusual_devs entry for Nokia 3250
+
+Mikko Honkala (1):
+      USB: Nokia E70 is an unusual device
+
+Neil Brown (2):
+      MD: Fix problem where hot-added drives are not resynced.
+      md: Fix bug where spares don't always get rebuilt properly when they become live
+
+Nick Piggin (1):
+      mm: fix madvise infinine loop
+
+Olivier Blondeau (1):
+      USB: storage: atmel unusual dev update
+
+Patrick McHardy (3):
+      [NET_SCHED]: Fix endless loops caused by inaccurate qlen counters
+      [NET_SCHED]: cls_basic: fix NULL pointer dereference
+      [NET_SCHED]: Fix ingress locking
+
+Pete Zaitcev (3):
+      USB storage: fix ipod ejecting issue
+      USB: unusual_devs.h for 0x046b:ff40
+      USB: RAZR v3i unusual_devs
+
+Phil Dibowitz (11):
+      USB: storage: sandisk unusual_devices entry
+      USB: storage: another unusual_devs.h entry
+      USB: storage: unusual_devs.h entry 0420:0001
+      USB: Storage: unusual devs update
+      USB Storage: US_FL_MAX_SECTORS_64 flag
+      USB: another unusual device
+      USB Storage: unusual_devs.h for Sony Ericsson M600i
+      USB: unusual_dev entry for Sony P990i
+      USB: usb-storage: Unusual_dev update
+      USB Storage: unusual_devs: add supertop drives
+      USB: Fix UCR-61S2B unusual_dev entry
+
+Rodolfo Quesada (1):
+      USB: storage: new unusual_devs.h entry: Mitsumi 7in1 Card Reader
+
+Russell King (1):
+      [SERIAL] Fix oops when removing suspended serial port
+
+Stefan Richter (1):
+      ieee1394: dv1394: fix CardBus card ejection
+
+Takashi Iwai (6):
+      [ALSA] hda-codec - Don't return error at initialization of modem codec
+      [ALSA] hda-intel - Don't try to probe invalid codecs
+      [ALSA] Fix invalid assignment of PCI revision
+      [ALSA] cmipci - Fix a typo in 'PC Speaker Playback Switch' control
+      [ALSA] cs4281 - Fix the check of right channel
+      [ALSA] ca0106 - Add missing sysfs device assignment
+
+Tobias Lorenz (1):
+      USB: Mitsumi USB FDD 061M: UNUSUAL_DEV multilun fix
+
+YOSHIFUJI Hideaki (1):
+      [IPV6] HASHTABLES: Use appropriate seed for caluculating ehash index.
+
+
+ Makefile                           |    2 
+ drivers/ieee1394/dv1394.c          |   17 -
+ drivers/md/linear.c                |    2 
+ drivers/md/md.c                    |    3 
+ drivers/md/raid1.c                 |   13 -
+ drivers/md/raid10.c                |   11 -
+ drivers/net/ppp_generic.c          |    3 
+ drivers/serial/serial_core.c       |    9 
+ drivers/usb/storage/scsiglue.c     |   12 -
+ drivers/usb/storage/unusual_devs.h |  285 +++++++++++++++++++++++++++--
+ drivers/usb/storage/usb.h          |    4 
+ include/linux/serial_core.h        |    1 
+ include/linux/usb_usual.h          |    2 
+ include/net/sch_generic.h          |    4 
+ include/sound/ymfpci.h             |    2 
+ mm/madvise.c                       |    5 
+ net/core/dev.c                     |    4 
+ net/ipv6/inet6_hashtables.c        |    2 
+ net/sched/cls_basic.c              |   17 -
+ net/sched/sch_api.c                |   39 +++
+ net/sched/sch_atm.c                |    5 
+ net/sched/sch_cbq.c                |   10 -
+ net/sched/sch_dsmark.c             |    7 
+ net/sched/sch_generic.c            |    7 
+ net/sched/sch_hfsc.c               |   30 ++-
+ net/sched/sch_htb.c                |   39 ++-
+ net/sched/sch_netem.c              |    5 
+ net/sched/sch_prio.c               |   14 +
+ net/sched/sch_sfq.c                |    3 
+ net/sched/sch_tbf.c                |   15 +
+ sound/core/hwdep.c                 |    3 
+ sound/pci/au88x0/au88x0.c          |    1 
+ sound/pci/ca0106/ca0106.h          |    2 
+ sound/pci/ca0106/ca0106_main.c     |    4 
+ sound/pci/cmipci.c                 |    2 
+ sound/pci/cs4281.c                 |    2 
+ sound/pci/emu10k1/emu10k1x.c       |    4 
+ sound/pci/hda/hda_intel.c          |   12 +
+ sound/pci/hda/patch_si3054.c       |    3 
+ sound/pci/ymfpci/ymfpci_main.c     |    2 
+ sound/synth/emux/soundfont.c       |    2 
+ sound/usb/usbaudio.c               |    8 
+ 42 files changed, 490 insertions(+), 127 deletions(-)
 
 
