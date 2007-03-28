@@ -1,113 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933890AbXC1XeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933877AbXC1XgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933890AbXC1XeZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 19:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933921AbXC1XeZ
+	id S933877AbXC1XgD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 19:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934004AbXC1XgC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 19:34:25 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:35621 "EHLO smtp.osdl.org"
+	Wed, 28 Mar 2007 19:36:02 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39434 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933890AbXC1XeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 19:34:25 -0400
-Date: Wed, 28 Mar 2007 16:34:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] cache pipe buf page address for non-highmem arch
-Message-Id: <20070328163416.133d109a.akpm@linux-foundation.org>
-In-Reply-To: <3F0B1567-B32C-44F4-9B90-0737ADDACC56@oracle.com>
-References: <b040c32a0703221751x54417524l5237742f345eeda9@mail.gmail.com>
-	<20070322170122.ee2589a1.akpm@linux-foundation.org>
-	<b040c32a0703231748s112beda6i3d51ebcd658005c4@mail.gmail.com>
-	<20070326201552.b8ad7dda.akpm@linux-foundation.org>
-	<b040c32a0703271047vba81938q538d182c9c984f42@mail.gmail.com>
-	<3D4D126C-0B26-4B00-A2E4-68BD84555B51@oracle.com>
-	<20070328161420.3c8f9688.akpm@linux-foundation.org>
-	<3F0B1567-B32C-44F4-9B90-0737ADDACC56@oracle.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	id S933877AbXC1XgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 19:36:00 -0400
+Date: Thu, 29 Mar 2007 01:34:42 +0200
+From: Karel Zak <kzak@redhat.com>
+To: =?utf-8?Q?P=C3=A1draig?= Brady <P@draigBrady.com>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Tomas M <tomas@slax.org>, linux-kernel@vger.kernel.org
+Subject: Re: max_loop limit
+Message-ID: <20070328233442.GK27806@petra.dvoda.cz>
+References: <460236CE.1030303@slax.org> <20070322110058.GB23664@tatooine.rebelbase.local> <46026A92.4020106@slax.org> <20070322144210.73dfaf83.dada1@cosmosbay.com> <20070322134230.GP19922@kernel.dk> <20070322145245.a49fefeb.dada1@cosmosbay.com> <20070322135456.GS19922@kernel.dk> <20070322141146.GN2986@holomorphy.com> <4602AA29.4020607@draigBrady.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4602AA29.4020607@draigBrady.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007 16:21:04 -0700
-Zach Brown <zach.brown@oracle.com> wrote:
-
-> > Does this look OK?
+On Thu, Mar 22, 2007 at 04:09:13PM +0000, Pádraig Brady wrote:
+> William Lee Irwin III wrote:
+> > Any chance we can get some kind of devices set up for partitions of
+> > loop devices if we're going to redo loopdev setup? That's been a thorn
+> > in my side for some time.
 > 
-> Almost...
-> 
-> > #ifdef CONFIG_HIGHMEM
-> > static inline void pipe_kunmap_atomic(void *addr, enum km_type type)
-> > #else	/* CONFIG_HIGHMEM */
-> > static inline void pipe_kunmap_atomic(struct page *page, enum  
-> > km_type type)
-> 
+> This script might be of use:
+> http://www.pixelbeat.org/scripts/lomount.sh
 
-OK, I give up.  What are you telling me here?
-
-<compiles it>
-
-argh, enum km_type isn't defined if !CONFIG_HIGHMEM, which is extravagantly
-dumb.
-
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-Cc: "Ken Chen" <kenchen@google.com>
-Cc: Zach Brown <zach.brown@oracle.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- fs/pipe.c |   31 +++++++++++++++++++++++++------
- 1 files changed, 25 insertions(+), 6 deletions(-)
-
-diff -puN fs/pipe.c~cache-pipe-buf-page-address-for-non-highmem-arch-fix-tidy fs/pipe.c
---- a/fs/pipe.c~cache-pipe-buf-page-address-for-non-highmem-arch-fix-tidy
-+++ a/fs/pipe.c
-@@ -22,17 +22,36 @@
- #include <asm/ioctls.h>
+ Ah, lomount... very popular name ;-) Xen guys have lomount too.
  
- #ifdef CONFIG_HIGHMEM
--#define pipe_kmap		kmap
--#define pipe_kmap_atomic	kmap_atomic
--#define pipe_kunmap		kunmap
--#define pipe_kunmap_atomic	kunmap_atomic
-+static inline void *pipe_kmap(struct page *page)
-+{
-+	return kmap(page);
-+}
-+
-+static inline void pipe_kunmap(struct page *page)
-+{
-+	kunmap(page);
-+}
-+
-+static inline void *pipe_kmap_atomic(struct page *page, enum km_type type)
-+{
-+	return kmap_atomic(page, type);
-+}
-+
-+static inline void pipe_kunmap_atomic(void *addr, enum km_type type)
-+{
-+	kunmap_atomic(addr, type);
-+}
- #else	/* CONFIG_HIGHMEM */
- static inline void *pipe_kmap(struct page *page)
- {
--	return (void *) page->private;
-+	return (void *)page->private;
- }
-+
-+static inline void pipe_kunmap(struct page *page)
-+{
-+}
-+
- #define pipe_kmap_atomic(page, type)	pipe_kmap(page)
--#define pipe_kunmap(page)		do { } while (0)
- #define pipe_kunmap_atomic(page, type)	do { } while (0)
- #endif
- 
-_
+ Unfortunately, these solution are useless with LVM volumes. The
+ kpartx is more usable:
 
+ http://fedoraproject.org/wiki/FedoraXenQuickstartFC6?highlight=%28Xen%29#head-9c5408e750e8184aece3efe822be0ef6dd1871cd
+
+    Karel
+
+-- 
+ Karel Zak  <kzak@redhat.com>
