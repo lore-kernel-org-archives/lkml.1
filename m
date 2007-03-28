@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXC1TYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932508AbXC1T1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932404AbXC1TYw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbXC1TYw
+	id S932508AbXC1T1G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933149AbXC1T1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:24:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38251 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932404AbXC1TYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:24:51 -0400
-Date: Wed, 28 Mar 2007 21:23:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 28 Mar 2007 15:27:06 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:44745 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932508AbXC1T1F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 15:27:05 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 28 Mar 2007 12:26:57 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       e1000-devel@lists.sourceforge.net, jgarzik@pobox.com,
-       netdev@vger.kernel.org
-Subject: Re: [1/5] 2.6.21-rc5: known regressions
-Message-ID: <20070328192327.GA24340@elte.hu>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de> <460AB9E8.8070803@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460AB9E8.8070803@intel.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Ravikiran G Thirumalai <kiran@scalex86.org>
+Subject: Re: [rfc][patch] queued spinlocks (i386)
+In-Reply-To: <20070328064318.GA12508@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com>
+References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu>
+ <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL>
+ <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 28 Mar 2007, Nick Piggin wrote:
 
-* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+> On Sat, Mar 24, 2007 at 06:29:59PM +0100, Ingo Molnar wrote:
+> > 
+> > * Nikita Danilov <nikita@clusterfs.com> wrote:
+> > 
+> > > Indeed, this technique is very well known. E.g., 
+> > > http://citeseer.ist.psu.edu/anderson01sharedmemory.html has a whole 
+> > > section (3. Local-spin Algorithms) on them, citing papers from the 
+> > > 1990 onward.
+> > 
+> > that is a cool reference! So i'd suggest to do (redo?) the patch based 
+> > on those concepts and that terminology and not use 'queued spinlocks' 
+> > that are commonly associated with MS's stuff. And as a result the 
+> > contended case would be optimized some more via local-spin algorithms. 
+> > (which is not a key thing for us, but which would be nice to have 
+> > nevertheless)
+> 
+> Firstly, the terminology in that paper _is_ "queue lock", which isn't
+> really surprising. I don't really know or care about what MS calls their
+> locks, but I'd suggest that their queued spinlock is probably named in
+> reference to its queueing property rather than its local spin property.
 
-> Adrian Bunk wrote:
-> >Subject    : e1000 resume weirdness
-> >References : http://lkml.org/lkml/2007/3/26/91
-> >Submitter  : Ingo Molnar <mingo@elte.hu>
-> >Handled-By : Jesse Brandeburg <jesse.brandeburg@gmail.com>
-> >             Auke Kok <auke-jan.h.kok@intel.com>
-> >Status     : problem is being debugged
+The method you propose is otherwise called "Ticket Lock":
 
-> Adrian, you probably want to drop this issue from your list.
+http://en.wikipedia.org/wiki/Ticket_lock
+http://www.cs.rochester.edu/research/synchronization/pseudocode/ss.html#ticket
 
-agreed - i have done many suspend/resumes meanwhile, and this condition 
-has not reoccured since then. (and even when it occured, it was 
-transitionary)
 
-	Ingo
+
+
+- Davide
+
+
