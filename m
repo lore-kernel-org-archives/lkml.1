@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbXC1MQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751023AbXC1MU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbXC1MQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 08:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbXC1MQS
+	id S1751023AbXC1MU3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 08:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbXC1MU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 08:16:18 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55103 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbXC1MQR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 08:16:17 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
+	Wed, 28 Mar 2007 08:20:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55556 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750944AbXC1MU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 08:20:27 -0400
+Date: Wed, 28 Mar 2007 14:19:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       <daniel.e.wolstenholme@intel.com>
-Subject: Re: [PATCH 16/21] MSI: arch should connect the irq and the msi_desc desc when it's ready
-References: <20070322105344.312FEDDF70@ozlabs.org>
-Date: Wed, 28 Mar 2007 06:15:37 -0600
-In-Reply-To: <20070322105344.312FEDDF70@ozlabs.org> (Michael Ellerman's
-	message of "Thu, 22 Mar 2007 21:51:42 +1100")
-Message-ID: <m1bqidr2c6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Thomas Meyer <thomas@m3y3r.de>, Frederic Riss <frederic.riss@gmail.com>,
+       Marcus Better <marcus@better.se>
+Subject: Re: [4/5] 2.6.21-rc5: known regressions
+Message-ID: <20070328121958.GA11290@elte.hu>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015949.GB16477@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070327015949.GB16477@stusta.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Ellerman <michael@ellerman.id.au> writes:
 
-> set_irq_msi() currently connects an irq_desc to an msi_desc. The archs call
-> it at some point in their setup routine, and then the generic code sets up the
-> reverse mapping from the msi_desc back to the irq.
->
-> set_irq_msi() should really do both connections, making it the one and only
-> call required to connect an irq with it's MSI desc.
+* Adrian Bunk <bunk@stusta.de> wrote:
 
-Hmm.  This comment should be a little more forceful than a suggestion
-to make ti clear you have made that change somewhere in this
-patch.
+> Subject    : second suspend to disk in a row results in an oops  (MSI)
+> References : http://lkml.org/lkml/2007/3/17/43
+>              http://lkml.org/lkml/2007/3/22/150
+>              http://lkml.org/lkml/2007/3/26/205
+>              http://lkml.org/lkml/2007/3/26/76
+> Submitter  : Thomas Meyer <thomas@m3y3r.de>
+>              Frédéric Riss <frederic.riss@gmail.com>
+>              Marcus Better <marcus@better.se>
+> Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+> Patch      : http://lkml.org/lkml/2007/3/24/136
+> Status     : patch was suggested
 
-> It should be the arch code that calls set_irq_msi(), and it should do so
-> only once it's sure it's not going to fail the irq allocation.
->
-> Given that there's no need for the arch to return the irq anymore, the return
-> value from the arch setup routine just becomes 0 for success and !0 for
-> failure.
+i can reproduce a crash on the second suspend-to-ram, on a T60. I get a 
+crash here:
 
-Call it negative for failure, or possibly nonzero.  !0 == 1  Which
-isn't what you meant, and is confusing comparing it to the code.
+ #ifdef CONFIG_PM
+ static void __pci_restore_msi_state(struct pci_dev *dev)
+ {
+         int pos;
+         u16 control;
+         struct msi_desc *entry;
 
-Ok.  This is likely me limit of picking on your patches for tonight.
+         if (!dev->msi_enabled)
+                 return;
+
+         entry = get_irq_msi(dev->irq);
+         pos = entry->msi_attrib.pos; <-------- crash on NULL dereference
 
 
+i.e. 'entry' is NULL after get_irq_msi(). (i can see the crash only on 
+the VGA screen so no dump of it available. Can write down more info if  
+it's helpful.)
 
-> Index: msi-new/arch/ia64/kernel/msi_ia64.c
-> ===================================================================
-> --- msi-new.orig/arch/ia64/kernel/msi_ia64.c
-> +++ msi-new/arch/ia64/kernel/msi_ia64.c
-> @@ -74,7 +74,6 @@ int ia64_setup_msi_irq(struct pci_dev *p
->  	if (irq < 0)
->  		return irq;
->  
-> -	set_irq_msi(irq, desc);
->  	dest_phys_id = cpu_physical_id(first_cpu(cpu_online_map));
->  	vector = irq;
->  
-> @@ -91,11 +90,13 @@ int ia64_setup_msi_irq(struct pci_dev *p
->  		MSI_DATA_DELIVERY_FIXED |
->  		MSI_DATA_VECTOR(vector);
->  
-> +	desc->irq = irq;
-Setting desc->irq just before set_irq_msi appears redundant here.
-> +	set_irq_msi(irq, desc);
->  	set_irq_chip_and_handler(irq, &ia64_msi_chip, handle_edge_irq);
->  	get_irq_chip(irq)->mask(irq);
->  	write_msi_msg(irq, &msg);
->  
-> -	return irq;
-> +	return 0;
->  }
->  
->  void ia64_teardown_msi_irq(unsigned int irq)
+I have tried Eric's patch above but now i always get a hang after 
+"system 00:00: resuming", already upon the first suspend-resume. Not 
+even the NMI watchdog can get the system out of that hang.
 
-Eric
+	Ingo
