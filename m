@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbXC1MMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbXC1MQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753030AbXC1MMR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 08:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXC1ML7
+	id S1753018AbXC1MQS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 08:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbXC1MQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 08:11:59 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36846 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933204AbXC1MLm (ORCPT
+	Wed, 28 Mar 2007 08:16:18 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55103 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbXC1MQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 08:11:42 -0400
-Date: Wed, 28 Mar 2007 14:11:41 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>, dwmw2@infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-Subject: [-mm patch] drivers/mtd/ubi/: make code static
-Message-ID: <20070328121141.GQ16477@stusta.de>
-References: <20070326205706.a750bb35.akpm@linux-foundation.org>
+	Wed, 28 Mar 2007 08:16:17 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       <daniel.e.wolstenholme@intel.com>
+Subject: Re: [PATCH 16/21] MSI: arch should connect the irq and the msi_desc desc when it's ready
+References: <20070322105344.312FEDDF70@ozlabs.org>
+Date: Wed, 28 Mar 2007 06:15:37 -0600
+In-Reply-To: <20070322105344.312FEDDF70@ozlabs.org> (Michael Ellerman's
+	message of "Thu, 22 Mar 2007 21:51:42 +1100")
+Message-ID: <m1bqidr2c6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070326205706.a750bb35.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 26, 2007 at 08:57:06PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.21-rc4-mm1:
->...
->  git-ubi.patch
->...
->  git trees
->...
+Michael Ellerman <michael@ellerman.id.au> writes:
+
+> set_irq_msi() currently connects an irq_desc to an msi_desc. The archs call
+> it at some point in their setup routine, and then the generic code sets up the
+> reverse mapping from the msi_desc back to the irq.
+>
+> set_irq_msi() should really do both connections, making it the one and only
+> call required to connect an irq with it's MSI desc.
+
+Hmm.  This comment should be a little more forceful than a suggestion
+to make ti clear you have made that change somewhere in this
+patch.
+
+> It should be the arch code that calls set_irq_msi(), and it should do so
+> only once it's sure it's not going to fail the irq allocation.
+>
+> Given that there's no need for the arch to return the irq anymore, the return
+> value from the arch setup routine just becomes 0 for success and !0 for
+> failure.
+
+Call it negative for failure, or possibly nonzero.  !0 == 1  Which
+isn't what you meant, and is confusing comparing it to the code.
+
+Ok.  This is likely me limit of picking on your patches for tonight.
 
 
-This patch makes needlessly global code static.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> Index: msi-new/arch/ia64/kernel/msi_ia64.c
+> ===================================================================
+> --- msi-new.orig/arch/ia64/kernel/msi_ia64.c
+> +++ msi-new/arch/ia64/kernel/msi_ia64.c
+> @@ -74,7 +74,6 @@ int ia64_setup_msi_irq(struct pci_dev *p
+>  	if (irq < 0)
+>  		return irq;
+>  
+> -	set_irq_msi(irq, desc);
+>  	dest_phys_id = cpu_physical_id(first_cpu(cpu_online_map));
+>  	vector = irq;
+>  
+> @@ -91,11 +90,13 @@ int ia64_setup_msi_irq(struct pci_dev *p
+>  		MSI_DATA_DELIVERY_FIXED |
+>  		MSI_DATA_VECTOR(vector);
+>  
+> +	desc->irq = irq;
+Setting desc->irq just before set_irq_msi appears redundant here.
+> +	set_irq_msi(irq, desc);
+>  	set_irq_chip_and_handler(irq, &ia64_msi_chip, handle_edge_irq);
+>  	get_irq_chip(irq)->mask(irq);
+>  	write_msi_msg(irq, &msg);
+>  
+> -	return irq;
+> +	return 0;
+>  }
+>  
+>  void ia64_teardown_msi_irq(unsigned int irq)
 
----
-
- drivers/mtd/ubi/eba.c  |    4 ++--
- drivers/mtd/ubi/vtbl.c |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
---- linux-2.6.21-rc5-mm2/drivers/mtd/ubi/eba.c.old	2007-03-27 23:36:48.000000000 +0200
-+++ linux-2.6.21-rc5-mm2/drivers/mtd/ubi/eba.c	2007-03-27 23:38:05.000000000 +0200
-@@ -489,8 +489,8 @@ out_unlock:
-  * Returns new physical eraseblock number in case of success, and a negative
-  * error code in case of failure.
-  */
--int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
--		const void *buf, int offset, int len)
-+static int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
-+		       const void *buf, int offset, int len)
- {
- 	int err, idx = vol_id2idx(ubi, vol_id), new_pnum, data_size, tries = 0;
- 	struct ubi_volume *vol = ubi->volumes[idx];
---- linux-2.6.21-rc5-mm2/drivers/mtd/ubi/vtbl.c.old	2007-03-27 23:38:54.000000000 +0200
-+++ linux-2.6.21-rc5-mm2/drivers/mtd/ubi/vtbl.c	2007-03-27 23:39:08.000000000 +0200
-@@ -68,7 +68,7 @@ static void paranoid_vtbl_check(const st
- #endif
- 
- /* Empty volume table record */
--struct ubi_vtbl_record empty_vtbl_record;
-+static struct ubi_vtbl_record empty_vtbl_record;
- 
- /**
-  * ubi_change_vtbl_record - change volume table record.
-
+Eric
