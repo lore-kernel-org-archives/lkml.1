@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933215AbXC1TbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXC1TcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933215AbXC1TbY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933224AbXC1TbY
+	id S933224AbXC1TcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933264AbXC1TcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:31:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:35574 "EHLO mail.goop.org"
+	Wed, 28 Mar 2007 15:32:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:44785 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933215AbXC1TbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:31:23 -0400
-Message-ID: <460AC28E.8080708@goop.org>
-Date: Wed, 28 Mar 2007 12:31:26 -0700
+	id S933224AbXC1TcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 15:32:19 -0400
+Message-ID: <460AC2C6.9040406@goop.org>
+Date: Wed, 28 Mar 2007 12:32:22 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
@@ -21,7 +21,7 @@ CC: Andrew Morton <akpm@linux-foundation.org>,
        Jan Beulich <jbeulich@novell.com>,
        Stephane Eranian <eranian@hpl.hp.com>, Ingo Molnar <mingo@elte.hu>,
        "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: [PATCH] Add smp_ops interface
+Subject: [PATCH] Add machine_ops interface  to abstract halting and rebooting
 References: <46099709.2000304@goop.org> <200703282103.50191.ak@suse.de> <460ABF84.5060201@goop.org> <200703282122.22869.ak@suse.de>
 In-Reply-To: <200703282122.22869.ak@suse.de>
 Content-Type: text/plain; charset=UTF-8
@@ -29,177 +29,145 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Add smp_ops interface
-
-Add a smp_ops interface.  This abstracts the API defined by
-<linux/smp.h> for use within arch/i386.  The primary intent is that it
-be used by a paravirtualizing hypervisor to implement SMP, but it
-could also be used by non-APIC-using sub-architectures.
-
-This is related to CONFIG_PARAVIRT, but is implemented unconditionally
-since it is simpler that way and not a highly performance-sensitive
-interface.
+machine_ops is an interface for the machine_* functions defined in
+<linux/reboot.h>.  This is intended to allow hypervisors to intercept
+the reboot process, but it could be used to implement other x86
+subarchtecture reboots.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
 
 ---
- arch/i386/kernel/smp.c     |   21 +++++++++++++----
- arch/i386/kernel/smpboot.c |    8 +++---
- include/asm-i386/smp.h     |   53 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 73 insertions(+), 9 deletions(-)
+ arch/i386/kernel/apm.c    |    3 --
+ arch/i386/kernel/reboot.c |   49 +++++++++++++++++++++++++++++++++++++--------
+ include/asm-i386/reboot.h |   20 ++++++++++++++++++
+ 3 files changed, 62 insertions(+), 10 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/smp.c
-+++ b/arch/i386/kernel/smp.c
-@@ -483,7 +483,7 @@ void flush_tlb_all(void)
-  * it goes straight through and wastes no time serializing
-  * anything. Worst case is that we lose a reschedule ...
-  */
--void smp_send_reschedule(int cpu)
-+void native_smp_send_reschedule(int cpu)
- {
- 	WARN_ON(cpu_is_offline(cpu));
- 	send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
-@@ -576,9 +576,9 @@ static int __smp_call_function_mask(cpum
-  * You must not call this function with disabled interrupts or from a
-  * hardware interrupt handler or from a bottom half handler.
-  */
--int smp_call_function_mask(cpumask_t mask,
--			     void (*func)(void *), void *info,
--			     int wait)
-+int native_smp_call_function_mask(cpumask_t mask,
-+				  void (*func)(void *), void *info,
-+				  int wait)
- {
- 	int ret;
+--- a/arch/i386/kernel/apm.c
++++ b/arch/i386/kernel/apm.c
+@@ -233,10 +233,9 @@
+ #include <asm/desc.h>
+ #include <asm/i8253.h>
+ #include <asm/paravirt.h>
++#include <asm/reboot.h>
  
-@@ -657,7 +657,7 @@ static void stop_this_cpu (void * dummy)
-  * this function calls the 'stop' function on all other CPUs in the system.
-  */
+ #include "io_ports.h"
+-
+-extern void machine_real_restart(unsigned char *, int);
  
--void smp_send_stop(void)
-+void native_smp_send_stop(void)
- {
- 	/* Don't deadlock on the call lock in panic */
- 	int nolock = !spin_trylock(&call_lock);
-@@ -733,3 +733,14 @@ int safe_smp_processor_id(void)
- 
- 	return cpuid >= 0 ? cpuid : 0;
- }
-+
-+struct smp_ops smp_ops = {
-+	.smp_prepare_boot_cpu = native_smp_prepare_boot_cpu,
-+	.smp_prepare_cpus = native_smp_prepare_cpus,
-+	.cpu_up = native_cpu_up,
-+	.smp_cpus_done = native_smp_cpus_done,
-+
-+	.smp_send_stop = native_smp_send_stop,
-+	.smp_send_reschedule = native_smp_send_reschedule,
-+	.smp_call_function_mask = native_smp_call_function_mask,
-+};
+ #if defined(CONFIG_APM_DISPLAY_BLANK) && defined(CONFIG_VT)
+ extern int (*console_blank_hook)(int);
 ===================================================================
---- a/arch/i386/kernel/smpboot.c
-+++ b/arch/i386/kernel/smpboot.c
-@@ -1169,7 +1169,7 @@ static void __init smp_boot_cpus(unsigne
+--- a/arch/i386/kernel/reboot.c
++++ b/arch/i386/kernel/reboot.c
+@@ -18,6 +18,7 @@
+ #include <asm/desc.h>
+ #include "mach_reboot.h"
+ #include <asm/reboot_fixups.h>
++#include <asm/reboot.h>
  
- /* These are wrappers to interface to the new boot process.  Someone
-    who understands all this stuff should rewrite it properly. --RR 15/Jul/02 */
--void __init smp_prepare_cpus(unsigned int max_cpus)
-+void __init native_smp_prepare_cpus(unsigned int max_cpus)
- {
- 	smp_commenced_mask = cpumask_of_cpu(0);
- 	cpu_callin_map = cpumask_of_cpu(0);
-@@ -1189,7 +1189,7 @@ static inline void switch_to_new_gdt(voi
- 	asm ("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
- }
- 
--void __init smp_prepare_boot_cpu(void)
-+void __init native_smp_prepare_boot_cpu(void)
- {
- 	unsigned int cpu = smp_processor_id();
- 
-@@ -1290,7 +1290,7 @@ void __cpu_die(unsigned int cpu)
- }
- #endif /* CONFIG_HOTPLUG_CPU */
- 
--int __cpuinit __cpu_up(unsigned int cpu)
-+int __cpuinit native_cpu_up(unsigned int cpu)
- {
- 	unsigned long flags;
- #ifdef CONFIG_HOTPLUG_CPU
-@@ -1335,7 +1335,7 @@ int __cpuinit __cpu_up(unsigned int cpu)
- 	return 0;
- }
- 
--void __init smp_cpus_done(unsigned int max_cpus)
-+void __init native_smp_cpus_done(unsigned int max_cpus)
- {
- #ifdef CONFIG_X86_IO_APIC
- 	setup_ioapic_dest();
-===================================================================
---- a/include/asm-i386/smp.h
-+++ b/include/asm-i386/smp.h
-@@ -47,6 +47,59 @@ extern void cpu_exit_clear(void);
- extern void cpu_exit_clear(void);
- extern void cpu_uninit(void);
+ /*
+  * Power off function, if any
+@@ -280,7 +281,7 @@ EXPORT_SYMBOL(machine_real_restart);
+ EXPORT_SYMBOL(machine_real_restart);
  #endif
-+
-+struct smp_ops
+ 
+-void machine_shutdown(void)
++static void native_machine_shutdown(void)
+ {
+ #ifdef CONFIG_SMP
+ 	int reboot_cpu_id;
+@@ -320,7 +321,7 @@ void __attribute__((weak)) mach_reboot_f
+ {
+ }
+ 
+-void machine_emergency_restart(void)
++static void native_machine_emergency_restart(void)
+ {
+ 	if (!reboot_thru_bios) {
+ 		if (efi_enabled) {
+@@ -344,17 +345,17 @@ void machine_emergency_restart(void)
+ 	machine_real_restart(jump_to_bios, sizeof(jump_to_bios));
+ }
+ 
+-void machine_restart(char * __unused)
++static void native_machine_restart(char * __unused)
+ {
+ 	machine_shutdown();
+ 	machine_emergency_restart();
+ }
+ 
+-void machine_halt(void)
+-{
+-}
+-
+-void machine_power_off(void)
++static void native_machine_halt(void)
 +{
-+	void (*smp_prepare_boot_cpu)(void);
-+	void (*smp_prepare_cpus)(unsigned max_cpus);
-+	int (*cpu_up)(unsigned cpu);
-+	void (*smp_cpus_done)(unsigned max_cpus);
++}
 +
-+	void (*smp_send_stop)(void);
-+	void (*smp_send_reschedule)(int cpu);
-+	int (*smp_call_function_mask)(cpumask_t mask,
-+				      void (*func)(void *info), void *info,
-+				      int wait);
++static void native_machine_power_off(void)
+ {
+ 	if (pm_power_off) {
+ 		machine_shutdown();
+@@ -363,3 +364,35 @@ void machine_power_off(void)
+ }
+ 
+ 
++struct machine_ops machine_ops = {
++	.power_off = native_machine_power_off,
++	.shutdown = native_machine_shutdown,
++	.emergency_restart = native_machine_emergency_restart,
++	.restart = native_machine_restart,
++	.halt = native_machine_halt,
 +};
 +
-+extern struct smp_ops smp_ops;
-+
-+static inline void smp_prepare_boot_cpu(void)
++void machine_power_off(void)
 +{
-+	smp_ops.smp_prepare_boot_cpu();
-+}
-+static inline void smp_prepare_cpus(unsigned int max_cpus)
-+{
-+	smp_ops.smp_prepare_cpus(max_cpus);
-+}
-+static inline int __cpu_up(unsigned int cpu)
-+{
-+	return smp_ops.cpu_up(cpu);
-+}
-+static inline void smp_cpus_done(unsigned int max_cpus)
-+{
-+	smp_ops.smp_cpus_done(max_cpus);
++	machine_ops.power_off();
 +}
 +
-+static inline void smp_send_stop(void)
++void machine_shutdown(void)
 +{
-+	smp_ops.smp_send_stop();
-+}
-+static inline void smp_send_reschedule(int cpu)
-+{
-+	smp_ops.smp_send_reschedule(cpu);
-+}
-+static inline int smp_call_function_mask(cpumask_t mask,
-+					 void (*func) (void *info), void *info,
-+					 int wait)
-+{
-+	return smp_ops.smp_call_function_mask(mask, func, info, wait);
++	machine_ops.shutdown();
 +}
 +
-+void native_smp_prepare_boot_cpu(void);
-+void native_smp_prepare_cpus(unsigned int max_cpus);
-+int native_cpu_up(unsigned int cpunum);
-+void native_smp_cpus_done(unsigned int max_cpus);
- 
- #ifndef CONFIG_PARAVIRT
- #define startup_ipi_hook(phys_apicid, start_eip, start_esp) 		\
++void machine_emergency_restart(void)
++{
++	machine_ops.emergency_restart();
++}
++
++void machine_restart(char *cmd)
++{
++	machine_ops.restart(cmd);
++}
++
++void machine_halt(void)
++{
++	machine_ops.halt();
++}
+===================================================================
+--- /dev/null
++++ b/include/asm-i386/reboot.h
+@@ -0,0 +1,20 @@
++#ifndef _ASM_REBOOT_H
++#define _ASM_REBOOT_H
++
++struct pt_regs;
++
++struct machine_ops
++{
++	void (*restart)(char *cmd);
++	void (*halt)(void);
++	void (*power_off)(void);
++	void (*shutdown)(void);
++	void (*crash_shutdown)(struct pt_regs *);
++	void (*emergency_restart)(void);
++};
++
++extern struct machine_ops machine_ops;
++
++void machine_real_restart(unsigned char *code, int length);
++
++#endif	/* _ASM_REBOOT_H */
 
