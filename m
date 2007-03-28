@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933771AbXC1Kg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934174AbXC1Kwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933771AbXC1Kg5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 06:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933779AbXC1Kg5
+	id S934174AbXC1Kwy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 06:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934047AbXC1Kwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 06:36:57 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:48097 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933771AbXC1Kg4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 06:36:56 -0400
-X-Greylist: delayed 1454 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Mar 2007 06:36:55 EDT
-Message-ID: <460A3F54.4000301@gmail.com>
-Date: Wed, 28 Mar 2007 12:11:32 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 28 Mar 2007 06:52:54 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:44783 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934174AbXC1Kwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 06:52:53 -0400
+Date: Wed, 28 Mar 2007 19:49:41 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh fixes
+Message-ID: <20070328104941.GA24102@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: PCI: cannot adjust BAR<X> (not I/O)
-Content-Type: multipart/mixed;
- boundary="------------070607050100010408070401"
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070607050100010408070401
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Please pull from:
 
-Hi Greg.
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-On an older Intel 430VX system, 2.6.20.4 complains a bit:
+Which contains:
 
-===
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-PCI: Probing PCI hardware
-PCI: Probing PCI hardware (bus 00)
-0000:00:07.1: cannot adjust BAR0 (not I/O)
-0000:00:07.1: cannot adjust BAR1 (not I/O)
-0000:00:07.1: cannot adjust BAR2 (not I/O)
-0000:00:07.1: cannot adjust BAR3 (not I/O)
-Boot video device is 0000:00:08.0
-pnp: the driver 'system' has been registered
-pnp: match found with the PnP device '00:07' and the driver 'system'
-NET: Registered protocol family 2
-===
+Kristoffer Ericson (1):
+      sh: Trivial fix for hp6xx build.
 
-00:07.1 is IDE (lspci -s 7.1 -vv attached, due to wrap). It's no doubt 
-safe to ignore but looks a bit alarming...
+Paul Mundt (2):
+      sh: Kill bogus GCC4 symbol exports.
+      sh: Fixup __cmpxchg() compile breakage with gcc4.
 
-Rene.
+ arch/sh/kernel/sh_ksyms.c |    3 ---
+ include/asm-sh/hp6xx.h    |    6 +++---
+ include/asm-sh/system.h   |    1 +
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
-
---------------070607050100010408070401
-Content-Type: text/plain;
- name="lspci"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="lspci"
-
-00:07.1 IDE interface: Intel Corporation 82371SB PIIX3 IDE [Natoma/Triton II] (prog-if 80 [Master])
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Region 0: [virtual] Memory at 000001f0 (32-bit, non-prefetchable) [disabled] [size=8]
-	Region 1: [virtual] Memory at 000003f0 (type 3, non-prefetchable) [disabled] [size=1]
-	Region 2: [virtual] Memory at 00000170 (32-bit, non-prefetchable) [disabled] [size=8]
-	Region 3: [virtual] Memory at 00000370 (type 3, non-prefetchable) [disabled] [size=1]
-	Region 4: I/O ports at f000 [disabled] [size=16]
-
-
---------------070607050100010408070401--
+diff --git a/arch/sh/kernel/sh_ksyms.c b/arch/sh/kernel/sh_ksyms.c
+index fe1b276..6e0d10f 100644
+--- a/arch/sh/kernel/sh_ksyms.c
++++ b/arch/sh/kernel/sh_ksyms.c
+@@ -82,9 +82,6 @@ DECLARE_EXPORT(__movstr);
+ DECLARE_EXPORT(__movmem_i4_even);
+ DECLARE_EXPORT(__movmem_i4_odd);
+ DECLARE_EXPORT(__movmemSI12_i4);
+-DECLARE_EXPORT(__sdivsi3_i4i);
+-DECLARE_EXPORT(__udiv_qrnnd_16);
+-DECLARE_EXPORT(__udivsi3_i4i);
+ #else /* GCC 3.x */
+ DECLARE_EXPORT(__movstr_i4_even);
+ DECLARE_EXPORT(__movstr_i4_odd);
+diff --git a/include/asm-sh/hp6xx.h b/include/asm-sh/hp6xx.h
+index f35134c..53ca564 100644
+--- a/include/asm-sh/hp6xx.h
++++ b/include/asm-sh/hp6xx.h
+@@ -10,9 +10,9 @@
+  *
+  */
+ 
+-#define HP680_BTN_IRQ		IRQ0_IRQ
+-#define HP680_TS_IRQ		IRQ3_IRQ
+-#define HP680_HD64461_IRQ	IRQ4_IRQ
++#define HP680_BTN_IRQ		32            /* IRQ0_IRQ */
++#define HP680_TS_IRQ		35            /* IRQ3_IRQ */
++#define HP680_HD64461_IRQ	36            /* IRQ4_IRQ */
+ 
+ #define DAC_LCD_BRIGHTNESS	0
+ #define DAC_SPEAKER_VOLUME	1
+diff --git a/include/asm-sh/system.h b/include/asm-sh/system.h
+index b1e42e7..4a6a19f 100644
+--- a/include/asm-sh/system.h
++++ b/include/asm-sh/system.h
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <linux/irqflags.h>
++#include <linux/compiler.h>
+ #include <asm/types.h>
+ 
+ /*
