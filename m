@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750808AbXC1PcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751049AbXC1PcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750808AbXC1PcH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 11:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXC1PcH
+	id S1751049AbXC1PcR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 11:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932228AbXC1PcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 11:32:07 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:49233 "EHLO
+	Wed, 28 Mar 2007 11:32:17 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:49249 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbXC1PcG (ORCPT
+	with ESMTP id S1751049AbXC1PcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 11:32:06 -0400
-Date: Wed, 28 Mar 2007 11:28:47 -0400
+	Wed, 28 Mar 2007 11:32:16 -0400
+Date: Wed, 28 Mar 2007 11:28:48 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: Blaisorblade <blaisorblade@yahoo.it>, LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 2/4] UML - improve checking and diagnostics of ethernet MACs
-Message-ID: <20070328152847.GA6335@c2.user-mode-linux.org>
+Subject: [PATCH 4/4] UML - Replace one-element array with zero-element array
+Message-ID: <20070328152848.GA6345@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,122 +25,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+  
+To look at users I did:
+$ find arch/um/ include/asm-um -name '*.[ch]'|xargs grep -r 'net_kern\.h'
++-l|xargs grep '\<user\>'
 
-Improve checking and diagnostics for broadcast and multicast Ethernet MAC
-addresses, and distinguish between those cases in output; also make sure the   
-device is assigned a MAC address valid only locally to avoid collisions.
+Most users just cast user to the appropriate pointer, the remaining ones are
+fixed here. In net_kern.c, I'm almost sure that save trick is not needed
+anymore, but I've not verified it.
 
 Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/drivers/net_kern.c  |   38 +++++++++++++++++++++++++++++---------
- include/linux/etherdevice.h |   12 ++++++++++++
- 2 files changed, 41 insertions(+), 9 deletions(-)
+ arch/um/drivers/net_kern.c |   14 +++-----------
+ arch/um/include/net_kern.h |    2 +-
+ 2 files changed, 4 insertions(+), 12 deletions(-)
 
 Index: linux-2.6.21-mm/arch/um/drivers/net_kern.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/net_kern.c	2007-03-21 13:43:12.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/net_kern.c	2007-03-21 13:43:42.000000000 -0400
-@@ -283,7 +283,7 @@ void uml_net_user_timer_expire(unsigned 
- #endif
- }
- 
--static void setup_etheraddr(char *str, unsigned char *addr)
-+static void setup_etheraddr(char *str, unsigned char *addr, char *name)
- {
- 	char *end;
- 	int i;
-@@ -302,15 +302,32 @@ static void setup_etheraddr(char *str, u
- 		}
- 		str = end + 1;
- 	}
--	if(addr[0] & 1){
-+	if (is_multicast_ether_addr(addr)) {
- 		printk(KERN_ERR
--		       "Attempt to assign a broadcast ethernet address to a "
-+		       "Attempt to assign a multicast ethernet address to a "
- 		       "device disallowed\n");
- 		goto random;
- 	}
-+	if (!is_valid_ether_addr(addr)) {
-+		printk(KERN_ERR
-+		       "Attempt to assign an invalid ethernet address to a "
-+		       "device disallowed\n");
-+		goto random;
-+	}
-+	if (!is_local_ether_addr(addr)) {
-+		printk(KERN_WARNING
-+		       "Warning: attempt to assign a globally valid ethernet address to a "
-+		       "device\n");
-+		printk(KERN_WARNING "You should better enable the 2nd rightmost bit "
-+		      "in the first byte of the MAC, i.e. "
-+		      "%02x:%02x:%02x:%02x:%02x:%02x\n",
-+		      addr[0] | 0x02, addr[1], addr[2], addr[3], addr[4], addr[5]);
-+	}
- 	return;
- 
- random:
-+	printk(KERN_INFO
-+	       "Choosing a random ethernet address for device %s\n", name);
- 	random_ether_addr(addr);
- }
- 
-@@ -331,6 +348,7 @@ static void eth_configure(int n, void *i
+--- linux-2.6.21-mm.orig/arch/um/drivers/net_kern.c	2007-03-21 13:43:45.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/net_kern.c	2007-03-21 13:43:48.000000000 -0400
+@@ -347,10 +347,9 @@ static void eth_configure(int n, void *i
+ 	struct uml_net *device;
  	struct net_device *dev;
  	struct uml_net_private *lp;
- 	int save, err, size;
-+	char name[sizeof(dev->name)];
+-	int save, err, size;
++	int err, size;
  
- 	size = transport->private_size + sizeof(struct uml_net_private) +
- 		sizeof(((struct uml_net_private *) 0)->user);
-@@ -344,7 +362,13 @@ static void eth_configure(int n, void *i
- 	INIT_LIST_HEAD(&device->list);
- 	device->index = n;
+-	size = transport->private_size + sizeof(struct uml_net_private) +
+-		sizeof(((struct uml_net_private *) 0)->user);
++	size = transport->private_size + sizeof(struct uml_net_private);
  
--	setup_etheraddr(mac, device->mac);
-+	/* If this name ends up conflicting with an existing registered
-+	 * netdevice, that is OK, register_netdev{,ice}() will notice this
-+	 * and fail.
-+	 */
-+	snprintf(name, sizeof(name), "eth%d", n);
-+
-+	setup_etheraddr(mac, device->mac, name);
+ 	device = kzalloc(sizeof(*device), GFP_KERNEL);
+ 	if (device == NULL) {
+@@ -409,12 +408,6 @@ static void eth_configure(int n, void *i
+ 	 */
+ 	(*transport->kern->init)(dev, init);
  
- 	printk(KERN_INFO "Netdevice %d ", n);
- 	printk("(%02x:%02x:%02x:%02x:%02x:%02x) ",
-@@ -375,11 +399,7 @@ static void eth_configure(int n, void *i
- 		goto out_free_netdev;
- 	SET_NETDEV_DEV(dev,&device->pdev.dev);
- 
--	/* If this name ends up conflicting with an existing registered
--	 * netdevice, that is OK, register_netdev{,ice}() will notice this
--	 * and fail.
+-	/* lp.user is the first four bytes of the transport data, which
+-	 * has already been initialized.  This structure assignment will
+-	 * overwrite that, so we make sure that .user gets overwritten with
+-	 * what it already has.
 -	 */
--	snprintf(dev->name, sizeof(dev->name), "eth%d", n);
-+	strcpy(dev->name, name);
- 	device->dev = dev;
+-	save = lp->user[0];
+ 	*lp = ((struct uml_net_private)
+ 		{ .list  		= LIST_HEAD_INIT(lp->list),
+ 		  .dev 			= dev,
+@@ -428,8 +421,7 @@ static void eth_configure(int n, void *i
+ 		  .write 		= transport->kern->write,
+ 		  .add_address 		= transport->user->add_address,
+ 		  .delete_address  	= transport->user->delete_address,
+-		  .set_mtu 		= transport->user->set_mtu,
+-		  .user  		= { save } });
++		  .set_mtu 		= transport->user->set_mtu });
  
- 	/*
-Index: linux-2.6.21-mm/include/linux/etherdevice.h
+ 	init_timer(&lp->tl);
+ 	spin_lock_init(&lp->lock);
+Index: linux-2.6.21-mm/arch/um/include/net_kern.h
 ===================================================================
---- linux-2.6.21-mm.orig/include/linux/etherdevice.h	2007-03-20 15:41:35.000000000 -0400
-+++ linux-2.6.21-mm/include/linux/etherdevice.h	2007-03-21 13:43:42.000000000 -0400
-@@ -71,6 +71,18 @@ static inline int is_multicast_ether_add
- }
+--- linux-2.6.21-mm.orig/arch/um/include/net_kern.h	2007-03-20 15:41:35.000000000 -0400
++++ linux-2.6.21-mm/arch/um/include/net_kern.h	2007-03-21 13:43:48.000000000 -0400
+@@ -40,7 +40,7 @@ struct uml_net_private {
+ 	void (*add_address)(unsigned char *, unsigned char *, void *);
+ 	void (*delete_address)(unsigned char *, unsigned char *, void *);
+ 	int (*set_mtu)(int mtu, void *);
+-	int user[1];
++	char user[0];
+ };
  
- /**
-+ * is_local_ether_addr - Determine if the Ethernet address is locally-assigned
-+ * one (IEEE 802).
-+ * @addr: Pointer to a six-byte array containing the Ethernet address
-+ *
-+ * Return true if the address is a local address.
-+ */
-+static inline int is_local_ether_addr(const u8 *addr)
-+{
-+	return (0x02 & addr[0]);
-+}
-+
-+/**
-  * is_broadcast_ether_addr - Determine if the Ethernet address is broadcast
-  * @addr: Pointer to a six-byte array containing the Ethernet address
-  *
+ struct net_kern_info {
