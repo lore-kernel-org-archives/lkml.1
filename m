@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752336AbXC1Qoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933030AbXC1QrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752336AbXC1Qoq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 12:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbXC1Qoq
+	id S933030AbXC1QrL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 12:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbXC1QrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 12:44:46 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:49820 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751090AbXC1Qop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 12:44:45 -0400
-Date: Wed, 28 Mar 2007 09:38:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Maxim <maximlevitsky@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: [3/6] 2.6.21-rc4: known regressions
-In-Reply-To: <200703281701.23876.maximlevitsky@gmail.com>
-Message-ID: <Pine.LNX.4.64.0703280931520.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
- <200703281543.47049.maximlevitsky@gmail.com> <20070328144148.GA16244@elte.hu>
- <200703281701.23876.maximlevitsky@gmail.com>
+	Wed, 28 Mar 2007 12:47:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55764 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933030AbXC1QrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 12:47:10 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1/5tI41W0z5KFSczu0g/YjpspvW1owV07UTMWFUNj
+	TItAfjxp/pSYig
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: andrea@suse.de
+Subject: fs/block_dev.c:953: warning: 'found' might be used uninitialized in this function
+Date: Wed, 28 Mar 2007 18:47:02 +0200
+User-Agent: KMail/1.9.5
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed;
+  boundary="nextPart2270823.slyZ4iofkq";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703281847.05356.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart2270823.slyZ4iofkq
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+I compiled current git source 2.6.21-rc5-g28defbe and got this warning:
+=2E..
+fs/block_dev.c: In function `bd_claim_by_kobject':
+fs/block_dev.c:953: warning: 'found' might be used uninitialized in this fu=
+nction
+=2E..
 
-On Wed, 28 Mar 2007, Maxim wrote:
-> 
-> 	Now I don't have a clue how to set those bits if only HPET is used as clock source because now clocksources
-> 	don't have _any_ resume hook.
+=2D-=20
+MfG/Sincerely
 
-One thing that drives me wild about that "clocksource resume" thing is 
-that it seems to think that clocksources are somehow different from any 
-other system devices..
+Toralf F=F6rster
 
-Why isn't the HPET considered a "device", and has it's own *device* 
-"suspend" and "resume"? Why do we seem to think that only "set_mode()" 
-etc should wake up clock sources?
+--nextPart2270823.slyZ4iofkq
+Content-Type: application/pgp-signature
 
-It's a *device*, dammit. It should save and resume like one (probably as a 
-system device). The "set_mode()" etc stuff is at a completely different 
-(higher) conceptual level.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Thomas? It does seem like Maxim has hit the nail on the head (at least 
-partly) on the HPET timer resume problems..
+iD8DBQBGCpwJhyrlCH22naMRAuMqAKDI/fiW13vFbONrffyM1hluSCEN3wCgqBdN
+j29Z/552ebO1wGrfmP5E/6g=
+=AWjH
+-----END PGP SIGNATURE-----
 
-		Linus
+--nextPart2270823.slyZ4iofkq--
