@@ -1,35 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965711AbXC1TKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965692AbXC1TKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965711AbXC1TKr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965694AbXC1TJB
+	id S965692AbXC1TKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965695AbXC1TJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:09:01 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45124 "EHLO mx1.suse.de"
+	Wed, 28 Mar 2007 15:09:00 -0400
+Received: from mx1.suse.de ([195.135.220.2]:45128 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965693AbXC1TIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:08:39 -0400
+	id S965694AbXC1TIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 15:08:42 -0400
 From: Andi Kleen <ak@suse.de>
 Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: discuss@x86-64.org
-Subject: Re: [discuss] [PATCH] Fix "Section mismatch" compile warning
-Date: Wed, 28 Mar 2007 21:08:25 +0200
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] Simplify smp_call_function*() by using common implementation
+Date: Wed, 28 Mar 2007 21:03:49 +0200
 User-Agent: KMail/1.9.5
-Cc: Bernhard Walle <bwalle@suse.de>, linux-kernel@vger.kernel.org
-References: <20070326151933.GA8765@strauss.suse.de>
-In-Reply-To: <20070326151933.GA8765@strauss.suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Stephane Eranian <eranian@hpl.hp.com>, Ingo Molnar <mingo@elte.hu>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>
+References: <46099709.2000304@goop.org>
+In-Reply-To: <46099709.2000304@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703282108.25741.ak@suse.de>
+Message-Id: <200703282103.50191.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 March 2007 17:19, Bernhard Walle wrote:
-> Fix "Section mismatch" warnings in arch/x86_64/kernel/time.c
+On Wednesday 28 March 2007 00:13, Jeremy Fitzhardinge wrote:
+> smp_call_function and smp_call_function_single are almost complete
+> duplicates of the same logic.  This patch combines them by
+> implementing them in terms of the more general
+> smp_call_function_mask().
 
-Applied thanks
+I think I got those already.
 
 -Andi
