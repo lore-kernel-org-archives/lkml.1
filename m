@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXC1BXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965584AbXC1B0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965576AbXC1BXI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 21:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965574AbXC1BXI
+	id S965584AbXC1B0l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 21:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965587AbXC1B0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 21:23:08 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:49052 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965576AbXC1BXG (ORCPT
+	Tue, 27 Mar 2007 21:26:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:40415 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965584AbXC1B0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 21:23:06 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=ZKIG5NXgMpwQD5Dv2hwc7BgCHKYMcisDCQAYl6gl0eh0pbKxT2ahpcCIRlYvDXhY9
-	/Ycst+6Yysfr8v4Ml5cCg==
-Message-ID: <4609C33A.1040907@google.com>
-Date: Tue, 27 Mar 2007 18:22:02 -0700
-From: Ethan Solomita <solo@google.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Dave Hansen <hansendc@us.ibm.com>
-Subject: Re: Linux-VServer example results for sharing vs. separate mappings
- ...
-References: <20070323193000.GB17007@MAIL.13thfloor.at> <20070323214235.94a3e899.akpm@linux-foundation.org> <20070324183806.GA7312@MAIL.13thfloor.at> <20070324121906.aff91c93.akpm@linux-foundation.org> <20070325022156.GA12442@MAIL.13thfloor.at>
-In-Reply-To: <20070325022156.GA12442@MAIL.13thfloor.at>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Mar 2007 21:26:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=DeNlg/clFC1LVfYbFdGU/ZLs3LvZPfz9po2DhsPd3SqLcDEfVVsBrLzjYIvduzo+jq/zCGpYjBIYFaaTGmiSRehUTTcOxH+8Lf0C6NWUcTmUeXm5PHg7nDpyZWMYyHRbdh67K8v53TqIyOeUZERova9ma7SgFfaSKHD4nSodJDU=
+Date: Wed, 28 Mar 2007 03:26:35 +0200
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Larry Finger <larry.finger@lwfinger.net>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Monakhov Dmitriy <dmonakhov@openvz.org>
+Subject: Re: 2.6.21-rc4-mm1
+Message-ID: <20070328012635.GC18799@zenigma>
+References: <4602752A.5050109@lwfinger.net> <20070322181019.62fe78ed@gondolin.boeblingen.de.ibm.com> <4602D137.4060402@lwfinger.net> <20070323111029.4089ccfb@gondolin.boeblingen.de.ibm.com> <20070323210618.6a41f5da.akpm@linux-foundation.org> <20070326110949.5301a571@gondolin.boeblingen.de.ibm.com> <20070326012232.0f0b9e09.akpm@linux-foundation.org> <20070326103432.GB18799@zenigma> <3ae72650703270225k1db9c4a8w6e31b95e007336d7@mail.gmail.com> <20070327191749.28298069@gondolin.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070327191749.28298069@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+From: Eric Rannaud <eric.rannaud@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Poetzl wrote:
-> On Sat, Mar 24, 2007 at 12:19:06PM -0800, Andrew Morton wrote:
->   
->> Or change the reclaim code so that a page which hasn't
->> been referenced from a process within its hardware
->> container is considered unreferenced (so it gets reclaimed). 
->>     
->
-> that might easily lead to some ping-pong behaviour,
-> when two similar guest are executing similar binaries
-> but not at the same time ...
->   
+On Tue, Mar 27, 2007 at 07:17:49PM +0200, Cornelia Huck wrote:
+> On Tue, 27 Mar 2007 11:25:57 +0200,
+> "Kay Sievers" <kay.sievers@vrfy.org> wrote:
+> > Checking the uevent return value, will not prevent any malfunction,
+> > usually this kind of "error handling" just prevents bringing up a
+> > whole subsystem, or booting-up a box, because the needed device does
+> > not exist at all.
+> 
+> OK, if we consider uevents to be non-vital to a functioning device.
 
-    It might lead to that, but I don't think it would become 
-pathological "easily". If a system has been up for a long time, it's 
-easy to image pagecache pages lying everywhere just because someone 
-somewhere is still using them.
+The reason for that original patch was that it is actually possible for the
+uevent functions to return -ENOMEM, the uevent buffer being statically
+allocated to BUFFER_SIZE (2048). It used to be 1024 but that was not
+always enough and it was doubled a while ago [1]. Using add_uevent_var()
+makes this less of a problem as such an overflow should be catched
+cleanly [2].
 
-    I suggest a variant on what Andrew says: don't change reclaim. 
-Instead, when referencing a page, don't mark the page as referenced if 
-the current task is not permitted to allocate from the page's node. I'm 
-thinking in terms of cpusets, with each task having a nodemask of 
-mems_allowed. This may result in a page being thrown out unnecessarily 
-and brought back in from disk, but when memory is tight that is what 
-happens. An optimization might be to keep track of who is referencing 
-the page and migrate it to their memory instead of reclaiming it, but 
-that would require reclaim to know the task/cpuset/container of the 
-referencing task.
-    -- Ethan
+> OTOH, I think using something like uevent_suppress (maybe via
+> dev_uevent_filter?) is a saner way to suppress a uevent than to return
+> an error code in the uevent function.
 
+That makes sense, I guess. I will try that.
+
+Thanks.
+
+
+[1] http://marc.info/?t=113797361200002&r=1&w=2
+[2] uevent-use-add_uevent_var-instead-of-open-coding-it.patch in rc4-mm1
