@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXC1TGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965686AbXC1TId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965661AbXC1TGB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965680AbXC1TGB
+	id S965686AbXC1TId (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965687AbXC1TId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:06:01 -0400
-Received: from xdsler061.osnanet.de ([89.166.177.61]:2403 "EHLO
-	Marvin.DL8BCU.ampr.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965661AbXC1TGA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:06:00 -0400
-X-Greylist: delayed 602 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Mar 2007 15:06:00 EDT
-Date: Wed, 28 Mar 2007 19:05:36 +0000
-From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Phy Prabab <phyprabab@gmail.com>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Odd log message associated with NFS
-Message-ID: <20070328190536.GB585@ds20.borg.net>
-Reply-To: dl8bcu@dl8bcu.de
-Mail-Followup-To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>,
-	"J. Bruce Fields" <bfields@fieldses.org>,
-	Phy Prabab <phyprabab@gmail.com>, nfs@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
-References: <2fe399760703271140l703c2791oa84e9e1832487dcb@mail.gmail.com> <20070327193909.GA585@ds20.borg.net> <20070328165925.GB21221@fieldses.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 28 Mar 2007 15:08:33 -0400
+Received: from mx2.suse.de ([195.135.220.15]:39993 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965686AbXC1TId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 15:08:33 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH] x86_64 : vsyscall_gtod_data diet and vgettimeofday() fix
+Date: Wed, 28 Mar 2007 20:55:34 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+References: <460AA6E3.50109@cosmosbay.com>
+In-Reply-To: <460AA6E3.50109@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070328165925.GB21221@fieldses.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200703282055.34452.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 28, 2007 at 12:59:25PM -0400, J. Bruce Fields wrote:
-> On Tue, Mar 27, 2007 at 07:39:10PM +0000, Thorsten Kranzkowski wrote:
-> > Mar 16 16:57:06 Marvin kernel: svc: bad direction 268435456, dropping request
-> > Mar 16 17:58:19 Marvin kernel: svc: bad direction 268435456, dropping request
-> > Mar 16 19:55:49 Marvin kernel: svc: bad direction 268435456, dropping request
+On Wednesday 28 March 2007 19:33, Eric Dumazet wrote:
+> Hi Andrew
 > 
-> So that's 2^28, in a field that should always be zero.  It's the very
+> This patch should be applied after x86_64 : fix vtime() vsyscall
 
-ahh. indeed. I didn't do the math, yet :)
+Applied thanks. I noticed this cache efficiency also while changing something
+else recently, but didn't have the motivation to really fix it.
 
-> first check of any data read from the rpc call, so it'd be consistent
-> with the call data being garbage, for one reason or another.
-> 
-> What would cause that to happen, I don't know.  Do you have a reliable
-> way to reproduce it?
-
-just sit and wait :-) 
-I'll let a tcpdump run this evening and see if I can correlate the message
-with anything. 
-
-If you have a printk or other patch for me to try, just let me know.
- 
-bye,
-Thorsten
-
--- 
-| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
-| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
-| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
+-Andi
