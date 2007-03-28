@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964862AbXC1Rc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbXC1RdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964862AbXC1Rc6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 13:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965052AbXC1Rc6
+	id S965010AbXC1RdN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 13:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965051AbXC1RdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 13:32:58 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51272 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964988AbXC1Rc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 13:32:57 -0400
-Date: Wed, 28 Mar 2007 10:32:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Robin Holt <holt@sgi.com>, David Howells <dhowells@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>, Hideo AOKI <haoki@redhat.com>
-Subject: Re: [PATCH 0/4] coredump: core dump masking support v4
-Message-Id: <20070328103223.0473efc3.akpm@linux-foundation.org>
-In-Reply-To: <460A6173.9040808@hitachi.com>
-References: <45E7AAFA.4070402@hitachi.com>
-	<20070315133721.ecbec123.akpm@linux-foundation.org>
-	<4603D281.1000101@hitachi.com>
-	<460A6173.9040808@hitachi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 28 Mar 2007 13:33:12 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:50000 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965010AbXC1RdL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 13:33:11 -0400
+Date: Wed, 28 Mar 2007 19:33:10 +0200
+From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc5-mm2
+Message-ID: <20070328173310.GA4682@rhlx01.hs-esslingen.de>
+References: <20070326211627.c681af3b.akpm@linux-foundation.org> <20070328170214.GA13044@rhlx01.hs-esslingen.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070328170214.GA13044@rhlx01.hs-esslingen.de>
+User-Agent: Mutt/1.4.2.2i
+X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007 21:37:07 +0900 "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com> wrote:
+Hi,
 
-> >   Because other people might (reasonably) wish to omit anonymous memory,
-> >   or private mappings, or file-backed VMAs, or whatever.
+On Wed, Mar 28, 2007 at 07:02:14PM +0200, Andreas Mohr wrote:
+> Hi,
+> 
+> On Mon, Mar 26, 2007 at 09:16:27PM -0800, Andrew Morton wrote:
 > > 
-> >   So maybe /proc/pid/coredump_omit_anon_shared should become
-> >   /proc/pid/core_dumpfilter, which is a carefully documented bitmask.
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/
+> > 
+> > 
+> > - This is the same as 2.6.12-rc5-mm1, except the staircase deadline CPU
+> >   scheduler has been added.
 > 
-> There are people who wish to dump VMAs which are not dumped by default.
-> Taking this into account, some bits of core_dumpfilter will be set by
-> default.  This means users have to be aware of the default bitmask
-> when they change the bitmask.  Perhaps changing the bitmask requires
-> 3 steps:
-> 
->   1. read the default bitmask
->   2. change bits of the mask
->   3. write it to the proc entry
-> 
-> So I think it is better if we provide /proc/pid/core_flags (default:
-> all bits are 0) instead of core_dumpfilter.  With this interface,
-> users who use only one bit of the bitmask (this will be a common case) 
-> just have to write 2^n to the proc entry.  It takes only one step:
-> 
->  1. write a value to the proc entry
-> 
-> If we can implement at the same cost, core_flags will be better
-> because it is useful for users.  What would you think about that?
-> 
+> OOPS (hand-pasted), happens on roughly 85% of bootups, didn't seem to
+> occur during my several previous 2.6.21-rc4-mm1 bootups:
 
-It sounds unnecessarily complex, and unnecessarily different from our
-normal expectations of /proc files.  And the value we read differs from the
-value we wrote...  I think having a non-zero default will be fine.
+Still happens after having added just-published RSDL fixup patch and
+reinstalled resulting kernel package.
 
-> 
-> By the way, Robin Holt wrote as follows:
-> 
-> > Can you make this a little more transparent?  Having a magic bitmask does
-> > not seem like the best way to do stuff.  Could you maybe make a core_flags
-> > directory with a seperate file for each flag.  It could still map to a
-> > single field in the mm, but be broken out for the proc filesystem.
-> 
-> Do you think Robin's suggestion is acceptable?
+.config diff between -rc4-mm1 and -rc5-mm1 is negligible.
+Interesting items in current .config:
+CONFIG_SWAP_PREFETCH=y
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_RT_MUTEXES=y
+CONFIG_TICK_ONESHOT=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_PREEMPT_VOLUNTARY=y
+CONFIG_X86_UP_APIC=y
+CONFIG_X86_UP_IOAPIC=y
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+CONFIG_ADAPTIVE_READAHEAD=y
+CONFIG_HZ=250
+CONFIG_X86_PM_TIMER=y
+# CONFIG_CPU_IDLE is not set
+CONFIG_PNP=y
+CONFIG_PNPACPI=y
+CONFIG_BLK_DEV_LOOP=m
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_IDEACPI=y
+CONFIG_RTC=y
 
-Marginal, I think.  This is not likely to be a field which a lot of people
-modify a lot of times.  Those few people who need to work with this can
-afford to look the values up in the documentation while writing their
-script.
+Thanks,
 
-And it requires a distressingly large amount of code to implement a /proc
-file.  Perhaps in this situation the code can be shared.
-
-otoh, why is it a /proc thing at all?
-
-unsigned long sys_set_corefile_filter(unsigned long enable_mask);
-unsigned long sys_clear_corefile_filter(unsigned long enable_mask);
-
-would be better?
+Andreas Mohr
