@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965663AbXC1Syf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965668AbXC1S4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965663AbXC1Syf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 14:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965661AbXC1Syf
+	id S965668AbXC1S4l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 14:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965671AbXC1S4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 14:54:35 -0400
-Received: from mga01.intel.com ([192.55.52.88]:33016 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965658AbXC1Sye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 14:54:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,341,1170662400"; 
-   d="scan'208"; a="220975894:sNHT21910504"
-Message-ID: <460AB9E8.8070803@intel.com>
-Date: Wed, 28 Mar 2007 11:54:32 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.10 (X11/20070311)
+	Wed, 28 Mar 2007 14:56:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:57692 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965668AbXC1S4k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 14:56:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=qY9n31eFc0y7g+VXLUGRSvv2gQFN/FP6ThCOoH3VYzSrBC2roiMDYFymc9CrWV7TelIUKEa4L+Po56g4v0jEg5yCsEqfqGtywpuVvnOA0XF1ETSfbBcVRIYMgTMNpE+UG2ep4pX5TvDv3ehOE77Ha8ifwKWqyHvPDvDt3bYMiwc=
+Date: Wed, 28 Mar 2007 22:56:32 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: tty OOPS (Re: 2.6.21-rc5-mm2)
+Message-ID: <20070328185632.GB5306@martell.zuzino.mipt.ru>
+References: <20070326211627.c681af3b.akpm@linux-foundation.org> <20070328170214.GA13044@rhlx01.hs-esslingen.de> <20070328173310.GA4682@rhlx01.hs-esslingen.de> <20070328174524.GA25709@rhlx01.hs-esslingen.de> <20070328180446.GA7528@rhlx01.hs-esslingen.de> <20070328183814.GA5306@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>, Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       e1000-devel@lists.sourceforge.net, jgarzik@pobox.com,
-       netdev@vger.kernel.org
-Subject: Re: [1/5] 2.6.21-rc5: known regressions
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de>
-In-Reply-To: <20070327015929.GY16477@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Mar 2007 18:54:33.0708 (UTC) FILETIME=[864E02C0:01C7716A]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070328183814.GA5306@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Subject    : e1000 resume weirdness
-> References : http://lkml.org/lkml/2007/3/26/91
-> Submitter  : Ingo Molnar <mingo@elte.hu>
-> Handled-By : Jesse Brandeburg <jesse.brandeburg@gmail.com>
->              Auke Kok <auke-jan.h.kok@intel.com>
-> Status     : problem is being debugged
+On Wed, Mar 28, 2007 at 10:38:14PM +0400, Alexey Dobriyan wrote:
+> On Wed, Mar 28, 2007 at 08:04:46PM +0200, Andreas Mohr wrote:
+> > [unrelated maintainers removed, Alexey added]
+> >
+> > On Wed, Mar 28, 2007 at 07:45:24PM +0200, Andreas Mohr wrote:
+> > > Hi,
+> > >
+> > > just wanted to add that when analyzing the backtrace I found the comment
+> > > at drivers/char/vt.c/con_close() to be VERY suspicious...
+> > > (need to take tty_mutex to prevent concurrent thread tty access).
+> > > This might just be what happened here despite trying to protect against it.
+> >
+> > OK, can we assume that one of
+> >
+> > +protect-tty-drivers-list-with-tty_mutex.patch
+> > +tty-minor-merge-correction.patch
+> > +tty-in-tiocsctty-when-we-steal-a-tty-hang-it-up-fix.patch
+> >
+> > is responsible / not implemented fully?
+>
+> #2 is just comment removal.
+>
+> I may state the obvious, but __iget() in sysfs_drop_dentry() gets NULL
+> inode and you aren't failing on spin_lock one line above because of UP
+> without spinlock debugging.
 
-The issue comes from a corner case and the underlying problem is that e1000 
-isn't stopping tx properly. We have a fix for this pending in our tree that I'll 
-push upstream for 2.6.22 to Jeff, but I don't think this should be a blocker and 
-it's probably is not a regression at all, the gap has always been present.
+The only suspicious new patch in -rc5-mm1 to me is
+fix-sysfs-reclaim-crash.patch which removes "sd->s_dentry = NULL;". Note
+that whole sysfs_drop_dentry() is NOP if ->s_dentry is NULL.
 
-on a side note, this is probably fixed easily by turning the adapters 
-detect_tx_hung flag off in e1000_down, so if someone spots this reoccurring 
-somewhat regularly, please contact me so we can debug it. I myself have a system 
-suspend/resuming in circles for an hour now with traffic flying across without a 
-single hit on it....
+Could you try to revert it?
 
-Adrian, you probably want to drop this issue from your list.
+	Alexey, who knows very little about sysfs internals
 
-Cheers,
-
-
-Auke
