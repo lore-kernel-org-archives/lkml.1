@@ -1,106 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXC1CGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbXC1CHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933103AbXC1CGG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 22:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXC1CGG
+	id S932439AbXC1CHm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 22:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933403AbXC1CHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 22:06:06 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:46838 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S932231AbXC1CGB (ORCPT
+	Tue, 27 Mar 2007 22:07:42 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:9512 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932439AbXC1CHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 22:06:01 -0400
-Date: Tue, 27 Mar 2007 22:02:47 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH] UML - fix I/O hang when multiple devices are in use
-Message-ID: <20070328020247.GA12299@c2.user-mode-linux.org>
+	Tue, 27 Mar 2007 22:07:40 -0400
+X-IronPort-AV: i="4.14,336,1170651600"; 
+   d="scan'208"; a="32825287:sNHT23490411"
+Subject: Re: [PATCH -mm] Blackfin arch: add kdebug header file
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: bryan.wu@analog.com, Mike Frysinger <vapier.adi@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070327083437.e1d6b954.randy.dunlap@oracle.com>
+References: <1174903941.32691.72.camel@roc-desktop>
+	 <200703262345.09489.arnd@arndb.de> <1174966837.6966.13.camel@roc-desktop>
+	 <20070327035734.GA25883@linux-sh.org>
+	 <8bd0f97a0703262134h20bdf8dcqb1043ca176a7149c@mail.gmail.com>
+	 <20070327044914.GA26099@linux-sh.org>
+	 <8bd0f97a0703262217g16aa62d4g1221082deda0aed2@mail.gmail.com>
+	 <20070326222711.d2f42da2.randy.dunlap@oracle.com>
+	 <1174974045.6966.26.camel@roc-desktop>
+	 <20070327083437.e1d6b954.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Wed, 28 Mar 2007 10:06:13 +0800
+Message-Id: <1175047573.15391.2.camel@roc-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ This patch needs to get into 2.6.21, as it fixes a serious bug
-introduced soon after 2.6.20 ]
+On Tue, 2007-03-27 at 08:34 -0700, Randy Dunlap wrote:
+> On Tue, 27 Mar 2007 13:40:45 +0800 Wu, Bryan wrote:
+> 
+> > On Mon, 2007-03-26 at 22:27 -0700, Randy Dunlap wrote:
+> > > On Tue, 27 Mar 2007 01:17:06 -0400 Mike Frysinger wrote:
+> > > 
+> > > > On 3/27/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> > > > > On Tue, Mar 27, 2007 at 12:34:25AM -0400, Mike Frysinger wrote:
+> > > > > > On 3/26/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> > > > > > >You should really consider the latter for getting updates merged in the
+> > > > > > >future
+> > > > > >
+> > > > > > we're planning for this, but the short term it isnt doable for us
+> > > > >
+> > > > > If you think mangling patches by hand is a more effective use of time, no
+> > > > > one is stopping you -- some people even prefer that. On the other hand, if
+> > > > > you're struggling with an effective methodology before things are merged,
+> > > > > what reason is there to suspect that things will get better afterwards?
+> > > > 
+> > > > we have a lot of infrastructure that the SCM is part of and at the
+> > > > moment, git is not a supported SCM
+> > > > 
+> > > > i'm not saying the current system is easy, just that we cant integrate
+> > > > git in the short term, so we'll continue spanking Bryan with the
+> > > > overhead :/
+> > > 
+> > > In that case, Bryan may like to know that git, mercurial (IIRC),
+> > > and quilt have patchbomb tools.  Also GregKH has one somewhere (he
+> > > can tell you where).  And Paul Jacksone has one at
+> > >   http://www.speakeasy.org/~pj99/sgi/sendpatchset
+> > > 
+> > 
+> > Thanks for this guide line information. I will dig into it.
+> > 
+> > But in my experience, it is difficult to find right patch email
+> > receivers, even in the MAINTAINERS file. If there are 20 patch emails,
+> > we should find 20 email receivers at least and manually add them to the
+> > emails. This is terrible, right? Any idea?
+> 
+> Yes, well, we all have the honor of going thru that.  There have
+> been a few suggestions, but I haven't seen any that were Real Good IMO.
+> 
+> You'll learn (quickly) where most patches go (i.e., subsystems and
+> their major maintainers/contributors).  Just put those people into
+> your email client address book and into the patch descriptions, like
+> Sam said, so that the patchbomb tools can help you out with them.
+> 
 
-Commit 62f96cb01e8de7a5daee472e540f726db2801499 introduced per-devices
-queues and locks, which was fine as far as it went, but left in place
-a global which controlled access to submitting requests to the host.
-This should have been made per-device as well, since it causes I/O
-hangs when multiple block devices are in use.
+Thanks a lot, I will try on my side. And one more question:
 
-This patch fixes that by replacing the global with an activity flag in
-the device structure in order to tell whether the queue is currently
-being run.
+What is patchbomb tools, you mean git, quilt or other kernel patch
+management tool? I am using quilt and try to use git to manage patches.
+Is there a tool just named patchbomb?
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/drivers/ubd_kern.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.21-mm/arch/um/drivers/ubd_kern.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/ubd_kern.c	2007-03-27 20:27:16.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/ubd_kern.c	2007-03-27 20:28:29.000000000 -0400
-@@ -108,10 +108,6 @@ static inline void ubd_set_bit(__u64 bit
- 
- static DEFINE_MUTEX(ubd_lock);
- 
--/* XXX - this made sense in 2.4 days, now it's only used as a boolean, and
-- * probably it doesn't make sense even for that. */
--static int do_ubd;
--
- static int ubd_open(struct inode * inode, struct file * filp);
- static int ubd_release(struct inode * inode, struct file * file);
- static int ubd_ioctl(struct inode * inode, struct file * file,
-@@ -168,6 +164,7 @@ struct ubd {
- 	struct platform_device pdev;
- 	struct request_queue *queue;
- 	spinlock_t lock;
-+	int active;
- };
- 
- #define DEFAULT_COW { \
-@@ -189,6 +186,7 @@ struct ubd {
- 	.shared =		0, \
-         .cow =			DEFAULT_COW, \
- 	.lock =			SPIN_LOCK_UNLOCKED,	\
-+	.active =		0, \
- }
- 
- /* Protected by ubd_lock */
-@@ -506,7 +504,6 @@ static void ubd_handler(void)
- 	struct ubd *dev;
- 	int n;
- 
--	do_ubd = 0;
- 	n = os_read_file(thread_fd, &req, sizeof(req));
- 	if(n != sizeof(req)){
- 		printk(KERN_ERR "Pid %d - spurious interrupt in ubd_handler, "
-@@ -516,6 +513,7 @@ static void ubd_handler(void)
- 
- 	rq = req.req;
- 	dev = rq->rq_disk->private_data;
-+	dev->active = 0;
- 
- 	ubd_finish(rq, req.error);
- 	reactivate_fd(thread_fd, UBD_IRQ);
-@@ -1081,11 +1079,12 @@ static void do_ubd_request(request_queue
- 		}
- 	}
- 	else {
--		if(do_ubd || (req = elv_next_request(q)) == NULL)
-+		struct ubd *dev = q->queuedata;
-+		if(dev->active || (req = elv_next_request(q)) == NULL)
- 			return;
- 		err = prepare_request(req, &io_req);
- 		if(!err){
--			do_ubd = 1;
-+			dev->active = 1;
- 			n = os_write_file(thread_fd, (char *) &io_req,
- 					 sizeof(io_req));
- 			if(n != sizeof(io_req))
+Best Regards,
+-Bryan
