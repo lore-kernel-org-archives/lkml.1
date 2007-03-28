@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbXC1JvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933330AbXC1KHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753625AbXC1JvO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 05:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXC1JvO
+	id S933330AbXC1KHw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 06:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbXC1KHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 05:51:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:2436 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752885AbXC1JvM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 05:51:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=su0RJS9GnEEYtfl6iKIVJ8lCXDxKyPgPjv9gYzkfVzZa8yy1QfQXgVfX48BJJb4LX4ObCNvicxltFngySO0LFaMlcuiTMCByDC8CW8RTq9aZ2M/7sjuMgVRhlg4mfFuEdvlLcFbfbp0UyZ7psMkCiGRPbmDBoD5Z8phPc0E4kDA=
-Message-ID: <460A3A89.2050809@gmail.com>
-Date: Wed, 28 Mar 2007 18:51:05 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 28 Mar 2007 06:07:52 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37054 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753946AbXC1KHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 06:07:51 -0400
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       davej@codemonkey.org.uk, johnstul@us.ibm.com, mingo@elte.hu,
+       tglx@linutronix.de
+Subject: Re: [PATCH] Add support for deferrable timers (respun)
+References: <200703212353.l2LNrNOj007453@shell0.pdx.osdl.net>
+	<20070322140532.GA120@tv-sign.ru>
+	<20070322151817.GA29840@linux-os.sc.intel.com>
+	<20070322161355.GA160@tv-sign.ru>
+	<20070327204344.GA21529@linux-os.sc.intel.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 28 Mar 2007 13:06:35 +0200
+In-Reply-To: <20070327204344.GA21529@linux-os.sc.intel.com>
+Message-ID: <p734po54og4.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan <alan@lxorguk.ukuu.org.uk>, Len Brown <lenb@kernel.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: ATA ACPI (was Re: Linux 2.6.21-rc5)
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <4608B0CA.1040005@garzik.org> <4608B1A2.3040305@gmail.com> <20070327213200.GA5842@ucw.cz>
-In-Reply-To: <20070327213200.GA5842@ucw.cz>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> 
->>>> So if you have reported a regression in the 2.6.21-rc 
->>>> series, please check 2.6.21-rc5, and update your 
->>>> report as appropriate (whether fixed or "still 
->>>> problems with xyzzy").
->>> [just got back from vacation, or would have sent this 
->>> earlier]
->>>
->>> FWIW, I'm still leaning towards disabling libata ACPI 
->>> support by default for 2.6.21.
->>>
->>> Upstream has Alan's fix for the worst PATA problems, 
->>> but for different reasons, I think PATA ACPI and SATA 
->>> ACPI support in libata does not feel quite ready for 
->>> prime time in 2.6.21.
->>>
->>> Scream now, or hold your peace until 2.6.22... :)
->> I second disabling ACPI for 2.6.21.
-> 
-> Ugh.. does that mean we'll have 'regression reports' as in 'it worked
-> ok in -rc5, broken in final?
-> 
-> Well, suspend is currently so broken that we'll be flooded by reports,
-> anyway, but.... could we get at least define in code so that we can
-> tell users to flip it?
+Venki Pallipadi <venkatesh.pallipadi@intel.com> writes:
+> +++ new/kernel/timer.c	2007-03-26 15:19:35.000000000 -0800
+> @@ -74,7 +74,7 @@
+>  	tvec_t tv3;
+>  	tvec_t tv4;
+>  	tvec_t tv5;
+> -} ____cacheline_aligned_in_smp;
+> +} ____cacheline_aligned;
 
-Just the default value for libata.noacpi is changed to 1, so user can
-easily reenable it by passing boot/module parameter.
+Why this change?  It should be aligned to 2 bytes anyways.
 
--- 
-tejun
+>  static DEFINE_PER_CPU(tvec_base_t *, tvec_bases) = &boot_tvec_bases;
+>  
+> +/*
+> + * The lowest bit of base ptr in timer is used as a flag to indicate
+> + * 'deferrable' nature of the timer. Functions below help us manage that flag.
+> + */
+> +static inline unsigned int tbase_get_deferrable(struct tvec_t_base_s *base)
+> +{
+> +	return ((unsigned int)base & TBASE_DEFERRABLE_FLAG);
+
+This will warn on 64bit for cast ptr -> int
+
+
+-Andi
