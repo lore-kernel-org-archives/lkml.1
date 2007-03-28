@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752976AbXC1VF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbXC1VJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752976AbXC1VF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 17:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbXC1VF4
+	id S1752998AbXC1VJN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 17:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbXC1VJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 17:05:56 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47872 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752976AbXC1VFz (ORCPT
+	Wed, 28 Mar 2007 17:09:12 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:25355 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753009AbXC1VJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 17:05:55 -0400
-Date: Wed, 28 Mar 2007 14:05:54 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
-In-Reply-To: <20070328134511.0d61ec8f.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703281401460.13743@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
- <20070328134511.0d61ec8f.akpm@linux-foundation.org>
+	Wed, 28 Mar 2007 17:09:10 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=wJgy+Ph02zxhd2qK0jlSWmG97nE2mPytnVGk3lB7kCufqCAZkY9OPxyhD9y27eJoh
+	Ln/Y8rr79W1zMFwdTD8fw==
+Message-ID: <460AD940.8080507@google.com>
+Date: Wed, 28 Mar 2007 14:08:16 -0700
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+CC: Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Maneesh Soni <maneesh@in.ibm.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [FIXED] Re: tty OOPS (Re: 2.6.21-rc5-mm2)
+References: <20070326211627.c681af3b.akpm@linux-foundation.org> <20070328170214.GA13044@rhlx01.hs-esslingen.de> <20070328173310.GA4682@rhlx01.hs-esslingen.de> <20070328174524.GA25709@rhlx01.hs-esslingen.de> <20070328180446.GA7528@rhlx01.hs-esslingen.de> <20070328183814.GA5306@martell.zuzino.mipt.ru> <20070328185632.GB5306@martell.zuzino.mipt.ru> <20070328201511.GA20889@rhlx01.hs-esslingen.de>
+In-Reply-To: <20070328201511.GA20889@rhlx01.hs-esslingen.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007, Andrew Morton wrote:
+Andreas Mohr wrote:
+> Hi,
+>
+> On Wed, Mar 28, 2007 at 10:56:32PM +0400, Alexey Dobriyan wrote:
+>   
+>> The only suspicious new patch in -rc5-mm1 to me is
+>> fix-sysfs-reclaim-crash.patch which removes "sd->s_dentry = NULL;". Note
+>> that whole sysfs_drop_dentry() is NOP if ->s_dentry is NULL.
+>>
+>> Could you try to revert it?
+>>
+>> 	Alexey, who knows very little about sysfs internals
+>>     
+>
+> Apparently that's still too much knowledge ;)
+>
+> Or, in other words: 6 reboots already and not a single problem!
+>
+> So yes, the removal of the NULLing line in this patch most likely
+> has caused this issue on my box.
+> Now the question is whether something as simple as that is a fully
+> correct fix or whether something should be done entirely differently.
+> I'll let people more familiar with those parts decide about it...
+>   
 
-> I would like to test qlhack on ia64, because ia64 puts pte-pages into the
-> quicklists as well, but my ia64 machine is presently indisposed.
+    Sorry -- I've only just been cc'd on this mail thread. Are we 
+claiming that this patch/fix has caused a new problem, or successfully 
+fixed an old problem?
 
-Its probably easier to set the number of cached pages to one.
-
-> My (much) preferred way to handle all this is to remove the quicklists from
-> all architectures: just use alloc_page() and free_page() for pte pages, pmd
-> pages, etc.  I remain unaware of any testing whcih indicates that this
-> would be a bad change.
-
-Tried this also on x86_64 with an enhanced quicklist patch that also deals 
-with ptes (at the price of not guaranteeing the free after the tlb flush):
-
-quicklist:
-
-real    8m56.787s
-user    7m46.380s
-sys     0m55.910s
-
-real    8m58.326s
-user    7m46.030s
-sys     0m56.250s
- 
-real    8m56.900s
-user    7m46.620s
-sys     0m55.570s
-
-no quicklist:
-
-real    9m7.798s
-user    7m48.340s
-sys     0m58.360s
-
-real    8m58.994s
-user    7m47.980s
-sys     0m54.870s
-
-real    8m58.533s
-user    7m48.030s
-sys     0m54.150s
-
-Seems that there is a slight benefit but its also barely above noise 
-level.
+    Thanks!
+    -- Ethan
 
