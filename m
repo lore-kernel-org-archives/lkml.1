@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752366AbXC1SgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965635AbXC1Sgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752366AbXC1SgK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 14:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965624AbXC1SgK
+	id S965635AbXC1Sgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 14:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965640AbXC1Sgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 14:36:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42930 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbXC1SgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 14:36:08 -0400
-X-Greylist: delayed 13929 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Mar 2007 14:36:08 EDT
-Date: Wed, 28 Mar 2007 20:32:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: Maxim <maximlevitsky@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org
-Subject: Re: [3/6] 2.6.21-rc4: known regressions
-Message-ID: <20070328183226.GA16415@elte.hu>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <b6a2187b0703261046r46782eedv64464ceddb44bc27@mail.gmail.com> <1175065468.4017.1.camel@chaos> <200703281543.47049.maximlevitsky@gmail.com> <20070328180457.GA4253@mellanox.co.il>
+	Wed, 28 Mar 2007 14:36:50 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:60695 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965635AbXC1Sgt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 14:36:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=aAQgfos/7vtKQXpJ4IeOuF/mpBKqRliqmQe6lh/Zi0QIcS8Yy39DOy/Z7MHYy
+	2/tfGa8vMdck+hyZHzRqcg6wQ==
+Date: Wed, 28 Mar 2007 20:36:47 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: David Howells <dhowells@redhat.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: Re: I/O memory barriers vs SMP memory barriers
+Message-ID: <20070328183647.GB18351@xi.wantstofly.org>
+References: <20070303111427.GB16944@xi.wantstofly.org> <20070303113305.GB10515@flint.arm.linux.org.uk> <20070321221134.GA22497@xi.wantstofly.org> <tnxlkhpgslz.fsf@arm.com> <16051.1174657433@redhat.com> <20070325211542.GD3593@linux.vnet.ibm.com> <20070325213843.GE22126@xi.wantstofly.org> <20070326032418.GA14557@linux.vnet.ibm.com> <20070326084639.GA30291@xi.wantstofly.org> <20070326200711.GA31296@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070328180457.GA4253@mellanox.co.il>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070326200711.GA31296@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 26, 2007 at 01:07:11PM -0700, Paul E. McKenney wrote:
 
-* Michael S. Tsirkin <mst@dev.mellanox.co.il> wrote:
-
-> Bingo!
+> > > > Does everybody agree on these semantics, though?  At least David
+> > > > seems to think that mb/rmb/wmb aren't required to order normal
+> > > > memory accesses against each other..
+> > > 
+> > > Not on UP.  On SMP, ordering is (almost certainly) required.
+> > 
+> > 'almost certainly'?  That sounds like there is a possibility that it
+> > wouldn't have to?  What does this depend on?
 > 
-> The patch below fixes the two problems (listed above) with resume from 
-> RAM that I have observed on my T60 with 2.6.21-rc5: with this patch 
-> applied, and with CONFIG_NO_HZ unset, date advances correctly, X 
-> functions properly and there is no delay on first disk access.
+> The underlying memory model of the CPU.  For sequentially consistent
+> systems, only compiler barriers are required.  There are very few such
+> systems -- MIPS and PA-RISC, if I remember correctly.  Performance
+> dictates otherwise.
 > 
-> Thanks very much.
-[...]
-> 
-> Maxim, do you plan to send this upstream?
+> I believe that MIPS is -not- sequentially consistent, but have not yet
+> purchased an architecture reference manual.
 
-we'll fix this the right way tomorrow, by adding a proper suspend/resume 
-sysdev handler - the lapic clockevents driver already has that. Maxim 
-definitely deserves alot of kudos for having found this bug!
+ARM Normal memory (RAM) accesses are weakly ordered, so on SMP, you
+need barriers.  (SMP ARM systems are the definite minority, though.)
 
-	Ingo
+(For ARM UP, we generally don't care, since most have virtual caches
+and are not I/O coherent, and so DMA coherent mappings will be done
+as uncached mappings, and uncached mappings are strongly ordered --
+except on XScale V3, which supports I/O coherency, and so you need to
+use barriers when operating on DMA coherent memory because DMA coherent
+mappings are done as Normal memory (which is weakly ordered) when I/O
+coherency is enabled.)
+
+
+> Given that ARM device drivers are accessing MMIO locations, which are
+> often slow anyway, how much is ARM really gaining by dropping memory
+> barriers when only I/O accesses need be ordered?  Is it measurable?
+
+No idea -- I assume Catalin has looked at this.
