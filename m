@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbXC1JuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbXC1JvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934031AbXC1JuS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 05:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933812AbXC1JuS
+	id S1753625AbXC1JvO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 05:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXC1JvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 05:50:18 -0400
-Received: from science.horizon.com ([192.35.100.1]:11561 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934031AbXC1JuQ (ORCPT
+	Wed, 28 Mar 2007 05:51:14 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:2436 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752885AbXC1JvM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 05:50:16 -0400
-Date: 28 Mar 2007 05:50:14 -0400
-Message-ID: <20070328095014.20945.qmail@science.horizon.com>
-From: linux@horizon.com
-To: nickpiggin@yahoo.com.au
-Subject: Re: [patch resend v4] update ctime and mtime for mmaped write
-Cc: akpm@linux-foundation.org, linux@horizon.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, miklos@szeredi.hu
-In-Reply-To: <460A201C.3070405@yahoo.com.au>
+	Wed, 28 Mar 2007 05:51:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=su0RJS9GnEEYtfl6iKIVJ8lCXDxKyPgPjv9gYzkfVzZa8yy1QfQXgVfX48BJJb4LX4ObCNvicxltFngySO0LFaMlcuiTMCByDC8CW8RTq9aZ2M/7sjuMgVRhlg4mfFuEdvlLcFbfbp0UyZ7psMkCiGRPbmDBoD5Z8phPc0E4kDA=
+Message-ID: <460A3A89.2050809@gmail.com>
+Date: Wed, 28 Mar 2007 18:51:05 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan <alan@lxorguk.ukuu.org.uk>, Len Brown <lenb@kernel.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: ATA ACPI (was Re: Linux 2.6.21-rc5)
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <4608B0CA.1040005@garzik.org> <4608B1A2.3040305@gmail.com> <20070327213200.GA5842@ucw.cz>
+In-Reply-To: <20070327213200.GA5842@ucw.cz>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But if you didn't notice until now, then the current implementation
-> must be pretty reasonable for you use as well.
+Pavel Machek wrote:
+> Hi!
+> 
+>>>> So if you have reported a regression in the 2.6.21-rc 
+>>>> series, please check 2.6.21-rc5, and update your 
+>>>> report as appropriate (whether fixed or "still 
+>>>> problems with xyzzy").
+>>> [just got back from vacation, or would have sent this 
+>>> earlier]
+>>>
+>>> FWIW, I'm still leaning towards disabling libata ACPI 
+>>> support by default for 2.6.21.
+>>>
+>>> Upstream has Alan's fix for the worst PATA problems, 
+>>> but for different reasons, I think PATA ACPI and SATA 
+>>> ACPI support in libata does not feel quite ready for 
+>>> prime time in 2.6.21.
+>>>
+>>> Scream now, or hold your peace until 2.6.22... :)
+>> I second disabling ACPI for 2.6.21.
+> 
+> Ugh.. does that mean we'll have 'regression reports' as in 'it worked
+> ok in -rc5, broken in final?
+> 
+> Well, suspend is currently so broken that we'll be flooded by reports,
+> anyway, but.... could we get at least define in code so that we can
+> tell users to flip it?
 
-Oh, I definitely noticed.  As soon as I tried to port my application
-to 2.6, it broke - as evidenced by my complaints last year.  The
-current solution is simple - since it's running on dedicated boxes,
-leave them on 2.4.
+Just the default value for libata.noacpi is changed to 1, so user can
+easily reenable it by passing boot/module parameter.
 
-I've now got the hint on how to make it work on 2.6 (sync_file_range()),
-so I can try again.  But the pressure to upgrade is not strong, so it
-might be a while.
-
-You may recall, this subthread started when I responding to "the
-only reason to use msync(MS_ASYNC) is to update timestamps" with a
-counterexample.  I still think the purpose of the call is a hint to the
-kernel that writing to the specified page(s) is complete and now would be
-a good time to clean them.  Which has very little to do with timestamps.
-
-Now, my application, which leaves less than a second between the MS_ASYNC
-and a subsequent MS_SYNC to check whether it's done, broke, but I can
-imagine similar cases where MS_ASYNC would remain a useful hint to reduce
-the sort of memory hogging generally associated with "dd if=/dev/zero"
-type operations.
-
-Reading between the lines of the standard, that seems (to me, at least)
-to obviously be the intended purpose of msync(MS_ASYNC).  I wonder if
-there's any historical documentation describing the original intent
-behind creating the call.
+-- 
+tejun
