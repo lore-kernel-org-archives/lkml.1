@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbXC1ViG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbXC1Vi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752985AbXC1ViG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 17:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbXC1ViF
+	id S932619AbXC1Vi5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 17:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbXC1Vi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 17:38:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40921 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752985AbXC1ViD (ORCPT
+	Wed, 28 Mar 2007 17:38:57 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53582 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753156AbXC1Vi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 17:38:03 -0400
-Date: Wed, 28 Mar 2007 23:41:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Ioan Ionita" <opslynx@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Testing patch for ALi PATA - fixes hopefully for the problems
- with ATAPI DMA
-Message-ID: <20070328234151.312ef2c8@the-village.bc.nu>
-In-Reply-To: <df47b87a0703281423q70d6ffd3l107bf84c325dec32@mail.gmail.com>
-References: <20070327190248.01bc7e5c@the-village.bc.nu>
-	<df47b87a0703281423q70d6ffd3l107bf84c325dec32@mail.gmail.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Mar 2007 17:38:56 -0400
+Date: Wed, 28 Mar 2007 14:38:55 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
+In-Reply-To: <20070328212459.GY8915@holomorphy.com>
+Message-ID: <Pine.LNX.4.64.0703281435330.14017@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
+ <20070328205055.GX8915@holomorphy.com> <Pine.LNX.4.64.0703281356080.13258@schroedinger.engr.sgi.com>
+ <20070328212459.GY8915@holomorphy.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007 17:23:08 -0400
-"Ioan Ionita" <opslynx@gmail.com> wrote:
+On Wed, 28 Mar 2007, William Lee Irwin III wrote:
 
-> On 3/27/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >
-> >
-> > This implements two things at driver level which are implemented
-> > implicitly by the old IDE layer
-> >
-> > - Only doing sector sized ATAPI I/O via DMA
-> > - Alway writing the size values
-> 
-> 
-> Is there a similar approach for SIS PATA ATAPI?
+> I'd also appreciate if it were mentioned who actually wrote this, given
+> that the patch posted was what I sent you verbatim (and actually
+> requested you not post for good reasons, some centering around pageattr.c).
 
-I'm not aware of any similar limit in the SiS hardware but you can
-certainly modify the patch and apply it in the same way to the SiS driver
-and see what happens
+Ughhh. Sorry I had this in there in early editions but removed the 
+paragraph later.
+
+> The salient point from the above, which was conveniently omitted, was
+> "it's all dominated by PTE caching." However, even this needs some
+> qualification having to do with the VSZ of the parent process in fork().
+> For very small processes, such as cannot be constructed with glibc due
+> to its massive bloat and cannot be constructed with the standard process
+> address space layouts due to stacks being too distant from text and
+> heap, PTE's actually don't substantially outnumber PMD's et al, so
+> there is more to this story.
+
+No that was described in the patch. Quote:
+
+"i386 only provides support for caching constructed pgd and pmds. These 
+are comparatively rare to ptes so it is no surprise that the current 
+approach has only minimal effect. ...."
