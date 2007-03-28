@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751224AbXC1AvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934259AbXC1BPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751224AbXC1AvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 20:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXC1AvV
+	id S934259AbXC1BPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 21:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934344AbXC1BPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 20:51:21 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:35646 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751224AbXC1AvT (ORCPT
+	Tue, 27 Mar 2007 21:15:39 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36879 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934259AbXC1BPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 20:51:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=ix6DyZPSVC0WggngS+UkeS9HnpnWggB9v6LQh8QUz+w7jrgAiHzpXu7cqyTEAIgD0d24ido1MrEg8/JkOpja5qp/zHMnZmcAu8zYEkotWRmBMhFl1B4eqetj5ks8RqVdun+mh26E+kqPGdzIa5jyiaeDBmmoZI/WePmOemDq2OM=
-Date: Tue, 27 Mar 2007 19:50:59 -0500
-From: Jay Cliburn <jcliburn@gmail.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Jose Alberto Reguero <jareguero@telefonica.net>,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: 2.6.21-rc5: known regressions with patches
-Message-ID: <20070327195059.7261facc@osprey.hogchain.net>
-In-Reply-To: <20070327230024.GJ16477@stusta.de>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	<20070327230024.GJ16477@stusta.de>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Mar 2007 21:15:38 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Williams, Mitch A" <mitch.a.williams@intel.com>
+Cc: "Grant Grundler" <grundler@parisc-linux.org>,
+       <linux-pci@atrey.karlin.mff.cuni.cz>, <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table
+References: <08FE5CC30C9A3F41BF819A502CF7BF6EF98580@fmsmsx411.amr.corp.intel.com>
+Date: Tue, 27 Mar 2007 19:14:37 -0600
+In-Reply-To: <08FE5CC30C9A3F41BF819A502CF7BF6EF98580@fmsmsx411.amr.corp.intel.com>
+	(Mitch A. Williams's message of "Tue, 27 Mar 2007 14:43:55 -0700")
+Message-ID: <m14po6w4n6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007 01:00:24 +0200
-Adrian Bunk <bunk@stusta.de> wrote:
+"Williams, Mitch A" <mitch.a.williams@intel.com> writes:
 
-> Subject    : atl1 net driver: problem with sockets
-> References : http://lkml.org/lkml/2007/3/21/248
-> Submitter  : Jose Alberto Reguero <jareguero@telefonica.net>
-> Patch      : http://marc.info/?l=linux-netdev&m=117502041808665&w=2
-> Status     : patch available
+> Doh!  I was reading the code wrong.  We only mask if we're still
+> handling a previous interrupt on the same vector.  My bad.
+>
+> However, I can't really see where mask() is used outside of that
+> instance.  Which then leads us back to the question:  do we need
+> a read flush on mask/unmask or just enable/disable?
 
-Patch submitted to netdev.  http://lkml.org/lkml/2007/3/27/321
+I'm not even certain we need the read flush in the enable.
+However having it in there makes the code easier to reason
+about.  Which is a big plus.
 
-Best,
-Jay
+Generally if the interrupt controller hardware is sane 
+mask/unmask and enable/disable should be the same function.
+
+If we need to work around something in the hardware enable/disable
+should do that and mask/unmask should poke the hardware.
+
+Since MSI is specified as properly handle pending interrupts
+I would put the write flush in mask.  It makes the code easier
+to understand and comprehend.
+
+The practical question in my book is do we set the enable/disable
+methods to the same functions as the mask/unmask methods or
+do we let them default to the crazy delayed disable scenario.
+
+Given that we do have a tiny race where we need to ensure the
+MSI is disabled before we unregister it, we don't know of any
+MSI implementation problems that will result in a screaming IRQ.
+I would say set enable/disable to the mask/unmask methods.
+
+This will fix the tiny freeing bug mentioned above, and not play
+games with drivers that are using MSI irqs.
+
+If at some point we need a lesser form someone can change the msi
+enable/disable methods to something else.
+
+Eric
