@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965634AbXC1SEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752366AbXC1SgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965634AbXC1SEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 14:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965632AbXC1SEs
+	id S1752366AbXC1SgK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 14:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965624AbXC1SgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 14:04:48 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:55054 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965634AbXC1SEr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 14:04:47 -0400
-Date: Wed, 28 Mar 2007 20:04:46 +0200
-From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: tty OOPS (Re: 2.6.21-rc5-mm2)
-Message-ID: <20070328180446.GA7528@rhlx01.hs-esslingen.de>
-References: <20070326211627.c681af3b.akpm@linux-foundation.org> <20070328170214.GA13044@rhlx01.hs-esslingen.de> <20070328173310.GA4682@rhlx01.hs-esslingen.de> <20070328174524.GA25709@rhlx01.hs-esslingen.de>
+	Wed, 28 Mar 2007 14:36:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42930 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752366AbXC1SgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 14:36:08 -0400
+X-Greylist: delayed 13929 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Mar 2007 14:36:08 EDT
+Date: Wed, 28 Mar 2007 20:32:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Maxim <maximlevitsky@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org
+Subject: Re: [3/6] 2.6.21-rc4: known regressions
+Message-ID: <20070328183226.GA16415@elte.hu>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <b6a2187b0703261046r46782eedv64464ceddb44bc27@mail.gmail.com> <1175065468.4017.1.camel@chaos> <200703281543.47049.maximlevitsky@gmail.com> <20070328180457.GA4253@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070328174524.GA25709@rhlx01.hs-esslingen.de>
+In-Reply-To: <20070328180457.GA4253@mellanox.co.il>
 User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-[unrelated maintainers removed, Alexey added]
+* Michael S. Tsirkin <mst@dev.mellanox.co.il> wrote:
 
-On Wed, Mar 28, 2007 at 07:45:24PM +0200, Andreas Mohr wrote:
-> Hi,
+> Bingo!
 > 
-> just wanted to add that when analyzing the backtrace I found the comment
-> at drivers/char/vt.c/con_close() to be VERY suspicious...
-> (need to take tty_mutex to prevent concurrent thread tty access).
-> This might just be what happened here despite trying to protect against it.
+> The patch below fixes the two problems (listed above) with resume from 
+> RAM that I have observed on my T60 with 2.6.21-rc5: with this patch 
+> applied, and with CONFIG_NO_HZ unset, date advances correctly, X 
+> functions properly and there is no delay on first disk access.
+> 
+> Thanks very much.
+[...]
+> 
+> Maxim, do you plan to send this upstream?
 
-OK, can we assume that one of
+we'll fix this the right way tomorrow, by adding a proper suspend/resume 
+sysdev handler - the lapic clockevents driver already has that. Maxim 
+definitely deserves alot of kudos for having found this bug!
 
-+protect-tty-drivers-list-with-tty_mutex.patch
-+tty-minor-merge-correction.patch
-+tty-in-tiocsctty-when-we-steal-a-tty-hang-it-up-fix.patch
-
-is responsible / not implemented fully?
-
-Andreas Mohr
+	Ingo
