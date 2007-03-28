@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbXC1JJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933740AbXC1JLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbXC1JJd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 05:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbXC1JJd
+	id S933740AbXC1JLt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 05:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933691AbXC1JLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 05:09:33 -0400
-Received: from truxi.wincor-nixdorf.com ([217.115.67.78]:50402 "EHLO
-	truxi.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752795AbXC1JJc (ORCPT
+	Wed, 28 Mar 2007 05:11:49 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47748 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933662AbXC1JLr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 05:09:32 -0400
-Subject: Re: [PATCH] Add support for ITE887x serial chipsets
-From: Niels de Vos <niels.devos@wincor-nixdorf.com>
-To: linux@horizon.com
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-In-Reply-To: <20070327183031.9989.qmail@science.horizon.com>
-References: <20070327183031.9989.qmail@science.horizon.com>
-Content-Type: text/plain
-Organization: Wincor Nixdorf International GmbH
-Date: Wed, 28 Mar 2007 11:08:52 +0200
-Message-Id: <1175072932.3065.8.camel@wsa115.wincor-nixdorf.com>
+	Wed, 28 Mar 2007 05:11:47 -0400
+Date: Wed, 28 Mar 2007 10:57:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       kyle@canonical.com
+Subject: Re: HPA patches
+Message-ID: <20070328105754.72b578bd@the-village.bc.nu>
+In-Reply-To: <20070328000851.GA25551@srcf.ucam.org>
+References: <20070323191321.5d00887a@lxorguk.ukuu.org.uk>
+	<20070328000851.GA25551@srcf.ucam.org>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Mar 2007 09:09:23.0885 (UTC) FILETIME=[C7382DD0:01C77118]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-27 at 14:30 -0400, linux@horizon.com wrote:
-> Minor point: the chip part numbers are actually IT887x, not ITE887x.
+On Wed, 28 Mar 2007 01:08:52 +0100
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-You are correct. Vendor is ITE, product IT887x (id=8872). What is the
-advised naming convention for something like this?
+> On Fri, Mar 23, 2007 at 07:13:21PM +0000, Alan Cox wrote:
+> > For reference this is what I am currently using with 2.6.21-rc4-mm1 and
+> > it is working for all my test cases so far: Its basically Kyle's patch
+> > with a libata switch to turn it on/off and some minor fixups from
+> > the original patch as posted
+> 
+> Fails for me on a Macbook Pro with:
 
-> I STFW for a data sheet, but didn't have immediate luck.  Does anyone know where to find
-> documentation?
-
-I can't even find the product on the official ITE site... The sheets I
-have come from our BIOS development team. I've uploaded them on our FTP
-server. The files will be deleted automatically in a few days.
-
-- <ftp://ftp.wincor-nixdorf.com/outgoing/IT8872_v0.2_07182000.PDF>
-- <ftp://ftp.wincor-nixdorf.com/outgoing/IT8874F_V0.1_09202001.PDF>
-
--- 
-Niels de Vos <niels.devos@wincor-nixdorf.com>
-Wincor Nixdorf International GmbH
-
+Ok thanks. This is interesting as the only thing new it is doing is
+asking for the HPA size. Does I think explain the problem however: Can
+you move the HPA setting call to after the mode has been set and see if
+that makes the problem vanish ?
