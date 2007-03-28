@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965752AbXC1UPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965749AbXC1UPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965752AbXC1UPK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 16:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965757AbXC1UPJ
+	id S965749AbXC1UPi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 16:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965763AbXC1UPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 16:15:09 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:57658 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965752AbXC1UPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 16:15:07 -0400
-Date: Wed, 28 Mar 2007 13:14:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Lee Revell <rlrevell@joe-job.com>,
-       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       andrea@suse.de, viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: fs/block_dev.c:953: warning: 'found' might be used
- uninitialized in this function
-Message-Id: <20070328131454.cdb06bc3.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703281909240.29565@twin.jikos.cz>
-References: <200703281847.05356.toralf.foerster@gmx.de>
-	<75b66ecd0703280956i522cf6cbyc4c9ef8b1666ec15@mail.gmail.com>
-	<Pine.LNX.4.64.0703281909240.29565@twin.jikos.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Wed, 28 Mar 2007 16:15:38 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:52810 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965757AbXC1UPN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 16:15:13 -0400
+Date: Wed, 28 Mar 2007 22:15:11 +0200
+From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andreas Mohr <andi@rhlx01.fht-esslingen.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Maneesh Soni <maneesh@in.ibm.com>, Ethan Solomita <solo@google.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: [FIXED] Re: tty OOPS (Re: 2.6.21-rc5-mm2)
+Message-ID: <20070328201511.GA20889@rhlx01.hs-esslingen.de>
+References: <20070326211627.c681af3b.akpm@linux-foundation.org> <20070328170214.GA13044@rhlx01.hs-esslingen.de> <20070328173310.GA4682@rhlx01.hs-esslingen.de> <20070328174524.GA25709@rhlx01.hs-esslingen.de> <20070328180446.GA7528@rhlx01.hs-esslingen.de> <20070328183814.GA5306@martell.zuzino.mipt.ru> <20070328185632.GB5306@martell.zuzino.mipt.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070328185632.GB5306@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.4.2.2i
+X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007 19:23:32 +0200 (CEST)
-Jiri Kosina <jikos@jikos.cz> wrote:
+Hi,
 
-> blockdev: bd_claim_by_kobject() could check value of unititalized pointer
+On Wed, Mar 28, 2007 at 10:56:32PM +0400, Alexey Dobriyan wrote:
+> The only suspicious new patch in -rc5-mm1 to me is
+> fix-sysfs-reclaim-crash.patch which removes "sd->s_dentry = NULL;". Note
+> that whole sysfs_drop_dentry() is NOP if ->s_dentry is NULL.
 > 
-> Fixes this warning:
+> Could you try to revert it?
 > 
-> fs/block_dev.c: In function `bd_claim_by_kobject':
-> fs/block_dev.c:953: warning: 'found' might be used uninitialized in this function
-> 
-> struct bd_holder *found is initialized only when bd_claim() returns zero. If it
-> returns nonzero, ptr stays uninitialized. Later the value of the pointer is checked.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> 
-> diff --git a/drivers/usb/input/hid-tmff.c b/drivers/usb/input/hid-tmff.c
-> diff --git a/fs/block_dev.c b/fs/block_dev.c
-> index 575076c..e87d84a 100644
-> --- a/fs/block_dev.c
-> +++ b/fs/block_dev.c
-> @@ -950,7 +950,7 @@ static int bd_claim_by_kobject(struct block_device *bdev, void *holder,
->  				struct kobject *kobj)
->  {
->  	int res;
-> -	struct bd_holder *bo, *found;
-> +	struct bd_holder *bo, *found = NULL;
+> 	Alexey, who knows very little about sysfs internals
 
-that generates extra code and people get upset.
+Apparently that's still too much knowledge ;)
 
-One approach which we could ue in here is
+Or, in other words: 6 reboots already and not a single problem!
 
-	struct bd_holder *found = found;  /* Suppress bogus gcc warning */
+So yes, the removal of the NULLing line in this patch most likely
+has caused this issue on my box.
+Now the question is whether something as simple as that is a fully
+correct fix or whether something should be done entirely differently.
+I'll let people more familiar with those parts decide about it...
 
-which (surprisingly) gcc will currently accept, and which shouldn't
-generate more code, although I haven't verified this.
+Thanks!
 
-
-But it's all rather ad-hoc and unpleasant.  I tend to think that we should
-come up with some standardised way of squashing this warning - something
-which stands out when one is reading the code, like
-
-	struct bd_holder *found;
-
-	squash_bogus_uninit_warning(found);	/* useful comment goes here */
-
-which is also unpleasant, but not as unpleasant as a screenful of warnings
-which hide real problems, IMO.
-
-
+Andreas Mohr
