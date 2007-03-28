@@ -1,50 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933807AbXC1Wri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933686AbXC1Wwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933807AbXC1Wri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 18:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934055AbXC1Wri
+	id S933686AbXC1Wwx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 18:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933699AbXC1Www
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 18:47:38 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:44604 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933807AbXC1Wri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 18:47:38 -0400
-Date: Wed, 28 Mar 2007 15:47:17 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Zachary Amsden <zach@vmware.com>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jeremy@goop.org
-Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
-Message-ID: <20070328224717.GK10574@sequoia.sous-sol.org>
-References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com> <20070328222656.GS6602@sequoia.sous-sol.org> <20070328223327.GG2986@holomorphy.com> <460AFD7F.6050802@vmware.com>
+	Wed, 28 Mar 2007 18:52:52 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:60691 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933686AbXC1Wwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 18:52:51 -0400
+Subject: [PATCH] scsi: megaraid_sas - intercepts cmd timeout and throttle io
+From: Sumant Patro <sumant.patro@lsi.com>
+To: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
+       sumant.patro@lsi.com
+Content-Type: text/plain
+Date: Wed, 28 Mar 2007 10:43:54 -0700
+Message-Id: <1175103834.4130.17.camel@dumbo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460AFD7F.6050802@vmware.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.0.2 (2.0.2-22) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Zachary Amsden (zach@vmware.com) wrote:
-> William Lee Irwin III wrote:
-> >>clone_pgd_range() for consistency?  and it seems we lost a
-> >>paravirt_alloc_pd_clone() in there somewhere.
-> >>    
-> >
-> >Yes, another reason why it shouldn't have been posted as-is. It was not
-> >intended to for anything more than comparative benchmarking on systems
-> >without graphics running on the bare metal as opposed to Xen/etc. guests.
-> >  
-> 
-> So clone_pgd_range is mostly useless now.  Originally, I intended it to 
-> take the part of paravirt_alloc_pd_clone.  We should probably merge the 
-> two into just one function, unless someone thinks clone_pgd_range is 
-> actually useful for something.
 
-No, I was going to suggest just that.  It was orginially introduced as
-the place holder for that IIRC.
+eh_timed_out call back (megasas_reset_timer) is used to throttle io to the adapter 
+when it is called the first time for a scmd.
+The MEGASAS_FW_BUSY flag is set and can_queue reduced to 16. The can_queue is restored 
+from completion routine in following two conditions : 5 seconds has elapsed and the # of
+outstanding cmds in FW is < 17.
 
-thanks,
--chris
+Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
+---
+ drivers/scsi/megaraid/megaraid_sas.c |   65 +++++++++++++++++++++++--
+ drivers/scsi/megaraid/megaraid_sas.h |   13 +++--
+ 2 files changed, 70 insertions(+), 8 deletions(-)
+
+This patch requires the patch submitted by James with subject line : 
+
+[PATCH] expose eh_timed_out to the host template
+
+diff -uprN linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.c	2007-03-28 08:41:49.000000000 -0700
++++ linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.c	2007-03-28 08:36:38.000000000 -0700
+@@ -10,7 +10,7 @@
+  *	   2 of the License, or (at your option) any later version.
+  *
+  * FILE		: megaraid_sas.c
+- * Version	: v00.00.03.10-rc1
++ * Version	: v00.00.03.10-rc3
+  *
+  * Authors:
+  *	(email-id : megaraidlinux@lsi.com)
+@@ -886,6 +886,7 @@ megasas_queue_command(struct scsi_cmnd *
+ 		goto out_return_cmd;
+ 
+ 	cmd->scmd = scmd;
++	scmd->SCp.ptr = (char *)cmd;
+ 
+ 	/*
+ 	 * Issue the command to the FW
+@@ -981,8 +982,8 @@ static int megasas_generic_reset(struct 
+ 
+ 	instance = (struct megasas_instance *)scmd->device->host->hostdata;
+ 
+-	scmd_printk(KERN_NOTICE, scmd, "megasas: RESET -%ld cmd=%x\n",
+-	       scmd->serial_number, scmd->cmnd[0]);
++	scmd_printk(KERN_NOTICE, scmd, "megasas: RESET -%ld cmd=%x retries=%x\n",
++		 scmd->serial_number, scmd->cmnd[0], scmd->retries);
+ 
+ 	if (instance->hw_crit_error) {
+ 		printk(KERN_ERR "megasas: cannot recover from previous reset "
+@@ -1000,6 +1001,40 @@ static int megasas_generic_reset(struct 
+ }
+ 
+ /**
++ * megasas_reset_timer - quiesce the adapter if required
++ * @scmd:		scsi cmnd
++ *
++ * Sets the FW busy flag and reduces the host->can_queue if the
++ * cmd has not been completed within the timeout period.
++ */
++static enum
++scsi_eh_timer_return megasas_reset_timer(struct scsi_cmnd *scmd)
++{
++	struct megasas_cmd *cmd = (struct megasas_cmd *)scmd->SCp.ptr;
++	struct megasas_instance *instance;
++	unsigned long flags;
++
++	if (cmd) {
++		if (time_after(jiffies, scmd->jiffies_at_alloc + 170 * HZ))
++			return EH_NOT_HANDLED;
++
++		instance = cmd->instance;
++		if (!(instance->flag & MEGASAS_FW_BUSY)) {
++			/* FW is busy, throttle IO */
++			spin_lock_irqsave(&instance->throttle_io_lock, flags);
++
++			instance->host->can_queue = 16;
++			instance->last_time = jiffies;
++			instance->flag |= MEGASAS_FW_BUSY;
++
++			spin_unlock_irqrestore(&instance->throttle_io_lock, flags);
++		}
++		return EH_RESET_TIMER;
++	}
++	return EH_HANDLED;
++}
++
++/**
+  * megasas_reset_device -	Device reset handler entry point
+  */
+ static int megasas_reset_device(struct scsi_cmnd *scmd)
+@@ -1112,6 +1147,7 @@ static struct scsi_host_template megasas
+ 	.eh_device_reset_handler = megasas_reset_device,
+ 	.eh_bus_reset_handler = megasas_reset_bus_host,
+ 	.eh_host_reset_handler = megasas_reset_bus_host,
++	.eh_timed_out = megasas_reset_timer,
+ 	.bios_param = megasas_bios_param,
+ 	.use_clustering = ENABLE_CLUSTERING,
+ };
+@@ -1215,9 +1251,8 @@ megasas_complete_cmd(struct megasas_inst
+ 	int exception = 0;
+ 	struct megasas_header *hdr = &cmd->frame->hdr;
+ 
+-	if (cmd->scmd) {
++	if (cmd->scmd)
+ 		cmd->scmd->SCp.ptr = (char *)0;
+-	}
+ 
+ 	switch (hdr->cmd) {
+ 
+@@ -1806,6 +1841,7 @@ static void megasas_complete_cmd_dpc(uns
+ 	u32 context;
+ 	struct megasas_cmd *cmd;
+ 	struct megasas_instance *instance = (struct megasas_instance *)instance_addr;
++	unsigned long flags;
+ 
+ 	/* If we have already declared adapter dead, donot complete cmds */
+ 	if (instance->hw_crit_error)
+@@ -1828,6 +1864,22 @@ static void megasas_complete_cmd_dpc(uns
+ 	}
+ 
+ 	*instance->consumer = producer;
++
++	/*
++	 * Check if we can restore can_queue
++	 */
++	if (instance->flag & MEGASAS_FW_BUSY
++		&& time_after(jiffies, instance->last_time + 5 * HZ)
++		&& atomic_read(&instance->fw_outstanding) < 17) {
++
++		spin_lock_irqsave(&instance->throttle_io_lock, flags);
++
++		instance->flag &= ~MEGASAS_FW_BUSY;
++		instance->host->can_queue =
++				instance->max_fw_cmds - MEGASAS_INT_CMDS;
++
++		spin_unlock_irqrestore(&instance->throttle_io_lock, flags);
++	}
+ }
+ 
+ /**
+@@ -2384,6 +2436,7 @@ megasas_probe_one(struct pci_dev *pdev, 
+ 	init_waitqueue_head(&instance->int_cmd_wait_q);
+ 	init_waitqueue_head(&instance->abort_cmd_wait_q);
+ 
++	spin_lock_init(&instance->throttle_io_lock);
+ 	spin_lock_init(&instance->cmd_pool_lock);
+ 
+ 	sema_init(&instance->aen_mutex, 1);
+@@ -2398,6 +2451,8 @@ megasas_probe_one(struct pci_dev *pdev, 
+ 	instance->init_id = MEGASAS_DEFAULT_INIT_ID;
+ 
+ 	megasas_dbg_lvl = 0;
++	instance->flag = 0;
++	instance->last_time = 0;
+ 
+ 	/*
+ 	 * Initialize MFI Firmware
+diff -uprN linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.h	2007-03-28 08:41:49.000000000 -0700
++++ linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.h	2007-03-28 08:36:39.000000000 -0700
+@@ -18,9 +18,9 @@
+ /*
+  * MegaRAID SAS Driver meta data
+  */
+-#define MEGASAS_VERSION				"00.00.03.10-rc1"
+-#define MEGASAS_RELDATE				"Feb 14, 2007"
+-#define MEGASAS_EXT_VERSION			"Wed Feb 14 10:14:25 PST 2007"
++#define MEGASAS_VERSION				"00.00.03.10-rc3"
++#define MEGASAS_RELDATE				"Mar 28, 2007"
++#define MEGASAS_EXT_VERSION			"Wed Mar 28 10:25:52 PST 2007"
+ 
+ /*
+  * Device IDs
+@@ -539,6 +539,8 @@ struct megasas_ctrl_info {
+ 
+ #define MEGASAS_DBG_LVL				1
+ 
++#define MEGASAS_FW_BUSY				1
++
+ /*
+  * When SCSI mid-layer calls driver's reset routine, driver waits for
+  * MEGASAS_RESET_WAIT_TIME seconds for all outstanding IO to complete. Note
+@@ -1104,6 +1106,11 @@ struct megasas_instance {
+ 
+ 	struct megasas_instance_template *instancet;
+ 	struct tasklet_struct isr_tasklet;
++
++	u8 flag;
++	u8 rsvd[3];
++	unsigned long last_time;
++	spinlock_t throttle_io_lock;
+ };
+ 
+ #define MEGASAS_IS_LOGICAL(scp)						\
+
+
