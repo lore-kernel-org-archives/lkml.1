@@ -1,79 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXC1WA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933372AbXC1WB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933365AbXC1WA1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 18:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXC1WA1
+	id S933372AbXC1WB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 18:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933589AbXC1WB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 18:00:27 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:44774 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933365AbXC1WA0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 18:00:26 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 28 Mar 2007 15:00:21 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-In-Reply-To: <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com>
-References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu>
- <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL>
- <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de>
- <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 28 Mar 2007 18:01:28 -0400
+Received: from holomorphy.com ([66.93.40.71]:60409 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933372AbXC1WB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 18:01:27 -0400
+Date: Wed, 28 Mar 2007 15:01:31 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
+Message-ID: <20070328220131.GF2986@holomorphy.com>
+References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com> <20070328205055.GX8915@holomorphy.com> <Pine.LNX.4.64.0703281356080.13258@schroedinger.engr.sgi.com> <20070328212459.GY8915@holomorphy.com> <Pine.LNX.4.64.0703281435330.14017@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703281435330.14017@schroedinger.engr.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007, Davide Libenzi wrote:
+On Wed, Mar 28, 2007 at 02:38:55PM -0700, Christoph Lameter wrote:
+> No that was described in the patch. Quote:
+> "i386 only provides support for caching constructed pgd and pmds. These 
+> are comparatively rare to ptes so it is no surprise that the current 
+> approach has only minimal effect. ...."
 
-> On Wed, 28 Mar 2007, Nick Piggin wrote:
-> 
-> > On Sat, Mar 24, 2007 at 06:29:59PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Nikita Danilov <nikita@clusterfs.com> wrote:
-> > > 
-> > > > Indeed, this technique is very well known. E.g., 
-> > > > http://citeseer.ist.psu.edu/anderson01sharedmemory.html has a whole 
-> > > > section (3. Local-spin Algorithms) on them, citing papers from the 
-> > > > 1990 onward.
-> > > 
-> > > that is a cool reference! So i'd suggest to do (redo?) the patch based 
-> > > on those concepts and that terminology and not use 'queued spinlocks' 
-> > > that are commonly associated with MS's stuff. And as a result the 
-> > > contended case would be optimized some more via local-spin algorithms. 
-> > > (which is not a key thing for us, but which would be nice to have 
-> > > nevertheless)
-> > 
-> > Firstly, the terminology in that paper _is_ "queue lock", which isn't
-> > really surprising. I don't really know or care about what MS calls their
-> > locks, but I'd suggest that their queued spinlock is probably named in
-> > reference to its queueing property rather than its local spin property.
-> 
-> The method you propose is otherwise called "Ticket Lock":
-> 
-> http://en.wikipedia.org/wiki/Ticket_lock
-> http://www.cs.rochester.edu/research/synchronization/pseudocode/ss.html#ticket
-
-That this work prio-art dates to 1991:
-
-http://www.cs.rochester.edu/u/scott/papers/1991_TOCS_synch.pdf
-
-So I would not worry to much about patents here. At least W2K MS ones ;)
-What I would worry though, is to add another class of locks. There's no 
-reason why Ticket Locks would perform worse than our spinlock, in both 
-contended and not-contended case, AFAICS. And they have a nice FIFO 
-behaviour.
+And where was the mention of this being a patch I sent you in a private
+reply verbatim, and furthermore asked you not to post?
 
 
-
-- Davide
-
-
+-- wli
