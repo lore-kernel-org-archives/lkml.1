@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbXC1G4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933253AbXC1HEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933342AbXC1G4w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 02:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933439AbXC1G4w
+	id S933253AbXC1HEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 03:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933439AbXC1HEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 02:56:52 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56234 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933342AbXC1G4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 02:56:51 -0400
-Date: Wed, 28 Mar 2007 08:56:50 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, kiran@scalex86.org
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-Message-ID: <20070328065650.GB12508@wotan.suse.de>
-References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de> <20070324134128.7882f905.akpm@linux-foundation.org>
+	Wed, 28 Mar 2007 03:04:34 -0400
+Received: from www.osadl.org ([213.239.205.134]:50968 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933253AbXC1HEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 03:04:32 -0400
+Subject: Re: [3/6] 2.6.21-rc4: known regressions
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <b6a2187b0703261046r46782eedv64464ceddb44bc27@mail.gmail.com>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070318184919.GW752@stusta.de>
+	 <b6a2187b0703251825l2b2ab9d3j43e17523cbca87ac@mail.gmail.com>
+	 <20070326040509.GU16477@stusta.de>
+	 <b6a2187b0703252237l4f662fb3n7f57dfb10360c4f6@mail.gmail.com>
+	 <1174926407.7911.1.camel@chaos>
+	 <b6a2187b0703261046r46782eedv64464ceddb44bc27@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 28 Mar 2007 09:04:28 +0200
+Message-Id: <1175065468.4017.1.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070324134128.7882f905.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 24, 2007 at 01:41:28PM -0800, Andrew Morton wrote:
-> > On Fri, 23 Mar 2007 11:32:44 +0100 Nick Piggin <npiggin@suse.de> wrote:
-> >
-> > I'm not as concerned about the contended performance of spinlocks
-> >
+On Tue, 2007-03-27 at 01:46 +0800, Jeff Chua wrote:
+> On 3/27/07, Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> The contended case matters.  Back in 2.5.something I screwed up the debug
-> version of one of the locks (rwlock, iirc) - it was simply missing a
-> cpu_relax(), and some people's benchmarks halved.
-
-Do you have a reference?
-
-rwlocks are a bit funny, because if they are found to be useful (that
-is, they get used somewhere), then it indicates there can be situations
-with a lot of contention and spinning.
-
-Wheras we usually prefer not to use spinlocks in situations like that.
-
-Not that I'm claiming the contended case doesn't matter, but I think
-problems there indicate a bug (and I think rwlocks are almost always
-questionable).
-
-Anyway, I'll look at doing some contended case optimisations afterward.
- 
-
-> > This was just something I had in mind when the hardware lock
-> > starvation issue came up
+> > > It's related. I tested without CONFIG_HPET_TIMER, and now my X60 can
+> > > suspend and resume from RAM (s2ram). Even better, it works
+> > > with/without CONFIG_NO_HZ.
+> >
+> > Does the patch below fix the HPET_TIMER=y case ?
 > 
-> It looks like a good way to address the lru_lock starvation/capture
-> problem.  But I think I'd be more comfortable if we were to introduce it as
-> a new lock type, rather than as a reimplementation of the existing
-> spin_lock().   Initially, at least.
+> Thomas, I tried, but it didn't help. Upon resume from ram, "date"
+> still didn't advance.
 
-I'd hate to have a proliferation of lock types though. I think my
-queued spinlock addresses a real hardware limitation of some systems.
+Can you please issue a SysRq-Q in this situation and provide the dmesg
+output ?
 
-In situations where contention isn't a problem, then queued locks won't
-cause a slowdown. In situations where it is, starvation could also be
-a problem.
+Thanks,
+
+	tglx
+
+
