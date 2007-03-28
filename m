@@ -1,36 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965698AbXC1TJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965714AbXC1TJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965698AbXC1TJG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965701AbXC1TJF
+	id S965714AbXC1TJu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXC1TJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:09:05 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40004 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965691AbXC1TIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:08:39 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [2.6 patch] i386/x86_64: remove UNEXPECTED_IO_APIC()
-Date: Wed, 28 Mar 2007 20:52:29 +0200
-User-Agent: KMail/1.9.5
-Cc: mingo@redhat.com, discuss@x86-64.org, linux-kernel@vger.kernel.org
-References: <20070328121131.GO16477@stusta.de>
-In-Reply-To: <20070328121131.GO16477@stusta.de>
+	Wed, 28 Mar 2007 15:09:38 -0400
+Received: from styx.suse.cz ([82.119.242.94]:52392 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965707AbXC1TJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 15:09:15 -0400
+Date: Wed, 28 Mar 2007 21:13:58 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Li Yu <liyu@ccoss.com.cn>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>, Li Yu <raise.sail@gmail.com>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+In-Reply-To: <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0703282113070.19566@jikos.suse.cz>
+References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com> 
+ <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn> 
+ <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>
+ <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703282052.29307.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 March 2007 14:11, Adrian Bunk wrote:
-> Many years ago, UNEXPECTED_IO_APIC() contained printk()'s (but nothing more).
-> 
-> Now that it's completely empty for years, we can as well remove it.
+On Wed, 28 Mar 2007, Dmitry Torokhov wrote:
 
-Both patches applied. Thanks
--Andi
+> Just register based on VID/PID and provide standard 
+> hid_default_input_event() to drivers so they would call it for reports 
+> they don't need to do special processing on.
+
+Agreed. This is actually what I meant in the original mail, but phrased it 
+very badly, sorry for confusion.
+
+Thanks,
+
+-- 
+Jiri Kosina
