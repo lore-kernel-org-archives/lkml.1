@@ -1,130 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbXC1EqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbXC1FBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbXC1EqK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 00:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbXC1EqK
+	id S1753938AbXC1FBO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 01:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933581AbXC1FBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 00:46:10 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35453 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753565AbXC1EqI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 00:46:08 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Michael Ellerman <michael@ellerman.id.au>
+	Wed, 28 Mar 2007 01:01:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:59806 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753937AbXC1FBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 01:01:13 -0400
+Subject: Re: [PATCH 9/21] MSI: Expand pci_msi_supported()
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
        "David S. Miller" <davem@davemloft.net>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       <daniel.e.wolstenholme@intel.com>
-Subject: Re: [PATCH 9/21] MSI: Expand pci_msi_supported()
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       daniel.e.wolstenholme@intel.com
+In-Reply-To: <m1slbqrn70.fsf@ebiederm.dsl.xmission.com>
 References: <20070322105340.53827DDF65@ozlabs.org>
-Date: Tue, 27 Mar 2007 22:45:07 -0600
-In-Reply-To: <20070322105340.53827DDF65@ozlabs.org> (Michael Ellerman's
-	message of "Thu, 22 Mar 2007 21:51:39 +1100")
-Message-ID: <m1slbqrn70.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	 <m1slbqrn70.fsf@ebiederm.dsl.xmission.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4Uog6IfXXfsq/IJZyn7C"
+Date: Wed, 28 Mar 2007 15:01:10 +1000
+Message-Id: <1175058070.6386.12.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Ellerman <michael@ellerman.id.au> writes:
 
-> pci_enable_msi() and pci_enable_msix() both search for the MSI/MSI-X
-> capability, we can fold this into pci_msi_supported() by passing the
-> type in.
->
-> Update the code to match the comment for pci_msi_supported(). That is
-> it returns 0 on success, and anything else indicates an error.
+--=-4Uog6IfXXfsq/IJZyn7C
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ok.  Looking at this one I don't see a bug exactly but there
-is one very confusing piece.
+On Tue, 2007-03-27 at 22:45 -0600, Eric W. Biederman wrote:
+> Michael Ellerman <michael@ellerman.id.au> writes:
+>=20
+> > pci_enable_msi() and pci_enable_msix() both search for the MSI/MSI-X
+> > capability, we can fold this into pci_msi_supported() by passing the
+> > type in.
+> >
+> > Update the code to match the comment for pci_msi_supported(). That is
+> > it returns 0 on success, and anything else indicates an error.
+>=20
+> Ok.  Looking at this one I don't see a bug exactly but there
+> is one very confusing piece.
+>=20
+> Currently we have a function pci_msi_supported that sounds like it
+> sounds like it should return a boolean value.
+>=20
+> However instead it returns 0 for success and -EINVAL for failure.
+>=20
+> Reading through the code before this patch it is clear it does this
+> weird thing because we check for < 0.
 
-Currently we have a function pci_msi_supported that sounds like it
-sounds like it should return a boolean value.
+I don't think it's that confusing. I agree it was a bit weird that
+previously it was explicitly checking for < 0, so I fixed that.
 
-However instead it returns 0 for success and -EINVAL for failure.
+> After this patch we are simply checking to see if there was a
+> return value at all.
+>=20
+> Can we please change the return value here so it is actually boolean.
+> 1 for supported 0 for not supported.
+>=20
+> There aren't any useful return values anyway so this would just make
+> the code easier to read and maintain.
 
-Reading through the code before this patch it is clear it does this
-weird thing because we check for < 0.
+There aren't any useful return values as it's currently written, but
+there code be. And I'd like to keep that possibility.
 
-After this patch we are simply checking to see if there was a
-return value at all.
+My next patch allows the arch routine to propagate its return value out
+to the caller, which is useful.
 
-Can we please change the return value here so it is actually boolean.
-1 for supported 0 for not supported.
+And I don't think making it return 0/1 makes it any clearer. As it is
+now it's just:
 
-There aren't any useful return values anyway so this would just make
-the code easier to read and maintain.
+If MSI is supported we return 0.
+If MSI is not supported we return some error code which is !=3D 0.
 
-Eric
+The caller just does:
 
+if (pci_msi_supported(blah ..))
+	error;
 
->
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->
->  drivers/pci/msi.c |   19 ++++++++-----------
->  1 file changed, 8 insertions(+), 11 deletions(-)
->
-> Index: msi-new/drivers/pci/msi.c
-> ===================================================================
-> --- msi-new.orig/drivers/pci/msi.c
-> +++ msi-new/drivers/pci/msi.c
-> @@ -433,12 +433,13 @@ static int msix_capability_init(struct p
->  /**
->   * pci_msi_supported - check whether MSI may be enabled on device
->   * @dev: pointer to the pci_dev data structure of MSI device function
-> + * @type: are we checking for MSI or MSI-X ?
->   *
->   * Look at global flags, the device itself, and its parent busses
->   * to return 0 if MSI are supported for the device.
->   **/
->  static
-> -int pci_msi_supported(struct pci_dev * dev)
-> +int pci_msi_supported(struct pci_dev * dev, int type)
->  {
->  	struct pci_bus *bus;
->  
-> @@ -456,6 +457,9 @@ int pci_msi_supported(struct pci_dev * d
->  		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
->  			return -EINVAL;
->  
-> +	if (!pci_find_capability(dev, type))
-> +		return -EINVAL;
-> +
->  	return 0;
->  }
->  
-> @@ -471,13 +475,9 @@ int pci_msi_supported(struct pci_dev * d
->   **/
->  int pci_enable_msi(struct pci_dev* dev)
->  {
-> -	int pos, status;
-> -
-> -	if (pci_msi_supported(dev) < 0)
-> -		return -EINVAL;
-> +	int status;
->  
-> -	pos = pci_find_capability(dev, PCI_CAP_ID_MSI);
-> -	if (!pos)
-> +	if (pci_msi_supported(dev, PCI_CAP_ID_MSI))
->  		return -EINVAL;
->  
->  	WARN_ON(!!dev->msi_enabled);
-> @@ -580,13 +580,10 @@ int pci_enable_msix(struct pci_dev* dev,
->  	int i, j;
->  	u16 control;
->  
-> -	if (!entries || pci_msi_supported(dev) < 0)
-> +	if (!entries || pci_msi_supported(dev, PCI_CAP_ID_MSIX))
->   		return -EINVAL;
->  
->  	pos = pci_find_capability(dev, PCI_CAP_ID_MSIX);
-> -	if (!pos)
-> - 		return -EINVAL;
-> -
->  	pci_read_config_word(dev, msi_control_reg(pos), &control);
->  	nr_entries = multi_msix_capable(control);
->  	if (nvec > nr_entries)
+Which is exactly the same whether it's 0/1 or 0/<error code>. And we
+have the option of returning a useful return value.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-4Uog6IfXXfsq/IJZyn7C
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBGCfaWdSjSd0sB4dIRArlbAJ9IYzKjS1CWSy4KaGZ/Bc2n5Y7eCgCeN1u9
+66s00Z0RsNSdsmXPMZLPif0=
+=FAS2
+-----END PGP SIGNATURE-----
+
+--=-4Uog6IfXXfsq/IJZyn7C--
+
