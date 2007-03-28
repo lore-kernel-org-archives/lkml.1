@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965714AbXC1TJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965719AbXC1TKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965714AbXC1TJu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXC1TJi
+	id S965719AbXC1TKD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965701AbXC1TJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:09:38 -0400
-Received: from styx.suse.cz ([82.119.242.94]:52392 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965707AbXC1TJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:09:15 -0400
-Date: Wed, 28 Mar 2007 21:13:58 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Li Yu <liyu@ccoss.com.cn>, yanghong@ccoss.com.cn,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       hongzhiyi@ccoss.com.cn, Marcel Holtmann <marcel@holtmann.org>,
-       LKML <linux-kernel@vger.kernel.org>, Li Yu <raise.sail@gmail.com>
-Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
-In-Reply-To: <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0703282113070.19566@jikos.suse.cz>
-References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com> 
- <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn> 
- <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>
- <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
+	Wed, 28 Mar 2007 15:09:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:16615 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965711AbXC1TJh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 15:09:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Q+uknIDVlVVr3wid34KTP/WLkcETf9f0OSXnJCdXUgsmy9MX9F1v4aTShOIzmMy6HnwnhHvAQdrYjM5Jf6KKLUN/OquyCBNAhzWWtQ5Cy3Kkhq6BlS6d0nyr8TtIH2bsrjdaW/nWT8TUj9isPbM3qe/K4opn3+9iD/x350lypC0=
+Date: Wed, 28 Mar 2007 23:09:25 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [KJ][PATCH] BIT macro cleanup
+Message-ID: <20070328190925.GC5306@martell.zuzino.mipt.ru>
+References: <20070328033309.GA9597@arun.site>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070328033309.GA9597@arun.site>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007, Dmitry Torokhov wrote:
+On Wed, Mar 28, 2007 at 09:03:09AM +0530, Milind Arun Choudhary wrote:
+> --- a/include/linux/bitops.h
+> +++ b/include/linux/bitops.h
+> @@ -8,6 +8,9 @@
+>   */
+>  #include <asm/bitops.h>
+>
+> +#define BIT(nr)	(1UL << ((nr) % BITS_PER_LONG))
 
-> Just register based on VID/PID and provide standard 
-> hid_default_input_event() to drivers so they would call it for reports 
-> they don't need to do special processing on.
+I think this would be a disaster because something like
 
-Agreed. This is actually what I meant in the original mail, but phrased it 
-very badly, sorry for confusion.
+	BIT(123)
 
-Thanks,
+would not even generate a warning.
 
--- 
-Jiri Kosina
