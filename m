@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbXC1TW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXC1TYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752630AbXC1TW1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbXC1TW1
+	id S932404AbXC1TYw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbXC1TYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:22:27 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45812 "EHLO mx1.suse.de"
+	Wed, 28 Mar 2007 15:24:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38251 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbXC1TW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:22:27 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] Simplify smp_call_function*() by using common implementation
-Date: Wed, 28 Mar 2007 21:22:22 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	id S932404AbXC1TYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 15:24:51 -0400
+Date: Wed, 28 Mar 2007 21:23:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       Stephane Eranian <eranian@hpl.hp.com>, Ingo Molnar <mingo@elte.hu>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>
-References: <46099709.2000304@goop.org> <200703282103.50191.ak@suse.de> <460ABF84.5060201@goop.org>
-In-Reply-To: <460ABF84.5060201@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       e1000-devel@lists.sourceforge.net, jgarzik@pobox.com,
+       netdev@vger.kernel.org
+Subject: Re: [1/5] 2.6.21-rc5: known regressions
+Message-ID: <20070328192327.GA24340@elte.hu>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de> <460AB9E8.8070803@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703282122.22869.ak@suse.de>
+In-Reply-To: <460AB9E8.8070803@intel.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 March 2007 21:18, Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> > On Wednesday 28 March 2007 00:13, Jeremy Fitzhardinge wrote:
-> >   
-> >> smp_call_function and smp_call_function_single are almost complete
-> >> duplicates of the same logic.  This patch combines them by
-> >> implementing them in terms of the more general
-> >> smp_call_function_mask().
-> >>     
-> >
-> > I think I got those already.
-> >   
-> 
-> OK.  Do you have smp_ops and machine_ops?
 
-Not yet. Can you resend the current set?
+* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
 
-> There's a doc update patch too:
+> Adrian Bunk wrote:
+> >Subject    : e1000 resume weirdness
+> >References : http://lkml.org/lkml/2007/3/26/91
+> >Submitter  : Ingo Molnar <mingo@elte.hu>
+> >Handled-By : Jesse Brandeburg <jesse.brandeburg@gmail.com>
+> >             Auke Kok <auke-jan.h.kok@intel.com>
+> >Status     : problem is being debugged
 
-Can you send that separately after i sync out please?
+> Adrian, you probably want to drop this issue from your list.
 
-Thanks
+agreed - i have done many suspend/resumes meanwhile, and this condition 
+has not reoccured since then. (and even when it occured, it was 
+transitionary)
 
--Andi
+	Ingo
