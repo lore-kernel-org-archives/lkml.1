@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751023AbXC1MU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751025AbXC1M2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751023AbXC1MU3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 08:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbXC1MU2
+	id S1751025AbXC1M2N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 08:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXC1M2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 08:20:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55556 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Mar 2007 08:28:13 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:34741 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750944AbXC1MU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 08:20:27 -0400
-Date: Wed, 28 Mar 2007 14:19:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Meyer <thomas@m3y3r.de>, Frederic Riss <frederic.riss@gmail.com>,
-       Marcus Better <marcus@better.se>
-Subject: Re: [4/5] 2.6.21-rc5: known regressions
-Message-ID: <20070328121958.GA11290@elte.hu>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015949.GB16477@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070327015949.GB16477@stusta.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751025AbXC1M2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 08:28:12 -0400
+Date: Wed, 28 Mar 2007 14:26:31 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Thomas Meyer <thomas@m3y3r.de>
+cc: Jiri Kosina <jkosina@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Soeren Sonnenburg <kernel@nn7.de>,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: appletouch quirk doesn't run at resume
+In-Reply-To: <4609866C.4060602@m3y3r.de>
+Message-ID: <Pine.LNX.4.64.0703281414410.29565@twin.jikos.cz>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+ <200703162134.14265.rjw@sisk.pl> <1174078066.13341.279.camel@localhost.localdomain>
+ <1174087552.13341.332.camel@localhost.localdomain> <45FBBDEA.9060708@m3y3r.de>
+ <20070318004240.GO752@stusta.de> <Pine.LNX.4.64.0703181934530.4195@jikos.suse.cz>
+ <45FD8CA3.10405@m3y3r.de> <Pine.LNX.4.64.0703182020070.4195@jikos.suse.cz>
+ <4609866C.4060602@m3y3r.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 27 Mar 2007, Thomas Meyer wrote:
 
-* Adrian Bunk <bunk@stusta.de> wrote:
+> It seems, that after the resume all usb devices gets removed and plug in 
+> again (virtually!). This results in a new input device name:
 
-> Subject    : second suspend to disk in a row results in an oops  (MSI)
-> References : http://lkml.org/lkml/2007/3/17/43
->              http://lkml.org/lkml/2007/3/22/150
->              http://lkml.org/lkml/2007/3/26/205
->              http://lkml.org/lkml/2007/3/26/76
-> Submitter  : Thomas Meyer <thomas@m3y3r.de>
->              Frédéric Riss <frederic.riss@gmail.com>
->              Marcus Better <marcus@better.se>
-> Handled-By : Eric W. Biederman <ebiederm@xmission.com>
-> Patch      : http://lkml.org/lkml/2007/3/24/136
-> Status     : patch was suggested
+Yes, this is what actually happens. JFYI see current thread on lkml which 
+is a bit realted - http://lkml.org/lkml/2007/3/27/149 if interested.
 
-i can reproduce a crash on the second suspend-to-ram, on a T60. I get a 
-crash here:
+> This change confuses the X synaptics driver:
+> Touchpad no synaptics event device found (checked 11 nodes)
+> Touchpad The /dev/input/event* device nodes seem to be missing
+> (EE) xf86OpenSerial: Cannot open device /dev/input/event2
+>         No such file or directory.
+> (WW) Touchpad: cannot open input device
+> One could say that the synaptics driver rightly complains about the 
+> missing event2 device! So is this a bug in the X synaptics driver?
 
- #ifdef CONFIG_PM
- static void __pci_restore_msi_state(struct pci_dev *dev)
- {
-         int pos;
-         u16 control;
-         struct msi_desc *entry;
+You can of course work this around by adding an udev rule such as
 
-         if (!dev->msi_enabled)
-                 return;
+SUBSYSTEM=="input",KERNEL=="event*",SYSFS{name}=="appletouch",SYMLINK+="input/appletouchpad"
 
-         entry = get_irq_msi(dev->irq);
-         pos = entry->msi_attrib.pos; <-------- crash on NULL dereference
+and the let Xorg use /dev/input/appletouchpad, which will always be a 
+symlink to the correct device.
 
-
-i.e. 'entry' is NULL after get_irq_msi(). (i can see the crash only on 
-the VGA screen so no dump of it available. Can write down more info if  
-it's helpful.)
-
-I have tried Eric's patch above but now i always get a hang after 
-"system 00:00: resuming", already upon the first suspend-resume. Not 
-even the NMI watchdog can get the system out of that hang.
-
-	Ingo
+-- 
+Jiri Kosina
