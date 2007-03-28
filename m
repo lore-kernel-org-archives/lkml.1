@@ -1,88 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbXC1Dna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbXC1DqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753002AbXC1Dna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Mar 2007 23:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbXC1Dna
+	id S1753003AbXC1DqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Mar 2007 23:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbXC1DqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Mar 2007 23:43:30 -0400
-Received: from smtp001.indigital.net ([66.249.241.185]:54684 "EHLO
-	smtp001.indigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbXC1Dn3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Mar 2007 23:43:29 -0400
-X-Greylist: delayed 934 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Mar 2007 23:43:29 EDT
-Message-ID: <4609E0DF.5020508@bnin.net>
-Date: Tue, 27 Mar 2007 23:28:31 -0400
-From: smitchel <smitchel@bnin.net>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060919)
+	Tue, 27 Mar 2007 23:46:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52946 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753003AbXC1DqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Mar 2007 23:46:18 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: tglx@linutronix.de
+Subject: Re: [PATCH] i386: disable local apic timer via command line or dmi quirk
+Date: Tue, 27 Mar 2007 23:38:26 -0400
+User-Agent: KMail/1.9.5
+Cc: Stefan Prechtel <stefan.prechtel@googlemail.com>, Andi Kleen <ak@suse.de>,
+       Grzegorz Chwesewicz <grzegorz.chwesewicz@chilan.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       john stultz <johnstul@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <b93822910703191010s1ac9d5d7jf9f761ecb933cc77@mail.gmail.com> <1174486483.10840.89.camel@localhost.localdomain> <200703272328.34685.lenb@kernel.org>
+In-Reply-To: <200703272328.34685.lenb@kernel.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: possible mistake in linux kernel header file -- kernel: 2.6.16.29
- file: mod_devicetable.h
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703272338.27471.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am not sure where to post this, maybe you can direct me what to do, if 
-anything.
+On Tuesday 27 March 2007 23:28, Len Brown wrote:
+> Thomas,
+> 
+> Is this failure specific to NO_HZ, and that is why the "nolapic_timer" fix is i386 only?
+> I'm running 2.6.21-rc5 an nx6325 here in 64-bit mode and I don't see the dramatic
+> boot failure described earlier in this thread.
+> 
+> However, I have observed that when running on battery,
+> the LOC falls behind the irq0 timer to the tune of about
+> 2 interrupt/minute.  eg. when i booted my machine, LOC was
+> behind irq0 by 50, and now about a 20 minutes later it is behind
+> irq0 by 99.  However, the LOC for each processor remain at
+> a constant offset with respect to each other.
+> 
+> I do not see these this drift when running on AC.
 
-We have two computers running slackware for amd64 version 11.0.
-Tonight we compiled mplayer on each of the systems.
+Correction.
+I double-checked and the same drift is present between irq0
+and LOC when on AC:
 
-On the first, everything compiled fine--it has a core 2 duo cpu and is 
-running a stock kernel off the install DVD for slackware-amd64.
-it is kernel 2.6.16.29.
+lenb@nx6325:/tmp/sut> uname -a; cat /proc/interrupts; sleep 100; cat /proc/interrupts
+Linux nx6325 2.6.21-rc5 #37 SMP Tue Mar 27 22:26:00 EDT 2007 x86_64 x86_64 x86_64 GNU/Linux
+           CPU0       CPU1
+  0:    1000442          0    <NULL>-edge      timer
+  1:        724          0   IO-APIC-edge      i8042
+  8:          0          0   IO-APIC-edge      rtc
+ 12:      36299          0   IO-APIC-edge      i8042
+ 14:      33661          0   IO-APIC-edge      ide0
+ 16:      20676          0   IO-APIC-fasteoi   libata
+ 19:         21          0   IO-APIC-fasteoi   ehci_hcd:usb1, ohci_hcd:usb2, ohci_hcd:usb3
+ 20:          1          0   IO-APIC-fasteoi   ohci1394
+ 21:       9388          0   IO-APIC-fasteoi   acpi
+ 23:      43794          0   IO-APIC-fasteoi   eth0
+NMI:          0          0
+LOC:    1000271    1000247
+ERR:          0
+           CPU0       CPU1
+  0:    1025442          0    <NULL>-edge      timer
+  1:        724          0   IO-APIC-edge      i8042
+  8:          0          0   IO-APIC-edge      rtc
+ 12:      39539          0   IO-APIC-edge      i8042
+ 14:      34506          0   IO-APIC-edge      ide0
+ 16:      22172          0   IO-APIC-fasteoi   libata
+ 19:         21          0   IO-APIC-fasteoi   ehci_hcd:usb1, ohci_hcd:usb2, ohci_hcd:usb3
+ 20:          1          0   IO-APIC-fasteoi   ohci1394
+ 21:       9630          0   IO-APIC-fasteoi   acpi
+ 23:      44826          0   IO-APIC-fasteoi   eth0
+NMI:          0          0
+LOC:    1025269    1025245
+ERR:          0
+lenb@nx6325:/tmp/sut> bc -l
+bc 1.06
+Copyright 1991-1994, 1997, 1998, 2000 Free Software Foundation, Inc.
+This is free software with ABSOLUTELY NO WARRANTY.
+For details type `warranty'.
+1025442-1000442
+25000
+1025269-1000271
+24998
+lenb@nx6325:/tmp/sut> cat /proc/acpi/ac_adapter/C1BD/state
+state:                   on-line
 
-On the second it would not compile, and it has dual opteron 250 cpus and 
-is running a kernel that we compiled to add some things to
-for sound, etc.   This was from a kernel source that we downloaded a few 
-days ago.
-it is kernel 2.6.16.29--same as first machine.
+-Len
 
-The error is stopping in the file /usr/include/linux/mod_devicetable.h.
-
-It appears that there are 4 extra lines that have been added to the  
-mod_devicetable.h that was part of the kernel source that we downloaded.
-They are in the first screenful of the file:
-
-#ifdef __KERNEL__
-#include <linux/types.h>
-typedef unsigned long kernel_ulong_t;
-#endif
-
-They are not in the same file in the kernel source from the slackware 
-amd-64 install DVD. (<linux/types.h> included somewhere else?)
-
-Googling we found:
-__KERNEL__ is defined for programs that run in kernel mode instead of 
-user programs (whatever that means).
-
-A few lines later in mod_devicetable.h it uses the type kernel_ulong_t 
-(in the same file--what if the ifdef path is not taken?)
-
-We thought that for the header file to be self-consistent, the typedef 
-statement should be defined in either case (__Kernel__ defined or not).
-So we copied that line out of the ifdef to just below it.
-Well that got rid of the type undefined error that occured during make.
-
-We still got a bunch of errors, mostly every word in the 
-mod_devicetable.h was individually "not understood" after the 
-ifdef-endif lines.
-
-Not wanting to break something somewhere else by defining __KERNEL__ 
-when we don't even understand what it does...we copied the
-include statement for <linux/types.h> after the endif, so basically both 
-lines inside the ifdef are executed all the time.
-
-Now it compiles fine.
-
-Could this be a bug in a kernel header file?  It has to be. if you don't 
-have __KERNEL__ defined, then the header file is broken because it uses
-the type kernel_ulong_t just a few lines later.
-
-Steve Mitchell
-Byrel Mitchell
-smitchel@bnin.net
-
-
+> Yes, the system exports just C1 in both cases.
+> 
+> Other oddities is the IRQ name on irq0 is garbled:
+> 
+> lenb@nx6325:~> uname -a; cat /proc/interrupts; sleep 100; cat /proc/interrupts
+> Linux nx6325 2.6.21-rc5 #37 SMP Tue Mar 27 22:26:00 EDT 2007 x86_64 x86_64 x86_64 GNU/Linux
+>            CPU0       CPU1
+>   0:     723812          0    <NULL>-edge      timer
+>   1:        716          0   IO-APIC-edge      i8042
+>   8:          0          0   IO-APIC-edge      rtc
+>  12:      30719          0   IO-APIC-edge      i8042
+>  14:      24318          0   IO-APIC-edge      ide0
+>  16:      18316          0   IO-APIC-fasteoi   libata
+>  19:         21          0   IO-APIC-fasteoi   ehci_hcd:usb1, ohci_hcd:usb2, ohci_hcd:usb3
+>  20:          1          0   IO-APIC-fasteoi   ohci1394
+>  21:       6736          0   IO-APIC-fasteoi   acpi
+>  23:      30358          0   IO-APIC-fasteoi   eth0
+> NMI:          0          0
+> LOC:     723675     723651
+> ERR:          0
+>            CPU0       CPU1
+>   0:     748812          0    <NULL>-edge      timer
+>   1:        716          0   IO-APIC-edge      i8042
+>   8:          0          0   IO-APIC-edge      rtc
+>  12:      30719          0   IO-APIC-edge      i8042
+>  14:      25164          0   IO-APIC-edge      ide0
+>  16:      18361          0   IO-APIC-fasteoi   libata
+>  19:         21          0   IO-APIC-fasteoi   ehci_hcd:usb1, ohci_hcd:usb2, ohci_hcd:usb3
+>  20:          1          0   IO-APIC-fasteoi   ohci1394
+>  21:       6960          0   IO-APIC-fasteoi   acpi
+>  23:      31385          0   IO-APIC-fasteoi   eth0
+> NMI:          0          0
+> LOC:     748673     748649
+> ERR:          0
+> lenb@nx6325:~> bc -l
+> bc 1.06
+> Copyright 1991-1994, 1997, 1998, 2000 Free Software Foundation, Inc.
+> This is free software with ABSOLUTELY NO WARRANTY.
+> For details type `warranty'.
+> 748812-723812
+> 25000
+> 748673-723675
+> 24998
+> 723812-723675
+> 137
+> 748812-748673
+> 139
+> lenb@nx6325:~> 
+> 
+> Further, in dmesg:
+> ATI board detected. Disabling timer routing over 8254.
+> 
+> ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> 
+> -Len
+> 
+> 
+> 
