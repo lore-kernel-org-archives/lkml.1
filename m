@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbXC1RdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964988AbXC1ReX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965010AbXC1RdN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 13:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965051AbXC1RdM
+	id S964988AbXC1ReX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 13:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965052AbXC1ReX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 13:33:12 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:50000 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965010AbXC1RdL (ORCPT
+	Wed, 28 Mar 2007 13:34:23 -0400
+Received: from mail-in-06.arcor-online.net ([151.189.21.46]:48545 "EHLO
+	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964988AbXC1ReW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 13:33:11 -0400
-Date: Wed, 28 Mar 2007 19:33:10 +0200
-From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm2
-Message-ID: <20070328173310.GA4682@rhlx01.hs-esslingen.de>
-References: <20070326211627.c681af3b.akpm@linux-foundation.org> <20070328170214.GA13044@rhlx01.hs-esslingen.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070328170214.GA13044@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+	Wed, 28 Mar 2007 13:34:22 -0400
+From: Prakash Punnoor <prakash@punnoor.de>
+To: ck@vds.kolivas.org
+Subject: Re: [ck] [PATCH] sched: staircase deadline misc fixes
+Date: Wed, 28 Mar 2007 19:34:17 +0200
+User-Agent: KMail/1.9.6
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux list <linux-kernel@vger.kernel.org>
+References: <200703290237.38777.kernel@kolivas.org>
+In-Reply-To: <200703290237.38777.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3882975.nSRCeiYS0B";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703281934.17932.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--nextPart3882975.nSRCeiYS0B
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Wed, Mar 28, 2007 at 07:02:14PM +0200, Andreas Mohr wrote:
-> Hi,
-> 
-> On Mon, Mar 26, 2007 at 09:16:27PM -0800, Andrew Morton wrote:
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/
-> > 
-> > 
-> > - This is the same as 2.6.12-rc5-mm1, except the staircase deadline CPU
-> >   scheduler has been added.
-> 
-> OOPS (hand-pasted), happens on roughly 85% of bootups, didn't seem to
-> occur during my several previous 2.6.21-rc4-mm1 bootups:
+Am Mittwoch 28 M=E4rz 2007 schrieb Con Kolivas:
+> I'm cautiously optimistic that we're at the thin edge of the bugfix wedge
+> now.
+>
+> ---
+> set_load_weight() should be performed after p->quota is set. This fixes a
+> large SMP performance regression.
 
-Still happens after having added just-published RSDL fixup patch and
-reinstalled resulting kernel package.
+Hi, I am using 2.6.21-rc5 with rsdl 0.37 and think I still see a regression=
+=20
+with my Athlon X2. Namely using this ac3 encoder=20
+(http://aften.sourceforge.net/), which I parallelized in a simple way, with=
+=20
+my test sample I remember having encoding times of ~5.4sec with vanilla and=
+=20
+~5.8 sec with rsdl - once the whole test wave is in cache. Otherwise you ca=
+n=20
+easily I/O limit the encoder. ;-) You need to get sources from svn though.=
+=20
+The current 0.06 release doesn't have threads support.
 
-.config diff between -rc4-mm1 and -rc5-mm1 is negligible.
-Interesting items in current .config:
-CONFIG_SWAP_PREFETCH=y
-CONFIG_SYSFS_DEPRECATED=y
-CONFIG_RT_MUTEXES=y
-CONFIG_TICK_ONESHOT=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_PREEMPT_VOLUNTARY=y
-CONFIG_X86_UP_APIC=y
-CONFIG_X86_UP_IOAPIC=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_ADAPTIVE_READAHEAD=y
-CONFIG_HZ=250
-CONFIG_X86_PM_TIMER=y
-# CONFIG_CPU_IDLE is not set
-CONFIG_PNP=y
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV_LOOP=m
-CONFIG_BLK_DEV_CRYPTOLOOP=m
-CONFIG_BLK_DEV_IDEACPI=y
-CONFIG_RTC=y
+Cheers,
 
-Thanks,
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
 
-Andreas Mohr
+--nextPart3882975.nSRCeiYS0B
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQBGCqcZxU2n/+9+t5gRAj3BAJ99v/YlQcb0YxYkXnPTTmMHLtt5CgCguXcZ
+Wk5Xf1AEWFxvuuMH1TI8D58=
+=W/Wp
+-----END PGP SIGNATURE-----
+
+--nextPart3882975.nSRCeiYS0B--
