@@ -1,104 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXC1QkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933104AbXC1Qkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933262AbXC1QkY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 12:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933151AbXC1QkY
+	id S933104AbXC1Qkn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 12:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbXC1Qkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 12:40:24 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:56631 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933262AbXC1QkW (ORCPT
+	Wed, 28 Mar 2007 12:40:43 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:37631 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933104AbXC1Qkl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 12:40:22 -0400
-Subject: [Patch -mm] integrity: ima exit
+	Wed, 28 Mar 2007 12:40:41 -0400
+Subject: [Patch -mm] integrity: ima cleanup
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: safford@watson.ibm.com, serue@linux.vnet.ibm.com,
        kjhall@linux.vnet.ibm.com, sailer@us.ibm.com, zohar@us.ibm.com,
        akpm@osdl.org
 Content-Type: text/plain
-Date: Wed, 28 Mar 2007 12:39:13 -0400
-Message-Id: <1175099953.16382.1.camel@localhost.localdomain>
+Date: Wed, 28 Mar 2007 12:39:33 -0400
+Message-Id: <1175099973.16382.2.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch corrects calling an __exit function from a non-_-exit function.
+This patch cleanups the few Lindent and sparse msgs
 
 signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 signed-off-by: Kylene Hall <kjhall@us.ibm.com>
 ---
 
- security/evm/ima/ima_init.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.21-rc5-mm2/security/evm/ima/ima_init.c
+Index: linux-2.6.21-rc5-mm2/security/evm/ima/ima.h
 ===================================================================
---- linux-2.6.21-rc5-mm2.orig/security/evm/ima/ima_init.c
-+++ linux-2.6.21-rc5-mm2/security/evm/ima/ima_init.c
-@@ -111,7 +111,7 @@ int ima_init(void)
- 	return ima_fs_init();
- }
+--- linux-2.6.21-rc5-mm2.orig/security/evm/ima/ima.h
++++ linux-2.6.21-rc5-mm2/security/evm/ima/ima.h
+@@ -52,7 +52,7 @@ struct ima_measure_entry {
  
--void ima_cleanup(void)
-+void __exit ima_cleanup(void)
+ struct ima_queue_entry {
+ 	struct hlist_node hnext;	/* place in hash collision list */
+-	struct list_head later;	/* place in ima_measurements list */
++	struct list_head later;		/* place in ima_measurements list */
+ 	struct ima_measure_entry *entry;
+ };
+ 
+@@ -72,7 +72,7 @@ struct ima_queue_entry *ima_lookup_diges
+ extern spinlock_t ima_queue_lock;
+ 
+ struct ima_h_table {
+-	atomic_t len;	/* number of stored measurements in the list */
++	atomic_t len;		/* number of stored measurements in the list */
+ 	atomic_t violations;
+ 	unsigned int max_htable_size;
+ 	struct hlist_head queue[IMA_MEASURE_HTABLE_SIZE];
+@@ -82,7 +82,7 @@ extern struct ima_h_table ima_htable;
+ 
+ /* TPM "Glue" definitions */
+ 
+-#define IMA_TPM ((TPM_ANY_TYPE<<16)| TPM_ANY_NUM)
++#define IMA_TPM ((((u32)TPM_ANY_TYPE)<<16)| (u32)TPM_ANY_NUM)
+ static inline void ima_extend(const u8 * hash)
  {
- 	ima_fs_cleanup();
- }
-Index: linux-2.6.21-rc5-mm2/security/evm/evm_integrity.h
+ 	if (!ima_used_chip)
+Index: linux-2.6.21-rc5-mm2/security/evm/ima/ima_fs.c
 ===================================================================
---- linux-2.6.21-rc5-mm2.orig/security/evm/evm_integrity.h
-+++ linux-2.6.21-rc5-mm2/security/evm/evm_integrity.h
-@@ -9,21 +9,21 @@
- extern unsigned int evm_enable_ima;
+--- linux-2.6.21-rc5-mm2.orig/security/evm/ima/ima_fs.c
++++ linux-2.6.21-rc5-mm2/security/evm/ima/ima_fs.c
+@@ -69,12 +69,11 @@ static void *ima_measurements_start(stru
+ 	return NULL;
+ }
  
- #ifdef CONFIG_IMA_MEASURE
--static inline int evm_ima_init(void)
-+static int evm_ima_init(void)
+-static void *ima_measurements_next(struct seq_file *m, void *v,
+-				   loff_t * pos)
++static void *ima_measurements_next(struct seq_file *m, void *v, loff_t * pos)
  {
- 	if (evm_enable_ima)
- 		return ima_init();
+ 	/* lock protects when reading beyond last element
+ 	 * against concurrent list-extension */
+-	struct list_head *lpos = (struct list_head *) v;
++	struct list_head *lpos = (struct list_head *)v;
+ 
+ 	rcu_read_lock();
+ 	lpos = rcu_dereference(lpos->next);
+@@ -88,7 +87,6 @@ static void ima_measurements_stop(struct
+ {
+ }
+ 
+-
+ /* print format:
+  *       32bit-le=pcr#
+  *       32bit-le=type# << flag
+@@ -207,8 +205,7 @@ static struct seq_operations ima_ascii_m
+ 	.show = ima_ascii_measurements_show
+ };
+ 
+-static int ima_ascii_measurements_open(struct inode *inode,
+-				       struct file *file)
++static int ima_ascii_measurements_open(struct inode *inode, struct file *file)
+ {
+ 	return seq_open(file, &ima_ascii_measurements_seqops);
+ }
+@@ -255,8 +252,7 @@ int ima_fs_init(void)
+ 
+ 	violations =
+ 	    securityfs_create_file("violations", S_IRUSR | S_IRGRP,
+-				   ima_dir, NULL,
+-				   &ima_htable_violations_ops);
++				   ima_dir, NULL, &ima_htable_violations_ops);
+ 	if (!violations || IS_ERR(violations))
+ 		goto out;
  	return 0;
- }
- 
--static inline void evm_ima_measure(const unsigned char *name, int hash_len,
-+static void evm_ima_measure(const unsigned char *name, int hash_len,
- 				   char *hash)
- {
- 	if (evm_enable_ima)
- 		ima_measure(name, hash_len, hash);
- }
- 
--static inline void evm_ima_cleanup(void)
-+static void __exit evm_ima_cleanup(void)
- {
- 	if (evm_enable_ima)
- 		ima_cleanup();
-@@ -31,19 +31,19 @@ static inline void evm_ima_cleanup(void)
- }
- 
- #else
--static inline int evm_ima_init(void)
-+static int evm_ima_init(void)
- {
- 	evm_enable_ima = 0;
- 	return 0;
- }
- 
--static inline void evm_ima_measure(const unsigned char *name, int hash_len,
-+static void evm_ima_measure(const unsigned char *name, int hash_len,
- 				   char *hash)
- {
- 	return;
- }
- 
--static inline void evm_ima_cleanup(void)
-+static void __exit evm_ima_cleanup(void)
- {
- 	evm_enable_ima = 0;
- }
 
 
 
