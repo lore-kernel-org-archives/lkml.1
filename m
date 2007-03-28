@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbXC1QwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbXC1Q5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932253AbXC1QwE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 12:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932960AbXC1QwD
+	id S933151AbXC1Q5F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 12:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbXC1Q5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 12:52:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:22769 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932253AbXC1QwC (ORCPT
+	Wed, 28 Mar 2007 12:57:05 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:63731 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933151AbXC1Q5E convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 12:52:02 -0400
+	Wed, 28 Mar 2007 12:57:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OGZBO7AJCrwEdACitgKHN5nhnbxNQcsouLUnDnGXYQ9cvBUfIttFztPr2Oue8GcYL/5tFINrRf3UaO04ZcRfP82gQ8H2ggocFj3PkF8Uh1mOMDsnq4wPfHURzHW8PRqCtc1P2D+kax9kLHwv/b0CDL/lplocmnFOWdHMWQlTbfc=
-Message-ID: <6bffcb0e0703280951h47fbb597wea2f37a6f1412644@mail.gmail.com>
-Date: Wed, 28 Mar 2007 18:51:56 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: Linux 2.6.21-rc5
-Cc: "Andi Kleen" <ak@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Philippe Elie" <phil.el@wanadoo.fr>
-In-Reply-To: <Pine.LNX.4.64.0703281809510.29565@twin.jikos.cz>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=F7THOHPl4J+bLO8N5UYYb3hCZN6D4XEfyztR82/Wv9jRgVWS1lzOSObg3gWv3waEU1EWZ4Fw7espTYKSjj6EExLj31vEfeL3YCs+VeaNWRGunZU0K7/+Yjmgd1+jrSF99a2l+EzJpUar2BQomKYtHdU2+LhxVqcVEjdt9Q/NHts=
+Message-ID: <75b66ecd0703280956i522cf6cbyc4c9ef8b1666ec15@mail.gmail.com>
+Date: Wed, 28 Mar 2007 12:56:59 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "=?ISO-8859-1?Q?Toralf_F=F6rster?=" <toralf.foerster@gmx.de>
+Subject: Re: fs/block_dev.c:953: warning: 'found' might be used uninitialized in this function
+Cc: andrea@suse.de, viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <200703281847.05356.toralf.foerster@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	 <46096834.5050508@googlemail.com> <200703281630.59191.ak@suse.de>
-	 <460A8203.20207@googlemail.com>
-	 <Pine.LNX.4.64.0703281809510.29565@twin.jikos.cz>
+References: <200703281847.05356.toralf.foerster@gmx.de>
+X-Google-Sender-Auth: 1efb0337374ae8e3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/03/07, Jiri Kosina <jikos@jikos.cz> wrote:
-> On Wed, 28 Mar 2007, Michal Piotrowski wrote:
->
-> > BUG: using smp_processor_id() in preemptible [00000001] code: mount/7245
-> > is fixed, thanks.
-> > but I still get this
-> > [  208.523901] =================================
-> > [  208.529739] [ INFO: inconsistent lock state ]
-> > [  208.534087] 2.6.21-rc5-g28defbea-dirty #131
-> > [  208.538260] ---------------------------------
-> > [  208.542611] inconsistent {hardirq-on-W} -> {in-hardirq-W} usage.
-> > [  208.548600] swapper/0 [HC1[1]:SC0[0]:HE0:SE1] takes:
->
-> Perhaps something like the one below?
+On 3/28/07, Toralf Förster <toralf.foerster@gmx.de> wrote:
+> I compiled current git source 2.6.21-rc5-g28defbe and got this warning:
+> ...
+> fs/block_dev.c: In function `bd_claim_by_kobject':
+> fs/block_dev.c:953: warning: 'found' might be used uninitialized in this function
+> ...
 >
 
-Problem seems to be fixed. Thanks!
+Most of these warnings are really GCC bugs.  Please examine the code
+in question.
 
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+Lee
