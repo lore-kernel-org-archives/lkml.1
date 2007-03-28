@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbXC1Ujb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932808AbXC1UpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752801AbXC1Ujb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 16:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXC1Ujb
+	id S932808AbXC1UpR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 16:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932809AbXC1UpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 16:39:31 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3281 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752801AbXC1Uja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 16:39:30 -0400
-From: Mariusz =?utf-8?q?Koz=C5=82owski?= <m.kozlowski@tuxland.pl>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.21-rc5-mm1
-Date: Wed, 28 Mar 2007 22:49:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>
-References: <20070326205706.a750bb35.akpm@linux-foundation.org> <20070328130234.c0a23572.akpm@linux-foundation.org> <20070328202542.GS16477@stusta.de>
-In-Reply-To: <20070328202542.GS16477@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 28 Mar 2007 16:45:17 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:59182 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932808AbXC1UpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 16:45:15 -0400
+Date: Wed, 28 Mar 2007 13:45:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
+Message-Id: <20070328134511.0d61ec8f.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703282249.48130.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 28 Mar 2007 13:12:56 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-> > > 	I run 2.6.21-rc4-mm1 with no hangs for a week.
-> > > Then when 2.6.21-rc5-mm1 showed up so I switched to it. Unfortunately
-> > > today my laptop hunged twice in a similar way as described here:
-> > > 
-> > > http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/index.html#1165
-> > 
-> > It's not good that we went backwards between those two releases.
-> > 
-> > > The difference is that it happened when I closed the lid in my laptop.
-> > > When reopend it the box was frozen (ACPI?). Again disk I/O was dead
-> > > so nothing was found in syslog.
-> > 
-> > Adrian, does this look like any of the bugs whcih you're monitoring?
-> >...
-> 
-> Is it also present in 2.6.21-rc5?
+> The benefit of preconstructed pgds and pmds in the i386 arch code seem to
+> be debatable. The performance measurements indicate that there may be a slight
+> benefit but it seems to almost vanish in the noise ratio.
 
-Don't know. I usualy test -mm series. Will test tommorow and let you know
-after some reasonable uptime.
+yeah, I did a couple hours testing with rc5, rc5+quicklists,
+rc5+quicklists+qlhack, where "qlhack" is my patch which removes the
+quicklists and mysteriously causes i386 to crash.
 
-> Is it also present with CONFIG_NO_HZ=n?
+I was testing 8-way x86_64 with patch-scripts (wildly fork-intensive),
+kernel build and lmbench.
 
-Don't know. Did not try recently. Will let you know.
+Basically I was unable to observe any statistically meaningful-looking
+differences between any of them.
 
-It takes time as these hangs are not easy to trigger. With 2.6.21-rc2-mm1
-it was easy -> push the system and watch it die in minutes. With
-2.6.21-rc5-mm1 it takes hours (3 hangs in ~15 hours) and not sure how to
-trigger it. It just happens from time to time.
+I would like to test qlhack on ia64, because ia64 puts pte-pages into the
+quicklists as well, but my ia64 machine is presently indisposed.
 
-> cu
-> Adrian
+My (much) preferred way to handle all this is to remove the quicklists from
+all architectures: just use alloc_page() and free_page() for pte pages, pmd
+pages, etc.  I remain unaware of any testing whcih indicates that this
+would be a bad change.
 
-Regards,
-
-	Mariusz Kozlowski
