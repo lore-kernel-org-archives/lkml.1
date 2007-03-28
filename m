@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbXC1W1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbXC1WaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752229AbXC1W1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 18:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXC1W1s
+	id S932406AbXC1WaG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 18:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933741AbXC1WaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 18:27:48 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:45465 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753093AbXC1W1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 18:27:47 -0400
-Date: Wed, 28 Mar 2007 15:26:56 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, William Lee Irwin III <wli@holomorphy.com>,
-       akpm@linux-foundation.org, jeremy@goop.org, zach@vmware.com
-Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
-Message-ID: <20070328222656.GS6602@sequoia.sous-sol.org>
-References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 28 Mar 2007 18:30:06 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:43361 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932406AbXC1WaF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 18:30:05 -0400
+X-Greylist: delayed 834 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Mar 2007 18:30:04 EDT
+X-Sasl-enc: 4S15P0HQA4+VBCCI9ZqYADooRWuUcCjcdzMeNfYdghic 1175121004
+Message-ID: <460AECE6.8090703@imap.cc>
+Date: Thu, 29 Mar 2007 00:32:06 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21-rc5
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070326221731.f4792260.akpm@linux-foundation.org>
+In-Reply-To: <20070326221731.f4792260.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> +#ifdef CONFIG_HIGHMEM64G
-> +#define __pgd_alloc()		kmem_cache_alloc(pgd_cache, GFP_KERNEL|__GFP_REPEAT)
-> +#define __pgd_free(pgd)		kmem_cache_free(pgd_cache, pgd)
+Am 27.03.2007 08:17 schrieb Andrew Morton:
+> I have a few fixes here which belong to subsystem trees, which were missed
+> by the maintainers and which we probably want to get into 2.6.21.
+[...]
+> Maintainers are cc'ed.  Please promptly ack, nack or otherwise quack, else
+> I'll be making my own decisions ;)
 
-I must've glazed over something, I thought this was removal of slabs?
+[CC list trimmed]
 
-BTW, this will interact shared_kernel_pmd patch that Jeremy's posted a
-few times (I know at least wli has looked over that one).  We need to
-make sure that PAE under at least Xen hypervisor has a page-sized pgd,
-although the mmlist chaining looks nice to me.
+It's not on that list, but would you mind slipping
+drivers-isdn-gigaset-mark-some-static-data-as-const-v2.patch
+into 2.6.21 too? It's largely trivial but I'd like to get it
+out of the door.
 
-> +static struct kmem_cache *pgd_cache;
-> +
-> +void __init pgtable_cache_init(void)
-> +{
-> +	pgd_cache = kmem_cache_create("pgd",
-> +				PTRS_PER_PGD*sizeof(pgd_t),
-> +				PTRS_PER_PGD*sizeof(pgd_t),
-> +				SLAB_PANIC,
-> +				NULL,
-> +				NULL);
-> +}
-> +#else /* !CONFIG_HIGHMEM64G */
-> +#define __pgd_alloc()		((pgd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT))
-> +#define __pgd_free(pgd)		free_page((unsigned long)(pgd))
-> +#endif /* !CONFIG_HIGHMEM64G */
->  
->  pgd_t *pgd_alloc(struct mm_struct *mm)
->  {
->  	int i;
-> -	pgd_t *pgd = kmem_cache_alloc(pgd_cache, GFP_KERNEL);
-> +	pgd_t *pgd = __pgd_alloc();
->  
-> -	if (PTRS_PER_PMD == 1 || !pgd)
-> +	if (!pgd)
-> +		return NULL;
-> +	memcpy(&pgd[USER_PTRS_PER_PGD], &swapper_pg_dir[USER_PTRS_PER_PGD],
-> +						KERNEL_PGD_PTRS*sizeof(pgd_t));
+Thanks,
+Tilman
 
-clone_pgd_range() for consistency?  and it seems we lost a paravirt_alloc_pd_clone()
-in there somewhere.
-
-> +	if (PTRS_PER_PMD == 1)
->  		return pgd;
+-- 
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Ungeoeffnet mindestens haltbar bis: (siehe Rueckseite)
