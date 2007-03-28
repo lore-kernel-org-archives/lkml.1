@@ -1,92 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750917AbXC1XOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933823AbXC1XSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750917AbXC1XOb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 19:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933813AbXC1XOb
+	id S933823AbXC1XSl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 19:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933827AbXC1XSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 19:14:31 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:35199 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750917AbXC1XOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 19:14:30 -0400
-Date: Wed, 28 Mar 2007 16:14:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] cache pipe buf page address for non-highmem arch
-Message-Id: <20070328161420.3c8f9688.akpm@linux-foundation.org>
-In-Reply-To: <3D4D126C-0B26-4B00-A2E4-68BD84555B51@oracle.com>
-References: <b040c32a0703221751x54417524l5237742f345eeda9@mail.gmail.com>
-	<20070322170122.ee2589a1.akpm@linux-foundation.org>
-	<b040c32a0703231748s112beda6i3d51ebcd658005c4@mail.gmail.com>
-	<20070326201552.b8ad7dda.akpm@linux-foundation.org>
-	<b040c32a0703271047vba81938q538d182c9c984f42@mail.gmail.com>
-	<3D4D126C-0B26-4B00-A2E4-68BD84555B51@oracle.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Wed, 28 Mar 2007 19:18:41 -0400
+Received: from smtp.ono.com ([62.42.230.12]:45216 "EHLO resmaa03.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933823AbXC1XSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 19:18:40 -0400
+Date: Thu, 29 Mar 2007 01:18:38 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Inlining can be _very_bad...
+Message-ID: <20070329011838.6e832615@werewolf-wl>
+X-Mailer: Claws Mail 2.8.1cvs57 (GTK+ 2.10.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="MP_nK/p.b/qJ=F6l.=Di1suDPB"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 15:57:53 -0700
-Zach Brown <zach.brown@oracle.com> wrote:
+--MP_nK/p.b/qJ=F6l.=Di1suDPB
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> > +#define pipe_kmap_atomic(page, type)	pipe_kmap(page)
-> > +#define pipe_kunmap(page)		do { } while (0)
-> > +#define pipe_kunmap_atomic(page, type)	do { } while (0)
-> 
-> Please don't drop arguments in stubs.  It can let completely broken  
-> code compile, like:
-> 
-> 	pipe_kunmap(SOME_COMPLETE_NONSENSE);
-> 
-> Static inlines with empty bodies are the gold standard.
-> 
+Hi all...
 
-yup.
+I post this here as it can be of direct interest for kernel development
+(as I recall many discussions about inlining yes or no...).
 
-<fiddle, fiddle>
+Testing other problems, I finally got this this issue: the same short
+and stupid loop lasted from 3 to 5 times more if it was in main() than
+if it was in an out-of-line function. The same (bad thing) happens if
+the function is inlined.
 
-Does this look OK?
+The basic code is like this:
 
-#ifdef CONFIG_HIGHMEM
-static inline void *pipe_kmap(struct page *page)
+float	data[];
+
+[inline] double one()
 {
-	return kmap(page);
+    double sum;
+    sum = 0;
+    for (i=0; i<SIZE; i++) sum += data[i];
+    return sum;
 }
 
-static inline void pipe_kunmap(struct page *page)
+int main()
 {
-	kunmap(page);
+    gettimeofday(&tv0,0);
+    for (i=0; i<SIZE; i++)
+        s0 += data[i];
+    gettimeofday(&tv1,0);
+    printf("T0: %6.2f ms\n",elap(tv0,tv1));
+    gettimeofday(&tv0,0);
+        s1 = one();
+    gettimeofday(&tv1,0);
+    printf("T1: %6.2f ms\n",elap(tv0,tv1));
 }
 
-static inline void *pipe_kmap_atomic(struct page *page, enum km_type type)
-{
-	return kmap_atomic(page, type);
-}
+The times if one() is not inlined (emt64, 2.33GHz):
 
-static inline void pipe_kunmap_atomic(void *addr, enum km_type type)
-{
-	kunmap_atomic(addr, type);
-}
-#else	/* CONFIG_HIGHMEM */
-static inline void *pipe_kmap(struct page *page)
-{
-	return (void *)page->private;
-}
+apolo:~/e4> tst
+T0: 1145.12 ms
+S0: 268435456.00
+T1: 457.19 ms
+S1: 268435456.00
 
-static inline void pipe_kunmap(struct page *page)
-{
-}
+With one() inlined:
 
-static inline void *pipe_kmap_atomic(struct page *page, enum km_type type)
-{
-	return (void *)page->private;
-}
+apolo:~/e4> tst
+T0: 1200.52 ms
+S0: 268435456.00
+T1: 1200.14 ms
+S1: 268435456.00
 
-static inline void pipe_kunmap_atomic(struct page *page, enum km_type type)
-{
-}
+Looking at the assembler, the non-inlined version does:
+
+.L2:
+    cvtss2sd    (%rdx,%rax,4), %xmm0
+    incq    %rax
+    cmpq    $268435456, %rax
+    addsd   %xmm0, %xmm1
+    jne .L2
+
+and the inlined
+
+.L13:
+    cvtss2sd    (%rdx,%rax,4), %xmm0
+    incq    %rax
+    cmpq    $268435456, %rax
+    addsd   8(%rsp), %xmm0
+    movsd   %xmm0, 8(%rsp)
+    jne .L13
+
+It looks like is updating the stack on each iteration...This is -march=opteron
+code, the -march=pentium4 is similar. Same behaviour with gcc3 and gcc4.
+
+tst.c and Makefile attached.
+
+Nice, isn't it ? Please, probe where is my fault...
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.20-jam06 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #1 SMP PREEMPT
+
+--MP_nK/p.b/qJ=F6l.=Di1suDPB
+Content-Type: application/octet-stream; name=Makefile
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=Makefile
+
+UFJPRz10c3QKU1JDUz10c3QuYwpDQz1nY2M0IC1tNjQgLW1hcmNoPW9wdGVyb24gLU8yCiNDQz1n
+Y2M0IC1tMzIgLW1hcmNoPXBlbnRpdW00IC1PMgojQ0MrPS1ESU5MSU5FCkxJQlM9CgpPQkpTPSQo
+U1JDUzouYz0ubykKQVNNUz0kKFNSQ1M6LmM9LnMpCgphbGw6ICQoUFJPRykgJChBU01TKQoKJChQ
+Uk9HKTogJChPQkpTKQoJJChDQykgLW8gJEAgJChPQkpTKSAkKExJQlMpCgouYy5vOgoJJChDQykg
+LWMgJDwKCi5jLnM6CgkkKENDKSAtYyAtUyAkPAoKY2xlYW46CglAcm0gLWYgJChQUk9HKSAkKE9C
+SlMpICQoQVNNUykgY29yZSB0YWdzCg==
+
+--MP_nK/p.b/qJ=F6l.=Di1suDPB
+Content-Type: text/x-csrc; name=tst.c
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename=tst.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+
+#define SIZE 256*1024*1024
+
+#define elap(t0,t1) \
+	((1000*t1.tv_sec+0.001*t1.tv_usec) - (1000*t0.tv_sec+0.001*t0.tv_usec))
+
+double  one();
+
+float	*data;
+
+#ifdef INLINE
+inline
 #endif
+double one()
+{
+	int i;
+	double sum;
 
+	sum =3D 0;
+	asm("#FBGN");
+	for (i=3D0; i<SIZE; i++)
+		sum +=3D data[i];
+	asm("#FEND");
+
+	return sum;
+}
+
+int main(int argc,char** argv)
+{
+	struct timeval	tv0,tv1;
+	double			s0,s1;
+	int				i;
+
+	data =3D malloc(SIZE*sizeof(float));
+	for (i=3D0; i<SIZE; i++)
+		data[i] =3D 1;
+
+	gettimeofday(&tv0,0);
+	s0 =3D 0;
+	asm("#MBGN");
+	for (i=3D0; i<SIZE; i++)
+		s0 +=3D data[i];
+	asm("#MEND");
+	gettimeofday(&tv1,0);
+	printf("T0: %6.2f ms\n",elap(tv0,tv1));
+	printf("S0: %0.2lf\n",s0);
+
+	gettimeofday(&tv0,0);
+		s1 =3D one();
+	gettimeofday(&tv1,0);
+	printf("T1: %6.2f ms\n",elap(tv0,tv1));
+	printf("S1: %0.2lf\n",s1);
+
+	free(data);
+
+	return 0;
+}
+
+
+--MP_nK/p.b/qJ=F6l.=Di1suDPB--
