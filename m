@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbXC1VAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbXC1VFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752900AbXC1VAq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 17:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbXC1VAq
+	id S1752954AbXC1VFE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 17:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXC1VFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 17:00:46 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47284 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752886AbXC1VAp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 17:00:45 -0400
-Date: Wed, 28 Mar 2007 14:00:44 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
-In-Reply-To: <20070328205055.GX8915@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0703281356080.13258@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
- <20070328205055.GX8915@holomorphy.com>
+	Wed, 28 Mar 2007 17:05:04 -0400
+Received: from ms.trustica.cz ([82.208.32.68]:44845 "EHLO ms.trustica.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752954AbXC1VFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 17:05:02 -0400
+Message-ID: <460AD872.6020609@assembler.cz>
+Date: Wed, 28 Mar 2007 23:04:50 +0200
+From: Rudolf Marek <r.marek@assembler.cz>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] MSR: Add support for safe variants
+References: <200703261157.l2QBvTJg011821@harpo.it.uu.se> <20070326140911.877430f5.khali@linux-fr.org>
+In-Reply-To: <20070326140911.877430f5.khali@linux-fr.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007, William Lee Irwin III wrote:
+Hello Mikael,
 
-> Getting the relevant results without tremendous amounts of noise from
-> other kernel activity needs something like lmbench's fault and fork()
-> microbenchmarks. Also, /proc/profile and/or oprofile results would be
-> useful here to get useful notions of what's happening performancewise,
-> in particular oprofile with L2 cache miss performance counters.
+> Maybe I'm in the minority here, but I for one strongly believe
+> that any attempt to access an MSR "which might not be there" is
+> inherently wrong. It implies that your HW detection is incomplete,
+> which in combination with MSR accesses means that you may end up
+> accessing MSRs that aren't at all what you think they should be.
 
-The machine had a minimal debian root and it was run on a serial console.
+Well I have some info from Intel, but the register is simply not always there. 
+So instead of oopsing kernel, handling the exception is much better.
 
-> it's in the noise. PMD and PTE caching are only pertinent to fork()
-> anyway, so the vast majority of your workload is unaffected, and it's
+For further details please check:
+http://softwarecommunity.intel.com/isn/Community/en-US/forums/thread/30229027.aspx
 
-I'd be interested to see some numbers here. I still believe the situation 
-to be better on IA64 and other platforms due to the larger page sizes 
-containing many more cachelines which should make the effect bigger.
+(last page) I may have more info in the future.
 
+> Who supplies these imprecise MSR definitions anyway?
+
+Yes Intel, please check the thread. Sometimes similar to catch 22 ;)
+
+Rudolf
