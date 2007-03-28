@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965775AbXC1UY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965776AbXC1UZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965775AbXC1UY2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 16:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965776AbXC1UY2
+	id S965776AbXC1UZp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 16:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965777AbXC1UZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 16:24:28 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:38248 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965775AbXC1UY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 16:24:27 -0400
-Message-ID: <460ACEF3.8090502@gmail.com>
-Date: Wed, 28 Mar 2007 22:24:19 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Wed, 28 Mar 2007 16:25:45 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37208 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965776AbXC1UZo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 16:25:44 -0400
+Date: Wed, 28 Mar 2007 22:25:42 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mariusz Koz__owski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: 2.6.21-rc5-mm1
+Message-ID: <20070328202542.GS16477@stusta.de>
+References: <20070326205706.a750bb35.akpm@linux-foundation.org> <200703281844.58698.m.kozlowski@tuxland.pl> <20070328130234.c0a23572.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Luming Yu <luming.yu@gmail.com>
-CC: Keenan Pepper <keenanpepper@gmail.com>, linux-kernel@vger.kernel.org
-Subject: ACPI Exception: Index is beyond end of object [Was: Timeouts on ICH7
- PATA drive with ata_piix; ide_generic works perfectly]
-References: <767314830702032132m4172ddfbmb2519ad90e7ae578@mail.gmail.com> <3877989d0702041956h1a423cafy40aef4aa4d8a1dc9@mail.gmail.com>
-In-Reply-To: <3877989d0702041956h1a423cafy40aef4aa4d8a1dc9@mail.gmail.com>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 28 Mar 2007 22:24:24 +0200 (CEST)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070328130234.c0a23572.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luming Yu napsal(a):
->> From the dmesg, I found a problem NOT relative to the PATA driver.
-> I would like to know if cpu freq driver works? If not, please enter a
-> acpi bug on bugzilla.kernel.org.
+On Wed, Mar 28, 2007 at 01:02:34PM -0700, Andrew Morton wrote:
+> On Wed, 28 Mar 2007 18:44:57 +0200
+> Mariusz Koz__owski <m.kozlowski@tuxland.pl> wrote:
+> 
+> > Hello,
+> > 
+> > 	I run 2.6.21-rc4-mm1 with no hangs for a week.
+> > Then when 2.6.21-rc5-mm1 showed up so I switched to it. Unfortunately
+> > today my laptop hunged twice in a similar way as described here:
+> > 
+> > http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/index.html#1165
+> 
+> It's not good that we went backwards between those two releases.
+> 
+> > The difference is that it happened when I closed the lid in my laptop.
+> > When reopend it the box was frozen (ACPI?). Again disk I/O was dead
+> > so nothing was found in syslog.
+> 
+> Adrian, does this look like any of the bugs whcih you're monitoring?
+>...
 
-I can't see a bugzilla entry for this?
+Is it also present in 2.6.21-rc5?
+Is it also present with CONFIG_NO_HZ=n?
 
-> "[   17.368000] ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT,
-> Index (0FFFFFFFD) is beyond end of object [20060707]
-> [   17.368000] ACPI Error (psparse-0537): Method parse/execution
-> failed [\_PR_.CPU1._PSS] (Node c1468ba8), AE_AML_PACKAGE_LIMIT
-> [   17.368000] ACPI Exception (acpi_processor-0235):
-> AE_AML_PACKAGE_LIMIT, Evaluating _PSS [20060707]
-> [   17.368000] ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT,
-> Index (0FFFFFFFD) is beyond end of object [20060707]
-> [   17.368000] ACPI Error (psparse-0537): Method parse/execution
-> failed [\_PR_.CPU2._PSS] (Node c14689f0), AE_AML_PACKAGE_LIMIT
-> [   17.368000] ACPI Exception (acpi_processor-0235):
-> AE_AML_PACKAGE_LIMIT, Evaluating _PSS [20060707]
+cu
+Adrian
 
-Was this solved somehow? I get this while modprobing acpi_cpufreq first
-time, any further probe is OK:
-
-ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFD) is
-beyond end of object [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.CPU1._PSS]
-(Node ffff81003ff05f30), AE_AML_PACKAGE_LIMIT
-ACPI Exception (processor_perflib-0234): AE_AML_PACKAGE_LIMIT, Evaluating
-_PSS [20070126]
-ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFD) is
-beyond end of object [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.CPU2._PSS]
-(Node ffff81003ff05c70), AE_AML_PACKAGE_LIMIT
-ACPI Exception (processor_perflib-0234): AE_AML_PACKAGE_LIMIT, Evaluating
-_PSS [20070126]
-
-thanks,
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
