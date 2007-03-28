@@ -1,154 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934065AbXC1XrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934182AbXC1Xr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934065AbXC1XrG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 19:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934046AbXC1XrG
+	id S934182AbXC1Xr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 19:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934250AbXC1Xr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 19:47:06 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37765 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934065AbXC1XrE (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 19:47:04 -0400
-Date: Thu, 29 Mar 2007 10:46:48 +1100
-From: David Chinner <dgc@sgi.com>
-To: Oliver Joa <oliver@j-o-a.de>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       xfs-oss <xfs@oss.sgi.com>
-Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
-Message-ID: <20070328234647.GT32597093@melbourne.sgi.com>
-References: <46094344.4090007@j-o-a.de> <20070328113141.GQ32597093@melbourne.sgi.com> <460A6298.4040702@j-o-a.de>
+	Wed, 28 Mar 2007 19:47:27 -0400
+Received: from mga01.intel.com ([192.55.52.88]:26884 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934046AbXC1XrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 19:47:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,342,1170662400"; 
+   d="scan'208"; a="221130402:sNHT22765687"
+Date: Wed, 28 Mar 2007 16:44:50 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-ide@vger.kernel.org, jgarzik@pobox.com,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: [patch 2/3] libata: expose AN support to user space via sysfs
+Message-Id: <20070328164450.b89d5156.kristen.c.accardi@intel.com>
+In-Reply-To: <20070328230108.597741522@intel.com>
+References: <20070328230108.597741522@intel.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460A6298.4040702@j-o-a.de>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 28, 2007 at 02:42:00PM +0200, Oliver Joa wrote:
-> Hi,
-> 
-> David Chinner wrote:
-> 
-> [...]
-> 
-> >What is the corruption message in the log from XFS?
-> >Can you please post that? Without it we really can't help you.
-> >
-> >Also, please check to see if there are any I/O errors
-> >in the log around the time the corruption message appears.
-> 
-> Ok, here is a test:
-> 
-> test:/# find / -xdev | cpio -padm /test/
-> cpio: /usr/src/linux-2.6.20.2/Documentation/networking/NAPI_HOWTO.txt: 
-> Structure needs cleaning
-> 3648371 blocks
-> test:/#
-> 
-> test:/home/olli# uname -a
-> Linux test 2.6.20.4-majestix-1 #1 SMP PREEMPT Tue Mar 27 12:15:41 CEST 
-> 2007 i686 GNU/Linux
-> 
-> dmesg gives the following:
-> [15442.935941] Filesystem "sda3": XFS internal error xfs_iformat(6) at 
-> line 492 of file fs/xfs/xfs_inode.c.  Caller 0xc0211f94
-> [15442.936003]  [<c0216dba>] xfs_iread+0x4ee/0x6e8
-> [15442.936039]  [<c0211f94>] xfs_iget+0x2e4/0x714
-> [15442.936071]  [<c0211f94>] xfs_iget+0x2e4/0x714
-> [15442.936101]  [<c02293be>] xfs_dir_lookup_int+0x7d/0xd4
+Allow user space to determine if an ATAPI device supports
+async notification (AN) of media changes.  This is done by
+adding a new sysfs file "async_notification" to genhd.
+If the file reads 1, then the device supports async 
+notification.  If the file reads 0, it does not.  
 
-So we have a corrupt inode. The error tells me that the
-corrupted inode is either a regular file, directory or link.
-Unfortunately it doesn't tell us the inode number that is
-corrupted.
+A flag is set in the generic disk to indicate whether
+or not AN is supported.  This flag is set by the SCSI
+subsystem when it registers with add_disk.  The SCSI
+system gets information from libata on whether the
+device supports AN during dev_configure. 
 
-> test:/# rm /usr/src/linux-2.6.20.2/Documentation/networking/NAPI_HOWTO.txt
-> rm: cannot remove 
-> `/usr/src/linux-2.6.20.2/Documentation/networking/NAPI_HOWTO.txt': 
-> Structure needs cleaning
-> test:/#
+Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-Once the filesystem shuts down this will happen to every operation.
-
-Next time you get a shutdown, can you unmount the filesystems and
-run xfs_check and then "xfs_repair -n" on the filesystem. These will
-tell you the inode numbers that are bad. Can you post the errors
-reported by these tools?
-
-Once you have the bad inode numbers, can you run the following
-on the bad inodes:
-
-# xfs_db -r -c "inode <inum>" -c "p" <device>
-
-E.g.:
-
-# xfs_db -r -c "inode 128" -c p /dev/sdb8
-core.magic = 0x494e
-core.mode = 040755
-core.version = 2
-core.format = 2 (extents)
-......
-
-and post the output for us? That will enable us to see exactly what
-the corruption is on the inode.
-
-Cheers,
-
-Dave.
-
-
-> 
-> I got:
-> 
-> [18359.750604] Filesystem "sda3": XFS internal error xfs_iformat(6) at 
-> line 492 of file fs/xfs/xfs_inode.c.  Caller 0xc0211f94
-> [18359.750701]  [<c0216dba>] xfs_iread+0x4ee/0x6e8
-> [18359.750755]  [<c0211f94>] xfs_iget+0x2e4/0x714
-> [18359.750802]  [<c0211f94>] xfs_iget+0x2e4/0x714
-> [18359.750849]  [<c02293be>] xfs_dir_lookup_int+0x7d/0xd4
-> [18359.750897]  [<c022cc6b>] xfs_lookup+0x52/0x78
-> [18359.750943]  [<c0238a22>] xfs_vn_lookup+0x3b/0x70
-> [18359.750990]  [<c0153e6d>] do_lookup+0xa3/0x140
-> [18359.751036]  [<c015578e>] __link_path_walk+0x73d/0xb5e
-> [18359.751086]  [<c0155bf3>] link_path_walk+0x44/0xb3
-> [18359.751133]  [<c0252afc>] rb_insert_color+0x4c/0xad
-> [18359.751180]  [<c0142044>] vma_link+0x54/0xcd
-> [18359.751226]  [<c0155efe>] do_path_lookup+0x176/0x191
-> [18359.751273]  [<c0154ef8>] getname+0x59/0x8f
-> [18359.751318]  [<c01566b8>] __user_walk_fd+0x2f/0x45
-> [18359.751364]  [<c0150a09>] vfs_lstat_fd+0x16/0x3d
-> [18359.751410]  [<c0252afc>] rb_insert_color+0x4c/0xad
-> [18359.751457]  [<c0142044>] vma_link+0x54/0xcd
-> [18359.751501]  [<c0150a75>] sys_lstat64+0xf/0x23
-> [18359.751546]  [<c0110545>] do_page_fault+0x277/0x526
-> [18359.751595]  [<c01102ce>] do_page_fault+0x0/0x526
-> [18359.751640]  [<c0102bd8>] syscall_call+0x7/0xb
-> [18359.751686]  [<c0360033>] rsc_parse+0x6f/0x37f
-> [18359.751732]  =======================
-> [18359.751784] Filesystem "sda3": XFS internal error xfs_iformat(6) at 
-> line 492 of file fs/xfs/xfs_inode.c.  Caller 0xc0211f94
-> [18359.751859]  [<c0216dba>] xfs_iread+0x4ee/0x6e8
-> [18359.751906]  [<c0211f94>] xfs_iget+0x2e4/0x714
-> [18359.751952]  [<c0211f94>] xfs_iget+0x2e4/0x714
-> [18359.751998]  [<c02293be>] xfs_dir_lookup_int+0x7d/0xd4
-> [18359.752047]  [<c022cc6b>] xfs_lookup+0x52/0x78
-> [18359.752094]  [<c0238a22>] xfs_vn_lookup+0x3b/0x70
-> [18359.752140]  [<c0154bcf>] __lookup_hash+0xb1/0xe1
-> [18359.752191]  [<c0156241>] do_unlinkat+0x5f/0x126
-> [18359.752237]  [<c0110545>] do_page_fault+0x277/0x526
-> [18359.752285]  [<c0102bd8>] syscall_call+0x7/0xb
-> [18359.752331]  [<c0360033>] rsc_parse+0x6f/0x37f
-> [18359.752376]  =======================
-> 
-> 
-> 
-> Thanks a Lot
-> 
-> Oliver
+Index: 2.6-mm/block/genhd.c
+===================================================================
+--- 2.6-mm.orig/block/genhd.c
++++ 2.6-mm/block/genhd.c
+@@ -372,6 +372,11 @@ static ssize_t disk_size_read(struct gen
+ {
+ 	return sprintf(page, "%llu\n", (unsigned long long)get_capacity(disk));
+ }
++static ssize_t disk_AN_read(struct gendisk * disk, char *page)
++{
++	return sprintf(page, "%d\n",
++		(disk->flags & GENHD_FL_ASYNC_NOTIFICATION ? 1 : 0));
++}
+ 
+ static ssize_t disk_stats_read(struct gendisk * disk, char *page)
+ {
+@@ -419,6 +424,10 @@ static struct disk_attribute disk_attr_s
+ 	.attr = {.name = "stat", .mode = S_IRUGO },
+ 	.show	= disk_stats_read
+ };
++static struct disk_attribute disk_attr_AN = {
++	.attr = {.name = "media_change_events", .mode = S_IRUGO },
++	.show	= disk_AN_read
++};
+ 
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ 
+@@ -455,6 +464,7 @@ static struct attribute * default_attrs[
+ 	&disk_attr_removable.attr,
+ 	&disk_attr_size.attr,
+ 	&disk_attr_stat.attr,
++	&disk_attr_AN.attr,
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ 	&disk_attr_fail.attr,
+ #endif
+Index: 2.6-mm/include/linux/genhd.h
+===================================================================
+--- 2.6-mm.orig/include/linux/genhd.h
++++ 2.6-mm/include/linux/genhd.h
+@@ -94,6 +94,7 @@ struct hd_struct {
+ 
+ #define GENHD_FL_REMOVABLE			1
+ #define GENHD_FL_DRIVERFS			2
++#define GENHD_FL_ASYNC_NOTIFICATION		4
+ #define GENHD_FL_CD				8
+ #define GENHD_FL_UP				16
+ #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
+Index: 2.6-mm/include/scsi/scsi_device.h
+===================================================================
+--- 2.6-mm.orig/include/scsi/scsi_device.h
++++ 2.6-mm/include/scsi/scsi_device.h
+@@ -126,7 +126,7 @@ struct scsi_device {
+ 	unsigned fix_capacity:1;	/* READ_CAPACITY is too high by 1 */
+ 	unsigned guess_capacity:1;	/* READ_CAPACITY might be too high by 1 */
+ 	unsigned retry_hwerror:1;	/* Retry HARDWARE_ERROR */
+-
++	unsigned async_notification:1;	/* device supports async notification */
+ 	unsigned int device_blocked;	/* Device returned QUEUE_FULL. */
+ 
+ 	unsigned int max_device_blocked; /* what device_blocked counts down from  */
+Index: 2.6-mm/drivers/ata/libata-scsi.c
+===================================================================
+--- 2.6-mm.orig/drivers/ata/libata-scsi.c
++++ 2.6-mm/drivers/ata/libata-scsi.c
+@@ -899,6 +899,9 @@ static void ata_scsi_dev_config(struct s
+ 		blk_queue_max_hw_segments(q, q->max_hw_segments - 1);
+ 	}
+ 
++	if (dev->flags & ATA_DFLAG_AN)
++		sdev->async_notification = 1;
++
+ 	if (dev->flags & ATA_DFLAG_NCQ) {
+ 		int depth;
+ 
+Index: 2.6-mm/drivers/scsi/sr.c
+===================================================================
+--- 2.6-mm.orig/drivers/scsi/sr.c
++++ 2.6-mm/drivers/scsi/sr.c
+@@ -603,6 +603,8 @@ static int sr_probe(struct device *dev)
+ 
+ 	dev_set_drvdata(dev, cd);
+ 	disk->flags |= GENHD_FL_REMOVABLE;
++	if (sdev->async_notification)
++		disk->flags |= GENHD_FL_ASYNC_NOTIFICATION;
+ 	add_disk(disk);
+ 
+ 	sdev_printk(KERN_DEBUG, sdev,
 
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
