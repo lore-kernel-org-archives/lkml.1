@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964778AbXC1RHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964932AbXC1RXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964778AbXC1RHD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 13:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964780AbXC1RHD
+	id S964932AbXC1RXN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 13:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964862AbXC1RXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 13:07:03 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:49587 "EHLO twin.jikos.cz"
+	Wed, 28 Mar 2007 13:23:12 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:54244 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964778AbXC1RHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 13:07:00 -0400
-Date: Wed, 28 Mar 2007 19:06:27 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Thomas Meyer <thomas@m3y3r.de>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Soeren Sonnenburg <kernel@nn7.de>, linux-input@atrey.karlin.mff.cuni.cz,
-       Peter Osterlund <petero2@telia.com>
-Subject: Re: appletouch quirk doesn't run at resume
-In-Reply-To: <460A9D28.5050703@m3y3r.de>
-Message-ID: <Pine.LNX.4.64.0703281903470.29565@twin.jikos.cz>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> 
- <1174078066.13341.279.camel@localhost.localdomain> 
- <1174087552.13341.332.camel@localhost.localdomain>  <45FBBDEA.9060708@m3y3r.de>
- <20070318004240.GO752@stusta.de>  <Pine.LNX.4.64.0703181934530.4195@jikos.suse.cz>
-  <45FD8CA3.10405@m3y3r.de>  <Pine.LNX.4.64.0703182020070.4195@jikos.suse.cz>
-  <4609866C.4060602@m3y3r.de>  <Pine.LNX.4.64.0703281414410.29565@twin.jikos.cz>
- <d120d5000703280624q62c26ffbs80e31d557bf3c72b@mail.gmail.com>
- <460A9D28.5050703@m3y3r.de>
+	id S964932AbXC1RXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 13:23:12 -0400
+Date: Wed, 28 Mar 2007 13:23:10 -0400
+To: Phy Prabab <phyprabab@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Issues with knfsd + solaris clients
+Message-ID: <20070328172310.GC21221@fieldses.org>
+References: <2fe399760703271334j1fe56c9ctc83e1310620d7728@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2fe399760703271334j1fe56c9ctc83e1310620d7728@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007, Thomas Meyer wrote:
+On Tue, Mar 27, 2007 at 01:34:21PM -0700, Phy Prabab wrote:
+> Here is a little bit more information on my issue with slowlaris and
 
-> > I am not sure if this would help... According to the excerpt from X
-> > log synaptics driver attempted to scan evdev devices and locate the
-> > touchpad. However if this scan happen before udev had a chance to
-> > process the event and create new /dev/input/eventX device node it will
-> > fail.
-> Okay. This strengthens above statement. And udev is too slow to create
-> the devices, while the driver already scanned the directory.
-> > I wonder if we should adjust the X driver to spin for a couple of 
-> > seconds in EventAutoDevProbe if the touchpad was already seen once... 
-> > Peter?
+Could you just use their name?  It's a little distracting otherwise.
 
-Yes, it looks like this is the root cause.
+> knfs 2.6.21-rc4/5 (actually appears in 2.4.20.x).  Running this from
+> the client (x.org source code):
+> >ls -l xc/lib/Xmu/Xct.h
+> -rw-rw-r-- 1 phy bdf 0 2006-01-09 06:59 xc/lib/Xmu/Xct.h
+> >file xc/lib/Xmu/Xct.h
+> xc/lib/Xmu/Xct.h:       cannot read: Is a directory
+> >rm -rf xc/lib/Xmu/Xct.h
+> rm: cannot remove `xc/lib/Xmu/Xct.h': Not owner
+> >uname -a
+> SunOS mm3 5.10 Generic_118855-14 i86pc i386 i86pc Solaris
+> >chmod 777 xc/lib/Xmu/Xct.h
+> >rm -rf xc/lib/Xmu/Xct.h
+> rm: cannot remove `xc/lib/Xmu/Xct.h': Not owner
+> >
+> 
+> I would think the file would not be directory and if I tried to remove
+> it, I should be able as owner and permissions are correct.  This is on
+> a solaris 10 on intel, but I also see this problem on solaris 8, 9 and
+> 10 on sparc.  Again, AIX5303 and 04 and all linux clients (2.4.x,
+> 2.6.x) seem to be fine.
 
-However I must admit that I don't like this behavior too much. We 
-shouldn't rely on drivers individual userland to wait for a reasonable 
-time before the udev settles down. This is not a nice API to provide. Will 
-try to think of some solution which would have reasonable 
-nastiness/functionality ratio.
+Would it be possible to get a trace showing what the rpc traffic during
+the above test?  You could run something like
 
--- 
-Jiri Kosina
+	tcpdump -s0 -wTMP host my-client.example.com
+
+and then post a copy of TMP someplace.  Or look at it yourself in
+wireshark--what you're looking for is how the server replied to the
+rpc's generated by the commands above, and whether the server's replies
+were consistent.
+
+--b.
