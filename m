@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965657AbXC1TAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXC1TGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965657AbXC1TAM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965689AbXC1TAL
+	id S965661AbXC1TGB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965680AbXC1TGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:00:11 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:64123 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965687AbXC1TAJ (ORCPT
+	Wed, 28 Mar 2007 15:06:01 -0400
+Received: from xdsler061.osnanet.de ([89.166.177.61]:2403 "EHLO
+	Marvin.DL8BCU.ampr.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965661AbXC1TGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:00:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hD5SX9zOsV4uUh+267qLQFmzvqJKC1N8vTnv+4QlRVhJJXQ81kjh85Y6Pn9gmWEYFQGvvP5jcT5q954Sp0HBWcWXGmX7jEQBcRphpSTbC/0McZ585k2IdLU7rIkSvvQcbDA2aP/lq/lu5bhRWg3VtoPgBtYwoUIXdCcZlPSn1To=
-Message-ID: <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
-Date: Wed, 28 Mar 2007 15:00:06 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
-Cc: "Li Yu" <liyu@ccoss.com.cn>, yanghong@ccoss.com.cn,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       hongzhiyi@ccoss.com.cn, "Marcel Holtmann" <marcel@holtmann.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Li Yu" <raise.sail@gmail.com>
-In-Reply-To: <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Mar 2007 15:06:00 -0400
+X-Greylist: delayed 602 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Mar 2007 15:06:00 EDT
+Date: Wed, 28 Mar 2007 19:05:36 +0000
+From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Phy Prabab <phyprabab@gmail.com>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Odd log message associated with NFS
+Message-ID: <20070328190536.GB585@ds20.borg.net>
+Reply-To: dl8bcu@dl8bcu.de
+Mail-Followup-To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>,
+	"J. Bruce Fields" <bfields@fieldses.org>,
+	Phy Prabab <phyprabab@gmail.com>, nfs@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <2fe399760703271140l703c2791oa84e9e1832487dcb@mail.gmail.com> <20070327193909.GA585@ds20.borg.net> <20070328165925.GB21221@fieldses.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com>
-	 <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn>
-	 <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>
+In-Reply-To: <20070328165925.GB21221@fieldses.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/28/07, Jiri Kosina <jkosina@suse.cz> wrote:
->
-> The crucial thing here is that all reports but the ones that the driver
-> registered to will be processed in a standard way by the generic hid bus
-> layer, and those reports that the driver registered to will be ignored by
-> the layer, and passed for processing to the driver.
->
+On Wed, Mar 28, 2007 at 12:59:25PM -0400, J. Bruce Fields wrote:
+> On Tue, Mar 27, 2007 at 07:39:10PM +0000, Thorsten Kranzkowski wrote:
+> > Mar 16 16:57:06 Marvin kernel: svc: bad direction 268435456, dropping request
+> > Mar 16 17:58:19 Marvin kernel: svc: bad direction 268435456, dropping request
+> > Mar 16 19:55:49 Marvin kernel: svc: bad direction 268435456, dropping request
+> 
+> So that's 2^28, in a field that should always be zero.  It's the very
 
-I don't think it is a good idea to register driver for specific
-usages/reports. Quite often you want to adjust processing of a report
-for a specific device. What if there are 2 devices that need such
-quirks? How will you do hotplug and module loading? Emit new uevent
-for every report? Also, what about users and Kconfig? "Driver for
-usage 0x000012345. Say Y if your hardware does not wotk correctly with
-defautl handler for this usage and require special processing"???
+ahh. indeed. I didn't do the math, yet :)
 
-Just register based on VID/PID and provide standard
-hid_default_input_event() to drivers so they would call it for reports
-they don't need to do special processing on.
+> first check of any data read from the rpc call, so it'd be consistent
+> with the call data being garbage, for one reason or another.
+> 
+> What would cause that to happen, I don't know.  Do you have a reliable
+> way to reproduce it?
+
+just sit and wait :-) 
+I'll let a tcpdump run this evening and see if I can correlate the message
+with anything. 
+
+If you have a printk or other patch for me to try, just let me know.
+ 
+bye,
+Thorsten
 
 -- 
-Dmitry
+| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
+| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
+| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
