@@ -1,156 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbXC1MmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbXC1MmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752022AbXC1MmO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 08:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXC1MmO
+	id S1751965AbXC1MmR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 08:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXC1MmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 08:42:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60741 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Mar 2007 08:42:16 -0400
+Received: from mail.gatrixx.com ([217.111.11.44]:23186 "EHLO mail.gatrixx.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751965AbXC1MmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 08:42:13 -0400
-Date: Wed, 28 Mar 2007 14:41:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Meyer <thomas@m3y3r.de>, Frederic Riss <frederic.riss@gmail.com>,
-       Marcus Better <marcus@better.se>
-Subject: Re: [4/5] 2.6.21-rc5: known regressions
-Message-ID: <20070328124121.GA23564@elte.hu>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015949.GB16477@stusta.de> <20070328121958.GA11290@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070328121958.GA11290@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751965AbXC1MmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 08:42:15 -0400
+Message-ID: <460A6298.4040702@j-o-a.de>
+Date: Wed, 28 Mar 2007 14:42:00 +0200
+From: Oliver Joa <oliver@j-o-a.de>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+CC: linux-kernel@vger.kernel.org, xfs-oss <xfs@oss.sgi.com>
+Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
+References: <46094344.4090007@j-o-a.de> <20070328113141.GQ32597093@melbourne.sgi.com>
+In-Reply-To: <20070328113141.GQ32597093@melbourne.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+David Chinner wrote:
 
->          entry = get_irq_msi(dev->irq);
->          pos = entry->msi_attrib.pos; <-------- crash on NULL dereference
+[...]
+
+> What is the corruption message in the log from XFS?
+> Can you please post that? Without it we really can't help you.
 > 
-> 
-> i.e. 'entry' is NULL after get_irq_msi(). (i can see the crash only on 
-> the VGA screen so no dump of it available. Can write down more info if 
-> it's helpful.)
-> 
-> I have tried Eric's patch above but now i always get a hang after 
-> "system 00:00: resuming", already upon the first suspend-resume. Not 
-> even the NMI watchdog can get the system out of that hang.
+> Also, please check to see if there are any I/O errors
+> in the log around the time the corruption message appears.
 
-find below the PM log of a successful suspend/resume cycle. (I've marked 
-the place that hangs with '[hard hang]')
+Ok, here is a test:
 
-	Ingo
+test:/# find / -xdev | cpio -padm /test/
+cpio: /usr/src/linux-2.6.20.2/Documentation/networking/NAPI_HOWTO.txt: 
+Structure needs cleaning
+3648371 blocks
+test:/#
 
----------------->
-PM: Preparing system for mem sleep
-Stopping tasks ... done.
-psmouse serio2: suspend
-psmouse serio1: suspend
-atkbd serio0: suspend
-i8042 i8042: suspend
-sd 0:0:0:0: suspend
-ide 0.0: suspend
-serial8250 serial8250: suspend
-platform vesafb.0: suspend
-pci_express 0000:00:1c.3:pcie03: suspend
-pci_express 0000:00:1c.3:pcie02: suspend
-pci_express 0000:00:1c.3:pcie00: suspend
-pci_express 0000:00:1c.2:pcie03: suspend
-pci_express 0000:00:1c.2:pcie02: suspend
-pci_express 0000:00:1c.2:pcie00: suspend
-pci_express 0000:00:1c.1:pcie03: suspend
-pci_express 0000:00:1c.1:pcie02: suspend
-pci_express 0000:00:1c.1:pcie00: suspend
-pci_express 0000:00:1c.0:pcie03: suspend
-pci_express 0000:00:1c.0:pcie02: suspend
-pci_express 0000:00:1c.0:pcie00: suspend
-platform pcspkr: suspend
-pnp 00:0a: suspend
-i8042 aux 00:09: suspend
-i8042 kbd 00:08: suspend
-pnp 00:07: suspend
-pnp 00:06: suspend
-pnp 00:05: suspend
-pnp 00:04: suspend
-pnp 00:03: suspend
-system 00:02: suspend
-pnp 00:01: suspend
-system 00:00: suspend
-yenta_cardbus 0000:15:00.0: suspend
-pci 0000:03:00.0: suspend
-e1000 0000:02:00.0: suspend
-pci 0000:03:00.0: resuming
-yenta_cardbus 0000:15:00.0: resuming
-PM: Writing back config space on device 0000:15:00.0 at offset f (was 34001ff, writing 5c0010b)
-PM: Writing back config space on device 0000:15:00.0 at offset e (was 0, writing 94fc)
-PM: Writing back config space on device 0000:15:00.0 at offset d (was 0, writing 9400)
-PM: Writing back config space on device 0000:15:00.0 at offset c (was 0, writing 90fc)
-PM: Writing back config space on device 0000:15:00.0 at offset b (was 0, writing 9000)
-PM: Writing back config space on device 0000:15:00.0 at offset a (was 0, writing 8bfff000)
-PM: Writing back config space on device 0000:15:00.0 at offset 9 (was 0, writing 88000000)
-PM: Writing back config space on device 0000:15:00.0 at offset 8 (was 0, writing e3fff000)
-PM: Writing back config space on device 0000:15:00.0 at offset 7 (was 0, writing e0000000)
-PM: Writing back config space on device 0000:15:00.0 at offset 6 (was 0, writing b0171615)
-PM: Writing back config space on device 0000:15:00.0 at offset 4 (was 0, writing e4300000)
-PM: Writing back config space on device 0000:15:00.0 at offset 3 (was 20000, writing 2a820)
-PM: Writing back config space on device 0000:15:00.0 at offset 1 (was 2100000, writing 2100007)
-system 00:00: resuming <-------------- [ hard hang ]
-pnp 00:01: resuming
-system 00:02: resuming
-pnp 00:03: resuming
-pnp 00:04: resuming
-pnp 00:05: resuming
-pnp 00:06: resuming
-pnp 00:07: resuming
-i8042 kbd 00:08: resuming
-i8042 aux 00:09: resuming
-pnp 00:0a: resuming
-platform pcspkr: resuming
-pci_express 0000:00:1c.0:pcie00: resuming
-pci_express 0000:00:1c.0:pcie02: resuming
-pci_express 0000:00:1c.0:pcie03: resuming
-pci_express 0000:00:1c.1:pcie00: resuming
-pci_express 0000:00:1c.1:pcie02: resuming
-pci_express 0000:00:1c.1:pcie03: resuming
-pci_express 0000:00:1c.2:pcie00: resuming
-pci_express 0000:00:1c.2:pcie02: resuming
-pci_express 0000:00:1c.2:pcie03: resuming
-pci_express 0000:00:1c.3:pcie00: resuming
-pci_express 0000:00:1c.3:pcie02: resuming
-pci_express 0000:00:1c.3:pcie03: resuming
-platform vesafb.0: resuming
-serial8250 serial8250: resuming
-ide 0.0: resuming
-sd 0:0:0:0: resuming
-i8042 i8042: resuming
-atkbd serio0: resuming
-psmouse serio1: resuming
-ata2: SATA link down (SStatus 0 SControl 0)
-ata3: SATA link down (SStatus 0 SControl 0)
-ata4: SATA link down (SStatus 0 SControl 0)
-psmouse serio2: resuming
-ata1: waiting for device to spin up (7 secs)
-Restarting tasks ... done.
-e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: configured for UDMA/100
-SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
-sda: Write Protect is off
-sda: Mode Sense: 00 3a 00 00
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-PM: Preparing system for mem sleep
+test:/home/olli# uname -a
+Linux test 2.6.20.4-majestix-1 #1 SMP PREEMPT Tue Mar 27 12:15:41 CEST 
+2007 i686 GNU/Linux
+
+dmesg gives the following:
+[15442.935941] Filesystem "sda3": XFS internal error xfs_iformat(6) at 
+line 492 of file fs/xfs/xfs_inode.c.  Caller 0xc0211f94
+[15442.936003]  [<c0216dba>] xfs_iread+0x4ee/0x6e8
+[15442.936039]  [<c0211f94>] xfs_iget+0x2e4/0x714
+[15442.936071]  [<c0211f94>] xfs_iget+0x2e4/0x714
+[15442.936101]  [<c02293be>] xfs_dir_lookup_int+0x7d/0xd4
+[15442.936135]  [<c022cc6b>] xfs_lookup+0x52/0x78
+[15442.936167]  [<c0238a22>] xfs_vn_lookup+0x3b/0x70
+[15442.936201]  [<c0153e6d>] do_lookup+0xa3/0x140
+[15442.936234]  [<c015578e>] __link_path_walk+0x73d/0xb5e
+[15442.936278]  [<c0211655>] xfs_iunlock+0x51/0x6d
+[15442.936309]  [<c0155bf3>] link_path_walk+0x44/0xb3
+[15442.936342]  [<c0155efe>] do_path_lookup+0x176/0x191
+[15442.936373]  [<c0154ef8>] getname+0x59/0x8f
+[15442.936402]  [<c01566b8>] __user_walk_fd+0x2f/0x45
+[15442.936431]  [<c0150a09>] vfs_lstat_fd+0x16/0x3d
+[15442.936461]  [<c0150a75>] sys_lstat64+0xf/0x23
+[15442.936490]  [<c0102bd8>] syscall_call+0x7/0xb
+[15442.936519]  =======================
+
+And after this command:
+
+test:/# rm /usr/src/linux-2.6.20.2/Documentation/networking/NAPI_HOWTO.txt
+rm: cannot remove 
+`/usr/src/linux-2.6.20.2/Documentation/networking/NAPI_HOWTO.txt': 
+Structure needs cleaning
+test:/#
+
+I got:
+
+[18359.750604] Filesystem "sda3": XFS internal error xfs_iformat(6) at 
+line 492 of file fs/xfs/xfs_inode.c.  Caller 0xc0211f94
+[18359.750701]  [<c0216dba>] xfs_iread+0x4ee/0x6e8
+[18359.750755]  [<c0211f94>] xfs_iget+0x2e4/0x714
+[18359.750802]  [<c0211f94>] xfs_iget+0x2e4/0x714
+[18359.750849]  [<c02293be>] xfs_dir_lookup_int+0x7d/0xd4
+[18359.750897]  [<c022cc6b>] xfs_lookup+0x52/0x78
+[18359.750943]  [<c0238a22>] xfs_vn_lookup+0x3b/0x70
+[18359.750990]  [<c0153e6d>] do_lookup+0xa3/0x140
+[18359.751036]  [<c015578e>] __link_path_walk+0x73d/0xb5e
+[18359.751086]  [<c0155bf3>] link_path_walk+0x44/0xb3
+[18359.751133]  [<c0252afc>] rb_insert_color+0x4c/0xad
+[18359.751180]  [<c0142044>] vma_link+0x54/0xcd
+[18359.751226]  [<c0155efe>] do_path_lookup+0x176/0x191
+[18359.751273]  [<c0154ef8>] getname+0x59/0x8f
+[18359.751318]  [<c01566b8>] __user_walk_fd+0x2f/0x45
+[18359.751364]  [<c0150a09>] vfs_lstat_fd+0x16/0x3d
+[18359.751410]  [<c0252afc>] rb_insert_color+0x4c/0xad
+[18359.751457]  [<c0142044>] vma_link+0x54/0xcd
+[18359.751501]  [<c0150a75>] sys_lstat64+0xf/0x23
+[18359.751546]  [<c0110545>] do_page_fault+0x277/0x526
+[18359.751595]  [<c01102ce>] do_page_fault+0x0/0x526
+[18359.751640]  [<c0102bd8>] syscall_call+0x7/0xb
+[18359.751686]  [<c0360033>] rsc_parse+0x6f/0x37f
+[18359.751732]  =======================
+[18359.751784] Filesystem "sda3": XFS internal error xfs_iformat(6) at 
+line 492 of file fs/xfs/xfs_inode.c.  Caller 0xc0211f94
+[18359.751859]  [<c0216dba>] xfs_iread+0x4ee/0x6e8
+[18359.751906]  [<c0211f94>] xfs_iget+0x2e4/0x714
+[18359.751952]  [<c0211f94>] xfs_iget+0x2e4/0x714
+[18359.751998]  [<c02293be>] xfs_dir_lookup_int+0x7d/0xd4
+[18359.752047]  [<c022cc6b>] xfs_lookup+0x52/0x78
+[18359.752094]  [<c0238a22>] xfs_vn_lookup+0x3b/0x70
+[18359.752140]  [<c0154bcf>] __lookup_hash+0xb1/0xe1
+[18359.752191]  [<c0156241>] do_unlinkat+0x5f/0x126
+[18359.752237]  [<c0110545>] do_page_fault+0x277/0x526
+[18359.752285]  [<c0102bd8>] syscall_call+0x7/0xb
+[18359.752331]  [<c0360033>] rsc_parse+0x6f/0x37f
+[18359.752376]  =======================
+
+
+
+Thanks a Lot
+
+Oliver
