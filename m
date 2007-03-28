@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbXC1VJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbXC1VPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbXC1VJN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 17:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbXC1VJM
+	id S1753050AbXC1VPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 17:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbXC1VPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 17:09:12 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:25355 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753009AbXC1VJK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 17:09:10 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=wJgy+Ph02zxhd2qK0jlSWmG97nE2mPytnVGk3lB7kCufqCAZkY9OPxyhD9y27eJoh
-	Ln/Y8rr79W1zMFwdTD8fw==
-Message-ID: <460AD940.8080507@google.com>
-Date: Wed, 28 Mar 2007 14:08:16 -0700
-From: Ethan Solomita <solo@google.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-CC: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Maneesh Soni <maneesh@in.ibm.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [FIXED] Re: tty OOPS (Re: 2.6.21-rc5-mm2)
-References: <20070326211627.c681af3b.akpm@linux-foundation.org> <20070328170214.GA13044@rhlx01.hs-esslingen.de> <20070328173310.GA4682@rhlx01.hs-esslingen.de> <20070328174524.GA25709@rhlx01.hs-esslingen.de> <20070328180446.GA7528@rhlx01.hs-esslingen.de> <20070328183814.GA5306@martell.zuzino.mipt.ru> <20070328185632.GB5306@martell.zuzino.mipt.ru> <20070328201511.GA20889@rhlx01.hs-esslingen.de>
-In-Reply-To: <20070328201511.GA20889@rhlx01.hs-esslingen.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 28 Mar 2007 17:15:44 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:59744 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752995AbXC1VPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 17:15:43 -0400
+Date: Wed, 28 Mar 2007 14:15:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+Message-Id: <20070328141539.353203a1.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703281346060.6730@woody.linux-foundation.org>
+References: <20070328073219.GA26024@havoc.gtf.org>
+	<460A1A3D.6050501@garzik.org>
+	<Pine.LNX.4.64.0703281346060.6730@woody.linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Mohr wrote:
-> Hi,
->
-> On Wed, Mar 28, 2007 at 10:56:32PM +0400, Alexey Dobriyan wrote:
->   
->> The only suspicious new patch in -rc5-mm1 to me is
->> fix-sysfs-reclaim-crash.patch which removes "sd->s_dentry = NULL;". Note
->> that whole sysfs_drop_dentry() is NOP if ->s_dentry is NULL.
->>
->> Could you try to revert it?
->>
->> 	Alexey, who knows very little about sysfs internals
->>     
->
-> Apparently that's still too much knowledge ;)
->
-> Or, in other words: 6 reboots already and not a single problem!
->
-> So yes, the removal of the NULLing line in this patch most likely
-> has caused this issue on my box.
-> Now the question is whether something as simple as that is a fully
-> correct fix or whether something should be done entirely differently.
-> I'll let people more familiar with those parts decide about it...
->   
+On Wed, 28 Mar 2007 13:53:10 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-    Sorry -- I've only just been cc'd on this mail thread. Are we 
-claiming that this patch/fix has caused a new problem, or successfully 
-fixed an old problem?
+> 
+> 
+> On Wed, 28 Mar 2007, Jeff Garzik wrote:
+> >
+> > Jeff Garzik wrote:
+> > > This disables libata ACPI, among other things.
+> > 
+> > If a -rc6 is possible, that would be quite nice...
+> 
+> Heh. I don't think -rc6 is "possible" - it's "inevitable". We have too 
+> much fallout from the timer changes still outstanding. It looks people 
+> finally figured out a big issue with the HPET timer, and that hopefully 
+> resolves most of the remaining timer-related regressions, but yes, we most 
+> definitely _will_ have an -rc6.
 
-    Thanks!
-    -- Ethan
+yup.
+
+> Andrew, what's your feeling apart from the timer fallout?
+
+There are two main metrics:
+
+a) the number of bugs which Adrian is tracking.  I think this still
+   exceeds 25, which is a lot.
+
+b) the rate at which fixes are arriving.  I have accumulated 15-20
+   since the last batch (40 hours ago), which is still a pretty high rate.
+
+Based on that, we're still quite a long way from -final.
+
+(But you know me - I'd be happy releasing 2.6.21 in July)
+(Don't ask me what year I'm referring to, either)
+
+
+There is another metric to look at, too: the number of fixes which are
+going into 2.6.x.y.  If that fix count is high, and if those fixes fix bugs
+which were not present in 2.6.x-1 then this is an indication that something
+is wrong - many regressions are sneaking through the -rc process.
+
+And I haven't run the numbers, but I get the impression that 2.6.20.x has
+an unusually large number of fixes in it.
 
