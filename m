@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965769AbXC1UUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965775AbXC1UY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965769AbXC1UUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 16:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965774AbXC1UUj
+	id S965775AbXC1UY2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 16:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965776AbXC1UY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 16:20:39 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:19968 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965768AbXC1UUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 16:20:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=IXNNBNESLd8OnQDBWIIBlwDyCcp4bftJz3zgHqmxqJeHak7UKEepc69lPiqIJapKCtu4dhK1cmzhoTXuGYxl20619LJAgasN8ymVn/RoDnKalw9MsBDfNVERudAjEkM+v/GI9t1AsAqmMHlgrgbhl0R9yJwMuOyvQ2/eiVKcERI=
-From: Maxim <maximlevitsky@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] [3/6] 2.6.21-rc4: known regressions
-Date: Wed, 28 Mar 2007 22:19:59 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-pm@lists.linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org,
-       gregkh@suse.de, linux-pm@lists.osdl.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, jgarzik@pobox.com,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <Pine.LNX.4.64.0703280931520.6730@woody.linux-foundation.org> <200703281238.57811.david-b@pacbell.net>
-In-Reply-To: <200703281238.57811.david-b@pacbell.net>
+	Wed, 28 Mar 2007 16:24:28 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:38248 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965775AbXC1UY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 16:24:27 -0400
+Message-ID: <460ACEF3.8090502@gmail.com>
+Date: Wed, 28 Mar 2007 22:24:19 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Luming Yu <luming.yu@gmail.com>
+CC: Keenan Pepper <keenanpepper@gmail.com>, linux-kernel@vger.kernel.org
+Subject: ACPI Exception: Index is beyond end of object [Was: Timeouts on ICH7
+ PATA drive with ata_piix; ide_generic works perfectly]
+References: <767314830702032132m4172ddfbmb2519ad90e7ae578@mail.gmail.com> <3877989d0702041956h1a423cafy40aef4aa4d8a1dc9@mail.gmail.com>
+In-Reply-To: <3877989d0702041956h1a423cafy40aef4aa4d8a1dc9@mail.gmail.com>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703282220.00199.maximlevitsky@gmail.com>
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 28 Mar 2007 22:24:24 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 March 2007 21:38:55 David Brownell wrote:
-> On Wednesday 28 March 2007 9:38 am, Linus Torvalds wrote:
-> 
-> > It's a *device*, dammit. It should save and resume like one (probably as a 
-> > system device). The "set_mode()" etc stuff is at a completely different 
-> > (higher) conceptual level.
-> 
-> Agreed, except about "probably as a system device".
-> 
-> Last I checked, there was no good reason to use sysdev suspend()/resume()
-> rather than platform_device suspend_late()/early_resume().  Which more
-> or less means no good reason to use sysdev in new code...
-> 
-> 
-> Also, making HPET use the legacy mode seems like a step backwards.
-> 
-> - Dave
-> 
+Luming Yu napsal(a):
+>> From the dmesg, I found a problem NOT relative to the PATA driver.
+> I would like to know if cpu freq driver works? If not, please enter a
+> acpi bug on bugzilla.kernel.org.
 
+I can't see a bugzilla entry for this?
 
-Hi,
-	It is not 'legacy' mode,
-It is a legacy replacement mode.
-It this mode HPET takes over IRQ0 and IRQ 8 and provides this way replacement for PIT and RTC periodic function
+> "[   17.368000] ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT,
+> Index (0FFFFFFFD) is beyond end of object [20060707]
+> [   17.368000] ACPI Error (psparse-0537): Method parse/execution
+> failed [\_PR_.CPU1._PSS] (Node c1468ba8), AE_AML_PACKAGE_LIMIT
+> [   17.368000] ACPI Exception (acpi_processor-0235):
+> AE_AML_PACKAGE_LIMIT, Evaluating _PSS [20060707]
+> [   17.368000] ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT,
+> Index (0FFFFFFFD) is beyond end of object [20060707]
+> [   17.368000] ACPI Error (psparse-0537): Method parse/execution
+> failed [\_PR_.CPU2._PSS] (Node c14689f0), AE_AML_PACKAGE_LIMIT
+> [   17.368000] ACPI Exception (acpi_processor-0235):
+> AE_AML_PACKAGE_LIMIT, Evaluating _PSS [20060707]
 
-	Best regards,
-		Maxim Levitsky
+Was this solved somehow? I get this while modprobing acpi_cpufreq first
+time, any further probe is OK:
 
+ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFD) is
+beyond end of object [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.CPU1._PSS]
+(Node ffff81003ff05f30), AE_AML_PACKAGE_LIMIT
+ACPI Exception (processor_perflib-0234): AE_AML_PACKAGE_LIMIT, Evaluating
+_PSS [20070126]
+ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFD) is
+beyond end of object [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.CPU2._PSS]
+(Node ffff81003ff05c70), AE_AML_PACKAGE_LIMIT
+ACPI Exception (processor_perflib-0234): AE_AML_PACKAGE_LIMIT, Evaluating
+_PSS [20070126]
+
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
