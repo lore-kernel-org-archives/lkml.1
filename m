@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbXC1WaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933648AbXC1WhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932406AbXC1WaG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 18:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933741AbXC1WaG
+	id S933648AbXC1WhT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 18:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933814AbXC1WhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 18:30:06 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:43361 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932406AbXC1WaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 18:30:05 -0400
-X-Greylist: delayed 834 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Mar 2007 18:30:04 EDT
-X-Sasl-enc: 4S15P0HQA4+VBCCI9ZqYADooRWuUcCjcdzMeNfYdghic 1175121004
-Message-ID: <460AECE6.8090703@imap.cc>
-Date: Thu, 29 Mar 2007 00:32:06 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Wed, 28 Mar 2007 18:37:19 -0400
+Received: from holomorphy.com ([66.93.40.71]:47496 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933648AbXC1WhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 18:37:18 -0400
+Date: Wed, 28 Mar 2007 15:33:27 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jeremy@goop.org, zach@vmware.com
+Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
+Message-ID: <20070328223327.GG2986@holomorphy.com>
+References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com> <20070328222656.GS6602@sequoia.sous-sol.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21-rc5
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070326221731.f4792260.akpm@linux-foundation.org>
-In-Reply-To: <20070326221731.f4792260.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070328222656.GS6602@sequoia.sous-sol.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 27.03.2007 08:17 schrieb Andrew Morton:
-> I have a few fixes here which belong to subsystem trees, which were missed
-> by the maintainers and which we probably want to get into 2.6.21.
-[...]
-> Maintainers are cc'ed.  Please promptly ack, nack or otherwise quack, else
-> I'll be making my own decisions ;)
+* Christoph Lameter (clameter@sgi.com) wrote:
+>> +#ifdef CONFIG_HIGHMEM64G
+>> +#define __pgd_alloc()		kmem_cache_alloc(pgd_cache, GFP_KERNEL|__GFP_REPEAT)
+>> +#define __pgd_free(pgd)		kmem_cache_free(pgd_cache, pgd)
 
-[CC list trimmed]
+On Wed, Mar 28, 2007 at 03:26:56PM -0700, Chris Wright wrote:
+> I must've glazed over something, I thought this was removal of slabs?
 
-It's not on that list, but would you mind slipping
-drivers-isdn-gigaset-mark-some-static-data-as-const-v2.patch
-into 2.6.21 too? It's largely trivial but I'd like to get it
-out of the door.
+The pgd slab is not fully removable in the PAE case because a dedicated
+slab is the only way to enforce alignment for allocations as small as
+PAE PGD's.
 
-Thanks,
-Tilman
 
--- 
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Ungeoeffnet mindestens haltbar bis: (siehe Rueckseite)
+On Wed, Mar 28, 2007 at 03:26:56PM -0700, Chris Wright wrote:
+> BTW, this will interact shared_kernel_pmd patch that Jeremy's posted a
+> few times (I know at least wli has looked over that one).  We need to
+> make sure that PAE under at least Xen hypervisor has a page-sized pgd,
+> although the mmlist chaining looks nice to me.
+
+That, not to mention the total lack of verification of the pageattr.c
+code, are among the reasons I didn't want it posted.
+
+
+* Christoph Lameter (clameter@sgi.com) wrote:
+>> +	memcpy(&pgd[USER_PTRS_PER_PGD], &swapper_pg_dir[USER_PTRS_PER_PGD],
+>> +						KERNEL_PGD_PTRS*sizeof(pgd_t));
+
+On Wed, Mar 28, 2007 at 03:26:56PM -0700, Chris Wright wrote:
+> clone_pgd_range() for consistency?  and it seems we lost a
+> paravirt_alloc_pd_clone() in there somewhere.
+
+Yes, another reason why it shouldn't have been posted as-is. It was not
+intended to for anything more than comparative benchmarking on systems
+without graphics running on the bare metal as opposed to Xen/etc. guests.
+
+
+-- wli
