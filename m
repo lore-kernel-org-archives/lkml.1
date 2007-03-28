@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933699AbXC1XLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750917AbXC1XOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933699AbXC1XLt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 19:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933786AbXC1XLt
+	id S1750917AbXC1XOb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 19:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933813AbXC1XOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 19:11:49 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:11376 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933699AbXC1XLs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 19:11:48 -0400
-Date: Wed, 28 Mar 2007 17:09:49 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: possible mistake in linux kernel header file -- kernel: 2.6.16.29
- file: mod_devicetable.h
-In-reply-to: <fa.oyzxCetQPxeJg2D2eekG0Gighs4@ifi.uio.no>
-To: smitchel <smitchel@bnin.net>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <460AF5BD.60603@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.oyzxCetQPxeJg2D2eekG0Gighs4@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 28 Mar 2007 19:14:31 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:35199 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750917AbXC1XOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 19:14:30 -0400
+Date: Wed, 28 Mar 2007 16:14:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] cache pipe buf page address for non-highmem arch
+Message-Id: <20070328161420.3c8f9688.akpm@linux-foundation.org>
+In-Reply-To: <3D4D126C-0B26-4B00-A2E4-68BD84555B51@oracle.com>
+References: <b040c32a0703221751x54417524l5237742f345eeda9@mail.gmail.com>
+	<20070322170122.ee2589a1.akpm@linux-foundation.org>
+	<b040c32a0703231748s112beda6i3d51ebcd658005c4@mail.gmail.com>
+	<20070326201552.b8ad7dda.akpm@linux-foundation.org>
+	<b040c32a0703271047vba81938q538d182c9c984f42@mail.gmail.com>
+	<3D4D126C-0B26-4B00-A2E4-68BD84555B51@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-smitchel wrote:
-> I am not sure where to post this, maybe you can direct me what to do, if 
-> anything.
-> 
-> We have two computers running slackware for amd64 version 11.0.
-> Tonight we compiled mplayer on each of the systems.
-> 
-> On the first, everything compiled fine--it has a core 2 duo cpu and is 
-> running a stock kernel off the install DVD for slackware-amd64.
-> it is kernel 2.6.16.29.
-> 
-> On the second it would not compile, and it has dual opteron 250 cpus and 
-> is running a kernel that we compiled to add some things to
-> for sound, etc.   This was from a kernel source that we downloaded a few 
-> days ago.
-> it is kernel 2.6.16.29--same as first machine.
-> 
-> The error is stopping in the file /usr/include/linux/mod_devicetable.h.
-> 
-> It appears that there are 4 extra lines that have been added to the  
-> mod_devicetable.h that was part of the kernel source that we downloaded.
-> They are in the first screenful of the file:
-> 
-> #ifdef __KERNEL__
-> #include <linux/types.h>
-> typedef unsigned long kernel_ulong_t;
-> #endif
-> 
-> They are not in the same file in the kernel source from the slackware 
-> amd-64 install DVD. (<linux/types.h> included somewhere else?)
-> 
-> Googling we found:
-> __KERNEL__ is defined for programs that run in kernel mode instead of 
-> user programs (whatever that means).
-> 
-> A few lines later in mod_devicetable.h it uses the type kernel_ulong_t 
-> (in the same file--what if the ifdef path is not taken?)
+On Tue, 27 Mar 2007 15:57:53 -0700
+Zach Brown <zach.brown@oracle.com> wrote:
 
-These compile errors are from compiling mplayer? Something is not right 
-here, it shouldn't be including that header file at all - and I'm not 
-sure how anything in /usr/include could be ending up trying to do so.
+> > +#define pipe_kmap_atomic(page, type)	pipe_kmap(page)
+> > +#define pipe_kunmap(page)		do { } while (0)
+> > +#define pipe_kunmap_atomic(page, type)	do { } while (0)
+> 
+> Please don't drop arguments in stubs.  It can let completely broken  
+> code compile, like:
+> 
+> 	pipe_kunmap(SOME_COMPLETE_NONSENSE);
+> 
+> Static inlines with empty bodies are the gold standard.
+> 
 
-__KERNEL__ is only supposed to be defined when building the kernel 
-itself. Current kernels (not sure if 2.6.16 had this though) have a 
-process which generates header files suitable for userspace from the 
-kernel's header files and strips out everything inside #ifdef __KERNEL__.
+yup.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+<fiddle, fiddle>
+
+Does this look OK?
+
+#ifdef CONFIG_HIGHMEM
+static inline void *pipe_kmap(struct page *page)
+{
+	return kmap(page);
+}
+
+static inline void pipe_kunmap(struct page *page)
+{
+	kunmap(page);
+}
+
+static inline void *pipe_kmap_atomic(struct page *page, enum km_type type)
+{
+	return kmap_atomic(page, type);
+}
+
+static inline void pipe_kunmap_atomic(void *addr, enum km_type type)
+{
+	kunmap_atomic(addr, type);
+}
+#else	/* CONFIG_HIGHMEM */
+static inline void *pipe_kmap(struct page *page)
+{
+	return (void *)page->private;
+}
+
+static inline void pipe_kunmap(struct page *page)
+{
+}
+
+static inline void *pipe_kmap_atomic(struct page *page, enum km_type type)
+{
+	return (void *)page->private;
+}
+
+static inline void pipe_kunmap_atomic(struct page *page, enum km_type type)
+{
+}
+#endif
 
