@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbXC1OKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbXC1ONs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751932AbXC1OKc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 10:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbXC1OKb
+	id S1751999AbXC1ONs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 10:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXC1ONs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 10:10:31 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:60297 "EHLO e2.ny.us.ibm.com"
+	Wed, 28 Mar 2007 10:13:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57135 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751932AbXC1OKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 10:10:30 -0400
-Subject: Re: Linux page cache issue?
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Xin Zhao <uszhaoxin@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <4ae3c140703272345y3b3cb3cexf4c4b63e0035d5b9@mail.gmail.com>
-References: <4ae3c140703272345y3b3cb3cexf4c4b63e0035d5b9@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 28 Mar 2007 09:10:28 -0500
-Message-Id: <1175091028.12882.15.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
+	id S1751999AbXC1ONr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 10:13:47 -0400
+Message-ID: <460A77F0.7030901@redhat.com>
+Date: Wed, 28 Mar 2007 10:13:04 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: virtualization@lists.linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, virtualization@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       John Hawkes <hawkes@sgi.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 3/4] Locally disable the softlockup watchdog rather than
+ touching it
+References: <20070327214919.800272641@goop.org> <200703281550.04224.ak@suse.de> <460A74EF.6000700@redhat.com> <200703281609.04956.ak@suse.de>
+In-Reply-To: <200703281609.04956.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-28 at 02:45 -0400, Xin Zhao wrote:
-> Hi,
-> 
-> If a Linux process opens and reads a file A, then it closes the file.
-> Will Linux keep the file A's data in cache for a while in case another
-> process opens and reads the same in a short time? I think that is what
-> I heard before.
 
-Yes.
 
-> But after I digged into the kernel code, I am confused.
-> 
-> When a process closes the file A, iput() will be called, which in turn
-> calls the follows two functions:
-> iput_final()->generic_drop_inode()
+Andi Kleen wrote:
+> On Wednesday 28 March 2007 16:00, Prarit Bhargava wrote:
+>   
+>>>> touch_nmi_watchdog is attempting to tickle _all_ CPUs softlockup watchdogs.
+>>>>     
+>>>>         
+>>> It is supposed to only touch the current CPU, just like it only touches
+>>> the NMI watchdog on the current CPU.
+>>>
+>>>   
+>>>       
+>> Andi,
+>>
+>> (sorry for the cut-and-paste). 
+>>
+>> touch_nmi_watchdogs sets EACH CPUs alert_counter to 0.
+>>     
+>
+> You're right. Sorry for the confusion.  
+>
+> But just touching the current CPU would make much more sense. After all
+> the caller doesn't know anything about the state of other CPUs. Perhaps it would be best
+> to just change that and keep the softlockup semantics.
+>   
+Yeah -- you're probably right, and besides that we're not seeing a crazy 
+# of softlockup messages after touch_nmi_watchdogs calls.
 
-A comment from the top of fs/dcache.c:
+My original comments regarding the code still stand though -- we 
+shouldn't have multiple methods of playing with the softlockup watchdog.
 
-/*
- * Notes on the allocation strategy:
- *
- * The dcache is a master of the icache - whenever a dcache entry
- * exists, the inode will always exist. "iput()" is done either when
- * the dcache entry is deleted or garbage collected.
- */
+P.
 
-Basically, as long a a dentry is present, iput_final won't be called on
-the inode.
-
-> But from the following calling chain, we can see that file close will
-> eventually lead to evict and free all cached pages. Actually in
-> truncate_complete_page(), the pages will be freed.  This seems to
-> imply that Linux has to re-read the same data from disk even if
-> another process B read the same file right after process A closes the
-> file. That does not make sense to me.
-> 
-> /***calling chain ***/
-> generic_delete_inode/generic_forget_inode()->
-> truncate_inode_pages()->truncate_inode_pages_range()->
-> truncate_complete_page()->remove_from_page_cache()->
-> __remove_from_page_cache()->radix_tree_delete()
-> 
-> Am I missing something? Can someone please provide some advise?
-> 
-> Thanks a lot
-> -x
-
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+> -Andi
+>   
