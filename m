@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbXC1Va6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932569AbXC1VdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753098AbXC1Va6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 17:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbXC1Va6
+	id S932569AbXC1VdQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 17:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbXC1VdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 17:30:58 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:37956 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753010AbXC1Va5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 17:30:57 -0400
-Date: Wed, 28 Mar 2007 17:30:18 -0400
-From: Kyle McMartin <kyle@canonical.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, kyle@canonical.com
-Subject: Re: HPA patches
-Message-ID: <20070328213017.GG4630@athena.road.mcmartin.ca>
-References: <20070323191321.5d00887a@lxorguk.ukuu.org.uk> <20070328000851.GA25551@srcf.ucam.org> <20070328105754.72b578bd@the-village.bc.nu> <20070328200829.GA12776@srcf.ucam.org> <20070328225431.69d0a3cc@the-village.bc.nu>
+	Wed, 28 Mar 2007 17:33:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53048 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753157AbXC1VdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 17:33:15 -0400
+Message-ID: <460ADF15.4060803@redhat.com>
+Date: Wed, 28 Mar 2007 17:33:09 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070328225431.69d0a3cc@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+References: <20070328073219.GA26024@havoc.gtf.org>	<460A1A3D.6050501@garzik.org>	<Pine.LNX.4.64.0703281346060.6730@woody.linux-foundation.org> <20070328141539.353203a1.akpm@linux-foundation.org>
+In-Reply-To: <20070328141539.353203a1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 28, 2007 at 10:54:31PM +0100, Alan Cox wrote:
-> > Hm. I tried adding it in the eh code after ata_set_mode() in 
-> > ata_eh_recover(), which alters the problem slightly - hpa_sectors is 
-> > still 0, so the taskfile call is still failing, but now the system just 
-> > stops at around the time that anything attempts to access sda with no 
-> > errors other than
+Andrew Morton wrote:
 > 
-> I wonder if the firmware is dying when we ask the disk to go zero sized
-> rather than erroring politely. I'm not sure hth HPA sectors can come back
-> as zero but we can be fairly sure 0 means "no HPA" in this case I guess ?
+> There is another metric to look at, too: the number of fixes which are
+> going into 2.6.x.y.  If that fix count is high, and if those fixes fix bugs
+> which were not present in 2.6.x-1 then this is an indication that something
+> is wrong - many regressions are sneaking through the -rc process.
 > 
+> And I haven't run the numbers, but I get the impression that 2.6.20.x has
+> an unusually large number of fixes in it.
 
-The command is "Read Native Max Sectors" which should be the full disk
-size as long as the command is supported, and the size returned by IDENTIFY
-would be smaller if HPA was in use.
+That could be because people are getting better at actually fixing bugs
+in the previous release. :)
 
-AIUI at least.
-
-Cheers,
-	Kyle
