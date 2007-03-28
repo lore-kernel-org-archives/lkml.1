@@ -1,67 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932508AbXC1T1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933215AbXC1TbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932508AbXC1T1G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 15:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933149AbXC1T1G
+	id S933215AbXC1TbY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 15:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933224AbXC1TbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 15:27:06 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:44745 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932508AbXC1T1F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 15:27:05 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 28 Mar 2007 12:26:57 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-In-Reply-To: <20070328064318.GA12508@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com>
-References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu>
- <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL>
- <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 28 Mar 2007 15:31:24 -0400
+Received: from gw.goop.org ([64.81.55.164]:35574 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933215AbXC1TbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 15:31:23 -0400
+Message-ID: <460AC28E.8080708@goop.org>
+Date: Wed, 28 Mar 2007 12:31:26 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Stephane Eranian <eranian@hpl.hp.com>, Ingo Molnar <mingo@elte.hu>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: [PATCH] Add smp_ops interface
+References: <46099709.2000304@goop.org> <200703282103.50191.ak@suse.de> <460ABF84.5060201@goop.org> <200703282122.22869.ak@suse.de>
+In-Reply-To: <200703282122.22869.ak@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007, Nick Piggin wrote:
+Subject: Add smp_ops interface
 
-> On Sat, Mar 24, 2007 at 06:29:59PM +0100, Ingo Molnar wrote:
-> > 
-> > * Nikita Danilov <nikita@clusterfs.com> wrote:
-> > 
-> > > Indeed, this technique is very well known. E.g., 
-> > > http://citeseer.ist.psu.edu/anderson01sharedmemory.html has a whole 
-> > > section (3. Local-spin Algorithms) on them, citing papers from the 
-> > > 1990 onward.
-> > 
-> > that is a cool reference! So i'd suggest to do (redo?) the patch based 
-> > on those concepts and that terminology and not use 'queued spinlocks' 
-> > that are commonly associated with MS's stuff. And as a result the 
-> > contended case would be optimized some more via local-spin algorithms. 
-> > (which is not a key thing for us, but which would be nice to have 
-> > nevertheless)
-> 
-> Firstly, the terminology in that paper _is_ "queue lock", which isn't
-> really surprising. I don't really know or care about what MS calls their
-> locks, but I'd suggest that their queued spinlock is probably named in
-> reference to its queueing property rather than its local spin property.
+Add a smp_ops interface.  This abstracts the API defined by
+<linux/smp.h> for use within arch/i386.  The primary intent is that it
+be used by a paravirtualizing hypervisor to implement SMP, but it
+could also be used by non-APIC-using sub-architectures.
 
-The method you propose is otherwise called "Ticket Lock":
+This is related to CONFIG_PARAVIRT, but is implemented unconditionally
+since it is simpler that way and not a highly performance-sensitive
+interface.
 
-http://en.wikipedia.org/wiki/Ticket_lock
-http://www.cs.rochester.edu/research/synchronization/pseudocode/ss.html#ticket
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
 
+---
+ arch/i386/kernel/smp.c     |   21 +++++++++++++----
+ arch/i386/kernel/smpboot.c |    8 +++---
+ include/asm-i386/smp.h     |   53 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 73 insertions(+), 9 deletions(-)
 
-
-
-- Davide
-
+===================================================================
+--- a/arch/i386/kernel/smp.c
++++ b/arch/i386/kernel/smp.c
+@@ -483,7 +483,7 @@ void flush_tlb_all(void)
+  * it goes straight through and wastes no time serializing
+  * anything. Worst case is that we lose a reschedule ...
+  */
+-void smp_send_reschedule(int cpu)
++void native_smp_send_reschedule(int cpu)
+ {
+ 	WARN_ON(cpu_is_offline(cpu));
+ 	send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
+@@ -576,9 +576,9 @@ static int __smp_call_function_mask(cpum
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
+  */
+-int smp_call_function_mask(cpumask_t mask,
+-			     void (*func)(void *), void *info,
+-			     int wait)
++int native_smp_call_function_mask(cpumask_t mask,
++				  void (*func)(void *), void *info,
++				  int wait)
+ {
+ 	int ret;
+ 
+@@ -657,7 +657,7 @@ static void stop_this_cpu (void * dummy)
+  * this function calls the 'stop' function on all other CPUs in the system.
+  */
+ 
+-void smp_send_stop(void)
++void native_smp_send_stop(void)
+ {
+ 	/* Don't deadlock on the call lock in panic */
+ 	int nolock = !spin_trylock(&call_lock);
+@@ -733,3 +733,14 @@ int safe_smp_processor_id(void)
+ 
+ 	return cpuid >= 0 ? cpuid : 0;
+ }
++
++struct smp_ops smp_ops = {
++	.smp_prepare_boot_cpu = native_smp_prepare_boot_cpu,
++	.smp_prepare_cpus = native_smp_prepare_cpus,
++	.cpu_up = native_cpu_up,
++	.smp_cpus_done = native_smp_cpus_done,
++
++	.smp_send_stop = native_smp_send_stop,
++	.smp_send_reschedule = native_smp_send_reschedule,
++	.smp_call_function_mask = native_smp_call_function_mask,
++};
+===================================================================
+--- a/arch/i386/kernel/smpboot.c
++++ b/arch/i386/kernel/smpboot.c
+@@ -1169,7 +1169,7 @@ static void __init smp_boot_cpus(unsigne
+ 
+ /* These are wrappers to interface to the new boot process.  Someone
+    who understands all this stuff should rewrite it properly. --RR 15/Jul/02 */
+-void __init smp_prepare_cpus(unsigned int max_cpus)
++void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ {
+ 	smp_commenced_mask = cpumask_of_cpu(0);
+ 	cpu_callin_map = cpumask_of_cpu(0);
+@@ -1189,7 +1189,7 @@ static inline void switch_to_new_gdt(voi
+ 	asm ("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
+ }
+ 
+-void __init smp_prepare_boot_cpu(void)
++void __init native_smp_prepare_boot_cpu(void)
+ {
+ 	unsigned int cpu = smp_processor_id();
+ 
+@@ -1290,7 +1290,7 @@ void __cpu_die(unsigned int cpu)
+ }
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+-int __cpuinit __cpu_up(unsigned int cpu)
++int __cpuinit native_cpu_up(unsigned int cpu)
+ {
+ 	unsigned long flags;
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -1335,7 +1335,7 @@ int __cpuinit __cpu_up(unsigned int cpu)
+ 	return 0;
+ }
+ 
+-void __init smp_cpus_done(unsigned int max_cpus)
++void __init native_smp_cpus_done(unsigned int max_cpus)
+ {
+ #ifdef CONFIG_X86_IO_APIC
+ 	setup_ioapic_dest();
+===================================================================
+--- a/include/asm-i386/smp.h
++++ b/include/asm-i386/smp.h
+@@ -47,6 +47,59 @@ extern void cpu_exit_clear(void);
+ extern void cpu_exit_clear(void);
+ extern void cpu_uninit(void);
+ #endif
++
++struct smp_ops
++{
++	void (*smp_prepare_boot_cpu)(void);
++	void (*smp_prepare_cpus)(unsigned max_cpus);
++	int (*cpu_up)(unsigned cpu);
++	void (*smp_cpus_done)(unsigned max_cpus);
++
++	void (*smp_send_stop)(void);
++	void (*smp_send_reschedule)(int cpu);
++	int (*smp_call_function_mask)(cpumask_t mask,
++				      void (*func)(void *info), void *info,
++				      int wait);
++};
++
++extern struct smp_ops smp_ops;
++
++static inline void smp_prepare_boot_cpu(void)
++{
++	smp_ops.smp_prepare_boot_cpu();
++}
++static inline void smp_prepare_cpus(unsigned int max_cpus)
++{
++	smp_ops.smp_prepare_cpus(max_cpus);
++}
++static inline int __cpu_up(unsigned int cpu)
++{
++	return smp_ops.cpu_up(cpu);
++}
++static inline void smp_cpus_done(unsigned int max_cpus)
++{
++	smp_ops.smp_cpus_done(max_cpus);
++}
++
++static inline void smp_send_stop(void)
++{
++	smp_ops.smp_send_stop();
++}
++static inline void smp_send_reschedule(int cpu)
++{
++	smp_ops.smp_send_reschedule(cpu);
++}
++static inline int smp_call_function_mask(cpumask_t mask,
++					 void (*func) (void *info), void *info,
++					 int wait)
++{
++	return smp_ops.smp_call_function_mask(mask, func, info, wait);
++}
++
++void native_smp_prepare_boot_cpu(void);
++void native_smp_prepare_cpus(unsigned int max_cpus);
++int native_cpu_up(unsigned int cpunum);
++void native_smp_cpus_done(unsigned int max_cpus);
+ 
+ #ifndef CONFIG_PARAVIRT
+ #define startup_ipi_hook(phys_apicid, start_eip, start_esp) 		\
 
