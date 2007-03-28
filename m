@@ -1,62 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965570AbXC1R4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965621AbXC1SEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965570AbXC1R4t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 13:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965574AbXC1R4t
+	id S965621AbXC1SEV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 14:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965626AbXC1SEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 13:56:49 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51800 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965570AbXC1R4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 13:56:48 -0400
-Date: Wed, 28 Mar 2007 10:56:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Wed, 28 Mar 2007 14:04:21 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:36716 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965620AbXC1SET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 14:04:19 -0400
+Date: Wed, 28 Mar 2007 20:04:57 +0200
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: Maxim <maximlevitsky@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: Linux 2.6.21-rc5
-In-Reply-To: <200703281630.59191.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0703281051180.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
- <46096834.5050508@googlemail.com> <200703281630.59191.ak@suse.de>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [3/6] 2.6.21-rc4: known regressions
+Message-ID: <20070328180457.GA4253@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<b6a2187b0703261046r46782eedv64464ceddb44bc27@mail.gmail.com>
+	<1175065468.4017.1.camel@chaos>
+	<200703281543.47049.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703281543.47049.maximlevitsky@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Subject    : first disk access after resume takes several minutes
+>              ('date' does not advance after resume from RAM, CONFIG_NO_HZ=n)
+> References : http://lkml.org/lkml/2007/3/8/117
+>              http://lkml.org/lkml/2007/3/25/20
+> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
 
+...
 
-On Wed, 28 Mar 2007, Andi Kleen wrote:
+> Subject    : after resume: X hangs after drawing a couple of windows
+> References : http://lkml.org/lkml/2007/3/8/117
+> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+> Status     : unknown
+
+...
+
+> > > > From: Jeff Chua <jeff.chua.linux@gmail.com>
+> > > > > It's related. I tested without CONFIG_HPET_TIMER, and now my X60 can
+> > > > > suspend and resume from RAM (s2ram). Even better, it works
+> > > > > with/without CONFIG_NO_HZ.
 > 
-> Can you test this patch please? 
-
-This patch is totally broken.
-
-> i386/x86-64: Convert nmi reservation to be global
+> Quoting Maxim <maximlevitsky@gmail.com>:
 > 
-> It doesn't make much sense to have this per CPU, because all
-> the services using NMIs run on all CPUs. So make it global.
+> Hi,
+> 	I almost sure Iknow why this happens,
+> 			The problem is that both hpet clock source
+> 	and hpet clockevents doesn't have a suspend/resume function
+> 	On resume we should enable the main counter _and_ enable
+> 	legacy replacement mode, On my system main counter in
+> 	enabled, by I think by bios, but legacy replacement mode is
+> 	not, so if a system doesn't use lapic as a tick source, but
+> 	use hpet+broadcast, it will hang for sure on resume, and i
+> 	tested it
+> 	
+> 			The patch below is a temporally fix, until
+> 	clock-events and clocksources will get proper suspend/resume
+> 	hooks:
+> 
+> 		Regards,
+> 			Maxim Levitsky
 
-NO!
+Bingo!
 
-If you do this, then you must make all *callers* be global too. But they 
-aren't. Right now all callers do per-CPU setup!
+The patch below fixes the two problems (listed above) with
+resume from RAM that I have observed on my T60 with
+2.6.21-rc5: with this patch applied, and with CONFIG_NO_HZ
+unset, date advances correctly, X functions properly and
+there is no delay on first disk access.
 
-See for example enable_lapic_nmi_watchdog():
+Thanks very much.
 
-	on_each_cpu(setup_apic_nmi_watchdog, NULL, 0, 1);
+---
+> Add suspend/resume for HPET
+> Signed-off-by: Maxim Levitsky <maximlevisky@gmail.com>
 
-where "setup_apic_nmi_watchdog()" will call "setup_k7_watchdog()", which 
-in turn will do a per-CPU reservation of the perfctl for the watchdog.
+Maxim, do you plan to send this upstream?
 
-So I agree in that it probably doesn't make sense to have NMI/perfctl 
-reservation per-CPU, but you can't just change the reservation and ignore 
-all the *users* of that reservation that assumed that it was per-CPU.
+Acked-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
 
-Is that code insane? Probably. But it probably also works. After your 
-patch, one CPU will be able to reserve the NMI/perfctl thing (fine so far) 
-but then all the other CPU's that try to do it will fail.
+---
 
-			Linus
+diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
+index 0fd9fba..a1ec79e 100644
+--- a/arch/i386/kernel/hpet.c
++++ b/arch/i386/kernel/hpet.c
+@@ -152,6 +152,16 @@ static void hpet_set_mode(enum clock_event_mode mode,
+ 	unsigned long cfg, cmp, now;
+ 	uint64_t delta;
+ 
++
++	if ( mode != CLOCK_EVT_MODE_UNUSED && mode != CLOCK_EVT_MODE_SHUTDOWN)
++	{
++		unsigned long cfg = hpet_readl(HPET_CFG);
++		cfg |= HPET_CFG_ENABLE | HPET_CFG_LEGACY;
++		hpet_writel(cfg, HPET_CFG);
++		
++	}
++		
++
+ 	switch(mode) {
+ 	case CLOCK_EVT_MODE_PERIODIC:
+ 		delta = ((uint64_t)(NSEC_PER_SEC/HZ)) * hpet_clockevent.mult;
+
+-- 
+MST
