@@ -1,66 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932315AbXC1P2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750808AbXC1PcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932315AbXC1P2W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 11:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932319AbXC1P2W
+	id S1750808AbXC1PcH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 11:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXC1PcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 11:28:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39406 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932315AbXC1P2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 11:28:21 -0400
-Message-ID: <460A8966.6090208@redhat.com>
-Date: Wed, 28 Mar 2007 11:27:34 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Lalancette <clalance@redhat.com>, John Hawkes <hawkes@sgi.com>
-Subject: Re: [patch 3/4] Locally disable the softlockup watchdog rather than
- touching it
-References: <20070327214919.800272641@goop.org> <20070327215828.085422178@goop.org> <460A6EC0.4020701@redhat.com> <460A7F57.9020006@goop.org> <460A80E6.9040003@redhat.com> <460A8820.3060708@goop.org>
-In-Reply-To: <460A8820.3060708@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Mar 2007 11:32:07 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:49233 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192AbXC1PcG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 11:32:06 -0400
+Date: Wed, 28 Mar 2007 11:28:47 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Blaisorblade <blaisorblade@yahoo.it>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 2/4] UML - improve checking and diagnostics of ethernet MACs
+Message-ID: <20070328152847.GA6335@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
 
+Improve checking and diagnostics for broadcast and multicast Ethernet MAC
+addresses, and distinguish between those cases in output; also make sure the   
+device is assigned a MAC address valid only locally to avoid collisions.
 
-Jeremy Fitzhardinge wrote:
-> Prarit Bhargava wrote:
->   
->> You don't have to do them all -- you could do one with (as in my
->> previous patch -- which I'm not married to BTW ;) )
->>
->> touch_cpu_softlockup_watchdog()
->>
->> and all with
->>
->> touch_softlockup_watchdog()
->>     
->
-> Well, I think changing the meaning of touch_softlockup_watchdog() for
-> all existing callers is wrong - even if you change most of them to refer
-> to the cpu-local function.  
-Hmmm .... it was suggested to me that I should mimic what 
-touch_nmi_watchdog() does.
+Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ arch/um/drivers/net_kern.c  |   38 +++++++++++++++++++++++++++++---------
+ include/linux/etherdevice.h |   12 ++++++++++++
+ 2 files changed, 41 insertions(+), 9 deletions(-)
 
-> There are definitely specific occasions on
-> which touching all CPUs is the right thing to do, but not in the general
-> case.
->   
-
-Yep.  That's why I have both a single cpu touch and the whole shebang :)
-
-> The only thing I really care about in my patches is ignoring stolen
-> time.  It may be that fixing that is enough to fix the reported problems
-> with spurious watchdog messages on tickless idle CPUs.
->
->   
-
->     J
->   
+Index: linux-2.6.21-mm/arch/um/drivers/net_kern.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/net_kern.c	2007-03-21 13:43:12.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/net_kern.c	2007-03-21 13:43:42.000000000 -0400
+@@ -283,7 +283,7 @@ void uml_net_user_timer_expire(unsigned 
+ #endif
+ }
+ 
+-static void setup_etheraddr(char *str, unsigned char *addr)
++static void setup_etheraddr(char *str, unsigned char *addr, char *name)
+ {
+ 	char *end;
+ 	int i;
+@@ -302,15 +302,32 @@ static void setup_etheraddr(char *str, u
+ 		}
+ 		str = end + 1;
+ 	}
+-	if(addr[0] & 1){
++	if (is_multicast_ether_addr(addr)) {
+ 		printk(KERN_ERR
+-		       "Attempt to assign a broadcast ethernet address to a "
++		       "Attempt to assign a multicast ethernet address to a "
+ 		       "device disallowed\n");
+ 		goto random;
+ 	}
++	if (!is_valid_ether_addr(addr)) {
++		printk(KERN_ERR
++		       "Attempt to assign an invalid ethernet address to a "
++		       "device disallowed\n");
++		goto random;
++	}
++	if (!is_local_ether_addr(addr)) {
++		printk(KERN_WARNING
++		       "Warning: attempt to assign a globally valid ethernet address to a "
++		       "device\n");
++		printk(KERN_WARNING "You should better enable the 2nd rightmost bit "
++		      "in the first byte of the MAC, i.e. "
++		      "%02x:%02x:%02x:%02x:%02x:%02x\n",
++		      addr[0] | 0x02, addr[1], addr[2], addr[3], addr[4], addr[5]);
++	}
+ 	return;
+ 
+ random:
++	printk(KERN_INFO
++	       "Choosing a random ethernet address for device %s\n", name);
+ 	random_ether_addr(addr);
+ }
+ 
+@@ -331,6 +348,7 @@ static void eth_configure(int n, void *i
+ 	struct net_device *dev;
+ 	struct uml_net_private *lp;
+ 	int save, err, size;
++	char name[sizeof(dev->name)];
+ 
+ 	size = transport->private_size + sizeof(struct uml_net_private) +
+ 		sizeof(((struct uml_net_private *) 0)->user);
+@@ -344,7 +362,13 @@ static void eth_configure(int n, void *i
+ 	INIT_LIST_HEAD(&device->list);
+ 	device->index = n;
+ 
+-	setup_etheraddr(mac, device->mac);
++	/* If this name ends up conflicting with an existing registered
++	 * netdevice, that is OK, register_netdev{,ice}() will notice this
++	 * and fail.
++	 */
++	snprintf(name, sizeof(name), "eth%d", n);
++
++	setup_etheraddr(mac, device->mac, name);
+ 
+ 	printk(KERN_INFO "Netdevice %d ", n);
+ 	printk("(%02x:%02x:%02x:%02x:%02x:%02x) ",
+@@ -375,11 +399,7 @@ static void eth_configure(int n, void *i
+ 		goto out_free_netdev;
+ 	SET_NETDEV_DEV(dev,&device->pdev.dev);
+ 
+-	/* If this name ends up conflicting with an existing registered
+-	 * netdevice, that is OK, register_netdev{,ice}() will notice this
+-	 * and fail.
+-	 */
+-	snprintf(dev->name, sizeof(dev->name), "eth%d", n);
++	strcpy(dev->name, name);
+ 	device->dev = dev;
+ 
+ 	/*
+Index: linux-2.6.21-mm/include/linux/etherdevice.h
+===================================================================
+--- linux-2.6.21-mm.orig/include/linux/etherdevice.h	2007-03-20 15:41:35.000000000 -0400
++++ linux-2.6.21-mm/include/linux/etherdevice.h	2007-03-21 13:43:42.000000000 -0400
+@@ -71,6 +71,18 @@ static inline int is_multicast_ether_add
+ }
+ 
+ /**
++ * is_local_ether_addr - Determine if the Ethernet address is locally-assigned
++ * one (IEEE 802).
++ * @addr: Pointer to a six-byte array containing the Ethernet address
++ *
++ * Return true if the address is a local address.
++ */
++static inline int is_local_ether_addr(const u8 *addr)
++{
++	return (0x02 & addr[0]);
++}
++
++/**
+  * is_broadcast_ether_addr - Determine if the Ethernet address is broadcast
+  * @addr: Pointer to a six-byte array containing the Ethernet address
+  *
