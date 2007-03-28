@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964935AbXC1Gyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbXC1G4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964935AbXC1Gyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 02:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965136AbXC1Gyt
+	id S933342AbXC1G4w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 02:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933439AbXC1G4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 02:54:49 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:49775 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964935AbXC1Gys (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 02:54:48 -0400
-Date: Wed, 28 Mar 2007 08:54:43 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch 1/8] Processor degredation support.
-Message-ID: <20070328065443.GA8146@osiris.boeblingen.de.ibm.com>
-References: <20070326212459.711271424@de.ibm.com> <20070326212634.931820139@de.ibm.com> <20070327213529.GB5842@ucw.cz>
-MIME-Version: 1.0
+	Wed, 28 Mar 2007 02:56:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56234 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933342AbXC1G4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 02:56:51 -0400
+Date: Wed, 28 Mar 2007 08:56:50 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, kiran@scalex86.org
+Subject: Re: [rfc][patch] queued spinlocks (i386)
+Message-ID: <20070328065650.GB12508@wotan.suse.de>
+References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de> <20070324134128.7882f905.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070327213529.GB5842@ucw.cz>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <20070324134128.7882f905.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +++ linux-2.6/drivers/s390/char/sclp_confmgm.c
+On Sat, Mar 24, 2007 at 01:41:28PM -0800, Andrew Morton wrote:
+> > On Fri, 23 Mar 2007 11:32:44 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> >
+> > I'm not as concerned about the contended performance of spinlocks
+> >
 > 
-> Can we get less cyptic name?
+> The contended case matters.  Back in 2.5.something I screwed up the debug
+> version of one of the locks (rwlock, iirc) - it was simply missing a
+> cpu_relax(), and some people's benchmarks halved.
 
-Would you like to see sclp_configuration_management.c?
+Do you have a reference?
 
-> > +static void sclp_conf_receiver_fn(struct evbuf_header *evbuf)
-> > +{
-> > +	struct conf_mgm_data *cdata;
-> > +
-> > +	cdata = (struct conf_mgm_data *)(evbuf + 1);
-> > +	if (cdata->ev_qualifier == EV_QUAL_CAP_CHANGE)
-> > +		/* Will be parsed. Don't change. */
-> > +		printk(KERN_WARNING "sclp: CPU capability changed.\n");
-> > +}
+rwlocks are a bit funny, because if they are found to be useful (that
+is, they get used somewhere), then it indicates there can be situations
+with a lot of contention and spinning.
+
+Wheras we usually prefer not to use spinlocks in situations like that.
+
+Not that I'm claiming the contended case doesn't matter, but I think
+problems there indicate a bug (and I think rwlocks are almost always
+questionable).
+
+Anyway, I'll look at doing some contended case optimisations afterward.
+ 
+
+> > This was just something I had in mind when the hardware lock
+> > starvation issue came up
 > 
-> What's that? I do not think printk provides guaranteed delivery.
+> It looks like a good way to address the lru_lock starvation/capture
+> problem.  But I think I'd be more comfortable if we were to introduce it as
+> a new lock type, rather than as a reimplementation of the existing
+> spin_lock().   Initially, at least.
 
-True. But which generic interface is currently used to notify user space
-of state changes? Maybe a uevent for the cpu device..
+I'd hate to have a proliferation of lock types though. I think my
+queued spinlock addresses a real hardware limitation of some systems.
 
-> > +static struct sclp_register sclp_conf_register =
-> > +{
-> > +	.receive_mask = EvTyp_ConfMgmData_Mask,
-> 
-> NoCamelCasePlease.
-> 
-> > @@ -27,6 +27,7 @@
-> >  #define EvTyp_CntlProgIdent	0x0B
-> >  #define EvTyp_SigQuiesce	0x1D
-> >  #define EvTyp_VT220Msg		0x1A
-> > +#define EvTyp_ConfMgmData	0x04
-> >  
-> >  #define EvTyp_OpCmd_Mask	0x80000000
-> >  #define EvTyp_Msg_Mask		0x40000000
-> > @@ -36,6 +37,7 @@
-> >  #define EvTyp_CtlProgIdent_Mask	0x00200000
-> >  #define EvTyp_SigQuiesce_Mask	0x00000008
-> >  #define EvTyp_VT220Msg_Mask	0x00000040
-> > +#define EvTyp_ConfMgmData_Mask	0x10000000
-> >  
-> >  #define GnrlMsgFlgs_DOM		0x8000
-> >  #define GnrlMsgFlgs_SndAlrm	0x4000
-> 
-> Yep, you have more CamelCases to fix.
-
-Yes, you're definately right. But I wanted to stick with the current
-coding style of the sclp device driver and didn't feel like generating
-a 1000+ line diff just to fix some coding style issues.
-Will fix this when I'm bored.
+In situations where contention isn't a problem, then queued locks won't
+cause a slowdown. In situations where it is, starvation could also be
+a problem.
