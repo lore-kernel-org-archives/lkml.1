@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933637AbXC1GWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933641AbXC1GXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933637AbXC1GWK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 02:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933673AbXC1GWK
+	id S933641AbXC1GXq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 02:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbXC1GXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 02:22:10 -0400
-Received: from sp604003mt.neufgp.fr ([84.96.92.56]:34918 "EHLO smTp.neuf.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933641AbXC1GWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 02:22:09 -0400
-Date: Wed, 28 Mar 2007 08:22:01 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-Subject: [PATCH] x86_64 : fix vtime() vsyscall
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, Linux kernel <linux-kernel@vger.kernel.org>
-Message-id: <460A0989.9000106@cosmosbay.com>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_jJZGPudX5/RPT6sojp3ROQ)"
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 28 Mar 2007 02:23:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:64767 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933641AbXC1GXp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 02:23:45 -0400
+Message-ID: <553a3bb80703272323s4c30cfex53c52d6032038d83@mail.gmail.com>
+Date: Wed, 28 Mar 2007 15:23:43 +0900
+From: "Soon-Son Kwon(Shawn)" <kss@kldp.org>
+To: linux-kernel@vger.kernel.org
+Subject: Invitation to Embedded Linux Conference '07
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Hi all,
 
---Boundary_(ID_jJZGPudX5/RPT6sojp3ROQ)
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
+The CELF Embedded Linux Conference is less than a month away!
+The conference is coming up on April 17, 18, and 19 in San Jose, California.
 
-There is a tiny probability that the return value from vtime(time_t *t) is 
-different than the value stored in *t
+If you haven't already done so, PLEASE visit the conference website -
+http://www.celinux.org/elc2007/ - to check out the session list and
+register for this very special event.
 
-Using a temporary variable solves the problem and gives a faster code.
+There will be lots of great presentations and fascinating demos,
+casual Birds-of-a-Feather sessions, and lots of opportunity to
+talk to each other.
 
-   17:   48 85 ff                test   %rdi,%rdi
-   1a:   48 8b 05 00 00 00 00    mov    0(%rip),%rax        # 
-__vsyscall_gtod_data.wall_time_tv.tv_sec
-   21:   74 03                   je     26
-   23:   48 89 07                mov    %rax,(%rdi)
-   26:   c9                      leaveq
-   27:   c3                      retq
+You'll see talks by prominent figures like Thomas Gleixner,
+and Jonathan Corbet will be there to give both a keynote
+and a technical session. The complete list of sessions is at
+http://www.celinux.org/elc2007/sessions.html .
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+You'll be able to talk directly to many of the primary maintainers
+of important kernel features and add-on systems such as uClinux,
+power management, etc.
 
---Boundary_(ID_jJZGPudX5/RPT6sojp3ROQ)
-Content-type: text/plain; name=vtime_fix.patch
-Content-transfer-encoding: 7BIT
-Content-disposition: inline; filename=vtime_fix.patch
+And most importantly, you'll be able to learn and share your
+experiences with a lot of real-world industry developers.
 
---- linux-2.6.21-rc5-mm1/arch/x86_64/kernel/vsyscall.c
-+++ linux-2.6.21-rc5-mm1-ed/arch/x86_64/kernel/vsyscall.c
-@@ -147,15 +147,15 @@ int __vsyscall(0) vgettimeofday(struct t
- 	return 0;
- }
- 
--/* This will break when the xtime seconds get inaccurate, but that is
-- * unlikely */
- time_t __vsyscall(1) vtime(time_t *t)
- {
-+	time_t result;
- 	if (!__vsyscall_gtod_data.sysctl_enabled)
- 		return time_syscall(t);
--	else if (t)
--		*t = __vsyscall_gtod_data.wall_time_tv.tv_sec;
--	return __vsyscall_gtod_data.wall_time_tv.tv_sec;
-+	result = __vsyscall_gtod_data.wall_time_tv.tv_sec;
-+	if (t)
-+		*t = result;
-+	return result;
- }
- 
- /* Fast way to get current CPU and node.
+If you're planning on coming, now is the time to make the
+arrangements. Please register soon so we have an accurate
+count of attendees!
 
---Boundary_(ID_jJZGPudX5/RPT6sojp3ROQ)--
+We look forward to seeing you there!
+
+/Shawn Kwon, marketing group co-chair of CE Linux Forum
+-- 
+http://kldp.org/~kss
