@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbXC1JaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965527AbXC1JdC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbXC1JaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 05:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXC1JaR
+	id S965527AbXC1JdC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 05:33:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965524AbXC1JdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 05:30:17 -0400
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:36299 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752824AbXC1JaP (ORCPT
+	Wed, 28 Mar 2007 05:33:01 -0400
+Received: from yue.linux-ipv6.org ([203.178.140.15]:35330 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965512AbXC1JdA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 05:30:15 -0400
-Date: Wed, 28 Mar 2007 11:30:06 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Oliver Joa <oliver@j-o-a.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
-Message-ID: <20070328113006.1f4fa0bd@localhost>
-In-Reply-To: <460A1D60.4020902@j-o-a.de>
-References: <46094344.4090007@j-o-a.de>
-	<46096CD7.1010100@mnsu.edu>
-	<460A1D60.4020902@j-o-a.de>
-X-Mailer: Sylpheed-Claws 2.4.0 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
+	Wed, 28 Mar 2007 05:33:00 -0400
+Date: Wed, 28 Mar 2007 18:33:46 +0900 (JST)
+Message-Id: <20070328.183346.23403158.yoshfuji@linux-ipv6.org>
+To: davem@davemloft.net
+Cc: agoston@ripe.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       yoshfuji@linux-ipv6.org
+Subject: Re: IPv6: Connection reset/timeout under heavy load
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <20070328.022624.59656162.davem@davemloft.net>
+References: <460A2BDB.6080200@ripe.net>
+	<20070328.182334.109744556.yoshfuji@linux-ipv6.org>
+	<20070328.022624.59656162.davem@davemloft.net>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007 09:46:40 +0200
-Oliver Joa <oliver@j-o-a.de> wrote:
+In article <20070328.022624.59656162.davem@davemloft.net> (at Wed, 28 Mar 2007 02:26:24 -0700 (PDT)), David Miller <davem@davemloft.net> says:
 
-> What can be wrong? There is nothing special, only board, cpu and 
-> harddisk, no other hardware. The board is running with the newest 
-> available bios. I bought a Intel-board, because normally Intel is 
-> supported very well.
+> > http://www.linux-ipv6.org/gitweb/gitweb.cgi?p=gitroot/yoshfuji/linux-2.6-fix.git;a=commit;h=33a79bba0cc2f197b46cc54182f94c31ff6ad334
+> > 
+> > I hope this patch will go in 2.6.16-stable...
+> 
+> Please forward this patch to Adrian Bunk (bunk@stusta.de),
+> he will definitely add it to 2.6.16-stable for you.
 
-What Seagate is it?  (hdparm -I /dev/sda | head)
+I will do it again...
 
-I have this one:
-
-ATA device, with non-removable media
-        Model Number:       ST380817AS
-        Serial Number:      4MR08EK8
-        Firmware Revision:  3.42
-
-
-and it gives problems with NCQ enabled.
-
-Try turning NCQ off with:
-
-	echo 1 > /sys/block/sda/device/queue_depth
-
--- 
-	Paolo Ornati
-	Linux 2.6.20.4 on x86_64
+--yoshfuji
