@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbXC1Gnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933681AbXC1Gn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127AbXC1Gnk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 02:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbXC1Gnj
+	id S933681AbXC1Gn5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 02:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbXC1Gn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 02:43:39 -0400
-Received: from mx2.suse.de ([195.135.220.15]:55625 "EHLO mx2.suse.de"
+	Wed, 28 Mar 2007 02:43:57 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:49199 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751784AbXC1Gni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 02:43:38 -0400
-Date: Wed, 28 Mar 2007 08:43:18 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nikita Danilov <nikita@clusterfs.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-Message-ID: <20070328064318.GA12508@wotan.suse.de>
-References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL> <20070324172959.GB542@elte.hu>
+	id S1753176AbXC1Gnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 02:43:55 -0400
+Date: Wed, 28 Mar 2007 12:13:53 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Simon Horman <horms@verge.net.au>
+Cc: fastboot@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdump/kexec: calculate note size at compile time
+Message-ID: <20070328064353.GD4941@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070328061855.GA9576@verge.net.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070324172959.GB542@elte.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070328061855.GA9576@verge.net.au>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 24, 2007 at 06:29:59PM +0100, Ingo Molnar wrote:
+On Wed, Mar 28, 2007 at 03:18:58PM +0900, Simon Horman wrote:
+> Currently the size of the per-cpu region reserved to save crash
+> notes is set by the per-architecture value MAX_NOTE_BYTES. Which
+> in turn is currently set to 1024 on all supported architectures.
 > 
-> * Nikita Danilov <nikita@clusterfs.com> wrote:
+> While testing ia64 I recently discovered that this value is
+> in fact too small. The particular setup I was using actually
+> needs 1172 bytes. This lead to very tedious failure mode
+> where the tail of one elf note would overwrite the head of 
+> another if they ended up being alocated sequentially by kmalloc,
+> which was often the case.
 > 
-> > Indeed, this technique is very well known. E.g., 
-> > http://citeseer.ist.psu.edu/anderson01sharedmemory.html has a whole 
-> > section (3. Local-spin Algorithms) on them, citing papers from the 
-> > 1990 onward.
+> It seems to me that a far better approach is to caclculate the size
+> that the area needs to be. This patch does just that.
 > 
-> that is a cool reference! So i'd suggest to do (redo?) the patch based 
-> on those concepts and that terminology and not use 'queued spinlocks' 
-> that are commonly associated with MS's stuff. And as a result the 
-> contended case would be optimized some more via local-spin algorithms. 
-> (which is not a key thing for us, but which would be nice to have 
-> nevertheless)
+> If a simpler stop-gap patch for ia64 to be squeezed into 2.6.21(.X) 
+> is needed then this should be as easy as making MAX_NOTE_BYTES
+> larger in arch/asm-ia64/kexec.h. Perhaps 2048 would be a good choice.
+> However, I think that the approach in this patch is a much more robust idea.
+> 
 
-Firstly, the terminology in that paper _is_ "queue lock", which isn't
-really surprising. I don't really know or care about what MS calls their
-locks, but I'd suggest that their queued spinlock is probably named in
-reference to its queueing property rather than its local spin property.
+Makes sense to me. Calculating the size based on elf_prstatus is better
+than hardcoding it to some value.
 
-Mine is a queueing lock, so I'll continue to call it queued spinlocks
-(not that the terminology will make it into our API anyway, because I
-intend for them simply to be an implementation of spinlocks).
+A minor query is inlined below.
 
-Secondly, as you say, local spin isn't really a must have. If SGI hasn't
-made a big stink about them by now, then I think queued locks (which are
-addressing a real hardware starvation issue on opterons) is more important.
+[..]
+> ===================================================================
+> --- linux-2.6.orig/include/linux/kexec.h	2007-03-28 09:42:14.000000000 +0900
+> +++ linux-2.6/include/linux/kexec.h	2007-03-28 12:32:50.000000000 +0900
+> @@ -7,6 +7,8 @@
+>  #include <linux/linkage.h>
+>  #include <linux/compat.h>
+>  #include <linux/ioport.h>
+> +#include <linux/elfcore.h>
+> +#include <linux/elf.h>
+>  #include <asm/kexec.h>
+> 
+>  /* Verify architecture specific macros are defined */
+> @@ -31,6 +33,13 @@
+>  #error KEXEC_ARCH not defined
+>  #endif
+> 
+> +#define KEXEC_NOTE_NAME "CORE"
+> +#define KEXEC_NOTE_HEAD_BYTES ALIGN(sizeof(struct elf_note), 4)
+> +#define KEXEC_NOTE_NAME_BYTES ALIGN(strlen(KEXEC_NOTE_NAME) + 1, 4)
+> +#define KEXEC_NOTE_BODY_BYTES ALIGN(sizeof(struct elf_prstatus), 4)
+> +#define KEXEC_NOTE_BYTES ( (KEXEC_NOTE_HEAD_BYTES * 2) + \
 
-That isn't to say that local spin might not help performance, or that
-my queued spinlocks would make it impossible to implement... it's just
-that it isn't my aim.
+Why are we multiplying KEXEC_NOTE_HEAD_BYTES with 2?
+
+Thanks
+Vivek
