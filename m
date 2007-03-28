@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbXC1VUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbXC1VUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbXC1VUK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 17:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXC1VUJ
+	id S1753092AbXC1VUY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 17:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbXC1VUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 17:20:09 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:59926 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753107AbXC1VUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 17:20:07 -0400
-Date: Wed, 28 Mar 2007 14:20:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andy Grover" <andrew.grover@intel.com>,
-       "Paul Diefenbaugh" <paul.s.diefenbaugh@intel.com>, len.brown@intel.com,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm2 -- ACPI problems (lid switch broken, always
- shows running from AC, plugging in AC hangs machine)
-Message-Id: <20070328142000.ebc7712d.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0703281355h13f1bd70s9eb94092bfa9c3e@mail.gmail.com>
-References: <a44ae5cd0703281355h13f1bd70s9eb94092bfa9c3e@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Mar 2007 17:20:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51712 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753092AbXC1VUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 17:20:22 -0400
+Date: Wed, 28 Mar 2007 14:20:20 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
+In-Reply-To: <20070328211658.GE2986@holomorphy.com>
+Message-ID: <Pine.LNX.4.64.0703281418040.13870@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
+ <20070328134511.0d61ec8f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703281401460.13743@schroedinger.engr.sgi.com>
+ <20070328211658.GE2986@holomorphy.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007 13:55:54 -0700
-"Miles Lane" <miles.lane@gmail.com> wrote:
+On Wed, 28 Mar 2007, William Lee Irwin III wrote:
 
-> My laptop (HP dv1240us) is always showing that my laptop is plugged
-> into AC power, even when it is running off of the battery.  When I
-> plug into the AC after running on the battery, the machine immediately
-> locks up.  Also, the laptop lid button isn't working -- pressing it
-> doesn't trigger a suspend.
+> On Wed, Mar 28, 2007 at 02:05:54PM -0700, Christoph Lameter wrote:
+> > Seems that there is a slight benefit but its also barely above noise 
+> > level.
+> 
+> I already went over the methodological issues with kernel compiles.
+> You may be able to prove this, but not this way.
 
-OK, thanks.
-
-If you have time, could you please test
-
-2.6.21-rc5 +
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/origin.patch +
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/git-acpi.patch
-
-which will allow us to eliminate any non-acpi patches.
-
-And please keep an eye on these bugs for us, don't let us merge these
-problems into 2.6.22.  It is bad of us to allow known failures to propagate
-into mainline and it has happened a couple of times in recent months.
-
+But this way is an established kernel way of doing things. Seems that my 
+AIM9 stuff was not convincing and I am not sure what other tests would be 
+acceptable. Could you post some of data regarding the improvements 
+possible through your patches?
