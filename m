@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932808AbXC1UpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932932AbXC1UqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932808AbXC1UpR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 16:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932809AbXC1UpR
+	id S932932AbXC1UqH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 16:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932887AbXC1UqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 16:45:17 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:59182 "EHLO smtp.osdl.org"
+	Wed, 28 Mar 2007 16:46:06 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:59198 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932808AbXC1UpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 16:45:15 -0400
-Date: Wed, 28 Mar 2007 13:45:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
-Message-Id: <20070328134511.0d61ec8f.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S932886AbXC1UqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 16:46:04 -0400
+Date: Wed, 28 Mar 2007 13:42:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+cc: linux-pm@lists.linux-foundation.org, Maxim <maximlevitsky@gmail.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org,
+       gregkh@suse.de, linux-pm@lists.osdl.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, jgarzik@pobox.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] [3/6] 2.6.21-rc4: known regressions
+In-Reply-To: <200703281238.57811.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.64.0703281336280.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+ <200703281701.23876.maximlevitsky@gmail.com>
+ <Pine.LNX.4.64.0703280931520.6730@woody.linux-foundation.org>
+ <200703281238.57811.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Mar 2007 13:12:56 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
 
-> The benefit of preconstructed pgds and pmds in the i386 arch code seem to
-> be debatable. The performance measurements indicate that there may be a slight
-> benefit but it seems to almost vanish in the noise ratio.
 
-yeah, I did a couple hours testing with rc5, rc5+quicklists,
-rc5+quicklists+qlhack, where "qlhack" is my patch which removes the
-quicklists and mysteriously causes i386 to crash.
+On Wed, 28 Mar 2007, David Brownell wrote:
+>
+> On Wednesday 28 March 2007 9:38 am, Linus Torvalds wrote:
+> 
+> > It's a *device*, dammit. It should save and resume like one (probably as a 
+> > system device). The "set_mode()" etc stuff is at a completely different 
+> > (higher) conceptual level.
+> 
+> Agreed, except about "probably as a system device".
+> 
+> Last I checked, there was no good reason to use sysdev suspend()/resume()
+> rather than platform_device suspend_late()/early_resume().  Which more
+> or less means no good reason to use sysdev in new code...
 
-I was testing 8-way x86_64 with patch-scripts (wildly fork-intensive),
-kernel build and lmbench.
+I won't disagree - it might well be much nicer to just show it in the 
+"real" device tree. I'm not 100% sure where in the tree it would go, 
+though. It should probably be "inside" the root entry, before any of the 
+PCI buses. It's generally what we've used those "system device" things 
+for, but I agree that it would be better to just make system devices show 
+up early on the regular device list than it is to have them be special 
+cases.
 
-Basically I was unable to observe any statistically meaningful-looking
-differences between any of them.
+Bit I think that's a separate (and fairly small) issue compared to the 
+"don't use the clocksource infrastructure as a make-believe suspend/resume 
+mechanism" problem that Maxim's patch had.
 
-I would like to test qlhack on ia64, because ia64 puts pte-pages into the
-quicklists as well, but my ia64 machine is presently indisposed.
+(Maxim, don't take that the wrong way - I think your analysis and patch 
+were great, I just think another organization would be better)
 
-My (much) preferred way to handle all this is to remove the quicklists from
-all architectures: just use alloc_page() and free_page() for pte pages, pmd
-pages, etc.  I remain unaware of any testing whcih indicates that this
-would be a bad change.
+> Also, making HPET use the legacy mode seems like a step backwards.
 
+I don't think that's actually "legacy" in any sense but the interrupt 
+delivery, where the "legacy mode" bit is not so much that the HPET itself 
+is "legacy" but that it *replaces* legacy devices.
+
+But I may have misunderstood the thing. I'm an old fart, so I know the old 
+timers much better than I know the new ones ;). Somebody feel free to hit 
+me with the clue-2x4.
+
+			Linus
