@@ -1,114 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933104AbXC1Qkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751165AbXC1Qmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933104AbXC1Qkn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 12:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbXC1Qkn
+	id S1751165AbXC1Qmp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 12:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXC1Qmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 12:40:43 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:37631 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933104AbXC1Qkl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 12:40:41 -0400
-Subject: [Patch -mm] integrity: ima cleanup
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: safford@watson.ibm.com, serue@linux.vnet.ibm.com,
-       kjhall@linux.vnet.ibm.com, sailer@us.ibm.com, zohar@us.ibm.com,
-       akpm@osdl.org
-Content-Type: text/plain
-Date: Wed, 28 Mar 2007 12:39:33 -0400
-Message-Id: <1175099973.16382.2.camel@localhost.localdomain>
+	Wed, 28 Mar 2007 12:42:45 -0400
+Received: from mga03.intel.com ([143.182.124.21]:5750 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751165AbXC1Qmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 12:42:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,341,1170662400"; 
+   d="scan'208"; a="204367781:sNHT431447345"
+Date: Wed, 28 Mar 2007 09:42:00 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       davej@codemonkey.org.uk, johnstul@us.ibm.com, mingo@elte.hu,
+       tglx@linutronix.de
+Subject: Re: [PATCH] Add support for deferrable timers (respun)
+Message-ID: <20070328164200.GA27711@linux-os.sc.intel.com>
+References: <200703212353.l2LNrNOj007453@shell0.pdx.osdl.net> <20070322140532.GA120@tv-sign.ru> <20070322151817.GA29840@linux-os.sc.intel.com> <20070322161355.GA160@tv-sign.ru> <20070327204344.GA21529@linux-os.sc.intel.com> <p734po54og4.fsf@bingen.suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p734po54og4.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch cleanups the few Lindent and sparse msgs
+On Wed, Mar 28, 2007 at 01:06:35PM +0200, Andi Kleen wrote:
+> Venki Pallipadi <venkatesh.pallipadi@intel.com> writes:
+> > +++ new/kernel/timer.c	2007-03-26 15:19:35.000000000 -0800
+> > @@ -74,7 +74,7 @@
+> >  	tvec_t tv3;
+> >  	tvec_t tv4;
+> >  	tvec_t tv5;
+> > -} ____cacheline_aligned_in_smp;
+> > +} ____cacheline_aligned;
+> 
+> Why this change?  It should be aligned to 2 bytes anyways.
 
-signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-signed-off-by: Kylene Hall <kjhall@us.ibm.com>
----
+Just wanted to be cautious of all archs and all compilers.
+ 
+> >  static DEFINE_PER_CPU(tvec_base_t *, tvec_bases) = &boot_tvec_bases;
+> >  
+> > +/*
+> > + * The lowest bit of base ptr in timer is used as a flag to indicate
+> > + * 'deferrable' nature of the timer. Functions below help us manage that flag.
+> > + */
+> > +static inline unsigned int tbase_get_deferrable(struct tvec_t_base_s *base)
+> > +{
+> > +	return ((unsigned int)base & TBASE_DEFERRABLE_FLAG);
+> 
+> This will warn on 64bit for cast ptr -> int
 
-Index: linux-2.6.21-rc5-mm2/security/evm/ima/ima.h
-===================================================================
---- linux-2.6.21-rc5-mm2.orig/security/evm/ima/ima.h
-+++ linux-2.6.21-rc5-mm2/security/evm/ima/ima.h
-@@ -52,7 +52,7 @@ struct ima_measure_entry {
- 
- struct ima_queue_entry {
- 	struct hlist_node hnext;	/* place in hash collision list */
--	struct list_head later;	/* place in ima_measurements list */
-+	struct list_head later;		/* place in ima_measurements list */
- 	struct ima_measure_entry *entry;
- };
- 
-@@ -72,7 +72,7 @@ struct ima_queue_entry *ima_lookup_diges
- extern spinlock_t ima_queue_lock;
- 
- struct ima_h_table {
--	atomic_t len;	/* number of stored measurements in the list */
-+	atomic_t len;		/* number of stored measurements in the list */
- 	atomic_t violations;
- 	unsigned int max_htable_size;
- 	struct hlist_head queue[IMA_MEASURE_HTABLE_SIZE];
-@@ -82,7 +82,7 @@ extern struct ima_h_table ima_htable;
- 
- /* TPM "Glue" definitions */
- 
--#define IMA_TPM ((TPM_ANY_TYPE<<16)| TPM_ANY_NUM)
-+#define IMA_TPM ((((u32)TPM_ANY_TYPE)<<16)| (u32)TPM_ANY_NUM)
- static inline void ima_extend(const u8 * hash)
- {
- 	if (!ima_used_chip)
-Index: linux-2.6.21-rc5-mm2/security/evm/ima/ima_fs.c
-===================================================================
---- linux-2.6.21-rc5-mm2.orig/security/evm/ima/ima_fs.c
-+++ linux-2.6.21-rc5-mm2/security/evm/ima/ima_fs.c
-@@ -69,12 +69,11 @@ static void *ima_measurements_start(stru
- 	return NULL;
- }
- 
--static void *ima_measurements_next(struct seq_file *m, void *v,
--				   loff_t * pos)
-+static void *ima_measurements_next(struct seq_file *m, void *v, loff_t * pos)
- {
- 	/* lock protects when reading beyond last element
- 	 * against concurrent list-extension */
--	struct list_head *lpos = (struct list_head *) v;
-+	struct list_head *lpos = (struct list_head *)v;
- 
- 	rcu_read_lock();
- 	lpos = rcu_dereference(lpos->next);
-@@ -88,7 +87,6 @@ static void ima_measurements_stop(struct
- {
- }
- 
--
- /* print format:
-  *       32bit-le=pcr#
-  *       32bit-le=type# << flag
-@@ -207,8 +205,7 @@ static struct seq_operations ima_ascii_m
- 	.show = ima_ascii_measurements_show
- };
- 
--static int ima_ascii_measurements_open(struct inode *inode,
--				       struct file *file)
-+static int ima_ascii_measurements_open(struct inode *inode, struct file *file)
- {
- 	return seq_open(file, &ima_ascii_measurements_seqops);
- }
-@@ -255,8 +252,7 @@ int ima_fs_init(void)
- 
- 	violations =
- 	    securityfs_create_file("violations", S_IRUSR | S_IRGRP,
--				   ima_dir, NULL,
--				   &ima_htable_violations_ops);
-+				   ima_dir, NULL, &ima_htable_violations_ops);
- 	if (!violations || IS_ERR(violations))
- 		goto out;
- 	return 0;
+OK. Will change this to ptr->long->int in the update patch.
 
-
-
+Thanks,
+Venki
