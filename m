@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422649AbXC2VzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422654AbXC2WAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422649AbXC2VzV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 17:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422651AbXC2VzV
+	id S1422654AbXC2WAb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 18:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422653AbXC2WAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 17:55:21 -0400
-Received: from mail.chilan.com ([82.160.212.9]:47742 "EHLO mail.chilan.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422649AbXC2VzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 17:55:20 -0400
-From: "Grzegorz Chwesewicz" <grzegorz.chwesewicz@chilan.com>
-To: "Grzegorz Chwesewicz" <grzegorz.chwesewicz@chilan.com>,
-       Andi Kleen <ak@suse.de>, "Mark Langsdorf" <mark.langsdorf@amd.com>
-Cc: "Len Brown" <lenb@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Morrow, William" <William.Morrow@amd.com>,
-       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Pavel Machek" <pavel@ucw.cz>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Mingming Cao" <cmm@us.ibm.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       "Oliver Pinter" <oliver.pntr@gmail.com>,
-       "Sid Boyce" <g3vbv@blueyonder.co.uk>, "Nick Piggin" <npiggin@suse.de>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Renninger" <trenn@suse.de>
-Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
-Date: Thu, 29 Mar 2007 23:55:19 +0200
-Message-Id: <20070329215416.M85651@chilan.com>
-In-Reply-To: <20070329214316.M53680@chilan.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <p73d52s2dvi.fsf@bingen.suse.de> <460C1B5B.4090802@amd.com> <200703292249.37979.ak@suse.de> <20070329214316.M53680@chilan.com>
-X-Mailer: OpenWebMail 2.52 20061019
-X-OriginatingIP: 82.160.213.5 (ceho)
+	Thu, 29 Mar 2007 18:00:31 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:60550 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422654AbXC2WAb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 18:00:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=tpN4PTowG+CYKIiCaGx+TzjNq66mpofg2ze4ptMsxbaJlKeh2wnmECADvueKs6AyEX9FEUcf0cXAW4q2cb5TNH+TkO7KDt0iuNnnBZzSs4O2RjiVvgm7Sq+9tKDBnjQsMbdSmYEkPDkp3hUIGrHFwPrcN3E9P+C3+Kf05vslbNw=
+Message-ID: <e8f45b9e0703291500y3b495fa4o9320fe1bf726189b@mail.gmail.com>
+Date: Fri, 30 Mar 2007 00:00:29 +0200
+From: "Gerard Braad Jr." <me@gbraad.nl>
+To: linux-kernel@vger.kernel.org
+Subject: P5B-VM, problems with Memory remap and Linux (wont address more than 2.8Gb)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-2
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: b7232a158b8075ec
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007 23:43:28 +0200, Grzegorz Chwesewicz wrote
-> On Thu, 29 Mar 2007 22:49:37 +0200, Andi Kleen wrote
-> > > Reviewed but not tested.  Needs to be wrapped in an AMD specific
-> > > call.
-> > 
-> > Here's a patch. I don't have a system with C1E, so i only tested that
-> > the apic timer still works on a older AMD box.
-> > 
-> > Would be good if someone with a Turion laptop, especially the HP nx6325
-> > could test it with CONFIG_NO_HZ enabled.
-> 
-> I have nx6325 with Turion.
-> 
-> ensima-hp linux-2.6 # cat .config|grep NO_HZ
-> CONFIG_NO_HZ=y
-> 
-> After patching system works ok on battery and on AC.
-> 
-<cut>
+Hello,
 
-Bootlogs on AC and battery can be found here:
-http://bugzilla.kernel.org/show_bug.cgi?id=8235
+sorry for the scarce technical information in this email. this is
+mostly due to it being mentioned before. I experience problems with
+the P5B-VM mainboard when using it with 4gb and Linux. When the Memory
+remap is activated, the internal network card is unusable (disabled).
+The system turns to be almost unusably slow... And in normal use, only
+2.8gb is available... Is there a solution around this? I use BIOS 0613
+and Fedora Core 6 (kernel 2.6.19-1... x86_64).
+
+Also the IDE bus experiences problems... it seems when there is a lot
+of traffic on the Realtek, the PATA channel keeps sending reset
+signals. The drive i use is a: ASUS DRW-1612BL. It is also described
+in the following mailinglists.
+
+   http://lkml.org/lkml/2007/3/12/398
+   http://lists.centos.org/pipermail/centos/2007-January/074575.html
+   http://lists.netfilter.org/pipermail/netfilter/2006-November/067431.html
+
+With some of these people I had contact... trying to resolve the
+problem, but until now we are unable to do so.
+
+Setup of at least 2 identical machines:
+   ASUS P5B-VM
+   4 DIMM's (Kingston KVR667D2N5K2/2G; DDR2 PC5300 1GB 667)
+   Intel Core 2 Duo E6600 (not overclocked, 2.4 Ghz)
+   1 Seagate 320Gb harddisk (sata)
+   1 ASUS DVD Burner (pata)
+
+These systems are used as headless VMware servers. This situation I
+experience on all systems based on this mainboard. Not sure if this
+also occurs on the P5B mainboard... :-S
+
+Is there a solution available to make these systems work with 4Gb,
+full speed, a working R8169 (8111B) and no errors on IDE? If you need
+any debug information, please tell me what I need to do...
+
+yours sincerely,
 
 
---
-Greetings - CeHo - Grzegorz Chwesewicz
+Gerard
