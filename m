@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbXC2H0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbXC2Heq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752779AbXC2H0F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 03:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXC2H0E
+	id S1753256AbXC2Heq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 03:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbXC2Hep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 03:26:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:50930 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779AbXC2H0D (ORCPT
+	Thu, 29 Mar 2007 03:34:45 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:31363 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753296AbXC2Heh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 03:26:03 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Linux-VServer example results for sharing vs. separate mappings  ...
-To: Ethan Solomita <solo@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Dave Hansen <hansendc@us.ibm.com>
-Reply-To: 7eggert@gmx.de
-Date: Thu, 29 Mar 2007 09:24:43 +0200
-References: <81XMo-Fl-19@gated-at.bofh.it> <827iC-6DZ-7@gated-at.bofh.it> <82jjS-89s-11@gated-at.bofh.it> <82l2j-2lv-11@gated-at.bofh.it> <82qEC-2yM-9@gated-at.bofh.it> <83v9d-3kf-1@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Thu, 29 Mar 2007 03:34:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=imrYvTarUbixZSF8mhzAnsr6Jf9IehAidUX8VZsVyqCjvTvwosnXjsZ/kxelAzwAuJqeFCc5m23K5aqwujXlnBNywYp6rFlbkg6YMph6/WM6NwyhHUoghvddXPRFOiOvX/fZpJCVGsak81+RCB4Af4ByPlubZwISCn+cYFmM8Ak=  ;
+X-YMail-OSG: oH22eWcVM1lEnQFD26EIJqZWvTHG7Udk6aTd7Hw3q4ix5APUklcnNT9sGdeJ42c.iLxIekWo8bqphAjSRF4VZmarQwbFLLk8snLhoqhYiB9y8nbYq_6sj7rqndzgOmXgLkrxdWn0ta0EPC8-
+Message-ID: <460B6C07.4070505@yahoo.com.au>
+Date: Thu, 29 Mar 2007 17:34:31 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1HWozz-0000gh-By@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/PZ9ZFYqjQlF7jERmacj8yiLzcZJFP2qSVWuL
- EuXxMBHPasaO8E19GeBJU3dSjnPvmi0GUt5MKz9PniZOBpWR7V
- q4TPsvCNe6c068lM2y8fw==
+To: davids@webmaster.com
+CC: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: RSDL v0.31
+References: <MDEHLPKNGKAHNMBLJOLKGEMCCJAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEMCCJAC.davids@webmaster.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ethan Solomita <solo@google.com> wrote:
+David Schwartz wrote:
+> Bill Davidsen wrote:
+> 
+> 
+>>I agree for giving a process more than a fair share, but I don't think
+>>"latency" is the best term for what you describe later. If you think of
+>>latency as the time between a process unblocking and the time when it
+>>gets CPU, that is a more traditional interpretation. I'm not really sure
+>>latency and CPU-starved are compatible.
+> 
+> 
+> For CPU-starvation, I think 'nice' is always going to be the fix. If you
+> want a process to get more than its 'fair share' of the CPU, you have to ask
+> for that. I think the scheduler should be fair by default.
+> 
+> However, cleverness in the scheduler with latency can make things better
+> without being unfair to anyone. It's perfectly fair for a task that has been
+> blocked for awhile to pre-empt a CPU-limited task when it unblocks.
+> 
+> What I'm arguing is that if your task is CPU-limited and the scheduler is
+> fair, that's your fault -- nice it. If your task is suffering from poor
+> latency, and it's using less than its fair share of the CPU (because it is
+> not CPU-limited), that is something the scheduler can be smarter about.
 
->     I suggest a variant on what Andrew says: don't change reclaim.
-> Instead, when referencing a page, don't mark the page as referenced if
-> the current task is not permitted to allocate from the page's node. I'm
-> thinking in terms of cpusets, with each task having a nodemask of
-> mems_allowed. This may result in a page being thrown out unnecessarily
-> and brought back in from disk, but when memory is tight that is what
-> happens. An optimization might be to keep track of who is referencing
-> the page and migrate it to their memory instead of reclaiming it, but
-> that would require reclaim to know the task/cpuset/container of the
-> referencing task.
+Agreed. That's what I've been saying for years (since early 2.6 when we had
+all those scheduler troubles and I started nicksched).
 
-If you are neaar reclaim and the page from that other node hasn't been
-touched recently, maybe you could steal it. Off cause this is only
-applicable if the checks are cheap enough.
+> Honestly, I have always been against aggressive pre-emption. I think as CPUs
+> get faster and timeslices get shorter, it makes less and less sense. In many
+
+I think scheduler timeslices actually shouldn't really be getting shorter.
+While I found it is quite easy to get good interactivity with a pretty
+dumb scheduler and tiny timeslices (at least until load ramps up enough
+that the "off-time" for your critical processes builds up too much), I
+think we want to aim for large timeslices. CPU caches are still getting
+bigger, and I don't think misses are getting cheaper (especially if you
+consider multi core). Also, the energy cost of a memory access is much
+higher even if hardware or software is able to hide the latency.
+
 -- 
-Funny quotes:
-40. Isn't making a smoking section in a restaurant like making a peeing
-    section in a swimming pool?
-Friﬂ, Spammer: t8nfgqx@jI9y.7eggert.dyndns.org uScowqPjo@i.7eggert.dyndns.org
+SUSE Labs, Novell Inc.
