@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934350AbXC2WJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945898AbXC2WLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934350AbXC2WJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 18:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934358AbXC2WJ0
+	id S1945898AbXC2WLW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 18:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945896AbXC2WLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 18:09:26 -0400
-Received: from pool-72-92-185-191.albyny.east.verizon.net ([72.92.185.191]:50753
-	"EHLO posidon.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934350AbXC2WJ0 (ORCPT
+	Thu, 29 Mar 2007 18:11:22 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49407 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945895AbXC2WLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 18:09:26 -0400
-X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Mar 2007 18:09:25 EDT
-Date: Thu, 29 Mar 2007 18:01:41 -0400
-From: Bill Davidsen <davidsen@posidon.tmr.com>
-Message-Id: <200703292201.l2TM1fO4005275@posidon.tmr.com>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.21-rc5-git1][KVM] exception on start VM
+	Thu, 29 Mar 2007 18:11:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: 2.6.21-rc5-mm2 - compile error on x86-64
+References: <20070326211627.c681af3b.akpm@linux-foundation.org>
+	<20070329182020.GA9223@aitel.hist.no>
+	<20070329142816.5d18d89f.akpm@linux-foundation.org>
+Date: Thu, 29 Mar 2007 16:10:50 -0600
+In-Reply-To: <20070329142816.5d18d89f.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 29 Mar 2007 14:28:16 -0700")
+Message-ID: <m1mz1vem51.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Starting a VM for Win98SE:
+Andrew Morton <akpm@linux-foundation.org> writes:
+>
+> Ah.  I assume you have CONFIG_SYSCTL=y, CONFIG_PROC_SYSCTL=n?
+>
+>
+>
+>
+> From: Andrew Morton <akpm@linux-foundation.org>
+>
+> We're using #ifdef CONFIG_SYSCTL, but we should be using CONFIG_PROC_SYSCTL,
+> so we get
 
-posidon:root> /usr/local/kvm-15/bin/qemu -m 128 -hda Win98SE-2.kvm 
-exception 13 (0)
-rax 00000000f000ff53 rbx 0000000000000000 rcx 000000000000005a rdx 000000000000000e
-rsi 00000000001100c4 rdi 000000000002a002 rsp 0000000000086650 rbp 000000000000667a
-r8  0000000000000000 r9  0000000000000000 r10 0000000000000000 r11 0000000000000000
-r12 0000000000000000 r13 0000000000000000 r14 0000000000000000 r15 0000000000000000
-rip 000000000000d350 rflags 00237206
-cs fff8 (000fff80/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-ds 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-es 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-ss 103f (000103f0/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-fs 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-gs 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-tr 0000 (08850000/00002088 p 1 dpl 0 db 0 s 0 type b l 0 g 0 avl 0)
-ldt 0000 (00000000/0000ffff p 1 dpl 0 db 0 s 0 type 2 l 0 g 0 avl 0)
-gdt 87244/2f
-idt 0/3ff
-cr0 60000010 cr2 0 cr3 0 cr4 0 cr8 0 efer 0
-Aborted
-posidon:root>
+I have no problem with the patch it is clearly more correct than what we
+are doing now but I didn't think it was possible to select
+CONFIG_SYSCTL and CONFIG_PROCFS without CONFIG_PROC_SYSCTL being
+selected...
+Do we have a constraint problem in Kconfig?  Or am I misremembering things?
 
+>  fs/built-in.o: In function `proc_root_init':
+>  /usr/src/linux/fs/proc/root.c:83: undefined reference to `proc_sys_init'
+>
+> Fix that up and remove an ifdef-in-C.
+>
+> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+> Cc: Helge Hafting <helgehaf@aitel.hist.no>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Hope that's useful, I was looking at nbd issues and just tried for 
-curiosity.
-
--- 
-<davidsen@tmr.com>
+Eric
