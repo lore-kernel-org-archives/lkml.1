@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030555AbXC2RxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030528AbXC2R4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030555AbXC2RxQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 13:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030580AbXC2RxP
+	id S1030528AbXC2R4O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 13:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030579AbXC2R4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 13:53:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44264 "EHLO mx2.mail.elte.hu"
+	Thu, 29 Mar 2007 13:56:14 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:34455 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030573AbXC2RxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 13:53:12 -0400
-Date: Thu, 29 Mar 2007 19:51:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Message-ID: <20070329175117.GA5521@elte.hu>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <460BBD1B.4040308@ru.mvista.com> <200703291531.18253.maximlevitsky@gmail.com> <200703291546.48996.maximlevitsky@gmail.com> <Pine.LNX.4.64.0703290949060.6730@woody.linux-foundation.org>
+	id S1030528AbXC2R4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 13:56:13 -0400
+Date: Thu, 29 Mar 2007 10:52:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz =?UTF-8?B?S296xYJvd3NraQ==?= <m.kozlowski@tuxland.pl>
+Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>, Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.21-rc5-mm1
+Message-Id: <20070329105233.31adb052.akpm@linux-foundation.org>
+In-Reply-To: <200703292001.41255.m.kozlowski@tuxland.pl>
+References: <20070326205706.a750bb35.akpm@linux-foundation.org>
+	<20070328202542.GS16477@stusta.de>
+	<200703282249.48130.m.kozlowski@tuxland.pl>
+	<200703292001.41255.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703290949060.6730@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Mar 2007 20:01:40 +0200 Mariusz Kozłowski <m.kozlowski@tuxland.pl> wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> Btw, what about arch/x86_64/kernel/hpet.c?
-
-at least wrt. suspend/resume it should be fine, because in 
-arch/x86_64/kernel/time.c it does this upon resume:
-
- static int timer_resume(struct sys_device *dev)
- {
-         if (hpet_address)
-                 hpet_reenable();
-         else
-                 i8254_timer_resume();
-
-[ barring the issue that mixing two pieces of hardware like this in a 
-  single resume function is wrong - all timer hardware should be 
-  separated like we did it for i386. I've got 64-bit clockevents code in 
-  -rt which does this separation. ]
-
-> That thing seems totally broken. Lookie here:
+> Hello,
 > 
->   arch/x86_64/kernel/hpet.c:irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
->   drivers/char/rtc.c:extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
+> > > > > 	I run 2.6.21-rc4-mm1 with no hangs for a week.
+> > > > > Then when 2.6.21-rc5-mm1 showed up so I switched to it. Unfortunately
+> > > > > today my laptop hunged twice in a similar way as described here:
+> > > > > 
+> > > > > http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/index.html#1165
+> > > > 
+> > > > It's not good that we went backwards between those two releases.
+> > > > 
+> > > > > The difference is that it happened when I closed the lid in my laptop.
+> > > > > When reopend it the box was frozen (ACPI?). Again disk I/O was dead
+> > > > > so nothing was found in syslog.
+> > > > 
+> > > > Adrian, does this look like any of the bugs whcih you're monitoring?
+> > > >...
+> > > 
+> > > Is it also present in 2.6.21-rc5?
+> > 
+> > Don't know. I usualy test -mm series. Will test tommorow and let you know
+> > after some reasonable uptime.
+> > 
+> > > Is it also present with CONFIG_NO_HZ=n?
+> > 
+> > Don't know. Did not try recently. Will let you know.
+> > 
+> > It takes time as these hangs are not easy to trigger. With 2.6.21-rc2-mm1
+> > it was easy -> push the system and watch it die in minutes. With
+> > 2.6.21-rc5-mm1 it takes hours (3 hangs in ~15 hours) and not sure how to
+> > trigger it. It just happens from time to time.
 > 
-> anybody see a problem? The x86-64 version doesn't seem to be very well 
-> maintained. Is there some fundamental reason why this file isn't 
-> shared across architectures?
+> Ok. CONGIG_NO_HZ=n and uptime ~12 hours, netconsole loaded, and no hangs
+> ... until I moved my laptop. The same scenario happened yesterday during the
+> last hang. I started playing and repeating some steps which I naturally do when
+> I move my laptop.
+> 
+> An hour later I came to this -> steps to hang 2.6.21-rc5-mm1 on my laptop:
+> 1. boot the system and login as root
+> 2. load netconsole (insmod netconole.ko netconsole=blah... blah...)
+> 3. unplug the cable (link goes down)
+> 4. system is frozen until forced to reboot
+> 
+> This is verified and repeatable _every_ single time I tried. Unfortunately
+> the last thing seen on the screen before system is frozen is 'eth0: link down'.
+> So my guess is that when hunting for hangs I found something else that can hang
+> my laptop (netconsole that is).
+> 
 
-there's no fundamental reason. x86_64 COW-ed hpet_timer.c and 
-time_hpet.c years ago and drifted off into different areas.
-They should be unified: more power to arch/x86/ ;-)
-
-	Ingo
+fix-sysfs-reclaim-crash.patch is known-bad.  Did you try reverting that?
