@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbXC2FXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965963AbXC2FYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbXC2FXz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 01:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965963AbXC2FXz
+	id S965963AbXC2FYg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 01:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964883AbXC2FYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 01:23:55 -0400
-Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:46487
-	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753221AbXC2FXy (ORCPT
+	Thu, 29 Mar 2007 01:24:35 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59036 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965963AbXC2FYe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 01:23:54 -0400
-Message-ID: <460B4BF2.1070803@roinet.com>
-Date: Thu, 29 Mar 2007 01:17:38 -0400
-From: David Acker <dacker@roinet.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Thu, 29 Mar 2007 01:24:34 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: michael@ellerman.id.au
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       daniel.e.wolstenholme@intel.com
+Subject: Re: [PATCH 14/21] MSI: Use a list instead of the custom link structure
+References: <20070322105343.3B358DDF6D@ozlabs.org>
+	<m13b3pswx2.fsf@ebiederm.dsl.xmission.com>
+	<1175144609.16660.33.camel@concordia.ozlabs.ibm.com>
+Date: Wed, 28 Mar 2007 23:24:00 -0600
+In-Reply-To: <1175144609.16660.33.camel@concordia.ozlabs.ibm.com> (Michael
+	Ellerman's message of "Thu, 29 Mar 2007 15:03:29 +1000")
+Message-ID: <m13b3omxlb.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Lennert Buytenhek <buytenh@wantstofly.org>, Jeff Garzik <jeff@garzik.org>,
-       Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFT] e100 driver on ARM
-References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com>
-In-Reply-To: <460AF480.7050609@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Lennert Buytenhek wrote:
->> On Mon, Sep 04, 2006 at 06:39:29AM -0400, Jeff Garzik wrote:
->>
->>> 1) Does e100 driver work on ARM?
->>
->> FWIW, e100 seems to work okay for me on an intel ixp2400 (xscale based)
->> board, an ixp2850 (xscale based) board and an ixp2350 (xscale3 based)
->> board.  ixp2350 works both with hardware coherency turned on (cpu
->> snoops bus) and turned off (manual dma cache clean/invalidate as usual.)
->>
->> As for the other ARM platforms that I'm interested in / have hardware
->> for / maintain, the at91/ep93xx/pxa270 don't have PCI, and the other
->> two (iop32x/iop33x) I can't test because I don't have such systems with
->> e100 NICs, but I expect those would work, since they're both xscale
->> based like the ixp2400, and the ixp2400 works.
-> 
-> I just got an iop342 board dropped on my lap. Once it's running, I'll 
-> make sure to make this the first thing to test.
-> 
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-I have a pxa255 based system with PCI added to it.  The e100 would have 
-memory corruption in its receive buffers detected by slab debugging 
-unless I put in the patch to use the S-bit.
+>
+> I thought about doing it in the MSI enable methods, but I think it
+> really belongs in the (nonexistant) routine that allocs and sets up a
+> pci_dev.
 
-Here is a link to the patch posting:
-http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc3/2.6.20-rc3-mm1/broken-out/git-netdev-all.patch
-Search for e100.c.
+I agree that would be a good place for it as well.
 
-http://www-gatago.com/linux/kernel/15457063.html - This discussion seems 
-to hit the issue.
+> I think it's pretty dicy to be passing around a pci_dev with an
+> uninitialised msi_list. Even if currently no code outside the MSI enable
+> methods looks at it, I think we're asking for bugs in the future.
 
-There appears to be a race on the cache line where the EL bit and the 
-next packet info live. In my case the hardware appeared to write to a 
-free packet.  The S-bit seems to make the hardware stop and spin on the 
-bit, while the EL bit seems to let the hardware try to use that packet.
+Reasonable.
 
-This race would occur less often when the receive buffer chain is always 
-refilled before the hardware can use them up.  On our 400 Mhz Xscale, we 
-can use up all 256 buffers if the PCI bus has another busy device on it. 
-  In our case it is an 802.11g miniPCI card and our software was routing 
-all ethernet packets to the wireless interface and vice versa while TCP 
-streams were running accross these connections.
--Ack
+> So I'll do a patch which adds alloc_pci_dev(), update the callers, and
+> then put the msi_list initialisation in there.
+
+Sounds good.  That will allow us to initialize all of the fields in struct
+pci_dev to a default value in one place.
+
+Eric
