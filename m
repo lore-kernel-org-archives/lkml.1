@@ -1,108 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbXC2OyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbXC2PGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbXC2OyG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 10:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbXC2OyG
+	id S1753771AbXC2PGO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 11:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbXC2PGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 10:54:06 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:37318 "EHLO
-	outbound4-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753756AbXC2OyE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 10:54:04 -0400
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 29 Mar 2007 11:06:14 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:57528 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753771AbXC2PGN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 11:06:13 -0400
+In-Reply-To: <20070329015457.d8c1d821.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Valentin Zaharov" <karlos_@netvision.net.il>,
+       linux-kernel@vger.kernel.org
+Subject: Re: cifs causes BUG: soft lockup detected on CPU
 MIME-Version: 1.0
-Subject: RE: [PATCH] i386: add command line option
- "local_apic_timer_c2_ok"
-Date: Thu, 29 Mar 2007 09:53:44 -0500
-Message-ID: <1449F58C868D8D4E9C72945771150BDFD967BB@SAUSEXMB1.amd.com>
-In-Reply-To: <200703272218.50531.lenb@kernel.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] i386: add command line option
- "local_apic_timer_c2_ok"
-Thread-Index: Acdw4K5k3dwjHLpeQ1GxtgxBTqoORABMHLMw
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
- <Pine.LNX.4.64.0703271430310.6730@woody.linux-foundation.org>
- <200703271816.33868.lenb@kernel.org>
- <200703272218.50531.lenb@kernel.org>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Len Brown" <lenb@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Morrow, William" <William.Morrow@amd.com>,
-       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>
-cc: "Thomas Gleixner" <tglx@linutronix.de>, "Pavel Machek" <pavel@ucw.cz>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Mingming Cao" <cmm@us.ibm.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       "Oliver Pinter" <oliver.pntr@gmail.com>,
-       "Sid Boyce" <g3vbv@blueyonder.co.uk>, "Nick Piggin" <npiggin@suse.de>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Renninger" <trenn@suse.de>
-X-OriginalArrivalTime: 29 Mar 2007 14:53:45.0242 (UTC)
- FILETIME=[0CC2CFA0:01C77212]
-X-WSS-ID: 6A150D733282582898-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Lotus Notes Release 7.0 HF144 February 01, 2006
+Message-ID: <OFE4847BAF.BAEC10E4-ON872572AD.005266C6-862572AD.0052FF7E@us.ibm.com>
+From: Steven French <sfrench@us.ibm.com>
+Date: Thu, 29 Mar 2007 10:06:10 -0500
+X-MIMETrack: Serialize by Router on D03NM123/03/M/IBM(Release 7.0.2HF32 | October 17, 2006) at
+ 03/29/2007 09:06:11,
+	Serialize complete at 03/29/2007 09:06:11
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > If we really care about using the LAPIC timer on systems with deeper
-> > than C1 support, the only alternative seems to be to test
-> > if it actually works or not at boot and run-time.
-> > Otherwise, we wait for future hardware with guaranteed
-> > not to break under any (BIOS) conditions ships, and check for that.
+This should be fixed in 2.6.21 as of 2/26.  The fix was 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3677db10a635a39f63ea509f8f0056d95589ff90
+
+
+Steve French
+Senior Software Engineer
+Linux Technology Center - IBM Austin
+phone: 512-838-2294
+email: sfrench at-sign us dot ibm dot com
+
+Andrew Morton <akpm@linux-foundation.org> wrote on 03/29/2007 03:54:57 AM:
+
+> On Wed, 28 Mar 2007 20:35:55 +0200 "Valentin Zaharov" 
+> <karlos_@netvision.net.il> wrote:
+> 
+> > Hi,
 > > 
-> > Based on what I read of the HP nx6325 where the LAPIC timer
-> > is breaking C1, AMD is in the same boat.
+> > We have continous problem with server freezes. We are using cifs 
+mounts
+> > on apache powered web servers with content located on Win2k3 server.
+> > Servers freeze from time to time, producing following error just 
+before
+> > freeze:
+> > 
+> > Mar 26 21:50:37 UFR2 kernel:  CIFS VFS: cifs_strtoUCS: char2uni 
+returned
+> > -22 Mar 26 21:51:45 UFR2 last message repeated 55 times Mar 26 
+21:52:49
+> > UFR2 last message repeated 30 times Mar 26 21:54:16 UFR2 last message
+> > repeated 10 times Mar 26 21:56:13 UFR2 last message repeated 20 times
+> > Mar 26 21:58:34 UFR2 last message repeated 75 times Mar 26 21:59:43 
+UFR2
+> > last message repeated 30 times Mar 26 22:01:02 UFR2 last message
+> > repeated 30 times Mar 26 22:02:04 UFR2 last message repeated 30 times
+> > Mar 26 22:03:08 UFR2 last message repeated 50 times Mar 26 22:04:27 
+UFR2
+> > last message repeated 10 times Mar 26 22:05:59 UFR2 last message
+> > repeated 20 times Mar 26 22:07:10 UFR2 last message repeated 20 times
+> > Mar 26 22:29:00 UFR2 last message repeated 64 times Mar 27 00:47:40 
+UFR2
+> > last message repeated 15 times Mar 27 01:42:41 UFR2 last message
+> > repeated 95 times Mar 27 02:15:57 UFR2 last message repeated 90 times
+> > Mar 27 02:27:13 UFR2 last message repeated 45 times Mar 27 03:14:08 
+UFR2
+> > last message repeated 95 times Mar 27 04:26:10 UFR2 last message
+> > repeated 2 times Mar 27 06:11:35 UFR2 last message repeated 45 times 
+Mar
+> > 27 06:20:20 UFR2 last message repeated 15 times Mar 27 06:20:20 UFR2
+> > last message repeated 12 times Mar 27 06:27:53 UFR2 kernel: BUG: soft
+> > lockup detected on CPU#3!
+> > Mar 27 06:27:53 UFR2 kernel:  [<c0134b57>] softlockup_tick+0x9e/0xac 
+Mar
+> > 27 06:27:53 UFR2 kernel:  [<c0121440>] update_process_times+0x3b/0x5e
+> > Mar 27 06:27:53 UFR2 kernel:  [<c010d885>]
+> > smp_apic_timer_interrupt+0x6c/0x7a
+> > Mar 27 06:27:53 UFR2 kernel:  [<c01032ec>]
+> > apic_timer_interrupt+0x28/0x30 Mar 27 06:27:53 UFR2 kernel:
+> > [<c0153d75>] generic_fillattr+0x75/0xa8 Mar 27 06:27:53 UFR2 kernel:
+> > [<f8e78ed2>] cifs_getattr+0x1e/0x2b [cifs] Mar 27 06:27:53 UFR2 
+kernel:
+> > [<f8e78eb4>] cifs_getattr+0x0/0x2b [cifs] Mar 27 06:27:53 UFR2 kernel:
+> > [<c0153dc9>] vfs_getattr+0x21/0x30 Mar 27 06:27:53 UFR2 kernel:
+> > [<c0153e93>] vfs_fstat+0x22/0x31 Mar 27 06:27:53 UFR2 kernel:
+> > [<c015443a>] sys_fstat64+0xf/0x23 Mar 27 06:27:53 UFR2 kernel:
+> > [<c0150fc5>] sys_open+0x1a/0x1c Mar 27 06:27:53 UFR2 kernel:
+> > [<c0102820>] sysenter_past_esp+0x5d/0x81 Mar 27 06:27:53 UFR2 kernel:
+> > [<c0310033>] xdr_xcode_array2+0x307/0x506 Mar 27 06:27:53 UFR2 kernel:
 > 
-> The nx6325 (Turion 64 X2) exports only C1.
-> I'm not sure how the conclusion was drawn that it has
-> a broken lapic timer as reflected in the "nolapic_timer" patch:
-
-If both cores goes into C1 at the same time, the chipset
-can move the processor into a C3 like state called C1e.
- 
-> +               /*
-> +                * BIOS exports only C1 state, but uses deeper power
-> +                * modes behind the kernels back.
-> +                */
-> +                 .callback = lapic_check_broken_bios,
-> +                 .ident = "HP nx6325",
-> +                 .matches = {
-> +                       DMI_MATCH(DMI_PRODUCT_NAME, "HP 
-> Compaq nx6325"),
-> +                 },
-> +        },
+> You didn't tell us what kernel version you're running.
 > 
-> But if this is true, then I don't know how to determine on
-> an AMD system if the LAPIC timer is guaranteed to work --
-> even for systems with just C1.
+> Hanging in generic_fillattr: i_size_read() got stuck.  This is because 
+CIFS
+> doesn't correctly hold i_mutex across i_size_write().
 > 
-> Jordan, William, can you clarify?
-
-For K7 and K8 through and including revision E, the LAPIC
-timer is guaranteed to work in C1.
-
-For K8 revisions F and G, and for upcoming family 0x10 and
-0x11 parts, if either bit in MSRC001_0055[28:27] is set,
-C1e is enabled and the LAPIC timer cannot be trusted in
-C1.
-
-AMD can craft a patch to sort this out as soon as we have
-an idea what the framework is going to look like.
-
--Mark Langsdorf
-Operating Systems Research Center
-AMD, Inc.
-
+> Steve, where are we up to with the fixes for that?
 
