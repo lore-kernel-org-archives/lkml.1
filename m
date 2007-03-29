@@ -1,134 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964930AbXC2FDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965951AbXC2FEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964930AbXC2FDc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 01:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965951AbXC2FDc
+	id S965951AbXC2FEO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 01:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965953AbXC2FEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 01:03:32 -0400
-Received: from ozlabs.org ([203.10.76.45]:54843 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964930AbXC2FDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 01:03:31 -0400
-Subject: Re: [PATCH 14/21] MSI: Use a list instead of the custom link
-	structure
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       daniel.e.wolstenholme@intel.com
-In-Reply-To: <m13b3pswx2.fsf@ebiederm.dsl.xmission.com>
-References: <20070322105343.3B358DDF6D@ozlabs.org>
-	 <m13b3pswx2.fsf@ebiederm.dsl.xmission.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YUAR3J540GEZy43s4XX7"
-Date: Thu, 29 Mar 2007 15:03:29 +1000
-Message-Id: <1175144609.16660.33.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Thu, 29 Mar 2007 01:04:14 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60156 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965951AbXC2FEN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 01:04:13 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, luming.yu@intel.com,
+       Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Meyer <thomas@m3y3r.de>, Frederic Riss <frederic.riss@gmail.com>,
+       Marcus Better <marcus@better.se>
+Subject: Re: [patch] MSI-X: fix resume crash
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+	<20070328130326.GA27126@elte.hu> <20070328130630.GA28108@elte.hu>
+	<200703290030.31228.lenb@kernel.org>
+Date: Wed, 28 Mar 2007 22:57:16 -0600
+In-Reply-To: <200703290030.31228.lenb@kernel.org> (Len Brown's message of
+	"Thu, 29 Mar 2007 00:30:30 -0400")
+Message-ID: <m1irckmytv.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Len Brown <lenb@kernel.org> writes:
 
---=-YUAR3J540GEZy43s4XX7
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>> Tony, Len the way pci_disable_device is being used in a suspend/resume 
+>> path by a few drivers is completely incompatible with the way irqs are 
+>> allocated on ia64.  In particular people the following sequence occurs 
+>> in several drivers.
+>> 
+>> probe:
+>>   pci_enable_device(pdev);
+>>   request_irq(pdev->irq);
+>> suspend:
+>>   pci_disable_device(pdev);
+>> resume:
+>>   pci_enable_device(pdev);
+>> remove:
+>>   free_irq(pdev->irq);
+>>   pci_disable_device(pdev);
+>
+> There are no IA64 machines that support system suspend/resume today --
+> so you have 0 chance of breaking the IA64 suspend/resume installed base.
 
-On Wed, 2007-03-28 at 00:29 -0600, Eric W. Biederman wrote:
-> Michael Ellerman <michael@ellerman.id.au> writes:
->=20
-> > The msi descriptors are linked together with what looks a lot like
-> > a linked list, but isn't a struct list_head list. Make it one.
-> >
-> > The only complication is that previously we walked a list of irqs, and
-> > got the descriptor for each with get_irq_msi(). Now we have a list of
-> > descriptors and need to get the irq out of it, so it needs to be in the
-> > actual struct msi_desc. We use 0 to indicate no irq is setup.
-> >
-> > At some point after a pci_dev is created we need to initialise its
-> > msi_list. pci_device_add() looks like the right place to do that, altho=
-ugh
-> > I'm not convinced it's 100% safe. In drivers/char/agp/alpha-agp.c we cr=
-eate
-> > a pci_dev and I don't see that it ever gets passed to pci_device_add(),=
- but
-> > we probably don't care.
->=20
-> Well that one appears to be a dummy place holder and probably should at
-> least have a kzalloc to initialize all of the fields to know values.
->=20
-> Regardless the normal pci device allocation does use kzalloc so we will
-> have well defined if not beautiful behavior if we try and use it.
->=20
-> Until we have a case where we need to use the msi_list outside of=20
-> where we enable and disable msi we should be perfectly fine initializing
-> the list somewhere inside of pci_enable_msi, and pci_enable_msix.
-> With dev->msi_enabled and dev->msix_enabled serving as flags to the
-> rest of the world that it is safe to look at the list.
->=20
-> It certainly sounds safer to me then becoming to closely coupled with
-> code that doesn't really care about how msi works.  Heck even though
-> we repeat the call twice I bet it will even be less code.
+Ok.  So that is why the inconsistency persists...
 
-I thought about doing it in the MSI enable methods, but I think it
-really belongs in the (nonexistant) routine that allocs and sets up a
-pci_dev.
+> My understanding is that Luming Yu has cobbled IA64 S4 support
+> together for a future release though.
+>
+>> What I'm proposing we do is move the irq allocation code out of 
+>> pci_enable_device and the irq freeing code out of pci_disable_device in 
+>> the future.  If we move ia64 to a model where the irq number equal the 
+>> gsi like we have for x86_64 and are in the middle of for i386 that 
+>> should be pretty straight forward. It would even be relatively simple  
+>> to delay vector allocation in that context until request_irq, if we 
+>> needed the delayed allocation benefit.  Do you two have any problems 
+>> with moving in that direction?
+>
+> I think consistency here would be _wonderful_.
+> Of course the beauty of having identity GSI=IRQ and a /proc/interrupts
+> that tells you what IOAPIC pin you are using become moot with MSI --
+> but hey, showing the IRQ number rather than the vector number
+> is consistent and makes sense.
 
-I think it's pretty dicy to be passing around a pci_dev with an
-uninitialised msi_list. Even if currently no code outside the MSI enable
-methods looks at it, I think we're asking for bugs in the future.
+Yes.  It also allows for bigger machines.  And I can get a consistent
+number out of MSI if we allocate irq numbers in a sufficiently non-sparse
+way.  Something like bus|device|func|irq which is 8+5+3+12 or 28 bits...
+I'll never get there though if i keep unearthing this long standing bugs.
 
-So I'll do a patch which adds alloc_pci_dev(), update the callers, and
-then put the msi_list initialisation in there.
+>> If fixing the arch code is unacceptable for some reason I'm not aware of 
+>> we need to audit the 10-20 drivers that call pci_disable_device in their 
+>> suspend/resume processing and ensure that they have freed all of the 
+>> irqs before that point.  Given that I have bug reports on the msi path I 
+>> know that isn't true.
+>
+> I think the suspend/resume interrupt logic needs some serious attention.
+> We've had several schemes for suspend/resume of interrupts, several
+> changes in strategy, and right now I think we are inconsistent,
+> and frankly, I'm amazed it works at all.
 
-> > --- msi-new.orig/include/linux/msi.h
-> > +++ msi-new/include/linux/msi.h
-> > @@ -1,6 +1,8 @@
-> >  #ifndef LINUX_MSI_H
-> >  #define LINUX_MSI_H
-> > =20
-> > +#include <linux/list.h>
-> > +
-> >  struct msi_msg {
-> >  	u32	address_lo;	/* low 32 bits of msi message address */
-> >  	u32	address_hi;	/* high 32 bits of msi message address */
-> > @@ -24,10 +26,8 @@ struct msi_desc {
-> >  		unsigned default_irq;	/* default pre-assigned irq	  */
-> >  	}msi_attrib;
-> > =20
-> > -	struct {
-> > -		__u16	head;
-> > -		__u16	tail;
-> > -	}link;
-> > +	int irq;
-> This should be "unsigned int irq"
+What I have been doing lately is to aim at consistency in how a function
+is called (and thus how it is expected to be used) and how it is actually
+implemented.  When I have a choice I try to pick a forgiving implementation
+so that driver writers don't have to follow a magic correct path for
+things to work correctly.  
 
-Oops, I'll fix that.
+Removing the irq assignment from pci_enable_device is something that
+matches implementation with use.
 
-cheers
+As for the rest it seems reasonable to me to allow an irq to be held
+requested over suspend/resume and to save and restore apic and msi
+capability state.  Especially since irq numbers are a kernel
+abstraction we should be able to do with them what we need to.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Honestly the whole suspend/resume thing is beyond me at this point I'm
+laptop free...  But I do know how to make code consistent with itself.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-YUAR3J540GEZy43s4XX7
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGC0ihdSjSd0sB4dIRAkkCAJ41/b8NnckoqwWF6Zhj1LkVA1OREwCfVNp3
-zwLFAwP+npb6hg735Yr3qZM=
-=eEDC
------END PGP SIGNATURE-----
-
---=-YUAR3J540GEZy43s4XX7--
-
+Eric
