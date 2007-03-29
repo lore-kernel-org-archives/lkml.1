@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965907AbXC2CHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964791AbXC2CNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965907AbXC2CHt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 22:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934302AbXC2CHt
+	id S964791AbXC2CNq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 22:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934306AbXC2CNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 22:07:49 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:24712 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933973AbXC2CHr (ORCPT
+	Wed, 28 Mar 2007 22:13:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:6028 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933973AbXC2CNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 22:07:47 -0400
+	Wed, 28 Mar 2007 22:13:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=MPEkEE/+gmk9G+dTZsP702IevrBRT5OZwtNe7JAXTPmlUTOVE5vogU/6N79o2YuEtMTY35f3ey2okZdclPulv7+te5i4oL4yGdil/TGG8lKVBFLkfJXRv5Ji6VHaN9YE4CArtherzrCN5WyZXjgDXzjqjadj4YxONeyxI7L02Sc=
-Message-ID: <460B1F6B.5050108@gmail.com>
-Date: Thu, 29 Mar 2007 11:07:39 +0900
+        b=h+JJb98bJA5crFd57kb9jqiYEYxHuSiQDawQAvAurzDvGM0Wx5bYUhbeUWLS7MElpumbpRin/Fb7PW6TiJTaU9mWtnv2SRW6CfqNikNniHaEb6V1gIOsS0sTNCiMdYIJI6jokQSs+9YbobUKzNQmADMvrdX18VG4M8vTfhwM9Uw=
+Message-ID: <460B20D0.7010009@gmail.com>
+Date: Thu, 29 Mar 2007 11:13:36 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [patch 2/3] libata: expose AN support to user space via sysfs
-References: <20070328230108.597741522@intel.com> <20070328164450.b89d5156.kristen.c.accardi@intel.com> <460B0539.9040103@pobox.com>
-In-Reply-To: <460B0539.9040103@pobox.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-ide@vger.kernel.org, jgarzik@pobox.com
+Subject: Re: [patch 3/3] libata: handle AN interrupt
+References: <20070328230108.597741522@intel.com> <20070328164457.a675a7d2.kristen.c.accardi@intel.com>
+In-Reply-To: <20070328164457.a675a7d2.kristen.c.accardi@intel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Kristen Carlson Accardi wrote:
->> Allow user space to determine if an ATAPI device supports
->> async notification (AN) of media changes.  This is done by
->> adding a new sysfs file "async_notification" to genhd.
->> If the file reads 1, then the device supports async notification.  If 
->> the file reads 0, it does not. 
->> A flag is set in the generic disk to indicate whether
->> or not AN is supported.  This flag is set by the SCSI
->> subsystem when it registers with add_disk.  The SCSI
->> system gets information from libata on whether the
->> device supports AN during dev_configure.
->> Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
->>
+Kristen Carlson Accardi wrote:
+> When we get an SDB FIS with the 'N' bit set, we should send
+> an event to user space to indicate that there has been a
+> media change.  The ahci host controller will send the
+> event via KOBJ_CHANGE uevent.
 > 
-> 3) I would make the contents of 'media_change_events' be a list of 
-> flags, rather than a boolean.  Thus, when AN is present, 
-> media_change_events would return "AN\n".  It would return "\n" (no 
-> flags) when AN is absent.  This permits future expansion of this 
-> capabilities reporting variable.
+> Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+>  
+> +static void async_notify_thread(struct work_struct *work)
+> +{
+> +	struct ata_device *atadev =
+> +		container_of(work, struct ata_device, async_notify);
+> +
+> +	/*
+> +	 * TBD - who should send this event?  I couldn't find an
+> +	 * easy way to map an ata_device to a genhd device, so
+> +	 * decided maybe the ata host should send the event and
+> +	 * allow user space to figure out what happened?
+> +	 */
+> +	kobject_uevent(&atadev->ap->host->dev->kobj, KOBJ_CHANGE);
+> +}
 
-I'm not sure about this.  AN is kind of specific term for ATA while 
-media change event is generic.  So, I think the original approach is 
-okay.  No matter how the actual thing is implemented, it's the same 
-media change event and as long as event delivery interface is the same, 
-upper layer shouldn't care about how it's done.
+I don't think this is right.  If you're gonna make media_change_event 
+capability generic, you gotta make event delivery generic too.  You can 
+make it a genhd event and make genhd supply the interface function, say, 
+genhd_notify_media_change() which is then forwarded by SCSI layer.
 
 Thanks.
 
