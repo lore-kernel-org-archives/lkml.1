@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030664AbXC2UJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030668AbXC2UKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030664AbXC2UJa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 16:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030669AbXC2UJ3
+	id S1030668AbXC2UKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 16:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030667AbXC2UKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 16:09:29 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60116 "EHLO mx2.suse.de"
+	Thu, 29 Mar 2007 16:10:36 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:51257 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030656AbXC2UJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 16:09:28 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de,
-       linux-pm@lists.osdl.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, jgarzik@pobox.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	<460BBD1B.4040308@ru.mvista.com>
-	<200703291531.18253.maximlevitsky@gmail.com>
-	<200703291546.48996.maximlevitsky@gmail.com>
-	<Pine.LNX.4.64.0703290949060.6730@woody.linux-foundation.org>
-	<20070329175117.GA5521@elte.hu>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 29 Mar 2007 22:46:46 +0200
-In-Reply-To: <20070329175117.GA5521@elte.hu>
-Message-ID: <p734po33hhl.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
+	id S1030666AbXC2UKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 16:10:35 -0400
+Date: Thu, 29 Mar 2007 16:10:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] net driver fixes
+Message-ID: <20070329201034.GA2177@havoc.gtf.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
-> 
-> there's no fundamental reason. x86_64 COW-ed hpet_timer.c and 
-> time_hpet.c years ago and drifted off into different areas.
 
-Not quite -- x86-64 did HPET long before i386; the only stuff cowed
-was the character driver support code. But the core HPET code
-was always totally different code streams. We never did the complicated 
-pluggable clock code i386 did though -- i never quite saw the point of that
-because there aren't that many timers there.
-Of course it is already obsolete with clocksources now.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
 
--Andi
+to receive the following updates:
+
+ drivers/net/atl1/atl1_main.c         |   10 ++++++++++
+ drivers/net/netxen/netxen_nic_init.c |    3 ++-
+ drivers/net/sis190.c                 |    1 +
+ 3 files changed, 13 insertions(+), 1 deletions(-)
+
+Chris Snook (1):
+      atl1: save mac address on remove
+
+Francois Romieu (1):
+      sis190: new PHY support
+
+Linsys Contractor Adhiraj Joshi (1):
+      NetXen: Fix hardware access for ppc architecture.
+
+diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+index dee3638..8606eac 100644
+--- a/drivers/net/atl1/atl1_main.c
++++ b/drivers/net/atl1/atl1_main.c
+@@ -2320,6 +2320,16 @@ static void __devexit atl1_remove(struct pci_dev *pdev)
+ 		return;
+ 
+ 	adapter = netdev_priv(netdev);
++
++	/* Some atl1 boards lack persistent storage for their MAC, and get it
++	 * from the BIOS during POST.  If we've been messing with the MAC
++	 * address, we need to save the permanent one.
++	 */
++	if (memcmp(adapter->hw.mac_addr, adapter->hw.perm_mac_addr, ETH_ALEN)) {
++		memcpy(adapter->hw.mac_addr, adapter->hw.perm_mac_addr, ETH_ALEN);
++		atl1_set_mac_addr(&adapter->hw);
++	}
++
+ 	iowrite16(0, adapter->hw.hw_addr + REG_GPHY_ENABLE);
+ 	unregister_netdev(netdev);
+ 	pci_iounmap(pdev, adapter->hw.hw_addr);
+diff --git a/drivers/net/netxen/netxen_nic_init.c b/drivers/net/netxen/netxen_nic_init.c
+index 229aa1c..eff965d 100644
+--- a/drivers/net/netxen/netxen_nic_init.c
++++ b/drivers/net/netxen/netxen_nic_init.c
+@@ -438,6 +438,7 @@ do_rom_fast_read_words(struct netxen_adapter *adapter, int addr,
+ 
+ 	for (addridx = addr; addridx < (addr + size); addridx += 4) {
+ 		ret = do_rom_fast_read(adapter, addridx, (int *)bytes);
++		*(int *)bytes = cpu_to_le32(*(int *)bytes);
+ 		if (ret != 0)
+ 			break;
+ 		bytes += 4;
+@@ -497,7 +498,7 @@ static inline int do_rom_fast_write_words(struct netxen_adapter *adapter,
+ 		int timeout = 0;
+ 		int data;
+ 
+-		data = *(u32*)bytes;
++		data = le32_to_cpu((*(u32*)bytes));
+ 
+ 		ret = do_rom_fast_write(adapter, addridx, data);
+ 		if (ret < 0)
+diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
+index b08508b..34463ce 100644
+--- a/drivers/net/sis190.c
++++ b/drivers/net/sis190.c
+@@ -324,6 +324,7 @@ static struct mii_chip_info {
+ 	u32 feature;
+ } mii_chip_table[] = {
+ 	{ "Broadcom PHY BCM5461", { 0x0020, 0x60c0 }, LAN, F_PHY_BCM5461 },
++	{ "Broadcom PHY AC131",   { 0x0143, 0xbc70 }, LAN, 0 },
+ 	{ "Agere PHY ET1101B",    { 0x0282, 0xf010 }, LAN, 0 },
+ 	{ "Marvell PHY 88E1111",  { 0x0141, 0x0cc0 }, LAN, F_PHY_88E1111 },
+ 	{ "Realtek PHY RTL8201",  { 0x0000, 0x8200 }, LAN, 0 },
