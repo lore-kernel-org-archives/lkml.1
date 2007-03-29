@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbXC2NUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbXC2NUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbXC2NUB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 09:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbXC2NUB
+	id S1753460AbXC2NUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 09:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbXC2NUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 09:20:01 -0400
-Received: from h155.mvista.com ([63.81.120.155]:21936 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753457AbXC2NT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 09:19:59 -0400
-Message-ID: <460BBD1B.4040308@ru.mvista.com>
-Date: Thu, 29 Mar 2007 17:20:27 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Maxim <maximlevitsky@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Thu, 29 Mar 2007 09:20:41 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59867 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753461AbXC2NUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 09:20:40 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: [ PATCH] Add suspend/resume for HPET was: Re: [3/6] 2.6.21-rc4:
- known regressions
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703290641.20236.maximlevitsky@gmail.com> <Pine.LNX.4.64.0703282203550.6730@woody.linux-foundation.org> <200703290747.28929.maximlevitsky@gmail.com>
-In-Reply-To: <200703290747.28929.maximlevitsky@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<20070326123141.GA11288@ucw.cz> <1174917142.4182.39.camel@chaos>
+	<200703271719.25795.lenb@kernel.org>
+	<Pine.LNX.4.64.0703271430310.6730@woody.linux-foundation.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 29 Mar 2007 16:19:25 +0200
+In-Reply-To: <Pine.LNX.4.64.0703271430310.6730@woody.linux-foundation.org>
+Message-ID: <p73hcs42kuq.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-Maxim wrote:
+> On Tue, 27 Mar 2007, Len Brown wrote:
+> > 
+> > I think the only fool-proof way to do this automatically is to
+> 
+> Why not just take the known-good CPUID signature?
 
-> ---
-> This adds support of suspend/resume on i386 for HPET
+I didn't think we could reliably distingush mobile cpus with C2+ 
+versus desktop CPUs without it. Or rather you would need a table
+for each new CPU revision Intel/AMD put out. That would be probably
+quite nightmarish to maintain.
 
-   The part after usually "---" gets cut off, the patch description and 
-signoff should actially *precede* it.
-
-> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-
-> diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
-> index 0fd9fba..7c67780 100644
-> --- a/arch/i386/kernel/hpet.c
-> +++ b/arch/i386/kernel/hpet.c
-[...]
-> +static __init int hpet_register_sysfs(void)
-> +{
-> +	int err;
-> +
-> +	if (!is_hpet_capable())
-> +		return 0;
-> +
-> +	err = sysdev_class_register(&hpet_class);
-> +
-> +	if (!err) {
-> +		sysdev_register(&hpet_device);
-> +		if (err)
-> +			sysdev_class_unregister(&hpet_class);
-
-    This doesn't make sense, err will always be 0.  Perhaps you actually 
-intended to check the result of sysdev_register()?
-
-> +	}
-> +
-> +	return err;
-> +}
-> +
-> +device_initcall(hpet_register_sysfs);
-> +
-> +#endif
-
-WBR, Sergei
+-Andi
