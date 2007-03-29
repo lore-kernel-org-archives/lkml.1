@@ -1,108 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030493AbXC2RS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbXC2RYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030493AbXC2RS4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 13:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030505AbXC2RS4
+	id S932536AbXC2RYJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 13:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933166AbXC2RYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 13:18:56 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:2261 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030493AbXC2RSz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 13:18:55 -0400
-MIME-Version: 1.0
+	Thu, 29 Mar 2007 13:24:09 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33446 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932536AbXC2RYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 13:24:06 -0400
+Date: Thu, 29 Mar 2007 10:23:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: 2.6.21-rc5-mm2
+Message-Id: <20070329102328.230233eb.akpm@linux-foundation.org>
+In-Reply-To: <1175190807.13420.1.camel@dyn9047017100.beaverton.ibm.com>
+References: <20070326211627.c681af3b.akpm@linux-foundation.org>
+	<1175190807.13420.1.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 29 Mar 2007 17:18:53.0407 (UTC) FILETIME=[533B56F0:01C77226]
-Content-class: urn:content-classes:message
-Subject: Re: Interface for the new fallocate() system call
-Date: Thu, 29 Mar 2007 13:18:53 -0400
-Message-ID: <Pine.LNX.4.61.0703291314330.4366@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.61.0703291854000.31834@yvahk01.tjqt.qr>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Interface for the new fallocate() system call
-thread-index: AcdyJlNCqkMDRiU0Q1y6AxdFfz37oQ==
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <Pine.LNX.4.61.0703291854000.31834@yvahk01.tjqt.qr>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, <torvalds@osdl.org>,
-       <akpm@linux-foundation.org>, <linux-fsdevel@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-ext4@vger.kernel.org>,
-       <xfs@oss.sgi.com>, <suparna@in.ibm.com>, <cmm@us.ibm.com>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Mar 2007 09:53:27 -0800 Badari Pulavarty <pbadari@gmail.com> wrote:
 
-On Thu, 29 Mar 2007, Jan Engelhardt wrote:
+> On Mon, 2007-03-26 at 21:16 -0800, Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/
+> > 
+> > 
+> > - This is the same as 2.6.12-rc5-mm1, except the staircase deadline CPU
+> >   scheduler has been added.
+> 
+> make allyesconfig - didn't give me a clean build :(
+> (not crucial for me to get it right -- but FYI).
+> 
+> Thanks,
+> Badari
+> 
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CHK     include/linux/compile.h
+>   CC      drivers/net/e100.o
+>   LD      drivers/net/wireless/built-in.o
+>   CC      drivers/net/epic100.o
+>   CC      drivers/net/sis190.o
+> drivers/net/wireless/mac80211/built-in.o: In function `bcm43xx_conf_tx':
+> drivers/net/wireless/mac80211/bcm43xx/bcm43xx_main.c:398: multiple definition of `zd_chip_switch_radio_on'
+>   CC      drivers/net/sis900.o
+> drivers/net/wireless/zd1211rw/built-in.o:drivers/net/wireless/zd1211rw/zd_chip.c:89: first defined here
+> drivers/net/wireless/mac80211/built-in.o: In function `bcm43xx_conf_tx':
+>
+> [zillions more errors]
 
-> Hi,
->
-> On Mar 29 2007 17:21, Amit K. Arora wrote:
->>
->> We need to come up with the best possible layout of arguments for the
->> fallocate() system call. Various architectures have different
->> requirements for how the arguments should look like. Since the mail
->> chain has become huge, here is the summary of various inputs received
->> so far.
->
->> s390 prefers following layout:
->>   int fallocate(int fd, loff_t offset, loff_t len, int mode)
->> For details on why and how "int, int, loff_t, loff_t" is a problem on
->> s390, please see Heiko's mail on 16th March. Here is the link:
->> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg133595.html
->
-> Quoting that...
-> 	|len -> r6 + second halve on stack
->
-> Then, is not this a gcc glitch? (IMO, it should put all of "len" on the
-> stack)
->
->> Platform: ppc, arm
->> ------------------
->> 6 arguments. Thus the desired layout by ppc32 is:
->>   int fallocate(int fd, int mode, loff_t offset, loff_t len)
->>
->> Option of loff_t => high u32 + low u32
->> --------------------------------------
->> Matthew and Russell have suggested another option of breaking each
->> "loff_t" into two "u32"s. This will result in 6 arguments in total.
->>
->> What are your thoughts on this ? What layout should we finalize on ?
->> Perhaps, since sync_file_range() system call has similar arguments, we
->> can take hint from the challenges faced on implementing it on various
->> architectures, and decide.
->>
->> Please suggest. Thanks!
->
-> Does it actually matter? Glibc can have its own argument ordering
-> different from the syscalls, so at least it would be possible to lay out
-> the syscall arguments in the most portable way while retaining nice
-> userspace C code. Hey, glibc might even wrap it up in a struct! (Using a
-> pointer, as suggested in one of the proposals.)
->
-> int fallocate(int fd, loff_t offset, loff_t len, int mode)
-> {
-> 	struct fallocate_foobar d = {fd, offset, len, mode};
-> 	return _syscall(..., &d);
-> }
->
-> Jan
-> --
+yeah, not surprised.
 
-I think it's always better to put only a pointer on the stack as
-above.
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5592.62 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+John, please test allyesconfig ;)
