@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXC2PnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030268AbXC2Pvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932282AbXC2PnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 11:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932411AbXC2PnT
+	id S1030268AbXC2Pvo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 11:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030279AbXC2Pvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 11:43:19 -0400
-Received: from smtp121.iad.emailsrvr.com ([207.97.245.121]:55665 "EHLO
-	smtp121.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932282AbXC2PnS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 11:43:18 -0400
-Message-ID: <460BDE95.90204@gentoo.org>
-Date: Thu, 29 Mar 2007 11:43:17 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0b2 (X11/20070208)
+	Thu, 29 Mar 2007 11:51:44 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42166 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030268AbXC2Pvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 11:51:43 -0400
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: "Len Brown" <lenb@kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Morrow, William" <William.Morrow@amd.com>,
+       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Pavel Machek" <pavel@ucw.cz>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Mingming Cao" <cmm@us.ibm.com>, "Adrian Bunk" <bunk@stusta.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
+       "Oliver Pinter" <oliver.pntr@gmail.com>,
+       "Sid Boyce" <g3vbv@blueyonder.co.uk>, "Nick Piggin" <npiggin@suse.de>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Thomas Renninger" <trenn@suse.de>
+Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<Pine.LNX.4.64.0703271430310.6730@woody.linux-foundation.org>
+	<200703271816.33868.lenb@kernel.org>
+	<200703272218.50531.lenb@kernel.org>
+	<1449F58C868D8D4E9C72945771150BDFD967BB@SAUSEXMB1.amd.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 29 Mar 2007 18:50:09 +0200
+In-Reply-To: <1449F58C868D8D4E9C72945771150BDFD967BB@SAUSEXMB1.amd.com>
+Message-ID: <p73d52s2dvi.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>
-CC: bugme-daemon@bugzilla.kernel.org,
-       linux list <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-References: <200703291304.l2TD4Dd6016401@fire-2.osdl.org>
-In-Reply-To: <200703291304.l2TD4Dd6016401@fire-2.osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+"Langsdorf, Mark" <mark.langsdorf@amd.com> writes:
 
-bugme-daemon@bugzilla.kernel.org wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=8255
-
-> Okay. I tracked down the problem with git. Here is what is the submission that
-> causes the problem:
+> > > If we really care about using the LAPIC timer on systems with deeper
+> > > than C1 support, the only alternative seems to be to test
+> > > if it actually works or not at boot and run-time.
+> > > Otherwise, we wait for future hardware with guaranteed
+> > > not to break under any (BIOS) conditions ships, and check for that.
+> > > 
+> > > Based on what I read of the HP nx6325 where the LAPIC timer
+> > > is breaking C1, AMD is in the same boat.
+> > 
+> > The nx6325 (Turion 64 X2) exports only C1.
+> > I'm not sure how the conclusion was drawn that it has
+> > a broken lapic timer as reflected in the "nolapic_timer" patch:
 > 
-> solaris linux-git # git bisect good
-> 0916bd3ebb7cefdd0f432e8491abe24f4b5a101e is first bad commit
-> commit 0916bd3ebb7cefdd0f432e8491abe24f4b5a101e
-> Author: Dave Jones <davej@redhat.com>
-> Date:   Wed Nov 22 20:42:01 2006 -0500
-> 
->         [PATCH] Correct bound checking from the value returned from _PPC method.
+> If both cores goes into C1 at the same time, the chipset
+> can move the processor into a C3 like state called C1e.
 
-The above commit seems to be the culprit behind this 2.6.19 regression, 
-which is still present as of 2.6.21-rc3 (so it's not the earlier issue 
-found by Ingo). Any ideas?
+... and that seems to break the local APIC timer.
 
-Thanks,
-Daniel
+> AMD can craft a patch to sort this out as soon as we have
+> an idea what the framework is going to look like.
 
+Just a snippet to detect it would be great. Then the dmi scan
+could be removed and replaced with that. This would be a 2.6.21
+candidate imho over the DMI hack.
+
+-Andi
