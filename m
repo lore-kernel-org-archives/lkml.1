@@ -1,33 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030361AbXC2Qjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030420AbXC2QlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030361AbXC2Qjg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 12:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030360AbXC2Qjg
+	id S1030420AbXC2QlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 12:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030428AbXC2QlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 12:39:36 -0400
-Received: from keil-draco.com ([216.193.185.50]:50604 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030344AbXC2Qjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 12:39:35 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: linux-kernel@vger.kernel.org
-Subject: apm platform device cleanup
-Date: Thu, 29 Mar 2007 12:39:22 -0400
-User-Agent: KMail/1.9.6
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 29 Mar 2007 12:41:17 -0400
+Received: from mga09.intel.com ([134.134.136.24]:10299 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030412AbXC2QlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 12:41:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,347,1170662400"; 
+   d="scan'208"; a="65923961:sNHT1342249785"
+Subject: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table (rev 2)
+From: Mitch Williams <mitch.a.williams@intel.com>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Cc: gregkh@suse.de, ebiederm@xmission.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, auke-jan.h.kok@intel.com
+Content-Type: text/plain
+Date: Thu, 29 Mar 2007 09:41:02 -0700
+Message-Id: <1175186462.21369.4.camel@strongmad>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703291239.23073.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In checking a "make allmodconfig" I noticed that the apm device 
-(arch/i386/kernel/apm.c) is still using the old pm_send_all setup - I know 
-the fix is to add suspend/resume hooks but the apm code hasn't been touched 
-since 2002 and isn't using the new device API (it doesn't even register, 
-AFAICT, a platform_device struct) Beyond needing to add that, are there any 
-suggestions ?
+This patch fixes a kernel bug which is triggered when using the
+irqbalance daemon with MSI-X hardware.
 
-DRH
+Because both MSI-X interrupt messages and MSI-X table writes are posted,
+it's possible for them to cross while in-flight.  This results in
+interrupts being received long after the kernel thinks they're disabled,
+and in interrupts being sent to stale vectors after rebalancing.
+
+This patch performs a read flush after writes to the MSI-X table for
+mask/unmask and rebalancing operations.
+
+This patch has been validated with (unreleased) network hardware which
+uses MSI-X.
+
+Revised with input from Eric Biederman.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+
+diff -urpN -X dontdiff linux-2.6.21-rc5-clean/arch/i386/kernel/io_apic.c linux-2.6.21-rc5/arch/i386/kernel/io_apic.c
+--- linux-2.6.21-rc5-clean/arch/i386/kernel/io_apic.c	2007-03-28 10:05:22.000000000 -0700
++++ linux-2.6.21-rc5/arch/i386/kernel/io_apic.c	2007-03-28 10:19:14.000000000 -0700
+@@ -2584,6 +2584,7 @@ static void set_msi_irq_affinity(unsigne
+ 	msg.address_lo |= MSI_ADDR_DEST_ID(dest);
+ 
+ 	write_msi_msg(irq, &msg);
++	msix_flush_writes(irq);
+ 	irq_desc[irq].affinity = mask;
+ }
+ #endif /* CONFIG_SMP */
+diff -urpN -X dontdiff linux-2.6.21-rc5-clean/arch/ia64/kernel/msi_ia64.c linux-2.6.21-rc5/arch/ia64/kernel/msi_ia64.c
+--- linux-2.6.21-rc5-clean/arch/ia64/kernel/msi_ia64.c	2007-03-28 10:05:22.000000000 -0700
++++ linux-2.6.21-rc5/arch/ia64/kernel/msi_ia64.c	2007-03-28 09:34:27.000000000 -0700
+@@ -60,6 +60,7 @@ static void ia64_set_msi_irq_affinity(un
+ 	msg.address_lo = addr;
+ 
+ 	write_msi_msg(irq, &msg);
++	msix_flush_writes(irq);
+ 	irq_desc[irq].affinity = cpu_mask;
+ }
+ #endif /* CONFIG_SMP */
+diff -urpN -X dontdiff linux-2.6.21-rc5-clean/arch/ia64/sn/kernel/msi_sn.c linux-2.6.21-rc5/arch/ia64/sn/kernel/msi_sn.c
+--- linux-2.6.21-rc5-clean/arch/ia64/sn/kernel/msi_sn.c	2007-03-28 10:05:22.000000000 -0700
++++ linux-2.6.21-rc5/arch/ia64/sn/kernel/msi_sn.c	2007-03-28 09:34:06.000000000 -0700
+@@ -204,6 +204,7 @@ static void sn_set_msi_irq_affinity(unsi
+ 	msg.address_lo = (u32)(bus_addr & 0x00000000ffffffff);
+ 
+ 	write_msi_msg(irq, &msg);
++	msix_flush_writes(irq);
+ 	irq_desc[irq].affinity = cpu_mask;
+ }
+ #endif /* CONFIG_SMP */
+diff -urpN -X dontdiff linux-2.6.21-rc5-clean/arch/x86_64/kernel/io_apic.c linux-2.6.21-rc5/arch/x86_64/kernel/io_apic.c
+--- linux-2.6.21-rc5-clean/arch/x86_64/kernel/io_apic.c	2007-03-28 10:05:22.000000000 -0700
++++ linux-2.6.21-rc5/arch/x86_64/kernel/io_apic.c	2007-03-28 10:18:52.000000000 -0700
+@@ -1956,6 +1956,7 @@ static void set_msi_irq_affinity(unsigne
+ 	msg.address_lo |= MSI_ADDR_DEST_ID(dest);
+ 
+ 	write_msi_msg(irq, &msg);
++	msix_flush_writes(irq);
+ 	irq_desc[irq].affinity = mask;
+ }
+ #endif /* CONFIG_SMP */
+diff -urpN -X dontdiff linux-2.6.21-rc5-clean/drivers/pci/msi.c linux-2.6.21-rc5/drivers/pci/msi.c
+--- linux-2.6.21-rc5-clean/drivers/pci/msi.c	2007-03-28 10:05:24.000000000 -0700
++++ linux-2.6.21-rc5/drivers/pci/msi.c	2007-03-28 09:21:34.000000000 -0700
+@@ -68,6 +68,29 @@ static void msix_set_enable(struct pci_d
+ 	}
+ }
+ 
++void msix_flush_writes(unsigned int irq)
++{
++	struct msi_desc *entry;
++
++	entry = get_irq_msi(irq);
++	BUG_ON(!entry || !entry->dev);
++	switch (entry->msi_attrib.type) {
++	case PCI_CAP_ID_MSI:
++		/* nothing to do */
++		break;
++	case PCI_CAP_ID_MSIX:
++	{
++		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
++			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
++		readl(entry->mask_base + offset);
++		break;
++	}
++	default:
++		BUG();
++		break;
++	}
++}
++
+ static void msi_set_mask_bit(unsigned int irq, int flag)
+ {
+ 	struct msi_desc *entry;
+@@ -186,11 +209,13 @@ void write_msi_msg(unsigned int irq, str
+ void mask_msi_irq(unsigned int irq)
+ {
+ 	msi_set_mask_bit(irq, 1);
++	msix_flush_writes(irq);
+ }
+ 
+ void unmask_msi_irq(unsigned int irq)
+ {
+ 	msi_set_mask_bit(irq, 0);
++	msix_flush_writes(irq);
+ }
+ 
+ static int msi_free_irq(struct pci_dev* dev, int irq);
+diff -urpN -X dontdiff linux-2.6.21-rc5-clean/include/linux/msi.h linux-2.6.21-rc5/include/linux/msi.h
+--- linux-2.6.21-rc5-clean/include/linux/msi.h	2007-03-28 10:05:25.000000000 -0700
++++ linux-2.6.21-rc5/include/linux/msi.h	2007-03-28 09:21:51.000000000 -0700
+@@ -12,6 +12,7 @@ extern void mask_msi_irq(unsigned int ir
+ extern void unmask_msi_irq(unsigned int irq);
+ extern void read_msi_msg(unsigned int irq, struct msi_msg *msg);
+ extern void write_msi_msg(unsigned int irq, struct msi_msg *msg);
++extern void msix_flush_writes(unsigned int irq);
+ 
+ struct msi_desc {
+ 	struct {
