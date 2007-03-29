@@ -1,68 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030741AbXC2VWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750936AbXC2V2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030741AbXC2VWH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 17:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030745AbXC2VWH
+	id S1750936AbXC2V2W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 17:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXC2V2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 17:22:07 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39685 "EHLO smtp.osdl.org"
+	Thu, 29 Mar 2007 17:28:21 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:39859 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030741AbXC2VWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 17:22:04 -0400
-Date: Thu, 29 Mar 2007 14:16:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-cc: Mark Langsdorf <mark.langsdorf@amd.com>, Len Brown <lenb@kernel.org>,
-       "Morrow, William" <William.Morrow@amd.com>,
-       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
-In-Reply-To: <200703292249.37979.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0703291410480.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
- <p73d52s2dvi.fsf@bingen.suse.de> <460C1B5B.4090802@amd.com>
- <200703292249.37979.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1750936AbXC2V2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 17:28:21 -0400
+Date: Thu, 29 Mar 2007 14:28:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Helge Hafting <helgehaf@aitel.hist.no>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: 2.6.21-rc5-mm2 - compile error on x86-64
+Message-Id: <20070329142816.5d18d89f.akpm@linux-foundation.org>
+In-Reply-To: <20070329182020.GA9223@aitel.hist.no>
+References: <20070326211627.c681af3b.akpm@linux-foundation.org>
+	<20070329182020.GA9223@aitel.hist.no>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Mar 2007 20:20:20 +0200
+Helge Hafting <helgehaf@aitel.hist.no> wrote:
+
+> I tried compiling this on x86-64, and got this compile error:
+>   CC      init/version.o
+>   CC      init/missing_syscalls.o
+> In file included from init/missing_syscalls.c:97:
+> init/missing_syscalls.h:279:2: warning: #warning syscall ssetmask not
+> implemented
+> init/missing_syscalls.h:1263:2: warning: #warning syscall getcpu not
+> implemented
+> init/missing_syscalls.h:1267:2: warning: #warning syscall epoll_pwait not
+> implemented
+> init/missing_syscalls.h:1271:2: warning: #warning syscall lutimesat not
+> implemented
+> init/missing_syscalls.h:1275:2: warning: #warning syscall revokeat not
+> implemented
+> init/missing_syscalls.h:1279:2: warning: #warning syscall frevoke not
+> implemented
+
+yup, people will presumably work on fixing these things up after the
+feature hits mainline.
+
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> fs/built-in.o: In function `proc_root_init':
+> /usr/src/linux/fs/proc/root.c:83: undefined reference to `proc_sys_init'
+
+Ah.  I assume you have CONFIG_SYSCTL=y, CONFIG_PROC_SYSCTL=n?
 
 
-On Thu, 29 Mar 2007, Andi Kleen wrote:
-> 
-> Here's a patch. I don't have a system with C1E, so i only tested that
-> the apic timer still works on a older AMD box.
 
-I think this looks better than what we have now, but it would look even 
-better if the core CPUID stuff was in arch/i386/kernel/cpu/amd.c, and we 
-simply had X86_FEATURE_BROKEN_C1_LAPIC etc..
 
-And then the apic.c code would just check
+From: Andrew Morton <akpm@linux-foundation.org>
 
-	if (boot_cpu_has(X86_FEATURE_BROKEN_C1_LAPIC))
-		return -1;
+We're using #ifdef CONFIG_SYSCTL, but we should be using CONFIG_PROC_SYSCTL,
+so we get
 
-or similar.
+ fs/built-in.o: In function `proc_root_init':
+ /usr/src/linux/fs/proc/root.c:83: undefined reference to `proc_sys_init'
 
-Doing the same for C2 and C3 gives us a clean way to have all these 
-per-vendor things in their relevant places, rather than having various 
-vendor-specific checks sprinkled in random places..
+Fix that up and remove an ifdef-in-C.
 
-That's *especially* true for something like this that can hit both on 
-x86-64 and i386, where the cpuid logic is shared, but the APIC logic is 
-*not* shared. If I read your patch correctly, this only fixes it on 32-bit 
-platforms, and I don't think the problem is in any way 32-bit specific, is 
-it?
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Helge Hafting <helgehaf@aitel.hist.no>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-		Linus
+ fs/proc/internal.h |    4 ++++
+ fs/proc/root.c     |    2 --
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff -puN fs/proc/root.c~proc-fix-linkage-with-config_sysctl=y-config_proc_sysctl=n fs/proc/root.c
+--- a/fs/proc/root.c~proc-fix-linkage-with-config_sysctl=y-config_proc_sysctl=n
++++ a/fs/proc/root.c
+@@ -79,9 +79,7 @@ void __init proc_root_init(void)
+ 	proc_device_tree_init();
+ #endif
+ 	proc_bus = proc_mkdir("bus", NULL);
+-#ifdef CONFIG_SYSCTL
+ 	proc_sys_init();
+-#endif
+ }
+ 
+ static int proc_root_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat
+diff -puN fs/proc/internal.h~proc-fix-linkage-with-config_sysctl=y-config_proc_sysctl=n fs/proc/internal.h
+--- a/fs/proc/internal.h~proc-fix-linkage-with-config_sysctl=y-config_proc_sysctl=n
++++ a/fs/proc/internal.h
+@@ -11,7 +11,11 @@
+ 
+ #include <linux/proc_fs.h>
+ 
++#ifdef CONFIG_PROC_SYSCTL
+ extern int proc_sys_init(void);
++#else
++static inline void proc_sys_init(void) { }
++#endif
+ 
+ struct vmalloc_info {
+ 	unsigned long	used;
+_
+
