@@ -1,113 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934195AbXC3BGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934386AbXC3BTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934195AbXC3BGZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 21:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934202AbXC3BGZ
+	id S934386AbXC3BTl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 21:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934381AbXC3BTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 21:06:25 -0400
-Received: from mga09.intel.com ([134.134.136.24]:25337 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934195AbXC3BGY convert rfc822-to-8bit (ORCPT
+	Thu, 29 Mar 2007 21:19:41 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:55760 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S934386AbXC3BTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 21:06:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,350,1170662400"; 
-   d="scan'208"; a="66169712:sNHT22506255"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Dependent CPU core speed reporting not updated with CPUFREQ_SHARED_TYPE_HW?
-Date: Thu, 29 Mar 2007 18:06:22 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F52DF4D8@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <460C5D24.608@us.ibm.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Dependent CPU core speed reporting not updated with CPUFREQ_SHARED_TYPE_HW?
-thread-index: AcdyZEc3Vf/L4lXPScWRVi+KuVWLYwAACCaw
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 30 Mar 2007 01:06:22.0922 (UTC) FILETIME=[A20BAAA0:01C77267]
+	Thu, 29 Mar 2007 21:19:33 -0400
+Date: Thu, 29 Mar 2007 14:29:20 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: user-mode-linux-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [uml-devel] [PATCH] UML - fix I/O hang when multiple devices are in use
+Message-ID: <20070329182920.GB8065@c2.user-mode-linux.org>
+References: <20070328020247.GA12299@c2.user-mode-linux.org> <200703290236.44324.blaisorblade@yahoo.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703290236.44324.blaisorblade@yahoo.it>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Thu, Mar 29, 2007 at 02:36:43AM +0200, Blaisorblade wrote:
+> > Sometimes you need to. I'd probably just remove the do_ubd check and
+> > always recall the request function when handling completions, it's
+> > easier and safe.
 
->-----Original Message-----
->From: Darrick J. Wong [mailto:djwong@us.ibm.com] 
->Sent: Thursday, March 29, 2007 5:43 PM
->To: Pallipadi, Venkatesh
->Cc: linux-kernel@vger.kernel.org
->Subject: Dependent CPU core speed reporting not updated with 
->CPUFREQ_SHARED_TYPE_HW?
->
->Hi Venki,
->
->I have a dual-Woodcrest machine here with _PSD tables that specify that
->cpufreq coordination between cores is done in hardware with
->DOMAIN_COORD_TYPE_HW_ALL.  On this particular machine, CPU 0 and CPU 2
->are on the same package, and it looks like they have to be at the same
->frequency.
->
->However, it seems that acpi_cpufreq_cpu_init() only sets 
->policy->cpus to
->the shared cpu mask if software coordination is required.  While this
->does have the effect of letting the hardware do its coordination job as
->advertised, it also means that a frequency change to CPU0 doesn't get
->echoed to CPU2 as it should be, and affected_cpus is inaccurate.
->
->This seems like a bug to me.  I can whip up a patch to set the policy
->cpu mask in all cases and neuter all but one of the MSR/PCT 
->writes if HW
->coordination is desired so that HW coordination is preserved and sysfs
->is accurate, but I'm curious to know if I've gotten it right.
->
+If I'm understanding this correctly, this is what happens now.  There
+is still the flag check and return if the queue is being run, but I
+don't see the advantage of removing that.
 
-Darrick,
+> Anyway, the main speedups to do on the UBD driver are:
+> * implement write barriers (so much less fsync) - this is performance killer 
+> n.1
 
-Above observation is correct. Affected_cpus and policy->cpus has
-multiple
-entry only when software coordination is desired. If hardware is doing
-the
-coordination, then setting policy->cpus makes another level of sw
-coordination
-on top of hardware coordination. The main reason is why I chose the
-current
-way is, from kernel perspective doing it at each logical CPU is much
-better
-than doing software coordination and making one CPU look at utilization
-of different CPUs and take decisions on their behalf. Especially with
-tickless
-kind of situations, 
-Example: say CPU 0 and CPU 2 are sharing frequency with hw coordination
-and we make CPU 2 MSR lowest at all times and run the ondemand policy on
-CPU 0
-to control both CPUs. Now CPU 0 is idle and CPU 2 gets some load.
-Ideally it
-will be better for CPU 2 to recognise and handle it, rather than wait
-for CPU 1
-to come out of idle and handle this at a later point in time.
-Having the policy per CPU and dealing with hw coordination locally also
-simplifies
-CPU hotplug handling.
+You mean preventing the upper layers from calling fsync?
 
-I agree that affected_cpus is lying in case of hardware coordination. I
-thought of
-making affected CPUs show the dependency in case of hw coord, but
-retaining the percpu
-control. But, it seemed complicated change for something that is
-cosmetic.
+> * possibly to use the new 2.6 request layout with scatter/gather I/O, and 
+> vectorized I/O on the host
 
-Note that this issue is the problem with what we display as current
-freq. However,
-ondemand knows the current freq of each CPU correctly even in this case,
-as it uses
-measured_freq interface that is supported on all recent processors to
-make
-frequency decisions.
+Yeah, this is something I've thought about on occassion but never
+done.
 
-Thanks,
-Venki
+> * while at vectorizing I/O using async I/O
+
+I have that, but haven't merged it since I see no performance benefit
+for some reason.
+
+> * to avoid passing requests on pipes (n.2) - on fast disk I/O becomes 
+> cpu-bound.
+
+Right - I cooked up a scheme a while ago that had the requests on a
+list, being removed from one end and added to the other, with some
+minimal number of bytes going across the pipe to ensure a wakeup if
+the other side was possibly asleep.  But I never implemented it.
+
+> * using futexes instead of pipes for synchronization (required for previous 
+> one).
+
+Yup - for this, we either need to test the host for futuxes and use
+pipes as a fallback or give up on 2.4 as the host.
+
+> I forgot one thing: remember ubd=mmap? Something like that could have been
+> done using MAP_PRIVATE, so that write had still to be called explicitly but
+> unchanged data was shared with the host.
+
+> Once a page gets dirty but is then cleaned, sharing it back is
+> difficult - but even without that good savings could be
+> achievable. That's to explore for the very future though.
+
+Interesting idea.  That does avoid the formerly fatal mmap problem.
+If you unmap it, the private copy goes away because it lost its last
+reference, and if you map it again, you get the shared version.
+
+That's a lot of mapping and unmapping though.  I wonder if just
+calling mmap would cause the COWed page to be dropped...
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
