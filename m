@@ -1,66 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934351AbXC2Vrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422639AbXC2VsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934351AbXC2Vrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 17:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934354AbXC2Vrk
+	id S1422639AbXC2VsP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 17:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422642AbXC2VsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 17:47:40 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2046 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934351AbXC2Vrj (ORCPT
+	Thu, 29 Mar 2007 17:48:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:41415 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422639AbXC2VsO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 17:47:39 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Why is NCQ enabled by default by libata? (2.6.20)
-Date: Thu, 29 Mar 2007 14:47:20 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEAICKAC.davids@webmaster.com>
+	Thu, 29 Mar 2007 17:48:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FocaS4H63KhYf8xxYV9zw5lrUvC/xxBmZ0VmXIgzFodUCPJVAJ7l8Ww+5uiqUNQTypoGhuTCtvjijvEFxjpRbV0wIrPV/vQsglEh/xtb+KIxFBp3tTcvVb1l/qpWlO5gwd9gdpA5lrxwwvQ5xSQ6T92Hj2f+COV953mLkLMKUIc=
+Message-ID: <e8f45b9e0703291448v749efee2w8f1e415d003e1fb9@mail.gmail.com>
+Date: Thu, 29 Mar 2007 23:48:11 +0200
+From: "Gerard Braad" <gbraad@member.fsf.org>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: your mail
+In-Reply-To: <Pine.LNX.4.61.0703292341370.31834@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <460BF73C.5070707@cfl.rr.com>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 29 Mar 2007 14:47:32 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 29 Mar 2007 14:47:32 -0800
+Content-Disposition: inline
+References: <e8f45b9e0703291439q505c6a06re003e91484a20354@mail.gmail.com>
+	 <Pine.LNX.4.61.0703292341370.31834@yvahk01.tjqt.qr>
+X-Google-Sender-Auth: 4f956532a96f4620
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sorry, this wasn't supposed to happen. Already done...
+Unsubscribed due to lack of a digest mail.
 
-> But when writing, what is the difference between queuing multiple tagged 
-> writes, and sending down multiple untagged cached writes that complete 
-> immediately and actually hit the disk later?  Either way the host keeps 
-> sending writes to the disk until it's buffers are full, and the disk is 
-> constantly trying to commit those buffers to the media in the most 
-> optimal order.
-
-Which sounds faster to you:
-
-1) "Do A, B, C, and D."
-   "Okay, I've finished A, B, C, and B."
-or
-
-2) "Do A."
-   "Okay." 
-   "Do B."
-   "Okay."
-   "Do C."
-   "Okay."
-   "Do D."
-   "Okay."
-
-The first looks a bit more efficient to me.
-
-	DS
-
-
+> I wonder why people can't send their unsubscribe message to the same
+> address they sent their subscribe message to.
