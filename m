@@ -1,111 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934291AbXC2BDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbXC2BJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934291AbXC2BDK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 21:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934292AbXC2BDK
+	id S932280AbXC2BJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 21:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934288AbXC2BJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 21:03:10 -0400
-Received: from smtp002.mail.ukl.yahoo.com ([217.12.11.33]:21227 "HELO
-	smtp002.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S934291AbXC2BDI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 21:03:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=42bvRxt0REbQ9r4ufi5dfPf2T+1rC6oA+KSTPbDWQfQEIENzwrLREwoNh9kGXG3C9eG9zIon8F4T3i05CT/2UF5uDSoC23yc2db4ZgI7VYOMWxE6SICSRLo50DLf3Tp8nJyICJLa4I4FX2VMc+Fn+a4hW72H+jHrSYjv797gU8A=  ;
-X-YMail-OSG: 08WLJzMVM1lXvSSies.Hm6iXuzlf8Gd0adP8E0TjZYbMmBuVmVyq0x94c2P_RAH29zIBJ3p8l8zNpE.Y6vMPxaCv4wup4UuCurOMl0MR2HYgSWJe
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH] UML - fix I/O hang when multiple devices are in use
-Date: Thu, 29 Mar 2007 03:02:43 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>
-References: <20070328020247.GA12299@c2.user-mode-linux.org> <200703290236.44324.blaisorblade@yahoo.it>
-In-Reply-To: <200703290236.44324.blaisorblade@yahoo.it>
+	Wed, 28 Mar 2007 21:09:28 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41567 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932280AbXC2BJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 21:09:28 -0400
+Date: Wed, 28 Mar 2007 18:09:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] i386: Remove page sized slabs for pgds and pmds
+In-Reply-To: <20070329005356.GA8915@holomorphy.com>
+Message-ID: <Pine.LNX.4.64.0703281800460.25452@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0703281309210.12985@schroedinger.engr.sgi.com>
+ <20070328134511.0d61ec8f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703281401460.13743@schroedinger.engr.sgi.com>
+ <20070328211658.GE2986@holomorphy.com> <Pine.LNX.4.64.0703281418040.13870@schroedinger.engr.sgi.com>
+ <20070328223753.GZ8915@holomorphy.com> <Pine.LNX.4.64.0703281636400.14657@schroedinger.engr.sgi.com>
+ <20070329005356.GA8915@holomorphy.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703290302.43447.blaisorblade@yahoo.it>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On giovedì 29 marzo 2007, Blaisorblade wrote:
-> On mercoledì 28 marzo 2007, Jeff Dike wrote:
-> > [ This patch needs to get into 2.6.21, as it fixes a serious bug
-> > introduced soon after 2.6.20 ]
-> >
-> > Commit 62f96cb01e8de7a5daee472e540f726db2801499 introduced per-devices
-> > queues and locks, which was fine as far as it went, but left in place
-> > a global which controlled access to submitting requests to the host.
-> > This should have been made per-device as well, since it causes I/O
-> > hangs when multiple block devices are in use.
-> >
-> > This patch fixes that by replacing the global with an activity flag in
-> > the device structure in order to tell whether the queue is currently
-> > being run.
->
-> Finally that variable has a understandable name. However in a mail from
-> Jens Axboe, titled:
-> "Re: [uml-devel] [PATCH 06/11] uml ubd driver: ubd_io_lock usage fixup" ,
-> with Date: Mon, 30 Oct 2006 09:26:48 +0100, he suggested removing this flag
->
-> altogether, so we may explore this for the future:
-> > > Add some comments about requirements for ubd_io_lock and expand its
-> > > use.
-> > >
-> > > When an irq signals that the "controller" (i.e. another thread on the
-> > > host, which does the actual requests and is the only one blocked on I/O
-> > > on the host) has done some work, we call again the request function
-> > > ourselves (do_ubd_request).
+On Wed, 28 Mar 2007, William Lee Irwin III wrote:
 
-> > > We now do that with ubd_io_lock held - that's useful to protect against
-> > > concurrent calls to elv_next_request and so on.
+> NIH == "Not Invented Here." Basically a sort of idea theft, often used
+> to grab credit for patches. You're not the one involved there. That was
+> a digression. One could say, though, that a solution to the slab issues
+> is to NIH slab allocators e.g. via quicklist.h/quicklist.c without the
+> negative connotation.
 
-> > Not only useful, required, as I think I complained about a year or more
-> > ago :-)
+Oh. The quicklist were actually taken from existing IA64 code. Not my idea 
+either. I am not wedded to any solution and I was certainly not intending
+to abscond with your idea. Would have been difficult given that there was 
+a signoff line with your name on it.
 
-> > > XXX: Maybe we shouldn't call at all the request function. Input needed
-> > > on this. Are we supposed to plug and unplug the queue? That code
-> > > "indirectly" does that by setting a flag, called do_ubd, which makes
-> > > the request function return (it's a residual of 2.4 block layer
-> > > interface).
+> On Wed, Mar 28, 2007 at 04:44:01PM -0700, Christoph Lameter wrote:
+> > We certainly see even from the rudimentary tests that I have done
+> > that the limited pgd, pmd caching has some effect. Could we please
+> > see your local patches? And I guess that you must have some sort of
+> > benchmark that you run to test these?
+> 
+> Short answer: No.
+> 
+> Long answer: Most of the local patches are not likely to be of interest
+> to the world at large. The ones I probably don't mind mentioning so
+> much are things like ports of ipt_TARPIT.c to -CURRENT, support for
+> mmap() of /proc/profile, things to make the notsc boot parameter
+> actually do what you'd expect it to do instead of the kernel ignoring
+> the option when you actually need it and mucking with the TSC behind
+> your back, and so on. There are also things I'd rather keep under wraps
+> so they don't mysteriously appear on lkml a few years later posted by
+> someone else without any attribution to me (i.e. the NIH's that bother
+> me). I've not got any of them ported to current mainline anyway, and
+> some data loss from fried disks seems to have eaten most/all of the
+> post-2.6.0 revisions of these patches anyway, though I've got compiled
+> kernels with them on various kernel versions between then and 2.6.10
+> (not to say that's any impediment to my hammering out fresh ports).
 
-> > Sometimes you need to. I'd probably just remove the do_ubd check and
-> > always recall the request function when handling completions, it's
-> > easier and safe.
-
-> Anyway, the main speedups to do on the UBD driver are:
-> * implement write barriers (so much less fsync) - this is performance
-> killer n.1
-
-> * possibly to use the new 2.6 request layout with scatter/gather I/O, and
-> vectorized I/O on the host
-> * while at vectorizing I/O using async I/O
-
-> * to avoid passing requests on pipes (n.2) - on fast disk I/O becomes
-> cpu-bound.
-> To make a different but related example, with a SpeedScale laptop, it's
-> interesting to double CPU frequency and observe tuntap speed double too.
-> (with 1GHz I get on TCP numbers like 150 Mbit/s - 100 Mbit/s, depending
-> whether UML trasmits or receives data; with 2GHz double rates).
-> Update: I now get 150Mbit / 200Mbit (Uml receives/Uml sends) at 1GHz, and
-> still the double at 2Ghz.
-> This is a different UML though.
-
-> * using futexes instead of pipes for synchronization (required for previous
-> one).
-
-I forgot one thing: remember ubd=mmap? Something like that could have been 
-done using MAP_PRIVATE, so that write had still to be called explicitly but 
-unchanged data was shared with the host.
-
-Once a page gets dirty but is then cleaned, sharing it back is difficult - but 
-even without that good savings could be achievable. That's to explore for the 
-very future though.
--- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
+Ummm..... So nothing concrete on the performance issues that we 
+are considering here? We are talking about something that was lost
+a couple of years ago? There are certainly other people who will have the 
+same ideas given enough time. Software and patches age like groceries. 
+Hiding them will just make them wither away.
