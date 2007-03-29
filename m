@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934061AbXC2Kia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030192AbXC2Ki4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934061AbXC2Kia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 06:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934278AbXC2Kia
+	id S1030192AbXC2Ki4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 06:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030197AbXC2Ki4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 06:38:30 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:48182 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934061AbXC2Ki3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 06:38:29 -0400
-X-IronPort-AV: i="4.14,345,1170651600"; 
-   d="scan'208"; a="25807581:sNHT27504869"
-Subject: [PATCH -mm] blackfin arch fix bug bf561 rev ID are 8-bit
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
+	Thu, 29 Mar 2007 06:38:56 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51596 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030192AbXC2Kiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 06:38:55 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86_64 irq: keep consistent for changing IRQ0_VECTOR from 0x20 to 0x30
+Date: Thu, 29 Mar 2007 12:13:05 +0200
+User-Agent: KMail/1.9.5
+Cc: "Yinghai Lu" <yinghai.lu@amd.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+References: <86802c440703052359q3242f771ne9c10752613820d3@mail.gmail.com> <86802c440703282148w29732dcfy5b41a244fad6be4e@mail.gmail.com> <m1bqicmy7u.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1bqicmy7u.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Thu, 29 Mar 2007 18:39:15 +0800
-Message-Id: <1175164756.15391.31.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Disposition: inline
+Message-Id: <200703291213.05390.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- arch/blackfin/kernel/setup.c            |    3 +++
- include/asm-blackfin/mach-bf561/bf561.h |    2 +-
- 2 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
-index b494f73..96ee2fa 100644
---- a/arch/blackfin/kernel/setup.c
-+++ b/arch/blackfin/kernel/setup.c
-@@ -117,6 +117,9 @@ static u_int get_dsp_rev_id(void)
- {
- 	u_int id;
- 	id = bfin_read_DSPID() & 0xffff;
-+#if defined(CONFIG_BF561)
-+	id>>=8;
-+#endif
- 	return id;
- }
- 
-diff --git a/include/asm-blackfin/mach-bf561/bf561.h b/include/asm-blackfin/mach-bf561/bf561.h
-index cd90a1c..ded1796 100644
---- a/include/asm-blackfin/mach-bf561/bf561.h
-+++ b/include/asm-blackfin/mach-bf561/bf561.h
-@@ -30,7 +30,7 @@
- #ifndef __MACH_BF561_H__
- #define __MACH_BF561_H__
- 
--#define SUPPORTED_DSPID		0x300
-+#define SUPPORTED_DSPID		0x3
- 
- #define OFFSET_(x) ((x) & 0x0000FFFF)
- #define L1_ISRAM		0xFFA00000
--- 
-1.5.0.5
+> ---
+> From: Yinghai Lu <yinghai.lu@amd.com>
+> Subject: x86_64 irq: Fix comments after changing IRQ0_VECTOR from 0x20 to 0x30
 
+applied thanks
+
+-Andi
