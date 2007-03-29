@@ -1,114 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965911AbXC2CUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965912AbXC2Cet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965911AbXC2CUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 22:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965914AbXC2CUl
+	id S965912AbXC2Cet (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 22:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965913AbXC2Cet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 22:20:41 -0400
-Received: from dilbert.robsims.com ([209.120.158.98]:42571 "EHLO
-	mail.robsims.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965911AbXC2CUj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 22:20:39 -0400
-Date: Mon, 26 Mar 2007 21:24:06 -0600
-From: Rob Sims <lkml-z@robsims.com>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Thomas Glanzmann <thomas@glanzmann.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andreas =?iso-8859-1?Q?Allg=F6wer?= <andreas.allgoewer@web.de>,
-       Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>
-Subject: Re: sky2 PHY setup
-Message-ID: <20070327032406.GA25659@robsims.com>
-References: <20070202102705.3cf028a6@freekitty> <20070202210934.GM1693@cip.informatik.uni-erlangen.de> <20070202151601.677ec5d9@freekitty> <20070203073012.GO1693@cip.informatik.uni-erlangen.de> <20070205090429.31d7bd32@freekitty> <20070222193611.GR20035@cip.informatik.uni-erlangen.de> <20070316002912.GB17594@cip.informatik.uni-erlangen.de> <20070316095932.5e920222@freekitty> <20070316203645.GA24699@robsims.com> <20070316141648.15d7ff75@freekitty>
+	Wed, 28 Mar 2007 22:34:49 -0400
+Received: from ishtar.tlinx.org ([64.81.245.74]:56557 "EHLO ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965912AbXC2Ces (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 22:34:48 -0400
+Message-ID: <460B25BE.3050808@tlinx.org>
+Date: Wed, 28 Mar 2007 19:34:38 -0700
+From: Linda Walsh <lkml@tlinx.org>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
-Content-Disposition: inline
-In-Reply-To: <20070316141648.15d7ff75@freekitty>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linda Walsh <lkml@tlinx.org>
+CC: Oliver Joa <oliver@j-o-a.de>, Eric Sandeen <sandeen@sandeen.net>,
+       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       xfs-oss <xfs@oss.sgi.com>
+Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
+References: <46094344.4090007@j-o-a.de> <20070328113141.GQ32597093@melbourne.sgi.com> <460A6298.4040702@j-o-a.de> <460A821B.4080308@sandeen.net> <460AC857.6040305@j-o-a.de> <460B068C.6060903@tlinx.org>
+In-Reply-To: <460B068C.6060903@tlinx.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---+QahgC5+KEYLbs62
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Oliver Joa wrote:
+>> eason or another, xfs has detected a corrupted on-disk inode format 
+>> which it cannot recognize, and shuts down.
+----
+Oh, one other thing that may not apply in your case, but may.
+Does your SATA disk support write caching?  Does it support
+something called a barrier function?  (not real clear on all
+the ways this can go wrong, but I believe barriers are supposed
+to guarantee previous data has been fixed on disk (not in write
+cache).  If the SATA controller issues a reset, it may very well
+purge the write cache.  Theoretically, I can think of a _possibility_,
+that the reset disk would purge the write cache and the barrier
+indicator would tell xfs to resume writing.  From a recent thread
+on the xfs list, it would appear this could be a "bad" thing (like
+crossing the streams ala "ghostbusters", but in a data-integrity
+context).
 
-On Fri, Mar 16, 2007 at 02:16:48PM -0700, Stephen Hemminger wrote:
-> On Fri, 16 Mar 2007 14:36:45 -0600
-> Rob Sims <lkml-z@robsims.com> wrote:
+Just a "shot in the dark" -- absent knowing anything specific
+about your hardware or situation...
 
-> > Are there some debug hooks that can be activated?  My sky2 stops
-> > responding (very light load) about twice a day.  The netdev watchdog
-> > notices after a while and is able to reactivate the interface:
+If that's the case, you might want to turn off write
+caching, since when xfs thinks "barriers" work, it turns
+off some "protection", that can enable some significant
+speedup in some situations. As an aside, some disks, I gather,
+may "claim" to support barriers, but really don't.  Xfs tries
+to verify the barrier claim, but I don't know that a reset
+issued to the disk will have deterministic behavior across
+all manufacturer's disks.  A bunch of "coulds" and "maybe's",
+but just thinking off top of head...
 
-> > Mar 15 13:28:12 btd kernel: NETDEV WATCHDOG: eth0: transmit timed out
-> > Mar 15 13:28:12 btd kernel: sky2 eth0: tx timeout
-> > Mar 15 13:28:12 btd kernel: sky2 eth0: transmit ring 458 .. 435 report=
-=3D458 done=3D458
-> > Mar 15 13:28:12 btd kernel: sky2 eth0: disabling interface
-> > Mar 15 13:28:12 btd kernel: sky2 eth0: enabling interface
-> > Mar 15 13:28:12 btd kernel: sky2 eth0: ram buffer 48K
-> > Mar 15 13:28:15 btd kernel: sky2 eth0: Link is up at 1000 Mbps, full du=
-plex, flow control both
->=20
-> Use ethtool -S to if there are any pause frames, etc. See if frames are
-> still making it into PHY statistics but not being received.
->=20
-> Use ethtool -d to dump registers. Need current version of ethtool with de=
-code logic.
->=20
-> Then look for things like is Ram buffer read/write pointer changing?
->=20
-> Is GMAC stuck in pause:
->=20
-> Normal is:
-> 	GMAC 1
-> 	Status                       0x5010  (see GM_GPSR_XXX in sky2.h)
-> 	Control                      0x1800
->=20
-> Stuck is
-> 	GMAC 1
-> 	Status			     0x5810 (or 0x5A10)
+Linda
 
-First, here's the described hang in action, on the Core2 Duo on a 1Gb
-hub:
-GMAC 1 Status/Control remains at 0x5010/0x1800 until module is removed.
-Read/write buffer pointers are changing.  Full ethtool output in
-http://www.robsims.com/sky2.netmon.log.gz
 
-This machine was also having major throughput problems - 17 kB/s.
-Rebooting brought it to ~ 20 MB/s.  Booting into a kernel with the
-proprietary sk98lin kernel module showed ~ 80MB/s.  Finally, returning
-to sky2 gave 117 MB/s.  Tests run using netcat, dd, /dev/zero, and
-/dev/null, transmitting from the problem box to an e1000 via a Netgear
-GS108.  No hangs were observed during the "load test."
-
-I also had a hang on a Pentium 4 w/sky2, 100Mb/s hub.  I neglected to
-try removing and re-inserting the module before rebooting.
-GMAC 1
-Status                       0xF004
-Control                      0x1800
-
-RAMbuffer pointers not moving, Read buffer Read pointer !=3D Write pointer.
-http://www.robsims.com/sky2.ethtooldumps.tgz
-
-Thanks for looking at this.
---=20
-Rob
-
---+QahgC5+KEYLbs62
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGCI5WnvKppSZW8osRAvSyAKCDQeRr44R9JLVgCSUAslbnOXriowCgl2m5
-pY8ojjwPvEOYzJdYxk+v3xo=
-=Ftub
------END PGP SIGNATURE-----
-
---+QahgC5+KEYLbs62--
