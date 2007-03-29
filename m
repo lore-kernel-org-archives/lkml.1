@@ -1,148 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030420AbXC2QlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030410AbXC2Ql0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030420AbXC2QlS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 12:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030428AbXC2QlR
+	id S1030410AbXC2Ql0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 12:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030383AbXC2QlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 12:41:17 -0400
-Received: from mga09.intel.com ([134.134.136.24]:10299 "EHLO mga09.intel.com"
+	Thu, 29 Mar 2007 12:41:23 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:60274 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030412AbXC2QlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 12:41:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,347,1170662400"; 
-   d="scan'208"; a="65923961:sNHT1342249785"
-Subject: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table (rev 2)
-From: Mitch Williams <mitch.a.williams@intel.com>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Cc: gregkh@suse.de, ebiederm@xmission.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, auke-jan.h.kok@intel.com
-Content-Type: text/plain
-Date: Thu, 29 Mar 2007 09:41:02 -0700
-Message-Id: <1175186462.21369.4.camel@strongmad>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
-Content-Transfer-Encoding: 7bit
+	id S1030400AbXC2QlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 12:41:18 -0400
+Date: Thu, 29 Mar 2007 09:35:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Maxim <maximlevitsky@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>
+Subject: Re: [ PATCH] Add suspend/resume for HPET was: Re: [3/6] 2.6.21-rc4:
+ known regressions
+In-Reply-To: <200703290747.28929.maximlevitsky@gmail.com>
+Message-ID: <Pine.LNX.4.64.0703290930540.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+ <200703290641.20236.maximlevitsky@gmail.com>
+ <Pine.LNX.4.64.0703282203550.6730@woody.linux-foundation.org>
+ <200703290747.28929.maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a kernel bug which is triggered when using the
-irqbalance daemon with MSI-X hardware.
 
-Because both MSI-X interrupt messages and MSI-X table writes are posted,
-it's possible for them to cross while in-flight.  This results in
-interrupts being received long after the kernel thinks they're disabled,
-and in interrupts being sent to stale vectors after rebalancing.
 
-This patch performs a read flush after writes to the MSI-X table for
-mask/unmask and rebalancing operations.
+On Thu, 29 Mar 2007, Maxim wrote:
 
-This patch has been validated with (unreleased) network hardware which
-uses MSI-X.
+> On Thursday 29 March 2007 07:08:58 Linus Torvalds wrote:
+> > 
+> > (Or, better yet, shouldn't we set "boot_hpet_disable" when we decide not 
+> > to use the HPET, and set hpet_virt_address to NULL?)
+> 
+> This is done here
+> 
+> out_nohpet:
+> 	iounmap(hpet_virt_address);
+> 	hpet_virt_address = NULL;
 
-Revised with input from Eric Biederman.
+No, that only clears hpet_virt_address, and thus makes all subsequent 
+"hpet_readl()" and "hpet_writel()" calls oops.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+But it doesn't actually *tell* anybody that the HPET is disabled, so if 
+you later on do
 
-diff -urpN -X dontdiff linux-2.6.21-rc5-clean/arch/i386/kernel/io_apic.c linux-2.6.21-rc5/arch/i386/kernel/io_apic.c
---- linux-2.6.21-rc5-clean/arch/i386/kernel/io_apic.c	2007-03-28 10:05:22.000000000 -0700
-+++ linux-2.6.21-rc5/arch/i386/kernel/io_apic.c	2007-03-28 10:19:14.000000000 -0700
-@@ -2584,6 +2584,7 @@ static void set_msi_irq_affinity(unsigne
- 	msg.address_lo |= MSI_ADDR_DEST_ID(dest);
- 
- 	write_msi_msg(irq, &msg);
-+	msix_flush_writes(irq);
- 	irq_desc[irq].affinity = mask;
- }
- #endif /* CONFIG_SMP */
-diff -urpN -X dontdiff linux-2.6.21-rc5-clean/arch/ia64/kernel/msi_ia64.c linux-2.6.21-rc5/arch/ia64/kernel/msi_ia64.c
---- linux-2.6.21-rc5-clean/arch/ia64/kernel/msi_ia64.c	2007-03-28 10:05:22.000000000 -0700
-+++ linux-2.6.21-rc5/arch/ia64/kernel/msi_ia64.c	2007-03-28 09:34:27.000000000 -0700
-@@ -60,6 +60,7 @@ static void ia64_set_msi_irq_affinity(un
- 	msg.address_lo = addr;
- 
- 	write_msi_msg(irq, &msg);
-+	msix_flush_writes(irq);
- 	irq_desc[irq].affinity = cpu_mask;
- }
- #endif /* CONFIG_SMP */
-diff -urpN -X dontdiff linux-2.6.21-rc5-clean/arch/ia64/sn/kernel/msi_sn.c linux-2.6.21-rc5/arch/ia64/sn/kernel/msi_sn.c
---- linux-2.6.21-rc5-clean/arch/ia64/sn/kernel/msi_sn.c	2007-03-28 10:05:22.000000000 -0700
-+++ linux-2.6.21-rc5/arch/ia64/sn/kernel/msi_sn.c	2007-03-28 09:34:06.000000000 -0700
-@@ -204,6 +204,7 @@ static void sn_set_msi_irq_affinity(unsi
- 	msg.address_lo = (u32)(bus_addr & 0x00000000ffffffff);
- 
- 	write_msi_msg(irq, &msg);
-+	msix_flush_writes(irq);
- 	irq_desc[irq].affinity = cpu_mask;
- }
- #endif /* CONFIG_SMP */
-diff -urpN -X dontdiff linux-2.6.21-rc5-clean/arch/x86_64/kernel/io_apic.c linux-2.6.21-rc5/arch/x86_64/kernel/io_apic.c
---- linux-2.6.21-rc5-clean/arch/x86_64/kernel/io_apic.c	2007-03-28 10:05:22.000000000 -0700
-+++ linux-2.6.21-rc5/arch/x86_64/kernel/io_apic.c	2007-03-28 10:18:52.000000000 -0700
-@@ -1956,6 +1956,7 @@ static void set_msi_irq_affinity(unsigne
- 	msg.address_lo |= MSI_ADDR_DEST_ID(dest);
- 
- 	write_msi_msg(irq, &msg);
-+	msix_flush_writes(irq);
- 	irq_desc[irq].affinity = mask;
- }
- #endif /* CONFIG_SMP */
-diff -urpN -X dontdiff linux-2.6.21-rc5-clean/drivers/pci/msi.c linux-2.6.21-rc5/drivers/pci/msi.c
---- linux-2.6.21-rc5-clean/drivers/pci/msi.c	2007-03-28 10:05:24.000000000 -0700
-+++ linux-2.6.21-rc5/drivers/pci/msi.c	2007-03-28 09:21:34.000000000 -0700
-@@ -68,6 +68,29 @@ static void msix_set_enable(struct pci_d
- 	}
- }
- 
-+void msix_flush_writes(unsigned int irq)
-+{
-+	struct msi_desc *entry;
-+
-+	entry = get_irq_msi(irq);
-+	BUG_ON(!entry || !entry->dev);
-+	switch (entry->msi_attrib.type) {
-+	case PCI_CAP_ID_MSI:
-+		/* nothing to do */
-+		break;
-+	case PCI_CAP_ID_MSIX:
-+	{
-+		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
-+			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
-+		readl(entry->mask_base + offset);
-+		break;
-+	}
-+	default:
-+		BUG();
-+		break;
-+	}
-+}
-+
- static void msi_set_mask_bit(unsigned int irq, int flag)
- {
- 	struct msi_desc *entry;
-@@ -186,11 +209,13 @@ void write_msi_msg(unsigned int irq, str
- void mask_msi_irq(unsigned int irq)
- {
- 	msi_set_mask_bit(irq, 1);
-+	msix_flush_writes(irq);
- }
- 
- void unmask_msi_irq(unsigned int irq)
- {
- 	msi_set_mask_bit(irq, 0);
-+	msix_flush_writes(irq);
- }
- 
- static int msi_free_irq(struct pci_dev* dev, int irq);
-diff -urpN -X dontdiff linux-2.6.21-rc5-clean/include/linux/msi.h linux-2.6.21-rc5/include/linux/msi.h
---- linux-2.6.21-rc5-clean/include/linux/msi.h	2007-03-28 10:05:25.000000000 -0700
-+++ linux-2.6.21-rc5/include/linux/msi.h	2007-03-28 09:21:51.000000000 -0700
-@@ -12,6 +12,7 @@ extern void mask_msi_irq(unsigned int ir
- extern void unmask_msi_irq(unsigned int irq);
- extern void read_msi_msg(unsigned int irq, struct msi_msg *msg);
- extern void write_msi_msg(unsigned int irq, struct msi_msg *msg);
-+extern void msix_flush_writes(unsigned int irq);
- 
- struct msi_desc {
- 	struct {
+	if (is_hpet_capable()) {
+		time = hpet_readl(..);
+		..
+
+you will just Oops!
+
+So as far as I can see, even with your latest patch, if hpet_enable() 
+fails (and triggers the "goto out_nohpet" cases), you'll just oops 
+immediately when you try to suspend/resume the HPET.
+
+THAT was what I meant - when we clear hpet_virt_address, we should also 
+tell all potential subsequent users that the HPET is not there!
+
+		Linus
