@@ -1,173 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965942AbXC2Eio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965944AbXC2Ele@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965942AbXC2Eio (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 00:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965944AbXC2Eio
+	id S965944AbXC2Ele (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 00:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965955AbXC2Eld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 00:38:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48970 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965942AbXC2Ein (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 00:38:43 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Ingo Molnar <mingo@elte.hu>, luming.yu@intel.com
-Subject: Re: [patch] MSI-X: fix resume crash
-Date: Thu, 29 Mar 2007 00:30:30 -0400
-User-Agent: KMail/1.9.5
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+	Thu, 29 Mar 2007 00:41:33 -0400
+Received: from hu-out-0506.google.com ([72.14.214.226]:54546 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965948AbXC2Elb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 00:41:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=T2m1YlogNJDfUFByhxS9QWtZhV4xlq3AF6lKFI9S6+4CcZCNjYHV107FTU7IIw7mPbZOI6aZ6gn2dCvhq45qHnVXR3AVCrXHURiO8XkQ51vA7Wb2pwQguRs0Pc6ls9Reoi0jk+46soocs/FBmNB6bHCTxAEOvcJej5cDSZuoV8c=
+From: Maxim <maximlevitsky@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [ PATCH] Add suspend/resume for HPET was: Re: [3/6] 2.6.21-rc4: known regressions
+Date: Thu, 29 Mar 2007 06:41:16 +0200
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Meyer <thomas@m3y3r.de>, Frederic Riss <frederic.riss@gmail.com>,
-       Marcus Better <marcus@better.se>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070328130326.GA27126@elte.hu> <20070328130630.GA28108@elte.hu>
-In-Reply-To: <20070328130630.GA28108@elte.hu>
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703281701.23876.maximlevitsky@gmail.com> <Pine.LNX.4.64.0703280931520.6730@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703280931520.6730@woody.linux-foundation.org>
 MIME-Version: 1.0
+Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703290030.31228.lenb@kernel.org>
+Message-Id: <200703290641.20236.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Tony, Len the way pci_disable_device is being used in a suspend/resume 
-> path by a few drivers is completely incompatible with the way irqs are 
-> allocated on ia64.  In particular people the following sequence occurs 
-> in several drivers.
+On Wednesday 28 March 2007 18:38:48 Linus Torvalds wrote:
 > 
-> probe:
->   pci_enable_device(pdev);
->   request_irq(pdev->irq);
-> suspend:
->   pci_disable_device(pdev);
-> resume:
->   pci_enable_device(pdev);
-> remove:
->   free_irq(pdev->irq);
->   pci_disable_device(pdev);
-
-There are no IA64 machines that support system suspend/resume today --
-so you have 0 chance of breaking the IA64 suspend/resume installed base.
-
-My understanding is that Luming Yu has cobbled IA64 S4 support
-together for a future release though.
-
-> What I'm proposing we do is move the irq allocation code out of 
-> pci_enable_device and the irq freeing code out of pci_disable_device in 
-> the future.  If we move ia64 to a model where the irq number equal the 
-> gsi like we have for x86_64 and are in the middle of for i386 that 
-> should be pretty straight forward. It would even be relatively simple  
-> to delay vector allocation in that context until request_irq, if we 
-> needed the delayed allocation benefit.  Do you two have any problems 
-> with moving in that direction?
-
-I think consistency here would be _wonderful_.
-Of course the beauty of having identity GSI=IRQ and a /proc/interrupts
-that tells you what IOAPIC pin you are using become moot with MSI --
-but hey, showing the IRQ number rather than the vector number
-is consistent and makes sense.
-
-> If fixing the arch code is unacceptable for some reason I'm not aware of 
-> we need to audit the 10-20 drivers that call pci_disable_device in their 
-> suspend/resume processing and ensure that they have freed all of the 
-> irqs before that point.  Given that I have bug reports on the msi path I 
-> know that isn't true.
-
-I think the suspend/resume interrupt logic needs some serious attention.
-We've had several schemes for suspend/resume of interrupts, several
-changes in strategy, and right now I think we are inconsistent,
-and frankly, I'm amazed it works at all.
-
--Len
-
-
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/cris/arch-v32/drivers/pci/bios.c |    4 +++-
->  arch/frv/mb93090-mb00/pci-vdk.c       |    3 ++-
->  arch/i386/pci/common.c                |    6 ++++--
->  arch/ia64/pci/pci.c                   |    8 ++++++--
->  4 files changed, 15 insertions(+), 6 deletions(-)
+> On Wed, 28 Mar 2007, Maxim wrote:
+> > 
+> > 	Now I don't have a clue how to set those bits if only HPET is used as clock source because now clocksources
+> > 	don't have _any_ resume hook.
 > 
-> Index: linux/arch/cris/arch-v32/drivers/pci/bios.c
-> ===================================================================
-> --- linux.orig/arch/cris/arch-v32/drivers/pci/bios.c
-> +++ linux/arch/cris/arch-v32/drivers/pci/bios.c
-> @@ -100,7 +100,9 @@ int pcibios_enable_device(struct pci_dev
->  	if ((err = pcibios_enable_resources(dev, mask)) < 0)
->  		return err;
->  
-> -	return pcibios_enable_irq(dev);
-> +	if (!dev->msi_enabled)
-> +		pcibios_enable_irq(dev);
-> +	return 0;
->  }
->  
->  int pcibios_assign_resources(void)
-> Index: linux/arch/frv/mb93090-mb00/pci-vdk.c
-> ===================================================================
-> --- linux.orig/arch/frv/mb93090-mb00/pci-vdk.c
-> +++ linux/arch/frv/mb93090-mb00/pci-vdk.c
-> @@ -466,6 +466,7 @@ int pcibios_enable_device(struct pci_dev
->  
->  	if ((err = pcibios_enable_resources(dev, mask)) < 0)
->  		return err;
-> -	pcibios_enable_irq(dev);
-> +	if (!dev->msi_enabled)
-> +		pcibios_enable_irq(dev);
->  	return 0;
->  }
-> Index: linux/arch/i386/pci/common.c
-> ===================================================================
-> --- linux.orig/arch/i386/pci/common.c
-> +++ linux/arch/i386/pci/common.c
-> @@ -434,11 +434,13 @@ int pcibios_enable_device(struct pci_dev
->  	if ((err = pcibios_enable_resources(dev, mask)) < 0)
->  		return err;
->  
-> -	return pcibios_enable_irq(dev);
-> +	if (!dev->msi_enabled)
-> +		return pcibios_enable_irq(dev);
-> +	return 0;
->  }
->  
->  void pcibios_disable_device (struct pci_dev *dev)
->  {
-> -	if (pcibios_disable_irq)
-> +	if (!dev->msi_enabled && pcibios_disable_irq)
->  		pcibios_disable_irq(dev);
->  }
-> Index: linux/arch/ia64/pci/pci.c
-> ===================================================================
-> --- linux.orig/arch/ia64/pci/pci.c
-> +++ linux/arch/ia64/pci/pci.c
-> @@ -557,14 +557,18 @@ pcibios_enable_device (struct pci_dev *d
->  	if (ret < 0)
->  		return ret;
->  
-> -	return acpi_pci_irq_enable(dev);
-> +	if (!dev->msi_enabled)
-> +		return acpi_pci_irq_enable(dev);
-> +	return 0;
->  }
->  
->  void
->  pcibios_disable_device (struct pci_dev *dev)
->  {
->  	BUG_ON(atomic_read(&dev->enable_cnt));
-> -	acpi_pci_irq_disable(dev);
-> +	if (!dev->msi_enabled)
-> +		acpi_pci_irq_disable(dev);
-> +	return 0;
->  }
->  
->  void
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> One thing that drives me wild about that "clocksource resume" thing is 
+> that it seems to think that clocksources are somehow different from any 
+> other system devices..
 > 
+> Why isn't the HPET considered a "device", and has it's own *device* 
+> "suspend" and "resume"? Why do we seem to think that only "set_mode()" 
+> etc should wake up clock sources?
+> 
+> It's a *device*, dammit. It should save and resume like one (probably as a 
+> system device). The "set_mode()" etc stuff is at a completely different 
+> (higher) conceptual level.
+> 
+> Thomas? It does seem like Maxim has hit the nail on the head (at least 
+> partly) on the HPET timer resume problems..
+> 
+> 		Linus
+> 
+
+
+Hi,
+	I am sending here a patch that as was discussed here adds hpet to list of system devices
+	and adds suspend/resume hooks this way.
+	I tested it and it works fine.
+
+---
+Add suspend/resume support for HPET
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+
+---
+ arch/i386/kernel/hpet.c |   64 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 64 insertions(+), 0 deletions(-)
+
+diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
+index 0fd9fba..ac41476 100644
+--- a/arch/i386/kernel/hpet.c
++++ b/arch/i386/kernel/hpet.c
+@@ -3,6 +3,8 @@
+ #include <linux/errno.h>
+ #include <linux/hpet.h>
+ #include <linux/init.h>
++#include <linux/sysdev.h>
++#include <linux/pm.h>
+ 
+ #include <asm/hpet.h>
+ #include <asm/io.h>
+@@ -524,3 +526,65 @@ irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ #endif
++
++
++/*
++ * Suspend/resume part
++ */
++
++#ifdef CONFIG_PM
++
++static int hpet_suspend(struct sys_device *sys_device, pm_message_t state)
++{
++	unsigned long cfg = hpet_readl(HPET_CFG);
++
++	cfg &= ~(HPET_CFG_ENABLE|HPET_CFG_LEGACY);
++	hpet_writel(cfg, HPET_CFG);
++
++	return 0;
++}
++
++static int hpet_resume(struct sys_device *sys_device)
++{
++	unsigned int id;
++
++	hpet_start_counter();
++
++	id = hpet_readl(HPET_ID);
++
++	if (id & HPET_ID_LEGSUP)
++		hpet_enable_int();
++
++	return 0;
++}
++
++static struct sysdev_class hpet_class = {
++	set_kset_name("hpet"),
++	.suspend	= hpet_suspend,
++	.resume		= hpet_resume,
++};
++
++static struct sys_device hpet_device = {
++	.id		= 0,
++	.cls		= &hpet_class,
++};
++
++
++static __init int hpet_register_sysfs(void)
++{
++	int err;
++
++	err = sysdev_class_register(&hpet_class);
++
++	if (!err) {
++		sysdev_register(&hpet_device);
++		if (err)
++			sysdev_class_unregister(&hpet_class);
++	}
++
++	return err;
++}
++
++device_initcall(hpet_register_sysfs);
++
++#endif
+-- 
+1.4.4.2
+
