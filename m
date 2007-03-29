@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933962AbXC2BaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965815AbXC2Bgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933962AbXC2BaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 21:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934301AbXC2BaQ
+	id S965815AbXC2Bgy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 21:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965865AbXC2Bgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 21:30:16 -0400
-Received: from kanga.kvack.org ([66.96.29.28]:60348 "EHLO kanga.kvack.org"
+	Wed, 28 Mar 2007 21:36:54 -0400
+Received: from mx2.suse.de ([195.135.220.15]:58334 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933962AbXC2BaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 21:30:14 -0400
-Date: Wed, 28 Mar 2007 21:29:55 -0400
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
-Cc: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: Inlining can be _very_bad...
-Message-ID: <20070329012955.GD17334@kvack.org>
-References: <20070329011838.6e832615@werewolf-wl>
+	id S965815AbXC2Bgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 21:36:53 -0400
+Date: Thu, 29 Mar 2007 03:36:52 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ravikiran G Thirumalai <kiran@scalex86.org>
+Subject: Re: [rfc][patch] queued spinlocks (i386)
+Message-ID: <20070329013652.GB2390@wotan.suse.de>
+References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL> <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de> <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070329011838.6e832615@werewolf-wl>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 01:18:38AM +0200, J.A. Magallón wrote:
-> It looks like is updating the stack on each iteration...This is -march=opteron
-> code, the -march=pentium4 is similar. Same behaviour with gcc3 and gcc4.
+On Wed, Mar 28, 2007 at 03:00:21PM -0700, Davide Libenzi wrote:
+> On Wed, 28 Mar 2007, Davide Libenzi wrote:
 > 
-> tst.c and Makefile attached.
+> > The method you propose is otherwise called "Ticket Lock":
+> > 
+> > http://en.wikipedia.org/wiki/Ticket_lock
+> > http://www.cs.rochester.edu/research/synchronization/pseudocode/ss.html#ticket
 > 
-> Nice, isn't it ? Please, probe where is my fault...
+> That this work prio-art dates to 1991:
+> 
+> http://www.cs.rochester.edu/u/scott/papers/1991_TOCS_synch.pdf
+> 
+> So I would not worry to much about patents here. At least W2K MS ones ;)
+> What I would worry though, is to add another class of locks. There's no 
 
-Yes, gcc sucks in its handling of large return values, news at 11.  I have 
-several outstanding bugs on cases where gcc could keep things in registers 
-but doesn't.
+No, as you see from my patch I just change the spinlock implementation
+to a queued one. I agree it doesn't make sense to add a new type of lock.
 
-That said, it tends to do much better on plain integer code, as that is 
-what it gets tuned for.  Do NOT propagate the blanket myth that inlining is 
-a bad thing.  It is very useful for small functions where the overhead 
-associated with call/ret sequences and register clobbers overshadows the 
-work being done.  The call/ret updates alone can make a big difference when 
-there are lots of other (more useful) memory transactions to complete.  Take 
-a look at things like the notifier hooks for an example of something that 
-does far too little work per function call and should really be inlined.
 
-		-ben
--- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <zyntrop@kvack.org>.
+> reason why Ticket Locks would perform worse than our spinlock, in both 
+> contended and not-contended case, AFAICS. And they have a nice FIFO 
+> behaviour.
+
+In most cases, no. For the uncontended case they should be about the
+same. They have the same spinning behaviour. However there is a little
+window where they might be a bit slower I think... actually perhaps I'm
+wrong!
+
+Currently if you have 4 CPUs spinning and the lock is released, all 4
+CPU cachelines will be invalidated, then they will be loaded again, and
+found to be 0, so they all try to atomic_dec_return the counter, each
+one invalidating others' cachelines. 1 gets through.
+
+With my queued locks, all 4 cachelines are invalidated and loaded, but
+only one will be allowed to proceed, and there are 0 atomic operations
+or stores of any kind.
+
+So I take that back: our current spinlocks have a worse thundering herd
+behaviour under contention than my queued ones. So I'll definitely
+push the patch through.
