@@ -1,34 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422657AbXC2WXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945901AbXC2WX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422657AbXC2WXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 18:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945894AbXC2WXW
+	id S1945901AbXC2WX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 18:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945905AbXC2WX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 18:23:22 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:41220 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422651AbXC2WXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 18:23:21 -0400
-Date: Thu, 29 Mar 2007 15:23:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	Thu, 29 Mar 2007 18:23:59 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:35124 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945901AbXC2WX6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 18:23:58 -0400
+Date: Thu, 29 Mar 2007 15:24:55 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
 To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org
 Subject: Re: 2.6.21-rc5-mm2 - compile error on x86-64
-Message-Id: <20070329152317.56df80d0.akpm@linux-foundation.org>
+Message-Id: <20070329152455.1be1fe2f.randy.dunlap@oracle.com>
 In-Reply-To: <m1mz1vem51.fsf@ebiederm.dsl.xmission.com>
 References: <20070326211627.c681af3b.akpm@linux-foundation.org>
 	<20070329182020.GA9223@aitel.hist.no>
 	<20070329142816.5d18d89f.akpm@linux-foundation.org>
 	<m1mz1vem51.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007 16:10:50 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+On Thu, 29 Mar 2007 16:10:50 -0600 Eric W. Biederman wrote:
 
 > Andrew Morton <akpm@linux-foundation.org> writes:
 > >
@@ -47,22 +52,21 @@ ebiederm@xmission.com (Eric W. Biederman) wrote:
 > CONFIG_SYSCTL and CONFIG_PROCFS without CONFIG_PROC_SYSCTL being
 > selected...
 > Do we have a constraint problem in Kconfig?  Or am I misremembering things?
-> 
 
-config PROC_SYSCTL
-        bool "Sysctl support (/proc/sys)" if EMBEDDED
-        depends on PROC_FS
-        select SYSCTL
-        default y
+Hi Eric,
 
-CONFIG_PROC_SYSCTL depends on CONFIG_PROC_FS
-CONFIG_PROC_SYSCTL selects CONFIG_SYSCTL
+Looks like you are just misremembering things...
 
-So I don't see anything preventing CONFIG_SYSCTL=y, CONFIG_PROC_FS=y,
-CONFIG_PROC_SYSCTL=n.  I assume we can make this combination compile, link
-and run easily enough.  I dunno if it makes any actual sense though?
+> >  fs/built-in.o: In function `proc_root_init':
+> >  /usr/src/linux/fs/proc/root.c:83: undefined reference to `proc_sys_init'
+> >
+> > Fix that up and remove an ifdef-in-C.
+> >
+> > Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+> > Cc: Helge Hafting <helgehaf@aitel.hist.no>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 
-I'd have thought that PROC_SYSCTL should just depend on SYSCTL.  But
-SYSCTL's Kconfig setup is weird.
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
