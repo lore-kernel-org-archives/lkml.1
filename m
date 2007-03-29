@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030477AbXC2RZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030522AbXC2RZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030477AbXC2RZT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 13:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030510AbXC2RZS
+	id S1030522AbXC2RZv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 13:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030519AbXC2RZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 13:25:18 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:33524 "EHLO smtp.osdl.org"
+	Thu, 29 Mar 2007 13:25:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48325 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933166AbXC2RZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 13:25:15 -0400
-Date: Thu, 29 Mar 2007 10:22:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: [ PATCH] Add suspend/resume for HPET was: Re: [3/6] 2.6.21-rc4:
- known regressions
-In-Reply-To: <200703291851.19424.maximlevitsky@gmail.com>
-Message-ID: <Pine.LNX.4.64.0703291022100.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
- <200703290747.28929.maximlevitsky@gmail.com>
- <Pine.LNX.4.64.0703290930540.6730@woody.linux-foundation.org>
- <200703291851.19424.maximlevitsky@gmail.com>
+	id S1030521AbXC2RZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 13:25:50 -0400
+Message-ID: <460BF68E.9030806@redhat.com>
+Date: Thu, 29 Mar 2007 13:25:34 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mitch Williams <mitch.a.williams@intel.com>
+CC: gregkh@suse.de, linux-kernel@vger.kernel.org, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table (rev 2)
+References: <1175186462.21369.4.camel@strongmad>
+In-Reply-To: <1175186462.21369.4.camel@strongmad>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mitch Williams wrote:
+> This patch fixes a kernel bug which is triggered when using the
+> irqbalance daemon with MSI-X hardware.
+> 
+> Because both MSI-X interrupt messages and MSI-X table writes are posted,
+> it's possible for them to cross while in-flight.  This results in
+> interrupts being received long after the kernel thinks they're disabled,
+> and in interrupts being sent to stale vectors after rebalancing.
+> 
+> This patch performs a read flush after writes to the MSI-X table for
+> mask/unmask and rebalancing operations.
+> 
+> This patch has been validated with (unreleased) network hardware which
+> uses MSI-X.
+> 
+> Revised with input from Eric Biederman.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> 
+
+Are you going to post one for 2.6.20 as well? Some people might be
+interested...
 
 
-On Thu, 29 Mar 2007, Maxim Levitsky wrote:
->
-> 	I agree, and as you said I did exactly that:
-
-Gaah. I'm blind. Sorry. Your patch did indeed do exactly that, I somehow 
-overlooked it.
-
-		Linus
