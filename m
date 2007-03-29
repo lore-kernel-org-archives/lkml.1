@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422659AbXC2WEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422646AbXC2WGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422659AbXC2WEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 18:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422665AbXC2WEb
+	id S1422646AbXC2WGN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 18:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422668AbXC2WGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 18:04:31 -0400
-Received: from smtp.ono.com ([62.42.230.12]:35661 "EHLO resmaa05.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422659AbXC2WEa convert rfc822-to-8bit (ORCPT
+	Thu, 29 Mar 2007 18:06:13 -0400
+Received: from mga02.intel.com ([134.134.136.20]:9538 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422646AbXC2WGM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 18:04:30 -0400
-Date: Fri, 30 Mar 2007 00:01:11 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: Inlining can be _very_bad...
-Message-ID: <20070330000111.620aaaab@werewolf-wl>
-In-Reply-To: <20070329175254.GC14134@stusta.de>
-References: <20070329011838.6e832615@werewolf-wl>
-	<20070329175254.GC14134@stusta.de>
-X-Mailer: Claws Mail 2.8.1cvs62 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 29 Mar 2007 18:06:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,348,1170662400"; 
+   d="scan'208"; a="218843393:sNHT22169216076"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table (rev 2)
+Date: Thu, 29 Mar 2007 15:05:56 -0700
+Message-ID: <08FE5CC30C9A3F41BF819A502CF7BF6EFCDB2B@fmsmsx411.amr.corp.intel.com>
+In-Reply-To: <460BF68E.9030806@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table (rev 2)
+Thread-Index: AcdyJ1tRP7BrERnSQaqXja5jTgkqFwAJn+nw
+From: "Williams, Mitch A" <mitch.a.williams@intel.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Cc: <linux-pci@atrey.karlin.mff.cuni.cz>, <gregkh@suse.de>,
+       <ebiederm@xmission.com>, <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+X-OriginalArrivalTime: 29 Mar 2007 22:05:57.0334 (UTC) FILETIME=[6D7E0760:01C7724E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007 19:52:54 +0200, Adrian Bunk <bunk@stusta.de> wrote:
+Chuck Ebbert wrote:
+>Are you going to post one for 2.6.20 as well? Some people might be
+>interested...
 
-> On Thu, Mar 29, 2007 at 01:18:38AM +0200, J.A. Magallón wrote:
-> > Hi all...
-> > 
-> > I post this here as it can be of direct interest for kernel development
-> > (as I recall many discussions about inlining yes or no...).
-> > 
-> > Testing other problems, I finally got this this issue: the same short
-> > and stupid loop lasted from 3 to 5 times more if it was in main() than
-> > if it was in an out-of-line function. The same (bad thing) happens if
-> > the function is inlined.
-> >...
-> > It looks like is updating the stack on each iteration...This is -march=opteron
-> > code, the -march=pentium4 is similar. Same behaviour with gcc3 and gcc4.
-> > 
-> > tst.c and Makefile attached.
-> > 
-> > Nice, isn't it ? Please, probe where is my fault...
-> 
-> The only fault is to post this issue here instead of the gcc Bugzilla.
-> 
+The first time I posted this patch, Greg KH indicated that he thought
+it was too intrusive to add to -stable, especially considering that
+our MSI-X capable hardware isn't in the field yet.
 
-Sorry, my intention was just something like 'take a look at your
-reduction-like code, perhaps its sloooow', something like checksum
-funtions in tcp or raid that are inlined expecting to be faster
-and in fact they are slower...
-
-> In your example the compiler should produce code not slower than with 
-> the out-of-line version when inlining. If it doesn't the bug in the 
-> compiler resulting in this should be fixed.
-> 
-
-That's what I expected, but...
-Going to gcc bugzilla...
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.20-jam06 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #2 SMP PREEMPT
+So the answer to your question is, "probably not".
+-Mitch
