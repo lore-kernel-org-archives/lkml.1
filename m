@@ -1,42 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965819AbXC2AJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933855AbXC2AKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965819AbXC2AJS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 20:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965884AbXC2AJS
+	id S933855AbXC2AKy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 20:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933896AbXC2AKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 20:09:18 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:32872 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965819AbXC2AJK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 20:09:10 -0400
-Message-ID: <460B0399.5080904@zytor.com>
-Date: Wed, 28 Mar 2007 17:08:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Paul Sokolovsky <pmiscml@gmail.com>
-CC: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       Anton Vorontsov <cbou@mail.ru>
-Subject: Re: [RFC] Virtual methods for devices and generalized GPIO support
- using it
-References: <881020209.20070327113610@gmail.com> <460A98B9.9040602@zytor.com> <1547009361.20070329025215@gmail.com>
-In-Reply-To: <1547009361.20070329025215@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 28 Mar 2007 20:10:54 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:36361 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933855AbXC2AKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 20:10:53 -0400
+Date: Wed, 28 Mar 2007 17:10:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Blaisorblade <blaisorblade@yahoo.it>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH 0/4] UML - Code cleanups for 2.6.21
+Message-Id: <20070328171046.fb56ae75.akpm@linux-foundation.org>
+In-Reply-To: <20070328152845.GA6350@c2.user-mode-linux.org>
+References: <20070328152845.GA6350@c2.user-mode-linux.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Sokolovsky wrote:
-> 
->      By this criteria I happened to choose macros syntax. But it's still
-> merely a syntax, and I don't pledge for it. If there's more movement
-> towards using explicit low-level forms like 1) or 2) instead of
-> introducing new syntactic pattern, then macro syntax can be considered
-> to have fulfilled its introductory role and can be dropped.
-> 
+On Wed, 28 Mar 2007 11:28:45 -0400
+Jeff Dike <jdike@addtoit.com> wrote:
 
-"Movement towards?!"  That's been a fundamental part of Linux design 
-since the very beginning.
+> These are tidying patches from Blaisorblade - 2.6.21 material.
 
-	-hpa
+The three net_kern.c patches invoked a reject storm against mainline,
+presumably because of uml-network-interface-hotplug-error-handling.patch.
+
+So I bumped those three patches into 2.6.22.
