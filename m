@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030344AbXC2RI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030490AbXC2RLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030344AbXC2RI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 13:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030360AbXC2RI6
+	id S1030490AbXC2RLN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 13:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030484AbXC2RLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 13:08:58 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:31534 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030344AbXC2RI5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 13:08:57 -0400
-Date: Thu, 29 Mar 2007 19:08:55 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org, mark.langsdorf@amd.com
-Subject: Re: [PATCH] fix amd64-agp aperture validation
-Message-ID: <20070329170855.GA3984@rhun.haifa.ibm.com>
-References: <460B8DA8.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460B8DA8.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.11
+	Thu, 29 Mar 2007 13:11:13 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:56154 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030479AbXC2RLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 13:11:11 -0400
+Date: Thu, 29 Mar 2007 19:01:54 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: Interface for the new fallocate() system call
+In-Reply-To: <20070329115126.GB7374@amitarora.in.ibm.com>
+Message-ID: <Pine.LNX.4.61.0703291854000.31834@yvahk01.tjqt.qr>
+References: <20070117094658.GA17390@amitarora.in.ibm.com>
+ <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com>
+ <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
+ <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com>
+ <20070329115126.GB7374@amitarora.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 08:58:00AM +0100, Jan Beulich wrote:
+Hi,
 
-> Under CONFIG_DISCONTIGMEM, assuming that a !pfn_valid() implies all
-> subsequent pfn-s are also invalid is wrong. Thus replace this by
-> explicitly checking against the E820 map.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> 
-> --- linux-2.6.21-rc5/drivers/char/agp/amd64-agp.c	2007-03-26 15:20:14.000000000 +0200
-> +++ 2.6.21-rc5-amd64-agp/drivers/char/agp/amd64-agp.c	2007-03-28 15:20:49.000000000 +0200
-> @@ -14,6 +14,7 @@
->  #include <linux/agp_backend.h>
->  #include <linux/mmzone.h>
->  #include <asm/page.h>		/* PAGE_SIZE */
-> +#include <asm/e820.h>
->  #include <asm/k8.h>
->  #include "agp.h"
->  
-> @@ -259,7 +260,6 @@ static const struct agp_bridge_driver am
->  /* Some basic sanity checks for the aperture. */
->  static int __devinit aperture_valid(u64 aper, u32 size)
->  {
-> -	u32 pfn, c;
->  	if (aper == 0) {
->  		printk(KERN_ERR PFX "No aperture\n");
->  		return 0;
-> @@ -272,14 +272,9 @@ static int __devinit aperture_valid(u64 
->  		printk(KERN_ERR PFX "Aperture out of bounds\n");
->  		return 0;
->  	}
-> -	pfn = aper >> PAGE_SHIFT;
-> -	for (c = 0; c < size/PAGE_SIZE; c++) {
-> -		if (!pfn_valid(pfn + c))
-> -			break;
-> -		if (!PageReserved(pfn_to_page(pfn + c))) {
-> -			printk(KERN_ERR PFX "Aperture pointing to RAM\n");
-> -			return 0;
-> -		}
-> +	if (e820_any_mapped(aper, aper + size, E820_RAM)) {
-> +		printk(KERN_ERR PFX "Aperture pointing to RAM\n");
-> +		return 0;
->  	}
+On Mar 29 2007 17:21, Amit K. Arora wrote:
+>
+>We need to come up with the best possible layout of arguments for the
+>fallocate() system call. Various architectures have different
+>requirements for how the arguments should look like. Since the mail
+>chain has become huge, here is the summary of various inputs received
+>so far.
 
-This pretty much duplicates the checking done in
-arch/x86-64/kernel/aperture.c:aperture_valid(), with slight variations
-(e.g., 32MB vs. 64MB aperture size). Should these two functions be
-consolidated?
+>s390 prefers following layout:
+>   int fallocate(int fd, loff_t offset, loff_t len, int mode)
+>For details on why and how "int, int, loff_t, loff_t" is a problem on
+>s390, please see Heiko's mail on 16th March. Here is the link:
+>http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg133595.html
 
-Cheers,
-Muli
+Quoting that...
+	|len -> r6 + second halve on stack
+
+Then, is not this a gcc glitch? (IMO, it should put all of "len" on the 
+stack)
+
+>Platform: ppc, arm
+>------------------
+>6 arguments. Thus the desired layout by ppc32 is:
+>   int fallocate(int fd, int mode, loff_t offset, loff_t len)
+>
+>Option of loff_t => high u32 + low u32
+>--------------------------------------
+>Matthew and Russell have suggested another option of breaking each
+>"loff_t" into two "u32"s. This will result in 6 arguments in total.
+>
+>What are your thoughts on this ? What layout should we finalize on ?
+>Perhaps, since sync_file_range() system call has similar arguments, we
+>can take hint from the challenges faced on implementing it on various
+>architectures, and decide.
+>
+>Please suggest. Thanks!
+
+Does it actually matter? Glibc can have its own argument ordering
+different from the syscalls, so at least it would be possible to lay out
+the syscall arguments in the most portable way while retaining nice
+userspace C code. Hey, glibc might even wrap it up in a struct! (Using a 
+pointer, as suggested in one of the proposals.)
+
+int fallocate(int fd, loff_t offset, loff_t len, int mode)
+{
+	struct fallocate_foobar d = {fd, offset, len, mode};
+	return _syscall(..., &d);
+}
+
+
+
+
+Jan
+-- 
