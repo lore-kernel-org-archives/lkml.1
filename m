@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030732AbXC2VEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030735AbXC2VMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030732AbXC2VEU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 17:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030734AbXC2VEU
+	id S1030735AbXC2VMN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 17:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030734AbXC2VMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 17:04:20 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:60855 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030732AbXC2VET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 17:04:19 -0400
-Message-ID: <460C299F.1020000@us.ibm.com>
-Date: Thu, 29 Mar 2007 16:03:27 -0500
-From: "Steve French (smfltc)" <smfltc@us.ibm.com>
-User-Agent: Mozilla Thunderbird 1.0 (Windows/20041206)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: undisclosed-recipients:;
-Subject: Re: Can't mount NAS device
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Mar 2007 17:12:13 -0400
+Received: from dsl017-049-130.sfo4.dsl.speakeasy.net ([69.17.49.130]:52611
+	"EHLO piratehaven.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030735AbXC2VMM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 17:12:12 -0400
+X-Greylist: delayed 1978 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Mar 2007 17:12:12 EDT
+Date: Thu, 29 Mar 2007 13:39:13 -0700
+From: Brian Pomerantz <bapper@piratehaven.org>
+To: viro@zeniv.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix page leak during core dump
+Message-ID: <20070329203913.GA5190@skull.piratehaven.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+X-homepage: http://www.piratehaven.org/~bapper/
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-strace did show something useful
-	mount(...) = -1 ENOTDIR (Not a directory)
 
-and then that led me to spotting the obvious bug which is
-on your NAS device (server).  The server is returning a
-malformed (illegal) response.
+When the dump cannot occur most likely because of a full file system
+and the page to be written is the zero page, the call to
+page_cache_release() is missed.
 
-The Linux cifs client was getting a 22 byte response to a level 0x200
-(FILE_UNIX_BASIC_INFO) request that is supposed to be 100 bytes.
+Signed-off-by: Brian Pomerantz <bapper@mvista.com>
 
-Basically connecting the mount to the server succeeded but 
-the stat of "." (the top directory in the mount) failed 
-since it is not recognized as a directory.
-
-When you disable the Unix Extensions on the client ie
-	echo 0 > /proc/fs/cifs/LinuxExtensionsEnabled
-you bypass the bug on the server, because the response to
-the call which is malformed is not issued (and an older
-infolevel is requested).
-
-If your server vendor produces a fix let me know and I can add
-the information about the required level of server to 
-the Linux cifs client "how-to" / user's guide.
-
-
-
-
-
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index a2fceba..9cc4f0a 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1704,7 +1704,10 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
+ 				DUMP_SEEK(PAGE_SIZE);
+ 			} else {
+ 				if (page == ZERO_PAGE(addr)) {
+-					DUMP_SEEK(PAGE_SIZE);
++					if (!dump_seek(file, PAGE_SIZE)) {
++						page_cache_release(page);
++						goto end_coredump;
++					}
+ 				} else {
+ 					void *kaddr;
+ 					flush_cache_page(vma, addr,
