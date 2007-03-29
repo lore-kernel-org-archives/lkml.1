@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030342AbXC2Qf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030354AbXC2QhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030342AbXC2Qf0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 12:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030348AbXC2Qf0
+	id S1030354AbXC2QhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 12:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030357AbXC2QhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 12:35:26 -0400
-Received: from smtp112.sbc.mail.mud.yahoo.com ([68.142.198.211]:21659 "HELO
-	smtp112.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030346AbXC2QfY (ORCPT
+	Thu, 29 Mar 2007 12:37:23 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:12320 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030354AbXC2QhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 12:35:24 -0400
-Date: Thu, 29 Mar 2007 09:35:20 -0700
-From: Chris Wedgwood <cw@f00f.org>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: Interface for the new fallocate() system call
-Message-ID: <20070329163520.GA16632@tuatara.stupidest.org>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070329115126.GB7374@amitarora.in.ibm.com>
+	Thu, 29 Mar 2007 12:37:23 -0400
+Date: Thu, 29 Mar 2007 09:38:38 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+Cc: <sam@ravnborg.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix dependency generation
+Message-Id: <20070329093838.d5b2d88a.randy.dunlap@oracle.com>
+In-Reply-To: <460C0020.76E4.0078.0@novell.com>
+References: <460BA292.76E4.0078.0@novell.com>
+	<20070329083947.d9ba87e0.randy.dunlap@oracle.com>
+	<460C0020.76E4.0078.0@novell.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 05:21:26PM +0530, Amit K. Arora wrote:
+On Thu, 29 Mar 2007 17:06:24 +0100 Jan Beulich wrote:
 
->    int fallocate(int fd, loff_t offset, loff_t len, int mode)
+> >>> Randy Dunlap <randy.dunlap@oracle.com> 29.03.07 17:39 >>>
+> >> --- linux-2.6.21-rc5/scripts/basic/fixdep.c	2007-02-04 19:44:54.000000000 +0100
+> >> +++ 2.6.21-rc5-fixdep-mod/scripts/basic/fixdep.c	2007-03-29 11:11:10.000000000 +0200
+> >> @@ -29,8 +29,7 @@
+> >>   * option which is mentioned in any of the listed prequisites.
+> >>   *
+> >>   * To be exact, split-include populates a tree in include/config/,
+> >> - * e.g. include/config/his/driver.h, which contains the #define/#undef
+> >> - * for the CONFIG_HIS_DRIVER option.
+> >
+> >I don't see why you deleted the line above.
+> 
+> Because it is no longer true. These files are empty as of 2.6.18.
 
-Right now there are only two possible values for mode --- it's not
-clear what additional values there will be in the future.
+We seem to be talking about different lines above.  Yes, the files
+are empty, but they are named based on the CONFIG_symbol name, which
+is what I was trying to get at.  So how about a comment like this:
 
-How about two syscalls?  If we decide later on we need something more
-complicated we can revisit this and *THEN* add another system call
-which may end up being a superset of the other two.
+ * To be exact, split-include populates a tree in include/config/,
+ * e.g., include/config/sysctl/syscall.h,
+ * for the CONFIG_SYSCTL_SYSCALL option, when that option
+ * is enabled (=y or =m).
 
-I know that sounds somewhat icky but:
 
-  * it's fairly simple
-
-  * we get nice argument handling on all arches by dropping u32 mode
-    (don't we?)
-
-  * syscalls don't really cost a lot to keep about, they do cost in
-    terms on maintenance though, but in this case i don't see it being
-    all that much of a problem
-
-  * IMO badly/over designed syscalls are going to be a bigger problem
-    long term
-
-Given that *NO* single fs in mainline right now can *reliably* use
-this functionality for a while maybe whatever solution people come up
-with next should sit in -mm for a while?  At least that gives people
-exposure to it and a chance to make some changes as once it's merged
-to mainline it's pretty hard to change.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
