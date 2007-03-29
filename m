@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965912AbXC2Cet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750974AbXC2Ciq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965912AbXC2Cet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 22:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965913AbXC2Cet
+	id S1750974AbXC2Ciq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Mar 2007 22:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbXC2Cip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 22:34:49 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:56557 "EHLO ishtar.tlinx.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965912AbXC2Ces (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 22:34:48 -0400
-Message-ID: <460B25BE.3050808@tlinx.org>
-Date: Wed, 28 Mar 2007 19:34:38 -0700
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 28 Mar 2007 22:38:45 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:49426 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbXC2Cio (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Mar 2007 22:38:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Jc9JsufPtbkbFNW0NEvTfByi1A0F1gV05GTk3FC70gDRCm9Q5xVI/VOBiNxA7fbhIRE6TvqvP5FJZfBatM1asz/P3VWe87pcvuF8GVsYvlZKv2r1j3jTx+Q9kHc28RAs2OUYFwfWF9R7X/Yw+EaKTem+r1sdY5ACImRB0jGgPAU=
+Message-ID: <460B26AB.8060307@gmail.com>
+Date: Thu, 29 Mar 2007 11:38:35 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Linda Walsh <lkml@tlinx.org>
-CC: Oliver Joa <oliver@j-o-a.de>, Eric Sandeen <sandeen@sandeen.net>,
-       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       xfs-oss <xfs@oss.sgi.com>
-Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
-References: <46094344.4090007@j-o-a.de> <20070328113141.GQ32597093@melbourne.sgi.com> <460A6298.4040702@j-o-a.de> <460A821B.4080308@sandeen.net> <460AC857.6040305@j-o-a.de> <460B068C.6060903@tlinx.org>
-In-Reply-To: <460B068C.6060903@tlinx.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [patch 2/3] libata: expose AN support to user space via sysfs
+References: <20070328230108.597741522@intel.com> <20070328164450.b89d5156.kristen.c.accardi@intel.com> <460B0539.9040103@pobox.com> <460B1F6B.5050108@gmail.com> <460B2249.4010200@pobox.com>
+In-Reply-To: <460B2249.4010200@pobox.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+> AN is a generic concept that I feel will propagate elsewhere.
 
-Oliver Joa wrote:
->> eason or another, xfs has detected a corrupted on-disk inode format 
->> which it cannot recognize, and shuts down.
-----
-Oh, one other thing that may not apply in your case, but may.
-Does your SATA disk support write caching?  Does it support
-something called a barrier function?  (not real clear on all
-the ways this can go wrong, but I believe barriers are supposed
-to guarantee previous data has been fixed on disk (not in write
-cache).  If the SATA controller issues a reset, it may very well
-purge the write cache.  Theoretically, I can think of a _possibility_,
-that the reset disk would purge the write cache and the barrier
-indicator would tell xfs to resume writing.  From a recent thread
-on the xfs list, it would appear this could be a "bad" thing (like
-crossing the streams ala "ghostbusters", but in a data-integrity
-context).
+I think SCSI already has it or am I imagining things again?  :-)
 
-Just a "shot in the dark" -- absent knowing anything specific
-about your hardware or situation...
+> Though perhaps it should be in a 'capability_flags' file rather than a 
+> 'media_change_event' file.
 
-If that's the case, you might want to turn off write
-caching, since when xfs thinks "barriers" work, it turns
-off some "protection", that can enable some significant
-speedup in some situations. As an aside, some disks, I gather,
-may "claim" to support barriers, but really don't.  Xfs tries
-to verify the barrier claim, but I don't know that a reset
-issued to the disk will have deterministic behavior across
-all manufacturer's disks.  A bunch of "coulds" and "maybe's",
-but just thinking off top of head...
+IMHO, if it's genhd.capability_flags then the flag should be 
+MEDIA_CHANGE_NOTIFY not ASYNC_NOTIFICATION because AN itself doesn't 
+imply any specific event.  It's just a notification mechanism, for ATAPI 
+devices, it means media change, for PMP it has a different meaning, so I 
+think we need to export the processed meaning not the specific mechanism 
+to userland.
 
-Linda
+Thanks.
 
-
+-- 
+tejun
