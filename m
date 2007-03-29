@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934312AbXC2Svx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030621AbXC2TCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934312AbXC2Svx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 14:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934325AbXC2Svx
+	id S1030621AbXC2TCz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 15:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030624AbXC2TCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 14:51:53 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55525 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934311AbXC2Svw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 14:51:52 -0400
-Message-ID: <460C0AB6.9020709@garzik.org>
-Date: Thu, 29 Mar 2007 14:51:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 29 Mar 2007 15:02:55 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:9614 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030621AbXC2TCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 15:02:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tTK3RkMS7oRzBaFSB3TCXBSIvyVLEIbSrWi31J1fnn1Hhbm3QPUVjyC/Urm4uM2012Br6QVAPGK03QJPQYy1hGGuo8srt9LKH4czPUF4/b4bfsp4Xh2rCDjJ+D390s+KacqJNYAvT5ybdS0KLZ2IfFnYOjThSlI6W54vO7loYlU=
+Message-ID: <b637ec0b0703291202x472c7c7eq5aa2f4d4646e67af@mail.gmail.com>
+Date: Thu, 29 Mar 2007 21:02:52 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [2/5] 2.6.21-rc5: known regressions
+Cc: linux-ide@vger.kernel.org, "Tejun Heo" <htejun@gmail.com>
+In-Reply-To: <460AC616.3050207@free.fr>
 MIME-Version: 1.0
-To: Phillip Susi <psusi@cfl.rr.com>
-CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux@horizon.com,
-       htejun@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Why is NCQ enabled by default by libata? (2.6.20)
-References: <20070327161616.31448.qmail@science.horizon.com> <Pine.LNX.4.64.0703271224400.5965@p34.internal.lan> <460A7EE7.5070101@cfl.rr.com> <460A8053.3040209@garzik.org> <460BF73C.5070707@cfl.rr.com>
-In-Reply-To: <460BF73C.5070707@cfl.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+	 <20070327015936.GZ16477@stusta.de> <460AC616.3050207@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Susi wrote:
-> Jeff Garzik wrote:
->> NCQ provides for a more asynchronous flow.  It helps greatly with 
->> reads (of which most are, by nature, synchronous at the app level) 
->> from multiple threads or apps.  It helps with writes, even with write 
->> cache on, by allowing multiple commands to be submitted and/or retired 
->> at the same time.
-> 
-> But when writing, what is the difference between queuing multiple tagged 
-> writes, and sending down multiple untagged cached writes that complete 
-> immediately and actually hit the disk later?  Either way the host keeps 
-> sending writes to the disk until it's buffers are full, and the disk is 
-> constantly trying to commit those buffers to the media in the most 
-> optimal order.
+Hi.
 
-Less overhead to starting commands, and all the other benefits of making 
-operations fully async.
+> > This email lists some known regressions in Linus' tree compared to 2.6.20.
+> ...
+> > Subject    : libata: PATA UDMA/100 configured as UDMA/33
+> > References : http://lkml.org/lkml/2007/2/20/294
+> >              http://www.mail-archive.com/linux-ide@vger.kernel.org/msg04115.html
+> >              http://bugzilla.kernel.org/show_bug.cgi?id=8133
+> >              http://bugzilla.kernel.org/show_bug.cgi?id=8164
+> >              http://lkml.org/lkml/2007/3/21/330
+> > Submitter  : Fabio Comolli <fabio.comolli@gmail.com>
+> >              Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
+> >              Laurent Riffard <laurent.riffard@free.fr>
+> >              Lukas Hejtmanek <xhejtman@mail.muni.cz>
+> > Handled-By : Tejun Heo <htejun@gmail.com>
+> > Patch      : http://thread.gmane.org/gmane.linux.ide/17444
+> > Status     : patch available
+>
 
-	Jeff
-
-
-
+Fixed for me (ata_piix) with today's GIT (Tejun's patch got applied).
+Regards,
+Fabio
