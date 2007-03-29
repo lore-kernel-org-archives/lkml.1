@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbXC2OTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbXC2OYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753626AbXC2OTr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 10:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbXC2OTr
+	id S1753695AbXC2OYh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 10:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbXC2OYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 10:19:47 -0400
-Received: from mail.tmr.com ([64.65.253.246]:52394 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753626AbXC2OTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 10:19:47 -0400
-Message-ID: <460BCB1D.9030806@tmr.com>
-Date: Thu, 29 Mar 2007 10:20:13 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 29 Mar 2007 10:24:37 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:10591 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753687AbXC2OYf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 10:24:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XYZOkNV3UxMsadiKHIuL+V9dKEr2sXrV60jE8avCTgH81MvnkhXu8GJHgt67nWUewDIac3Y8pKYFvKsMx8AKSez7VmNJegInrJFfHxrn8saDDNGjxsSZ6SQb7dH6VFzVi+/OoCi+t7HYf+dqdxxUlW1sEMYcfnThjdeGxgrEXH8=
+Message-ID: <b6a2187b0703290724l1ca26fa4vdb73f3ae82d6514f@mail.gmail.com>
+Date: Thu, 29 Mar 2007 22:24:33 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Subject: Re: [3/6] 2.6.21-rc4: known regressions
+Cc: Maxim <maximlevitsky@gmail.com>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Adrian Bunk" <bunk@stusta.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "Jens Axboe" <jens.axboe@oracle.com>, "Len Brown" <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20070328180457.GA4253@mellanox.co.il>
 MIME-Version: 1.0
-To: roland <devzero@web.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: max_loop limit
-References: <05e401c76cdb$178be430$eeeea8c0@aldipc>
-In-Reply-To: <05e401c76cdb$178be430$eeeea8c0@aldipc>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <b6a2187b0703261046r46782eedv64464ceddb44bc27@mail.gmail.com>
+	 <1175065468.4017.1.camel@chaos>
+	 <200703281543.47049.maximlevitsky@gmail.com>
+	 <20070328180457.GA4253@mellanox.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-roland wrote:
-> partitions on loop or device-mapper devices ?
-> 
-> you can use kpartx tool for this.
-> 
-> bryn m. reeves told me, that it's probably poissible to create udev 
-> rules that will automatically create partition maps when a new loop 
-> device is setup, which is better than adding partitioning logig into 
-> dm-loop for example.
+On 3/29/07, Michael S. Tsirkin <mst@dev.mellanox.co.il> wrote:
+> > Quoting Maxim <maximlevitsky@gmail.com>:
+> >                       The patch below is a temporally fix, until
+> >       clock-events and clocksources will get proper suspend/resume
+> >       hooks:
+> Bingo!
 
-It is certainly possible to create a partitionable RAID device from a 
-loop device. Should be possible to use nbd as well, but I can't seem to 
-get nbd to work on 2.6.21-rc (my working system runs 2.6.17).
-> 
-> example:
->> kpartx -a /dev/mapper/loop0
->>
->> # ls /dev/mapper/loop0*
->> /dev/mapper/loop0  /dev/mapper/loop0p1  /dev/mapper/loop0p2
->> /dev/mapper/loop0p3
-> 
-> i have seen a patch for loop.c doing this, though. search the archives 
-> for this
-> 
-> regards
-> roland
-> 
-> 
-> 
-> 
-> 
-> On Thu, Mar 22, 2007 at 02:33:14PM +0000, Al Viro wrote:
->> Correction: current ABI is crap.  To set the thing up you need to open
->> it and issue an ioctl.  Which is a bloody bad idea, for obvious 
->> reasons...
-> 
-> Agreed.  What would be a right way?  Global device ala ptmx/tun/tap?
-> New syscall?  Something else?
-> 
->  OG.
-> -
-> ]
+I confirmed that it suspend/resume disk/ram all works on my X60s with
+CONFIG_HPET_TIMER=y and CONFIG_NO_HZ unset.
 
+But suspend to disk still hang with CONFIG_NO_HZ=y no matter what
+setting CONFIG_HPET_TIMER is set to.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Thanks,
+Jeff.
