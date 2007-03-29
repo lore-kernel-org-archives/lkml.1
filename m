@@ -1,128 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945905AbXC2WYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945899AbXC2WYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945905AbXC2WYI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 18:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945895AbXC2WYI
+	id S1945899AbXC2WYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 18:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945895AbXC2WYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 18:24:08 -0400
-Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:24571 "HELO
-	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1945907AbXC2WYG (ORCPT
+	Thu, 29 Mar 2007 18:24:34 -0400
+Received: from fallback.us4.outblaze.com ([205.158.62.120]:34038 "EHLO
+	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945899AbXC2WYc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 18:24:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FnP7dercEMUmExZfh82zam3+4GUItyt+ZtnHgeyuszlWa6MZ/cLa+C74HnDwdRkCrpQGm1xwPyrNC5hOcw2xn/0raR3TjreKVpIna+Z6Ei4ozfkPEaDghHXHVXSPEGec6SRMDlofo2FksVGeDnI7l2Wfd0QtGwmTaPITFsmlw44=  ;
-X-YMail-OSG: t1FEXMkVM1nRlTYE182WTKPb1dlGqayUlIhhrGd3GWGvuNaoLDAB0sbdBFHEgOTPGJRZ_mohxA--
-From: David Brownell <david-b@pacbell.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: 2.6.20-rc4-mm1: different values for OHCI_QUIRK_ZFMICRO
-Date: Thu, 29 Mar 2007 15:24:00 -0700
-User-Agent: KMail/1.7.1
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Tony Olech <tony.olech@elandigitalsystems.com>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-References: <20070111222627.66bb75ab.akpm@osdl.org> <20070220000654.GK13958@stusta.de> <20070329150638.83dcf1fa.randy.dunlap@oracle.com>
-In-Reply-To: <20070329150638.83dcf1fa.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Mar 2007 18:24:32 -0400
+X-OB-Received: from unknown (205.158.62.232)
+  by wfilter.us4.outblaze.com; 29 Mar 2007 22:22:21 -0000
 Content-Disposition: inline
-Message-Id: <200703291524.01834.david-b@pacbell.net>
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+From: "Elliott Johnson" <ejohnson@linuxmail.org>
+To: linux-kernel@vger.kernel.org
+Date: Fri, 30 Mar 2007 06:22:21 +0800
+Subject: strange high system cpu usage.
+X-Originating-Ip: 209.209.36.196
+X-Originating-Server: ws5-11.us4.outblaze.com
+Message-Id: <20070329222221.9C53BCA0A4@ws5-11.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 March 2007 3:06 pm, Randy Dunlap wrote:
-> On Tue, 20 Feb 2007 01:06:54 +0100 Adrian Bunk wrote:
-> 
-> > On Sun, Jan 14, 2007 at 06:36:10AM -0800, David Brownell wrote:
-> > > On Sunday 14 January 2007 1:10 am, Adrian Bunk wrote:
-> > > > <--  snip  -->
-> > > 
-> > > Waiting for Tony to submit bugfixes to his driver...
-> > 
-> > Still unfixed as of 2.6.20-mm1.
->
-> so is there a patch around for this yet?
-> 
-> or shall someone other than Tony (??) make one?
+Hello,
 
-ISTR posting the appended patch back in January; it's been
-refreshed since then.  Presumably it still works.
+I've been upgrading a few machines here at work and noticed some problems with high system cpu usage on one machine.  In trying to debug the problem I've come across a few confusing stats that I was hoping could be cleared up by someone on this list.
 
-- Dave
+Firstly some info about the system.  It's a dell 2850 running a 32bit gentoo install with glibc 2.5 and kernel 2.6.19.  A single multi-threaded process is generating the system cpu usage.  One of our developers wrote the code and it does some intense disk reads and writes, which should create primarily iowait cpu usage.  On a debian system with the same hardware using glibc-2.4 and kernel 2.6.8 the process generates virtually 0 load compared the the upgraded server's load of 2-4.
 
-=============	CUT HERE
-Partial fix for bogosity in the ftdi-elan and u13-hcd drivers ... these
-have no business including with the internals of other drivers, much less
-doing so in a broken way!!
+Here is some disk usage info:
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+ dc2 linux # sar -d -p
+ 17:40:01          DEV       tps  rd_sec/s  wr_sec/s  avgrq-sz  avgqu-sz     await     svctm     %util
+ 17:45:01          sda      0.61     10.50      5.11     25.47      0.00      1.07      0.91      0.06
+ 17:45:01          sdb     26.43     41.81    438.41     18.17      0.19      7.10      2.42      6.41
+ 17:45:01        nodev     26.63     41.81    438.41     18.03      0.19      7.07      2.41      6.41
+ 17:50:01          sda      0.10      0.35      0.97     13.66      0.00      0.28      0.28      0.00
+ 17:50:01          sdb     25.45     56.05    523.54     22.77      0.06      2.38      1.88      4.80
+ 17:50:01        nodev     25.67     56.05    523.54     22.58      0.06      2.38      1.87      4.79
 
-Index: g26/drivers/usb/misc/ftdi-elan.c
-===================================================================
---- g26.orig/drivers/usb/misc/ftdi-elan.c	2007-01-02 20:05:33.000000000 -0800
-+++ g26/drivers/usb/misc/ftdi-elan.c	2007-02-08 18:45:13.000000000 -0800
-@@ -73,6 +73,13 @@ static struct list_head ftdi_static_list
- #include "usb_u132.h"
- #include <asm/io.h>
- #include "../core/hcd.h"
-+
-+	/* FIXME ohci.h is ONLY for internal use by the OHCI driver.
-+	 * If you're going to try crap like this, you need to split
-+	 * out the common stuff (register declarations?) into a
-+	 * sharable file, maybe name <linux/usb/ohci.h>
-+	 */
-+
- #include "../host/ohci.h"
- /* Define these values to match your devices*/
- #define USB_FTDI_ELAN_VENDOR_ID 0x0403
-@@ -2300,11 +2307,7 @@ static int ftdi_elan_checkingPCI(struct 
-         offsetof(struct ohci_regs, member), 0, data);
- #define ftdi_write_pcimem(ftdi, member, data) ftdi_elan_write_pcimem(ftdi, \
-         offsetof(struct ohci_regs, member), 0, data);
--#define OHCI_QUIRK_AMD756 0x01
--#define OHCI_QUIRK_SUPERIO 0x02
--#define OHCI_QUIRK_INITRESET 0x04
--#define OHCI_BIG_ENDIAN 0x08
--#define OHCI_QUIRK_ZFMICRO 0x10
-+
- #define OHCI_CONTROL_INIT OHCI_CTRL_CBSR
- #define OHCI_INTR_INIT (OHCI_INTR_MIE | OHCI_INTR_UE | OHCI_INTR_RD | \
-         OHCI_INTR_WDH)
-Index: g26/drivers/usb/host/u132-hcd.c
-===================================================================
---- g26.orig/drivers/usb/host/u132-hcd.c	2007-01-02 20:05:33.000000000 -0800
-+++ g26/drivers/usb/host/u132-hcd.c	2007-02-08 18:45:06.000000000 -0800
-@@ -58,6 +58,13 @@
- #include <asm/system.h>
- #include <asm/byteorder.h>
- #include "../core/hcd.h"
-+
-+	/* FIXME ohci.h is ONLY for internal use by the OHCI driver.
-+	 * If you're going to try crap like this, you need to split
-+	 * out the common stuff (register declarations?) into a
-+	 * sharable file, maybe name <linux/usb/ohci.h>
-+	 */
-+
- #include "ohci.h"
- #define OHCI_CONTROL_INIT OHCI_CTRL_CBSR
- #define OHCI_INTR_INIT (OHCI_INTR_MIE | OHCI_INTR_UE | OHCI_INTR_RD | \
-@@ -174,11 +181,6 @@ struct u132_ring {
-         struct u132_endp *curr_endp;
-         struct delayed_work scheduler;
- };
--#define OHCI_QUIRK_AMD756 0x01
--#define OHCI_QUIRK_SUPERIO 0x02
--#define OHCI_QUIRK_INITRESET 0x04
--#define OHCI_BIG_ENDIAN 0x08
--#define OHCI_QUIRK_ZFMICRO 0x10
- struct u132 {
-         struct kref kref;
-         struct list_head u132_list;
+Here is some cpu info:
+
+ dc2 linux # sar -p
+ 17:40:01        CPU     %user     %nice   %system   %iowait    %steal     %idle
+ 17:45:01        all      0.05      0.00     20.80      0.27      0.00     78.89
+ 17:50:01        all      0.03      0.00     26.46      0.24      0.00     73.26
+
+Here are some memory stats:
+
+ dc2 linux # vmstat 3
+ procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+  2  0      0 1166088    320 720204    0    0    14    63  131  124  0 23 76  0
+  0  0      0 1165832    320 720808    0    0    32   410  400  253  0 30 70  0
+  1  0      0 1165028    320 721208    0    0    16   260  469  297  0 22 78  0
+  1  0      0 1164228    320 722156    0    0   141    59  474  340  0 27 71  2
+
+dc2 linux # vmstat -s
+      2075276  total memory
+       993380  used memory
+       162412  active memory
+       697456  inactive memory
+      1081896  free memory
+          320  buffer memory
+       792036  swap cache
+      4152792  total swap
+            0  used swap
+      4152792  free swap
+         1308 non-nice user cpu ticks
+            0 nice user cpu ticks
+       286057 system cpu ticks
+       951507 idle cpu ticks
+         3378 IO-wait cpu ticks
+          188 IRQ cpu ticks
+          362 softirq cpu ticks
+            0 stolen cpu ticks
+       157581 pages paged in
+       780844 pages paged out
+            0 pages swapped in
+            0 pages swapped out
+      1617473 interrupts
+      1506805 CPU context switches
+   1175215011 boot time
+         7709 forks
+
+
+We rebooted it a few moments ago, but before that vmstat showed that the buffered memory was 0kb.  This is very different from the other machine which has around 500Mb.  A low buffer mem count seems common in our machines with kernel 2.6.17-2.6.19.  Looking at vmstat's man page its difficult to understand exactly what buffered mem is and how to go about altering things to get this value higher to test with.  It seems to be a computed value and not something settable via /proc.  Does any one know more about buffered memory and how to adjust it?
+
+-Elliott Johnson
+
+=
+Search for products and services at: 
+http://search.mail.com
+
+-- 
+Powered by Outblaze
