@@ -1,152 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934332AbXC2TVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934331AbXC2Tbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934332AbXC2TVu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 15:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934331AbXC2TVu
+	id S934331AbXC2Tbl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 15:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934333AbXC2Tbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 15:21:50 -0400
-Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:44240 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934326AbXC2TVt (ORCPT
+	Thu, 29 Mar 2007 15:31:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:45135 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934331AbXC2Tbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 15:21:49 -0400
-Subject: [PATCH 2.6.21] iw_cxgb3: Fix TERM codes.
-From: Steve Wise <swise@opengridcomputing.com>
-To: Roland Dreier <rolandd@cisco.com>
-Cc: OpenFabrics General <general@lists.openfabrics.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 29 Mar 2007 14:21:48 -0500
-Message-Id: <1175196108.23273.35.camel@stevo-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+	Thu, 29 Mar 2007 15:31:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=oE8Hs6hujXgQbJhmsXOb1V4V6ZoT4Dt1OFUVZKgHLBImxNeyJmVr7RtU4oH6ARnPbesSHFhe3r+0HLyJd49i5esDxkUsrGY9LNIjo7JjQ/YPF1l3gP83j6kxRB/DldzMgoqfhvrtGApXacPaBJ23gAiA1PheXfcrxkg/jvihYOE=
+Message-ID: <75b66ecd0703291231n1b7cbcfcpbb16f4cfee933c2c@mail.gmail.com>
+Date: Thu, 29 Mar 2007 15:31:35 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Kevin Perros" <kevin.perros@free.fr>
+Subject: Re: 2.6.20.3-rt8 - DMA suffers excessive delay periodically
+Cc: John <linux.kernel@free.fr>, linux-kernel@vger.kernel.org
+In-Reply-To: <460C094C.8070304@free.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46094728.40300@free.fr>
+	 <75b66ecd0703271341x34463c49w64bdac21a9741355@mail.gmail.com>
+	 <460A297A.2030200@free.fr> <460C094C.8070304@free.fr>
+X-Google-Sender-Auth: 2ce02bd4ce889309
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 3/29/07, Kevin Perros <kevin.perros@free.fr> wrote:
+> > No it is an "indutrial" motherboard.
+> > Although I don't know what makes it "industrial".
+> >
+> > Regards.
+> >
+> > Is this related to SMM?
+> >
+> > As far as I can tell, the BIOS is Phoenix AwardBIOS v6.00PG.
+> >
+> > Would someone know how to disable SMM in this BIOS?
+>
+> Usually you cannot disable SMM via the BIOS. You have to write chipset
+> specific Kernel code for that.
 
-Fix TERM codes.
+The problem could also be something other than SMM, like DMA
+starvation by a video or disk controller.  Try disabling all hard
+drive controllers and booting from a CD or USB stick.
 
-Fix TERMINATE layer, type, and ecode values based on
-conformance testing.
+Also, try tweaking the expire_centisecs and writeback_centisecs values
+in /proc/sys/vm and see if it changes the period of the glitches.
 
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
-
- drivers/infiniband/hw/cxgb3/iwch_qp.c |   69 ++++++++++++++++++---------------
- 1 files changed, 38 insertions(+), 31 deletions(-)
-
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_qp.c b/drivers/infiniband/hw/cxgb3/iwch_qp.c
-index 0a472c9..714dddb 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_qp.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_qp.c
-@@ -471,43 +471,62 @@ int iwch_bind_mw(struct ib_qp *qp,
- 	return err;
- }
- 
--static void build_term_codes(int t3err, u8 *layer_type, u8 *ecode, int tagged)
-+static inline void build_term_codes(struct respQ_msg_t *rsp_msg,
-+				    u8 *layer_type, u8 *ecode)
- {
--	switch (t3err) {
-+	int status = TPT_ERR_INTERNAL_ERR;
-+	int tagged = 0;
-+	int opcode = -1;
-+	int rqtype = 0;
-+	int send_inv = 0;
-+
-+	if (rsp_msg) {
-+		status = CQE_STATUS(rsp_msg->cqe);
-+		opcode = CQE_OPCODE(rsp_msg->cqe);
-+		rqtype = RQ_TYPE(rsp_msg->cqe);
-+		send_inv = (opcode == T3_SEND_WITH_INV) ||
-+		           (opcode == T3_SEND_WITH_SE_INV);
-+		tagged = (opcode == T3_RDMA_WRITE) ||
-+			 (rqtype && (opcode == T3_READ_RESP));
-+	}
-+
-+	switch (status) {
- 	case TPT_ERR_STAG:
--		if (tagged == 1) {
--			*layer_type = LAYER_DDP|DDP_TAGGED_ERR;
--			*ecode = DDPT_INV_STAG;
--		} else if (tagged == 2) {
-+		if (send_inv) {
-+			*layer_type = LAYER_RDMAP|RDMAP_REMOTE_OP;
-+			*ecode = RDMAP_CANT_INV_STAG;
-+		} else {
- 			*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
- 			*ecode = RDMAP_INV_STAG;
- 		}
- 		break;
- 	case TPT_ERR_PDID:
-+		*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
-+		if ((opcode == T3_SEND_WITH_INV) ||
-+		    (opcode == T3_SEND_WITH_SE_INV))
-+			*ecode = RDMAP_CANT_INV_STAG;
-+		else
-+			*ecode = RDMAP_STAG_NOT_ASSOC;
-+		break;
- 	case TPT_ERR_QPID:
-+		*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
-+		*ecode = RDMAP_STAG_NOT_ASSOC;
-+		break;
- 	case TPT_ERR_ACCESS:
--		if (tagged == 1) {
--			*layer_type = LAYER_DDP|DDP_TAGGED_ERR;
--			*ecode = DDPT_STAG_NOT_ASSOC;
--		} else if (tagged == 2) {
--			*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
--			*ecode = RDMAP_STAG_NOT_ASSOC;
--		}
-+		*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
-+		*ecode = RDMAP_ACC_VIOL;
- 		break;
- 	case TPT_ERR_WRAP:
- 		*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
- 		*ecode = RDMAP_TO_WRAP;
- 		break;
- 	case TPT_ERR_BOUND:
--		if (tagged == 1) {
-+		if (tagged) {
- 			*layer_type = LAYER_DDP|DDP_TAGGED_ERR;
- 			*ecode = DDPT_BASE_BOUNDS;
--		} else if (tagged == 2) {
-+		} else {
- 			*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
- 			*ecode = RDMAP_BASE_BOUNDS;
--		} else {
--			*layer_type = LAYER_DDP|DDP_UNTAGGED_ERR;
--			*ecode = DDPU_MSG_TOOBIG;
- 		}
- 		break;
- 	case TPT_ERR_INVALIDATE_SHARED_MR:
-@@ -591,8 +610,6 @@ int iwch_post_terminate(struct iwch_qp *
- {
- 	union t3_wr *wqe;
- 	struct terminate_message *term;
--	int status;
--	int tagged = 0;
- 	struct sk_buff *skb;
- 
- 	PDBG("%s %d\n", __FUNCTION__, __LINE__);
-@@ -610,17 +627,7 @@ int iwch_post_terminate(struct iwch_qp *
- 
- 	/* immediate data starts here. */
- 	term = (struct terminate_message *)wqe->send.sgl;
--	if (rsp_msg) {
--		status = CQE_STATUS(rsp_msg->cqe);
--		if (CQE_OPCODE(rsp_msg->cqe) == T3_RDMA_WRITE)
--			tagged = 1;
--		if ((CQE_OPCODE(rsp_msg->cqe) == T3_READ_REQ) ||
--		    (CQE_OPCODE(rsp_msg->cqe) == T3_READ_RESP))
--			tagged = 2;
--	} else {
--		status = TPT_ERR_INTERNAL_ERR;
--	}
--	build_term_codes(status, &term->layer_etype, &term->ecode, tagged);
-+	build_term_codes(rsp_msg, &term->layer_etype, &term->ecode);
- 	build_fw_riwrh((void *)wqe, T3_WR_SEND,
- 		       T3_COMPLETION_FLAG | T3_NOTIFY_FLAG, 1,
- 		       qhp->ep->hwtid, 5);
-
+Lee
