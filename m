@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934356AbXC2Vvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934354AbXC2Vvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934356AbXC2Vvq (ORCPT <rfc822;w@1wt.eu>);
+	id S934354AbXC2Vvq (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 29 Mar 2007 17:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934359AbXC2Vvq
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934357AbXC2Vvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 29 Mar 2007 17:51:46 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54907 "EHLO amd.ucw.cz"
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54908 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934356AbXC2Vvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934354AbXC2Vvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 29 Mar 2007 17:51:45 -0400
-Date: Thu, 29 Mar 2007 23:46:26 +0200
+Date: Thu, 29 Mar 2007 23:48:07 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc4: mmc fails to work, then oopses
-Message-ID: <20070329214626.GA5676@elf.ucw.cz>
-References: <20070322113742.GA7198@elf.ucw.cz> <460270B8.3000006@drzeus.cx>
+To: Len Brown <lenb@kernel.org>
+Cc: bunk@stusta.de, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: [4/5] 2.6.21-rc5: known regressions
+Message-ID: <20070329214807.GB5676@elf.ucw.cz>
+References: <200703271826.11981.lenb@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <460270B8.3000006@drzeus.cx>
+In-Reply-To: <200703271826.11981.lenb@kernel.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
-> > 
-> > (Machine was suspended/resumed before this).
-> > 
-> > mount /dev/mmc1 /mnt
-> > 
-> 
-> Driver? Reproducable? Vanilla git kernel?
 
-It was driver for 
+> Pavel,
+> fixed in -rc5?
 
-15:00.2 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter 
+Yes, I did quick test and then some more testing, and it seems
+gone. 
 
-...but problem is either gone in -rc5, or not reproducible. I'll play
-with it some more.
+> Subject    : s2ram autowake regression  (ACPI?)
+> References : http://lkml.org/lkml/2007/3/20/96
+> Submitter  : Pavel Machek <pavel@ucw.cz>
+> Handled-By : Len Brown <lenb@kernel.org>
+> Status     : submitter was asked to test a patch
+
 									Pavel
-
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
