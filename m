@@ -1,255 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750773AbXC2HQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751197AbXC2HRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750773AbXC2HQW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 03:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbXC2HQW
+	id S1751197AbXC2HRW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 03:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbXC2HRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 03:16:22 -0400
-Received: from ns.suse.de ([195.135.220.2]:50153 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750773AbXC2HQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 03:16:21 -0400
-Date: Thu, 29 Mar 2007 09:16:11 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-Message-ID: <20070329071611.GA24176@wotan.suse.de>
-References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL> <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de> <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com> <20070329013652.GB2390@wotan.suse.de>
+	Thu, 29 Mar 2007 03:17:21 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34965
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751197AbXC2HRV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 03:17:21 -0400
+Message-Id: <460B843C.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Thu, 29 Mar 2007 08:17:48 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
+Subject: Re: [PATCH] x86: tighten kernel image page access rights
+References: <4607F177.76E4.0078.0@novell.com>
+ <200703282107.11511.ak@suse.de>
+In-Reply-To: <200703282107.11511.ak@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070329013652.GB2390@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 03:36:52AM +0200, Nick Piggin wrote:
-> In most cases, no. For the uncontended case they should be about the
-> same. They have the same spinning behaviour. However there is a little
-> window where they might be a bit slower I think... actually perhaps I'm
-> wrong!
-> 
-> Currently if you have 4 CPUs spinning and the lock is released, all 4
-> CPU cachelines will be invalidated, then they will be loaded again, and
-> found to be 0, so they all try to atomic_dec_return the counter, each
-> one invalidating others' cachelines. 1 gets through.
-> 
-> With my queued locks, all 4 cachelines are invalidated and loaded, but
-> only one will be allowed to proceed, and there are 0 atomic operations
-> or stores of any kind.
-> 
-> So I take that back: our current spinlocks have a worse thundering herd
-> behaviour under contention than my queued ones. So I'll definitely
-> push the patch through.
+>>> Andi Kleen <ak@suse.de> 28.03.07 21:07 >>>
+>
+>> +#ifdef CONFIG_HOTPLUG_CPU
+>> +	/* It must still be possible to apply SMP alternatives. */
+>> +	if (num_possible_cpus() <= 1)
+>
+>It would be better to temporarily change the pages where the alternatives
+>are applied while that is done and keep it otherwise ro
 
-OK, it isn't a big difference, but a user-space test is showing slightly
-(~2%) improvement in the contended case on a 16 core Opteron.
+I had considered that, but not done so due to the larger resulting patch.
+Are you okay with doing this as a follow-up step?
 
-There is a case where the present spinlocks are almost twice as fast on
-this machine (in terms of aggregate throughput), and that is when a lock
-is taken right after it is released. This is because the same CPU will
-often be able to retake the lock without transitioning the cache. This is
-going to be a rare case for us, and would suggest suboptimal code anyway 
-(ie. the lock should just be kept rather than dropped and retaken).
-
-Actually, one situation where it comes up is when we drop and retake a
-lock that needs_lockbreak. Of course, the queued lock behaviour is
-desired in that case anyway.
-
-However single-thread performance is presently a bit down. OTOH, the
-assembly generated by gcc looks like it could be improved upon (even by
-me :P).
-
-This is what I've got so far. Should work for i386 and x86_64. Any
-enhancements or results from other CPUs would be interesting.
-
---
-#define _GNU_SOURCE
-#include <stdlib.h>
-#include <assert.h>
-#include <stdio.h>
-#include <pthread.h>
-#include <sched.h>
-#include <sys/time.h>
-
-#define likely(x)	__builtin_expect(!!(x), 1)
-#define unlikely(x)	__builtin_expect(!!(x), 0)
-static inline void cpu_relax(void)
-{
-	asm volatile("rep ; nop" : : : "memory");
-}
-
-static unsigned long delta(struct timeval start, struct timeval end)
-{
-	return (end.tv_sec - start.tv_sec) * 1000000
-		+ end.tv_usec - start.tv_usec;
-}
-
-static unsigned long lps;
-static void calibrate_delay(void)
-{
-	struct timeval start, now;
-	unsigned long i;
-	gettimeofday(&start, NULL);
-	i = 0;
-	gettimeofday(&start, NULL);
-	do {
-		gettimeofday(&now, NULL);
-		i++;
-	} while (delta(start, now) < 1000000 * 2);
-	lps = i / 2;
-	printf("%lu lps\n", lps);
-}
-
-static void delay(unsigned long usec)
-{
-	struct timeval now;
-	unsigned long loops = (lps*usec + 999999) / 1000000;
-	unsigned long i;
-
-	for (i = 0; i < loops; i++)
-		gettimeofday(&now, NULL);
-}
-
-#define QUEUE_LOCKS
-#ifdef QUEUE_LOCKS
-
-typedef struct {
-	unsigned short qhead;
-	unsigned short qtail;
-} spinlock_t;
-
-#define SPIN_LOCK_UNLOCKED (spinlock_t){ 0, 0 }
-
-static inline void spin_lock(spinlock_t *lock)
-{
-	unsigned short pos = 1;
-
-	asm volatile("lock ; xaddw %0, %1\n\t"
-			: "+r" (pos), "+m" (lock->qhead) : : "memory");
-	while (unlikely(pos != lock->qtail))
-		cpu_relax();
-}
-
-static inline void spin_unlock(spinlock_t *lock)
-{
-	asm volatile("addw $1, %0\n\t"
-			: "+m" (lock->qtail) : : "memory");
-}
-#else
-typedef struct {
-	unsigned int slock;
-} spinlock_t;
-
-#define SPIN_LOCK_UNLOCKED (spinlock_t){ 1 }
-
-static inline void spin_lock(spinlock_t *lock)
-{
-	asm volatile(
-		"1:\n\t"
-		"lock ; decl %0\n\t"
-		"jns 2f\n\t"
-		"3:\n\t"
-		"rep;nop\n\t"
-		"cmpl $0,%0\n\t"
-		"jle 3b\n\t"
-		"jmp 1b\n\t"
-		"2:\n\t" : "=m" (lock->slock) : : "memory");
-}
-
-static inline void spin_unlock(spinlock_t *lock)
-{
-	asm volatile("movl $1,%0" :"=m" (lock->slock) :: "memory");
-}
-#endif
-
-static struct {
-	spinlock_t lock;
-	unsigned long count;
-} __attribute__((__aligned__(128))) data;
-
-
-#undef MULTI_THREAD
-#ifdef MULTI_THREAD
-#define NR_THREADS	16
-#define NR_ITERS	200000
-#else
-#define NR_THREADS	1
-#define NR_ITERS	1000000000
-#endif
-
-static long go = 0;
-
-static void *thread(void *arg)
-{
-	cpu_set_t mask;
-	struct sched_param param;
-	long nr = (long)arg;
-	long i;
-
-	assert(nr < NR_THREADS);
-
-	CPU_ZERO(&mask);
-	CPU_SET(nr, &mask);
-
-	if (sched_setaffinity(0, sizeof(mask), &mask) == -1)
-		perror("sched_setaffinity"), exit(1);
-
-	param.sched_priority = 90;
-	if (sched_setscheduler(0, SCHED_FIFO, &param) == -1)
-		perror("sched_setscheduler"), exit(1);
-
-	while (!go)
-		sched_yield();
-
-	for (i = 0; i < NR_ITERS; i++) {
-		/*
-		 * delay outside the lock should be non-zero to simulate
-		 * reasonable code. The larger the delay inside the lock
-		 * in relation to the delay outside, the more contention.
-		 * For single-thread mode, delays aren't so critical.
-		 */
-		spin_lock(&data.lock);
-		data.count++;
-		spin_unlock(&data.lock);
-//		delay(1);
-	}
-
-	return NULL;
-}
-
-int main(void)
-{
-	pthread_t threads[NR_THREADS];
-	struct sched_param param;
-	long i;
-
-	param.sched_priority = 90;
-	if (sched_setscheduler(0, SCHED_FIFO, &param) == -1)
-		perror("sched_setscheduler"), exit(1);
-
- 	data.lock = SPIN_LOCK_UNLOCKED;
-	data.count = 0;
-
-	calibrate_delay();
-
-	for (i = 0; i < NR_THREADS; i++) {
-		if (pthread_create(&threads[i], NULL, thread, (void *)i) == -1)
-			perror("pthread_create"), exit(1);
-	}
-
-	go = 1;
-	sched_yield();
-	
-	for (i = 0; i < NR_THREADS; i++) {
-		if (pthread_join(threads[i], NULL) == -1)
-			perror("pthread_join"), exit(1);
-	}
-
-	assert(data.count == NR_ITERS*NR_THREADS);
-
-	exit(0);
-}
+Jan
