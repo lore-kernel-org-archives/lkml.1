@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbXC2Nbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbXC2NcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbXC2Nbk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 09:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbXC2Nbd
+	id S1753494AbXC2NcV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 09:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbXC2NcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 09:31:33 -0400
-Received: from hu-out-0506.google.com ([72.14.214.236]:61503 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753491AbXC2Nba (ORCPT
+	Thu, 29 Mar 2007 09:32:21 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47675 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753494AbXC2NcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 09:31:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Tx3B0Y61VMHOneFTC56jriKexWc1Mz9I8tIwvPuv5nPu9Y2l8/79wRonhXvh0i5eoNWExGO2Gzjtl34LXGGCxupUOkvLp/gjXthgDz4vfHPObGUs6qYfnwkc7zsNZk2upAScEPC3v6JSPmNDZ0B6xkhL/PVvmAFJQ5vxP/I2aNU=
-From: Maxim <maximlevitsky@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [ PATCH] Add suspend/resume for HPET was: Re: [3/6] 2.6.21-rc4: known regressions
-Date: Thu, 29 Mar 2007 15:31:17 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703290747.28929.maximlevitsky@gmail.com> <460BBD1B.4040308@ru.mvista.com>
-In-Reply-To: <460BBD1B.4040308@ru.mvista.com>
+	Thu, 29 Mar 2007 09:32:20 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: michael@ellerman.id.au
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <greg@kroah.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       daniel.e.wolstenholme@intel.com
+Subject: Re: [PATCH 13/21] MSI: Do MSI masking in the arch code
+References: <20070322105342.B8317DDF6A@ozlabs.org>
+	<m1y7lhrhwm.fsf@ebiederm.dsl.xmission.com>
+	<1175158720.16660.69.camel@concordia.ozlabs.ibm.com>
+Date: Thu, 29 Mar 2007 07:31:09 -0600
+In-Reply-To: <1175158720.16660.69.camel@concordia.ozlabs.ibm.com> (Michael
+	Ellerman's message of "Thu, 29 Mar 2007 18:58:40 +1000")
+Message-ID: <m18xdgkwgy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703291531.18253.maximlevitsky@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 March 2007 15:20:27 Sergei Shtylyov wrote:
-> Hello.
-> 
-> Maxim wrote:
-> 
-> > ---
-> > This adds support of suspend/resume on i386 for HPET
-> 
->    The part after usually "---" gets cut off, the patch description and 
-> signoff should actially *precede* it.
-> 
-> > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> 
-> > diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
-> > index 0fd9fba..7c67780 100644
-> > --- a/arch/i386/kernel/hpet.c
-> > +++ b/arch/i386/kernel/hpet.c
-> [...]
-> > +static __init int hpet_register_sysfs(void)
-> > +{
-> > +	int err;
-> > +
-> > +	if (!is_hpet_capable())
-> > +		return 0;
-> > +
-> > +	err = sysdev_class_register(&hpet_class);
-> > +
-> > +	if (!err) {
-> > +		sysdev_register(&hpet_device);
-> > +		if (err)
-> > +			sysdev_class_unregister(&hpet_class);
-> 
->     This doesn't make sense, err will always be 0.  Perhaps you actually 
-> intended to check the result of sysdev_register()?
-> 
-> > +	}
-> > +
-> > +	return err;
-> > +}
-> > +
-> > +device_initcall(hpet_register_sysfs);
-> > +
-> > +#endif
-> 
-> WBR, Sergei
-> 
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-Hi,
-	Big thanks for pointing this out,
-		I will resend that updated patch.
+>
+> The main motivation was to have the arch in control of as much direct
+> register writing as possible. Even though our HV does allow us to write
+> to config space, it's not obviously safe for Linux to be flipping bits
+> and also calling the HV to configure things. What's worse, I don't have
+> hardware that supports the mask bits, so I can't test it.
 
-	Best regards,
-		Maxim Levitsky
+I agree that there are limits here, on what we can feed into a hypervisor
+and not confuse it.  Mostly my thinking is to assume someone has been
+scribbling with the msi capability before we got there  and to place
+everything in a know good state and not assume that device reset has
+already done the work for us.  Since we aren't the pci  device reset
+we can choose the defaults that make sense for us.
 
+Worse case we can just put the capability in the state that pci device
+reset would have put it in.
+
+> I also thought this would save me from having custom MSI irq_chips for
+> the powerpc backends. But I think I need them now anyway, so I guess
+> that's not a concern.
+
+Well we could still do the basic setup in arch_setup_msi_irq so I don't think
+it has ever been an irq_chips style operations.
+
+> So I guess we'll drop this one, although I might try and tidy up the
+> implementation of "mask all MSIs" in msi_capability_init() as another
+> patch.
+
+I have no problem with that.  The msix version of this still needs
+to be written as well.
+
+Eric
