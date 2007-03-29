@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422639AbXC2VsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422641AbXC2VtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422639AbXC2VsP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 17:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422642AbXC2VsP
+	id S1422641AbXC2VtS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 17:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934356AbXC2VtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 17:48:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:41415 "EHLO
+	Thu, 29 Mar 2007 17:49:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:42203 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422639AbXC2VsO (ORCPT
+	with ESMTP id S934354AbXC2VtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 17:48:14 -0400
+	Thu, 29 Mar 2007 17:49:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=FocaS4H63KhYf8xxYV9zw5lrUvC/xxBmZ0VmXIgzFodUCPJVAJ7l8Ww+5uiqUNQTypoGhuTCtvjijvEFxjpRbV0wIrPV/vQsglEh/xtb+KIxFBp3tTcvVb1l/qpWlO5gwd9gdpA5lrxwwvQ5xSQ6T92Hj2f+COV953mLkLMKUIc=
-Message-ID: <e8f45b9e0703291448v749efee2w8f1e415d003e1fb9@mail.gmail.com>
-Date: Thu, 29 Mar 2007 23:48:11 +0200
-From: "Gerard Braad" <gbraad@member.fsf.org>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: your mail
-In-Reply-To: <Pine.LNX.4.61.0703292341370.31834@yvahk01.tjqt.qr>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LfgXT0PP9RVRTLmb+tj7npgj+JXzOYOy2ufW+liePzlj5nbIbswXJOYlfL2M9hIXElnRbSzCv6GRQO9pnaSZtpmgpOrywMizI4Piyef53Qi+zYXndP+wtPg8fFDUbRwdOCJFykXEyInv7wB56Rh0IEtBQoGcSbpYHvHA2dGxlUU=
+Message-ID: <a44ae5cd0703291449p1e8f75a2i68e9874362cef061@mail.gmail.com>
+Date: Thu, 29 Mar 2007 14:49:14 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Len Brown" <lenb@kernel.org>
+Subject: Re: 2.6.21-rc5-mm2 -- ACPI problems (lid switch broken, always shows running from AC, plugging in AC hangs machine)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+In-Reply-To: <a44ae5cd0703291335q1eff6661hf398dfca1db8e491@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <e8f45b9e0703291439q505c6a06re003e91484a20354@mail.gmail.com>
-	 <Pine.LNX.4.61.0703292341370.31834@yvahk01.tjqt.qr>
-X-Google-Sender-Auth: 4f956532a96f4620
+References: <a44ae5cd0703281355h13f1bd70s9eb94092bfa9c3e@mail.gmail.com>
+	 <a44ae5cd0703290100q1bb80390ke66333407bbeecfd@mail.gmail.com>
+	 <20070329011503.00c89cb8.akpm@linux-foundation.org>
+	 <200703291311.09893.lenb@kernel.org>
+	 <a44ae5cd0703291314i6cd6cbaeo8ed0d7037b746cd5@mail.gmail.com>
+	 <a44ae5cd0703291335q1eff6661hf398dfca1db8e491@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, this wasn't supposed to happen. Already done...
-Unsubscribed due to lack of a digest mail.
+Hmm.   I've reproduced these problems with vanilla 2.6.21-rc5, so the
+latest acpi-git changes are off the hook.  I am currently trying to
+reproduce the problems with 2.6.21-rc4.  I'll let you know how it
+turns out.
 
-> I wonder why people can't send their unsubscribe message to the same
-> address they sent their subscribe message to.
+       Miles
