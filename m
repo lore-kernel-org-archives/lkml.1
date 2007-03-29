@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbXC2EC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbXC2EIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752204AbXC2EC6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 00:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXC2EC6
+	id S1751635AbXC2EIr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 00:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXC2EIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 00:02:58 -0400
-Received: from smtpout.mac.com ([17.250.248.174]:51239 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbXC2EC5 convert rfc822-to-8bit (ORCPT
+	Thu, 29 Mar 2007 00:08:47 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:32970 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635AbXC2EIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 00:02:57 -0400
-X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Mar 2007 00:02:57 EDT
-In-Reply-To: <Pine.LNX.4.61.0703240023220.10028@yvahk01.tjqt.qr>
-References: <460236CE.1030303@slax.org> <20070322110058.GB23664@tatooine.rebelbase.local> <46026A92.4020106@slax.org> <20070322144210.73dfaf83.dada1@cosmosbay.com> <Pine.LNX.4.61.0703230232320.9555@yvahk01.tjqt.qr> <Pine.LNX.4.61.0703240023220.10028@yvahk01.tjqt.qr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <89DC3EEA-72A3-4F6A-9FD8-FD5D5010BE39@mac.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Tomas M <tomas@slax.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-From: Kyle Moffett <mrlinuxman@mac.com>
-Subject: Re: [PATCH] max_loop limit
-Date: Wed, 28 Mar 2007 23:54:17 -0400
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Thu, 29 Mar 2007 00:08:46 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: g3vbv@blueyonder.co.uk
+Cc: Adrian Bunk <bunk@stusta.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org, auxsvr@gmail.com
+Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
+References: <45E59D64.3070202@blueyonder.co.uk>
+	<200702281805.13822.auxsvr@gmail.com>
+	<20070307214730.87859590.akpm@linux-foundation.org>
+	<45EFBC73.2030005@blueyonder.co.uk>
+	<46016EAF.6010801@blueyonder.co.uk> <20070321193420.GP752@stusta.de>
+	<m17itabbbv.fsf@ebiederm.dsl.xmission.com>
+	<4601DCB4.4060804@blueyonder.co.uk>
+	<20070321184258.758a5a29.randy.dunlap@oracle.com>
+	<20070322105908.GS752@stusta.de> <4608919C.4050007@blueyonder.co.uk>
+	<m1y7liyeyt.fsf@ebiederm.dsl.xmission.com>
+	<4609E04D.408@blueyonder.co.uk>
+Date: Wed, 28 Mar 2007 22:04:16 -0600
+In-Reply-To: <4609E04D.408@blueyonder.co.uk> (Sid Boyce's message of "Wed, 28
+	Mar 2007 04:26:05 +0100")
+Message-ID: <m1r6r8n1a7.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 23, 2007, at 19:26:34, Jan Engelhardt wrote:
-> here's one. Allocates all the fluff dynamically. It does not create  
-> any dev nodes by itself, so you need to do it (à la mdadm), but  
-> you'll get all 1048576 available minors.
->
-> +static LIST_HEAD(loop_devices);
 
-Maybe an rbtree would work better here?  Maximum number of nodes  
-traversed to get to the bottom of the tree given 2^(20) loop devices  
-is 19 as opposed to the 2^(20) for a linked list.  Also, to preserve  
-compatibility with existing userspace loop tools you should probably  
-always allocate one extra loop device.  Keep a "highest used loopdev"  
-number and create the one after that so that udev will autocreate a  
-dev node for it.
+Sid I think I have found the problem. Could you try the following patch. 
+I believe I accidentally switched the sense of a test....
 
-Cheers,
-Kyle Moffett
+diff --git a/kernel/exit.c b/kernel/exit.c
+index f132349..b55ed4c 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -790,7 +790,7 @@ static void exit_notify(struct task_struct *tsk)
+ 	
+ 	pgrp = task_pgrp(tsk);
+ 	if ((task_pgrp(t) != pgrp) &&
+-	    (task_session(t) != task_session(tsk)) &&
++	    (task_session(t) == task_session(tsk)) &&
+ 	    will_become_orphaned_pgrp(pgrp, tsk) &&
+ 	    has_stopped_jobs(pgrp)) {
+ 		__kill_pgrp_info(SIGHUP, SEND_SIG_PRIV, pgrp);
+
 
