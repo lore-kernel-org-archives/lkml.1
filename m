@@ -1,95 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934193AbXC2WzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934360AbXC2X3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934193AbXC2WzM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 18:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934359AbXC2WzM
+	id S934360AbXC2X3l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 19:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934377AbXC2X3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 18:55:12 -0400
-Received: from smtpout.mac.com ([17.250.248.184]:55568 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934193AbXC2WzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 18:55:10 -0400
-In-Reply-To: <20070329205935.GB13541@Ahmed>
-References: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com> <2375c9f90703290332w3f232b1cjf044f554fba04879@mail.gmail.com> <20070329205935.GB13541@Ahmed>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <64884922-4254-4827-9A9F-09053043B8E6@mac.com>
-Cc: Cong WANG <xiyou.wangcong@gmail.com>,
-       Russ Meyerriecks <datachomper@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
+	Thu, 29 Mar 2007 19:29:41 -0400
+Received: from hu-out-0506.google.com ([72.14.214.225]:42756 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934375AbXC2X3j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 19:29:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=hgHsULEe0hPexk7EvZCzv9vPnCGe3bHueBkwvw9YUnArWO2IleB3evETPahXwjSpWenntR4t46ZZiag1YwyhBHysjR+2xCv9VXOADR84Ujx8f1vowoCT+aLt0mD4ReDlj7Z0z6yfqhNw9xZhUPMHME3wImB4rFB3USsJEobURWM=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] [3/6] 2.6.21-rc4: known regressions
+Date: Fri, 30 Mar 2007 01:29:27 +0200
+User-Agent: KMail/1.9.6
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de,
+       Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>, jgarzik@pobox.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.linux-foundation.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703282327.56132.maximlevitsky@gmail.com> <200703291533.38002.david-b@pacbell.net>
+In-Reply-To: <200703291533.38002.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Student Project Ideas
-Date: Thu, 29 Mar 2007 18:54:33 -0400
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+Content-Disposition: inline
+Message-Id: <200703300129.27474.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 29, 2007, at 16:59:36, Ahmed S. Darwish wrote:
-> On Thu, Mar 29, 2007 at 06:32:21PM +0800, Cong WANG wrote:
->> Second, in fact, I am also a college student and also want to find  
->> a suitable and real task in linux kernel for me to work on. KJ  
->> doesn't help much. ;-p
->
-> No, it really helps alot, just be _patient_. For me, I sent a  
-> series of dumb patches at first to use ARRAY_SIZE macro instead of  
-> manual computation. Though the patches were completely braindead, I  
-> learnt alot of stuff about how everything works here.
+On Friday 30 March 2007 00:33:35 David Brownell wrote:
+> On Wednesday 28 March 2007 2:27 pm, Maxim wrote:
+> > On Wednesday 28 March 2007 22:59:26 David Brownell wrote:
+> 
+> > 	When HPET is active it eats RTC IRQ,
+> 
+> Only when HPET timers 0 and 1 are set up for "Legacy Replacement Mode".
+> In the more sensible "Standard Mode", they have their own IRQs.
+> 
+> 
+> > 	So the only way out is to emulate RTC using HPET,
+> > 	It is done this way in old rtc driver, rtc-cmos should do the same.
+> 
+> No.  Patches like
+> 
+>   http://marc.info/?l=linux-kernel&m=117219531503973&w=2
+> 
+> should be merged (I hope they're in the 2.6.22 queue!), making
+> HPET run in "Standard Mode" so that HPET can stop sticking its
+> fingers in code where they don't belong.
+> 
+> 
+> > 	I am also planning to add support of HPET and suspend/resume
+> > 	for rtc-cmos, but I didn't start this yet. 
+> 
+> It's already got suspend/resume support, and in the 2.6.22 queue
+> are RTC framework updates which will let the RTC framework replace
+> a lot more platform-specific RTC support.  (Platform changes can come
+> later, where they're needed.  ARM for example doesn't need any.)
+> 
+> Once HPET stops using "Legacy Replacement Mode" you won't need to
+> touch anything in the RTC stack (except maybe the legacy char/rtc.c
+> driver, removing HPET stuff).
+> 
+> The open issue with suspend/resume support in rtc-cmos relates to
+> how ACPI wakeup alarms should trigger.  I've not made time to test
+> those patches.
+> 
+> - Dave
+> 
 
-One thing that I think is fairly non-obvious to newcomers is that  
-Linux kernel development is not done at all the way they teach you in  
-your Large Scale Software Engineering classes.  Many of those classes  
-talk much about careful design (whether top-down, bottom-up, outside- 
-in, waterfall, spiral, $BUZZWORD_OF_THE_DAY) and detailed unit- 
-testing, whereas Linux kernel development isn't really "designed" at  
-all.
+Hi,
+	It is not that simple,
 
-Linux is all about evolution: Somebody comes up with a design they  
-like and talk about it on LKML, lots of knowledgeable people put in  
-input, the design is reworked, repeat.  After a few discussion emails  
-(or none at all for small projects), somebody just sits down and  
-codes the damn thing.  In a business nobody does any code till they  
-have the design finalized, the managers consider the extra coding a  
-waste of man-hours, whereas in Linux the whole design process centers  
-around writing many subtly different versions of the same thing until  
-everybody agrees that it looks right.
+	Only in legacy replacement mode HPET can be put on IRQ0 (and sadly  IRQ8)
+	At least this is true on some systems, on mine for example
+	
+	On my system first 2 hpet timers can only be assigned to IRQ21-23
+	and third to ether IRQ11, IRQ21-IRQ23
 
-Then it gets pulled into Andrew Mortons tree and promptly breaks all  
-over the place because people try things you didn't expect.  You then  
-get the opportunity to recode half the thing all over again to fix  
-the newly discovered deficiencies.  Repeat several times.
+	Or in legacy replacement mode first is assigned IRQ0 and second IRQ8
 
-After a while it stops crashing peoples boxes and goes into Linus  
-tree, but at that point your job is only half done.  Now you have to  
-maintain the feature, add patches, improve functionality, and  
-continue to be active in the community.
+	this will make it difficult to use it as a clockevents source
 
-Large college end-of-study projects are single-person activities,  
-they want to test _your_ knowledge.  On the other hand Linux kernel  
-development is a community exercise, it's trying to use the knowledge  
-of thousands to build the best kernel possible.  If you can get  
-approval to use the bits of code that many others contribute then  
-more power to you.
+	Not to mention the fact that current code assumes that BIOS assigned IRQs to all timers which is not true on my system.
 
-The other thing to realize about Linux is that it is NOT a "hobbyist"  
-OS any more, there are some extremely mission-critical Linux systems  
-out in the world which depend on the code quality and efficiency.   
-There are few people indeed who can really efficiently increase the  
-performance of the Linux schedular or other core subsystems.  Kudos  
-to Linus Torvalds, Ingo Molnar, Con Kolivas, Andrew Morton, and  
-others too numerous to list for their incredible skill and dedication.
+	I have brand new intel DG965 motherboard.
 
-So while it's entirely possible to do innovative dissertation work on  
-the Linux kernel with your own private source tree, don't expect to  
-go from a cold standing start to having a big project in the upstream  
-kernel without investing twice as much time as it was to do the  
-dissertation in the first place.  That's not to say that you can't  
-always get advice from many others on this mailing list during the  
-process, though.
+	What is wrong with relying on HPET to provide RTC IRQ ?
 
-Cheers,
-Kyle Moffett
+	Best regards,
+		Maxim Levitsky
 
