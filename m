@@ -1,69 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933997AbXC2Fmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933998AbXC2Frm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933997AbXC2Fmx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 01:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933998AbXC2Fmx
+	id S933998AbXC2Frm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 01:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934007AbXC2Frm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 01:42:53 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42676 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933997AbXC2Fmw (ORCPT
+	Thu, 29 Mar 2007 01:47:42 -0400
+Received: from hu-out-0506.google.com ([72.14.214.236]:30640 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934000AbXC2Frk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 01:42:52 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
+	Thu, 29 Mar 2007 01:47:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Ee8OtykTinvmiuTizABUb/FNuHYBozkjMmXoiJ/0uUhKipKdxhoZrseB4EIEVnIuL+1gefgdcx9u0UjjWAu6w3M6tUrc1jf+aLtcWaW9YfyasT7aMN3FobQBT9y/yd7OHkE+c1XRVqjWMTqOyF+HeAdxLOOBxlq6VKbCtN44B7g=
+From: Maxim <maximlevitsky@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Adrian Bunk <bunk@stusta.de>,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH] pid:  Properly detect orphaned process groups in exit_notify
-References: <ac10ef410703271555s6c4d7b95hc94091bae575600d@mail.gmail.com>
-	<m1648lqzsf.fsf@ebiederm.dsl.xmission.com>
-	<ac10ef410703280946oe46b0a5pdd5dcfb0419713ca@mail.gmail.com>
-	<m14po5ozbx.fsf@ebiederm.dsl.xmission.com>
-	<ac10ef410703281835o6d2c258fkd905467bfc089ffa@mail.gmail.com>
-	<m1vegkn1bz.fsf@ebiederm.dsl.xmission.com>
-	<ac10ef410703282142j2ab375fbi793cb4db908540f6@mail.gmail.com>
-Date: Wed, 28 Mar 2007 23:38:16 -0600
-In-Reply-To: <ac10ef410703282142j2ab375fbi793cb4db908540f6@mail.gmail.com>
-	(Michael Wu's message of "Thu, 29 Mar 2007 00:42:43 -0400")
-Message-ID: <m1y7lglid3.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Subject: Re: [ PATCH] Add suspend/resume for HPET was: Re: [3/6] 2.6.21-rc4: known regressions
+Date: Thu, 29 Mar 2007 07:47:28 +0200
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703290641.20236.maximlevitsky@gmail.com> <Pine.LNX.4.64.0703282203550.6730@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703282203550.6730@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703290747.28929.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 29 March 2007 07:08:58 Linus Torvalds wrote:
+> 
+> On Thu, 29 Mar 2007, Maxim wrote:
+> >
+> > 	I am sending here a patch that as was discussed here adds hpet to list of system devices
+> > 	and adds suspend/resume hooks this way.
+> > 	I tested it and it works fine.
+> 
+> Ok, it certainly looks better, but it *also* looks like it just assumes 
+> the HPET is there. Which would work in testing _with_ a HPET, but would 
+> likely break on hardware without one, no?
+> 
+> Shouldn't there be at least something like a
+> 
+> 	if (!is_hpet_capable())
+> 		return 0;
+> 
+> at the top of that init routine? I'd also expect that you'd need to check 
+> that "hpet_virt_address" is valid or something?
+> 
+> (Or, better yet, shouldn't we set "boot_hpet_disable" when we decide not 
+> to use the HPET, and set hpet_virt_address to NULL?)
 
-In commit 0475ac0845f9295bc5f69af45f58dff2c104c8d1 when converting
-the converting the orphaned process group handling to use struct pid
-I made a small mistake.  I accidentally replaced an == with a !=.
+This is done here
 
-Besides just being a dumb thing to do apparently this has a bad side
-effect.  The improper orphaned process group detection causes kwin to
-die after a suspend/resume cycle.
+out_nohpet:
+	iounmap(hpet_virt_address);
+	hpet_virt_address = NULL;
+> 
+> 		Linus
+> 
 
-I'm amazed this patch has been around as long as it has without anyone
-else noticing something funny going on.
+Hi, 
+	Of course, I forgot.
 
-And the following people deserve credit for spotting and helping
-to reproduce this.
+	I was planning to put sysdev code in hpet_enable()
+	but it is not possible because this function is called too early.
 
-Thanks to: Sid Boyce <g3vbv@blueyonder.co.uk>
-Thanks to: "Michael Wu"
+	Thus I put sysdev initialization  in separate function but forgot to test for HPET
 
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+	Thanks a lot.
+
+	Best regards
+		Maxim Levitsky
+
 ---
+This adds support of suspend/resume on i386 for HPET
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index f132349..b55ed4c 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -790,7 +790,7 @@ static void exit_notify(struct task_struct *tsk)
- 	
- 	pgrp = task_pgrp(tsk);
- 	if ((task_pgrp(t) != pgrp) &&
--	    (task_session(t) != task_session(tsk)) &&
-+	    (task_session(t) == task_session(tsk)) &&
- 	    will_become_orphaned_pgrp(pgrp, tsk) &&
- 	    has_stopped_jobs(pgrp)) {
- 		__kill_pgrp_info(SIGHUP, SEND_SIG_PRIV, pgrp);
+---
+ arch/i386/kernel/hpet.c |   68 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 68 insertions(+), 0 deletions(-)
+
+diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
+index 0fd9fba..7c67780 100644
+--- a/arch/i386/kernel/hpet.c
++++ b/arch/i386/kernel/hpet.c
+@@ -3,6 +3,8 @@
+ #include <linux/errno.h>
+ #include <linux/hpet.h>
+ #include <linux/init.h>
++#include <linux/sysdev.h>
++#include <linux/pm.h>
+ 
+ #include <asm/hpet.h>
+ #include <asm/io.h>
+@@ -310,6 +312,7 @@ int __init hpet_enable(void)
+ out_nohpet:
+ 	iounmap(hpet_virt_address);
+ 	hpet_virt_address = NULL;
++	boot_hpet_disable = 1;
+ 	return 0;
+ }
+ 
+@@ -524,3 +527,68 @@ irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ #endif
++
++
++/*
++ * Suspend/resume part
++ */
++
++#ifdef CONFIG_PM
++
++static int hpet_suspend(struct sys_device *sys_device, pm_message_t state)
++{
++	unsigned long cfg = hpet_readl(HPET_CFG);
++
++	cfg &= ~(HPET_CFG_ENABLE|HPET_CFG_LEGACY);
++	hpet_writel(cfg, HPET_CFG);
++
++	return 0;
++}
++
++static int hpet_resume(struct sys_device *sys_device)
++{
++	unsigned int id;
++
++	hpet_start_counter();
++
++	id = hpet_readl(HPET_ID);
++
++	if (id & HPET_ID_LEGSUP)
++		hpet_enable_int();
++
++	return 0;
++}
++
++static struct sysdev_class hpet_class = {
++	set_kset_name("hpet"),
++	.suspend	= hpet_suspend,
++	.resume		= hpet_resume,
++};
++
++static struct sys_device hpet_device = {
++	.id		= 0,
++	.cls		= &hpet_class,
++};
++
++
++static __init int hpet_register_sysfs(void)
++{
++	int err;
++
++	if (!is_hpet_capable())
++		return 0;
++
++	err = sysdev_class_register(&hpet_class);
++
++	if (!err) {
++		sysdev_register(&hpet_device);
++		if (err)
++			sysdev_class_unregister(&hpet_class);
++	}
++
++	return err;
++}
++
++device_initcall(hpet_register_sysfs);
++
++#endif
+-- 
+1.4.4.2
+
