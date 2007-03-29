@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbXC2Lv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbXC2Lvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbXC2Lv3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 07:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbXC2Lv0
+	id S1753373AbXC2Lvv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 07:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbXC2Lvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 07:51:26 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38915 "EHLO e4.ny.us.ibm.com"
+	Thu, 29 Mar 2007 07:51:51 -0400
+Received: from smtpout.mac.com ([17.250.248.175]:49286 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753367AbXC2LvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 07:51:24 -0400
-Date: Thu, 29 Mar 2007 17:21:26 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Interface for the new fallocate() system call
-Message-ID: <20070329115126.GB7374@amitarora.in.ibm.com>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070321120425.GA27273@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	id S1753369AbXC2Lvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 07:51:50 -0400
+In-Reply-To: <200703291341.13172.ak@suse.de>
+References: <200703212353.l2LNrNOj007453@shell0.pdx.osdl.net> <20070328170159.7fc8c289.akpm@linux-foundation.org> <20070329005953.GA8764@linux-os.sc.intel.com> <200703291341.13172.ak@suse.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7B0DEC32-4413-46CB-BB4D-DC6A1674F2EC@mac.com>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel <linux-kernel@vger.kernel.org>, davej@codemonkey.org.uk,
+       johnstul@us.ibm.com, mingo@elte.hu, tglx@linutronix.de
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Add support for deferrable timers (respun-Mar28)
+Date: Thu, 29 Mar 2007 07:51:15 -0400
+To: Andi Kleen <ak@suse.de>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mar 29, 2007, at 07:41:12, Andi Kleen wrote:
+>> ondemand is the biggest offender and the patch below reduces the  
+>> number of interrupts by 50% or more (depending on HZ) on different  
+>> test systems here.
+>
+> Cool!
+>
+>> Yes. There are quite a few other timers inside kernel that can be  
+>> migrated. I will use timer_stats and track others and send in the  
+>> patches soon.
+>
+> Longer term it might make sense to even expose this as a option to  
+> user space. Maybe as a new timer in setitimer()? This might safe  
+> power with "wiggling desktop applets" too.
 
-We need to come up with the best possible layout of arguments for the
-fallocate() system call. Various architectures have different
-requirements for how the arguments should look like. Since the mail
-chain has become huge, here is the summary of various inputs received
-so far.
+Might also be useful to add an extra option to "top" to reduce the  
+polling frequency if the system is otherwise idle.  A fixed 30-sec  
+timer and a deferrable 1-sec timer or somesuch?
 
-Platform: s390
---------------
-s390 prefers following layout:
+Cheers,
+Kyle Moffett
 
-   int fallocate(int fd, loff_t offset, loff_t len, int mode)
-
-For details on why and how "int, int, loff_t, loff_t" is a problem on
-s390, please see Heiko's mail on 16th March. Here is the link:
-http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg133595.html
-
-Platform: ppc, arm
-------------------
-ppc (32 bit) has a problem with "int, loff_t, loff_t, int" layout,
-since this will result in a pad between fd and offset, making seven
-arguments total - which is not supported by ppc32. It supports only
-6 arguments. Thus the desired layout by ppc32 is:
-
-   int fallocate(int fd, int mode, loff_t offset, loff_t len)
-
-Even ARM prefers above kind of layout. For details please see the
-definition of sys_arm_sync_file_range().
-
-Option of loff_t => high u32 + low u32
---------------------------------------
-Matthew and Russell have suggested another option of breaking each
-"loff_t" into two "u32"s. This will result in 6 arguments in total.
-
-Following think that this is a good alternative:
-Matthew Wilcox, Russell King, Heiko Carstens
-
-Following do not like this idea:
-Chris Wedgwood
-
-
-What are your thoughts on this ? What layout should we finalize on ?
-Perhaps, since sync_file_range() system call has similar arguments, we
-can take hint from the challenges faced on implementing it on various
-architectures, and decide.
-
-Please suggest. Thanks!
-
---
-Regards,
-Amit Arora
