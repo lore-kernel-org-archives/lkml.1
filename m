@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbXC2HjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965974AbXC2Hou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbXC2HjP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 03:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbXC2HjP
+	id S965974AbXC2Hou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 03:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965975AbXC2Hou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 03:39:15 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:39360 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753300AbXC2HjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 03:39:14 -0400
-X-Greylist: delayed 467 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Mar 2007 03:37:48 EDT
-Message-ID: <375153397.05466@ustc.edu.cn>
-X-WebMAIL-MUA: [210.45.119.241]
-From: "" <linwy@mail.ustc.edu.cn>
-To: linux-kernel@vger.kernel.org
-Date: Thu, 29 Mar 2007 15:29:57 +0800
-Reply-To: "" <linwy@mail.ustc.edu.cn>
-X-Priority: 3
-Subject: a question about kernel copy userspace data
-Content-Type: text/plain
+	Thu, 29 Mar 2007 03:44:50 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:56541 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965974AbXC2Hot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 03:44:49 -0400
+Message-ID: <460B6E4B.3060004@gmail.com>
+Date: Thu, 29 Mar 2007 09:44:11 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.osdl.org, pavel@suse.cz
+Subject: 2.6.21-rc5: swsusp: Not enough free memory
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 29 Mar 2007 09:44:16 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello ,
-i am programming a trial firewall based on netfilter ,which needs the module to
-access the data of user space ,so i use copy_from_user() but it can't work ,the
-code(simple test code) is like this:
--------user space program-----
-#include <stdlib.h>
-#include <stdio.h>
+Hi,
 
-int main(int argc ,char *argv[]) {
-char para[100]="insmod test.ko ";
-int c=24;
-unsigned int point=&c;
-printf("%u\n",point);
-char b[11]="0000000000"; /*convert the unsigned to chars */
-int j=10;
-int siz=0;
-while(point>0) {
-b[--j]=point%10+48;
-point=point/10;
-siz++;
-}
-char ips[30]="point=";
-strcat(ips,&b[10-siz]);
-strcat(para,ips);
-puts(para);
-system("make");
-system(para);
-}
--------kernel module-----------
-#include <linux/module.h>
-#include <linux/netfilter_ipv4.h>
-#include <linux/tcp.h>
-#include <linux/moduleparam.h>
+I'm getting this while trying to swsups the machine in -rc5, -rc4 is fine:
 
-MODULE_LICENSE("Dual BSD/GPL");
+Disabling non-boot CPUs
+CPU 1 is now offline
+SMP alternatives: switching to UP code
+CPU1 is down
+swsusp: critical section:
+swsusp: Need to copy 131380 pages
+swsusp: Not enough free memory
+Error -12 suspending
+Enabling non-boot CPUs ...
 
-static unsigned int *point;
-module_param(point, uint , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-MODULE_PARM_DESC(point, "the pointer of user space");
+# cat /sys/power/resume
+8:6
+# cat /proc/swaps
+Filename                                Type            Size    Used    Priority
+/dev/sda6                               partition       1004020 0       -1
 
-static unsigned int
-linuxmag_hook(unsigned int hook, struct sk_buff **pskb,
-const struct net_device *indev, const
-struct net_device *outdev, int
-(*okfn)(struct sk_buff *))
-{
-printk("world\n");
-printk(" %u\n",point);
-int *b;
-b=kmalloc(sizeof(int),GFP_KERNEL);
-copy_from_user(b,(int *)point,sizeof(int));
-printk("user space's value=%u\n",*b);
-}
+Any other info needed?
 
-static struct nf_hook_ops linuxmag_ops
-= { .hook = linuxmag_hook,
-.owner = THIS_MODULE,
-.pf = PF_INET,
-.hooknum = NF_IP_LOCAL_OUT,
-.priority = NF_IP_PRI_FILTER-1
-};
+BTW. is this OK on resume?
+PM: Writing back config space on device 0000:02:00.0 at offset 1 (was 100006, w
+iting 100002)
+pnp: Failed to activate device 00:04.
+pnp: Failed to activate device 00:05.
+ usbdev5.3_ep00: PM: resume from 0, parent 5-4 still 2
 
-static int __init init(void)
-{
-return nf_register_hook(&linuxmag_ops);
-}
+# ll /sys/bus/pnp/devices/00\:0{4,5}/driver
+lrwxrwxrwx 1 root root 0 2007-03-29 09:16 /sys/bus/pnp/devices/00:04/driver
+-> ../../../bus/pnp/drivers/i8042 kbd
+lrwxrwxrwx 1 root root 0 2007-03-29 09:16 /sys/bus/pnp/devices/00:05/driver
+-> ../../../bus/pnp/drivers/i8042 aux
 
-static void __exit fini(void)
-{
-nf_unregister_hook(&linuxmag_ops);
-}
-module_init(init);
-module_exit(fini);
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
 
-i check the /var/log/messages.
- the user space's value is 0
-not the right value 24 which i defined in main().
-this question puzzled me for a few days,and i am a fresh man about  kernel.is
-there anyone can help me?
-any answer would be appreciated very much .
-
-
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
