@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030327AbXC2QXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXC2QfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030327AbXC2QXG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 12:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933115AbXC2QXG
+	id S933115AbXC2QfX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 12:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbXC2QfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 12:23:06 -0400
-Received: from mga01.intel.com ([192.55.52.88]:23227 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933143AbXC2QXE convert rfc822-to-8bit (ORCPT
+	Thu, 29 Mar 2007 12:35:23 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:41045 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933115AbXC2QfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 12:23:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,347,1170662400"; 
-   d="scan'208"; a="221562502:sNHT20776609"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 29 Mar 2007 12:35:22 -0400
+Message-ID: <460BEABE.3040706@s5r6.in-berlin.de>
+Date: Thu, 29 Mar 2007 18:35:10 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6 patch] the scheduled eepro100 removal
-Date: Thu, 29 Mar 2007 09:22:50 -0700
-Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5202357DB0@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <460B76A3.6040200@drugphish.ch>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6 patch] the scheduled eepro100 removal
-Thread-Index: Acdx2wo6BQ1T5EKBSVytTIELSwPYNgAQ0kpA
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: "Roberto Nibali" <ratz@drugphish.ch>, "Yinghai Lu" <yinghai.lu@amd.com>
-Cc: "Jeff Garzik" <jgarzik@pobox.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Bill Davidsen" <davidsen@tmr.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <saw@saw.sw.com.sg>
-X-OriginalArrivalTime: 29 Mar 2007 16:22:51.0103 (UTC) FILETIME=[7F2476F0:01C7721E]
+To: Russ Meyerriecks <datachomper@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Student Project Ideas
+References: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com>
+In-Reply-To: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roberto Nibali wrote:
->>> Sounds sane to me.  My overall opinion on eepro100 removal is that
->>> we're not there yet.  Rare problem cases remain where e100 fails
->>> but eepro100 works, and it's older drivers so its low priority for
->>> everybody. 
->>> 
->>> Needs to happen, though...
->> 
->> It seems that several Tyan Opteron base system that were using IPMI
->> add on card.  the IPMI card share intel 100Mhz nic onboard. you need
->> to use eepro100 instead of e100 otherwise the e100 will shutdown OOB
->> (out of Band) connection for IPMI when shut down the OS.
-> 
-> I find it hard to believe that something as common as IPMI in
-> conjunction with the IPMI technology wasn't tested in Intel's lab.
-> From my experience with Intel Server boards, onboard IPMI (all offered
-> versions) and e100/e1000 NICs, I've never ever experienced any
-> problems operating the BMC over the NIC. Also, I don't quite
-> understand you point about the "IPMI card sharing the 100Mbit/s NIC"
-> onboard? What exactly is shared?
+Russ Meyerriecks wrote:
+> If anybody has any bug fixes or features maybe they never got
+> around to,
 
-It's a legit problem, but only with this *one* system.
+http://bugzilla.kernel.org/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED
+has 1504 hits right now.
+
+> and would be suitable for this situation,
+
+This may be a problem.
+-- 
+Stefan Richter
+-=====-=-=== --== ===-=
+http://arcgraph.de/sr/
