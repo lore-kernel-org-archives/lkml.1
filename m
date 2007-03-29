@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934353AbXC2WJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934350AbXC2WJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934353AbXC2WJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 18:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934358AbXC2WJ1
+	id S934350AbXC2WJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 18:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934358AbXC2WJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 18:09:27 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:53914 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934353AbXC2WJ0 (ORCPT
+	Thu, 29 Mar 2007 18:09:26 -0400
+Received: from pool-72-92-185-191.albyny.east.verizon.net ([72.92.185.191]:50753
+	"EHLO posidon.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934350AbXC2WJ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 29 Mar 2007 18:09:26 -0400
-Date: Thu, 29 Mar 2007 15:06:38 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Tony Olech <tony.olech@elandigitalsystems.com>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.20-rc4-mm1: different values for OHCI_QUIRK_ZFMICRO
-Message-Id: <20070329150638.83dcf1fa.randy.dunlap@oracle.com>
-In-Reply-To: <20070220000654.GK13958@stusta.de>
-References: <20070111222627.66bb75ab.akpm@osdl.org>
-	<20070114091016.GS7469@stusta.de>
-	<200701140636.11657.david-b@pacbell.net>
-	<20070220000654.GK13958@stusta.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Mar 2007 18:09:25 EDT
+Date: Thu, 29 Mar 2007 18:01:41 -0400
+From: Bill Davidsen <davidsen@posidon.tmr.com>
+Message-Id: <200703292201.l2TM1fO4005275@posidon.tmr.com>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.21-rc5-git1][KVM] exception on start VM
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007 01:06:54 +0100 Adrian Bunk wrote:
+Starting a VM for Win98SE:
 
-> On Sun, Jan 14, 2007 at 06:36:10AM -0800, David Brownell wrote:
-> > On Sunday 14 January 2007 1:10 am, Adrian Bunk wrote:
-> > > <--  snip  -->
-> > 
-> > Waiting for Tony to submit bugfixes to his driver...
-> 
-> Still unfixed as of 2.6.20-mm1.
-> 
-> > > ...
-> > >   CC      drivers/usb/misc/ftdi-elan.o
-> > > /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/usb/misc/ftdi-elan.c:2307:1: warning: "OHCI_QUIRK_ZFMICRO" redefined
-> > > In file included from /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/usb/misc/ftdi-elan.c:76:
-> > > /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/usb/misc/../host/ohci.h:399:1: warning: this is the location of the previous definition
-> > > ...
-> > > $ grep -r ^#define * | grep OHCI_QUIRK_ZFMICRO  
-> > > drivers/usb/host/ohci.h:#define OHCI_QUIRK_ZFMICRO      0x20                   /* Compaq ZFMicro chipset*/
-> > > drivers/usb/host/u132-hcd.c:#define OHCI_QUIRK_ZFMICRO 0x10
-> > > drivers/usb/misc/ftdi-elan.c:#define OHCI_QUIRK_ZFMICRO 0x10
-> > > $ 
-> > > 
-> > > <--  snip  -->
-
-so is there a patch around for this yet?
-
-or shall someone other than Tony (??) make one?
+posidon:root> /usr/local/kvm-15/bin/qemu -m 128 -hda Win98SE-2.kvm 
+exception 13 (0)
+rax 00000000f000ff53 rbx 0000000000000000 rcx 000000000000005a rdx 000000000000000e
+rsi 00000000001100c4 rdi 000000000002a002 rsp 0000000000086650 rbp 000000000000667a
+r8  0000000000000000 r9  0000000000000000 r10 0000000000000000 r11 0000000000000000
+r12 0000000000000000 r13 0000000000000000 r14 0000000000000000 r15 0000000000000000
+rip 000000000000d350 rflags 00237206
+cs fff8 (000fff80/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+ds 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+es 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+ss 103f (000103f0/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+fs 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+gs 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+tr 0000 (08850000/00002088 p 1 dpl 0 db 0 s 0 type b l 0 g 0 avl 0)
+ldt 0000 (00000000/0000ffff p 1 dpl 0 db 0 s 0 type 2 l 0 g 0 avl 0)
+gdt 87244/2f
+idt 0/3ff
+cr0 60000010 cr2 0 cr3 0 cr4 0 cr8 0 efer 0
+Aborted
+posidon:root>
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Hope that's useful, I was looking at nbd issues and just tried for 
+curiosity.
+
+-- 
+<davidsen@tmr.com>
