@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422663AbXC2WQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422657AbXC2WXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422663AbXC2WQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 18:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422684AbXC2WQw
+	id S1422657AbXC2WXW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 18:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945894AbXC2WXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 18:16:52 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:45183 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422663AbXC2WQv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 18:16:51 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 29 Mar 2007 15:16:49 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Nick Piggin <npiggin@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] queued spinlocks (i386)
-In-Reply-To: <20070329184213.GA83@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0703291215440.1199@alien.or.mcafeemobile.com>
-References: <20070325155407.GA497@tv-sign.ru> <20070328070459.GC12508@wotan.suse.de>
- <20070329184213.GA83@tv-sign.ru>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 Mar 2007 18:23:22 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:41220 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422651AbXC2WXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 18:23:21 -0400
+Date: Thu, 29 Mar 2007 15:23:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc5-mm2 - compile error on x86-64
+Message-Id: <20070329152317.56df80d0.akpm@linux-foundation.org>
+In-Reply-To: <m1mz1vem51.fsf@ebiederm.dsl.xmission.com>
+References: <20070326211627.c681af3b.akpm@linux-foundation.org>
+	<20070329182020.GA9223@aitel.hist.no>
+	<20070329142816.5d18d89f.akpm@linux-foundation.org>
+	<m1mz1vem51.fsf@ebiederm.dsl.xmission.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007, Oleg Nesterov wrote:
+On Thu, 29 Mar 2007 16:10:50 -0600
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-> On 03/28, Nick Piggin wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > >
-> > Well with my queued spinlocks, all that lockbreak stuff can just come out
-> > of the spin_lock, break_lock out of the spinlock structure, and
-> > need_lockbreak just becomes (lock->qhead - lock->qtail > 1).
+> > Ah.  I assume you have CONFIG_SYSCTL=y, CONFIG_PROC_SYSCTL=n?
+> >
+> >
+> >
+> >
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> >
+> > We're using #ifdef CONFIG_SYSCTL, but we should be using CONFIG_PROC_SYSCTL,
+> > so we get
 > 
-> Q: queued spinlocks are not CONFIG_PREEMPT friendly,
-
-Why? Is CONFIG_PREEMPT friendly to anyone? :)
-
-
-
-> > +       asm volatile(LOCK_PREFIX "xaddw %0, %1\n\t"
-> > +                    : "+r" (pos), "+m" (lock->qhead) : : "memory");
-> > +       while (unlikely(pos != lock->qtail))
-> > +               cpu_relax();
+> I have no problem with the patch it is clearly more correct than what we
+> are doing now but I didn't think it was possible to select
+> CONFIG_SYSCTL and CONFIG_PROCFS without CONFIG_PROC_SYSCTL being
+> selected...
+> Do we have a constraint problem in Kconfig?  Or am I misremembering things?
 > 
-> once we incremented lock->qhead, we have no optiion but should spin with
-> preemption disabled until pos == lock->qtail, yes?
 
-Yes, preemption and deterministic spinlock policies are not friends.
+config PROC_SYSCTL
+        bool "Sysctl support (/proc/sys)" if EMBEDDED
+        depends on PROC_FS
+        select SYSCTL
+        default y
+
+CONFIG_PROC_SYSCTL depends on CONFIG_PROC_FS
+CONFIG_PROC_SYSCTL selects CONFIG_SYSCTL
+
+So I don't see anything preventing CONFIG_SYSCTL=y, CONFIG_PROC_FS=y,
+CONFIG_PROC_SYSCTL=n.  I assume we can make this combination compile, link
+and run easily enough.  I dunno if it makes any actual sense though?
 
 
-
-- Davide
-
+I'd have thought that PROC_SYSCTL should just depend on SYSCTL.  But
+SYSCTL's Kconfig setup is weird.
 
