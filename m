@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934043AbXC2ISK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbXC2IT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934043AbXC2ISK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 04:18:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934048AbXC2ISK
+	id S1751399AbXC2IT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 04:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXC2IT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 04:18:10 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48691 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S934043AbXC2ISJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 04:18:09 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+4PCZKaga41KN2iXHZfZCuMfggF9yfgFR1PHkw0N
-	cYmmhKaj/NvQCV
-Subject: Re: [PATCH] sched: staircase deadline misc fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-In-Reply-To: <1175147455.6430.91.camel@Homer.simpson.net>
-References: <200703290237.38777.kernel@kolivas.org>
-	 <20070328184843.GA17420@elte.hu>  <200703290944.45888.kernel@kolivas.org>
-	 <1175147455.6430.91.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Thu, 29 Mar 2007 10:18:03 +0200
-Message-Id: <1175156283.6430.143.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Thu, 29 Mar 2007 04:19:59 -0400
+Received: from drugphish.ch ([69.55.226.176]:53607 "EHLO www.drugphish.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751399AbXC2IT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 04:19:58 -0400
+Message-ID: <460B76A3.6040200@drugphish.ch>
+Date: Thu, 29 Mar 2007 10:19:47 +0200
+From: Roberto Nibali <ratz@drugphish.ch>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai.lu@amd.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Bill Davidsen <davidsen@tmr.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, saw@saw.sw.com.sg,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: [2.6 patch] the scheduled eepro100 removal
+References: <20070325145810.GI16477@stusta.de> <460AE997.90509@tmr.com>	 <460AEB85.1020101@intel.com> <460AEF65.8070908@pobox.com> <86802c440703282208m1f79c682q876e4d08d9216cd2@mail.gmail.com>
+In-Reply-To: <86802c440703282208m1f79c682q876e4d08d9216cd2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rereading to make sure I wasn't unclear anywhere...
+>> Sounds sane to me.  My overall opinion on eepro100 removal is that we're
+>> not there yet.  Rare problem cases remain where e100 fails but eepro100
+>> works, and it's older drivers so its low priority for everybody.
+>>
+>> Needs to happen, though...
+> 
+> It seems that several Tyan Opteron base system that were using IPMI
+> add on card.  the IPMI card share intel 100Mhz nic onboard. you need
+> to use eepro100 instead of e100 otherwise the e100 will shutdown OOB
+> (out of Band) connection for IPMI when shut down the OS.
 
-On Thu, 2007-03-29 at 07:50 +0200, Mike Galbraith wrote:
->  
-> I don't see what a < 95% load really means.
+I find it hard to believe that something as common as IPMI in 
+conjunction with the IPMI technology wasn't tested in Intel's lab. From 
+my experience with Intel Server boards, onboard IPMI (all offered 
+versions) and e100/e1000 NICs, I've never ever experienced any problems 
+operating the BMC over the NIC. Also, I don't quite understand you point 
+about the "IPMI card sharing the 100Mbit/s NIC" onboard? What exactly is 
+shared?
 
-Egad.  Here I'm pondering the numbers and light load as I'm typing, and
-my fingers (seemingly independent when mind wanders off) typed < 95% as
-in not fully committed, instead of "light".
-
-	-Mike
-
+Best regards,
+Roberto Nibali, ratz
+-- 
+echo 
+'[q]sa[ln0=aln256%Pln256/snlbx]sb3135071790101768542287578439snlbxq' | dc
