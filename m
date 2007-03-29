@@ -1,138 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030587AbXC2SAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030603AbXC2SJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030587AbXC2SAv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 14:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030591AbXC2SAu
+	id S1030603AbXC2SJo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 14:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030608AbXC2SJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 14:00:50 -0400
-Received: from mx.melware.net ([217.91.97.190]:4503 "EHLO mx.melware.net"
+	Thu, 29 Mar 2007 14:09:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39275 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030587AbXC2SAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 14:00:50 -0400
-Date: Thu, 29 Mar 2007 20:00:47 +0200 (CEST)
-From: Armin Schindler <armin@melware.de>
-X-X-Sender: armin@phoenix.one.melware.de
-To: Adrian Bunk <bunk@stusta.de>
-Cc: randy.dunlap@oracle.com, kai.germaschewski@gmx.de,
-       isdn4linux@listserv.isdn4linux.de,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, kkeil@suse.de
-Subject: Re: [RFC: 2.6 patch] fix ISDN_CAPI<->ISDN_DIVAS
-In-Reply-To: <20070329172956.GB14134@stusta.de>
-Message-ID: <Pine.LNX.4.61.0703291954500.15823@phoenix.one.melware.de>
-References: <20070324130622.GE752@stusta.de> <Pine.LNX.4.61.0703241442220.28244@phoenix.one.melware.de>
- <20070324150806.GA2078@stusta.de> <Pine.LNX.4.61.0703291235330.12116@phoenix.one.melware.de>
- <20070329172956.GB14134@stusta.de>
-Organization: Cytronics & Melware
+	id S1030603AbXC2SJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 14:09:43 -0400
+Message-ID: <460C004F.8050702@redhat.com>
+Date: Thu, 29 Mar 2007 14:07:11 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Brian Braunstein <brian@bristyle.com>
+CC: Max Krasnyansky <maxk@qualcomm.com>, vtun@office.satix.net, akpm@osdl.org,
+       jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: tun/tap: fixed hw address handling
+References: <460632E9.5030508@bristyle.com>
+In-Reply-To: <460632E9.5030508@bristyle.com>
+Content-Type: multipart/mixed;
+ boundary="------------070605000000030108090104"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007, Adrian Bunk wrote:
-> On Thu, Mar 29, 2007 at 01:06:12PM +0200, Armin Schindler wrote:
-> > On Sat, 24 Mar 2007, Adrian Bunk wrote:
-> > > On Sat, Mar 24, 2007 at 02:49:42PM +0100, Armin Schindler wrote:
-> > > > On Sat, 24 Mar 2007, Adrian Bunk wrote:
-> > > > > Randy Dunlap reported in kernel Bugzilla #8241 the following compile 
-> > > > > error with CONFIG_ISDN_CAPI=m, CONFIG_ISDN_DIVAS=y:
-> > > > > 
-> > > > > <--  snip  -->
-> > > > > 
-> > > > > ...
-> > > > > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/divacapi.ko] undefined!
-> > > > > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_mnt.ko] undefined!
-> > > > > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
-> > > > > WARNING: "proc_net_eicon" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
-> > > > > make[1]: *** [__modpost] Error 1
-> > > > > 
-> > > > > <--  snip  -->
-> > > > > 
-> > > > > 
-> > > > > Kconfig contains the following strange thing:
-> > > > > 
-> > > > > menu "Active Eicon DIVA Server cards"
-> > > > >         depends on NET && ISDN && ISDN_CAPI!=n
-> > > > > 
-> > > > > 
-> > > > > It seems that except for ISDN_DIVAS_DIVACAPI (that already has a proper 
-> > > > > dependency), nothing here actually requires ISDN_CAPI?
-> > > > 
-> > > > Not quite true. Yes, the base modules for the divas driver do not require 
-> > > > ISDN_CAPI, but without ISDN_CAPI it doesn't make any sense.
-> > > 
-> > > Let me try to understand this:
-> > > 
-> > > Does it make sense to have CONFIG_ISDN_DIVAS=y, CONFIG_ISDN_CAPI=m?
-> > 
-> > Yes, this is possible. DIVAS itself does not depend on CAPI.
-> > 
-> > > And do CONFIG_ISDN_DIVAS=y/m, CONFIG_ISDN_DIVAS_DIVACAPI=n 
-> > > configurations make sense?
-> > 
-> > Yes, but for only for experts who want to use the DIVAS own API
-> > without CAPI.
-> >  
-> > > If not, what about:
-> > > - let ISDN_DIVAS depend on ISDN_CAPI and
-> > > - enable ISDN_DIVAS_DIVACAPI unconditionally (and perhaps even build 
-> > >                                               it into the divas module)?
-> > 
-> > That would not be correct.
-> >  
-> > > > The patch below (go into /hardware even for non ISDN_CAPI) is wrong. The
-> > > > subdir /hardware was created for new drivers using CAPI. So it is correct to
-> > > > go there when ISDN_CAPI != n only.
-> > > > 
-> > > > I don't understand the warnings above. The symbols are exported by divas 
-> > > > modules, so why is it causing warnings? There have been no change in the 
-> > > > divas modules for this. Any change in the kernel module creation structure
-> > > > which may causing this?
-> > > 
-> > > These aren't warnings, these are errors.
-> > > 
-> > > Due to
-> > >   obj-$(CONFIG_ISDN_CAPI)                    += hardware/
-> > > 
-> > > hardware/ isn't visited with CONFIG_ISDN_CAPI=m when building vmlinux.
-> > > 
-> > > This means the modules were built, but the static code they were using 
-> > > wasn't linkd into the kernel.
-> > > 
-> > > This might not have occured before since CONFIG_ISDN_CAPI=m, 
-> > > CONFIG_ISDN_DIVAS=y is an unusual configuration.
-> > 
-> > I see. So for DIVAS the line 
-> >   obj-$(CONFIG_ISDN_CAPI)                    += hardware/
-> > causes the trouble, because all hardware/ driver are meant to be CAPI 
-> > drivers...
-> > 
-> > In that case we should change hardware/eicon/ as you proposed:
-> > > - let ISDN_DIVAS depend on ISDN_CAPI and
-> > 
-> > So the solution might be just to change
-> >  
-> >     menu "Active Eicon DIVA Server cards"
-> >       depends on NET && ISDN && ISDN_CAPI!=n
-> > to 
-> >     menu "Active Eicon DIVA Server cards"
-> >       depends on NET && ISDN && ISDN_CAPI
-> > 
-> > in drivers/isdn/hardware/eicon/Kconfig
-> > right?
-> 
-> 
-> This is a solution.
-> 
-> It implies that CONFIG_ISDN_CAPI=n, CONFIG_ISDN_DIVAS=y/m or 
-> CONFIG_ISDN_CAPI=m, CONFIG_ISDN_DIVAS=y will not be possible, and the 
-> "experts who want to use the DIVAS own API" you were talking about have 
-> to enable CONFIG_ISDN_CAPI in their kernel. But considering that it 
-> isn't a new problem, and you as the maintainer hadn't heard about it 
-> before (it results in the driver not being included into the kernel 
-> despite CONFIG_ISDN_DIVAS=y), this might be a pure theoretical 
-> configuration not worth supporting.
+This is a multi-part message in MIME format.
+--------------070605000000030108090104
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Agreed. It seems that these 'experts' are using the separate divas driver
-package anyway.
+Brian Braunstein wrote:
+> 
+> From: Brian Braunstein <linuxkernel@bristyle.com>
+> 
+> Fixed tun/tap driver's handling of hw addresses.
 
-Armin
+Okay, the attached patch applies. Can someone comment on whether
+it makes sense? (pasted inline for comments)
+
+From: Brian Braunstein <linuxkernel@bristyle.com>
+
+Fixed tun/tap driver's handling of hw addresses. The hw address is stored in
+both the net_device.dev_addr and tun.dev_addr fields.  These fields were not
+kept synchronized, and in fact weren't even initialized to the same value.
+Now during both init and when performing SIOCSIFHWADDR on the tun device
+these values are both updated.  However, if SIOCSIFHWADDR is performed on the
+net device directly (for instance, setting the hw address using ifconfig),
+the tun device does not get updated.  Perhaps the tun.dev_addr field should
+be removed completely at some point, as it is redundant and
+net_device.dev_addr can be used anywhere it is used.
+
+Signed-off-by: Brian Braunstein <linuxkernel@bristyle.com>
+
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -196,7 +196,10 @@ static void tun_net_init(struct net_devi
+                dev->set_multicast_list = tun_net_mclist;
+
+                ether_setup(dev);
+-               random_ether_addr(dev->dev_addr);
++
++               /* random address already created for us by tun_set_iff, use it */
++               memcpy(dev->dev_addr, tun->dev_addr, min(sizeof(tun->dev_addr), sizeof(dev->dev_addr)) );
++
+                dev->tx_queue_len = TUN_READQ_SIZE;  /* We prefer our own queue length */
+                break;
+        }
+@@ -636,6 +639,7 @@ static int tun_chr_ioctl(struct inode *i
+                return 0;
+
+        case SIOCGIFHWADDR:
++               /* Note: the actual net device's address may be different */
+                memcpy(ifr.ifr_hwaddr.sa_data, tun->dev_addr,
+                                min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
+                if (copy_to_user( argp, &ifr, sizeof ifr))
+@@ -643,16 +647,22 @@ static int tun_chr_ioctl(struct inode *i
+                return 0;
+
+        case SIOCSIFHWADDR:
+-               /** Set the character device's hardware address. This is used when
+-                * filtering packets being sent from the network device to the character
+-                * device. */
+-               memcpy(tun->dev_addr, ifr.ifr_hwaddr.sa_data,
+-                               min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
+-               DBG(KERN_DEBUG "%s: set hardware address: %x:%x:%x:%x:%x:%x\n",
+-                               tun->dev->name,
+-                               tun->dev_addr[0], tun->dev_addr[1], tun->dev_addr[2],
+-                               tun->dev_addr[3], tun->dev_addr[4], tun->dev_addr[5]);
+-               return 0;
++               /* try to set the actual net device's hw address */
++               int ret = dev_set_mac_address(tun->dev, &ifr.ifr_hwaddr);
++
++               if (ret == 0) {
++                       /** Set the character device's hardware address. This is used when
++                        * filtering packets being sent from the network device to the character
++                        * device. */
++                       memcpy(tun->dev_addr, ifr.ifr_hwaddr.sa_data,
++                                       min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
++                       DBG(KERN_DEBUG "%s: set hardware address: %x:%x:%x:%x:%x:%x\n",
++                                       tun->dev->name,
++                                       tun->dev_addr[0], tun->dev_addr[1], tun->dev_addr[2],
++                                       tun->dev_addr[3], tun->dev_addr[4], tun->dev_addr[5]);
++               }
++
++               return  ret;
+
+        case SIOCADDMULTI:
+                /** Add the specified group to the character device's multicast filter
+
+
+
+--------------070605000000030108090104
+Content-Type: text/plain;
+ name="linux-2.6-20.5t-tuntap_fix_set_hw_address.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6-20.5t-tuntap_fix_set_hw_address.patch"
+
+From: Brian Braunstein <linuxkernel@bristyle.com>
+
+Fixed tun/tap driver's handling of hw addresses. The hw address is stored in
+both the net_device.dev_addr and tun.dev_addr fields.  These fields were not
+kept synchronized, and in fact weren't even initialized to the same value.
+Now during both init and when performing SIOCSIFHWADDR on the tun device
+these values are both updated.  However, if SIOCSIFHWADDR is performed on the
+net device directly (for instance, setting the hw address using ifconfig),
+the tun device does not get updated.  Perhaps the tun.dev_addr field should
+be removed completely at some point, as it is redundant and
+net_device.dev_addr can be used anywhere it is used.
+
+Signed-off-by: Brian Braunstein <linuxkernel@bristyle.com>
+
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -196,7 +196,10 @@ static void tun_net_init(struct net_devi
+ 		dev->set_multicast_list = tun_net_mclist;
+ 
+ 		ether_setup(dev);
+-		random_ether_addr(dev->dev_addr);
++
++		/* random address already created for us by tun_set_iff, use it */
++		memcpy(dev->dev_addr, tun->dev_addr, min(sizeof(tun->dev_addr), sizeof(dev->dev_addr)) );
++
+ 		dev->tx_queue_len = TUN_READQ_SIZE;  /* We prefer our own queue length */
+ 		break;
+ 	}
+@@ -636,6 +639,7 @@ static int tun_chr_ioctl(struct inode *i
+ 		return 0;
+ 
+ 	case SIOCGIFHWADDR:
++		/* Note: the actual net device's address may be different */
+ 		memcpy(ifr.ifr_hwaddr.sa_data, tun->dev_addr,
+ 				min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
+ 		if (copy_to_user( argp, &ifr, sizeof ifr))
+@@ -643,16 +647,22 @@ static int tun_chr_ioctl(struct inode *i
+ 		return 0;
+ 
+ 	case SIOCSIFHWADDR:
+-		/** Set the character device's hardware address. This is used when
+-		 * filtering packets being sent from the network device to the character
+-		 * device. */
+-		memcpy(tun->dev_addr, ifr.ifr_hwaddr.sa_data,
+-				min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
+-		DBG(KERN_DEBUG "%s: set hardware address: %x:%x:%x:%x:%x:%x\n",
+-				tun->dev->name,
+-				tun->dev_addr[0], tun->dev_addr[1], tun->dev_addr[2],
+-				tun->dev_addr[3], tun->dev_addr[4], tun->dev_addr[5]);
+-		return 0;
++		/* try to set the actual net device's hw address */
++		int ret = dev_set_mac_address(tun->dev, &ifr.ifr_hwaddr);
++
++		if (ret == 0) {
++			/** Set the character device's hardware address. This is used when
++			 * filtering packets being sent from the network device to the character
++			 * device. */
++			memcpy(tun->dev_addr, ifr.ifr_hwaddr.sa_data,
++					min(sizeof ifr.ifr_hwaddr.sa_data, sizeof tun->dev_addr));
++			DBG(KERN_DEBUG "%s: set hardware address: %x:%x:%x:%x:%x:%x\n",
++					tun->dev->name,
++					tun->dev_addr[0], tun->dev_addr[1], tun->dev_addr[2],
++					tun->dev_addr[3], tun->dev_addr[4], tun->dev_addr[5]);
++		}
++
++		return  ret;
+ 
+ 	case SIOCADDMULTI:
+ 		/** Add the specified group to the character device's multicast filter
+
+--------------070605000000030108090104--
