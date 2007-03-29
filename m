@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbXC2JKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbXC2JKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbXC2JKq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 05:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXC2JKp
+	id S1752411AbXC2JKr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 05:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbXC2JKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 05:10:45 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:53612 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbXC2JKW (ORCPT
+	Thu, 29 Mar 2007 05:10:46 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:56537 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbXC2JKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 05:10:22 -0400
-Date: Thu, 29 Mar 2007 11:12:18 +0200
+	Thu, 29 Mar 2007 05:10:21 -0400
+Date: Thu, 29 Mar 2007 11:12:14 +0200
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [Patch -mm 3/3] s390: cio: Delay uevents for subchannels.
-Message-ID: <20070329111218.40c358dd@gondolin.boeblingen.de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg K-H <greg@kroah.com>,
+       Manuel Estrada Sainz <ranty@debian.org>,
+       Eric Rannaud <eric.rannaud@gmail.com>
+Subject: [Patch -mm 2/3] Driver core: switch firmware_class to
+ uevent_suppress.
+Message-ID: <20070329111214.1c3aa250@gondolin.boeblingen.de.ibm.com>
 Organization: IBM Deutschland Entwicklung GmbH
 X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
@@ -33,51 +33,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-We often have the situation that we register a subchannel and start
-device recognition, only to find out that the device is not usable
-after all, which triggers an unregister of the subchannel. This often
-happens on hundreds of subchannels on a LPAR, leading to a storm of
-events which aren't of any use. Therefore, use uevent_suppress to
-delay the KOBJ_ADD uevent for a subchannel until we know that its
-ccw_device is to be registered.
+Use uevent_suppress instead of returning an error code in
+firmware_uevent(). Get rid of the now unneeded FW_STATUS_READY
+and FW_STATUS_READY_NOHOTPLUG.
 
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
 ---
- drivers/s390/cio/css.c    |    9 +++++++++
- drivers/s390/cio/device.c |    6 ++++++
- 2 files changed, 15 insertions(+)
+ drivers/base/firmware_class.c |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
 
---- linux-2.6.21-rc5-mm1.orig/drivers/s390/cio/device.c
-+++ linux-2.6.21-rc5-mm1/drivers/s390/cio/device.c
-@@ -903,6 +903,12 @@ io_subchannel_register(struct work_struc
- 		}
- 		goto out;
- 	}
-+	/*
-+	 * Now we know this subchannel will stay, we can throw
-+	 * our delayed uevent.
-+	 */
-+	sch->dev.uevent_suppress = 0;
-+	kobject_uevent(&sch->dev.kobj, KOBJ_ADD);
- 	/* make it known to the system */
- 	ret = ccw_device_register(cdev);
- 	if (ret) {
---- linux-2.6.21-rc5-mm1.orig/drivers/s390/cio/css.c
-+++ linux-2.6.21-rc5-mm1/drivers/s390/cio/css.c
-@@ -135,6 +135,15 @@ css_register_subchannel(struct subchanne
- 	sch->dev.bus = &css_bus_type;
- 	sch->dev.release = &css_subchannel_release;
- 	sch->dev.groups = subch_attr_groups;
-+	/*
-+	 * We don't want to generate uevents for I/O subchannels that don't
-+	 * have a working ccw device behind them since they will be
-+	 * unregistered before they can be used anyway, so we delay the add
-+	 * uevent until after device recognition was successful.
-+	 */
-+	if (!cio_is_console(sch->schid))
-+		/* Console is special, no need to suppress. */
-+		sch->dev.uevent_suppress = 1;
+--- linux-2.6.21-rc5-mm1.orig/drivers/base/firmware_class.c
++++ linux-2.6.21-rc5-mm1/drivers/base/firmware_class.c
+@@ -31,8 +31,6 @@ enum {
+ 	FW_STATUS_LOADING,
+ 	FW_STATUS_DONE,
+ 	FW_STATUS_ABORT,
+-	FW_STATUS_READY,
+-	FW_STATUS_READY_NOHOTPLUG,
+ };
  
- 	css_get_ssd_info(sch);
+ static int loading_timeout = 60;	/* In seconds */
+@@ -96,9 +94,6 @@ static int firmware_uevent(struct device
+ 	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
+ 	int i = 0, len = 0;
+ 
+-	if (!test_bit(FW_STATUS_READY, &fw_priv->status))
+-		return -ENODEV;
+-
+ 	if (add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &len,
+ 			   "FIRMWARE=%s", fw_priv->fw_id))
+ 		return -ENOMEM;
+@@ -333,6 +328,7 @@ static int fw_register_device(struct dev
+ 	f_dev->parent = device;
+ 	f_dev->class = &firmware_class;
+ 	dev_set_drvdata(f_dev, fw_priv);
++	f_dev->uevent_suppress = 1;
+ 	retval = device_register(f_dev);
+ 	if (retval) {
+ 		printk(KERN_ERR "%s: device_register failed\n",
+@@ -382,9 +378,7 @@ static int fw_setup_device(struct firmwa
+ 	}
+ 
+ 	if (uevent)
+-                set_bit(FW_STATUS_READY, &fw_priv->status);
+-        else
+-                set_bit(FW_STATUS_READY_NOHOTPLUG, &fw_priv->status);
++		f_dev->uevent_suppress = 0;
+ 	*dev_p = f_dev;
+ 	goto out;
  
