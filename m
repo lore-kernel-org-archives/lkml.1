@@ -1,129 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750948AbXC2H51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933219AbXC2IAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750948AbXC2H51 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 03:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXC2H51
+	id S933219AbXC2IAt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 04:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbXC2IAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 03:57:27 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:36792
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750948AbXC2H50 (ORCPT
+	Thu, 29 Mar 2007 04:00:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:23024 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753208AbXC2IAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 03:57:26 -0400
-Message-Id: <460B8DA8.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Thu, 29 Mar 2007 08:58:00 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Cc: <mark.langsdorf@amd.com>
-Subject: [PATCH] fix amd64-agp aperture validation
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Mar 2007 04:00:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K2ES5dE61++1d9sT0rYSGLYFHawY4k7QiDSgyqZde8m0QZR8D641LnKuA6J02xMFXEWLQleK0pA4eulOXCQClwprkAeHdrhv13QAFn5KaYjOlDKxbnOuIwHxMys+mcISoqSBhXT3O/qHO+EeeAj3yaHa19ilCfShRcY931u82Ok=
+Message-ID: <a44ae5cd0703290100q1bb80390ke66333407bbeecfd@mail.gmail.com>
+Date: Thu, 29 Mar 2007 01:00:45 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc5-mm2 -- ACPI problems (lid switch broken, always shows running from AC, plugging in AC hangs machine)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andy Grover" <andrew.grover@intel.com>,
+       "Paul Diefenbaugh" <paul.s.diefenbaugh@intel.com>, len.brown@intel.com,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20070328142000.ebc7712d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <a44ae5cd0703281355h13f1bd70s9eb94092bfa9c3e@mail.gmail.com>
+	 <20070328142000.ebc7712d.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Under CONFIG_DISCONTIGMEM, assuming that a !pfn_valid() implies all
-subsequent pfn-s are also invalid is wrong. Thus replace this by
-explicitly checking against the E820 map.
+On 3/28/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 28 Mar 2007 13:55:54 -0700
+> "Miles Lane" <miles.lane@gmail.com> wrote:
+>
+> > My laptop (HP dv1240us) is always showing that my laptop is plugged
+> > into AC power, even when it is running off of the battery.  When I
+> > plug into the AC after running on the battery, the machine immediately
+> > locks up.  Also, the laptop lid button isn't working -- pressing it
+> > doesn't trigger a suspend.
+>
+> OK, thanks.
+>
+> If you have time, could you please test
+>
+> 2.6.21-rc5 +
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/origin.patch + ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/git-acpi.patch
+> which will allow us to eliminate any non-acpi patches.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Okay, I tested with those patches and got the same problems with the
+resulting build.
+I can't reproduce the hang on plugging in the AC with either
+2.6.21-rc5-mm2 or the
+build with the patches you sent.  The other problems are 100% reproducible.
+I have some new details:
 
---- linux-2.6.21-rc5/arch/i386/kernel/e820.c	2007-03-26 15:20:01.000000000 +0200
-+++ 2.6.21-rc5-amd64-agp/arch/i386/kernel/e820.c	2007-03-28 15:32:24.000000000 +0200
-@@ -818,6 +818,26 @@ void __init limit_regions(unsigned long 
- 	print_memory_map("limit_regions endfunc");
- }
- 
-+/*
-+ * This function checks if any part of the range <start,end> is mapped
-+ * with type.
-+ */
-+int
-+e820_any_mapped(u64 start, u64 end, unsigned type)
-+{
-+	int i;
-+	for (i = 0; i < e820.nr_map; i++) {
-+		const struct e820entry *ei = &e820.map[i];
-+		if (type && ei->type != type)
-+			continue;
-+		if (ei->addr >= end || ei->addr + ei->size <= start)
-+			continue;
-+		return 1;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(e820_any_mapped);
-+
-  /*
-   * This function checks if the entire range <start,end> is mapped with type.
-   *
---- linux-2.6.21-rc5/arch/x86_64/kernel/e820.c	2007-03-26 15:20:12.000000000 +0200
-+++ 2.6.21-rc5-amd64-agp/arch/x86_64/kernel/e820.c	2007-03-28 15:26:08.000000000 +0200
-@@ -98,7 +98,7 @@ static inline int bad_addr(unsigned long
-  * This function checks if any part of the range <start,end> is mapped
-  * with type.
-  */
--int __meminit
-+int
- e820_any_mapped(unsigned long start, unsigned long end, unsigned type)
- { 
- 	int i;
-@@ -112,6 +112,7 @@ e820_any_mapped(unsigned long start, uns
- 	} 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(e820_any_mapped);
- 
- /*
-  * This function checks if the entire range <start,end> is mapped with type.
---- linux-2.6.21-rc5/drivers/char/agp/amd64-agp.c	2007-03-26 15:20:14.000000000 +0200
-+++ 2.6.21-rc5-amd64-agp/drivers/char/agp/amd64-agp.c	2007-03-28 15:20:49.000000000 +0200
-@@ -14,6 +14,7 @@
- #include <linux/agp_backend.h>
- #include <linux/mmzone.h>
- #include <asm/page.h>		/* PAGE_SIZE */
-+#include <asm/e820.h>
- #include <asm/k8.h>
- #include "agp.h"
- 
-@@ -259,7 +260,6 @@ static const struct agp_bridge_driver am
- /* Some basic sanity checks for the aperture. */
- static int __devinit aperture_valid(u64 aper, u32 size)
- {
--	u32 pfn, c;
- 	if (aper == 0) {
- 		printk(KERN_ERR PFX "No aperture\n");
- 		return 0;
-@@ -272,14 +272,9 @@ static int __devinit aperture_valid(u64 
- 		printk(KERN_ERR PFX "Aperture out of bounds\n");
- 		return 0;
- 	}
--	pfn = aper >> PAGE_SHIFT;
--	for (c = 0; c < size/PAGE_SIZE; c++) {
--		if (!pfn_valid(pfn + c))
--			break;
--		if (!PageReserved(pfn_to_page(pfn + c))) {
--			printk(KERN_ERR PFX "Aperture pointing to RAM\n");
--			return 0;
--		}
-+	if (e820_any_mapped(aper, aper + size, E820_RAM)) {
-+		printk(KERN_ERR PFX "Aperture pointing to RAM\n");
-+		return 0;
- 	}
- 
- 	/* Request the Aperture. This catches cases when someone else
---- linux-2.6.21-rc5/include/asm-i386/e820.h	2007-02-04 19:44:54.000000000 +0100
-+++ 2.6.21-rc5-amd64-agp/include/asm-i386/e820.h	2007-03-28 15:21:47.000000000 +0200
-@@ -38,6 +38,7 @@ extern struct e820map e820;
- 
- extern int e820_all_mapped(unsigned long start, unsigned long end,
- 			   unsigned type);
-+extern int e820_any_mapped(u64 start, u64 end, unsigned type);
- extern void find_max_pfn(void);
- extern void register_bootmem_low_pages(unsigned long max_low_pfn);
- extern void e820_register_memory(void);
+1.  Power always shows up as plugged in to AC.
+2.  The lid button is non-operational for initiating a suspend.
+3.  Suspending from the Gnome shutdown menu works.   Afterwards, the
+lid button works for resuming from suspend.
+4.  If I suspend, resume and then try to shutdown; when I see the
+message "The machine will now halt" the power does not shut off.  That
+is, the various buttons on my laptop stay lit up.  I am forced to
+shutdown by holding down the power button for five seconds.
 
-
+I hope this helps,
+            Miles
