@@ -1,54 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbXC2JeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXC2JfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbXC2JeE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 05:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXC2JeD
+	id S1752043AbXC2JfR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 05:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXC2JfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 05:34:03 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:32995 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbXC2JeB (ORCPT
+	Thu, 29 Mar 2007 05:35:17 -0400
+Received: from ananas2.netvision.net.il ([199.203.100.203]:45435 "EHLO
+	ntx.netvision.net.il" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752043AbXC2JfP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 05:34:01 -0400
-Date: Thu, 29 Mar 2007 11:34:00 +0200
-From: Jan Kara <jack@suse.cz>
-To: Linda Walsh <lkml@tlinx.org>
-Cc: Oliver Joa <oliver@j-o-a.de>, Eric Sandeen <sandeen@sandeen.net>,
-       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       xfs-oss <xfs@oss.sgi.com>
-Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
-Message-ID: <20070329093400.GB14616@atrey.karlin.mff.cuni.cz>
-References: <46094344.4090007@j-o-a.de> <20070328113141.GQ32597093@melbourne.sgi.com> <460A6298.4040702@j-o-a.de> <460A821B.4080308@sandeen.net> <460AC857.6040305@j-o-a.de> <460B068C.6060903@tlinx.org> <460B25BE.3050808@tlinx.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460B25BE.3050808@tlinx.org>
-User-Agent: Mutt/1.5.9i
+	Thu, 29 Mar 2007 05:35:15 -0400
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: cifs causes BUG: soft lockup detected on CPU
+Date: Thu, 29 Mar 2007 11:35:13 +0200
+Message-ID: <58D14E53A4F69C4EAF4D29171C447CC4011AC786@NTX-CL.forest.netvision.net.il>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-topic: cifs causes BUG: soft lockup detected on CPU
+Thread-index: Acdx46gff6kaEXm1SCG7iGehaoueUwAAdTwA
+From: "Valentin Zaharov" <karlos_@netvision.net.il>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, "Steven French" <sfrench@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Oliver Joa wrote:
-> >>eason or another, xfs has detected a corrupted on-disk inode format 
-> >>which it cannot recognize, and shuts down.
-> ----
-> Oh, one other thing that may not apply in your case, but may.
-> Does your SATA disk support write caching?  Does it support
-> something called a barrier function?  (not real clear on all
-> the ways this can go wrong, but I believe barriers are supposed
-> to guarantee previous data has been fixed on disk (not in write
-> cache).  If the SATA controller issues a reset, it may very well
-> purge the write cache.  Theoretically, I can think of a _possibility_,
-> that the reset disk would purge the write cache and the barrier
-> indicator would tell xfs to resume writing.  From a recent thread
-> on the xfs list, it would appear this could be a "bad" thing (like
-> crossing the streams ala "ghostbusters", but in a data-integrity
-> context).
-  As far as I can remember, barrier does not mean that data is fixed on
-disk. It is only a command that forces all the writes before the barrier
-to be performed before all the writes after the barrier. So this is more
-an ordering restriction than a data integrity thing...
+I get this error when try to apply the patch:
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+patch -p1 < cifs.patch
+patching file include/linux/fs.h
+patch: **** malformed patch at line 26: /*
+
+Am I missing something or patch is bad?  
+
+Thanks in advance
+
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+Sent: Thursday, March 29, 2007 11:22 AM
+To: Valentin Zaharov
+Cc: linux-kernel@vger.kernel.org; Steven French
+Subject: Re: cifs causes BUG: soft lockup detected on CPU
+
+On Thu, 29 Mar 2007 11:13:04 +0200 "Valentin Zaharov"
+<karlos_@netvision.net.il> wrote:
+
+> I've tried different kernel versions.
+> Right now iam using generic 2.6.9-42 on one machine and 2.6.20.1 on 
+> another one.
+> I also tried various distributions ( Suse, CentOS, RHEL4 ) - not sure 
+> it is relevant.
+> Tried installing latest cifs modules, tried changing CIFSMaxBufSize to
+
+> 15000,  without luck.
+> Freezes are totally random - sometimes they happen 2-4 times a day, 
+> sometimes it can take 2 weeks.
+
+Yeah, it's a relatively recently known-bug, I'm afraid.
+
+Probably this will keep you out of trouble until it gets fixed for real:
+
+--- a/include/linux/fs.h~a
++++ a/include/linux/fs.h
+@@ -627,25 +627,7 @@ extern void inode_double_unlock(struct i
+  */
+ static inline loff_t i_size_read(const struct inode *inode)  { -#if
+BITS_PER_LONG==32 && defined(CONFIG_SMP)
+-	loff_t i_size;
+-	unsigned int seq;
+-
+-	do {
+-		seq = read_seqcount_begin(&inode->i_size_seqcount);
+-		i_size = inode->i_size;
+-	} while (read_seqcount_retry(&inode->i_size_seqcount, seq));
+-	return i_size;
+-#elif BITS_PER_LONG==32 && defined(CONFIG_PREEMPT)
+-	loff_t i_size;
+-
+-	preempt_disable();
+-	i_size = inode->i_size;
+-	preempt_enable();
+-	return i_size;
+-#else
+ 	return inode->i_size;
+-#endif
+ }
+ 
+ /*
+_
+
