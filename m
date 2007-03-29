@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965974AbXC2Hou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965980AbXC2HrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965974AbXC2Hou (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 03:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965975AbXC2Hou
+	id S965980AbXC2HrM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 03:47:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965979AbXC2HrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 03:44:50 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:56541 "EHLO minas.ics.muni.cz"
+	Thu, 29 Mar 2007 03:47:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:33330 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965974AbXC2Hot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 03:44:49 -0400
-Message-ID: <460B6E4B.3060004@gmail.com>
-Date: Thu, 29 Mar 2007 09:44:11 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
-MIME-Version: 1.0
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.osdl.org, pavel@suse.cz
-Subject: 2.6.21-rc5: swsusp: Not enough free memory
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
+	id S965980AbXC2HrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 03:47:11 -0400
+Subject: [PATCH] ignore vgacon if hardware not present
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>, Gerd Hoffmann <kraxel@suse.de>,
+       Alan <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 29 Mar 2007 17:46:48 +1000
+Message-Id: <1175154408.12230.195.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 29 Mar 2007 09:44:16 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+(Did this fall through the cracks?  I don't see it in -mm.  It's
+standalone, and saves some silly code in lguest and presumably others).
+==
 
-I'm getting this while trying to swsups the machine in -rc5, -rc4 is fine:
+Avoid trying to set up vgacon if there's no vga hardware present.
 
-Disabling non-boot CPUs
-CPU 1 is now offline
-SMP alternatives: switching to UP code
-CPU1 is down
-swsusp: critical section:
-swsusp: Need to copy 131380 pages
-swsusp: Not enough free memory
-Error -12 suspending
-Enabling non-boot CPUs ...
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+From: Gerd Hoffmann <kraxel@suse.de>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-# cat /sys/power/resume
-8:6
-# cat /proc/swaps
-Filename                                Type            Size    Used    Priority
-/dev/sda6                               partition       1004020 0       -1
+---
+ drivers/video/console/vgacon.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Any other info needed?
+===================================================================
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -372,7 +372,8 @@ static const char *vgacon_startup(void)
+ 	}
+ 
+ 	/* VGA16 modes are not handled by VGACON */
+-	if ((ORIG_VIDEO_MODE == 0x0D) ||	/* 320x200/4 */
++	if ((ORIG_VIDEO_MODE == 0x00) ||	/* SCREEN_INFO not initialized */
++	    (ORIG_VIDEO_MODE == 0x0D) ||	/* 320x200/4 */
+ 	    (ORIG_VIDEO_MODE == 0x0E) ||	/* 640x200/4 */
+ 	    (ORIG_VIDEO_MODE == 0x10) ||	/* 640x350/4 */
+ 	    (ORIG_VIDEO_MODE == 0x12) ||	/* 640x480/4 */
 
-BTW. is this OK on resume?
-PM: Writing back config space on device 0000:02:00.0 at offset 1 (was 100006, w
-iting 100002)
-pnp: Failed to activate device 00:04.
-pnp: Failed to activate device 00:05.
- usbdev5.3_ep00: PM: resume from 0, parent 5-4 still 2
 
-# ll /sys/bus/pnp/devices/00\:0{4,5}/driver
-lrwxrwxrwx 1 root root 0 2007-03-29 09:16 /sys/bus/pnp/devices/00:04/driver
--> ../../../bus/pnp/drivers/i8042 kbd
-lrwxrwxrwx 1 root root 0 2007-03-29 09:16 /sys/bus/pnp/devices/00:05/driver
--> ../../../bus/pnp/drivers/i8042 aux
-
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
-
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
