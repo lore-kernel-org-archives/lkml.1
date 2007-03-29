@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934331AbXC2Tbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbXC2Tq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934331AbXC2Tbl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 15:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934333AbXC2Tbl
+	id S934142AbXC2Tq4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 15:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934143AbXC2Tq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 15:31:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:45135 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934331AbXC2Tbk (ORCPT
+	Thu, 29 Mar 2007 15:46:56 -0400
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:33565 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934142AbXC2Tqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 15:31:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=oE8Hs6hujXgQbJhmsXOb1V4V6ZoT4Dt1OFUVZKgHLBImxNeyJmVr7RtU4oH6ARnPbesSHFhe3r+0HLyJd49i5esDxkUsrGY9LNIjo7JjQ/YPF1l3gP83j6kxRB/DldzMgoqfhvrtGApXacPaBJ23gAiA1PheXfcrxkg/jvihYOE=
-Message-ID: <75b66ecd0703291231n1b7cbcfcpbb16f4cfee933c2c@mail.gmail.com>
-Date: Thu, 29 Mar 2007 15:31:35 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Kevin Perros" <kevin.perros@free.fr>
-Subject: Re: 2.6.20.3-rt8 - DMA suffers excessive delay periodically
-Cc: John <linux.kernel@free.fr>, linux-kernel@vger.kernel.org
-In-Reply-To: <460C094C.8070304@free.fr>
+	Thu, 29 Mar 2007 15:46:55 -0400
+Date: Thu, 29 Mar 2007 14:43:14 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@localhost.localdomain
+To: Linus Torvalds <torvalds@osdl.org>
+cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+       chuckmeade@mindspring.com
+Subject: Please pull from 'for_linus' branch
+Message-ID: <Pine.LNX.4.64.0703291434500.23408@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46094728.40300@free.fr>
-	 <75b66ecd0703271341x34463c49w64bdac21a9741355@mail.gmail.com>
-	 <460A297A.2030200@free.fr> <460C094C.8070304@free.fr>
-X-Google-Sender-Auth: 2ce02bd4ce889309
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/29/07, Kevin Perros <kevin.perros@free.fr> wrote:
-> > No it is an "indutrial" motherboard.
-> > Although I don't know what makes it "industrial".
-> >
-> > Regards.
-> >
-> > Is this related to SMM?
-> >
-> > As far as I can tell, the BIOS is Phoenix AwardBIOS v6.00PG.
-> >
-> > Would someone know how to disable SMM in this BIOS?
->
-> Usually you cannot disable SMM via the BIOS. You have to write chipset
-> specific Kernel code for that.
+Linus,
 
-The problem could also be something other than SMM, like DMA
-starvation by a video or disk controller.  Try disabling all hard
-drive controllers and booting from a CD or USB stick.
+Please pull from 'for_linus' branch of
+master.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 
-Also, try tweaking the expire_centisecs and writeback_centisecs values
-in /proc/sys/vm and see if it changes the period of the glitches.
+These are a few fixes for 2.6.21 related to the quicc engine support.
 
-Lee
+to receive the following updates:
+
+ arch/powerpc/sysdev/qe_lib/qe.c |    6 +++---
+ include/asm-powerpc/immap_qe.h  |    3 ++-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+Chuck Meade (1):
+      [POWERPC] qe: Fix QUICC Engine SDMA setup errors
+
+Timur Tabi (1):
+      [POWERPC] qe: ucc_slow.guemr is in the wrong place
+
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index e3d71e0..43f6cc9 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -251,13 +251,13 @@ static int qe_sdma_init(void)
+
+ 	/* allocate 2 internal temporary buffers (512 bytes size each) for
+ 	 * the SDMA */
+-	sdma_buf_offset = qe_muram_alloc(512 * 2, 64);
++ 	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+ 	if (IS_MURAM_ERR(sdma_buf_offset))
+ 		return -ENOMEM;
+
+ 	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
+-	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
+-					QE_SDMR_CEN_SHIFT)));
++ 	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
++ 					(0x1 << QE_SDMR_CEN_SHIFT)));
+
+ 	return 0;
+ }
+diff --git a/include/asm-powerpc/immap_qe.h b/include/asm-powerpc/immap_qe.h
+index 9fdd049..1020b7f 100644
+--- a/include/asm-powerpc/immap_qe.h
++++ b/include/asm-powerpc/immap_qe.h
+@@ -258,8 +258,9 @@ struct ucc_slow {
+ 	u8	uccs;		/* UCCx status register */
+ 	u8	res3[0x24];
+ 	__be16	utpt;
++	u8	res4[0x52];
+ 	u8	guemr;		/* UCC general extended mode register */
+-	u8	res4[0x200 - 0x091];
++	u8	res5[0x200 - 0x091];
+ } __attribute__ ((packed));
+
+ /* QE UCC Fast */
