@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbXC2MUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbXC2MZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbXC2MUA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 08:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXC2MUA
+	id S1751978AbXC2MZS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 08:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbXC2MZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 08:20:00 -0400
-Received: from colin.muc.de ([193.149.48.1]:4445 "EHLO mail.muc.de"
+	Thu, 29 Mar 2007 08:25:18 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57033 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751978AbXC2MT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 08:19:59 -0400
-Date: 29 Mar 2007 14:19:58 +0200
-Date: Thu, 29 Mar 2007 14:19:58 +0200
-From: Andi Kleen <ak@muc.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Gerd Hoffmann <kraxel@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>,
-       Ingo Molnar <mingo@elte.hu>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ignore vgacon if hardware not present
-Message-ID: <20070329121958.GA35584@muc.de>
-References: <1175154408.12230.195.camel@localhost.localdomain> <20070329103602.GB52274@muc.de> <1175166417.12230.206.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751978AbXC2MZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 08:25:17 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH] x86: tighten kernel image page access rights (re-diff against firstfloor tree)
+Date: Thu, 29 Mar 2007 14:22:33 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, patches@x86-64.org
+References: <460BC6A7.76E4.0078.0@novell.com>
+In-Reply-To: <460BC6A7.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1175166417.12230.206.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200703291422.33537.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 09:06:57PM +1000, Rusty Russell wrote:
-> On Thu, 2007-03-29 at 12:36 +0200, Andi Kleen wrote:
-> > On Thu, Mar 29, 2007 at 05:46:48PM +1000, Rusty Russell wrote:
-> > > (Did this fall through the cracks?  I don't see it in -mm.  It's
-> > > standalone, and saves some silly code in lguest and presumably others).
-> > 
-> > Normally it should go to some some console maintainer? 
+On Thursday 29 March 2007 14:01, Jan Beulich wrote:
+> On x86-64, kernel memory freed after init can be entirely unmapped instead
+> of just getting 'poisoned' by overwriting with a debug pattern.
 > 
-> Hmm, but who?
+> On i386 and x86-64 (under CONFIG_DEBUG_RODATA), kernel text and bug table
+> can also be write-protected.
 > 
-> > Ok I can add it.
-> 
-> Thanks.  While you're in a patch-applying mood, how about this?
+> (Not sure what the symbol 'stext' is good for; can it be removed?)
 
-Ok. Can you do it for x86-64 too?
+I see you remove it already
 
+Added thanks
 -Andi
