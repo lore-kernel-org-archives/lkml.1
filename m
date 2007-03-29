@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbXC2KEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXC2KUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934078AbXC2KEK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 06:04:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934079AbXC2KEK
+	id S1030190AbXC2KUp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 06:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934204AbXC2KUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 06:04:10 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:18795 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934078AbXC2KEJ (ORCPT
+	Thu, 29 Mar 2007 06:20:45 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:39565 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S934061AbXC2KUo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 06:04:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=MiA9855LX4O+Z5fMoZCs6akIj/f3wuFwf/JUHKEtGS2ySZEa5i1wlMKLfVGoP6cp732QRUgIVRS2AgU4Z2tTDNUT7bjkgymd5UTR8OcMwhRPYg7VQ0oADkyGl3oCKsbOe3PcQEGW811HmBYkC65/BDURRHs+q/mrNBnqpS3Hc4w=
-Message-ID: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com>
-Date: Thu, 29 Mar 2007 05:04:08 -0500
-From: "Russ Meyerriecks" <datachomper@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Student Project Ideas
+	Thu, 29 Mar 2007 06:20:44 -0400
+Message-ID: <460B91D2.6060002@aitel.hist.no>
+Date: Thu, 29 Mar 2007 12:15:46 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Russ Meyerriecks <datachomper@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Student Project Ideas
+References: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com>
+In-Reply-To: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-  I've been hacking on the Linux kernel all semester for my OS:
-Internals class. We are given full autonomy in picking our final
-programming project and I would love for mine to be /useful/ for the
-Linux kernel and not just a theoretical exorcise. If anybody has any
-bug fixes or features maybe they never got around to, and would be
-suitable for this situation, I would love to hear about them.
+Russ Meyerriecks wrote:
+> Hi all,
+>  I've been hacking on the Linux kernel all semester for my OS:
+> Internals class. We are given full autonomy in picking our final
+> programming project and I would love for mine to be /useful/ for the
+> Linux kernel and not just a theoretical exorcise. If anybody has any
+> bug fixes or features maybe they never got around to, and would be
+> suitable for this situation, I would love to hear about them.
+>
+Take a look at:
+http://janitor.kernelnewbies.org/
 
-Thanks in advance,
- Russ Meyerriecks
- University of Alabama in Huntsville
+
+Here you can find many things nobody got around to.
+Things like coding style and patch submission is also documented here.
+
+Helge Hafting
