@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030200AbXC2Kql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030202AbXC2Ktw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030200AbXC2Kql (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 06:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030202AbXC2Kql
+	id S1030202AbXC2Ktw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 06:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030224AbXC2Ktw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 06:46:41 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:25275 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030200AbXC2Kqk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 06:46:40 -0400
-X-IronPort-AV: i="4.14,345,1170651600"; 
-   d="scan'208"; a="25808018:sNHT23704702"
-Subject: Re: [PATCH] blackfin arch fix stamp537 ISP1716 IRQ setting bug
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <1175164857.15391.34.camel@roc-desktop>
-References: <1175164857.15391.34.camel@roc-desktop>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Thu, 29 Mar 2007 18:47:32 +0800
-Message-Id: <1175165252.15391.40.camel@roc-desktop>
+	Thu, 29 Mar 2007 06:49:52 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4667 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030202AbXC2Ktv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 06:49:51 -0400
+Date: Thu, 29 Mar 2007 10:49:37 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Robin Holt <holt@sgi.com>,
+       David Howells <dhowells@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>, Hideo AOKI <haoki@redhat.com>
+Subject: Re: [PATCH 1/4] coredump: add an interface to control the core dump routine
+Message-ID: <20070329104936.GC5138@ucw.cz>
+References: <45E7AAFA.4070402@hitachi.com> <45E7AC6F.8080704@hitachi.com> <20070302093419.GA2001@elf.ucw.cz> <4607C47B.2030909@hitachi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4607C47B.2030909@hitachi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-Sorry for word wrap. this one is ok.
+> I have discussed with my colleagues why you say "ugly" against my
+> procfs interface, then I noticed I may have misunderstood what you said.
+> Is the reason for saying "ugly" two interfaces, i.e. preexisting ulimit
+> (get/setrlimit) and my proc entry, exist to control core file size? 
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- arch/blackfin/mach-bf537/boards/stamp.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Yes.
 
-diff --git a/arch/blackfin/mach-bf537/boards/stamp.c b/arch/blackfin/mach-bf537/boards/stamp.c
-index 0f90ff9..a4219df 100644
---- a/arch/blackfin/mach-bf537/boards/stamp.c
-+++ b/arch/blackfin/mach-bf537/boards/stamp.c
-@@ -68,7 +68,7 @@ static struct resource bfin_isp1761_resources[] = {
- 	[1] = {
- 		.start  = ISP1761_IRQ,
- 		.end    = ISP1761_IRQ,
--		.flags  = IORESOURCE_IRQ | IORESOURCE_IRQ_LOWLEVEL,
-+		.flags  = IORESOURCE_IRQ,
- 	},
- };
- 
+> > Plus, what you are doing can be done in userspace using google
+> > coredumper.
+> 
+> I think that the needs differ between userland core dumper user and
+> in-kernel core dumper user.  Pros and cons also differ.
+> 
+> Some of people (such as system admins, distro vendors, etc) need
+> highly reliable core dumper because they don't want to experience
+> same failures again and they don't hope that another failure is
+> caused by core dumping.  Userland core dumper is useful because
+> it is relatively easy to be customized, but its reliability highly
+> depends on the application programs.
+
+Fix userland core dumper to be reliable, then.
+
+> If the stack for signal handlers is not set up carefully, if the
+> data used by userland core dumper has been destroyed, if
+> coredump_omit_anon_shared flag has been overwritten by bad data,
+> or if the address of functions have been destroyed, the userland
+> core dumper may fail to dump.  So in-kernel solutoin is required
+> by enterprise users.
+
+It should be possible to dump from separate process.
+
 -- 
-1.5.0.5
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
