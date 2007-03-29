@@ -1,59 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934060AbXC2J7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbXC2KEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934060AbXC2J7c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 05:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934078AbXC2J7c
+	id S934078AbXC2KEK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 06:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934079AbXC2KEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 05:59:32 -0400
-Received: from styx.suse.cz ([82.119.242.94]:41074 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934060AbXC2J7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 05:59:31 -0400
-Date: Thu, 29 Mar 2007 11:24:09 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Li Yu <raise.sail@gmail.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>, hongzhiyi@ccoss.com.cn,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       yanghong@ccoss.com.cn, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
-In-Reply-To: <460B507E.60305@gmail.com>
-Message-ID: <Pine.LNX.4.64.0703291056360.19566@jikos.suse.cz>
-References: <200703051532096508636@gmail.com>  <45FE6971.6090503@gmail.com>
- <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn>
- <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz> <460B507E.60305@gmail.com>
+	Thu, 29 Mar 2007 06:04:10 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:18795 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934078AbXC2KEJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 06:04:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=MiA9855LX4O+Z5fMoZCs6akIj/f3wuFwf/JUHKEtGS2ySZEa5i1wlMKLfVGoP6cp732QRUgIVRS2AgU4Z2tTDNUT7bjkgymd5UTR8OcMwhRPYg7VQ0oADkyGl3oCKsbOe3PcQEGW811HmBYkC65/BDURRHs+q/mrNBnqpS3Hc4w=
+Message-ID: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com>
+Date: Thu, 29 Mar 2007 05:04:08 -0500
+From: "Russ Meyerriecks" <datachomper@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Student Project Ideas
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007, Li Yu wrote:
+Hi all,
+  I've been hacking on the Linux kernel all semester for my OS:
+Internals class. We are given full autonomy in picking our final
+programming project and I would love for mine to be /useful/ for the
+Linux kernel and not just a theoretical exorcise. If anybody has any
+bug fixes or features maybe they never got around to, and would be
+suitable for this situation, I would love to hear about them.
 
-> The last word is a question, what's the future of hiddev? It will merge 
-> into hidraw later?  I think so, but can't sure.
-
-Hi Li,
-
-no, it won't, it doesn't provide compatible interface for purpose.
-
-hiddev has currently the following drawbacks:
-
-- USB-transport specific
-
-- uses in-kernel HID parser to parse reports and fill in usages and 
-  values. This is usually not what authors of the userspace drivers for 
-  HID devices want - the devices often have quirks or behave in a strange 
-  way, and making workarounds is more complicated when kernel parser 
-  operates on the received reports
-
-- only a few applications use it (acupsd, nut, hid2hcianything else?). All 
-  other drivers rather use libhid, which is built on top of libusb, in 
-  order to be able to receive and send really raw HID reports, and parse 
-  them on their own. This is however also USB-transport specific
-
-The purpose of hidraw is to provide the applications the same 
-functionality they are having when using libhid/libusb, but in a 
-transport-independent way, as it is hooked to generic HID layer, which 
-works as a 'proxy' for different transports that use it.
-
--- 
-Jiri Kosina
+Thanks in advance,
+ Russ Meyerriecks
+ University of Alabama in Huntsville
