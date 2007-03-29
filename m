@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbXC2DvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbXC2EC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752055AbXC2DvP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Mar 2007 23:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXC2DvP
+	id S1752204AbXC2EC6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 00:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXC2EC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Mar 2007 23:51:15 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:41786 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbXC2DvO (ORCPT
+	Thu, 29 Mar 2007 00:02:58 -0400
+Received: from smtpout.mac.com ([17.250.248.174]:51239 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752203AbXC2EC5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Mar 2007 23:51:14 -0400
-Message-ID: <460B36FE.5050301@student.ltu.se>
-Date: Thu, 29 Mar 2007 05:48:14 +0200
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Milind Arun Choudhary <milindchoudhary@gmail.com>
-CC: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [KJ][PATCH] BIT macro cleanup
-References: <20070328033309.GA9597@arun.site>
-In-Reply-To: <20070328033309.GA9597@arun.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Mar 2007 00:02:57 -0400
+X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Mar 2007 00:02:57 EDT
+In-Reply-To: <Pine.LNX.4.61.0703240023220.10028@yvahk01.tjqt.qr>
+References: <460236CE.1030303@slax.org> <20070322110058.GB23664@tatooine.rebelbase.local> <46026A92.4020106@slax.org> <20070322144210.73dfaf83.dada1@cosmosbay.com> <Pine.LNX.4.61.0703230232320.9555@yvahk01.tjqt.qr> <Pine.LNX.4.61.0703240023220.10028@yvahk01.tjqt.qr>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <89DC3EEA-72A3-4F6A-9FD8-FD5D5010BE39@mac.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Tomas M <tomas@slax.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 8BIT
+From: Kyle Moffett <mrlinuxman@mac.com>
+Subject: Re: [PATCH] max_loop limit
+Date: Wed, 28 Mar 2007 23:54:17 -0400
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Milind Arun Choudhary wrote:
-> BIT macro cleanup,now in bitops.h
+On Mar 23, 2007, at 19:26:34, Jan Engelhardt wrote:
+> here's one. Allocates all the fluff dynamically. It does not create  
+> any dev nodes by itself, so you need to do it (à la mdadm), but  
+> you'll get all 1048576 available minors.
 >
-> Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
->
-> ---
->   
-<snip>
-> diff --git a/drivers/net/s2io.h b/drivers/net/s2io.h
-> index 0de0c65..5aa3be5 100644
-> --- a/drivers/net/s2io.h
-> +++ b/drivers/net/s2io.h
-> @@ -14,6 +14,7 @@
->  #define _S2IO_H
->  
->  #define TBD 0
-> +#undef BIT
->  #define BIT(loc)		(0x8000000000000000ULL >> (loc))
->  #define vBIT(val, loc, sz)	(((u64)val) << (64-loc-sz))
->  #define INV(d)  ((d&0xff)<<24) | (((d>>8)&0xff)<<16) | (((d>>16)&0xff)<<8)| ((d>>24)&0xff)
->   
-Why not use "LLBIT(63 - loc)" instead?
+> +static LIST_HEAD(loop_devices);
 
-Richard Knutsson
+Maybe an rbtree would work better here?  Maximum number of nodes  
+traversed to get to the bottom of the tree given 2^(20) loop devices  
+is 19 as opposed to the 2^(20) for a linked list.  Also, to preserve  
+compatibility with existing userspace loop tools you should probably  
+always allocate one extra loop device.  Keep a "highest used loopdev"  
+number and create the one after that so that udev will autocreate a  
+dev node for it.
+
+Cheers,
+Kyle Moffett
 
