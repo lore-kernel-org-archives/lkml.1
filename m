@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030197AbXC2KjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030196AbXC2KkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030197AbXC2KjA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 06:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030201AbXC2KjA
+	id S1030196AbXC2KkQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 06:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030201AbXC2KkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 06:39:00 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51602 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030197AbXC2Ki7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 06:38:59 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: patches@x86-64.org
-Subject: Re: [patches] [PATCH] fix amd64-agp aperture validation
-Date: Thu, 29 Mar 2007 12:00:30 +0200
-User-Agent: KMail/1.9.5
-Cc: "Jan Beulich" <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       mark.langsdorf@amd.com
-References: <460B8DA8.76E4.0078.0@novell.com>
-In-Reply-To: <460B8DA8.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 29 Mar 2007 06:40:16 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:36718 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030196AbXC2KkO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 06:40:14 -0400
+X-IronPort-AV: i="4.14,345,1170651600"; 
+   d="scan'208"; a="25807678:sNHT21029477"
+Subject: [PATCH] blackfin arch fix stamp537 ISP1716 IRQ setting bug
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703291200.30799.ak@suse.de>
+Organization: Analog Devices, Inc.
+Date: Thu, 29 Mar 2007 18:40:57 +0800
+Message-Id: <1175164857.15391.34.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 March 2007 09:58, Jan Beulich wrote:
-> Under CONFIG_DISCONTIGMEM, assuming that a !pfn_valid() implies all
-> subsequent pfn-s are also invalid is wrong. Thus replace this by
-> explicitly checking against the E820 map.
 
-Applied thanks.
--Andi
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+---
+ arch/blackfin/mach-bf537/boards/stamp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/blackfin/mach-bf537/boards/stamp.c
+b/arch/blackfin/mach-bf537/boards/stamp.c
+index 0f90ff9..a4219df 100644
+--- a/arch/blackfin/mach-bf537/boards/stamp.c
++++ b/arch/blackfin/mach-bf537/boards/stamp.c
+@@ -68,7 +68,7 @@ static struct resource bfin_isp1761_resources[] = {
+ 	[1] = {
+ 		.start  = ISP1761_IRQ,
+ 		.end    = ISP1761_IRQ,
+-		.flags  = IORESOURCE_IRQ | IORESOURCE_IRQ_LOWLEVEL,
++		.flags  = IORESOURCE_IRQ,
+ 	},
+ };
+ 
+-- 
+1.5.0.5
+
