@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945898AbXC2WLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422672AbXC2WOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945898AbXC2WLW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 18:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945896AbXC2WLW
+	id S1422672AbXC2WOr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 18:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422682AbXC2WOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 18:11:22 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49407 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945895AbXC2WLV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 18:11:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: 2.6.21-rc5-mm2 - compile error on x86-64
-References: <20070326211627.c681af3b.akpm@linux-foundation.org>
-	<20070329182020.GA9223@aitel.hist.no>
-	<20070329142816.5d18d89f.akpm@linux-foundation.org>
-Date: Thu, 29 Mar 2007 16:10:50 -0600
-In-Reply-To: <20070329142816.5d18d89f.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Thu, 29 Mar 2007 14:28:16 -0700")
-Message-ID: <m1mz1vem51.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 29 Mar 2007 18:14:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39350 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422672AbXC2WOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 18:14:46 -0400
+Message-ID: <460C3A3C.3070904@redhat.com>
+Date: Thu, 29 Mar 2007 18:14:20 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Williams, Mitch A" <mitch.a.williams@intel.com>
+CC: linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH 2.6.21-rc5] MSI: read-flush MSI-X table (rev 2)
+References: <08FE5CC30C9A3F41BF819A502CF7BF6EFCDB2B@fmsmsx411.amr.corp.intel.com>
+In-Reply-To: <08FE5CC30C9A3F41BF819A502CF7BF6EFCDB2B@fmsmsx411.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
->
-> Ah.  I assume you have CONFIG_SYSCTL=y, CONFIG_PROC_SYSCTL=n?
->
->
->
->
-> From: Andrew Morton <akpm@linux-foundation.org>
->
-> We're using #ifdef CONFIG_SYSCTL, but we should be using CONFIG_PROC_SYSCTL,
-> so we get
+Williams, Mitch A wrote:
+> Chuck Ebbert wrote:
+>> Are you going to post one for 2.6.20 as well? Some people might be
+>> interested...
+> 
+> The first time I posted this patch, Greg KH indicated that he thought
+> it was too intrusive to add to -stable, especially considering that
+> our MSI-X capable hardware isn't in the field yet.
+> 
+> So the answer to your question is, "probably not".
 
-I have no problem with the patch it is clearly more correct than what we
-are doing now but I didn't think it was possible to select
-CONFIG_SYSCTL and CONFIG_PROCFS without CONFIG_PROC_SYSCTL being
-selected...
-Do we have a constraint problem in Kconfig?  Or am I misremembering things?
+So it's not useful in 2.6.20 for anything that's available today, from
+any vendor? We can put it in Fedora if you think it is.
 
->  fs/built-in.o: In function `proc_root_init':
->  /usr/src/linux/fs/proc/root.c:83: undefined reference to `proc_sys_init'
->
-> Fix that up and remove an ifdef-in-C.
->
-> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-> Cc: Helge Hafting <helgehaf@aitel.hist.no>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-
-Eric
