@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030736AbXC2VRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030741AbXC2VWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030736AbXC2VRd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 17:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030738AbXC2VRd
+	id S1030741AbXC2VWH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 17:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030745AbXC2VWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 17:17:33 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39580 "EHLO smtp.osdl.org"
+	Thu, 29 Mar 2007 17:22:07 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:39685 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030736AbXC2VRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 17:17:32 -0400
-Date: Thu, 29 Mar 2007 14:17:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       kernel list <linux-kernel@vger.kernel.org>, Robin Holt <holt@sgi.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>, Hideo AOKI <haoki@redhat.com>
-Subject: Re: [PATCH 1/4] coredump: add an interface to control the core dump
- routine
-Message-Id: <20070329141715.71a6abae.akpm@linux-foundation.org>
-In-Reply-To: <11911.1175195819@redhat.com>
-References: <20070329104936.GC5138@ucw.cz>
-	<45E7AAFA.4070402@hitachi.com>
-	<45E7AC6F.8080704@hitachi.com>
-	<20070302093419.GA2001@elf.ucw.cz>
-	<4607C47B.2030909@hitachi.com>
-	<11911.1175195819@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1030741AbXC2VWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 17:22:04 -0400
+Date: Thu, 29 Mar 2007 14:16:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+cc: Mark Langsdorf <mark.langsdorf@amd.com>, Len Brown <lenb@kernel.org>,
+       "Morrow, William" <William.Morrow@amd.com>,
+       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
+In-Reply-To: <200703292249.37979.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0703291410480.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+ <p73d52s2dvi.fsf@bingen.suse.de> <460C1B5B.4090802@amd.com>
+ <200703292249.37979.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007 20:16:59 +0100
-David Howells <dhowells@redhat.com> wrote:
 
-> Pavel Machek <pavel@ucw.cz> wrote:
+
+On Thu, 29 Mar 2007, Andi Kleen wrote:
 > 
-> > > Userland core dumper is useful because it is relatively easy to be
-> > > customized, but its reliability highly depends on the application
-> > > programs.
-> > 
-> > Fix userland core dumper to be reliable, then.
-> 
-> I don't think it's that easy.  The userland core dumper, as I understand it,
-> has to work *within* an application program (it's a library), thus the
-> application program my scotch the core dumper in a couple of ways:
+> Here's a patch. I don't have a system with C1E, so i only tested that
+> the apic timer still works on a older AMD box.
 
-That's no longer necessarily true with the recently-added
-dump-to-an-application feature:
+I think this looks better than what we have now, but it would look even 
+better if the core CPUID stuff was in arch/i386/kernel/cpu/amd.c, and we 
+simply had X86_FEATURE_BROKEN_C1_LAPIC etc..
 
-core_pattern:
-  ...
-. If the first character of the pattern is a '|', the kernel will treat
-  the rest of the pattern as a command to run.  The core dump will be
-  written to the standard input of that program instead of to a file.
+And then the apic.c code would just check
 
+	if (boot_cpu_has(X86_FEATURE_BROKEN_C1_LAPIC))
+		return -1;
 
-That's new in 2.6.20 (maybe .19?) so people probably don't know about it.
+or similar.
 
+Doing the same for C2 and C3 gives us a clean way to have all these 
+per-vendor things in their relevant places, rather than having various 
+vendor-specific checks sprinkled in random places..
+
+That's *especially* true for something like this that can hit both on 
+x86-64 and i386, where the cpuid logic is shared, but the APIC logic is 
+*not* shared. If I read your patch correctly, this only fixes it on 32-bit 
+platforms, and I don't think the problem is in any way 32-bit specific, is 
+it?
+
+		Linus
