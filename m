@@ -1,51 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934327AbXC2TRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934332AbXC2TVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934327AbXC2TRa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 15:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934328AbXC2TRa
+	id S934332AbXC2TVu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 15:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934331AbXC2TVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 15:17:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39029 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934327AbXC2TR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 15:17:29 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070329104936.GC5138@ucw.cz> 
-References: <20070329104936.GC5138@ucw.cz>  <45E7AAFA.4070402@hitachi.com> <45E7AC6F.8080704@hitachi.com> <20070302093419.GA2001@elf.ucw.cz> <4607C47B.2030909@hitachi.com> 
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Robin Holt <holt@sgi.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       dhowells@redhat.com
-Subject: Re: [PATCH 1/4] coredump: add an interface to control the core dump routine 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Thu, 29 Mar 2007 20:16:59 +0100
-Message-ID: <11911.1175195819@redhat.com>
+	Thu, 29 Mar 2007 15:21:50 -0400
+Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:44240 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934326AbXC2TVt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 15:21:49 -0400
+Subject: [PATCH 2.6.21] iw_cxgb3: Fix TERM codes.
+From: Steve Wise <swise@opengridcomputing.com>
+To: Roland Dreier <rolandd@cisco.com>
+Cc: OpenFabrics General <general@lists.openfabrics.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org
+Content-Type: text/plain
+Date: Thu, 29 Mar 2007 14:21:48 -0500
+Message-Id: <1175196108.23273.35.camel@stevo-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> wrote:
 
-> > Userland core dumper is useful because it is relatively easy to be
-> > customized, but its reliability highly depends on the application
-> > programs.
-> 
-> Fix userland core dumper to be reliable, then.
+Fix TERM codes.
 
-I don't think it's that easy.  The userland core dumper, as I understand it,
-has to work *within* an application program (it's a library), thus the
-application program my scotch the core dumper in a couple of ways:
+Fix TERMINATE layer, type, and ecode values based on
+conformance testing.
 
- (1) by trying to claim the same services (such as signal handlers).
+Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+---
 
- (2) by destroying the coredumper should the application run amok and splat it
-     (by munmapping it, mmapping over it, writing over it, etc.).
+ drivers/infiniband/hw/cxgb3/iwch_qp.c |   69 ++++++++++++++++++---------------
+ 1 files changed, 38 insertions(+), 31 deletions(-)
 
-Plus there are cases that an in-application userspace coredumper can't catch -
-namely double/triple faults.
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_qp.c b/drivers/infiniband/hw/cxgb3/iwch_qp.c
+index 0a472c9..714dddb 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_qp.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_qp.c
+@@ -471,43 +471,62 @@ int iwch_bind_mw(struct ib_qp *qp,
+ 	return err;
+ }
+ 
+-static void build_term_codes(int t3err, u8 *layer_type, u8 *ecode, int tagged)
++static inline void build_term_codes(struct respQ_msg_t *rsp_msg,
++				    u8 *layer_type, u8 *ecode)
+ {
+-	switch (t3err) {
++	int status = TPT_ERR_INTERNAL_ERR;
++	int tagged = 0;
++	int opcode = -1;
++	int rqtype = 0;
++	int send_inv = 0;
++
++	if (rsp_msg) {
++		status = CQE_STATUS(rsp_msg->cqe);
++		opcode = CQE_OPCODE(rsp_msg->cqe);
++		rqtype = RQ_TYPE(rsp_msg->cqe);
++		send_inv = (opcode == T3_SEND_WITH_INV) ||
++		           (opcode == T3_SEND_WITH_SE_INV);
++		tagged = (opcode == T3_RDMA_WRITE) ||
++			 (rqtype && (opcode == T3_READ_RESP));
++	}
++
++	switch (status) {
+ 	case TPT_ERR_STAG:
+-		if (tagged == 1) {
+-			*layer_type = LAYER_DDP|DDP_TAGGED_ERR;
+-			*ecode = DDPT_INV_STAG;
+-		} else if (tagged == 2) {
++		if (send_inv) {
++			*layer_type = LAYER_RDMAP|RDMAP_REMOTE_OP;
++			*ecode = RDMAP_CANT_INV_STAG;
++		} else {
+ 			*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
+ 			*ecode = RDMAP_INV_STAG;
+ 		}
+ 		break;
+ 	case TPT_ERR_PDID:
++		*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
++		if ((opcode == T3_SEND_WITH_INV) ||
++		    (opcode == T3_SEND_WITH_SE_INV))
++			*ecode = RDMAP_CANT_INV_STAG;
++		else
++			*ecode = RDMAP_STAG_NOT_ASSOC;
++		break;
+ 	case TPT_ERR_QPID:
++		*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
++		*ecode = RDMAP_STAG_NOT_ASSOC;
++		break;
+ 	case TPT_ERR_ACCESS:
+-		if (tagged == 1) {
+-			*layer_type = LAYER_DDP|DDP_TAGGED_ERR;
+-			*ecode = DDPT_STAG_NOT_ASSOC;
+-		} else if (tagged == 2) {
+-			*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
+-			*ecode = RDMAP_STAG_NOT_ASSOC;
+-		}
++		*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
++		*ecode = RDMAP_ACC_VIOL;
+ 		break;
+ 	case TPT_ERR_WRAP:
+ 		*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
+ 		*ecode = RDMAP_TO_WRAP;
+ 		break;
+ 	case TPT_ERR_BOUND:
+-		if (tagged == 1) {
++		if (tagged) {
+ 			*layer_type = LAYER_DDP|DDP_TAGGED_ERR;
+ 			*ecode = DDPT_BASE_BOUNDS;
+-		} else if (tagged == 2) {
++		} else {
+ 			*layer_type = LAYER_RDMAP|RDMAP_REMOTE_PROT;
+ 			*ecode = RDMAP_BASE_BOUNDS;
+-		} else {
+-			*layer_type = LAYER_DDP|DDP_UNTAGGED_ERR;
+-			*ecode = DDPU_MSG_TOOBIG;
+ 		}
+ 		break;
+ 	case TPT_ERR_INVALIDATE_SHARED_MR:
+@@ -591,8 +610,6 @@ int iwch_post_terminate(struct iwch_qp *
+ {
+ 	union t3_wr *wqe;
+ 	struct terminate_message *term;
+-	int status;
+-	int tagged = 0;
+ 	struct sk_buff *skb;
+ 
+ 	PDBG("%s %d\n", __FUNCTION__, __LINE__);
+@@ -610,17 +627,7 @@ int iwch_post_terminate(struct iwch_qp *
+ 
+ 	/* immediate data starts here. */
+ 	term = (struct terminate_message *)wqe->send.sgl;
+-	if (rsp_msg) {
+-		status = CQE_STATUS(rsp_msg->cqe);
+-		if (CQE_OPCODE(rsp_msg->cqe) == T3_RDMA_WRITE)
+-			tagged = 1;
+-		if ((CQE_OPCODE(rsp_msg->cqe) == T3_READ_REQ) ||
+-		    (CQE_OPCODE(rsp_msg->cqe) == T3_READ_RESP))
+-			tagged = 2;
+-	} else {
+-		status = TPT_ERR_INTERNAL_ERR;
+-	}
+-	build_term_codes(status, &term->layer_etype, &term->ecode, tagged);
++	build_term_codes(rsp_msg, &term->layer_etype, &term->ecode);
+ 	build_fw_riwrh((void *)wqe, T3_WR_SEND,
+ 		       T3_COMPLETION_FLAG | T3_NOTIFY_FLAG, 1,
+ 		       qhp->ep->hwtid, 5);
 
-David
