@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbXC2RYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030477AbXC2RZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932536AbXC2RYJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 13:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933166AbXC2RYJ
+	id S1030477AbXC2RZT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 13:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030510AbXC2RZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 13:24:09 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:33446 "EHLO smtp.osdl.org"
+	Thu, 29 Mar 2007 13:25:18 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33524 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932536AbXC2RYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 13:24:06 -0400
-Date: Thu, 29 Mar 2007 10:23:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: 2.6.21-rc5-mm2
-Message-Id: <20070329102328.230233eb.akpm@linux-foundation.org>
-In-Reply-To: <1175190807.13420.1.camel@dyn9047017100.beaverton.ibm.com>
-References: <20070326211627.c681af3b.akpm@linux-foundation.org>
-	<1175190807.13420.1.camel@dyn9047017100.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S933166AbXC2RZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 13:25:15 -0400
+Date: Thu, 29 Mar 2007 10:22:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>
+Subject: Re: [ PATCH] Add suspend/resume for HPET was: Re: [3/6] 2.6.21-rc4:
+ known regressions
+In-Reply-To: <200703291851.19424.maximlevitsky@gmail.com>
+Message-ID: <Pine.LNX.4.64.0703291022100.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+ <200703290747.28929.maximlevitsky@gmail.com>
+ <Pine.LNX.4.64.0703290930540.6730@woody.linux-foundation.org>
+ <200703291851.19424.maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007 09:53:27 -0800 Badari Pulavarty <pbadari@gmail.com> wrote:
 
-> On Mon, 2007-03-26 at 21:16 -0800, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/
-> > 
-> > 
-> > - This is the same as 2.6.12-rc5-mm1, except the staircase deadline CPU
-> >   scheduler has been added.
-> 
-> make allyesconfig - didn't give me a clean build :(
-> (not crucial for me to get it right -- but FYI).
-> 
-> Thanks,
-> Badari
-> 
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CHK     include/linux/compile.h
->   CC      drivers/net/e100.o
->   LD      drivers/net/wireless/built-in.o
->   CC      drivers/net/epic100.o
->   CC      drivers/net/sis190.o
-> drivers/net/wireless/mac80211/built-in.o: In function `bcm43xx_conf_tx':
-> drivers/net/wireless/mac80211/bcm43xx/bcm43xx_main.c:398: multiple definition of `zd_chip_switch_radio_on'
->   CC      drivers/net/sis900.o
-> drivers/net/wireless/zd1211rw/built-in.o:drivers/net/wireless/zd1211rw/zd_chip.c:89: first defined here
-> drivers/net/wireless/mac80211/built-in.o: In function `bcm43xx_conf_tx':
+
+On Thu, 29 Mar 2007, Maxim Levitsky wrote:
 >
-> [zillions more errors]
+> 	I agree, and as you said I did exactly that:
 
-yeah, not surprised.
+Gaah. I'm blind. Sorry. Your patch did indeed do exactly that, I somehow 
+overlooked it.
 
-John, please test allyesconfig ;)
+		Linus
