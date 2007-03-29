@@ -1,153 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbXC2LH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbXC2LSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbXC2LH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 07:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbXC2LH2
+	id S1753349AbXC2LSG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 07:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbXC2LSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 07:07:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:53840 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753296AbXC2LH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 07:07:27 -0400
-Subject: Re: [PATCH] ignore vgacon if hardware not present
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@muc.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Gerd Hoffmann <kraxel@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>,
-       Ingo Molnar <mingo@elte.hu>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070329103602.GB52274@muc.de>
-References: <1175154408.12230.195.camel@localhost.localdomain>
-	 <20070329103602.GB52274@muc.de>
-Content-Type: text/plain
-Date: Thu, 29 Mar 2007 21:06:57 +1000
-Message-Id: <1175166417.12230.206.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Mar 2007 07:18:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:59988 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753358AbXC2LSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 07:18:05 -0400
+Date: Thu, 29 Mar 2007 13:14:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Linda Walsh <lkml@tlinx.org>, Oliver Joa <oliver@j-o-a.de>,
+       Eric Sandeen <sandeen@sandeen.net>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, xfs-oss <xfs@oss.sgi.com>
+Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
+Message-ID: <20070329111407.GA9959@kernel.dk>
+References: <46094344.4090007@j-o-a.de> <20070328113141.GQ32597093@melbourne.sgi.com> <460A6298.4040702@j-o-a.de> <460A821B.4080308@sandeen.net> <460AC857.6040305@j-o-a.de> <460B068C.6060903@tlinx.org> <460B25BE.3050808@tlinx.org> <20070329093400.GB14616@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070329093400.GB14616@atrey.karlin.mff.cuni.cz>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAQ=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-29 at 12:36 +0200, Andi Kleen wrote:
-> On Thu, Mar 29, 2007 at 05:46:48PM +1000, Rusty Russell wrote:
-> > (Did this fall through the cracks?  I don't see it in -mm.  It's
-> > standalone, and saves some silly code in lguest and presumably others).
-> 
-> Normally it should go to some some console maintainer? 
+On Thu, Mar 29 2007, Jan Kara wrote:
+> > Oliver Joa wrote:
+> > >>eason or another, xfs has detected a corrupted on-disk inode format 
+> > >>which it cannot recognize, and shuts down.
+> > ----
+> > Oh, one other thing that may not apply in your case, but may.
+> > Does your SATA disk support write caching?  Does it support
+> > something called a barrier function?  (not real clear on all
+> > the ways this can go wrong, but I believe barriers are supposed
+> > to guarantee previous data has been fixed on disk (not in write
+> > cache).  If the SATA controller issues a reset, it may very well
+> > purge the write cache.  Theoretically, I can think of a _possibility_,
+> > that the reset disk would purge the write cache and the barrier
+> > indicator would tell xfs to resume writing.  From a recent thread
+> > on the xfs list, it would appear this could be a "bad" thing (like
+> > crossing the streams ala "ghostbusters", but in a data-integrity
+> > context).
+>   As far as I can remember, barrier does not mean that data is fixed on
+> disk. It is only a command that forces all the writes before the barrier
+> to be performed before all the writes after the barrier. So this is more
+> an ordering restriction than a data integrity thing...
 
-Hmm, but who?
+A barrier write guarentees both data before barrier is on disk, as well
+as the barrier itself when completion is signalled.
 
-> Ok I can add it.
-
-Thanks.  While you're in a patch-applying mood, how about this?
-
-Cheers,
-Rusty.
-==
-Use X86_EFLAGS_IF in irqflags.h.
-
-Move X86_EFLAGS_IF et al out to a new header: processor-flags.h, so we
-can include it from irqflags.h and use it in raw_irqs_disabled_flags().
-
-As a side-effect, we could now use these flags in .S files.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
----
- include/asm-i386/irqflags.h        |    3 ++-
- include/asm-i386/processor-flags.h |   26 ++++++++++++++++++++++++++
- include/asm-i386/processor.h       |   22 +---------------------
- 3 files changed, 29 insertions(+), 22 deletions(-)
-
-===================================================================
---- /dev/null
-+++ b/include/asm-i386/processor-flags.h
-@@ -0,0 +1,26 @@
-+#ifndef __ASM_I386_PROCESSOR_FLAGS_H
-+#define __ASM_I386_PROCESSOR_FLAGS_H
-+/* Various flags defined: can be included from assembler. */
-+
-+/*
-+ * EFLAGS bits
-+ */
-+#define X86_EFLAGS_CF	0x00000001 /* Carry Flag */
-+#define X86_EFLAGS_PF	0x00000004 /* Parity Flag */
-+#define X86_EFLAGS_AF	0x00000010 /* Auxillary carry Flag */
-+#define X86_EFLAGS_ZF	0x00000040 /* Zero Flag */
-+#define X86_EFLAGS_SF	0x00000080 /* Sign Flag */
-+#define X86_EFLAGS_TF	0x00000100 /* Trap Flag */
-+#define X86_EFLAGS_IF	0x00000200 /* Interrupt Flag */
-+#define X86_EFLAGS_DF	0x00000400 /* Direction Flag */
-+#define X86_EFLAGS_OF	0x00000800 /* Overflow Flag */
-+#define X86_EFLAGS_IOPL	0x00003000 /* IOPL mask */
-+#define X86_EFLAGS_NT	0x00004000 /* Nested Task */
-+#define X86_EFLAGS_RF	0x00010000 /* Resume Flag */
-+#define X86_EFLAGS_VM	0x00020000 /* Virtual Mode */
-+#define X86_EFLAGS_AC	0x00040000 /* Alignment Check */
-+#define X86_EFLAGS_VIF	0x00080000 /* Virtual Interrupt Flag */
-+#define X86_EFLAGS_VIP	0x00100000 /* Virtual Interrupt Pending */
-+#define X86_EFLAGS_ID	0x00200000 /* CPUID detection flag */
-+
-+#endif	/* __ASM_I386_PROCESSOR_FLAGS_H */
-===================================================================
---- a/include/asm-i386/irqflags.h
-+++ b/include/asm-i386/irqflags.h
-@@ -9,6 +9,7 @@
-  */
- #ifndef _ASM_IRQFLAGS_H
- #define _ASM_IRQFLAGS_H
-+#include <asm/processor-flags.h>
- 
- #ifndef __ASSEMBLY__
- static inline unsigned long native_save_fl(void)
-@@ -119,7 +120,7 @@ static inline unsigned long __raw_local_
- 
- static inline int raw_irqs_disabled_flags(unsigned long flags)
- {
--	return !(flags & (1 << 9));
-+	return !(flags & X86_EFLAGS_IF);
- }
- 
- static inline int raw_irqs_disabled(void)
-===================================================================
---- a/include/asm-i386/processor.h
-+++ b/include/asm-i386/processor.h
-@@ -21,6 +21,7 @@
- #include <asm/percpu.h>
- #include <linux/cpumask.h>
- #include <linux/init.h>
-+#include <asm/processor-flags.h>
- 
- /* flag for disabling the tsc */
- extern int tsc_disable;
-@@ -125,27 +126,6 @@ extern void detect_ht(struct cpuinfo_x86
- #else
- static inline void detect_ht(struct cpuinfo_x86 *c) {}
- #endif
--
--/*
-- * EFLAGS bits
-- */
--#define X86_EFLAGS_CF	0x00000001 /* Carry Flag */
--#define X86_EFLAGS_PF	0x00000004 /* Parity Flag */
--#define X86_EFLAGS_AF	0x00000010 /* Auxillary carry Flag */
--#define X86_EFLAGS_ZF	0x00000040 /* Zero Flag */
--#define X86_EFLAGS_SF	0x00000080 /* Sign Flag */
--#define X86_EFLAGS_TF	0x00000100 /* Trap Flag */
--#define X86_EFLAGS_IF	0x00000200 /* Interrupt Flag */
--#define X86_EFLAGS_DF	0x00000400 /* Direction Flag */
--#define X86_EFLAGS_OF	0x00000800 /* Overflow Flag */
--#define X86_EFLAGS_IOPL	0x00003000 /* IOPL mask */
--#define X86_EFLAGS_NT	0x00004000 /* Nested Task */
--#define X86_EFLAGS_RF	0x00010000 /* Resume Flag */
--#define X86_EFLAGS_VM	0x00020000 /* Virtual Mode */
--#define X86_EFLAGS_AC	0x00040000 /* Alignment Check */
--#define X86_EFLAGS_VIF	0x00080000 /* Virtual Interrupt Flag */
--#define X86_EFLAGS_VIP	0x00100000 /* Virtual Interrupt Pending */
--#define X86_EFLAGS_ID	0x00200000 /* CPUID detection flag */
- 
- static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
- 					 unsigned int *ecx, unsigned int *edx)
-
+-- 
+Jens Axboe
 
