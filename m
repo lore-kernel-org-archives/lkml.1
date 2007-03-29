@@ -1,93 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030484AbXC2RRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030493AbXC2RS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030484AbXC2RRe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 13:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030493AbXC2RRe
+	id S1030493AbXC2RS4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 13:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030505AbXC2RS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 13:17:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44197 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030463AbXC2RRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 13:17:32 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc5-mm2 -- ACPI problems (lid switch broken, always shows running from AC, plugging in AC hangs machine)
-Date: Thu, 29 Mar 2007 13:11:09 -0400
-User-Agent: KMail/1.9.5
-Cc: "Miles Lane" <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-References: <a44ae5cd0703281355h13f1bd70s9eb94092bfa9c3e@mail.gmail.com> <a44ae5cd0703290100q1bb80390ke66333407bbeecfd@mail.gmail.com> <20070329011503.00c89cb8.akpm@linux-foundation.org>
-In-Reply-To: <20070329011503.00c89cb8.akpm@linux-foundation.org>
+	Thu, 29 Mar 2007 13:18:56 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:2261 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030493AbXC2RSz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 13:18:55 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703291311.09893.lenb@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 29 Mar 2007 17:18:53.0407 (UTC) FILETIME=[533B56F0:01C77226]
+Content-class: urn:content-classes:message
+Subject: Re: Interface for the new fallocate() system call
+Date: Thu, 29 Mar 2007 13:18:53 -0400
+Message-ID: <Pine.LNX.4.61.0703291314330.4366@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.61.0703291854000.31834@yvahk01.tjqt.qr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Interface for the new fallocate() system call
+thread-index: AcdyJlNCqkMDRiU0Q1y6AxdFfz37oQ==
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <Pine.LNX.4.61.0703291854000.31834@yvahk01.tjqt.qr>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, <torvalds@osdl.org>,
+       <akpm@linux-foundation.org>, <linux-fsdevel@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <linux-ext4@vger.kernel.org>,
+       <xfs@oss.sgi.com>, <suparna@in.ibm.com>, <cmm@us.ibm.com>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 March 2007 04:15, Andrew Morton wrote:
-> On Thu, 29 Mar 2007 01:00:45 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
-> 
-> > On 3/28/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > On Wed, 28 Mar 2007 13:55:54 -0700
-> > > "Miles Lane" <miles.lane@gmail.com> wrote:
-> > >
-> > > > My laptop (HP dv1240us) is always showing that my laptop is plugged
-> > > > into AC power, even when it is running off of the battery.  When I
-> > > > plug into the AC after running on the battery, the machine immediately
-> > > > locks up.  Also, the laptop lid button isn't working -- pressing it
-> > > > doesn't trigger a suspend.
-> > >
-> > > OK, thanks.
-> > >
-> > > If you have time, could you please test
-> > >
-> > > 2.6.21-rc5 +
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/origin.patch + ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm2/broken-out/git-acpi.patch
-> > > which will allow us to eliminate any non-acpi patches.
-> > 
-> > Okay, I tested with those patches and got the same problems with the
-> > resulting build.
-> > I can't reproduce the hang on plugging in the AC with either
-> > 2.6.21-rc5-mm2 or the
-> > build with the patches you sent.
 
-So it sounds like the most serious problem, the hang,
-is not reproducible without the reset of the -mm tree.
+On Thu, 29 Mar 2007, Jan Engelhardt wrote:
 
-> > The other problems are 100% reproducible. 
-> > I have some new details:
-> > 
-> > 1.  Power always shows up as plugged in to AC.
-> > 2.  The lid button is non-operational for initiating a suspend.
-> > 3.  Suspending from the Gnome shutdown menu works.   Afterwards, the
-> > lid button works for resuming from suspend.
-> > 4.  If I suspend, resume and then try to shutdown; when I see the
-> > message "The machine will now halt" the power does not shut off.  That
-> > is, the various buttons on my laptop stay lit up.  I am forced to
-> > shutdown by holding down the power button for five seconds.
-> > 
-> 
-> Thanks.  So we can conclude that all these problems are due to changes in
-> 2.6.21-rc5-mm2's git-acpi.patch?
+> Hi,
+>
+> On Mar 29 2007 17:21, Amit K. Arora wrote:
+>>
+>> We need to come up with the best possible layout of arguments for the
+>> fallocate() system call. Various architectures have different
+>> requirements for how the arguments should look like. Since the mail
+>> chain has become huge, here is the summary of various inputs received
+>> so far.
+>
+>> s390 prefers following layout:
+>>   int fallocate(int fd, loff_t offset, loff_t len, int mode)
+>> For details on why and how "int, int, loff_t, loff_t" is a problem on
+>> s390, please see Heiko's mail on 16th March. Here is the link:
+>> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg133595.html
+>
+> Quoting that...
+> 	|len -> r6 + second halve on stack
+>
+> Then, is not this a gcc glitch? (IMO, it should put all of "len" on the
+> stack)
+>
+>> Platform: ppc, arm
+>> ------------------
+>> 6 arguments. Thus the desired layout by ppc32 is:
+>>   int fallocate(int fd, int mode, loff_t offset, loff_t len)
+>>
+>> Option of loff_t => high u32 + low u32
+>> --------------------------------------
+>> Matthew and Russell have suggested another option of breaking each
+>> "loff_t" into two "u32"s. This will result in 6 arguments in total.
+>>
+>> What are your thoughts on this ? What layout should we finalize on ?
+>> Perhaps, since sync_file_range() system call has similar arguments, we
+>> can take hint from the challenges faced on implementing it on various
+>> architectures, and decide.
+>>
+>> Please suggest. Thanks!
+>
+> Does it actually matter? Glibc can have its own argument ordering
+> different from the syscalls, so at least it would be possible to lay out
+> the syscall arguments in the most portable way while retaining nice
+> userspace C code. Hey, glibc might even wrap it up in a struct! (Using a
+> pointer, as suggested in one of the proposals.)
+>
+> int fallocate(int fd, loff_t offset, loff_t len, int mode)
+> {
+> 	struct fallocate_foobar d = {fd, offset, len, mode};
+> 	return _syscall(..., &d);
+> }
+>
+> Jan
+> --
 
-Miles,
+I think it's always better to put only a pointer on the stack as
+above.
 
-Please apply the latest acpi patch directly on top of Linus' tree.
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/test/2.6.21/acpi-test-20070126-2.6.21-rc5.diff.gz
-If Andrew and I are in sync, you should get the same issues above as above -- no hang,
-but still problems 1-4.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.62 BogoMips).
+New book: http://www.AbominableFirebug.com/
+_
+
 
-Then revert that patch and edit it to delete all changes to ec.c
-and apply it again.  ie. keep drivers/acpi/ec.c from Linus's tree and re-test.
-If the symptoms 1-4 go away, then we've isolated the regression to the changes to ec.c.
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-Also, it might be helpful to open up a bug report here:
-http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-and attach to it the output from acpidump
-
-thanks,
--Len
+Thank you.
