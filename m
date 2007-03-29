@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030716AbXC2UxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030725AbXC2U7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030716AbXC2UxQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 16:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030720AbXC2UxQ
+	id S1030725AbXC2U7u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 16:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030732AbXC2U7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 16:53:16 -0400
-Received: from igw1.br.ibm.com ([32.104.18.24]:58826 "EHLO igw1.br.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030716AbXC2UxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 16:53:16 -0400
-Subject: Re: regarding kernel preemption
-From: Rodrigo Rubira Branco <rrbranco@br.ibm.com>
-Reply-To: rrbranco@br.ibm.com
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <20070329162146.GA32670@ld0162-tx32.am.freescale.net>
-References: <7783925d0703290905u1e4d94f2v88d6f1736c52de81@mail.gmail.com>
-	 <20070329162146.GA32670@ld0162-tx32.am.freescale.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ltKikBE9ALWGOc+yWSDL"
-Organization: IBM - LTC/Brazil
-Date: Thu, 29 Mar 2007 17:54:29 -0300
-Message-Id: <1175201669.4599.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Thu, 29 Mar 2007 16:59:50 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:16406 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030725AbXC2U7t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 16:59:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=kxBZN6tV/z8ZBb1RZ7JhW01NyjMpPHq/6wq18P6LUKalJjlgb+IXGOfT3N9QDkI3I2fTLeGB45U4vzezsYGRfl5ED2UimH3fwtPE5gMNDnH+/1PwkWQ6Smw96OpmXuWiI1hZkwu+WMDXKq4Ykfp74okRao98u2pFOlhEty6cHFY=
+Date: Thu, 29 Mar 2007 22:59:36 +0200
+To: Cong WANG <xiyou.wangcong@gmail.com>
+Cc: Russ Meyerriecks <datachomper@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Student Project Ideas
+Message-ID: <20070329205935.GB13541@Ahmed>
+References: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com> <2375c9f90703290332w3f232b1cjf044f554fba04879@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2375c9f90703290332w3f232b1cjf044f554fba04879@mail.gmail.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 29, 2007 at 06:32:21PM +0800, Cong WANG wrote:
+> 2007/3/29, Russ Meyerriecks <datachomper@gmail.com>:
+> >Hi all,
+> >  I've been hacking on the Linux kernel all semester for my OS:
+> >Internals class. We are given full autonomy in picking our final
+> >programming project and I would love for mine to be /useful/ for the
+> >Linux kernel and not just a theoretical exorcise. If anybody has any
+> >bug fixes or features maybe they never got around to, and would be
+> >suitable for this situation, I would love to hear about them.
+> >
+> 
+> First, I think you can read the book named "Kernel Projects for
+> Linux". It's a good book although it's outdated.
+> 
+> Second, in fact, I am also a college student and also want to find a
+> suitable and real task in linux kernel for me to work on. KJ doesn't
+> help much. ;-p
+> 
 
---=-ltKikBE9ALWGOc+yWSDL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+No, it really helps alot, just be _patient_. For me, I sent a series of dumb
+patches at first to use ARRAY_SIZE macro instead of manual computation. Though
+the patches were completely braindead, I learnt alot of stuff about how
+everything works here. 
 
-I recommend this link for more info:
-http://www.linuxjournal.com/comment/reply/5600
+Beside sending this KJ patches, I keep reading from Understanding Linux kernel v3
+and reading lots of code everyday. Yesterday my first semi-real patch was
+accepted in -mm. I'm sure that day by day my patches will be more real and fix
+serious issues. 
 
-Sent me a mail if you need any other explanation into this.
+All of that wouldn't have smoothly happened without the first step, the KJ step ;).
 
-Cya,
+It seems that being a developer in the kernel community is going exactly like how
+code goes, _evolution_ not a revolution. You can't be responsible for a good
+project directly, just take your way from a janitor to a subsystem maintaner :).
+Ofcourse, unless you have an old experience in other OSs (espcifically Unix ones).
 
+Regards,
 
-Rodrigo (BSDaemon).
-
-On Thu, 2007-03-29 at 11:21 -0500, Scott Wood wrote:
-> On Thu, Mar 29, 2007 at 09:35:13PM +0530, Rick Brown wrote:
-> > When we preempt_enable() / preempt_disable(), is the kernel preemption
-> > enabled or disabled for ALL the processors or just the local
-> > processor?
->=20
-> Just the local processor.
->=20
-> -Scott
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-newbie" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at http://www.linux-learn.org/faqs
---=20
-Rodrigo Rubira Branco
-Software Engineering - Advanced Linux Response Team (ALRT)
-IBM Linux Technology Center (IBM/LTC)
-rrbranco@br.ibm.com
-
-GPG KeyID: 5E90CA19
-
---=-ltKikBE9ALWGOc+yWSDL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGDCeExJRNvl6QyhkRArLNAJ94bb24k8tqMSTR9+l4ks0dKQX6DgCdFUI+
-lzgf7t3Thpo1o8uiTTk9xuU=
-=M6zK
------END PGP SIGNATURE-----
-
---=-ltKikBE9ALWGOc+yWSDL--
+-- 
+Ahmed S. Darwish
+http://darwish.07.googlepages.com
 
