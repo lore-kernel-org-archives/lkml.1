@@ -1,85 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030524AbXC2R27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933166AbXC2R37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030524AbXC2R27 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 13:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030565AbXC2R26
+	id S933166AbXC2R37 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 13:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933232AbXC2R36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 13:28:58 -0400
-Received: from hu-out-0506.google.com ([72.14.214.230]:48481 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030524AbXC2R24 (ORCPT
+	Thu, 29 Mar 2007 13:29:58 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37848 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933166AbXC2R35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 13:28:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=kww1twPe1gYP33MOsIGN4mn9D6HGFg+wEDkApbO0Xw7LoAEM/QmSPhABk0mgfyb0atcTjgHK4rYP5oY3FlWC10Uv1QsJNkZPvdPMMrnynJi5IeV9o51AuY/moNsE2lKGoXvZNkLpS15ZytKA+ogihkk1RfEa8v2nATa6yc+wsIE=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Date: Thu, 29 Mar 2007 19:28:41 +0200
-User-Agent: KMail/1.9.6
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703291546.48996.maximlevitsky@gmail.com> <Pine.LNX.4.64.0703290949060.6730@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703290949060.6730@woody.linux-foundation.org>
+	Thu, 29 Mar 2007 13:29:57 -0400
+Date: Thu, 29 Mar 2007 19:29:56 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Armin Schindler <armin@melware.de>
+Cc: randy.dunlap@oracle.com, kai.germaschewski@gmx.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       kkeil@suse.de
+Subject: Re: [RFC: 2.6 patch] fix ISDN_CAPI<->ISDN_DIVAS
+Message-ID: <20070329172956.GB14134@stusta.de>
+References: <20070324130622.GE752@stusta.de> <Pine.LNX.4.61.0703241442220.28244@phoenix.one.melware.de> <20070324150806.GA2078@stusta.de> <Pine.LNX.4.61.0703291235330.12116@phoenix.one.melware.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200703291928.42122.maximlevitsky@gmail.com>
+In-Reply-To: <Pine.LNX.4.61.0703291235330.12116@phoenix.one.melware.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 March 2007 18:53:37 Linus Torvalds wrote:
-> 
-> On Thu, 29 Mar 2007, Maxim Levitsky wrote:
-> >
-> > Subject: Add suspend/resume for HPET
-> >
-> > This adds support of suspend/resume on i386 for HPET
-> >
-> > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+On Thu, Mar 29, 2007 at 01:06:12PM +0200, Armin Schindler wrote:
+> On Sat, 24 Mar 2007, Adrian Bunk wrote:
+> > On Sat, Mar 24, 2007 at 02:49:42PM +0100, Armin Schindler wrote:
+> > > On Sat, 24 Mar 2007, Adrian Bunk wrote:
+> > > > Randy Dunlap reported in kernel Bugzilla #8241 the following compile 
+> > > > error with CONFIG_ISDN_CAPI=m, CONFIG_ISDN_DIVAS=y:
+> > > > 
+> > > > <--  snip  -->
+> > > > 
+> > > > ...
+> > > > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/divacapi.ko] undefined!
+> > > > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_mnt.ko] undefined!
+> > > > WARNING: "DIVA_DIDD_Read" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
+> > > > WARNING: "proc_net_eicon" [drivers/isdn/hardware/eicon/diva_idi.ko] undefined!
+> > > > make[1]: *** [__modpost] Error 1
+> > > > 
+> > > > <--  snip  -->
+> > > > 
+> > > > 
+> > > > Kconfig contains the following strange thing:
+> > > > 
+> > > > menu "Active Eicon DIVA Server cards"
+> > > >         depends on NET && ISDN && ISDN_CAPI!=n
+> > > > 
+> > > > 
+> > > > It seems that except for ISDN_DIVAS_DIVACAPI (that already has a proper 
+> > > > dependency), nothing here actually requires ISDN_CAPI?
+> > > 
+> > > Not quite true. Yes, the base modules for the divas driver do not require 
+> > > ISDN_CAPI, but without ISDN_CAPI it doesn't make any sense.
 > > 
-> > ---
-> >  arch/i386/kernel/hpet.c |   68 +++++++++++++++++++++++++++++++++++++++++++++++
+> > Let me try to understand this:
+> > 
+> > Does it make sense to have CONFIG_ISDN_DIVAS=y, CONFIG_ISDN_CAPI=m?
 > 
-> Btw, what about arch/x86_64/kernel/hpet.c?
+> Yes, this is possible. DIVAS itself does not depend on CAPI.
 > 
-> That thing seems totally broken. Lookie here:
+> > And do CONFIG_ISDN_DIVAS=y/m, CONFIG_ISDN_DIVAS_DIVACAPI=n 
+> > configurations make sense?
 > 
->   arch/x86_64/kernel/hpet.c:irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
->   drivers/char/rtc.c:extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
+> Yes, but for only for experts who want to use the DIVAS own API
+> without CAPI.
+>  
+> > If not, what about:
+> > - let ISDN_DIVAS depend on ISDN_CAPI and
+> > - enable ISDN_DIVAS_DIVACAPI unconditionally (and perhaps even build 
+> >                                               it into the divas module)?
 > 
-> anybody see a problem? The x86-64 version doesn't seem to be very well 
-> maintained. Is there some fundamental reason why this file isn't shared 
-> across architectures?
+> That would not be correct.
+>  
+> > > The patch below (go into /hardware even for non ISDN_CAPI) is wrong. The
+> > > subdir /hardware was created for new drivers using CAPI. So it is correct to
+> > > go there when ISDN_CAPI != n only.
+> > > 
+> > > I don't understand the warnings above. The symbols are exported by divas 
+> > > modules, so why is it causing warnings? There have been no change in the 
+> > > divas modules for this. Any change in the kernel module creation structure
+> > > which may causing this?
+> > 
+> > These aren't warnings, these are errors.
+> > 
+> > Due to
+> >   obj-$(CONFIG_ISDN_CAPI)                    += hardware/
+> > 
+> > hardware/ isn't visited with CONFIG_ISDN_CAPI=m when building vmlinux.
+> > 
+> > This means the modules were built, but the static code they were using 
+> > wasn't linkd into the kernel.
+> > 
+> > This might not have occured before since CONFIG_ISDN_CAPI=m, 
+> > CONFIG_ISDN_DIVAS=y is an unusual configuration.
 > 
-> 			Linus
+> I see. So for DIVAS the line 
+>   obj-$(CONFIG_ISDN_CAPI)                    += hardware/
+> causes the trouble, because all hardware/ driver are meant to be CAPI 
+> drivers...
 > 
+> In that case we should change hardware/eicon/ as you proposed:
+> > - let ISDN_DIVAS depend on ISDN_CAPI and
+> 
+> So the solution might be just to change
+>  
+>     menu "Active Eicon DIVA Server cards"
+>       depends on NET && ISDN && ISDN_CAPI!=n
+> to 
+>     menu "Active Eicon DIVA Server cards"
+>       depends on NET && ISDN && ISDN_CAPI
+> 
+> in drivers/isdn/hardware/eicon/Kconfig
+> right?
 
-Hi,
-	I agree with that, there seems to be lot of code duplication between i386 and x86_64.
-	By the way, x86_64 does take care of suspend/resume for hpet, it is done by 
 
-	linux-2.6/arch/x86_64/kernel/time.c:timer_resume(struct sys_device *dev):
-		hpet_reenable()
+This is a solution.
+
+It implies that CONFIG_ISDN_CAPI=n, CONFIG_ISDN_DIVAS=y/m or 
+CONFIG_ISDN_CAPI=m, CONFIG_ISDN_DIVAS=y will not be possible, and the 
+"experts who want to use the DIVAS own API" you were talking about have 
+to enable CONFIG_ISDN_CAPI in their kernel. But considering that it 
+isn't a new problem, and you as the maintainer hadn't heard about it 
+before (it results in the driver not being included into the kernel 
+despite CONFIG_ISDN_DIVAS=y), this might be a pure theoretical 
+configuration not worth supporting.
 
 
-	on i386 PIT driver goes out of way when HPET is detected
-	So it seems that there is lot of work to do to remove redundant code.
+> Armin
 
+cu
+Adrian
 
-	Best regards,
-		Maxim Levitsky
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
