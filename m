@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030268AbXC2Pvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030285AbXC2P4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030268AbXC2Pvo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 11:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030279AbXC2Pvo
+	id S1030285AbXC2P4o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 11:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030293AbXC2P4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 11:51:44 -0400
-Received: from mx2.suse.de ([195.135.220.15]:42166 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030268AbXC2Pvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 11:51:43 -0400
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: "Len Brown" <lenb@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Morrow, William" <William.Morrow@amd.com>,
-       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Pavel Machek" <pavel@ucw.cz>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Mingming Cao" <cmm@us.ibm.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       "Oliver Pinter" <oliver.pntr@gmail.com>,
-       "Sid Boyce" <g3vbv@blueyonder.co.uk>, "Nick Piggin" <npiggin@suse.de>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Renninger" <trenn@suse.de>
-Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0703271430310.6730@woody.linux-foundation.org>
-	<200703271816.33868.lenb@kernel.org>
-	<200703272218.50531.lenb@kernel.org>
-	<1449F58C868D8D4E9C72945771150BDFD967BB@SAUSEXMB1.amd.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 29 Mar 2007 18:50:09 +0200
-In-Reply-To: <1449F58C868D8D4E9C72945771150BDFD967BB@SAUSEXMB1.amd.com>
-Message-ID: <p73d52s2dvi.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Thu, 29 Mar 2007 11:56:44 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:51190 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1030285AbXC2P4n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 11:56:43 -0400
+Date: Thu, 29 Mar 2007 11:56:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: Maxim Levitsky <maximlevitsky@gmail.com>, <linux-kernel@vger.kernel.org>,
+       <gregkh@suse.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
+In-Reply-To: <460BBCD8.1020802@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0703291155000.3108-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Langsdorf, Mark" <mark.langsdorf@amd.com> writes:
+On Thu, 29 Mar 2007, Mark Lord wrote:
 
-> > > If we really care about using the LAPIC timer on systems with deeper
-> > > than C1 support, the only alternative seems to be to test
-> > > if it actually works or not at boot and run-time.
-> > > Otherwise, we wait for future hardware with guaranteed
-> > > not to break under any (BIOS) conditions ships, and check for that.
-> > > 
-> > > Based on what I read of the HP nx6325 where the LAPIC timer
-> > > is breaking C1, AMD is in the same boat.
-> > 
-> > The nx6325 (Turion 64 X2) exports only C1.
-> > I'm not sure how the conclusion was drawn that it has
-> > a broken lapic timer as reflected in the "nolapic_timer" patch:
+> Maxim Levitsky wrote:
+> > Hi,
+> > 	I noticed that after suspend/resume cycle all my usb devices are unplugged/replugged by uhci driver.
+> > While it is not that big problem to me, that can be a real problem if a device is a flash card with mounted 
+> > file-system, because disappeared device will cause file-system corruption.
 > 
-> If both cores goes into C1 at the same time, the chipset
-> can move the processor into a C3 like state called C1e.
+> Mmm.. this sounds really bad -- I wonder what happens if the rootfs is on USB ?
 
-... and that seems to break the local APIC timer.
+The system crashes as soon as it resumes.  As you might expect.
 
-> AMD can craft a patch to sort this out as soon as we have
-> an idea what the framework is going to look like.
+> With older kernels, things just "worked" this way.  Has it now been broken ??
 
-Just a snippet to detect it would be great. Then the dmi scan
-could be removed and replaced with that. This would be a 2.6.21
-candidate imho over the DMI hack.
+No; it has never worked.  Your memory of how older kernels behaved is 
+wrong.
 
--Andi
+Alan Stern
+
+P.S.: Help is on the way.  I will soon submit a patch to help improve the 
+situation.
+
