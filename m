@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030619AbXC2SLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030634AbXC2SR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030619AbXC2SLx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 14:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030622AbXC2SLx
+	id S1030634AbXC2SR4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 14:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030632AbXC2SR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 14:11:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:52313 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030619AbXC2SLv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 14:11:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K7TAkTYBcDNdA5JkVJJrkjYVqoNONqK7jUYnKlSbaREK668uyTdwexuI4mWVnPNBQhkXsQgY+wKCiA3MltkEWhMWfza6NPtYHqUYPiWcIkJLQ+9oUqeUYfuglrLJ5WWqN3CVeW7hcN/rLuYKapvwu7yehFWRq0oVpHe4FXPSt44=
-Message-ID: <b6a2187b0703291111k67fcc904u8a225cbee8cf3e58@mail.gmail.com>
-Date: Fri, 30 Mar 2007 02:11:47 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Maxim Levitsky" <maximlevitsky@gmail.com>
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Cc: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "Jens Axboe" <jens.axboe@oracle.com>, "Len Brown" <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
-In-Reply-To: <200703291546.48996.maximlevitsky@gmail.com>
+	Thu, 29 Mar 2007 14:17:56 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:55342 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030628AbXC2SRy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 14:17:54 -0400
+Date: Thu, 29 Mar 2007 20:05:24 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: Interface for the new fallocate() system call
+In-Reply-To: <Pine.LNX.4.61.0703291314330.4366@chaos.analogic.com>
+Message-ID: <Pine.LNX.4.61.0703292002210.31834@yvahk01.tjqt.qr>
+References: <20070117094658.GA17390@amitarora.in.ibm.com>
+ <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com>
+ <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
+ <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com>
+ <20070329115126.GB7374@amitarora.in.ibm.com> <Pine.LNX.4.61.0703291854000.31834@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0703291314330.4366@chaos.analogic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <460BBD1B.4040308@ru.mvista.com>
-	 <200703291531.18253.maximlevitsky@gmail.com>
-	 <200703291546.48996.maximlevitsky@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/29/07, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> Subject: Add suspend/resume for HPET
-> This adds support of suspend/resume on i386 for HPET
-> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+ 
+On Mar 29 2007 13:18, linux-os (Dick Johnson) wrote:
+>
+>I think it's always better to put only a pointer on the stack as
+>above.
 
-Confirmed that suspend/resume disk/ram works on X60s with
-CONFIG_HPET_TIMER=y and CONFIG_NO_HZ unset.
+I have to disagree, since wrapping it into a struct and copying the struct
+in kernelspace from userspace requires more code. Pointers only become
+useful at 3 (rarely) or 4 (yeah, more likely) and 5+ (definitely)
+arguments, (3) see above about copying, (4) middle thing and (5) tons of
+arguments like mmap() should be wrapped up... for simplicity of dealing
+with it later.
 
-But suspend to disk still hang with CONFIG_NO_HZ unset.
 
-Thanks,
-Jeff.
+Jan
+-- 
