@@ -1,120 +1,360 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbXC2IcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751260AbXC2Iiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751221AbXC2IcX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 04:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbXC2IcX
+	id S1751260AbXC2Iiz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 04:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbXC2Iiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 04:32:23 -0400
-Received: from ananas2.netvision.net.il ([199.203.100.203]:43674 "EHLO
-	ntx.netvision.net.il" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751221AbXC2IcW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 04:32:22 -0400
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 29 Mar 2007 04:38:55 -0400
+Received: from hosting4p.com ([81.0.235.160]:33726 "EHLO micron1.hosting4p.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751260AbXC2Iiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 04:38:54 -0400
+Message-ID: <460B7B1D.2060708@slax.org>
+Date: Thu, 29 Mar 2007 10:38:53 +0200
+From: Tomas M <tomas@slax.org>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: cifs causes BUG: soft lockup detected on CPU
-Date: Thu, 29 Mar 2007 10:32:19 +0200
-Message-ID: <58D14E53A4F69C4EAF4D29171C447CC4011AC77F@NTX-CL.forest.netvision.net.il>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-topic: cifs causes BUG: soft lockup detected on CPU
-Thread-index: AcdxZz/3Q9CUcH7dRryCoLTW+wPMhQAAIZFQAB02bkA=
-From: "Valentin Zaharov" <karlos_@netvision.net.il>
-To: <linux-kernel@vger.kernel.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] max_loop limit, loop.c final working version
+References: <460236CE.1030303@slax.org> <20070322110058.GB23664@tatooine.rebelbase.local> <46026A92.4020106@slax.org> <20070322144210.73dfaf83.dada1@cosmosbay.com> <Pine.LNX.4.61.0703230232320.9555@yvahk01.tjqt.qr> <Pine.LNX.4.61.0703240023220.10028@yvahk01.tjqt.qr> <89DC3EEA-72A3-4F6A-9FD8-FD5D5010BE39@mac.com> <Pine.LNX.4.61.0703290612490.32661@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0703290612490.32661@yvahk01.tjqt.qr>
+Content-Type: multipart/mixed;
+ boundary="------------080406040903050001050405"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------080406040903050001050405
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+This is a diff from Ken Chen, who sent it to me a week ago and received 
+the claimed prize $256. I think it's partially based on Jan's code, 
+while if fixes the bug Jan mentioned (as far as I know).
+
+It does the following:
+- allocate loop dynamically on the fly
+- allocate one more (spare) loop each time,
+   so losetup and mount tools can work correctly
+- doesn't need any module parameters
+
+Unfortunately 'mount' and 'losetup' binaries are hardcoded to stop 
+searching for free loop device after the minor num 255, so one have to 
+use a workaround in order to use more loops with 'mount':
+
+$ losetup /dev/loop1000 file
+$ mount /dev/loop1000 /mntpnt
+
+I hope these binaries will be fixed soon.
+
+
+Tomas M
+slax.org
+
+
+--------------080406040903050001050405
+Content-Type: text/x-patch;
+ name="loop.c.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="loop.c.diff"
+
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 6b5b642..7db2c38 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -77,9 +77,8 @@ #include <linux/kthread.h>
  
-Anyone? I am new here, excuse me if format is wrong. Please assist with
-this problem.
-
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Valentin
-Zaharov
-Sent: Wednesday, March 28, 2007 8:36 PM
-To: linux-kernel@vger.kernel.org
-Subject: cifs causes BUG: soft lockup detected on CPU
-
-Hi,
+ #include <asm/uaccess.h>
  
-We have continous problem with server freezes. We are using cifs mounts
-on apache powered web servers with content located on Win2k3 server.
-Servers freeze from time to time, producing following error just before
-freeze:
-
-Mar 26 21:50:37 UFR2 kernel:  CIFS VFS: cifs_strtoUCS: char2uni returned
--22 Mar 26 21:51:45 UFR2 last message repeated 55 times Mar 26 21:52:49
-UFR2 last message repeated 30 times Mar 26 21:54:16 UFR2 last message
-repeated 10 times Mar 26 21:56:13 UFR2 last message repeated 20 times
-Mar 26 21:58:34 UFR2 last message repeated 75 times Mar 26 21:59:43 UFR2
-last message repeated 30 times Mar 26 22:01:02 UFR2 last message
-repeated 30 times Mar 26 22:02:04 UFR2 last message repeated 30 times
-Mar 26 22:03:08 UFR2 last message repeated 50 times Mar 26 22:04:27 UFR2
-last message repeated 10 times Mar 26 22:05:59 UFR2 last message
-repeated 20 times Mar 26 22:07:10 UFR2 last message repeated 20 times
-Mar 26 22:29:00 UFR2 last message repeated 64 times Mar 27 00:47:40 UFR2
-last message repeated 15 times Mar 27 01:42:41 UFR2 last message
-repeated 95 times Mar 27 02:15:57 UFR2 last message repeated 90 times
-Mar 27 02:27:13 UFR2 last message repeated 45 times Mar 27 03:14:08 UFR2
-last message repeated 95 times Mar 27 04:26:10 UFR2 last message
-repeated 2 times Mar 27 06:11:35 UFR2 last message repeated 45 times Mar
-27 06:20:20 UFR2 last message repeated 15 times Mar 27 06:20:20 UFR2
-last message repeated 12 times Mar 27 06:27:53 UFR2 kernel: BUG: soft
-lockup detected on CPU#3!
-Mar 27 06:27:53 UFR2 kernel:  [<c0134b57>] softlockup_tick+0x9e/0xac Mar
-27 06:27:53 UFR2 kernel:  [<c0121440>] update_process_times+0x3b/0x5e
-Mar 27 06:27:53 UFR2 kernel:  [<c010d885>]
-smp_apic_timer_interrupt+0x6c/0x7a
-Mar 27 06:27:53 UFR2 kernel:  [<c01032ec>]
-apic_timer_interrupt+0x28/0x30 Mar 27 06:27:53 UFR2 kernel:
-[<c0153d75>] generic_fillattr+0x75/0xa8 Mar 27 06:27:53 UFR2 kernel:
-[<f8e78ed2>] cifs_getattr+0x1e/0x2b [cifs] Mar 27 06:27:53 UFR2 kernel:
-[<f8e78eb4>] cifs_getattr+0x0/0x2b [cifs] Mar 27 06:27:53 UFR2 kernel:
-[<c0153dc9>] vfs_getattr+0x21/0x30 Mar 27 06:27:53 UFR2 kernel:
-[<c0153e93>] vfs_fstat+0x22/0x31 Mar 27 06:27:53 UFR2 kernel:
-[<c015443a>] sys_fstat64+0xf/0x23 Mar 27 06:27:53 UFR2 kernel:
-[<c0150fc5>] sys_open+0x1a/0x1c Mar 27 06:27:53 UFR2 kernel:
-[<c0102820>] sysenter_past_esp+0x5d/0x81 Mar 27 06:27:53 UFR2 kernel:
-[<c0310033>] xdr_xcode_array2+0x307/0x506 Mar 27 06:27:53 UFR2 kernel:
-======================= Mar 27 06:27:54 UFR2 kernel: BUG: soft lockup
-detected on CPU#0!
-Mar 27 06:27:54 UFR2 kernel:  [<c0134b57>] softlockup_tick+0x9e/0xac Mar
-27 06:27:54 UFR2 kernel:  [<c0121440>] update_process_times+0x3b/0x5e
-Mar 27 06:27:54 UFR2 kernel:  [<c010d885>]
-smp_apic_timer_interrupt+0x6c/0x7a
-Mar 27 06:27:54 UFR2 kernel:  [<c01032ec>]
-apic_timer_interrupt+0x28/0x30 Mar 27 06:27:54 UFR2 kernel:
-[<c0153d69>] generic_fillattr+0x69/0xa8 Mar 27 06:27:54 UFR2 kernel:
-[<f8e78ed2>] cifs_getattr+0x1e/0x2b [cifs] Mar 27 06:27:54 UFR2 kernel:
-[<f8e78eb4>] cifs_getattr+0x0/0x2b [cifs] Mar 27 06:27:54 UFR2 kernel:
-[<c0153dc9>] vfs_getattr+0x21/0x30 Mar 27 06:27:54 UFR2 kernel:
-[<c0153e93>] vfs_fstat+0x22/0x31 Mar 27 06:27:54 UFR2 kernel:
-[<c015443a>] sys_fstat64+0xf/0x23 Mar 27 06:27:54 UFR2 kernel:
-[<c0150fc5>] sys_open+0x1a/0x1c Mar 27 06:27:54 UFR2 kernel:
-[<c0102820>] sysenter_past_esp+0x5d/0x81 Mar 27 06:27:54 UFR2 kernel:
-=======================
-
-/etc/fstab
-\\filer\sites /mnt/filer cifs
-credentials=/root/domain.pass,domain=WEBDOM,port=139,rw,directio,nomapch
-ars,noserverino,nobrl,ui
-d=apache,gid=apache,iocharset=utf8,dir_mode=0755,file_mode=0755 0 0
-
-Please advise,
-
-Valentin Zaharov
-
-System Department
-
-NetVision Ltd.
-
+-static int max_loop = 8;
+-static struct loop_device *loop_dev;
+-static struct gendisk **disks;
++static LIST_HEAD(loop_devices);
++static DEFINE_SPINLOCK(loop_devices_lock);
+ 
+ /*
+  * Transfer functions
+@@ -183,7 +182,7 @@ figure_loop_size(struct loop_device *lo)
+ 	if (unlikely((loff_t)x != size))
+ 		return -EFBIG;
+ 
+-	set_capacity(disks[lo->lo_number], x);
++	set_capacity(lo->lo_disk, x);
+ 	return 0;					
+ }
+ 
+@@ -812,7 +811,7 @@ static int loop_set_fd(struct loop_devic
+ 	lo->lo_queue->queuedata = lo;
+ 	lo->lo_queue->unplug_fn = loop_unplug;
+ 
+-	set_capacity(disks[lo->lo_number], size);
++	set_capacity(lo->lo_disk, size);
+ 	bd_set_size(bdev, size << 9);
+ 
+ 	set_blocksize(bdev, lo_blocksize);
+@@ -832,7 +831,7 @@ out_clr:
+ 	lo->lo_device = NULL;
+ 	lo->lo_backing_file = NULL;
+ 	lo->lo_flags = 0;
+-	set_capacity(disks[lo->lo_number], 0);
++	set_capacity(lo->lo_disk, 0);
+ 	invalidate_bdev(bdev, 0);
+ 	bd_set_size(bdev, 0);
+ 	mapping_set_gfp_mask(mapping, lo->old_gfp_mask);
+@@ -918,7 +917,7 @@ static int loop_clr_fd(struct loop_devic
+ 	memset(lo->lo_crypt_name, 0, LO_NAME_SIZE);
+ 	memset(lo->lo_file_name, 0, LO_NAME_SIZE);
+ 	invalidate_bdev(bdev, 0);
+-	set_capacity(disks[lo->lo_number], 0);
++	set_capacity(lo->lo_disk, 0);
+ 	bd_set_size(bdev, 0);
+ 	mapping_set_gfp_mask(filp->f_mapping, gfp);
+ 	lo->lo_state = Lo_unbound;
+@@ -1322,6 +1321,23 @@ static long lo_compat_ioctl(struct file 
+ }
+ #endif
+ 
++static struct loop_device *loop_find_dev(int number)
++{
++	struct loop_device *lo;
++	int found = 0;
++		  
++	spin_lock(&loop_devices_lock);
++	list_for_each_entry(lo, &loop_devices, lo_list) {
++		if (lo->lo_number == number) {
++			found = 1;
++			break;
++		}
++	}
++	spin_unlock(&loop_devices_lock);
++	return found ? lo : NULL;
++}
++
++static struct loop_device *loop_init_one(int i);
+ static int lo_open(struct inode *inode, struct file *file)
+ {
+ 	struct loop_device *lo = inode->i_bdev->bd_disk->private_data;
+@@ -1330,6 +1346,9 @@ static int lo_open(struct inode *inode, 
+ 	lo->lo_refcnt++;
+ 	mutex_unlock(&lo->lo_ctl_mutex);
+ 
++	if (!loop_find_dev(lo->lo_number + 1))
++		loop_init_one(lo->lo_number + 1);
++
+ 	return 0;
+ }
+ 
+@@ -1357,8 +1376,6 @@ #endif
+ /*
+  * And now the modules code and kernel interface.
+  */
+-module_param(max_loop, int, 0);
+-MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-256)");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+ 
+@@ -1383,7 +1400,7 @@ int loop_unregister_transfer(int number)
+ 
+ 	xfer_funcs[n] = NULL;
+ 
+-	for (lo = &loop_dev[0]; lo < &loop_dev[max_loop]; lo++) {
++	list_for_each_entry(lo, &loop_devices, lo_list) {
+ 		mutex_lock(&lo->lo_ctl_mutex);
+ 
+ 		if (lo->lo_encryption == xfer)
+@@ -1398,102 +1415,104 @@ int loop_unregister_transfer(int number)
+ EXPORT_SYMBOL(loop_register_transfer);
+ EXPORT_SYMBOL(loop_unregister_transfer);
+ 
+-static int __init loop_init(void)
++static struct loop_device *loop_init_one(int i)
+ {
+-	int	i;
++	struct loop_device *lo;
++	struct gendisk *disk;
+ 
+-	if (max_loop < 1 || max_loop > 256) {
+-		printk(KERN_WARNING "loop: invalid max_loop (must be between"
+-				    " 1 and 256), using default (8)\n");
+-		max_loop = 8;
+-	}
++	lo = kzalloc(sizeof(*lo), GFP_KERNEL);
++	if (!lo)
++		goto out;
+ 
+-	if (register_blkdev(LOOP_MAJOR, "loop"))
+-		return -EIO;
++	lo->lo_queue = blk_alloc_queue(GFP_KERNEL);
++	if (!lo->lo_queue)
++		goto out_free_dev;
++
++	disk = lo->lo_disk = alloc_disk(1);
++	if (!disk)
++		goto out_free_queue;
++
++	mutex_init(&lo->lo_ctl_mutex);
++	lo->lo_number		= i;
++	lo->lo_thread		= NULL;
++	init_waitqueue_head(&lo->lo_event);
++	spin_lock_init(&lo->lo_lock);
++	disk->major		= LOOP_MAJOR;
++	disk->first_minor	= i;
++	disk->fops		= &lo_fops;
++	disk->private_data	= lo;
++	disk->queue		= lo->lo_queue;
++	sprintf(disk->disk_name, "loop%d", i);
++	add_disk(disk);
++	spin_lock(&loop_devices_lock);
++	list_add_tail(&lo->lo_list, &loop_devices);
++	spin_unlock(&loop_devices_lock);
++	return lo;
++
++out_free_queue:
++	blk_cleanup_queue(lo->lo_queue);
++out_free_dev:
++	kfree(lo);
++out:
++	return ERR_PTR(-ENOMEM);
++}
+ 
+-	loop_dev = kmalloc(max_loop * sizeof(struct loop_device), GFP_KERNEL);
+-	if (!loop_dev)
+-		goto out_mem1;
+-	memset(loop_dev, 0, max_loop * sizeof(struct loop_device));
++static void loop_del_one(struct loop_device *lo)
++{
++	del_gendisk(lo->lo_disk);
++	blk_cleanup_queue(lo->lo_queue);
++	put_disk(lo->lo_disk);
++	list_del(&lo->lo_list);
++	kfree(lo);
++}
+ 
+-	disks = kmalloc(max_loop * sizeof(struct gendisk *), GFP_KERNEL);
+-	if (!disks)
+-		goto out_mem2;
++static struct kobject *loop_probe(dev_t dev, int *part, void *data)
++{
++	unsigned int number = dev & MINORMASK;
++	struct loop_device *lo;
+ 
+-	for (i = 0; i < max_loop; i++) {
+-		disks[i] = alloc_disk(1);
+-		if (!disks[i])
+-			goto out_mem3;
++	if ((lo = loop_find_dev(number)) == NULL) {
++		lo = loop_init_one(number);
++		*part = 0;
++		if (IS_ERR(lo))
++			return (void *)lo;
+ 	}
++	return &lo->lo_disk->kobj;
++}
+ 
+-	for (i = 0; i < max_loop; i++) {
+-		struct loop_device *lo = &loop_dev[i];
+-		struct gendisk *disk = disks[i];
 -
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-in the body of a message to majordomo@vger.kernel.org More majordomo
-info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+-		memset(lo, 0, sizeof(*lo));
+-		lo->lo_queue = blk_alloc_queue(GFP_KERNEL);
+-		if (!lo->lo_queue)
+-			goto out_mem4;
+-		mutex_init(&lo->lo_ctl_mutex);
+-		lo->lo_number = i;
+-		lo->lo_thread = NULL;
+-		init_waitqueue_head(&lo->lo_event);
+-		spin_lock_init(&lo->lo_lock);
+-		disk->major = LOOP_MAJOR;
+-		disk->first_minor = i;
+-		disk->fops = &lo_fops;
+-		sprintf(disk->disk_name, "loop%d", i);
+-		disk->private_data = lo;
+-		disk->queue = lo->lo_queue;
+-	}
++static int __init loop_init(void)
++{
++	struct loop_device *lo;
++
++	if (register_blkdev(LOOP_MAJOR, "loop"))
++		return -EIO;
++	blk_register_region(MKDEV(LOOP_MAJOR, 0), 1UL << MINORBITS,
++				  THIS_MODULE, loop_probe, NULL, NULL);
+ 
+-	/* We cannot fail after we call this, so another loop!*/
+-	for (i = 0; i < max_loop; i++)
+-		add_disk(disks[i]);
+-	printk(KERN_INFO "loop: loaded (max %d devices)\n", max_loop);
++	lo = loop_init_one(0);
++	if (IS_ERR(lo))
++		goto out_free;
++
++	printk(KERN_INFO "loop: loaded");
+ 	return 0;
+ 
+-out_mem4:
+-	while (i--)
+-		blk_cleanup_queue(loop_dev[i].lo_queue);
+-	i = max_loop;
+-out_mem3:
+-	while (i--)
+-		put_disk(disks[i]);
+-	kfree(disks);
+-out_mem2:
+-	kfree(loop_dev);
+-out_mem1:
++out_free:
+ 	unregister_blkdev(LOOP_MAJOR, "loop");
+ 	printk(KERN_ERR "loop: ran out of memory\n");
+ 	return -ENOMEM;
+ }
+ 
+-static void loop_exit(void)
++static void __exit loop_exit(void)
+ {
+-	int i;
++	struct loop_device *lo, *next;
+ 
+-	for (i = 0; i < max_loop; i++) {
+-		del_gendisk(disks[i]);
+-		blk_cleanup_queue(loop_dev[i].lo_queue);
+-		put_disk(disks[i]);
+-	}
++	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
++		loop_del_one(lo);
++
++	blk_unregister_region(MKDEV(LOOP_MAJOR, 0), 1UL << MINORBITS);
+ 	if (unregister_blkdev(LOOP_MAJOR, "loop"))
+ 		printk(KERN_WARNING "loop: cannot unregister blkdev\n");
+-
+-	kfree(disks);
+-	kfree(loop_dev);
+ }
+ 
+ module_init(loop_init);
+ module_exit(loop_exit);
+-
+-#ifndef MODULE
+-static int __init max_loop_setup(char *str)
+-{
+-	max_loop = simple_strtol(str, NULL, 0);
+-	return 1;
+-}
+-
+-__setup("max_loop=", max_loop_setup);
+-#endif
+diff --git a/include/linux/loop.h b/include/linux/loop.h
+index 191a595..0b99b31 100644
+--- a/include/linux/loop.h
++++ b/include/linux/loop.h
+@@ -64,6 +64,8 @@ struct loop_device {
+ 	wait_queue_head_t	lo_event;
+ 
+ 	request_queue_t		*lo_queue;
++	struct gendisk		*lo_disk;
++	struct list_head	lo_list;
+ };
+ 
+ #endif /* __KERNEL__ */
+
+--------------080406040903050001050405--
