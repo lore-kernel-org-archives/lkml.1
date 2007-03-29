@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934319AbXC2Sqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934321AbXC2Sue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934319AbXC2Sqi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 14:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934321AbXC2Sqi
+	id S934321AbXC2Sue (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 14:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934323AbXC2Sue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 14:46:38 -0400
-Received: from postfix2-g20.free.fr ([212.27.60.43]:53200 "EHLO
-	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934319AbXC2Sqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 14:46:37 -0400
-Message-ID: <460C094C.8070304@free.fr>
-Date: Thu, 29 Mar 2007 20:45:32 +0200
-From: Kevin Perros <kevin.perros@free.fr>
-User-Agent: Thunderbird 2.0b2 (X11/20070307)
+	Thu, 29 Mar 2007 14:50:34 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2840 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934321AbXC2Sue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 14:50:34 -0400
+From: Mariusz =?utf-8?q?Koz=C5=82owski?= <m.kozlowski@tuxland.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.21-rc5-mm1
+Date: Thu, 29 Mar 2007 21:02:56 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>, Matt Mackall <mpm@selenic.com>
+References: <20070326205706.a750bb35.akpm@linux-foundation.org> <200703292045.13140.m.kozlowski@tuxland.pl> <20070329183857.GA13362@elte.hu>
+In-Reply-To: <20070329183857.GA13362@elte.hu>
 MIME-Version: 1.0
-To: John <linux.kernel@free.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20.3-rt8 - DMA suffers excessive delay periodically
-References: <46094728.40300@free.fr> <75b66ecd0703271341x34463c49w64bdac21a9741355@mail.gmail.com> <460A297A.2030200@free.fr>
-In-Reply-To: <460A297A.2030200@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703292102.56503.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> No it is an "indutrial" motherboard.
-> Although I don't know what makes it "industrial".
+> > > > This is verified and repeatable _every_ single time I tried. 
+> > > > Unfortunately the last thing seen on the screen before system is 
+> > > > frozen is 'eth0: link down'. So my guess is that when hunting for 
+> > > > hangs I found something else that can hang my laptop (netconsole 
+> > > > that is).
+> > > 
+> > > fix-sysfs-reclaim-crash.patch is known-bad.  Did you try reverting 
+> > > that?
+> > 
+> > Yes, just tested it. Sorry. It doesn't change anything.
 > 
-> Regards.
-> 
-> Is this related to SMM?
->
-> As far as I can tell, the BIOS is Phoenix AwardBIOS v6.00PG.
->
-> Would someone know how to disable SMM in this BIOS?
+> could you try a !CONFIG_SMP kernel to make sure it's not some 
+> self-locking of netconsole that is interfering? (Is it perhaps the 
+> 'eth0: link down' message that is trigger from within netconsole?)
 
-Usually you cannot disable SMM via the BIOS. You have to write chipset
-specific Kernel code for that.
+This is from .config:
 
-By example, a module exist in RTAI's code base for Intel Chipset.
+# CONFIG_SMP is not set
 
-You can assess your system's latencies using the -rt kernel calibration
-tools, located in Ingo Molnar's repository.
+Can this be that 'link down' is emitted by netconsole when the link is
+already down and kernel gets locked? Does it make any sense?
 
-Here is an introduction to SMI :
-http://www.securityfocus.com/columnists/402
-
+	Mariusz
