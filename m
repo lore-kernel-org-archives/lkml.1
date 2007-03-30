@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945952AbXC3M3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750699AbXC3MbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945952AbXC3M3r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 08:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945968AbXC3M3p
+	id S1750699AbXC3MbH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 08:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXC3MbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 08:29:45 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:55458 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750992AbXC3M3o (ORCPT
+	Fri, 30 Mar 2007 08:31:07 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:42050 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbXC3MbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 08:29:44 -0400
-Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: gregkh@suse.de, hugh@veritas.com, cornelia.huck@de.ibm.com,
-       dmitry.torokhov@gmail.com, oneukum@suse.de, maneesh@in.ibm.com,
-       rpurdie@rpsys.net, Jeff Garzik <jgarzik@pobox.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       SCSI Mailing List <linux-scsi@vger.kernel.org>
-In-Reply-To: <460CDBA6.5030608@gmail.com>
-References: <460CDBA6.5030608@gmail.com>
-Content-Type: text/plain
-Date: Fri, 30 Mar 2007 08:29:10 -0400
-Message-Id: <1175257751.3760.19.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Fri, 30 Mar 2007 08:31:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bfG0lxn9LFzN+9Dty4iAb6V+0aTmclcprPvCMxz9YdX+fMDs+YqY3/pOnNqdVXVsVBPjg0p9TOZzOgxWGeQm9drCi/KhyFk57A+kPlYaQznnqLUbz5pYE4iPJKWxbk6BhoXqCFJnQfRCCOo4tzIV8avOipQHk8wg9CuHmN6FpNM=
+Message-ID: <3b44d3fb0703300531l6293e792y94d4f16e43652fb5@mail.gmail.com>
+Date: Fri, 30 Mar 2007 18:01:03 +0530
+From: "Milind Arun Choudhary" <milindchoudhary@gmail.com>
+To: "Richard Knutsson" <ricknu-0@student.ltu.se>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: [KJ][PATCH] BIT macro cleanup
+Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz
+In-Reply-To: <460B3244.9060405@student.ltu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070328033309.GA9597@arun.site>
+	 <20070328190925.GC5306@martell.zuzino.mipt.ru>
+	 <460B3244.9060405@student.ltu.se>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-30 at 18:43 +0900, Tejun Heo wrote:
-> Orphaning sysfs nodes on unregistration is a big step in this
-> direction.  With sysfs reference counting out of the picture,
-> implementing 'disconnect immediate' interface only on a few components
-> (including request_queue) should suffice for most block device
-> drivers.  I'm not familiar with other drivers but I don't think
-> they'll be very different.
+On 3/29/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
+> Alexey Dobriyan wrote:
+> > On Wed, Mar 28, 2007 at 09:03:09AM +0530, Milind Arun Choudhary wrote:
+> >
+> >> +#define BIT(nr)	(1UL << ((nr) % BITS_PER_LONG))
+> >>
+> >
+> > I think this would be a disaster because something like
+> >
+> > 	BIT(123)
+> >
+> > would not even generate a warning.
+> >
+> There were a discussion on this, at KJ, when BIT was first used with a
+> modular operation. I said the same thing as you do now, but a big user
+> of BIT is the input-subsystem who defined their BIT as above. Also it
+> was mentioned that the compiler can only find the statical errors, a
+> variable input can break it in runtime.
+> + if we _really_ want to check the tree for such warnings, it is easy to
+> remove the modular operation temporarily (and keep away of input/)
+>
+> I don't say I like this, just that it is a choose between possible errors.
+as discussed in earlier thread there are two kinds of users of BIT
+1. input sybsystem which needs the "% BITS_PER_LONG"
+2. & all other who don't, so that they are warned when the bit no overflows
+I think a simple macro cant serve both the purposes
 
-I agree with this statement.  The big question in my mind is how do we
-do it?
+so IMHO there should be two macros
+ +#define BIT(nr)	(1UL << (nr))
+which server the first case
 
-The essential problem, and the reason why the lifetime rules are
-entangled is that fundamentally, sysfs entries are managed by kobjects.
-The things the device drivers are interested in is struct device, which
-is usually embedded in driver data structures.  Unfortunately, the
-required kobject is usually embedded in struct device meaning that the
-relevant driver structure cannot be freed while the sysfs entry still
-exists.
+&
+ +#define XXXBITXXX(nr)	(1UL << ((nr) % BITS_PER_LONG))
+for input users
+earlier i suggested a name BITWRAP
+but some people hate it i think
+'m fine with any other name as well
+inputs....suggest a name
 
-It seems to me that the only way to Orphan the sysfs entries is to
-separate the kobject and the struct device so their lifetime rules are
-no longer entangled.  Then we can free the driver structure with the
-embedded struct device while still keeping the necessary kobject around
-to perform orphaned sysfs operations.
+so that we can still keep these two macros (along with LLBIT) in
+bitops.h & use apporpriately
 
-So it seems to me that what we need to do is to give struct device its
-own kref and a pointer to a kobject.  Then we can manage the separate
-lifetimes independently.  The device would basically allocate and take a
-reference to the kobject on device_add() and relinquish it again (and
-null out the kobject pointer) on device_del().  The complexity here is
-that we now have to allocate the kobject somewhere else ... probably in
-device_add() (it doesn't come for free with the device structures).
+only hassle is the whole input tree is to be searched & replaced for BIT
+is this OK
 
-James
-
-
+-- 
+Milind Arun Choudhary
