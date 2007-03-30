@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945926AbXC3DyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945928AbXC3DzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945926AbXC3DyB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 23:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945929AbXC3DyB
+	id S1945928AbXC3DzA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 23:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945930AbXC3DzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 23:54:01 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:23720 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945926AbXC3DyA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 23:54:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G8J/CIOzAoH6DWMPQ/uMZyb46pVzMdy6KSe689EZWxy2kKJxc6TZ373MwpEWiCQtghElzTTeM8miyUji5qY9npRGwICEAWX0PFSiEhb18+7Yykr2RaYfw3ZBnqMJgzGZvrOGYflIrYYQ8gaVTqSH6sS3lC8zz+wSSJPn2kB7mEU=
-Message-ID: <8bd0f97a0703292053l2391d6eeh7440d7633301fdae@mail.gmail.com>
-Date: Thu, 29 Mar 2007 23:53:59 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH] nommu arch dont zero the anonymous mapping by adding UNINITIALIZE flag
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Howells" <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1175226172.15391.66.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Mar 2007 23:55:00 -0400
+Received: from webmail-outgoing.us4.outblaze.com ([205.158.62.67]:58245 "EHLO
+	webmail-outgoing.us4.outblaze.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1945928AbXC3DzA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 23:55:00 -0400
+X-Greylist: delayed 19958 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Mar 2007 23:55:00 EDT
+X-OB-Received: from unknown (205.158.62.133)
+  by wfilter.us4.outblaze.com; 30 Mar 2007 03:54:57 -0000
 Content-Disposition: inline
-References: <1175226172.15391.66.camel@roc-desktop>
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+From: "Elliott Johnson" <ejohnson@linuxmail.org>
+To: linux-kernel@vger.kernel.org
+Date: Fri, 30 Mar 2007 11:54:57 +0800
+Subject: Re: strange high system cpu usage.
+X-Originating-Ip: 209.209.36.196
+X-Originating-Server: ws5-3.us4.outblaze.com
+Message-Id: <20070330035457.57A4124753@ws5-3.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/29/07, Wu, Bryan <bryan.wu@analog.com> wrote:
-> On architectures with MMU, malloc takes about the same speed,
-> indepentant of malloc size, while on the Blackfin (NOMMU), as the malloc
-> size increases, the time that malloc consumes grows....
+>What problem are you trying to solve?  IOW, how do you know it's not
+>just an artifact of diferent load average calculation between 2.4 and
+>2.6?
+>
+>Are you actually seeing reduced throughput/performance?  Or are you
+>just looking at load average?
+>
+>Lee
 
-err, this is not the direction we wanted to go ... this requires
-changes to the user<->kernel boundary which certainly will be rejected
-by the glibc maintainers since it implies breakage in POSIX behavior
-and is specific to no-mmu only ...
+Well the problem is apparent, we are having abnormally high cpu usage.  It's about a 
+20-40% performance hit.
 
-the plan is to hold onto this cruft in Blackfin until we get this bug
-sorted out:
-http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=3027
+The load calculations were not between 2.4 and 2.6 kernel versions, but between 2.6.8 and 
+2.6.19.  Sorry if this wasn't very clear from my last email.
 
-as the thing we'll send to mainline will be sane (a no-mmu specific
-kconfig option to control the memset in the kernel malloc)
+In trying to diagnose the problem I also looked at memory stats (vmstat) and found the 
+'buffered' memory statistic way off from the comparable debian (2.6.8) install (0-300kb 
+versus 500mb).
 
-the memset in the kernel right now for no-mmu is by design, not defect
-... we can chat about this more via Blackfin channels if you like, or
-just wait till we meet up in Shanghai
--mike
+The vmstat man page has little information on this statistic and there seems to be varying
+explanations on the web.  I was hoping for a decisive explanation (or link) and possibly 
+advice in toggling this value (or reasons not to).
+
+I'm still trying to work on this at my end.  Some recent tests show that it might be
+related to the megasas driver or the large number of small files we are using on a xfs
+formated 10T array.  I'll keep at it.
+
+Thanks for your response,
+
+-Elliott
+
+=
+Search for products and services at: 
+http://search.mail.com
+
+-- 
+Powered by Outblaze
