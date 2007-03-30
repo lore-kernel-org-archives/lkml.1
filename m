@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXC3VXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969AbXC3VJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbXC3VXi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbXC3VX2
+	id S1753969AbXC3VJq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbXC3VJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:23:28 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:54337 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754037AbXC3VXG (ORCPT
+	Fri, 30 Mar 2007 17:09:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58192 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753964AbXC3VJa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:23:06 -0400
-Message-ID: <460D7F70.3090702@gmail.com>
-Date: Fri, 30 Mar 2007 23:21:52 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Fri, 30 Mar 2007 17:09:30 -0400
+Date: Fri, 30 Mar 2007 14:04:04 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Jeff Dike <jdike@linux.intel.com>
+Subject: [patch 05/37] UML - host VDSO fix
+Message-ID: <20070330210404.GF29450@kroah.com>
+References: <20070330205938.984247529@mini.kroah.org>
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: mcdx -- do_request(): non-read command to cd!!
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="uml-host-vdso-fix.patch"
+In-Reply-To: <20070330210334.GA29450@kroah.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Al.
+-stable review patch.  If anyone has any objections, please let us know.
 
-GIT doesn't remember, it's been too long, but IIRC you were the last one 
-to do some work on mcdx (the old proprietary mitsumi cd-rom driver). The 
-thing builds without warnings on 2.6.20.4, unlike most other proprietary 
-CD-ROM drivers, so someone did...
+------------------
+From: Jeff Dike <jdike@addtoit.com>
 
-In any case, I just bet you're positively thrilled receiving bug-reports 
-for the thing right? Mmm?
+This fixes a problem seen by a number of people running UML on newer host
+kernels.  init would hang with an infinite segfault loop.
 
-I dug up a 1-speed Mitsumi CRMC-LU005S today. Brilliant drive! You push 
-on the front, after which it comes loose and you then yank the entire 
-drive, mechanism and all, out of its casing over some kind of magnetic 
-resistance it seems and then open a _second_ top-loading door, put in 
-the CD and follow the procedure backwards again. I've done that at least 
-20 times now and I'm not by any means done yet. Brilliant.
+It turns out that the host kernel was providing a AT_SYSINFO_EHDR of
+0xffffe000, which faked UML into believing that the host VDSO page could be
+reused.  However, AT_SYSINFO pointed into the middle of the address space, and
+was unmapped as a result.  Because UML was providing AT_SYSINFO_EHDR and
+AT_SYSINFO to its own processes, these would branch to nowhere when trying to
+use the VDSO.
 
-The drive works fine under DOS (*), with both IRQ-less and IRQ-enabled 
-controllers. The linux driver does not work though:
+The fix is to also check the location of AT_SYSINFO when deciding whether to
+use the host's VDSO.
 
-root@5va2:~# modprobe mcdx
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-root@5va2:~# dmesg | tail -4
-mcdx Version 2.14(hs)
-mcdx $Id: mcdx.c,v 1.21 1997/01/26 07:12:59 davem Exp $
-Uniform CD-ROM driver Revision: 3.20
-  mcdx: Mitsumi CD-ROM installed at 0x300, irq 15. (Firmware version M 4)
+---
+ arch/um/os-Linux/elf_aux.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-root@5va2:~# mount /dev/mcdx0 /mnt/cdrom
-mount: block device /dev/mcdx0 is write-protected, mounting read-only
-mount: /dev/mcdx0: can't read superblock
+--- a/arch/um/os-Linux/elf_aux.c
++++ b/arch/um/os-Linux/elf_aux.c
+@@ -40,6 +40,9 @@ __init void scan_elf_aux( char **envp)
+ 		switch ( auxv->a_type ) {
+ 			case AT_SYSINFO:
+ 				__kernel_vsyscall = auxv->a_un.a_val;
++				/* See if the page is under TASK_SIZE */
++				if (__kernel_vsyscall < (unsigned long) envp)
++					__kernel_vsyscall = 0;
+ 				break;
+ 			case AT_SYSINFO_EHDR:
+ 				vsyscall_ehdr = auxv->a_un.a_val;
 
-root@5va2:~# dmesg | tail -4
-  mcdx: Mitsumi CD-ROM installed at 0x300, irq 15. (Firmware version M 4)
-mcdx do_request(): non-read command to cd!!
-end_request: I/O error, dev mcdx0, sector 0
-FAT: unable to read boot sector
-root@5va2:~#
-
-This same 300/15 pair works under DOS in the same machine and IRQ15 is 
-firing. The error sounds very block-ish. Would you happen to know?
-
-I'll happily test patches :-)
-
-Rene.
-
-(*) Mitsumi not only has the old DOS driver online, it even keeps a 
-scanned manual available:
-
-http://www.mitsumi.com/enduser/1_drivers.html#Manuals
-
+-- 
