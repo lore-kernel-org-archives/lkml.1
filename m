@@ -1,128 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752267AbXC3SBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbXC3SEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752267AbXC3SBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 14:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXC3SBR
+	id S1752226AbXC3SEq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXC3SEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 14:01:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34347 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752080AbXC3SBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 14:01:15 -0400
-Date: Fri, 30 Mar 2007 10:59:24 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: zaitcev@redhat.com, <dtor@insightbb.com>,
-       <linux-usb-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       stuard_hayes@dell.com
-Subject: usb hid: reset NumLock
-Message-Id: <20070330105924.01a16dd6.zaitcev@redhat.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Mar 2007 14:04:46 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38730 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752226AbXC3SEp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 14:04:45 -0400
+Date: Fri, 30 Mar 2007 20:04:44 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       e1000-devel@lists.sourceforge.net, jgarzik@pobox.com,
+       netdev@vger.kernel.org
+Subject: Re: [1/5] 2.6.21-rc5: known regressions
+Message-ID: <20070330180444.GH14134@stusta.de>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de> <460AB9E8.8070803@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <460AB9E8.8070803@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a patch for comments only, please do not apply (at least not as-is).
-I haven't got the test results yet.
+On Wed, Mar 28, 2007 at 11:54:32AM -0700, Kok, Auke wrote:
+> Adrian Bunk wrote:
+> >Subject    : e1000 resume weirdness
+> >References : http://lkml.org/lkml/2007/3/26/91
+> >Submitter  : Ingo Molnar <mingo@elte.hu>
+> >Handled-By : Jesse Brandeburg <jesse.brandeburg@gmail.com>
+> >             Auke Kok <auke-jan.h.kok@intel.com>
+> >Status     : problem is being debugged
+> 
+> The issue comes from a corner case and the underlying problem is that e1000 
+> isn't stopping tx properly. We have a fix for this pending in our tree that 
+> I'll push upstream for 2.6.22 to Jeff, but I don't think this should be a 
+> blocker and it's probably is not a regression at all, the gap has always 
+> been present.
+> 
+> on a side note, this is probably fixed easily by turning the adapters 
+> detect_tx_hung flag off in e1000_down, so if someone spots this reoccurring 
+> somewhat regularly, please contact me so we can debug it. I myself have a 
+> system suspend/resuming in circles for an hour now with traffic flying 
+> across without a single hit on it....
+> 
+> Adrian, you probably want to drop this issue from your list.
 
-Dell people (Stuart and Charles) complained that on some USB keyboards,
-if BIOS enables NumLock, it stays on even after Linux has started. Since
-we always start with NumLock off, this confuses users. Quick double dab
-at NumLock fixes it, but it's not nice.
+Thanks for the update, dropped as non-regression.
 
-The keyboard driver tries to reset LEDs at start, but this never works.
-Since the bitmap dev->led is zero, the input_event() filters out any
-attempts to switch LEDs off. So, the code in kbd_start() does nothing.
+> Cheers,
+> 
+> 
+> Auke
 
-The Dell's solution looks like this (for 2.6.9 code base):
+cu
+Adrian
 
-linux-2.6.9-42.0.3/drivers/char/keyboard.c:
-@@ -931,6 +931,19 @@ void kbd_refresh_leds(struct input_handl
- 
- 	tasklet_disable(&keyboard_tasklet);
- 	if (leds != 0xff) {
-+		/*
-+		 * We can't be sure of the state of the LEDs on keyboards
-+		 * (e.g., BIOS might have left LED_NUML on), so set dev->led
-+		 * opposite of ledstate, to make sure input_event() actually
-+		 * sends the command to the keyboard to set each LED.
-+		 */
-+		if (test_bit(LED_SCROLLL, handle->dev->led) == !!(leds & 0x01))
-+			change_bit(LED_SCROLLL, handle->dev->led);
-+		if (test_bit(LED_NUML, handle->dev->led) == !!(leds & 0x02))
-+			change_bit(LED_NUML, handle->dev->led);
-+		if (test_bit(LED_CAPSL, handle->dev->led) == !!(leds & 0x04))
-+			change_bit(LED_CAPSL, handle->dev->led);
-+
- 		input_event(handle->dev, EV_LED, LED_SCROLLL, !!(leds & 0x01));
- 		input_event(handle->dev, EV_LED, LED_NUML,    !!(leds & 0x02));
- 		input_event(handle->dev, EV_LED, LED_CAPSL,   !!(leds & 0x04));
+-- 
 
-I didn't like a) layering violation, and b) that they defeat filtering
-unconditionally. Why have any filtering then?
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Instead, I propose for USB HID driver to reset NumLock on probe. Like this:
-
---- a/drivers/usb/input/hid-core.c
-+++ b/drivers/usb/input/hid-core.c
-@@ -458,6 +458,18 @@ static int usb_hidinput_input_event(struct input_dev *dev, unsigned int type, un
- 	return 0;
- }
- 
-+static void usbhid_set_leds(struct hid_device *hid, unsigned int code, int val)
-+{
-+	struct hid_field *field;
-+	int offset;
-+
-+	/* This is often called for the mouse half. */
-+	if ((offset = hidinput_find_field(hid, EV_LED, code, &field)) != -1) {
-+		hid_set_field(field, offset, val);
-+		usbhid_submit_report(hid, field->report, USB_DIR_OUT);
-+	}
-+}
-+
- int usbhid_wait_io(struct hid_device *hid)
- {
- 	struct usbhid_device *usbhid = hid->driver_data;
-@@ -1328,9 +1340,18 @@ static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 		return -ENODEV;
- 	}
- 
--	if ((hid->claimed & HID_CLAIMED_INPUT))
-+	if ((hid->claimed & HID_CLAIMED_INPUT)) {
- 		hid_ff_init(hid);
- 
-+		/*
-+		 * We do this only if input has claimed the device because
-+		 * we can only find fields after they were configured in
-+		 * hidinput_connect.
-+		 */
-+		/* if (hid->quirks & HID_QUIRK_RESET_LEDS) */
-+		usbhid_set_leds(hid, LED_NUML, 0);
-+	}
-+
- 	if (hid->quirks & HID_QUIRK_SONY_PS3_CONTROLLER)
- 		hid_fixup_sony_ps3_controller(interface_to_usbdev(intf),
- 			intf->cur_altsetting->desc.bInterfaceNumber);
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index d26b08f..f592f01 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -267,6 +267,7 @@ struct hid_item {
- #define HID_QUIRK_SKIP_OUTPUT_REPORTS		0x00020000
- #define HID_QUIRK_IGNORE_MOUSE			0x00040000
- #define HID_QUIRK_SONY_PS3_CONTROLLER		0x00080000
-+#define HID_QUIRK_RESET_LEDS			0x00100000
- 
- /*
-  * This is the global environment of the parser. This information is
-
-URL with details, discussion, rejected patch to read BIOS byte at 0x417:
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=228674
-
-Jiri, Dmitry, any opinions please?
-
--- Pete
