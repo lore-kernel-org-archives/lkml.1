@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbXC3SGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbXC3SGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752414AbXC3SGK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 14:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXC3SGK
+	id S1753318AbXC3SGl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXC3SGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 14:06:10 -0400
-Received: from smtpout.mac.com ([17.250.248.184]:51053 "EHLO smtpout.mac.com"
+	Fri, 30 Mar 2007 14:06:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37307 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752414AbXC3SGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 14:06:09 -0400
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5E1467FD-223A-46DD-9A03-5EA20B5D4842@mac.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	id S1753318AbXC3SGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 14:06:40 -0400
+Message-ID: <460D51AA.2080307@redhat.com>
+Date: Fri, 30 Mar 2007 14:06:34 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: tino.keitel@gmx.de
+CC: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] UDF cleanup and fixes
+References: <20070306164447.GC3661@duck.suse.cz> <20070330045923.GA5528@dose.home.local>
+In-Reply-To: <20070330045923.GA5528@dose.home.local>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: [RFC][PATCH 0/2] Darwinux:  Binary compat support for Mach-O/Darwin in Linux
-Date: Fri, 30 Mar 2007 14:05:22 -0400
-To: LKML Kernel <linux-kernel@vger.kernel.org>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've gotten some time to start working with this code again and I'm  
-looking for some review on my first couple patches.  After these two  
-patches the code does little more than print out lots of details  
-about the binary being run to the syslog and then fail with -ENOEXEC,  
-but it's a start.  I'm currently fixing up my icky memory-mapping  
-code to avoid allocating big chunks of kernel memory for tables in  
-the binary, and once I make some progress on that I'll submit it too.
+Tino Keitel wrote:
+> On Tue, Mar 06, 2007 at 17:44:47 +0100, Jan Kara wrote:
+>>   Hello,
+>>
+>>   the patches attached to six following emails implement some cleanup and
+>> fixes in the UDF code. The main two fixes are:
+>>   1) UDF now works correctly for files larger than 1GB.
+> 
+> Hi,
+> 
+> I tried 2.6.20 with your patches and got the following behaviour:
+> 
+> $ ls -la dvd.udf 
+> -rw-r--r-- 1 root root 4699717632 Mar 29 15:36 dvd.udf
+> $ mount -o loop -t udf dvd.udf /media/udf/
+> $ df /media/udf/
+> Filesystem           1K-blocks      Used Available Use% Mounted on
+> /home/storage/dvd.udf
+>                        4588506 -8584746354 8589334860   -  /media/udf
+>                                ^^^^^^^^^^^^^^^^^^^^^^
+> $ ls -la /media/udf/
+> total 4587521
+> drwxr-xr-x 3 root root        144 Mar 29 15:36 .
+> drwxr-xr-x 9 root root       1024 Mar 20 12:02 ..
+> -rw-r--r-- 1 root root 4697620480 Mar 29 15:57 bk_usr.tar
+> drwxr-xr-x 2 root root         40 Mar 29 15:36 lost+found
+> 
 
-I'd appreciate any information on what is required in the load_binary  
-function in my binfmt.  In particular, if there's anything which fs/ 
-binfmt_elf.c does do which is *NOT* required, I'd be interested to  
-know what and why.  Thanks for all your assistance.
+Is that on a 32-bit machine?
 
-Cheers,
-Kyle Moffett
+Seems to work okay on a 64-bit system here:
+
+$ df /mnt/udf
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/var/tmp/udf_fs        4798938       302   4798636   1% /mnt/udf
+$ ll /var/tmp/udf_fs
+-rw-r--r-- 1 root root 4915200000 Mar 30 13:49 /var/tmp/udf_fs
+
+And after creating a large file in the filesystem:
+
+$ ll /mnt/udf/udf_file
+-rw-r--r-- 1 root root 4751360000 Mar 30 14:01 /mnt/udf/udf_file
+$ df /mnt/udf
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/var/tmp/udf_fs        4798938   4640304    158634  97% /mnt/udf
+
+
