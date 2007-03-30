@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752325AbXC3SMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbXC3SOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752325AbXC3SMF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 14:12:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbXC3SMF
+	id S1752679AbXC3SOX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbXC3SOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 14:12:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59328 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752965AbXC3SME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 14:12:04 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Miles Lane" <miles.lane@gmail.com>
-Subject: Re: 2.6.21-rc5-mm2 -- ACPI problems (lid switch broken, always shows running from AC, plugging in AC hangs machine)
-Date: Fri, 30 Mar 2007 14:10:43 -0400
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-References: <a44ae5cd0703281355h13f1bd70s9eb94092bfa9c3e@mail.gmail.com> <a44ae5cd0703291335q1eff6661hf398dfca1db8e491@mail.gmail.com> <a44ae5cd0703291449p1e8f75a2i68e9874362cef061@mail.gmail.com>
-In-Reply-To: <a44ae5cd0703291449p1e8f75a2i68e9874362cef061@mail.gmail.com>
+	Fri, 30 Mar 2007 14:14:23 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:53277 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbXC3SOW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 14:14:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=L2F5WncmZZkhvjJ7SHe7S3TX8sZh9MPaav6U4v2xl+vkCQh7L/yY6dJpcNZRUthSEKcaAIS3wvQu5txqpn91STsVU6l3VR4Ywb5lTxUvytd0b806w1XtH9zP20EGTA/lGq9xYuVmsQXKzPs1nYGyZ2pd/TSByOZt5V7nksOInTI=
+Message-ID: <d120d5000703301114r420a9604i34b6a015e6bad285@mail.gmail.com>
+Date: Fri, 30 Mar 2007 14:14:20 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Pete Zaitcev" <zaitcev@redhat.com>
+Subject: Re: usb hid: reset NumLock
+Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, stuard_hayes@dell.com
+In-Reply-To: <20070330105924.01a16dd6.zaitcev@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703301410.43857.lenb@kernel.org>
+References: <20070330105924.01a16dd6.zaitcev@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 March 2007 17:49, Miles Lane wrote:
-> Hmm.   I've reproduced these problems with vanilla 2.6.21-rc5, so the
-> latest acpi-git changes are off the hook....
+Hi Pete,
 
-I think the 1st message on this thread holds the answer:
+On 3/30/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
+>
+> I didn't like a) layering violation, and b) that they defeat filtering
+> unconditionally. Why have any filtering then?
+>
+> Instead, I propose for USB HID driver to reset NumLock on probe. Like this:
+>
+> --- a/drivers/usb/input/hid-core.c
+> +++ b/drivers/usb/input/hid-core.c
+> @@ -458,6 +458,18 @@ static int usb_hidinput_input_event(struct input_dev *dev, unsigned int type, un
+>        return 0;
+>  }
+>
+> +static void usbhid_set_leds(struct hid_device *hid, unsigned int code, int val)
+> +{
+> +       struct hid_field *field;
+> +       int offset;
+> +
+> +       /* This is often called for the mouse half. */
+> +       if ((offset = hidinput_find_field(hid, EV_LED, code, &field)) != -1) {
+> +               hid_set_field(field, offset, val);
+> +               usbhid_submit_report(hid, field->report, USB_DIR_OUT);
+> +       }
+> +}
+> +
 
-> ACPI: BIOS bug: multiple APIC/MADT found, using 2
-> ACPI: If "acpi_apic_instance=0" works better, notify linux-acpi@vger.kernel.org
+This is fine and that's what we do in atkbd probe but maybe we should
+move that in input core and reset leds as part of
+input_register_device()?
 
-Looking at your acpidump in
-http://bugzilla.kernel.org/show_bug.cgi?id=8283
-clearly the 2nd table is broken (it is missing the SCI override)
-and that is why you get no ACPI interrupts.
-
-If Windows works on your machine -- ACPI events such as power button etc --
-then that is proof that Windows doesn't use the 2nd MADT and I need
-to revert 09fe58356d148ff66901ddf639e725ca1a48a0af
-
-thanks,
--Len
+-- 
+Dmitry
