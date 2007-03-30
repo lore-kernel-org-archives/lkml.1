@@ -1,108 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbXC3XKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXC3XLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933057AbXC3XKO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 19:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933085AbXC3XKN
+	id S933090AbXC3XLk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 19:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbXC3XLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 19:10:13 -0400
-Received: from smtp005.mail.ukl.yahoo.com ([217.12.11.36]:21826 "HELO
-	smtp005.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933057AbXC3XKJ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 19:10:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=trUgugEc1jlSSQyhzpgCK/XcPbG0cfGn1VRCzSXwS8CzO/B8R5Va0JfC+KzAzmnqVXE+HeiWHCLg7rGi1+7pHB1Y+fyadZcn9pBDDI2vWGyhCqIJS6KVYTYVJNkf39+sqsMmsjEx8MkfR4+K3dAeJ9t3lsMGq/OHsRYReXxxQIY=  ;
-X-YMail-OSG: mMHABxMVM1nnzKmWsXcfeRpDvfDf2tBsCV0XYPSjnSkgLWwlNebidgBP4O5Qre1a1uWYQI9ee8sQrExd4..IpsthG3lrEXZZRICaRv3.ZZ1pPMjbA31pMlTJBn41PrHr6S8-
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH 1/2] UML - Fix umid in xterm titles
-Date: Sat, 31 Mar 2007 01:10:03 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeff Dike <jdike@addtoit.com>, Andrew Morton <akpm@osdl.org>,
-       Davide Brini <davide.brini@unibo.it>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20070330145255.GA5466@c2.user-mode-linux.org>
-In-Reply-To: <20070330145255.GA5466@c2.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703310110.03985.blaisorblade@yahoo.it>
+	Fri, 30 Mar 2007 19:11:39 -0400
+Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:2362 "EHLO
+	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933056AbXC3XLi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 19:11:38 -0400
+X-Greylist: delayed 587 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Mar 2007 19:11:38 EDT
+Date: Fri, 30 Mar 2007 15:21:33 -0700
+From: "Ed Lin" <ed.lin@promise.com>
+To: "linux-scsi" <linux-scsi@vger.kernel.org>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "james.Bottomley" <james.Bottomley@SteelEye.com>,
+       "jeff" <jeff@garzik.org>, "promise_linux" <promise_linux@promise.com>
+Subject: [PATCH 1/4] [SCSI]stex: fix id mapping issue
+X-mailer: Foxmail 5.0 [en]
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <NONAMEBZNuIkdg0MZMt000005d3@nonameb.ptu.promise.com>
+X-OriginalArrivalTime: 30 Mar 2007 22:21:43.0812 (UTC) FILETIME=[CC0CDC40:01C77319]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On venerdì 30 marzo 2007, Jeff Dike wrote:
-> From: Davide Brini <davide.brini@unibo.it>
->
-> Calls lines_init() *after* xterm_title is modified to include umid.
->
-> Signed-off-by: Davide Brini <davide.brini@unibo.it>
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+The internal id/lun mapping of st_vsc and st_vsc1 controllers is different
+from st_shasta. The original driver code can only  map first 16 'entities'
+for st_vsc and st_vsc1 while there are actually 128 available.
 
-Acked-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+Also the  ST_MAX_LUN_PER_TARGET should be 8, although this can do
+no harm because inquiries beyond boundary are discarded by firmware.
 
-> --
->  arch/um/drivers/ssl.c           |    4 ++--
->  arch/um/drivers/stdio_console.c |    4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
->
-> Index: linux-2.6.21-mm/arch/um/drivers/ssl.c
-> ===================================================================
-> --- linux-2.6.21-mm.orig/arch/um/drivers/ssl.c	2007-03-30
-> 10:11:01.000000000 -0400 +++
-> linux-2.6.21-mm/arch/um/drivers/ssl.c	2007-03-30 10:28:51.000000000 -0400
-> @@ -191,12 +191,12 @@ static int ssl_init(void)
->  	ssl_driver = register_lines(&driver, &ssl_ops, serial_lines,
->  				    ARRAY_SIZE(serial_lines));
->
-> -	lines_init(serial_lines, ARRAY_SIZE(serial_lines), &opts);
-> -
->  	new_title = add_xterm_umid(opts.xterm_title);
->  	if (new_title != NULL)
->  		opts.xterm_title = new_title;
->
-> +	lines_init(serial_lines, ARRAY_SIZE(serial_lines), &opts);
-> +
->  	ssl_init_done = 1;
->  	register_console(&ssl_cons);
->  	return 0;
-> Index: linux-2.6.21-mm/arch/um/drivers/stdio_console.c
-> ===================================================================
-> --- linux-2.6.21-mm.orig/arch/um/drivers/stdio_console.c	2007-03-30
-> 10:11:01.000000000 -0400 +++
-> linux-2.6.21-mm/arch/um/drivers/stdio_console.c	2007-03-30
-> 10:28:51.000000000 -0400 @@ -166,12 +166,12 @@ int stdio_init(void)
->  		return -1;
->  	printk(KERN_INFO "Initialized stdio console driver\n");
->
-> -	lines_init(vts, ARRAY_SIZE(vts), &opts);
-> -
->  	new_title = add_xterm_umid(opts.xterm_title);
->  	if(new_title != NULL)
->  		opts.xterm_title = new_title;
->
-> +	lines_init(vts, ARRAY_SIZE(vts), &opts);
-> +
->  	con_init_done = 1;
->  	register_console(&stdiocons);
->  	return 0;
->
-> -------------------------------------------------------------------------
-> Take Surveys. Earn Cash. Influence the Future of IT
-> Join SourceForge.net's Techsay panel and you'll get the chance to share
-> your opinions on IT & business topics through brief surveys-and earn cash
-> http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
-> _______________________________________________
-> User-mode-linux-devel mailing list
-> User-mode-linux-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/user-mode-linux-devel
+The correct internal mapping should be:
+id:0~15, lun:0~7 (st_shasta)
+id:0, lun:0~127 (st_yosemite)
+id:0~127, lun:0 (st_vsc and st_vsc1)
+To scsi mid layer they are all channel:0~7, id:0~15, lun:0, with a maximun
+'entity' number of 128. The RAID console only interfaces to scsi mid layer
+and is always mapped at channel:0, id:16, lun:0.
+
+Signed-off-by: Ed Lin <ed.lin@promise.com>
+---
+diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
+index 69be132..4d68533 100644
+--- a/drivers/scsi/stex.c
++++ b/drivers/scsi/stex.c
+@@ -115,7 +115,7 @@ enum {
+ 
+ 	ST_MAX_ARRAY_SUPPORTED			= 16,
+ 	ST_MAX_TARGET_NUM			= (ST_MAX_ARRAY_SUPPORTED+1),
+-	ST_MAX_LUN_PER_TARGET			= 16,
++	ST_MAX_LUN_PER_TARGET			= 8,
+ 
+ 	st_shasta				= 0,
+ 	st_vsc					= 1,
+@@ -645,12 +645,16 @@ stex_queuecommand(struct scsi_cmnd *cmd,
+ 
+ 	req = stex_alloc_req(hba);
+ 
+-	if (hba->cardtype == st_yosemite) {
+-		req->lun = lun * (ST_MAX_TARGET_NUM - 1) + id;
+-		req->target = 0;
+-	} else {
++	if (hba->cardtype == st_shasta) {
+ 		req->lun = lun;
+ 		req->target = id;
++	} else if (hba->cardtype == st_yosemite){
++		req->lun = id * ST_MAX_LUN_PER_TARGET + lun;
++		req->target = 0;
++	} else {
++		/* st_vsc and st_vsc1 */
++		req->lun = 0;
++		req->target = id * ST_MAX_LUN_PER_TARGET + lun;
+ 	}
+ 
+ 	/* cdb */
 
 
-
--- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
