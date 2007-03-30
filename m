@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbXC3QQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbXC3QRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbXC3QQB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 12:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbXC3QQB
+	id S1753520AbXC3QRJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 12:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXC3QRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 12:16:01 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:50272 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753861AbXC3QQA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 12:16:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t7mfufT5dHskgo3j7GRn7/fKH15V0QeqW+1pf+yot/KgkPvmRjLhONJu0bLmbN1/Iq9ibOpFGCjN3kKAeekn+xycH2yfwyvpMGasJygNaaQJdSL8EqiRzHS0vh3Icsd/EXq8F1z1mjYMIuAayXjblxO3WfZ4BMQ4YHj4D38xYHw=
-Message-ID: <75b57c110703300915q431843faqe0fae0f0fa421bb1@mail.gmail.com>
-Date: Fri, 30 Mar 2007 12:15:57 -0400
-From: "Gerb Stralko" <gerb.stralko@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: Student Project Ideas
-Cc: "Russ Meyerriecks" <datachomper@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070330153437.GA5589@ucw.cz>
+	Fri, 30 Mar 2007 12:17:09 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:58332 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753520AbXC3QRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 12:17:07 -0400
+Date: Fri, 30 Mar 2007 18:16:16 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Ken Chen <kenchen@google.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] remove artificial software max_loop limit
+In-Reply-To: <b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0703301813120.31834@yvahk01.tjqt.qr>
+References: <b040c32a0703300053u110063b0u80ee0e7b9dd158c2@mail.gmail.com> 
+ <b040c32a0703300148w479cf4cdw667cf464edf7c725@mail.gmail.com> 
+ <Pine.LNX.4.61.0703301105190.31834@yvahk01.tjqt.qr>
+ <b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com>
-	 <20070330153437.GA5589@ucw.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://www.netnice.org/
 
-it does exactly that...this project started at my college, and we've
-done some cool research with this little project. Take a look, alot of
-research papers too...
+On Mar 30 2007 02:25, Ken Chen wrote:
+>
+> Oh, crap.  Google mail is innocent.  It was me who did some ugly
+> copy-paste between apps.
 
-On 3/30/07, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
-> >  I've been hacking on the Linux kernel all semester for
-> >  my OS:
-> > Internals class. We are given full autonomy in picking
-> > our final
-> > programming project and I would love for mine to be
-> > /useful/ for the
-> > Linux kernel and not just a theoretical exorcise. If
-> > anybody has any
-> > bug fixes or features maybe they never got around to,
-> > and would be
-> > suitable for this situation, I would love to hear about
-> > them.
->
-> netnice would be nice. As in netnice -n 19 wget interesting_video.
->
->                                                         Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Well, you did it again :p
+
+> I don't mind either way, this thing won't be bigger than 1^20 anyway.
+> Oh, which reminds me that we probably should explicitly test and cap
+> that limit (1^20 that is).
+
+I do not think is needed, since it will already be caught by the
+layout of a dev_t.
+
+> +static struct loop_device *loop_find_dev(int number)
+> +{
+> +	struct loop_device *lo;
+> +
+> +	list_for_each_entry(lo, &loop_devices, lo_list) {
+> +		if (lo->lo_number == number)
+> +			return lo;
+> +	}
+
+Can do without {}
+
+
+Jan
+-- 
