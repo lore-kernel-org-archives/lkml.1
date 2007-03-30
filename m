@@ -1,239 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932563AbXC3WKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbXC3WOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932563AbXC3WKr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 18:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932562AbXC3WKr
+	id S932649AbXC3WOO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 18:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932562AbXC3WOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 18:10:47 -0400
-Received: from smtp009.mail.ukl.yahoo.com ([217.12.11.63]:38139 "HELO
-	smtp009.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932563AbXC3WKp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 18:10:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
-  b=t6lKSzeq0E2bluA/BTosEbq9Xmf8Qn9w0fgdjs4G/NfLVxEHwbXMD4bGZDrYtvdMIw26FmJTb8/CpJrR1o1zOMEnLpwkDZ5/QtKT/voe3hS5Hufv7IRIam0Zx7FRZzp1yjzacGrF670ziirozdfBq/d+ed4HhTwPROcZcqmHQQs=  ;
-X-YMail-OSG: .hV9kvIVM1m5Q7_JK038mRBmgwS4U3yNssCy9ig5Jm8mB2f.5uuZ.pWT2kMGl8nTP9OIY2L02Ant3cqv5VykuJ6PBMIj4wSW4UMKcZkGnj5tQwzF
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH 2/2] UML - Speed up exec
-Date: Sat, 31 Mar 2007 00:10:34 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>
-References: <20070330145257.GA5471@c2.user-mode-linux.org>
-In-Reply-To: <20070330145257.GA5471@c2.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_arYDG3JNq8iFiOT"
-Message-Id: <200703310010.34803.blaisorblade@yahoo.it>
+	Fri, 30 Mar 2007 18:14:14 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:54782 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932649AbXC3WON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 18:14:13 -0400
+Date: Fri, 30 Mar 2007 15:13:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>, David Howells <dhowells@redhat.com>
+Cc: Brian Pomerantz <bapper@piratehaven.org>, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] fix page leak during core dump
+Message-Id: <20070330151353.95cd56ed.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703302250050.28059@blonde.wat.veritas.com>
+References: <20070329203913.GA5190@skull.piratehaven.org>
+	<20070330134359.ec6d95bc.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703302250050.28059@blonde.wat.veritas.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_arYDG3JNq8iFiOT
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 30 Mar 2007 23:01:45 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-On venerd=EC 30 marzo 2007, Jeff Dike wrote:
-> flush_thread doesn't need to do a full page table walk in order to
-> clear the address space.  It knows what the end result needs to be, so
-> it can call unmap directly.
->
-> This results in a 10-20% speedup in an exec from bash.
+> On Fri, 30 Mar 2007, Andrew Morton wrote:
+> > On Thu, 29 Mar 2007 13:39:13 -0700
+> > Brian Pomerantz <bapper@piratehaven.org> wrote:
+> > 
+> > > When the dump cannot occur most likely because of a full file system
+> > > and the page to be written is the zero page, the call to
+> > > page_cache_release() is missed.
+> > > 
+> > > Signed-off-by: Brian Pomerantz <bapper@mvista.com>
+> > > 
+> > > diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> > > index a2fceba..9cc4f0a 100644
+> > > --- a/fs/binfmt_elf.c
+> > > +++ b/fs/binfmt_elf.c
+> > > @@ -1704,7 +1704,10 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
+> > >  				DUMP_SEEK(PAGE_SIZE);
+> > >  			} else {
+> > >  				if (page == ZERO_PAGE(addr)) {
+> > > -					DUMP_SEEK(PAGE_SIZE);
+> > > +					if (!dump_seek(file, PAGE_SIZE)) {
+> > > +						page_cache_release(page);
+> > > +						goto end_coredump;
+> > > +					}
+> > 
+> > Oh for gawds sake I wish we could be rid of those idiotic macros :(
+> > 
+> > This patch looks OK to me, although a refcount leak on the ZERO_PAGE is
+> > special, because that page is PageReserved().
+> > 
+> > It used to be the case that we'd ignore attempts to change the refcount on
+> > reserved pages (or at least on the ZERO_PAGE), but we changed that, so we
+> > now actually refcount the ZERO_PAGE.  (I think, from a quick read of the
+> > code.  This contradicts my memory of how it works).
+> > 
+> > So I expect the net effect here is that a sufficiently determined attacker
+> > can overflow the ZERO_PAGE's refcount, thus causing it to be "freed".  The
+> > page allocator won't actually free the page due to PG_Reserved, but it'll
+> > all become very noisy.
+> > 
+> > Nick, Hugh: agree?
+> 
+> I think so - lots of "Bad page state" messages as the count bounces
+> around the 0 mark, but not actually freed.  But when CONFIG_DEBUG_VM
+> you'll get BUG_ONs.  And I can't swear bad things won't happen some-
+> where once the count wraps to negative.  Easier to fix than work out
+> the consequences.
+> 
+> (Of course, Nick is right now proposing a patch to take us back the
+> other way, back to not accounting the ZERO_PAGE: so the fix needs
+> to go in, then he'll need to reverse that again in his patch.)
 
-Oh, yeah!
-When porting part of Ingo's work, I realized that a similar thing can be do=
-ne=20
-for fork().
+OK.
 
-If the whole address space is unmapped in init_new_context_skas(), the firs=
-t=20
-fix_range_common() call won't need to call unmap at all. He did this with=20
-remap_file_pages(), where init_new_context_skas() must "unmap" everything=20
-anyway.
+> Doesn't fs/binfmt_elf_fdpic.c need the same fix?  It looks slightly
+> different there, but I think when you look closer there's exactly
+> the same issue?
 
-This is giving some speedup in lmbench (5% better in fork proc, 2% better i=
-n=20
-exec proc), but the results are still controversial, there is one benchmark=
-=20
-with a 2% slowdown (called 'mmap latency').
+Think so.  David, does it look OK?
 
-In a loop, it maps, touches a byte per page and unmaps a region with growin=
-g=20
-size (up to 32MB).
-
-However, since results aren't yet stable for some other benchmark (context=
-=20
-switching benchmark is crazy), I'm still studying on this.
-
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> --
->  arch/um/kernel/skas/exec.c |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
->
-> Index: linux-2.6.21-mm/arch/um/kernel/skas/exec.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.21-mm.orig/arch/um/kernel/skas/exec.c	2007-03-30
-> 10:28:24.000000000 -0400 +++
-> linux-2.6.21-mm/arch/um/kernel/skas/exec.c	2007-03-30 10:30:15.000000000
-> -0400 @@ -17,7 +17,17 @@
->
->  void flush_thread_skas(void)
->  {
-> -	force_flush_all();
-> +	void *data =3D NULL;
-> +	unsigned long end =3D proc_mm ? task_size : CONFIG_STUB_START;
-> +	int ret;
-> +
-> +	ret =3D unmap(&current->mm->context.skas.id, 0, end, 1, &data);
-> +	if(ret){
-> +		printk("flush_thread_skas - clearing address space failed, "
-> +		       "err =3D %d\n", ret);
-> +		force_sig(SIGKILL, current);
-> +	}
-> +
->  	switch_mm_skas(&current->mm->context.skas.id);
->  }
+<would anyone be interested in hearing my opinion on the DUMP_SEEK macro
+again?>
 
 
-=2D-=20
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
+From: Brian Pomerantz <bapper@piratehaven.org>
 
---Boundary-00=_arYDG3JNq8iFiOT
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="first-flush-optim.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="first-flush-optim.diff"
+When the dump cannot occur most likely because of a full file system and
+the page to be written is the zero page, the call to page_cache_release()
+is missed.
 
-Index: linux-2.6.git/arch/um/include/skas/mmu-skas.h
-===================================================================
---- linux-2.6.git.orig/arch/um/include/skas/mmu-skas.h
-+++ linux-2.6.git/arch/um/include/skas/mmu-skas.h
-@@ -16,6 +16,7 @@ struct mmu_context_skas {
- 	unsigned long last_pmd;
- #endif
- 	uml_ldt_t ldt;
-+	int first_flush;
- };
- 
- extern void switch_mm_skas(struct mm_id * mm_idp);
-Index: linux-2.6.git/arch/um/kernel/skas/mmu.c
-===================================================================
---- linux-2.6.git.orig/arch/um/kernel/skas/mmu.c
-+++ linux-2.6.git/arch/um/kernel/skas/mmu.c
-@@ -77,6 +77,7 @@ int init_new_context_skas(struct task_st
- 	struct mmu_context_skas *to_mm = &mm->context.skas;
- 	unsigned long stack = 0;
- 	int ret = -ENOMEM;
-+	void *unused = NULL;
- 
- 	if(skas_needs_stub){
- 		stack = get_zeroed_page(GFP_KERNEL);
-@@ -121,6 +122,14 @@ int init_new_context_skas(struct task_st
- 		else to_mm->id.u.pid = start_userspace(stack);
- 	}
- 
-+	mm->context.skas.first_flush = 1;
-+	ret = unmap(&mm->context.skas.id, 0, TASK_SIZE, 1, &unused);
-+	if (ret < 0) {
-+		printk("init_new_context_skas - unmap failed, "
-+		       "errno = %d; continuing\n", ret);
-+		mm->context.skas.first_flush = 0;
-+	}
-+
- 	ret = init_new_ldt(to_mm, from_mm);
- 	if(ret < 0){
- 		printk("init_new_context_skas - init_ldt"
-Index: linux-2.6.git/arch/um/kernel/tlb.c
-===================================================================
---- linux-2.6.git.orig/arch/um/kernel/tlb.c
-+++ linux-2.6.git/arch/um/kernel/tlb.c
-@@ -139,10 +139,17 @@ void fix_range_common(struct mm_struct *
- 	void *flush = NULL;
- 	int op_index = -1, last_op = ARRAY_SIZE(ops) - 1;
- 	int ret = 0;
-+	int first_flush;
- 
- 	if(mm == NULL)
- 		return;
- 
-+	/* Nothing is mapped in this address space, so no call to add_munmap()
-+	 * must be done */
-+	first_flush = mm->context.skas.first_flush;
-+
-+	mm->context.skas.first_flush = 0;
-+
- 	ops[0].type = NONE;
- 	for(addr = start_addr; addr < end_addr && !ret;){
- 		npgd = pgd_offset(mm, addr);
-@@ -151,9 +158,10 @@ void fix_range_common(struct mm_struct *
- 			if(end > end_addr)
- 				end = end_addr;
- 			if(force || pgd_newpage(*npgd)){
--				ret = add_munmap(addr, end - addr, ops,
--						 &op_index, last_op, mmu,
--						 &flush, do_ops);
-+				if (!first_flush)
-+					ret = add_munmap(addr, end - addr, ops,
-+							 &op_index, last_op, mmu,
-+							 &flush, do_ops);
- 				pgd_mkuptodate(*npgd);
+Signed-off-by: Brian Pomerantz <bapper@mvista.com>
+Cc: Hugh Dickins <hugh@veritas.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/binfmt_elf.c       |    5 ++++-
+ fs/binfmt_elf_fdpic.c |    6 ++++--
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff -puN fs/binfmt_elf.c~fix-page-leak-during-core-dump fs/binfmt_elf.c
+--- a/fs/binfmt_elf.c~fix-page-leak-during-core-dump
++++ a/fs/binfmt_elf.c
+@@ -1704,7 +1704,10 @@ static int elf_core_dump(long signr, str
+ 				DUMP_SEEK(PAGE_SIZE);
+ 			} else {
+ 				if (page == ZERO_PAGE(addr)) {
+-					DUMP_SEEK(PAGE_SIZE);
++					if (!dump_seek(file, PAGE_SIZE)) {
++						page_cache_release(page);
++						goto end_coredump;
++					}
+ 				} else {
+ 					void *kaddr;
+ 					flush_cache_page(vma, addr,
+diff -puN fs/binfmt_elf_fdpic.c~fix-page-leak-during-core-dump fs/binfmt_elf_fdpic.c
+--- a/fs/binfmt_elf_fdpic.c~fix-page-leak-during-core-dump
++++ a/fs/binfmt_elf_fdpic.c
+@@ -1480,8 +1480,10 @@ static int elf_fdpic_dump_segments(struc
+ 				DUMP_SEEK(file->f_pos + PAGE_SIZE);
  			}
- 			addr = end;
-@@ -166,9 +174,10 @@ void fix_range_common(struct mm_struct *
- 			if(end > end_addr)
- 				end = end_addr;
- 			if(force || pud_newpage(*npud)){
--				ret = add_munmap(addr, end - addr, ops,
--						 &op_index, last_op, mmu,
--						 &flush, do_ops);
-+				if (!first_flush)
-+					ret = add_munmap(addr, end - addr, ops,
-+							 &op_index, last_op, mmu,
-+							 &flush, do_ops);
- 				pud_mkuptodate(*npud);
+ 			else if (page == ZERO_PAGE(addr)) {
+-				DUMP_SEEK(file->f_pos + PAGE_SIZE);
+-				page_cache_release(page);
++				if (!dump_seek(file, file->f_pos + PAGE_SIZE)) {
++					page_cache_release(page);
++					return 0;
++				}
  			}
- 			addr = end;
-@@ -181,9 +190,10 @@ void fix_range_common(struct mm_struct *
- 			if(end > end_addr)
- 				end = end_addr;
- 			if(force || pmd_newpage(*npmd)){
--				ret = add_munmap(addr, end - addr, ops,
--						 &op_index, last_op, mmu,
--						 &flush, do_ops);
-+				if (!first_flush)
-+					ret = add_munmap(addr, end - addr, ops,
-+							 &op_index, last_op, mmu,
-+							 &flush, do_ops);
- 				pmd_mkuptodate(*npmd);
- 			}
- 			addr = end;
-@@ -207,7 +217,8 @@ void fix_range_common(struct mm_struct *
- 					       PAGE_SIZE, r, w, x, ops,
- 					       &op_index, last_op, mmu,
- 					       &flush, do_ops);
--			else ret = add_munmap(addr, PAGE_SIZE, ops,
-+			else if (!first_flush)
-+				ret = add_munmap(addr, PAGE_SIZE, ops,
- 					      &op_index, last_op, mmu,
- 					      &flush, do_ops);
- 		}
-@@ -219,7 +230,7 @@ void fix_range_common(struct mm_struct *
- 		*npte = pte_mkuptodate(*npte);
- 		addr += PAGE_SIZE;
- 	}
--	if(!ret)
-+	if (!ret && op_index > -1)
- 		ret = (*do_ops)(mmu, ops, op_index, 1, &flush);
- 
- /* This is not an else because ret is modified above */
+ 			else {
+ 				void *kaddr;
+_
 
---Boundary-00=_arYDG3JNq8iFiOT--
