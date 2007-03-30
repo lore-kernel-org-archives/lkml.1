@@ -1,105 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbXC3XB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932900AbXC3XDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932825AbXC3XB3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 19:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932903AbXC3XB3
+	id S932900AbXC3XDV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 19:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932893AbXC3XDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 19:01:29 -0400
-Received: from xenotime.net ([66.160.160.81]:38296 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932825AbXC3XB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 19:01:28 -0400
-Date: Fri, 30 Mar 2007 16:02:59 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch 1/13] signal/timer/event fds v8 - anonymous inode source
- ...
-Message-Id: <20070330160259.6e03705b.rdunlap@xenotime.net>
-In-Reply-To: <Pine.LNX.4.64.0703301532500.3721@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.28743.1174415834.1>
-	<20070330123943.8df1aa92.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703301532500.3721@alien.or.mcafeemobile.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 Mar 2007 19:03:21 -0400
+Received: from gretel.pobox.com ([208.58.1.197]:42398 "EHLO gretel.pobox.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932900AbXC3XDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 19:03:20 -0400
+Message-ID: <460D8435.3060503@pobox.com>
+Date: Fri, 30 Mar 2007 17:42:13 -0400
+From: Mark Lord <mlord@pobox.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [patch 34/37] libata bugfix: HDIO_DRIVE_TASK
+References: <20070330205938.984247529@mini.kroah.org> <20070330210659.GK29450@kroah.com>
+In-Reply-To: <20070330210659.GK29450@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007 15:44:15 -0700 (PDT) Davide Libenzi wrote:
-
-> On Fri, 30 Mar 2007, Andrew Morton wrote:
+Greg KH wrote:
+> -stable review patch.  If anyone has any objections, please let us know.
 > 
-> > > +#include <asm/uaccess.h>
-> > > +
-> > > +
-> > > +
-> > 
-> > Too many blank lines
+> ------------------
+> From: Mark Lord <liml@rtr.ca>
 > 
-> It'd be interesting to know how much is enough. You use one, ppl says it 
-> is too dense. You use more, ppl says it's too much.
-> There's the one-line rule for inter-function spacing, but what's the 
-> include-functions ones? Or the functions-data ones?
-
-1 :)
-
-
-> > > +static int ainofs_delete_dentry(struct dentry *dentry);
-> > > +static struct inode *aino_mkinode(void);
-> > 
-> > Unneeded forward declaration.
+> libata bugfix: HDIO_DRIVE_TASK
 > 
-> Same here. You're the third says this, so I'm gonna change it. But pls 
-> consider adding it to the coding style.
+> I was trying to use HDIO_DRIVE_TASK for something today,
+> and discovered that the libata implementation does not copy
+> over the upper four LBA bits from args[6].
 > 
+> This is serious, as any tools using this ioctl would have their
+> commands applied to the wrong sectors on the drive, possibly resulting
+> in disk corruption.
 > 
+> Ideally, newer apps should use SG_IO/ATA_16 directly,
+> avoiding this bug.  But with libata poised to displace drivers/ide,
+> better compatibility here is a must.
 > 
-> > > +static struct file_system_type aino_fs_type = {
-> > > +	.name		= "ainofs",
-> > > +	.get_sb		= ainofs_get_sb,
-> > > +	.kill_sb	= kill_anon_super,
-> > > +};
-> > > +static struct dentry_operations ainofs_dentry_operations = {
-> > > +	.d_delete	= ainofs_delete_dentry,
-> > > +};
-> > 
-> > If this is moved elsewhere we can perhaps remove some or all of the
-> > unpleasing static function forward-declarations.
+> This patch fixes libata to use the upper four LBA bits passed
+> in from the ioctl.
 > 
-> Grrr :)
-
-you are a puttycat
-
-
-> > > +/**
-> > > + * aino_getfd - creates a new file instance by hooking it up to and anonymous
-> > > + *              inode, and a dentry that describe the "class" of the file
-> > > + * @pfd:     [out]   pointer to the file descriptor
-> > > + * @dpinode: [out]   pointer to the inode
-> > > + * @pfile:   [out]   pointer to the file struct
-> > > + * @name:    [in]    name of the "class" of the new file
-> > > + * @fops     [in]    file operations for the new file
-> > > + * @priv     [in]    private data for the new file (will be file's private_data)
-> > 
-> > The [in] and [out] thing is nice - does kerneldoc handle it appropriately?
+> The original drivers/ide implementation copies over all bits
+> except for the master/slave select bit.  With this patch,
+> libata will copy only the four high-order LBA bits,
+> just in case there are assumptions elsewhere in libata (?).
 > 
-> No idea. It should come out as text at least.
+> Signed-off-by: Mark Lord <mlord@pobox.com>
+> Cc: Chuck Ebbert <cebbert@redhat.com>
+> Signed-off-by: Jeff Garzik <jeff@garzik.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+..
 
-Yes, it's just [nice] text.
+Mmmm.. I've just noticed another bit we should  be preserving there,
+both for *stable* and current mainline.
 
-But the function description needs to fit on one line.  If that's
-not enough, put more description after the @params lines, separated
-by a
- *
-"blank" line.
+Instead of:
 
+> +	scsi_cmd[13] = args[6] & 0x0f;
 
+We should be doing:
+
+> +	scsi_cmd[13] = args[6] & 0x4f;
+
+As-is, the patch still helps, but it is not as useful as it could be.
+Here's the fixed version.  I'm also sending out a 2.6.21 patch via Jeff.
+
+Signed-off-by: Mark Lord <mlord@pobox.com>
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ drivers/ata/libata-scsi.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -295,6 +295,7 @@ int ata_task_ioctl(struct scsi_device *s
+ 	scsi_cmd[8]  = args[3];
+ 	scsi_cmd[10] = args[4];
+ 	scsi_cmd[12] = args[5];
++	scsi_cmd[13] = args[6] & 0x4f;
+ 	scsi_cmd[14] = args[0];
+ 
+ 	/* Good values for timeout and retries?  Values below
+
+-- 
+Mark Lord
+Real-Time Remedies Inc.
+mlord@pobox.com 
