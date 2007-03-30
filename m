@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbXC3VRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbXC3VLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbXC3VRp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXC3VQz
+	id S1753978AbXC3VLy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbXC3VLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:16:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51688 "EHLO
+	Fri, 30 Mar 2007 17:11:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58291 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753990AbXC3VMC (ORCPT
+	with ESMTP id S1753961AbXC3VKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:12:02 -0400
-Date: Fri, 30 Mar 2007 14:06:37 -0700
+	Fri, 30 Mar 2007 17:10:38 -0400
+Date: Fri, 30 Mar 2007 14:04:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Vasily Averin <vvs@sw.ru>,
-       Markus Lidel <Markus.Lidel@shadowconnect.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 28/37] i2o: block IO errors on i2o disk
-Message-ID: <20070330210637.GE29450@kroah.com>
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 15/37] VIDEO: Fix FFB DAC revision probing
+Message-ID: <20070330210446.GQ29450@kroah.com>
 References: <20070330205938.984247529@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i2o-block-io-errors-on-i2o-disk.patch"
+Content-Disposition: inline; filename="video-fix-ffb-dac-revision-probing.patch"
 In-Reply-To: <20070330210334.GA29450@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,70 +37,192 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Vasily Averin <vvs@sw.ru>
+From: David Miller <davem@davemloft.net>
 
-[PATCH] i2o: block IO errors on i2o disk
+[VIDEO] ffb: Fix two DAC handling bugs.
 
-I2O subsystem has been broken in mainstream several months ago (after
-2.6.18).  Commit 4aff5e2333c9a1609662f2091f55c3f6fffdad36 from Jens
-Axboe split struct request ->flags into two parts: cmd_type and
-cmd_flags.
+The determination of whether the DAC has inverted cursor logic is
+broken, import the version checks the X.org driver uses to fix this.
 
-In i2o layer this patch has replaced flag REQ_SPECIAL by the according
-cmd_type.  However i2o has used REQ_SPECIAL not as command type but as
-driver-specific flag for the debug purposes.  As result all i2o requests
-have type "special" now, are not processed to the hardware and fail with
-I/O error:
+Next, when we change the timing generator, borrow code from X.org that
+does 10 NOP reads of the timing generator register afterwards to make
+sure the video-enable transition occurs cleanly.
 
-   i2o/hda:<3>Buffer I/O error on device i2o/hda, logical block 0
-  Buffer I/O error on device i2o/hda, logical block 0
-  Buffer I/O error on device i2o/hda, logical block 0
-   unable to read partition table
-  block-osm: device added (TID: 207): i2o/hda
+Finally, use macros for the DAC registers and fields in order to
+provide documentation for the next person who reads this code.
 
-The following patch removes the extra debug checks without any drawbacks and
-restores the normal driver's work.
-
-Signed-off-by:	Vasily Averin <vvs@sw.ru>
-Acked-by: Markus Lidel <Markus.Lidel@shadowconnect.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-From: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/message/i2o/i2o_block.c |   12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+ drivers/video/ffb.c |   84 +++++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 60 insertions(+), 24 deletions(-)
 
---- a/drivers/message/i2o/i2o_block.c
-+++ b/drivers/message/i2o/i2o_block.c
-@@ -390,13 +390,6 @@ static int i2o_block_prep_req_fn(struct 
- 		return BLKPREP_KILL;
+--- a/drivers/video/ffb.c
++++ b/drivers/video/ffb.c
+@@ -336,14 +336,30 @@ struct ffb_dac {
+ 	u32	value2;
+ };
+ 
++#define FFB_DAC_UCTRL	0x1001 /* User Control */
++#define  FFB_DAC_UCTRL_MANREV	0x00000f00 /* 4-bit Manufacturing Revision */
++#define  FFB_DAC_UCTRL_MANREV_SHIFT 8
++#define FFB_DAC_TGEN	0x6000 /* Timing Generator */
++#define  FFB_DAC_TGEN_VIDE	0x00000001 /* Video Enable */
++#define FFB_DAC_DID	0x8000 /* Device Identification */
++#define  FFB_DAC_DID_PNUM	0x0ffff000 /* Device Part Number */
++#define  FFB_DAC_DID_PNUM_SHIFT 12
++#define  FFB_DAC_DID_REV	0xf0000000 /* Device Revision */
++#define  FFB_DAC_DID_REV_SHIFT 28
++
++#define FFB_DAC_CUR_CTRL	0x100
++#define  FFB_DAC_CUR_CTRL_P0	0x00000001
++#define  FFB_DAC_CUR_CTRL_P1	0x00000002
++
+ struct ffb_par {
+ 	spinlock_t		lock;
+ 	struct ffb_fbc __iomem	*fbc;
+ 	struct ffb_dac __iomem	*dac;
+ 
+ 	u32			flags;
+-#define FFB_FLAG_AFB		0x00000001
+-#define FFB_FLAG_BLANKED	0x00000002
++#define FFB_FLAG_AFB		0x00000001 /* AFB m3 or m6 */
++#define FFB_FLAG_BLANKED	0x00000002 /* screen is blanked */
++#define FFB_FLAG_INVCURSOR	0x00000004 /* DAC has inverted cursor logic */
+ 
+ 	u32			fg_cache __attribute__((aligned (8)));
+ 	u32			bg_cache;
+@@ -354,7 +370,6 @@ struct ffb_par {
+ 	unsigned long		physbase;
+ 	unsigned long		fbsize;
+ 
+-	int			dac_rev;
+ 	int			board_type;
+ };
+ 
+@@ -426,11 +441,12 @@ static void ffb_switch_from_graph(struct
+ 	FFBWait(par);
+ 
+ 	/* Disable cursor.  */
+-	upa_writel(0x100, &dac->type2);
+-	if (par->dac_rev <= 2)
++	upa_writel(FFB_DAC_CUR_CTRL, &dac->type2);
++	if (par->flags & FFB_FLAG_INVCURSOR)
+ 		upa_writel(0, &dac->value2);
+ 	else
+-		upa_writel(3, &dac->value2);
++		upa_writel((FFB_DAC_CUR_CTRL_P0 |
++			    FFB_DAC_CUR_CTRL_P1), &dac->value2);
+ 
+ 	spin_unlock_irqrestore(&par->lock, flags);
+ }
+@@ -664,18 +680,18 @@ ffb_blank(int blank, struct fb_info *inf
+ 	struct ffb_par *par = (struct ffb_par *) info->par;
+ 	struct ffb_dac __iomem *dac = par->dac;
+ 	unsigned long flags;
+-	u32 tmp;
++	u32 val;
++	int i;
+ 
+ 	spin_lock_irqsave(&par->lock, flags);
+ 
+ 	FFBWait(par);
+ 
++	upa_writel(FFB_DAC_TGEN, &dac->type);
++	val = upa_readl(&dac->value);
+ 	switch (blank) {
+ 	case FB_BLANK_UNBLANK: /* Unblanking */
+-		upa_writel(0x6000, &dac->type);
+-		tmp = (upa_readl(&dac->value) | 0x1);
+-		upa_writel(0x6000, &dac->type);
+-		upa_writel(tmp, &dac->value);
++		val |= FFB_DAC_TGEN_VIDE;
+ 		par->flags &= ~FFB_FLAG_BLANKED;
+ 		break;
+ 
+@@ -683,13 +699,16 @@ ffb_blank(int blank, struct fb_info *inf
+ 	case FB_BLANK_VSYNC_SUSPEND: /* VESA blank (vsync off) */
+ 	case FB_BLANK_HSYNC_SUSPEND: /* VESA blank (hsync off) */
+ 	case FB_BLANK_POWERDOWN: /* Poweroff */
+-		upa_writel(0x6000, &dac->type);
+-		tmp = (upa_readl(&dac->value) & ~0x1);
+-		upa_writel(0x6000, &dac->type);
+-		upa_writel(tmp, &dac->value);
++		val &= ~FFB_DAC_TGEN_VIDE;
+ 		par->flags |= FFB_FLAG_BLANKED;
+ 		break;
  	}
- 
--	/* request is already processed by us, so return */
--	if (blk_special_request(req)) {
--		osm_debug("REQ_SPECIAL already set!\n");
--		req->cmd_flags |= REQ_DONTPREP;
--		return BLKPREP_OK;
--	}
--
- 	/* connect the i2o_block_request to the request */
- 	if (!req->special) {
- 		ireq = i2o_block_request_alloc();
-@@ -408,11 +401,8 @@ static int i2o_block_prep_req_fn(struct 
- 		ireq->i2o_blk_dev = i2o_blk_dev;
- 		req->special = ireq;
- 		ireq->req = req;
--	} else
--		ireq = req->special;
--
++	upa_writel(FFB_DAC_TGEN, &dac->type);
++	upa_writel(val, &dac->value);
++	for (i = 0; i < 10; i++) {
++		upa_writel(FFB_DAC_TGEN, &dac->type);
++		upa_readl(&dac->value);
 +	}
- 	/* do not come back here */
--	req->cmd_type = REQ_TYPE_SPECIAL;
- 	req->cmd_flags |= REQ_DONTPREP;
  
- 	return BLKPREP_OK;
+ 	spin_unlock_irqrestore(&par->lock, flags);
+ 
+@@ -894,6 +913,7 @@ static int ffb_init_one(struct of_device
+ 	struct ffb_dac __iomem *dac;
+ 	struct all_info *all;
+ 	int err;
++	u32 dac_pnum, dac_rev, dac_mrev;
+ 
+ 	all = kzalloc(sizeof(*all), GFP_KERNEL);
+ 	if (!all)
+@@ -948,17 +968,31 @@ static int ffb_init_one(struct of_device
+ 	if ((upa_readl(&fbc->ucsr) & FFB_UCSR_ALL_ERRORS) != 0)
+ 		upa_writel(FFB_UCSR_ALL_ERRORS, &fbc->ucsr);
+ 
+-	ffb_switch_from_graph(&all->par);
+-
+ 	dac = all->par.dac;
+-	upa_writel(0x8000, &dac->type);
+-	all->par.dac_rev = upa_readl(&dac->value) >> 0x1c;
++	upa_writel(FFB_DAC_DID, &dac->type);
++	dac_pnum = upa_readl(&dac->value);
++	dac_rev = (dac_pnum & FFB_DAC_DID_REV) >> FFB_DAC_DID_REV_SHIFT;
++	dac_pnum = (dac_pnum & FFB_DAC_DID_PNUM) >> FFB_DAC_DID_PNUM_SHIFT;
++
++	upa_writel(FFB_DAC_UCTRL, &dac->type);
++	dac_mrev = upa_readl(&dac->value);
++	dac_mrev = (dac_mrev & FFB_DAC_UCTRL_MANREV) >>
++		FFB_DAC_UCTRL_MANREV_SHIFT;
+ 
+ 	/* Elite3D has different DAC revision numbering, and no DAC revisions
+-	 * have the reversed meaning of cursor enable.
++	 * have the reversed meaning of cursor enable.  Otherwise, Pacifica 1
++	 * ramdacs with manufacturing revision less than 3 have inverted
++	 * cursor logic.  We identify Pacifica 1 as not Pacifica 2, the
++	 * latter having a part number value of 0x236e.
+ 	 */
+-	if (all->par.flags & FFB_FLAG_AFB)
+-		all->par.dac_rev = 10;
++	if ((all->par.flags & FFB_FLAG_AFB) || dac_pnum == 0x236e) {
++		all->par.flags &= ~FFB_FLAG_INVCURSOR;
++	} else {
++		if (dac_mrev < 3)
++			all->par.flags |= FFB_FLAG_INVCURSOR;
++	}
++
++	ffb_switch_from_graph(&all->par);
+ 
+ 	/* Unblank it just to be sure.  When there are multiple
+ 	 * FFB/AFB cards in the system, or it is not the OBP
+@@ -993,10 +1027,12 @@ static int ffb_init_one(struct of_device
+ 
+ 	dev_set_drvdata(&op->dev, all);
+ 
+-	printk("%s: %s at %016lx, type %d, DAC revision %d\n",
++	printk("%s: %s at %016lx, type %d, "
++	       "DAC pnum[%x] rev[%d] manuf_rev[%d]\n",
+ 	       dp->full_name,
+ 	       ((all->par.flags & FFB_FLAG_AFB) ? "AFB" : "FFB"),
+-	       all->par.physbase, all->par.board_type, all->par.dac_rev);
++	       all->par.physbase, all->par.board_type,
++	       dac_pnum, dac_rev, dac_mrev);
+ 
+ 	return 0;
+ }
 
 -- 
