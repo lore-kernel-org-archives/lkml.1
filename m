@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751292AbXC3Sqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751653AbXC3Sr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751292AbXC3Sqz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 14:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXC3Sqz
+	id S1751653AbXC3Sr3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbXC3SrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 14:46:55 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:65316 "EHLO
+	Fri, 30 Mar 2007 14:47:09 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:65399 "EHLO
 	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751292AbXC3Sqz (ORCPT
+	with ESMTP id S1751517AbXC3SrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 14:46:55 -0400
-Message-Id: <20070330184541.583153763@mvista.com>
+	Fri, 30 Mar 2007 14:47:06 -0400
+Message-Id: <20070330184616.107636073@mvista.com>
+References: <20070330184541.583153763@mvista.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 30 Mar 2007 11:45:42 -0700
+Date: Fri, 30 Mar 2007 11:45:49 -0700
 From: Daniel Walker <dwalker@mvista.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, johnstul@us.ibm.com
-Content-Disposition: inline; filename=clocksource_arm_list_init.patch
-Subject: [PATCH 1/9] clocksource: arm initialize list value
+Content-Disposition: inline; filename=clocksource_s390_init_list.patch
+Subject: [PATCH 8/9] clocksource: s390 initialize list value
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update arch/arm/ with list initialization.
+Update arch/s390 with list initialization.
 
 Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
 ---
- arch/arm/mach-imx/time.c      |    1 +
- arch/arm/mach-ixp4xx/common.c |    1 +
- arch/arm/mach-netx/time.c     |    1 +
- arch/arm/mach-pxa/time.c      |    1 +
- 4 files changed, 4 insertions(+)
+ arch/s390/kernel/time.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: linux-2.6.19/arch/arm/mach-imx/time.c
+Index: linux-2.6.20/arch/s390/kernel/time.c
 ===================================================================
---- linux-2.6.19.orig/arch/arm/mach-imx/time.c
-+++ linux-2.6.19/arch/arm/mach-imx/time.c
-@@ -88,6 +88,7 @@ static struct clocksource clocksource_im
- 	.mask		= 0xFFFFFFFF,
- 	.shift 		= 20,
+--- linux-2.6.20.orig/arch/s390/kernel/time.c
++++ linux-2.6.20/arch/s390/kernel/time.c
+@@ -314,6 +314,7 @@ static struct clocksource clocksource_to
+ 	.mult		= 1000,
+ 	.shift		= 12,
  	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+	.list		= LIST_HEAD_INIT(clocksource_imx.list),
++	.list		= LIST_HEAD_INIT(clocksource_tod.list),
  };
  
- static int __init imx_clocksource_init(void)
-Index: linux-2.6.19/arch/arm/mach-ixp4xx/common.c
-===================================================================
---- linux-2.6.19.orig/arch/arm/mach-ixp4xx/common.c
-+++ linux-2.6.19/arch/arm/mach-ixp4xx/common.c
-@@ -396,6 +396,7 @@ static struct clocksource clocksource_ix
- 	.mask		= CLOCKSOURCE_MASK(32),
- 	.shift 		= 20,
- 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+	.list		= LIST_HEAD_INIT(clocksource_ixp4xx.list),
- };
  
- unsigned long ixp4xx_timer_freq = FREQ;
-Index: linux-2.6.19/arch/arm/mach-netx/time.c
-===================================================================
---- linux-2.6.19.orig/arch/arm/mach-netx/time.c
-+++ linux-2.6.19/arch/arm/mach-netx/time.c
-@@ -63,6 +63,7 @@ static struct clocksource clocksource_ne
- 	.mask		= CLOCKSOURCE_MASK(32),
- 	.shift 		= 20,
- 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+	.list		= LIST_HEAD_INIT(clocksource_netx.list),
- };
- 
- /*
-Index: linux-2.6.19/arch/arm/mach-pxa/time.c
-===================================================================
---- linux-2.6.19.orig/arch/arm/mach-pxa/time.c
-+++ linux-2.6.19/arch/arm/mach-pxa/time.c
-@@ -113,6 +113,7 @@ static struct clocksource clocksource_px
- 	.mask           = CLOCKSOURCE_MASK(32),
- 	.shift          = 20,
- 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+	.list		= LIST_HEAD_INIT(clocksource_pxa.list),
- };
- 
- static void __init pxa_timer_init(void)
 
 -- 
