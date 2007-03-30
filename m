@@ -1,34 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbXC3VUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXC3VU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbXC3VUP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:20:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbXC3VLP
+	id S1753994AbXC3VU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbXC3VKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:11:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51464 "EHLO
+	Fri, 30 Mar 2007 17:10:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58239 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753975AbXC3VK4 (ORCPT
+	with ESMTP id S1753961AbXC3VJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:10:56 -0400
-Date: Fri, 30 Mar 2007 14:04:59 -0700
+	Fri, 30 Mar 2007 17:09:55 -0400
+Date: Fri, 30 Mar 2007 14:04:19 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Mikael Pettersson <mikpe@it.uu.se>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 17/37] SPARC: Fix sparc builds with gcc-4.2.x
-Message-ID: <20070330210459.GT29450@kroah.com>
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jeff Dike <jdike@addtoit.com>,
+       Paolo Blaisorblade Giarrusso <blaisorblade@yahoo.it>
+Subject: [patch 08/37] uml: fix unreasonably long udelay
+Message-ID: <20070330210419.GJ29450@kroah.com>
 References: <20070330205938.984247529@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc-fix-sparc-builds-with-gcc-4.2.x.patch"
+Content-Disposition: inline; filename="uml-fix-unreasonably-long-udelay.patch"
 In-Reply-To: <20070330210334.GA29450@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,56 +38,89 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mikael Pettersson <mikpe@it.uu.se>
+From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
 
-[SPARC]: sparc64 gcc-4.2.0 20070317 -Werror failure
+Currently we have a confused udelay implementation.
 
-Compiling 2.6.21-rc5 with gcc-4.2.0 20070317 (prerelease)
-for sparc64 fails as follows:
+* __const_udelay does not accept usecs but xloops in i386 and x86_64
+* our implementation requires usecs as arg
+* it gets a xloops count when called by asm/arch/delay.h
 
-  gcc -Wp,-MD,arch/sparc64/kernel/.time.o.d  -nostdinc -isystem /home/mikpe/pkgs/linux-sparc64/gcc-4.2.0/lib/gcc/sparc64-unknown-linux-gnu/4.2.0/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -m64 -pipe -mno-fpu -mcpu=ultrasparc -mcmodel=medlow -ffixed-g4 -ffixed-g5 -fcall-used-g7 -Wno-sign-compare -Wa,--undeclared-regs -fomit-frame-pointer  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign -Werror   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(time)"  -D"KBUILD_MODNAME=KBUILD_STR(time)" -c -o arch/sparc64/kernel/time.o arch/sparc64/kernel/time.c
-cc1: warnings being treated as errors
-arch/sparc64/kernel/time.c: In function 'kick_start_clock':
-arch/sparc64/kernel/time.c:559: warning: overflow in implicit constant conversion
-make[1]: *** [arch/sparc64/kernel/time.o] Error 1
-make: *** [arch/sparc64/kernel] Error 2
+Bugs related to this (extremely long shutdown times) where reported by some
+x86_64 users, especially using Device Mapper.
 
-gcc gets unhappy when the MSTK_SET macro's u8 __val variable
-is updated with &= ~0xff (MSTK_YEAR_MASK). Making the constant
-unsigned fixes the problem.
+To hit this bug, a compile-time constant time parameter must be passed - that's
+why UML seems to work most times.
+Fix this with a simple udelay implementation.
 
-[ I fixed up the sparc32 side as well -DaveM ]
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/asm-sparc/mostek.h   |    2 +-
- include/asm-sparc64/mostek.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/um/sys-i386/delay.c   |   11 -----------
+ arch/um/sys-x86_64/delay.c |   11 -----------
+ include/asm-um/delay.h     |   17 ++++++++++++++---
+ 3 files changed, 14 insertions(+), 25 deletions(-)
 
---- a/include/asm-sparc/mostek.h
-+++ b/include/asm-sparc/mostek.h
-@@ -87,7 +87,7 @@ extern void __iomem *mstk48t02_regs;
- #define	MSTK_DOW_MASK	0x07
- #define	MSTK_DOM_MASK	0x3f
- #define	MSTK_MONTH_MASK	0x1f
--#define	MSTK_YEAR_MASK	0xff
-+#define	MSTK_YEAR_MASK	0xffU
+--- a/arch/um/sys-i386/delay.c
++++ b/arch/um/sys-i386/delay.c
+@@ -27,14 +27,3 @@ void __udelay(unsigned long usecs)
+ }
  
- /* Binary coded decimal conversion macros. */
- #define MSTK_REGVAL_TO_DECIMAL(x)  (((x) & 0x0F) + 0x0A * ((x) >> 0x04))
---- a/include/asm-sparc64/mostek.h
-+++ b/include/asm-sparc64/mostek.h
-@@ -89,7 +89,7 @@ extern void __iomem *mstk48t02_regs;
- #define	MSTK_DOW_MASK	0x07
- #define	MSTK_DOM_MASK	0x3f
- #define	MSTK_MONTH_MASK	0x1f
--#define	MSTK_YEAR_MASK	0xff
-+#define	MSTK_YEAR_MASK	0xffU
+ EXPORT_SYMBOL(__udelay);
+-
+-void __const_udelay(unsigned long usecs)
+-{
+-	int i, n;
+-
+-	n = (loops_per_jiffy * HZ * usecs) / MILLION;
+-        for(i=0;i<n;i++)
+-                cpu_relax();
+-}
+-
+-EXPORT_SYMBOL(__const_udelay);
+--- a/arch/um/sys-x86_64/delay.c
++++ b/arch/um/sys-x86_64/delay.c
+@@ -28,14 +28,3 @@ void __udelay(unsigned long usecs)
+ }
  
- /* Binary coded decimal conversion macros. */
- #define MSTK_REGVAL_TO_DECIMAL(x)  (((x) & 0x0F) + 0x0A * ((x) >> 0x04))
+ EXPORT_SYMBOL(__udelay);
+-
+-void __const_udelay(unsigned long usecs)
+-{
+-	unsigned long i, n;
+-
+-	n = (loops_per_jiffy * HZ * usecs) / MILLION;
+-        for(i=0;i<n;i++)
+-                cpu_relax();
+-}
+-
+-EXPORT_SYMBOL(__const_udelay);
+--- a/include/asm-um/delay.h
++++ b/include/asm-um/delay.h
+@@ -1,9 +1,20 @@
+ #ifndef __UM_DELAY_H
+ #define __UM_DELAY_H
+ 
+-#include "asm/arch/delay.h"
+-#include "asm/archparam.h"
+-
+ #define MILLION 1000000
+ 
++/* Undefined on purpose */
++extern void __bad_udelay(void);
++
++extern void __udelay(unsigned long usecs);
++extern void __delay(unsigned long loops);
++
++#define udelay(n) ((__builtin_constant_p(n) && (n) > 20000) ? \
++	__bad_udelay() : __udelay(n))
++
++/* It appears that ndelay is not used at all for UML, and has never been
++ * implemented. */
++extern void __unimplemented_ndelay(void);
++#define ndelay(n) __unimplemented_ndelay()
++
+ #endif
 
 -- 
