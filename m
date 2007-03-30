@@ -1,63 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbXC3No0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734AbXC3NpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751600AbXC3No0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 09:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbXC3No0
+	id S1751734AbXC3NpM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 09:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXC3NpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 09:44:26 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:26841 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbXC3NoZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 09:44:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GwuVc9JsjLfpLV7ri/r0QF9oGK50160dXWS/rHJUlzl2+/RmntjUjoHHHmaH0xNuv7fz4sFFd2hGudr6d70Ky638kiHMzRGAueEV4/3DB1hr60jBLFIjPKM5YOI2KcQxFJV3IxnZNBFYue9EpXJDVsFIGIWWITwiQbUYe/Gsxac=
-Message-ID: <6d6a94c50703300644y28e51f47h19182f550c18c40d@mail.gmail.com>
-Date: Fri, 30 Mar 2007 21:44:24 +0800
-From: "Aubrey Li" <aubreylee@gmail.com>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: [PATCH] nommu arch dont zero the anonymous mapping by adding UNINITIALIZE flag
-Cc: vapier.adi@gmail.com, jie.zhang@analog.com, bryan.wu@analog.com,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <15938.1175253862@redhat.com>
+	Fri, 30 Mar 2007 09:45:12 -0400
+Received: from mail.gatrixx.com ([217.111.11.44]:49563 "EHLO mail.gatrixx.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751734AbXC3NpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 09:45:09 -0400
+Message-ID: <460D145C.6080807@j-o-a.de>
+Date: Fri, 30 Mar 2007 15:45:00 +0200
+From: Oliver Joa <oliver@j-o-a.de>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+CC: linux-kernel@vger.kernel.org, xfs-oss <xfs@oss.sgi.com>
+Subject: Re: Corrupt XFS -Filesystems on new Hardware and Kernel
+References: <46094344.4090007@j-o-a.de> <20070328113141.GQ32597093@melbourne.sgi.com> <460A6298.4040702@j-o-a.de> <20070328234647.GT32597093@melbourne.sgi.com>
+In-Reply-To: <20070328234647.GT32597093@melbourne.sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1175226172.15391.66.camel@roc-desktop>
-	 <10785.1175247540@redhat.com>
-	 <6d6a94c50703300334w6b4787f3p144715de5166d7bc@mail.gmail.com>
-	 <15938.1175253862@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/30/07, David Howells <dhowells@redhat.com> wrote:
-> Aubrey Li <aubreylee@gmail.com> wrote:
->
-> > malloc() allocates size bytes and returns a pointer to the allocated memory.
-> > ****The memory is not cleared.****
->
-> But this is *not* malloc().  It's mmap().  Are you prepared to guarantee that
-> there are no applications out there that don't rely on anon mmap() giving
-> zeroed memory?
+Hi,
 
-I can't find mmap must give zeroed memory in the mmap manual.
-Is there any reason relying on anon mmap() giving zerod memory?
-Can you show me an example?
+David Chinner wrote:
 
->
-> The MMU-mode clearing is done for security reasons - there shouldn't be any
-> leakage between processes, and because the zero page can just be faulted in.
->
-NO-MMU can't do this clearing. Performance is down.
+[...]
 
-> Personally, I'd prefer to maintain compatibility with MMU-mode wherever
-> possible, but I'm happy with overrides like the MAP_UNINITIALISED flag
-> suggested.
->
-Not necessary IMHO.
+> Next time you get a shutdown, can you unmount the filesystems and
+> run xfs_check and then "xfs_repair -n" on the filesystem. These will
+> tell you the inode numbers that are bad. Can you post the errors
+> reported by these tools?
 
--Aubrey
+
+xfs_check gives this:
+
+bad format 0 for inode 8458341 type 0100000
+bad format 0 for inode 8458344 type 0100000
+bad format 0 for inode 8458348 type 0100000
+block 1/4962 type unknown not expected
+block 1/4963 type unknown not expected
+block 1/4970 type unknown not expected
+block 1/4975 type unknown not expected
+block 1/4976 type unknown not expected
+link count mismatch for inode 8458341 (name ?), nlink 0, counted 1
+link count mismatch for inode 8458344 (name ?), nlink 0, counted 1
+link count mismatch for inode 8458348 (name ?), nlink 0, counted 1
+
+
+
+xfs_repair -n gives this:
+
+Phase 1 - find and verify superblock...
+Phase 2 - using internal log
+         - scan filesystem freespace and inode maps...
+         - found root inode chunk
+Phase 3 - for each AG...
+         - scan (but don't clear) agi unlinked lists...
+         - process known inodes and perform inode discovery...
+         - agno = 0
+         - agno = 1
+bad inode format in inode 8458341
+bad inode format in inode 8458344
+bad inode format in inode 8458348
+bad inode format in inode 8458341
+would have cleared inode 8458341
+bad inode format in inode 8458344
+would have cleared inode 8458344
+bad inode format in inode 8458348
+would have cleared inode 8458348
+         - agno = 2
+         - agno = 3
+         - agno = 4
+         - agno = 5
+         - agno = 6
+         - agno = 7
+         - agno = 8
+         - agno = 9
+         - agno = 10
+         - agno = 11
+         - agno = 12
+         - agno = 13
+         - agno = 14
+         - agno = 15
+         - process newly discovered inodes...
+Phase 4 - check for duplicate blocks...
+         - setting up duplicate extent list...
+         - check for inodes claiming duplicate blocks...
+         - agno = 0
+         - agno = 1
+entry "cpufreq.c" at block 0 offset 152 in directory inode 8458336 
+references free inode 8458341
+         would clear inode number in entry at offset 152...
+entry "head.S" at block 0 offset 232 in directory inode 8458336 
+references free inode 8458344
+         would clear inode number in entry at offset 232...
+entry "irq.c" at block 0 offset 320 in directory inode 8458336 
+references free inode 8458348
+         would clear inode number in entry at offset 320...
+bad inode format in inode 8458341
+would have cleared inode 8458341
+bad inode format in inode 8458344
+would have cleared inode 8458344
+bad inode format in inode 8458348
+would have cleared inode 8458348
+         - agno = 2
+         - agno = 3
+         - agno = 4
+         - agno = 5
+         - agno = 6
+         - agno = 7
+         - agno = 8
+         - agno = 9
+         - agno = 10
+         - agno = 11
+         - agno = 12
+         - agno = 13
+         - agno = 14
+         - agno = 15
+No modify flag set, skipping phase 5
+Phase 6 - check inode connectivity...
+         - traversing filesystem starting at / ...
+entry "cpufreq.c" in directory inode 8458336 points to free inode 
+8458341, would junk entry
+entry "head.S" in directory inode 8458336 points to free inode 8458344, 
+would junk entry
+entry "irq.c" in directory inode 8458336 points to free inode 8458348, 
+would junk entry
+         - traversal finished ...
+         - traversing all unattached subtrees ...
+         - traversals finished ...
+         - moving disconnected inodes to lost+found ...
+Phase 7 - verify link counts...
+No modify flag set, skipping filesystem flush and exiting.
+
+
+> Once you have the bad inode numbers, can you run the following
+> on the bad inodes:
+> 
+> # xfs_db -r -c "inode <inum>" -c "p" <device>
+
+
+xfs_db on inode 8458341 gives:
+
+core.magic = 0x494e
+core.mode = 0100644
+core.version = 1
+core.format = 0 (dev)
+core.nlinkv1 = 1
+core.uid = 0
+core.gid = 0
+core.flushiter = 6
+core.atime.sec = Tue Jan 30 22:42:51 2007
+core.atime.nsec = 000000000
+core.mtime.sec = Wed Jan 10 19:10:37 2007
+core.mtime.nsec = 000000000
+core.ctime.sec = Wed Mar 28 18:15:36 2007
+core.ctime.nsec = 612718490
+core.size = 6209
+core.nblocks = 2
+core.extsize = 0
+core.nextents = 1
+core.naextents = 0
+core.forkoff = 0
+core.aformat = 2 (extents)
+core.dmevmask = 0
+core.dmstate = 0
+core.newrtbm = 0
+core.prealloc = 0
+core.realtime = 0
+core.immutable = 0
+core.append = 0
+core.sync = 0
+core.noatime = 0
+core.nodump = 0
+core.rtinherit = 0
+core.projinherit = 0
+core.nosymlinks = 0
+core.extsz = 0
+core.extszinherit = 0
+core.nodefrag = 0
+core.gen = 0
+next_unlinked = null
+u.dev = 0
+
+
+
+xfs_db on inode 8458344 gives:
+
+core.magic = 0x494e
+core.mode = 0100644
+core.version = 1
+core.format = 0 (dev)
+core.nlinkv1 = 1
+core.uid = 0
+core.gid = 0
+core.flushiter = 6
+core.atime.sec = Tue Jan 30 22:42:51 2007
+core.atime.nsec = 000000000
+core.mtime.sec = Wed Jan 10 19:10:37 2007
+core.mtime.nsec = 000000000
+core.ctime.sec = Wed Mar 28 18:15:36 2007
+core.ctime.nsec = 612849562
+core.size = 2326
+core.nblocks = 1
+core.extsize = 0
+core.nextents = 1
+core.naextents = 0
+core.forkoff = 0
+core.aformat = 2 (extents)
+core.dmevmask = 0
+core.dmstate = 0
+core.newrtbm = 0
+core.prealloc = 0
+core.realtime = 0
+core.immutable = 0
+core.append = 0
+core.sync = 0
+core.noatime = 0
+core.nodump = 0
+core.rtinherit = 0
+core.projinherit = 0
+core.nosymlinks = 0
+core.extsz = 0
+core.extszinherit = 0
+core.nodefrag = 0
+core.gen = 0
+next_unlinked = null
+u.dev = 0
+
+
+xfs_db on inode 8458336 gives:
+
+core.magic = 0x494e
+core.mode = 040755
+core.version = 1
+core.format = 2 (extents)
+core.nlinkv1 = 5
+core.uid = 0
+core.gid = 0
+core.flushiter = 1
+core.atime.sec = Tue Jan 30 22:42:51 2007
+core.atime.nsec = 906063000
+core.mtime.sec = Wed Jan 10 19:10:37 2007
+core.mtime.nsec = 000000000
+core.ctime.sec = Tue Jan 30 22:44:48 2007
+core.ctime.nsec = 428077021
+core.size = 4096
+core.nblocks = 1
+core.extsize = 0
+core.nextents = 1
+core.naextents = 0
+core.forkoff = 0
+core.aformat = 2 (extents)
+core.dmevmask = 0
+core.dmstate = 0
+core.newrtbm = 0
+core.prealloc = 0
+core.realtime = 0
+core.immutable = 0
+core.append = 0
+core.sync = 0
+core.noatime = 0
+core.nodump = 0
+core.rtinherit = 0
+core.projinherit = 0
+core.nosymlinks = 0
+core.extsz = 0
+core.extszinherit = 0
+core.nodefrag = 0
+core.gen = 0
+next_unlinked = null
+u.bmx[0] = [startoff,startblock,blockcount,extentflag] 0:[0,528704,1,0]
+
+[...]
+
+> and post the output for us? That will enable us to see exactly what
+> the corruption is on the inode.
+
+Here is it...
+
+Thanks a lot...
+
+Olli
+
