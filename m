@@ -1,141 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbXC3Bsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbXC3Bxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752864AbXC3Bsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 21:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXC3Bsw
+	id S1753786AbXC3Bxi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 21:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbXC3Bxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 21:48:52 -0400
-Received: from hu-out-0506.google.com ([72.14.214.233]:42487 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbXC3Bsu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 21:48:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=es9waty+iJmglbAkXMYLjyHpvyg69eYAWRnuTKcS4XOo3bpZ5k3db6ezxegvy3jWeBVkNLBgNOg9KetSlBsmtPWlCx9chepGReec9B7+Z4oTaaijfSFpcz4rOFR/ONE/qaLIUxbobJYX1T0bbXbq9k+xS3nYJhcew316SIPnJtE=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] [3/6] 2.6.21-rc4: known regressions
-Date: Fri, 30 Mar 2007 03:48:38 +0300
-User-Agent: KMail/1.9.6
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de,
-       Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>, jgarzik@pobox.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.linux-foundation.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703300129.27474.maximlevitsky@gmail.com> <200703291709.17085.david-b@pacbell.net>
-In-Reply-To: <200703291709.17085.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Mar 2007 21:53:37 -0400
+Received: from ns1.suse.de ([195.135.220.2]:39314 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751364AbXC3Bxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 21:53:37 -0400
+Date: Fri, 30 Mar 2007 03:53:21 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ravikiran G Thirumalai <kiran@scalex86.org>, Ingo Molnar <mingo@elte.hu>,
+       Nikita Danilov <nikita@clusterfs.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] queued spinlocks (i386)
+Message-ID: <20070330015321.GB19407@wotan.suse.de>
+References: <20070325155407.GA497@tv-sign.ru> <20070328070459.GC12508@wotan.suse.de> <20070329184213.GA83@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703300348.38402.maximlevitsky@gmail.com>
+In-Reply-To: <20070329184213.GA83@tv-sign.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 March 2007 03:09:14 David Brownell wrote:
-> On Thursday 29 March 2007 4:29 pm, Maxim Levitsky wrote:
-> > On Friday 30 March 2007 00:33:35 David Brownell wrote:
-> > > On Wednesday 28 March 2007 2:27 pm, Maxim wrote:
-> 
-> > > > 	So the only way out is to emulate RTC using HPET,
-> > > > 	It is done this way in old rtc driver, rtc-cmos should do the same.
-> > > 
-> > > No.  Patches like
-> > > 
-> > >   http://marc.info/?l=linux-kernel&m=117219531503973&w=2
-> 
-> also:   http://marc.info/?l=linux-kernel&m=117219531526317&w=2
-> 
-> > > should be merged (I hope they're in the 2.6.22 queue!), making
-> > > HPET run in "Standard Mode" so that HPET can stop sticking its
-> > > fingers in code where they don't belong.
-> > >
-> > > ...
+On Thu, Mar 29, 2007 at 10:42:13PM +0400, Oleg Nesterov wrote:
+> On 03/28, Nick Piggin wrote:
 > >
-> > 	It is not that simple,
-> > 
-> > 	Only in legacy replacement mode HPET can be put on IRQ0 (and sadly  IRQ8)
-> > 	At least this is true on some systems, on mine for example
+> > Well with my queued spinlocks, all that lockbreak stuff can just come out
+> > of the spin_lock, break_lock out of the spinlock structure, and
+> > need_lockbreak just becomes (lock->qhead - lock->qtail > 1).
 > 
-> Right, that's the entire point of legacy replacement mode.
-> 
-> But so what?  In standard mode, HPET just uses other IRQs.
-> Nothing would care about irq0, and irq8 would be used by
-> the RTC as necessary.
-> 
-> 
-> > 	this will make it difficult to use it as a clockevents source
-> 
-> Why?  It's not like the clockevent logic cares what IRQ a given
-> programmable timer uses.  So long as the HPET driver can receive
-> its IRQ, it'll make a fine clockevent.  There's no reason to have
-> HPET prevent other drivers from working, by insisting it use that
-> nasty "prevent other hardware from issuing IRQs" mode.
-> 
-> The patches from Venkatesh sure seem to have behaved for him.
-> And while he might have complained about difficulty, I think
-> that'd be more likely due to the SMP issues he also addressed
-> than because of some (historical?) attachment to irq0.
-> 
-> 
-> > 	Not to mention the fact that current code assumes that BIOS
-> > 	assigned IRQs to all timers which is not true on my system. 
-> 
-> Getting IRQ routing sorted out is a problem that's been solved
-> numerous times before.  And again, the patches referenced above
-> seem to have resolved any such issues.
-No they don't, 
+> Q: queued spinlocks are not CONFIG_PREEMPT friendly,
 
-First patch does that:
+I consider the re-enabling of preemption and interrupts to be a hack
+anyway. Because if you already have interrupts or preemption disabled
+at entry time, they will remain disabled.
 
-                        hd.hd_irq[i] = (timer->hpet_config &
-                                        Tn_INT_ROUTE_CNF_MASK) >>                                
-					Tn_INT_ROUTE_CNF_SHIFT;
-
-This just reads values assigned by BIOS.
-
+IMO the real solution is to ensure spinlock critical sections don't get
+too large, and perhaps use fair spinlocks to prevent starvation.
 
 > 
+> > +       asm volatile(LOCK_PREFIX "xaddw %0, %1\n\t"
+> > +                    : "+r" (pos), "+m" (lock->qhead) : : "memory");
+> > +       while (unlikely(pos != lock->qtail))
+> > +               cpu_relax();
 > 
-> > 	What is wrong with relying on HPET to provide RTC IRQ ?
-> 
-> For starters, it's not an RTC.  Why in the world would you want to
-> make the OS think it's an RTC ... unless you're Microsoft, and are
-> desperate to get another periodic timer (and don't much care about
-> the other RTC functionality?
-> 
-> 
-> ... that's all off-topic for 2.6.21 regressions though; it's too
-> late to merge x86_64 clockevent support, or fix HPET issues like
-> not using "standard mode".
-> 
-> - Dave
-> 
-> 
+> once we incremented lock->qhead, we have no optiion but should spin with
+> preemption disabled until pos == lock->qtail, yes?
 
-Hi,
-	I feel that you are right,
-
-	You meant that one of HPET timers will be used as clock source and will be assigned some IRQ (not IRQ0)
-	
-	Seems fine,
-
-	Only one thing: the kernel must assign IRQs to HPETS , relying on bios is not good,
-	Also the IRQ for clocksource should be not shared, but maybe I am wrong here 
-	(I am afraid that latencies might be a problem here)
-
-	By the way I never thought about the fact that legacy replacement mode  is a 'virtual legacy'
-
-	I mean that it is intended to simulate RTCs and PITs on systems that don't have them, am I right here ?
-	HPET spec says that RTC is still requred to provide all its usial functions except periodic freq.
-
-	Best regards,
-		Maxim Levitsky
+Correct. For the purposes of deadlock behaviour, we have effectively
+taken the lock at that point.
