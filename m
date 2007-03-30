@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbXC3VQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbXC3VQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbXC3VQO (ORCPT <rfc822;w@1wt.eu>);
+	id S1754018AbXC3VQO (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 30 Mar 2007 17:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbXC3VQG
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbXC3VMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:16:06 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:53107 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbXC3VPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:15:35 -0400
-Date: Fri, 30 Mar 2007 14:15:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ken Chen" <kenchen@google.com>
-Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] remove artificial software max_loop limit
-Message-Id: <20070330141524.5f6cff29.akpm@linux-foundation.org>
-In-Reply-To: <b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
-References: <b040c32a0703300053u110063b0u80ee0e7b9dd158c2@mail.gmail.com>
-	<b040c32a0703300148w479cf4cdw667cf464edf7c725@mail.gmail.com>
-	<Pine.LNX.4.61.0703301105190.31834@yvahk01.tjqt.qr>
-	<b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Mar 2007 17:12:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51769 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754001AbXC3VMd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 17:12:33 -0400
+Date: Fri, 30 Mar 2007 14:06:55 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <htejun@gmail.com>,
+       Art Haas <ahaas@airmail.net>, Mark Lord <mlord@pobox.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: [patch 33/37] libata: clear TF before IDENTIFYing
+Message-ID: <20070330210655.GJ29450@kroah.com>
+References: <20070330205938.984247529@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="libata-clear-tf-before-identifying.patch"
+In-Reply-To: <20070330210334.GA29450@kroah.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007 02:25:37 -0700
-"Ken Chen" <kenchen@google.com> wrote:
+-stable review patch.  If anyone has any objections, please let us know.
 
-> -module_param(max_loop, int, 0);
-> -MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-256)");
+------------------
+From: Tejun Heo <htejun@gmail.com>
 
-So..  this change will cause a fatal error for anyone who is presently
-using max_loop, won't it?  If they're doing that within their
-initramfs/initrd/etc then things could get rather ugly for them.
+libata: clear TF before IDENTIFYing
 
-I don't know how much of a problem this will be in practice - do people use
-max_loop much?
+Some devices chock if Feature is not clear when IDENTIFY is issued.
+Set ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE for IDENTIFY such that whole
+TF is cleared when reading ID data.
 
-btw, did you test this change as both a module and as linked-into-vmlinux?
+Kudos to Art Haas for testing various futile patches over several
+months and Mark Lord for pointing out the fix.
+
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Art Haas <ahaas@airmail.net>
+Cc: Mark Lord <mlord@pobox.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/ata/libata-core.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1478,7 +1478,16 @@ int ata_dev_read_id(struct ata_device *d
+ 	}
+ 
+ 	tf.protocol = ATA_PROT_PIO;
+-	tf.flags |= ATA_TFLAG_POLLING; /* for polling presence detection */
++
++	/* Some devices choke if TF registers contain garbage.  Make
++	 * sure those are properly initialized.
++	 */
++	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
++
++	/* Device presence detection is unreliable on some
++	 * controllers.  Always poll IDENTIFY if available.
++	 */
++	tf.flags |= ATA_TFLAG_POLLING;
+ 
+ 	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_FROM_DEVICE,
+ 				     id, sizeof(id[0]) * ATA_ID_WORDS);
+
+-- 
