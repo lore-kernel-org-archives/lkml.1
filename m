@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbXC3Utj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbXC3Uyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753611AbXC3Utj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 16:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbXC3Utj
+	id S1753618AbXC3Uyz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 16:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbXC3Uyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 16:49:39 -0400
-Received: from mga02.intel.com ([134.134.136.20]:28104 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753568AbXC3Uti convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 16:49:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,355,1170662400"; 
-   d="scan'208"; a="219454027:sNHT3692774547"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.21-rc5] Flush MSI-X table writes (rev 3)
-Date: Fri, 30 Mar 2007 13:49:20 -0700
-Message-ID: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com>
-In-Reply-To: <m14po2iilg.fsf@ebiederm.dsl.xmission.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.21-rc5] Flush MSI-X table writes (rev 3)
-Thread-Index: AcdzCbIkURbW1/1DTrqcXuhgahJn6AAAYKfA
-From: "Williams, Mitch A" <mitch.a.williams@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>, "Greg KH" <gregkh@suse.de>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>, <linux-kernel@vger.kernel.org>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-X-OriginalArrivalTime: 30 Mar 2007 20:49:21.0373 (UTC) FILETIME=[E47FC8D0:01C7730C]
+	Fri, 30 Mar 2007 16:54:55 -0400
+Received: from isilmar.linta.de ([213.239.214.66]:35181 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753622AbXC3Uyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 16:54:54 -0400
+Date: Fri, 30 Mar 2007 16:48:11 -0400
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       "Robert P. J. Day" <rpjday@mindspring.com>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: some PCMCIA SCSI drivers can be built *only* as modules
+Message-ID: <20070330204811.GC11637@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	James Bottomley <James.Bottomley@SteelEye.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	linux-scsi@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0703250916090.22484@CPE00045a9c397f-CM001225dbafb6> <4607CA5A.4040906@s5r6.in-berlin.de> <20070326200257.GA28622@infradead.org> <1174941347.3549.41.camel@mulgrave.il.steeleye.com> <20070326203824.GA1430@infradead.org> <1174943213.3549.53.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1174943213.3549.53.camel@mulgrave.il.steeleye.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+On Mon, Mar 26, 2007 at 04:06:53PM -0500, James Bottomley wrote:
+> On Mon, 2007-03-26 at 21:38 +0100, Christoph Hellwig wrote:
+> > On Mon, Mar 26, 2007 at 03:35:47PM -0500, James Bottomley wrote:
+> > > I agree the non-legacy (CardBus and beyond) ones can be built in.  I
+> > > thought the legacy 8 and 16 bit type I and II still had to be modular
+> > > because they still need setting up.
+> > 
+> > nope.  While I don't have a pcmcia scsi card my 16 bit pcmcia wireless
+> > cards work perfectly fine without any previous setup.
+> 
+> OK ... I had the opposite experience ... A ZoomAir 802.11b card wasn't
+> working because I'd accidentally config'd it non-modular.  However, if
+> Dominik confirms it's all supposed to work non-modular.
 
->The bug report would be phrased as someone seeing "No irq for vector"
->on x86_64.  Unless they are a skilled developer they are unlikely to
->trace it down to not flushing posted writes to a MSI bar during irq
->migration.  It part it is a subtle hardware/software race.
->
->I have seen some unresolved bug reports described this way on machines
->that have MSI-X capable hardware.  The are against fedora core and I
->can't haven't been able to get the reporters to try 2.6.21-rcX and
->the other irq back ports don't work so well.
->
->I currently count 7 drivers in 2.6.21 that are susceptible to the race
->this bug closes.
->
->This version of the patch seems to meet all of the criteria for being
->obviously correct, and all it does is insert a stupid readl.  Not
->very dangerous.
->
->This fix removes a race between hardware and software that you likely
->need to migrate MSI-X irqs a lot to trigger.  Which can be the kind of
->thing that bytes you after you have a month of uptime.  This is a very
->nasty condition to track down from bug reports.  I'd rather not have a
->known culprit out there.
+PCMCIA card drivers should (famous last words) work just fine if built as
+modules. They may not be bound to devices, depending on the arch and 
+system, until userspace tools have run, but this is independent of modular
+or built-in drivers. So a full ACK on this.
 
-Agreed, this is a subtle bug, and was a real hairball to track down.
-Even so, I'm surprised that nobody else has dug into this, since it
-should affect anybody running MSI-X.  I originally thought I was seeing
-a hardware bug, which is why I dug more deeply into the issue.
+Thanks,
 
-If Eric is seeing bug reports related to "no vector for IRQ" in the
-wild, then I have to change my stance and agree that this should be
-pushed to -stable.  Every one of those messages indicates that we
-hit the race condition.
-
--Mitch
+Dominik
