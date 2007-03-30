@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbXC3VQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbXC3VRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754024AbXC3VQy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbXC3VL4
+	id S1754028AbXC3VRp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXC3VQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:11:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51641 "EHLO
+	Fri, 30 Mar 2007 17:16:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51688 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753990AbXC3VLp (ORCPT
+	with ESMTP id S1753990AbXC3VMC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:11:45 -0400
-Date: Fri, 30 Mar 2007 14:06:27 -0700
+	Fri, 30 Mar 2007 17:12:02 -0400
+Date: Fri, 30 Mar 2007 14:06:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,185 +20,88 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Simon Arlott <simon@fire.lp0.eu>,
-       Johannes Stezenbach <js@linuxtv.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 25/37] dvb-core: fix several locking related problems
-Message-ID: <20070330210627.GB29450@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Vasily Averin <vvs@sw.ru>,
+       Markus Lidel <Markus.Lidel@shadowconnect.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 28/37] i2o: block IO errors on i2o disk
+Message-ID: <20070330210637.GE29450@kroah.com>
 References: <20070330205938.984247529@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dvb-core-fix-several-locking-related-problems.patch"
+Content-Disposition: inline; filename="i2o-block-io-errors-on-i2o-disk.patch"
 In-Reply-To: <20070330210334.GA29450@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Simon Arlott <simon@fire.lp0.eu>
+From: Vasily Averin <vvs@sw.ru>
 
-dvb-core: fix several locking related problems
+[PATCH] i2o: block IO errors on i2o disk
 
-Fix several instances of dvb-core functions using mutex_lock_interruptible
-and returning -ERESTARTSYS where the calling function will either never
-retry or never check the return value.
+I2O subsystem has been broken in mainstream several months ago (after
+2.6.18).  Commit 4aff5e2333c9a1609662f2091f55c3f6fffdad36 from Jens
+Axboe split struct request ->flags into two parts: cmd_type and
+cmd_flags.
 
-These cause a race condition with dvb_dmxdev_filter_free and
-dvb_dvr_release, both of which are filesystem release functions whose
-return value is ignored and will never be retried.  When this happens it
-becomes impossible to open dvr0 again (-EBUSY) since it has not been
-released properly.
+In i2o layer this patch has replaced flag REQ_SPECIAL by the according
+cmd_type.  However i2o has used REQ_SPECIAL not as command type but as
+driver-specific flag for the debug purposes.  As result all i2o requests
+have type "special" now, are not processed to the hardware and fail with
+I/O error:
 
-(cherry picked from commit c278850206fd9df0bb62a72ca0b277fe20c5a452)
+   i2o/hda:<3>Buffer I/O error on device i2o/hda, logical block 0
+  Buffer I/O error on device i2o/hda, logical block 0
+  Buffer I/O error on device i2o/hda, logical block 0
+   unable to read partition table
+  block-osm: device added (TID: 207): i2o/hda
 
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+The following patch removes the extra debug checks without any drawbacks and
+restores the normal driver's work.
+
+Signed-off-by:	Vasily Averin <vvs@sw.ru>
+Acked-by: Markus Lidel <Markus.Lidel@shadowconnect.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+From: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Acked-By: Johannes Stezenbach <js@linuxtv.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/dvb/dvb-core/dmxdev.c    |   12 +++---------
- drivers/media/dvb/dvb-core/dvb_demux.c |   21 +++++++--------------
- drivers/media/dvb/dvb-core/dvbdev.c    |    9 +++------
- 3 files changed, 13 insertions(+), 29 deletions(-)
+ drivers/message/i2o/i2o_block.c |   12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
---- a/drivers/media/dvb/dvb-core/dmxdev.c
-+++ b/drivers/media/dvb/dvb-core/dmxdev.c
-@@ -181,8 +181,7 @@ static int dvb_dvr_release(struct inode 
- 	struct dvb_device *dvbdev = file->private_data;
- 	struct dmxdev *dmxdev = dvbdev->priv;
+--- a/drivers/message/i2o/i2o_block.c
++++ b/drivers/message/i2o/i2o_block.c
+@@ -390,13 +390,6 @@ static int i2o_block_prep_req_fn(struct 
+ 		return BLKPREP_KILL;
+ 	}
  
--	if (mutex_lock_interruptible(&dmxdev->mutex))
--		return -ERESTARTSYS;
-+	mutex_lock(&dmxdev->mutex);
- 
- 	if ((file->f_flags & O_ACCMODE) == O_WRONLY) {
- 		dmxdev->demux->disconnect_frontend(dmxdev->demux);
-@@ -674,13 +673,8 @@ static int dvb_demux_open(struct inode *
- static int dvb_dmxdev_filter_free(struct dmxdev *dmxdev,
- 				  struct dmxdev_filter *dmxdevfilter)
- {
--	if (mutex_lock_interruptible(&dmxdev->mutex))
--		return -ERESTARTSYS;
--
--	if (mutex_lock_interruptible(&dmxdevfilter->mutex)) {
--		mutex_unlock(&dmxdev->mutex);
--		return -ERESTARTSYS;
+-	/* request is already processed by us, so return */
+-	if (blk_special_request(req)) {
+-		osm_debug("REQ_SPECIAL already set!\n");
+-		req->cmd_flags |= REQ_DONTPREP;
+-		return BLKPREP_OK;
 -	}
-+	mutex_lock(&dmxdev->mutex);
-+	mutex_lock(&dmxdevfilter->mutex);
+-
+ 	/* connect the i2o_block_request to the request */
+ 	if (!req->special) {
+ 		ireq = i2o_block_request_alloc();
+@@ -408,11 +401,8 @@ static int i2o_block_prep_req_fn(struct 
+ 		ireq->i2o_blk_dev = i2o_blk_dev;
+ 		req->special = ireq;
+ 		ireq->req = req;
+-	} else
+-		ireq = req->special;
+-
++	}
+ 	/* do not come back here */
+-	req->cmd_type = REQ_TYPE_SPECIAL;
+ 	req->cmd_flags |= REQ_DONTPREP;
  
- 	dvb_dmxdev_filter_stop(dmxdevfilter);
- 	dvb_dmxdev_filter_reset(dmxdevfilter);
---- a/drivers/media/dvb/dvb-core/dvb_demux.c
-+++ b/drivers/media/dvb/dvb-core/dvb_demux.c
-@@ -673,8 +673,7 @@ static int dmx_ts_feed_stop_filtering(st
- 	struct dvb_demux *demux = feed->demux;
- 	int ret;
- 
--	if (mutex_lock_interruptible(&demux->mutex))
--		return -ERESTARTSYS;
-+	mutex_lock(&demux->mutex);
- 
- 	if (feed->state < DMX_STATE_GO) {
- 		mutex_unlock(&demux->mutex);
-@@ -748,8 +747,7 @@ static int dvbdmx_release_ts_feed(struct
- 	struct dvb_demux *demux = (struct dvb_demux *)dmx;
- 	struct dvb_demux_feed *feed = (struct dvb_demux_feed *)ts_feed;
- 
--	if (mutex_lock_interruptible(&demux->mutex))
--		return -ERESTARTSYS;
-+	mutex_lock(&demux->mutex);
- 
- 	if (feed->state == DMX_STATE_FREE) {
- 		mutex_unlock(&demux->mutex);
-@@ -916,8 +914,7 @@ static int dmx_section_feed_stop_filteri
- 	struct dvb_demux *dvbdmx = dvbdmxfeed->demux;
- 	int ret;
- 
--	if (mutex_lock_interruptible(&dvbdmx->mutex))
--		return -ERESTARTSYS;
-+	mutex_lock(&dvbdmx->mutex);
- 
- 	if (!dvbdmx->stop_feed) {
- 		mutex_unlock(&dvbdmx->mutex);
-@@ -942,8 +939,7 @@ static int dmx_section_feed_release_filt
- 	struct dvb_demux_feed *dvbdmxfeed = (struct dvb_demux_feed *)feed;
- 	struct dvb_demux *dvbdmx = dvbdmxfeed->demux;
- 
--	if (mutex_lock_interruptible(&dvbdmx->mutex))
--		return -ERESTARTSYS;
-+	mutex_lock(&dvbdmx->mutex);
- 
- 	if (dvbdmxfilter->feed != dvbdmxfeed) {
- 		mutex_unlock(&dvbdmx->mutex);
-@@ -1016,8 +1012,7 @@ static int dvbdmx_release_section_feed(s
- 	struct dvb_demux_feed *dvbdmxfeed = (struct dvb_demux_feed *)feed;
- 	struct dvb_demux *dvbdmx = (struct dvb_demux *)demux;
- 
--	if (mutex_lock_interruptible(&dvbdmx->mutex))
--		return -ERESTARTSYS;
-+	mutex_lock(&dvbdmx->mutex);
- 
- 	if (dvbdmxfeed->state == DMX_STATE_FREE) {
- 		mutex_unlock(&dvbdmx->mutex);
-@@ -1126,8 +1121,7 @@ static int dvbdmx_connect_frontend(struc
- 	if (demux->frontend)
- 		return -EINVAL;
- 
--	if (mutex_lock_interruptible(&dvbdemux->mutex))
--		return -ERESTARTSYS;
-+	mutex_lock(&dvbdemux->mutex);
- 
- 	demux->frontend = frontend;
- 	mutex_unlock(&dvbdemux->mutex);
-@@ -1138,8 +1132,7 @@ static int dvbdmx_disconnect_frontend(st
- {
- 	struct dvb_demux *dvbdemux = (struct dvb_demux *)demux;
- 
--	if (mutex_lock_interruptible(&dvbdemux->mutex))
--		return -ERESTARTSYS;
-+	mutex_lock(&dvbdemux->mutex);
- 
- 	demux->frontend = NULL;
- 	mutex_unlock(&dvbdemux->mutex);
---- a/drivers/media/dvb/dvb-core/dvbdev.c
-+++ b/drivers/media/dvb/dvb-core/dvbdev.c
-@@ -204,8 +204,7 @@ int dvb_register_device(struct dvb_adapt
- 
- 	int id;
- 
--	if (mutex_lock_interruptible(&dvbdev_register_lock))
--		return -ERESTARTSYS;
-+	mutex_lock(&dvbdev_register_lock);
- 
- 	if ((id = dvbdev_get_free_id (adap, type)) < 0) {
- 		mutex_unlock(&dvbdev_register_lock);
-@@ -295,8 +294,7 @@ int dvb_register_adapter(struct dvb_adap
- {
- 	int num;
- 
--	if (mutex_lock_interruptible(&dvbdev_register_lock))
--		return -ERESTARTSYS;
-+	mutex_lock(&dvbdev_register_lock);
- 
- 	if ((num = dvbdev_get_free_adapter_num ()) < 0) {
- 		mutex_unlock(&dvbdev_register_lock);
-@@ -324,8 +322,7 @@ EXPORT_SYMBOL(dvb_register_adapter);
- 
- int dvb_unregister_adapter(struct dvb_adapter *adap)
- {
--	if (mutex_lock_interruptible(&dvbdev_register_lock))
--		return -ERESTARTSYS;
-+	mutex_lock(&dvbdev_register_lock);
- 	list_del (&adap->list_head);
- 	mutex_unlock(&dvbdev_register_lock);
- 	return 0;
+ 	return BLKPREP_OK;
 
 -- 
