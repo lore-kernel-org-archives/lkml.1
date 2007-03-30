@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbXC3HKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbXC3HQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbXC3HKN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 03:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXC3HKN
+	id S932672AbXC3HQf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 03:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbXC3HQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 03:10:13 -0400
-Received: from mail-04.jhb.wbs.co.za ([196.2.97.3]:15893 "EHLO
-	mail-04.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753572AbXC3HKM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 03:10:12 -0400
-X-Greylist: delayed 616 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Mar 2007 03:10:11 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAIpSDEbEHh/Rh2dsb2JhbACQCQIBCA4q
-From: Bongani Hlope <bhlope@mweb.co.za>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Subject: Re: Use C++ in kernel module?
-Date: Fri, 30 Mar 2007 08:59:32 +0200
-User-Agent: KMail/1.9.6
-Cc: Conke Hu <conke.hu@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <5767b9100703292037n57a09807qb07c20fe589273e@mail.gmail.com> <Pine.LNX.4.61.0703300547010.31834@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0703300547010.31834@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Mar 2007 03:16:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45908 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753847AbXC3HQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 03:16:33 -0400
+Date: Fri, 30 Mar 2007 02:14:17 -0500
+From: Jakub Jelinek <jakub@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: Interface for the new fallocate() system call
+Message-ID: <20070330071417.GI355@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703300859.32305.bhlope@mweb.co.za>
-X-Original-Subject: Re: Use C++ in kernel module?
-X-Scan-Signature: db362505dd0b8a6a0465bfc0772f0abe
+In-Reply-To: <20070329101010.7a2b8783.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 March 2007 05:49:14 Jan Engelhardt wrote:
-> On Mar 30 2007 11:37, Conke Hu wrote:
-> > Is it possible to use C++ in linux kernel module? how?
-> > I've tested but failed, there is an unknown symbol in the .o file from
-> > c++ source code.
->
-> You answered it yourself. Linux does not have a C++ runtime.
-> It is possible to use a very limited set of C++ features, usually not
-> worth the fight.
->
->
-> Jan
+On Thu, Mar 29, 2007 at 10:10:10AM -0700, Andrew Morton wrote:
+> > Platform: s390
+> > --------------
+> > s390 prefers following layout:
+> > 
+> >    int fallocate(int fd, loff_t offset, loff_t len, int mode)
+> > 
+> > For details on why and how "int, int, loff_t, loff_t" is a problem on
+> > s390, please see Heiko's mail on 16th March. Here is the link:
+> > http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg133595.html
+> > 
+> > Platform: ppc, arm
+> > ------------------
+> > ppc (32 bit) has a problem with "int, loff_t, loff_t, int" layout,
+> > since this will result in a pad between fd and offset, making seven
+> > arguments total - which is not supported by ppc32. It supports only
+> > 6 arguments. Thus the desired layout by ppc32 is:
+> > 
+> >    int fallocate(int fd, int mode, loff_t offset, loff_t len)
+> > 
+> > Even ARM prefers above kind of layout. For details please see the
+> > definition of sys_arm_sync_file_range().
+> 
+> This is a clean-looking option.  Can s390 be changed to support seven-arg
+> syscalls?
 
-Do the "C++ kernel modules" crowd actually know C++? If they knew how C++ was 
-designed, they would know that it requires some runtime support, which will 
-stop them from asking this question over and over again. I'm begining to 
-think that most of these questions are asked by people who think OO 
-programing should used in the kernel (which is already done anyway)
+Wouldn't
+int fallocate(loff_t offset, loff_t len, int fd, int mode)
+work on both s390 and ppc/arm?  glibc will certainly wrap it and
+reorder the arguments as needed, so there is no need to keep fd first.
 
---
-
-A log may float in a river, but that does not make it a crocodile.
+	Jakub
