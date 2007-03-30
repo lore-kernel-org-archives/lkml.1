@@ -1,119 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbXC3ShJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXC3Siy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751523AbXC3ShJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 14:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXC3ShI
+	id S1751366AbXC3Siy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXC3Siy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 14:37:08 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:65515 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751474AbXC3ShG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 14:37:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Nh7CuUQoWcNpWNyYJccYim3008KiITgXFX9KwQunaGQ5ev2ijs+bbFCu4nKhVcB81SZtiFhGHMzB9mvSfXt5d6PsUh4tMc9Wxp+aq4w5Z6/OXsz79Y55Ydxit8AwKYZhGG8sC46eNG3ZH9kHCd/JnB+VWyAKS9BsvntxiaE2wJM=
-Message-ID: <d120d5000703301137m7ba7e3e4xb18aad1d1fc7c052@mail.gmail.com>
-Date: Fri, 30 Mar 2007 14:37:04 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Ivo van Doorn" <ivdoorn@gmail.com>
-Subject: Re: [RFC] rfkill - Add support for input key to control wireless radio
-Cc: "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "John Linville" <linville@tuxdriver.com>, "Jiri Benc" <jbenc@suse.cz>,
-       "Lennart Poettering" <lennart@poettering.net>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Larry Finger" <Larry.Finger@lwfinger.net>
-In-Reply-To: <200703301913.57656.IvDoorn@gmail.com>
+	Fri, 30 Mar 2007 14:38:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57847 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751366AbXC3Six (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 14:38:53 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] ACPI patch for 2.6.21-rc5
+Date: Fri, 30 Mar 2007 14:37:33 -0400
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200612031936.34343.IvDoorn@gmail.com>
-	 <200703301659.48047.IvDoorn@gmail.com>
-	 <d120d5000703300828k5baf3c7x3716148b2e08d17f@mail.gmail.com>
-	 <200703301913.57656.IvDoorn@gmail.com>
+Message-Id: <200703301437.33798.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/30/07, Ivo van Doorn <ivdoorn@gmail.com> wrote:
-> > > >
-> > > > My only concern is where rfkill code should live. Since it is no
-> > > > longer dependent on input core (embedded systems might disable
-> > > > rfkill-input and use bare rfkill and control state from userspace)
-> > > > it does not need to live in drivers/input.
-> > >
-> > > How about:
-> > > rfkill -> drivers/misc
-> >
-> > Not in net?
->
-> Well in drivers/net are the network drivers but not the irda and bluetooth drivers,
-> those are located in different folders in drivers/ so I think misc would be the most
-> suitable location.
+Hi Linus,
 
-We could also consider the ./net itself. rfkill is not a driver, it is
-a facility.
+please pull from: 
 
-> > >  - input_polldev
-> > >        - Handlers polling, where the driver should check what the previous state was and the driver
-> > >          should send the event to rfkill.
-> >
-> > This is the input device visible to userspace and kernel. It polls
-> > state of the button and sends KEY_WLAN/KEY_BLUETOOTH events through
-> > input layer. They get distributed through various input handlers such
-> > as evdev and rfkill-input. Evdev provides route for events to
-> > userspace where application can listen to events and then toggle RF
-> > switches according to the current policy via
-> > /sys/class/rfkill/rfkillXXX/state. Rfkill-input provides in-kernel
-> > route for events into rfkill system. If rfkill-input is loaded
-> > switches that are not claimed by userspace will be toggled
-> > automatically.
-> >
-> > Does this make sense?
->
-> Yes, but what if the user loads both modules or has them both compiled in?
-> Shouldn't there be some protection against that, since both handlers should not
-> be active at the same time.
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
 
-Why not? evdev is just a delivery transport for input events to
-userspace. Even if user wants the kernel to control state of RF
-switches (which I expect most users woudl want) there still could be
-applications interested in knowing that used turned off wireless. And
-if userspace really wishes to control switch all by itself it can
-"claim" it.
+This restores 2.6.20 behavior, fixing the 2.6.21 regression below.
 
-I guess what you are missing is that input event generated by a device
-is pushed through every handler bound to the device so there is no way
-for a "wrong" handler to "steals" an event from "right" handler. They
-all work simultaneously.
+thanks!
 
-> > > personally I would prefer enforcing drivers to call
-> > > allocate()
-> > > register()
-> > > unregister()
-> > > free()
-> > >
-> > > Especially with unregister() doing the same steps as free() (put_device)
-> > > might be somwhat confusing. But might be just me. ;)
-> > >
-> >
-> > I know but for refcounted objects you can't really tell when they will
-> > actually be freed. It depends when their last user drops off.
->
-> Then perhaps rfkill_register could call put_device() when it fails, and free()
-> can be removed entirely. That way it would we prevent some driver
-> to call free() anyway.
->
+-Len
 
-That would make error handling in ->probe() methods a bit unwieldy I
-think - if you are using the standard "goto err_xxx; goto err_yyy;"
-technique then you have to conditionally call rfkill_free(). Hovewer
-if register simply fails and does not free anything and you call
-rfkill_register() last (which you need to do because driver has to be
-almost fully functional to be able to serve toggle_radio calls) you
-can always call rfkill_free() if something fails.
+ps. individual patches are available on linux-acpi@vger.kernel.org
+and a consolidated plain patch is available here:
+ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.21/acpi-release-20070126-2.6.21-rc5.diff.gz
 
--- 
-Dmitry
+ Documentation/kernel-parameters.txt |    2 +-
+ drivers/acpi/tables.c               |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+through these commits:
+
+Len Brown (1):
+      Revert "ACPI: parse 2nd MADT by default"
+
+with this log:
+
+commit 4e381a4f06e3c7b350b55a2636b9d45691780eba
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Mar 30 14:16:10 2007 -0400
+
+    Revert "ACPI: parse 2nd MADT by default"
+    
+    This reverts commit 09fe58356d148ff66901ddf639e725ca1a48a0af.
+    http://bugzilla.kernel.org/show_bug.cgi?id=8283
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
