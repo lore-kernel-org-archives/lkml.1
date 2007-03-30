@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933247AbXC3IMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945949AbXC3IjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933247AbXC3IMk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 04:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933452AbXC3IMj
+	id S1945949AbXC3IjY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 04:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945950AbXC3IjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 04:12:39 -0400
-Received: from lucidpixels.com ([75.144.35.66]:47445 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933354AbXC3IMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 04:12:38 -0400
-Date: Fri, 30 Mar 2007 04:12:37 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Neil Brown <neilb@suse.de>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: Software RAID (non-preempt) server blocking question. (2.6.20.4)
-In-Reply-To: <17932.37976.65001.735686@notabene.brown>
-Message-ID: <Pine.LNX.4.64.0703300412310.18662@p34.internal.lan>
-References: <Pine.LNX.4.64.0703270557360.31853@p34.internal.lan>
- <17931.23488.160031.119117@notabene.brown> <Pine.LNX.4.64.0703290410260.32099@p34.internal.lan>
- <17932.37976.65001.735686@notabene.brown>
+	Fri, 30 Mar 2007 04:39:23 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:6190 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945948AbXC3IjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 04:39:21 -0400
+Date: Fri, 30 Mar 2007 10:39:18 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: Interface for the new fallocate() system call
+Message-ID: <20070330083918.GD8365@osiris.boeblingen.de.ibm.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070330071417.GI355@devserv.devel.redhat.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 30, 2007 at 02:14:17AM -0500, Jakub Jelinek wrote:
+> On Thu, Mar 29, 2007 at 10:10:10AM -0700, Andrew Morton wrote:
+> > > Platform: s390
+> > > --------------
+> > > s390 prefers following layout:
+> > > 
+> > >    int fallocate(int fd, loff_t offset, loff_t len, int mode)
+> > > 
+> > > For details on why and how "int, int, loff_t, loff_t" is a problem on
+> > > s390, please see Heiko's mail on 16th March. Here is the link:
+> > > http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg133595.html
+> > > 
+> > > Platform: ppc, arm
+> > > ------------------
+> > > ppc (32 bit) has a problem with "int, loff_t, loff_t, int" layout,
+> > > since this will result in a pad between fd and offset, making seven
+> > > arguments total - which is not supported by ppc32. It supports only
+> > > 6 arguments. Thus the desired layout by ppc32 is:
+> > > 
+> > >    int fallocate(int fd, int mode, loff_t offset, loff_t len)
+> > > 
+> > > Even ARM prefers above kind of layout. For details please see the
+> > > definition of sys_arm_sync_file_range().
+> > 
+> > This is a clean-looking option.  Can s390 be changed to support seven-arg
+> > syscalls?
+> 
+> Wouldn't
+> int fallocate(loff_t offset, loff_t len, int fd, int mode)
+> work on both s390 and ppc/arm?  glibc will certainly wrap it and
+> reorder the arguments as needed, so there is no need to keep fd first.
 
-
-On Fri, 30 Mar 2007, Neil Brown wrote:
-
-> On Thursday March 29, jpiszcz@lucidpixels.com wrote:
->>
->>>
->>> Did you look at "cat /proc/mdstat" ?? What sort of speed was the check
->>> running at?
->> Around 44MB/s.
->>
->> I do use the following optimization, perhaps a bad idea if I want other
->> processes to 'stay alive'?
->>
->> echo "Setting minimum resync speed to 200MB/s..."
->> echo "This improves the resync speed from 2.1MB/s to 44MB/s"
->> echo 200000 > /sys/block/md0/md/sync_speed_min
->> echo 200000 > /sys/block/md1/md/sync_speed_min
->> echo 200000 > /sys/block/md2/md/sync_speed_min
->> echo 200000 > /sys/block/md3/md/sync_speed_min
->> echo 200000 > /sys/block/md4/md/sync_speed_min
->>
->
-> Yes, well....
->
-> You told it to use up to 200MB/s and the drives are only delivering
-> 44MB/s, so they will be taking nearly all of the available bandwidth.
-> You shouldn't be too surprised if other things suffer.
->
-> NeilBrown
->
-
-Understood, will reduce this, thanks.
-
-Justin.
+That would be fine for s390.
