@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945890AbXC3Cpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932954AbXC3Cq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945890AbXC3Cpb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 22:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945915AbXC3Cpb
+	id S932954AbXC3Cq6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 22:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932966AbXC3Cq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 22:45:31 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:45231 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945890AbXC3Cpa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 22:45:30 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 29 Mar 2007 19:43:04 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-In-Reply-To: <20070330015902.GC19407@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0703291942280.1199@alien.or.mcafeemobile.com>
-References: <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de>
- <17925.18904.820106.145029@gargle.gargle.HOWL> <20070324172959.GB542@elte.hu>
- <20070328064318.GA12508@wotan.suse.de> <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com>
- <20070329013652.GB2390@wotan.suse.de> <20070329071611.GA24176@wotan.suse.de>
- <Pine.LNX.4.64.0703291723140.1199@alien.or.mcafeemobile.com>
- <20070330015902.GC19407@wotan.suse.de>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 Mar 2007 22:46:58 -0400
+Received: from waste.org ([66.93.16.53]:53829 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932954AbXC3Cq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 22:46:57 -0400
+Date: Thu, 29 Mar 2007 21:33:55 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>, akpm@linux-foundation.org, bunk@stusta.de,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Cleanup: i386 separate hardware-defined TSS from Linux additions
+Message-ID: <20070330023355.GU10459@waste.org>
+References: <200703270607.l2R672de009090@shell0.pdx.osdl.net> <200703291219.47276.ak@suse.de> <1175165905.12230.201.camel@localhost.localdomain> <200703291316.56393.ak@suse.de> <1175222195.12230.363.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1175222195.12230.363.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007, Nick Piggin wrote:
-
-> > I slightly modified it to use cycles:
-> > 
-> > http://www.xmailserver.org/qspins.c
+On Fri, Mar 30, 2007 at 12:36:35PM +1000, Rusty Russell wrote:
+> On Thu, 2007-03-29 at 13:16 +0200, Andi Kleen wrote:
+> > Please clean it up properly with two structs.
 > 
-> Slightly more than slightly ;)
+> Not sure about this, now I've done it.  Running it here.
 > 
-> You want to have a delay _outside_ the critical section as well, for
-> multi-thread tests, otherwise the releasing CPU often just retakes
-> the lock (in the unqueued lock case). As I said, most kernel code
-> should _not_ be dropping and retaking locks.
+> If you like it, I can do x86-64 as well.
+> 
+> ==
+> lguest defines its own TSS struct because the "struct tss_struct"
+> contains linux-specific additions.  Andi asked me to split the struct
+> in processor.h.
+> 
+> Unfortunately it makes usage a little awkward.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff -r 7edfac26a523 include/asm-i386/processor.h
+> --- a/include/asm-i386/processor.h	Thu Mar 29 20:02:17 2007 +1000
+> +++ b/include/asm-i386/processor.h	Fri Mar 30 12:22:38 2007 +1000
+> @@ -325,7 +325,8 @@ typedef struct {
+>  
+>  struct thread_struct;
+>  
+> -struct tss_struct {
+> +/* This is the TSS defined by the hardware. */
+> +struct i386_hw_tss {
+>  	unsigned short	back_link,__blh;
+>  	unsigned long	esp0;
+>  	unsigned short	ss0,__ss0h;
+> @@ -349,6 +350,11 @@ struct tss_struct {
+>  	unsigned short	gs, __gsh;
+>  	unsigned short	ldt, __ldth;
+>  	unsigned short	trace, io_bitmap_base;
+> +} __attribute__((packed));
+> +
+> +struct tss_struct {
+> +	struct i386_hw_tss x86_tss;
+> +
+>  	/*
+>  	 * The extra 1 is there because the CPU will access an
+>  	 * additional byte beyond the end of the IO permission
 
-Yeah. ATM it mostly does double-takes.
+This comment needs to stay in the first struct..?
 
-
-
-- Davide
-
-
+-- 
+Mathematics is the supreme nostalgia of our time.
