@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbXC3Bxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXC3B7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753786AbXC3Bxi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 21:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbXC3Bxh
+	id S1752694AbXC3B7K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 21:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXC3B7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 21:53:37 -0400
-Received: from ns1.suse.de ([195.135.220.2]:39314 "EHLO mx1.suse.de"
+	Thu, 29 Mar 2007 21:59:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49794 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751364AbXC3Bxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 21:53:37 -0400
-Date: Fri, 30 Mar 2007 03:53:21 +0200
+	id S1752694AbXC3B7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 21:59:08 -0400
+Date: Fri, 30 Mar 2007 03:59:02 +0200
 From: Nick Piggin <npiggin@suse.de>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ravikiran G Thirumalai <kiran@scalex86.org>, Ingo Molnar <mingo@elte.hu>,
-       Nikita Danilov <nikita@clusterfs.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] queued spinlocks (i386)
-Message-ID: <20070330015321.GB19407@wotan.suse.de>
-References: <20070325155407.GA497@tv-sign.ru> <20070328070459.GC12508@wotan.suse.de> <20070329184213.GA83@tv-sign.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ravikiran G Thirumalai <kiran@scalex86.org>
+Subject: Re: [rfc][patch] queued spinlocks (i386)
+Message-ID: <20070330015902.GC19407@wotan.suse.de>
+References: <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL> <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de> <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com> <20070329013652.GB2390@wotan.suse.de> <20070329071611.GA24176@wotan.suse.de> <Pine.LNX.4.64.0703291723140.1199@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070329184213.GA83@tv-sign.ru>
+In-Reply-To: <Pine.LNX.4.64.0703291723140.1199@alien.or.mcafeemobile.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 10:42:13PM +0400, Oleg Nesterov wrote:
-> On 03/28, Nick Piggin wrote:
-> >
-> > Well with my queued spinlocks, all that lockbreak stuff can just come out
-> > of the spin_lock, break_lock out of the spinlock structure, and
-> > need_lockbreak just becomes (lock->qhead - lock->qtail > 1).
+On Thu, Mar 29, 2007 at 05:27:24PM -0700, Davide Libenzi wrote:
+> On Thu, 29 Mar 2007, Nick Piggin wrote:
 > 
-> Q: queued spinlocks are not CONFIG_PREEMPT friendly,
-
-I consider the re-enabling of preemption and interrupts to be a hack
-anyway. Because if you already have interrupts or preemption disabled
-at entry time, they will remain disabled.
-
-IMO the real solution is to ensure spinlock critical sections don't get
-too large, and perhaps use fair spinlocks to prevent starvation.
-
+> > On Thu, Mar 29, 2007 at 03:36:52AM +0200, Nick Piggin wrote:
+> > > In most cases, no. For the uncontended case they should be about the
+> > > same. They have the same spinning behaviour. However there is a little
+> > > window where they might be a bit slower I think... actually perhaps I'm
+> > > wrong!
+> > > 
+> > > Currently if you have 4 CPUs spinning and the lock is released, all 4
+> > > CPU cachelines will be invalidated, then they will be loaded again, and
+> > > found to be 0, so they all try to atomic_dec_return the counter, each
+> > > one invalidating others' cachelines. 1 gets through.
+> > > 
+> > > With my queued locks, all 4 cachelines are invalidated and loaded, but
+> > > only one will be allowed to proceed, and there are 0 atomic operations
+> > > or stores of any kind.
+> > > 
+> > > So I take that back: our current spinlocks have a worse thundering herd
+> > > behaviour under contention than my queued ones. So I'll definitely
+> > > push the patch through.
+> > 
+> > OK, it isn't a big difference, but a user-space test is showing slightly
+> > (~2%) improvement in the contended case on a 16 core Opteron.
+> > 
+> > There is a case where the present spinlocks are almost twice as fast on
+> > this machine (in terms of aggregate throughput), and that is when a lock
+> > is taken right after it is released. This is because the same CPU will
+> > often be able to retake the lock without transitioning the cache. This is
+> > going to be a rare case for us, and would suggest suboptimal code anyway 
+> > (ie. the lock should just be kept rather than dropped and retaken).
+> > 
+> > Actually, one situation where it comes up is when we drop and retake a
+> > lock that needs_lockbreak. Of course, the queued lock behaviour is
+> > desired in that case anyway.
+> > 
+> > However single-thread performance is presently a bit down. OTOH, the
+> > assembly generated by gcc looks like it could be improved upon (even by
+> > me :P).
+> > 
+> > This is what I've got so far. Should work for i386 and x86_64. Any
+> > enhancements or results from other CPUs would be interesting.
 > 
-> > +       asm volatile(LOCK_PREFIX "xaddw %0, %1\n\t"
-> > +                    : "+r" (pos), "+m" (lock->qhead) : : "memory");
-> > +       while (unlikely(pos != lock->qtail))
-> > +               cpu_relax();
+> I slightly modified it to use cycles:
 > 
-> once we incremented lock->qhead, we have no optiion but should spin with
-> preemption disabled until pos == lock->qtail, yes?
+> http://www.xmailserver.org/qspins.c
 
-Correct. For the purposes of deadlock behaviour, we have effectively
-taken the lock at that point.
+Slightly more than slightly ;)
+
+You want to have a delay _outside_ the critical section as well, for
+multi-thread tests, otherwise the releasing CPU often just retakes
+the lock (in the unqueued lock case). As I said, most kernel code
+should _not_ be dropping and retaking locks.
+
+> Here (Dual Opteron 252) queued locks (ticklocks) are about 10% slower in 
+> both cases. This is really a microbench, and assembly matter a lot. I did 
+> not have time to look at the generated one yet, but optimizing branches 
+> can help in those cases.
+
