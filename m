@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932900AbXC3XDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbXC3XGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932900AbXC3XDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 19:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932893AbXC3XDV
+	id S932975AbXC3XGM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 19:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933004AbXC3XGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 19:03:21 -0400
-Received: from gretel.pobox.com ([208.58.1.197]:42398 "EHLO gretel.pobox.com"
+	Fri, 30 Mar 2007 19:06:12 -0400
+Received: from mga03.intel.com ([143.182.124.21]:28529 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932900AbXC3XDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 19:03:20 -0400
-Message-ID: <460D8435.3060503@pobox.com>
-Date: Fri, 30 Mar 2007 17:42:13 -0400
-From: Mark Lord <mlord@pobox.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	id S932975AbXC3XGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 19:06:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,355,1170662400"; 
+   d="scan'208"; a="205856242:sNHT148064868"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [PATCH 2.6.21-rc5 2/3] msi: fix ARM compile
+To: greg@kroah.com
+Cc: linux@arm.linux.org.uk, linux-pci@atrey.karlin.mff.cuni.cz,
+       ebiederm@xmission.com, linux-kernel@vger.kernel.org
+Date: Fri, 30 Mar 2007 16:05:55 -0700
+Message-ID: <20070330230555.14060.62139.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20070330220243.14060.14389.stgit@dwillia2-linux.ch.intel.com>
+References: <20070330220243.14060.14389.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [patch 34/37] libata bugfix: HDIO_DRIVE_TASK
-References: <20070330205938.984247529@mini.kroah.org> <20070330210659.GK29450@kroah.com>
-In-Reply-To: <20070330210659.GK29450@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> -stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> From: Mark Lord <liml@rtr.ca>
-> 
-> libata bugfix: HDIO_DRIVE_TASK
-> 
-> I was trying to use HDIO_DRIVE_TASK for something today,
-> and discovered that the libata implementation does not copy
-> over the upper four LBA bits from args[6].
-> 
-> This is serious, as any tools using this ioctl would have their
-> commands applied to the wrong sectors on the drive, possibly resulting
-> in disk corruption.
-> 
-> Ideally, newer apps should use SG_IO/ATA_16 directly,
-> avoiding this bug.  But with libata poised to displace drivers/ide,
-> better compatibility here is a must.
-> 
-> This patch fixes libata to use the upper four LBA bits passed
-> in from the ioctl.
-> 
-> The original drivers/ide implementation copies over all bits
-> except for the master/slave select bit.  With this patch,
-> libata will copy only the four high-order LBA bits,
-> just in case there are assumptions elsewhere in libata (?).
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> Cc: Chuck Ebbert <cebbert@redhat.com>
-> Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-..
+In file included from drivers/pci/msi.c:22:
+include/asm/smp.h:17:26: asm/arch/smp.h: No such file or directory
+include/asm/smp.h:20:3: #error "<asm-arm/smp.h> included in non-SMP build"
+include/asm/smp.h:23:1: warning: "raw_smp_processor_id" redefined
+In file included from include/linux/sched.h:65,
+                 from include/linux/mm.h:4,
+                 from drivers/pci/msi.c:10:
+include/linux/smp.h:85:1: warning: this is the location of the previous
+definition
 
-Mmmm.. I've just noticed another bit we should  be preserving there,
-both for *stable* and current mainline.
+Tested on powerpc, i386, and x86_64.
 
-Instead of:
-
-> +	scsi_cmd[13] = args[6] & 0x0f;
-
-We should be doing:
-
-> +	scsi_cmd[13] = args[6] & 0x4f;
-
-As-is, the patch still helps, but it is not as useful as it could be.
-Here's the fixed version.  I'm also sending out a 2.6.21 patch via Jeff.
-
-Signed-off-by: Mark Lord <mlord@pobox.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Acked-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/ata/libata-scsi.c |    1 +
- 1 file changed, 1 insertion(+)
 
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -295,6 +295,7 @@ int ata_task_ioctl(struct scsi_device *s
- 	scsi_cmd[8]  = args[3];
- 	scsi_cmd[10] = args[4];
- 	scsi_cmd[12] = args[5];
-+	scsi_cmd[13] = args[6] & 0x4f;
- 	scsi_cmd[14] = args[0];
+ drivers/pci/msi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index ad33e01..7a7152b 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -16,10 +16,10 @@
+ #include <linux/pci.h>
+ #include <linux/proc_fs.h>
+ #include <linux/msi.h>
++#include <linux/smp.h>
  
- 	/* Good values for timeout and retries?  Values below
-
--- 
-Mark Lord
-Real-Time Remedies Inc.
-mlord@pobox.com 
+ #include <asm/errno.h>
+ #include <asm/io.h>
+-#include <asm/smp.h>
+ 
+ #include "pci.h"
+ #include "msi.h"
