@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbXC3TrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbXC3Tr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752350AbXC3TrF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 15:47:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXC3TrF
+	id S1752652AbXC3Tr5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 15:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbXC3Tr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 15:47:05 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38820 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752350AbXC3TrC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 15:47:02 -0400
-Date: Fri, 30 Mar 2007 21:47:01 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jikos@jikos.cz>,
-       Lee Revell <rlrevell@joe-job.com>,
-       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       andrea@suse.de, viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: fs/block_dev.c:953: warning: 'found' might be used uninitialized in this function
-Message-ID: <20070330194701.GL14134@stusta.de>
-References: <200703281847.05356.toralf.foerster@gmx.de> <75b66ecd0703280956i522cf6cbyc4c9ef8b1666ec15@mail.gmail.com> <Pine.LNX.4.64.0703281909240.29565@twin.jikos.cz> <20070328131454.cdb06bc3.akpm@linux-foundation.org> <46C1CD24-F48E-4EB9-B6A5-E1B3C303C62F@mac.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46C1CD24-F48E-4EB9-B6A5-E1B3C303C62F@mac.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 30 Mar 2007 15:47:57 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:50258 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752652AbXC3Tr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 15:47:56 -0400
+Date: Fri, 30 Mar 2007 12:47:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Mitch Williams <mitch.a.williams@intel.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH 2.6.21-rc5] Flush MSI-X table writes (rev 3)
+Message-Id: <20070330124747.f20c9eb0.akpm@linux-foundation.org>
+In-Reply-To: <m1irciime5.fsf@ebiederm.dsl.xmission.com>
+References: <1175280848.17652.5.camel@strongmad>
+	<m1irciime5.fsf@ebiederm.dsl.xmission.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 11:16:39PM -0400, Kyle Moffett wrote:
-> On Mar 28, 2007, at 16:14:54, Andrew Morton wrote:
-> >On Wed, 28 Mar 2007 19:23:32 +0200 (CEST)
-> >Jiri Kosina <jikos@jikos.cz> wrote:
-> >
-> >>blockdev: bd_claim_by_kobject() could check value of unititalized  
-> >>pointer
-> >>
-> >>Fixes this warning:
-> >>
-> >>fs/block_dev.c: In function `bd_claim_by_kobject':
-> >>fs/block_dev.c:953: warning: 'found' might be used uninitialized  
-> >>in this function
-> >>
-> >>struct bd_holder *found is initialized only when bd_claim()  
-> >>returns zero. If it returns nonzero, ptr stays uninitialized.  
-> >>Later the value of the pointer is checked.
-> >
-> >that generates extra code and people get upset.
-> >
-> >One approach which we could ue in here is
-> >
-> >	struct bd_holder *found = found;  /* Suppress bogus gcc warning */
+On Fri, 30 Mar 2007 13:04:02 -0600
+ebiederm@xmission.com (Eric W. Biederman) wrote:
+
+> Mitch Williams <mitch.a.williams@intel.com> writes:
 > 
-> Well, that would be correct except the warning is an actual kernel  
-> bug.  Read Jiri's message (which you also quoted):
-> >struct bd_holder *found is initialized only when bd_claim() returns  
-> >zero. If it returns nonzero, ptr stays uninitialized. Later the  
-> >value of the pointer is checked.
+> > This patch fixes a kernel bug which is triggered when using the
+> > irqbalance daemon with MSI-X hardware.
+> >
+> > Because both MSI-X interrupt messages and MSI-X table writes are posted,
+> > it's possible for them to cross while in-flight.  This results in
+> > interrupts being received long after the kernel thinks they're disabled,
+> > and in interrupts being sent to stale vectors after rebalancing.
+> >
+> > This patch performs a read flush after writes to the MSI-X table for
+> > mask and unmask operations.  Since the SMP affinity is set while
+> > the interrupt is masked, and since it's unmasked immediately after,
+> > no additional flushes are required in the various affinity setting
+> > routines.
+> >
+> > This patch has been validated with (unreleased) network hardware which
+> > uses MSI-X.
+> >
+> > Revised with input from Eric Biederman.
 > 
-> So in this case it has to be initialized to NULL or there's a  
-> potential BUG() lurking.
+> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-
-No, the code is correct and it's impossible that the variable ever gets 
-read uninitialized.
-
-And BTW, i386 gcc 4.1 doesn't give me a warning for this.
-Toralf, which gcc version and architecture did you see this with?
-
-
-> Cheers,
-> Kyle Moffett
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Did we end up deciding whether this is (needed*safe) enough for 2.6.21?
