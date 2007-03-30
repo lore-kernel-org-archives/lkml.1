@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbXC3U43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbXC3VDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbXC3U43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 16:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbXC3U43
+	id S1753832AbXC3VDu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbXC3VDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 16:56:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53791 "EHLO mx1.redhat.com"
+	Fri, 30 Mar 2007 17:03:50 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:48810 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753629AbXC3U42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 16:56:28 -0400
-Message-ID: <460D796F.2020309@redhat.com>
-Date: Fri, 30 Mar 2007 16:56:15 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1753832AbXC3VDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 17:03:49 -0400
+Date: Fri, 30 Mar 2007 17:03:44 -0400
+To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Odd log message associated with NFS
+Message-ID: <20070330210344.GF15224@fieldses.org>
+References: <2fe399760703271140l703c2791oa84e9e1832487dcb@mail.gmail.com> <20070327193909.GA585@ds20.borg.net> <20070328165925.GB21221@fieldses.org> <20070328190536.GB585@ds20.borg.net> <20070328232348.GJ21221@fieldses.org> <20070330205145.GA1349@Marvin.DL8BCU.ampr.org>
 MIME-Version: 1.0
-To: "Williams, Mitch A" <mitch.a.williams@intel.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH 2.6.21-rc5] Flush MSI-X table writes (rev 3)
-References: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com>
-In-Reply-To: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070330205145.GA1349@Marvin.DL8BCU.ampr.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Williams, Mitch A wrote:
-> 
-> If Eric is seeing bug reports related to "no vector for IRQ" in the
-> wild, then I have to change my stance and agree that this should be
-> pushed to -stable.  Every one of those messages indicates that we
-> hit the race condition.
-> 
+On Fri, Mar 30, 2007 at 08:51:45PM +0000, Thorsten Kranzkowski wrote:
+> The source address obviously isn't from my local net, and the clear
+> text speaks for itself.
 
-Your previous patch is in a Fedora test kernel. Hopefully I will
-have some feedback soon.
+Woah, yeah, neato.  OK, I guess that makes me a lot more willing to
+believe any "impossible" error in linux/net/sunrpc/svc.c:svc_process()
+is due to random garbage on the network.
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=225399
+I'd definitely like more people to be able to run their nfs server
+outside any firewall, so that probably means we should demote these
+printk's to dprintk's some day.
+
+> looks like an attack to some Windows service with phishing content.
+> luckily this machine is neither windows based nor intel compatible :)
+
+I'd love to know what the heck it's actually trying to do.
+
+Thanks for the followup!
+
+--b.
