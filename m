@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751664AbXC3QLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbXC3QNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751664AbXC3QLD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 12:11:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbXC3QLD
+	id S1753515AbXC3QNT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 12:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbXC3QNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 12:11:03 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39038 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751664AbXC3QLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 12:11:01 -0400
-Date: Fri, 30 Mar 2007 09:10:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-Cc: David Howells <dhowells@redhat.com>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>, Robin Holt <holt@sgi.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>, Hideo AOKI <haoki@redhat.com>
-Subject: Re: [PATCH 1/4] coredump: add an interface to control the core dump
- routine
-Message-Id: <20070330091028.cf884d4c.akpm@linux-foundation.org>
-In-Reply-To: <460CE683.700@hitachi.com>
-References: <20070329104936.GC5138@ucw.cz>
-	<45E7AAFA.4070402@hitachi.com>
-	<45E7AC6F.8080704@hitachi.com>
-	<20070302093419.GA2001@elf.ucw.cz>
-	<4607C47B.2030909@hitachi.com>
-	<11911.1175195819@redhat.com>
-	<20070329141715.71a6abae.akpm@linux-foundation.org>
-	<460CE683.700@hitachi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 Mar 2007 12:13:19 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:43747 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbXC3QNS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 12:13:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pa1CyuEhXBHKWLB9tV3q/kpSBzlgsEQ89dGLjeFVsJ5PAl3iSZ5Li/svXj9cjfawXYyvPbucQ6WrfReEmqukri46LvphZr3Ud0XqEXTq9o9bB8hPOfd2xY2KbOcUBmZdqoUr9jKreI37yvMiHvxdKUdzFbRlwTmqTtP7jeNFMKU=
+Message-ID: <d120d5000703300913n6c4e7d54jc6054daffe81a1f@mail.gmail.com>
+Date: Fri, 30 Mar 2007 12:13:17 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Li Yu" <raise.sail@gmail.com>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+Cc: "Jiri Kosina" <jkosina@suse.cz>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, "Marcel Holtmann" <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <460CA201.7030006@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703051532096508636@gmail.com>
+	 <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
+	 <460C7EB4.9080009@gmail.com> <200703300033.22059.dtor@insightbb.com>
+	 <460CA201.7030006@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007 19:29:23 +0900 "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com> wrote:
+On 3/30/07, Li Yu <raise.sail@gmail.com> wrote:
+> I think I can understand your words. but I need confirm:
+>
+> Before specific driver register this device, the
+> fundamental/standard/common(select one by your mind:) driver had already
+> attach on it likely. At this case, we should detach this hid_device from
+> its working driver, let this hid_device attach with our new specific
+> driver. then new driver will handle all input event later, so the your
+> words is same with the third choice in fact, is it right? if so, the
+> actual behavior is same with former HID simple interface.
+>
 
-> > core_pattern:
-> >   ...
-> > . If the first character of the pattern is a '|', the kernel will treat
-> >   the rest of the pattern as a command to run.  The core dump will be
-> >   written to the standard input of that program instead of to a file.
-> 
-> I think dumping core over a pipe is almost good.  Filtering and writing
-> out a core by a separete userspace program can be reliable because it is
-> independent of the failed user process.  But I have one concern; data
-> transfer over a pipe is slow.  It took 7 seconds to transfer 2GB
-> anonymous shared memory (detailed at the last of this mail).
-> 
-> In the case of dumping hundreds processes which share giga bytes memory,
-> it will take a few minutes even if the huge shared memory is not written
-> to a disk.  If a user wants to restart the failed application as soon
-> as possible to keep downtime to a minimum, this extra transfer time will
-> be a barrier.  So I think in-kernel filtering is still needed.
+I was thinking that as we write customized drivers we would add them
+(manually or automatically) to the HID blacklist so that generic
+driver would not bind to such devices. Then, as your driver loads it
+would parse reports and construct input device structure in the same
+fashion that it processes the reports - if it is an "interesting"
+report/usage it will handle setup itself; otherwise just call generic
+setup function shared with the generic HID driver. This way there is
+only one input device and there is no storm of add/remove events as we
+loking for the proper driver to bind to the device.
 
-Yes, I agree - I don't think we presently have a way of avoiding having
-to send all of that uninteresting data down the pipe.
+Does this make sense?
 
-One may, however, be able to play tricks with /proc/<pid>/mem from within
-the corefile-generating program: select the vmas which are to be dumped,
-read only those ones.  I don't know how practical that would be.
+This would not quite work for (potentially out of tree) HID drivers
+brought in after compiling generic HID driver but that should be a
+very rate occurance and we still can manually bind such drivers via
+sysfs bind/unbind and new_id manipulations.
+
+-- 
+Dmitry
