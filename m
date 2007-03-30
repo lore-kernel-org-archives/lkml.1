@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXC3B7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbXC3CGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbXC3B7K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 21:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXC3B7J
+	id S1753801AbXC3CGr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 22:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbXC3CGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 21:59:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49794 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752694AbXC3B7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 21:59:08 -0400
-Date: Fri, 30 Mar 2007 03:59:02 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-Message-ID: <20070330015902.GC19407@wotan.suse.de>
-References: <20070323100418.GA30740@elte.hu> <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL> <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de> <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com> <20070329013652.GB2390@wotan.suse.de> <20070329071611.GA24176@wotan.suse.de> <Pine.LNX.4.64.0703291723140.1199@alien.or.mcafeemobile.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 29 Mar 2007 22:06:47 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:24060 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753801AbXC3CGq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 22:06:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=VlKCqw52S6qc6W2I85QYj23IM9b/MbWuolaMjCe0/eo6BqbN9rsq/bXOnKe5/xER1tL2QyvHItrvEM/AW27T6tvImrwRaxoKTu+y0MxyvoefDOZDZLDSNmmmEJEA+l10TAtsjpmhcz9Wdk37vVLrHsCJVvOCXec+We1MUmRRvs4=
+Message-ID: <75b66ecd0703291906q265f9cc7g486cf65484ba8393@mail.gmail.com>
+Date: Thu, 29 Mar 2007 22:06:41 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: [patch] queued spinlocks (i386)
+Cc: "Oleg Nesterov" <oleg@tv-sign.ru>, "Nick Piggin" <npiggin@suse.de>,
+       "Ravikiran G Thirumalai" <kiran@scalex86.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Nikita Danilov" <nikita@clusterfs.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0703291215440.1199@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703291723140.1199@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.9i
+References: <20070325155407.GA497@tv-sign.ru>
+	 <20070328070459.GC12508@wotan.suse.de>
+	 <20070329184213.GA83@tv-sign.ru>
+	 <Pine.LNX.4.64.0703291215440.1199@alien.or.mcafeemobile.com>
+X-Google-Sender-Auth: 2674c48ccdb91eec
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 05:27:24PM -0700, Davide Libenzi wrote:
-> On Thu, 29 Mar 2007, Nick Piggin wrote:
-> 
-> > On Thu, Mar 29, 2007 at 03:36:52AM +0200, Nick Piggin wrote:
-> > > In most cases, no. For the uncontended case they should be about the
-> > > same. They have the same spinning behaviour. However there is a little
-> > > window where they might be a bit slower I think... actually perhaps I'm
-> > > wrong!
-> > > 
-> > > Currently if you have 4 CPUs spinning and the lock is released, all 4
-> > > CPU cachelines will be invalidated, then they will be loaded again, and
-> > > found to be 0, so they all try to atomic_dec_return the counter, each
-> > > one invalidating others' cachelines. 1 gets through.
-> > > 
-> > > With my queued locks, all 4 cachelines are invalidated and loaded, but
-> > > only one will be allowed to proceed, and there are 0 atomic operations
-> > > or stores of any kind.
-> > > 
-> > > So I take that back: our current spinlocks have a worse thundering herd
-> > > behaviour under contention than my queued ones. So I'll definitely
-> > > push the patch through.
-> > 
-> > OK, it isn't a big difference, but a user-space test is showing slightly
-> > (~2%) improvement in the contended case on a 16 core Opteron.
-> > 
-> > There is a case where the present spinlocks are almost twice as fast on
-> > this machine (in terms of aggregate throughput), and that is when a lock
-> > is taken right after it is released. This is because the same CPU will
-> > often be able to retake the lock without transitioning the cache. This is
-> > going to be a rare case for us, and would suggest suboptimal code anyway 
-> > (ie. the lock should just be kept rather than dropped and retaken).
-> > 
-> > Actually, one situation where it comes up is when we drop and retake a
-> > lock that needs_lockbreak. Of course, the queued lock behaviour is
-> > desired in that case anyway.
-> > 
-> > However single-thread performance is presently a bit down. OTOH, the
-> > assembly generated by gcc looks like it could be improved upon (even by
-> > me :P).
-> > 
-> > This is what I've got so far. Should work for i386 and x86_64. Any
-> > enhancements or results from other CPUs would be interesting.
-> 
-> I slightly modified it to use cycles:
-> 
-> http://www.xmailserver.org/qspins.c
+On 3/29/07, Davide Libenzi <davidel@xmailserver.org> wrote:
+> On Thu, 29 Mar 2007, Oleg Nesterov wrote:
+>
+> > On 03/28, Nick Piggin wrote:
+> > >
+> > > Well with my queued spinlocks, all that lockbreak stuff can just come out
+> > > of the spin_lock, break_lock out of the spinlock structure, and
+> > > need_lockbreak just becomes (lock->qhead - lock->qtail > 1).
+> >
+> > Q: queued spinlocks are not CONFIG_PREEMPT friendly,
+>
+> Why? Is CONFIG_PREEMPT friendly to anyone? :)
 
-Slightly more than slightly ;)
+Until someone fixes all the places in the kernel where scheduling can
+be held off for tens of milliseconds, CONFIG_PREEMPT will be an
+absolute requirement for many applications like audio and gaming.
 
-You want to have a delay _outside_ the critical section as well, for
-multi-thread tests, otherwise the releasing CPU often just retakes
-the lock (in the unqueued lock case). As I said, most kernel code
-should _not_ be dropping and retaking locks.
+Many of these were fixed a while back during early -rt development but
+at some point the process stalled as the remaining cases were too hard
+to fix...
 
-> Here (Dual Opteron 252) queued locks (ticklocks) are about 10% slower in 
-> both cases. This is really a microbench, and assembly matter a lot. I did 
-> not have time to look at the generated one yet, but optimizing branches 
-> can help in those cases.
-
+Lee
