@@ -1,85 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbXC3T3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751867AbXC3Tbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752057AbXC3T3G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 15:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXC3T3F
+	id S1751867AbXC3Tbi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 15:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXC3Tbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 15:29:05 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:13368 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbXC3T3B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 15:29:01 -0400
-Date: Fri, 30 Mar 2007 21:31:01 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: gregkh@suse.de, hugh@veritas.com, dmitry.torokhov@gmail.com,
-       oneukum@suse.de, maneesh@in.ibm.com, rpurdie@rpsys.net,
-       James.Bottomley@SteelEye.com, Jeff Garzik <jgarzik@pobox.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       SCSI Mailing List <linux-scsi@vger.kernel.org>
-Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
-Message-ID: <20070330213101.7aa7babf@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <460D27E3.2050602@gmail.com>
-References: <460CDBA6.5030608@gmail.com>
-	<20070330151926.18fc12a0@gondolin.boeblingen.de.ibm.com>
-	<460D0E78.3040200@gmail.com>
-	<20070330154042.4c7deb72@gondolin.boeblingen.de.ibm.com>
-	<460D178F.4000500@gmail.com>
-	<20070330165251.7beffc7c@gondolin.boeblingen.de.ibm.com>
-	<460D27E3.2050602@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 Mar 2007 15:31:38 -0400
+Received: from mx2.suse.de ([195.135.220.15]:44850 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751867AbXC3Tbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 15:31:36 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Fw: Re: 2.6.21-rc5-mm3
+Date: Fri, 30 Mar 2007 21:31:23 +0200
+User-Agent: KMail/1.9.5
+Cc: Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+References: <20070330103958.16b738aa.akpm@linux-foundation.org>
+In-Reply-To: <20070330103958.16b738aa.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703302131.23469.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Mar 2007 00:08:19 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
-
-> (3) make sure all existing kobjects are released by module exit function.
-> 
-> For example, let's say there is a hypothetical disk device /dev/dk0
-> driven by a hypothetical driver mydrv.  /dev/dk0 is represented like the
-> following in the sysfs tree.
-> 
-> /sys/devices/pci0000:00/0000:00:1f.0/dk0/{myknob0,myknob1}
-> 
-> Owner of both attrs myknob0 and myknob1 is mydrv and opening either
-> increases the reference counts of dk0 and mydrv and closing does the
-> opposite.
-> 
-> * When there is no opener of either knob and the /dev/dk0 isn't used by
-> anyone.  Reference count of dk0 is 1, mydrv 0.
-
-Hm, but as long as dk0 is registered, it can be looked up and someone
-could get a reference on it.
 
 > 
-> * User issues rmmod mydrv.  As mydrv's reference count is zero, unload
-> proceeds and mydrv's exit function is called.
-> 
-> * mydrv's exit function looks like the following.
-> 
->   mydrv_exit()
->   {
-> 	sysfs_remove_file(dk0, myknob0);
-> 	sysfs_remove_file(dk1, myknob1);
-> 	device_del(dk0);
-> 	deinit controller;
-> 	release all resources;
->   }
-> 
-> The device_del(dk0) drops dk0's reference count to zero and its
-> ->release is invoked immediately.
+> BUG: NMI Watchdog detected LOCKUP on CPU0, eip c014ce9c, registers:
 
-And here is the problem if someone else still has a reference. The
-module will be unloaded, but ->release will not be called until the
-"someone else" gives up the reference...
+I suspect it is just because his console is too slow and then unwinding
+took too long and it happened to hit the unwinder. 
+
+You did use a slow console, right?
+
+I suppose it just needs a strategic touch_nmi_watchdog. Will add that.
+
+> Modules linked in: ide_cd cdrom rtc unix
+> CPU:    0
+> EIP:    0060:[<c014ce9c>]    Not tainted VLI
+> EFLAGS: 00000093   (2.6.21-rc5-mm3 #10)
+> EIP is at read_pointer+0x49/0x2d8
+> eax: c7a8dd04   ebx: 00000000   ecx: 00000000   edx: c043d19c
+> esi: c043d184   edi: c043d19c   ebp: c7a8dbf4   esp: c7a8dbbc
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process udevd (pid: 864, ti=c7a8c000 task=c97cd4d0 task.ti=c7a8c000)
+> Stack: 0000000b c7a8dc70 c7a8dbf4 c014d6d0 c7a8dd04 c043e454 c7a8dbf4 c011fdd1 
+>        c043e404 c043e454 c043d190 0005cd94 c043d184 c7a8dd04 c7a8dd14 c014dd3a 
+>        00000000 00000000 00000000 00000000 c7a8df44 c7a8dd74 c741eefb 00000008 
+> Call Trace:
+>  [<c014dd3a>] unwind+0x414/0xfa2
+>  [<c010510d>] dump_trace_unwind+0xb4/0xe5
+>  [<c014ce4d>] unwind_init_running+0x25/0x2b
+>  [<c01051a1>] dump_trace+0x63/0x1eb
+>  [<c010ad39>] save_stack_trace+0x23/0x42
+>  [<c01393c9>] update_cpu_base_expires_next+0x56/0x5a
+>  [<c013a475>] hrtimer_interrupt+0x17c/0x1b8
+>  [<c0115e8e>] smp_apic_timer_interrupt+0x72/0x85
+>  [<c0104bef>] apic_timer_interrupt+0x33/0x38
+>  [<c014320c>] lock_release+0x1d2/0x1da
+>  [<c013a7ef>] up_read+0x19/0x2e
+>  [<c011b800>] do_page_fault+0x28f/0x55b
+>  [<c034d191>] error_code+0x79/0x80
+>  [<c020c23e>] __put_user_4+0x12/0x18
+> DWARF2 unwinder stuck at __put_user_4+0x12/0x18
+> Leftover inexact backtrace:
+>  [<c01040d6>] ret_from_fork+0x6/0x1c
+
+Hmpf. I saw it once in child_rip here too. Then I wanted to reproduce it to report
+properly and couldn't again. I had a few other backtraces that were all non stuck
+with child_rip then on essentially the same kernel. Something weird is going on.
+
+>  [<c013a475>] hrtimer_interrupt+0x17c/0x1b8
+>  [<c0115e8e>] smp_apic_timer_interrupt+0x72/0x85
+>  [<c0104bef>] apic_timer_interrupt+0x33/0x38
+>  [<c020c184>] __get_user_4+0x14/0x17
+> DWARF2 unwinder stuck at __get_user_4+0x14/0x17
+> Leftover inexact backtrace:
+
+Now that is weird. Never seen before. Jan, any ideas?
+
+What is your gcc/compiler, Michal?
+
+-Andi
+
+
+Were there any strange binutils in use, Michal?
+
+>  [<c018b42f>] do_execve+0xdd/0x210
+>  [<c0102497>] sys_execve+0x3f/0x62
+>  [<c01041c2>] sysenter_past_esp+0x5f/0x99
