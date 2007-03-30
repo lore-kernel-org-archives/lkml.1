@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbXC3VFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbXC3VGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752395AbXC3VFq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbXC3VFq
+	id S1753952AbXC3VGH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXC3VGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:05:46 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42637 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752395AbXC3VFp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:05:45 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Williams, Mitch A" <mitch.a.williams@intel.com>
-Cc: "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>, <linux-kernel@vger.kernel.org>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH 2.6.21-rc5] Flush MSI-X table writes (rev 3)
-References: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com>
-Date: Fri, 30 Mar 2007 15:05:07 -0600
-In-Reply-To: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com>
-	(Mitch A. Williams's message of "Fri, 30 Mar 2007 13:49:20 -0700")
-Message-ID: <m1y7leh27w.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 30 Mar 2007 17:06:06 -0400
+Received: from mail.chilan.com ([82.160.212.9]:58583 "EHLO mail.chilan.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753952AbXC3VGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 17:06:04 -0400
+From: "Grzegorz Chwesewicz" <grzegorz.chwesewicz@chilan.com>
+To: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, Len Brown <lenb@kernel.org>,
+       "Morrow, William" <William.Morrow@amd.com>,
+       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
+Date: Fri, 30 Mar 2007 23:06:02 +0200
+Message-Id: <20070330210534.M37380@chilan.com>
+In-Reply-To: <200703300005.41800.ak@suse.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703292249.37979.ak@suse.de> <Pine.LNX.4.64.0703291410480.6730@woody.linux-foundation.org> <200703300005.41800.ak@suse.de>
+X-Mailer: OpenWebMail 2.52 20061019
+X-OriginatingIP: 82.160.213.5 (ceho)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset=iso-8859-2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Williams, Mitch A" <mitch.a.williams@intel.com> writes:
+On Fri, 30 Mar 2007 00:05:39 +0200, Andi Kleen wrote
+> On Thursday 29 March 2007 23:16, Linus Torvalds wrote:
+> > 
+> > On Thu, 29 Mar 2007, Andi Kleen wrote:
+> > > 
+> > > Here's a patch. I don't have a system with C1E, so i only tested that
+> > > the apic timer still works on a older AMD box.
+> > 
+> > I think this looks better than what we have now, but it would look even 
+> > better if the core CPUID stuff was in arch/i386/kernel/cpu/amd.c, and we 
+> > simply had X86_FEATURE_BROKEN_C1_LAPIC etc..
+> > 
+> > And then the apic.c code would just check
+> > 
+> > 	if (boot_cpu_has(X86_FEATURE_BROKEN_C1_LAPIC))
+> > 		return -1;
+> > 
+> > or similar.
+> 
+> Ok fair point. Here's an updated patch.
 
-> Agreed, this is a subtle bug, and was a real hairball to track down.
-> Even so, I'm surprised that nobody else has dug into this, since it
-> should affect anybody running MSI-X.  I originally thought I was seeing
-> a hardware bug, which is why I dug more deeply into the issue.
->
-> If Eric is seeing bug reports related to "no vector for IRQ" in the
-> wild, then I have to change my stance and agree that this should be
-> pushed to -stable.  Every one of those messages indicates that we
-> hit the race condition.
+This patch also works. If You want bootlog or output of /proc/interrupts I can
+post it.
 
-There is a non MSI-X cause as well with the ioapics that I believe I have
-now worked around.  It was a lot harder because ioapics don't obey the
-pci ordering rules.  Although the primary culprit was receiving a second
-instance of the an irq before we had acknowledged the first instance.
-
-I had just about concluded that there was likely a second cause for
-the "no vector for IRQ" message but I had not been able to confirm
-that until I saw the first version of this patch.
-
-In general the rule for -stable is that a fix has to go to -linus
-first.  It makes it simple to see if the normal QA has been done
-on the patch before we push it towards stable.  So this patch needs to
-hit 2.6.21 first.
-
-Eric
+--
+Greetings - CeHo - Grzegorz Chwesewicz
