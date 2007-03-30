@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbXC3VKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXC3VXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbXC3VKV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXC3VJs
+	id S1754048AbXC3VXi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbXC3VX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:09:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58215 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753971AbXC3VJl (ORCPT
+	Fri, 30 Mar 2007 17:23:28 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:54337 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754037AbXC3VXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:09:41 -0400
-Date: Fri, 30 Mar 2007 14:04:12 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, JC.LAFOUCRIERE@CEA.FR,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Jeff Dike <jdike@linux.intel.com>
-Subject: [patch 06/37] UML - Fix static linking
-Message-ID: <20070330210412.GH29450@kroah.com>
-References: <20070330205938.984247529@mini.kroah.org>
+	Fri, 30 Mar 2007 17:23:06 -0400
+Message-ID: <460D7F70.3090702@gmail.com>
+Date: Fri, 30 Mar 2007 23:21:52 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="uml-fix-static-linking.patch"
-In-Reply-To: <20070330210334.GA29450@kroah.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-MIME-Error: demime acl condition: uuencoded line length is not a multiple of 4 characters
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: mcdx -- do_request(): non-read command to cd!!
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+Hi Al.
 
-------------------
-From: Jeff Dike <jdike@addtoit.com>
+GIT doesn't remember, it's been too long, but IIRC you were the last one 
+to do some work on mcdx (the old proprietary mitsumi cd-rom driver). The 
+thing builds without warnings on 2.6.20.4, unlike most other proprietary 
+CD-ROM drivers, so someone did...
 
-During a static link, ld has started putting a .note section in the
-.uml.setup.init section.  This has the result that the UML setups
-begin with 32 bytes of garbage and UML crashes immediately on boot.
+In any case, I just bet you're positively thrilled receiving bug-reports 
+for the thing right? Mmm?
 
-This patch creates a specific .note section for ld to drop this stuff
-into.
+I dug up a 1-speed Mitsumi CRMC-LU005S today. Brilliant drive! You push 
+on the front, after which it comes loose and you then yank the entire 
+drive, mechanism and all, out of its casing over some kind of magnetic 
+resistance it seems and then open a _second_ top-loading door, put in 
+the CD and follow the procedure backwards again. I've done that at least 
+20 times now and I'm not by any means done yet. Brilliant.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+The drive works fine under DOS (*), with both IRQ-less and IRQ-enabled 
+controllers. The linux driver does not work though:
 
----
- include/asm-um/common.lds.S |    1 +
- 1 file changed, 1 insertion(+)
+root@5va2:~# modprobe mcdx
 
---- a/include/asm-um/common.lds.S
-+++ b/include/asm-um/common.lds.S
-@@ -15,6 +15,7 @@
-   PROVIDE (_unprotected_end = .);
- 
-   . = ALIGN(4096);
-+  .note : { *(note.*) }
-   __start___ex_table = .;
-   __ex_table : { *(__ex_table) }
-   __stop___ex_table = .;
+root@5va2:~# dmesg | tail -4
+mcdx Version 2.14(hs)
+mcdx $Id: mcdx.c,v 1.21 1997/01/26 07:12:59 davem Exp $
+Uniform CD-ROM driver Revision: 3.20
+  mcdx: Mitsumi CD-ROM installed at 0x300, irq 15. (Firmware version M 4)
 
--- 
+root@5va2:~# mount /dev/mcdx0 /mnt/cdrom
+mount: block device /dev/mcdx0 is write-protected, mounting read-only
+mount: /dev/mcdx0: can't read superblock
+
+root@5va2:~# dmesg | tail -4
+  mcdx: Mitsumi CD-ROM installed at 0x300, irq 15. (Firmware version M 4)
+mcdx do_request(): non-read command to cd!!
+end_request: I/O error, dev mcdx0, sector 0
+FAT: unable to read boot sector
+root@5va2:~#
+
+This same 300/15 pair works under DOS in the same machine and IRQ15 is 
+firing. The error sounds very block-ish. Would you happen to know?
+
+I'll happily test patches :-)
+
+Rene.
+
+(*) Mitsumi not only has the old DOS driver online, it even keeps a 
+scanned manual available:
+
+http://www.mitsumi.com/enduser/1_drivers.html#Manuals
+
