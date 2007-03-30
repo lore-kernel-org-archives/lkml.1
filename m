@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbXC3Oie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbXC3OjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751955AbXC3Oie (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 10:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbXC3Oie
+	id S1753235AbXC3OjK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 10:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbXC3OjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 10:38:34 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:55766 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbXC3Oid (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 10:38:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=usDg0WRc0CF13mpvpTHYxqPKb7eaInAnTAkxMGtJGTdVsfpNwCW/Qm2rI6qWSRaeV6jPNV5U05aurOhzJ9GJRWK05C98t4I1EagGkBiSDZ78N0TwnoLp6fF+d+G7IBOnfsffJJzpgPsxhcYw0XuGEfqILf7RovFnTLiAsCax42g=
-Message-ID: <6d6a94c50703300738i7b9d3fcn341feb08dca8817d@mail.gmail.com>
-Date: Fri, 30 Mar 2007 22:38:32 +0800
-From: "Aubrey Li" <aubreylee@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] nommu arch dont zero the anonymous mapping by adding UNINITIALIZE flag
-Cc: "David Howells" <dhowells@redhat.com>, vapier.adi@gmail.com,
-       jie.zhang@analog.com, bryan.wu@analog.com,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070330155635.6a6c55d2@the-village.bc.nu>
+	Fri, 30 Mar 2007 10:39:09 -0400
+Received: from mga02.intel.com ([134.134.136.20]:21808 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751973AbXC3OjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 10:39:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,353,1170662400"; 
+   d="scan'208"; a="219263599:sNHT23867144"
+Message-ID: <460D2108.1080101@intel.com>
+Date: Fri, 30 Mar 2007 07:39:04 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.10 (X11/20070311)
 MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@sw.ru>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       auke-jan.h.kok@intel.com
+Subject: Re: 2.6.21-rc5-mm3: fix e1000 compilation
+References: <20070330085029.GA6556@localhost.sw.ru>
+In-Reply-To: <20070330085029.GA6556@localhost.sw.ru>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1175226172.15391.66.camel@roc-desktop>
-	 <10785.1175247540@redhat.com>
-	 <6d6a94c50703300334w6b4787f3p144715de5166d7bc@mail.gmail.com>
-	 <15938.1175253862@redhat.com>
-	 <6d6a94c50703300644y28e51f47h19182f550c18c40d@mail.gmail.com>
-	 <20070330155635.6a6c55d2@the-village.bc.nu>
+X-OriginalArrivalTime: 30 Mar 2007 14:39:05.0063 (UTC) FILETIME=[2A8BE770:01C772D9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/30/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > I can't find mmap must give zeroed memory in the mmap manual.
-> > Is there any reason relying on anon mmap() giving zerod memory?
->
-> Its how all Unix/Linux like systems behave.
-Fair enough.
+Alexey Dobriyan wrote:
+>   CC [M]  drivers/net/e1000/e1000_main.o
+> drivers/net/e1000/e1000_main.c: In function 'e1000_tso':
+> drivers/net/e1000/e1000_main.c:2968: error: dereferencing pointer to incomplete type
+> 	...
+> 
+
+can you send me your config? I'd like to see why nobody here didn't spot this on 
+any of our tests.
+
+thanks,
+
+Auke
 
 
-> You have to clear the memory
-> to something to deal with security on any kind of real system, and zero
-> is a good a value as any
->
-> > > Personally, I'd prefer to maintain compatibility with MMU-mode wherever
-> > > possible, but I'm happy with overrides like the MAP_UNINITIALISED flag
-> > > suggested.
-> > >
-> > Not necessary IMHO.
->
-> mmap() for anonymous memory pools should not normally be a hot path,
-> because the C library malloc is supposed to show some brains. If you need
-> special behaviour (eg for performance hacks) then create yourself
-> a /dev/zero like device which just maps uncleared pages. Its not much
-> code and it keeps special cases out of the core kernel.
->
-On MMU-mode, /dev/zero's-->mmap gives zerod memory.
-On NO-MMU-mode, we have to do memset(,,,) to give zerod memory. So the
-different malloc size has the different time cost.
-So Bryan's test case shows the terrible performance result.
----------------------------------------------------------------
-Summary is, when I run the app "time test",
-
-on x86:
-real    0m0.066s
-user    0m0.008s
-sys     0m0.058s
-
-on Blackfin:
-real    3m 37.69s
-user    0m 0.04s
-sys     3m 37.58s
----------------------------------------------------------------
-So now the question is,
-Keep the same behave as MMU but with bad performance, or keep the same
-performance as MMU but without the same behave, Which one is more
-important?
-
--Aubrey
+> --- a/drivers/net/e1000/e1000_main.c
+> +++ b/drivers/net/e1000/e1000_main.c
+> @@ -32,6 +32,8 @@ #include <linux/init.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/pagemap.h>
+>  #include <linux/netdevice.h>
+> +#include <linux/tcp.h>
+> +#include <linux/ipv6.h>
+>  #include <net/checksum.h>
+>  #include <net/ip6_checksum.h>
+>  #include <linux/mii.h>
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
