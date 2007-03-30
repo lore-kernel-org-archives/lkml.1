@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbXC3QiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbXC3Qmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753927AbXC3QiN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 12:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbXC3QiN
+	id S1753936AbXC3Qmh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 12:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbXC3Qmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 12:38:13 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:57157 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753927AbXC3QiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 12:38:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AF+ePSLtYFZCCuF8bvSwGGc7k8QpbctK/7bHmWQV2zIy8ub0yGvjatIM23Db64LHctYeP4FH1baHF3oGJfjUCD/moFtnQjFw7apm6gVbboFlVnRS4UujZ68pkswpUJCTxcrOakFksLnxS7AEbm/1OwHt4cKyuL/ZKaAHpWyWwtE=
-Message-ID: <d120d5000703300938j564a82bdq1e95eeab67a37221@mail.gmail.com>
-Date: Fri, 30 Mar 2007 12:38:11 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc5-mm3
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070330010559.2a232d9a.akpm@linux-foundation.org>
+	Fri, 30 Mar 2007 12:42:37 -0400
+Received: from mail.tmr.com ([64.65.253.246]:53163 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753932AbXC3Qmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 12:42:36 -0400
+Message-ID: <460D3D7D.70702@tmr.com>
+Date: Fri, 30 Mar 2007 12:40:29 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+CC: Roberto Nibali <ratz@drugphish.ch>, Yinghai Lu <yinghai.lu@amd.com>,
+       Jeff Garzik <jgarzik@pobox.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, saw@saw.sw.com.sg
+Subject: Re: [2.6 patch] the scheduled eepro100 removal
+References: <36D9DB17C6DE9E40B059440DB8D95F5202357DB0@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F5202357DB0@orsmsx418.amr.corp.intel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/30/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+Brandeburg, Jesse wrote:
+> Roberto Nibali wrote:
+>   
+>>>> Sounds sane to me.  My overall opinion on eepro100 removal is that
+>>>> we're not there yet.  Rare problem cases remain where e100 fails
+>>>> but eepro100 works, and it's older drivers so its low priority for
+>>>> everybody. 
+>>>>
+>>>> Needs to happen, though...
+>>>>         
+>>> It seems that several Tyan Opteron base system that were using IPMI
+>>> add on card.  the IPMI card share intel 100Mhz nic onboard. you need
+>>> to use eepro100 instead of e100 otherwise the e100 will shutdown OOB
+>>> (out of Band) connection for IPMI when shut down the OS.
+>>>       
+>> I find it hard to believe that something as common as IPMI in
+>> conjunction with the IPMI technology wasn't tested in Intel's lab.
+>> From my experience with Intel Server boards, onboard IPMI (all offered
+>> versions) and e100/e1000 NICs, I've never ever experienced any
+>> problems operating the BMC over the NIC. Also, I don't quite
+>> understand you point about the "IPMI card sharing the 100Mbit/s NIC"
+>> onboard? What exactly is shared?
+>>     
 >
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/
+> It's a legit problem, but only with this *one* system.
 >
-> - git-cryptodev has things in it again
->
-> - Re-added git-e1000: a large amount of e1000 driver work
->
-> - git-net has a huge amount of material in it, but I dropped it because it
->  went oops.
->
-> - git-block is back, minus the problematic unplugging rework.
->
-> - Lots of x86 updates.
->
-> - lguest is being redone and has been dropped
->
-> - The IDE development tree has been restored
->
-
-Andrew,
-
-Did you drop git-input? I do not see it anywhere....
+>   
+Of course the eepro100 driver is not taking a lot of maintenance either, 
+removing it is not critical as long as there is a legitimate need to 
+support old hardware.
 
 -- 
-Dmitry
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
+
