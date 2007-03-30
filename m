@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752312AbXC3Tjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbXC3TkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752312AbXC3Tjl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 15:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXC3Tjl
+	id S1752670AbXC3TkO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 15:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbXC3TkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 15:39:41 -0400
-Received: from gw.goop.org ([64.81.55.164]:50797 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752312AbXC3Tjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 15:39:40 -0400
-Message-ID: <460D6778.6000207@goop.org>
-Date: Fri, 30 Mar 2007 12:39:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 30 Mar 2007 15:40:14 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38807 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752670AbXC3TkL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 15:40:11 -0400
+Date: Fri, 30 Mar 2007 21:40:11 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>, andrea@suse.de,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: fs/block_dev.c:953: warning: 'found' might be used uninitialized in this function
+Message-ID: <20070330194011.GK14134@stusta.de>
+References: <200703281847.05356.toralf.foerster@gmx.de> <75b66ecd0703280956i522cf6cbyc4c9ef8b1666ec15@mail.gmail.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andi Kleen <andi@firstfloor.org>,
-       =?UTF-8?B?UGF3ZcWCIFNpa29yYQ==?= <pluto@agmk.net>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: smart gcc inliner...
-References: <46093349.7060401@agmk.net> <p73ircm4odz.fsf@bingen.suse.de> <4609D92A.3050104@goop.org> <20070330193216.GJ14134@stusta.de>
-In-Reply-To: <20070330193216.GJ14134@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <75b66ecd0703280956i522cf6cbyc4c9ef8b1666ec15@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Mar 27, 2007 at 07:55:38PM -0700, Jeremy Fitzhardinge wrote:
->   
->> Andi Kleen wrote:
->>     
->>> init functions should only ever be called from other init functions.
->>>
->>> So this should not happen. If it happens the annotations need to be fixed.
->>>       
->> I've seen some versions of gcc inline weak functions too.
->>     
->
-> Please be more precise:
-> - gcc version
-> - example code
-> - bug number in the gcc Bugzilla
->   
+On Wed, Mar 28, 2007 at 12:56:59PM -0400, Lee Revell wrote:
+> On 3/28/07, Toralf Förster <toralf.foerster@gmx.de> wrote:
+> >I compiled current git source 2.6.21-rc5-g28defbe and got this warning:
+> >...
+> >fs/block_dev.c: In function `bd_claim_by_kobject':
+> >fs/block_dev.c:953: warning: 'found' might be used uninitialized in this 
+> >function
+> >...
+> >
+> 
+> Most of these warnings are really GCC bugs.  Please examine the code
+> in question.
 
-Sorry, it was a while ago, and I didn't take the time to fully report
-it.  It was FC6 on x86_64, doing a 32-bit cross-build.  I'll see if I
-can repro it.
+The word "GCC bugs" is a bit hard for them.
 
-> This would also help understanding what you are talking about:
-> - Did gcc inline a global function?
-> - Or was a static function declared as weak (which might be an error
->   by the programmer)?
-> - ...
->   
+gcc gives different warnings for code where it could prove that a 
+variable gets used uninitialized and code where it's not sure whether a 
+variable will always be used initialized.
 
-It was, specifically, smp_setup_processor_id getting inlined into
-start_kernel.
+There are even cases where it's technically impossible for gcc to 
+determine that a variable always gets initialized.
 
-    J
+And these "might be used uninitialized" warnings have already found 
+several kernel bugs.
+
+> Lee
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
