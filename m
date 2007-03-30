@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbXC3VGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbXC3VJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbXC3VGH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXC3VGG
+	id S1753920AbXC3VJH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:09:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXC3VJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:06:06 -0400
-Received: from mail.chilan.com ([82.160.212.9]:58583 "EHLO mail.chilan.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753952AbXC3VGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:06:04 -0400
-From: "Grzegorz Chwesewicz" <grzegorz.chwesewicz@chilan.com>
-To: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Langsdorf <mark.langsdorf@amd.com>, Len Brown <lenb@kernel.org>,
-       "Morrow, William" <William.Morrow@amd.com>,
-       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
-Date: Fri, 30 Mar 2007 23:06:02 +0200
-Message-Id: <20070330210534.M37380@chilan.com>
-In-Reply-To: <200703300005.41800.ak@suse.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703292249.37979.ak@suse.de> <Pine.LNX.4.64.0703291410480.6730@woody.linux-foundation.org> <200703300005.41800.ak@suse.de>
-X-Mailer: OpenWebMail 2.52 20061019
-X-OriginatingIP: 82.160.213.5 (ceho)
+	Fri, 30 Mar 2007 17:09:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58167 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753920AbXC3VJF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 17:09:05 -0400
+Date: Fri, 30 Mar 2007 14:03:34 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/37] 2.6.20-stable review
+Message-ID: <20070330210334.GA29450@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007 00:05:39 +0200, Andi Kleen wrote
-> On Thursday 29 March 2007 23:16, Linus Torvalds wrote:
-> > 
-> > On Thu, 29 Mar 2007, Andi Kleen wrote:
-> > > 
-> > > Here's a patch. I don't have a system with C1E, so i only tested that
-> > > the apic timer still works on a older AMD box.
-> > 
-> > I think this looks better than what we have now, but it would look even 
-> > better if the core CPUID stuff was in arch/i386/kernel/cpu/amd.c, and we 
-> > simply had X86_FEATURE_BROKEN_C1_LAPIC etc..
-> > 
-> > And then the apic.c code would just check
-> > 
-> > 	if (boot_cpu_has(X86_FEATURE_BROKEN_C1_LAPIC))
-> > 		return -1;
-> > 
-> > or similar.
-> 
-> Ok fair point. Here's an updated patch.
+This is the start of the stable review cycle for the 2.6.20.5 release.
+There are 37 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-This patch also works. If You want bootlog or output of /proc/interrupts I can
-post it.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
---
-Greetings - CeHo - Grzegorz Chwesewicz
+Responses should be made by Tuesday, April 3, 00:00:00 UTC.  Anything
+received after that time might be too late.
+
+thanks,
+
+greg k-h
