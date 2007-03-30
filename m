@@ -1,84 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751612AbXC3R17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbXC3Rkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751612AbXC3R17 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 13:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbXC3R17
+	id S1752040AbXC3Rkg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 13:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXC3Rkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 13:27:59 -0400
-Received: from mga09.intel.com ([134.134.136.24]:42508 "EHLO mga09.intel.com"
+	Fri, 30 Mar 2007 13:40:36 -0400
+Received: from mail.suse.de ([195.135.220.2]:35043 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751612AbXC3R16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 13:27:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,354,1170662400"; 
-   d="scan'208"; a="66522740:sNHT24264765"
-Message-ID: <460D4896.9090302@intel.com>
-Date: Fri, 30 Mar 2007 10:27:50 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.10 (X11/20070311)
+	id S1752040AbXC3Rkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 13:40:35 -0400
+Date: Fri, 30 Mar 2007 10:38:31 -0700
+From: Greg KH <gregkh@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: hugh@veritas.com, cornelia.huck@de.ibm.com, dmitry.torokhov@gmail.com,
+       oneukum@suse.de, maneesh@in.ibm.com, rpurdie@rpsys.net,
+       James.Bottomley@SteelEye.com, Jeff Garzik <jgarzik@pobox.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       SCSI Mailing List <linux-scsi@vger.kernel.org>
+Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
+Message-ID: <20070330173831.GA4469@suse.de>
+References: <460CDBA6.5030608@gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm3: fix e1000 compilation
-References: <20070330085029.GA6556@localhost.sw.ru>	<460D2108.1080101@intel.com>	<20070330100104.9b770cd8.akpm@linux-foundation.org> <20070330100709.44127796.randy.dunlap@oracle.com>
-In-Reply-To: <20070330100709.44127796.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Mar 2007 17:27:51.0139 (UTC) FILETIME=[BE287B30:01C772F0]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <460CDBA6.5030608@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Fri, 30 Mar 2007 10:01:04 -0700 Andrew Morton wrote:
+On Fri, Mar 30, 2007 at 06:43:02PM +0900, Tejun Heo wrote:
+> Hello, all.
 > 
->> On Fri, 30 Mar 2007 07:39:04 -0700 "Kok, Auke" <auke-jan.h.kok@intel.com> wrote:
->>
->>> Alexey Dobriyan wrote:
->>>>   CC [M]  drivers/net/e1000/e1000_main.o
->>>> drivers/net/e1000/e1000_main.c: In function 'e1000_tso':
->>>> drivers/net/e1000/e1000_main.c:2968: error: dereferencing pointer to incomplete type
->>>> 	...
->>>>
->>> can you send me your config? I'd like to see why nobody here didn't spot this on 
->>> any of our tests.
->>>
->> test.kernel.org got thoroughly broken by e1000, but Alexey's patch fixed things
->> up.
+> This document tries to describe lifetime problems of the current
+> device driver model primarily from the point view of device drivers
+> and establish consensus, or at least, start discussion about how to
+> solve these problems.  This is primarily based on my experience with
+> IDE and SCSI layers and my knowledge on other drivers is limited, so I
+> might have generalized too aggressively.  Feel free to point out.
+
+Very nice summary of the problems we are trying to address here,
+thanks for doing this.
+
+> 2. How do we solve this?
 > 
-> My daily/nightly builds were also broken by it...
+> 2-1. Rule #a and #b
+> 
+> If you think about it, the impedance matching between rule #a and #b
+> should be done somewhere.  Maybe doing it in each low level driver is
+> what's intended when the driver model is designed but it's
+> impractically painful and the reality reflects that by doing it in
+> midlayers.
+> 
+> It's better if we do it in higher layers.  For example, SCSI has a
+> mechanism to reject new requests and drain request_queue to allow low
+> level driver to just unregister an existing device.  IDE currently
+> doesn't have such feature but it would need to do almost the same
+> thing to support hotplug.  If request_queue just had a feature to
+> drain and kill itself, both SCSI and IDE could use it.  It would be
+> simpler and less error-prone.  On the other hand, if it's pushed
+> downward, it will cause much more pain in all the low level drivers.
 
-turns out that NETIF_F_TSO6 is defined even if CONFIG_IPV6 is turned off, which 
-is what broke e1000. That in itself might be a problem. Perhaps this should be 
-fixed in netdevice.h (gratuitous bad inline patch below) but I'm not sure if 
-people would appreciate this, as it's rather ugly, and it gets all horrible when 
-people disable TCP protocol support...
+No, we should not push this kind of thing down to the lower drivers.
 
-In any case, I was not suspecting this at all. The patch to e1000 is fine with me.
+In fact, my goal is to try to keep a "normal" driver writer from having
+to know anything about the driver model, except for how to add and
+remove a sysfs file that is bound to the device controlled by the
+driver.
 
-Auke
+And for the majority of the busses, this is true, it's only people like
+you who are mucking around in the bus specific code that know how hard
+this whole thing is :)
 
+> Orphaning sysfs nodes on unregistration is a big step in this
+> direction.  With sysfs reference counting out of the picture,
+> implementing 'disconnect immediate' interface only on a few components
+> (including request_queue) should suffice for most block device
+> drivers.  I'm not familiar with other drivers but I don't think
+> they'll be very different.
+> 
+> All in all, I'm hoping something like the following can be done in
+> device drivers, midlayer or low level.
+> 
+> * For binding
+> 
+>  alloc resources;
+>  init controller;
+>  register to upper layers;
+> 
+> * For unbinding
+> 
+>  unregister from upper layers; (no lingering references or objects)
+>  deinit controller;
+>  release resources;
+> 
+> This basically nullifies lifetime rule #b from the POV of drivers.
 
----
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 1a52854..f077137 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -331,10 +331,16 @@ struct net_device
-  #define NETIF_F_UFO            (SKB_GSO_UDP << NETIF_F_GSO_SHIFT)
-  #define NETIF_F_GSO_ROBUST     (SKB_GSO_DODGY << NETIF_F_GSO_SHIFT)
-  #define NETIF_F_TSO_ECN        (SKB_GSO_TCP_ECN << NETIF_F_GSO_SHIFT)
-+#ifdef CONFIG_IPV6
-  #define NETIF_F_TSO6           (SKB_GSO_TCPV6 << NETIF_F_GSO_SHIFT)
-+#endif
+I agree, that should be our goal.  And for almost all busses, this is
+true today, right?
 
-         /* List of features with software fallbacks. */
-+#ifdef CONFIG_IPV6
-  #define NETIF_F_GSO_SOFTWARE   (NETIF_F_TSO | NETIF_F_TSO_ECN | NETIF_F_TSO6)
-+#else
-+#define NETIF_F_GSO_SOFTWARE   (NETIF_F_TSO | NETIF_F_TSO_ECN)
-+#endif
+> 2-2. Rule #b and #c
+> 
+> One way to solve this problem is to subordinate lifetime rule #b to
+> rule #c.  Each kobject points to its owning module such that grabbing
+> a kobject automatically grabs the module.  The problem with this
+> approach is that it requires wide update and makes kobject_get
+> heavier.
 
-  #define NETIF_F_GEN_CSUM       (NETIF_F_NO_CSUM | NETIF_F_HW_CSUM)
-  #define NETIF_F_ALL_CSUM       (NETIF_F_IP_CSUM | NETIF_F_GEN_CSUM)
+Why would kobject_get become heavier?
+
+> Another more appealing approach is to do nothing.  Solving the problem
+> between rule #a and #b in the way described above means virtually
+> nullifying rule #b.  With rule #b gone, rule #c can't conflict with
+> it.  IOW, no reference from upper layer would be remaining after a
+> driver unregisters itself from the upper layer - the module can be
+> safely unloaded.
+
+Yes, but you have to watch out for devices that add their own files with
+callbacks to that driver.  That is a problem today that Oliver has tried
+to address with his recent patches.
+
+> 3. How do we get there from here?
+> 
+> The current device driver model is used by most device drivers - huge
+> amount of code.  We can't update them at once.
+
+No, the majority of the logic is in the busses, and we can update them
+pretty easily.
+
+> Fortunately, the
+> suggested solution can easily be implemented gradually.  We can add
+> 'disconnect now' interface to upper driver interface one-by-one and
+> convert its users gradually.  The existing reference counting
+> mechanism can be left alone and used to verify that the conversion is
+> correct by verifying reference count is 0 after unregistering.
+> 
+> Once the conversion is complete (maybe after a year), we can remove
+> the reference counting mechanism from device driver interface.
+
+I'd be interested in seeing how we can do this.  Do you have any
+specific patches started in this area?
+
+> 4. Some afterthoughts
+> 
+> * Doing this would make module reference counting more flexible.
+>  Instead of being confined by implementation, it can be used to
+>  define when to allow and disallow module unloading.  (you can't
+>  unload a block driver module if a fs on it is mounted but sysfs
+>  access doesn't matter.)
+
+Well, remember, module unloading is racy and unrecommended to use anyway
+:)
+
+Also, look at the network drivers who all have their own special type of
+lock, with no module reference count increment when they are in use.  Is
+this what you want to do for everything else?
+
+> * Outside of device driver model, kobject is currently used to supply
+>  something sysfs nodes can be attached to, such that both the
+>  information supplier and node users have something common to
+>  reference count.  With orphaning added, there is no need to use
+>  kobject this way.  IMHO, kobject should have been implementation
+>  detail inside the device model proper in the first place.
+
+Well, kobject was created because Al Viro wanted to use them for the
+block devices and it didn't make sense to use a 'struct device' for them
+at the time.  Also, the class code wasn't even around then (this is
+_very_ early 2.5 timeframe.
+
+So yes, any cleanups and refactoring that we can do in this area would
+be very good and welcome.  Kay has had some ideas for how we can clean
+up the whole subsystem/kset mess too.  Hopefully something comes of that
+soon.
+
+thanks,
+
+greg k-h
