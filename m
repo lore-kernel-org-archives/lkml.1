@@ -1,34 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbXC3VcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXC3VcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932195AbXC3VcO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932178AbXC3VcN
+	id S932178AbXC3VcT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbXC3VcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:32:13 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38898 "EHLO
+	Fri, 30 Mar 2007 17:32:18 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38908 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932114AbXC3VcL (ORCPT
+	with ESMTP id S932178AbXC3VcP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:32:11 -0400
-Date: Fri, 30 Mar 2007 23:32:09 +0200
+	Fri, 30 Mar 2007 17:32:15 -0400
+Date: Fri, 30 Mar 2007 23:32:15 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oliver Pinter <oliver.pntr@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org,
-       Mathieu =?utf-8?Q?B=C3=A9rard?= <Mathieu.Berard@crans.org>,
-       Tejun Heo <htejun@gmail.com>
-Subject: [1/4] 2.6.21-rc5: known regressions (v2)
-Message-ID: <20070330213209.GM14134@stusta.de>
+       Hans-Georg Rist <hg.rist@web.de>, perex@suse.cz,
+       alsa-devel@alsa-project.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andi Kleen <ak@suse.de>, Oliver Neukum <oneukum@suse.de>,
+       greg@kroah.com, linux-usb-devel@lists.sourceforge.net,
+       Marcelo Tosatti <marcelo@kvack.org>, CIJOML <cijoml@volny.cz>,
+       v4l-dvb-maintainer@linuxtv.org, Ingo Molnar <mingo@elte.hu>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, jgarzik@pobox.com,
+       netdev@vger.kernel.org
+Subject: [2/4] 2.6.21-rc5: known regressions (v2)
+Message-ID: <20070330213215.GN14134@stusta.de>
 References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 In-Reply-To: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,37 +45,45 @@ possibly involved with one or more of these issues.
 Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-Subject    : crashes in KDE
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8157
-Submitter  : Oliver Pinter <oliver.pntr@gmail.com>
+Subject    : snd_hda_intel doesn't work with ASUS M2V mainboard
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8273
+Submitter  : Hans-Georg Rist <hg.rist@web.de>
 Status     : unknown
 
 
-Subject    : hung bootup in various drivers
-References : http://lkml.org/lkml/2007/3/30/68
+Subject    : snd_intel8x0: divide error: 0000
+References : http://lkml.org/lkml/2007/3/5/252
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Status     : unknown
+
+
+Subject    : hal daemon crashes after pulling a USB serial device
+References : http://www.opensubscriber.com/message/linux-usb-devel@lists.sourceforge.net/6369800.html
+Submitter  : Andi Kleen <ak@suse.de>
+Handled-By : Oliver Neukum <oneukum@suse.de>
+Status     : problem is being debugged
+
+
+Subject    : USB: iPod doesn't work  (CONFIG_USB_SUSPEND)
+References : http://lkml.org/lkml/2007/3/21/320
+Submitter  : Tino Keitel <tino.keitel@gmx.de>
+Caused-By  : Marcelo Tosatti <marcelo@kvack.org>
+             commit 1d619f128ba911cd3e6d6ad3475f146eb92f5c27
+Handled-By : Oliver Neukum <oneukum@suse.de>
+Status     : problem is being debuggged
+
+
+Subject    : USB: Oops when changing DVB-T adapter
+References : http://lkml.org/lkml/2007/3/9/212
+Submitter  : CIJOML <cijoml@volny.cz>
+Status     : unknown
+
+
+Subject    : forcedeth: sporadic under-load crashes
+References : http://lkml.org/lkml/2007/3/26/63
 Submitter  : Ingo Molnar <mingo@elte.hu>
 Handled-By : Ingo Molnar <mingo@elte.hu>
-             Greg KH <gregkh@suse.de>
-             Kay Sievers <kay.sievers@vrfy.org>
-Status     : problem is being discussed
-
-
-Subject    : kernels fail to boot with drives on ATIIXP controller
-             (ACPI/IRQ related)
-References : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229621
-             http://lkml.org/lkml/2007/3/4/257
-Submitter  : Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
-Status     : unknown
-
-
-Subject    : NCQ problem with ahci and Hitachi drive
-References : http://lkml.org/lkml/2007/3/4/178
-             http://lkml.org/lkml/2007/3/9/475
-             http://lkml.org/lkml/2007/2/22/8
-Submitter  : Mathieu Bérard <Mathieu.Berard@crans.org>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Patch      : http://lkml.org/lkml/2007/2/22/8
-Status     : possible patch available
-
+             Ayaz Abdulla <aabdulla@nvidia.com>
+Status     : problem is being debugged
 
 
