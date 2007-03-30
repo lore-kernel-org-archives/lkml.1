@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751659AbXC3Syh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751747AbXC3S4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751659AbXC3Syh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 14:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbXC3Syg
+	id S1751747AbXC3S4I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbXC3S4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 14:54:36 -0400
-Received: from mga02.intel.com ([134.134.136.20]:8826 "EHLO mga02.intel.com"
+	Fri, 30 Mar 2007 14:56:07 -0400
+Received: from mga01.intel.com ([192.55.52.88]:12039 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751690AbXC3Syf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 14:54:35 -0400
+	id S1751747AbXC3S4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 14:56:06 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,354,1170662400"; 
-   d="scan'208"; a="219404867:sNHT33129607"
-Subject: [PATCH 2.6.21-rc5] Flush MSI-X table writes (rev 3)
+   d="scan'208"; a="222307135:sNHT18699016"
+Subject: [PATCH 2.6.20.4]
 From: Mitch Williams <mitch.a.williams@intel.com>
-To: linux-pci@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org
-Cc: gregkh@suse.de, ebiederm@xmission.com, linux-kernel@vger.kernel.org,
-       auke-jan.h.kok@intel.com
+To: linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de
+Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, auke-jan.h.kok@intel.com
 Content-Type: text/plain
-Date: Fri, 30 Mar 2007 11:54:08 -0700
-Message-Id: <1175280848.17652.5.camel@strongmad>
+Date: Fri, 30 Mar 2007 11:56:05 -0700
+Message-Id: <1175280965.17652.8.camel@strongmad>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
 Content-Transfer-Encoding: 7bit
@@ -45,20 +45,18 @@ uses MSI-X.
 
 Revised with input from Eric Biederman.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-
-diff -urpN -X dontdiff linux-2.6.21-rc5-clean/drivers/pci/msi.c linux-2.6.21-rc5/drivers/pci/msi.c
---- linux-2.6.21-rc5-clean/drivers/pci/msi.c	2007-03-28 10:05:24.000000000 -0700
-+++ linux-2.6.21-rc5/drivers/pci/msi.c	2007-03-28 09:21:34.000000000 -0700
-@@ -68,6 +68,29 @@ static void msix_set_enable(struct pci_d
- 	}
+diff -urpN -X dontdiff linux-2.6.20.4-clean/drivers/pci/msi.c linux-2.6.20.4/drivers/pci/msi.c
+--- linux-2.6.20.4-clean/drivers/pci/msi.c	2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20.4/drivers/pci/msi.c	2007-03-30 10:51:46.000000000 -0700
+@@ -40,6 +40,29 @@ static int msi_cache_init(void)
+ 	return 0;
  }
  
 +static void msix_flush_writes(unsigned int irq)
 +{
 +	struct msi_desc *entry;
 +
-+	entry = get_irq_msi(irq);
++	entry = msi_desc[irq];
 +	BUG_ON(!entry || !entry->dev);
 +	switch (entry->msi_attrib.type) {
 +	case PCI_CAP_ID_MSI:
@@ -80,7 +78,7 @@ diff -urpN -X dontdiff linux-2.6.21-rc5-clean/drivers/pci/msi.c linux-2.6.21-rc5
  static void msi_set_mask_bit(unsigned int irq, int flag)
  {
  	struct msi_desc *entry;
-@@ -186,11 +209,13 @@ void write_msi_msg(unsigned int irq, str
+@@ -154,11 +177,13 @@ void write_msi_msg(unsigned int irq, str
  void mask_msi_irq(unsigned int irq)
  {
  	msi_set_mask_bit(irq, 1);
