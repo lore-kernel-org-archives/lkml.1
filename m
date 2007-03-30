@@ -1,98 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbXC3Rnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750881AbXC3Rqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195AbXC3Rnu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 13:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbXC3Rnu
+	id S1750881AbXC3Rqd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 13:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbXC3Rqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 13:43:50 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35268 "EHLO mx1.suse.de"
+	Fri, 30 Mar 2007 13:46:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41633 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752051AbXC3Rns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 13:43:48 -0400
-Date: Fri, 30 Mar 2007 10:41:58 -0700
-From: Greg KH <gregkh@suse.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>, hugh@veritas.com,
-       cornelia.huck@de.ibm.com, dmitry.torokhov@gmail.com, oneukum@suse.de,
-       maneesh@in.ibm.com, rpurdie@rpsys.net, Jeff Garzik <jgarzik@pobox.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       SCSI Mailing List <linux-scsi@vger.kernel.org>
-Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
-Message-ID: <20070330174158.GB4469@suse.de>
-References: <460CDBA6.5030608@gmail.com> <1175257751.3760.19.camel@mulgrave.il.steeleye.com> <460D12B8.6050101@gmail.com>
-MIME-Version: 1.0
+	id S1750881AbXC3Rqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 13:46:31 -0400
+Date: Fri, 30 Mar 2007 19:46:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Greg KH <gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [bug] hung bootup in various drivers, was: "2.6.21-rc5: known regressions"
+Message-ID: <20070330174619.GA12589@elte.hu>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de> <20070330120416.GA19373@elte.hu> <20070330141639.GA10387@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <460D12B8.6050101@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070330141639.GA10387@suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 30, 2007 at 10:38:00PM +0900, Tejun Heo wrote:
-> James Bottomley wrote:
-> > On Fri, 2007-03-30 at 18:43 +0900, Tejun Heo wrote:
-> >> Orphaning sysfs nodes on unregistration is a big step in this
-> >> direction.  With sysfs reference counting out of the picture,
-> >> implementing 'disconnect immediate' interface only on a few components
-> >> (including request_queue) should suffice for most block device
-> >> drivers.  I'm not familiar with other drivers but I don't think
-> >> they'll be very different.
-> > 
-> > I agree with this statement.  The big question in my mind is how do we
-> > do it?
-> > 
-> > The essential problem, and the reason why the lifetime rules are
-> > entangled is that fundamentally, sysfs entries are managed by kobjects.
-> > The things the device drivers are interested in is struct device, which
-> > is usually embedded in driver data structures.  Unfortunately, the
-> > required kobject is usually embedded in struct device meaning that the
-> > relevant driver structure cannot be freed while the sysfs entry still
-> > exists.
-> > 
-> > It seems to me that the only way to Orphan the sysfs entries is to
-> > separate the kobject and the struct device so their lifetime rules are
-> > no longer entangled.  Then we can free the driver structure with the
-> > embedded struct device while still keeping the necessary kobject around
-> > to perform orphaned sysfs operations.
-> > 
-> > So it seems to me that what we need to do is to give struct device its
-> > own kref and a pointer to a kobject.  Then we can manage the separate
-> > lifetimes independently.  The device would basically allocate and take a
-> > reference to the kobject on device_add() and relinquish it again (and
-> > null out the kobject pointer) on device_del().  The complexity here is
-> > that we now have to allocate the kobject somewhere else ... probably in
-> > device_add() (it doesn't come for free with the device structures).
+
+* Greg KH <gregkh@suse.de> wrote:
+
+> >  BUG: at drivers/base/driver.c:187 driver_unregister()
+> >   [<c0105ff9>] show_trace_log_lvl+0x19/0x2e
+> >   [<c01063e2>] show_trace+0x12/0x14
+> >   [<c01063f8>] dump_stack+0x14/0x16
+> >   [<c063f7e6>] driver_unregister+0x3d/0x43
+> >   [<c0488048>] pci_unregister_driver+0x10/0x5f
+> >   [<c1b5f7c7>] slgt_init+0x9b/0x1ca
+> >   [<c1b31a2d>] init+0x15d/0x2bd
+> >   [<c0105bc3>] kernel_thread_helper+0x7/0x10
+
+> Yes, we should allow the ability to call unregister_driver from within 
+> the module_init function.
 > 
-> My plan was to make sysfs more independent from struct device/kobject.
-> e.g. Something like the following.
-> 
-> * kobject_get() on attr/symlink creation
-> * open() doesn't need extra kobject reference
-> * deleting a node makes it release the kobject reference and the kobject
-> pointer is nullified.
+> But I don't understand what is causing you to see this problem.  Who 
+> is holding the reference on the struct device at this point in time?  
+> Is it the fact that userspace has some files open and it hasn't 
+> released them yet?
 
-Hm, this sounds good, but I think it will be racy.
+at least in the slgt_init() case the affected codepath is trivial:
 
-Although separating the very tight tie between sysfs and kobject would
-be very good to have.  Pat originally wanted to do that years ago,
-but he's now lost to the land of a million sheep...
+        if ((rc = pci_register_driver(&pci_driver)) < 0) {
+                printk("%s pci_register_driver error=%d\n", driver_name, rc);
+                return rc;
+        }
+        pci_registered = 1;
 
-So I don't object to this goal at all.
+        if (!slgt_device_list) {
+                printk("%s no devices found\n",driver_name);
+                pci_unregister_driver(&pci_driver);
+                return -ENODEV;
 
-> This way the sysfs reference counting can be put completely out of
-> picture without impacting the rest of code.  Handling symlink and
-> suicidal attributes might need some extra attention but I think they can
-> be done.
+slgt_device_list is NULL because no matching PCI ID is on my system (i 
+dont have this hardware), so the ->probe() function did not get called 
+at all.
 
-Ok, I'll but I really want to see that code :)
+i.e. a pure pci_register_driver() + pci_unregister_driver() sequence 
+seems to cause a hang. I.e. it seems to be a pure driver-base-core 
+matter.
 
-> In the long term, I think sysfs should be independent from driver model
-> and kobject such that an entity which wants to use sysfs but is not a
-> device doesn't have to dance with kobject just to use sysfs.
-
-I agree.
-
-thanks,
-
-greg k-h
+	Ingo
