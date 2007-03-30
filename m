@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750881AbXC3Rqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbXC3R6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750881AbXC3Rqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 13:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbXC3Rqc
+	id S1752201AbXC3R6p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 13:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXC3R6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 13:46:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41633 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbXC3Rqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 13:46:31 -0400
-Date: Fri, 30 Mar 2007 19:46:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [bug] hung bootup in various drivers, was: "2.6.21-rc5: known regressions"
-Message-ID: <20070330174619.GA12589@elte.hu>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de> <20070330120416.GA19373@elte.hu> <20070330141639.GA10387@suse.de>
+	Fri, 30 Mar 2007 13:58:45 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:58248 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752008AbXC3R6o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 13:58:44 -0400
+Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Tejun Heo <htejun@gmail.com>, gregkh@suse.de, hugh@veritas.com,
+       cornelia.huck@de.ibm.com, oneukum@suse.de, maneesh@in.ibm.com,
+       rpurdie@rpsys.net, Jeff Garzik <jgarzik@pobox.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       SCSI Mailing List <linux-scsi@vger.kernel.org>
+In-Reply-To: <d120d5000703300615y7b367d82hb42f1c58ca8a6328@mail.gmail.com>
+References: <460CDBA6.5030608@gmail.com>
+	 <1175257751.3760.19.camel@mulgrave.il.steeleye.com>
+	 <d120d5000703300615y7b367d82hb42f1c58ca8a6328@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 30 Mar 2007 12:58:21 -0500
+Message-Id: <1175277501.3760.32.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070330141639.GA10387@suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-03-30 at 09:15 -0400, Dmitry Torokhov wrote:
+> If you want to manage lifetime rules independently you might want to
+> not embed struct device into you subsystems objects but attach them
+> via pointers and use device_create(). Now that we orphan sysfs access
+> upon unregistering device this will severe all ties from driver core
+> to your system once you start teardown of a device and you should be
+> in clear.
 
-* Greg KH <gregkh@suse.de> wrote:
+But that wouldn't really help ... all objects have lifetimes.  What
+Tejun is pointing out is that we have two different lifetime
+requirements:  driver internal (and subsystem) objects and sysfs
+objects ... we still need something embedded in the driver objects, so
+it may as well be struct device ... trying to manage struct device
+outside of the driver objects would turn into another nasty refcounting
+problem.  The struct device is usually the generic abstraction of the
+specific structure it's embedded in, so I think it really does make
+sense to keep these pieces together.
 
-> >  BUG: at drivers/base/driver.c:187 driver_unregister()
-> >   [<c0105ff9>] show_trace_log_lvl+0x19/0x2e
-> >   [<c01063e2>] show_trace+0x12/0x14
-> >   [<c01063f8>] dump_stack+0x14/0x16
-> >   [<c063f7e6>] driver_unregister+0x3d/0x43
-> >   [<c0488048>] pci_unregister_driver+0x10/0x5f
-> >   [<c1b5f7c7>] slgt_init+0x9b/0x1ca
-> >   [<c1b31a2d>] init+0x15d/0x2bd
-> >   [<c0105bc3>] kernel_thread_helper+0x7/0x10
+> However there are simpler subsystems (input, serio, etc.) where there
+> is only one core module which provides services to device drivers and
+> handles registration and deregistration. For such substustems it makes
+> sense to embed struct devices and manage lifetime for all components
+> at once.
 
-> Yes, we should allow the ability to call unregister_driver from within 
-> the module_init function.
-> 
-> But I don't understand what is causing you to see this problem.  Who 
-> is holding the reference on the struct device at this point in time?  
-> Is it the fact that userspace has some files open and it hasn't 
-> released them yet?
+James
 
-at least in the slgt_init() case the affected codepath is trivial:
 
-        if ((rc = pci_register_driver(&pci_driver)) < 0) {
-                printk("%s pci_register_driver error=%d\n", driver_name, rc);
-                return rc;
-        }
-        pci_registered = 1;
-
-        if (!slgt_device_list) {
-                printk("%s no devices found\n",driver_name);
-                pci_unregister_driver(&pci_driver);
-                return -ENODEV;
-
-slgt_device_list is NULL because no matching PCI ID is on my system (i 
-dont have this hardware), so the ->probe() function did not get called 
-at all.
-
-i.e. a pure pci_register_driver() + pci_unregister_driver() sequence 
-seems to cause a hang. I.e. it seems to be a pure driver-base-core 
-matter.
-
-	Ingo
