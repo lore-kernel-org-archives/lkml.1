@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932854AbXC3WqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbXC3Wux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932854AbXC3WqE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 18:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbXC3WqE
+	id S932771AbXC3Wux (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 18:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932470AbXC3Wuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 18:46:04 -0400
-Received: from smtp-3.hut.fi ([130.233.228.93]:50011 "EHLO smtp-3.hut.fi"
+	Fri, 30 Mar 2007 18:50:52 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55618 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753971AbXC3WqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 18:46:01 -0400
-X-Greylist: delayed 2204 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Mar 2007 18:46:00 EDT
-Date: Sat, 31 Mar 2007 01:09:00 +0300 (EEST)
-From: Mikko Tiihonen <mikko.tiihonen@iki.fi>
-To: nicolas.mailhot@laposte.net
-cc: linux-kernel@vger.kernel.org
-Subject: RE: [PATCH 1/5] RT kernel: force detect HPET from PCI space
-Message-ID: <Pine.OSF.4.64.0703310049090.412261@kosh.hut.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-TKK-Virus-Scanned: by amavisd-new-2.1.2-hutcc at putosiko.hut.fi
+	id S932771AbXC3Wuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 18:50:52 -0400
+Date: Fri, 30 Mar 2007 15:50:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ken Chen" <kenchen@google.com>
+Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] remove artificial software max_loop limit
+Message-Id: <20070330155043.2daa6d5c.akpm@linux-foundation.org>
+In-Reply-To: <b040c32a0703301506q17509843h1309a4132634154a@mail.gmail.com>
+References: <b040c32a0703300053u110063b0u80ee0e7b9dd158c2@mail.gmail.com>
+	<b040c32a0703300148w479cf4cdw667cf464edf7c725@mail.gmail.com>
+	<Pine.LNX.4.61.0703301105190.31834@yvahk01.tjqt.qr>
+	<b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
+	<20070330141524.5f6cff29.akpm@linux-foundation.org>
+	<b040c32a0703301506q17509843h1309a4132634154a@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 30 Mar 2007 15:06:03 -0700
+"Ken Chen" <kenchen@google.com> wrote:
 
-> Anyone got the same thing for CK804? I had my hopes high, and then I saw
-> the DECLARE_PCI_FIXUP_HEADER values [and the thread title was misleading]
+> On 3/30/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > So..  this change will cause a fatal error for anyone who is presently
+> > using max_loop, won't it?  If they're doing that within their
+> > initramfs/initrd/etc then things could get rather ugly for them.
+> 
+> probably, if they access loop device non-sequentially.
+> 
 
-I have an A8N-E motherboard with AthlonX2 and the ACPI definitions are 
-missing the HPET (standard feature of Asus motherboards).
+My point is that the modprobe will fail if it is passed an unrecognised
+module parameter (won't it?)
 
-I too got interested to get my motherboard working. Luckily I found this 
-http://lkml.org/lkml/2006/12/17/69 from which I generated the following patch:
+So if we're worried about not breaking existing setups, we should retain
+this module parameter as a do-nothing thing, maybe with a
+this-is-going-away warning printk, too.
 
---- arch/i386/kernel/quirks.c.orig	2007-03-30 23:43:06.000000000 +0300
-+++ arch/i386/kernel/quirks.c	2007-03-30 23:26:47.000000000 +0300
-@@ -101,5 +101,39 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_I
-  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH7_1,     force_enable_hpet);
-  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH7_31,     force_enable_hpet);
-  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH8_1,     force_enable_hpet);
-+
-+static void __init force_enable_nvidia_hpet(struct pci_dev *dev)
-+{
-+        u8 enabled;
-+	u32 addr;
-+
-+	if (hpet_address)
-+		return;
-+
-+	pci_read_config_dword(dev, 0x44, &addr);
-+	if (addr != 0xfefff000L) {
-+		printk(KERN_INFO "Unsafe HPET address 0x%08x. Cannot force enable HPET\n", addr);
-+		return;
-+	}
-+
-+	pci_read_config_byte(dev, 0xA3, &enabled);
-+	if ((enabled & 4) == 0) {
-+	        if (enabled != 0xc1) {
-+		  printk(KERN_INFO "Unsafe HPET enable 0x%02x. Cannot force enable HPET\n", enabled);
-+		  return;
-+		}
-+		pci_write_config_byte(dev, 0xA3, enabled | 4);
-+		pci_read_config_byte(dev, 0xA3, &enabled);
-+		if ((enabled & 4) == 0) {
-+			printk(KERN_INFO "Failed to force enable HPET\n");
-+			return;
-+		}
-+	}
-+
-+	force_hpet_address = addr;
-+	printk(KERN_INFO "Force enabled HPET. Base address 0x%08lx\n", force_hpet_address);
-+}
-+
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA,	0x0050,     force_enable_nvidia_hpet); // NForce4
-  #endif
+> 
+> > I don't know how much of a problem this will be in practice - do people use
+> > max_loop much?
+> 
+> I don't know either.
 
-Now Linux seems to detect HPET and it passes at least the basic sanity checks:
+hm.
 
-Force enabled HPET. Base address 0xfefff000
-HPET: hpet_period 40000000, hpet_tick 83333
-Successfully registered HPET clocksource
+> 
+> > btw, did you test this change as both a module and as linked-into-vmlinux?
+> 
+> as linked-into-vmlinux.  why do you ask?  It breaks if it is module?
+> I made last minute change to a mutex name and shamely posted without
+> doing a compile test.  Besides that, is there something else breaks?
 
-Unfortunately the 2.6.20-mm2 kernel to which I tried to patch the patch series 
-seems to hang few seconds later after half way in udev startup event 
-processing.
+Just idle curiosity regarding how much testing it had seen.
 
-It could either be something totally different in 2.6.20-mm2 that just happens 
-to fail or more likely some interrupt setup that still needs to be done.
+Generally one would expect things to be OK, but there can be startup
+ordering problems.
 
-I have no idea how to continue from here.
+The most common problem is that the module simply doesn't load because it's
+using some not-exported-to-modules symbol
 
--Mikko
