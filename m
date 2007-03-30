@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751698AbXC3Nin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751498AbXC3Nn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751698AbXC3Nin (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 09:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbXC3Nim
+	id S1751498AbXC3Nn2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 09:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbXC3Nn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 09:38:42 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:19188 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbXC3Nik (ORCPT
+	Fri, 30 Mar 2007 09:43:28 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39532 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbXC3Nn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 09:38:40 -0400
-Date: Fri, 30 Mar 2007 15:40:42 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: gregkh@suse.de, hugh@veritas.com, dmitry.torokhov@gmail.com,
-       oneukum@suse.de, maneesh@in.ibm.com, rpurdie@rpsys.net,
-       James.Bottomley@SteelEye.com, Jeff Garzik <jgarzik@pobox.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       SCSI Mailing List <linux-scsi@vger.kernel.org>
-Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
-Message-ID: <20070330154042.4c7deb72@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <460D0E78.3040200@gmail.com>
-References: <460CDBA6.5030608@gmail.com>
-	<20070330151926.18fc12a0@gondolin.boeblingen.de.ibm.com>
-	<460D0E78.3040200@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+	Fri, 30 Mar 2007 09:43:28 -0400
+Date: Fri, 30 Mar 2007 14:43:27 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Eduard Bloch <edi@gmx.de>
+Cc: linux-kernel@vger.kernel.org, debburn-devel@lists.alioth.debian.org
+Subject: Re: broken device locking, sg vs. sg_io on block devices
+Message-ID: <20070330134327.GA24030@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Eduard Bloch <edi@gmx.de>, linux-kernel@vger.kernel.org,
+	debburn-devel@lists.alioth.debian.org
+References: <200703261811.21448.gerald@itzgrund.net> <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007 22:19:52 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
-
-> > Shouldn't getting/putting the module refcount be solely done in
-> > kobject.c? Grab the module reference when the kobject is created and
-> > release the module reference in kobject_cleanup() after the release
-> > function has been called. This doesn't make kobject_get() heavier, and
-> > it ensures we don't delete the module until after the last kobject it is
-> > supposed to clean up has been released.
+On Fri, Mar 30, 2007 at 01:17:44PM +0200, Eduard Bloch wrote:
+> Hello,
 > 
-> If we do that, we wouldn't be able to unload a module if there is any
-> kobject referencing it even when the node has no openers, so no easy way
-> out there.  :-(
+> I am talking this issue to LKML now.
+> 
+> Short story: using O_EXCL on /dev/srX alone does not help to prevent
+> other process from killing your burn process by just reading the
+> /dev/sgX device associated with yours, and vice versa. We have done the
+> best we could to make safe operation (in contrary to Schilling's
+> kill-this-evil-hald-thing bitching) but that is not enough, the locking
+> has to be established on kernel layer.
+> 
+> Long story:
+> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=413960
+> https://bugzilla.novell.com/show_bug.cgi?id=226019
+> http://lists.alioth.debian.org/pipermail/debburn-devel/2007-February/000297.html
+> and other error messages.
+> 
+> There is AFAICS no simple way to establish locking across the driver
+> borders. If kernel developers have a good idea, any help is appreciated.
+> 
+> Below are the typical symptoms: wodim operates via /dev/sgX because the
+> user chosen it this way, some other process (most likely hald) comes
+> along and reads from /dev/sr0 and the drive gets confused. Boom.
 
-But we must not unload the module when there is still a kobject around
-referencing a release function in the module, or we will oops if the
-kobject is finally released. If needed, the module must clean up its
-kobjects in its exit function.
+You have thre problems here, and none of them are in the kernel :)
+
+First the hardsware is broken when it can't deal with concurrent requests,
+I'd try to get a refund for it.  Second wodim should never ever use
+/dev/sg if the sr node is available.  And third HAL should stop poking
+devices all the time.  Then again hald is a totally lost cause and
+I can only recommend to uninstall it ASAP.
