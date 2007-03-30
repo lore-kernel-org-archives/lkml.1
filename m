@@ -1,112 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750954AbXC3SYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbXC3ShJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750954AbXC3SYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 14:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbXC3SYT
+	id S1751523AbXC3ShJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXC3ShI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 14:24:19 -0400
-Received: from aa014msr.fastwebnet.it ([85.18.95.74]:59082 "EHLO
-	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916AbXC3SYS (ORCPT
+	Fri, 30 Mar 2007 14:37:08 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:65515 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbXC3ShG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 14:24:18 -0400
-Date: Fri, 30 Mar 2007 20:16:49 +0200
-From: Mattia Dongili <malattia@linux.it>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix cpufreq_stats attrs removal
-Message-ID: <20070330181649.GB4127@inferi.kami.home>
-References: <20070319153013.GA6814@localhost.sw.ru> <20070319204125.GA5598@suse.de> <20070320100634.GA6811@localhost.sw.ru> <20070322030753.GB5728@suse.de> <20070322035104.GA17159@redhat.com> <20070322040006.GA6892@suse.de> <20070321201042.f1cbf4d8.akpm@linux-foundation.org> <20070322170201.GP4108@inferi.kami.home> <20070330080903.GA6559@localhost.sw.ru>
+	Fri, 30 Mar 2007 14:37:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Nh7CuUQoWcNpWNyYJccYim3008KiITgXFX9KwQunaGQ5ev2ijs+bbFCu4nKhVcB81SZtiFhGHMzB9mvSfXt5d6PsUh4tMc9Wxp+aq4w5Z6/OXsz79Y55Ydxit8AwKYZhGG8sC46eNG3ZH9kHCd/JnB+VWyAKS9BsvntxiaE2wJM=
+Message-ID: <d120d5000703301137m7ba7e3e4xb18aad1d1fc7c052@mail.gmail.com>
+Date: Fri, 30 Mar 2007 14:37:04 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Ivo van Doorn" <ivdoorn@gmail.com>
+Subject: Re: [RFC] rfkill - Add support for input key to control wireless radio
+Cc: "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "John Linville" <linville@tuxdriver.com>, "Jiri Benc" <jbenc@suse.cz>,
+       "Lennart Poettering" <lennart@poettering.net>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Larry Finger" <Larry.Finger@lwfinger.net>
+In-Reply-To: <200703301913.57656.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070330080903.GA6559@localhost.sw.ru>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.21-rc5-mm3-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <200612031936.34343.IvDoorn@gmail.com>
+	 <200703301659.48047.IvDoorn@gmail.com>
+	 <d120d5000703300828k5baf3c7x3716148b2e08d17f@mail.gmail.com>
+	 <200703301913.57656.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 30, 2007 at 12:09:03PM +0400, Alexey Dobriyan wrote:
-> On Thu, Mar 22, 2007 at 06:02:01PM +0100, Mattia Dongili wrote:
-> > On Wed, Mar 21, 2007 at 08:10:42PM -0800, Andrew Morton wrote:
-> > > I ain't picky, but as a short-term thing it'd be kinda nice if it didn't
-> > > oops the kernel.
-> > 
-> > There are other symptoms to this same bug:
-> > 
-> > 1. unload p4-clockmod: /sys/.../cpu0/cpufreq is removed all together
-> > 2. load p4-clockmod: /sys/.../cpu0/cpufreq appears but no 'stats' subdir
-> >    (yes, cpufreq_stats is loaded)
-> > 3. rmmod cpufreq_stats: Ooops!
-> > 
-> > Call Trace:
-> >  [<c0183f5b>] remove_dir+0x33/0xc4
-> >  [<c0184fca>] remove_files+0x1a/0x28
-> >  [<c018503b>] sysfs_remove_group+0x63/0x71
-> >  [<f898c38d>] cpufreq_stat_cpu_callback+0x51/0x8a [cpufreq_stats]
-> >  [<f898c477>] cpufreq_stats_exit+0x47/0x4b [cpufreq_stats]
-> >  [<c012f145>] sys_delete_module+0x190/0x1b7
-> >  [<c0140073>] do_wp_page+0x231/0x3e7
-> >  [<c0102e17>] syscall_call+0x7/0xb
-> > 
-> > The problem is cpufreq_stats doesn't know when a cpufreq driver is
-> > removed and doesn't cleanup. I guess this affects any setup with
-> > cpufreq_stats.
-> > The attached patch seems to solve both symptoms and yes... it's quite
-> > invasive as it introduce one more cpufreq policy notification (REMOVED).
-> > 
-> > BTW: the patch is against .21-rc4-mm1 but applies with some fuzz to
-> > 2.6.20 too
-> 
-> Also, it doesn't work.
+On 3/30/07, Ivo van Doorn <ivdoorn@gmail.com> wrote:
+> > > >
+> > > > My only concern is where rfkill code should live. Since it is no
+> > > > longer dependent on input core (embedded systems might disable
+> > > > rfkill-input and use bare rfkill and control state from userspace)
+> > > > it does not need to live in drivers/input.
+> > >
+> > > How about:
+> > > rfkill -> drivers/misc
+> >
+> > Not in net?
+>
+> Well in drivers/net are the network drivers but not the irda and bluetooth drivers,
+> those are located in different folders in drivers/ so I think misc would be the most
+> suitable location.
 
-hmmm... odd. I did test that case. Also, using .21-rc5-mm3 (which
-has that patch applied) and acpi-cpufreq (I don't have that P4 handy
-now) I actually hit a WARN_ON in kref_get(), but no oops:
+We could also consider the ./net itself. rfkill is not a driver, it is
+a facility.
 
-# rmmod acpi-cpufreq
+> > >  - input_polldev
+> > >        - Handlers polling, where the driver should check what the previous state was and the driver
+> > >          should send the event to rfkill.
+> >
+> > This is the input device visible to userspace and kernel. It polls
+> > state of the button and sends KEY_WLAN/KEY_BLUETOOTH events through
+> > input layer. They get distributed through various input handlers such
+> > as evdev and rfkill-input. Evdev provides route for events to
+> > userspace where application can listen to events and then toggle RF
+> > switches according to the current policy via
+> > /sys/class/rfkill/rfkillXXX/state. Rfkill-input provides in-kernel
+> > route for events into rfkill system. If rfkill-input is loaded
+> > switches that are not claimed by userspace will be toggled
+> > automatically.
+> >
+> > Does this make sense?
+>
+> Yes, but what if the user loads both modules or has them both compiled in?
+> Shouldn't there be some protection against that, since both handlers should not
+> be active at the same time.
 
-[ 1839.895632] acpi-cpufreq: acpi_cpufreq_exit
-[ 1839.895637] cpufreq-core: unregistering driver acpi-cpufreq
-[ 1839.895642] cpufreq-core: unregistering CPU 0
-[ 1839.895649] cpufreq-core: __cpufreq_governor for CPU 0, event 2
-[ 1839.895661] cpufreq-stats: removing tables
-[ 1839.895714] cpufreq-core: last reference is dropped
-[ 1839.895716] cpufreq-core: waiting for dropping of refcount
-[ 1839.895718] cpufreq-core: wait complete
-[ 1839.895720] acpi-cpufreq: acpi_cpufreq_cpu_exit
-[ 1839.895723] freq-table: clearing show_table for cpu 0
-[ 1839.895726] cpufreq-core: unregistering CPU 1
-[ 1839.895728] cpufreq-core: __cpufreq_governor for CPU 1, event 2
-[ 1839.895731] cpufreq-stats: removing tables    <------- dprintk on CPUFREQ_REMOVE
-[ 1839.895741] cpufreq-core: last reference is dropped
-[ 1839.895744] cpufreq-core: waiting for dropping of refcount
-[ 1839.895746] cpufreq-core: wait complete
-[ 1839.895747] acpi-cpufreq: acpi_cpufreq_cpu_exit
-[ 1839.895749] freq-table: clearing show_table for cpu 1
+Why not? evdev is just a delivery transport for input events to
+userspace. Even if user wants the kernel to control state of RF
+switches (which I expect most users woudl want) there still could be
+applications interested in knowing that used turned off wireless. And
+if userspace really wishes to control switch all by itself it can
+"claim" it.
 
-# cat time_in_state
+I guess what you are missing is that input event generated by a device
+is pushed through every handler bound to the device so there is no way
+for a "wrong" handler to "steals" an event from "right" handler. They
+all work simultaneously.
 
-[ 1853.932509] BUG: at lib/kref.c:32 kref_get()
-[ 1853.932567]  [<c0104b7a>] show_trace_log_lvl+0x1a/0x30
-[ 1853.932676]  [<c0105705>] show_trace+0x12/0x14
-[ 1853.932778]  [<c010575e>] dump_stack+0x16/0x18
-[ 1853.932880]  [<c01dcfba>] kref_get+0x37/0x40
-[ 1853.932986]  [<c01dc415>] kobject_get+0x15/0x1b
-[ 1853.933087]  [<c019ff0b>] sysfs_open_file+0x40/0x209
-[ 1853.933189]  [<c01693bc>] __dentry_open+0xc2/0x179
-[ 1853.933293]  [<c01694f5>] nameidata_to_filp+0x27/0x38
-[ 1853.933395]  [<c0169539>] do_filp_open+0x33/0x3b
-[ 1853.933498]  [<c0169584>] do_sys_open+0x43/0xc7
-[ 1853.933600]  [<c0169640>] sys_open+0x1c/0x1e
-[ 1853.933700]  [<c0103d24>] sysenter_past_esp+0x5d/0x81
-[ 1853.933799]  =======================
-[ 1853.934330] cpufreq-core: last reference is dropped
+> > > personally I would prefer enforcing drivers to call
+> > > allocate()
+> > > register()
+> > > unregister()
+> > > free()
+> > >
+> > > Especially with unregister() doing the same steps as free() (put_device)
+> > > might be somwhat confusing. But might be just me. ;)
+> > >
+> >
+> > I know but for refcounted objects you can't really tell when they will
+> > actually be freed. It depends when their last user drops off.
+>
+> Then perhaps rfkill_register could call put_device() when it fails, and free()
+> can be removed entirely. That way it would we prevent some driver
+> to call free() anyway.
+>
+
+That would make error handling in ->probe() methods a bit unwieldy I
+think - if you are using the standard "goto err_xxx; goto err_yyy;"
+technique then you have to conditionally call rfkill_free(). Hovewer
+if register simply fails and does not free anything and you call
+rfkill_register() last (which you need to do because driver has to be
+almost fully functional to be able to serve toggle_radio calls) you
+can always call rfkill_free() if something fails.
 
 -- 
-mattia
-:wq!
+Dmitry
