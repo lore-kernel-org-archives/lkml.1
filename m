@@ -1,51 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbXC3ELP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945939AbXC3EVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbXC3ELP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 00:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbXC3ELP
+	id S1945939AbXC3EVr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 00:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945941AbXC3EVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 00:11:15 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:60354 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753840AbXC3ELP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 00:11:15 -0400
-Date: Fri, 30 Mar 2007 13:10:03 +0900
-From: Simon Horman <horms@verge.net.au>
-To: linux-kernel@vger.kernel.org
-Cc: Paul Jackson <pj@sgi.com>, Simon Derr <simon.derr@bull.net>
-Subject: [PATCH] CPUSETS: add mems to basic usage documentation
-Message-ID: <20070330041001.GA20566@verge.net.au>
+	Fri, 30 Mar 2007 00:21:46 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:10203 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945939AbXC3EVp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 00:21:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KaNZAy3ytwlQ2n+7+w9GJga6Df7SSUYeol3LTNs3uTVeohIHITCnvsG4a+mudYAQyTp3M0dNUxEz8yJEzXzU+BcCtAZ0DTaCHsrwusTgkPoCYkiRfn260dT+7psvUD7Q3E3SXRxMt56ezKwI5kGxPa1NPaF9E0soS6wwuQdpmqU=
+Message-ID: <4807377b0703292121o6eef3bf2l998878cfd677d821@mail.gmail.com>
+Date: Thu, 29 Mar 2007 21:21:42 -0700
+From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
+To: andrei.popa@i-neo.ro
+Subject: Re: [BUG] ethX misnumbered and one missing in mii-tool
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "NetDEV list" <netdev@vger.kernel.org>
+In-Reply-To: <1175203383.6219.8.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: mutt-ng/devel-r804 (Debian)
+References: <1175203383.6219.8.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems that there must be at least one node in mems
-and at least one CPU in cpus in order to be able to assign
-tasks to a cpuset. This makes sense. And I think it would
-also make sense to include a mems setting in the basic usage
-section of the documentation.
+added netdev.
 
-I also wonder if something logged to dmsg, explaining why
-a write failed, would be a good enhancement. I ended up having
-rummage arround in cpuset.c in order to work out why my 
-configuration was failing.
+On 3/29/07, Andrei Popa <andrei.popa@i-neo.ro> wrote:
+> In a dual core 2 server with an intel motherboard and 5 network
+> cards(two onboard) and 1 pci express card with two slots and one pci-x
+> pci64 card the kernel sees all of them in dmesg but in mii-tool are
+> misnumbered and one card is missing.
+> (please CC as I am not subscribed to lkml)
 
-Signed-off-by: Simon Horman <horms@verge.net.au>
+please don't use mii-tool, ethtool is a much better option and
+actually works with gigabit cards.
 
-Index: linux-2.6/Documentation/cpusets.txt
-===================================================================
---- linux-2.6.orig/Documentation/cpusets.txt	2007-03-30 13:03:07.000000000 +0900
-+++ linux-2.6/Documentation/cpusets.txt	2007-03-30 13:03:19.000000000 +0900
-@@ -557,6 +557,9 @@
- Add some cpus:
- # /bin/echo 0-7 > cpus
- 
-+Add some mems:
-+# /bin/echo 0-7 > mems
-+
- Now attach your shell to this cpuset:
- # /bin/echo $$ > tasks
- 
+> from dmesg:
+> Intel(R) PRO/1000 Network Driver - version 7.0.33-k2-NAPI
+> Copyright (c) 1999-2005 Intel Corporation.
+> ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+> PCI: Setting latency timer of device 0000:03:00.0 to 64
+> e1000: 0000:03:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+> 00:15:17:21:0c:08
+> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+
+eth0...
+
+> ACPI: PCI Interrupt 0000:03:00.1[B] -> GSI 17 (level, low) -> IRQ 17
+> PCI: Setting latency timer of device 0000:03:00.1 to 64
+> e1000: 0000:03:00.1: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+> 00:15:17:21:0c:09
+> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+eth0...
+
+> ACPI: PCI Interrupt 0000:05:00.0[A] -> GSI 18 (level, low) -> IRQ 18
+> PCI: Setting latency timer of device 0000:05:00.0 to 64
+> e1000: 0000:05:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+> 00:15:17:17:b7:68
+> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+eth0...
+> GSI 20 sharing vector 0xC9 and IRQ 20
+> ACPI: PCI Interrupt 0000:05:00.1[B] -> GSI 19 (level, low) -> IRQ 20
+> PCI: Setting latency timer of device 0000:05:00.1 to 64
+> e1000: 0000:05:00.1: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+> 00:15:17:17:b7:69
+> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+eth0...
+
+> GSI 21 sharing vector 0xD1 and IRQ 21
+> ACPI: PCI Interrupt 0000:06:02.0[A] -> GSI 27 (level, low) -> IRQ 21
+> e1000: 0000:06:02.0: e1000_probe: (PCI-X:100MHz:64-bit)
+> 00:0e:0c:ba:a8:50
+> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+eth0...
+
+um, I'm a little confused why every interface was named eth0 when it
+tried to come up.
+you didn't mention what kernel you're using.
+
+you can enable MSI and not share interrupts on this platform, it will
+at least help your PCIe adapters.
+
+> zeus ~ # mii-tool
+> eth2: no link
+> eth5: negotiated 100baseTx-FD, link ok
+> eth6: no link
+> eth7: no link
+> zeus ~ #
+>
+> it sees only 4 cards that are misnumbered and one is missing.
+
+what does 'ip link' or 'ifconfig -a' show?
+
+Jesse
