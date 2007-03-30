@@ -1,97 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbXC3TLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbXC3TNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752103AbXC3TLr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 15:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXC3TLq
+	id S1752041AbXC3TNm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 15:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXC3TNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 15:11:46 -0400
-Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:53047 "EHLO
-	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752103AbXC3TLp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 15:11:45 -0400
-Message-ID: <460D60D8.7010408@gmail.com>
-Date: Fri, 30 Mar 2007 22:11:20 +0300
-From: Anssi Hannula <anssi.hannula@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070308)
+	Fri, 30 Mar 2007 15:13:41 -0400
+Received: from ns1.suse.de ([195.135.220.2]:39719 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752041AbXC3TNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 15:13:41 -0400
+Date: Fri, 30 Mar 2007 12:09:51 -0700
+From: Greg KH <gregkh@suse.de>
+To: Mitch Williams <mitch.a.williams@intel.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       auke-jan.h.kok@intel.com
+Subject: Re: [PATCH 2.6.20.4] Flush MSI-X table writes (rev 3)
+Message-ID: <20070330190951.GA18351@suse.de>
+References: <1175281427.17652.16.camel@strongmad>
 MIME-Version: 1.0
-To: johann deneux <johann.deneux@gmail.com>
-CC: Jiri Slaby <jirislaby@gmail.com>, Dmitry Torokhov <dtor@insightbb.com>,
-       =?ISO-8859-1?Q?=22STenyaK_=28Bruno_Gonz=E1lez=29=22?= 
-	<stenyak@gmail.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom
- driver]
-References: <2460126662758025813@fi.muni.cz> <46018FB8.1080601@gmail.com>	 <38b3b7c0703211503s3a8ee177v5b149cfd5975de8c@mail.gmail.com>	 <200703221150.12403.dtor@insightbb.com> <46090BF2.2000105@gmail.com>	 <38b3b7c0703271136s799114fcndfaa6de8db52fc70@mail.gmail.com>	 <46097A68.6080802@gmail.com>	 <38b3b7c0703271343p6a56fed8i950941e8cef196d8@mail.gmail.com>	 <460983D6.7070409@gmail.com> <38b3b7c0703271434u2fddc4d1jc2b9af097e9c95b2@mail.gmail.com>
-In-Reply-To: <38b3b7c0703271434u2fddc4d1jc2b9af097e9c95b2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1175281427.17652.16.camel@strongmad>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-johann deneux wrote:
-> On 3/27/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+On Fri, Mar 30, 2007 at 12:03:47PM -0700, Mitch Williams wrote:
+> This patch fixes a kernel bug which is triggered when using the
+> irqbalance daemon with MSI-X hardware.
 > 
->> Ok, so how to deal with these devices? Does anybody have some idea?
->> That's
->> what I was talking about somewhere in the beginning of this thread,
->> the raw
->> values, because it seems too specific for letting kernel to cope with
->> each
->> of these devices separately, but there might be a better idea in
->> somebody's
->> head? But raw is ugly...
->>
+> Because both MSI-X interrupt messages and MSI-X table writes are posted,
+> it's possible for them to cross while in-flight.  This results in
+> interrupts being received long after the kernel thinks they're disabled,
+> and in interrupts being sent to stale vectors after rebalancing.
 > 
-> What about adding a member to ff_effect which would be the number of the
-> motor?
-> We can't change the layout of ff_effect too much though, so we have to
-> find unused bits and put them to work.
+> This patch performs a read flush after writes to the MSI-X table for
+> mask and unmask operations.  Since the SMP affinity is set while
+> the interrupt is masked, and since it's unmasked immediately after,
+> no additional flushes are required in the various affinity setting
+> routines.
+> 
+> This patch has been validated with (unreleased) network hardware which
+> uses MSI-X.
+> 
+> Revised with input from Eric Biederman.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 
-Actually, having thought more about this, I'm beginning to believe
-Jiri's original FF_RAW approach could actually be a good option to add
-3d effect support to the API. It would be similar to FF_CONSTANT but
-instead of angle+magnitude the force is defined as s16 per every axis
-(so it could actually be used with current drivers as well).
+Sorry, but this isn't going to go into 2.6.20 any time soon as it
+doesn't fit the rules for the -stable tree.
 
-Alternatively we could define FF_3D_CONSTANT as an usual FF_CONSTANT
-with an additional direction value, allowing a 3D force to be described
-using 2x direction and magnitude.
+But I'll take an updated version for my pci tree to go to Linus after
+2.6.21 is out.
 
-Or we could define both ;)
+thanks,
 
-Howewer, if I understood correctly that the 3 values the phantom device
-takes are not really magnitudes along X, Y, Z, but some possibly
-unaligned motors specific to this device, we cannot really abstract the
-device motors into a 3D force effect. We could still add some FF_RAW
-type, however, but with the values representing motors instead of axes,
-with the exact function (direction) of each motor being left undefined
-in the API (unlike the FF_RAW type I was talking a few paragraphs ago,
-this type of course wouldn't be used at all by other drivers).
-
-
-> Another possibility is to get rid of "trigger" and replace it by __u8
-> motor and some padding, since that's I-Force specific (are there other
-> drivers that implement that?). The goal of "trigger" is to start an
-> effect when a button is pressed, which can be done from userland
-> instead. It's not like we need micro-second latency when starting
-> effects.
-
-The generic PID driver implements that. I also think implementing the
-support in software for the devices not supporting triggers in hw could
-be quite easily done in ff-core.c or ff-memless.c.
-
-(I also don't know what the triggers are useful for)
-
-johann deneux also wrote in another message:
-> The
-> problem is to make an extension that does not duplicate the
-> capabilities of the existing API. We don't want to have two ways of
-> specifying the same effects.
-
-How is this a problem?
-
--- 
-Anssi Hannula
-
+greg k-h
