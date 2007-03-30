@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752237AbXC3Pmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbXC3Pqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752237AbXC3Pmr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 11:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXC3Pmr
+	id S1752858AbXC3Pqe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 11:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXC3Pqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 11:42:47 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:5377
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752237AbXC3Pmr (ORCPT
+	Fri, 30 Mar 2007 11:46:34 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:32599 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbXC3Pqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 11:42:47 -0400
-Message-Id: <460D4C35.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Fri, 30 Mar 2007 16:43:17 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix dependency generation
-References: <460BA292.76E4.0078.0@novell.com>
- <20070330150843.GA3520@uranus.ravnborg.org>
-In-Reply-To: <20070330150843.GA3520@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 Mar 2007 11:46:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PpwrAg5dU/nzSwlJlmrVz75im5iaivRl5PHpu/GOaciua3Awdcuft33j/Ymlfuk/sl6rDd9pPN9mk2sALI2IDUXvA/D4PzjQPEBoNxXg6Hz6hAayA3Xj3aUi6FbpXfo+JP1Tr3OqwN07zQHCmZ9FGf9IGOQYDaYNc3jVoH33YGU=
+Message-ID: <6d6a94c50703300846x605e66e0pbd8537a06436f6ee@mail.gmail.com>
+Date: Fri, 30 Mar 2007 23:46:31 +0800
+From: "Aubrey Li" <aubreylee@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH] nommu arch dont zero the anonymous mapping by adding UNINITIALIZE flag
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, vapier.adi@gmail.com,
+       jie.zhang@analog.com, bryan.wu@analog.com,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <12871.1175267477@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <1175226172.15391.66.camel@roc-desktop>
+	 <10785.1175247540@redhat.com>
+	 <6d6a94c50703300334w6b4787f3p144715de5166d7bc@mail.gmail.com>
+	 <15938.1175253862@redhat.com>
+	 <6d6a94c50703300644y28e51f47h19182f550c18c40d@mail.gmail.com>
+	 <20070330155635.6a6c55d2@the-village.bc.nu>
+	 <6d6a94c50703300738i7b9d3fcn341feb08dca8817d@mail.gmail.com>
+	 <12871.1175267477@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Sam Ravnborg <sam@ravnborg.org> 30.03.07 17:08 >>>
->On Thu, Mar 29, 2007 at 10:27:14AM +0100, Jan Beulich wrote:
->> Commit 2e3646e51b2d6415549b310655df63e7e0d7a080 changed the way
->> the split config tree is built, but failed to also adjust fixdep
->> accordingly - if changing a config option from or to m, files
->> referencing the respective CONFIG_..._MODULE (but not the
->> corresponding CONFIG_...) didn't get rebuilt.
->Do you have a test case for this?
->I want to play a little with this before I submit it.
+On 3/30/07, David Howells <dhowells@redhat.com> wrote:
+> Aubrey Li <aubreylee@gmail.com> wrote:
+>
+> > Keep the same behave as MMU but with bad performance, or keep the same
+> > performance as MMU but without the same behave, Which one is more
+> > important?
+>
+> The thing to do is to pass a flag to mmap() to suppress the memset (as
+> suggested).  This can then be used by the uClibc malloc() implementation and
+> does not impact any application that does an anon mmap() expecting the memory
+> returned to be zeroed.
+>
 
-On i386, set CONFIG_APM=y, build, then change it to m.
+As Mike mentioned, it implies breakage in POSIX behavior
+and is specific to no-mmu only.
 
->> 
->> Once at it, also eliminate false dependencies due to use of
->> ...CONFIG_... identifiers.
->But that will break UM - no??
->See following note from fixdep:
-> * Note 2: if somebody writes HELLO_CONFIG_BOOM in a file, it will depend onto
-> * CONFIG_BOOM. This could seem a bug (not too hard to fix), but please do not
-> * fix it! Some UserModeLinux files (look at arch/um/) call CONFIG_BOOM as
-> * UML_CONFIG_BOOM, to avoid conflicts with /usr/include/linux/autoconf.h,
-> * through arch/um/include/uml-config.h; this fixdep "bug" makes sure that
-> * those files will have correct dependencies.
+What kind of application does an anonymous mmap() expecting the memory
+returned to be zeroed?
 
-Hmm, didn't see this note. Then this might warrant special casing UML, but
-penalizing all code due to this seems at least odd to me.
-
-Jan
+-Aubrey
