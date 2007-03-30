@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934376AbXC3AZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934377AbXC3A11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934376AbXC3AZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 20:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934377AbXC3AZ1
+	id S934377AbXC3A11 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 20:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934380AbXC3A11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 20:25:27 -0400
-Received: from smtpout.mac.com ([17.250.248.171]:58129 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934376AbXC3AZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 20:25:27 -0400
-In-Reply-To: <Pine.LNX.4.61.0703300206480.31834@yvahk01.tjqt.qr>
-References: <bc8960410703290304t7ff61205u7110ac33c671fb4d@mail.gmail.com> <2375c9f90703290332w3f232b1cjf044f554fba04879@mail.gmail.com> <20070329205935.GB13541@Ahmed> <64884922-4254-4827-9A9F-09053043B8E6@mac.com> <Pine.LNX.4.61.0703300206480.31834@yvahk01.tjqt.qr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EE2D5D85-8F52-46B2-83A3-918ED961FDB1@mac.com>
-Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Cong WANG <xiyou.wangcong@gmail.com>,
-       Russ Meyerriecks <datachomper@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Student Project Ideas
-Date: Thu, 29 Mar 2007 20:25:12 -0400
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Thu, 29 Mar 2007 20:27:27 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:45205 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934377AbXC3A10 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 20:27:26 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 29 Mar 2007 17:27:24 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ravikiran G Thirumalai <kiran@scalex86.org>
+Subject: Re: [rfc][patch] queued spinlocks (i386)
+In-Reply-To: <20070329071611.GA24176@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0703291723140.1199@alien.or.mcafeemobile.com>
+References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu>
+ <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL>
+ <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de>
+ <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com>
+ <20070329013652.GB2390@wotan.suse.de> <20070329071611.GA24176@wotan.suse.de>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 29, 2007, at 20:09:11, Jan Engelhardt wrote:
-> On Mar 29 2007 18:54, Kyle Moffett wrote:
->>
->> One thing that I think is fairly non-obvious to newcomers is that  
->> Linux kernel development is not done at all the way they teach you  
->> in your Large Scale Software Engineering classes.  Many of those  
->> classes talk much about careful design (whether top-down, bottom- 
->> up, outside-in, waterfall, spiral, $BUZZWORD_OF_THE_DAY) and  
->> detailed unit-testing, whereas Linux kernel development isn't  
->> really "designed" at all.
->
-> Well, linux kernel is "extreme programming" - hack away until it  
-> works, care about a design shape and stable API later.
+On Thu, 29 Mar 2007, Nick Piggin wrote:
 
-I somewhat disagree.  Look at the amount of _design_ which is going  
-into the linux-virtualization stuff, the replacement SLAB subsystems  
-(SLOB/SLUB), or the current queued-spinlock thread.  Admittedly with  
-Linux 90% of the design process is rewriting the code a thousand  
-times based on comments before it goes into mainline, but that's  
-design nonetheless.  It's just evolved-design-by-committee, a very  
-knowledgeable committee made of the people who are interested in and  
-understand what's going on well enough to give useful input and with  
-enough sense of technical value to veto anything with significant  
-architectural problems.
+> On Thu, Mar 29, 2007 at 03:36:52AM +0200, Nick Piggin wrote:
+> > In most cases, no. For the uncontended case they should be about the
+> > same. They have the same spinning behaviour. However there is a little
+> > window where they might be a bit slower I think... actually perhaps I'm
+> > wrong!
+> > 
+> > Currently if you have 4 CPUs spinning and the lock is released, all 4
+> > CPU cachelines will be invalidated, then they will be loaded again, and
+> > found to be 0, so they all try to atomic_dec_return the counter, each
+> > one invalidating others' cachelines. 1 gets through.
+> > 
+> > With my queued locks, all 4 cachelines are invalidated and loaded, but
+> > only one will be allowed to proceed, and there are 0 atomic operations
+> > or stores of any kind.
+> > 
+> > So I take that back: our current spinlocks have a worse thundering herd
+> > behaviour under contention than my queued ones. So I'll definitely
+> > push the patch through.
+> 
+> OK, it isn't a big difference, but a user-space test is showing slightly
+> (~2%) improvement in the contended case on a 16 core Opteron.
+> 
+> There is a case where the present spinlocks are almost twice as fast on
+> this machine (in terms of aggregate throughput), and that is when a lock
+> is taken right after it is released. This is because the same CPU will
+> often be able to retake the lock without transitioning the cache. This is
+> going to be a rare case for us, and would suggest suboptimal code anyway 
+> (ie. the lock should just be kept rather than dropped and retaken).
+> 
+> Actually, one situation where it comes up is when we drop and retake a
+> lock that needs_lockbreak. Of course, the queued lock behaviour is
+> desired in that case anyway.
+> 
+> However single-thread performance is presently a bit down. OTOH, the
+> assembly generated by gcc looks like it could be improved upon (even by
+> me :P).
+> 
+> This is what I've got so far. Should work for i386 and x86_64. Any
+> enhancements or results from other CPUs would be interesting.
 
-Cheers,
-Kyle Moffett
+I slightly modified it to use cycles:
+
+http://www.xmailserver.org/qspins.c
+
+Here (Dual Opteron 252) queued locks (ticklocks) are about 10% slower in 
+both cases. This is really a microbench, and assembly matter a lot. I did 
+not have time to look at the generated one yet, but optimizing branches 
+can help in those cases.
+
+
+
+
+- Davide
+
 
