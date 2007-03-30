@@ -1,140 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbXC3PAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751234AbXC3PIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753845AbXC3PAd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 11:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXC3PAd
+	id S1751234AbXC3PIB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 11:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXC3PIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 11:00:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:42110 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753845AbXC3PAb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 11:00:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=Q54FclG4qIJPqfvcxPg4PZZ8gPjxgQ7WG4U2k4DWGE1jJqereuhC48mt/KOLaayS4hwELaU6Ke9rCzPJZIPS4XUXn+TFw7h1wDBqZ0p4uZZ4GHYSTmeJFBY1C1pDofQd7RTFmsYDRbLkMaXoGPqUx4UMWccH1MPdL4g4q/Rl0wM=
-To: Dmitry Torokhov <dtor@insightbb.com>
-Subject: Re: [RFC] rfkill - Add support for input key to control wireless radio
-Date: Fri, 30 Mar 2007 16:59:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       John Linville <linville@tuxdriver.com>, Jiri Benc <jbenc@suse.cz>,
-       Lennart Poettering <lennart@poettering.net>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Larry Finger <Larry.Finger@lwfinger.net>
-References: <200612031936.34343.IvDoorn@gmail.com> <200701311220.51971.IvDoorn@gmail.com> <200703300127.40849.dtor@insightbb.com>
-In-Reply-To: <200703300127.40849.dtor@insightbb.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Fri, 30 Mar 2007 11:08:01 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37316 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751234AbXC3PIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 11:08:00 -0400
+Date: Fri, 30 Mar 2007 17:08:43 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix dependency generation
+Message-ID: <20070330150843.GA3520@uranus.ravnborg.org>
+References: <460BA292.76E4.0078.0@novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703301659.48047.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+In-Reply-To: <460BA292.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Mar 29, 2007 at 10:27:14AM +0100, Jan Beulich wrote:
+> Commit 2e3646e51b2d6415549b310655df63e7e0d7a080 changed the way
+> the split config tree is built, but failed to also adjust fixdep
+> accordingly - if changing a config option from or to m, files
+> referencing the respective CONFIG_..._MODULE (but not the
+> corresponding CONFIG_...) didn't get rebuilt.
+Do you have a test case for this?
+I want to play a little with this before I submit it.
 
-> I am very sorry for taking so much time to respond but finally I went
-> through the patch and I still have the same objection as before -
-> it mixes two logically (and often physically) separated objects into
-> a single entity. I think that RF switch and button should be separate
-> entities, created and destroyed independently of each other. This way
-> everything handled uniformly by the kernel.
-
-ok. Sounds good as well. :)
-
-> I attempted to rework the rfkill core supprt and simplify it and
-> came up with the patch below. Network card drivers that are able
-> to control state of their RF transmitters allocate and register
-> rfkill structures. Every rfkill structure belongs to one of
-> RF classes (WLAN, Bluetooth or IRDA) and exports its name, type,
-> state and "user_claim" through sysfs.
 > 
-> There is also an input handler that catces KEY_WLAN and KEY_BLUETOOTH
-> events passing through input system and toggles state of all RF
-> switches of appropriate type registered with rfkill system (unless
-> a switch was claimed by userspace in which case it is left alone).
-> I think this provides basic functionality that most of the users need
-> and any advanced control will have to be done from userspace.
+> Once at it, also eliminate false dependencies due to use of
+> ...CONFIG_... identifiers.
+But that will break UM - no??
+See following note from fixdep:
+ * Note 2: if somebody writes HELLO_CONFIG_BOOM in a file, it will depend onto
+ * CONFIG_BOOM. This could seem a bug (not too hard to fix), but please do not
+ * fix it! Some UserModeLinux files (look at arch/um/) call CONFIG_BOOM as
+ * UML_CONFIG_BOOM, to avoid conflicts with /usr/include/linux/autoconf.h,
+ * through arch/um/include/uml-config.h; this fixdep "bug" makes sure that
+ * those files will have correct dependencies.
 
-Shouldn't a KEY_IRDA be added as well?
-It isn't currently defined in input.h yet, but perhaps it actually should?
-Or is IRDA treated differently for a specific reason?
+	Sam
 
-> In a followup patch there is a skeleton code for creating polled
-> input devices. For cards that have button physically connected
-> their drivers will have to register a separate input device and
-> let either input handler or userspace application take care of
-> switching RF state appropriately.
->
-> My only concern is where rfkill code should live. Since it is no
-> longer dependent on input core (embedded systems might disable
-> rfkill-input and use bare rfkill and control state from userspace)
-> it does not need to live in drivers/input.
-
-How about:
-rfkill -> drivers/misc
-rfkill_input -> input/misc
-input_polldev -> lib/ (perhaps small namechange to rfkill_polldev?)
-It would scatter the components a bit, but since each of those modules
-has its own specific task this would make the most sense.
-And by setting the depends and select fields for the menu entries correctly
-it shouldn't be too big of a problem.
-
-> Please let me know what you think.
-
-Just to get it straight on how these 3 modules would cooperate (before I start mixing things up) ;)
-
- - rfkill
-	- Drivers register to the rfkill module, rfkill 
-	- Provides the sysfs interface
-	- Drivers that don't require polling should report the events to this module
-
- - rfkill_input
-	- Provides input device visible to userspace
-
- - input_polldev
-	- Handlers polling, where the driver should check what the previous state was and the driver
-	  should send the event to rfkill.
-
-Could input_polldev perhaps not be setup to poll, and keep track of the current button status
-and send the signal directly to rfkill?
-
-What I am also not sure of is that input_polldev and rfkill_input both register a input device.
-Instead of starting and stopping the polling through the input device it would perhaps make more
-sense to either use the input device from rfkill_input and/or make use of a sysfs attribute.
-
-> +/**
-> + * rfkill_unregister - Uegister a rfkill structure.
-> + * @rfkill: rfkill structure to be unregistered
-> + *
-> + * This function should be called by the network driver during device
-> + * teardown to destroy rfkill structure. Note that rfkill_free() should
-> + * _not_ be called after rfkill_unregister().
-> + */
-> +void rfkill_unregister(struct rfkill *rfkill)
-> +{
-> +       device_del(&rfkill->dev);
-> +       rfkill_remove_switch(rfkill);
-> +       put_device(&rfkill->dev);
-> +}
-> +EXPORT_SYMBOL(rfkill_unregister);
-
-personally I would prefer enforcing drivers to call
-allocate()
-register()
-unregister()
-free()
-
-Especially with unregister() doing the same steps as free() (put_device)
-might be somwhat confusing. But might be just me. ;)
-
-The remainder looks good, unfortunately I can't test it since the laptop with an rfkill button I have
-requires isn't in a state for testing at this moment, and I would need to figure out how button status
-reading happens in bcm43xx.
-
-Ivo
+> 
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> 
+> --- linux-2.6.21-rc5/scripts/basic/fixdep.c	2007-02-04 19:44:54.000000000 +0100
+> +++ 2.6.21-rc5-fixdep-mod/scripts/basic/fixdep.c	2007-03-29 11:11:10.000000000 +0200
+> @@ -29,8 +29,7 @@
+>   * option which is mentioned in any of the listed prequisites.
+>   *
+>   * To be exact, split-include populates a tree in include/config/,
+> - * e.g. include/config/his/driver.h, which contains the #define/#undef
+> - * for the CONFIG_HIS_DRIVER option.
+> + * e.g. include/config/his/driver.h, consiting of empty files.
+>   *
+>   * So if the user changes his CONFIG_HIS_DRIVER option, only the objects
+>   * which depend on "include/linux/config/his/driver.h" will be rebuilt,
+> @@ -223,7 +222,7 @@ void use_config(char *m, int slen)
+>  void parse_config_file(char *map, size_t len)
+>  {
+>  	int *end = (int *) (map + len);
+> -	/* start at +1, so that p can never be < map */
+> +	/* start at +1, so that p can never be <= map */
+>  	int *m   = (int *) map + 1;
+>  	char *p, *q;
+>  
+> @@ -235,6 +234,8 @@ void parse_config_file(char *map, size_t
+>  		continue;
+>  	conf:
+>  		if (p > map + len - 7)
+> +			break;
+> +		if (isalnum(p[-1]) || p[-1] == '_')
+>  			continue;
+>  		if (memcmp(p, "CONFIG_", 7))
+>  			continue;
+> @@ -245,6 +246,8 @@ void parse_config_file(char *map, size_t
+>  		continue;
+>  
+>  	found:
+> +		if (!memcmp(q - 7, "_MODULE", 7))
+> +			q -= 7;
+>  		use_config(p+7, q-p-7);
+>  	}
+>  }
+> 
+> 
