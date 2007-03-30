@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbXC3U3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbXC3UoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbXC3U3j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 16:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbXC3U3j
+	id S1753600AbXC3UoJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 16:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbXC3UoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 16:29:39 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:40625 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753595AbXC3U3i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 16:29:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=c+oCajTZ8nTT+5tTp887froLAFtawOD6OCrUG3gLL8FK91N7XHCxyfyxx7h1yEEIdb36RxCOJB5c31c2QaVOLuubxr+AyO0ejBWDYGicqvfsclRn60I4lrLnKGa9QGSYxPT6ioKxv+cPeL2+aLe33YZcUM9j83Abe8gxugY5M9k=
-Message-ID: <d120d5000703301329o67d8720dp1f7875a9ff4e11dd@mail.gmail.com>
-Date: Fri, 30 Mar 2007 16:29:37 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Pete Zaitcev" <zaitcev@redhat.com>
-Subject: Re: usb hid: reset NumLock
-Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, stuart_hayes@dell.com
-In-Reply-To: <20070330125437.b3229471.zaitcev@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 30 Mar 2007 16:44:09 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:51516 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753600AbXC3UoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 16:44:07 -0400
+Date: Fri, 30 Mar 2007 13:43:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Brian Pomerantz <bapper@piratehaven.org>
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] fix page leak during core dump
+Message-Id: <20070330134359.ec6d95bc.akpm@linux-foundation.org>
+In-Reply-To: <20070329203913.GA5190@skull.piratehaven.org>
+References: <20070329203913.GA5190@skull.piratehaven.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070330105924.01a16dd6.zaitcev@redhat.com>
-	 <d120d5000703301114r420a9604i34b6a015e6bad285@mail.gmail.com>
-	 <20070330125437.b3229471.zaitcev@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/30/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
-> On Fri, 30 Mar 2007 14:14:20 -0400, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
->
-> > > I didn't like a) layering violation, and b) that they defeat filtering
-> > > unconditionally. Why have any filtering then?
-> > >
-> > > Instead, I propose for USB HID driver to reset NumLock on probe. Like this:
-> > >
-> > > --- a/drivers/usb/input/hid-core.c
->
-> > This is fine and that's what we do in atkbd probe but maybe we should
-> > move that in input core and reset leds as part of
-> > input_register_device()?
->
-> Sure, as long as it works. I think (as much as I understand), that we
-> already attempt to do this indirectly. input_register_device invokes
-> ->start handlers, and the kbd_start attempts to reset LEDs, but fails
-> because of the state filtering.
->
+On Thu, 29 Mar 2007 13:39:13 -0700
+Brian Pomerantz <bapper@piratehaven.org> wrote:
 
-Not exactly... Keyboard handler's start method tries to bring state of
-new keyboard in sync with the state of the rest of keyboards. The
-purpose of start() is not to complete hardware initialization but to
-adjust logical state of the device according to handler's
-requirements...
+> When the dump cannot occur most likely because of a full file system
+> and the page to be written is the zero page, the call to
+> page_cache_release() is missed.
+> 
+> Signed-off-by: Brian Pomerantz <bapper@mvista.com>
+> 
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index a2fceba..9cc4f0a 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -1704,7 +1704,10 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
+>  				DUMP_SEEK(PAGE_SIZE);
+>  			} else {
+>  				if (page == ZERO_PAGE(addr)) {
+> -					DUMP_SEEK(PAGE_SIZE);
+> +					if (!dump_seek(file, PAGE_SIZE)) {
+> +						page_cache_release(page);
+> +						goto end_coredump;
+> +					}
 
-But I am backpedaling on my statement about moving it into input core.
-The driver (HID in this case) should properly reset the device before
-registering it with input layer.
+Oh for gawds sake I wish we could be rid of those idiotic macros :(
 
--- 
-Dmitry
+This patch looks OK to me, although a refcount leak on the ZERO_PAGE is
+special, because that page is PageReserved().
+
+It used to be the case that we'd ignore attempts to change the refcount on
+reserved pages (or at least on the ZERO_PAGE), but we changed that, so we
+now actually refcount the ZERO_PAGE.  (I think, from a quick read of the
+code.  This contradicts my memory of how it works).
+
+So I expect the net effect here is that a sufficiently determined attacker
+can overflow the ZERO_PAGE's refcount, thus causing it to be "freed".  The
+page allocator won't actually free the page due to PG_Reserved, but it'll
+all become very noisy.
+
+Nick, Hugh: agree?
