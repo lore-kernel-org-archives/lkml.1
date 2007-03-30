@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbXC3MHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945952AbXC3M3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752951AbXC3MHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 08:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbXC3MHo
+	id S1945952AbXC3M3r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 08:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945968AbXC3M3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 08:07:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51322 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752951AbXC3MHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 08:07:44 -0400
-Date: Fri, 30 Mar 2007 14:06:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [bug] fixed_init(): BUG: at drivers/base/core.c:120 device_release(), was: "2.6.21-rc5: known regressions"
-Message-ID: <20070330120657.GA21271@elte.hu>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de> <20070330120416.GA19373@elte.hu>
+	Fri, 30 Mar 2007 08:29:45 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:55458 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750992AbXC3M3o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 08:29:44 -0400
+Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: gregkh@suse.de, hugh@veritas.com, cornelia.huck@de.ibm.com,
+       dmitry.torokhov@gmail.com, oneukum@suse.de, maneesh@in.ibm.com,
+       rpurdie@rpsys.net, Jeff Garzik <jgarzik@pobox.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       SCSI Mailing List <linux-scsi@vger.kernel.org>
+In-Reply-To: <460CDBA6.5030608@gmail.com>
+References: <460CDBA6.5030608@gmail.com>
+Content-Type: text/plain
+Date: Fri, 30 Mar 2007 08:29:10 -0400
+Message-Id: <1175257751.3760.19.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070330120416.GA19373@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-03-30 at 18:43 +0900, Tejun Heo wrote:
+> Orphaning sysfs nodes on unregistration is a big step in this
+> direction.  With sysfs reference counting out of the picture,
+> implementing 'disconnect immediate' interface only on a few components
+> (including request_queue) should suffice for most block device
+> drivers.  I'm not familiar with other drivers but I don't think
+> they'll be very different.
 
-there's a new type of message in allyesconfig-bzImage bootup test:
+I agree with this statement.  The big question in my mind is how do we
+do it?
 
-Calling initcall 0xc1b6d692: fixed_init+0x0/0x33()
-Fixed PHY: Registered new driver
-Device 'fixed@100:1' does not have a release() function, it is broken and must be fixed.
-BUG: at drivers/base/core.c:120 device_release()
- [<c0105ff9>] show_trace_log_lvl+0x19/0x2e
- [<c01063e2>] show_trace+0x12/0x14
- [<c01063f8>] dump_stack+0x14/0x16
- [<c063cddf>] device_release+0x7c/0x7e
- [<c0476c32>] kobject_cleanup+0x44/0x5e
- [<c0476c57>] kobject_release+0xb/0xd
- [<c04773ef>] kref_put+0x63/0x71
- [<c0476757>] kobject_put+0x14/0x16
- [<c063ceef>] put_device+0x11/0x13
- [<c063d943>] device_unregister+0x12/0x15
- [<c07337d1>] fixed_mdio_register_device+0x210/0x23b
- [<c1b6d6b0>] fixed_init+0x1e/0x33
- [<c1b31a2d>] init+0x15d/0x2bd
- [<c0105bc3>] kernel_thread_helper+0x7/0x10
- =======================
-Device 'fixed@10:1' does not have a release() function, it is broken and must be fixed.
-BUG: at drivers/base/core.c:120 device_release()
- [<c0105ff9>] show_trace_log_lvl+0x19/0x2e
- [<c01063e2>] show_trace+0x12/0x14
- [<c01063f8>] dump_stack+0x14/0x16
- [<c063cddf>] device_release+0x7c/0x7e
- [<c0476c32>] kobject_cleanup+0x44/0x5e
- [<c0476c57>] kobject_release+0xb/0xd
- [<c04773ef>] kref_put+0x63/0x71
- [<c0476757>] kobject_put+0x14/0x16
- [<c063ceef>] put_device+0x11/0x13
- [<c063d943>] device_unregister+0x12/0x15
- [<c07337d1>] fixed_mdio_register_device+0x210/0x23b
- [<c1b6d6c1>] fixed_init+0x2f/0x33
- [<c1b31a2d>] init+0x15d/0x2bd
- [<c0105bc3>] kernel_thread_helper+0x7/0x10
- =======================
-Calling initcall 0xc1b6d6c5: sundance_init+0x0/0x16()
-Calling initcall 0xc1b6d6db: hamachi_init+0x0/0x16()
+The essential problem, and the reason why the lifetime rules are
+entangled is that fundamentally, sysfs entries are managed by kobjects.
+The things the device drivers are interested in is struct device, which
+is usually embedded in driver data structures.  Unfortunately, the
+required kobject is usually embedded in struct device meaning that the
+relevant driver structure cannot be freed while the sysfs entry still
+exists.
+
+It seems to me that the only way to Orphan the sysfs entries is to
+separate the kobject and the struct device so their lifetime rules are
+no longer entangled.  Then we can free the driver structure with the
+embedded struct device while still keeping the necessary kobject around
+to perform orphaned sysfs operations.
+
+So it seems to me that what we need to do is to give struct device its
+own kref and a pointer to a kobject.  Then we can manage the separate
+lifetimes independently.  The device would basically allocate and take a
+reference to the kobject on device_add() and relinquish it again (and
+null out the kobject pointer) on device_del().  The complexity here is
+that we now have to allocate the kobject somewhere else ... probably in
+device_add() (it doesn't come for free with the device structures).
+
+James
+
+
