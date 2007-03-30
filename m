@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbXC3SEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbXC3SGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752226AbXC3SEq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 14:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXC3SEq
+	id S1752414AbXC3SGK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXC3SGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 14:04:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38730 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752226AbXC3SEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 14:04:45 -0400
-Date: Fri, 30 Mar 2007 20:04:44 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       e1000-devel@lists.sourceforge.net, jgarzik@pobox.com,
-       netdev@vger.kernel.org
-Subject: Re: [1/5] 2.6.21-rc5: known regressions
-Message-ID: <20070330180444.GH14134@stusta.de>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de> <460AB9E8.8070803@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <460AB9E8.8070803@intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 30 Mar 2007 14:06:10 -0400
+Received: from smtpout.mac.com ([17.250.248.184]:51053 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752414AbXC3SGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 14:06:09 -0400
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5E1467FD-223A-46DD-9A03-5EA20B5D4842@mac.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: [RFC][PATCH 0/2] Darwinux:  Binary compat support for Mach-O/Darwin in Linux
+Date: Fri, 30 Mar 2007 14:05:22 -0400
+To: LKML Kernel <linux-kernel@vger.kernel.org>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 28, 2007 at 11:54:32AM -0700, Kok, Auke wrote:
-> Adrian Bunk wrote:
-> >Subject    : e1000 resume weirdness
-> >References : http://lkml.org/lkml/2007/3/26/91
-> >Submitter  : Ingo Molnar <mingo@elte.hu>
-> >Handled-By : Jesse Brandeburg <jesse.brandeburg@gmail.com>
-> >             Auke Kok <auke-jan.h.kok@intel.com>
-> >Status     : problem is being debugged
-> 
-> The issue comes from a corner case and the underlying problem is that e1000 
-> isn't stopping tx properly. We have a fix for this pending in our tree that 
-> I'll push upstream for 2.6.22 to Jeff, but I don't think this should be a 
-> blocker and it's probably is not a regression at all, the gap has always 
-> been present.
-> 
-> on a side note, this is probably fixed easily by turning the adapters 
-> detect_tx_hung flag off in e1000_down, so if someone spots this reoccurring 
-> somewhat regularly, please contact me so we can debug it. I myself have a 
-> system suspend/resuming in circles for an hour now with traffic flying 
-> across without a single hit on it....
-> 
-> Adrian, you probably want to drop this issue from your list.
+I've gotten some time to start working with this code again and I'm  
+looking for some review on my first couple patches.  After these two  
+patches the code does little more than print out lots of details  
+about the binary being run to the syslog and then fail with -ENOEXEC,  
+but it's a start.  I'm currently fixing up my icky memory-mapping  
+code to avoid allocating big chunks of kernel memory for tables in  
+the binary, and once I make some progress on that I'll submit it too.
 
-Thanks for the update, dropped as non-regression.
+I'd appreciate any information on what is required in the load_binary  
+function in my binfmt.  In particular, if there's anything which fs/ 
+binfmt_elf.c does do which is *NOT* required, I'd be interested to  
+know what and why.  Thanks for all your assistance.
 
-> Cheers,
-> 
-> 
-> Auke
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Cheers,
+Kyle Moffett
