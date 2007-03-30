@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934360AbXC2X3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934368AbXC3AJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934360AbXC2X3l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 19:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934377AbXC2X3l
+	id S934368AbXC3AJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 20:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934366AbXC3AJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 19:29:41 -0400
-Received: from hu-out-0506.google.com ([72.14.214.225]:42756 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934375AbXC2X3j (ORCPT
+	Thu, 29 Mar 2007 20:09:21 -0400
+Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:44656 "HELO
+	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S934367AbXC3AJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 19:29:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=hgHsULEe0hPexk7EvZCzv9vPnCGe3bHueBkwvw9YUnArWO2IleB3evETPahXwjSpWenntR4t46ZZiag1YwyhBHysjR+2xCv9VXOADR84Ujx8f1vowoCT+aLt0mD4ReDlj7Z0z6yfqhNw9xZhUPMHME3wImB4rFB3USsJEobURWM=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: David Brownell <david-b@pacbell.net>
+	Thu, 29 Mar 2007 20:09:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=R0cbNsHzuVkGqvfhEBQ14XJ/yEVo8JTg7ZqGsbHBhFcfMzWcSrwj6P30gI+zlG7zI4AIOHbTYfJyRCwiesZAMWx93vEaCQAs4CP73LWaIZx7zTGmKqHPd/rnupz6tZnbD6ialGvBOoMrUUMlxukqWxMFmHG6OwrK9/PoA+Az8Q8=  ;
+X-YMail-OSG: eKe37akVM1n7KFEpWzKnbYrEjYDOtBPX9zDnpcFidkEgjkk7XUMV7Z2Siap3cl_p3R38SUtyTHdvZBIrd3QUBYDW3Uo91tqxUFpa_VJULdwwdXmaQzA-
+From: David Brownell <david-b@pacbell.net>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: [linux-pm] [3/6] 2.6.21-rc4: known regressions
-Date: Fri, 30 Mar 2007 01:29:27 +0200
-User-Agent: KMail/1.9.6
+Date: Thu, 29 Mar 2007 17:09:14 -0700
+User-Agent: KMail/1.7.1
 Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de,
        Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
@@ -29,77 +30,81 @@ Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
        linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.linux-foundation.org,
        "Michael S. Tsirkin" <mst@mellanox.co.il>,
        Thomas Gleixner <tglx@linutronix.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703282327.56132.maximlevitsky@gmail.com> <200703291533.38002.david-b@pacbell.net>
-In-Reply-To: <200703291533.38002.david-b@pacbell.net>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703291533.38002.david-b@pacbell.net> <200703300129.27474.maximlevitsky@gmail.com>
+In-Reply-To: <200703300129.27474.maximlevitsky@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703300129.27474.maximlevitsky@gmail.com>
+Message-Id: <200703291709.17085.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 March 2007 00:33:35 David Brownell wrote:
-> On Wednesday 28 March 2007 2:27 pm, Maxim wrote:
-> > On Wednesday 28 March 2007 22:59:26 David Brownell wrote:
-> 
-> > 	When HPET is active it eats RTC IRQ,
-> 
-> Only when HPET timers 0 and 1 are set up for "Legacy Replacement Mode".
-> In the more sensible "Standard Mode", they have their own IRQs.
-> 
-> 
-> > 	So the only way out is to emulate RTC using HPET,
-> > 	It is done this way in old rtc driver, rtc-cmos should do the same.
-> 
-> No.  Patches like
-> 
->   http://marc.info/?l=linux-kernel&m=117219531503973&w=2
-> 
-> should be merged (I hope they're in the 2.6.22 queue!), making
-> HPET run in "Standard Mode" so that HPET can stop sticking its
-> fingers in code where they don't belong.
-> 
-> 
-> > 	I am also planning to add support of HPET and suspend/resume
-> > 	for rtc-cmos, but I didn't start this yet. 
-> 
-> It's already got suspend/resume support, and in the 2.6.22 queue
-> are RTC framework updates which will let the RTC framework replace
-> a lot more platform-specific RTC support.  (Platform changes can come
-> later, where they're needed.  ARM for example doesn't need any.)
-> 
-> Once HPET stops using "Legacy Replacement Mode" you won't need to
-> touch anything in the RTC stack (except maybe the legacy char/rtc.c
-> driver, removing HPET stuff).
-> 
-> The open issue with suspend/resume support in rtc-cmos relates to
-> how ACPI wakeup alarms should trigger.  I've not made time to test
-> those patches.
-> 
-> - Dave
-> 
+On Thursday 29 March 2007 4:29 pm, Maxim Levitsky wrote:
+> On Friday 30 March 2007 00:33:35 David Brownell wrote:
+> > On Wednesday 28 March 2007 2:27 pm, Maxim wrote:
 
-Hi,
-	It is not that simple,
+> > > 	So the only way out is to emulate RTC using HPET,
+> > > 	It is done this way in old rtc driver, rtc-cmos should do the same.
+> > 
+> > No.  Patches like
+> > 
+> >   http://marc.info/?l=linux-kernel&m=117219531503973&w=2
 
-	Only in legacy replacement mode HPET can be put on IRQ0 (and sadly  IRQ8)
-	At least this is true on some systems, on mine for example
-	
-	On my system first 2 hpet timers can only be assigned to IRQ21-23
-	and third to ether IRQ11, IRQ21-IRQ23
+also:   http://marc.info/?l=linux-kernel&m=117219531526317&w=2
 
-	Or in legacy replacement mode first is assigned IRQ0 and second IRQ8
+> > should be merged (I hope they're in the 2.6.22 queue!), making
+> > HPET run in "Standard Mode" so that HPET can stop sticking its
+> > fingers in code where they don't belong.
+> >
+> > ...
+>
+> 	It is not that simple,
+> 
+> 	Only in legacy replacement mode HPET can be put on IRQ0 (and sadly  IRQ8)
+> 	At least this is true on some systems, on mine for example
 
-	this will make it difficult to use it as a clockevents source
+Right, that's the entire point of legacy replacement mode.
 
-	Not to mention the fact that current code assumes that BIOS assigned IRQs to all timers which is not true on my system.
+But so what?  In standard mode, HPET just uses other IRQs.
+Nothing would care about irq0, and irq8 would be used by
+the RTC as necessary.
 
-	I have brand new intel DG965 motherboard.
 
-	What is wrong with relying on HPET to provide RTC IRQ ?
+> 	this will make it difficult to use it as a clockevents source
 
-	Best regards,
-		Maxim Levitsky
+Why?  It's not like the clockevent logic cares what IRQ a given
+programmable timer uses.  So long as the HPET driver can receive
+its IRQ, it'll make a fine clockevent.  There's no reason to have
+HPET prevent other drivers from working, by insisting it use that
+nasty "prevent other hardware from issuing IRQs" mode.
+
+The patches from Venkatesh sure seem to have behaved for him.
+And while he might have complained about difficulty, I think
+that'd be more likely due to the SMP issues he also addressed
+than because of some (historical?) attachment to irq0.
+
+
+> 	Not to mention the fact that current code assumes that BIOS
+> 	assigned IRQs to all timers which is not true on my system. 
+
+Getting IRQ routing sorted out is a problem that's been solved
+numerous times before.  And again, the patches referenced above
+seem to have resolved any such issues.
+
+
+> 	What is wrong with relying on HPET to provide RTC IRQ ?
+
+For starters, it's not an RTC.  Why in the world would you want to
+make the OS think it's an RTC ... unless you're Microsoft, and are
+desperate to get another periodic timer (and don't much care about
+the other RTC functionality?
+
+
+... that's all off-topic for 2.6.21 regressions though; it's too
+late to merge x86_64 clockevent support, or fix HPET issues like
+not using "standard mode".
+
+- Dave
 
