@@ -1,73 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbXC3Wux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbXC3XB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932771AbXC3Wux (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 18:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932470AbXC3Wuw
+	id S932825AbXC3XB3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 19:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932903AbXC3XB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 18:50:52 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55618 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932771AbXC3Wuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 18:50:52 -0400
-Date: Fri, 30 Mar 2007 15:50:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ken Chen" <kenchen@google.com>
-Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] remove artificial software max_loop limit
-Message-Id: <20070330155043.2daa6d5c.akpm@linux-foundation.org>
-In-Reply-To: <b040c32a0703301506q17509843h1309a4132634154a@mail.gmail.com>
-References: <b040c32a0703300053u110063b0u80ee0e7b9dd158c2@mail.gmail.com>
-	<b040c32a0703300148w479cf4cdw667cf464edf7c725@mail.gmail.com>
-	<Pine.LNX.4.61.0703301105190.31834@yvahk01.tjqt.qr>
-	<b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
-	<20070330141524.5f6cff29.akpm@linux-foundation.org>
-	<b040c32a0703301506q17509843h1309a4132634154a@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 30 Mar 2007 19:01:29 -0400
+Received: from xenotime.net ([66.160.160.81]:38296 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932825AbXC3XB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 19:01:28 -0400
+Date: Fri, 30 Mar 2007 16:02:59 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 1/13] signal/timer/event fds v8 - anonymous inode source
+ ...
+Message-Id: <20070330160259.6e03705b.rdunlap@xenotime.net>
+In-Reply-To: <Pine.LNX.4.64.0703301532500.3721@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.28743.1174415834.1>
+	<20070330123943.8df1aa92.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703301532500.3721@alien.or.mcafeemobile.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007 15:06:03 -0700
-"Ken Chen" <kenchen@google.com> wrote:
+On Fri, 30 Mar 2007 15:44:15 -0700 (PDT) Davide Libenzi wrote:
 
-> On 3/30/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > So..  this change will cause a fatal error for anyone who is presently
-> > using max_loop, won't it?  If they're doing that within their
-> > initramfs/initrd/etc then things could get rather ugly for them.
+> On Fri, 30 Mar 2007, Andrew Morton wrote:
 > 
-> probably, if they access loop device non-sequentially.
+> > > +#include <asm/uaccess.h>
+> > > +
+> > > +
+> > > +
+> > 
+> > Too many blank lines
 > 
+> It'd be interesting to know how much is enough. You use one, ppl says it 
+> is too dense. You use more, ppl says it's too much.
+> There's the one-line rule for inter-function spacing, but what's the 
+> include-functions ones? Or the functions-data ones?
 
-My point is that the modprobe will fail if it is passed an unrecognised
-module parameter (won't it?)
+1 :)
 
-So if we're worried about not breaking existing setups, we should retain
-this module parameter as a do-nothing thing, maybe with a
-this-is-going-away warning printk, too.
 
+> > > +static int ainofs_delete_dentry(struct dentry *dentry);
+> > > +static struct inode *aino_mkinode(void);
+> > 
+> > Unneeded forward declaration.
 > 
-> > I don't know how much of a problem this will be in practice - do people use
-> > max_loop much?
+> Same here. You're the third says this, so I'm gonna change it. But pls 
+> consider adding it to the coding style.
 > 
-> I don't know either.
-
-hm.
-
 > 
-> > btw, did you test this change as both a module and as linked-into-vmlinux?
 > 
-> as linked-into-vmlinux.  why do you ask?  It breaks if it is module?
-> I made last minute change to a mutex name and shamely posted without
-> doing a compile test.  Besides that, is there something else breaks?
+> > > +static struct file_system_type aino_fs_type = {
+> > > +	.name		= "ainofs",
+> > > +	.get_sb		= ainofs_get_sb,
+> > > +	.kill_sb	= kill_anon_super,
+> > > +};
+> > > +static struct dentry_operations ainofs_dentry_operations = {
+> > > +	.d_delete	= ainofs_delete_dentry,
+> > > +};
+> > 
+> > If this is moved elsewhere we can perhaps remove some or all of the
+> > unpleasing static function forward-declarations.
+> 
+> Grrr :)
 
-Just idle curiosity regarding how much testing it had seen.
+you are a puttycat
 
-Generally one would expect things to be OK, but there can be startup
-ordering problems.
 
-The most common problem is that the module simply doesn't load because it's
-using some not-exported-to-modules symbol
+> > > +/**
+> > > + * aino_getfd - creates a new file instance by hooking it up to and anonymous
+> > > + *              inode, and a dentry that describe the "class" of the file
+> > > + * @pfd:     [out]   pointer to the file descriptor
+> > > + * @dpinode: [out]   pointer to the inode
+> > > + * @pfile:   [out]   pointer to the file struct
+> > > + * @name:    [in]    name of the "class" of the new file
+> > > + * @fops     [in]    file operations for the new file
+> > > + * @priv     [in]    private data for the new file (will be file's private_data)
+> > 
+> > The [in] and [out] thing is nice - does kerneldoc handle it appropriately?
+> 
+> No idea. It should come out as text at least.
 
+Yes, it's just [nice] text.
+
+But the function description needs to fit on one line.  If that's
+not enough, put more description after the @params lines, separated
+by a
+ *
+"blank" line.
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
