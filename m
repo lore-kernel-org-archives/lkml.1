@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751648AbXC3PNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752017AbXC3PRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751648AbXC3PNp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 11:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXC3PNp
+	id S1752017AbXC3PRE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 11:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbXC3PRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 11:13:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43246 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751648AbXC3PNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 11:13:44 -0400
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <6d6a94c50703300738i7b9d3fcn341feb08dca8817d@mail.gmail.com> 
-References: <6d6a94c50703300738i7b9d3fcn341feb08dca8817d@mail.gmail.com>  <1175226172.15391.66.camel@roc-desktop> <10785.1175247540@redhat.com> <6d6a94c50703300334w6b4787f3p144715de5166d7bc@mail.gmail.com> <15938.1175253862@redhat.com> <6d6a94c50703300644y28e51f47h19182f550c18c40d@mail.gmail.com> <20070330155635.6a6c55d2@the-village.bc.nu> 
-To: "Aubrey Li" <aubreylee@gmail.com>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, vapier.adi@gmail.com,
-       jie.zhang@analog.com, bryan.wu@analog.com,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] nommu arch dont zero the anonymous mapping by adding UNINITIALIZE flag 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Fri, 30 Mar 2007 16:11:17 +0100
-Message-ID: <12871.1175267477@redhat.com>
+	Fri, 30 Mar 2007 11:17:04 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:57927 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbXC3PRB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 11:17:01 -0400
+Message-ID: <460D29FA.4090507@oracle.com>
+Date: Fri, 30 Mar 2007 08:17:14 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: sam@ravnborg.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix dependency generation
+References: <460BA292.76E4.0078.0@novell.com><20070329083947.d9ba87e0.randy.dunlap@oracle.com><460C0020.76E4.0078.0@novell.com> <20070329093838.d5b2d88a.randy.dunlap@oracle.com> <460CF131.76E4.0078.0@novell.com>
+In-Reply-To: <460CF131.76E4.0078.0@novell.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aubrey Li <aubreylee@gmail.com> wrote:
-
-> Summary is, when I run the app "time test",
+Jan Beulich wrote:
+>>>> Randy Dunlap <randy.dunlap@oracle.com> 29.03.07 18:38 >>>
+>> On Thu, 29 Mar 2007 17:06:24 +0100 Jan Beulich wrote:
+>>
+>>>>>> Randy Dunlap <randy.dunlap@oracle.com> 29.03.07 17:39 >>>
+>>>>> --- linux-2.6.21-rc5/scripts/basic/fixdep.c	2007-02-04 19:44:54.000000000 +0100
+>>>>> +++ 2.6.21-rc5-fixdep-mod/scripts/basic/fixdep.c	2007-03-29 11:11:10.000000000 +0200
+>>>>> @@ -29,8 +29,7 @@
+>>>>>   * option which is mentioned in any of the listed prequisites.
+>>>>>   *
+>>>>>   * To be exact, split-include populates a tree in include/config/,
+>>>>> - * e.g. include/config/his/driver.h, which contains the #define/#undef
+>>>>> - * for the CONFIG_HIS_DRIVER option.
+>>>> I don't see why you deleted the line above.
+>>> Because it is no longer true. These files are empty as of 2.6.18.
+>> We seem to be talking about different lines above.  Yes, the files
+>> are empty, but they are named based on the CONFIG_symbol name, which
+>> is what I was trying to get at.  So how about a comment like this:
+>>
+>> * To be exact, split-include populates a tree in include/config/,
+>> * e.g., include/config/sysctl/syscall.h,
+>> * for the CONFIG_SYSCTL_SYSCALL option, when that option
+>> * is enabled (=y or =m).
 > 
-> on x86:
-> real    0m0.066s
-> user    0m0.008s
-> sys     0m0.058s
-> 
-> on Blackfin:
-> real    3m 37.69s
-> user    0m 0.04s
-> sys     3m 37.58s
+> Shouldn't that then be '..., when that option is or ever was enabled
+> (=y or =m) since last cleaning the tree'?
 
-That's not a good comparison: you're comparing two different machines of two
-different archs.
+Uh, I have no idea, but I guess that's OK with me.
 
-> Keep the same behave as MMU but with bad performance, or keep the same
-> performance as MMU but without the same behave, Which one is more
-> important?
-
-The thing to do is to pass a flag to mmap() to suppress the memset (as
-suggested).  This can then be used by the uClibc malloc() implementation and
-does not impact any application that does an anon mmap() expecting the memory
-returned to be zeroed.
-
-David
+-- 
+~Randy
