@@ -1,69 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbXC3G1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751027AbXC3GfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbXC3G1M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 02:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXC3G1L
+	id S1751027AbXC3GfP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 02:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXC3GfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 02:27:11 -0400
-Received: from mtaout3.012.net.il ([84.95.2.7]:58055 "EHLO mtaout3.012.net.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752653AbXC3G1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 02:27:11 -0400
-Date: Fri, 30 Mar 2007 09:27:04 +0300
-From: Avi Kivity <avi@qumranet.com>
-Subject: Re: [2.6.21-rc5-git1][KVM] exception on start VM
-In-reply-to: <200703292201.l2TM1fO4005275@posidon.tmr.com>
-To: Bill Davidsen <davidsen@posidon.tmr.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <460CADB8.9090607@qumranet.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7BIT
-X-Greylist: Sender IP whitelisted,
- not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Fri,
- 30 Mar 2007 09:27:04 +0300 (IDT)
-References: <200703292201.l2TM1fO4005275@posidon.tmr.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 30 Mar 2007 02:35:15 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:31052 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbXC3GfM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 02:35:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=CpXo1W8KhE5y73xkD0B/N9upKRt+GkElakLaSLIBKz2+EAa3dn5MKl2yL5FwkfrBA9NdPYKRFDndngteR4qwo3xP+5A98vh/N6Gbv7AzgBGt2rNLD/BWP/dDWSR8PfAp89w2T2TB2vo1SUTJHDvaXpS5NdqEnB02/nYrx8fCPmQ=
+Message-ID: <460CA201.7030006@gmail.com>
+Date: Fri, 30 Mar 2007 13:37:05 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dtor@insightbb.com>
+CC: Jiri Kosina <jkosina@suse.cz>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+References: <200703051532096508636@gmail.com> <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com> <460C7EB4.9080009@gmail.com> <200703300033.22059.dtor@insightbb.com>
+In-Reply-To: <200703300033.22059.dtor@insightbb.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> Starting a VM for Win98SE:
+Dmitry Torokhov wrote:
+> On Thursday 29 March 2007 23:06, Li Yu wrote:
+>   
+>> Dmitry Torokhov wrote:
+>>     
+>>> On 3/28/07, Jiri Kosina <jkosina@suse.cz> wrote:
+>>>       
+>>>> The crucial thing here is that all reports but the ones that the driver
+>>>> registered to will be processed in a standard way by the generic hid bus
+>>>> layer, and those reports that the driver registered to will be
+>>>> ignored by
+>>>> the layer, and passed for processing to the driver.
+>>>>
+>>>>         
+>>> I don't think it is a good idea to register driver for specific
+>>> usages/reports. Quite often you want to adjust processing of a report
+>>> for a specific device. What if there are 2 devices that need such
+>>> quirks? How will you do hotplug and module loading? Emit new uevent
+>>> for every report? Also, what about users and Kconfig? "Driver for
+>>> usage 0x000012345. Say Y if your hardware does not wotk correctly with
+>>> defautl handler for this usage and require special processing"???
+>>>
+>>> Just register based on VID/PID and provide standard
+>>> hid_default_input_event() to drivers so they would call it for reports
+>>> they don't need to do special processing on.
+>>>
+>>>       
+>>     I think the shadow driver can not share inputdev with the related
+>> fundamental driver, so here are two input devices for one hid_device,
+>> how we should process both? It seem we have three choices:
+>>
+>> 1. Shadow | Fundamental means
+>>
+>>     I think this is Jiri said. Fundamental driver handle all common
+>> input events, and Shadow driver handle anther specific input events,
+>> this imply user space process need monitor both input devices at same
+>> time, I do not think this is good idea.
+>>
+>> 2. Shadow & Fundamental means
+>>
+>>     Let Fundamental driver and Shadow driver work at same time! but
+>> shadow also handle specific input event. So, the user may get twice
+>> input events! For example, the keyboard input in console.
+>> Also, I do not like this.
+>>
+>> 3. Shadow ^ Fundamental means
+>>
+>>     Let Shadow driver handle every thing, and fundamental device silent,
+>> even unregister it. I think this is best choice between them, this means
+>> have a bit of complex.
+>>
+>>     
 >
-> posidon:root> /usr/local/kvm-15/bin/qemu -m 128 -hda Win98SE-2.kvm 
-> exception 13 (0)
-> rax 00000000f000ff53 rbx 0000000000000000 rcx 000000000000005a rdx 000000000000000e
-> rsi 00000000001100c4 rdi 000000000002a002 rsp 0000000000086650 rbp 000000000000667a
-> r8  0000000000000000 r9  0000000000000000 r10 0000000000000000 r11 0000000000000000
-> r12 0000000000000000 r13 0000000000000000 r14 0000000000000000 r15 0000000000000000
-> rip 000000000000d350 rflags 00237206
-> cs fff8 (000fff80/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-> ds 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-> es 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-> ss 103f (000103f0/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-> fs 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-> gs 0000 (00000000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
-> tr 0000 (08850000/00002088 p 1 dpl 0 db 0 s 0 type b l 0 g 0 avl 0)
-> ldt 0000 (00000000/0000ffff p 1 dpl 0 db 0 s 0 type 2 l 0 g 0 avl 0)
-> gdt 87244/2f
-> idt 0/3ff
-> cr0 60000010 cr2 0 cr3 0 cr4 0 cr8 0 efer 0
-> Aborted
-> posidon:root>
 >
+> There should be one device and your driver should simply do:
 >
-> Hope that's useful, I was looking at nbd issues and just tried for 
-> curiosity.
+> static void my_driver_hid_event(struct hid_device *hid, struct hid_field *field,
+> 				struct hid_usage *usage, __s32 value)
+> {
+> 	if (special_processing_needed(usage)) {
+> 		do_special_processing(...);
+> 		input_event(field->hidinput->input, XXX, YYY, ZZZ);
+> 		...
+>
+> 	} else
+> 		hidinput_hid_event(hid, field, usage, value);
+> }
+>
+> That is pretty much it. Your driver is not a shadow driver, it is
+> regular driver on HID bus that just happens to use generic hander
+> for standard events.
 >
 >   
 
-Known issue.  It will be a while before we can support the '95 family on 
-Intel as it makes heavy use of real mode.
+I think I can understand your words. but I need confirm:
 
-Please copy kvm-devel@lists.sourceforge.net on kvm issues, a per 
-MAINTAINERS.
+Before specific driver register this device, the
+fundamental/standard/common(select one by your mind:) driver had already
+attach on it likely. At this case, we should detach this hid_device from
+its working driver, let this hid_device attach with our new specific
+driver. then new driver will handle all input event later, so the your
+words is same with the third choice in fact, is it right? if so, the
+actual behavior is same with former HID simple interface.
 
+Good luck.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+- Li Yu
 
