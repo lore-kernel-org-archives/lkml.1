@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbXC3Jay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbXC3Jaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752381AbXC3Jay (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 05:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbXC3Jay
+	id S933590AbXC3Jaz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 05:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933566AbXC3Jaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 05:30:54 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36107 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752381AbXC3Jax (ORCPT
+	Fri, 30 Mar 2007 05:30:55 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:4809 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220AbXC3Jay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 05:30:53 -0400
-Date: Fri, 30 Mar 2007 02:30:47 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Simon Horman <horms@verge.net.au>
-Cc: linux-kernel@vger.kernel.org, simon.derr@bull.net
-Subject: Re: [PATCH] CPUSETS: add mems to basic usage documentation
-Message-Id: <20070330023047.216048a6.pj@sgi.com>
-In-Reply-To: <20070330041001.GA20566@verge.net.au>
-References: <20070330041001.GA20566@verge.net.au>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Fri, 30 Mar 2007 05:30:54 -0400
+Subject: Re: Why is arch/s390/crypto/Kconfig sourced when building for
+	another arch ?
+From: Jan Glauber <jang@linux.vnet.ibm.com>
+To: Thomas Backlund <tmb@mandriva.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <eueg41$j5t$1@sea.gmane.org>
+References: <eueg41$j5t$1@sea.gmane.org>
+Content-Type: text/plain
+Date: Fri, 30 Mar 2007 09:30:12 +0000
+Message-Id: <1175247012.5474.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Horman wrote:
-> +++ linux-2.6/Documentation/cpusets.txt	2007-03-30 13:03:19.000000000 +0900
-> ...
-> +Add some mems:
-> +# /bin/echo 0-7 > mems
+Hi Thomas,
 
-Nice change - thanks.
+> with 2.6.20.4 it works great, but when switching to 2.6.21-rcX it breaks 
+> with this:
+> 
+> drivers/crypto/Kconfig:55: can't open file "arch/s390/crypto/Kconfig"
 
-Acked-by: Paul Jackson <pj@sgi.com>
+arch/s390/crypto/Kconfig is included there since that is the right place
+for the config options to show up.
 
+> I tried to fix drivers/crypto/Kconfig by changing the code to:
+> 
+> if S390
+> source "arch/s390/crypto/Kconfig"
+> endif
+> 
+> but it still gets sourced...
 
-(I probably would not add a dmesg complaint; we don't usually
-do that for ordinary system call failures.  Pay close attention
-to the resulting errno - in this case ENOSPC.)
+You would need something like:
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+source "arch/s390/crypto/Kconfig"
+	depends on S390
+
+But that is not implemented and I doubt it will since deleting parts of
+the kernel tree is not something that is required to work.
+
+Jan
+
