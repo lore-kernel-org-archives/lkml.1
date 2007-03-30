@@ -1,88 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933114AbXC3XMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXC3XXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933114AbXC3XMO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 19:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXC3XML
+	id S932903AbXC3XXA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 19:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXC3XW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 19:12:11 -0400
-Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:2362 "EHLO
-	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933082AbXC3XLk (ORCPT
+	Fri, 30 Mar 2007 19:22:59 -0400
+Received: from vscan03.westnet.com.au ([203.10.1.142]:37213 "EHLO
+	vscan03.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932903AbXC3XW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 19:11:40 -0400
-X-Greylist: delayed 587 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Mar 2007 19:11:38 EDT
-Date: Fri, 30 Mar 2007 15:21:40 -0700
-From: "Ed Lin" <ed.lin@promise.com>
-To: "linux-scsi" <linux-scsi@vger.kernel.org>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "james.Bottomley" <james.Bottomley@SteelEye.com>,
-       "jeff" <jeff@garzik.org>, "promise_linux" <promise_linux@promise.com>
-Subject: [PATCH 4/4] [SCSI]stex: minor cleanup and version update
-X-mailer: Foxmail 5.0 [en]
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <NONAMEBj81EYtN3Isam000005d6@nonameb.ptu.promise.com>
-X-OriginalArrivalTime: 30 Mar 2007 22:21:46.0796 (UTC) FILETIME=[CDD42EC0:01C77319]
+	Fri, 30 Mar 2007 19:22:59 -0400
+X-Greylist: delayed 1707 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Mar 2007 19:22:59 EDT
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: Oliver Joa <oliver@j-o-a.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Intel DP965LT Mainboard running?
+Date: Sat, 31 Mar 2007 08:54:28 +1000
+Organization: http://bugsplatter.mine.nu/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <195r03lcafge17t48hpm09g2jhpn1uuus9@4ax.com>
+References: <460D8FCA.2050907@j-o-a.de>
+In-Reply-To: <460D8FCA.2050907@j-o-a.de>
+X-Mailer: Forte Agent 2.0/32.652
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add debug information into abort and host_reset routine.
-Change ioremap to ioremap_nocache.
-Version updated to 3.6.0000.1.
+On Sat, 31 Mar 2007 00:31:38 +0200, Oliver Joa <oliver@j-o-a.de> wrote:
 
-Signed-off-by: Ed Lin <ed.lin@promise.com>
----
-diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
-index 9465f35..5a10cfa 100644
---- a/drivers/scsi/stex.c
-+++ b/drivers/scsi/stex.c
-@@ -32,11 +32,12 @@ #include <scsi/scsi_device.h>
- #include <scsi/scsi_cmnd.h>
- #include <scsi/scsi_host.h>
- #include <scsi/scsi_tcq.h>
-+#include <scsi/scsi_dbg.h>
- 
- #define DRV_NAME "stex"
--#define ST_DRIVER_VERSION "3.1.0.1"
-+#define ST_DRIVER_VERSION "3.6.0000.1"
- #define ST_VER_MAJOR 		3
--#define ST_VER_MINOR 		1
-+#define ST_VER_MINOR 		6
- #define ST_OEM 			0
- #define ST_BUILD_VER 		1
- 
-@@ -1007,6 +1008,11 @@ static int stex_abort(struct scsi_cmnd *
- 	u32 data;
- 	int result = SUCCESS;
- 	unsigned long flags;
-+
-+	printk(KERN_INFO DRV_NAME
-+		"(%s): aborting command\n", pci_name(hba->pdev));
-+	scsi_print_command(cmd);
-+
- 	base = hba->mmio_base;
- 	spin_lock_irqsave(host->host_lock, flags);
- 	if (tag < host->can_queue && hba->ccb[tag].cmd == cmd)
-@@ -1092,6 +1098,10 @@ static int stex_reset(struct scsi_cmnd *
- 	unsigned long before;
- 	hba = (struct st_hba *) &cmd->device->host->hostdata[0];
- 
-+	printk(KERN_INFO DRV_NAME
-+		"(%s): resetting host\n", pci_name(hba->pdev));
-+	scsi_print_command(cmd);
-+
- 	hba->mu_status = MU_STATE_RESETTING;
- 
- 	if (hba->cardtype == st_shasta)
-@@ -1211,7 +1221,7 @@ stex_probe(struct pci_dev *pdev, const s
- 		goto out_scsi_host_put;
- 	}
- 
--	hba->mmio_base = ioremap(pci_resource_start(pdev, 0),
-+	hba->mmio_base = ioremap_nocache(pci_resource_start(pdev, 0),
- 		pci_resource_len(pdev, 0));
- 	if ( !hba->mmio_base) {
- 		printk(KERN_ERR DRV_NAME "(%s): memory map failed\n",
+>Hi,
+>
+>does anyone have a running Intel DP965LT Mainboard? I can not get this 
+>Board running. You can see the Problems in the Thread "Corrupt 
+>XFS-Filesystems on new Hardware and Kernel". Please can you give me a 
+>running Kernel-Config?
 
+http://bugsplatter.mine.nu/system/dp965lt.html  some notes and gotchas
+http://bugsplatter.mine.nu/test/boxen/silly/    configs and dmesgs
 
+I've only had reiserfs and ext3 going, not XFS.  
+
+Grant.
