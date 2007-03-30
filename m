@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXC3VWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbXC3VWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbXC3VWr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXC3VK3
+	id S1753973AbXC3VWs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXC3VK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:10:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58244 "EHLO
+	Fri, 30 Mar 2007 17:10:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58267 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753971AbXC3VKA (ORCPT
+	with ESMTP id S1753973AbXC3VKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:10:00 -0400
-Date: Fri, 30 Mar 2007 14:04:24 -0700
+	Fri, 30 Mar 2007 17:10:11 -0400
+Date: Fri, 30 Mar 2007 14:04:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 09/37] ieee1394: dv1394: fix CardBus card ejection
-Message-ID: <20070330210424.GK29450@kroah.com>
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 11/37] NET_SCHED: Fix ingress qdisc locking.
+Message-ID: <20070330210431.GM29450@kroah.com>
 References: <20070330205938.984247529@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ieee1394-dv1394-fix-cardbus-card-ejection.patch"
+Content-Disposition: inline; filename="net_sched-fix-ingress-qdisc-locking.patch"
 In-Reply-To: <20070330210334.GA29450@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,53 +38,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Patrick McHardy <kaber@trash.net>
 
-Fix NULL pointer dereference on hot ejection of a FireWire card while
-dv1394 was loaded.  http://bugzilla.kernel.org/show_bug.cgi?id=7121
-I did not test card ejection with open /dev/dv1394 files yet.
+[NET_SCHED]: Fix ingress locking
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Ingress queueing uses a seperate lock for serializing enqueue operations,
+but fails to properly protect itself against concurrent changes to the
+qdisc tree. Use queue_lock for now since the real fix it quite intrusive.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- drivers/ieee1394/dv1394.c |   12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ net/core/dev.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/ieee1394/dv1394.c
-+++ b/drivers/ieee1394/dv1394.c
-@@ -2267,11 +2267,7 @@ static void dv1394_remove_host (struct h
- {
- 	struct video_card *video;
- 	unsigned long flags;
--	int id = host->id;
--
--	/* We only work with the OHCI-1394 driver */
--	if (strcmp(host->driver->name, OHCI1394_DRIVER_NAME))
--		return;
-+	int id = host->id, found_ohci_card = 0;
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1750,10 +1750,10 @@ static int ing_filter(struct sk_buff *sk
  
- 	/* find the corresponding video_cards */
- 	do {
-@@ -2284,6 +2280,7 @@ static void dv1394_remove_host (struct h
- 			if ((tmp_vid->id >> 2) == id) {
- 				list_del(&tmp_vid->list);
- 				video = tmp_vid;
-+				found_ohci_card = 1;
- 				break;
- 			}
- 		}
-@@ -2293,8 +2290,9 @@ static void dv1394_remove_host (struct h
- 			dv1394_un_init(video);
- 	} while (video != NULL);
+ 		skb->tc_verd = SET_TC_AT(skb->tc_verd,AT_INGRESS);
  
--	class_device_destroy(hpsb_protocol_class,
--		MKDEV(IEEE1394_MAJOR, IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id<<2)));
-+	if (found_ohci_card)
-+		class_device_destroy(hpsb_protocol_class, MKDEV(IEEE1394_MAJOR,
-+				IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id << 2)));
- }
+-		spin_lock(&dev->ingress_lock);
++		spin_lock(&dev->queue_lock);
+ 		if ((q = dev->qdisc_ingress) != NULL)
+ 			result = q->enqueue(skb, q);
+-		spin_unlock(&dev->ingress_lock);
++		spin_unlock(&dev->queue_lock);
  
- static void dv1394_add_host (struct hpsb_host *host)
+ 	}
+ 
 
 -- 
