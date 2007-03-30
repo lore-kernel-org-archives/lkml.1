@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbXC3QRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbXC3QUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbXC3QRJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 12:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXC3QRJ
+	id S1753875AbXC3QUs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 12:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbXC3QUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 12:17:09 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:58332 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753520AbXC3QRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 12:17:07 -0400
-Date: Fri, 30 Mar 2007 18:16:16 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Ken Chen <kenchen@google.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] remove artificial software max_loop limit
-In-Reply-To: <b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
-Message-ID: <Pine.LNX.4.61.0703301813120.31834@yvahk01.tjqt.qr>
-References: <b040c32a0703300053u110063b0u80ee0e7b9dd158c2@mail.gmail.com> 
- <b040c32a0703300148w479cf4cdw667cf464edf7c725@mail.gmail.com> 
- <Pine.LNX.4.61.0703301105190.31834@yvahk01.tjqt.qr>
- <b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Fri, 30 Mar 2007 12:20:48 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:45417 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753875AbXC3QUs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 12:20:48 -0400
+Subject: Re: Why is arch/s390/crypto/Kconfig sourced when building for
+	another arch ?
+From: Jan Glauber <jang@linux.vnet.ibm.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Thomas Backlund <tmb@mandriva.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0703300551460.10946@CPE00045a9c397f-CM001225dbafb6>
+References: <eueg41$j5t$1@sea.gmane.org>
+	 <1175247012.5474.15.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703300551460.10946@CPE00045a9c397f-CM001225dbafb6>
+Content-Type: text/plain
+Date: Fri, 30 Mar 2007 16:20:09 +0000
+Message-Id: <1175271610.5474.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-03-30 at 05:55 -0400, Robert P. J. Day wrote:
+>   i'm betting the S390 folks would *really* hate that idea but, if you
+> look closely, the generic Kconfig file *already* has some
+> arch-dependent content:
+> 
+> ...
+> config CRYPTO_DEV_PADLOCK
+>         tristate "Support for VIA PadLock ACE"
+>         depends on X86_32     <-----
+> ...
 
-On Mar 30 2007 02:25, Ken Chen wrote:
->
-> Oh, crap.  Google mail is innocent.  It was me who did some ugly
-> copy-paste between apps.
+Yes, but the padlock driver is located under drivers/crypto. The s390
+crypto stuff is not. It is under arch/s390/crypto, thats why the Kconfig
+file is there...
 
-Well, you did it again :p
-
-> I don't mind either way, this thing won't be bigger than 1^20 anyway.
-> Oh, which reminds me that we probably should explicitly test and cap
-> that limit (1^20 that is).
-
-I do not think is needed, since it will already be caught by the
-layout of a dev_t.
-
-> +static struct loop_device *loop_find_dev(int number)
-> +{
-> +	struct loop_device *lo;
-> +
-> +	list_for_each_entry(lo, &loop_devices, lo_list) {
-> +		if (lo->lo_number == number)
-> +			return lo;
-> +	}
-
-Can do without {}
-
+Both solutions (the current and your proposed) are somehow ugly. 
+I don't care too much, where the Kconfig entries are, as long as it
+works. So if you're interested in changing it go forward and post a
+patch...
 
 Jan
--- 
+
+>   i think it's a matter of deciding how to be consistent.  either you
+> allow individual architectures to define their own additional Kconfig
+> files or you don't.  mixing the two approaches is a recipe for
+> confusion.
+> 
+> rday
+> 
+> 
+
