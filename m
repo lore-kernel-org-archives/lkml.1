@@ -1,102 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945939AbXC3EVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945940AbXC3Edq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945939AbXC3EVr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 00:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945941AbXC3EVq
+	id S1945940AbXC3Edq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 00:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945941AbXC3Edq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 00:21:46 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:10203 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945939AbXC3EVp (ORCPT
+	Fri, 30 Mar 2007 00:33:46 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:5998 "EHLO
+	asav15.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945940AbXC3Edp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 00:21:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KaNZAy3ytwlQ2n+7+w9GJga6Df7SSUYeol3LTNs3uTVeohIHITCnvsG4a+mudYAQyTp3M0dNUxEz8yJEzXzU+BcCtAZ0DTaCHsrwusTgkPoCYkiRfn260dT+7psvUD7Q3E3SXRxMt56ezKwI5kGxPa1NPaF9E0soS6wwuQdpmqU=
-Message-ID: <4807377b0703292121o6eef3bf2l998878cfd677d821@mail.gmail.com>
-Date: Thu, 29 Mar 2007 21:21:42 -0700
-From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
-To: andrei.popa@i-neo.ro
-Subject: Re: [BUG] ethX misnumbered and one missing in mii-tool
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "NetDEV list" <netdev@vger.kernel.org>
-In-Reply-To: <1175203383.6219.8.camel@localhost>
+	Fri, 30 Mar 2007 00:33:45 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswMAOMvDEZKhRO4UGdsb2JhbACHQYg9AQEq
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Li Yu <raise.sail@gmail.com>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+Date: Fri, 30 Mar 2007 00:33:20 -0400
+User-Agent: KMail/1.9.3
+Cc: Jiri Kosina <jkosina@suse.cz>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200703051532096508636@gmail.com> <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com> <460C7EB4.9080009@gmail.com>
+In-Reply-To: <460C7EB4.9080009@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1175203383.6219.8.camel@localhost>
+Message-Id: <200703300033.22059.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-added netdev.
-
-On 3/29/07, Andrei Popa <andrei.popa@i-neo.ro> wrote:
-> In a dual core 2 server with an intel motherboard and 5 network
-> cards(two onboard) and 1 pci express card with two slots and one pci-x
-> pci64 card the kernel sees all of them in dmesg but in mii-tool are
-> misnumbered and one card is missing.
-> (please CC as I am not subscribed to lkml)
-
-please don't use mii-tool, ethtool is a much better option and
-actually works with gigabit cards.
-
-> from dmesg:
-> Intel(R) PRO/1000 Network Driver - version 7.0.33-k2-NAPI
-> Copyright (c) 1999-2005 Intel Corporation.
-> ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 16 (level, low) -> IRQ 16
-> PCI: Setting latency timer of device 0000:03:00.0 to 64
-> e1000: 0000:03:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
-> 00:15:17:21:0c:08
-> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
-
-eth0...
-
-> ACPI: PCI Interrupt 0000:03:00.1[B] -> GSI 17 (level, low) -> IRQ 17
-> PCI: Setting latency timer of device 0000:03:00.1 to 64
-> e1000: 0000:03:00.1: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
-> 00:15:17:21:0c:09
-> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
-eth0...
-
-> ACPI: PCI Interrupt 0000:05:00.0[A] -> GSI 18 (level, low) -> IRQ 18
-> PCI: Setting latency timer of device 0000:05:00.0 to 64
-> e1000: 0000:05:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
-> 00:15:17:17:b7:68
-> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
-eth0...
-> GSI 20 sharing vector 0xC9 and IRQ 20
-> ACPI: PCI Interrupt 0000:05:00.1[B] -> GSI 19 (level, low) -> IRQ 20
-> PCI: Setting latency timer of device 0000:05:00.1 to 64
-> e1000: 0000:05:00.1: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
-> 00:15:17:17:b7:69
-> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
-eth0...
-
-> GSI 21 sharing vector 0xD1 and IRQ 21
-> ACPI: PCI Interrupt 0000:06:02.0[A] -> GSI 27 (level, low) -> IRQ 21
-> e1000: 0000:06:02.0: e1000_probe: (PCI-X:100MHz:64-bit)
-> 00:0e:0c:ba:a8:50
-> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
-eth0...
-
-um, I'm a little confused why every interface was named eth0 when it
-tried to come up.
-you didn't mention what kernel you're using.
-
-you can enable MSI and not share interrupts on this platform, it will
-at least help your PCIe adapters.
-
-> zeus ~ # mii-tool
-> eth2: no link
-> eth5: negotiated 100baseTx-FD, link ok
-> eth6: no link
-> eth7: no link
-> zeus ~ #
+On Thursday 29 March 2007 23:06, Li Yu wrote:
+> Dmitry Torokhov wrote:
+> > On 3/28/07, Jiri Kosina <jkosina@suse.cz> wrote:
+> >>
+> >> The crucial thing here is that all reports but the ones that the driver
+> >> registered to will be processed in a standard way by the generic hid bus
+> >> layer, and those reports that the driver registered to will be
+> >> ignored by
+> >> the layer, and passed for processing to the driver.
+> >>
+> >
+> > I don't think it is a good idea to register driver for specific
+> > usages/reports. Quite often you want to adjust processing of a report
+> > for a specific device. What if there are 2 devices that need such
+> > quirks? How will you do hotplug and module loading? Emit new uevent
+> > for every report? Also, what about users and Kconfig? "Driver for
+> > usage 0x000012345. Say Y if your hardware does not wotk correctly with
+> > defautl handler for this usage and require special processing"???
+> >
+> > Just register based on VID/PID and provide standard
+> > hid_default_input_event() to drivers so they would call it for reports
+> > they don't need to do special processing on.
+> >
+> 
+>     I think the shadow driver can not share inputdev with the related
+> fundamental driver, so here are two input devices for one hid_device,
+> how we should process both? It seem we have three choices:
+> 
+> 1. Shadow | Fundamental means
+> 
+>     I think this is Jiri said. Fundamental driver handle all common
+> input events, and Shadow driver handle anther specific input events,
+> this imply user space process need monitor both input devices at same
+> time, I do not think this is good idea.
+> 
+> 2. Shadow & Fundamental means
+> 
+>     Let Fundamental driver and Shadow driver work at same time! but
+> shadow also handle specific input event. So, the user may get twice
+> input events! For example, the keyboard input in console.
+> Also, I do not like this.
+> 
+> 3. Shadow ^ Fundamental means
+> 
+>     Let Shadow driver handle every thing, and fundamental device silent,
+> even unregister it. I think this is best choice between them, this means
+> have a bit of complex.
 >
-> it sees only 4 cards that are misnumbered and one is missing.
 
-what does 'ip link' or 'ifconfig -a' show?
 
-Jesse
+There should be one device and your driver should simply do:
+
+static void my_driver_hid_event(struct hid_device *hid, struct hid_field *field,
+				struct hid_usage *usage, __s32 value)
+{
+	if (special_processing_needed(usage)) {
+		do_special_processing(...);
+		input_event(field->hidinput->input, XXX, YYY, ZZZ);
+		...
+
+	} else
+		hidinput_hid_event(hid, field, usage, value);
+}
+
+That is pretty much it. Your driver is not a shadow driver, it is
+regular driver on HID bus that just happens to use generic hander
+for standard events.
+
+-- 
+Dmitry
