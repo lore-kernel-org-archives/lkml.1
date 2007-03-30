@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934163AbXC3Cu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbXC3DHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934163AbXC3Cu7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 22:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbXC3Cu7
+	id S1753526AbXC3DHm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 23:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbXC3DHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 22:50:59 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:47928 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934163AbXC3Cu6 (ORCPT
+	Thu, 29 Mar 2007 23:07:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:18951 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbXC3DHl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 22:50:58 -0400
-Date: Thu, 29 Mar 2007 19:31:04 -0700
-From: Greg KH <greg@kroah.com>
-To: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
-Subject: Re: new sysfs layout and ethernet device names
-Message-ID: <20070330023104.GA21771@kroah.com>
-References: <20070320170102.GA16341@nostromo.devel.redhat.com> <3ae72650703220147j42db8f79s734d4755c2fa43fd@mail.gmail.com> <20070328031743.GA11819@nostromo.devel.redhat.com> <20070328041005.GA7550@kroah.com> <20070329004138.GA23562@nostromo.devel.redhat.com>
+	Thu, 29 Mar 2007 23:07:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=NGS9+gNgdI+v6+ewi0LVv/eUG2xEpiqT9/YOIzyv1KBnk1IaJd0k65tryy5tQ30VOa9fxee0ryULq301q+OpTJlak4IY8Hbtha8xDB+BVmRbZBeph1QAhLziYZW3mnMqyC6D0LMW9IVkOFUAoU1S24kj6xAZEZ5mldgcZHpSKwk=
+Message-ID: <460C7EB4.9080009@gmail.com>
+Date: Fri, 30 Mar 2007 11:06:28 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070329004138.GA23562@nostromo.devel.redhat.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Jiri Kosina <jkosina@suse.cz>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>, Li Yu <raise.sail@gmail.com>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com>	 <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn>	 <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz> <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
+In-Reply-To: <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 28, 2007 at 08:41:38PM -0400, Bill Nottingham wrote:
-> Greg KH (greg@kroah.com) said: 
-> > If you follow the rules in Documentation/ABI/testing/sysfs-class your
-> > program will not have any problems.
-> 
-> Oh, of *course*. We add interfaces and then claim years later,
-> after code has been written, "Oh, you shouldn't be using that!" in
-> documentation. Meanwhile, such code using the old interface will still
-> a) continue to compile b) continue to run without any sort of warnings.
-> 
-> If interfaces have to change, so be it. But changing the rules for
-> using them years after it's implemented and then claiming "you didn't
-> read the instructions" is pretty lame.
+Dmitry Torokhov wrote:
+> On 3/28/07, Jiri Kosina <jkosina@suse.cz> wrote:
+>>
+>> The crucial thing here is that all reports but the ones that the driver
+>> registered to will be processed in a standard way by the generic hid bus
+>> layer, and those reports that the driver registered to will be
+>> ignored by
+>> the layer, and passed for processing to the driver.
+>>
+>
+> I don't think it is a good idea to register driver for specific
+> usages/reports. Quite often you want to adjust processing of a report
+> for a specific device. What if there are 2 devices that need such
+> quirks? How will you do hotplug and module loading? Emit new uevent
+> for every report? Also, what about users and Kconfig? "Driver for
+> usage 0x000012345. Say Y if your hardware does not wotk correctly with
+> defautl handler for this usage and require special processing"???
+>
+> Just register based on VID/PID and provide standard
+> hid_default_input_event() to drivers so they would call it for reports
+> they don't need to do special processing on.
+>
 
-That documentation has been in the kernel tree for almost a full year:
-	commit c18f6365fdbaf30611a8822afcd7097865dcaa32
-	Author: Greg Kroah-Hartman <gregkh@suse.de>
-	Date:   Thu Apr 27 14:10:12 2006 -0700
+    I think the shadow driver can not share inputdev with the related
+fundamental driver, so here are two input devices for one hid_device,
+how we should process both? It seem we have three choices:
 
-	    [PATCH] Add kernel<->userspace ABI stability documentation
+1. Shadow | Fundamental means
 
-And Kay and I have been saying to not to rely on directories for over
-two years now...
+    I think this is Jiri said. Fundamental driver handle all common
+input events, and Shadow driver handle anther specific input events,
+this imply user space process need monitor both input devices at same
+time, I do not think this is good idea.
 
-Anyway, yes, older code should still "just work" if you enable the
-CONFIG_SYSFS_DEPRECATED config option in the kernel, that is what it is
-there for.
+2. Shadow & Fundamental means
 
-If you have any problems with that option enabled, please let me know
-and I will be glad to fix it up.
+    Let Fundamental driver and Shadow driver work at same time! but
+shadow also handle specific input event. So, the user may get twice
+input events! For example, the keyboard input in console.
+Also, I do not like this.
 
-thanks,
+3. Shadow ^ Fundamental means
 
-greg k-h
+    Let Shadow driver handle every thing, and fundamental device silent,
+even unregister it. I think this is best choice between them, this means
+have a bit of complex.
+
+Welcome for your words.
+
+PS: Have we need more than one shadow driver for same fundamental
+driver? I do not think so.
+
+Good luck.
+
+- Li Yu
+
+
+
+
