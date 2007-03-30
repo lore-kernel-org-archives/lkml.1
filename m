@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750943AbXC3RWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752009AbXC3RXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750943AbXC3RWe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 13:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXC3RWe
+	id S1752009AbXC3RXN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 13:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXC3RXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 13:22:34 -0400
-Received: from mx.laposte.net ([81.255.54.16]:49198 "EHLO mx.laposte.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750943AbXC3RWe convert rfc822-to-8bit (ORCPT
+	Fri, 30 Mar 2007 13:23:12 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44211 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752009AbXC3RXL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 13:22:34 -0400
-Subject: Re: [PATCH 1/5] RT kernel: force detect HPET from PCI space
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070330165949.GA19584@linux-os.sc.intel.com>
-References: <1175273420.23240.3.camel@rousalka.dyndns.org>
-	 <20070330165949.GA19584@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Organization: Adresse perso
-Date: Fri, 30 Mar 2007 19:22:28 +0200
-Message-Id: <1175275348.24045.1.camel@rousalka.dyndns.org>
+	Fri, 30 Mar 2007 13:23:11 -0400
+Date: Fri, 30 Mar 2007 19:20:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: eranian@hpl.hp.com
+Cc: linux-kernel@vger.kernel.org, perfmon@napali.hpl.hp.com
+Subject: Re: exposing FSB clock speed in /sys
+Message-ID: <20070330192053.36107276@the-village.bc.nu>
+In-Reply-To: <20070330153937.GC16059@frankl.hpl.hp.com>
+References: <20070330153937.GC16059@frankl.hpl.hp.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-5.fc7) 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 30 mars 2007 à 09:59 -0700, Venki Pallipadi a écrit :
-> On Fri, Mar 30, 2007 at 06:50:19PM +0200, Nicolas Mailhot wrote:
-> > Anyone got the same thing for CK804? I had my hopes high, and then I saw
-> > the DECLARE_PCI_FIXUP_HEADER values [and the thread title was
-> > misleading]
-> > 
-> 
-> Sorry about the wrong subject. It should have had ICH in the subject somewhere.
+> Looking at the code, it seems that there is no standard way of extracting
+> the FSB speed. For each processor model, you have different MSRs. I would
+> think that the routines in the cpufreq code could be moved out and used
+> as the basis to expose the information somewhere in /sys.
 
-I think I'll recover :)
+It's well un-documented, but one of the problems is that for many
+processor lines the information isn't in public documents (eg the older
+processors like the PII/PIII)
 
-> On the brighter side, if you find the chipset document for your chipset,
-> It should be as easy as this patch to force enable it :-).
-
-It's only at the rainbow end, right?
-
--- 
-Nicolas Mailhot
+Alan
