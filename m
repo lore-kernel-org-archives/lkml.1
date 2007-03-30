@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbXC3VTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbXC3VTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbXC3VTB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbXC3VLR
+	id S1753953AbXC3VTA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXC3VLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:11:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51440 "EHLO
+	Fri, 30 Mar 2007 17:11:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58319 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965AbXC3VKu (ORCPT
+	with ESMTP id S1753972AbXC3VKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:10:50 -0400
-Date: Fri, 30 Mar 2007 14:04:55 -0700
+	Fri, 30 Mar 2007 17:10:44 -0400
+Date: Fri, 30 Mar 2007 14:04:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,7 +24,7 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Alexey Dobriyan <adobriyan@sw.ru>,
        "David S. Miller" <davem@davemloft.net>
 Subject: [patch 16/37] NET: Fix sock_attach_fd() failure in sys_accept()
-Message-ID: <20070330210455.GS29450@kroah.com>
+Message-ID: <20070330210451.GR29450@kroah.com>
 References: <20070330205938.984247529@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
