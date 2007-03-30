@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbXC3R6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbXC3SBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbXC3R6p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 13:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXC3R6p
+	id S1751572AbXC3SBB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 14:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbXC3SBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 13:58:45 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:58248 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752008AbXC3R6o (ORCPT
+	Fri, 30 Mar 2007 14:01:01 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38727 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751572AbXC3SBA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 13:58:44 -0400
-Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Tejun Heo <htejun@gmail.com>, gregkh@suse.de, hugh@veritas.com,
-       cornelia.huck@de.ibm.com, oneukum@suse.de, maneesh@in.ibm.com,
-       rpurdie@rpsys.net, Jeff Garzik <jgarzik@pobox.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       SCSI Mailing List <linux-scsi@vger.kernel.org>
-In-Reply-To: <d120d5000703300615y7b367d82hb42f1c58ca8a6328@mail.gmail.com>
-References: <460CDBA6.5030608@gmail.com>
-	 <1175257751.3760.19.camel@mulgrave.il.steeleye.com>
-	 <d120d5000703300615y7b367d82hb42f1c58ca8a6328@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 30 Mar 2007 12:58:21 -0500
-Message-Id: <1175277501.3760.32.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Mar 2007 14:01:00 -0400
+Date: Fri, 30 Mar 2007 20:00:59 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Sid Boyce <g3vbv@blueyonder.co.uk>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       auxsvr@gmail.com
+Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
+Message-ID: <20070330180059.GG14134@stusta.de>
+References: <20070321193420.GP752@stusta.de> <m17itabbbv.fsf@ebiederm.dsl.xmission.com> <4601DCB4.4060804@blueyonder.co.uk> <20070321184258.758a5a29.randy.dunlap@oracle.com> <20070322105908.GS752@stusta.de> <4608919C.4050007@blueyonder.co.uk> <m1y7liyeyt.fsf@ebiederm.dsl.xmission.com> <4609E04D.408@blueyonder.co.uk> <20070328041407.GM16477@stusta.de> <460BA48E.4060407@blueyonder.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <460BA48E.4060407@blueyonder.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-30 at 09:15 -0400, Dmitry Torokhov wrote:
-> If you want to manage lifetime rules independently you might want to
-> not embed struct device into you subsystems objects but attach them
-> via pointers and use device_create(). Now that we orphan sysfs access
-> upon unregistering device this will severe all ties from driver core
-> to your system once you start teardown of a device and you should be
-> in clear.
+On Thu, Mar 29, 2007 at 12:35:42PM +0100, Sid Boyce wrote:
+>...
+> 1) Ran the commands as above,cg-clone; git start; git bisect bad 
+> <checksum>;git bisect good <checksum of 2.6.20-git10 > I presume.
+> 2) 2.6.20-git10 is the last good kernel.
+> 3) 2.6.20-git11 and later are all bad.
+> 4) I do cg-clone which gives a kernel whose Makefile is 2.6.21-rc4 (or 
+> whatever is current).
+>...
 
-But that wouldn't really help ... all objects have lifetimes.  What
-Tejun is pointing out is that we have two different lifetime
-requirements:  driver internal (and subsystem) objects and sysfs
-objects ... we still need something embedded in the driver objects, so
-it may as well be struct device ... trying to manage struct device
-outside of the driver objects would turn into another nasty refcounting
-problem.  The struct device is usually the generic abstraction of the
-specific structure it's embedded in, so I think it really does make
-sense to keep these pieces together.
+No, that's what should be repeated:
 
-> However there are simpler subsystems (input, serio, etc.) where there
-> is only one core module which provides services to device drivers and
-> handles registration and deregistration. For such substustems it makes
-> sense to embed struct devices and manage lifetime for all components
-> at once.
+# start round
+cp /path/to/.config .
+make oldconfig
+make
+# install kernel, check whether it's good or bad, then:
+git bisect [bad|good]
+# start next round
 
-James
+> Regards
+> Sid.
 
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
