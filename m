@@ -1,93 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934377AbXC3A11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXC3Al4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934377AbXC3A11 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Mar 2007 20:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934380AbXC3A11
+	id S932234AbXC3Al4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Mar 2007 20:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934195AbXC3Al4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 20:27:27 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:45205 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934377AbXC3A10 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 20:27:26 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 29 Mar 2007 17:27:24 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, Nikita Danilov <nikita@clusterfs.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [rfc][patch] queued spinlocks (i386)
-In-Reply-To: <20070329071611.GA24176@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0703291723140.1199@alien.or.mcafeemobile.com>
-References: <20070323085910.GA11577@wotan.suse.de> <20070323100418.GA30740@elte.hu>
- <20070323103243.GE11577@wotan.suse.de> <17925.18904.820106.145029@gargle.gargle.HOWL>
- <20070324172959.GB542@elte.hu> <20070328064318.GA12508@wotan.suse.de>
- <Pine.LNX.4.64.0703281224030.21150@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703281452130.21150@alien.or.mcafeemobile.com>
- <20070329013652.GB2390@wotan.suse.de> <20070329071611.GA24176@wotan.suse.de>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 Mar 2007 20:41:56 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44476 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932234AbXC3Alz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Mar 2007 20:41:55 -0400
+Date: Thu, 29 Mar 2007 17:41:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Simon Horman <horms@verge.net.au>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, fastboot@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kdump/kexec: calculate note size at compile time
+Message-Id: <20070329174145.0db7779f.akpm@linux-foundation.org>
+In-Reply-To: <20070329033056.GD22141@verge.net.au>
+References: <20070328061855.GA9576@verge.net.au>
+	<20070328064353.GD4941@in.ibm.com>
+	<20070328071315.GC29303@verge.net.au>
+	<20070328080853.GE4941@in.ibm.com>
+	<20070329033056.GD22141@verge.net.au>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007, Nick Piggin wrote:
+On Thu, 29 Mar 2007 12:30:59 +0900
+Simon Horman <horms@verge.net.au> wrote:
 
-> On Thu, Mar 29, 2007 at 03:36:52AM +0200, Nick Piggin wrote:
-> > In most cases, no. For the uncontended case they should be about the
-> > same. They have the same spinning behaviour. However there is a little
-> > window where they might be a bit slower I think... actually perhaps I'm
-> > wrong!
-> > 
-> > Currently if you have 4 CPUs spinning and the lock is released, all 4
-> > CPU cachelines will be invalidated, then they will be loaded again, and
-> > found to be 0, so they all try to atomic_dec_return the counter, each
-> > one invalidating others' cachelines. 1 gets through.
-> > 
-> > With my queued locks, all 4 cachelines are invalidated and loaded, but
-> > only one will be allowed to proceed, and there are 0 atomic operations
-> > or stores of any kind.
-> > 
-> > So I take that back: our current spinlocks have a worse thundering herd
-> > behaviour under contention than my queued ones. So I'll definitely
-> > push the patch through.
-> 
-> OK, it isn't a big difference, but a user-space test is showing slightly
-> (~2%) improvement in the contended case on a 16 core Opteron.
-> 
-> There is a case where the present spinlocks are almost twice as fast on
-> this machine (in terms of aggregate throughput), and that is when a lock
-> is taken right after it is released. This is because the same CPU will
-> often be able to retake the lock without transitioning the cache. This is
-> going to be a rare case for us, and would suggest suboptimal code anyway 
-> (ie. the lock should just be kept rather than dropped and retaken).
-> 
-> Actually, one situation where it comes up is when we drop and retake a
-> lock that needs_lockbreak. Of course, the queued lock behaviour is
-> desired in that case anyway.
-> 
-> However single-thread performance is presently a bit down. OTOH, the
-> assembly generated by gcc looks like it could be improved upon (even by
-> me :P).
-> 
-> This is what I've got so far. Should work for i386 and x86_64. Any
-> enhancements or results from other CPUs would be interesting.
+> [PATCH] kdump/kexec: calculate note size at compile time
 
-I slightly modified it to use cycles:
+i386 allmodconfig, gcc-4.1.0:
 
-http://www.xmailserver.org/qspins.c
-
-Here (Dual Opteron 252) queued locks (ticklocks) are about 10% slower in 
-both cases. This is really a microbench, and assembly matter a lot. I did 
-not have time to look at the generated one yet, but optimizing branches 
-can help in those cases.
-
-
-
-
-- Davide
-
-
+In file included from init/initramfs.c:508:
+include/linux/kexec.h:148: error: variable-size type declared outside of any function
