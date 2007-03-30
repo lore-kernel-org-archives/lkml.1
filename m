@@ -1,220 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbXC3HgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932739AbXC3Hmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbXC3HgI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 03:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXC3HgI
+	id S932739AbXC3Hmm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 03:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXC3Hmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 03:36:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:25589 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753173AbXC3HgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 03:36:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=OHei1cqdLjqutVO1eySgiQ9NJzM6h9vzP1T89Qk7xpEZNFfqxwpIpdSxRryWV4LEA0wCpaTc8fuocJSWIBWa5AYLJLB6WjwjAnAvXpCiq2IzFETgm+3RLYrNDQ976caJNq5BoqG6Qcl8HTp8El1Et5Bvsa8L/neibsUeh2op30E=
-Message-ID: <ecfa260c0703300036u5d82389apaaa735ba7de5a3bb@mail.gmail.com>
-Date: Fri, 30 Mar 2007 03:36:02 -0400
-From: Zach <netrek@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: spurious kernel error
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 30 Mar 2007 03:42:42 -0400
+Received: from [85.204.20.254] ([85.204.20.254]:39283 "EHLO megainternet.ro"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932739AbXC3Hml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 03:42:41 -0400
+Subject: Re: [BUG] ethX misnumbered and one missing in mii-tool
+From: Andrei Popa <andrei.popa@i-neo.ro>
+Reply-To: andrei.popa@i-neo.ro
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDEV list <netdev@vger.kernel.org>
+In-Reply-To: <4807377b0703292121o6eef3bf2l998878cfd677d821@mail.gmail.com>
+References: <1175203383.6219.8.camel@localhost>
+	 <4807377b0703292121o6eef3bf2l998878cfd677d821@mail.gmail.com>
+Content-Type: text/plain
+Organization: I-NEO
+Date: Fri, 30 Mar 2007 10:42:23 +0300
+Message-Id: <1175240543.6219.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just noticed this weird kernel message while looking through
-/var/log/ , I have never noticed this error to occur before and below
-is the only mention of it I could find in my log files:
+On Thu, 2007-03-29 at 21:21 -0700, Jesse Brandeburg wrote:
+> added netdev.
+> 
+> On 3/29/07, Andrei Popa <andrei.popa@i-neo.ro> wrote:
+> > In a dual core 2 server with an intel motherboard and 5 network
+> > cards(two onboard) and 1 pci express card with two slots and one pci-x
+> > pci64 card the kernel sees all of them in dmesg but in mii-tool are
+> > misnumbered and one card is missing.
+> > (please CC as I am not subscribed to lkml)
+> 
+> please don't use mii-tool, ethtool is a much better option and
+> actually works with gigabit cards.
 
-netrek:/var/log# grep IRQ7 *
-kern.log:Mar 29 23:44:36 netrek kernel: spurious 8259A interrupt: IRQ7.
-kernel:Mar 29 23:44:36 netrek kernel: spurious 8259A interrupt: IRQ7.
-messages:Mar 29 23:44:36 netrek kernel: spurious 8259A interrupt: IRQ7.
-syslog:Mar 29 23:44:36 netrek kernel: spurious 8259A interrupt: IRQ7.
+ethtool reports the same
 
-I next looked at output of lspci but as you can see I do not have IRQ7
-assigned to anything:
+> 
+> > from dmesg:
+> > Intel(R) PRO/1000 Network Driver - version 7.0.33-k2-NAPI
+> > Copyright (c) 1999-2005 Intel Corporation.
+> > ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+> > PCI: Setting latency timer of device 0000:03:00.0 to 64
+> > e1000: 0000:03:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+> > 00:15:17:21:0c:08
+> > e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+> 
+> eth0...
+> 
+> > ACPI: PCI Interrupt 0000:03:00.1[B] -> GSI 17 (level, low) -> IRQ 17
+> > PCI: Setting latency timer of device 0000:03:00.1 to 64
+> > e1000: 0000:03:00.1: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+> > 00:15:17:21:0c:09
+> > e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+> eth0...
+> 
+> > ACPI: PCI Interrupt 0000:05:00.0[A] -> GSI 18 (level, low) -> IRQ 18
+> > PCI: Setting latency timer of device 0000:05:00.0 to 64
+> > e1000: 0000:05:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+> > 00:15:17:17:b7:68
+> > e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+> eth0...
+> > GSI 20 sharing vector 0xC9 and IRQ 20
+> > ACPI: PCI Interrupt 0000:05:00.1[B] -> GSI 19 (level, low) -> IRQ 20
+> > PCI: Setting latency timer of device 0000:05:00.1 to 64
+> > e1000: 0000:05:00.1: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+> > 00:15:17:17:b7:69
+> > e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+> eth0...
+> 
+> > GSI 21 sharing vector 0xD1 and IRQ 21
+> > ACPI: PCI Interrupt 0000:06:02.0[A] -> GSI 27 (level, low) -> IRQ 21
+> > e1000: 0000:06:02.0: e1000_probe: (PCI-X:100MHz:64-bit)
+> > 00:0e:0c:ba:a8:50
+> > e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+> eth0...
+> 
+> um, I'm a little confused why every interface was named eth0 when it
+> tried to come up.
 
-netrek:~# lspci -v
-0000:00:00.0 Host bridge: Intel Corporation 440BX/ZX/DX -
-82443BX/ZX/DX Host bridge (rev 03)
-       Flags: bus master, medium devsel, latency 32
-       Memory at f4000000 (32-bit, prefetchable) [size=64M]
-       Capabilities: [a0] AGP version 1.0
 
-0000:00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX
-AGP bridge (rev 03) (prog-if 00 [Normal decode])
-       Flags: bus master, 66MHz, medium devsel, latency 32
-       Bus: primary=00, secondary=01, subordinate=01, sec-latency=32
-       I/O behind bridge: 0000e000-0000efff
-       Memory behind bridge: fd000000-feffffff
-       Prefetchable memory behind bridge: f8000000-fbffffff
 
-0000:00:03.0 CardBus bridge: Texas Instruments PCI1420
-       Subsystem: Dell Latitude C600
-       Flags: bus master, medium devsel, latency 32, IRQ 11
-       Memory at 10000000 (32-bit, non-prefetchable) [size=4K]
-       Bus: primary=00, secondary=02, subordinate=05, sec-latency=32
-       I/O window 0: 00000000-00000003
-       I/O window 1: 00000000-00000003
-       16-bit legacy interface ports at 0001
+> you didn't mention what kernel you're using.
 
-0000:00:03.1 CardBus bridge: Texas Instruments PCI1420
-       Subsystem: Dell Latitude C600
-       Flags: bus master, medium devsel, latency 32, IRQ 11
-       Memory at 10001000 (32-bit, non-prefetchable) [size=4K]
-       Bus: primary=00, secondary=06, subordinate=09, sec-latency=32
-       I/O window 0: 00000000-00000003
-       I/O window 1: 00000000-00000003
-       16-bit legacy interface ports at 0001
+this war kernel 2.6.17.14 and the driver was compiled as a module.
 
-0000:00:07.0 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 02)
-       Flags: bus master, medium devsel, latency 0
 
-0000:00:07.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE
-(rev 01) (prog-if 80 [Master])
-       Flags: bus master, medium devsel, latency 32
-       I/O ports at 0860 [size=16]
+with kernel 2.6.20.4(and build in e1000 driver):
+zeus ~ # uname -a
+Linux zeus 2.6.20.4-zeus3 #3 SMP Wed Mar 28 13:44:50 EEST 2007 x86_64
+Intel(R) Xeon(TM) CPU 3.00GHz GenuineIntel GNU/Linux
 
-0000:00:07.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB
-(rev 01) (prog-if 00 [UHCI])
-       Flags: bus master, medium devsel, latency 32, IRQ 11
-       I/O ports at dce0 [size=32]
+the devices are recognized ok as eth0,eth1.eth2,eth3,eth4 but misnumered
+and one missing int mii-tool/ethtool
 
-0000:00:07.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 03)
-       Flags: medium devsel, IRQ 9
+Intel(R) PRO/1000 Network Driver - version 7.3.15-k2-NAPI
+Copyright (c) 1999-2006 Intel Corporation.
+ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:03:00.0 to 64
+e1000: 0000:03:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+00:15:17:21:0c:08
+e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+ACPI: PCI Interrupt 0000:03:00.1[B] -> GSI 17 (level, low) -> IRQ 17
+PCI: Setting latency timer of device 0000:03:00.1 to 64
+e1000: 0000:03:00.1: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+00:15:17:21:0c:09
+e1000: eth1: e1000_probe: Intel(R) PRO/1000 Network Connection
+ACPI: PCI Interrupt 0000:05:00.0[A] -> GSI 18 (level, low) -> IRQ 18
+PCI: Setting latency timer of device 0000:05:00.0 to 64
+e1000: 0000:05:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+00:15:17:17:b7:68
+e1000: eth2: e1000_probe: Intel(R) PRO/1000 Network Connection
+ACPI: PCI Interrupt 0000:05:00.1[B] -> GSI 19 (level, low) -> IRQ 19
+PCI: Setting latency timer of device 0000:05:00.1 to 64
+e1000: 0000:05:00.1: e1000_probe: (PCI Express:2.5Gb/s:Width x4)
+00:15:17:17:b7:69
+e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network Connection
+ACPI: PCI Interrupt 0000:06:02.0[A] -> GSI 27 (level, low) -> IRQ 27
+e1000: 0000:06:02.0: e1000_probe: (PCI-X:100MHz:64-bit)
+00:0e:0c:ba:a8:50
+e1000: eth4: e1000_probe: Intel(R) PRO/1000 Network Connection
 
-0000:00:08.0 Multimedia audio controller: ESS Technology ES1983S
-Maestro-3i PCI Audio Accelerator (rev 10)
-       Subsystem: Dell Latitude C600
-       Flags: bus master, medium devsel, latency 32, IRQ 5
-       I/O ports at d800 [size=256]
-       Memory at f3ffe000 (32-bit, non-prefetchable) [size=8K]
-       Capabilities: [c0] Power Management version 2
+zeus ~ # mii-tool
+eth2: no link
+eth5: negotiated 100baseTx-FD, link ok
+eth6: no link
+eth7: no link
+zeus ~ #
 
-0000:00:10.0 Ethernet controller: 3Com Corporation 3c556 Hurricane
-CardBus [Cyclone] (rev 10)
-       Subsystem: 3Com Corporation: Unknown device 6456
-       Flags: bus master, medium devsel, latency 32, IRQ 11
-       I/O ports at d400 [size=256]
-       Memory at f3ffdc00 (32-bit, non-prefetchable) [size=128]
-       Memory at f3ffd800 (32-bit, non-prefetchable) [size=128]
-       Expansion ROM at fc000000 [disabled] [size=128K]
-       Capabilities: [50] Power Management version 2
+ethtool shows the same
 
-0000:00:10.1 Communication controller: 3Com Corporation Mini PCI 56k
-Winmodem (rev 10)
-       Subsystem: 3Com Corporation: Unknown device 615b
-       Flags: bus master, medium devsel, latency 32, IRQ 11
-       I/O ports at d000 [size=256]
-       Memory at f3ffd400 (32-bit, non-prefetchable) [size=256]
-       Memory at f3ffd000 (32-bit, non-prefetchable) [size=128]
-       Capabilities: [50] Power Management version 2
+> 
+> you can enable MSI and not share interrupts on this platform, it will
+> at least help your PCIe adapters.
 
-0000:01:00.0 VGA compatible controller: ATI Technologies Inc Rage
-Mobility M3 AGP 2x (rev 02) (prog-if 00 [VGA])
-       Subsystem: Dell Latitude C600
-       Flags: bus master, stepping, 66MHz, medium devsel, latency 32, IRQ 11
-       Memory at f8000000 (32-bit, prefetchable) [size=64M]
-       I/O ports at ec00 [size=256]
-       Memory at fdffc000 (32-bit, non-prefetchable) [size=16K]
-       Expansion ROM at <unassigned> [disabled] [size=128K]
-       Capabilities: [50] AGP version 2.0
-       Capabilities: [5c] Power Management version 2
+Initialy I enabled it but I thought it was a problem from there and
+disabled it.
 
-/proc/pci similarly shows no IRQ 7 being assigned in accordance with
-the lspci output above:
+> 
+> > zeus ~ # mii-tool
+> > eth2: no link
+> > eth5: negotiated 100baseTx-FD, link ok
+> > eth6: no link
+> > eth7: no link
+> > zeus ~ #
+> >
+> > it sees only 4 cards that are misnumbered and one is missing.
+> 
+> what does 'ip link' or 'ifconfig -a' show?
 
-netrek:~# cat /proc/pci |grep IRQ
-     IRQ 11.
-     IRQ 11.
-     IRQ 11.
-     IRQ 9.
-     IRQ 5.
-     IRQ 11.
-     IRQ 11.
-     IRQ 11.
+zeus ~ # ip link
+1: eth6: <BROADCAST,MULTICAST> mtu 1500 qdisc noop qlen 1000
+    link/ether 00:15:17:21:0c:08 brd ff:ff:ff:ff:ff:ff
+2: eth5: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen
+1000
+    link/ether 00:15:17:21:0c:09 brd ff:ff:ff:ff:ff:ff
+3: eth8: <BROADCAST,MULTICAST> mtu 1500 qdisc noop qlen 1000
+    link/ether 00:15:17:17:b7:68 brd ff:ff:ff:ff:ff:ff
+4: eth7: <BROADCAST,MULTICAST> mtu 1500 qdisc noop qlen 1000
+    link/ether 00:15:17:17:b7:69 brd ff:ff:ff:ff:ff:ff
+5: eth2: <BROADCAST,MULTICAST> mtu 1500 qdisc noop qlen 1000
+    link/ether 00:0e:0c:ba:a8:50 brd ff:ff:ff:ff:ff:ff
+6: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+zeus ~ #
 
-My external serial modem (Supre Express 56 Sp) is on /dev/ttyS0 could
-this be using IRQ 7? By the way is there a way I can probe/scan my
-external modem so I can get information about it too?
 
-My kernel:
+zeus ~ # ifconfig -a
+eth2      Link encap:Ethernet  HWaddr 00:0E:0C:BA:A8:50
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+          Base address:0x2000 Memory:b8a00000-b8a20000
 
-netrek:~# uname -a
-Linux netrek 2.4.27-2-686 #1 Wed Nov 30 21:55:37 JST 2005 i686 GNU/Linux
+eth5      Link encap:Ethernet  HWaddr 00:15:17:21:0C:09
+          inet addr:192.168.0.1  Bcast:192.168.0.127
+Mask:255.255.255.128
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:58833 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:201 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:4058208 (3.8 Mb)  TX bytes:48318 (47.1 Kb)
+          Base address:0x4000 Memory:b8920000-b8940000
 
-I am using the kernel image for Debian testing release (Debian 4.0):
+eth6      Link encap:Ethernet  HWaddr 00:15:17:21:0C:08
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+          Base address:0x4020 Memory:b8960000-b8980000
 
-netrek:~# dpkg -l | grep kernel-image-2.4.27
-ii  kernel-image-2.4.27-2-686        2.4.27-12
-Linux kernel image for version 2.4.27 on PPr
+eth7      Link encap:Ethernet  HWaddr 00:15:17:17:B7:69
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+          Base address:0x3000 Memory:b8800000-b8820000
 
-netrek:~# apt-cache show  kernel-image-2.4.27-2-686
-Package: kernel-image-2.4.27-2-686
-Status: install ok installed
-Priority: optional
-Section: base
-Installed-Size: 31844
-Maintainer: Debian Kernel Team <debian-kernel@lists.debian.org>
-Architecture: i386
-Source: kernel-image-2.4.27-i386
-Version: 2.4.27-12
-Provides: kernel-image, kernel-image-2.4
-Depends: initrd-tools (>= 0.1.48), coreutils | fileutils (>= 4.0),
-modutils (>= 2.4.19)
-Suggests: lilo (>= 19.1) | grub, fdutils, kernel-doc-2.4.27 |
-kernel-source-2.4.27, kernel-pcmcia-modules-2.4.27-2-686 |
-pcmcia-modules-2.4.27-2-686
-Description: Linux kernel image for version 2.4.27 on PPro/Celeron/PII/PIII/P4
- This package contains the Linux kernel image for version 2.4.27 on
- Pentium Pro/Celeron/Pentium II/Pentium III/Pentium 4,
- the corresponding System.map file, and the modules built by the packager.
- It also contains scripts that try to ensure that the system is not left in
- a unbootable state after an update.
- .
- If you wish to update a bootdisk, or to use a bootloader to make
- installing and using the image easier, we suggest you install the latest
- fdutils (for formatting a floppy to be used as boot disk), and LILO, for a
- powerful bootloader. Of course, both these are optional.
- .
- Kernel image packages are generally produced using kernel-package,
- and it is suggested that you install that package if you wish to
- create a custom kernel from the sources.
+eth8      Link encap:Ethernet  HWaddr 00:15:17:17:B7:68
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+          Base address:0x3020 Memory:b8820000-b8840000
 
-The machine is a notebook, Dell Latitude C600, BIOS version A23.
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
 
-I do not use the built-in ethernet card since for now I just access
-the net through dialup modem nor do I use the built-in Winmodem.
 
-netrek:~# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 8
-model name      : Pentium III (Coppermine)
-stepping        : 6
-cpu MHz         : 751.716
-cache size      : 256 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
-cmov pat pse36 mmx fxsr sse
-bogomips        : 1500.77
 
-Any suggestions on what caused this error, how I can debug it to get
-more information or ideally how to prevent this from happening again
-would be appreciated.
+> 
+> Jesse
 
-Regards,
-Zach
