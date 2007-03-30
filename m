@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbXC3VVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXC3VWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbXC3VVO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbXC3VUd
+	id S1754042AbXC3VWr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXC3VK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:20:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51522 "EHLO
+	Fri, 30 Mar 2007 17:10:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58244 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753976AbXC3VLJ (ORCPT
+	with ESMTP id S1753971AbXC3VKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:11:09 -0400
-Date: Fri, 30 Mar 2007 14:05:06 -0700
+	Fri, 30 Mar 2007 17:10:00 -0400
+Date: Fri, 30 Mar 2007 14:04:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de, Thomas Graf <tgraf@suug.ch>,
-       Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 19/37] NET: Fix FIB rules compatability
-Message-ID: <20070330210506.GV29450@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 09/37] ieee1394: dv1394: fix CardBus card ejection
+Message-ID: <20070330210424.GK29450@kroah.com>
 References: <20070330205938.984247529@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="net-fix-fib-rules-compatability.patch"
+Content-Disposition: inline; filename="ieee1394-dv1394-fix-cardbus-card-ejection.patch"
 In-Reply-To: <20070330210334.GA29450@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,268 +36,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-From: Thomas Graf <tgraf@suug.ch>
+Fix NULL pointer dereference on hot ejection of a FireWire card while
+dv1394 was loaded.  http://bugzilla.kernel.org/show_bug.cgi?id=7121
+I did not test card ejection with open /dev/dv1394 files yet.
 
-[NET]: Fix fib_rules compatibility breakage
-
-Based upon a patch from Patrick McHardy.
-
-The fib_rules netlink attribute policy introduced in 2.6.19 broke
-userspace compatibilty. When specifying a rule with "from all"
-or "to all", iproute adds a zero byte long netlink attribute,
-but the policy requires all addresses to have a size equal to
-sizeof(struct in_addr)/sizeof(struct in6_addr), resulting in a
-validation error.
-
-Check attribute length of FRA_SRC/FRA_DST in the generic framework
-by letting the family specific rules implementation provide the
-length of an address. Report an error if address length is non
-zero but no address attribute is provided. Fix actual bug by
-checking address length for non-zero instead of relying on
-availability of attribute.
-
-Signed-off-by: Thomas Graf <tgraf@suug.ch>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/fib_rules.h |    1 +
- net/core/fib_rules.c    |   30 ++++++++++++++++++++++++++++++
- net/decnet/dn_rules.c   |   13 ++++++-------
- net/ipv4/fib_rules.c    |   14 ++++++--------
- net/ipv6/fib6_rules.c   |   14 +++++---------
- 5 files changed, 48 insertions(+), 24 deletions(-)
+ drivers/ieee1394/dv1394.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
---- a/include/net/fib_rules.h
-+++ b/include/net/fib_rules.h
-@@ -34,6 +34,7 @@ struct fib_rules_ops
- 	int			family;
- 	struct list_head	list;
- 	int			rule_size;
-+	int			addr_size;
- 
- 	int			(*action)(struct fib_rule *,
- 					  struct flowi *, int,
---- a/net/core/fib_rules.c
-+++ b/net/core/fib_rules.c
-@@ -152,6 +152,28 @@ out:
- 
- EXPORT_SYMBOL_GPL(fib_rules_lookup);
- 
-+static int validate_rulemsg(struct fib_rule_hdr *frh, struct nlattr **tb,
-+			    struct fib_rules_ops *ops)
-+{
-+	int err = -EINVAL;
-+
-+	if (frh->src_len)
-+		if (tb[FRA_SRC] == NULL ||
-+		    frh->src_len > (ops->addr_size * 8) ||
-+		    nla_len(tb[FRA_SRC]) != ops->addr_size)
-+			goto errout;
-+
-+	if (frh->dst_len)
-+		if (tb[FRA_DST] == NULL ||
-+		    frh->dst_len > (ops->addr_size * 8) ||
-+		    nla_len(tb[FRA_DST]) != ops->addr_size)
-+			goto errout;
-+
-+	err = 0;
-+errout:
-+	return err;
-+}
-+
- int fib_nl_newrule(struct sk_buff *skb, struct nlmsghdr* nlh, void *arg)
+--- a/drivers/ieee1394/dv1394.c
++++ b/drivers/ieee1394/dv1394.c
+@@ -2267,11 +2267,7 @@ static void dv1394_remove_host (struct h
  {
- 	struct fib_rule_hdr *frh = nlmsg_data(nlh);
-@@ -173,6 +195,10 @@ int fib_nl_newrule(struct sk_buff *skb, 
- 	if (err < 0)
- 		goto errout;
- 
-+	err = validate_rulemsg(frh, tb, ops);
-+	if (err < 0)
-+		goto errout;
-+
- 	rule = kzalloc(ops->rule_size, GFP_KERNEL);
- 	if (rule == NULL) {
- 		err = -ENOMEM;
-@@ -260,6 +286,10 @@ int fib_nl_delrule(struct sk_buff *skb, 
- 	if (err < 0)
- 		goto errout;
- 
-+	err = validate_rulemsg(frh, tb, ops);
-+	if (err < 0)
-+		goto errout;
-+
- 	list_for_each_entry(rule, ops->rules_list, list) {
- 		if (frh->action && (frh->action != rule->action))
- 			continue;
---- a/net/decnet/dn_rules.c
-+++ b/net/decnet/dn_rules.c
-@@ -109,8 +109,6 @@ errout:
- 
- static struct nla_policy dn_fib_rule_policy[FRA_MAX+1] __read_mostly = {
- 	FRA_GENERIC_POLICY,
--	[FRA_SRC]	= { .type = NLA_U16 },
--	[FRA_DST]	= { .type = NLA_U16 },
- };
- 
- static int dn_fib_rule_match(struct fib_rule *rule, struct flowi *fl, int flags)
-@@ -133,7 +131,7 @@ static int dn_fib_rule_configure(struct 
- 	int err = -EINVAL;
- 	struct dn_fib_rule *r = (struct dn_fib_rule *)rule;
- 
--	if (frh->src_len > 16 || frh->dst_len > 16 || frh->tos)
-+	if (frh->tos)
- 		goto  errout;
- 
- 	if (rule->table == RT_TABLE_UNSPEC) {
-@@ -150,10 +148,10 @@ static int dn_fib_rule_configure(struct 
- 		}
- 	}
- 
--	if (tb[FRA_SRC])
-+	if (frh->src_len)
- 		r->src = nla_get_le16(tb[FRA_SRC]);
- 
--	if (tb[FRA_DST])
-+	if (frh->dst_len)
- 		r->dst = nla_get_le16(tb[FRA_DST]);
- 
- 	r->src_len = frh->src_len;
-@@ -176,10 +174,10 @@ static int dn_fib_rule_compare(struct fi
- 	if (frh->dst_len && (r->dst_len != frh->dst_len))
- 		return 0;
- 
--	if (tb[FRA_SRC] && (r->src != nla_get_le16(tb[FRA_SRC])))
-+	if (frh->src_len && (r->src != nla_get_le16(tb[FRA_SRC])))
- 		return 0;
- 
--	if (tb[FRA_DST] && (r->dst != nla_get_le16(tb[FRA_DST])))
-+	if (frh->dst_len && (r->dst != nla_get_le16(tb[FRA_DST])))
- 		return 0;
- 
- 	return 1;
-@@ -249,6 +247,7 @@ int dn_fib_dump_rules(struct sk_buff *sk
- static struct fib_rules_ops dn_fib_rules_ops = {
- 	.family		= AF_DECnet,
- 	.rule_size	= sizeof(struct dn_fib_rule),
-+	.addr_size	= sizeof(u16),
- 	.action		= dn_fib_rule_action,
- 	.match		= dn_fib_rule_match,
- 	.configure	= dn_fib_rule_configure,
---- a/net/ipv4/fib_rules.c
-+++ b/net/ipv4/fib_rules.c
-@@ -171,8 +171,6 @@ static struct fib_table *fib_empty_table
- 
- static struct nla_policy fib4_rule_policy[FRA_MAX+1] __read_mostly = {
- 	FRA_GENERIC_POLICY,
--	[FRA_SRC]	= { .type = NLA_U32 },
--	[FRA_DST]	= { .type = NLA_U32 },
- 	[FRA_FLOW]	= { .type = NLA_U32 },
- };
- 
-@@ -183,8 +181,7 @@ static int fib4_rule_configure(struct fi
- 	int err = -EINVAL;
- 	struct fib4_rule *rule4 = (struct fib4_rule *) rule;
- 
--	if (frh->src_len > 32 || frh->dst_len > 32 ||
--	    (frh->tos & ~IPTOS_TOS_MASK))
-+	if (frh->tos & ~IPTOS_TOS_MASK)
- 		goto errout;
- 
- 	if (rule->table == RT_TABLE_UNSPEC) {
-@@ -201,10 +198,10 @@ static int fib4_rule_configure(struct fi
- 		}
- 	}
- 
--	if (tb[FRA_SRC])
-+	if (frh->src_len)
- 		rule4->src = nla_get_be32(tb[FRA_SRC]);
- 
--	if (tb[FRA_DST])
-+	if (frh->dst_len)
- 		rule4->dst = nla_get_be32(tb[FRA_DST]);
- 
- #ifdef CONFIG_NET_CLS_ROUTE
-@@ -242,10 +239,10 @@ static int fib4_rule_compare(struct fib_
- 		return 0;
- #endif
- 
--	if (tb[FRA_SRC] && (rule4->src != nla_get_be32(tb[FRA_SRC])))
-+	if (frh->src_len && (rule4->src != nla_get_be32(tb[FRA_SRC])))
- 		return 0;
- 
--	if (tb[FRA_DST] && (rule4->dst != nla_get_be32(tb[FRA_DST])))
-+	if (frh->dst_len && (rule4->dst != nla_get_be32(tb[FRA_DST])))
- 		return 0;
- 
- 	return 1;
-@@ -309,6 +306,7 @@ static size_t fib4_rule_nlmsg_payload(st
- static struct fib_rules_ops fib4_rules_ops = {
- 	.family		= AF_INET,
- 	.rule_size	= sizeof(struct fib4_rule),
-+	.addr_size	= sizeof(u32),
- 	.action		= fib4_rule_action,
- 	.match		= fib4_rule_match,
- 	.configure	= fib4_rule_configure,
---- a/net/ipv6/fib6_rules.c
-+++ b/net/ipv6/fib6_rules.c
-@@ -131,8 +131,6 @@ static int fib6_rule_match(struct fib_ru
- 
- static struct nla_policy fib6_rule_policy[FRA_MAX+1] __read_mostly = {
- 	FRA_GENERIC_POLICY,
--	[FRA_SRC]	= { .len = sizeof(struct in6_addr) },
--	[FRA_DST]	= { .len = sizeof(struct in6_addr) },
- };
- 
- static int fib6_rule_configure(struct fib_rule *rule, struct sk_buff *skb,
-@@ -142,9 +140,6 @@ static int fib6_rule_configure(struct fi
- 	int err = -EINVAL;
- 	struct fib6_rule *rule6 = (struct fib6_rule *) rule;
- 
--	if (frh->src_len > 128 || frh->dst_len > 128)
--		goto errout;
+ 	struct video_card *video;
+ 	unsigned long flags;
+-	int id = host->id;
 -
- 	if (rule->action == FR_ACT_TO_TBL) {
- 		if (rule->table == RT6_TABLE_UNSPEC)
- 			goto errout;
-@@ -155,11 +150,11 @@ static int fib6_rule_configure(struct fi
+-	/* We only work with the OHCI-1394 driver */
+-	if (strcmp(host->driver->name, OHCI1394_DRIVER_NAME))
+-		return;
++	int id = host->id, found_ohci_card = 0;
+ 
+ 	/* find the corresponding video_cards */
+ 	do {
+@@ -2284,6 +2280,7 @@ static void dv1394_remove_host (struct h
+ 			if ((tmp_vid->id >> 2) == id) {
+ 				list_del(&tmp_vid->list);
+ 				video = tmp_vid;
++				found_ohci_card = 1;
+ 				break;
+ 			}
  		}
- 	}
+@@ -2293,8 +2290,9 @@ static void dv1394_remove_host (struct h
+ 			dv1394_un_init(video);
+ 	} while (video != NULL);
  
--	if (tb[FRA_SRC])
-+	if (frh->src_len)
- 		nla_memcpy(&rule6->src.addr, tb[FRA_SRC],
- 			   sizeof(struct in6_addr));
+-	class_device_destroy(hpsb_protocol_class,
+-		MKDEV(IEEE1394_MAJOR, IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id<<2)));
++	if (found_ohci_card)
++		class_device_destroy(hpsb_protocol_class, MKDEV(IEEE1394_MAJOR,
++				IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id << 2)));
+ }
  
--	if (tb[FRA_DST])
-+	if (frh->dst_len)
- 		nla_memcpy(&rule6->dst.addr, tb[FRA_DST],
- 			   sizeof(struct in6_addr));
- 
-@@ -186,11 +181,11 @@ static int fib6_rule_compare(struct fib_
- 	if (frh->tos && (rule6->tclass != frh->tos))
- 		return 0;
- 
--	if (tb[FRA_SRC] &&
-+	if (frh->src_len &&
- 	    nla_memcmp(tb[FRA_SRC], &rule6->src.addr, sizeof(struct in6_addr)))
- 		return 0;
- 
--	if (tb[FRA_DST] &&
-+	if (frh->dst_len &&
- 	    nla_memcmp(tb[FRA_DST], &rule6->dst.addr, sizeof(struct in6_addr)))
- 		return 0;
- 
-@@ -240,6 +235,7 @@ static size_t fib6_rule_nlmsg_payload(st
- static struct fib_rules_ops fib6_rules_ops = {
- 	.family			= AF_INET6,
- 	.rule_size		= sizeof(struct fib6_rule),
-+	.addr_size		= sizeof(struct in6_addr),
- 	.action			= fib6_rule_action,
- 	.match			= fib6_rule_match,
- 	.configure		= fib6_rule_configure,
+ static void dv1394_add_host (struct hpsb_host *host)
 
 -- 
