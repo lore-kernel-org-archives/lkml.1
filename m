@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbXC3Qb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbXC3Qb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbXC3Qb2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 12:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXC3Qb1
+	id S1753910AbXC3Qb7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 12:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbXC3Qb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 12:31:27 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:1265 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753895AbXC3Qb1 (ORCPT
+	Fri, 30 Mar 2007 12:31:58 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:53814 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753901AbXC3Qb5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 12:31:27 -0400
-Date: Fri, 30 Mar 2007 20:31:24 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Greg KH <gregkh@suse.de>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [bug] fixed_init(): BUG: at drivers/base/core.c:120
- device_release(), was: "2.6.21-rc5: known regressions"
-Message-ID: <20070330203124.7106ae08@vitb.ru.mvista.com>
-In-Reply-To: <20070330142514.GA15327@elte.hu>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	<20070327015929.GY16477@stusta.de>
-	<20070330120416.GA19373@elte.hu>
-	<20070330120657.GA21271@elte.hu>
-	<20070330141856.GB10387@suse.de>
-	<20070330142514.GA15327@elte.hu>
-Organization: MontaVista software, Inc.
-X-Mailer: Sylpheed-Claws 2.0.0cvs8 (GTK+ 2.6.10; i686-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 Mar 2007 12:31:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rBn3gq4sh82cMZXPiEVt4A+YNQtynYeAdtgTjH0ZnmxJqFNmZdy9VAieLH6cGV63dFu3bemveW+0C0hvpjABcdtugGgR2nmPCQNUz/JXHvfDVMPIv01GWamjzsRluKCvBbZ2gzT8OTrLXPTvXxm+TKnunjd7l7O7xZEYpPbhN4M=
+Message-ID: <6bffcb0e0703300931n1fb83ad3j2f857a8959c470b@mail.gmail.com>
+Date: Fri, 30 Mar 2007 18:31:56 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc5-mm3
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070330010559.2a232d9a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007 16:25:14 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On 30/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/
+>
 
-> 
-> * Greg KH <gregkh@suse.de> wrote:
-> 
-> > > Device 'fixed@10:1' does not have a release() function, it is broken and must be fixed.
-> > > BUG: at drivers/base/core.c:120 device_release()
-> > >  [<c0105ff9>] show_trace_log_lvl+0x19/0x2e
-> > >  [<c01063e2>] show_trace+0x12/0x14
-> > >  [<c01063f8>] dump_stack+0x14/0x16
-> > >  [<c063cddf>] device_release+0x7c/0x7e
-> > >  [<c0476c32>] kobject_cleanup+0x44/0x5e
-> > >  [<c0476c57>] kobject_release+0xb/0xd
-> > >  [<c04773ef>] kref_put+0x63/0x71
-> > >  [<c0476757>] kobject_put+0x14/0x16
-> > >  [<c063ceef>] put_device+0x11/0x13
-> > >  [<c063d943>] device_unregister+0x12/0x15
-> > >  [<c07337d1>] fixed_mdio_register_device+0x210/0x23b
-> > >  [<c1b6d6c1>] fixed_init+0x2f/0x33
-> > >  [<c1b31a2d>] init+0x15d/0x2bd
-> > >  [<c0105bc3>] kernel_thread_helper+0x7/0x10
-> > 
-> > That means that whatever driver has fixed_mdio_register_device() in it 
-> > is broken and needs to be fixed.
-> 
-> that would be drivers/net/phy/fixed.c.
-> 
+It's my lucky Friday, kernel hangs shortly after
 
-OK, I'll look into it, thanks for pointing out.
+PM: Removing info for No Bus:vcsa1
+PM: Adding info for No Bus:vcs1
+PM: Adding info for No Bus:vcsa1
+PM: Removing info for No Bus:vcs1
+PM: Removing info for No Bus:vcsa1
+PM: Adding info for No Bus:vcs1
+PM: Adding info for No Bus:vcsa1
+PM: Adding info for No Bus:rtc
+Real Time Clock Driver v1.12ac
 
-> > It is independant from your previous question about unregistering the 
-> > device from within module_init().
-> 
-> (yes - hence the different subject line, etc.)
-> 
+due to
 
+GOOD
+mm-only-hrtimers-debug-patch.patch
+mm-only-hrtimers-debug-patch-fix.patch
+BAD
+
+patches. Both patches works fine for me in vanilla tree.
+
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm3/mm-config
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm3/mm-console.log
+
+Regards,
+Michal
 
 -- 
-Sincerely, 
-Vitaly
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
