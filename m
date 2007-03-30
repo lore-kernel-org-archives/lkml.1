@@ -1,37 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXC3Qfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbXC3QiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbXC3Qfk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 12:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbXC3Qfk
+	id S1753927AbXC3QiN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 12:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbXC3QiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 12:35:40 -0400
-Received: from csclub1.cs.uwaterloo.ca ([129.97.7.226]:34769 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753914AbXC3Qfj (ORCPT
+	Fri, 30 Mar 2007 12:38:13 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:57157 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbXC3QiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 12:35:39 -0400
-Date: Fri, 30 Mar 2007 12:35:38 -0400
-To: Andrei Popa <andrei.popa@i-neo.ro>
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDEV list <netdev@vger.kernel.org>
-Subject: Re: [BUG] ethX misnumbered and one missing in mii-tool
-Message-ID: <20070330163538.GC3510@csclub.uwaterloo.ca>
-References: <1175203383.6219.8.camel@localhost> <4807377b0703292121o6eef3bf2l998878cfd677d821@mail.gmail.com> <1175240543.6219.10.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 30 Mar 2007 12:38:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AF+ePSLtYFZCCuF8bvSwGGc7k8QpbctK/7bHmWQV2zIy8ub0yGvjatIM23Db64LHctYeP4FH1baHF3oGJfjUCD/moFtnQjFw7apm6gVbboFlVnRS4UujZ68pkswpUJCTxcrOakFksLnxS7AEbm/1OwHt4cKyuL/ZKaAHpWyWwtE=
+Message-ID: <d120d5000703300938j564a82bdq1e95eeab67a37221@mail.gmail.com>
+Date: Fri, 30 Mar 2007 12:38:11 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc5-mm3
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070330010559.2a232d9a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1175240543.6219.10.camel@localhost>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 30, 2007 at 10:42:23AM +0300, Andrei Popa wrote:
-> ethtool reports the same
+On 3/30/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/
+>
+> - git-cryptodev has things in it again
+>
+> - Re-added git-e1000: a large amount of e1000 driver work
+>
+> - git-net has a huge amount of material in it, but I dropped it because it
+>  went oops.
+>
+> - git-block is back, minus the problematic unplugging rework.
+>
+> - Lots of x86 updates.
+>
+> - lguest is being redone and has been dropped
+>
+> - The IDE development tree has been restored
+>
 
-Is udev running and having fun renumbering interfaces as they are being
-detected in order to keep "consistent" interface names?
+Andrew,
 
---
-Len Sorensen
+Did you drop git-input? I do not see it anywhere....
+
+-- 
+Dmitry
