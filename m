@@ -1,89 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932750AbXC3WiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750898AbXC3WoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932750AbXC3WiX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 18:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932470AbXC3WiX
+	id S1750898AbXC3WoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 18:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbXC3WoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 18:38:23 -0400
-Received: from mx.laposte.net ([81.255.54.16]:7737 "EHLO mx.laposte.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932764AbXC3WiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 18:38:21 -0400
-Subject: RE: [PATCH 1/5] RT kernel: force detect HPET from PCI space
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: Mikko Tiihonen <mikko.tiihonen@iki.fi>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.OSF.4.64.0703310049090.412261@kosh.hut.fi>
-References: <Pine.OSF.4.64.0703310049090.412261@kosh.hut.fi>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-6nkQJWmk107VTrtZBykN"
-Organization: Adresse perso
-Date: Sat, 31 Mar 2007 00:38:08 +0200
-Message-Id: <1175294288.32441.6.camel@rousalka.dyndns.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-5.fc7) 
+	Fri, 30 Mar 2007 18:44:22 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:47571 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbXC3WoV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 18:44:21 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 30 Mar 2007 15:44:15 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 1/13] signal/timer/event fds v8 - anonymous inode source
+ ...
+In-Reply-To: <20070330123943.8df1aa92.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703301532500.3721@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.28743.1174415834.1>
+ <20070330123943.8df1aa92.akpm@linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 30 Mar 2007, Andrew Morton wrote:
 
---=-6nkQJWmk107VTrtZBykN
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+> > +#include <asm/uaccess.h>
+> > +
+> > +
+> > +
+> 
+> Too many blank lines
 
-Le samedi 31 mars 2007 =C3=A0 01:09 +0300, Mikko Tiihonen a =C3=A9crit :
-> > Anyone got the same thing for CK804? I had my hopes high, and then I sa=
-w
-> > the DECLARE_PCI_FIXUP_HEADER values [and the thread title was misleadin=
-g]
->=20
-> I have an A8N-E motherboard with AthlonX2 and the ACPI definitions are=20
-> missing the HPET (standard feature of Asus motherboards).
->=20
-> I too got interested to get my motherboard working. Luckily I found this=20
-> http://lkml.org/lkml/2006/12/17/69=20
+It'd be interesting to know how much is enough. You use one, ppl says it 
+is too dense. You use more, ppl says it's too much.
+There's the one-line rule for inter-function spacing, but what's the 
+include-functions ones? Or the functions-data ones?
 
-Oh, is looks so close to my system
 
-00:01.0 ISA bridge: nVidia Corporation CK804 ISA Bridge (rev a3)
-        Subsystem: Giga-byte Technology GA-K8N Ultra-9 Mainboard
-        Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B-
-        Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=3Dfast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-        Latency: 0
-00: de 10 50 00 0f 00 a0 00 a3 00 01 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 58 14 11 0c
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-40: 58 14 11 0c 00 f0 ff fe fa 3e ff 00 fa 3e ff 00
-                ^^^^^^^^^^^
-                Usual HPET base address
-50: fa 3e ff 00 00 5a 62 02 00 00 00 01 00 00 ff ff
-60: 01 10 00 00 01 14 00 00 01 18 00 00 00 00 f9 ff
-70: 10 00 ff ff c1 00 00 00 00 00 04 19 18 d2 80 0d
-                ^^
-                c1 =3D> HPET disabled (according to your reference)
 
-I don't have an HPET toggle in my bios
+> > +static int ainofs_delete_dentry(struct dentry *dentry);
+> > +static struct inode *aino_mkinode(void);
+> 
+> Unneeded forward declaration.
 
-> from which I generated the following patch:
+Same here. You're the third says this, so I'm gonna change it. But pls 
+consider adding it to the coding style.
 
-I'd love to test it, but what kernel baseline did you use?
-2.6.21-rc5-mm2?
 
---=20
-Nicolas Mailhot
 
---=-6nkQJWmk107VTrtZBykN
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+> > +static int ainofs_get_sb(struct file_system_type *fs_type, int flags,
+> > +			 const char *dev_name, void *data, struct vfsmount *mnt);
+> > +
+> > +
+> > +
+> > +static struct vfsmount *aino_mnt __read_mostly;
+> > +static struct inode *aino_inode;
+> > +static const struct file_operations aino_fops = { };
+> 
+> Unneeded { }
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Ack.
 
-iEYEABECAAYFAkYNkUsACgkQI2bVKDsp8g21FACfZGKk1XwPQpoSrVlVFrP525tO
-1hIAoObcLUUmdYF3G/ptd5b/oqiGGjbH
-=TNSd
------END PGP SIGNATURE-----
 
---=-6nkQJWmk107VTrtZBykN--
+
+> > +static struct file_system_type aino_fs_type = {
+> > +	.name		= "ainofs",
+> > +	.get_sb		= ainofs_get_sb,
+> > +	.kill_sb	= kill_anon_super,
+> > +};
+> > +static struct dentry_operations ainofs_dentry_operations = {
+> > +	.d_delete	= ainofs_delete_dentry,
+> > +};
+> 
+> If this is moved elsewhere we can perhaps remove some or all of the
+> unpleasing static function forward-declarations.
+
+Grrr :)
+
+
+
+
+> > +/**
+> > + * aino_getfd - creates a new file instance by hooking it up to and anonymous
+> > + *              inode, and a dentry that describe the "class" of the file
+> > + * @pfd:     [out]   pointer to the file descriptor
+> > + * @dpinode: [out]   pointer to the inode
+> > + * @pfile:   [out]   pointer to the file struct
+> > + * @name:    [in]    name of the "class" of the new file
+> > + * @fops     [in]    file operations for the new file
+> > + * @priv     [in]    private data for the new file (will be file's private_data)
+> 
+> The [in] and [out] thing is nice - does kerneldoc handle it appropriately?
+
+No idea. It should come out as text at least.
+
+
+
+
+> > + *
+> > + * Creates a new file by hooking it on a single inode. This is useful for files
+> > + * that do not need to have a full-fledged inode in order to operate correctly.
+> > + * All the files created with aino_getfd() will share a single inode, by hence
+> > + * saving memory and avoiding code duplication for the file/inode/dentry setup.
+> > + */
+> > +int aino_getfd(int *pfd, struct inode **pinode, struct file **pfile,
+> > +	       char const *name, const struct file_operations *fops, void *priv)
+> 
+> Dunno about others, but the "aino" naming doesn't grab me, really. 
+> anon_inode_getfd() would make more sense.
+
+Why? Don't you like fortran-like compact naming? :)
+
+
+
+> We conventionally use `const char *' rather than `char const *', and I thnk
+> it is more logical to do so.
+
+Okie
+
+
+
+
+> > +static int ainofs_delete_dentry(struct dentry *dentry)
+> > +{
+> > +	/*
+> > +	 * We faked vfs to believe the dentry was hashed when we created it.
+> > +	 * Now we restore the flag so that dput() will work correctly.
+> > +	 */
+> > +	dentry->d_flags |= DCACHE_UNHASHED;
+> > +	return 1;
+> > +}
+> 
+> Is that legit, or is it a hack??
+
+Same thing used in pipes. Avoid loading the hash for things that'll never 
+be looked up.
+
+
+
+
+> > +/*
+> > + * A single inode exist for all aino files. On the contrary of pipes,
+> > + * aino inodes has no per-instance data associated, so we can avoid
+> > + * the allocation of multiple of them.
+> > + */
+> 
+> "Contrary to pipes, aino inodes have no ...."
+
+Ok
+
+
+
+> > +static struct inode *aino_mkinode(void)
+> > +{
+> > +	struct inode *inode = new_inode(aino_mnt->mnt_sb);
+> > +
+> > +	if (!inode)
+> > +		return ERR_PTR(-ENOMEM);
+> > +
+> > +	inode->i_fop = &aino_fops;
+> > +
+> > +	/*
+> > +	 * Mark the inode dirty from the very beginning,
+> > +	 * that way it will never be moved to the dirty
+> > +	 * list because mark_inode_dirty() will think
+> > +	 * that it already _is_ on the dirty list.
+> > +	 */
+> 
+> Thus breaking what is hopefully a VFS invariant.  How come?
+
+Copied from pipes.
+
+
+
+
+> > +static int __init aino_init(void)
+> > +{
+> > +	int error;
+> > +
+> > +	error = register_filesystem(&aino_fs_type);
+> > +	if (error)
+> > +		goto err_exit;
+> > +	aino_mnt = kern_mount(&aino_fs_type);
+> > +	if (IS_ERR(aino_mnt)) {
+> > +		error = PTR_ERR(aino_mnt);
+> > +		goto err_unregister_filesystem;
+> > +	}
+> > +	aino_inode = aino_mkinode();
+> > +	if (IS_ERR(aino_inode)) {
+> > +		error = PTR_ERR(aino_inode);
+> > +		goto err_mntput;
+> > +	}
+> > +
+> > +	return 0;
+> > +
+> > +err_mntput:
+> > +	mntput(aino_mnt);
+> > +err_unregister_filesystem:
+> > +	unregister_filesystem(&aino_fs_type);
+> > +err_exit:
+> > +	printk(KERN_ERR "aino_init() failed (%d)\n", error);
+> 
+> I suspect this is panic time?
+
+Ok, it was panincing, and someone made me change it. Would you please 
+agree?
+The system can survive w/out, but it'll be a broken system WRT userspace.
+
+
+
+
+> > +int aino_getfd(int *pfd, struct inode **pinode, struct file **pfile,
+> > +	       char const *name, const struct file_operations *fops, void *priv);
+> > +
+> > +#endif /* _LINUX_ANON_INODES_H */
+> > +
+> > Index: linux-2.6.21-rc3.quilt/fs/Makefile
+> > ===================================================================
+> > --- linux-2.6.21-rc3.quilt.orig/fs/Makefile	2007-03-15 15:19:22.000000000 -0700
+> > +++ linux-2.6.21-rc3.quilt/fs/Makefile	2007-03-19 19:01:01.000000000 -0700
+> > @@ -11,7 +11,7 @@
+> >  		attr.o bad_inode.o file.o filesystems.o namespace.o aio.o \
+> >  		seq_file.o xattr.o libfs.o fs-writeback.o \
+> >  		pnode.o drop_caches.o splice.o sync.o utimes.o \
+> > -		stack.o
+> > +		stack.o anon_inodes.o
+> 
+> Can we make this optional if CONFIG_EMBEDDED?  You plan on converting epoll
+> to use this facility, but with CONFIG_EPOLL=n, this is all dead code?
+
+Hmmm, the whole point is that all this stuff works with or without epoll. 
+And epoll need no changes to support this.
+
+
+
+- Davide
+
+
