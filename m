@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbXC3UoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbXC3Utj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753600AbXC3UoJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 16:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbXC3UoJ
+	id S1753611AbXC3Utj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 16:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbXC3Utj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 16:44:09 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51516 "EHLO smtp.osdl.org"
+	Fri, 30 Mar 2007 16:49:39 -0400
+Received: from mga02.intel.com ([134.134.136.20]:28104 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753600AbXC3UoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 16:44:07 -0400
-Date: Fri, 30 Mar 2007 13:43:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Brian Pomerantz <bapper@piratehaven.org>
-Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] fix page leak during core dump
-Message-Id: <20070330134359.ec6d95bc.akpm@linux-foundation.org>
-In-Reply-To: <20070329203913.GA5190@skull.piratehaven.org>
-References: <20070329203913.GA5190@skull.piratehaven.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753568AbXC3Uti convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 16:49:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,355,1170662400"; 
+   d="scan'208"; a="219454027:sNHT3692774547"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2.6.21-rc5] Flush MSI-X table writes (rev 3)
+Date: Fri, 30 Mar 2007 13:49:20 -0700
+Message-ID: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com>
+In-Reply-To: <m14po2iilg.fsf@ebiederm.dsl.xmission.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.21-rc5] Flush MSI-X table writes (rev 3)
+Thread-Index: AcdzCbIkURbW1/1DTrqcXuhgahJn6AAAYKfA
+From: "Williams, Mitch A" <mitch.a.williams@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, "Greg KH" <gregkh@suse.de>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-pci@atrey.karlin.mff.cuni.cz>, <linux-kernel@vger.kernel.org>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+X-OriginalArrivalTime: 30 Mar 2007 20:49:21.0373 (UTC) FILETIME=[E47FC8D0:01C7730C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Mar 2007 13:39:13 -0700
-Brian Pomerantz <bapper@piratehaven.org> wrote:
+Eric W. Biederman wrote:
 
-> When the dump cannot occur most likely because of a full file system
-> and the page to be written is the zero page, the call to
-> page_cache_release() is missed.
-> 
-> Signed-off-by: Brian Pomerantz <bapper@mvista.com>
-> 
-> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-> index a2fceba..9cc4f0a 100644
-> --- a/fs/binfmt_elf.c
-> +++ b/fs/binfmt_elf.c
-> @@ -1704,7 +1704,10 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
->  				DUMP_SEEK(PAGE_SIZE);
->  			} else {
->  				if (page == ZERO_PAGE(addr)) {
-> -					DUMP_SEEK(PAGE_SIZE);
-> +					if (!dump_seek(file, PAGE_SIZE)) {
-> +						page_cache_release(page);
-> +						goto end_coredump;
-> +					}
+>The bug report would be phrased as someone seeing "No irq for vector"
+>on x86_64.  Unless they are a skilled developer they are unlikely to
+>trace it down to not flushing posted writes to a MSI bar during irq
+>migration.  It part it is a subtle hardware/software race.
+>
+>I have seen some unresolved bug reports described this way on machines
+>that have MSI-X capable hardware.  The are against fedora core and I
+>can't haven't been able to get the reporters to try 2.6.21-rcX and
+>the other irq back ports don't work so well.
+>
+>I currently count 7 drivers in 2.6.21 that are susceptible to the race
+>this bug closes.
+>
+>This version of the patch seems to meet all of the criteria for being
+>obviously correct, and all it does is insert a stupid readl.  Not
+>very dangerous.
+>
+>This fix removes a race between hardware and software that you likely
+>need to migrate MSI-X irqs a lot to trigger.  Which can be the kind of
+>thing that bytes you after you have a month of uptime.  This is a very
+>nasty condition to track down from bug reports.  I'd rather not have a
+>known culprit out there.
 
-Oh for gawds sake I wish we could be rid of those idiotic macros :(
+Agreed, this is a subtle bug, and was a real hairball to track down.
+Even so, I'm surprised that nobody else has dug into this, since it
+should affect anybody running MSI-X.  I originally thought I was seeing
+a hardware bug, which is why I dug more deeply into the issue.
 
-This patch looks OK to me, although a refcount leak on the ZERO_PAGE is
-special, because that page is PageReserved().
+If Eric is seeing bug reports related to "no vector for IRQ" in the
+wild, then I have to change my stance and agree that this should be
+pushed to -stable.  Every one of those messages indicates that we
+hit the race condition.
 
-It used to be the case that we'd ignore attempts to change the refcount on
-reserved pages (or at least on the ZERO_PAGE), but we changed that, so we
-now actually refcount the ZERO_PAGE.  (I think, from a quick read of the
-code.  This contradicts my memory of how it works).
-
-So I expect the net effect here is that a sufficiently determined attacker
-can overflow the ZERO_PAGE's refcount, thus causing it to be "freed".  The
-page allocator won't actually free the page due to PG_Reserved, but it'll
-all become very noisy.
-
-Nick, Hugh: agree?
+-Mitch
