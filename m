@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbXC3VLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXC3VMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbXC3VLx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 17:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbXC3VLx
+	id S1753989AbXC3VMB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 17:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXC3VL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 17:11:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51656 "EHLO
+	Fri, 30 Mar 2007 17:11:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51614 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753993AbXC3VLt (ORCPT
+	with ESMTP id S1753989AbXC3VLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 17:11:49 -0400
-Date: Fri, 30 Mar 2007 14:06:30 -0700
+	Fri, 30 Mar 2007 17:11:37 -0400
+Date: Fri, 30 Mar 2007 14:06:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Hunold <hunold@linuxtv.org>,
-       Oliver Endriss <o.endriss@gmx.de>,
+       alan@lxorguk.ukuu.org.uk,
+       Thomas Viehweger <Thomas.Viehweger@marconi.com>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 26/37] V4L: saa7146: Fix allocation of clipping memory
-Message-ID: <20070330210630.GC29450@kroah.com>
+Subject: [patch 24/37] DVB: isl6421: dont reference freed memory
+Message-ID: <20070330210623.GA29450@kroah.com>
 References: <20070330205938.984247529@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-saa7146-fix-allocation-of-clipping-memory.patch"
+Content-Disposition: inline; filename="dvb-isl6421-don-t-reference-freed-memory.patch"
 In-Reply-To: <20070330210334.GA29450@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,41 +38,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Oliver Endriss <o.endriss@gmx.de>
+From: Thomas Viehweger <Thomas.Viehweger@marconi.com>
 
-V4L: saa7146: Fix allocation of clipping memory
+DVB: isl6421: don't reference freed memory
 
-Olaf Hering pointed out that SAA7146_CLIPPING_MEM would become
-very large for PAGE_SIZE > 4K.
+After freeing a block there should be no reference to this block.
 
-In fact, the number of clipping windows is limited to 16,
-and calculate_clipping_registers_rect() does not use more
-than 256 bytes. SAA7146_CLIPPING_MEM adjusted accordingly.
+(cherry picked from commit 09d4895488d4df5c58b739573846f514ceabc911)
 
-(cherry picked from commit 7a7cd1920969dd9da4e0d99aab573b3eba24c799)
-
-Thanks-to: Olaf Hering <olaf@aepfle.de>
-Acked-by: Michael Hunold <hunold@linuxtv.org>
-Signed-off-by: Oliver Endriss <o.endriss@gmx.de>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Signed-off-by: Thomas Viehweger <Thomas.Viehweger@marconi.com>
 Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/media/saa7146_vv.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/media/dvb/frontends/isl6421.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/include/media/saa7146_vv.h
-+++ b/include/media/saa7146_vv.h
-@@ -239,7 +239,8 @@ void saa7146_res_free(struct saa7146_fh 
- #define SAA7146_HPS_SYNC_PORT_B		0x01
+--- a/drivers/media/dvb/frontends/isl6421.c
++++ b/drivers/media/dvb/frontends/isl6421.c
+@@ -122,6 +122,7 @@ struct dvb_frontend *isl6421_attach(stru
+ 	/* detect if it is present or not */
+ 	if (isl6421_set_voltage(fe, SEC_VOLTAGE_OFF)) {
+ 		kfree(isl6421);
++		fe->sec_priv = NULL;
+ 		return NULL;
+ 	}
  
- /* some memory sizes */
--#define SAA7146_CLIPPING_MEM	(14*PAGE_SIZE)
-+/* max. 16 clipping rectangles */
-+#define SAA7146_CLIPPING_MEM	(16 * 4 * sizeof(u32))
- 
- /* some defines for the various clipping-modes */
- #define SAA7146_CLIPPING_RECT		0x4
 
 -- 
