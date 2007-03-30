@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbXC3Jaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945956AbXC3JjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933590AbXC3Jaz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 05:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933566AbXC3Jaz
+	id S1945956AbXC3JjQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 05:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945960AbXC3JjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 05:30:55 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:4809 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753220AbXC3Jay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 05:30:54 -0400
-Subject: Re: Why is arch/s390/crypto/Kconfig sourced when building for
-	another arch ?
-From: Jan Glauber <jang@linux.vnet.ibm.com>
-To: Thomas Backlund <tmb@mandriva.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <eueg41$j5t$1@sea.gmane.org>
-References: <eueg41$j5t$1@sea.gmane.org>
-Content-Type: text/plain
-Date: Fri, 30 Mar 2007 09:30:12 +0000
-Message-Id: <1175247012.5474.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Mar 2007 05:39:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34324 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945956AbXC3JjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 05:39:15 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1175226172.15391.66.camel@roc-desktop> 
+References: <1175226172.15391.66.camel@roc-desktop> 
+To: bryan.wu@analog.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nommu arch dont zero the anonymous mapping by adding UNINITIALIZE flag 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Fri, 30 Mar 2007 10:39:00 +0100
+Message-ID: <10785.1175247540@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+Wu, Bryan <bryan.wu@analog.com> wrote:
 
-> with 2.6.20.4 it works great, but when switching to 2.6.21-rcX it breaks 
-> with this:
-> 
-> drivers/crypto/Kconfig:55: can't open file "arch/s390/crypto/Kconfig"
+> It takes lots of time in malloc()->mmap()->do_mmap_private()->memset(). When
+> malloc a big area, memset() the area to zero makes the performance very bad.
 
-arch/s390/crypto/Kconfig is included there since that is the right place
-for the config options to show up.
+Ummm...
 
-> I tried to fix drivers/crypto/Kconfig by changing the code to:
-> 
-> if S390
-> source "arch/s390/crypto/Kconfig"
-> endif
-> 
-> but it still gets sourced...
+How do you then cope with attempting to run that same application under
+MMU-mode Linux?  Won't MMU mmap() give EINVAL?  If so, then that'd be grounds
+for NAK'ing this patch in the form given.
 
-You would need something like:
+My theory is that NOMMU binaries should run just as well under an MMU-mode
+kernel as under a NOMMU kernel.
 
-source "arch/s390/crypto/Kconfig"
-	depends on S390
+What you're asking for is also a security risk - though obviously on NOMMU-mode
+one that's fairly irrelevant.  It might even make a lot of sense there to move
+the clearance into uClibc where possible rather than doing it in the kernel.
 
-But that is not implemented and I doubt it will since deleting parts of
-the kernel tree is not something that is required to work.
+On MMU-mode kernels, the option should just be ignored.
 
-Jan
+I'd also recommend you stick a 'D' on the end of 'MAP_UNINITIALIZE' or may be
+call it MAP_UNCLEARED'.  But that's a minor point, but you're not telling
+mmap() to go and uninitialise the memory...
 
+Lastly, why do you actually need VM_UNINITIALIZE at all?  The flag is only used
+in a place where MAP_UNINITIALIZE is still available (okay, you'll have to hand
+it down as an extra argument).  That looks like a waste of a VM_xxx flag, and
+we don't have that many to spare.
+
+David
