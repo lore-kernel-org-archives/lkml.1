@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751498AbXC3Nn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbXC3No0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751498AbXC3Nn2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 09:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbXC3Nn2
+	id S1751600AbXC3No0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 09:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbXC3No0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 09:43:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39532 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbXC3Nn2 (ORCPT
+	Fri, 30 Mar 2007 09:44:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:26841 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbXC3NoZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 09:43:28 -0400
-Date: Fri, 30 Mar 2007 14:43:27 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Eduard Bloch <edi@gmx.de>
-Cc: linux-kernel@vger.kernel.org, debburn-devel@lists.alioth.debian.org
-Subject: Re: broken device locking, sg vs. sg_io on block devices
-Message-ID: <20070330134327.GA24030@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Eduard Bloch <edi@gmx.de>, linux-kernel@vger.kernel.org,
-	debburn-devel@lists.alioth.debian.org
-References: <200703261811.21448.gerald@itzgrund.net> <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 30 Mar 2007 09:44:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GwuVc9JsjLfpLV7ri/r0QF9oGK50160dXWS/rHJUlzl2+/RmntjUjoHHHmaH0xNuv7fz4sFFd2hGudr6d70Ky638kiHMzRGAueEV4/3DB1hr60jBLFIjPKM5YOI2KcQxFJV3IxnZNBFYue9EpXJDVsFIGIWWITwiQbUYe/Gsxac=
+Message-ID: <6d6a94c50703300644y28e51f47h19182f550c18c40d@mail.gmail.com>
+Date: Fri, 30 Mar 2007 21:44:24 +0800
+From: "Aubrey Li" <aubreylee@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH] nommu arch dont zero the anonymous mapping by adding UNINITIALIZE flag
+Cc: vapier.adi@gmail.com, jie.zhang@analog.com, bryan.wu@analog.com,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <15938.1175253862@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <1175226172.15391.66.camel@roc-desktop>
+	 <10785.1175247540@redhat.com>
+	 <6d6a94c50703300334w6b4787f3p144715de5166d7bc@mail.gmail.com>
+	 <15938.1175253862@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 30, 2007 at 01:17:44PM +0200, Eduard Bloch wrote:
-> Hello,
-> 
-> I am talking this issue to LKML now.
-> 
-> Short story: using O_EXCL on /dev/srX alone does not help to prevent
-> other process from killing your burn process by just reading the
-> /dev/sgX device associated with yours, and vice versa. We have done the
-> best we could to make safe operation (in contrary to Schilling's
-> kill-this-evil-hald-thing bitching) but that is not enough, the locking
-> has to be established on kernel layer.
-> 
-> Long story:
-> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=413960
-> https://bugzilla.novell.com/show_bug.cgi?id=226019
-> http://lists.alioth.debian.org/pipermail/debburn-devel/2007-February/000297.html
-> and other error messages.
-> 
-> There is AFAICS no simple way to establish locking across the driver
-> borders. If kernel developers have a good idea, any help is appreciated.
-> 
-> Below are the typical symptoms: wodim operates via /dev/sgX because the
-> user chosen it this way, some other process (most likely hald) comes
-> along and reads from /dev/sr0 and the drive gets confused. Boom.
+On 3/30/07, David Howells <dhowells@redhat.com> wrote:
+> Aubrey Li <aubreylee@gmail.com> wrote:
+>
+> > malloc() allocates size bytes and returns a pointer to the allocated memory.
+> > ****The memory is not cleared.****
+>
+> But this is *not* malloc().  It's mmap().  Are you prepared to guarantee that
+> there are no applications out there that don't rely on anon mmap() giving
+> zeroed memory?
 
-You have thre problems here, and none of them are in the kernel :)
+I can't find mmap must give zeroed memory in the mmap manual.
+Is there any reason relying on anon mmap() giving zerod memory?
+Can you show me an example?
 
-First the hardsware is broken when it can't deal with concurrent requests,
-I'd try to get a refund for it.  Second wodim should never ever use
-/dev/sg if the sr node is available.  And third HAL should stop poking
-devices all the time.  Then again hald is a totally lost cause and
-I can only recommend to uninstall it ASAP.
+>
+> The MMU-mode clearing is done for security reasons - there shouldn't be any
+> leakage between processes, and because the zero page can just be faulted in.
+>
+NO-MMU can't do this clearing. Performance is down.
+
+> Personally, I'd prefer to maintain compatibility with MMU-mode wherever
+> possible, but I'm happy with overrides like the MAP_UNINITIALISED flag
+> suggested.
+>
+Not necessary IMHO.
+
+-Aubrey
