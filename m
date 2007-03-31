@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933583AbXCaDml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965105AbXCaDpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933583AbXCaDml (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 23:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933589AbXCaDml
+	id S965105AbXCaDpm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 23:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965084AbXCaDpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 23:42:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49630 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933583AbXCaDmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 23:42:40 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19hh0Ikmt9hpz73/nO905Ua+4IAcneh0yiSIG8+O3
-	mhL0ceL9vrG7bg
-Subject: Re: [test] hackbench.c interactivity results: vanilla versus
-	SD/RSDL
-From: Mike Galbraith <efault@gmx.de>
-To: Xenofon Antidides <xantidides@yahoo.gr>
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1175311424.6927.6.camel@Homer.simpson.net>
-References: <20070331023615.98478.qmail@web26704.mail.ukl.yahoo.com>
-	 <1175311424.6927.6.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Sat, 31 Mar 2007 05:42:37 +0200
-Message-Id: <1175312557.6927.14.camel@Homer.simpson.net>
+	Fri, 30 Mar 2007 23:45:42 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4393 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965105AbXCaDpl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 23:45:41 -0400
+Date: Sat, 31 Mar 2007 13:45:13 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Greg KH <gregkh@suse.de>
+Cc: Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: Re: [patch 32/37] CRYPTO: api: scatterwalk_copychunks() fails to advance through scatterlist
+Message-ID: <20070331034513.GA926@gondor.apana.org.au>
+References: <20070330205938.984247529@mini.kroah.org> <20070330210651.GI29450@kroah.com> <460DBC4C.1060602@trash.net> <20070331021437.GA31298@gondor.apana.org.au> <20070331031129.GA1784@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070331031129.GA1784@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-31 at 05:23 +0200, Mike Galbraith wrote:
-> On Fri, 2007-03-30 at 19:36 -0700, Xenofon Antidides wrote:
+On Fri, Mar 30, 2007 at 08:11:29PM -0700, Greg KH wrote:
 > 
-> > Something different on many cpus? Sorry I was thinking
-> > something other. I try 50% run + 50% sleep on one cpu
-> > and mainline has big problem. Sorry for bad code I
-> > copy bits to make it work. Start program first then
-> > run bash 100% cpu (while : ; do : ; done). Try change
-> > program forks from 1 till 3 or more mainline kernel
-> > and bash gets 0%.
-> 
-> top - 05:16:41 up 43 min, 13 users,  load average: 9.51, 4.32, 5.67
-> 
->   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  P COMMAND
->  7146 root      15   0  1564  104   24 R   43  0.0   0:20.74 0 fiftypercent
->  7142 root      15   0  1564  104   24 S   37  0.0   0:18.08 0 fiftypercent
->  7140 root      15   0  1564  436  356 R   21  0.0   0:18.94 1 fiftypercent
->  7144 root      15   0  1564  104   24 R   21  0.0   0:18.75 1 fiftypercent
->  7143 root      15   0  1564  104   24 R   20  0.0   0:18.85 1 fiftypercent
->  7145 root      15   0  1564  104   24 R   19  0.0   0:18.30 1 fiftypercent
->  7147 root      15   0  1564  104   24 R   19  0.0   0:18.03 1 fiftypercent
->  7141 root      16   0  1564  104   24 R   10  0.0   0:18.29 0 fiftypercent
->  6245 root      16   0  3368 1876 1376 R    7  0.2   0:49.81 0 bash
-> 
-> That's mainline with the below (which I'm trying various ideas to improve).
+> Is this an "add-on" patch, or a replacement one?
 
-Note: that's not an sh -c started at the same time as the 50% duty cycle
-dos, the pertinent data is that bash is getting into the loop.
+This is an add-on.  In case you want a replacement, here it is:
 
-Yesterday, I piddled around with tracking interactive backlog as a way
-to detect when the load isn't really an interactive load, that's very
-simple and has potential.
-
-	-Mike
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/crypto/scatterwalk.c b/crypto/scatterwalk.c
+index 35172d3..0f76175 100644
+--- a/crypto/scatterwalk.c
++++ b/crypto/scatterwalk.c
+@@ -91,6 +91,8 @@ void scatterwalk_copychunks(void *buf, struct scatter_walk *walk,
+ 		memcpy_dir(buf, vaddr, len_this_page, out);
+ 		scatterwalk_unmap(vaddr, out);
+ 
++		scatterwalk_advance(walk, len_this_page);
++
+ 		if (nbytes == len_this_page)
+ 			break;
+ 
+@@ -99,7 +101,5 @@ void scatterwalk_copychunks(void *buf, struct scatter_walk *walk,
+ 
+ 		scatterwalk_pagedone(walk, out, 1);
+ 	}
+-
+-	scatterwalk_advance(walk, nbytes);
+ }
+ EXPORT_SYMBOL_GPL(scatterwalk_copychunks);
