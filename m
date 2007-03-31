@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbXCaGol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965254AbXCaGts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932183AbXCaGol (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 02:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933586AbXCaGol
+	id S965254AbXCaGts (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 02:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965275AbXCaGts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 02:44:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:25945 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932183AbXCaGok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 02:44:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=AAsGrQhA2pKtoYt6hSi4rj557pfcoL5Wu9OZyopkweNXn2W0IBXE6o9gz1JGjW5ZrgDfOV4wPRlSNL4gajpwnjRXbDy/5h0yvwZprxc2lYR36K85bHTCaHcZc9hPbZ10PWnJjT+lx8lPbnGlhkAiXqJB6JSFutIDN0kdsKcZOGk=
-Subject: Re: [4/4] 2.6.21-rc5: known regressions (v2)
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tino Keitel <tino.keitel@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       pavel@suse.cz, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20070330214956.GQ14134@stusta.de>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	 <20070330214956.GQ14134@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 31 Mar 2007 08:44:39 +0200
-Message-Id: <1175323479.5550.70.camel@funkylaptop>
+	Sat, 31 Mar 2007 02:49:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49199 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965254AbXCaGts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 02:49:48 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+kqWZhcbWksc/z+uH1tAUF1qE2+2O2cJccn3ynQs
+	EaLZTQaKsrLVq0
+Subject: Re: [test] hackbench.c interactivity results: vanilla versus
+	SD/RSDL
+From: Mike Galbraith <efault@gmx.de>
+To: Xenofon Antidides <xantidides@yahoo.gr>
+Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
+       linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1175322706.6030.20.camel@Homer.simpson.net>
+References: <834572.46808.qm@web26713.mail.ukl.yahoo.com>
+	 <1175322706.6030.20.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Sat, 31 Mar 2007 08:49:46 +0200
+Message-Id: <1175323786.6030.28.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 30 mars 2007 à 23:49 +0200, Adrian Bunk a écrit :
-> Subject    : MacMini doesn't come out of suspend to ram  (i386 clockevents)
->              (CONFIG_HPET_TIMER)
-> References : http://lkml.org/lkml/2007/3/21/374
-> Submitter  : Frédéric Riss <frederic.riss@gmail.com>
->              Tino Keitel <tino.keitel@gmx.de>
-> Caused-By  : Thomas Gleixner <tglx@linutronix.de>
->              commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-> Status     : unknown
+On Sat, 2007-03-31 at 08:31 +0200, Mike Galbraith wrote:
+> On Fri, 2007-03-30 at 22:41 -0700, Xenofon Antidides wrote:
+> 
+> > Patch makes X yuck with any load. I stick with SD.
 
-This one has been fixed by 399afa4fc9238fbae42116cf25a54671c0e8f56e.
-Suspend to ram now works with HPET enabled (and regardless of the NO_HZ
-setting).
+General comment directed at nobody in particular:
 
-Thanks!
+If anyone thinks the current scheduler sucks rocks, maybe they should
+try to fix it.  If they think SD is the best thing since sliced bread,
+maybe they should help Con fix that.  Code talks...
 
-Fred.
+	-Mike
 
