@@ -1,120 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbXCaLUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752945AbXCaLgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752915AbXCaLUU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 07:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbXCaLUT
+	id S1752945AbXCaLgp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 07:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbXCaLgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 07:20:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:24744 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752915AbXCaLUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 07:20:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=o6+ZdQf/mpoDAqcCM3aVtrmJpdU9bG4/dOIeOvB166QDX+2fq9VT3jTWE0GhIOjpAvwFljklUB6KSQiWAAeYA/Ym9BJBVXun3Tt+QL5JAONvydAS2WY/0EeI+MVLwEY54s7zuDOlGJdbohiw28m0/b5uYEtj355tL9XLSyEXtJU=
-Message-ID: <460E43D2.70504@googlemail.com>
-Date: Sat, 31 Mar 2007 13:19:46 +0200
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: Fw: Re: 2.6.21-rc5-mm3
-References: <20070330103958.16b738aa.akpm@linux-foundation.org> <200703302131.23469.ak@suse.de>
-In-Reply-To: <200703302131.23469.ak@suse.de>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Sat, 31 Mar 2007 07:36:45 -0400
+Received: from mx.laposte.net ([81.255.54.16]:52526 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752945AbXCaLgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 07:36:44 -0400
+Subject: Re: [PATCH 1/5] RT kernel: force detect HPET from PCI space
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Mikko Tiihonen <mikko.tiihonen@iki.fi>, linux-kernel@vger.kernel.org,
+       ranma@tdiedrich.de, om.turyx@gmail.com
+In-Reply-To: <m3bqi9u2an.fsf@maximus.localdomain>
+References: <Pine.OSF.4.64.0703310049090.412261@kosh.hut.fi>
+	 <1175294288.32441.6.camel@rousalka.dyndns.org>
+	 <m3bqi9u2an.fsf@maximus.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HGtWM+8CkR7eN9QAuh2o"
+Organization: Adresse perso
+Date: Sat, 31 Mar 2007 13:36:26 +0200
+Message-Id: <1175340987.4174.9.camel@rousalka.dyndns.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 (2.10.0-5.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen napisał(a):
->> BUG: NMI Watchdog detected LOCKUP on CPU0, eip c014ce9c, registers:
-> 
-> I suspect it is just because his console is too slow and then unwinding
-> took too long and it happened to hit the unwinder. 
-> 
-> You did use a slow console, right?
 
-console=ttyS0,115200n8
+--=-HGtWM+8CkR7eN9QAuh2o
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> I suppose it just needs a strategic touch_nmi_watchdog. Will add that.
-> 
->> Modules linked in: ide_cd cdrom rtc unix
->> CPU:    0
->> EIP:    0060:[<c014ce9c>]    Not tainted VLI
->> EFLAGS: 00000093   (2.6.21-rc5-mm3 #10)
->> EIP is at read_pointer+0x49/0x2d8
->> eax: c7a8dd04   ebx: 00000000   ecx: 00000000   edx: c043d19c
->> esi: c043d184   edi: c043d19c   ebp: c7a8dbf4   esp: c7a8dbbc
->> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
->> Process udevd (pid: 864, ti=c7a8c000 task=c97cd4d0 task.ti=c7a8c000)
->> Stack: 0000000b c7a8dc70 c7a8dbf4 c014d6d0 c7a8dd04 c043e454 c7a8dbf4 c011fdd1 
->>        c043e404 c043e454 c043d190 0005cd94 c043d184 c7a8dd04 c7a8dd14 c014dd3a 
->>        00000000 00000000 00000000 00000000 c7a8df44 c7a8dd74 c741eefb 00000008 
->> Call Trace:
->>  [<c014dd3a>] unwind+0x414/0xfa2
->>  [<c010510d>] dump_trace_unwind+0xb4/0xe5
->>  [<c014ce4d>] unwind_init_running+0x25/0x2b
->>  [<c01051a1>] dump_trace+0x63/0x1eb
->>  [<c010ad39>] save_stack_trace+0x23/0x42
->>  [<c01393c9>] update_cpu_base_expires_next+0x56/0x5a
->>  [<c013a475>] hrtimer_interrupt+0x17c/0x1b8
->>  [<c0115e8e>] smp_apic_timer_interrupt+0x72/0x85
->>  [<c0104bef>] apic_timer_interrupt+0x33/0x38
->>  [<c014320c>] lock_release+0x1d2/0x1da
->>  [<c013a7ef>] up_read+0x19/0x2e
->>  [<c011b800>] do_page_fault+0x28f/0x55b
->>  [<c034d191>] error_code+0x79/0x80
->>  [<c020c23e>] __put_user_4+0x12/0x18
->> DWARF2 unwinder stuck at __put_user_4+0x12/0x18
->> Leftover inexact backtrace:
->>  [<c01040d6>] ret_from_fork+0x6/0x1c
-> 
-> Hmpf. I saw it once in child_rip here too. Then I wanted to reproduce it to report
-> properly and couldn't again. I had a few other backtraces that were all non stuck
-> with child_rip then on essentially the same kernel. Something weird is going on.
-> 
->>  [<c013a475>] hrtimer_interrupt+0x17c/0x1b8
->>  [<c0115e8e>] smp_apic_timer_interrupt+0x72/0x85
->>  [<c0104bef>] apic_timer_interrupt+0x33/0x38
->>  [<c020c184>] __get_user_4+0x14/0x17
->> DWARF2 unwinder stuck at __get_user_4+0x14/0x17
->> Leftover inexact backtrace:
-> 
-> Now that is weird. Never seen before. Jan, any ideas?
-> 
-> What is your gcc/compiler, Michal?
+[adding some people in CC that expressed interest in the problem before]
 
-gcc --version
-gcc (GCC) 4.1.1 20070105 (Red Hat 4.1.1-51)
+Le samedi 31 mars 2007 =C3=A0 12:37 +0200, Krzysztof Halasa a =C3=A9crit :
+> Nicolas Mailhot <nicolas.mailhot@laposte.net> writes:
+>=20
+> > Oh, is looks so close to my system
+> >
+> > 00:01.0 ISA bridge: nVidia Corporation CK804 ISA Bridge (rev a3)
+> > 00: de 10 50 00 0f 00 a0 00 a3 00 01 06 00 00 80 00
+> > 10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> > 20: 00 00 00 00 00 00 00 00 00 00 00 00 58 14 11 0c
+> > 30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> > 40: 58 14 11 0c 00 f0 ff fe fa 3e ff 00 fa 3e ff 00
+> >                 ^^^^^^^^^^^
+> >                 Usual HPET base address
+> > 50: fa 3e ff 00 00 5a 62 02 00 00 00 01 00 00 ff ff
+> > 60: 01 10 00 00 01 14 00 00 01 18 00 00 00 00 f9 ff
+> > 70: 10 00 ff ff c1 00 00 00 00 00 04 19 18 d2 80 0d
+> >                 ^^
+> >                 c1 =3D> HPET disabled (according to your reference)
+> >
+> > I don't have an HPET toggle in my bios
+>=20
+> For reference: HPET enabled in BIOS, MSI K9N platinum board:
+>=20
+> dmesg | grep HPET
+> ACPI: HPET (v001 A M I  OEMHPET0 0x02000701 MSFT 0x00000097)
+> 	@ 0x000000003ffd5480
+> ACPI: HPET id: 0x10de8201 base: 0xfed00000
+> time.c: Using 25.000000 MHz WALL HPET GTOD HPET timer.
+>=20
+> 00:01.0 ISA bridge: nVidia Corporation MCP55 LPC Bridge (rev a2)
+>         Subsystem: Micro-Star International Co., Ltd. Unknown device 7250
+>         Flags: bus master, 66MHz, fast devsel, latency 0
+>         I/O ports at 2f00 [size=3D128]
+> 00: de 10 62 03 0f 00 a0 00 a2 00 01 06 00 00 80 00
+> 10: 01 2f 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 20: 00 00 00 00 00 00 00 00 00 00 00 00 62 14 50 72
+> 30: 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00
+> 40: 62 14 50 72 00 00 d0 fe fa 3e ff 00 fa 3e ff 00
+>                 ^^^^^^^^^^^
+> Dword at 0x44 indeed seems to be the address
+>=20
+> 50: fa 3e ff 00 00 5a 62 02 00 00 00 01 00 00 fe 3f
+> 60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f9 ff
+> 70: 10 00 ff ff c5 80 00 00 00 00 45 19 00 c6 40 00
+>                 ^^
+> Enabled =3D consistent with http://lkml.org/lkml/2006/12/17/69
+>=20
+> 80: 09 20 00 10 1d 08 00 00 f0 00 00 01 f0 00 00 00
+> 90: 00 08 00 00 00 00 00 00 21 47 95 86 ef cd ab 00
+> a0: 01 00 00 81 00 00 00 00 00 00 00 00 00 00 00 00
+>              ^^
+> Not sure about 0xa3, though.
+>=20
+> b0: 00 00 00 00 00 0a 7f 0a 00 00 00 00 00 00 00 00
+> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> d0: 00 00 00 00 00 00 00 00 44 00 00 fe fd d3 00 a0
+> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> f0: 00 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00
 
-> 
-> -Andi
-> 
-> 
-> Were there any strange binutils in use, Michal?
+Here is the full reference on my system
 
-I don't remember when I had problems with this compiler.
+00:01.0 ISA bridge: nVidia Corporation CK804 ISA Bridge (rev a3)
+        Subsystem: Giga-byte Technology GA-K8N Ultra-9 Mainboard
+        Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=3Dfast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+00: de 10 50 00 0f 00 a0 00 a3 00 01 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 58 14 11 0c
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 58 14 11 0c 00 f0 ff fe fa 3e ff 00 fa 3e ff 00
+50: fa 3e ff 00 00 5a 62 02 00 00 00 01 00 00 ff ff
+60: 01 10 00 00 01 14 00 00 01 18 00 00 00 00 f9 ff
+70: 10 00 ff ff c1 00 00 00 00 00 04 19 18 d2 80 0d
+80: 09 20 00 d8 01 01 00 00 c0 00 00 01 00 00 00 00
+90: 00 00 00 00 00 00 00 00 21 64 87 a9 de bc 00 00
+a0: 03 00 30 c1 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 95 02 f4 02 00 08 5f 08 00 00 00 00 00 00 00 00
+c0: 35 82 80 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 14 10 01 00 00 00 d0 00 80 30 00 20 61 44 44 11
+f0: 5a ff 5f bf 00 00 00 c0 10 ff ff ff 00 00 30 07
 
-> 
->>  [<c018b42f>] do_execve+0xdd/0x210
->>  [<c0102497>] sys_execve+0x3f/0x62
->>  [<c01041c2>] sysenter_past_esp+0x5f/0x99
-> 
+I'm crazy enough to test a patch if someone cooks it, but I'm way out of
+my depth there :)
 
-Regards,
-Michal
+--=20
+Nicolas Mailhot
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+--=-HGtWM+8CkR7eN9QAuh2o
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iEYEABECAAYFAkYOR7oACgkQI2bVKDsp8g2+pQCgjAZe/pqTWxT9dIVpvfVMGCaf
+a+kAoN/DV0DEvi/isA7hbLNSuVpfbYfF
+=MqKe
+-----END PGP SIGNATURE-----
+
+--=-HGtWM+8CkR7eN9QAuh2o--
