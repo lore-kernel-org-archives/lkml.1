@@ -1,45 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbXCaPuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbXCaPvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbXCaPuy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 11:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbXCaPuy
+	id S1753189AbXCaPvc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 11:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbXCaPvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 11:50:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39947 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbXCaPux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 11:50:53 -0400
-Message-ID: <460E835A.4000300@redhat.com>
-Date: Sat, 31 Mar 2007 11:50:50 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Pedram M <pmessri@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Fwd: kswapd issues + kernel 2.4.21-32.0.1.ELsmp
-References: <9c9aa5d00703310110s2a21f19l37544c3d46be53c9@mail.gmail.com> <9c9aa5d00703310111w3809fd56t75bcde9d5047ca81@mail.gmail.com>
-In-Reply-To: <9c9aa5d00703310111w3809fd56t75bcde9d5047ca81@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 31 Mar 2007 11:51:31 -0400
+Received: from www.osadl.org ([213.239.205.134]:53340 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753189AbXCaPvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 11:51:13 -0400
+Subject: Re: [PATCH v2] Add suspend/resume for HPET
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>
+In-Reply-To: <200703291546.48996.maximlevitsky@gmail.com>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <460BBD1B.4040308@ru.mvista.com>
+	 <200703291531.18253.maximlevitsky@gmail.com>
+	 <200703291546.48996.maximlevitsky@gmail.com>
+Content-Type: text/plain
+Date: Sat, 31 Mar 2007 17:51:11 +0200
+Message-Id: <1175356272.28263.27.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pedram M wrote:
-> Hi,
-> 
-> I've seen this around, and have heard about it in forums and else-where,
-> could somebody enlighten me with more information or with experiences
-> they have had.  Looks like kswapd begins to eat CPU dramatically till the
-> box eventually locks up.
+On Thu, 2007-03-29 at 15:46 +0200, Maxim Levitsky wrote:
+> Subject: Add suspend/resume for HPET
+> This adds support of suspend/resume on i386 for HPET
+> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+>
+> +static struct sysdev_class hpet_class = {
+> +	set_kset_name("hpet"),
+> +	.suspend	= hpet_suspend,
+> +	.resume		= hpet_resume,
+> +};
+> +
+> +static struct sys_device hpet_device = {
+> +	.id		= 0,
+> +	.cls		= &hpet_class,
+> +};
 
-You'll want to contact your distro's support people, who are way
-better than I am at extracting all the information needed to
-debug your problem.
+Sorry for being inresponsive. I was travelling and unexpectedly cut off
+from the internet for some days.
 
-OTOH, chances are it's been fixed already in a more recent kernel.
+While I agree in principle with the patch, I'm a bit uncomfortable. The
+sys device suspend / resume ordering is not guaranteed and relies on the
+registering order.
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Jeff still seems to have problems with CONFIG_NO_HZ=n and it might be
+caused by time keeping / tick management resume happening before the
+HPET resume.
+
+The required resume order is:
+
+clocksources
+timekeeping
+clockevents
+tick management
+
+I'm not sure how to do this properly with the sys device facilities, but
+I look into it.
+
+/me goes off to understand the sys device magic.
+
+	tglx
+
+
