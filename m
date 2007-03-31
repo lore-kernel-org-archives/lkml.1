@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751692AbXCaUtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751743AbXCaUtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751692AbXCaUtU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 16:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbXCaUtU
+	id S1751743AbXCaUtn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 16:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXCaUtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 16:49:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47700 "EHLO ogre.sisk.pl"
+	Sat, 31 Mar 2007 16:49:43 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:35842 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592AbXCaUtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 16:49:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix microcode-related suspend problem
-Date: Sat, 31 Mar 2007 22:52:29 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Pavel Machek <pavel@ucw.cz>, Maxim <maximlevitsky@gmail.com>
-References: <200703312204.15752.rjw@sisk.pl> <20070331133532.0d791f6e.akpm@linux-foundation.org>
-In-Reply-To: <20070331133532.0d791f6e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751635AbXCaUtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 16:49:42 -0400
+Date: Sat, 31 Mar 2007 13:46:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen.Clark@seclark.us
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       Francois Romieu <romieu@fr.zoreil.com>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.21-rc5 from fc7-rc2 problems
+Message-Id: <20070331134610.64a9c410.akpm@linux-foundation.org>
+In-Reply-To: <460EC109.5070300@seclark.us>
+References: <460EC109.5070300@seclark.us>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703312252.29873.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 31 March 2007 22:35, Andrew Morton wrote:
-> On Sat, 31 Mar 2007 22:04:15 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > This patch appeard on LMKL six days ago and there have not been any negative
-> > comments since then, so I think I can try to make it official.
-> > 
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Fix the regression resulting from the recent change of suspend code ordering
-> > that causes systems based on Intel x86 CPUs using the microcode driver to
-> > hang during the resume.
-> > 
-> > The problem occurs since the microcode driver uses request_firmware() in its
-> > CPU hotplug notifier, which is called after tasks has been frozen and hangs.
-> > It can be fixed by telling the microcode driver to use the microcode stored in
-> > memory during the resume instead of trying to load it from disk.
-> 
-> CONFIG_SMP=n:
+On Sat, 31 Mar 2007 16:14:01 -0400 Stephen Clark <Stephen.Clark@seclark.us> wrote:
 
-Ah, sorry.  I tend to forget about it ...
-
-> arch/i386/kernel/microcode.c: In function 'microcode_init_cpu':
-> arch/i386/kernel/microcode.c:628: error: 'suspend_cpu_hotplug' undeclared (first use in this function)
-> arch/i386/kernel/microcode.c:628: error: (Each undeclared identifier is reported only once
-> arch/i386/kernel/microcode.c:628: error: for each function it appears in.)
-> arch/i386/kernel/microcode.c: In function 'mc_sysdev_add':
-> arch/i386/kernel/microcode.c:717: error: 'suspend_cpu_hotplug' undeclared (first use in this function)
-> arch/i386/kernel/microcode.c: In function 'mc_sysdev_remove':
-> arch/i386/kernel/microcode.c:745: error: 'suspend_cpu_hotplug' undeclared (first use in this function)
+> Hello,
 > 
-> Given this, and the overall intrusiveness of the change, I'd worry about
-> trying to get this into 2.6.21.
+> I have just tried booting the fc7-rc2 live cd on 2 of my laptops and it 
+> failed on both.
+> 
+> Laptop 1 is an asus vbi s96f that get a panic that says exception in 
+> interrupt routine
+> for my rtl8139.
+>
+> This device works fine in 2.6.20.2
 
-Well, in that case I'll try to fix it later in a slightly different way.
+That's regression #1.  Are you able to take a photograph of the screen
+when it has crashed?  Setting the display to 50 rows would make that more
+useful.  (serial console would be better, but I assume that thing has
+no serial port).
+
+> 
+> The other laptop is a hp n5430 it fail in the ali-pata driver not being 
+> able to read the cdrom, timeing out
+> and dropping into a bash shell telling me to tell it where the root 
+> filesystem is.
+
+That's #2, I guess.
+
+> Also it sets my hard
+> drive to udma/33 when it run find at udma/66 under 2.6.20.1.
+
+#3.  Hopefully it's related to #2.
+
+Please send the full dmesg output for 2.6.20.1 on the n5430.
+
+> It would 
+> really be nice if the people makeing
+> all these changes would at least keep things compatible with what they 
+> were before. These are regressions
+> guys!
+
+We try ;)
+
+> This hp n5430 system works fine with 2.6.20.1.
+
+Thanks, it helps.
+
