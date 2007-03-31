@@ -1,75 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbXCaHX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751939AbXCaHix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751766AbXCaHX6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 03:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbXCaHXl
+	id S1751939AbXCaHix (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 03:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXCaHix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 03:23:41 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:1423 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbXCaHXc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 03:23:32 -0400
-From: divy@chelsio.com
-Subject: [PATCH 2.6.21 4/4] cxgb3 - Firwmare update
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Sat, 31 Mar 2007 00:23:30 -0700
-Message-ID: <20070331072330.4748.57940.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sat, 31 Mar 2007 03:38:53 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39441 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751939AbXCaHiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 03:38:52 -0400
+Date: Sat, 31 Mar 2007 09:39:35 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Beulich <jbeulich@novell.com>, Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] kconfig: factor out code in conf_spilt_config
+Message-ID: <20070331073935.GA11383@uranus.ravnborg.org>
+References: <460BA292.76E4.0078.0@novell.com> <20070331064228.GA11023@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070331064228.GA11023@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+>From e9fcc3bf8d1c71df1ae650d5291c5d4b15d71656 Mon Sep 17 00:00:00 2001
+From: Sam Ravnborg <sam@neptun.ravnborg.org>
+Date: Sat, 31 Mar 2007 09:15:12 +0200
+Subject: [PATCH] kconfig: factor out code in conf_spilt_config
 
-Introduce FW micro version.
-Bump up FW version to 3.3.0
+This patch simply factor out code and
+do not introduce any functional changes.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
+ scripts/kconfig/confdata.c |   75 ++++++++++++++++++++++++--------------------
+ 1 files changed, 41 insertions(+), 34 deletions(-)
 
- drivers/net/cxgb3/cxgb3_main.c |    4 ++--
- drivers/net/cxgb3/version.h    |    5 ++++-
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 512daf7..26240fd 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -721,7 +721,7 @@ static void bind_qsets(struct adapter *a
- 	}
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index 664fe29..ff6b39b 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -533,13 +533,48 @@ int conf_write(const char *name)
+ 	return 0;
  }
  
--#define FW_FNAME "t3fw-%d.%d.bin"
-+#define FW_FNAME "t3fw-%d.%d.%d.bin"
- 
- static int upgrade_fw(struct adapter *adap)
- {
-@@ -731,7 +731,7 @@ static int upgrade_fw(struct adapter *ad
- 	struct device *dev = &adap->pdev->dev;
- 
- 	snprintf(buf, sizeof(buf), FW_FNAME, FW_VERSION_MAJOR,
--		 FW_VERSION_MINOR);
-+		 FW_VERSION_MINOR, FW_VERSION_MICRO);
- 	ret = request_firmware(&fw, buf, dev);
- 	if (ret < 0) {
- 		dev_err(dev, "could not upgrade firmware: unable to load %s\n",
-diff --git a/drivers/net/cxgb3/version.h b/drivers/net/cxgb3/version.h
-index 82278f8..042e27e 100644
---- a/drivers/net/cxgb3/version.h
-+++ b/drivers/net/cxgb3/version.h
-@@ -36,6 +36,9 @@
- #define DRV_NAME "cxgb3"
- /* Driver version */
- #define DRV_VERSION "1.0-ko"
++/* Touch the file specified (adding .h to the name) */
++static int touch_file(const char *file)
++{
++	struct stat sb;
++	int fd;
++	char *d;
++	char name[128];
 +
-+/* Firmware version */
- #define FW_VERSION_MAJOR 3
--#define FW_VERSION_MINOR 2
-+#define FW_VERSION_MINOR 3
-+#define FW_VERSION_MICRO 0
- #endif				/* __CHELSIO_VERSION_H */
++	strcpy(name, file);
++	strcat(name, ".h");
++
++	/* Open existing file */
++	fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
++	if (fd == -1) {
++		if (errno != ENOENT)
++			return 1;
++		/*
++		 * Create directory components,
++		 * unless they exist already.
++		 */
++		d = name;
++		while ((d = strchr(d, '/'))) {
++			*d = 0;
++			if (stat(name, &sb) && mkdir(name, 0755))
++				return 1;
++			*d++ = '/';
++		}
++		/* Directories created, now create file. */
++		fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
++		if (fd == -1)
++			return 1;
++	}
++	close(fd);
++	return 0;
++}
++
+ int conf_split_config(void)
+ {
+ 	char *name, path[128];
+ 	char *s, *d, c;
+ 	struct symbol *sym;
+-	struct stat sb;
+-	int res, i, fd;
++	int res, i;
+ 
+ 	name = getenv("KCONFIG_AUTOCONFIG");
+ 	if (!name)
+@@ -601,45 +636,17 @@ int conf_split_config(void)
+ 		 *	different from 'no').
+ 		 */
+ 
+-		/* Replace all '_' and append ".h" */
++		/* Replace all '_' with '/' */
+ 		s = sym->name;
+ 		d = path;
+ 		while ((c = *s++)) {
+ 			c = tolower(c);
+ 			*d++ = (c == '_') ? '/' : c;
+ 		}
+-		strcpy(d, ".h");
+-
+-		/* Assume directory path already exists. */
+-		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+-		if (fd == -1) {
+-			if (errno != ENOENT) {
+-				res = 1;
+-				break;
+-			}
+-			/*
+-			 * Create directory components,
+-			 * unless they exist already.
+-			 */
+-			d = path;
+-			while ((d = strchr(d, '/'))) {
+-				*d = 0;
+-				if (stat(path, &sb) && mkdir(path, 0755)) {
+-					res = 1;
+-					goto out;
+-				}
+-				*d++ = '/';
+-			}
+-			/* Try it again. */
+-			fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+-			if (fd == -1) {
+-				res = 1;
+-				break;
+-			}
+-		}
+-		close(fd);
++		*d = '\0';
++		if (touch_file(path))
++			return 1;
+ 	}
+-out:
+ 	if (chdir("../.."))
+ 		return 1;
+ 
+-- 
+1.5.1.rc3.gaa453
+
