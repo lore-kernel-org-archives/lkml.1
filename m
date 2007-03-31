@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXCaUzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbXCaUzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751744AbXCaUzi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 16:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbXCaUzg
+	id S1751956AbXCaUzz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 16:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbXCaUzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 16:55:36 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39482 "EHLO
+	Sat, 31 Mar 2007 16:55:55 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39493 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751024AbXCaUzf (ORCPT
+	with ESMTP id S1751608AbXCaUzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 16:55:35 -0400
-Date: Sat, 31 Mar 2007 22:55:35 +0200
+	Sat, 31 Mar 2007 16:55:43 -0400
+Date: Sat, 31 Mar 2007 22:55:43 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: ctindel@users.sourceforge.net, fubar@us.ibm.com
-Cc: bonding-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [2.6 patch] bonding/bond_main.c: make 2 functions static
-Message-ID: <20070331205535.GA14134@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Miklos Szeredi <mszeredi@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] make struct proc_fdinfo_file_operations static
+Message-ID: <20070331205543.GC14134@stusta.de>
+References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070330010559.2a232d9a.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes two needleesly global functions static.
+On Fri, Mar 30, 2007 at 01:05:59AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.21-rc5-mm2:
+>...
+> +add-file-position-info-to-proc.patch
+> 
+>  /proc feature work
+>...
+
+
+This patch makes the needlessly global
+struct proc_fdinfo_file_operations static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
----
-
- drivers/net/bonding/bond_main.c |    5 +++--
- drivers/net/bonding/bonding.h   |    2 --
- 2 files changed, 3 insertions(+), 4 deletions(-)
-
---- linux-2.6.21-rc5-mm3/drivers/net/bonding/bonding.h.old	2007-03-31 21:12:31.000000000 +0200
-+++ linux-2.6.21-rc5-mm3/drivers/net/bonding/bonding.h	2007-03-31 21:12:42.000000000 +0200
-@@ -301,13 +301,11 @@
- void bond_destroy_slave_symlinks(struct net_device *master, struct net_device *slave);
- int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev);
- int bond_release(struct net_device *bond_dev, struct net_device *slave_dev);
--int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev);
- void bond_mii_monitor(struct net_device *bond_dev);
- void bond_loadbalance_arp_mon(struct net_device *bond_dev);
- void bond_activebackup_arp_mon(struct net_device *bond_dev);
- void bond_set_mode_ops(struct bonding *bond, int mode);
- int bond_parse_parm(char *mode_arg, struct bond_parm_tbl *tbl);
--const char *bond_mode_name(int mode);
- void bond_select_active_slave(struct bonding *bond);
- void bond_change_active_slave(struct bonding *bond, struct slave *new_active);
- void bond_register_arp(struct bonding *);
---- linux-2.6.21-rc5-mm3/drivers/net/bonding/bond_main.c.old	2007-03-31 21:12:50.000000000 +0200
-+++ linux-2.6.21-rc5-mm3/drivers/net/bonding/bond_main.c	2007-03-31 21:13:16.000000000 +0200
-@@ -187,7 +187,7 @@
+--- linux-2.6.21-rc5-mm3/fs/proc/base.c.old	2007-03-31 22:07:21.000000000 +0200
++++ linux-2.6.21-rc5-mm3/fs/proc/base.c	2007-03-31 22:07:30.000000000 +0200
+@@ -1515,7 +1515,7 @@
+ 	return err;
+ }
  
- /*---------------------------- General routines -----------------------------*/
- 
--const char *bond_mode_name(int mode)
-+static const char *bond_mode_name(int mode)
- {
- 	switch (mode) {
- 	case BOND_MODE_ROUNDROBIN :
-@@ -1224,7 +1224,8 @@
- 
- /*---------------------------------- IOCTL ----------------------------------*/
- 
--int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev)
-+static int bond_sethwaddr(struct net_device *bond_dev,
-+			  struct net_device *slave_dev)
- {
- 	dprintk("bond_dev=%p\n", bond_dev);
- 	dprintk("slave_dev=%p\n", slave_dev);
+-const struct file_operations proc_fdinfo_file_operations = {
++static const struct file_operations proc_fdinfo_file_operations = {
+ 	.open		= nonseekable_open,
+ 	.read		= proc_fdinfo_read,
+ };
 
