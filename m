@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbXCaKCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbXCaKFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbXCaKCN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 06:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbXCaKCN
+	id S1752717AbXCaKFu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 06:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbXCaKFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 06:02:13 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54023 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbXCaKCN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 06:02:13 -0400
-Date: Sat, 31 Mar 2007 12:02:09 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       perfmon@napali.hpl.hp.com
-Subject: Re: exposing FSB clock speed in /sys
-Message-ID: <20070331100209.GA17761@one.firstfloor.org>
-References: <20070330153937.GC16059@frankl.hpl.hp.com> <p73bqiaqh32.fsf@bingen.suse.de> <20070331081832.GB17535@frankl.hpl.hp.com>
+	Sat, 31 Mar 2007 06:05:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53182 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752717AbXCaKFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 06:05:49 -0400
+Date: Sat, 31 Mar 2007 12:05:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Xenofon Antidides <xantidides@yahoo.gr>
+Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [test] hackbench.c interactivity results: vanilla versus SD/RSDL
+Message-ID: <20070331100543.GA13031@elte.hu>
+References: <1175322706.6030.20.camel@Homer.simpson.net> <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070331081832.GB17535@frankl.hpl.hp.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> I am not interested in older processors, but I think for all recent Intel
-> processors, there is a fairly simple algorithm to get the frequency using
-> a couple of MSRs (including MSR_IA32_EBL_CR_POWERON or MSR_FSB_FREQ).
+Xenofon,
 
-Hmm, maybe make it an own driver that creates the sysfs entries somewhere.
-I don't think it's useful enough for the main kernel.
+could you tell us a bit more about the specs of your system? What CPU 
+speed for example? (i suspect it's a single-CPU box, right?)
 
-But what happens during power saving that may lower the frequency? 
-Wouldn't you need update events for that? That might complicate it.
-
-> 
-> Don't we already have /sys entries that exits only for certain processors
-> or platforms?
-
-Yes.
-
-> I think the Opteron have HYPERTRANSPORT-related events which could be used
-> to obtain similar metrics.
-
-Yes, but you usually don't need the frequency.
-
--Andi
+	Ingo
