@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933340AbXCaCae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933387AbXCaCcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933340AbXCaCae (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 22:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933379AbXCaCae
+	id S933387AbXCaCcE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 22:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933379AbXCaCcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 22:30:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:7607 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933340AbXCaCad (ORCPT
+	Fri, 30 Mar 2007 22:32:04 -0400
+Received: from stinky.trash.net ([213.144.137.162]:52083 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933387AbXCaCcD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 22:30:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=YGcp1Pl1FnqH1hp5U9emZW3z8ZFg2YHIADEPadVTBPfqK68T8c7auzhWp0TGbXWR+EMPG2U8K9A3v+aSvYaBrDMZtPryqE4dSRB/0EL3nfYI05fB29zox5LrVtPdkWrtI15/9f/8UWNyYRUGh3aCAKqu7R6XxicL+4V4J1Ez61I=
-Message-ID: <2375c9f90703301930k4963168u4ba4dbc4c43ce2ee@mail.gmail.com>
-Date: Sat, 31 Mar 2007 10:30:31 +0800
-From: "Cong WANG" <xiyou.wangcong@gmail.com>
-To: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       viro@zeniv.linux.org.uk
-Subject: [-mm3 patch]Warning fix: check the return value of kobject_add etc.
+	Fri, 30 Mar 2007 22:32:03 -0400
+Message-ID: <460DC818.4060003@trash.net>
+Date: Sat, 31 Mar 2007 04:31:52 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: Re: [patch 32/37] CRYPTO: api: scatterwalk_copychunks() fails to
+ advance through scatterlist
+References: <20070330205938.984247529@mini.kroah.org> <20070330210651.GI29450@kroah.com> <460DBC4C.1060602@trash.net> <20070331021437.GA31298@gondor.apana.org.au>
+In-Reply-To: <20070331021437.GA31298@gondor.apana.org.au>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since kobject_add, sysfs_create_link and sysfs_create_file are marked
-as '__must_check', so we must always check their return values, or gcc
-will give us warnings.
+Herbert Xu wrote:
+> Indeed.  That patch was buggy.  Sorry for not catching this earlier.
+> 
+> This should fix the problem.
 
-Signed-off-by: Cong WANG <xiyou.wangcong@gmail.com>
 
----
---- fs/partitions/check.c.orig	2007-03-30 21:35:45.000000000 +0800
-+++ fs/partitions/check.c	2007-03-30 21:49:53.000000000 +0800
-@@ -385,10 +385,16 @@ void add_partition(struct gendisk *disk,
- 	p->kobj.parent = &disk->kobj;
- 	p->kobj.ktype = &ktype_part;
- 	kobject_init(&p->kobj);
--	kobject_add(&p->kobj);
-+	if (kobject_add(&p->kobj)) {
-+		kfree(p);
-+		return;
-+	}
- 	if (!disk->part_uevent_suppress)
- 		kobject_uevent(&p->kobj, KOBJ_ADD);
--	sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
-+	if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
-+		kfree(p);
-+		return;
-+	}
- 	if (flags & ADDPART_FLAG_WHOLEDISK) {
- 		static struct attribute addpartattr = {
- 			.name = "whole_disk",
-@@ -396,7 +402,10 @@ void add_partition(struct gendisk *disk,
- 			.owner = THIS_MODULE,
- 		};
-
--		sysfs_create_file(&p->kobj, &addpartattr);
-+		if (sysfs_create_file(&p->kobj, &addpartattr)) {
-+			kfree(p);
-+			return;
-+		}
- 	}
- 	partition_sysfs_add_subdir(p);
- 	disk->part[part-1] = p;
+Works fine, thanks Herbert.
