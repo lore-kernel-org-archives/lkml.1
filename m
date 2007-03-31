@@ -1,104 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933310AbXCaCIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933317AbXCaCQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933310AbXCaCIj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 22:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933314AbXCaCIj
+	id S933317AbXCaCQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 22:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933320AbXCaCQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 22:08:39 -0400
-Received: from webmail-outgoing.us4.outblaze.com ([205.158.62.67]:58396 "EHLO
-	webmail-outgoing.us4.outblaze.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933310AbXCaCIi convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 22:08:38 -0400
-X-OB-Received: from unknown (205.158.62.131)
-  by wfilter.us4.outblaze.com; 31 Mar 2007 02:08:37 -0000
+	Fri, 30 Mar 2007 22:16:12 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3981 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933317AbXCaCQL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 22:16:11 -0400
+Date: Sat, 31 Mar 2007 12:14:37 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: Re: [patch 32/37] CRYPTO: api: scatterwalk_copychunks() fails to advance through scatterlist
+Message-ID: <20070331021437.GA31298@gondor.apana.org.au>
+References: <20070330205938.984247529@mini.kroah.org> <20070330210651.GI29450@kroah.com> <460DBC4C.1060602@trash.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-MIME-Version: 1.0
-From: "Elliott Johnson" <ejohnson@linuxmail.org>
-To: "Elliott Johnson" <ejohnson@linuxmail.org>
-Cc: linux-kernel@vger.kernel.org
-Date: Sat, 31 Mar 2007 10:08:37 +0800
-Subject: Re: strange high system cpu usage.
-X-Originating-Ip: 209.209.36.196
-X-Originating-Server: ws5-1.us4.outblaze.com
-Message-Id: <20070331020837.C597743FCD@ws5-1.us4.outblaze.com>
+In-Reply-To: <460DBC4C.1060602@trash.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee
-
-Thanks for your help.  In testing different kernels we found that using an unpatched kernel from kernel.org seems to fix the problem.  I'm assuming that a patch added in the gentoo-sources patch set was creating the problem.  Our once 8 minute untar is now down to 7-8 seconds with a vanilla 2.6.18.6 kernel.
-
-If anyone is interested in our oprofile code or other info, just ask and I'll post it.  Otherwise I'll be reporting this to the gentoo developers.
-
--E
-
-> ----- Original Message -----
-> From: "Elliott Johnson" <ejohnson@linuxmail.org>
-> To: linux-kernel@vger.kernel.org
-> Subject: Re: strange high system cpu usage.
-> Date: 	Fri, 30 Mar 2007 11:54:57 +0800
-> 
-> 
-> > What problem are you trying to solve?  IOW, how do you know it's not
-> > just an artifact of diferent load average calculation between 2.4 and
-> > 2.6?
-> >
-> > Are you actually seeing reduced throughput/performance?  Or are you
-> > just looking at load average?
-> >
-> > Lee
-> 
-> Well the problem is apparent, we are having abnormally high cpu 
-> usage.  It's about a
-> 20-40% performance hit.
-> 
-> The load calculations were not between 2.4 and 2.6 kernel versions, 
-> but between 2.6.8 and
-> 2.6.19.  Sorry if this wasn't very clear from my last email.
-> 
-> In trying to diagnose the problem I also looked at memory stats 
-> (vmstat) and found the
-> 'buffered' memory statistic way off from the comparable debian 
-> (2.6.8) install (0-300kb
-> versus 500mb).
-> 
-> The vmstat man page has little information on this statistic and 
-> there seems to be varying
-> explanations on the web.  I was hoping for a decisive explanation 
-> (or link) and possibly
-> advice in toggling this value (or reasons not to).
-> 
-> I'm still trying to work on this at my end.  Some recent tests show 
-> that it might be
-> related to the megasas driver or the large number of small files we 
-> are using on a xfs
-> formated 10T array.  I'll keep at it.
-> 
-> Thanks for your response,
-> 
-> -Elliott
-> 
-> =
-> Search for products and services at:
-> http://search.mail.com
-> 
-> --
-> Powered by Outblaze
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+On Sat, Mar 31, 2007 at 03:41:32AM +0200, Patrick McHardy wrote:
 >
+> > [CRYPTO] api: scatterwalk_copychunks() fails to advance through scatterlist
+> 
+> This patch seems to cause some problems, I get reproducable freezes
+> on the receiving system with net-2.6.22 when sending IPsec packets
+> larger than the mtu (reproduced about 10 times). Reverting this
+> patch seems to fix it. In a few cases the oops also occured on the
+> sending system.
+> 
+> Backtrace from UML (sending system):
+> 
+> uml:~# ping 10.0.0.1 -s 20000
+> PING 10.0.0.1 (10.0.0.1) 20000(20028) bytes of data.
+> BUG: soft lockup detected on CPU#0!
+> Call Trace:
 
+Indeed.  That patch was buggy.  Sorry for not catching this earlier.
 
-=
-Search for products and services at: 
-http://search.mail.com
+This should fix the problem.
 
+[CRYPTO] api: Use the right value when advancing scatterwalk_copychunks
+
+In the scatterwalk_copychunks loop, We should be advancing by
+len_this_page and not nbytes.  The latter is the total length.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
 -- 
-Powered by Outblaze
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/crypto/scatterwalk.c b/crypto/scatterwalk.c
+index a664231..0f76175 100644
+--- a/crypto/scatterwalk.c
++++ b/crypto/scatterwalk.c
+@@ -91,7 +91,7 @@ void scatterwalk_copychunks(void *buf, struct scatter_walk *walk,
+ 		memcpy_dir(buf, vaddr, len_this_page, out);
+ 		scatterwalk_unmap(vaddr, out);
+ 
+-		scatterwalk_advance(walk, nbytes);
++		scatterwalk_advance(walk, len_this_page);
+ 
+ 		if (nbytes == len_this_page)
+ 			break;
