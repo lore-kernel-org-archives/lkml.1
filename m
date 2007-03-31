@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965030AbXCaDQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933573AbXCaDVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965030AbXCaDQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 23:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965045AbXCaDQz
+	id S933573AbXCaDVq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 23:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbXCaDVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 23:16:55 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39066 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964863AbXCaDQw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 23:16:52 -0400
-Date: Sat, 31 Mar 2007 05:16:50 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [3/4] 2.6.21-rc5: known regressions (v2)
-Message-ID: <20070331031650.GR14134@stusta.de>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070330213220.GO14134@stusta.de> <b6a2187b0703301952s6042fbfdu2e15e0f868a958f4@mail.gmail.com>
+	Fri, 30 Mar 2007 23:21:46 -0400
+Received: from gw.goop.org ([64.81.55.164]:46918 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933573AbXCaDVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 23:21:45 -0400
+Message-ID: <460DD3CA.2040407@goop.org>
+Date: Fri, 30 Mar 2007 20:21:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <b6a2187b0703301952s6042fbfdu2e15e0f868a958f4@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Clean up ELF note generation
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 31, 2007 at 10:52:59AM +0800, Jeff Chua wrote:
-> On 3/31/07, Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> >Subject    : ThinkPad doesn't resume from suspend to RAM
-> >References : http://lkml.org/lkml/2007/2/27/80
-> >             http://lkml.org/lkml/2007/2/28/348
-> >Submitter  : Jens Axboe <jens.axboe@oracle.com>
-> >             Jeff Chua <jeff.chua.linux@gmail.com>
-> >Status     : unknown
-> 
-> Fixed with CONFIG_NO_HZ unset and patch from Maxim
-> (http://lkml.org/lkml/2007/3/29/108).
+Three cleanups:
 
-Thanks for this information.
+1: ELF notes are never mapped, so there's no need to have any access
+   flags in their phdr.
 
-Jens, does suspend to RAM also work for you with the latest -git?
+2: When generating them from asm, tell the assembler to use a SHT_NOTE
+   section type.  There doesn't seem to be a way to do this from C.
 
-> Thanks,
-> Jeff,
+3: Use ANSI rather than traditional cpp behaviour to stringify the
+   macro argument.
 
-cu
-Adrian
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
 
--- 
+---
+ arch/i386/kernel/vmlinux.lds.S    |    2 +-
+ include/asm-generic/vmlinux.lds.h |    2 +-
+ include/linux/elfnote.h           |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+===================================================================
+--- a/arch/i386/kernel/vmlinux.lds.S
++++ b/arch/i386/kernel/vmlinux.lds.S
+@@ -34,7 +34,7 @@ PHDRS {
+ PHDRS {
+ 	text PT_LOAD FLAGS(5);	/* R_E */
+ 	data PT_LOAD FLAGS(7);	/* RWE */
+-	note PT_NOTE FLAGS(4);	/* R__ */
++	note PT_NOTE FLAGS(0);	/* ___ */
+ }
+ SECTIONS
+ {
+===================================================================
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -208,7 +208,7 @@
+ 	}
+ 
+ #define NOTES								\
+-		.notes : { *(.note.*) } :note
++	.notes : { *(.note.*) } :note
+ 
+ #define INITCALLS							\
+   	*(.initcall0.init)						\
+===================================================================
+--- a/include/linux/elfnote.h
++++ b/include/linux/elfnote.h
+@@ -39,12 +39,12 @@
+  *      ELFNOTE(XYZCo, 12, .long, 0xdeadbeef)
+  */
+ #define ELFNOTE(name, type, desctype, descdata)	\
+-.pushsection .note.name			;	\
++.pushsection .note.name, "",@note	;	\
+   .align 4				;	\
+   .long 2f - 1f		/* namesz */	;	\
+   .long 4f - 3f		/* descsz */	;	\
+   .long type				;	\
+-1:.asciz "name"				;	\
++1:.asciz #name				;	\
+ 2:.align 4				;	\
+ 3:desctype descdata			;	\
+ 4:.align 4				;	\
 
