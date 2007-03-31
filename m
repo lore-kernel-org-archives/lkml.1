@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbXCaQcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbXCaQdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbXCaQcP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 12:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbXCaQcP
+	id S1753366AbXCaQdX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 12:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbXCaQdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 12:32:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50056 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753354AbXCaQcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 12:32:14 -0400
-Date: Sat, 31 Mar 2007 18:31:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [bug] hung bootup in various drivers, was: "2.6.21-rc5: known regressions"
-Message-ID: <20070331163122.GA2512@elte.hu>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070327015929.GY16477@stusta.de> <20070330120416.GA19373@elte.hu> <20070330141639.GA10387@suse.de> <20070330174619.GA12589@elte.hu> <20070330193258.GA7403@suse.de>
+	Sat, 31 Mar 2007 12:33:23 -0400
+Received: from www.osadl.org ([213.239.205.134]:37348 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752929AbXCaQdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 12:33:21 -0400
+Subject: Re: [PATCH v2] Add suspend/resume for HPET
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>
+In-Reply-To: <Pine.LNX.4.64.0703310908160.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <460BBD1B.4040308@ru.mvista.com>
+	 <200703291531.18253.maximlevitsky@gmail.com>
+	 <200703291546.48996.maximlevitsky@gmail.com>
+	 <1175356272.28263.27.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703310908160.6730@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 31 Mar 2007 18:33:20 +0200
+Message-Id: <1175358800.28263.36.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070330193258.GA7403@suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Greg KH <gregkh@suse.de> wrote:
-
-> Something has grabbed a reference to the driver...
+On Sat, 2007-03-31 at 09:09 -0700, Linus Torvalds wrote:
 > 
-> Oh wait, is this code a module or built into the kernel?
+> On Sat, 31 Mar 2007, Thomas Gleixner wrote:
+> > 
+> > While I agree in principle with the patch, I'm a bit uncomfortable. The
+> > sys device suspend / resume ordering is not guaranteed and relies on the
+> > registering order.
 > 
-> If it's built in, there's still a reference counting bug in the 
-> module/driver hookup logic as we really don't have a "module" yet we 
-> are still thinking we do as we represent it in /sys/module and create 
-> the linkages.
+> Well, this is why we probably should try to get away from the "system 
+> device" issue, exactly because system devices are totally outside the 
+> normal ordering and only have a random linear order.
+> 
+> If the clocksources were actually in the device tree, you'd get all the 
+> normal guarantees about hierarchical ordering..
 
-yes - an allyesconfig bzImage kernel is definitely massively built in :)
+Right, but clock - sources/events need to be extremly late suspended and
+early resumed. How can we ensure this ?
 
-> Kay, did you ever get a chance to look into this reference counting 
-> issue?
+	tglx
 
-i'll try Kay's patch.
 
-	Ingo
