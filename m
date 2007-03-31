@@ -1,214 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbXCaVyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbXCaWMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752552AbXCaVyO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 17:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXCaVyO
+	id S1752619AbXCaWMM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 18:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXCaWMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 17:54:14 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39521 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752552AbXCaVyN (ORCPT
+	Sat, 31 Mar 2007 18:12:12 -0400
+Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:39484 "HELO
+	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752619AbXCaWMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 17:54:13 -0400
-Date: Sat, 31 Mar 2007 23:54:12 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.46
-Message-ID: <20070331215412.GG14134@stusta.de>
+	Sat, 31 Mar 2007 18:12:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=rIQNQDUp72gpxF9GlUtKbc05rqVFV2DDRXOKC78f3RutJbmHmlP0Z/GpOJhOocW8Hejiam8XsSAZMmnzoWt4nJPBWGGKvWIqFCkSkCu8HSCqlBjOIsIGOGr/dzrh7+/q5FQThV8It+J0TUWpusZEgigzs/+P31u6Gzb91ietA8E=  ;
+X-YMail-OSG: .6_0CFwVM1niy3N2wq3SdkabWA.ge3Uli5_ws1nT3GmaoGQ.OZ8Ecg6FIPc1uu3_gumQ03kyJA--
+From: David Brownell <david-b@pacbell.net>
+To: Greg KH <gregkh@suse.de>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.21-rc5-git 1/2] fix hotplug for legacy platform drivers
+Date: Sat, 31 Mar 2007 14:55:38 -0700
+User-Agent: KMail/1.7.1
+Cc: Andres Salomon <dilinger@debian.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703311455.38490.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
+We've had various reports of some legacy "probe the hardware" style platform
+drivers having nasty problems with hotplug support.
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+The core issue is that those legacy drivers don't fully conform to the driver
+model.  They assume a role that should be the responsibility of infrastructure
+code: creating device nodes.
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+The "modprobe" step in hotplugging relies on drivers to have split those
+roles into different modules.  The lack of this split causes the problems.
+When a driver creates nodes for devices that don't exist (sending a hotplug
+event), then exits (aborting one modprobe) before the "modprobe $MODALIAS"
+step completes (by failing, since it's in the middle of a modprobe), the
+result can be an endless loop of modprobe invocations ... badness.
 
+This fix uses the newish per-device flag controlling issuance of "add" events.
+(A previous version of this patch used a per-device "driver can hotplug" flag,
+which only scrubbed $MODALIAS from the environment rather than suppressing the
+entire hotplug event.)  It also shrinks that flag to one bit, saving a word in
+"struct device".
 
-Changes since 2.6.16.45:
+So the net of this patch is removing some nasty failures with legacy drivers,
+while retaining hotplug capability for the majority of platform drivers.
 
-Adrian Bunk (2):
-      Linux 2.6.16.46-rc1
-      Linux 2.6.16.46
-
-Akinbou Mita (1):
-      md: fix /proc/mdstat refcounting
-
-Alan Stern (10):
-      usb-storage: unusual_devs entry for Nikon DSC D70s
-      USB: unusual_devs entry for Nokia N80
-      USB: unusual_devs entry for Nokia N91
-      USB: unusual_devs entry for Nokia E61
-      USB: unusual_devs entry for Lacie DVD+-RW
-      USB: unusual-devs entry for Nokia E60
-      USB: unusual_devs entry for Nokia 6131
-      USB: unusual_devs entry for Nokia 6234
-      unusual_devs update for UCR-61S2B
-      USB: unusual_devs update for Sony P990i phone
-
-Amol Lad (1):
-      sound/pci/au88x0/au88x0.c: ioremap balanced with iounmap
-
-Andrew Nayenko (1):
-      USB storage: Nokia 6288 unusual_devs entry
-
-Andy Isaacson (1):
-      fix read past end of array in md/linear.c
-
-Clemens Ladisch (1):
-      usb-audio: work around wrong frequency in CM6501 descriptors
-
-David Kuehling (1):
-      USB: unusual_devs entry for A-VOX WSX-300ER MP3 player
-
-Davide Perini (1):
-      usb-storage: unusual_devs entry for Motorola RAZR V3x
-
-Dylan Taft (1):
-      USB Storage: US_FL_IGNORE_RESIDUE needed for Aiptek MP3 Player
-
-Eric Sesterhenn (1):
-      [ALSA] fix NULL pointer dereference in sound/synth/emux/soundfont.c
-
-Ernis (1):
-      USB: unusual_devs entry for Samsung MP3 player
-
-Florin Malita (1):
-      [ALSA] Dereference after free in snd_hwdep_release()
-
-Guennadi Liakhovetski (1):
-      [PPP]: Don't leak an sk_buff on interface destruction.
-
-Jaco Kroon (1):
-      USB: add Digitech USB-Storage to unusual_devs.h
-
-Jürgen Mell (1):
-      USB floppy drive SAMSUNG SFD-321U/EP was detected 8 times
-
-Lars Ellenberg (1):
-      md: pass down BIO_RW_SYNC in raid{1,10}
-
-Lars Jacob (1):
-      USB: unusual_devs entry for Sony DSC-H5
-
-Luiz Fernando N. Capitulino (1):
-      USB: unusual_devs.h for Sony floppy
-
-Manuel Osdoba (1):
-      USB: unusual_devs.h entry for nokia 6233
-
-Mario Rettig (1):
-      USB: unusual_devs entry for Nokia 3250
-
-Mikko Honkala (1):
-      USB: Nokia E70 is an unusual device
-
-Neil Brown (2):
-      MD: Fix problem where hot-added drives are not resynced.
-      md: Fix bug where spares don't always get rebuilt properly when they become live
-
-Nick Piggin (1):
-      mm: fix madvise infinine loop
-
-Olivier Blondeau (1):
-      USB: storage: atmel unusual dev update
-
-Patrick McHardy (3):
-      [NET_SCHED]: Fix endless loops caused by inaccurate qlen counters
-      [NET_SCHED]: cls_basic: fix NULL pointer dereference
-      [NET_SCHED]: Fix ingress locking
-
-Pete Zaitcev (3):
-      USB storage: fix ipod ejecting issue
-      USB: unusual_devs.h for 0x046b:ff40
-      USB: RAZR v3i unusual_devs
-
-Phil Dibowitz (11):
-      USB: storage: sandisk unusual_devices entry
-      USB: storage: another unusual_devs.h entry
-      USB: storage: unusual_devs.h entry 0420:0001
-      USB: Storage: unusual devs update
-      USB Storage: US_FL_MAX_SECTORS_64 flag
-      USB: another unusual device
-      USB Storage: unusual_devs.h for Sony Ericsson M600i
-      USB: unusual_dev entry for Sony P990i
-      USB: usb-storage: Unusual_dev update
-      USB Storage: unusual_devs: add supertop drives
-      USB: Fix UCR-61S2B unusual_dev entry
-
-Rodolfo Quesada (1):
-      USB: storage: new unusual_devs.h entry: Mitsumi 7in1 Card Reader
-
-Russell King (1):
-      [SERIAL] Fix oops when removing suspended serial port
-
-Stefan Richter (1):
-      ieee1394: dv1394: fix CardBus card ejection
-
-Takashi Iwai (6):
-      [ALSA] hda-codec - Don't return error at initialization of modem codec
-      [ALSA] hda-intel - Don't try to probe invalid codecs
-      [ALSA] Fix invalid assignment of PCI revision
-      [ALSA] cmipci - Fix a typo in 'PC Speaker Playback Switch' control
-      [ALSA] cs4281 - Fix the check of right channel
-      [ALSA] ca0106 - Add missing sysfs device assignment
-
-Tobias Lorenz (1):
-      USB: Mitsumi USB FDD 061M: UNUSUAL_DEV multilun fix
-
-YOSHIFUJI Hideaki (1):
-      [IPV6] HASHTABLES: Use appropriate seed for caluculating ehash index.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
 
- Makefile                           |    2 
- drivers/ieee1394/dv1394.c          |   17 -
- drivers/md/linear.c                |    2 
- drivers/md/md.c                    |    3 
- drivers/md/raid1.c                 |   13 -
- drivers/md/raid10.c                |   11 -
- drivers/net/ppp_generic.c          |    3 
- drivers/serial/serial_core.c       |    9 
- drivers/usb/storage/scsiglue.c     |   12 -
- drivers/usb/storage/unusual_devs.h |  285 +++++++++++++++++++++++++++--
- drivers/usb/storage/usb.h          |    4 
- include/linux/serial_core.h        |    1 
- include/linux/usb_usual.h          |    2 
- include/net/sch_generic.h          |    4 
- include/sound/ymfpci.h             |    2 
- mm/madvise.c                       |    5 
- net/core/dev.c                     |    4 
- net/ipv6/inet6_hashtables.c        |    2 
- net/sched/cls_basic.c              |   17 -
- net/sched/sch_api.c                |   39 +++
- net/sched/sch_atm.c                |    5 
- net/sched/sch_cbq.c                |   10 -
- net/sched/sch_dsmark.c             |    7 
- net/sched/sch_generic.c            |    7 
- net/sched/sch_hfsc.c               |   30 ++-
- net/sched/sch_htb.c                |   39 ++-
- net/sched/sch_netem.c              |    5 
- net/sched/sch_prio.c               |   14 +
- net/sched/sch_sfq.c                |    3 
- net/sched/sch_tbf.c                |   15 +
- sound/core/hwdep.c                 |    3 
- sound/pci/au88x0/au88x0.c          |    1 
- sound/pci/ca0106/ca0106.h          |    2 
- sound/pci/ca0106/ca0106_main.c     |    4 
- sound/pci/cmipci.c                 |    2 
- sound/pci/cs4281.c                 |    2 
- sound/pci/emu10k1/emu10k1x.c       |    4 
- sound/pci/hda/hda_intel.c          |   12 +
- sound/pci/hda/patch_si3054.c       |    3 
- sound/pci/ymfpci/ymfpci_main.c     |    2 
- sound/synth/emux/soundfont.c       |    2 
- sound/usb/usbaudio.c               |    8 
- 42 files changed, 490 insertions(+), 127 deletions(-)
-
+--- g26.orig/include/linux/device.h	2007-03-30 16:44:04.000000000 -0700
++++ g26/include/linux/device.h	2007-03-31 14:39:35.000000000 -0700
+@@ -395,12 +395,13 @@ struct device {
+ 	struct klist_node	knode_parent;		/* node in sibling list */
+ 	struct klist_node	knode_driver;
+ 	struct klist_node	knode_bus;
+-	struct device 	* parent;
++	struct device		*parent;
+ 
+ 	struct kobject kobj;
+ 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
+ 	struct device_type	*type;
+ 	unsigned		is_registered:1;
++	unsigned		uevent_suppress:1;
+ 	struct device_attribute uevent_attr;
+ 	struct device_attribute *devt_attr;
+ 
+@@ -441,7 +442,6 @@ struct device {
+ 	struct class		*class;
+ 	dev_t			devt;		/* dev_t, creates the sysfs "dev" */
+ 	struct attribute_group	**groups;	/* optional groups */
+-	int			uevent_suppress;
+ 
+ 	void	(*release)(struct device * dev);
+ };
+--- g26.orig/drivers/base/platform.c	2007-03-30 16:44:04.000000000 -0700
++++ g26/drivers/base/platform.c	2007-03-31 14:23:02.000000000 -0700
+@@ -160,6 +160,11 @@ static void platform_device_release(stru
+  *
+  *	Create a platform device object which can have other objects attached
+  *	to it, and which will have attached objects freed when it is released.
++ *
++ *	This device will be marked as not supporting hotpluggable drivers; in
++ *	the unusual case that the device isn't being dynamically allocated as
++ *	of a legacy "probe the hardware" driver, infrastructure code should
++ *	reverse this marking.
+  */
+ struct platform_device *platform_device_alloc(const char *name, unsigned int id)
+ {
+@@ -172,6 +177,12 @@ struct platform_device *platform_device_
+ 		pa->pdev.id = id;
+ 		device_initialize(&pa->pdev.dev);
+ 		pa->pdev.dev.release = platform_device_release;
++
++		/* prevent hotplug "modprobe $(MODALIAS)" from causing trouble in
++		 * legacy probe-the-hardware drivers, which don't properly split
++		 * out enumeration logic from drivers.
++		 */
++		pa->pdev.dev.uevent_suppress = 1;
+ 	}
+ 
+ 	return pa ? &pa->pdev : NULL;
+@@ -349,6 +360,13 @@ EXPORT_SYMBOL_GPL(platform_device_unregi
+  *	memory allocated for the device allows drivers using such devices
+  *	to be unloaded iwithout waiting for the last reference to the device
+  *	to be dropped.
++ *
++ *	This interface is primarily intended for use with legacy drivers
++ *	which probe hardware directly.  Because such drivers create device
++ *	nodes themselves, rather than letting system infrastructure handle
++ *	such device enumeration tasks, they don't fully conform to the Linux
++ *	driver model.  In particular, when such drivers are built as modules,
++ *	they can't be "hotplugged".
+  */
+ struct platform_device *platform_device_register_simple(char *name, unsigned int id,
+ 							struct resource *res, unsigned int num)
+--- g26.orig/drivers/pcmcia/pxa2xx_sharpsl.c	2007-03-30 16:44:04.000000000 -0700
++++ g26/drivers/pcmcia/pxa2xx_sharpsl.c	2007-03-31 14:26:04.000000000 -0700
+@@ -261,6 +261,8 @@ static int __init sharpsl_pcmcia_init(vo
+ 	if (!sharpsl_pcmcia_device)
+ 		return -ENOMEM;
+ 
++	/* REVISIT just statically allocate the device */
++	sharpsl_pcmcia_device->dev.uevent_suppress = 0;
+ 	sharpsl_pcmcia_device->dev.platform_data = &sharpsl_pcmcia_ops;
+ 	sharpsl_pcmcia_device->dev.parent = platform_scoop_config->devs[0].dev;
+ 
+--- g26.orig/drivers/pcmcia/pxa2xx_mainstone.c	2007-03-30 16:44:04.000000000 -0700
++++ g26/drivers/pcmcia/pxa2xx_mainstone.c	2007-03-31 14:23:56.000000000 -0700
+@@ -175,6 +175,8 @@ static int __init mst_pcmcia_init(void)
+ 	if (!mst_pcmcia_device)
+ 		return -ENOMEM;
+ 
++	/* REVISIT just statically allocate the device */
++	mst_pcmcia_device->dev.uevent_suppress = 0;
+ 	mst_pcmcia_device->dev.platform_data = &mst_pcmcia_ops;
+ 
+ 	ret = platform_device_add(mst_pcmcia_device);
