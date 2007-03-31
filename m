@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933587AbXCaGwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945891AbXCaGyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933587AbXCaGwY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 02:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933599AbXCaGwY
+	id S1945891AbXCaGyU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 02:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945933AbXCaGyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 02:52:24 -0400
-Received: from brick.kernel.dk ([62.242.22.158]:27434 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933587AbXCaGwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 02:52:23 -0400
-Date: Sat, 31 Mar 2007 08:47:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mcdx -- do_request(): non-read command to cd!!
-Message-ID: <20070331064711.GF6246@kernel.dk>
-References: <460D7F70.3090702@gmail.com>
-Mime-Version: 1.0
+	Sat, 31 Mar 2007 02:54:20 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39981 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945891AbXCaGyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 02:54:19 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Helge Hafting <helgehaf@aitel.hist.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc5-mm2 - compile error on x86-64
+References: <20070326211627.c681af3b.akpm@linux-foundation.org>
+	<20070329182020.GA9223@aitel.hist.no>
+	<20070329142816.5d18d89f.akpm@linux-foundation.org>
+	<20070331062743.GA26131@aitel.hist.no>
+Date: Sat, 31 Mar 2007 00:53:38 -0600
+In-Reply-To: <20070331062743.GA26131@aitel.hist.no> (Helge Hafting's message
+	of "Sat, 31 Mar 2007 08:27:43 +0200")
+Message-ID: <m1r6r5hpjh.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460D7F70.3090702@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 30 2007, Rene Herman wrote:
-> Hi Al.
-> 
-> GIT doesn't remember, it's been too long, but IIRC you were the last one 
-> to do some work on mcdx (the old proprietary mitsumi cd-rom driver). The 
-> thing builds without warnings on 2.6.20.4, unlike most other proprietary 
-> CD-ROM drivers, so someone did...
-> 
-> In any case, I just bet you're positively thrilled receiving bug-reports 
-> for the thing right? Mmm?
-> 
-> I dug up a 1-speed Mitsumi CRMC-LU005S today. Brilliant drive! You push 
-> on the front, after which it comes loose and you then yank the entire 
-> drive, mechanism and all, out of its casing over some kind of magnetic 
-> resistance it seems and then open a _second_ top-loading door, put in 
-> the CD and follow the procedure backwards again. I've done that at least 
-> 20 times now and I'm not by any means done yet. Brilliant.
-> 
-> The drive works fine under DOS (*), with both IRQ-less and IRQ-enabled 
-> controllers. The linux driver does not work though:
-> 
-> root@5va2:~# modprobe mcdx
-> 
-> root@5va2:~# dmesg | tail -4
-> mcdx Version 2.14(hs)
-> mcdx $Id: mcdx.c,v 1.21 1997/01/26 07:12:59 davem Exp $
-> Uniform CD-ROM driver Revision: 3.20
->  mcdx: Mitsumi CD-ROM installed at 0x300, irq 15. (Firmware version M 4)
-> 
-> root@5va2:~# mount /dev/mcdx0 /mnt/cdrom
-> mount: block device /dev/mcdx0 is write-protected, mounting read-only
-> mount: /dev/mcdx0: can't read superblock
-> 
-> root@5va2:~# dmesg | tail -4
->  mcdx: Mitsumi CD-ROM installed at 0x300, irq 15. (Firmware version M 4)
-> mcdx do_request(): non-read command to cd!!
-> end_request: I/O error, dev mcdx0, sector 0
-> FAT: unable to read boot sector
-> root@5va2:~#
-> 
-> This same 300/15 pair works under DOS in the same machine and IRQ15 is 
-> firing. The error sounds very block-ish. Would you happen to know?
-> 
-> I'll happily test patches :-)
+Helge Hafting <helgehaf@aitel.hist.no> writes:
 
-Try this.
+> Correct. I seem to remember that the latter is considered 
+> "deprecated, but some programs may still depend on it".  So I disabled it to 
+> see what broke.  udev complained about the missing /proc/sys/kernel/hotplug,
+> but was happy to use /sys/kernel/uevent_helper instead.  I didn't
+> notice other problems, so I left things like that.
 
-diff --git a/drivers/cdrom/mcdx.c b/drivers/cdrom/mcdx.c
-index f574962..7086313 100644
---- a/drivers/cdrom/mcdx.c
-+++ b/drivers/cdrom/mcdx.c
-@@ -577,6 +577,11 @@ static void do_mcdx_request(request_queue_t * q)
- 	if (!req)
- 		return;
- 
-+	if (!blk_fs_request(req)) {
-+		end_request(req, 0);
-+		goto again;
-+	}
-+
- 	stuffp = req->rq_disk->private_data;
- 
- 	if (!stuffp->present) {
-@@ -596,7 +601,7 @@ static void do_mcdx_request(request_queue_t * q)
- 	xtrace(REQUEST, "do_request() (%lu + %lu)\n",
- 	       req->sector, req->nr_sectors);
- 
--	if (req->cmd != READ) {
-+	if (rq_data_dir(req) != READ) {
- 		xwarn("do_request(): non-read command to cd!!\n");
- 		xtrace(REQUEST, "end_request(0): write\n");
- 		end_request(req, 0);
+Well if anything it is the other way around.  The preferred interface to
+sysctls is /proc/sys.  There is the whole thing where people aren't to
+happy with non-process related things in /proc, so in that sense there
+is a bit of deprecation, but /proc and /proc/sys are fully supported.
 
--- 
-Jens Axboe
+The plethora of configuration is what remains when I dug into the binary
+sys_sysctl interface and tested the assertion that no one uses it, and
+it has been deprecated for years and we could just kill it.
 
+We can now remove the binary sys_sysctl syscall while keeping /proc/sys
+support.  Someday I might even get ambitious and add the appropriate
+deprecated warnings so we can kill the binary interface.
+
+I got as far as seeing that there were a small handful of real
+programs that use sys_sysctl.  I looked at how were giving notice
+and realized that was insufficient to tell users we were deprecating
+the thing.  I didn't see much point (except being able to immediate
+drop support) to removing sys_sysctl and since we would have to go
+a couple of years still supporting it to remove it properly I got
+lazy and stopped.
+
+Maybe myself or someone else can get ambitious and deprecate
+sys_sysctl properly and we can remove it one of these years...
+
+Eric
