@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXCaQJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbXCaQMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbXCaQJw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 12:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbXCaQJu
+	id S1753229AbXCaQMF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 12:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbXCaQMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 12:09:50 -0400
-Received: from www.osadl.org ([213.239.205.134]:57162 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753281AbXCaQJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 12:09:48 -0400
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-In-Reply-To: <b6a2187b0703310901t42fe4752s55eb20d198788b22@mail.gmail.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <460BBD1B.4040308@ru.mvista.com>
-	 <200703291531.18253.maximlevitsky@gmail.com>
-	 <200703291546.48996.maximlevitsky@gmail.com>
-	 <1175356272.28263.27.camel@localhost.localdomain>
-	 <b6a2187b0703310901t42fe4752s55eb20d198788b22@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 31 Mar 2007 18:09:47 +0200
-Message-Id: <1175357387.28263.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 31 Mar 2007 12:12:05 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:37328 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753229AbXCaQMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 12:12:03 -0400
+Date: Sat, 31 Mar 2007 18:11:36 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix dependency generation
+In-Reply-To: <20070331064228.GA11023@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0703311804230.14457@scrub.home>
+References: <460BA292.76E4.0078.0@novell.com> <20070331064228.GA11023@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-01 at 00:01 +0800, Jeff Chua wrote:
-> On 3/31/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > Jeff still seems to have problems with CONFIG_NO_HZ=n and it might be
-> > caused by time keeping / tick management resume happening before the
-> > HPET resume.
-> 
-> 
-> me>Confirmed that suspend/resume disk/ram works on X60s with
-> me>CONFIG_HPET_TIMER=y and CONFIG_NO_HZ unset.
-> me> But suspend to disk still hang with CONFIG_NO_HZ unset.
-> 
-> 
-> Oops, sorry. Typo (as a result copy/paste using mouse)
->     ... I actually meant CONFIG_NO_HZ "set".
-> 
-> Just to be clear, suspend to disk still hang with CONFIG_NO_HZ=y. It
-> hang just before you see the percent saving %.
+Hi,
 
-Ah, that's a different one then. In that path the timers should be
-alive, but who knows.
+On Sat, 31 Mar 2007, Sam Ravnborg wrote:
 
-	tglx
+> The problem is that tristate symbol represent three values.
+> =n => CONFIG_SYMBOL is undefined
+> =y => CONFIG_SYMBOL is defined
+> =m => COMFIG_SYMBOL_MODULE is defined
+> 
+> The function split_config does not take into account the
+> different values and 'fixing' this in fixdep is wrong.
+> Because fixdep does not know if the variable is a tristate symbol or not
+> so it can either blindly remove _MODULE (your patch)
+> or each time it encounters _MODULE check for a symbol with and
+> without _MODULE.
 
+What really matters is that CONFIG_SYMBOL changed, one could optimize for 
+the COMFIG_SYMBOL_MODULE case, but I don't think it's worth it, especially 
+...
 
+> The better fix is to teach the split_config function that
+> for tristate symbols two files shall be created in the include/config
+> hirachy. So for apm this gets:
+> include/config/apm.h
+> include/config/apm/module.h
+
+if it requires thousands of new inodes for a feature which should be 
+rarely used.
+
+> This will make kconfig behave correct the day that someone add a config
+> symbol with a _MODULE suffix.
+
+I'd rather reserve that namespace, if it allows for the simpler version to 
+just map all symbols to the basic config symbol name.
+
+bye, Roman
