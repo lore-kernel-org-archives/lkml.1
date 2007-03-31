@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751185AbXCaGbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbXCaGc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751185AbXCaGbt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 02:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXCaGbt
+	id S1752986AbXCaGc5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 02:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbXCaGc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 02:31:49 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51949 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751185AbXCaGbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 02:31:48 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18wv74X2Zkwn4incSWXkjVlojJJgjC19eEE5AOP8w
-	CDkfSajaObDoup
-Subject: Re: [test] hackbench.c interactivity results: vanilla versus
-	SD/RSDL
-From: Mike Galbraith <efault@gmx.de>
-To: Xenofon Antidides <xantidides@yahoo.gr>
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <834572.46808.qm@web26713.mail.ukl.yahoo.com>
-References: <834572.46808.qm@web26713.mail.ukl.yahoo.com>
-Content-Type: text/plain
-Date: Sat, 31 Mar 2007 08:31:46 +0200
-Message-Id: <1175322706.6030.20.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sat, 31 Mar 2007 02:32:56 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:42168 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752897AbXCaGc4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 02:32:56 -0400
+Date: Sat, 31 Mar 2007 08:27:43 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: 2.6.21-rc5-mm2 - compile error on x86-64
+Message-ID: <20070331062743.GA26131@aitel.hist.no>
+References: <20070326211627.c681af3b.akpm@linux-foundation.org> <20070329182020.GA9223@aitel.hist.no> <20070329142816.5d18d89f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070329142816.5d18d89f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Helge Hafting <helgehaf@aitel.hist.no>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-30 at 22:41 -0700, Xenofon Antidides wrote:
+On Thu, Mar 29, 2007 at 02:28:16PM -0700, Andrew Morton wrote:
+> On Thu, 29 Mar 2007 20:20:20 +0200
+> Helge Hafting <helgehaf@aitel.hist.no> wrote:
+> 
+[...]
+> yup, people will presumably work on fixing these things up after the
+> feature hits mainline.
+> 
+> >   LD      init/built-in.o
+> >   LD      .tmp_vmlinux1
+> > fs/built-in.o: In function `proc_root_init':
+> > /usr/src/linux/fs/proc/root.c:83: undefined reference to `proc_sys_init'
+> 
+> Ah.  I assume you have CONFIG_SYSCTL=y, CONFIG_PROC_SYSCTL=n?
 
-> Patch makes X yuck with any load. I stick with SD.
+Correct. I seem to remember that the latter is considered 
+"deprecated, but some programs may still depend on it".  So I disabled it to 
+see what broke.  udev complained about the missing /proc/sys/kernel/hotplug,
+but was happy to use /sys/kernel/uevent_helper instead.  I didn't
+notice other problems, so I left things like that.
 
-Shrug.  My milage is different, but hey, it's a work in progress.  If SD
-ever gets to the point that it actually delivers what it claims, I may
-join you.
-
-In the meantime, IMHO mainline is MUCH better in the general case.  If
-the general case was that which the various sleep exploits do, the
-history mechanism in mainline wouldn't have survived it's first day.
-
-	-Mike
-
+Helge Hafting
