@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbXCaTrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbXCaTuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbXCaTrI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 15:47:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXCaTrI
+	id S1753364AbXCaTuu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 15:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXCaTuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 15:47:08 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:48153 "EHLO
+	Sat, 31 Mar 2007 15:50:50 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:48156 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753335AbXCaTrG (ORCPT
+	with ESMTP id S1753364AbXCaTut (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 15:47:06 -0400
+	Sat, 31 Mar 2007 15:50:49 -0400
 X-AuthUser: davidel@xmailserver.org
-Date: Sat, 31 Mar 2007 12:46:58 -0700 (PDT)
+Date: Sat, 31 Mar 2007 12:50:48 -0700 (PDT)
 From: Davide Libenzi <davidel@xmailserver.org>
 X-X-Sender: davide@alien.or.mcafeemobile.com
 To: Andrew Morton <akpm@linux-foundation.org>
 cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 6/13] signal/timer/event fds v8 - timerfd core ...
-In-Reply-To: <20070330180910.dd16a52f.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703311238230.22390@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.28743.1174415837.6>
- <20070330124005.0ec31aa6.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703301734390.3721@alien.or.mcafeemobile.com>
- <20070330180910.dd16a52f.akpm@linux-foundation.org>
+       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [patch 10/13] signal/timer/event fds v8 - eventfd core ...
+In-Reply-To: <20070330182603.5d6817d3.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703311247110.22390@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.28743.1174415840.10>
+ <20070330124028.c6e54d2e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703301804110.3721@alien.or.mcafeemobile.com>
+ <20070330182603.5d6817d3.akpm@linux-foundation.org>
 X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
 X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
@@ -34,83 +35,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, 30 Mar 2007, Andrew Morton wrote:
 
-> On Fri, 30 Mar 2007 17:47:28 -0700 (PDT) Davide Libenzi <davidel@xmailserver.org> wrote:
+> On Fri, 30 Mar 2007 18:11:55 -0700 (PDT) Davide Libenzi <davidel@xmailserver.org> wrote:
 > 
-> > On Fri, 30 Mar 2007, Andrew Morton wrote:
 > > 
-> > > > +struct timerfd_ctx {
-> > > > +	struct hrtimer tmr;
-> > > > +	ktime_t tintv;
-> > > > +	spinlock_t lock;
-> > > > +	wait_queue_head_t wqh;
-> > > > +	unsigned long ticks;
-> > > > +};
+> > > > + */
 > > > 
-> > > Did you consider using the (presently unused) lock inside wqh instead of
-> > > adding a new one?  That's a little bit rude, poking into waitqueue
-> > > internals like that, but we do it elsewhere and tricks like that are
-> > > acceptable in core-kernel, I guess.
+> > > So it is the caller's responsibility to ensure that *file refers to an
+> > > eventfd file?
 > > 
-> > Please, no. Gain is not worth the plug into the structure design IMO.
+> > In which function? I lost you ...
 > > 
 > 
-> The decision is not that obvious - your patch's main use of
-> timerfd_ctx.lock is to provide locking for wqh - ie: to duplicate the
-> function of the existing lock which is there for that purpose.
+> eventfd_signal() assumes that the passed in file* refers to an eventfd
+> file.  So if a caller passes in a file* for /etc/passwd, the kernel will go
+> splat.
 > 
-> So I think it's a legitimate optimisation to borrow it.
+> I guess that's caveat emptor, and any violations of that will show up
+> quickly in testing.  My main concern would be that there might be some way
+> for a naughty user to force the kernel to pass a non-eventfd file* into
+> this function.  That depends upon as-yet-unwritten code - is there a risk
+> of this happening, and how do we prevent it?
 
-As I see it, the lock protects the ticks and the timer structure, and the 
-wait queue *happen* to have a lock inside. That's the whole purpose in 
-having data modeled by structures with accessor functions.
-IMO, given that we'd get by plugging into the wait_queue_head_t lock is 
-not much (if at all), it'd be better to to peek at the wait_queue_head_t 
-directly.
+That's the kernel side of the API. The userspace->kernel fd validation is 
+done in eventfd_fget(), that the kernel uses to get an eventfd file* from 
+an eventfd file descriptor. The eventfd_fget() does the file operations 
+check and returns proper error.
+At that point, if the kernel feeds eventfd_signal() with crap, it gets 
+crap back. Like calling internal kernel functions with bogus mm_struct or 
+task_struct.
 
 
 
-
-> > > > +static enum hrtimer_restart timerfd_tmrproc(struct hrtimer *htmr)
-> > > > +{
-> > > > +	struct timerfd_ctx *ctx = container_of(htmr, struct timerfd_ctx, tmr);
-> > > > +	enum hrtimer_restart rval = HRTIMER_NORESTART;
-> > > > +	unsigned long flags;
+> > > > +	DECLARE_WAITQUEUE(wait, current);
 > > > > +
-> > > > +	spin_lock_irqsave(&ctx->lock, flags);
-> > > > +	ctx->ticks++;
-> > > > +	wake_up_locked(&ctx->wqh);
-> > > > +	if (ctx->tintv.tv64 != 0) {
-> > > > +		hrtimer_forward(htmr, hrtimer_cb_get_time(htmr), ctx->tintv);
-> > > > +		rval = HRTIMER_RESTART;
-> > > > +	}
-> > > > +	spin_unlock_irqrestore(&ctx->lock, flags);
-> > > > +
-> > > > +	return rval;
-> > > > +}
+> > > > +	if (count < sizeof(ucnt))
+> > > > +		return -EINVAL;
+> > > > +	if (get_user(ucnt, (const __u64 __user *) buf))
+> > > > +		return -EFAULT;
 > > > 
-> > > What's this do?
+> > > Some architectures do not implement 64-bit get_user()
 > > 
-> > Really, do we need to comment such trivial code? There is *nothing* that 
-> > is worth a line of comment in there. IMO useless comment are more annoying 
-> > than blank lines.
+> > copy_from_user it is, then ...
 > > 
 > 
-> Look at it from the point of view of someone who knows kernel code but does
-> not specifically know this subsystem.  That describes the great majority of
-> people who will be reading your code.
-
-Okie, I added a comment ;)
-
-
-
-> Patch headers are not maintainable.
+> spose so.  I think architectures _should_ implement 64-bit get_user() and
+> put_user() nowadays.  So you could leave the code as-is and inform the arch
+> maintainers, if you're feeling keen.
 > 
-> Nobody wants to have to go off and waddle though the git repo to understand
-> the design intent behind each function.
+> If all this code has its own Kconfig options then the architectures won't
+> break until their maintainers come along to enable the new features, so
+> they'll implement 64-bit get_user() at that time and things will all unfold
+> in a nicely non-chaotic fashion.
 
-I agree. I thought we were talking about the "poor smuck" having to 
-document it, and the patch header is a pretty good start (and maybe 
-finish ;).
+Agreed. I'll leave the get_user(u64).
 
 
 
