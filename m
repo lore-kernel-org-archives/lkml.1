@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933317AbXCaCQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbXCaCZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933317AbXCaCQM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 22:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933320AbXCaCQM
+	id S933327AbXCaCZG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 22:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933325AbXCaCZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 22:16:12 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3981 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933317AbXCaCQL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 22:16:11 -0400
-Date: Sat, 31 Mar 2007 12:14:37 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: Re: [patch 32/37] CRYPTO: api: scatterwalk_copychunks() fails to advance through scatterlist
-Message-ID: <20070331021437.GA31298@gondor.apana.org.au>
-References: <20070330205938.984247529@mini.kroah.org> <20070330210651.GI29450@kroah.com> <460DBC4C.1060602@trash.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460DBC4C.1060602@trash.net>
-User-Agent: Mutt/1.5.9i
+	Fri, 30 Mar 2007 22:25:06 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33233 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933322AbXCaCZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 22:25:04 -0400
+Date: Fri, 30 Mar 2007 19:24:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 1/13] signal/timer/event fds v8 - anonymous inode source
+ ...
+In-Reply-To: <20070330160850.d7988a87.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703301922280.6730@woody.linux-foundation.org>
+References: <send-serie.davidel@xmailserver.org.28743.1174415834.1>
+ <20070330123943.8df1aa92.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703301532500.3721@alien.or.mcafeemobile.com>
+ <20070330160850.d7988a87.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 31, 2007 at 03:41:32AM +0200, Patrick McHardy wrote:
->
-> > [CRYPTO] api: scatterwalk_copychunks() fails to advance through scatterlist
+
+
+On Fri, 30 Mar 2007, Andrew Morton wrote:
+> > 
+> > Ok, it was panincing, and someone made me change it. Would you please 
+> > agree?
+> > The system can survive w/out, but it'll be a broken system WRT userspace.
 > 
-> This patch seems to cause some problems, I get reproducable freezes
-> on the receiving system with net-2.6.22 when sending IPsec packets
-> larger than the mtu (reproduced about 10 times). Reverting this
-> patch seems to fix it. In a few cases the oops also occured on the
-> sending system.
-> 
-> Backtrace from UML (sending system):
-> 
-> uml:~# ping 10.0.0.1 -s 20000
-> PING 10.0.0.1 (10.0.0.1) 20000(20028) bytes of data.
-> BUG: soft lockup detected on CPU#0!
-> Call Trace:
+> I'd say panic.  There's no much point in limping along with an
+> incorrectly-working kernel, only to have some small number of apps fail
+> mysteriously later on.
 
-Indeed.  That patch was buggy.  Sorry for not catching this earlier.
+Well, in this case (since it's at bootup only), I'd agree with panic(), 
+but generally I disagree - it's actually much better to have a broken 
+system limping along and allowing things like syslogd to write the problem 
+to log-files and generally working as well as possible.
 
-This should fix the problem.
+If people can do a "dmesg" and send it out as an email, we're much more 
+likely to get good bug-reports.
 
-[CRYPTO] api: Use the right value when advancing scatterwalk_copychunks
+But for early boot, and for something that can't really happen anyway, 
+panic() sounds fine.
 
-In the scatterwalk_copychunks loop, We should be advancing by
-len_this_page and not nbytes.  The latter is the total length.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/crypto/scatterwalk.c b/crypto/scatterwalk.c
-index a664231..0f76175 100644
---- a/crypto/scatterwalk.c
-+++ b/crypto/scatterwalk.c
-@@ -91,7 +91,7 @@ void scatterwalk_copychunks(void *buf, struct scatter_walk *walk,
- 		memcpy_dir(buf, vaddr, len_this_page, out);
- 		scatterwalk_unmap(vaddr, out);
- 
--		scatterwalk_advance(walk, nbytes);
-+		scatterwalk_advance(walk, len_this_page);
- 
- 		if (nbytes == len_this_page)
- 			break;
+		Linus
