@@ -1,279 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXCaJtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbXCaKCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbXCaJtB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 05:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbXCaJtA
+	id S1752277AbXCaKCN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 06:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbXCaKCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 05:49:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47209 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbXCaJs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 05:48:59 -0400
-X-Greylist: delayed 69797 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Mar 2007 05:48:58 EDT
-Date: Sat, 31 Mar 2007 11:48:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Xenofon Antidides <xantidides@yahoo.gr>
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch] sched: improve fairness, v3
-Message-ID: <20070331094848.GA7829@elte.hu>
-References: <1175322706.6030.20.camel@Homer.simpson.net> <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com> <20070331094323.GA5550@elte.hu>
+	Sat, 31 Mar 2007 06:02:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54023 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752277AbXCaKCN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 06:02:13 -0400
+Date: Sat, 31 Mar 2007 12:02:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       perfmon@napali.hpl.hp.com
+Subject: Re: exposing FSB clock speed in /sys
+Message-ID: <20070331100209.GA17761@one.firstfloor.org>
+References: <20070330153937.GC16059@frankl.hpl.hp.com> <p73bqiaqh32.fsf@bingen.suse.de> <20070331081832.GB17535@frankl.hpl.hp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070331094323.GA5550@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070331081832.GB17535@frankl.hpl.hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> I am not interested in older processors, but I think for all recent Intel
+> processors, there is a fairly simple algorithm to get the frequency using
+> a couple of MSRs (including MSR_IA32_EBL_CR_POWERON or MSR_FSB_FREQ).
 
-> also, could you possibly try these workloads you described with Mike's 
-> latest patch too? Thanks,
+Hmm, maybe make it an own driver that creates the sysfs entries somewhere.
+I don't think it's useful enough for the main kernel.
 
-i.e. the one below.
+But what happens during power saving that may lower the frequency? 
+Wouldn't you need update events for that? That might complicate it.
 
-	Ingo
+> 
+> Don't we already have /sys entries that exits only for certain processors
+> or platforms?
 
---------------------->
-Subject: [patch] sched: improve fairness, v3
-From: Mike Galbraith <efault@gmx.de>
+Yes.
 
-track interactive backlog as a way to detect when the load isn't really
-an interactive load, that's very simple and has potential.
+> I think the Opteron have HYPERTRANSPORT-related events which could be used
+> to obtain similar metrics.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Yes, but you usually don't need the frequency.
 
----
- kernel/sched.c |  115 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 108 insertions(+), 7 deletions(-)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -109,6 +109,7 @@ unsigned long long __attribute__((weak))
- #define MAX_SLEEP_AVG		(DEF_TIMESLICE * MAX_BONUS)
- #define STARVATION_LIMIT	(MAX_SLEEP_AVG)
- #define NS_MAX_SLEEP_AVG	(JIFFIES_TO_NS(MAX_SLEEP_AVG))
-+#define INTERACTIVE_LIMIT	(DEF_TIMESLICE * 4)
- 
- /*
-  * If a task is 'interactive' then we reinsert it in the active
-@@ -167,6 +168,9 @@ unsigned long long __attribute__((weak))
- 	(JIFFIES_TO_NS(MAX_SLEEP_AVG * \
- 		(MAX_BONUS / 2 + DELTA((p)) + 1) / MAX_BONUS - 1))
- 
-+#define INTERACTIVE_BACKLOG_EXCEEDED(array) \
-+	((array)->interactive_ticks > INTERACTIVE_LIMIT)
-+
- #define TASK_PREEMPTS_CURR(p, rq) \
- 	((p)->prio < (rq)->curr->prio)
- 
-@@ -201,6 +205,7 @@ static inline unsigned int task_timeslic
- 
- struct prio_array {
- 	unsigned int nr_active;
-+	int interactive_ticks;
- 	DECLARE_BITMAP(bitmap, MAX_PRIO+1); /* include 1 bit for delimiter */
- 	struct list_head queue[MAX_PRIO];
- };
-@@ -234,6 +239,7 @@ struct rq {
- 	 */
- 	unsigned long nr_uninterruptible;
- 
-+	unsigned long switch_timestamp;
- 	unsigned long expired_timestamp;
- 	/* Cached timestamp set by update_cpu_clock() */
- 	unsigned long long most_recent_timestamp;
-@@ -691,6 +697,8 @@ static void dequeue_task(struct task_str
- 	list_del(&p->run_list);
- 	if (list_empty(array->queue + p->prio))
- 		__clear_bit(p->prio, array->bitmap);
-+	if (TASK_INTERACTIVE(p))
-+		array->interactive_ticks -= p->time_slice;
- }
- 
- static void enqueue_task(struct task_struct *p, struct prio_array *array)
-@@ -700,6 +708,8 @@ static void enqueue_task(struct task_str
- 	__set_bit(p->prio, array->bitmap);
- 	array->nr_active++;
- 	p->array = array;
-+	if (TASK_INTERACTIVE(p))
-+		array->interactive_ticks += p->time_slice;
- }
- 
- /*
-@@ -882,7 +892,11 @@ static int recalc_task_prio(struct task_
- 	/* Caller must always ensure 'now >= p->timestamp' */
- 	unsigned long sleep_time = now - p->timestamp;
- 
--	if (batch_task(p))
-+	/*
-+	 * Migration timestamp adjustment may induce negative time.
-+	 * Ignore unquantifiable values as well as SCHED_BATCH tasks.
-+	 */ 
-+	if (now < p->timestamp || batch_task(p))
- 		sleep_time = 0;
- 
- 	if (likely(sleep_time > 0)) {
-@@ -3051,9 +3065,9 @@ static inline int expired_starving(struc
- {
- 	if (rq->curr->static_prio > rq->best_expired_prio)
- 		return 1;
--	if (!STARVATION_LIMIT || !rq->expired_timestamp)
-+	if (!STARVATION_LIMIT)
- 		return 0;
--	if (jiffies - rq->expired_timestamp > STARVATION_LIMIT * rq->nr_running)
-+	if (jiffies - rq->switch_timestamp > STARVATION_LIMIT * rq->nr_running)
- 		return 1;
- 	return 0;
- }
-@@ -3131,8 +3145,74 @@ void account_steal_time(struct task_stru
- 		cpustat->steal = cputime64_add(cpustat->steal, tmp);
- }
- 
-+/*
-+ * Promote and requeue the next lower priority task.  If no task
-+ * is available in the active array, switch to the expired array.
-+ * @rq: runqueue to search.
-+ * @prio: priority at which to begin search.
-+ */
-+static inline void promote_next_lower(struct rq *rq, int prio)
-+{
-+	struct prio_array *array = rq->active;
-+	struct task_struct *p = NULL;
-+	unsigned long long now = rq->most_recent_timestamp;
-+	unsigned long *bitmap;
-+	unsigned long starving = JIFFIES_TO_NS(rq->nr_running * DEF_TIMESLICE);
-+	int idx = prio + 1, found_noninteractive = 0;
-+
-+repeat:
-+	bitmap = array->bitmap;
-+	idx = find_next_bit(bitmap, MAX_PRIO, idx);
-+	if (idx < MAX_PRIO) {
-+		struct list_head *queue = array->queue + idx;
-+
-+		p = list_entry(queue->next, struct task_struct, run_list);
-+		if (!TASK_INTERACTIVE(p))
-+			found_noninteractive = 1;
-+
-+		/* Skip non-starved queues. */
-+		if (now < p->last_ran + starving) {
-+			idx++;
-+			p = NULL;
-+			goto repeat;
-+		}
-+	} else if (!found_noninteractive && array == rq->active) {
-+		/* Nobody home, check the expired array. */
-+		array = rq->expired;
-+		idx = 0;
-+		p = NULL;
-+		goto repeat;
-+	}
-+
-+	/* Found one, requeue it. */
-+	if (p) {
-+		dequeue_task(p, p->array);
-+		if (array == rq->active)
-+			p->prio--;
-+		/*
-+		 * If we pulled a task from the expired array, correct
-+		 * expired array info.  We can't afford a full search
-+		 * for best_expired_prio, but do the best we can.
-+		 */
-+		else {
-+			idx = sched_find_first_bit(array->bitmap);
-+			if (idx < MAX_PRIO) {
-+				if (rq->best_expired_prio > idx)
-+					rq->best_expired_prio = idx;
-+			} else {
-+				/* We emptied the array */
-+				rq->best_expired_prio = MAX_PRIO;
-+				rq->switch_timestamp = jiffies;
-+			}
-+		}
-+		enqueue_task(p, rq->active);
-+	}
-+}
-+
- static void task_running_tick(struct rq *rq, struct task_struct *p)
- {
-+	int task_was_interactive;
-+
- 	if (p->array != rq->active) {
- 		/* Task has expired but was not scheduled yet */
- 		set_tsk_need_resched(p);
-@@ -3161,21 +3241,41 @@ static void task_running_tick(struct rq 
- 		}
- 		goto out_unlock;
- 	}
-+
-+	/*
-+	 * Tick off interactive task ticks from the active array.
-+	 */
-+	task_was_interactive = TASK_INTERACTIVE(p);
-+	if (task_was_interactive && --rq->active->interactive_ticks < 0)
-+		rq->active->interactive_ticks = 0;
-+
- 	if (!--p->time_slice) {
-+		int expire_limit = STARVATION_LIMIT;
-+
- 		dequeue_task(p, rq->active);
- 		set_tsk_need_resched(p);
- 		p->prio = effective_prio(p);
- 		p->time_slice = task_timeslice(p);
- 		p->first_time_slice = 0;
- 
--		if (!rq->expired_timestamp)
--			rq->expired_timestamp = jiffies;
- 		if (!TASK_INTERACTIVE(p) || expired_starving(rq)) {
- 			enqueue_task(p, rq->expired);
- 			if (p->static_prio < rq->best_expired_prio)
- 				rq->best_expired_prio = p->static_prio;
-+			if (!task_was_interactive)
-+				rq->expired_timestamp = jiffies;
- 		} else
- 			enqueue_task(p, rq->active);
-+
-+		/*
-+		 * If we haven't expired a non-interactive task within
-+		 * STARVATION_LIMIT ticks, or the current interactive
-+		 * load exceeds INTERACTIVE_BACKLOG, start promoting
-+		 * lower priority tasks.
-+		 */
-+		if (time_after(jiffies, rq->expired_timestamp + expire_limit) ||
-+				INTERACTIVE_BACKLOG_EXCEEDED(rq->active))
-+			promote_next_lower(rq, p->prio);
- 	} else {
- 		/*
- 		 * Prevent a too long timeslice allowing a task to monopolize
-@@ -3356,7 +3456,7 @@ need_resched_nonpreemptible:
- 		idle_balance(cpu, rq);
- 		if (!rq->nr_running) {
- 			next = rq->idle;
--			rq->expired_timestamp = 0;
-+			rq->switch_timestamp = jiffies;
- 			goto switch_tasks;
- 		}
- 	}
-@@ -3370,7 +3470,8 @@ need_resched_nonpreemptible:
- 		rq->active = rq->expired;
- 		rq->expired = array;
- 		array = rq->active;
--		rq->expired_timestamp = 0;
-+		array->interactive_ticks = 0;
-+		rq->switch_timestamp = jiffies;
- 		rq->best_expired_prio = MAX_PRIO;
- 	}
- 
+-Andi
