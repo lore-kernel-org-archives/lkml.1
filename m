@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbXCaPBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbXCaPBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753107AbXCaPBQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 11:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbXCaPBQ
+	id S1753150AbXCaPBk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 11:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbXCaPBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 11:01:16 -0400
-Received: from smtp-1.hut.fi ([130.233.228.91]:58452 "EHLO smtp-1.hut.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753107AbXCaPBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 11:01:15 -0400
-Date: Sat, 31 Mar 2007 18:00:34 +0300 (EEST)
-From: Mikko Tiihonen <mikko.tiihonen@iki.fi>
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
-       ranma@tdiedrich.de, om.turyx@gmail.com
-Subject: Re: [PATCH 1/5] RT kernel: force detect HPET from PCI space
-In-Reply-To: <1175340987.4174.9.camel@rousalka.dyndns.org>
-Message-ID: <Pine.OSF.4.64.0703311746170.412261@kosh.hut.fi>
-References: <Pine.OSF.4.64.0703310049090.412261@kosh.hut.fi>
- <1175294288.32441.6.camel@rousalka.dyndns.org> <m3bqi9u2an.fsf@maximus.localdomain>
- <1175340987.4174.9.camel@rousalka.dyndns.org>
+	Sat, 31 Mar 2007 11:01:25 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39292 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753137AbXCaPBY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 11:01:24 -0400
+Date: Sat, 31 Mar 2007 17:01:23 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, Tejun Heo <htejun@gmail.com>
+Subject: Re: [1/4] 2.6.21-rc5: known regressions (v2)
+Message-ID: <20070331150123.GU14134@stusta.de>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070330213209.GM14134@stusta.de> <20070331002310.GA3213@ellpspace.math.ualberta.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-TKK-Virus-Scanned: by amavisd-new-2.1.2-hutcc at katosiko.hut.fi
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070331002310.GA3213@ellpspace.math.ualberta.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 30, 2007 at 06:23:10PM -0600, Michal Jaegermann wrote:
+> On Fri, Mar 30, 2007 at 11:32:09PM +0200, Adrian Bunk wrote:
+> > 
+> > Subject    : kernels fail to boot with drives on ATIIXP controller
+> >              (ACPI/IRQ related)
+> > References : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229621
+> >              http://lkml.org/lkml/2007/3/4/257
+> > Submitter  : Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
+> > Status     : unknown
+> 
+> I have now even better one with pata_via.  A kernel, which for
+> all practical purposes is 2.6.21-rc5, not only refuses to boot
+> (and I cannot find some option combination which would allow me to
+> do so anyway) but simply refuses to read _any_ data from a media.
+> This included a partitioning information.
+> 
+> Earlier kernel on the same hardware boots without raising any fuss.
+> 
+> Details are collected as
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=234650
 
+If I understand this correctly, a plain 2.6.20 kernel is already broken?
 
-On Sat, 31 Mar 2007, Nicolas Mailhot wrote:
+>    Michal
 
-> [adding some people in CC that expressed interest in the problem before]
->
-> I'm crazy enough to test a patch if someone cooks it, but I'm way out of
-> my depth there :)
+cu
+Adrian
 
-After struggling with totally broken kernels for the whole morning I got the 
-HPET to work with my NForce4 with the following hard coded ACPI quirk. My 
-machine has been now stable for few hours and I tested that the HPET really 
-seems to be working by switching the clock source using
+-- 
 
-echo hpet|tsc|acpi_pm > /sys/devices/system/clocksource/clocksource0/current_clocksource
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Results of a simple benchmark show that the time to execute gettimeofday 
-really varies based on the clock source: (performance normalised to tsc)
-tsc:      1x
-hpet:     4x
-acpi_pm: 12x
-
-At least on my motherboard it seems to be enough to just grab the HPET address 
-from the lspci output and not bother with any of the other changing bits.
-
---- linux-2.6.21-rc5-git5/arch/i386/kernel/acpi/boot.c	2007-03-31 17:49:24.000000000 +0300
-+++ linux-2.6.21-rc5-git5.hpet/arch/i386/kernel/acpi/boot.c	2007-03-31 17:02:27.000000000 +0300
-@@ -1189,6 +1189,8 @@ int __init acpi_boot_table_init(void)
-
-  int __init acpi_boot_init(void)
-  {
-+        struct acpi_table_hpet hpet_tbl;
-+
-  	/*
-  	 * If acpi_disabled, bail out
-  	 * One exception: acpi=ht continues far enough to enumerate LAPICs
-@@ -1208,7 +1210,12 @@ int __init acpi_boot_init(void)
-  	 */
-  	acpi_process_madt();
-
--	acpi_table_parse(ACPI_SIG_HPET, acpi_parse_hpet);
-+	hpet_tbl.address.address = 0xfefff000L;
-+	hpet_tbl.address.space_id = ACPI_SPACE_MEM;
-+	hpet_tbl.sequence = 0;
-+	hpet_tbl.id = 0xbabe;
-+        acpi_parse_hpet((struct acpi_table_header *) &hpet_tbl);
-+	//	acpi_table_parse(ACPI_SIG_HPET, acpi_parse_hpet);
-
-  	return 0;
-  }
-
--Mikko
