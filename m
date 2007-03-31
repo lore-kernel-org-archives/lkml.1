@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933630AbXCaEzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933613AbXCaEz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933630AbXCaEzE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 00:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933587AbXCaEyg
+	id S933613AbXCaEz4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 00:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933541AbXCaEzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 00:54:36 -0400
-Received: from gw.goop.org ([64.81.55.164]:34194 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965254AbXCaExq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 00:53:46 -0400
-Message-Id: <20070331020055.235511601@goop.org>
-References: <20070331020042.003398870@goop.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 30 Mar 2007 19:00:47 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [patch 5/6] cleanups to help using per-cpu variables from asm
-Content-Disposition: inline; filename=i386-cleanups-to-help-using-per-cpu-variables-from-asm.patch
+	Sat, 31 Mar 2007 00:55:03 -0400
+Received: from [212.12.190.20] ([212.12.190.20]:32891 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933589AbXCaEyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 00:54:38 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [test] hackbench.c interactivity results: vanilla versus
+Date: Sat, 31 Mar 2007 07:58:15 +0300
+User-Agent: KMail/1.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703310758.15339.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch does a few small cleanups:
- - use PER_CPU_NAME to generate the names of per-cpu variables
- - use lea to add the per_cpu offset in PER_CPU(), because it doesn't
-   affect condition flags
- - add PER_CPU_VAR which allows direct access to pre-cpu variables
-   with the %fs: prefix on SMP.
+Mike Galbraith wrote:
+> Yesterday, I piddled around with tracking interactive backlog as a way
+> to detect when the load isn't really an interactive load, that's very
+> simple and has potential.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andi Kleen <ak@suse.de>
+You may want to consider fixing latencies per nice relative to load, as the 
+biggest problem with iab are huge latency delays, which exhibit themselves 
+as starvation, caused by unfair timeslice management.
 
----
- include/asm-i386/percpu.h |   12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
 
-===================================================================
---- a/include/asm-i386/percpu.h
-+++ b/include/asm-i386/percpu.h
-@@ -16,12 +16,14 @@
-  *    PER_CPU(cpu_gdt_descr, %ebx)
-  */
- #ifdef CONFIG_SMP
-+#define PER_CPU(var, reg)				\
-+	movl %fs:per_cpu__##this_cpu_off, reg;		\
-+	lea per_cpu__##var(reg), reg
-+#define PER_CPU_VAR(var)	%fs:per_cpu__##var
-+#else /* ! SMP */
- #define PER_CPU(var, reg)			\
--	movl %fs:per_cpu__this_cpu_off, reg;		\
--	addl $per_cpu__##var, reg
--#else /* ! SMP */
--#define PER_CPU(var, reg) \
--	movl $per_cpu__##var, reg;
-+	movl $per_cpu__##var, reg
-+#define PER_CPU_VAR(var)	per_cpu__##var
- #endif	/* SMP */
- 
- #else /* ...!ASSEMBLY */
+Thanks!
 
--- 
+--
+Al
 
