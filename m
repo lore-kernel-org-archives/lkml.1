@@ -1,56 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbXCaRly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbXCaRzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753720AbXCaRly (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 13:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbXCaRly
+	id S1753764AbXCaRzs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 13:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbXCaRzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 13:41:54 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:58423 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753717AbXCaRlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 13:41:53 -0400
-Date: Sat, 31 Mar 2007 10:41:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: Ken Chen <kenchen@google.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] remove artificial software max_loop limit
-Message-Id: <20070331104144.46c85f27.akpm@linux-foundation.org>
-In-Reply-To: <20070331170743.GB14596@kroah.com>
-References: <b040c32a0703300053u110063b0u80ee0e7b9dd158c2@mail.gmail.com>
-	<b040c32a0703300148w479cf4cdw667cf464edf7c725@mail.gmail.com>
-	<Pine.LNX.4.61.0703301105190.31834@yvahk01.tjqt.qr>
-	<b040c32a0703300225r3f8b1daah2f95e8af26c0d867@mail.gmail.com>
-	<20070330141524.5f6cff29.akpm@linux-foundation.org>
-	<20070331170743.GB14596@kroah.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 31 Mar 2007 13:55:48 -0400
+Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:25710 "HELO
+	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753764AbXCaRzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 13:55:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=t4xs1mdTAKiK+SUaxeE8StY8+veKXqQR5X3sQhNWUarOCqXbkrHPgWQcHUu9cQjdiYou2We2WRBYxgSr3woUp4oOtv2yPVAnNVQWimkt6ixvMlOZHgR3+5T+zM9IPn7xYxvEx7Dk3vbQZtxkxbVeBzgXtXZx1SOMsjzli9uCDAM=  ;
+X-YMail-OSG: xG55hrcVM1k5Qx_16tTPwCIQhtLIVoQyCCSXZablYgFGI6me.LyD8JCC0EzLhr_cPLpnT8nZUA--
+From: David Brownell <david-b@pacbell.net>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
+Date: Sat, 31 Mar 2007 10:55:42 -0700
+User-Agent: KMail/1.7.1
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de,
+       linux-pm@lists.osdl.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
+       jgarzik@pobox.com, Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <1175358800.28263.36.camel@localhost.localdomain> <Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200703311055.43407.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Mar 2007 10:07:43 -0700 Greg KH <greg@kroah.com> wrote:
-
-> On Fri, Mar 30, 2007 at 02:15:24PM -0700, Andrew Morton wrote:
-> > On Fri, 30 Mar 2007 02:25:37 -0700
-> > "Ken Chen" <kenchen@google.com> wrote:
-> > 
-> > > -module_param(max_loop, int, 0);
-> > > -MODULE_PARM_DESC(max_loop, "Maximum number of loop devices (1-256)");
-> > 
-> > So..  this change will cause a fatal error for anyone who is presently
-> > using max_loop, won't it?  If they're doing that within their
-> > initramfs/initrd/etc then things could get rather ugly for them.
-> > 
-> > I don't know how much of a problem this will be in practice - do people use
-> > max_loop much?
+On Saturday 31 March 2007 9:53 am, Linus Torvalds wrote:
 > 
-> Yes, the distros do, and they recommend it to their users a lot.
+> On Sat, 31 Mar 2007, Thomas Gleixner wrote:
+> > 
+> > Right, but clock - sources/events need to be extremly late suspended and
+> > early resumed. How can we ensure this ?
+> 
+> Make them be at the top of the device tree by adding them early. That's 
+> the whole point of the device tree after all - we have an ordering that is 
+> enforced by its topology, and that we sort by when things were added.
 
-Thanks.  In that case I think we should retain the max_loop module parameter
-for now.
+Right, but "when things get added" doesn't correlate well to
+"when they should get suspended/resumed".  It's also in basic
+conflict with runtime PM models, where devices may be suspended
+at essentially any time.  And sysdevs are even stranger.
 
-Ken, when you respin that patch could you restore max_loop, and make its
-use trigger a warning along the lines of "loop: the max_loop option is obsolete
-and will be removed in March 2008"?
+
+One way out:  rather than constructing that list as devices get
+enumerated, it could be constructed by a (linear-time, non-recursive)
+walk of the device tree(s) before they get suspended.
+
+(Or equivalently:  construct lists at enumeration time, but just
+adding them *right after their parent* rather than at the end of
+the list.)
+
+Would that solve the problem here?  Potentially ... if the tree is
+structured to meet Thomas' rules:
+
+> > The required resume order is:
+> > 
+> > clocksources
+> > timekeeping
+> > clockevents
+> > tick management
+
+> So the only thing that needs to be done is to make sure that we add the 
+> timer devices early during bootup - something we have to do *anyway*. If a 
+> device is added early in bootup, that automatically means that it will be 
+> suspended late, and resumed early - because we maintain that order all the 
+> way through..
+
+>             -- "clocksource" -- +-- HPET
+>                                 |
+>                                 +-- TSC
+>                                 |
+>                                 +-- i8259
+>                                 |
+>                                 +-- lapic timer
+>                                 |
+>                                 .. whatever else
+
+If each of those were a device node, with "clocksource" suspend/resume
+methods handling Thomas' "timekeeping" item, and simlarly for "clockevent"
+devices ... I could see that all working neatly.
+
+- Dave
+
