@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933571AbXCaDQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbXCaDQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933571AbXCaDQc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 23:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933573AbXCaDQc
+	id S964834AbXCaDQf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 23:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964863AbXCaDQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 23:16:32 -0400
-Received: from gw.goop.org ([64.81.55.164]:41430 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933571AbXCaDQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 23:16:31 -0400
-Message-ID: <460DD28D.2070302@goop.org>
-Date: Fri, 30 Mar 2007 20:16:29 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 0/6] i386 gdt and percpu cleanups
-References: <20070331020042.003398870@goop.org>
-In-Reply-To: <20070331020042.003398870@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Mar 2007 23:16:35 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:60280 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964834AbXCaDQe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 23:16:34 -0400
+Date: Fri, 30 Mar 2007 23:12:52 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH] [PATCH] uml: fix static linking for real
+Message-ID: <20070331031252.GA11746@c2.user-mode-linux.org>
+References: <20070331012027.24884.85252.stgit@americanbeauty.home.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070331012027.24884.85252.stgit@americanbeauty.home.lan>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> This is a series of patches based on your latest queue (as of the
-> other day, at least).
->   
+On Sat, Mar 31, 2007 at 03:20:27AM +0200, Paolo 'Blaisorblade' Giarrusso wrote:
+> There was a typo in commit 7632fc8f809a97f9d82ce125e8e3e579390ce2e5, preventing
+> it from working - 32bit binaries crashed hopelessly before the below fix and
+> work perfectly now.
+> Merge for 2.6.21, please.
 
-BTW, the From: line attributions got dropped from a few of these.  These:
+ACK.
 
-    Allow percpu variables to be page-aligned
-    Page-align the GDT
+	Jeff
 
-should be From: Rusty.  He did most of the work on the others, but I
-changed them enough that he shouldn't be saddled with the blame when
-things break ;)
-
-    J
+-- 
+Work email - jdike at linux dot intel dot com
