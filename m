@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbXCaVFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbXCaVHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752204AbXCaVFc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 17:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbXCaVFc
+	id S1752203AbXCaVHu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 17:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXCaVHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 17:05:32 -0400
-Received: from gw.goop.org ([64.81.55.164]:39542 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbXCaVFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 17:05:31 -0400
-Message-ID: <460ECD13.4000603@goop.org>
-Date: Sat, 31 Mar 2007 14:05:23 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 31 Mar 2007 17:07:50 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:48363 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbXCaVHt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 17:07:49 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 31 Mar 2007 14:07:47 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch 2/13] signal/timer/event fds v9 - signalfd core ...
+In-Reply-To: <Pine.LNX.4.64.0703311325090.22390@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0703311404090.22390@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703311325090.22390@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [2.6 patch] remove the config option for the cs5530a_warm_reset()
- quirk
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org> <20070331205530.GZ14134@stusta.de>
-In-Reply-To: <20070331205530.GZ14134@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Instead of cleaning up this mess, please replace this patch with the 
-> patch below.
->   
+On Sat, 31 Mar 2007, Davide Libenzi wrote:
 
-Yeah, I considered that patch as a placeholder; I'd been wondering if it
-can be completely removed.
+> +config SIGNALFD
+> +	bool "Eanble signalfd() system call" if EMBEDDED
+              ^^^^^^
+Alright ...
 
-But this patch looks fine, though I'd go further - the lookup table of
-pci ids is overkill since it only has one entry (and doesn't look likely
-to grow any more).
 
-    J
+
+- Davide
+
+
