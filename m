@@ -1,87 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933539AbXCaDJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933564AbXCaDM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933539AbXCaDJH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 23:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbXCaDJG
+	id S933564AbXCaDM6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 23:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933573AbXCaDM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 23:09:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:52617 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933539AbXCaDJF (ORCPT
+	Fri, 30 Mar 2007 23:12:57 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:22690 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933564AbXCaDM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 23:09:05 -0400
+	Fri, 30 Mar 2007 23:12:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=n485XYCrmzvJsRexwWrncXaLJkl8ZkHXYmqLxmHdSs8DwXk5kVX1Go+tjPbY6kmPa8tdgUqUvhIwwkI1HR5iiPwdB8qW/hcfZqBD/RGyKeEq8H7R8gfoNMz5DoK2dZQHx41Fc/RL8zOH5cOZNoY9OoZA3typrUj2YiVtL3G1GsA=
-Message-ID: <2375c9f90703302009i28f2f11ayf3e83216f4017c7d@mail.gmail.com>
-Date: Sat, 31 Mar 2007 11:09:03 +0800
-From: "Cong WANG" <xiyou.wangcong@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       jikos@jikos.cz, "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: fs/block_dev.c:953: warning: 'found' might be used uninitialized in this function
-In-Reply-To: <20070330194701.GL14134@stusta.de>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=b2cckzoPqk2X3OqxAD8ai5ATXP5oVYoy1OmhrLjBgjx1JlmkVj03fNotjVqz64Nin2Fd7wYSxC7Sb+pAhEme7Vdk+WddhriuBuGW96AUDH6Kc6OPawaPgx6jvXGxC8G9ch0UpLFycscGuUplYUyiQ4bETRLIyglF7cMt074d+7I=
+Message-ID: <460DD1B0.4080605@gmail.com>
+Date: Sat, 31 Mar 2007 12:12:48 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: gregkh@suse.de, hugh@veritas.com, dmitry.torokhov@gmail.com,
+       oneukum@suse.de, maneesh@in.ibm.com, rpurdie@rpsys.net,
+       James.Bottomley@SteelEye.com, Jeff Garzik <jgarzik@pobox.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       SCSI Mailing List <linux-scsi@vger.kernel.org>
+Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
+References: <460CDBA6.5030608@gmail.com>	<20070330151926.18fc12a0@gondolin.boeblingen.de.ibm.com>	<460D0E78.3040200@gmail.com>	<20070330154042.4c7deb72@gondolin.boeblingen.de.ibm.com>	<460D178F.4000500@gmail.com>	<20070330165251.7beffc7c@gondolin.boeblingen.de.ibm.com>	<460D27E3.2050602@gmail.com> <20070330213101.7aa7babf@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070330213101.7aa7babf@gondolin.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703281847.05356.toralf.foerster@gmx.de>
-	 <75b66ecd0703280956i522cf6cbyc4c9ef8b1666ec15@mail.gmail.com>
-	 <Pine.LNX.4.64.0703281909240.29565@twin.jikos.cz>
-	 <20070328131454.cdb06bc3.akpm@linux-foundation.org>
-	 <46C1CD24-F48E-4EB9-B6A5-E1B3C303C62F@mac.com>
-	 <20070330194701.GL14134@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/3/31, Adrian Bunk <bunk@stusta.de>:
-> On Thu, Mar 29, 2007 at 11:16:39PM -0400, Kyle Moffett wrote:
-> > On Mar 28, 2007, at 16:14:54, Andrew Morton wrote:
-> > >On Wed, 28 Mar 2007 19:23:32 +0200 (CEST)
-> > >Jiri Kosina <jikos@jikos.cz> wrote:
-> > >
-> > >>blockdev: bd_claim_by_kobject() could check value of unititalized
-> > >>pointer
-> > >>
-> > >>Fixes this warning:
-> > >>
-> > >>fs/block_dev.c: In function `bd_claim_by_kobject':
-> > >>fs/block_dev.c:953: warning: 'found' might be used uninitialized
-> > >>in this function
-> > >>
-> > >>struct bd_holder *found is initialized only when bd_claim()
-> > >>returns zero. If it returns nonzero, ptr stays uninitialized.
-> > >>Later the value of the pointer is checked.
-> > >
-> > >that generates extra code and people get upset.
-> > >
-> > >One approach which we could ue in here is
-> > >
-> > >     struct bd_holder *found = found;  /* Suppress bogus gcc warning */
-> >
-> > Well, that would be correct except the warning is an actual kernel
-> > bug.  Read Jiri's message (which you also quoted):
-> > >struct bd_holder *found is initialized only when bd_claim() returns
-> > >zero. If it returns nonzero, ptr stays uninitialized. Later the
-> > >value of the pointer is checked.
-> >
-> > So in this case it has to be initialized to NULL or there's a
-> > potential BUG() lurking.
->
->
-> No, the code is correct and it's impossible that the variable ever gets
-> read uninitialized.
->
-> And BTW, i386 gcc 4.1 doesn't give me a warning for this.
-> Toralf, which gcc version and architecture did you see this with?
->
+Cornelia Huck wrote:
+> On Sat, 31 Mar 2007 00:08:19 +0900,
+> Tejun Heo <htejun@gmail.com> wrote:
+> 
+>> (3) make sure all existing kobjects are released by module exit function.
+>>
+>> For example, let's say there is a hypothetical disk device /dev/dk0
+>> driven by a hypothetical driver mydrv.  /dev/dk0 is represented like the
+>> following in the sysfs tree.
+>>
+>> /sys/devices/pci0000:00/0000:00:1f.0/dk0/{myknob0,myknob1}
+>>
+>> Owner of both attrs myknob0 and myknob1 is mydrv and opening either
+>> increases the reference counts of dk0 and mydrv and closing does the
+>> opposite.
+>>
+>> * When there is no opener of either knob and the /dev/dk0 isn't used by
+>> anyone.  Reference count of dk0 is 1, mydrv 0.
+> 
+> Hm, but as long as dk0 is registered, it can be looked up and someone
+> could get a reference on it.
 
-I am also using i386 gcc 4.1.1, and I did receive many warnings of
-such kind yesterday. I think we should fix them.
+Yeah, exactly.  That's why any getting any kobject reference backed by a
+module must be accompanied by try_module_get().
 
-And the reason for the existence of such things is we just want to use
-them for writing first instead of reading, thus ignore the
-initialization.
+int mydrv_get_dk(struct dk *dk)
+{
+	rc = try_module_get(mydrv);
+	if (rc)
+		return rc;
+	kobject_get(&dk->kobj);
+	return 0;
+}
+
+>> * User issues rmmod mydrv.  As mydrv's reference count is zero, unload
+>> proceeds and mydrv's exit function is called.
+>>
+>> * mydrv's exit function looks like the following.
+>>
+>>   mydrv_exit()
+>>   {
+>> 	sysfs_remove_file(dk0, myknob0);
+>> 	sysfs_remove_file(dk1, myknob1);
+>> 	device_del(dk0);
+>> 	deinit controller;
+>> 	release all resources;
+>>   }
+>>
+>> The device_del(dk0) drops dk0's reference count to zero and its
+>> ->release is invoked immediately.
+> 
+> And here is the problem if someone else still has a reference. The
+> module will be unloaded, but ->release will not be called until the
+> "someone else" gives up the reference...
+
+Exactly, in that case, module reference count must not be zero.  You and
+I are saying the same thing.  Why are we running in circle?
 
 -- 
-So Dark The Con Of Man.
+tejun
