@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751939AbXCaHix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbXCaHji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751939AbXCaHix (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 03:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXCaHix
+	id S1751964AbXCaHji (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 03:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXCaHji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 03:38:53 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39441 "EHLO pasmtpA.tele.dk"
+	Sat, 31 Mar 2007 03:39:38 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39600 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751939AbXCaHiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 03:38:52 -0400
-Date: Sat, 31 Mar 2007 09:39:35 +0200
+	id S1751964AbXCaHjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 03:39:37 -0400
+Date: Sat, 31 Mar 2007 09:40:21 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Jan Beulich <jbeulich@novell.com>, Roman Zippel <zippel@linux-m68k.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] kconfig: factor out code in conf_spilt_config
-Message-ID: <20070331073935.GA11383@uranus.ravnborg.org>
+Subject: [PATCH 2/2] kconfig/kbuild: fix dependency problem
+Message-ID: <20070331074021.GB11383@uranus.ravnborg.org>
 References: <460BA292.76E4.0078.0@novell.com> <20070331064228.GA11023@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,124 +24,59 @@ User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From e9fcc3bf8d1c71df1ae650d5291c5d4b15d71656 Mon Sep 17 00:00:00 2001
+>From bbc89026f3e5d9e437ce4cd26d3013fe226103e2 Mon Sep 17 00:00:00 2001
 From: Sam Ravnborg <sam@neptun.ravnborg.org>
-Date: Sat, 31 Mar 2007 09:15:12 +0200
-Subject: [PATCH] kconfig: factor out code in conf_spilt_config
+Date: Sat, 31 Mar 2007 09:34:46 +0200
+Subject: [PATCH] kconfig/kbuild: fix dependency problem
 
-This patch simply factor out code and
-do not introduce any functional changes.
+Commit 2e3646e51b2d6415549b310655df63e7e0d7a080 changed the way
+the split config tree is built, but failed to also adjust fixdep
+accordingly - if changing a config option from or to m, files
+referencing the respective CONFIG_..._MODULE (but not the
+corresponding CONFIG_...) didn't get rebuilt.
+
+This happens because tristate symbol has three values represented
+by different CONFIG_ symbols:
+
+=n => CONFIG_SYMBOL undefined
+=y => CONFIG_SYMBOL equals 1
+=m => CONFIG_SYMBOL_MODULE equals 1
+
+But conf_split_config did not support the _MODULE syntax
+and therefore no include/config/symbol/module.h file was
+generated/touched when changing a symbol to/from m.
+Thus make did nt pick up the change and rebuild failed.
+
+This patch teaches conf_split_config to support the
+_MODULE variant.
+
+This fixes a problem reported by Randy Dunlap <randy.dunlap@oracle.com>.
+arch/i386/kernel/apm.o revealed this bug.
+Original fix was posted by:  "Jan Beulich" <jbeulich@novell.com>
+which inspired this better fix.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/kconfig/confdata.c |   75 ++++++++++++++++++++++++--------------------
- 1 files changed, 41 insertions(+), 34 deletions(-)
+ scripts/kconfig/confdata.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
 diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 664fe29..ff6b39b 100644
+index ff6b39b..4137961 100644
 --- a/scripts/kconfig/confdata.c
 +++ b/scripts/kconfig/confdata.c
-@@ -533,13 +533,48 @@ int conf_write(const char *name)
- 	return 0;
- }
- 
-+/* Touch the file specified (adding .h to the name) */
-+static int touch_file(const char *file)
-+{
-+	struct stat sb;
-+	int fd;
-+	char *d;
-+	char name[128];
-+
-+	strcpy(name, file);
-+	strcat(name, ".h");
-+
-+	/* Open existing file */
-+	fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-+	if (fd == -1) {
-+		if (errno != ENOENT)
-+			return 1;
-+		/*
-+		 * Create directory components,
-+		 * unless they exist already.
-+		 */
-+		d = name;
-+		while ((d = strchr(d, '/'))) {
-+			*d = 0;
-+			if (stat(name, &sb) && mkdir(name, 0755))
+@@ -646,6 +646,12 @@ int conf_split_config(void)
+ 		*d = '\0';
+ 		if (touch_file(path))
+ 			return 1;
++		/* For tristate symbols we need to touch symbol/module.h too */
++		if (sym->type == S_TRISTATE) {
++			strcat(path, "/module");
++			if (touch_file(path))
 +				return 1;
-+			*d++ = '/';
 +		}
-+		/* Directories created, now create file. */
-+		fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-+		if (fd == -1)
-+			return 1;
-+	}
-+	close(fd);
-+	return 0;
-+}
-+
- int conf_split_config(void)
- {
- 	char *name, path[128];
- 	char *s, *d, c;
- 	struct symbol *sym;
--	struct stat sb;
--	int res, i, fd;
-+	int res, i;
- 
- 	name = getenv("KCONFIG_AUTOCONFIG");
- 	if (!name)
-@@ -601,45 +636,17 @@ int conf_split_config(void)
- 		 *	different from 'no').
- 		 */
- 
--		/* Replace all '_' and append ".h" */
-+		/* Replace all '_' with '/' */
- 		s = sym->name;
- 		d = path;
- 		while ((c = *s++)) {
- 			c = tolower(c);
- 			*d++ = (c == '_') ? '/' : c;
- 		}
--		strcpy(d, ".h");
--
--		/* Assume directory path already exists. */
--		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
--		if (fd == -1) {
--			if (errno != ENOENT) {
--				res = 1;
--				break;
--			}
--			/*
--			 * Create directory components,
--			 * unless they exist already.
--			 */
--			d = path;
--			while ((d = strchr(d, '/'))) {
--				*d = 0;
--				if (stat(path, &sb) && mkdir(path, 0755)) {
--					res = 1;
--					goto out;
--				}
--				*d++ = '/';
--			}
--			/* Try it again. */
--			fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
--			if (fd == -1) {
--				res = 1;
--				break;
--			}
--		}
--		close(fd);
-+		*d = '\0';
-+		if (touch_file(path))
-+			return 1;
  	}
--out:
  	if (chdir("../.."))
  		return 1;
- 
 -- 
 1.5.1.rc3.gaa453
 
