@@ -1,104 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750940AbXCaMuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751545AbXCaM4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750940AbXCaMuZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 08:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbXCaMuZ
+	id S1751545AbXCaM4G (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 08:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXCaM4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 08:50:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:9646 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbXCaMuW (ORCPT
+	Sat, 31 Mar 2007 08:56:06 -0400
+Received: from mexforward.lss.emc.com ([128.222.32.20]:36954 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbXCaM4F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 08:50:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=XDNG8NjxlEQ73KxE0do8jpc0nYjDEsiLAdS6Dwv6yGkgy669BNVCCQQtjC2pxn/dcNm/vfidP0F0UlBXbKEbbywSgj0Z4+YADE0WF7k01QsXvUCneopkheM9M4WoClBOqa0bVFsH14I6Ds9wcK1tD2H/+a/roX5RPLDjK/UIkUA=
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Subject: Re: [RFC] rfkill - Add support for input key to control wireless radio
-Date: Sat, 31 Mar 2007 14:49:39 +0200
-User-Agent: KMail/1.9.5
-Cc: "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "John Linville" <linville@tuxdriver.com>, "Jiri Benc" <jbenc@suse.cz>,
-       "Lennart Poettering" <lennart@poettering.net>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Larry Finger" <Larry.Finger@lwfinger.net>
-References: <200612031936.34343.IvDoorn@gmail.com> <200703301913.57656.IvDoorn@gmail.com> <d120d5000703301137m7ba7e3e4xb18aad1d1fc7c052@mail.gmail.com>
-In-Reply-To: <d120d5000703301137m7ba7e3e4xb18aad1d1fc7c052@mail.gmail.com>
+	Sat, 31 Mar 2007 08:56:05 -0400
+Message-ID: <460E5A51.7010601@emc.com>
+Date: Sat, 31 Mar 2007 08:55:45 -0400
+From: Ric Wheeler <ric@emc.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mark Rustad <mrustad@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: Why is NCQ enabled by default by libata? (2.6.20)
+References: <Pine.LNX.4.64.0703241232580.11608@p34.internal.lan> <4608B2B9.7090503@garzik.org> <ACBD2F44-03C7-49BE-9A2F-ABF7078BCC5E@gmail.com> <460964BA.8090101@garzik.org> <711F1620-F483-4CC2-83D6-F2DD577AB5BB@gmail.com>
+In-Reply-To: <711F1620-F483-4CC2-83D6-F2DD577AB5BB@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703311449.40022.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.3.31.52133
+X-PerlMx-Spam: Gauge=, SPAM=1%, Reason='EMC_FROM_0+ -3, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Well in drivers/net are the network drivers but not the irda and bluetooth drivers,
-> > those are located in different folders in drivers/ so I think misc would be the most
-> > suitable location.
-> 
-> We could also consider the ./net itself. rfkill is not a driver, it is
-> a facility.
 
-True, in that case ./net would be good.
 
-> > > Does this make sense?
-> >
-> > Yes, but what if the user loads both modules or has them both compiled in?
-> > Shouldn't there be some protection against that, since both handlers should not
-> > be active at the same time.
-> 
-> Why not? evdev is just a delivery transport for input events to
-> userspace. Even if user wants the kernel to control state of RF
-> switches (which I expect most users woudl want) there still could be
-> applications interested in knowing that used turned off wireless. And
-> if userspace really wishes to control switch all by itself it can
-> "claim" it.
+Mark Rustad wrote:
+> On Mar 27, 2007, at 1:38 PM, Jeff Garzik wrote:
+>
+>> Mark Rustad wrote:
+>>> reorder any queued operations. Of course if you really care about 
+>>> your data, you don't really want to turn write cache on.
+>>
+>> That's a gross exaggeration.  FLUSH CACHE and FUA both ensure data 
+>> integrity as well.
+>>
+>> Turning write cache off has always been a performance-killing action 
+>> on ATA.
+>
+> Perhaps. Folks I work with would disagree with that, but I am not 
+> enough of a storage expert to judge. My statement mirrors the 
+> judgement of folks I work with that know more than I do.
 
-Right, I forgot about that user_claim thingy. ;)
+You can easily demonstrate that disabling write cache on a S-ATA or ATA 
+drive will drop your large file write performance by 50% - just try 
+writing 10MB files to disk. 
 
-> I guess what you are missing is that input event generated by a device
-> is pushed through every handler bound to the device so there is no way
-> for a "wrong" handler to "steals" an event from "right" handler. They
-> all work simultaneously.
-> 
-> > > > personally I would prefer enforcing drivers to call
-> > > > allocate()
-> > > > register()
-> > > > unregister()
-> > > > free()
-> > > >
-> > > > Especially with unregister() doing the same steps as free() (put_device)
-> > > > might be somwhat confusing. But might be just me. ;)
-> > > >
-> > >
-> > > I know but for refcounted objects you can't really tell when they will
-> > > actually be freed. It depends when their last user drops off.
-> >
-> > Then perhaps rfkill_register could call put_device() when it fails, and free()
-> > can be removed entirely. That way it would we prevent some driver
-> > to call free() anyway.
-> >
-> 
-> That would make error handling in ->probe() methods a bit unwieldy I
-> think - if you are using the standard "goto err_xxx; goto err_yyy;"
-> technique then you have to conditionally call rfkill_free(). Hovewer
-> if register simply fails and does not free anything and you call
-> rfkill_register() last (which you need to do because driver has to be
-> almost fully functional to be able to serve toggle_radio calls) you
-> can always call rfkill_free() if something fails.
+ric
 
-Ok.
 
-Well that would mean rfkill would be ready to applied to one of the kernel trees right? :)
-The first user of rfkill would be rt2x00, which is in wireless-dev as well as -mm.
-The second user could be the driver from Lennart, but I haven't heard from him quite a while
-(although he is on the CC list) so I am not sure if his MSI driver can be fixed to use rfkill. His MSI
-driver is already in the linus' tree.
-A third user could be bcm43xx but I don't know how far they are with hardware key detection and
-status reading (to make it work with rfkill), perhaps Larry could give more information about that.
-
-Ivo
