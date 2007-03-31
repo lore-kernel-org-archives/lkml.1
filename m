@@ -1,91 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbXCaIFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbXCaILH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbXCaIFi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 04:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbXCaIFh
+	id S1752357AbXCaILH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 04:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbXCaILH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 04:05:37 -0400
-Received: from h80ad2689.async.vt.edu ([128.173.38.137]:38900 "EHLO
-	h80ad2689.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752262AbXCaIFe (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 04:05:34 -0400
-Message-Id: <200703310805.l2V85PA4004332@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.21-rc5-mm3 - cpuidle, acpi, and C-states
-In-Reply-To: Your message of "Fri, 30 Mar 2007 01:05:59 PDT."
-             <20070330010559.2a232d9a.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175328325_3891P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sat, 31 Mar 2007 04:11:07 -0400
+Received: from gw.goop.org ([64.81.55.164]:34983 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752361AbXCaILF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 04:11:05 -0400
+Message-ID: <460E1796.2070607@goop.org>
+Date: Sat, 31 Mar 2007 01:11:02 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] VMI paravirt-ops bugfix for 2.6.21
+References: <460E1FC7.5030107@vmware.com>
+In-Reply-To: <460E1FC7.5030107@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Sat, 31 Mar 2007 04:05:25 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175328325_3891P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <4319.1175328312.1@turing-police.cc.vt.edu>
+Zachary Amsden wrote:
+> Critical bugfix; when using software RAID, potentially USB or AIO in
+> highmem configurations, drivers are allowed to use kmap_atomic from
+> interrupt context.  This is incompatible with the current implementation
+> of lazy MMU mode, and means the kmap will silently fail, causing either
+> memory corruption or kernel panics.  This bug is only visible with >970
+> megs of RAM and extreme memory pressure, but nontheless extremely serious.
+>   
 
-On Fri, 30 Mar 2007 01:05:59 PDT, Andrew Morton said:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/
+Why's that?  Don't some things get preferentially allocated out of highmem?
 
-Somebody is confused (possibly me).  Running an x86_64 kernel, and I have:
+> The fix is to disable interrupts on the CPU when entering a lazy MMU
+> state; this is totally safe, as preemption is already disabled, and
+> lazy update state can neither be nested nor overlapping.  Thus per-cpu
+> variables to track the state and flags can be used to disable interrupts
+> during this critical region.
+>
+> Signed-off-by: Zachary Amsden <zach@vmware.com>
+>
+> diff -r be8c61492e28 arch/i386/kernel/vmi.c
+> --- a/arch/i386/kernel/vmi.c	Fri Mar 30 14:13:45 2007 -0700
+> +++ b/arch/i386/kernel/vmi.c	Fri Mar 30 14:18:16 2007 -0700
+> @@ -69,6 +69,7 @@ struct {
+>  	void (*flush_tlb)(int);
+>  	void (*set_initial_ap_state)(int, int);
+>  	void (*halt)(void);
+> + 	void (*set_lazy_mode)(int mode);
+>  } vmi_ops;
+>  
+>  /* XXX move this to alternative.h */
+> @@ -574,6 +575,31 @@ vmi_startup_ipi_hook(int phys_apicid, un
+>  }
+>  #endif
+>  
+> +static void vmi_set_lazy_mode(int new_mode)
+> +{
+> +	static DEFINE_PER_CPU(int, mode);
+> +	static DEFINE_PER_CPU(unsigned long, flags);
+> +	int cpu = smp_processor_id();
+> +
+> +	if (!vmi_ops.set_lazy_mode)
+> +		return;
+> +
+> +	/*
+> +	 * Modes do not nest or overlap, so we can simply disable
+> +	 * irqs when entering a mode and re-enable when leaving.
+> +	 */
+> +	BUG_ON(per_cpu(mode, cpu) && new_mode);
+> +	BUG_ON(!new_mode && !per_cpu(mode, cpu));
+>   
 
-% cat /proc/acpi/processor/CPU0/power
-active state:            C0
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 2000 usec
-states:
-    C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000003] duration[00000000000000000000]
-    C2:                  type[C2] promotion[--] demotion[--] latency[001] usage[00166266] duration[00000000000000000000]
-    C3:                  type[C3] promotion[--] demotion[--] latency[057] usage[02045938] duration[00000000000000000000]
+It's probably better to use __get_cpu_var() rather than per_cpu(X,
+smp_processor_id());  It's a real pity there's no ^^ operator...
 
-Wow. Lots of zeros in that last column..
+> +	
+> +	if (new_mode)
+> +		local_irq_save(per_cpu(flags, cpu));
+> +	else
+> +		local_irq_restore(per_cpu(flags, cpu));
+>   
 
-The 'duration' is output by this code in drivers/acpi/processor_idle.c that
-thinks the value is an 'unsigned long long':
+The comment only talks about disabling interrupts for lazy_mmu, but this
+seems to do it for lazy_cpu as well.  Is that OK?  What happens if
+someone wants to change interrupt states under lazy_cpu; I can't think
+of an inherent reason why that wouldn't be allowed (though I don't think
+it happens now).
 
-                seq_printf(seq, "latency[%03d] usage[%08d] duration[%020llu]\n",
-                           pr->power.states[i].latency,
-                           pr->power.states[i].usage,
-                           (unsigned long long)pr->power.states[i].time);
+This kind of logic is a bit clunky anyway; would it be better to simply
+have separate enable/disable functions?  Or at least separate functions
+per mode?
 
-However, over in /sys, we have non-zero values for the usage/time:
+Anyway,
 
-%  cat /sys/devices/system/cpu/cpu0/cpuidle/state?/time
-0
-110861364
--2091818383
+Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-That's because in drivers/cpuidle/sysfs.c, we have this code that thinks
-a %d is suitable to output that number:
-
-#define define_show_state_function(_name) static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) { \     
-        return sprintf(buf, "%d\n", state->_name);\
-}
-...
-define_one_state_ro(time, show_state_time);
-
-But the negative number for state2/time indicates that *this* isn't right either....
-
---==_Exmh_1175328325_3891P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGDhZFcC3lWbTT17ARAi7nAKDlvwYnzkMxorBXocNDcxNlJrwYcACgtz/M
-0Ua/ABwYIxF9srL0V/wVNeQ=
-=iu39
------END PGP SIGNATURE-----
-
---==_Exmh_1175328325_3891P--
+    J
