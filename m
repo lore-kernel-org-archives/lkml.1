@@ -1,64 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbXCaQ77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbXCaRBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbXCaQ77 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 12:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbXCaQ77
+	id S1753400AbXCaRBR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 13:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbXCaRBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 12:59:59 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:56420 "EHLO smtp.osdl.org"
+	Sat, 31 Mar 2007 13:01:17 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:50721 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbXCaQ75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 12:59:57 -0400
-Date: Sat, 31 Mar 2007 09:53:43 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-In-Reply-To: <1175358800.28263.36.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> 
- <460BBD1B.4040308@ru.mvista.com>  <200703291531.18253.maximlevitsky@gmail.com>
-  <200703291546.48996.maximlevitsky@gmail.com>  <1175356272.28263.27.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0703310908160.6730@woody.linux-foundation.org>
- <1175358800.28263.36.camel@localhost.localdomain>
+	id S1753400AbXCaRBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 13:01:16 -0400
+Date: Sun, 1 Apr 2007 01:57:58 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: updated list of "dead" Makefile CONFIG_ variables
+Message-ID: <20070331165758.GA19727@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0703310552560.26371@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703310552560.26371@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 31, 2007 at 06:12:01AM -0400, Robert P. J. Day wrote:
+> ===== SH_KGDB =====
+> ./arch/sh/kernel/Makefile:obj-$(CONFIG_SH_KGDB)         += kgdb_stub.o kgdb_jmp.o
+> ./arch/sh/Makefile:cflags-$(CONFIG_SH_KGDB)             += -g
 
-
-On Sat, 31 Mar 2007, Thomas Gleixner wrote:
-> 
-> Right, but clock - sources/events need to be extremly late suspended and
-> early resumed. How can we ensure this ?
-
-Make them be at the top of the device tree by adding them early. That's 
-the whole point of the device tree after all - we have an ordering that is 
-enforced by its topology, and that we sort by when things were added.
-
-Right now the way things work is (iirc - somebody like Greg should 
-double-check me) is that we add all devices to the power list at 
-device_add() time by traversing the devices fromt he root all the way out, 
-and doing a device_add() which does a device_pm_add(), which in turn adds 
-it to the power-management list - so that the list is always topologically 
-sorted.
-
-So the only thing that needs to be done is to make sure that we add the 
-timer devices early during bootup - something we have to do *anyway*. If a 
-device is added early in bootup, that automatically means that it will be 
-suspended late, and resumed early - because we maintain that order all the 
-way through..
-
-		Linus
+These are fixed in my 2.6.22 queue.
