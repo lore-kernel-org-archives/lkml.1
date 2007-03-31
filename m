@@ -1,62 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXCaKn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbXCaK47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbXCaKn4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 06:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbXCaKn4
+	id S1752871AbXCaK47 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 06:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbXCaK47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 06:43:56 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:55256 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752841AbXCaKnz (ORCPT
+	Sat, 31 Mar 2007 06:56:59 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:60479 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752871AbXCaK46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 06:43:55 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Sat, 31 Mar 2007 06:43:13 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Andreas Schwab <schwab@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: updated list of "dead" Makefile CONFIG_ variables
-In-Reply-To: <je1wj51yyi.fsf@sykes.suse.de>
-Message-ID: <Pine.LNX.4.64.0703310642360.1381@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0703310552560.26371@CPE00045a9c397f-CM001225dbafb6>
- <je1wj51yyi.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sat, 31 Mar 2007 06:56:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=N0ImqVDi48wjIEnYifjXpAblHf1ZYILZ0RsAi+DN1Jc+wqJRLQvHDzsa6BghPbBo3xnwSDHaNzoJOuin5h1d7B22e1tk5/5nmEIQLl9OYLN2a1wEExoP1f8nanSZYBGGumB/UaOs1qWYdy967mzpyqGZPoww/LxH5SPRhGkENUk=
+Date: Sat, 31 Mar 2007 16:27:46 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       parisc-linux@lists.parisc-linux.org
+Subject: [KJ][PATCH] ROUND_?UP macro cleanup in drivers/parisc
+Message-ID: <20070331105746.GA14572@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Mar 2007, Andreas Schwab wrote:
+Clean up ROUND_?UP, Use ALIGN where ever appropriate.
 
-> "Robert P. J. Day" <rpjday@mindspring.com> writes:
->
-> > ===== MACHINE =====
-> > ./arch/ppc/boot/simple/Makefile:# zimage-$(CONFIG_MACHINE) and zimagerd-$(CONFIG_MACHINE) to the target
-> > ./arch/ppc/boot/simple/Makefile:# that produces the desired image and they must set end-$(CONFIG_MACHINE)
-> > ./arch/ppc/boot/simple/Makefile:# than 'zImage.elf', set end-$(CONFIG_MACHINE) to be the suffix used for
-> > ./arch/ppc/boot/simple/Makefile:# set entrypoint-$(CONFIG_MACHINE) to the location which the image should be
-> > ./arch/ppc/boot/simple/Makefile:# loaded at.  The optimal setting for entrypoint-$(CONFIG_MACHINE) is the link
-> > ./arch/ppc/boot/simple/Makefile:# misc-$(CONFIG_MACHINE) variable.
->
-> That looks like a meta variable.  It's only a comment anyway.
->
-> Andreas.
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-whoops, my bad, i totally missed that.  ack.  time to refine the
-script, methinks.
+---
+ ccio-dma.c      |    8 ++++----
+ iommu-helpers.h |    4 ++--
+ sba_iommu.c     |    6 ++----
+ 3 files changed, 8 insertions(+), 10 deletions(-)
 
-rday
+
+
+diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
+index 894fdb9..1459ca8 100644
+--- a/drivers/parisc/ccio-dma.c
++++ b/drivers/parisc/ccio-dma.c
+@@ -32,6 +32,7 @@
+ */
+ 
+ #include <linux/types.h>
++#include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/spinlock.h>
+@@ -292,7 +293,6 @@ static int ioc_count;
+ #define PDIR_INDEX(iovp)    ((iovp)>>IOVP_SHIFT)
+ #define MKIOVP(pdir_idx)    ((long)(pdir_idx) << IOVP_SHIFT)
+ #define MKIOVA(iovp,offset) (dma_addr_t)((long)iovp | (long)offset)
+-#define ROUNDUP(x,y) ((x + ((y)-1)) & ~((y)-1))
+ 
+ /*
+ ** Don't worry about the 150% average search length on a miss.
+@@ -668,7 +668,7 @@ ccio_mark_invalid(struct ioc *ioc, dma_addr_t iova, size_t byte_cnt)
+ 	size_t saved_byte_cnt;
+ 
+ 	/* round up to nearest page size */
+-	saved_byte_cnt = byte_cnt = ROUNDUP(byte_cnt, IOVP_SIZE);
++	saved_byte_cnt = byte_cnt = ALIGN(byte_cnt, IOVP_SIZE);
+ 
+ 	while(byte_cnt > 0) {
+ 		/* invalidate one page at a time */
+@@ -751,7 +751,7 @@ ccio_map_single(struct device *dev, void *addr, size_t size,
+ 	offset = ((unsigned long) addr) & ~IOVP_MASK;
+ 
+ 	/* round up to nearest IOVP_SIZE */
+-	size = ROUNDUP(size + offset, IOVP_SIZE);
++	size = ALIGN(size + offset, IOVP_SIZE);
+ 	spin_lock_irqsave(&ioc->res_lock, flags);
+ 
+ #ifdef CCIO_MAP_STATS
+@@ -814,7 +814,7 @@ ccio_unmap_single(struct device *dev, dma_addr_t iova, size_t size,
+ 
+ 	iova ^= offset;        /* clear offset bits */
+ 	size += offset;
+-	size = ROUNDUP(size, IOVP_SIZE);
++	size = ALIGN(size, IOVP_SIZE);
+ 
+ 	spin_lock_irqsave(&ioc->res_lock, flags);
+ 
+diff --git a/drivers/parisc/iommu-helpers.h b/drivers/parisc/iommu-helpers.h
+index 38d9e1a..0a1f99a 100644
+--- a/drivers/parisc/iommu-helpers.h
++++ b/drivers/parisc/iommu-helpers.h
+@@ -138,7 +138,7 @@ iommu_coalesce_chunks(struct ioc *ioc, struct scatterlist *startsg, int nents,
+ 			** exceed DMA_CHUNK_SIZE if we coalesce the
+ 			** next entry.
+ 			*/   
+-			if(unlikely(ROUNDUP(dma_len + dma_offset + startsg->length,
++			if(unlikely(ALIGN(dma_len + dma_offset + startsg->length,
+ 					    IOVP_SIZE) > DMA_CHUNK_SIZE))
+ 				break;
+ 
+@@ -158,7 +158,7 @@ iommu_coalesce_chunks(struct ioc *ioc, struct scatterlist *startsg, int nents,
+ 		** Allocate space for DMA stream.
+ 		*/
+ 		sg_dma_len(contig_sg) = dma_len;
+-		dma_len = ROUNDUP(dma_len + dma_offset, IOVP_SIZE);
++		dma_len = ALIGN(dma_len + dma_offset, IOVP_SIZE);
+ 		sg_dma_address(contig_sg) =
+ 			PIDE_FLAG 
+ 			| (iommu_alloc_range(ioc, dma_len) << IOVP_SHIFT)
+diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
+index 76a29da..7d83d9f 100644
+--- a/drivers/parisc/sba_iommu.c
++++ b/drivers/parisc/sba_iommu.c
+@@ -113,8 +113,6 @@ module_param(sba_reserve_agpgart, int, 1);
+ MODULE_PARM_DESC(sba_reserve_agpgart, "Reserve half of IO pdir as AGPGART");
+ #endif
+ 
+-#define ROUNDUP(x,y) ((x + ((y)-1)) & ~((y)-1))
+-
+ 
+ /************************************
+ ** SBA register read and write support
+@@ -352,7 +350,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted)
+ 		** SBA HW features in the unmap path.
+ 		*/
+ 		unsigned long o = 1 << get_order(bits_wanted << PAGE_SHIFT);
+-		uint bitshiftcnt = ROUNDUP(ioc->res_bitshift, o);
++		uint bitshiftcnt = ALIGN(ioc->res_bitshift, o);
+ 		unsigned long mask;
+ 
+ 		if (bitshiftcnt >= BITS_PER_LONG) {
+@@ -779,7 +777,7 @@ sba_unmap_single(struct device *dev, dma_addr_t iova, size_t size,
+ 	offset = iova & ~IOVP_MASK;
+ 	iova ^= offset;        /* clear offset bits */
+ 	size += offset;
+-	size = ROUNDUP(size, IOVP_SIZE);
++	size = ALIGN(size, IOVP_SIZE);
+ 
+ 	spin_lock_irqsave(&ioc->res_lock, flags);
+ 
+
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Milind Arun Choudhary
