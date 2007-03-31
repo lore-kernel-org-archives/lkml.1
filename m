@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbXCaWpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbXCaXBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752665AbXCaWpQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 18:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXCaWpQ
+	id S1752661AbXCaXBA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 19:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXCaXBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 18:45:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48912 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752665AbXCaWpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 18:45:14 -0400
-Date: Sat, 31 Mar 2007 15:43:18 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: dtor@insightbb.com, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, stuard_hayes@dell.com, zaitcev@redhat.com
-Subject: Re: usb hid: reset NumLock
-Message-Id: <20070331154318.05724805.zaitcev@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0703312122100.6040@jikos.suse.cz>
-References: <20070330105924.01a16dd6.zaitcev@redhat.com>
-	<Pine.LNX.4.64.0703312122100.6040@jikos.suse.cz>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 31 Mar 2007 19:01:00 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:42714 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752661AbXCaXA7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 19:00:59 -0400
+Date: Sun, 01 Apr 2007 00:58:30 +0200
+Message-Id: <1712880100@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: blaisorblade@yahoo.it, jdike@addtoit.com
+Subject: [RFC] UML kernel & rootfs bundle with every kernel release ?
+Organization: http://freemail.web.de/
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Mar 2007 21:35:19 +0200 (CEST), Jiri Kosina <jkosina@suse.cz> wrote:
-> On Fri, 30 Mar 2007, Pete Zaitcev wrote:
+Hello !
 
-> I think I see an issue here. Imagine that you boot a system initially with 
-> one keyboard connected (usb, ps/2, doesn't matter), and after some time 
-> you connect second USB keyboard (the NumLock is 'on' on the first keyboard 
-> when you connect the second one).
-> 
-> Without your patch, the NumLock led will be OK on the second keyboard 
-> immediately. With your patch, the NumLock will be forced to 'off' and it 
-> will be out of sync with the first keyboard. The leds will get in sync 
-> later when any change occurs. 
+i`m not very much into UML for the last months, but while playing around with dm-loop i just got one idea i`d like to share.
 
-Oh, right, I missed it. The difficulty is how I rely on usages and fields
-being already mapped by hidinput_configure_usage(). Thanks for letting me
-know, I'll think about it.
+Whenever you want to test some new kernel (feature), you may put you main system at risk, exactly know what you`re doing - or - use UserModeLinux.
 
--- Pete
+The "problem" with UML is:
+
+- you needs to compile an UML kernel first.
+- you needs some "basic" knowlege about UML to get things running.
+- you need to create an appropriate filesystem image for UML - or find some for download
+- you need to copy appropriate kernel modules inside
+- you need to put kernel sources inside, have compiler......
+- you may need appropriate modle-init-tools,initrd, kernel specific tools (updated dmsetup, updated....whatever)
+
+in short: 
+it`s quite some work to be done to have your uml 2.6.21 with root-fs up and running and working cleanly.
+whenever i search the net for some appropriate UML fs image, those i find are very often old and outdated...
+
+is there a project/website which is offering such ready to run "UML kernel+rootfs release bundles" for download (i.e. new kernel,generic  root-fs, modules inside, sources inside, compiler inside - in sync with the latest stable vanilla) , or , would it make sense to establish such project ?
+i.e. besides releasing the kernel, also releasing sort of a kernel "runtime kit" and/or "devkit" ?
+
+i think this could be very helpful for linux-kernel, because it could be tested by more people more quickly, more easily and thus, more often.
+just download, do few steps for setup, start up that virtual machine and there you go testing, hacking into the sources, do all that things you never would do on your main system,  whatever....
+
+it would probably also add benefit to UML itself.
+
+does this sound dumb? i don`t know, so please comment.
+
+regards
+roland
+
+PS:
+ok, this would be some 500M to 1G download, but there`s lot`s of bandwidth today - and P2P/Bittorrent.....
+_______________________________________________________________
+SMS schreiben mit WEB.DE FreeMail - einfach, schnell und
+kostenguenstig. Jetzt gleich testen! http://f.web.de/?mc=021192
+
