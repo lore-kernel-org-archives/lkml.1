@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbXCaORa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbXCaOWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753108AbXCaORa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 10:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXCaORa
+	id S1753122AbXCaOWN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 10:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbXCaOWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 10:17:30 -0400
-Received: from smtp009.mail.ukl.yahoo.com ([217.12.11.63]:26656 "HELO
-	smtp009.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753108AbXCaORM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 10:17:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jvJa3YpS3KOzEkeVMFCuDJmltpbz+DqQEaM2ZFdZ7qcxyuflxbIPVq1nJJfQb8Vu4QFC25/fyW+P+59y8YMw3rrq1knT1CGTearwL9lLNfUPwOe64nLvOYrFlQ9zN71F4fRHyT+385OOdeiUCVBTNQLTauSuAATjBOt6O9FV9PE=  ;
-X-YMail-OSG: Fg2_U0sVM1lfOS9Fh8klpKxr7Xo8xGLv4iCdGkh3bVp3DyZiYpKF.3mtJ4hfULXrPMJhn4m0diuAnQGgxuWiSibXlsUgtjLBG.G890KWYfoTGaAC
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: Jeff Dike <jdike@addtoit.com>
-Subject: Re: [uml-devel] [PATCH] UML - fix I/O hang when multiple devices are in use
-Date: Sat, 31 Mar 2007 16:17:08 +0200
-User-Agent: KMail/1.9.6
-Cc: user-mode-linux-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20070328020247.GA12299@c2.user-mode-linux.org> <200703290236.44324.blaisorblade@yahoo.it> <20070329182920.GB8065@c2.user-mode-linux.org>
-In-Reply-To: <20070329182920.GB8065@c2.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703311617.09082.blaisorblade@yahoo.it>
+	Sat, 31 Mar 2007 10:22:13 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:38413 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753109AbXCaOWM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 10:22:12 -0400
+Subject: Re: [PATCH 1/4] [SCSI]stex: fix id mapping issue
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Ed Lin <ed.lin@promise.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, jeff <jeff@garzik.org>,
+       promise_linux <promise_linux@promise.com>
+In-Reply-To: <NONAMEBZNuIkdg0MZMt000005d3@nonameb.ptu.promise.com>
+References: <NONAMEBZNuIkdg0MZMt000005d3@nonameb.ptu.promise.com>
+Content-Type: text/plain
+Date: Sat, 31 Mar 2007 09:22:08 -0500
+Message-Id: <1175350928.3760.55.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On giovedì 29 marzo 2007, Jeff Dike wrote:
-> On Thu, Mar 29, 2007 at 02:36:43AM +0200, Blaisorblade wrote:
-> > > Sometimes you need to. I'd probably just remove the do_ubd check and
-> > > always recall the request function when handling completions, it's
-> > > easier and safe.
->
-> If I'm understanding this correctly, this is what happens now.  There
-> is still the flag check and return if the queue is being run, but I
-> don't see the advantage of removing that.
-Possibly he just didn't understood what do_ubd was for, maybe there's some 
-technical reason.
+On Fri, 2007-03-30 at 15:21 -0700, Ed Lin wrote:
+> The internal id/lun mapping of st_vsc and st_vsc1 controllers is different
+> from st_shasta. The original driver code can only  map first 16 'entities'
+> for st_vsc and st_vsc1 while there are actually 128 available.
+> 
+> Also the  ST_MAX_LUN_PER_TARGET should be 8, although this can do
+> no harm because inquiries beyond boundary are discarded by firmware.
+> 
+> The correct internal mapping should be:
+> id:0~15, lun:0~7 (st_shasta)
+> id:0, lun:0~127 (st_yosemite)
+> id:0~127, lun:0 (st_vsc and st_vsc1)
+> To scsi mid layer they are all channel:0~7, id:0~15, lun:0, with a maximun
+> 'entity' number of 128. The RAID console only interfaces to scsi mid layer
+> and is always mapped at channel:0, id:16, lun:0.
 
-> That's a lot of mapping and unmapping though.  I wonder if just
-> calling mmap would cause the COWed page to be dropped...
-Yes, it would.
--- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
+I'm with Christoph here ... if we're going to break the backwards
+compatibility of the mappings (which your code does) then we could just
+dump channel and use the SCSI id and lun directly.
+
+Understanding this code is predicated on this quirky definition in
+stex_queuecommand:
+
+	id = cmd->device->id;
+	lun = cmd->device->channel; /* firmware lun issue work around */
+                           ^^^^^^^
+
+> @ -645,12 +645,16 @@ stex_queuecommand(struct scsi_cmnd *cmd,
+>  
+>  	req = stex_alloc_req(hba);
+>  
+> -	if (hba->cardtype == st_yosemite) {
+> -		req->lun = lun * (ST_MAX_TARGET_NUM - 1) + id;
+
+This looks to be correct, it goes up id 0 to ST_MAX_TARGET_NUM -1 then
+takes the next channel.
+
+> -		req->target = 0;
+> -	} else {
+> +	if (hba->cardtype == st_shasta) {
+>  		req->lun = lun;
+>  		req->target = id;
+> +	} else if (hba->cardtype == st_yosemite){
+> +		req->lun = id * ST_MAX_LUN_PER_TARGET + lun;
+> +		req->target = 0;
+> +	} else {
+> +		/* st_vsc and st_vsc1 */
+> +		req->lun = 0;
+> +		req->target = id * ST_MAX_LUN_PER_TARGET + lun;
+
+These both look to be wrong.  You're taking the channel as the lowest
+common denominator, so your first target is on channel 1 id 0, your next
+on channel 2, id 0 and so on.  That's really going to mess with the
+ordering (which will be user visible) is that really what you want?
+
+James
+
+
