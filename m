@@ -1,223 +1,803 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbXCaUOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750948AbXCaU1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751959AbXCaUOH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 16:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbXCaUOG
+	id S1750948AbXCaU1L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 16:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXCaU1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 16:14:06 -0400
-Received: from smtpout08-04.prod.mesa1.secureserver.net ([64.202.165.12]:60623
-	"HELO smtpout08.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1752431AbXCaUOD (ORCPT
+	Sat, 31 Mar 2007 16:27:10 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:48258 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751024AbXCaU1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 16:14:03 -0400
-Message-ID: <460EC109.5070300@seclark.us>
-Date: Sat, 31 Mar 2007 16:14:01 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Sat, 31 Mar 2007 16:27:08 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 31 Mar 2007 13:27:05 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [patch 2/13] signal/timer/event fds v9 - signalfd core ...
+Message-ID: <Pine.LNX.4.64.0703311325090.22390@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.21-rc5 from fc7-rc2 problems
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I have just tried booting the fc7-rc2 live cd on 2 of my laptops and it 
-failed on both.
+This patch series implements the new signalfd() system call.
+I took part of the original Linus code (and you know how
+badly it can be broken :), and I added even more breakage ;)
+Signals are fetched from the same signal queue used by the process,
+so signalfd will compete with standard kernel delivery in dequeue_signal().
+If you want to reliably fetch signals on the signalfd file, you need to
+block them with sigprocmask(SIG_BLOCK).
+This seems to be working fine on my Dual Opteron machine. I made a quick 
+test program for it:
 
-Laptop 1 is an asus vbi s96f that get a panic that says exception in 
-interrupt routine
-for my rtl8139.
+http://www.xmailserver.org/signafd-test.c
 
-This device works fine in 2.6.20.2
-$ lspci -v
-00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 
-945GT Express Memory Controller Hub (rev 03)
-        Subsystem: Intel Corporation Mobile 945GM/PM/GMS/940GML and 
-945GT Express Memory Controller Hub
-        Flags: bus master, fast devsel, latency 0
-        Capabilities: <access denied>
+The signalfd() system call implements signal delivery into a file 
+descriptor receiver. The signalfd file descriptor if created with the 
+following API:
 
-00:02.0 VGA compatible controller: Intel Corporation Mobile 
-945GM/GMS/940GML Express Integrated Graphics Controller (rev 03) 
-(prog-if 00 [VGA])
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1252
-        Flags: bus master, fast devsel, latency 0, IRQ 16
-        Memory at feb80000 (32-bit, non-prefetchable) [size=512K]
-        I/O ports at ec00 [size=8]
-        Memory at d0000000 (32-bit, prefetchable) [size=256M]
-        Memory at feb40000 (32-bit, non-prefetchable) [size=256K]
-        Capabilities: <access denied>
+int signalfd(int ufd, const sigset_t *mask, size_t masksize);
 
-00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/940GML 
-Express Integrated Graphics Controller (rev 03)
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1252
-        Flags: bus master, fast devsel, latency 0
-        Memory at fea80000 (32-bit, non-prefetchable) [size=512K]
-        Capabilities: <access denied>
+The "ufd" parameter allows to change an existing signalfd sigmask, w/out 
+going to close/create cycle (Linus idea). Use "ufd" == -1 if you want a 
+brand new signalfd file.
+The "mask" allows to specify the signal mask of signals that we are 
+interested in. The "masksize" parameter is the size of "mask".
+The signalfd fd supports the poll(2) and read(2) system calls. The poll(2)
+will return POLLIN when signals are available to be dequeued. As a direct
+consequence of supporting the Linux poll subsystem, the signalfd fd can use
+used together with epoll(2) too.
+The read(2) system call will return a "struct signalfd_siginfo" structure
+in the userspace supplied buffer. The return value is the number of bytes
+copied in the supplied buffer, or -1 in case of error. The read(2) call
+can also return 0, in case the sighand structure to which the signalfd
+was attached, has been orphaned. The O_NONBLOCK flag is also supported, and
+read(2) will return -EAGAIN in case no signal is available.
+If the size of the buffer passed to read(2) is lower than
+sizeof(struct signalfd_siginfo), -EINVAL is returned. A read from the
+signalfd can also return -ERESTARTSYS in case a signal hits the process.
+The format of the struct signalfd_siginfo is, and the valid fields depends
+of the (->code & __SI_MASK) value, in the same way a struct siginfo would:
 
-00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High 
-Definition Audio Controller (rev 02)
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1343
-        Flags: bus master, fast devsel, latency 0, IRQ 16
-        Memory at feb38000 (64-bit, non-prefetchable) [size=16K]
-        Capabilities: <access denied>
-
-00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express 
-Port 1 (rev 02) (prog-if 00 [Normal decode])
-        Flags: bus master, fast devsel, latency 0
-        Bus: primary=00, secondary=04, subordinate=04, sec-latency=0
-        Capabilities: <access denied>
-
-00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express 
-Port 2 (rev 02) (prog-if 00 [Normal decode])
-        Flags: bus master, fast devsel, latency 0
-        Bus: primary=00, secondary=03, subordinate=03, sec-latency=0
-        Memory behind bridge: fe700000-fe7fffff
-        Capabilities: <access denied>
-
-00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express 
-Port 3 (rev 02) (prog-if 00 [Normal decode])
-        Flags: bus master, fast devsel, latency 0
-        Bus: primary=00, secondary=01, subordinate=02, sec-latency=0
-        I/O behind bridge: 0000c000-0000cfff
-        Memory behind bridge: fdf00000-fe6fffff
-        Prefetchable memory behind bridge: 00000000bdf00000-00000000bfe00000
-        Capabilities: <access denied>
-
-00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI 
-#1 (rev 02) (prog-if 00 [UHCI])
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 0, IRQ 19
-        I/O ports at e400 [size=32]
-
-00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI 
-#2 (rev 02) (prog-if 00 [UHCI])
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 0, IRQ 20
-        I/O ports at e480 [size=32]
-
-00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI 
-#3 (rev 02) (prog-if 00 [UHCI])
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 0, IRQ 18
-        I/O ports at e800 [size=32]
-
-00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI 
-#4 (rev 02) (prog-if 00 [UHCI])
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 0, IRQ 16
-        I/O ports at e880 [size=32]
-
-00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI 
-Controller (rev 02) (prog-if 20 [EHCI])
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 0, IRQ 19
-        Memory at feb3fc00 (32-bit, non-prefetchable) [size=1K]
-        Capabilities: <access denied>
-
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2) 
-(prog-if 01 [Subtractive decode])
-        Flags: bus master, fast devsel, latency 0
-        Bus: primary=00, secondary=05, subordinate=05, sec-latency=32
-        I/O behind bridge: 0000d000-0000dfff
-        Memory behind bridge: fe800000-fe8fffff
-        Prefetchable memory behind bridge: 0000000080000000-0000000080000000
-        Capabilities: <access denied>
-
-00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface 
-Bridge (rev 02)
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 0
-        Capabilities: <access denied>
-
-00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) 
-Serial ATA Storage Controller IDE (rev 02) (prog-if 80 [Master])
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, 66MHz, medium devsel, latency 0, IRQ 20
-        I/O ports at 01f0 [size=8]
-        I/O ports at 03f4 [size=1]
-        I/O ports at 0170 [size=8]
-        I/O ports at 0374 [size=1]
-        I/O ports at ffa0 [size=16]
-        Capabilities: <access denied>
-
-00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller 
-(rev 02)
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: medium devsel, IRQ 20
-        I/O ports at 0400 [size=32]
-
-03:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG 
-Network Connection (rev 02)
-        Subsystem: Intel Corporation Unknown device 1000
-        Flags: bus master, fast devsel, latency 0, IRQ 17
-        Memory at fe7ff000 (32-bit, non-prefetchable) [size=4K]
-        Capabilities: <access denied>
-
-05:01.0 FireWire (IEEE 1394): Ricoh Co Ltd Unknown device 0832 (prog-if 
-10 [OHCI])
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 64, IRQ 16
-        Memory at fe8fe800 (32-bit, non-prefetchable) [size=2K]
-        Capabilities: <access denied>
-
-05:01.1 Class 0805: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host 
-Adapter (rev 19)
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 64, IRQ 17
-        Memory at fe8ff000 (32-bit, non-prefetchable) [size=256]
-        Capabilities: <access denied>
-
-05:01.2 System peripheral: Ricoh Co Ltd Unknown device 0843 (rev 01)
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: bus master, medium devsel, latency 0, IRQ 10
-        Memory at fe8ff400 (32-bit, non-prefetchable) [size=256]
-        Capabilities: <access denied>
-
-05:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host 
-Adapter (rev 0a)
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1347
-        Flags: medium devsel, IRQ 10
-        Memory at fe8ff800 (32-bit, non-prefetchable) [size=256]
-        Capabilities: <access denied>
-
-05:07.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8169SC 
-Gigabit Ethernet (rev 10)
-        Subsystem: ASUSTeK Computer Inc. Unknown device 1345
-        Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 18
-        I/O ports at d800 [size=256]
-        Memory at fe8ffc00 (32-bit, non-prefetchable) [size=256]
-        Expansion ROM at 80000000 [disabled] [size=128K]
-        Capabilities: <access denied>
-
-
-The other laptop is a hp n5430 it fail in the ali-pata driver not being 
-able to read the cdrom, timeing out
-and dropping into a bash shell telling me to tell it where the root 
-filesystem is. Also it sets my hard
-drive to udma/33 when it run find at udma/66 under 2.6.20.1. It would 
-really be nice if the people makeing
-all these changes would at least keep things compatible with what they 
-were before. These are regressions
-guys!
-
-This hp n5430 system works fine with 2.6.20.1.
-
-Hope this stuff gets fixed.
-
-
--- 
-
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
+struct signalfd_siginfo {
+	__u32 signo;	/* si_signo */
+	__s32 err;	/* si_errno */
+	__s32 code;	/* si_code */
+	__u32 pid;	/* si_pid */
+	__u32 uid;	/* si_uid */
+	__s32 fd;	/* si_fd */
+	__u32 tid;	/* si_fd */
+	__u32 band;	/* si_band */
+	__u32 overrun;	/* si_overrun */
+	__u32 trapno;	/* si_trapno */
+	__s32 status;	/* si_status */
+	__s32 svint;	/* si_int */
+	__u64 svptr;	/* si_ptr */
+	__u64 utime;	/* si_utime */
+	__u64 stime;	/* si_stime */
+	__u64 addr;	/* si_addr */
+};
 
 
 
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+
+- Davide
+
+
+
+Index: linux-2.6.21-rc5.fds/fs/signalfd.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc5.fds/fs/signalfd.c	2007-03-31 12:29:28.000000000 -0700
+@@ -0,0 +1,357 @@
++/*
++ *  fs/signalfd.c
++ *
++ *  Copyright (C) 2003  Linus Torvalds
++ *
++ *  Mon Mar 5, 2007: Davide Libenzi <davidel@xmailserver.org>
++ *      Changed ->read() to return a siginfo strcture instead of signal number.
++ *      Fixed locking in ->poll().
++ *      Added sighand-detach notification.
++ *      Added fd re-use in sys_signalfd() syscall.
++ *      Now using anonymous inode source.
++ *      Thanks to Oleg Nesterov for useful code review and suggestions.
++ *      More comments and suggestions from Arnd Bergmann.
++ */
++
++#include <linux/file.h>
++#include <linux/poll.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/fs.h>
++#include <linux/mount.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/signal.h>
++#include <linux/list.h>
++#include <linux/anon_inodes.h>
++#include <linux/signalfd.h>
++
++#include <asm/uaccess.h>
++
++
++struct signalfd_ctx {
++	struct list_head lnk;
++	wait_queue_head_t wqh;
++	sigset_t sigmask;
++	struct task_struct *tsk;
++};
++
++struct signalfd_lockctx {
++	struct task_struct *tsk;
++	unsigned long flags;
++};
++
++
++/*
++ * Tries to acquire the sighand lock. We do not increment the sighand
++ * use count, and we do not even pin the task struct, so we need to
++ * do it inside an RCU read lock, and we must be prepared for the
++ * ctx->tsk going to NULL (in signalfd_deliver()), and for the sighand
++ * being detached. We return 0 if the sighand has been detached, or
++ * 1 if we were able to pin the sighand lock.
++ */
++static int signalfd_lock(struct signalfd_ctx *ctx, struct signalfd_lockctx *lk)
++{
++	struct sighand_struct *sighand = NULL;
++
++	rcu_read_lock();
++	lk->tsk = rcu_dereference(ctx->tsk);
++	if (likely(lk->tsk != NULL))
++		sighand = lock_task_sighand(lk->tsk, &lk->flags);
++	rcu_read_unlock();
++
++	if (sighand && !ctx->tsk) {
++		unlock_task_sighand(lk->tsk, &lk->flags);
++		sighand = NULL;
++	}
++
++	return sighand != NULL;
++}
++
++static void signalfd_unlock(struct signalfd_lockctx *lk)
++{
++	unlock_task_sighand(lk->tsk, &lk->flags);
++}
++
++/*
++ * This must be called with the sighand lock held.
++ */
++void signalfd_deliver(struct task_struct *tsk, int sig)
++{
++	struct sighand_struct *sighand = tsk->sighand;
++	struct signalfd_ctx *ctx, *tmp;
++
++	BUG_ON(!sig);
++	list_for_each_entry_safe(ctx, tmp, &sighand->signalfd_list, lnk) {
++		/*
++		 * We use a negative signal value as a way to broadcast that the
++		 * sighand has been orphaned, so that we can notify all the
++		 * listeners about this. Remember the ctx->sigmask is inverted,
++		 * so if the user is interested in a signal, that corresponding
++		 * bit will be zero.
++		 */
++		if (sig < 0) {
++			if (ctx->tsk == tsk) {
++				ctx->tsk = NULL;
++				list_del_init(&ctx->lnk);
++				wake_up(&ctx->wqh);
++			}
++		} else {
++			if (!sigismember(&ctx->sigmask, sig))
++				wake_up(&ctx->wqh);
++		}
++	}
++}
++
++static void signalfd_cleanup(struct signalfd_ctx *ctx)
++{
++	struct signalfd_lockctx lk;
++
++	/*
++	 * This is tricky. If the sighand is gone, we do not need to remove
++	 * context from the list, the list itself won't be there anymore.
++	 */
++	if (signalfd_lock(ctx, &lk)) {
++		list_del(&ctx->lnk);
++		signalfd_unlock(&lk);
++	}
++	kfree(ctx);
++}
++
++static int signalfd_release(struct inode *inode, struct file *file)
++{
++	signalfd_cleanup(file->private_data);
++	return 0;
++}
++
++static unsigned int signalfd_poll(struct file *file, poll_table *wait)
++{
++	struct signalfd_ctx *ctx = file->private_data;
++	unsigned int events = 0;
++	struct signalfd_lockctx lk;
++
++	poll_wait(file, &ctx->wqh, wait);
++
++	/*
++	 * Let the caller get a POLLIN in this case, ala socket recv() when
++	 * the peer disconnects.
++	 */
++	if (signalfd_lock(ctx, &lk)) {
++		if (next_signal(&lk.tsk->pending, &ctx->sigmask) > 0 ||
++		    next_signal(&lk.tsk->signal->shared_pending,
++				&ctx->sigmask) > 0)
++			events |= POLLIN;
++		signalfd_unlock(&lk);
++	} else
++		events |= POLLIN;
++
++	return events;
++}
++
++/*
++ * Copied from copy_siginfo_to_user() in kernel/signal.c
++ */
++static int signalfd_copyinfo(struct signalfd_siginfo __user *uinfo,
++			     siginfo_t const *kinfo)
++{
++	long err;
++
++	BUILD_BUG_ON(sizeof(struct signalfd_siginfo) != 128);
++
++	/*
++	 * Unused memebers should be zero ...
++	 */
++	err = __clear_user(uinfo, sizeof(*uinfo));
++
++	/*
++	 * If you change siginfo_t structure, please be sure
++	 * this code is fixed accordingly.
++	 */
++	err |= __put_user(kinfo->si_signo, &uinfo->signo);
++	err |= __put_user(kinfo->si_errno, &uinfo->err);
++	err |= __put_user((short)kinfo->si_code, &uinfo->code);
++	switch (kinfo->si_code & __SI_MASK) {
++	case __SI_KILL:
++		err |= __put_user(kinfo->si_pid, &uinfo->pid);
++		err |= __put_user(kinfo->si_uid, &uinfo->uid);
++		break;
++	case __SI_TIMER:
++		 err |= __put_user(kinfo->si_tid, &uinfo->tid);
++		 err |= __put_user(kinfo->si_overrun, &uinfo->overrun);
++		 err |= __put_user(kinfo->si_ptr, &uinfo->svptr);
++		break;
++	case __SI_POLL:
++		err |= __put_user(kinfo->si_band, &uinfo->band);
++		err |= __put_user(kinfo->si_fd, &uinfo->fd);
++		break;
++	case __SI_FAULT:
++		err |= __put_user(kinfo->si_addr, &uinfo->addr);
++#ifdef __ARCH_SI_TRAPNO
++		err |= __put_user(kinfo->si_trapno, &uinfo->trapno);
++#endif
++		break;
++	case __SI_CHLD:
++		err |= __put_user(kinfo->si_pid, &uinfo->pid);
++		err |= __put_user(kinfo->si_uid, &uinfo->uid);
++		err |= __put_user(kinfo->si_status, &uinfo->status);
++		err |= __put_user(kinfo->si_utime, &uinfo->utime);
++		err |= __put_user(kinfo->si_stime, &uinfo->stime);
++		break;
++	case __SI_RT: /* This is not generated by the kernel as of now. */
++	case __SI_MESGQ: /* But this is */
++		err |= __put_user(kinfo->si_pid, &uinfo->pid);
++		err |= __put_user(kinfo->si_uid, &uinfo->uid);
++		err |= __put_user(kinfo->si_ptr, &uinfo->svptr);
++		break;
++	default: /* this is just in case for now ... */
++		err |= __put_user(kinfo->si_pid, &uinfo->pid);
++		err |= __put_user(kinfo->si_uid, &uinfo->uid);
++		break;
++	}
++
++	return err ? -EFAULT: sizeof(*uinfo);
++}
++
++/*
++ * Returns either the size of a "struct signalfd_siginfo", or zero if the
++ * sighand we are attached to, has been orphaned. The "count" parameter
++ * must be at least the size of a "struct signalfd_siginfo".
++ */
++static ssize_t signalfd_read(struct file *file, char __user *buf, size_t count,
++			     loff_t *ppos)
++{
++	struct signalfd_ctx *ctx = file->private_data;
++	ssize_t res = 0;
++	int locked, signo;
++	siginfo_t info;
++	struct signalfd_lockctx lk;
++	DECLARE_WAITQUEUE(wait, current);
++
++	if (count < sizeof(struct signalfd_siginfo))
++		return -EINVAL;
++	locked = signalfd_lock(ctx, &lk);
++	if (!locked)
++		return 0;
++	res = -EAGAIN;
++	signo = dequeue_signal(lk.tsk, &ctx->sigmask, &info);
++	if (signo == 0 && !(file->f_flags & O_NONBLOCK)) {
++		add_wait_queue(&ctx->wqh, &wait);
++		for (;;) {
++			set_current_state(TASK_INTERRUPTIBLE);
++			signo = dequeue_signal(lk.tsk, &ctx->sigmask, &info);
++			if (signo != 0)
++				break;
++			if (signal_pending(current)) {
++				res = -ERESTARTSYS;
++				break;
++			}
++			signalfd_unlock(&lk);
++			schedule();
++			locked = signalfd_lock(ctx, &lk);
++			if (unlikely(!locked)) {
++				/*
++				 * Let the caller read zero byte, ala socket
++				 * recv() when the peer disconnect. This test
++				 * must be done before doing a dequeue_signal(),
++				 * because if the sighand has been orphaned,
++				 * the dequeue_signal() call is going to crash.
++				 */
++				res = 0;
++				break;
++			}
++		}
++		remove_wait_queue(&ctx->wqh, &wait);
++		__set_current_state(TASK_RUNNING);
++	}
++	if (likely(locked))
++		signalfd_unlock(&lk);
++	if (likely(signo))
++		res = signalfd_copyinfo((struct signalfd_siginfo __user *) buf,
++					&info);
++
++	return res;
++}
++
++
++static const struct file_operations signalfd_fops = {
++	.release	= signalfd_release,
++	.poll		= signalfd_poll,
++	.read		= signalfd_read,
++};
++
++
++/*
++ * Create a file descriptor that is associated with our signal
++ * state. We can pass it around to others if we want to, but
++ * it will always be _our_ signal state.
++ */
++asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask)
++{
++	int error;
++	sigset_t sigmask;
++	struct signalfd_ctx *ctx;
++	struct sighand_struct *sighand;
++	struct file *file;
++	struct inode *inode;
++	struct signalfd_lockctx lk;
++
++	if (sizemask != sizeof(sigset_t) ||
++	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
++		return error = -EINVAL;
++	sigdelsetmask(&sigmask, sigmask(SIGKILL) | sigmask(SIGSTOP));
++	signotset(&sigmask);
++
++	if (ufd == -1) {
++		ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
++		if (!ctx)
++			return -ENOMEM;
++
++		init_waitqueue_head(&ctx->wqh);
++		ctx->sigmask = sigmask;
++		ctx->tsk = current;
++
++		sighand = current->sighand;
++		/*
++		 * Add this fd to the list of signal listeners.
++		 */
++		spin_lock_irq(&sighand->siglock);
++		list_add_tail(&ctx->lnk, &sighand->signalfd_list);
++		spin_unlock_irq(&sighand->siglock);
++
++		/*
++		 * When we call this, the initialization must be complete, since
++		 * aino_getfd() will install the fd.
++		 */
++		error = aino_getfd(&ufd, &inode, &file, "[signalfd]",
++				   &signalfd_fops, ctx);
++		if (error)
++			goto err_fdalloc;
++	} else {
++		file = fget(ufd);
++		if (!file)
++			return -EBADF;
++		ctx = file->private_data;
++		if (file->f_op != &signalfd_fops) {
++			fput(file);
++			return -EINVAL;
++		}
++		/*
++		 * We need to be prepared of the fact that the sighand this fd
++		 * is attached to, has been detched. In that case signalfd_lock()
++		 * will return 0, and we'll just skip setting the new mask.
++		 */
++		if (signalfd_lock(ctx, &lk)) {
++			ctx->sigmask = sigmask;
++			signalfd_unlock(&lk);
++		}
++		wake_up(&ctx->wqh);
++		fput(file);
++	}
++
++	return ufd;
++
++err_fdalloc:
++	signalfd_cleanup(ctx);
++	return error;
++}
++
+Index: linux-2.6.21-rc5.fds/include/linux/init_task.h
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/include/linux/init_task.h	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/include/linux/init_task.h	2007-03-31 12:29:28.000000000 -0700
+@@ -84,6 +84,7 @@
+ 	.count		= ATOMIC_INIT(1), 				\
+ 	.action		= { { { .sa_handler = NULL, } }, },		\
+ 	.siglock	= __SPIN_LOCK_UNLOCKED(sighand.siglock),	\
++	.signalfd_list	= LIST_HEAD_INIT(sighand.signalfd_list),	\
+ }
+ 
+ extern struct group_info init_groups;
+Index: linux-2.6.21-rc5.fds/include/linux/sched.h
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/include/linux/sched.h	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/include/linux/sched.h	2007-03-31 12:29:28.000000000 -0700
+@@ -379,6 +379,7 @@
+ 	atomic_t		count;
+ 	struct k_sigaction	action[_NSIG];
+ 	spinlock_t		siglock;
++	struct list_head        signalfd_list;
+ };
+ 
+ struct pacct_struct {
+Index: linux-2.6.21-rc5.fds/kernel/fork.c
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/kernel/fork.c	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/kernel/fork.c	2007-03-31 12:29:28.000000000 -0700
+@@ -1424,8 +1424,10 @@
+ 	struct sighand_struct *sighand = data;
+ 
+ 	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) ==
+-					SLAB_CTOR_CONSTRUCTOR)
++					SLAB_CTOR_CONSTRUCTOR) {
+ 		spin_lock_init(&sighand->siglock);
++		INIT_LIST_HEAD(&sighand->signalfd_list);
++	}
+ }
+ 
+ void __init proc_caches_init(void)
+Index: linux-2.6.21-rc5.fds/include/linux/syscalls.h
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/include/linux/syscalls.h	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/include/linux/syscalls.h	2007-03-31 12:29:28.000000000 -0700
+@@ -602,6 +602,7 @@
+ asmlinkage long sys_set_robust_list(struct robust_list_head __user *head,
+ 				    size_t len);
+ asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
++asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+Index: linux-2.6.21-rc5.fds/include/linux/signalfd.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc5.fds/include/linux/signalfd.h	2007-03-31 12:29:28.000000000 -0700
+@@ -0,0 +1,97 @@
++/*
++ *  include/linux/signalfd.h
++ *
++ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
++ *
++ */
++
++#ifndef _LINUX_SIGNALFD_H
++#define _LINUX_SIGNALFD_H
++
++
++struct signalfd_siginfo {
++	__u32 signo;
++	__s32 err;
++	__s32 code;
++	__u32 pid;
++	__u32 uid;
++	__s32 fd;
++	__u32 tid;
++	__u32 band;
++	__u32 overrun;
++	__u32 trapno;
++	__s32 status;
++	__s32 svint;
++	__u64 svptr;
++	__u64 utime;
++	__u64 stime;
++	__u64 addr;
++
++	/*
++	 * Pad strcture to 128 bytes. Remember to update the
++	 * pad size when you add new memebers. We use a fixed
++	 * size structure to avoid compatibility problems with
++	 * future versions, and we leave extra space for additional
++	 * members. We use fixed size members because this strcture
++	 * comes out of a read(2) and we really don't want to have
++	 * a compat on read(2).
++	 */
++	__u8 __pad[48];
++};
++
++
++#ifdef __KERNEL__
++
++#ifdef CONFIG_SIGNALFD
++
++/*
++ * Deliver the signal to listening signalfd. This must be called
++ * with the sighand lock held. Same are the following that end up
++ * calling signalfd_deliver().
++ */
++void signalfd_deliver(struct task_struct *tsk, int sig);
++
++/*
++ * No need to fall inside signalfd_deliver() if no signal listeners
++ * are available.
++ */
++static inline void signalfd_notify(struct task_struct *tsk, int sig)
++{
++	if (unlikely(!list_empty(&tsk->sighand->signalfd_list)))
++		signalfd_deliver(tsk, sig);
++}
++
++/*
++ * The signal -1 is used to notify the signalfd that the sighand
++ * is on its way to be detached.
++ */
++static inline void signalfd_detach_locked(struct task_struct *tsk)
++{
++	if (unlikely(!list_empty(&tsk->sighand->signalfd_list)))
++		signalfd_deliver(tsk, -1);
++}
++
++static inline void signalfd_detach(struct task_struct *tsk)
++{
++	struct sighand_struct *sighand = tsk->sighand;
++
++	if (unlikely(!list_empty(&sighand->signalfd_list))) {
++		spin_lock_irq(&sighand->siglock);
++		signalfd_deliver(tsk, -1);
++		spin_unlock_irq(&sighand->siglock);
++	}
++}
++
++#else /* CONFIG_SIGNALFD */
++
++#define signalfd_deliver(t, s) do { } while (0)
++#define signalfd_notify(t, s) do { } while (0)
++#define signalfd_detach_locked(t) do { } while (0)
++#define signalfd_detach(t) do { } while (0)
++
++#endif /* CONFIG_SIGNALFD */
++
++#endif /* __KERNEL__ */
++
++#endif /* _LINUX_SIGNALFD_H */
++
+Index: linux-2.6.21-rc5.fds/kernel/signal.c
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/kernel/signal.c	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/kernel/signal.c	2007-03-31 12:29:28.000000000 -0700
+@@ -26,6 +26,7 @@
+ #include <linux/freezer.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/nsproxy.h>
++#include <linux/signalfd.h>
+ 
+ #include <asm/param.h>
+ #include <asm/uaccess.h>
+@@ -233,8 +234,7 @@
+ 
+ /* Given the mask, find the first available signal that should be serviced. */
+ 
+-static int
+-next_signal(struct sigpending *pending, sigset_t *mask)
++int next_signal(struct sigpending *pending, sigset_t *mask)
+ {
+ 	unsigned long i, *s, *m, x;
+ 	int sig = 0;
+@@ -740,6 +740,12 @@
+ 	int ret = 0;
+ 
+ 	/*
++	 * Deliver the signal to listening signalfds. This must be called
++	 * with the sighand lock held.
++	 */
++	signalfd_notify(t, sig);
++
++	/*
+ 	 * fast-pathed signals for kernel-internal things like SIGSTOP
+ 	 * or SIGKILL.
+ 	 */
+@@ -1401,6 +1407,11 @@
+ 		ret = 1;
+ 		goto out;
+ 	}
++	/*
++	 * Deliver the signal to listening signalfds. This must be called
++	 * with the sighand lock held.
++	 */
++	signalfd_notify(p, sig);
+ 
+ 	list_add_tail(&q->list, &p->pending.list);
+ 	sigaddset(&p->pending.signal, sig);
+@@ -1444,6 +1455,11 @@
+ 		q->info.si_overrun++;
+ 		goto out;
+ 	} 
++	/*
++	 * Deliver the signal to listening signalfds. This must be called
++	 * with the sighand lock held.
++	 */
++	signalfd_notify(p, sig);
+ 
+ 	/*
+ 	 * Put this signal on the shared-pending queue.
+@@ -2104,6 +2120,8 @@
+ 	/*
+ 	 * If you change siginfo_t structure, please be sure
+ 	 * this code is fixed accordingly.
++	 * Please remember to update the signalfd_copyinfo() function
++	 * inside fs/signalfd.c too, in case siginfo_t changes.
+ 	 * It should never copy any pad contained in the structure
+ 	 * to avoid security leaks, but must copy the generic
+ 	 * 3 ints plus the relevant union member.
+Index: linux-2.6.21-rc5.fds/fs/exec.c
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/fs/exec.c	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/fs/exec.c	2007-03-31 12:29:28.000000000 -0700
+@@ -50,6 +50,7 @@
+ #include <linux/tsacct_kern.h>
+ #include <linux/cn_proc.h>
+ #include <linux/audit.h>
++#include <linux/signalfd.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/mmu_context.h>
+@@ -581,6 +582,13 @@
+ 	int count;
+ 
+ 	/*
++	 * Tell all the sighand listeners that this sighand has
++	 * been detached. The signalfd_detach() function grabs the
++	 * sighand lock, if signal listeners are present on the sighand.
++	 */
++	signalfd_detach(tsk);
++
++	/*
+ 	 * If we don't share sighandlers, then we aren't sharing anything
+ 	 * and we can just re-use it all.
+ 	 */
+@@ -756,8 +764,7 @@
+ 		spin_unlock(&oldsighand->siglock);
+ 		write_unlock_irq(&tasklist_lock);
+ 
+-		if (atomic_dec_and_test(&oldsighand->count))
+-			kmem_cache_free(sighand_cachep, oldsighand);
++		__cleanup_sighand(oldsighand);
+ 	}
+ 
+ 	BUG_ON(!thread_group_leader(tsk));
+Index: linux-2.6.21-rc5.fds/kernel/exit.c
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/kernel/exit.c	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/kernel/exit.c	2007-03-31 12:29:28.000000000 -0700
+@@ -42,6 +42,7 @@
+ #include <linux/audit.h> /* for audit_free() */
+ #include <linux/resource.h>
+ #include <linux/blkdev.h>
++#include <linux/signalfd.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -82,6 +83,14 @@
+ 	sighand = rcu_dereference(tsk->sighand);
+ 	spin_lock(&sighand->siglock);
+ 
++	/*
++	 * Notify that this sighand has been detached. This must
++	 * be called with the tsk->sighand lock held. Also, this
++	 * access tsk->sighand internally, so it must be called
++	 * before tsk->sighand is reset.
++	 */
++	signalfd_detach_locked(tsk);
++
+ 	posix_cpu_timers_exit(tsk);
+ 	if (atomic_dec_and_test(&sig->count))
+ 		posix_cpu_timers_exit_group(tsk);
+Index: linux-2.6.21-rc5.fds/include/linux/signal.h
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/include/linux/signal.h	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/include/linux/signal.h	2007-03-31 12:29:28.000000000 -0700
+@@ -233,6 +233,7 @@
+ 	return sig <= _NSIG ? 1 : 0;
+ }
+ 
++extern int next_signal(struct sigpending *pending, sigset_t *mask);
+ extern int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p);
+ extern int __group_send_sig_info(int, struct siginfo *, struct task_struct *);
+ extern long do_sigpending(void __user *, unsigned long);
+Index: linux-2.6.21-rc5.fds/include/linux/Kbuild
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/include/linux/Kbuild	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/include/linux/Kbuild	2007-03-31 12:29:28.000000000 -0700
+@@ -190,6 +190,7 @@
+ unifdef-y += errqueue.h
+ unifdef-y += ethtool.h
+ unifdef-y += eventpoll.h
++unifdef-y += signalfd.h
+ unifdef-y += ext2_fs.h
+ unifdef-y += ext3_fs.h
+ unifdef-y += fb.h
+Index: linux-2.6.21-rc5.fds/fs/Makefile
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/fs/Makefile	2007-03-31 12:28:39.000000000 -0700
++++ linux-2.6.21-rc5.fds/fs/Makefile	2007-03-31 12:29:28.000000000 -0700
+@@ -23,6 +23,7 @@
+ obj-$(CONFIG_INOTIFY_USER)	+= inotify_user.o
+ obj-$(CONFIG_EPOLL)		+= eventpoll.o
+ obj-$(CONFIG_ANON_INODES)	+= anon_inodes.o
++obj-$(CONFIG_SIGNALFD)		+= signalfd.o
+ obj-$(CONFIG_COMPAT)		+= compat.o compat_ioctl.o
+ 
+ nfsd-$(CONFIG_NFSD)		:= nfsctl.o
+Index: linux-2.6.21-rc5.fds/init/Kconfig
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/init/Kconfig	2007-03-31 12:29:21.000000000 -0700
++++ linux-2.6.21-rc5.fds/init/Kconfig	2007-03-31 12:29:28.000000000 -0700
+@@ -473,6 +473,16 @@
+ 	  Disabling this option will cause the kernel to be built without
+ 	  support for epoll family of system calls.
+ 
++config SIGNALFD
++	bool "Eanble signalfd() system call" if EMBEDDED
++	depends on ANON_INODES
++	default y
++	help
++	  Enable the signalfd() system call that allows to receive signals
++	  on a file descriptor.
++
++	  If unsure, say Y.
++
+ config SHMEM
+ 	bool "Use full shmem filesystem" if EMBEDDED
+ 	default y
