@@ -1,78 +1,381 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751244AbXCaUKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751205AbXCaUK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751244AbXCaUKY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 16:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbXCaUJg
+	id S1751205AbXCaUK0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 16:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXCaUJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 16:09:36 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:48183 "EHLO
+	Sat, 31 Mar 2007 16:09:38 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:48188 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbXCaUJc (ORCPT
+	with ESMTP id S1752558AbXCaUJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 16:09:32 -0400
+	Sat, 31 Mar 2007 16:09:33 -0400
 X-AuthUser: davidel@xmailserver.org
 From: Davide Libenzi <davidel@xmailserver.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
+       Thomas Gleixner <tglx@linutronix.de>
 Date: Sat, 31 Mar 2007 13:09:29 -0700
-Subject: [patch 5/13] signal/timer/event fds v9 - signalfd compat code ...
+Subject: [patch 6/13] signal/timer/event fds v9 - timerfd core ...
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.16816.1175371771.5>
+Message-ID: <send-serie.davidel@xmailserver.org.16816.1175371772.6>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implement the necessary compat code for the signalfd system call.
+This patch introduces a new system call for timers events delivered
+though file descriptors. This allows timer event to be used with
+standard POSIX poll(2), select(2) and read(2). As a consequence of
+supporting the Linux f_op->poll subsystem, they can be used with
+epoll(2) too.
+The system call is defined as:
+
+int timerfd(int ufd, int clockid, int flags, const struct itimerspec *utmr);
+
+The "ufd" parameter allows for re-use (re-programming) of an existing
+timerfd w/out going through the close/open cycle (same as signalfd).
+If "ufd" is -1, s new file descriptor will be created, otherwise the
+existing "ufd" will be re-programmed.
+The "clockid" parameter is either CLOCK_MONOTONIC or CLOCK_REALTIME.
+The time specified in the "utmr->it_value" parameter is the expiry
+time for the timer.
+If the TFD_TIMER_ABSTIME flag is set in "flags", this is an absolute
+time, otherwise it's a relative time.
+If the time specified in the "utmr->it_interval" is not zero (.tv_sec == 0,
+tv_nsec == 0), this is the period at which the following ticks should
+be generated.
+The "utmr->it_interval" should be set to zero if only one tick is requested.
+Setting the "utmr->it_value" to zero will disable the timer, or will create
+a timerfd without the timer enabled.
+The function returns the new (or same, in case "ufd" is a valid timerfd
+descriptor) file, or -1 in case of error.
+As stated before, the timerfd file descriptor supports poll(2), select(2)
+and epoll(2). When a timer event happened on the timerfd, a POLLIN mask
+will be returned.
+The read(2) call can be used, and it will return a u32 variable holding
+the number of "ticks" that happened on the interface since the last call
+to read(2). The read(2) call supportes the O_NONBLOCK flag too, and EAGAIN
+will be returned if no ticks happened.
+A quick test program, shows timerfd working correctly on my amd64 box:
+
+http://www.xmailserver.org/timerfd-test.c
+
+
 
 
 Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
 
 
 - Davide
 
 
 
-Index: linux-2.6.21-rc5.fds/fs/compat.c
+Index: linux-2.6.21-rc5.fds/fs/timerfd.c
 ===================================================================
---- linux-2.6.21-rc5.fds.orig/fs/compat.c	2007-03-31 12:25:43.000000000 -0700
-+++ linux-2.6.21-rc5.fds/fs/compat.c	2007-03-31 12:30:34.000000000 -0700
-@@ -46,6 +46,7 @@
- #include <linux/rwsem.h>
- #include <linux/tsacct_kern.h>
- #include <linux/highmem.h>
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc5.fds/fs/timerfd.c	2007-03-31 12:46:14.000000000 -0700
+@@ -0,0 +1,233 @@
++/*
++ *  fs/timerfd.c
++ *
++ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
++ *
++ *
++ *  Thanks to Thomas Gleixner for code reviews and useful comments.
++ *
++ */
++
++#include <linux/file.h>
++#include <linux/poll.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/fs.h>
++#include <linux/mount.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
 +#include <linux/signal.h>
- #include <linux/poll.h>
- #include <linux/mm.h>
- #include <linux/eventpoll.h>
-@@ -2335,3 +2336,28 @@
- #endif /* TIF_RESTORE_SIGMASK */
- 
- #endif /* CONFIG_EPOLL */
++#include <linux/list.h>
++#include <linux/spinlock.h>
++#include <linux/time.h>
++#include <linux/hrtimer.h>
++#include <linux/jiffies.h>
++#include <linux/anon_inodes.h>
++#include <linux/timerfd.h>
 +
-+#ifdef CONFIG_SIGNALFD
++#include <asm/uaccess.h>
 +
-+asmlinkage long compat_sys_signalfd(int ufd,
-+				    const compat_sigset_t __user *sigmask,
-+				    compat_size_t sigsetsize)
++
++struct timerfd_ctx {
++	struct hrtimer tmr;
++	ktime_t tintv;
++	spinlock_t lock;
++	wait_queue_head_t wqh;
++	/*
++	 * Every time a timer triggers, we increase "ticks". A read(2)
++	 * will return the current value, and will reset "ticks" to zero.
++	 */
++	u32 ticks;
++};
++
++
++/*
++ * This gets called when the timer event triggers. We increment the
++ * tick count and wake the possible waiters. If the timer in a
++ * sequential one (->tintv.tv64 != 0), we re-arm it with hrtimer_forward().
++ */
++static enum hrtimer_restart timerfd_tmrproc(struct hrtimer *htmr)
 +{
-+	compat_sigset_t ss32;
-+	sigset_t tmp;
-+	sigset_t __user *ksigmask;
++	struct timerfd_ctx *ctx = container_of(htmr, struct timerfd_ctx, tmr);
++	enum hrtimer_restart rval = HRTIMER_NORESTART;
++	unsigned long flags;
 +
-+	if (sigsetsize != sizeof(compat_sigset_t))
-+		return -EINVAL;
-+	if (copy_from_user(&ss32, sigmask, sizeof(ss32)))
-+		return -EFAULT;
-+	sigset_from_compat(&tmp, &ss32);
-+	ksigmask = compat_alloc_user_space(sizeof(sigset_t));
-+	if (copy_to_user(ksigmask, &tmp, sizeof(sigset_t)))
-+		return -EFAULT;
++	spin_lock_irqsave(&ctx->lock, flags);
++	ctx->ticks++;
++	wake_up_locked(&ctx->wqh);
++	if (ctx->tintv.tv64 != 0) {
++		hrtimer_forward(htmr, hrtimer_cb_get_time(htmr), ctx->tintv);
++		rval = HRTIMER_RESTART;
++	}
++	spin_unlock_irqrestore(&ctx->lock, flags);
 +
-+	return sys_signalfd(ufd, ksigmask, sizeof(sigset_t));
++	return rval;
 +}
 +
-+#endif /* CONFIG_SIGNALFD */
++static void timerfd_setup(struct timerfd_ctx *ctx, int clockid, int flags,
++			  const struct itimerspec *ktmr)
++{
++	enum hrtimer_mode htmode;
++	ktime_t texp;
 +
++	htmode = (flags & TFD_TIMER_ABSTIME) ?
++		HRTIMER_MODE_ABS: HRTIMER_MODE_REL;
++
++	texp = timespec_to_ktime(ktmr->it_value);
++	ctx->ticks = 0;
++	ctx->tintv = timespec_to_ktime(ktmr->it_interval);
++	hrtimer_init(&ctx->tmr, clockid, htmode);
++	ctx->tmr.expires = texp;
++	ctx->tmr.function = timerfd_tmrproc;
++	if (texp.tv64 != 0)
++		hrtimer_start(&ctx->tmr, texp, htmode);
++}
++
++static int timerfd_release(struct inode *inode, struct file *file)
++{
++	struct timerfd_ctx *ctx = file->private_data;
++
++	hrtimer_cancel(&ctx->tmr);
++	kfree(ctx);
++	return 0;
++}
++
++static unsigned int timerfd_poll(struct file *file, poll_table *wait)
++{
++	struct timerfd_ctx *ctx = file->private_data;
++	unsigned int events = 0;
++	unsigned long flags;
++
++	poll_wait(file, &ctx->wqh, wait);
++
++	spin_lock_irqsave(&ctx->lock, flags);
++	if (ctx->ticks)
++		events |= POLLIN;
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	return events;
++}
++
++static ssize_t timerfd_read(struct file *file, char __user *buf, size_t count,
++			    loff_t *ppos)
++{
++	struct timerfd_ctx *ctx = file->private_data;
++	ssize_t res;
++	u32 ticks;
++	DECLARE_WAITQUEUE(wait, current);
++
++	if (count < sizeof(ticks))
++		return -EINVAL;
++	spin_lock_irq(&ctx->lock);
++	res = -EAGAIN;
++	ticks = ctx->ticks;
++	if (ticks == 0 && !(file->f_flags & O_NONBLOCK)) {
++		__add_wait_queue(&ctx->wqh, &wait);
++		for (res = 0;;) {
++			set_current_state(TASK_INTERRUPTIBLE);
++			ticks = ctx->ticks;
++			if (ticks != 0) {
++				res = 0;
++				break;
++			}
++			if (signal_pending(current)) {
++				res = -ERESTARTSYS;
++				break;
++			}
++			spin_unlock_irq(&ctx->lock);
++			schedule();
++			spin_lock_irq(&ctx->lock);
++		}
++		__remove_wait_queue(&ctx->wqh, &wait);
++		__set_current_state(TASK_RUNNING);
++	}
++	if (ticks)
++		ctx->ticks = 0;
++	spin_unlock_irq(&ctx->lock);
++	if (ticks)
++		res = put_user(ticks, buf) ? -EFAULT: sizeof(ticks);
++	return res;
++}
++
++
++static const struct file_operations timerfd_fops = {
++	.release	= timerfd_release,
++	.poll		= timerfd_poll,
++	.read		= timerfd_read,
++};
++
++
++asmlinkage long sys_timerfd(int ufd, int clockid, int flags,
++			    const struct itimerspec __user *utmr)
++{
++	int error;
++	struct timerfd_ctx *ctx;
++	struct file *file;
++	struct inode *inode;
++	struct itimerspec ktmr;
++
++	if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
++		return -EFAULT;
++
++	if (clockid != CLOCK_MONOTONIC &&
++	    clockid != CLOCK_REALTIME)
++		return -EINVAL;
++	if (!timespec_valid(&ktmr.it_value) ||
++	    !timespec_valid(&ktmr.it_interval))
++		return -EINVAL;
++
++	if (ufd == -1) {
++		ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
++		if (!ctx)
++			return -ENOMEM;
++
++		init_waitqueue_head(&ctx->wqh);
++		spin_lock_init(&ctx->lock);
++
++		timerfd_setup(ctx, clockid, flags, &ktmr);
++
++		/*
++		 * When we call this, the initialization must be complete, since
++		 * aino_getfd() will install the fd.
++		 */
++		error = aino_getfd(&ufd, &inode, &file, "[timerfd]",
++				   &timerfd_fops, ctx);
++		if (error)
++			goto err_tmrcancel;
++	} else {
++		file = fget(ufd);
++		if (!file)
++			return -EBADF;
++		ctx = file->private_data;
++		if (file->f_op != &timerfd_fops) {
++			fput(file);
++			return -EINVAL;
++		}
++		/*
++		 * We need to stop the existing timer before reprogramming
++		 * it to the new values.
++		 */
++		for (;;) {
++			spin_lock_irq(&ctx->lock);
++			if (hrtimer_try_to_cancel(&ctx->tmr) >= 0)
++				break;
++			spin_unlock_irq(&ctx->lock);
++			cpu_relax();
++		}
++		/*
++		 * Re-program the timer to the new value ...
++		 */
++		timerfd_setup(ctx, clockid, flags, &ktmr);
++
++		spin_unlock_irq(&ctx->lock);
++		fput(file);
++	}
++
++	return ufd;
++
++err_tmrcancel:
++	hrtimer_cancel(&ctx->tmr);
++	kfree(ctx);
++	return error;
++}
++
+Index: linux-2.6.21-rc5.fds/include/linux/timerfd.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc5.fds/include/linux/timerfd.h	2007-03-31 12:30:36.000000000 -0700
+@@ -0,0 +1,17 @@
++/*
++ *  include/linux/timerfd.h
++ *
++ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
++ *
++ */
++
++#ifndef _LINUX_TIMERFD_H
++#define _LINUX_TIMERFD_H
++
++
++#define TFD_TIMER_ABSTIME (1 << 0)
++
++
++
++#endif /* _LINUX_TIMERFD_H */
++
+Index: linux-2.6.21-rc5.fds/include/linux/syscalls.h
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/include/linux/syscalls.h	2007-03-31 12:29:28.000000000 -0700
++++ linux-2.6.21-rc5.fds/include/linux/syscalls.h	2007-03-31 12:45:37.000000000 -0700
+@@ -603,6 +603,8 @@
+ 				    size_t len);
+ asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
+ asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask);
++asmlinkage long sys_timerfd(int ufd, int clockid, int flags,
++			    const struct itimerspec __user *utmr);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+Index: linux-2.6.21-rc5.fds/fs/Makefile
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/fs/Makefile	2007-03-31 12:29:28.000000000 -0700
++++ linux-2.6.21-rc5.fds/fs/Makefile	2007-03-31 12:45:37.000000000 -0700
+@@ -24,6 +24,7 @@
+ obj-$(CONFIG_EPOLL)		+= eventpoll.o
+ obj-$(CONFIG_ANON_INODES)	+= anon_inodes.o
+ obj-$(CONFIG_SIGNALFD)		+= signalfd.o
++obj-$(CONFIG_TIMERFD)		+= timerfd.o
+ obj-$(CONFIG_COMPAT)		+= compat.o compat_ioctl.o
+ 
+ nfsd-$(CONFIG_NFSD)		:= nfsctl.o
+Index: linux-2.6.21-rc5.fds/init/Kconfig
+===================================================================
+--- linux-2.6.21-rc5.fds.orig/init/Kconfig	2007-03-31 12:29:28.000000000 -0700
++++ linux-2.6.21-rc5.fds/init/Kconfig	2007-03-31 12:45:38.000000000 -0700
+@@ -483,6 +483,16 @@
+ 
+ 	  If unsure, say Y.
+ 
++config TIMERFD
++	bool "Eanble timerfd() system call" if EMBEDDED
++	depends on ANON_INODES
++	default y
++	help
++	  Enable the timerfd() system call that allows to receive timer
++	  events on a file descriptor.
++
++	  If unsure, say Y.
++
+ config SHMEM
+ 	bool "Use full shmem filesystem" if EMBEDDED
+ 	default y
 
