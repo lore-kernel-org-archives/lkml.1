@@ -1,83 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbXCaTkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbXCaTrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbXCaTkz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 15:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbXCaTkz
+	id S1753335AbXCaTrI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 15:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXCaTrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 15:40:55 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:34023 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbXCaTky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 15:40:54 -0400
-Date: Sat, 31 Mar 2007 12:40:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bernhard Rosenkraenzer <bero@arklinux.org>
-Cc: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.21-rc5-mm[12]: Oops on bootup in xor_see_2
-Message-Id: <20070331124049.ec87cb3a.akpm@linux-foundation.org>
-In-Reply-To: <200703311736.47751.bero@arklinux.org>
-References: <200703311736.47751.bero@arklinux.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 31 Mar 2007 15:47:08 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:48153 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753335AbXCaTrG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 15:47:06 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 31 Mar 2007 12:46:58 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 6/13] signal/timer/event fds v8 - timerfd core ...
+In-Reply-To: <20070330180910.dd16a52f.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703311238230.22390@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.28743.1174415837.6>
+ <20070330124005.0ec31aa6.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703301734390.3721@alien.or.mcafeemobile.com>
+ <20070330180910.dd16a52f.akpm@linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Mar 2007 17:36:47 +0000 Bernhard Rosenkraenzer <bero@arklinux.org> wrote:
+On Fri, 30 Mar 2007, Andrew Morton wrote:
 
-> I'm getting this Oops when booting an 2.6.21-rc5-mm1 or 2.6.21-rc5-mm2 on an 
-> Acer Aspire 1501 LMi in 32 bit mode (2.6.21-rc4-mm1 + hotfixes works 
-> perfectly):
+> On Fri, 30 Mar 2007 17:47:28 -0700 (PDT) Davide Libenzi <davidel@xmailserver.org> wrote:
 > 
-> xor: automatically using best checksumming function: pIII_sse
+> > On Fri, 30 Mar 2007, Andrew Morton wrote:
+> > 
+> > > > +struct timerfd_ctx {
+> > > > +	struct hrtimer tmr;
+> > > > +	ktime_t tintv;
+> > > > +	spinlock_t lock;
+> > > > +	wait_queue_head_t wqh;
+> > > > +	unsigned long ticks;
+> > > > +};
+> > > 
+> > > Did you consider using the (presently unused) lock inside wqh instead of
+> > > adding a new one?  That's a little bit rude, poking into waitqueue
+> > > internals like that, but we do it elsewhere and tricks like that are
+> > > acceptable in core-kernel, I guess.
+> > 
+> > Please, no. Gain is not worth the plug into the structure design IMO.
+> > 
 > 
-> BUG: unable to handle kernel NULL pointer dereference at virtual address 
-> 00000010
-> printing eip:
-> c02cb724
-> *pde=00000000
-> Oops: 0002 [#1]
-> last sysfs file:
-> Modules linked in:
-> CPU: 0
-> EIP: 0060:[<c02cb724>] Not tainted VLI
-> EFLAGS: 00010212 (2.6.12-rc5-mm2)
-> EIP is at xor_sse_2+0x34/0x200
-> eax: 00000010 ebx: fffea4df ecx: df8c3000 edx: df8c0000
-> esi: 8005003b edi: c03ebce0 ebp: df8c3000 esp: dfd01ef8
-> ds: 007b es: 007b fs: 00d8 gs: 0000 ss: 0068
-> Process swapper (pid: 1, ti=dfd000000 task=c146aa10 task:ti=dfd00000
-> Stack: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
->        00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
->        c13f1800 fffea4df 00000000 c02caa83 c03ebce0 df8c0000 00000000 c011bd7b
-> Call Trace:
->   [<c02caa83>] do_xor_speed+0x53/0xf0
->   [<c011bd7b>] printk+0x1b/0x20
->   [<c02cac02>] calibrate_xor_block+0x2e/0x1b0
->   [<c03fe7a2>] kernel_init+0x92/0x1c0
->   [<c0103dee>] ret_from_fork+0x6/0x1c
->   [<c03fe710>] kernel_init+0x0/0x1c0
->   [<c03fe710>] kernel_init+0x0/0x1c0
->   [<c0104937>] kernel_thread_helper+0x7/0x10
-> =======================
-> Code: 44 89 74 24 48 0f 20 c6 0f 06 0f 11 04 24 0f 11 4c 24 10 0f 11 54 24 20 
-> 0f
->       11 5c 24 30 0f 18 82 00 01 00 00 0f 18 82 20 01 00 00 <00> 00 00 00 00 
-> 00
->       00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> -
+> The decision is not that obvious - your patch's main use of
+> timerfd_ctx.lock is to provide locking for wqh - ie: to duplicate the
+> function of the existing lock which is there for that purpose.
+> 
+> So I think it's a legitimate optimisation to borrow it.
 
-Dan, I'm assuming your changes in there are the cause of this.  AFAICT all
-you're doing is moving code around, so it's a bit odd.
+As I see it, the lock protects the ticks and the timer structure, and the 
+wait queue *happen* to have a lock inside. That's the whole purpose in 
+having data modeled by structures with accessor functions.
+IMO, given that we'd get by plugging into the wait_queue_head_t lock is 
+not much (if at all), it'd be better to to peek at the wait_queue_head_t 
+directly.
 
-Bernhard, the config would be useful please.
 
-Neil, is calibrate_xor_block() being rational?
 
-	b1 = (void *) __get_free_pages(GFP_KERNEL, 2);
-	...
-	b2 = b1 + 2*PAGE_SIZE + BENCH_SIZE;
 
-Is it correct to add BENCH_SIZE to b2 here?
+> > > > +static enum hrtimer_restart timerfd_tmrproc(struct hrtimer *htmr)
+> > > > +{
+> > > > +	struct timerfd_ctx *ctx = container_of(htmr, struct timerfd_ctx, tmr);
+> > > > +	enum hrtimer_restart rval = HRTIMER_NORESTART;
+> > > > +	unsigned long flags;
+> > > > +
+> > > > +	spin_lock_irqsave(&ctx->lock, flags);
+> > > > +	ctx->ticks++;
+> > > > +	wake_up_locked(&ctx->wqh);
+> > > > +	if (ctx->tintv.tv64 != 0) {
+> > > > +		hrtimer_forward(htmr, hrtimer_cb_get_time(htmr), ctx->tintv);
+> > > > +		rval = HRTIMER_RESTART;
+> > > > +	}
+> > > > +	spin_unlock_irqrestore(&ctx->lock, flags);
+> > > > +
+> > > > +	return rval;
+> > > > +}
+> > > 
+> > > What's this do?
+> > 
+> > Really, do we need to comment such trivial code? There is *nothing* that 
+> > is worth a line of comment in there. IMO useless comment are more annoying 
+> > than blank lines.
+> > 
+> 
+> Look at it from the point of view of someone who knows kernel code but does
+> not specifically know this subsystem.  That describes the great majority of
+> people who will be reading your code.
+
+Okie, I added a comment ;)
+
+
+
+> Patch headers are not maintainable.
+> 
+> Nobody wants to have to go off and waddle though the git repo to understand
+> the design intent behind each function.
+
+I agree. I thought we were talking about the "poor smuck" having to 
+document it, and the patch header is a pretty good start (and maybe 
+finish ;).
+
+
+
+- Davide
+
+
