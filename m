@@ -1,62 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933279AbXCaB3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933286AbXCaBcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933279AbXCaB3z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 21:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933286AbXCaB3z
+	id S933286AbXCaBcs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 21:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933290AbXCaBcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 21:29:55 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:47614 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933279AbXCaB3y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 21:29:54 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 30 Mar 2007 18:29:52 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch 1/13] signal/timer/event fds v8 - anonymous inode source
- ...
-In-Reply-To: <20070330160850.d7988a87.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703301828350.3721@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.28743.1174415834.1>
- <20070330123943.8df1aa92.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703301532500.3721@alien.or.mcafeemobile.com>
- <20070330160850.d7988a87.akpm@linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Fri, 30 Mar 2007 21:32:48 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60492 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933286AbXCaBcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 21:32:47 -0400
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: exposing FSB clock speed in /sys
+References: <20070330153937.GC16059@frankl.hpl.hp.com>
+From: Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <20070330153937.GC16059@frankl.hpl.hp.com>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+Date: 31 Mar 2007 04:31:29 +0200
+Message-ID: <p73bqiaqh32.fsf@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Mar 2007, Andrew Morton wrote:
+Stephane Eranian <eranian-sDzT885Ts8HQT0dZR+AlfA@public.gmane.org> writes:
 
-> I'd say panic.  There's no much point in limping along with an
-> incorrectly-working kernel, only to have some small number of apps fail
-> mysteriously later on.
+> It seems that the kernel does not expose the Front-Side Bus (FSN) Clock
+> speed to user applications. 
 
-Panic it is ...
+You mean the APIC timer frequency which happens to match the FSB 
+on some CPUs? 
+ 
+> Knowledge the the FSB speed is very useful to monitoring tools. It is used
+> to compute certain bus-related metrics.
 
+Can you describe those metrics in detail? 
 
-> > > Can we make this optional if CONFIG_EMBEDDED?  You plan on converting epoll
-> > > to use this facility, but with CONFIG_EPOLL=n, this is all dead code?
-> > 
-> > Hmmm, the whole point is that all this stuff works with or without epoll. 
-> > And epoll need no changes to support this.
-> 
-> I'm suggesting that all known clients of anon_inode be made optional. 
-> Hence anon_iode can become optional too.
-> 
-> It's a desirable objective, at least.  The default, really.
-
-Ok, I'll put them under Kconf.
-
-
-
-- Davide
-
-
+-Andi
