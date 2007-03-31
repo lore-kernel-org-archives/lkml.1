@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbXCaQBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbXCaQGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753224AbXCaQBv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 12:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbXCaQBv
+	id S1753240AbXCaQGI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 12:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbXCaQGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 12:01:51 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:26756 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753224AbXCaQBt (ORCPT
+	Sat, 31 Mar 2007 12:06:08 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:41351 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbXCaQGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 12:01:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EQWxyfDcq1bVavNOun72K562S2R/T1L5wLn0S1yJrsFAd4aqWo0iH+d4LwULSvtjJJq4heDTao2F7jZDtpjOM9BlMS3K8km/1VWkWH8h5OhOV2PPxTfoqanp89JVDk94eEQqtZ6UZC+pBk/r+AaUp5HLwvMsuFu41cAQVJskQdc=
-Message-ID: <b6a2187b0703310901t42fe4752s55eb20d198788b22@mail.gmail.com>
-Date: Sun, 1 Apr 2007 00:01:48 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Cc: "Maxim Levitsky" <maximlevitsky@gmail.com>,
-       "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "Jens Axboe" <jens.axboe@oracle.com>, "Len Brown" <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
-In-Reply-To: <1175356272.28263.27.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 31 Mar 2007 12:06:05 -0400
+Date: Sat, 31 Mar 2007 18:08:06 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: gregkh@suse.de, hugh@veritas.com, dmitry.torokhov@gmail.com,
+       oneukum@suse.de, maneesh@in.ibm.com, rpurdie@rpsys.net,
+       James.Bottomley@SteelEye.com, Jeff Garzik <jgarzik@pobox.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       SCSI Mailing List <linux-scsi@vger.kernel.org>
+Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
+Message-ID: <20070331180806.55d572c8@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <460DD1B0.4080605@gmail.com>
+References: <460CDBA6.5030608@gmail.com>
+	<20070330151926.18fc12a0@gondolin.boeblingen.de.ibm.com>
+	<460D0E78.3040200@gmail.com>
+	<20070330154042.4c7deb72@gondolin.boeblingen.de.ibm.com>
+	<460D178F.4000500@gmail.com>
+	<20070330165251.7beffc7c@gondolin.boeblingen.de.ibm.com>
+	<460D27E3.2050602@gmail.com>
+	<20070330213101.7aa7babf@gondolin.boeblingen.de.ibm.com>
+	<460DD1B0.4080605@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <460BBD1B.4040308@ru.mvista.com>
-	 <200703291531.18253.maximlevitsky@gmail.com>
-	 <200703291546.48996.maximlevitsky@gmail.com>
-	 <1175356272.28263.27.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/31/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+On Sat, 31 Mar 2007 12:12:48 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-> Jeff still seems to have problems with CONFIG_NO_HZ=n and it might be
-> caused by time keeping / tick management resume happening before the
-> HPET resume.
+> > Hm, but as long as dk0 is registered, it can be looked up and someone
+> > could get a reference on it.
+> 
+> Yeah, exactly.  That's why any getting any kobject reference backed by a
+> module must be accompanied by try_module_get().
+> 
+> int mydrv_get_dk(struct dk *dk)
+> {
+> 	rc = try_module_get(mydrv);
+> 	if (rc)
+> 		return rc;
+> 	kobject_get(&dk->kobj);
+> 	return 0;
+> }
 
+This works if the caller always knows which module to grab (I was
+thinking about some tree-walking code).
 
-me>Confirmed that suspend/resume disk/ram works on X60s with
-me>CONFIG_HPET_TIMER=y and CONFIG_NO_HZ unset.
-me> But suspend to disk still hang with CONFIG_NO_HZ unset.
+> Exactly, in that case, module reference count must not be zero.  You and
+> I are saying the same thing.  Why are we running in circle?
 
+I hope we're not, it just makes one dizzy :)
 
-Oops, sorry. Typo (as a result copy/paste using mouse)
-    ... I actually meant CONFIG_NO_HZ "set".
-
-Just to be clear, suspend to disk still hang with CONFIG_NO_HZ=y. It
-hang just before you see the percent saving %.
-
-
-Jeff.
+I'll think some more about it...
