@@ -1,246 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbXCaUA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751224AbXCaUJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753362AbXCaUA6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 16:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbXCaUA6
+	id S1751224AbXCaUJd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 16:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXCaUJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 16:00:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47569 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753362AbXCaUA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 16:00:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Fix microcode-related suspend problem
-Date: Sat, 31 Mar 2007 22:04:15 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
-       Pavel Machek <pavel@ucw.cz>, Maxim <maximlevitsky@gmail.com>
+	Sat, 31 Mar 2007 16:09:33 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:48174 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751224AbXCaUJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 16:09:31 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Date: Sat, 31 Mar 2007 13:09:29 -0700
+Subject: [patch 3/13] signal/timer/event fds v9 - signalfd wire up i386 arch ...
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703312204.15752.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.16816.1175371770.3>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch wire the signalfd system call to the i386 architecture.
 
-This patch appeard on LMKL six days ago and there have not been any negative
-comments since then, so I think I can try to make it official.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Fix the regression resulting from the recent change of suspend code ordering
-that causes systems based on Intel x86 CPUs using the microcode driver to
-hang during the resume.
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-The problem occurs since the microcode driver uses request_firmware() in its
-CPU hotplug notifier, which is called after tasks has been frozen and hangs.
-It can be fixed by telling the microcode driver to use the microcode stored in
-memory during the resume instead of trying to load it from disk.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/i386/kernel/microcode.c |   71 ++++++++++++++++++++++++++++++++++++++++---
- include/linux/cpu.h          |    2 +
- kernel/cpu.c                 |   32 +++++++++----------
- 3 files changed, 85 insertions(+), 20 deletions(-)
+- Davide
 
-Index: linux-2.6.21-rc5/arch/i386/kernel/microcode.c
+
+
+Index: linux-2.6.21-rc5.fds/arch/i386/kernel/syscall_table.S
 ===================================================================
---- linux-2.6.21-rc5.orig/arch/i386/kernel/microcode.c
-+++ linux-2.6.21-rc5/arch/i386/kernel/microcode.c
-@@ -567,6 +567,53 @@ static int cpu_request_microcode(int cpu
- 	return error;
- }
- 
-+static int apply_microcode_on_cpu(int cpu)
-+{
-+	struct cpuinfo_x86 *c = cpu_data + cpu;
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	cpumask_t old;
-+	unsigned int val[2];
-+	int err = 0;
-+
-+	if (!uci->mc)
-+		return -EINVAL;
-+
-+	old = current->cpus_allowed;
-+	set_cpus_allowed(current, cpumask_of_cpu(cpu));
-+
-+	/* Check if the microcode we have in memory matches the CPU */
-+	if (c->x86_vendor != X86_VENDOR_INTEL || c->x86 < 6 ||
-+	    cpu_has(c, X86_FEATURE_IA64) || uci->sig != cpuid_eax(0x00000001))
-+		err = -EINVAL;
-+
-+	if (!err && ((c->x86_model >= 5) || (c->x86 > 6))) {
-+		/* get processor flags from MSR 0x17 */
-+		rdmsr(MSR_IA32_PLATFORM_ID, val[0], val[1]);
-+		if (uci->pf != (1 << ((val[1] >> 18) & 7)))
-+			err = -EINVAL;
-+	}
-+
-+	if (!err) {
-+		wrmsr(MSR_IA32_UCODE_REV, 0, 0);
-+		/* see notes above for revision 1.07.  Apparent chip bug */
-+		sync_core();
-+		/* get the current revision from MSR 0x8B */
-+		rdmsr(MSR_IA32_UCODE_REV, val[0], val[1]);
-+		if (uci->rev != val[1])
-+			err = -EINVAL;
-+	}
-+
-+	if (!err)
-+		apply_microcode(cpu);
-+	else
-+		printk(KERN_ERR "microcode: Could not apply microcode to CPU%d:"
-+			" sig=0x%x, pf=0x%x, rev=0x%x\n",
-+			cpu, uci->sig, uci->pf, uci->rev);
-+
-+	set_cpus_allowed(current, old);
-+	return err;
-+}
-+
- static void microcode_init_cpu(int cpu)
- {
- 	cpumask_t old;
-@@ -577,7 +624,8 @@ static void microcode_init_cpu(int cpu)
- 	set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 	mutex_lock(&microcode_mutex);
- 	collect_cpu_info(cpu);
--	if (uci->valid && system_state == SYSTEM_RUNNING)
-+	if (uci->valid && system_state == SYSTEM_RUNNING &&
-+	    !suspend_cpu_hotplug)
- 		cpu_request_microcode(cpu);
- 	mutex_unlock(&microcode_mutex);
- 	set_cpus_allowed(current, old);
-@@ -663,13 +711,24 @@ static int mc_sysdev_add(struct sys_devi
- 		return 0;
- 
- 	pr_debug("Microcode:CPU %d added\n", cpu);
--	memset(uci, 0, sizeof(*uci));
-+	/* If suspend_cpu_hotplug is set, the system is resuming and we should
-+	 * use the data from before the suspend.
-+	 */
-+	if (suspend_cpu_hotplug) {
-+		err = apply_microcode_on_cpu(cpu);
-+		if (err)
-+			microcode_fini_cpu(cpu);
-+	}
-+	if (!uci->valid)
-+		memset(uci, 0, sizeof(*uci));
- 
- 	err = sysfs_create_group(&sys_dev->kobj, &mc_attr_group);
- 	if (err)
- 		return err;
- 
--	microcode_init_cpu(cpu);
-+	if (!uci->valid)
-+		microcode_init_cpu(cpu);
-+
- 	return 0;
- }
- 
-@@ -680,7 +739,11 @@ static int mc_sysdev_remove(struct sys_d
- 	if (!cpu_online(cpu))
- 		return 0;
- 	pr_debug("Microcode:CPU %d removed\n", cpu);
--	microcode_fini_cpu(cpu);
-+	/* If suspend_cpu_hotplug is set, the system is suspending and we should
-+	 * keep the microcode in memory for the resume.
-+	 */
-+	if (!suspend_cpu_hotplug)
-+		microcode_fini_cpu(cpu);
- 	sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
- 	return 0;
- }
-Index: linux-2.6.21-rc5/include/linux/cpu.h
+--- linux-2.6.21-rc5.fds.orig/arch/i386/kernel/syscall_table.S	2007-03-31 12:25:43.000000000 -0700
++++ linux-2.6.21-rc5.fds/arch/i386/kernel/syscall_table.S	2007-03-31 12:30:07.000000000 -0700
+@@ -319,3 +319,4 @@
+ 	.long sys_move_pages
+ 	.long sys_getcpu
+ 	.long sys_epoll_pwait
++	.long sys_signalfd		/* 320 */
+Index: linux-2.6.21-rc5.fds/include/asm-i386/unistd.h
 ===================================================================
---- linux-2.6.21-rc5.orig/include/linux/cpu.h
-+++ linux-2.6.21-rc5/include/linux/cpu.h
-@@ -127,6 +127,8 @@ static inline int cpu_is_offline(int cpu
- #endif		/* CONFIG_HOTPLUG_CPU */
+--- linux-2.6.21-rc5.fds.orig/include/asm-i386/unistd.h	2007-03-31 12:25:43.000000000 -0700
++++ linux-2.6.21-rc5.fds/include/asm-i386/unistd.h	2007-03-31 12:30:07.000000000 -0700
+@@ -325,10 +325,11 @@
+ #define __NR_move_pages		317
+ #define __NR_getcpu		318
+ #define __NR_epoll_pwait	319
++#define __NR_signalfd		320
  
- #ifdef CONFIG_SUSPEND_SMP
-+extern int suspend_cpu_hotplug;
-+
- extern int disable_nonboot_cpus(void);
- extern void enable_nonboot_cpus(void);
- #else
-Index: linux-2.6.21-rc5/kernel/cpu.c
-===================================================================
---- linux-2.6.21-rc5.orig/kernel/cpu.c
-+++ linux-2.6.21-rc5/kernel/cpu.c
-@@ -254,6 +254,12 @@ int __cpuinit cpu_up(unsigned int cpu)
- }
+ #ifdef __KERNEL__
  
- #ifdef CONFIG_SUSPEND_SMP
-+/* Needed to prevent the microcode driver from requesting firmware in its CPU
-+ * hotplug notifier during the suspend/resume.
-+ */
-+int suspend_cpu_hotplug;
-+EXPORT_SYMBOL(suspend_cpu_hotplug);
-+
- static cpumask_t frozen_cpus;
+-#define NR_syscalls 320
++#define NR_syscalls 321
  
- int disable_nonboot_cpus(void)
-@@ -261,16 +267,8 @@ int disable_nonboot_cpus(void)
- 	int cpu, first_cpu, error = 0;
- 
- 	mutex_lock(&cpu_add_remove_lock);
--	first_cpu = first_cpu(cpu_present_map);
--	if (!cpu_online(first_cpu)) {
--		error = _cpu_up(first_cpu);
--		if (error) {
--			printk(KERN_ERR "Could not bring CPU%d up.\n",
--				first_cpu);
--			goto out;
--		}
--	}
--
-+	suspend_cpu_hotplug = 1;
-+	first_cpu = first_cpu(cpu_online_map);
- 	/* We take down all of the non-boot CPUs in one shot to avoid races
- 	 * with the userspace trying to use the CPU hotplug at the same time
- 	 */
-@@ -296,7 +294,7 @@ int disable_nonboot_cpus(void)
- 	} else {
- 		printk(KERN_ERR "Non-boot CPUs are not disabled\n");
- 	}
--out:
-+	suspend_cpu_hotplug = 0;
- 	mutex_unlock(&cpu_add_remove_lock);
- 	return error;
- }
-@@ -308,20 +306,22 @@ void enable_nonboot_cpus(void)
- 	/* Allow everyone to use the CPU hotplug again */
- 	mutex_lock(&cpu_add_remove_lock);
- 	cpu_hotplug_disabled = 0;
--	mutex_unlock(&cpu_add_remove_lock);
- 	if (cpus_empty(frozen_cpus))
--		return;
-+		goto out;
- 
-+	suspend_cpu_hotplug = 1;
- 	printk("Enabling non-boot CPUs ...\n");
- 	for_each_cpu_mask(cpu, frozen_cpus) {
--		error = cpu_up(cpu);
-+		error = _cpu_up(cpu);
- 		if (!error) {
- 			printk("CPU%d is up\n", cpu);
- 			continue;
- 		}
--		printk(KERN_WARNING "Error taking CPU%d up: %d\n",
--			cpu, error);
-+		printk(KERN_WARNING "Error taking CPU%d up: %d\n", cpu, error);
- 	}
- 	cpus_clear(frozen_cpus);
-+	suspend_cpu_hotplug = 0;
-+out:
-+	mutex_unlock(&cpu_add_remove_lock);
- }
- #endif
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+
