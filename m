@@ -1,49 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbXCaOfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbXCaOpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753124AbXCaOfU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 10:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXCaOfT
+	id S1753134AbXCaOpY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 10:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXCaOpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 10:35:19 -0400
-Received: from ns1.suse.de ([195.135.220.2]:60968 "EHLO mx1.suse.de"
+	Sat, 31 Mar 2007 10:45:24 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:44202 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbXCaOfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 10:35:18 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Zachary Amsden <zach@vmware.com>
-Subject: Re: [PATCH] VMI paravirt-ops bugfix for 2.6.21
-Date: Sat, 31 Mar 2007 16:35:01 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <460E1FC7.5030107@vmware.com>
-In-Reply-To: <460E1FC7.5030107@vmware.com>
+	id S1753121AbXCaOpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 10:45:23 -0400
+X-Greylist: delayed 1206 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Mar 2007 10:45:23 EDT
+From: syrjala@sci.fi
+Date: Sat, 31 Mar 2007 17:25:14 +0300
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Richard Purdie <rpurdie@rpsys.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: drivers/video/aty/atyfb_base.c: array overruns
+Message-ID: <20070331142514.GA21030@sci.fi>
+References: <20070319092246.GI752@stusta.de> <1175304210.4663.2.camel@daplas>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200703311635.01776.ak@suse.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1175304210.4663.2.camel@daplas>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 March 2007 10:45, Zachary Amsden wrote:
-> So lazy MMU mode is vulnerable to interrupts coming in and issuing 
-> kmap_atomic, which does not work when under lazy MMU mode.  The window 
-> for this is small, but it means highmem kernels, especially with heavy 
-> network, USB, or AIO workloads are vulnerable to getting invariably 
-> fatal pagefaults in interrupt handlers.  For now, the best fix is to 
-> simply disable and re-enable interrupts when entering and exiting lazy 
-> mode (which, btw, is already guaranteed to have preempt disabled).  For 
-> the future, a better fix is to simply exit lazy mode when issuing 
-> kmap_atomic, but I do not want to touch any generic code now for 2.6.21.
+On Sat, Mar 31, 2007 at 09:23:29AM +0800, Antonino A. Daplas wrote:
+> On Mon, 2007-03-19 at 10:22 +0100, Adrian Bunk wrote:
+> > The Coverity checker spotted the following two array overruns in 
+> > drivers/video/aty/atyfb_base.c:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> > static const u32 lt_lcd_regs[] = {
+> >         CONFIG_PANEL_LG,
+> >         LCD_GEN_CNTL_LG,
+> >         DSTN_CONTROL_LG,
+> >         HFB_PITCH_ADDR_LG,
+> >         HORZ_STRETCHING_LG,
+> >         VERT_STRETCHING_LG,
+> >         0, /* EXT_VERT_STRETCH */
+> >         LT_GIO_LG,
+> >         POWER_MANAGEMENT_LG
+> > };
+> 
+> We can pad this array with zeroes, as a stop-gap measure. Ville, what do
+> you think?
 
-I think I would prefer you touch the generic code. This new hook is ugly.
+Actually this array overrun can never happen. LCD_MISC_CNTL is accessed
+in the in the pmac backlight code and the backlight device is not
+registered for the Rage LT chip (only user of lt_lcd_regs[]).
 
-And the lazy mode is currently only used by VMI anyways, isn't it? So you shouldn't 
-impact anybody else
+> > 
+> > void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
+> > {
+> >         if (M64_HAS(LT_LCD_REGS)) {
+> >                 aty_st_le32(lt_lcd_regs[index], val, par);
+> > ...
+> > }
+> > ...
+> > u32 aty_ld_lcd(int index, const struct atyfb_par *par)
+> > {
+> >         if (M64_HAS(LT_LCD_REGS)) {
+> >                 return aty_ld_le32(lt_lcd_regs[index], par);
+> > ...
+> > }
+> > ...
+> > static int aty_bl_update_status(struct backlight_device *bd)
+> > {
+> >         struct atyfb_par *par = class_get_devdata(&bd->class_dev);
+> >         unsigned int reg = aty_ld_lcd(LCD_MISC_CNTL, par);
+> > ...
+> >         aty_st_lcd(LCD_MISC_CNTL, reg, par);
+> > 
+> >         return 0;
+> > }
+> > ...
+> > 
+> > <--  snip  -->
+> > 
+> > LCD_MISC_CNTL = 0x14 = 20 > 8
+> > 
+> > cu
+> > Adrian
+> > 
+> 
 
--Andi
-
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
