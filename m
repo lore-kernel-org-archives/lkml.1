@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXCaJng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbXCaJsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbXCaJng (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 05:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbXCaJng
+	id S1752691AbXCaJsk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 05:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXCaJsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 05:43:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35999 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbXCaJnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 05:43:35 -0400
-Date: Sat, 31 Mar 2007 11:43:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Xenofon Antidides <xantidides@yahoo.gr>
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [test] hackbench.c interactivity results: vanilla versus SD/RSDL
-Message-ID: <20070331094323.GA5550@elte.hu>
-References: <1175322706.6030.20.camel@Homer.simpson.net> <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com>
-Mime-Version: 1.0
+	Sat, 31 Mar 2007 05:48:39 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:43905 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752691AbXCaJsj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 05:48:39 -0400
+Date: Sat, 31 Mar 2007 11:46:32 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] UDF cleanup and fixes
+Message-ID: <20070331094631.GA24220@thinkpad.home.local>
+Mail-Followup-To: Chuck Ebbert <cebbert@redhat.com>,
+	Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
+References: <20070306164447.GC3661@duck.suse.cz> <20070330045923.GA5528@dose.home.local> <460D51AA.2080307@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <460D51AA.2080307@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 30, 2007 at 14:06:34 -0400, Chuck Ebbert wrote:
+> Tino Keitel wrote:
+> > On Tue, Mar 06, 2007 at 17:44:47 +0100, Jan Kara wrote:
+> >>   Hello,
+> >>
+> >>   the patches attached to six following emails implement some cleanup and
+> >> fixes in the UDF code. The main two fixes are:
+> >>   1) UDF now works correctly for files larger than 1GB.
+> > 
+> > Hi,
+> > 
+> > I tried 2.6.20 with your patches and got the following behaviour:
+> > 
+> > $ ls -la dvd.udf 
+> > -rw-r--r-- 1 root root 4699717632 Mar 29 15:36 dvd.udf
+> > $ mount -o loop -t udf dvd.udf /media/udf/
+> > $ df /media/udf/
+> > Filesystem           1K-blocks      Used Available Use% Mounted on
+> > /home/storage/dvd.udf
+> >                        4588506 -8584746354 8589334860   -  /media/udf
+> >                                ^^^^^^^^^^^^^^^^^^^^^^
+> > $ ls -la /media/udf/
+> > total 4587521
+> > drwxr-xr-x 3 root root        144 Mar 29 15:36 .
+> > drwxr-xr-x 9 root root       1024 Mar 20 12:02 ..
+> > -rw-r--r-- 1 root root 4697620480 Mar 29 15:57 bk_usr.tar
+> > drwxr-xr-x 2 root root         40 Mar 29 15:36 lost+found
+> > 
+> 
+> Is that on a 32-bit machine?
 
-* Xenofon Antidides <xantidides@yahoo.gr> wrote:
+Yes, it's an Intel Core Duo.
 
-> [...] I cannot play wine games with audio, I cannot sample video, I 
-> cannot use skype, I cannot play midi. And even linux only things I try 
-> do I cannot share my X, I cannot use more than one vmware. [...]
-
-strange - i can do such things (and other things) with the vanilla 
-scheduler (except vmware which i dont run). It would be nice to debug 
-your 'cannot play midi' problem for example - could you try to describe 
-it a bit more accurately so that we can try to reproduce it and fix it? 
-(in the alternative i can send you tracing patches to capture what the 
-scheduler does and how)
-
-also, could you possibly try these workloads you described with Mike's 
-latest patch too? Thanks,
-
-	Ingo
+Regards,
+Tino
