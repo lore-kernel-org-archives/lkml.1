@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933410AbXCaCrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933449AbXCaCsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933410AbXCaCrd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Mar 2007 22:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933425AbXCaCrd
+	id S933449AbXCaCsd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Mar 2007 22:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933458AbXCaCsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Mar 2007 22:47:33 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:37049 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933410AbXCaCrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Mar 2007 22:47:33 -0400
-Date: Sat, 31 Mar 2007 11:37:23 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Paul Jackson <pj@sgi.com>
-Cc: linux-kernel@vger.kernel.org, simon.derr@bull.net
-Subject: Re: [PATCH] CPUSETS: add mems to basic usage documentation
-Message-ID: <20070331023723.GB29836@verge.net.au>
-References: <20070330041001.GA20566@verge.net.au> <20070330023047.216048a6.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070330023047.216048a6.pj@sgi.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+	Fri, 30 Mar 2007 22:48:33 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:10756 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933449AbXCaCsc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Mar 2007 22:48:32 -0400
+Subject: Re: [PATCH 9/9] clocksource: refactor duplicate registration
+	checking
+From: Daniel Walker <dwalker@mvista.com>
+To: James Morris <jmorris@namei.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       johnstul@us.ibm.com
+In-Reply-To: <Line.LNX.4.64.0703302158380.29742@d.namei>
+References: <20070330184541.583153763@mvista.com>
+	 <20070330184616.429016225@mvista.com>
+	 <Line.LNX.4.64.0703302158380.29742@d.namei>
+Content-Type: text/plain
+Date: Fri, 30 Mar 2007 19:47:52 -0700
+Message-Id: <1175309273.12252.184.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 30, 2007 at 02:30:47AM -0700, Paul Jackson wrote:
-> Simon Horman wrote:
-> > +++ linux-2.6/Documentation/cpusets.txt	2007-03-30 13:03:19.000000000 +0900
-> > ...
-> > +Add some mems:
-> > +# /bin/echo 0-7 > mems
+On Fri, 2007-03-30 at 21:59 -0400, James Morris wrote:
+> On Fri, 30 Mar 2007, Daniel Walker wrote:
 > 
-> Nice change - thanks.
+> >  /**
+> >   * clocksource_register - Used to install new clocksources
+> >   * @t:		clocksource to be registered
+> >   *
+> > - * Returns -EBUSY if registration fails, zero otherwise.
+> > + * Always returns zero.
+> >   */
+> >  int clocksource_register(struct clocksource *c)
 > 
-> Acked-by: Paul Jackson <pj@sgi.com>
+> Return should be void, then.
 
-Thanks
+Yeah, that's another patch tho ..
 
-> (I probably would not add a dmesg complaint; we don't usually
-> do that for ordinary system call failures.  Pay close attention
-> to the resulting errno - in this case ENOSPC.)
-
-Understood
-
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+Daniel
 
