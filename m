@@ -1,109 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965131AbXCaGlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbXCaGol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965131AbXCaGlp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 02:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933586AbXCaGlp
+	id S932183AbXCaGol (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 02:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933586AbXCaGol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 02:41:45 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37733 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932183AbXCaGlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 02:41:44 -0400
-Date: Sat, 31 Mar 2007 08:42:28 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>, Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH] fix dependency generation
-Message-ID: <20070331064228.GA11023@uranus.ravnborg.org>
-References: <460BA292.76E4.0078.0@novell.com>
+	Sat, 31 Mar 2007 02:44:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:25945 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932183AbXCaGok (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 02:44:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=AAsGrQhA2pKtoYt6hSi4rj557pfcoL5Wu9OZyopkweNXn2W0IBXE6o9gz1JGjW5ZrgDfOV4wPRlSNL4gajpwnjRXbDy/5h0yvwZprxc2lYR36K85bHTCaHcZc9hPbZ10PWnJjT+lx8lPbnGlhkAiXqJB6JSFutIDN0kdsKcZOGk=
+Subject: Re: [4/4] 2.6.21-rc5: known regressions (v2)
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tino Keitel <tino.keitel@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       pavel@suse.cz, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20070330214956.GQ14134@stusta.de>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+	 <20070330214956.GQ14134@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 31 Mar 2007 08:44:39 +0200
+Message-Id: <1175323479.5550.70.camel@funkylaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460BA292.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 29, 2007 at 10:27:14AM +0100, Jan Beulich wrote:
-> Commit 2e3646e51b2d6415549b310655df63e7e0d7a080 changed the way
-> the split config tree is built, but failed to also adjust fixdep
-> accordingly - if changing a config option from or to m, files
-> referencing the respective CONFIG_..._MODULE (but not the
-> corresponding CONFIG_...) didn't get rebuilt.
+Le vendredi 30 mars 2007 à 23:49 +0200, Adrian Bunk a écrit :
+> Subject    : MacMini doesn't come out of suspend to ram  (i386 clockevents)
+>              (CONFIG_HPET_TIMER)
+> References : http://lkml.org/lkml/2007/3/21/374
+> Submitter  : Frédéric Riss <frederic.riss@gmail.com>
+>              Tino Keitel <tino.keitel@gmx.de>
+> Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+>              commit e9e2cdb412412326c4827fc78ba27f410d837e6e
+> Status     : unknown
 
-The problem is that tristate symbol represent three values.
-=n => CONFIG_SYMBOL is undefined
-=y => CONFIG_SYMBOL is defined
-=m => COMFIG_SYMBOL_MODULE is defined
+This one has been fixed by 399afa4fc9238fbae42116cf25a54671c0e8f56e.
+Suspend to ram now works with HPET enabled (and regardless of the NO_HZ
+setting).
 
-The function split_config does not take into account the
-different values and 'fixing' this in fixdep is wrong.
-Because fixdep does not know if the variable is a tristate symbol or not
-so it can either blindly remove _MODULE (your patch)
-or each time it encounters _MODULE check for a symbol with and
-without _MODULE.
+Thanks!
 
-The better fix is to teach the split_config function that
-for tristate symbols two files shall be created in the include/config
-hirachy. So for apm this gets:
-include/config/apm.h
-include/config/apm/module.h
+Fred.
 
-This will make kconfig behave correct the day that someone add a config
-symbol with a _MODULE suffix.
-
-I will follow-up with two patches that implement the changes to split_config.
-The first is a pure code refactoring preparing for the second patch.
-
-Roman - please ack/nack these this since they touches kconfig backend.
-
-	Sam
-
-
-> 
-> Once at it, also eliminate false dependencies due to use of
-> ...CONFIG_... identifiers.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
-> --- linux-2.6.21-rc5/scripts/basic/fixdep.c	2007-02-04 19:44:54.000000000 +0100
-> +++ 2.6.21-rc5-fixdep-mod/scripts/basic/fixdep.c	2007-03-29 11:11:10.000000000 +0200
-> @@ -29,8 +29,7 @@
->   * option which is mentioned in any of the listed prequisites.
->   *
->   * To be exact, split-include populates a tree in include/config/,
-> - * e.g. include/config/his/driver.h, which contains the #define/#undef
-> - * for the CONFIG_HIS_DRIVER option.
-> + * e.g. include/config/his/driver.h, consiting of empty files.
->   *
->   * So if the user changes his CONFIG_HIS_DRIVER option, only the objects
->   * which depend on "include/linux/config/his/driver.h" will be rebuilt,
-> @@ -223,7 +222,7 @@ void use_config(char *m, int slen)
->  void parse_config_file(char *map, size_t len)
->  {
->  	int *end = (int *) (map + len);
-> -	/* start at +1, so that p can never be < map */
-> +	/* start at +1, so that p can never be <= map */
->  	int *m   = (int *) map + 1;
->  	char *p, *q;
->  
-> @@ -235,6 +234,8 @@ void parse_config_file(char *map, size_t
->  		continue;
->  	conf:
->  		if (p > map + len - 7)
-> +			break;
-> +		if (isalnum(p[-1]) || p[-1] == '_')
->  			continue;
->  		if (memcmp(p, "CONFIG_", 7))
->  			continue;
-> @@ -245,6 +246,8 @@ void parse_config_file(char *map, size_t
->  		continue;
->  
->  	found:
-> +		if (!memcmp(q - 7, "_MODULE", 7))
-> +			q -= 7;
->  		use_config(p+7, q-p-7);
->  	}
->  }
-> 
-> 
