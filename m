@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbXCaJYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbXCaJ1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752423AbXCaJYo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 05:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbXCaJYo
+	id S1752607AbXCaJ1E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 05:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXCaJ1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 05:24:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54368 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752423AbXCaJYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 05:24:44 -0400
-Date: Sat, 31 Mar 2007 11:23:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/5] x86_64: enable clockevents and dynticks
-Message-ID: <20070331092339.GA2033@elte.hu>
-References: <20070331083149.997762000@sous-sol.org>
+	Sat, 31 Mar 2007 05:27:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51130 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540AbXCaJ1B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 05:27:01 -0400
+Date: Sat, 31 Mar 2007 10:26:44 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Ed Lin <ed.lin@promise.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "james.Bottomley" <james.Bottomley@SteelEye.com>,
+       jeff <jeff@garzik.org>, promise_linux <promise_linux@promise.com>
+Subject: Re: [PATCH 1/4] [SCSI]stex: fix id mapping issue
+Message-ID: <20070331092644.GA25989@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Ed Lin <ed.lin@promise.com>,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	"james.Bottomley" <james.Bottomley@SteelEye.com>,
+	jeff <jeff@garzik.org>, promise_linux <promise_linux@promise.com>
+References: <NONAMEBZNuIkdg0MZMt000005d3@nonameb.ptu.promise.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070331083149.997762000@sous-sol.org>
+In-Reply-To: <NONAMEBZNuIkdg0MZMt000005d3@nonameb.ptu.promise.com>
 User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 30, 2007 at 03:21:33PM -0700, Ed Lin wrote:
+> +	if (hba->cardtype == st_shasta) {
+>  		req->lun = lun;
+>  		req->target = id;
+> +	} else if (hba->cardtype == st_yosemite){
+> +		req->lun = id * ST_MAX_LUN_PER_TARGET + lun;
+> +		req->target = 0;
+> +	} else {
+> +		/* st_vsc and st_vsc1 */
+> +		req->lun = 0;
+> +		req->target = id * ST_MAX_LUN_PER_TARGET + lun;
 
-* Chris Wright <chrisw@sous-sol.org> wrote:
+I don't get why you can't export id as targer and lun as lun for
+the !st_shasta types.  Could you explain in detail what the problem
+with that approach would be?
 
-> This series converts x86_64 timers to clockevents drivers and then 
-> enables dynticks.  There's some minor cleanups along the way.  The 
-> lapic broadcast mechanism is untested, I'm sure it still needs work, 
-> there's still some cruft in lapic_setup_timer.
-> 
-> This is just for comments at this point, now that it's working on my 
-> test box in both NO_HZ=n and NO_HZ=n configurations (typically using 
-> hpet).
-
-hm, neat - did you take a look at the x86_64 clockevents code that is in 
--rt and that has been there for a year or so and has been tested quite 
-extensively?
-
-	Ingo
