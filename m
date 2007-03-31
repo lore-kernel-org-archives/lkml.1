@@ -1,123 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbXCaHqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbXCaHrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751988AbXCaHqw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 03:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXCaHqw
+	id S1752254AbXCaHrU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 03:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXCaHrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 03:46:52 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50836 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751988AbXCaHqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 03:46:51 -0400
-Message-ID: <460E1FC7.5030107@vmware.com>
-Date: Sat, 31 Mar 2007 00:45:59 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Sat, 31 Mar 2007 03:47:20 -0400
+Received: from mail.chilan.com ([82.160.212.9]:54637 "EHLO mail.chilan.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752159AbXCaHrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 03:47:17 -0400
+From: "Grzegorz Chwesewicz" <grzegorz.chwesewicz@chilan.com>
+To: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, Len Brown <lenb@kernel.org>,
+       "Morrow, William" <William.Morrow@amd.com>,
+       "Crouse, Jordan" <jordan.crouse@ldcmail.amd.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] i386: add command line option "local_apic_timer_c2_ok"
+Date: Sat, 31 Mar 2007 09:47:14 +0200
+Message-Id: <20070331074239.M63498@chilan.com>
+In-Reply-To: <200703300005.41800.ak@suse.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703292249.37979.ak@suse.de> <Pine.LNX.4.64.0703291410480.6730@woody.linux-foundation.org> <200703300005.41800.ak@suse.de>
+X-Mailer: OpenWebMail 2.52 20061019
+X-OriginatingIP: 82.160.212.2 (ceho)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] VMI paravirt-ops bugfix for 2.6.21
-Content-Type: multipart/mixed;
- boundary="------------070701020207090800010905"
+Content-Type: text/plain;
+	charset=iso-8859-2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070701020207090800010905
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, 30 Mar 2007 00:05:39 +0200, Andi Kleen wrote
+> On Thursday 29 March 2007 23:16, Linus Torvalds wrote:
+> > 
+> > On Thu, 29 Mar 2007, Andi Kleen wrote:
+> > > 
+> > > Here's a patch. I don't have a system with C1E, so i only tested that
+> > > the apic timer still works on a older AMD box.
+> > 
+> > I think this looks better than what we have now, but it would look even 
+> > better if the core CPUID stuff was in arch/i386/kernel/cpu/amd.c, and we 
+> > simply had X86_FEATURE_BROKEN_C1_LAPIC etc..
+> > 
+> > And then the apic.c code would just check
+> > 
+> > 	if (boot_cpu_has(X86_FEATURE_BROKEN_C1_LAPIC))
+> > 		return -1;
+> > 
+> > or similar.
+> 
+> Ok fair point. Here's an updated patch.
 
-So lazy MMU mode is vulnerable to interrupts coming in and issuing 
-kmap_atomic, which does not work when under lazy MMU mode.  The window 
-for this is small, but it means highmem kernels, especially with heavy 
-network, USB, or AIO workloads are vulnerable to getting invariably 
-fatal pagefaults in interrupt handlers.  For now, the best fix is to 
-simply disable and re-enable interrupts when entering and exiting lazy 
-mode (which, btw, is already guaranteed to have preempt disabled).  For 
-the future, a better fix is to simply exit lazy mode when issuing 
-kmap_atomic, but I do not want to touch any generic code now for 2.6.21.
+I've tested this patch little bit more on my nx6325 and I've found scenario in
+which my box works slow. When I boot HP with connected AC (it boots fast), and
+then after boot I unplug AC and try to power HP off it's working very slow
+(powering off process take few minutes). On battery it's always booting and
+powering off fast. Can enybody with nx6325 confirm this ?
 
-Hopefully there is still time to apply it.  Thanks to Jeremy 
-Fitzhardinge for pointing this out.
-
-Zach
-
---------------070701020207090800010905
-Content-Type: text/plain;
- name="vmi-lazy-mmu-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="vmi-lazy-mmu-fix.patch"
-
-Critical bugfix; when using software RAID, potentially USB or AIO in
-highmem configurations, drivers are allowed to use kmap_atomic from
-interrupt context.  This is incompatible with the current implementation
-of lazy MMU mode, and means the kmap will silently fail, causing either
-memory corruption or kernel panics.  This bug is only visible with >970
-megs of RAM and extreme memory pressure, but nontheless extremely serious.
-
-The fix is to disable interrupts on the CPU when entering a lazy MMU
-state; this is totally safe, as preemption is already disabled, and
-lazy update state can neither be nested nor overlapping.  Thus per-cpu
-variables to track the state and flags can be used to disable interrupts
-during this critical region.
-
-Signed-off-by: Zachary Amsden <zach@vmware.com>
-
-diff -r be8c61492e28 arch/i386/kernel/vmi.c
---- a/arch/i386/kernel/vmi.c	Fri Mar 30 14:13:45 2007 -0700
-+++ b/arch/i386/kernel/vmi.c	Fri Mar 30 14:18:16 2007 -0700
-@@ -69,6 +69,7 @@ struct {
- 	void (*flush_tlb)(int);
- 	void (*set_initial_ap_state)(int, int);
- 	void (*halt)(void);
-+ 	void (*set_lazy_mode)(int mode);
- } vmi_ops;
- 
- /* XXX move this to alternative.h */
-@@ -574,6 +575,31 @@ vmi_startup_ipi_hook(int phys_apicid, un
- }
- #endif
- 
-+static void vmi_set_lazy_mode(int new_mode)
-+{
-+	static DEFINE_PER_CPU(int, mode);
-+	static DEFINE_PER_CPU(unsigned long, flags);
-+	int cpu = smp_processor_id();
-+
-+	if (!vmi_ops.set_lazy_mode)
-+		return;
-+
-+	/*
-+	 * Modes do not nest or overlap, so we can simply disable
-+	 * irqs when entering a mode and re-enable when leaving.
-+	 */
-+	BUG_ON(per_cpu(mode, cpu) && new_mode);
-+	BUG_ON(!new_mode && !per_cpu(mode, cpu));
-+	
-+	if (new_mode)
-+		local_irq_save(per_cpu(flags, cpu));
-+	else
-+		local_irq_restore(per_cpu(flags, cpu));
-+
-+	vmi_ops.set_lazy_mode(new_mode);
-+	per_cpu(mode, cpu) = new_mode;
-+}
-+
- static inline int __init check_vmi_rom(struct vrom_header *rom)
- {
- 	struct pci_header *pci;
-@@ -804,7 +830,7 @@ static inline int __init activate_vmi(vo
- 	para_wrap(load_esp0, vmi_load_esp0, set_kernel_stack, UpdateKernelStack);
- 	para_fill(set_iopl_mask, SetIOPLMask);
- 	para_fill(io_delay, IODelay);
--	para_fill(set_lazy_mode, SetLazyMode);
-+	para_wrap(set_lazy_mode, vmi_set_lazy_mode, set_lazy_mode, SetLazyMode);
- 
- 	/* user and kernel flush are just handled with different flags to FlushTLB */
- 	para_wrap(flush_tlb_user, vmi_flush_tlb_user, flush_tlb, FlushTLB);
-
---------------070701020207090800010905--
+--
+Greetings - CeHo - Grzegorz Chwesewicz
