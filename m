@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbXDASpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933885AbXDASpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933860AbXDASpL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933869AbXDASpK
+	id S933885AbXDASpg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933883AbXDASpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:45:10 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46826 "EHLO pasmtpA.tele.dk"
+	Sun, 1 Apr 2007 14:45:36 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:50878 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933860AbXDASpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:45:09 -0400
-Date: Sun, 1 Apr 2007 20:45:54 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix dependency generation
-Message-ID: <20070401184553.GC10113@uranus.ravnborg.org>
-References: <460BA292.76E4.0078.0@novell.com> <20070331064228.GA11023@uranus.ravnborg.org> <Pine.LNX.4.64.0703311804230.14457@scrub.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703311804230.14457@scrub.home>
-User-Agent: Mutt/1.4.2.1i
+	id S933876AbXDASpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:45:32 -0400
+Date: Sun, 1 Apr 2007 20:42:59 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 07/16] kconfig-dynamic-frequency.diff
+In-Reply-To: <B118D361-9F40-456F-96B7-E61B16B98432@mac.com>
+Message-ID: <Pine.LNX.4.61.0704012040220.15102@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0704012006060.12316@yvahk01.tjqt.qr>
+ <B118D361-9F40-456F-96B7-E61B16B98432@mac.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 31, 2007 at 06:11:36PM +0200, Roman Zippel wrote:
-> Hi,
-> 
-> On Sat, 31 Mar 2007, Sam Ravnborg wrote:
-> 
-> > The problem is that tristate symbol represent three values.
-> > =n => CONFIG_SYMBOL is undefined
-> > =y => CONFIG_SYMBOL is defined
-> > =m => COMFIG_SYMBOL_MODULE is defined
-> > 
-> > The function split_config does not take into account the
-> > different values and 'fixing' this in fixdep is wrong.
-> > Because fixdep does not know if the variable is a tristate symbol or not
-> > so it can either blindly remove _MODULE (your patch)
-> > or each time it encounters _MODULE check for a symbol with and
-> > without _MODULE.
-> 
-> What really matters is that CONFIG_SYMBOL changed, one could optimize for 
-> the COMFIG_SYMBOL_MODULE case, but I don't think it's worth it, especially 
-> ...
-> 
-> > The better fix is to teach the split_config function that
-> > for tristate symbols two files shall be created in the include/config
-> > hirachy. So for apm this gets:
-> > include/config/apm.h
-> > include/config/apm/module.h
-> 
-> if it requires thousands of new inodes for a feature which should be 
-> rarely used.
-> 
-> > This will make kconfig behave correct the day that someone add a config
-> > symbol with a _MODULE suffix.
-> 
-> I'd rather reserve that namespace, if it allows for the simpler version to 
-> just map all symbols to the basic config symbol name.
 
-OK, I have forwarded Jan's patch for inclusion (the bug-fix part).
+On Apr 1 2007 14:39, Kyle Moffett wrote:
+>> 
+>> Make HZ fully configurable through menuconfig.
+>> 
+>> Already posted at http://lkml.org/lkml/2006/6/18/111
+>
+> Instead of that, what about something like this instead:  NOTE: I know my
+> mailer mangles diffs and this one was hand-edited based on Jan's diff from
+> within my mailer so it probably doesn't apply, but it's enough to point out the
+> idea:
 
-	Sam
+> config HZ
+> -	int
+> +	int if !HZ_CUSTOM
+> +	int "Customized HZ value" if HZ_CUSTOM
+> default 100 if HZ_100
+> default 250 if HZ_250
+> default 1000 if HZ_1000
 
-> 
-> bye, Roman
+People always come up with new complexities I never thought kconfig
+would be able to do. Nice stuff. I'll take up on your idea and
+incorporate it right away.
+
+But I would have to ask: Why do we need 100/250/300/1000 if there is
+anyway an input field for the user to enter - s/he should read the
+help text for Known Good values, should not s/he?
+
+
+Jan
+-- 
