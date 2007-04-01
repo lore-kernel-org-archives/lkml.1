@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbXDAGCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbXDAGM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932451AbXDAGCI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 02:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932465AbXDAGCI
+	id S1752016AbXDAGM4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 02:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXDAGM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 02:02:08 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:57932 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932451AbXDAGCH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 02:02:07 -0400
-Message-ID: <460F58B2.7020607@vmware.com>
-Date: Sat, 31 Mar 2007 23:01:06 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] VMI paravirt-ops bugfix for 2.6.21
-References: <460E1FC7.5030107@vmware.com> <200703311635.01776.ak@suse.de>
-In-Reply-To: <200703311635.01776.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sun, 1 Apr 2007 02:12:56 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:50815 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752016AbXDAGMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 02:12:55 -0400
+Date: Sat, 31 Mar 2007 23:12:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch 3/13] signal/timer/event fds v9 - signalfd wire up i386
+ arch ...
+Message-Id: <20070331231245.bb55c39d.akpm@linux-foundation.org>
+In-Reply-To: <send-serie.davidel@xmailserver.org.16816.1175371770.3>
+References: <send-serie.davidel@xmailserver.org.16816.1175371770.3>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> I think I would prefer you touch the generic code. This new hook is ugly.
->   
+On Sat, 31 Mar 2007 13:09:29 -0700 Davide Libenzi <davidel@xmailserver.org> wrote:
 
-What new hook?  The hook has been there for sometime, and now we are 
-using it to fix a bug.  I do not want to touch generic or arch code at 
-this point in the 2.6.21 release.
+> This patch wire the signalfd system call to the i386 architecture.
+> 
 
-> And the lazy mode is currently only used by VMI anyways, isn't it? So you shouldn't 
-> impact anybody else
->   
+all your x86 syscall numbers got incremented due to lutiemsat().
 
-Yes, but if I don't touch arch code, I won't even affect native.  I do 
-not want to risk any instability, despite how easy it would be to do 
-what you and others have asked, I don't think it is appropriate at -rc5 
-stage.
-
-Thanks,
-Zach
+The revoke sycalls got incremented by three.
