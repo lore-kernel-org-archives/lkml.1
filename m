@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932437AbXDALuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932933AbXDAMWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932437AbXDALuE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 07:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbXDALuD
+	id S932933AbXDAMWX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 08:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932943AbXDAMWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 07:50:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:30190 "EHLO
+	Sun, 1 Apr 2007 08:22:23 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:2703 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932437AbXDALuA (ORCPT
+	with ESMTP id S932933AbXDAMWW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 07:50:00 -0400
+	Sun, 1 Apr 2007 08:22:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=qxu6mpgG10r+vNKpImruk1egVNJlWwD4N67yoiVPeSypDYwX7l+CCaWIUf80YWTiJWfY9mpcuV2vnFLdaDIZr5GsQaKf4Yve7gtzrnWREhBIRgt2BbZZ9erxXAmMy7svWPhTbbbR5w5IEXd5Y/VXSB5V6E0MeCgEK1ECy/4V7GA=
-Message-ID: <84144f020704010449w2ba342a3qf3025425e84ad2ce@mail.gmail.com>
-Date: Sun, 1 Apr 2007 14:49:59 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Pete Zaitcev" <zaitcev@redhat.com>
-Subject: Re: usb hid: reset NumLock
-Cc: "Jiri Kosina" <jkosina@suse.cz>, dtor@insightbb.com,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       stuard_hayes@dell.com
-In-Reply-To: <20070330105924.01a16dd6.zaitcev@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=Lo6AQ98DPI0i4inUNbdJL+9qUL3g8g2VMdG5B/1xruksc59ayC8odA7DLHg+bJMtTjXAQEXXVso/6jDmDHipBBiUX4i3/iVtBu9O7ECETHvw/QCsKLNKeNHl0YwwUd4k/w+cXjXsDw/Wuie38uwaj5LbLGawyDf7w8CltsdfsMw=
+Date: Sun, 1 Apr 2007 17:53:19 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, ralf@linux-mips.org
+Subject: [KJ][PATCH] ROUND_UP cleanup in arch/mips/kernel/sysirix.c
+Message-ID: <20070401122319.GA10178@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070330105924.01a16dd6.zaitcev@redhat.com>
-X-Google-Sender-Auth: 086d8b426442a733
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/30/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
-> Dell people (Stuart and Charles) complained that on some USB keyboards,
-> if BIOS enables NumLock, it stays on even after Linux has started. Since
-> we always start with NumLock off, this confuses users. Quick double dab
-> at NumLock fixes it, but it's not nice.
+ROUND_UP(32|64) cleanup, use ALIGN
 
-What I am seeing on my Thinkpad is that when I boot _without_ an USB
-keyboard NumLock is enabled. Switching to virtual console and back to
-X fixes it which is why I have never bothered to debug it further.
-Perhaps this is related? Should I give your patch a spin to see if it
-fixes the problem?
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+
+---
+ sysirix.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+
+
+diff --git a/arch/mips/kernel/sysirix.c b/arch/mips/kernel/sysirix.c
+index 93a1484..59c25bc 100644
+--- a/arch/mips/kernel/sysirix.c
++++ b/arch/mips/kernel/sysirix.c
+@@ -1736,14 +1736,13 @@ struct irix_dirent32_callback {
+ };
+ 
+ #define NAME_OFFSET32(de) ((int) ((de)->d_name - (char *) (de)))
+-#define ROUND_UP32(x) (((x)+sizeof(u32)-1) & ~(sizeof(u32)-1))
+ 
+ static int irix_filldir32(void *__buf, const char *name,
+ 	int namlen, loff_t offset, u64 ino, unsigned int d_type)
+ {
+ 	struct irix_dirent32 __user *dirent;
+ 	struct irix_dirent32_callback *buf = __buf;
+-	unsigned short reclen = ROUND_UP32(NAME_OFFSET32(dirent) + namlen + 1);
++	unsigned short reclen = ALIGN(NAME_OFFSET32(dirent) + namlen + 1, sizeof(u32));
+ 	int err = 0;
+ 	u32 d_ino;
+ 
+@@ -1838,14 +1837,13 @@ struct irix_dirent64_callback {
+ };
+ 
+ #define NAME_OFFSET64(de) ((int) ((de)->d_name - (char *) (de)))
+-#define ROUND_UP64(x) (((x)+sizeof(u64)-1) & ~(sizeof(u64)-1))
+ 
+ static int irix_filldir64(void *__buf, const char *name,
+ 	int namlen, loff_t offset, u64 ino, unsigned int d_type)
+ {
+ 	struct irix_dirent64 __user *dirent;
+ 	struct irix_dirent64_callback * buf = __buf;
+-	unsigned short reclen = ROUND_UP64(NAME_OFFSET64(dirent) + namlen + 1);
++	unsigned short reclen = ALIGN(NAME_OFFSET64(dirent) + namlen + 1,sizeof(u64));
+ 	int err = 0;
+ 
+ 	if (!access_ok(VERIFY_WRITE, buf, sizeof(*buf)))
+
+-- 
+Milind Arun Choudhary
