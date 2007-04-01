@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933865AbXDASoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbXDASpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933865AbXDASoA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933860AbXDASoA
+	id S933860AbXDASpL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933869AbXDASpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:44:00 -0400
-Received: from smtpout.mac.com ([17.250.248.184]:64321 "EHLO smtpout.mac.com"
+	Sun, 1 Apr 2007 14:45:10 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46826 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933865AbXDASn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:43:58 -0400
-In-Reply-To: <1714123823@web.de>
-References: <1714123823@web.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6BD015BC-3F6A-4839-9A66-DB2E322F5B74@mac.com>
-Cc: Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [patch] remove artificial software max_loop limit
-Date: Sun, 1 Apr 2007 14:43:52 -0400
-To: devzero@web.de
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	id S933860AbXDASpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:45:09 -0400
+Date: Sun, 1 Apr 2007 20:45:54 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix dependency generation
+Message-ID: <20070401184553.GC10113@uranus.ravnborg.org>
+References: <460BA292.76E4.0078.0@novell.com> <20070331064228.GA11023@uranus.ravnborg.org> <Pine.LNX.4.64.0703311804230.14457@scrub.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703311804230.14457@scrub.home>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 01, 2007, at 14:36:11, devzero@web.de wrote:
->> Blame on the dual meaning of max_loop that it uses currently: to
->> initialize a set of loop devices and as a side effect, it also sets
->> the upper limit.  People are complaining about the former constrain,
->> isn't it?  Does anyone uses the 2nd meaning of upper limit?
->>
->> - Ken
->
-> what sense would it make to set an upper limit at all?
->
-> we`re so happy to have none anymore :)
+On Sat, Mar 31, 2007 at 06:11:36PM +0200, Roman Zippel wrote:
+> Hi,
+> 
+> On Sat, 31 Mar 2007, Sam Ravnborg wrote:
+> 
+> > The problem is that tristate symbol represent three values.
+> > =n => CONFIG_SYMBOL is undefined
+> > =y => CONFIG_SYMBOL is defined
+> > =m => COMFIG_SYMBOL_MODULE is defined
+> > 
+> > The function split_config does not take into account the
+> > different values and 'fixing' this in fixdep is wrong.
+> > Because fixdep does not know if the variable is a tristate symbol or not
+> > so it can either blindly remove _MODULE (your patch)
+> > or each time it encounters _MODULE check for a symbol with and
+> > without _MODULE.
+> 
+> What really matters is that CONFIG_SYMBOL changed, one could optimize for 
+> the COMFIG_SYMBOL_MODULE case, but I don't think it's worth it, especially 
+> ...
+> 
+> > The better fix is to teach the split_config function that
+> > for tristate symbols two files shall be created in the include/config
+> > hirachy. So for apm this gets:
+> > include/config/apm.h
+> > include/config/apm/module.h
+> 
+> if it requires thousands of new inodes for a feature which should be 
+> rarely used.
+> 
+> > This will make kconfig behave correct the day that someone add a config
+> > symbol with a _MODULE suffix.
+> 
+> I'd rather reserve that namespace, if it allows for the simpler version to 
+> just map all symbols to the basic config symbol name.
 
-Well, the point of an upper limit might be to keep loop devices from  
-chewing up too much memory on a system.  IE: To fail allocating more  
-loopdevs before you run OOM and start killing random userspace  
-processes.
+OK, I have forwarded Jan's patch for inclusion (the bug-fix part).
 
-Cheers,
-Kyle Moffett
+	Sam
 
+> 
+> bye, Roman
