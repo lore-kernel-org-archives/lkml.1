@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbXDAGQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXDAGR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752029AbXDAGQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 02:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXDAGQ0
+	id S932469AbXDAGR1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 02:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXDAGR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 02:16:26 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38668 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbXDAGQZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 02:16:25 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jurriaan <thunder7@xs4all.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org,
-       Vivek Goyal <vgoyal@in.ibm.com>
-Subject: Re: 2.6.21-rc5-mm3 - no boot, "address not 2M aligned"
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
-	<20070331071220.GA26910@aitel.hist.no>
-	<20070331005303.354411f0.akpm@linux-foundation.org>
-	<20070401052932.GA9894@amd64.of.nowhere>
-Date: Sun, 01 Apr 2007 00:15:51 -0600
-In-Reply-To: <20070401052932.GA9894@amd64.of.nowhere> (thunder7@xs4all.nl's
-	message of "Sun, 1 Apr 2007 07:29:32 +0200")
-Message-ID: <m1ircghb6w.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Sun, 1 Apr 2007 02:17:27 -0400
+Received: from 1wt.eu ([62.212.114.60]:1601 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932469AbXDAGR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 02:17:26 -0400
+Date: Sun, 1 Apr 2007 08:17:07 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Pedram M <pmessri@gmail.com>
+Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: my first janitorial
+Message-ID: <20070401061707.GB943@1wt.eu>
+References: <9c9aa5d00703310639q68fa5d19k4d8e3bfb56b1fa6@mail.gmail.com> <9c9aa5d00703312224t1948b24bhe34199f19cbda4fb@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9c9aa5d00703312224t1948b24bhe34199f19cbda4fb@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thunder7@xs4all.nl writes:
+Hi,
 
-> I had the same with this .config from 2.6.21-rc3-mm2 after running 'make
-> oldconfig' and answering N to all new questions. Then, I tweaked some
-> items, mostly to see if there was an 'align kernel' item in there
-> somewhere. Diff between _working_ 2.6.21-rc5-mm3 .config and this
-> 2.6.21-rc3-mm2 .config at the end. Somehow that seems to have adapted
-> 'CONFIG_PHYSICAL_START', maybe that's it?
+On Sat, Mar 31, 2007 at 10:24:12PM -0700, Pedram M wrote:
+> How about this one? Am I doing it right now?
+> If not, please try to explain more to me what I am
+> doing wrong.
 
-That looks like it.
+You have made several mistakes :
+  - you must select an appropriate subject for your mail. Nobody cares
+    that it is your first mail, what they care about is the problem you
+    are trying to fix and what it applies to. Preferably start your
+    subject with [PATCH] so that people can quickly notice it without
+    having to open it first.
 
-Does anyone know how to express the constraint of a 2M aligned number in Kconfig?
+  - you did not send a description of your patch. It is important to
+    have a full description, it can be from 1 line to 1 page depending
+    on the complexity of the issue. It is important to explain why you
+    think you are right so that people can argue if they don't agree.
+    Please also try to be as factual as possible, because your message
+    will become the commit message. It means that sentences such as
+    "I think that ..." are not the best we can write.
 
-The original plan was to remove CONFIG_PHYSICAL_START and CONFIG_RELOCATABLE on
-x86_64 because after this series they have no cost and thus just lead to a little
-more confusion.
+  - you must sign your patch. For this, add a "Signed-Off-By:" footer.
+    Take a look at other patches for this.
 
-However because we don't tag vmlinux as ET_DYN and Xen has some use for kernel
-built at different physical addresses (or at least loaded at them), and because
-Xen directly loads vmlinux he kept those options.
+   - your patch was cut and cannot apply to anything. A proper patch starts
+     with line beginning with "---" line, followed by a line with "+++",
+     both indicating the file your patch is supposed to apply to. Make your
+     patch with one level directory for the kernel so that it can apply with
+     "patch -p1". For instance:
 
-If we can find a place to stick it into the build doing a little post processing
-of vmlinux so that it has the proper ELF header type (ET_DYN not ET_EXEC) would
-be useful and allow us to remove those extra confusing options.
+        $ diff -u linux-2.6.20/Makefile linux-2.6.20-mine/Makefile
 
-If I have a spare moment I will take a look.  Since there is confusion it is
-probably worth removing the unnecessary confusing options if we can instead
-of supporting the full confusion.
+     Another solution is to use '.' as the directory, in order to add one
+     directory level for "patch -p1" to be happy :
 
-Doing the same for i386 would be a little harder but with Dave
-Miller's suggestions for Xen and leaving the functions to be replaced
-unlinked so the compiler generates efficient calls and then doing
-linking magic to fill in the pieces at boot looks about as tricky as
-moving the relocation logic for i386 into vmlinux as well.  So it
-seems feasible and possibly worth doing.
+        $ diff -u ./Makefile.orig ./Makefile
 
-Eric
+Hoping this helps,
+Willy
+
+
+> @@ -4760,7 +4760,7 @@
+> 	for (i = 0; i < NR_CARDS; i++) {
+> 		/* look for a Cyclades card by vendor and device id */
+> 		while ((device_id = cy_pci_dev_id[dev_index]) != 0) {
+> -			if ((pdev = pci_find_device(PCI_VENDOR_ID_CYCLADES,
+> +			if ((pdev = pci_get_device(PCI_VENDOR_ID_CYCLADES,
+> 						   device_id, pdev)) == 
+> 						   NULL) {
+> 				dev_index++;	/* try next device id */
+> 			} else {
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
