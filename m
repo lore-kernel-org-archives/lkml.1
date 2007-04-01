@@ -1,189 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbXDAOgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933332AbXDAOgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933368AbXDAOgK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 10:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933113AbXDAOfr
+	id S933332AbXDAOgN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 10:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933367AbXDAOgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 10:35:47 -0400
-Received: from il.qumranet.com ([82.166.9.18]:47541 "EHLO il.qumranet.com"
+	Sun, 1 Apr 2007 10:36:12 -0400
+Received: from il.qumranet.com ([82.166.9.18]:47551 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933127AbXDAOfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 10:35:41 -0400
+	id S933332AbXDAOfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 10:35:46 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 06/41] KVM: Use a shared page for kernel/user communication when runing a vcpu
-Date: Sun,  1 Apr 2007 17:35:03 +0300
-Message-Id: <11754381383144-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>,
+       Avi Kivity <avi@qumranet.com>
+Subject: [PATCH 41/41] KVM: SVM: enable LBRV virtualization if available
+Date: Sun,  1 Apr 2007 17:35:38 +0300
+Message-Id: <11754381403398-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.5
-In-Reply-To: <11754381383730-git-send-email-avi@qumranet.com>
-References: <1175438138288-git-send-email-avi@qumranet.com> <11754381381990-git-send-email-avi@qumranet.com> <11754381384009-git-send-email-avi@qumranet.com> <1175438138805-git-send-email-avi@qumranet.com> <11754381382515-git-send-email-avi@qumranet.com> <11754381383730-git-send-email-avi@qumranet.com>
+In-Reply-To: <11754381393751-git-send-email-avi@qumranet.com>
+References: <1175438138288-git-send-email-avi@qumranet.com> <11754381381990-git-send-email-avi@qumranet.com> <11754381384009-git-send-email-avi@qumranet.com> <1175438138805-git-send-email-avi@qumranet.com> <11754381382515-git-send-email-avi@qumranet.com> <11754381383730-git-send-email-avi@qumranet.com> <11754381383144-git-send-email-avi@qumranet.com> <11754381381597-git-send-email-avi@qumranet.com> <1175438139242-git-send-email-avi@qumranet.com> <1175438139494-git-send-email-avi@qumranet.com> <11754381392046-git-send-email-avi@qumranet.com> <1175438139795-git-send-email-avi@qumranet.com> <1175438139430-git-send-email-avi@qumranet.com> <11754381393496-git-send-email-avi@qumranet.com> <11754381391514-git-send-email-avi@qumranet.com> <11754381392382-git-send-email-avi@qumranet.com> <11754381392358-git-send-email-avi@qumranet.com> <1175438139872-git-send-email-avi@qumranet.com> <11754381392921-git-send-email-avi@qumranet.com> <117543813978-git-send-email-avi@qumranet.com> <117543
+ 81393061-git-send-email-avi@qumranet.com> <11754381392186-git-send-email-avi@qumranet.com> <117543813916-git-send-email-avi@qumranet.com> <1175438139530-git-send-email-avi@qumranet.com> <1175438139960-git-send-email-avi@qumranet.com> <1175438139816-git-send-email-avi@qumranet.com> <1175438139141-git-send-email-avi@qumranet.com> <11754381391993-git-send-email-avi@qumranet.com> <1175438139877-git-send-email-avi@qumranet.com> <11754381391119-git-send-email-avi@qumranet.com> <1175438139312-git-send-email-avi@qumranet.com> <11754381392527-git-send-email-avi@qumranet.com> <11754381393184-git-send-email-avi@qumranet.com> <1175438139249-git-send-email-avi@qumranet.com> <11754381391161-git-send-email-avi@qumranet.com> <11754381393714-git-send-email-avi@qumranet.com> <11754381392948-git-send-email-avi@qumranet.com> <1175438139458-git-send-email-avi@qumranet.com> <117543813933-git-send-email-avi@qumranet.com> <11754381393962-git-send-email-avi@qumranet.com> <11754381393751-git-send-ema
+ il-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of passing a 'struct kvm_run' back and forth between the kernel and
-userspace, allocate a page and allow the user to mmap() it.  This reduces
-needless copying and makes the interface expandable by providing lots of
-free space.
+From: Joerg Roedel <joerg.roedel@amd.com>
 
+This patch enables the virtualization of the last branch record MSRs on
+SVM if this feature is available in hardware. It also introduces a small
+and simple check feature for specific SVM extensions.
+
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h      |    1 +
- drivers/kvm/kvm_main.c |   54 +++++++++++++++++++++++++++++++++++------------
- include/linux/kvm.h    |    6 ++--
- 3 files changed, 44 insertions(+), 17 deletions(-)
+ drivers/kvm/svm.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index 0d122bf..901b8d9 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -228,6 +228,7 @@ struct kvm_vcpu {
- 	struct mutex mutex;
- 	int   cpu;
- 	int   launched;
-+	struct kvm_run *run;
- 	int interrupt_window_open;
- 	unsigned long irq_summary; /* bit vector: 1 per word in irq_pending */
- #define NR_IRQ_WORDS KVM_IRQ_BITMAP_SIZE(unsigned long)
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 946ed86..42be8a8 100755
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -355,6 +355,8 @@ static void kvm_free_vcpu(struct kvm_vcpu *vcpu)
- 	kvm_mmu_destroy(vcpu);
- 	vcpu_put(vcpu);
- 	kvm_arch_ops->vcpu_free(vcpu);
-+	free_page((unsigned long)vcpu->run);
-+	vcpu->run = NULL;
- }
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index 303e959..b7e1410 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -44,6 +44,10 @@ MODULE_LICENSE("GPL");
+ #define KVM_EFER_LMA (1 << 10)
+ #define KVM_EFER_LME (1 << 8)
  
- static void kvm_free_vcpus(struct kvm *kvm)
-@@ -1887,6 +1889,33 @@ static int kvm_vcpu_ioctl_debug_guest(struct kvm_vcpu *vcpu,
- 	return r;
- }
++#define SVM_FEATURE_NPT  (1 << 0)
++#define SVM_FEATURE_LBRV (1 << 1)
++#define SVM_DEATURE_SVML (1 << 2)
++
+ unsigned long iopm_base;
+ unsigned long msrpm_base;
  
-+static struct page *kvm_vcpu_nopage(struct vm_area_struct *vma,
-+				    unsigned long address,
-+				    int *type)
-+{
-+	struct kvm_vcpu *vcpu = vma->vm_file->private_data;
-+	unsigned long pgoff;
-+	struct page *page;
-+
-+	*type = VM_FAULT_MINOR;
-+	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
-+	if (pgoff != 0)
-+		return NOPAGE_SIGBUS;
-+	page = virt_to_page(vcpu->run);
-+	get_page(page);
-+	return page;
-+}
-+
-+static struct vm_operations_struct kvm_vcpu_vm_ops = {
-+	.nopage = kvm_vcpu_nopage,
-+};
-+
-+static int kvm_vcpu_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_ops = &kvm_vcpu_vm_ops;
-+	return 0;
-+}
-+
- static int kvm_vcpu_release(struct inode *inode, struct file *filp)
- {
- 	struct kvm_vcpu *vcpu = filp->private_data;
-@@ -1899,6 +1928,7 @@ static struct file_operations kvm_vcpu_fops = {
- 	.release        = kvm_vcpu_release,
- 	.unlocked_ioctl = kvm_vcpu_ioctl,
- 	.compat_ioctl   = kvm_vcpu_ioctl,
-+	.mmap           = kvm_vcpu_mmap,
+@@ -68,6 +72,7 @@ struct svm_cpu_data {
  };
  
- /*
-@@ -1947,6 +1977,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
- {
- 	int r;
- 	struct kvm_vcpu *vcpu;
-+	struct page *page;
+ static DEFINE_PER_CPU(struct svm_cpu_data *, svm_data);
++static uint32_t svm_features;
  
- 	r = -EINVAL;
- 	if (!valid_vcpu(n))
-@@ -1961,6 +1992,12 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
- 		return -EEXIST;
- 	}
+ struct svm_init_data {
+ 	int cpu;
+@@ -82,6 +87,11 @@ static u32 msrpm_ranges[] = {0, 0xc0000000, 0xc0010000};
  
-+	page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-+	r = -ENOMEM;
-+	if (!page)
-+		goto out_unlock;
-+	vcpu->run = page_address(page);
+ #define MAX_INST_SIZE 15
+ 
++static inline u32 svm_has(u32 feat)
++{
++	return svm_features & feat;
++}
 +
- 	vcpu->host_fx_image = (char*)ALIGN((hva_t)vcpu->fx_buf,
- 					   FX_IMAGE_ALIGN);
- 	vcpu->guest_fx_image = vcpu->host_fx_image + FX_IMAGE_SIZE;
-@@ -1990,6 +2027,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
+ static unsigned get_addr_size(struct kvm_vcpu *vcpu)
+ {
+ 	struct vmcb_save_area *sa = &vcpu->svm->vmcb->save;
+@@ -302,6 +312,7 @@ static void svm_hardware_enable(void *garbage)
+ 	svm_data->asid_generation = 1;
+ 	svm_data->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
+ 	svm_data->next_asid = svm_data->max_asid + 1;
++	svm_features = cpuid_edx(SVM_CPUID_FUNC);
  
- out_free_vcpus:
- 	kvm_free_vcpu(vcpu);
-+out_unlock:
- 	mutex_unlock(&vcpu->mutex);
- out:
- 	return r;
-@@ -2003,21 +2041,9 @@ static long kvm_vcpu_ioctl(struct file *filp,
- 	int r = -EINVAL;
+ 	asm volatile ( "sgdt %0" : "=m"(gdt_descr) );
+ 	gdt = (struct desc_struct *)gdt_descr.address;
+@@ -511,6 +522,8 @@ static void init_vmcb(struct vmcb *vmcb)
+ 	control->msrpm_base_pa = msrpm_base;
+ 	control->tsc_offset = 0;
+ 	control->int_ctl = V_INTR_MASKING_MASK;
++	if (svm_has(SVM_FEATURE_LBRV))
++		control->lbr_ctl = 1ULL;
  
- 	switch (ioctl) {
--	case KVM_RUN: {
--		struct kvm_run kvm_run;
--
--		r = -EFAULT;
--		if (copy_from_user(&kvm_run, argp, sizeof kvm_run))
--			goto out;
--		r = kvm_vcpu_ioctl_run(vcpu, &kvm_run);
--		if (r < 0 &&  r != -EINTR)
--			goto out;
--		if (copy_to_user(argp, &kvm_run, sizeof kvm_run)) {
--			r = -EFAULT;
--			goto out;
--		}
-+	case KVM_RUN:
-+		r = kvm_vcpu_ioctl_run(vcpu, vcpu->run);
- 		break;
--	}
- 	case KVM_GET_REGS: {
- 		struct kvm_regs kvm_regs;
- 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 275354f..d88e750 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -11,7 +11,7 @@
- #include <asm/types.h>
- #include <linux/ioctl.h>
- 
--#define KVM_API_VERSION 4
-+#define KVM_API_VERSION 5
- 
- /*
-  * Architectural interrupt line count, and the size of the bitmap needed
-@@ -49,7 +49,7 @@ enum kvm_exit_reason {
- 	KVM_EXIT_SHUTDOWN         = 8,
- };
- 
--/* for KVM_RUN */
-+/* for KVM_RUN, returned by mmap(vcpu_fd, offset=0) */
- struct kvm_run {
- 	/* in */
- 	__u32 emulated;  /* skip current instruction */
-@@ -233,7 +233,7 @@ struct kvm_dirty_log {
- /*
-  * ioctls for vcpu fds
-  */
--#define KVM_RUN                   _IOWR(KVMIO, 2, struct kvm_run)
-+#define KVM_RUN                   _IO(KVMIO, 16)
- #define KVM_GET_REGS              _IOR(KVMIO, 3, struct kvm_regs)
- #define KVM_SET_REGS              _IOW(KVMIO, 4, struct kvm_regs)
- #define KVM_GET_SREGS             _IOR(KVMIO, 5, struct kvm_sregs)
+ 	init_seg(&save->es);
+ 	init_seg(&save->ss);
 -- 
 1.5.0.5
 
