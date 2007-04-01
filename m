@@ -1,70 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbXDAVQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbXDAVmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752920AbXDAVQW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 17:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXDAVQW
+	id S1752741AbXDAVmG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 17:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXDAVmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 17:16:22 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:37822 "EHLO pasmtpA.tele.dk"
+	Sun, 1 Apr 2007 17:42:06 -0400
+Received: from gw.goop.org ([64.81.55.164]:57407 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752920AbXDAVQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 17:16:21 -0400
-Date: Sun, 1 Apr 2007 23:17:05 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: mconf not removed by make mrproper
-Message-ID: <20070401211705.GA11077@uranus.ravnborg.org>
-References: <1170299149.32500.13.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170299149.32500.13.camel@nigel.suspend2.net>
-User-Agent: Mutt/1.4.2.1i
+	id S1752741AbXDAVmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 17:42:03 -0400
+Message-ID: <46102723.9050405@goop.org>
+Date: Sun, 01 Apr 2007 14:41:55 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] clean up tsc-based sched_clock
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 01, 2007 at 02:05:49PM +1100, Nigel Cunningham wrote:
-> Hi.
-> 
-> The scripts/kconfig/mconf target isn't removed by the make mrproper
-> target. I can see a couple of possibilities, but wasn't sure which you'd
-> prefer, so thought I'd just raise the issue.
-> 
-> It's only an issue for me because my patch generation script relies on
-> make mrproper making a properly clean tree.
+Three cleanups there:
+ - change "instable" -> "unstable"
+ - it's better to use get_cpu_var for getting this cpu's variables
+ - change cycles_2_ns to do the full computation rather than just the
+   tsc->ns scaling.  It's a simpler interface, and it makes the function
+   more generally useful.
 
-Fixed - thanks.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-	Sam
-
->From c428e4cd1fdddb5c1a33d6cd229148497ae03893 Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@neptun.ravnborg.org>
-Date: Sun, 1 Apr 2007 23:14:11 +0200
-Subject: [PATCH] kbuild: remove kconfig binaries during make mrproper
-
-Nigel Cunningham <nigel@nigel.suspend2.net> noticed
-that 'make mrproper' did not remove mconf.
-Fixed so we now remove all relevant binaries.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc:  Nigel Cunningham <nigel@nigel.suspend2.net>
 ---
- scripts/kconfig/Makefile |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/i386/kernel/sched-clock.c |   35 +++++++++++++++++++++--------------
+ 1 file changed, 21 insertions(+), 14 deletions(-)
 
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index 7e7e147..2e421bd 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -140,6 +140,7 @@ endif
+===================================================================
+--- a/arch/i386/kernel/sched-clock.c
++++ b/arch/i386/kernel/sched-clock.c
+@@ -39,17 +39,23 @@
  
- clean-files	:= lkc_defs.h qconf.moc .tmp_qtcheck \
- 		   .tmp_gtkcheck zconf.tab.c lex.zconf.c zconf.hash.c
-+clean-files     += mconf qconf gconf
+ struct sc_data {
+ 	unsigned int cyc2ns_scale;
+-	unsigned char instable;
++	unsigned char unstable;
+ 	unsigned long long last_tsc;
+ 	unsigned long long ns_base;
+ };
  
- # Needed for systems without gettext
- KBUILD_HAVE_NLS := $(shell \
--- 
-1.5.1.rc3.20.gaa453
+ static DEFINE_PER_CPU(struct sc_data, sc_data);
+ 
+-static inline unsigned long long cycles_2_ns(int cpu, unsigned long long cyc)
++static inline unsigned long long cycles_2_ns(unsigned long long cyc)
+ {
+-	struct sc_data *sc = &per_cpu(sc_data, cpu);
+-	return (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
++	const struct sc_data *sc = &__get_cpu_var(sc_data);
++	unsigned long long ns;
++
++	cyc -= sc->last_tsc;
++	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
++	ns += sc->ns_base;
++
++	return ns;
+ }
+ 
+ /*
+@@ -62,18 +68,19 @@ static inline unsigned long long cycles_
+  */
+ unsigned long long sched_clock(void)
+ {
+-	int cpu = get_cpu();
+-	struct sc_data *sc = &per_cpu(sc_data, cpu);
+ 	unsigned long long r;
++	const struct sc_data *sc = &get_cpu_var(sc_data);
+ 
+-	if (sc->instable) {
++	if (sc->unstable) {
+ 		/* TBD find a cheaper fallback timer than this */
+ 		r = ktime_to_ns(ktime_get());
+ 	} else {
+ 		get_scheduled_cycles(r);
+-		r = ((u64)sc->ns_base) + cycles_2_ns(cpu, r - sc->last_tsc);
++		r = cycles_2_ns(r);
+ 	}
+-	put_cpu();
++
++	put_cpu_var(sc_data);
++
+ 	return r;
+ }
+ 
+@@ -81,7 +88,7 @@ static void resync_sc_freq(struct sc_dat
+ static void resync_sc_freq(struct sc_data *sc, unsigned int newfreq)
+ {
+ 	if (!cpu_has_tsc) {
+-		sc->instable = 1;
++		sc->unstable = 1;
+ 		return;
+ 	}
+ 	/* RED-PEN protect with seqlock? I hope that's not needed
+@@ -90,7 +97,7 @@ static void resync_sc_freq(struct sc_dat
+ 	sc->ns_base = ktime_to_ns(ktime_get());
+ 	get_scheduled_cycles(sc->last_tsc);
+ 	sc->cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR) / newfreq;
+-	sc->instable = 0;
++	sc->unstable = 0;
+ }
+ 
+ static void call_r_s_f(void *arg)
+@@ -119,9 +126,9 @@ static int sc_freq_event(struct notifier
+ 	switch (event) {
+ 	case CPUFREQ_RESUMECHANGE:  /* needed? */
+ 	case CPUFREQ_PRECHANGE:
+-		/* Mark TSC as instable until cpu frequency change is done
++		/* Mark TSC as unstable until cpu frequency change is done
+ 		   because we don't know when exactly it will change */
+-		sc->instable = 1;
++		sc->unstable = 1;
+ 		break;
+ 	case CPUFREQ_SUSPENDCHANGE:
+ 	case CPUFREQ_POSTCHANGE:
+@@ -163,7 +170,7 @@ static __init int init_sched_clock(void)
+ 	int i;
+ 	struct cpufreq_freqs f = { .cpu = get_cpu(), .new = 0 };
+ 	for_each_possible_cpu (i)
+-		per_cpu(sc_data, i).instable = 1;
++		per_cpu(sc_data, i).unstable = 1;
+ 	WARN_ON(num_online_cpus() > 1);
+ 	call_r_s_f(&f);
+ 	put_cpu();
+
 
