@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933660AbXDARIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933666AbXDARTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933660AbXDARIw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 13:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbXDARIv
+	id S933666AbXDARTK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 13:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933629AbXDARTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 13:08:51 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:48861 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933660AbXDARIv (ORCPT
+	Sun, 1 Apr 2007 13:19:10 -0400
+Received: from smtpa2.netcabo.pt ([212.113.174.17]:6260 "EHLO
+	exch01smtp01.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933666AbXDARTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 13:08:51 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 1 Apr 2007 10:08:50 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 6/13] signal/timer/event fds v9 - timerfd core ...
-In-Reply-To: <Pine.LNX.4.64.0704010941490.26331@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0704011007570.26331@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.16816.1175371772.6>
- <1175418341.28263.64.camel@localhost.localdomain>
- <Pine.LNX.4.64.0704010941490.26331@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 1 Apr 2007 13:19:09 -0400
+Message-ID: <460FE7F3.4060303@rncbc.org>
+Date: Sun, 01 Apr 2007 18:12:19 +0100
+From: Rui Nuno Capela <rncbc@rncbc.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+CC: linux-rt-users@vger.kernel.org
+Subject: 2.6.21-rc5-rt6 make errors
+References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>
+In-Reply-To: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2007 17:19:06.0936 (UTC) FILETIME=[DA88F380:01C77481]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Apr 2007, Davide Libenzi wrote:
+Hi,
 
-> I do not know about DoS on timers (did not follow the thread), but I could 
-> easily implement it here, by capping the counter to some value, and return 
-> POLLERR in poll().
+Just tried to build 2.6.21-rc5-rt6 and it is failing on build time.
 
-For capping I mean, I won't re-arm the timer if ticks exceeded it ...
+...
+kernel/sched.c: In function ‘__schedule’:
+kernel/sched.c:3830: error: ‘print_functions’ undeclared (first use in
+this function)
+kernel/sched.c:3830: error: (Each undeclared identifier is reported only
+once
+kernel/sched.c:3830: error: for each function it appears in.)
+...
+arch/i386/kernel/apic.c: In function ‘smp_apic_timer_interrupt’:
+arch/i386/kernel/apic.c:589: error: invalid lvalue in assignment
+arch/i386/kernel/apic.c:608: error: invalid lvalue in assignment
+...
 
+Just to let you know that -rt5 was doing fine with very same .config .
 
-- Davide
+Cheers.
+-- 
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
 
 
