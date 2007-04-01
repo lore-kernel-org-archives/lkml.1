@@ -1,63 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbXDAHdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbXDAHfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750893AbXDAHdH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 03:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbXDAHdH
+	id S932129AbXDAHfv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 03:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932140AbXDAHfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 03:33:07 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:46993 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbXDAHdE (ORCPT
+	Sun, 1 Apr 2007 03:35:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:57890 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932129AbXDAHfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 03:33:04 -0400
+	Sun, 1 Apr 2007 03:35:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VuDg12YHR9UAeyNOC8w7QfNdA4zfqRIczdqAwVjqIwIKsqwhdJ/ifRU2AikmOZ4GvsWNIWwFyuknmVot2ebJSVjaH80wfJmoMcGPt76iggC5XgqrTGMp3UbkyWcJOXCxmStauLyTdKYI7L7WI8vcTE7VsCG64epAzXWiovCvBmc=
-Message-ID: <2c0942db0704010033r61f967c3y7d05e3ec0a9f6931@mail.gmail.com>
-Date: Sun, 1 Apr 2007 00:33:02 -0700
-From: "Ray Lee" <madrabbit@gmail.com>
-Reply-To: ray-gmail@madrabbit.org
-To: "Gene Heskett" <gene.heskett@verizon.net>
-Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
-Cc: "Ingo Molnar" <mingo@elte.hu>, amanda-hackers@amanda.org,
-       linux-kernel@vger.kernel.org, amanda-users@amanda.org
-In-Reply-To: <200704010100.19016.gene.heskett@verizon.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=tC1Zdfld1IG4sPvxDEwBQta+dVKRd/NPXrkfJVeqoM5kGIxTsPqP6pOXoLrrQe9EwM5e5QHfOyoetF4rk01t9rt2tXtZarR6jG3KC41+z7Fvj+N5SP5x0tuzrgMIifErQTBUMPfgQ5YxOQN/9nAxrTFy6eBPh0pXgphywqRasqM=
+Date: Sun, 1 Apr 2007 13:06:46 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       parisc-linux@lists.parisc-linux.org, grundler@parisc-linux.org,
+       kyle@mcmartin.ca, willy@debian.org
+Subject: [KJ][PATCH] ROUND_UP macro cleanup in arch/parisc
+Message-ID: <20070401073646.GA11444@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200704010100.19016.gene.heskett@verizon.net>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/31/07, Gene Heskett <gene.heskett@verizon.net> wrote:
-> This effect I have isolated down to something in the 31 patches from
-> 2.6.20.4 to 2.6.20.5-rc1, but I'm going to need additional guidance in
-> setting up the bisect to find it.  If indeed its a kernel problem.
+ROUND_UP macro cleanup, use ALIGN where ever appropriate
 
-First, set up a *small* test case, for your own sanity as well as
-ours. (Set up a new backup job that does just part of your home
-directory, for example. No, even better, just one file.) Then verify
-that the small test case also fails the same was that you noticed your
-big one does between 2.6.20.3 and 2.6.20.4.
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-Then, download everything in http://madrabbit.org/~ray/2.6.20.4 . That
-has all the patches that Greg has in git, but your git is ancient so
-let's just use the patches, hmm? It also has a control file (called
-'series') that lists the order they should be applied in. Save
-everything to the root of your 2.6.20.3 source tree. It'll be messy,
-but it'll make things easier.
+---
+ hpux/fs.c             |    5 ++---
+ kernel/sys_parisc32.c |    3 +--
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-Once you have that, then go and apply the first half of the patches. (As in:
-   head -n 16 series | xargs -n 1 patch -p1
-at the base of the tree.
 
-Compile and install that kernel, run your test case to see if the
-problem is there. If it *is*, cut it in half again (Revert those 16
-patches by adding a -R to the patch command (at the very end), then
-redo the above command with an 8 instead of a 16.) If the problem
-isn't there, cut the range [16,31] in half, giving you a 24 for the
-next trial. Then repeat. Make sense?
 
-Ray
+diff --git a/arch/parisc/hpux/fs.c b/arch/parisc/hpux/fs.c
+index 4204cd1..7ff5546 100644
+--- a/arch/parisc/hpux/fs.c
++++ b/arch/parisc/hpux/fs.c
+@@ -21,6 +21,7 @@
+  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+ 
++#include <linux/kernel.h>
+ #include <linux/mm.h>
+ #include <linux/sched.h>
+ #include <linux/file.h>
+@@ -70,7 +71,6 @@ struct getdents_callback {
+ };
+ 
+ #define NAME_OFFSET(de) ((int) ((de)->d_name - (char *) (de)))
+-#define ROUND_UP(x) (((x)+sizeof(long)-1) & ~(sizeof(long)-1))
+ 
+ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
+ 		u64 ino, unsigned d_type)
+@@ -78,7 +78,7 @@ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
+ 	struct hpux_dirent * dirent;
+ 	struct getdents_callback * buf = (struct getdents_callback *) __buf;
+ 	ino_t d_ino;
+-	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 1);
++	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1,sizeof(long));
+ 
+ 	buf->error = -EINVAL;	/* only used if we fail.. */
+ 	if (reclen > buf->count)
+@@ -103,7 +103,6 @@ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
+ }
+ 
+ #undef NAME_OFFSET
+-#undef ROUND_UP
+ 
+ int hpux_getdents(unsigned int fd, struct hpux_dirent *dirent, unsigned int count)
+ {
+diff --git a/arch/parisc/kernel/sys_parisc32.c b/arch/parisc/kernel/sys_parisc32.c
+index ce3245f..e590880 100644
+--- a/arch/parisc/kernel/sys_parisc32.c
++++ b/arch/parisc/kernel/sys_parisc32.c
+@@ -311,14 +311,13 @@ struct readdir32_callback {
+ 	int count;
+ };
+ 
+-#define ROUND_UP(x,a)	((__typeof__(x))(((unsigned long)(x) + ((a) - 1)) & ~((a) - 1)))
+ #define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+ static int filldir32 (void *__buf, const char *name, int namlen,
+ 			loff_t offset, u64 ino, unsigned int d_type)
+ {
+ 	struct linux32_dirent __user * dirent;
+ 	struct getdents32_callback * buf = (struct getdents32_callback *) __buf;
+-	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 1, 4);
++	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, 4);
+ 	u32 d_ino;
+ 
+ 	buf->error = -EINVAL;	/* only used if we fail.. */
+
+-- 
+Milind Arun Choudhary
