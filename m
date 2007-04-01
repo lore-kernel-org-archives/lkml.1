@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078AbXDAV4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965145AbXDAWBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753078AbXDAV4s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 17:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXDAV4r
+	id S965145AbXDAWBl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 18:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965197AbXDAWBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 17:56:47 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:39179 "EHLO tmailer.gwdg.de"
+	Sun, 1 Apr 2007 18:01:40 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53186 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753080AbXDAV4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 17:56:47 -0400
-Date: Sun, 1 Apr 2007 23:55:30 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Petr Vandrovec <petr@vandrovec.name>
-cc: bunk@stusta.de, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc regression in mptbase
-In-Reply-To: <20070324010213.GA32620@vana.vc.cvut.cz>
-Message-ID: <Pine.LNX.4.61.0704012355070.1245@yvahk01.tjqt.qr>
-References: <460475EF.1040109@vc.cvut.cz> <20070324010213.GA32620@vana.vc.cvut.cz>
+	id S965145AbXDAWBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 18:01:40 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] clean up tsc-based sched_clock
+Date: Mon, 2 Apr 2007 00:01:31 +0200
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <46102723.9050405@goop.org>
+In-Reply-To: <46102723.9050405@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704020001.31349.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 01 April 2007 23:41, Jeremy Fitzhardinge wrote:
+> Three cleanups there:
+>  - change "instable" -> "unstable"
+>  - it's better to use get_cpu_var for getting this cpu's variables
+>  - change cycles_2_ns to do the full computation rather than just the
+>    tsc->ns scaling.  It's a simpler interface, and it makes the function
+>    more generally useful.
 
-On Mar 24 2007 02:02, Petr Vandrovec wrote:
->> > in at least 2.6.21-rc4, one or more of the mptscsi scsi modules is 
->> > broken with respect to not detecting any harddisk (VMware provides that 
->> > virtual LSI MPT controller), which means no working system.
->> > No problems in 2.6.20.2.
->> 
->> Could be a bug in the driver or a bug in the emulation exposed by a 
->> change in the driver.
->> 
->Hello,
->   it is bug in the emulation.  It should be fixed in Workstation 6.0 RC1.  If you
->want to use VMware's LSILogic emulation with older products, you need fix below until
->new releases come out (or unless I'll put out binary patch to fix binaries to
->return 16 instead of previous value).
-
-Yes (workaround works) and rc1 works. Thanks.
-
-
-Jan
--- 
+Added thanks
+-Andi
