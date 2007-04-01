@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965136AbXDAVDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965153AbXDAVFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965136AbXDAVDG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 17:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965176AbXDAVDF
+	id S965153AbXDAVFi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 17:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965176AbXDAVFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 17:03:05 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33048 "EHLO pasmtpA.tele.dk"
+	Sun, 1 Apr 2007 17:05:38 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42434 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965136AbXDAVDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 17:03:02 -0400
-Date: Sun, 1 Apr 2007 23:03:46 +0200
+	id S965153AbXDAVFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 17:05:37 -0400
+Date: Sun, 1 Apr 2007 23:06:22 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [pp] kbuild: asm-offsets generalized
-Message-ID: <20070401210346.GB10761@uranus.ravnborg.org>
-References: <1171024771.2718.129.camel@localhost.localdomain> <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz> <20070216155527.GA14687@flower.upol.cz> <20070216155929.GA14713@flower.upol.cz> <20070401204203.GA10761@uranus.ravnborg.org> <20070401210803.GF10959@flower.upol.cz>
+To: Edgardo Hames <ehames@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Rebuilding and checksumming the Linux kernel
+Message-ID: <20070401210622.GC10761@uranus.ravnborg.org>
+References: <478c16ae0704011156u5a34ae96lfd88a6da16d5726a@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070401210803.GF10959@flower.upol.cz>
+In-Reply-To: <478c16ae0704011156u5a34ae96lfd88a6da16d5726a@mail.gmail.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 01, 2007 at 11:08:03PM +0200, Oleg Verych wrote:
-> On Sun, Apr 01, 2007 at 10:42:03PM +0200, Sam Ravnborg wrote:
-> > On Fri, Feb 16, 2007 at 04:59:29PM +0100, Oleg Verych wrote:
-> []
-> > > [patch proposition] kbuild: asm-offsets generalized
-> []
-> > >  * (hopefully) more readable sed scripts,
-> > > 
-> > >  * top Kbuild may be updated...
-> []
-> > 
-> > Can I ask you to provide a complete patch that replaces the current
-> > asm-offset stuff with your more readable script version.
->  
-> OK, unless this is 1st April joke ;)
+On Sun, Apr 01, 2007 at 03:56:30PM -0300, Edgardo Hames wrote:
+> I'm working on a project with teams spread across the world and we all
+> work on the same repository patching the kernel and then integrating
+> into a common main branch. Even though we label the source code, we
+> would like to make sure that we are all building the same kernel by
+> running md5sum on the resulting binary.
 > 
-> > >  * scripts/mkCconstants:
-> > >    - asm-offsets magic demystified, generalized,
-> 
-> > Name the script: mkasm-offset.sh to make a direct connection to 
-> > the resulting .h file name.
->  
-> OK, nice name.
-> 
-> > > 
-> > >  * file needs `chmod u+x`, i don't know, how it's done in patch(1).
-> 
-> BTW, i'll look at git-diff/git-apply for doing that, as was noted by Linus.
-When patch passes me I can take care - so do not worry.
-But tell me to do so if I should forget in the meantime.
+> Right now, this is not possible because the kernel includes a
+> timestamp and a build number on the binary. What are this timestamps
+> used for? Can we just remove them? Is there any other thing that may
+> lead to different binaries? (we are using the exact toolchains and
+> build machines, so we can assume that the same executable is generated
+> if the input source is the same).
 
-PS. On vacation for a week from tomorrow so take your time.
+Soon you will be able to say:
+
+KBUILD_BUILD_TIMESTAMP="2007-02-30 01:02.03" KBUILD_BUILD_VERSION=99 make
+
+It will hit -mm soon and mainline in next merge window.
+Patch is in kbuild.git at git.kernel.org.
 
 	Sam
