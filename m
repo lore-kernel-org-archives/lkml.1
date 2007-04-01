@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXDAGhL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXDAGkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932690AbXDAGhL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 02:37:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932785AbXDAGhL
+	id S932785AbXDAGkR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 02:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbXDAGkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 02:37:11 -0400
-Received: from smtp01.isdsl.net ([196.26.208.190]:55702 "EHLO smtp01.isdsl.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932690AbXDAGhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 02:37:09 -0400
-X-Greylist: delayed 1221 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Apr 2007 02:37:09 EDT
-Message-ID: <460F4E35.10109@kroon.co.za>
-Date: Sun, 01 Apr 2007 08:16:21 +0200
-From: Jaco Kroon <jaco@kroon.co.za>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070331)
+	Sun, 1 Apr 2007 02:40:17 -0400
+Received: from mail-in-08.arcor-online.net ([151.189.21.48]:57455 "EHLO
+	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932785AbXDAGkP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 02:40:15 -0400
+From: Prakash Punnoor <prakash@punnoor.de>
+To: ck@vds.kolivas.org
+Subject: Re: [ck] [PATCH] sched: staircase deadline misc fixes
+Date: Sun, 1 Apr 2007 08:40:07 +0200
+User-Agent: KMail/1.9.6
+Cc: linux list <linux-kernel@vger.kernel.org>
+References: <200703290237.38777.kernel@kolivas.org> <200703281934.17932.prakash@punnoor.de>
+In-Reply-To: <200703281934.17932.prakash@punnoor.de>
 MIME-Version: 1.0
-To: Pedram M <pmessri@gmail.com>
-CC: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
-References: <9c9aa5d00703310639q68fa5d19k4d8e3bfb56b1fa6@mail.gmail.com> <9c9aa5d00703312224t1948b24bhe34199f19cbda4fb@mail.gmail.com>
-In-Reply-To: <9c9aa5d00703312224t1948b24bhe34199f19cbda4fb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1314662.aESkcNa9nf";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Spam-score: -1.8
-X-Spam-report: SpamAssassin 3.1.8 (xacatecas.lan) Report:
-	ALL_TRUSTED=-1.8
-	Relay Countries: 
-	pts  rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	Total: -1.8/3.5
-	Contact: postmaster@kroon.co.za
-Subject: Re: [KJ] my first janitorial
-X-Scan-Signature: 30172e4ad79eabc895afebd0c12510de{39}}
-X-Trace: smtp01.isdsl.net 1HXtMq-0001cf-90 75f48bc69df1efd56812aeba0d930953
+Message-Id: <200704010840.11387.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pedram M wrote:
-> How about this one? Am I doing it right now?
-> If not, please try to explain more to me what I am
-> doing wrong.
+--nextPart1314662.aESkcNa9nf
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-You need a changelog entry (or explanation of what you're doing). You 
-need a signed-off-by line and your patch needs to apply to the root of 
-the kernel tree with -p1, something like:
+Am Mittwoch 28 M=E4rz 2007 schrieb Prakash Punnoor:
+> Am Mittwoch 28 M=E4rz 2007 schrieb Con Kolivas:
+> > I'm cautiously optimistic that we're at the thin edge of the bugfix wed=
+ge
+> > now.
+> >
+> > ---
+> > set_load_weight() should be performed after p->quota is set. This fixes=
+ a
+> > large SMP performance regression.
+>
+> Hi, I am using 2.6.21-rc5 with rsdl 0.37 and think I still see a regressi=
+on
+> with my Athlon X2. Namely using this ac3 encoder
+> (http://aften.sourceforge.net/), which I parallelized in a simple way, wi=
+th
+> my test sample I remember having encoding times of ~5.4sec with vanilla a=
+nd
+> ~5.8 sec with rsdl - once the whole test wave is in cache. Otherwise you
+> can easily I/O limit the encoder. ;-) You need to get sources from svn
+> though. The current 0.06 release doesn't have threads support.
 
--------------
-Replace deprecated pci_find_device call with pci_get_device.
+BTW, I confirmed this regression. With vanilla 2.76.21-rc5 I get back my 5.=
+4=20
+secs with the test sample and two threads. Furtmermore for me vanilla=20
+actually feels nicer on my dual core, even with load - just subjectively=20
+that's why I ditched rsdl...
 
-Signed-Off-By: Pedram M <pmessri@gmail.com>
+Cheers,
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
 
---- linux-2.6.20.3.orig/path/to/file.c     2006-06-24 09:41:08.000000000 
-+0200
-+++ linux-2.6.20.3/path/to/file.c       2006-07-15 21:01:57.000000000 +0200
-@@ -4760,7 +4760,7 @@
-  	for (i = 0; i < NR_CARDS; i++) {
-  		/* look for a Cyclades card by vendor and device id */
-  		while ((device_id = cy_pci_dev_id[dev_index]) != 0) {
--			if ((pdev = pci_find_device(PCI_VENDOR_ID_CYCLADES,
-+			if ((pdev = pci_get_device(PCI_VENDOR_ID_CYCLADES,
-  						   device_id, pdev)) == NULL) {
-  				dev_index++;	/* try next device id */
-  			} else {
--------------
+--nextPart1314662.aESkcNa9nf
+Content-Type: application/pgp-signature
 
-And your subject needs to please include the string "[PATCH]", something 
-like:  [PATCH] path/to/file.c: pci_find_device cleanup
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
 
-However, as pointed out, the code itself is incorrect, for every 
-pci_get_device there also needs to be a call to pci_put_device in order 
-to maintain reference counts.
+iD8DBQBGD1PLxU2n/+9+t5gRAiVjAKCizhqJUcWkKSKw+YhsWgWMW6xPOgCfeGyc
+B3tPCLfWj9kir5DBOKpYRTs=
+=kRiL
+-----END PGP SIGNATURE-----
 
-Your client does not seem to be clobbering the patch itself and 
-maintains tabs and line wrapping (unlike my client).
-
-Jaco
+--nextPart1314662.aESkcNa9nf--
