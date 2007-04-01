@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965055AbXDAUu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965044AbXDAUwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965055AbXDAUu0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 16:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXDAUu0
+	id S965044AbXDAUwv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 16:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXDAUwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 16:50:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50548 "EHLO ogre.sisk.pl"
+	Sun, 1 Apr 2007 16:52:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50565 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965095AbXDAUuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 16:50:25 -0400
+	id S965044AbXDAUwu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 16:52:50 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
-Date: Sun, 1 Apr 2007 22:53:37 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc5-mm3
+Date: Sun, 1 Apr 2007 22:56:27 +0200
 User-Agent: KMail/1.9.5
-Cc: Alan Stern <stern@rowland.harvard.edu>, David Zeuthen <davidz@redhat.com>,
-       Maxim <maximlevitsky@gmail.com>, Pete Zaitcev <zaitcev@redhat.com>,
-       gregkh@suse.de, Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-References: <20070401175020.GE11146@elf.ucw.cz> <Pine.LNX.4.44L0.0704011422460.1054-100000@netrider.rowland.org> <20070401183437.GH11146@elf.ucw.cz>
-In-Reply-To: <20070401183437.GH11146@elf.ucw.cz>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+References: <20070330010559.2a232d9a.akpm@linux-foundation.org> <20070401120305.932a493b.akpm@linux-foundation.org> <200704012239.01964.rjw@sisk.pl>
+In-Reply-To: <200704012239.01964.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200704012253.38931.rjw@sisk.pl>
+Message-Id: <200704012256.28850.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sunday, 1 April 2007 20:34, Pavel Machek wrote:
-> Hi!
-> 
-> > > Problem is that suspending _with_ removable mass storage devices
-> > > attached just will not work. User will unplug them, then complain
-> > > about corruption. Advanced user will unplug them, work with them
-> > > somewhere else, replug them, then loose filesystem.
+On Sunday, 1 April 2007 22:39, Rafael J. Wysocki wrote:
+> On Sunday, 1 April 2007 21:03, Andrew Morton wrote:
+> > On Sun, 01 Apr 2007 18:00:12 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> > 
+> > > Andrew Morton napisał(a):
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/
+> > > > 
 > > > 
-> > > Feel free to send patch to teach filesystems to handle this.
+> > > BUG: at /mnt/md0/devel/linux-mm/arch/i386/kernel/smp.c:571 native_smp_call_function_mask()
+> > >  [<c01051a1>] dump_trace+0x63/0x1eb
+> > >  [<c0105343>] show_trace_log_lvl+0x1a/0x30
+> > >  [<c0105f8a>] show_trace+0x12/0x14
+> > >  [<c0106027>] dump_stack+0x16/0x18
+> > >  [<c0113a92>] native_smp_call_function_mask+0x57/0x14b
+> > >  [<c0113c9b>] smp_call_function+0x1e/0x22
+> > >  [<c0129a60>] on_each_cpu+0x2a/0x73
+> > >  [<c013a12d>] clock_was_set+0x1b/0x1d
+> > >  [<c013b99d>] timekeeping_resume+0xb5/0xbb
+> > >  [<c027af35>] __sysdev_resume+0x17/0x5d
+> > >  [<c027b2aa>] sysdev_resume+0x19/0x4b
+> > >  [<c027fd12>] device_power_up+0xb/0x12
+> > >  [<c014f30b>] swsusp_suspend+0x55/0x63
+> > >  [<c014fad0>] pm_suspend_disk+0x163/0x28f
+> > >  [<c014e7be>] enter_state+0x54/0x1d5
+> > >  [<c014e9c5>] state_store+0x86/0x9c
+> > >  [<c01bfe47>] subsys_attr_store+0x23/0x2b
+> > >  [<c01bff89>] sysfs_write_file+0xc1/0xe9
+> > >  [<c0186485>] vfs_write+0xd1/0x15a
+> > >  [<c0186ab7>] sys_write+0x3d/0x72
+> > >  [<c010424c>] syscall_call+0x7/0xb
+> > >  [<b7f9b410>] 0xb7f9b410
 > > 
-> > Actually what's needed is a Persistent Logical Volume Manager.  With it,
-> > you could even mount a filesystem on a USB device, unplug the device, plug
-> > it back into a different port, and still be able to use the filesystem.
+> > We're calling smp_call_function() with local interrupts disabled, which is
+> > deadlockable.
 > > 
-> > But you're still likely to run into trouble if you unplug a storage
-> > device, move it to another system and write on it, then plug it back into
-> > the original system.  The PLVM would somehow have to recognize that the
-> > data had been changed.  I don't know a foolproof way of doing that.
+> > This, I expect, is because swsusp_suspend() optimistically tries to run
+> > everything with local interrupts disabled.
 > 
-> Such detection should be possible when done at filesystem level.
+> Well, not everything, but device_power_down()/device_power_up() which only
+> handle sysdevs.
 > 
-> I.e. ext3 would notice that someone replayed the journal.
+> > I don't know why this has suddenly started happening -
+> > timekeeping_resume()->clock_was_set()->on_each_cpu() has been there for a
+> > while.  Doesn't mainline do the same thing?
 > 
-> Or we could create ext5 where each r/w mount would update mount
-> time... actually we probably already have last mount time in ext3,
-> so...
+> Yes, and it has always done it.  It even is documented in
+> Documentation/power/devices.txt:System Devices . ;-)
+> 
+> > Not sure what to do about this.  The best fix would be to teach swsusp to
+> > not be so optmistic: resume functions are called with local irqs _enabled_
+> > - that's part of their call environment.  swsusp tries to call them with
+> > local irqs disabled and bad things happen.
+> 
+> I think timekeeping_resume() shouldn't call smp_call_function() ...
 
-I'm thinking we'll need to introduce something like freezing notifiers, ie.
-the ability to register a notifier by an interested subsystem that will be
-called right after user space processes have been frozen and right before
-we start to thaw them (that may allow us to handle the microcode issue in
-a clean way, for example).
-
-Now if a filesystem registers a freezing notifier, it may be unmounted during
-the suspend and remounted during the resume in more or less transparent
-way.  I think an additional mount flag would be needed for filesystem that
-should install such notifiers, like "removable".
-
-Greetings,
-Rafael
+... which even is unnecessary, because sysdev_resume() runs on _one_ CPU.
