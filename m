@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933790AbXDASQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933789AbXDASQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933790AbXDASQN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933789AbXDASQG
+	id S933789AbXDASQv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933794AbXDASQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:16:06 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:39500 "EHLO tmailer.gwdg.de"
+	Sun, 1 Apr 2007 14:16:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35569 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933769AbXDASPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:15:43 -0400
-Date: Sun, 1 Apr 2007 20:15:27 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 08/16] console-printk-level.diff
-In-Reply-To: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704012007020.12316@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S933795AbXDASQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:16:20 -0400
+Date: Sun, 1 Apr 2007 20:16:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] enhance initcall_debug, measure latency
+Message-ID: <20070401181614.GA25648@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Subject: [patch] enhance initcall_debug, measure latency
+From: Ingo Molnar <mingo@elte.hu>
 
-Allow the printk level to be set using a "conlevel=" parameter.
-(Or is there already a different bootoption that does the same thing?)
+enhance the initcall_debug boot option:
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+ - measure the time the initcall took to execute and report
+   it in units of milliseconds.
 
- printk.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ - show the return code of initcalls (useful to see failures and
+   to make sure that an initcall hung)
 
-Index: linux-2.6.21-rc5/kernel/printk.c
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ init/main.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+Index: linux/init/main.c
 ===================================================================
---- linux-2.6.21-rc5.orig/kernel/printk.c
-+++ linux-2.6.21-rc5/kernel/printk.c
-@@ -747,6 +747,15 @@ void resume_console(void)
- }
- #endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
+--- linux.orig/init/main.c
++++ linux/init/main.c
+@@ -685,6 +685,7 @@ static void __init do_initcalls(void)
+ 	int count = preempt_count();
  
-+static __init int set_conlevel(char *str)
-+{
-+	if(*str >= '0' && *str <= '9')
-+		*console_printk = *str - '0';
-+	return 1;
-+}
+ 	for (call = __initcall_start; call < __initcall_end; call++) {
++		ktime_t t0, t1, delta;
+ 		char *msg = NULL;
+ 		char msgbuf[40];
+ 		int result;
+@@ -694,10 +695,26 @@ static void __init do_initcalls(void)
+ 			print_fn_descriptor_symbol(": %s()",
+ 					(unsigned long) *call);
+ 			printk("\n");
++			t0 = ktime_get();
+ 		}
+ 
+ 		result = (*call)();
+ 
++		if (initcall_debug) {
++			t1 = ktime_get();
++			delta = ktime_sub(t1, t0);
 +
-+__setup("conlevel=", set_conlevel);
++			printk("initcall 0x%p", *call);
++			print_fn_descriptor_symbol(": %s()",
++					(unsigned long) *call);
++			printk(" returned %d.\n", result);
 +
- /**
-  * acquire_console_sem - lock the console system for exclusive use.
-  *
-#<EOF>
++			printk("initcall 0x%p ran for %Ld msecs: ",
++				*call, delta.tv64 >> 20);
++			print_fn_descriptor_symbol("%s()\n",
++				(unsigned long) *call);
++		}
++
+ 		if (result && result != -ENODEV && initcall_debug) {
+ 			sprintf(msgbuf, "error code %d", result);
+ 			msg = msgbuf;
