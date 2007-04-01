@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbXDALXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932437AbXDALuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932433AbXDALXW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 07:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932437AbXDALXW
+	id S932437AbXDALuE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 07:50:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbXDALuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 07:23:22 -0400
-Received: from mail.t-c-c.at ([82.150.200.3]:53334 "HELO mail.t-c-c.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932433AbXDALXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 07:23:22 -0400
-Message-ID: <460F961C.4050902@gmx.at>
-Date: Sun, 01 Apr 2007 11:23:08 +0000
-From: "Florian D." <flockmock@gmx.at>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070304)
+	Sun, 1 Apr 2007 07:50:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:30190 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932437AbXDALuA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 07:50:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=qxu6mpgG10r+vNKpImruk1egVNJlWwD4N67yoiVPeSypDYwX7l+CCaWIUf80YWTiJWfY9mpcuV2vnFLdaDIZr5GsQaKf4Yve7gtzrnWREhBIRgt2BbZZ9erxXAmMy7svWPhTbbbR5w5IEXd5Y/VXSB5V6E0MeCgEK1ECy/4V7GA=
+Message-ID: <84144f020704010449w2ba342a3qf3025425e84ad2ce@mail.gmail.com>
+Date: Sun, 1 Apr 2007 14:49:59 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Pete Zaitcev" <zaitcev@redhat.com>
+Subject: Re: usb hid: reset NumLock
+Cc: "Jiri Kosina" <jkosina@suse.cz>, dtor@insightbb.com,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       stuard_hayes@dell.com
+In-Reply-To: <20070330105924.01a16dd6.zaitcev@redhat.com>
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: cannot add device to partitioned raid6 array
-References: <460EF263.7020505@gmx.at>	<17935.8101.815473.709581@notabene.brown>	<460F7A87.3030201@gmx.at> <17935.33905.934360.22271@notabene.brown>
-In-Reply-To: <17935.33905.934360.22271@notabene.brown>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070330105924.01a16dd6.zaitcev@redhat.com>
+X-Google-Sender-Auth: 086d8b426442a733
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> Definitely the cause.  If you really need to add this array, you may
-> be able to reduce the usage of the array, then reduce the size of the
-> array, then add the drive.
-> Depending on how you have partitioned the array, and how you are using
-> the partitions, you may just need to reduce the filesystem in the last
-> partition, then use *fdisk to resize the partition.  Then something
-> like:
-> 
->    mdadm --grow --size=243000000 /dev/md_d4
-> 
-> Is is generally safer to reduce the filesystem too much, resize the
-> device, then grow the filesystem up to the size of the device.  That
-> way avoids fiddly arithmetic and so reduces the chance of failure.
-> 
-> NeilBrown
-> 
+On 3/30/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> Dell people (Stuart and Charles) complained that on some USB keyboards,
+> if BIOS enables NumLock, it stays on even after Linux has started. Since
+> we always start with NumLock off, this confuses users. Quick double dab
+> at NumLock fixes it, but it's not nice.
 
-thanks, but I decided to begin from scratch(backup is available ;)
-now, all partitions have the same size. creating a raid6 array from 2 drives and hot-adding another
-one works now. so this could be regarded as solved.
-
-But when I try to create the array with 3 drives at once, the following strange error appears:
-
-flockmock ~ # mdadm --create /dev/md_d4 --level=6 -a mdp --chunk=32 -n 4 /dev/sda2 /dev/sdb2 
-/dev/sdc2 missing
-mdadm: RUN_ARRAY failed: Input/output error
-mdadm: stopped /dev/md_d4
-
-dmesg shows:
-[  484.362525] md: bind<sda2>
-[  484.363429] md: bind<sdb2>
-[  484.364337] md: bind<sdc2>
-[  484.364397] md: md_d4: raid array is not clean -- starting background reconstruction
-[  484.365876] raid5: device sdc2 operational as raid disk 2
-[  484.365879] raid5: device sdb2 operational as raid disk 1
-[  484.365881] raid5: device sda2 operational as raid disk 0
-[  484.365884] raid5: cannot start dirty degraded array for md_d4
-[  484.365886] RAID5 conf printout:
-[  484.365887]  --- rd:4 wd:3
-[  484.365889]  disk 0, o:1, dev:sda2
-[  484.365891]  disk 1, o:1, dev:sdb2
-[  484.365893]  disk 2, o:1, dev:sdc2
-[  484.365895] raid5: failed to run raid set md_d4
-[  484.365897] md: pers->run() failed ...
-[  484.366271] md: md_d4 stopped.
-[  484.366303] md: unbind<sdc2>
-[  484.366309] md: export_rdev(sdc2)
-[  484.366314] md: unbind<sdb2>
-[  484.366318] md: export_rdev(sdb2)
-[  484.366321] md: unbind<sda2>
-[  484.366325] md: export_rdev(sda2)
-
-
-I just wanted to report that FYI, I will take the first route and wait a little...
-cheers, florian
+What I am seeing on my Thinkpad is that when I boot _without_ an USB
+keyboard NumLock is enabled. Switching to virtual console and back to
+X fixes it which is why I have never bothered to debug it further.
+Perhaps this is related? Should I give your patch a spin to see if it
+fixes the problem?
