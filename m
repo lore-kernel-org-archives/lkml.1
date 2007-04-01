@@ -1,83 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXDAGR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXDAGUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbXDAGR1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 02:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXDAGR1
+	id S932664AbXDAGUt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 02:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbXDAGUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 02:17:27 -0400
-Received: from 1wt.eu ([62.212.114.60]:1601 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932469AbXDAGR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 02:17:26 -0400
-Date: Sun, 1 Apr 2007 08:17:07 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Pedram M <pmessri@gmail.com>
-Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: my first janitorial
-Message-ID: <20070401061707.GB943@1wt.eu>
-References: <9c9aa5d00703310639q68fa5d19k4d8e3bfb56b1fa6@mail.gmail.com> <9c9aa5d00703312224t1948b24bhe34199f19cbda4fb@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 1 Apr 2007 02:20:48 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:38538 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932664AbXDAGUs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 02:20:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EMzhLRGSgC+t2FsHEeRVmToWXEGThk+zcWUeGBzfFWqtCzvIQdh7AI2/eOzwycmrZPw/EdVklqR6imvKsG0W9MxyJVtzPJ0H96uxFiBug8lQ+ePUq9fRRLQCQuuY7dA9hyQIZh9NjMrGvCb1zxoBtEKYTkkTuC1bPbqD6+WDhnc=
+Message-ID: <2375c9f90703312320m3e895bbap735c2d49da9d5ff9@mail.gmail.com>
+Date: Sun, 1 Apr 2007 14:20:46 +0800
+From: "Cong WANG" <xiyou.wangcong@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: [-mm3 patch]Warning fix: check the return value of kobject_add etc.
+In-Reply-To: <20070331223136.6019d98f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9c9aa5d00703312224t1948b24bhe34199f19cbda4fb@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+References: <2375c9f90703301930k4963168u4ba4dbc4c43ce2ee@mail.gmail.com>
+	 <20070331223136.6019d98f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+2007/4/1, Andrew Morton <akpm@linux-foundation.org>:
+> On Sat, 31 Mar 2007 10:30:31 +0800 "Cong WANG" <xiyou.wangcong@gmail.com> wrote:
+>
+> > Since kobject_add, sysfs_create_link and sysfs_create_file are marked
+> > as '__must_check', so we must always check their return values, or gcc
+> > will give us warnings.
+> >
+> > Signed-off-by: Cong WANG <xiyou.wangcong@gmail.com>
+> >
+> > ---
+> > --- fs/partitions/check.c.orig        2007-03-30 21:35:45.000000000 +0800
+> > +++ fs/partitions/check.c     2007-03-30 21:49:53.000000000 +0800
+> > @@ -385,10 +385,16 @@ void add_partition(struct gendisk *disk,
+> >       p->kobj.parent = &disk->kobj;
+> >       p->kobj.ktype = &ktype_part;
+> >       kobject_init(&p->kobj);
+> > -     kobject_add(&p->kobj);
+> > +     if (kobject_add(&p->kobj)) {
+> > +             kfree(p);
+> > +             return;
+> > +     }
+> >       if (!disk->part_uevent_suppress)
+> >               kobject_uevent(&p->kobj, KOBJ_ADD);
+> > -     sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
+> > +     if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
+> > +             kfree(p);
+> > +             return;
+> > +     }
+> >       if (flags & ADDPART_FLAG_WHOLEDISK) {
+> >               static struct attribute addpartattr = {
+> >                       .name = "whole_disk",
+> > @@ -396,7 +402,10 @@ void add_partition(struct gendisk *disk,
+> >                       .owner = THIS_MODULE,
+> >               };
+> >
+> > -             sysfs_create_file(&p->kobj, &addpartattr);
+> > +             if (sysfs_create_file(&p->kobj, &addpartattr)) {
+> > +                     kfree(p);
+> > +                     return;
+> > +             }
+> >       }
+> >       partition_sysfs_add_subdir(p);
+> >       disk->part[part-1] = p;
+>
+> Well yes, but the point here it to fix kernel bugs, not to just make the
+> warnings go away.
+>
+> The bugs here are that the effects of the kobject_add() and the
+> sysfs_create_link() are not undone on the error path.
 
-On Sat, Mar 31, 2007 at 10:24:12PM -0700, Pedram M wrote:
-> How about this one? Am I doing it right now?
-> If not, please try to explain more to me what I am
-> doing wrong.
+Thanks for your point.
 
-You have made several mistakes :
-  - you must select an appropriate subject for your mail. Nobody cares
-    that it is your first mail, what they care about is the problem you
-    are trying to fix and what it applies to. Preferably start your
-    subject with [PATCH] so that people can quickly notice it without
-    having to open it first.
+>
+> Also, please always prepare patches in `patch -p1' form, as per
+> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt, thanks.
+>
+>
 
-  - you did not send a description of your patch. It is important to
-    have a full description, it can be from 1 line to 1 page depending
-    on the complexity of the issue. It is important to explain why you
-    think you are right so that people can argue if they don't agree.
-    Please also try to be as factual as possible, because your message
-    will become the commit message. It means that sentences such as
-    "I think that ..." are not the best we can write.
+Sorry. I am confused with this. Does that mean I should make patches
+_upon_ the root kernel source directory or first make a copy of the
+original source code and then diff against the two dirs? But I was
+told that "patches should be based _in_ the root kernel source
+directory" and when only one file was modified just to diff it with
+the original single file. (See Documentation/SubmittingPatches.)
 
-  - you must sign your patch. For this, add a "Signed-Off-By:" footer.
-    Take a look at other patches for this.
-
-   - your patch was cut and cannot apply to anything. A proper patch starts
-     with line beginning with "---" line, followed by a line with "+++",
-     both indicating the file your patch is supposed to apply to. Make your
-     patch with one level directory for the kernel so that it can apply with
-     "patch -p1". For instance:
-
-        $ diff -u linux-2.6.20/Makefile linux-2.6.20-mine/Makefile
-
-     Another solution is to use '.' as the directory, in order to add one
-     directory level for "patch -p1" to be happy :
-
-        $ diff -u ./Makefile.orig ./Makefile
-
-Hoping this helps,
-Willy
-
-
-> @@ -4760,7 +4760,7 @@
-> 	for (i = 0; i < NR_CARDS; i++) {
-> 		/* look for a Cyclades card by vendor and device id */
-> 		while ((device_id = cy_pci_dev_id[dev_index]) != 0) {
-> -			if ((pdev = pci_find_device(PCI_VENDOR_ID_CYCLADES,
-> +			if ((pdev = pci_get_device(PCI_VENDOR_ID_CYCLADES,
-> 						   device_id, pdev)) == 
-> 						   NULL) {
-> 				dev_index++;	/* try next device id */
-> 			} else {
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Can you help out? And should I remake this patch? Thanks again!
