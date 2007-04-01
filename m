@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbXDADNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751948AbXDADVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751769AbXDADNd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 23:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbXDADNd
+	id S1751948AbXDADVT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 23:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbXDADVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 23:13:33 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:7193 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769AbXDADNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 23:13:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AwhqhOSGCGkpPtlhFcWW6D6KjPFuUJy+CUkRC3KqAXt+6/hZNpHSCo2wp1/2r9AOcUNDb8aQMs3gi5siccKLYsm8BHLZ73UVWhtq4OYJFQ1gr1xAtGrgDOIo006/am9roLJEF+/yVTTBgbJampMTczaP4rFKTpcwAq/nRkFnHYk=
-Message-ID: <b6a2187b0703312013o6c305e00v829894f215812550@mail.gmail.com>
-Date: Sun, 1 Apr 2007 11:13:31 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
-Cc: linux-pm@lists.linux-foundation.org, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de,
-       "Ingo Molnar" <mingo@elte.hu>, "Jens Axboe" <jens.axboe@oracle.com>,
-       jgarzik@pobox.com, "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "Maxim Levitsky" <maximlevitsky@gmail.com>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <200703311232.57505.david-b@pacbell.net>
+	Sat, 31 Mar 2007 23:21:19 -0400
+Received: from vitelus.com ([63.99.9.247]:36158 "EHLO vitelus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751924AbXDADVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 23:21:18 -0400
+Date: Sat, 31 Mar 2007 20:20:42 -0700
+From: Aaron Lehmann <aaronl@vitelus.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Silent corruption on AMD64
+Message-ID: <20070401032042.GU15189@vitelus.com>
+References: <20070401012736.GT15189@vitelus.com> <20070331195236.7c818ed5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <20070331170245.GA9244@elte.hu>
-	 <200703311118.55132.david-b@pacbell.net>
-	 <200703311232.57505.david-b@pacbell.net>
+In-Reply-To: <20070331195236.7c818ed5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/1/07, David Brownell <david-b@pacbell.net> wrote:
-> for those will all get grouped together ... suspended "very late" and
-> resumed "very early", regardless of when they get registered.  Pretty
-> much the driver model parts of what Linus was suggesting; clockevent
-> bits would still be needed.
+On Sat, Mar 31, 2007 at 07:52:36PM -0700, Andrew Morton wrote:
+> Are you able to provide us with some before-and-after data so we
+> can see this corruption.
+> 
+> See, if it's dropped-bits or shifted-data or eight-byte-aligned
+> kernel addresses or whatever, that helps us generate theories..
 
-I tested your patch with CONFIG_NO_HZ=y, but it still hangs while
-suspending to disk (before the percent saving).
+Sure.
 
-But one discovery. I get tired of all these hangs, so I decided to
-press some keys and the power button. Accidentally, the suspend
-proceeded and successfully suspended!
+I created a large file containing the repeating ASCII string "abcdefgh",
+and subjected it to the corruption I described earlier. The correct
+hex sequence is:
 
-I tried many more times, and discovered that to proceed with the
-suspend, hit any 4 keys slowly. (e.g. "F1 F2 F3 F4", or "1 2 3 4").
+61 62 63 64 65 66 67 68
 
-My .config has CONFIG_NO_HZ=y and CONFIG_HIGH_RES_TIMERS=y, but I
-suppose CONFIG_HIGH_RES_TIMERS=y gots nothing to do with the hang.
+Here were some of the permutations that I found in corrupted copies:
 
-I went back with my vanilla 2.6.21-rc5 with Maxim's patch, and with
-hitting the keys, I could suspend to disk with CONFIG_NO_HZ=y and
-CONFIG_HIGH_RES_TIMERS=y.
+61 62 63 64 92 57 5C 0A
+61 62 63 64 A2 2D E1 C7
+61 62 63 64 11 38 0E B6
+61 62 63 64 57 B1 EE 1F
+61 62 63 64 E0 3D 10 21
+61 62 63 64 97 E1 C0 F5
 
-Jeff.
+I did not observe any errors other than replacements of four-byte
+blocks. These errors always started at addresses in the file that had
+a remainder of 12 modulo 16 (i.e. the hex addresses always ended in
+'C'). There was an average about one error per 300MB.
