@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933827AbXDASet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933847AbXDASgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933827AbXDASet (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXDASet
+	id S933847AbXDASgO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXDASgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:34:49 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41087 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933827AbXDASes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:34:48 -0400
-Date: Sun, 1 Apr 2007 20:34:37 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Zeuthen <davidz@redhat.com>, Maxim <maximlevitsky@gmail.com>,
-       Pete Zaitcev <zaitcev@redhat.com>, gregkh@suse.de,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
-Message-ID: <20070401183437.GH11146@elf.ucw.cz>
-References: <20070401175020.GE11146@elf.ucw.cz> <Pine.LNX.4.44L0.0704011422460.1054-100000@netrider.rowland.org>
+	Sun, 1 Apr 2007 14:36:14 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:48734 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933847AbXDASgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:36:13 -0400
+Date: Sun, 01 Apr 2007 20:36:11 +0200
+Message-Id: <1714123823@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0704011422460.1054-100000@netrider.rowland.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+From: devzero@web.de
+To: Ken Chen <kenchen@google.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] remove artificial software max_loop limit
+Organization: http://freemail.web.de/
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+>Blame on the dual meaning of max_loop that it uses currently: to
+>initialize a set of loop devices and as a side effect, it also sets
+>the upper limit.  People are complaining about the former constrain,
+>isn't it?  Does anyone uses the 2nd meaning of upper limit?
+>
+>- Ken
 
-> > Problem is that suspending _with_ removable mass storage devices
-> > attached just will not work. User will unplug them, then complain
-> > about corruption. Advanced user will unplug them, work with them
-> > somewhere else, replug them, then loose filesystem.
-> > 
-> > Feel free to send patch to teach filesystems to handle this.
-> 
-> Actually what's needed is a Persistent Logical Volume Manager.  With it,
-> you could even mount a filesystem on a USB device, unplug the device, plug
-> it back into a different port, and still be able to use the filesystem.
-> 
-> But you're still likely to run into trouble if you unplug a storage
-> device, move it to another system and write on it, then plug it back into
-> the original system.  The PLVM would somehow have to recognize that the
-> data had been changed.  I don't know a foolproof way of doing that.
+what sense would it make to set an upper limit at all?
 
-Such detection should be possible when done at filesystem level.
+we`re so happy to have none anymore :)
 
-I.e. ext3 would notice that someone replayed the journal.
+i think andrew`s suggestion is just good:
 
-Or we could create ext5 where each r/w mount would update mount
-time... actually we probably already have last mount time in ext3,
-so...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>So if we're worried about not breaking existing setups, we should retain
+>this module parameter as a do-nothing thing, maybe with a
+>this-is-going-away warning printk, too.
+
+
+roland
+
+
+
+_______________________________________________________________
+SMS schreiben mit WEB.DE FreeMail - einfach, schnell und
+kostenguenstig. Jetzt gleich testen! http://f.web.de/?mc=021192
+
