@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933895AbXDASyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933888AbXDAS4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933895AbXDASyj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933897AbXDASyj
+	id S933888AbXDAS4e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933897AbXDAS4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:54:39 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:61713 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933895AbXDASyi convert rfc822-to-8bit (ORCPT
+	Sun, 1 Apr 2007 14:56:33 -0400
+Received: from ik-out-1112.google.com ([66.249.90.180]:43435 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933888AbXDAS4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:54:38 -0400
-Date: Sun, 01 Apr 2007 20:54:37 +0200
-Message-Id: <1714153317@web.de>
+	Sun, 1 Apr 2007 14:56:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=QXsq3s66f1YS2OItu3P0M/0Q9meAQA00UttzOyqyNeYV/63ydWwYE7Htt/Lhc5twLXElqP6iZYZBEemclnsplYi7JtANFxDbMyNcbvVdkfZ8incFh+CFXNhkqtbnuTI2bceGwTbsV4sMZuxz4QPR5D6CHTPqonFyMmehjXDV5DY=
+Message-ID: <478c16ae0704011156u5a34ae96lfd88a6da16d5726a@mail.gmail.com>
+Date: Sun, 1 Apr 2007 15:56:30 -0300
+From: "Edgardo Hames" <ehames@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Rebuilding and checksumming the Linux kernel
 MIME-Version: 1.0
-From: devzero@web.de
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] remove artificial software max_loop limit
-Organization: http://freemail.web.de/
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, the point of an upper limit might be to keep loop devices from  
-> chewing up too much memory on a system.  IE: To fail allocating more  
-> loopdevs before you run OOM and start killing random userspace  
-> processes.
+I'm working on a project with teams spread across the world and we all
+work on the same repository patching the kernel and then integrating
+into a common main branch. Even though we label the source code, we
+would like to make sure that we are all building the same kernel by
+running md5sum on the resulting binary.
 
-ok, sounds reasonable. 
+Right now, this is not possible because the kernel includes a
+timestamp and a build number on the binary. What are this timestamps
+used for? Can we just remove them? Is there any other thing that may
+lead to different binaries? (we are using the exact toolchains and
+build machines, so we can assume that the same executable is generated
+if the input source is the same).
 
-but - not very sure here, but don`t you need to be root for creating loop devices and don`t you have many other ways to chew up too  much memory then, anyway ?
+Please, cc me in your replies because I'm not subscribed to the list.
 
-
-> -----Ursprüngliche Nachricht-----
-> Von: Kyle Moffett <mrmacman_g4@mac.com>
-> Gesendet: 01.04.07 20:44:04
-> An: devzero@web.de
-> CC: Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org
-> Betreff: Re: [patch] remove artificial software max_loop limit
-
-
-> On Apr 01, 2007, at 14:36:11, devzero@web.de wrote:
-> >> Blame on the dual meaning of max_loop that it uses currently: to
-> >> initialize a set of loop devices and as a side effect, it also sets
-> >> the upper limit.  People are complaining about the former constrain,
-> >> isn't it?  Does anyone uses the 2nd meaning of upper limit?
-> >>
-> >> - Ken
-> >
-> > what sense would it make to set an upper limit at all?
-> >
-> > we`re so happy to have none anymore :)
-> 
-> Well, the point of an upper limit might be to keep loop devices from  
-> chewing up too much memory on a system.  IE: To fail allocating more  
-> loopdevs before you run OOM and start killing random userspace  
-> processes.
-> 
-> Cheers,
-> Kyle Moffett
-> 
-> 
-
-
-_______________________________________________________________
-SMS schreiben mit WEB.DE FreeMail - einfach, schnell und
-kostenguenstig. Jetzt gleich testen! http://f.web.de/?mc=021192
-
+Thanks for your time,
+Ed
