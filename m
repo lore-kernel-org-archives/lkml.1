@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbXCaXBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbXCaXLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752661AbXCaXBA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 19:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXCaXBA
+	id S1752684AbXCaXLP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 19:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXCaXLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 19:01:00 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:42714 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbXCaXA7 (ORCPT
+	Sat, 31 Mar 2007 19:11:15 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37716 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752684AbXCaXLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 19:00:59 -0400
-Date: Sun, 01 Apr 2007 00:58:30 +0200
-Message-Id: <1712880100@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Cc: blaisorblade@yahoo.it, jdike@addtoit.com
-Subject: [RFC] UML kernel & rootfs bundle with every kernel release ?
-Organization: http://freemail.web.de/
-Content-Type: text/plain; charset=iso-8859-15
+	Sat, 31 Mar 2007 19:11:15 -0400
+Date: Sun, 1 Apr 2007 01:14:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Eduard Bloch <edi@gmx.de>
+Cc: linux-kernel@vger.kernel.org, debburn-devel@lists.alioth.debian.org
+Subject: Re: broken device locking, sg vs. sg_io on block devices
+Message-ID: <20070401011452.7c0cbce9@the-village.bc.nu>
+In-Reply-To: <20070331224021.GA6488@rotes76.wohnheim.uni-kl.de>
+References: <200703261811.21448.gerald@itzgrund.net>
+	<20070330111744.GA8889@rotes76.wohnheim.uni-kl.de>
+	<20070330134327.GA24030@infradead.org>
+	<20070330142114.GA31685@rotes76.wohnheim.uni-kl.de>
+	<20070330191038.067c346b@the-village.bc.nu>
+	<20070331170703.GA8179@rotes76.wohnheim.uni-kl.de>
+	<20070331232002.7b478f37@the-village.bc.nu>
+	<20070331224021.GA6488@rotes76.wohnheim.uni-kl.de>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello !
+> > > The use of /dev/sg* is still common practice, its invention predates
+> > 
+> > The /dev/sg interface cannot do the locking. If you use /dev/sg you are
+> 
+> Again, it doesn't have to. It can pass the locking operations to the
+> related block device driver.
 
-i`m not very much into UML for the last months, but while playing around with dm-loop i just got one idea i`d like to share.
+No it can't. The driver has no idea what the locking rules are for
+arbitary command blocks send to arbitary devices. /dev/sg is a *raw*
+interface. You can send anything to anyone, and the locking rules for
+that are far too complex for a giant morass of kernel code to get added.
 
-Whenever you want to test some new kernel (feature), you may put you main system at risk, exactly know what you`re doing - or - use UserModeLinux.
+The mess begins because you use /dev/sg and put it in a cdrom group
+instead of using SG_IO on the /dev/sr device. The mess continues because
+of the user of O_EXCL locking thus forcing re-open/close by HAL instead
+of fcntl based co-operative locking.
 
-The "problem" with UML is:
+The job of the kernel is not and never has been to anticipate and correct
+everything stupid someone tries to do in user space. 
 
-- you needs to compile an UML kernel first.
-- you needs some "basic" knowlege about UML to get things running.
-- you need to create an appropriate filesystem image for UML - or find some for download
-- you need to copy appropriate kernel modules inside
-- you need to put kernel sources inside, have compiler......
-- you may need appropriate modle-init-tools,initrd, kernel specific tools (updated dmsetup, updated....whatever)
+As I said before the people wanting to arbitrate serial ports got this
+right in the mid 1970's your situation is not much more complicated,
+unless you persist in using /dev/sg - which yes does make it hard, but so
+does writing it in COBOL, or while standing on your head. And the
+solution to all three cases is the same *DONT DO IT*
 
-in short: 
-it`s quite some work to be done to have your uml 2.6.21 with root-fs up and running and working cleanly.
-whenever i search the net for some appropriate UML fs image, those i find are very often old and outdated...
-
-is there a project/website which is offering such ready to run "UML kernel+rootfs release bundles" for download (i.e. new kernel,generic  root-fs, modules inside, sources inside, compiler inside - in sync with the latest stable vanilla) , or , would it make sense to establish such project ?
-i.e. besides releasing the kernel, also releasing sort of a kernel "runtime kit" and/or "devkit" ?
-
-i think this could be very helpful for linux-kernel, because it could be tested by more people more quickly, more easily and thus, more often.
-just download, do few steps for setup, start up that virtual machine and there you go testing, hacking into the sources, do all that things you never would do on your main system,  whatever....
-
-it would probably also add benefit to UML itself.
-
-does this sound dumb? i don`t know, so please comment.
-
-regards
-roland
-
-PS:
-ok, this would be some 500M to 1G download, but there`s lot`s of bandwidth today - and P2P/Bittorrent.....
-_______________________________________________________________
-SMS schreiben mit WEB.DE FreeMail - einfach, schnell und
-kostenguenstig. Jetzt gleich testen! http://f.web.de/?mc=021192
-
+Alan
