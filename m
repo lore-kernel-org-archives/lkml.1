@@ -1,134 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbXDAVmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbXDAVxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752741AbXDAVmG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 17:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXDAVmG
+	id S1753041AbXDAVxU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 17:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbXDAVxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 17:42:06 -0400
-Received: from gw.goop.org ([64.81.55.164]:57407 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752741AbXDAVmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 17:42:03 -0400
-Message-ID: <46102723.9050405@goop.org>
-Date: Sun, 01 Apr 2007 14:41:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sun, 1 Apr 2007 17:53:20 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:11075 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540AbXDAVxU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 17:53:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=q2NWjLTEeUfSl0FEN0hXg5gFtw/k8luCJOLV2LZa0xtY6AQWYWhBXWXsQMDsqmq1YwZ3tygbUq4T6VUpfTXOiWUSRoC6YSANGh+lfUmnvJRea299XzR5FzhT655CLJwKoaiKHySC2ltRtPaI3eJEwp1F3jAuKeSa3SApwSaRn8c=
+Message-ID: <478c16ae0704011453j7942bb3aq15c9930045db9e50@mail.gmail.com>
+Date: Sun, 1 Apr 2007 18:53:18 -0300
+From: "Edgardo Hames" <ehames@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Rebuilding and checksumming the Linux kernel
+Cc: "Sam Ravnborg" <sam@ravnborg.org>
+In-Reply-To: <20070401210622.GC10761@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] clean up tsc-based sched_clock
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <478c16ae0704011156u5a34ae96lfd88a6da16d5726a@mail.gmail.com>
+	 <20070401210622.GC10761@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Three cleanups there:
- - change "instable" -> "unstable"
- - it's better to use get_cpu_var for getting this cpu's variables
- - change cycles_2_ns to do the full computation rather than just the
-   tsc->ns scaling.  It's a simpler interface, and it makes the function
-   more generally useful.
+On 4/1/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Sun, Apr 01, 2007 at 03:56:30PM -0300, Edgardo Hames wrote:
+> > I'm working on a project with teams spread across the world and we all
+> > work on the same repository patching the kernel and then integrating
+> > into a common main branch. Even though we label the source code, we
+> > would like to make sure that we are all building the same kernel by
+> > running md5sum on the resulting binary.
+> >
+> > Right now, this is not possible because the kernel includes a
+> > timestamp and a build number on the binary. What are this timestamps
+> > used for? Can we just remove them? Is there any other thing that may
+> > lead to different binaries? (we are using the exact toolchains and
+> > build machines, so we can assume that the same executable is generated
+> > if the input source is the same).
+>
+> Soon you will be able to say:
+>
+> KBUILD_BUILD_TIMESTAMP="2007-02-30 01:02.03" KBUILD_BUILD_VERSION=99 make
+>
+> It will hit -mm soon and mainline in next merge window.
+> Patch is in kbuild.git at git.kernel.org.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+This is so much more than I could have asked for! I will try this
+patch on my version of the kernel.
 
----
- arch/i386/kernel/sched-clock.c |   35 +++++++++++++++++++++--------------
- 1 file changed, 21 insertions(+), 14 deletions(-)
+Thanks a lot,
+Ed
+-- 
+Encontrá a "Tu psicópata favorito" http://tuxmaniac.blogspot.com
 
-===================================================================
---- a/arch/i386/kernel/sched-clock.c
-+++ b/arch/i386/kernel/sched-clock.c
-@@ -39,17 +39,23 @@
- 
- struct sc_data {
- 	unsigned int cyc2ns_scale;
--	unsigned char instable;
-+	unsigned char unstable;
- 	unsigned long long last_tsc;
- 	unsigned long long ns_base;
- };
- 
- static DEFINE_PER_CPU(struct sc_data, sc_data);
- 
--static inline unsigned long long cycles_2_ns(int cpu, unsigned long long cyc)
-+static inline unsigned long long cycles_2_ns(unsigned long long cyc)
- {
--	struct sc_data *sc = &per_cpu(sc_data, cpu);
--	return (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
-+	const struct sc_data *sc = &__get_cpu_var(sc_data);
-+	unsigned long long ns;
-+
-+	cyc -= sc->last_tsc;
-+	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
-+	ns += sc->ns_base;
-+
-+	return ns;
- }
- 
- /*
-@@ -62,18 +68,19 @@ static inline unsigned long long cycles_
-  */
- unsigned long long sched_clock(void)
- {
--	int cpu = get_cpu();
--	struct sc_data *sc = &per_cpu(sc_data, cpu);
- 	unsigned long long r;
-+	const struct sc_data *sc = &get_cpu_var(sc_data);
- 
--	if (sc->instable) {
-+	if (sc->unstable) {
- 		/* TBD find a cheaper fallback timer than this */
- 		r = ktime_to_ns(ktime_get());
- 	} else {
- 		get_scheduled_cycles(r);
--		r = ((u64)sc->ns_base) + cycles_2_ns(cpu, r - sc->last_tsc);
-+		r = cycles_2_ns(r);
- 	}
--	put_cpu();
-+
-+	put_cpu_var(sc_data);
-+
- 	return r;
- }
- 
-@@ -81,7 +88,7 @@ static void resync_sc_freq(struct sc_dat
- static void resync_sc_freq(struct sc_data *sc, unsigned int newfreq)
- {
- 	if (!cpu_has_tsc) {
--		sc->instable = 1;
-+		sc->unstable = 1;
- 		return;
- 	}
- 	/* RED-PEN protect with seqlock? I hope that's not needed
-@@ -90,7 +97,7 @@ static void resync_sc_freq(struct sc_dat
- 	sc->ns_base = ktime_to_ns(ktime_get());
- 	get_scheduled_cycles(sc->last_tsc);
- 	sc->cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR) / newfreq;
--	sc->instable = 0;
-+	sc->unstable = 0;
- }
- 
- static void call_r_s_f(void *arg)
-@@ -119,9 +126,9 @@ static int sc_freq_event(struct notifier
- 	switch (event) {
- 	case CPUFREQ_RESUMECHANGE:  /* needed? */
- 	case CPUFREQ_PRECHANGE:
--		/* Mark TSC as instable until cpu frequency change is done
-+		/* Mark TSC as unstable until cpu frequency change is done
- 		   because we don't know when exactly it will change */
--		sc->instable = 1;
-+		sc->unstable = 1;
- 		break;
- 	case CPUFREQ_SUSPENDCHANGE:
- 	case CPUFREQ_POSTCHANGE:
-@@ -163,7 +170,7 @@ static __init int init_sched_clock(void)
- 	int i;
- 	struct cpufreq_freqs f = { .cpu = get_cpu(), .new = 0 };
- 	for_each_possible_cpu (i)
--		per_cpu(sc_data, i).instable = 1;
-+		per_cpu(sc_data, i).unstable = 1;
- 	WARN_ON(num_online_cpus() > 1);
- 	call_r_s_f(&f);
- 	put_cpu();
-
-
+The future is not what it used to be.
+-- Paul Valéry
