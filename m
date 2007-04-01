@@ -1,114 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbXDAACH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbXDAA1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbXDAACH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 20:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXDAACG
+	id S1752779AbXDAA1h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 20:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbXDAA1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 20:02:06 -0400
-Received: from mail.t-c-c.at ([82.150.200.3]:37537 "HELO mail.t-c-c.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752773AbXDAACF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 20:02:05 -0400
-X-Greylist: delayed 1038 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Mar 2007 20:02:05 EDT
-Message-ID: <460EF263.7020505@gmx.at>
-Date: Sat, 31 Mar 2007 23:44:35 +0000
-From: "Florian D." <flockmock@gmx.at>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070304)
+	Sat, 31 Mar 2007 20:27:37 -0400
+Received: from smtpout06-04.prod.mesa1.secureserver.net ([64.202.165.227]:54405
+	"HELO smtpout06.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1752779AbXDAA1g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 20:27:36 -0400
+Message-ID: <460EFC76.4060808@seclark.us>
+Date: Sat, 31 Mar 2007 20:27:34 -0400
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: cannot add device to partitioned raid6 array
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       Francois Romieu <romieu@fr.zoreil.com>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.21-rc5 from fc7-rc2 problems
+References: <460EC109.5070300@seclark.us> <20070331134610.64a9c410.akpm@linux-foundation.org>
+In-Reply-To: <20070331134610.64a9c410.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi list!
+Andrew Morton wrote:
 
-in short:
-I created a partitioned raid6 array with 2 missing drives. Now, I want to add a device. It fails with:
-flockmock ~ # mdadm -a /dev/md_d4 /dev/sdb2
-mdadm: add new device failed for /dev/sdb2 as 4: Invalid argument
+>On Sat, 31 Mar 2007 16:14:01 -0400 Stephen Clark <Stephen.Clark@seclark.us> wrote:
+>
+>  
+>
+>>Hello,
+>>
+>>I have just tried booting the fc7-rc2 live cd on 2 of my laptops and it 
+>>failed on both.
+>>
+>>Laptop 1 is an asus vbi s96f that get a panic that says exception in 
+>>interrupt routine
+>>for my rtl8139.
+>>
+>>This device works fine in 2.6.20.2
+>>    
+>>
+>
+>That's regression #1.  Are you able to take a photograph of the screen
+>when it has crashed?  Setting the display to 50 rows would make that more
+>useful.  (serial console would be better, but I assume that thing has
+>no serial port).
+>
+>  
+>
+>>The other laptop is a hp n5430 it fail in the ali-pata driver not being 
+>>able to read the cdrom, timeing out
+>>and dropping into a bash shell telling me to tell it where the root 
+>>filesystem is.
+>>    
+>>
+>
+>That's #2, I guess.
+>
+>  
+>
+>>Also it sets my hard
+>>drive to udma/33 when it run find at udma/66 under 2.6.20.1.
+>>    
+>>
+>
+>#3.  Hopefully it's related to #2.
+>
+>Please send the full dmesg output for 2.6.20.1 on the n5430.
+>
+>  
+>
+>>It would 
+>>really be nice if the people makeing
+>>all these changes would at least keep things compatible with what they 
+>>were before. These are regressions
+>>guys!
+>>    
+>>
+>
+>We try ;)
+>
+>  
+>
+>>This hp n5430 system works fine with 2.6.20.1.
+>>    
+>>
+>
+>Thanks, it helps.
+>
+>
+>  
+>
+I'll see if I can get a serial port console setup on each laptop, 
+failing that I'll take a
+photo.
 
-I think it is the same problem as in:
-http://marc.info/?l=linux-raid&m=115316147716600&w=2
+Thanks,
+Steve
+
+-- 
+
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
 
 
 
-details:
-kernel 2.6.20.4
-mdadm-2.6.1
-the raid6 array:
-
-flockmock ~ # mdadm --detail /dev/md_d4
-/dev/md_d4:
-         Version : 00.90.03
-   Creation Time : Sat Mar 31 19:48:58 2007
-      Raid Level : raid6
-      Array Size : 490030464 (467.33 GiB 501.79 GB)
-   Used Dev Size : 245015232 (233.66 GiB 250.90 GB)
-    Raid Devices : 4
-   Total Devices : 2
-Preferred Minor : 4
-     Persistence : Superblock is persistent
-
-     Update Time : Sat Mar 31 23:28:37 2007
-           State : clean, degraded
-  Active Devices : 2
-Working Devices : 2
-  Failed Devices : 0
-   Spare Devices : 0
-
-      Chunk Size : 32K
-
-            UUID : dfb5e536:2447b984:b7699fd8:8ba37cbf
-          Events : 0.2972
-
-     Number   Major   Minor   RaidDevice State
-        0       8        2        0      active sync   /dev/sda2
-        1       8       34        1      active sync   /dev/sdc2
-        2       0        0        2      removed
-        3       0        0        3      removed
-
-the device, which I want to add:
-flockmock ~ # mdadm -E /dev/sdb2
-/dev/sdb2:
-           Magic : a92b4efc
-         Version : 00.90.00
-            UUID : dfb5e536:2447b984:b7699fd8:8ba37cbf
-   Creation Time : Sat Mar 31 19:48:58 2007
-      Raid Level : raid6
-   Used Dev Size : 245015232 (233.66 GiB 250.90 GB)
-      Array Size : 490030464 (467.33 GiB 501.79 GB)
-    Raid Devices : 4
-   Total Devices : 2
-Preferred Minor : 4
-
-     Update Time : Sat Mar 31 23:29:23 2007
-           State : clean
-  Active Devices : 2
-Working Devices : 2
-  Failed Devices : 2
-   Spare Devices : 0
-        Checksum : 8aeeef56 - correct
-          Events : 0.2974
-
-      Chunk Size : 32K
-
-       Number   Major   Minor   RaidDevice State
-this     4       8       18       -1      spare   /dev/sdb2
-
-    0     0       8        2        0      active sync   /dev/sda2
-    1     1       8       34        1      active sync   /dev/sdc2
-    2     2       0        0        2      faulty removed
-    3     3       0        0        3      faulty removed
-
-dmesg shows such error mesgs:
-[  220.681135] md: sdb2 has invalid sb, not importing!
-[  220.681186] md: md_import_device returned -22
-[  220.681435] md: sdb2 has invalid sb, not importing!
-[  220.681463] md: md_import_device returned -22
-
-any idea how to resolve this? thanks,
-florian
-
-PS: please cc me in replies, thanks.
