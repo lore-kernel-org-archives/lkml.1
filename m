@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932334AbXDAF2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1749667AbXDAFbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932334AbXDAF2X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 01:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbXDAF2X
+	id S1749667AbXDAFbk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 01:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbXDAFbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 01:28:23 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:49764 "EHLO smtp.osdl.org"
+	Sun, 1 Apr 2007 01:31:40 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:49857 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932334AbXDAF2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 01:28:22 -0400
-Date: Sat, 31 Mar 2007 22:28:13 -0700
+	id S1749667AbXDAFbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 01:31:39 -0400
+Date: Sat, 31 Mar 2007 22:31:36 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 3/3] slab: avoid __initdata warning (may be a bogus one)
-Message-Id: <20070331222813.bd66ae05.akpm@linux-foundation.org>
-In-Reply-To: <20070330230814.19809.15981.stgit@americanbeauty.home.lan>
-References: <20070330230746.19809.2000.stgit@americanbeauty.home.lan>
-	<20070330230814.19809.15981.stgit@americanbeauty.home.lan>
+To: "Cong WANG" <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: [-mm3 patch]Warning fix: check the return value of kobject_add
+ etc.
+Message-Id: <20070331223136.6019d98f.akpm@linux-foundation.org>
+In-Reply-To: <2375c9f90703301930k4963168u4ba4dbc4c43ce2ee@mail.gmail.com>
+References: <2375c9f90703301930k4963168u4ba4dbc4c43ce2ee@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,38 +25,55 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Mar 2007 01:08:14 +0200 "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it> wrote:
+On Sat, 31 Mar 2007 10:30:31 +0800 "Cong WANG" <xiyou.wangcong@gmail.com> wrote:
 
-> set_up_list3s is not __init and references initkmem_list3.
+> Since kobject_add, sysfs_create_link and sysfs_create_file are marked
+> as '__must_check', so we must always check their return values, or gcc
+> will give us warnings.
 > 
-> Also, kmem_cache_create calls setup_cpu_cache which calls set_up_list3s. The
-> state machine _may_ prevent the code from accessing this data after freeing
-> initdata (it makes sure it's used only up to boot), so this warning may be a
-> false positive.
+> Signed-off-by: Cong WANG <xiyou.wangcong@gmail.com>
 > 
-> Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
 > ---
+> --- fs/partitions/check.c.orig	2007-03-30 21:35:45.000000000 +0800
+> +++ fs/partitions/check.c	2007-03-30 21:49:53.000000000 +0800
+> @@ -385,10 +385,16 @@ void add_partition(struct gendisk *disk,
+>  	p->kobj.parent = &disk->kobj;
+>  	p->kobj.ktype = &ktype_part;
+>  	kobject_init(&p->kobj);
+> -	kobject_add(&p->kobj);
+> +	if (kobject_add(&p->kobj)) {
+> +		kfree(p);
+> +		return;
+> +	}
+>  	if (!disk->part_uevent_suppress)
+>  		kobject_uevent(&p->kobj, KOBJ_ADD);
+> -	sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
+> +	if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
+> +		kfree(p);
+> +		return;
+> +	}
+>  	if (flags & ADDPART_FLAG_WHOLEDISK) {
+>  		static struct attribute addpartattr = {
+>  			.name = "whole_disk",
+> @@ -396,7 +402,10 @@ void add_partition(struct gendisk *disk,
+>  			.owner = THIS_MODULE,
+>  		};
 > 
->  mm/slab.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 0934f8d..0772faf 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -305,7 +305,7 @@ struct kmem_list3 {
->   * Need this for bootstrapping a per node allocator.
->   */
->  #define NUM_INIT_LISTS (2 * MAX_NUMNODES + 1)
-> -struct kmem_list3 __initdata initkmem_list3[NUM_INIT_LISTS];
-> +struct kmem_list3 initkmem_list3[NUM_INIT_LISTS];
->  #define	CACHE_CACHE 0
->  #define	SIZE_AC 1
->  #define	SIZE_L3 (1 + MAX_NUMNODES)
+> -		sysfs_create_file(&p->kobj, &addpartattr);
+> +		if (sysfs_create_file(&p->kobj, &addpartattr)) {
+> +			kfree(p);
+> +			return;
+> +		}
+>  	}
+>  	partition_sysfs_add_subdir(p);
+>  	disk->part[part-1] = p;
 
-Yes, I think this is a flase positive - we'll never touch initkmem_list3[]
-after free_initmem() because of the transitions of g_cpucache_up.
+Well yes, but the point here it to fix kernel bugs, not to just make the
+warnings go away.
 
-(In which case set_up_list3s() shoud be __init, too?)
+The bugs here are that the effects of the kobject_add() and the
+sysfs_create_link() are not undone on the error path.
 
-Christoph, I think you looked at this previously?
+Also, please always prepare patches in `patch -p1' form, as per
+http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt, thanks.
+
