@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbXDASRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbXDASSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbXDASRc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXDASRb
+	id S933793AbXDASSF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbXDASRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:17:31 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:40774 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933721AbXDASRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:17:16 -0400
-Message-ID: <460FF726.7090601@gmail.com>
-Date: Sun, 01 Apr 2007 20:17:10 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Sun, 1 Apr 2007 14:17:35 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:39960 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933795AbXDASRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:17:08 -0400
+Date: Sun, 1 Apr 2007 20:16:22 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 11/16] samba-eintr-fix.diff
+In-Reply-To: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704012009230.12316@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-References: <460B6E4B.3060004@gmail.com> <200703291639.41515.rjw@sisk.pl>
-In-Reply-To: <200703291639.41515.rjw@sisk.pl>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
-> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
->> Hi,
->>
->> I'm getting this while trying to swsups the machine in -rc5, -rc4 is fine:
->>
->> Disabling non-boot CPUs
->> CPU 1 is now offline
->> SMP alternatives: switching to UP code
->> CPU1 is down
->> swsusp: critical section:
->> swsusp: Need to copy 131380 pages
->> swsusp: Not enough free memory
->> Error -12 suspending
->> Enabling non-boot CPUs ...
->>
->> # cat /sys/power/resume
->> 8:6
->> # cat /proc/swaps
->> Filename                                Type            Size    Used    Priority
->> /dev/sda6                               partition       1004020 0       -1
->>
->> Any other info needed?
-> 
-> Beats me.  There were no changes that could result in such a thing between
-> -rc4 and -rc5, at least not in the swsusp department.
-> 
-> Could you please try to bisect?
 
-Hm, there is some kind of magic.
+From: Dave Jones
+Already posted at http://lkml.org/lkml/2005/7/7/255
 
-First, I have fglrx, that taints kernel. If I use vesa drv with X, it
-doesn't resume the card. If I try console, it doesn't resume it too.
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+Cc: Dave Jones <Dave Jones <davej@redhat.com>
 
-fglrx + suspend.sf.net seems to work -- 3 unsuccesfull disk >
-sys/power/state and after s2dsk with backspace during suspend, disk >
-sys/power/state works. But this sceniario happened only once...
+ request.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Next, it was so early to utter -rc4 is good, it happens there too, so it's
-not a regression.
-
-I have no idea what's wrong, is there any possibility to figure out, what
-happens (esp. kick fglrx off)? Disable higmem? Try UP?
-
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
-
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+Index: linux-2.6.21-rc5/fs/smbfs/request.c
+===================================================================
+--- linux-2.6.21-rc5.orig/fs/smbfs/request.c
++++ linux-2.6.21-rc5/fs/smbfs/request.c
+@@ -347,6 +347,7 @@ int smb_add_request(struct smb_request *
+ 			smb_rput(req);
+ 		}
+ 		smb_unlock_server(server);
++		return -EINTR;
+ 	}
+ 
+ 	if (!timeleft) {
+#<EOF>
