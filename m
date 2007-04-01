@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752256AbXDAU2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXDAUgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752256AbXDAU2K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 16:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXDAU2K
+	id S1752320AbXDAUgH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 16:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbXDAUgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 16:28:10 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:47781 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752256AbXDAU2J (ORCPT
+	Sun, 1 Apr 2007 16:36:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50508 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752320AbXDAUgG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 16:28:09 -0400
-Date: Sun, 01 Apr 2007 14:27:51 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Fwd: kswapd issues + kernel 2.4.21-32.0.1.ELsmp
-In-reply-to: <fa.Fyq10Ks5ejO6P+77Y8svOle1kro@ifi.uio.no>
-To: Pedram M <pmessri@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <461015C7.60804@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.vikcLJfO/FKczN77bSVCqEtBhL0@ifi.uio.no>
- <fa.Fyq10Ks5ejO6P+77Y8svOle1kro@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sun, 1 Apr 2007 16:36:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc5-mm3
+Date: Sun, 1 Apr 2007 22:39:01 +0200
+User-Agent: KMail/1.9.5
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+References: <20070330010559.2a232d9a.akpm@linux-foundation.org> <460FD70C.1040602@googlemail.com> <20070401120305.932a493b.akpm@linux-foundation.org>
+In-Reply-To: <20070401120305.932a493b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704012239.01964.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pedram M wrote:
-> Hi,
+On Sunday, 1 April 2007 21:03, Andrew Morton wrote:
+> On Sun, 01 Apr 2007 18:00:12 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 > 
-> I've seen this around, and have heard about it in forums and else-where,
-> could somebody enlighten me with more information or with experiences
-> they have had.  Looks like kswapd begins to eat CPU dramatically till the
-> box eventually locks up.
+> > Andrew Morton napisał(a):
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/
+> > > 
+> > 
+> > BUG: at /mnt/md0/devel/linux-mm/arch/i386/kernel/smp.c:571 native_smp_call_function_mask()
+> >  [<c01051a1>] dump_trace+0x63/0x1eb
+> >  [<c0105343>] show_trace_log_lvl+0x1a/0x30
+> >  [<c0105f8a>] show_trace+0x12/0x14
+> >  [<c0106027>] dump_stack+0x16/0x18
+> >  [<c0113a92>] native_smp_call_function_mask+0x57/0x14b
+> >  [<c0113c9b>] smp_call_function+0x1e/0x22
+> >  [<c0129a60>] on_each_cpu+0x2a/0x73
+> >  [<c013a12d>] clock_was_set+0x1b/0x1d
+> >  [<c013b99d>] timekeeping_resume+0xb5/0xbb
+> >  [<c027af35>] __sysdev_resume+0x17/0x5d
+> >  [<c027b2aa>] sysdev_resume+0x19/0x4b
+> >  [<c027fd12>] device_power_up+0xb/0x12
+> >  [<c014f30b>] swsusp_suspend+0x55/0x63
+> >  [<c014fad0>] pm_suspend_disk+0x163/0x28f
+> >  [<c014e7be>] enter_state+0x54/0x1d5
+> >  [<c014e9c5>] state_store+0x86/0x9c
+> >  [<c01bfe47>] subsys_attr_store+0x23/0x2b
+> >  [<c01bff89>] sysfs_write_file+0xc1/0xe9
+> >  [<c0186485>] vfs_write+0xd1/0x15a
+> >  [<c0186ab7>] sys_write+0x3d/0x72
+> >  [<c010424c>] syscall_call+0x7/0xb
+> >  [<b7f9b410>] 0xb7f9b410
 > 
-> Thanks,
-> Pedram
+> We're calling smp_call_function() with local interrupts disabled, which is
+> deadlockable.
+> 
+> This, I expect, is because swsusp_suspend() optimistically tries to run
+> everything with local interrupts disabled.
 
-Looks like an old RHEL3 kernel - first off try the latest updated kernel 
-which is 2.4.21-47.0.1.EL.
+Well, not everything, but device_power_down()/device_power_up() which only
+handle sysdevs.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> I don't know why this has suddenly started happening -
+> timekeeping_resume()->clock_was_set()->on_each_cpu() has been there for a
+> while.  Doesn't mainline do the same thing?
 
+Yes, and it has always done it.  It even is documented in
+Documentation/power/devices.txt:System Devices . ;-)
+
+> Not sure what to do about this.  The best fix would be to teach swsusp to
+> not be so optmistic: resume functions are called with local irqs _enabled_
+> - that's part of their call environment.  swsusp tries to call them with
+> local irqs disabled and bad things happen.
+
+I think timekeeping_resume() shouldn't call smp_call_function() ...
