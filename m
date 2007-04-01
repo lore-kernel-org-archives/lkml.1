@@ -1,49 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbXDAOxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933140AbXDAO4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933089AbXDAOxf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 10:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933140AbXDAOxe
+	id S933140AbXDAO4z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 10:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbXDAO4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 10:53:34 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:57213 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933089AbXDAOxd (ORCPT
+	Sun, 1 Apr 2007 10:56:55 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43527 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933140AbXDAO4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 10:53:33 -0400
-Date: Sun, 1 Apr 2007 15:53:18 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Alexey Starikovskiy <aystarik@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Message-ID: <20070401145317.GA17776@srcf.ucam.org>
-References: <460E0158.7090705@goop.org> <8f8ff01d0703310033y74421cfcl747ece1be003471@mail.gmail.com> <460F511E.2090102@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <460F511E.2090102@goop.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.21-rc5: Thinkpad X60 gets critical thermal shutdowns
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Sun, 1 Apr 2007 10:56:54 -0400
+Date: Sun, 1 Apr 2007 17:00:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Pedram M" <pmessri@gmail.com>
+Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: my first janitorial
+Message-ID: <20070401170043.27a581cb@the-village.bc.nu>
+In-Reply-To: <9c9aa5d00703312224t1948b24bhe34199f19cbda4fb@mail.gmail.com>
+References: <9c9aa5d00703310639q68fa5d19k4d8e3bfb56b1fa6@mail.gmail.com>
+	<9c9aa5d00703312224t1948b24bhe34199f19cbda4fb@mail.gmail.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 31, 2007 at 11:28:46PM -0700, Jeremy Fitzhardinge wrote:
+On Sat, 31 Mar 2007 22:24:12 -0700
+"Pedram M" <pmessri@gmail.com> wrote:
 
-> That seems to have helped.  If I watch
-> /proc/acpi/thermal_zone/THM?/temperature, it seems stable even under
-> load.   I didn't try watching the thermal_zones when these options were
-> enabled, but I presume the temperature was not controlled for it to hit
-> 128 degC.
-> 
-> What's going on here?  Does reading an i2c sensor from the kernel
-> prevent something else from doing it?
+> How about this one? Am I doing it right now?
+> If not, please try to explain more to me what I am
+> doing wrong.
 
-The i2c drivers access the same hardware as the ACPI methods, and 
-there's no locking.
+You need to hold a reference to the PCI device for the entire duration it
+is used. I think you actually also need something like this to get the whole
+thing using pci references and pci_get_* properly
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Alan
+
+--- drivers/char/cyclades.c~	2007-04-01 15:52:16.000000000 +0100
++++ drivers/char/cyclades.c	2007-04-01 15:52:16.000000000 +0100
+@@ -4803,7 +4782,7 @@
+                 cy_card[j].bus_index = 1;
+                 cy_card[j].first_line = cy_next_channel;
+                 cy_card[j].num_chips = cy_pci_nchan/4;
+-		cy_card[j].pdev = pdev;
++		cy_card[j].pdev = pci_dev_get(pdev);
+ 	
+                 /* enable interrupts in the PCI interface */
+ 		plx_ver = cy_readb(cy_pci_addr2 + CyPLX_VER) & 0x0f;
+@@ -4901,7 +4880,7 @@
+ 			Ze_addr0[ZeIndex] = cy_pci_addr0;
+ 			Ze_addr2[ZeIndex] = cy_pci_addr2;
+ 			Ze_irq[ZeIndex] = cy_pci_irq;
+-			Ze_pdev[ZeIndex] = pdev;
++			Ze_pdev[ZeIndex] = pci_dev_get(pdev);
+ 			ZeIndex++;
+ 		    }
+ 		    i--;
+@@ -4986,7 +4965,7 @@
+                 cy_card[j].bus_index = 1;
+                 cy_card[j].first_line = cy_next_channel;
+                 cy_card[j].num_chips = -1;
+-		cy_card[j].pdev = pdev;
++		cy_card[j].pdev = pci_dev_get(pdev);
+ 
+                 /* print message */
+ #ifdef CONFIG_CYZ_INTR
+@@ -5007,6 +4986,10 @@
+                 cy_next_channel += cy_pci_nchan;
+ 	    }
+         }
++        
++        if (pdev)
++		pci_dev_put(pdev);
++        
+ 
+         for (; ZeIndex != 0 && i < NR_CARDS; i++) {
+ 	    cy_pci_phys0 = Ze_phys0[0];
+@@ -5485,11 +5468,12 @@
+ 	    )
+ 		free_irq(cy_card[i].irq, &cy_card[i]);
+ #ifdef CONFIG_PCI
+-		if (cy_card[i].pdev)
++		if (cy_card[i].pdev) {
+ 			pci_release_regions(cy_card[i].pdev);
++			pci_dev_put(pdev);
++		}
+ #endif
+         }
+     }
+ } /* cy_cleanup_module */
+ 
+ module_init(cy_init);
