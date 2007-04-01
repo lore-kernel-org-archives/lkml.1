@@ -1,40 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964873AbXDAVNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbXDAVQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964873AbXDAVNL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 17:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965026AbXDAVNL
+	id S1752920AbXDAVQW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 17:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXDAVQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 17:13:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:56362 "EHLO mail.goop.org"
+	Sun, 1 Apr 2007 17:16:22 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37822 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964873AbXDAVNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 17:13:09 -0400
-Message-ID: <4610205C.5060708@goop.org>
-Date: Sun, 01 Apr 2007 14:13:00 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Kyle Moffett <mrmacman_g4@mac.com>
-CC: Andi Kleen <ak@suse.de>, "Brown, Len" <len.brown@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc5: Thinkpad X60 gets critical thermal shutdowns
-References: <460E0158.7090705@goop.org> <8393D4C0-57C5-4CD2-8CA4-E4241E74FB4E@mac.com>
-In-Reply-To: <8393D4C0-57C5-4CD2-8CA4-E4241E74FB4E@mac.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1752920AbXDAVQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 17:16:21 -0400
+Date: Sun, 1 Apr 2007 23:17:05 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: mconf not removed by make mrproper
+Message-ID: <20070401211705.GA11077@uranus.ravnborg.org>
+References: <1170299149.32500.13.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170299149.32500.13.camel@nigel.suspend2.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> Well, 128C is more than hot enough to boil water and well above the
-> thermal tolerances of most CPUs, so I would imagine that were your CPU
-> actually that hot it wouldn't be capable of printing the "Critical
-> temperature reached" messages, let alone properly rebooting.
+On Thu, Feb 01, 2007 at 02:05:49PM +1100, Nigel Cunningham wrote:
+> Hi.
+> 
+> The scripts/kconfig/mconf target isn't removed by the make mrproper
+> target. I can see a couple of possibilities, but wasn't sure which you'd
+> prefer, so thought I'd just raise the issue.
+> 
+> It's only an issue for me because my patch generation script relies on
+> make mrproper making a properly clean tree.
 
-Yes, its probably a bad reading, but its not complete absurd - chips can
-operate up to ~100C, but they're definitely unhappy at that point.  In
-fact, I typically get 85-95 degrees from those sensors in normal
-operation, but I have no idea whether that's a real measurement or not.
+Fixed - thanks.
 
-    J
+	Sam
+
+>From c428e4cd1fdddb5c1a33d6cd229148497ae03893 Mon Sep 17 00:00:00 2001
+From: Sam Ravnborg <sam@neptun.ravnborg.org>
+Date: Sun, 1 Apr 2007 23:14:11 +0200
+Subject: [PATCH] kbuild: remove kconfig binaries during make mrproper
+
+Nigel Cunningham <nigel@nigel.suspend2.net> noticed
+that 'make mrproper' did not remove mconf.
+Fixed so we now remove all relevant binaries.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc:  Nigel Cunningham <nigel@nigel.suspend2.net>
+---
+ scripts/kconfig/Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index 7e7e147..2e421bd 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -140,6 +140,7 @@ endif
+ 
+ clean-files	:= lkc_defs.h qconf.moc .tmp_qtcheck \
+ 		   .tmp_gtkcheck zconf.tab.c lex.zconf.c zconf.hash.c
++clean-files     += mconf qconf gconf
+ 
+ # Needed for systems without gettext
+ KBUILD_HAVE_NLS := $(shell \
+-- 
+1.5.1.rc3.20.gaa453
+
