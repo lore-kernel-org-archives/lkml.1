@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXDAGkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXDAGqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbXDAGkR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 02:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbXDAGkR
+	id S932819AbXDAGqw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 02:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbXDAGqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 02:40:17 -0400
-Received: from mail-in-08.arcor-online.net ([151.189.21.48]:57455 "EHLO
-	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932785AbXDAGkP (ORCPT
+	Sun, 1 Apr 2007 02:46:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:2820 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932819AbXDAGqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 02:40:15 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] [PATCH] sched: staircase deadline misc fixes
-Date: Sun, 1 Apr 2007 08:40:07 +0200
-User-Agent: KMail/1.9.6
-Cc: linux list <linux-kernel@vger.kernel.org>
-References: <200703290237.38777.kernel@kolivas.org> <200703281934.17932.prakash@punnoor.de>
-In-Reply-To: <200703281934.17932.prakash@punnoor.de>
+	Sun, 1 Apr 2007 02:46:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LkIDzw6XeyDhyaHVH3uYNPsQEtTHwkMSbty1dl8U0oVlg8or8Pe/c9XDS/Uqi9epPTius2lneN92dAl1W3ORdBttY9cmsjCLuAINjtcwTb0Ktluu418hzoHw3oUcR3n/seBNwDanx/bEdqodWBnn2MrWzPOfKhGoPa5NyVm/Lc8=
+Message-ID: <2375c9f90703312346t5cf9f85x7f2a13df6cfa1d6d@mail.gmail.com>
+Date: Sun, 1 Apr 2007 14:46:50 +0800
+From: "Cong WANG" <xiyou.wangcong@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm3 patch]Warning fix: check the return value of kobject_add etc.
+Cc: viro@zeniv.linux.org.uk
+In-Reply-To: <20070331233422.f171ff4c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1314662.aESkcNa9nf";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704010840.11387.prakash@punnoor.de>
+Content-Disposition: inline
+References: <2375c9f90703301930k4963168u4ba4dbc4c43ce2ee@mail.gmail.com>
+	 <20070331223136.6019d98f.akpm@linux-foundation.org>
+	 <2375c9f90703312320m3e895bbap735c2d49da9d5ff9@mail.gmail.com>
+	 <20070331233422.f171ff4c.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1314662.aESkcNa9nf
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Am Mittwoch 28 M=E4rz 2007 schrieb Prakash Punnoor:
-> Am Mittwoch 28 M=E4rz 2007 schrieb Con Kolivas:
-> > I'm cautiously optimistic that we're at the thin edge of the bugfix wed=
-ge
-> > now.
-> >
-> > ---
-> > set_load_weight() should be performed after p->quota is set. This fixes=
- a
-> > large SMP performance regression.
+2007/4/1, Andrew Morton <akpm@linux-foundation.org>:
+> On Sun, 1 Apr 2007 14:20:46 +0800 "Cong WANG" <xiyou.wangcong@gmail.com> wrote:
 >
-> Hi, I am using 2.6.21-rc5 with rsdl 0.37 and think I still see a regressi=
-on
-> with my Athlon X2. Namely using this ac3 encoder
-> (http://aften.sourceforge.net/), which I parallelized in a simple way, wi=
-th
-> my test sample I remember having encoding times of ~5.4sec with vanilla a=
-nd
-> ~5.8 sec with rsdl - once the whole test wave is in cache. Otherwise you
-> can easily I/O limit the encoder. ;-) You need to get sources from svn
-> though. The current 0.06 release doesn't have threads support.
+> >
+> > >
+> > > Also, please always prepare patches in `patch -p1' form, as per
+> > > http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt, thanks.
+> > >
+> > >
+> >
+> > Sorry. I am confused with this. Does that mean I should make patches
+> > _upon_ the root kernel source directory or first make a copy of the
+> > original source code and then diff against the two dirs? But I was
+> > told that "patches should be based _in_ the root kernel source
+> > directory" and when only one file was modified just to diff it with
+> > the original single file. (See Documentation/SubmittingPatches.)
+>
+> The headers should look like:
+>
+> --- a/arch/cris/kernel/crisksyms.c
+> +++ a/arch/cris/kernel/crisksyms.c
+>
+> I don't know how people do that.  One obvious way is to do
+>
+> cd /usr/src
+> diff -u linux-orig/arch/cris/kernel/crisksyms.c linux-new/arch/cris/kernel/crisksyms.c
+>
+> other people probably alter the diff headers.
 
-BTW, I confirmed this regression. With vanilla 2.76.21-rc5 I get back my 5.=
-4=20
-secs with the test sample and two threads. Furtmermore for me vanilla=20
-actually feels nicer on my dual core, even with load - just subjectively=20
-that's why I ditched rsdl...
+Oh, thanks. I know.
 
-Cheers,
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+>
+> > And should I remake this patch?
+>
+> Sure, but please change it to perform correct error handling first.  And
+> test that error handling, if you can.  That will involve adding artificial
+> errors.
+>
 
---nextPart1314662.aESkcNa9nf
-Content-Type: application/pgp-signature
+I will remake it soon and send it again.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQBGD1PLxU2n/+9+t5gRAiVjAKCizhqJUcWkKSKw+YhsWgWMW6xPOgCfeGyc
-B3tPCLfWj9kir5DBOKpYRTs=
-=kRiL
------END PGP SIGNATURE-----
-
---nextPart1314662.aESkcNa9nf--
+In fact, I have just tested it roughly. And I don't how to produce
+artificial errors. Sorry, I hope someone can help me to test it
+carefully.
