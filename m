@@ -1,77 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964826AbXDAUDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965013AbXDAUHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964826AbXDAUDR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 16:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXDAUDR
+	id S965013AbXDAUHl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 16:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964917AbXDAUHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 16:03:17 -0400
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:56797 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964826AbXDAUDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 16:03:16 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: "michael chang" <thenewme91@gmail.com>
-Subject: Re: [ck] [PATCH] sched: staircase deadline misc fixes
-Date: Sun, 1 Apr 2007 22:03:08 +0200
-User-Agent: KMail/1.9.6
-Cc: ck@vds.kolivas.org, "linux list" <linux-kernel@vger.kernel.org>
-References: <200703290237.38777.kernel@kolivas.org> <200704010840.11387.prakash@punnoor.de> <b14e81f00704010724i3155a16en91074ab789416f3d@mail.gmail.com>
-In-Reply-To: <b14e81f00704010724i3155a16en91074ab789416f3d@mail.gmail.com>
+	Sun, 1 Apr 2007 16:07:41 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:36570 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964873AbXDAUHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 16:07:39 -0400
+Message-ID: <461010F9.7040706@us.ibm.com>
+Date: Sun, 01 Apr 2007 13:07:21 -0700
+From: Nivedita Singhvi <niv@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4260920.jKLnKSYrfV";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Dave Sperry <dave_sperry@ieee.org>
+CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
+References: <461004CE.1030009@ieee.org>
+In-Reply-To: <461004CE.1030009@ieee.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704012203.12595.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4260920.jKLnKSYrfV
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Dave Sperry wrote:
+> Hi
 
-Am Sonntag 01 April 2007 schrieb michael chang:
-> On 4/1/07, Prakash Punnoor <prakash@punnoor.de> wrote:
-> > Am Mittwoch 28 M=C3=A4rz 2007 schrieb Prakash Punnoor:
+(adding netdev to cc list)
 
-> > >
-> > > Hi, I am using 2.6.21-rc5 with rsdl 0.37 and think I still see a
-> > > regression with my Athlon X2. Namely using this ac3 encoder
-> > > (http://aften.sourceforge.net/), which I parallelized in a simple way,
-> > > with my test sample I remember having encoding times of ~5.4sec with
-> > > vanilla and ~5.8 sec with rsdl - once the whole test wave is in cache.
+> I have a dual core Opteron machine that exhibits poor UDP performance 
+> (RT consumes more than 2X cpu) with the 2.6.21-rc5-rt5 as compared to 
+> 2.6.21-rc5. Top shows the IRQ handler consuming a lot of CPU.
 
-> > BTW, I confirmed this regression. With vanilla 2.76.21-rc5 I get back my
-> > 5.4 secs with the test sample and two threads. Furtmermore for me vanil=
-la
->
-> Which version of RSDL were you comparing to 2.6.21-rc5? Did you try
-> the patch in the first message (http://lkml.org/lkml/2007/3/28/146)?
-> The patch that _began_ this thread had SMP fixes in it... (Also, IIRC,
-> the latest version of the scheduler no longer has the rotating
-> component - so it's just SDl now.)
+Dave, any chance you've got oprofile working on the -rt5?
+And I'm assuming nothing very different in the stats or errors
+through both runs?
 
-As I said, I tried 0.37. Didn't it have the fix inside? Actually I am=20
-reluctant to go back to (r)sdl, as it didn't show improvements for me, yet.
+thanks,
+Nivedita
 
-=2D-=20
-(=C2=B0=3D                 =3D=C2=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+> The mother board is a Supermicro H8DME-2 with one dual core Opteron 
+> installed. The networking is provided by the on board nVidia MCP55Pro chip.
+> 
+> The RT test is done using netperf 2.4.3 with the server on an IBM LS20 
+> blade running RHEL4U2 and the Supermicro running netperf under RHEL5 
+> with 2.6.21-rc5-rt5.
+> The Non-RT test was done on the exact same setup except 2.6.21-rc5-rt5 
+> was loaded on the SuperMicro board.
+> 
+> Cyclesoak was used to measure CPU utilization in all cases.
+> 
+> 
+> 
+> Here are the RT results
+> ########################################################3
+> ## 2.6.21-rc5-rt5
+> #######################################################
+> $ !netper
+> netperf -l 100 -H 192.168.70.11 -t UDP_STREAM -- -m 1025
+> UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 
+> 192.168.70.11 (192.168.70.11) port 0 AF_INET
+> Socket  Message  Elapsed      Messages
+> Size    Size     Time         Okay Errors   Throughput
+> bytes   bytes    secs            #      #   10^6bits/sec
+> 
+> 126976    1025   100.00    8676376      0     711.46
+> 135168           100.00    8676376            711.46
+> 
+> ########## cyclesoak during test
+> $ ./cyclesoak
+> using 2 CPUs
+> System load: -0.1%
+> System load: 40.5%
+> System load: 51.6%
+> System load: 51.5%
+> System load: 50.9%
+> System load: 50.7%
+> System load: 50.8%
+> System load: 50.7%
+> System load: 50.6%
+> 
+> ######## top during test
+> top - 13:26:48 up 8 min,  4 users,  load average: 1.74, 0.46, 0.15
+> Tasks: 149 total,   4 running, 145 sleeping,   0 stopped,   0 zombie
+> Cpu(s):  0.7%us, 16.8%sy, 50.6%ni,  0.0%id,  0.0%wa, 25.6%hi,  6.3%si,  
+> 0.0%st
+> Mem:   2035444k total,   465888k used,  1569556k free,    28840k buffers
+> Swap:  3068372k total,        0k used,  3068372k free,   318668k cached
+> 
+>  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> 3865 eadi      39  19  6804 1164  108 R  100  0.1   0:38.25 cyclesoak
+> 2715 root     -51  -5     0    0    0 S   51  0.0   0:09.52 IRQ-8406
+> 3867 eadi      25   0  6440  632  480 R   34  0.0   0:06.03 
+> netperf         19 root     -51   0     0    0    0 S   13  0.0   
+> 0:02.33 softirq-net-tx/
+> 3866 eadi      39  19  6804 1164  108 R    1  0.1   0:20.47 cyclesoak
+> 3167 root      25   0 29888 1180  888 S    0  0.1   0:00.93 automount
+> 3861 eadi      15   0 12712 1076  788 R    0  0.1   0:00.19 top
+>    1 root      18   0 10308  668  552 S    0  0.0   0:00.67 init         
+> 2 root      RT   0     0    0    0 S    0  0.0   0:00.00 migration/0   
+>    3 root      RT   0     0    0    0 S    0  0.0   0:00.00 posix_cpu_timer
+>    4 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-high/0
+>    5 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-timer/0
+>    6 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-net-tx/
+>    7 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-net-rx/
+>    8 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-block/0
+> 
+> ########################
+> The baseline results:
+> RHEL5 with 2.6.21-rc5 kernel
+> ##############################
+> 
+> $  netperf -l 100 -H 192.168.70.11 -t UDP_STREAM -- -m 1025
+> 
+> UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 
+> 192.168.70.11 (192.168.70.11) port 0 AF_INET
+> Socket  Message  Elapsed      Messages
+> Size    Size     Time         Okay Errors   Throughput
+> bytes   bytes    secs            #      #   10^6bits/sec
+> 
+> 126976    1025   100.00    11405485      0     935.24
+> 135168           100.00    11405485            935.24
+> 
+> #######################################
+> $ ./cyclesoak
+> using 2 CPUs
+> System load:  7.6%
+> System load: 29.6%
+> System load: 29.6%
+> System load: 28.9%
+> System load: 24.9%
+> System load: 25.0%
+> System load: 24.8%
+> System load: 24.9%
+> 
+> #######################################
+> top:top - 13:52:22 up 10 min,  6 users,  load average: 1.46, 0.43, 0.17
+> Tasks: 118 total,   4 running, 114 sleeping,   0 stopped,   0 zombie
+> Cpu(s):  0.5%us,  9.8%sy, 75.7%ni,  0.0%id,  0.0%wa,  5.8%hi,  8.1%si,  
+> 0.0%st
+> Mem:   2057200k total,   459128k used,  1598072k free,    29020k buffers
+> Swap:  3068372k total,        0k used,  3068372k free,   318968k cached
+> 
+>  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> 3882 eadi      39  19  6804 1164  108 R  100  0.1   0:52.11 cyclesoak
+> 3881 eadi      39  19  6804 1164  108 R   65  0.1   0:38.47 cyclesoak
+> 3883 eadi      15   0  6436  632  480 R   35  0.0   0:18.26 netperf
+> 3879 eadi      15   0 12580 1052  788 R    0  0.1   0:00.15 top
+>    1 root      18   0 10308  664  552 S    0  0.0   0:00.48 init         
+> 2 root      RT   0     0    0    0 S    0  0.0   0:00.00 migration/0
+>    3 root      34  19     0    0    0 S    0  0.0   0:00.01 ksoftirqd/0
+>    4 root      RT   0     0    0    0 S    0  0.0   0:00.00 watchdog/0
+>    5 root      RT   0     0    0    0 S    0  0.0   0:00.00 migration/1
+>    6 root      34  19     0    0    0 S    0  0.0   0:00.00 ksoftirqd/1
+> 
+> Any thoughts on how to fix this?
+> 
+> Thanks,
+> -Dave
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
---nextPart4260920.jKLnKSYrfV
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQBGEBAAxU2n/+9+t5gRAj9PAJ9sxnNYaA8CN6mBf/apIEZc0uD7ogCgg8nj
-FsI0+UjpxxgW63qOpYWxaqI=
-=ascW
------END PGP SIGNATURE-----
-
---nextPart4260920.jKLnKSYrfV--
