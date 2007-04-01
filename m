@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1749667AbXDAFbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932359AbXDAFjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1749667AbXDAFbk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 01:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbXDAFbk
+	id S932359AbXDAFjG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 01:39:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbXDAFjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 01:31:40 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:49857 "EHLO smtp.osdl.org"
+	Sun, 1 Apr 2007 01:39:05 -0400
+Received: from gw.goop.org ([64.81.55.164]:46961 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbXDAFbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 01:31:39 -0400
-Date: Sat, 31 Mar 2007 22:31:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Cong WANG" <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [-mm3 patch]Warning fix: check the return value of kobject_add
- etc.
-Message-Id: <20070331223136.6019d98f.akpm@linux-foundation.org>
-In-Reply-To: <2375c9f90703301930k4963168u4ba4dbc4c43ce2ee@mail.gmail.com>
-References: <2375c9f90703301930k4963168u4ba4dbc4c43ce2ee@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S932359AbXDAFjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 01:39:04 -0400
+Message-ID: <460F4576.6010904@goop.org>
+Date: Sat, 31 Mar 2007 22:39:02 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, gregkh@suse.de,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [3/4] 2.6.21-rc5: known regressions (v2)
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070330213220.GO14134@stusta.de>
+In-Reply-To: <20070330213220.GO14134@stusta.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Mar 2007 10:30:31 +0800 "Cong WANG" <xiyou.wangcong@gmail.com> wrote:
+Adrian Bunk wrote:
+> Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+> References : http://lkml.org/lkml/2007/3/13/3
+> Submitter  : Dave Jones <davej@redhat.com>
+>              Jeremy Fitzhardinge <jeremy@goop.org>
+> Caused-By  : PCI merge
+>              commit 78149df6d565c36675463352d0bfe0000b02b7a7
+> Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+>              Rafael J. Wysocki <rjw@sisk.pl>
+> Status     : problem is being debugged
+>   
 
-> Since kobject_add, sysfs_create_link and sysfs_create_file are marked
-> as '__must_check', so we must always check their return values, or gcc
-> will give us warnings.
-> 
-> Signed-off-by: Cong WANG <xiyou.wangcong@gmail.com>
-> 
-> ---
-> --- fs/partitions/check.c.orig	2007-03-30 21:35:45.000000000 +0800
-> +++ fs/partitions/check.c	2007-03-30 21:49:53.000000000 +0800
-> @@ -385,10 +385,16 @@ void add_partition(struct gendisk *disk,
->  	p->kobj.parent = &disk->kobj;
->  	p->kobj.ktype = &ktype_part;
->  	kobject_init(&p->kobj);
-> -	kobject_add(&p->kobj);
-> +	if (kobject_add(&p->kobj)) {
-> +		kfree(p);
-> +		return;
-> +	}
->  	if (!disk->part_uevent_suppress)
->  		kobject_uevent(&p->kobj, KOBJ_ADD);
-> -	sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
-> +	if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
-> +		kfree(p);
-> +		return;
-> +	}
->  	if (flags & ADDPART_FLAG_WHOLEDISK) {
->  		static struct attribute addpartattr = {
->  			.name = "whole_disk",
-> @@ -396,7 +402,10 @@ void add_partition(struct gendisk *disk,
->  			.owner = THIS_MODULE,
->  		};
-> 
-> -		sysfs_create_file(&p->kobj, &addpartattr);
-> +		if (sysfs_create_file(&p->kobj, &addpartattr)) {
-> +			kfree(p);
-> +			return;
-> +		}
->  	}
->  	partition_sysfs_add_subdir(p);
->  	disk->part[part-1] = p;
+I know this is currently a subject of discussion on lkml, but I wanted
+to confirm that booting with "hpet=disable" fixes this, and resume works
+for me.  It ends up using acpi_pm as the clocksource.
 
-Well yes, but the point here it to fix kernel bugs, not to just make the
-warnings go away.
-
-The bugs here are that the effects of the kobject_add() and the
-sysfs_create_link() are not undone on the error path.
-
-Also, please always prepare patches in `patch -p1' form, as per
-http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt, thanks.
-
+    J
