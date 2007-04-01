@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbXDASmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933862AbXDASnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbXDASmg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933856AbXDASmg
+	id S933862AbXDASnW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933860AbXDASnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:42:36 -0400
-Received: from mtaout4.012.net.il ([84.95.2.10]:29003 "EHLO mtaout4.012.net.il"
+	Sun, 1 Apr 2007 14:43:22 -0400
+Received: from smtpout.mac.com ([17.250.248.185]:62058 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933832AbXDASmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:42:35 -0400
-Date: Sun, 01 Apr 2007 21:42:23 +0300
-From: Avi Kivity <avi@argo.co.il>
-Subject: Re: [patch 13/13] signal/timer/event fds v9 - KAIO eventfd support
- example ...
-In-reply-to: <Pine.LNX.4.64.0704011000470.26331@alien.or.mcafeemobile.com>
-To: Davide Libenzi <davidel@xmailserver.org>
+	id S933848AbXDASnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:43:21 -0400
+In-Reply-To: <Pine.LNX.4.61.0704012010530.12316@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012010530.12316@yvahk01.tjqt.qr>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <408FF8B5-A6A8-479A-B60A-37A219B5FCB1@mac.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>
-Message-id: <460FFD0F.7080107@argo.co.il>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-X-Greylist: Sender IP whitelisted,
- not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Sun,
- 01 Apr 2007 21:42:23 +0300 (IDT)
-References: <send-serie.davidel@xmailserver.org.16816.1175371778.13>
- <460FCA90.4000003@argo.co.il>
- <Pine.LNX.4.64.0704011000470.26331@alien.or.mcafeemobile.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+       Jouni Malinen <jkmaline@cc.hut.fi>, Jeroen Vreeken <pe1rxq@amsat.org>,
+       Andrew Morton <akpm@osdl.org>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH 15/16] use-regular-eth-suffix.diff
+Date: Sun, 1 Apr 2007 14:42:39 -0400
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
-> On Sun, 1 Apr 2007, Avi Kivity wrote:
+On Apr 01, 2007, at 14:18:12, Jan Engelhardt wrote:
+> Some radio adapter drivers wrongly(?) name their devices "wlan%d"  
+> instead of "eth%d" (if you ask me, it should be %u - but not today).
 >
->   
->> What is the motivation for adding aio_resfd to an individual iocb instead of
->> the entire io context?  It seems redundant, as you can already create multiple
->> io contexts to wait on.
->>     
->
-> To add it to the context, you need to either change the context create API 
-> (I think no-go here), or add a new syscall just to handle that.
-> Doing it in the iocb gives finer grained setup, but can be more work for 
-> the user that wants to use it for all the iocbs.
->   
+> Technically, they operate like Ethernet, and in fact, running `/ 
+> sbin/ip a` shows "link/ether" instead of "link/ieee80211". This  
+> patch renames them back, but I would appreciate some comment,  
+> explanation or at least link why they actually have wlan%d there.
 
-I think it's a bit too fine grained, and a new system call 
-(io_bindfd()?) would be easier to use.  In addition, you would move the 
-eventfd_fget() out of the submission path.
+NACK.  This has the potential to significantly break backwards- 
+compatibility for users of those cards who are not using udev to  
+maintain consistent device naming (because they only have a single  
+card, for example).  I would recommend against applying it for that  
+reason.
 
-For the users that want fine grained control, they can already call 
-io_setup() multiple times and submit iocbs to different completion rings.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Cheers,
+Kyle Moffett
 
