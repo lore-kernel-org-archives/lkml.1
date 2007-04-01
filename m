@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933504AbXDAPnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933471AbXDAP6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933504AbXDAPnK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 11:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933473AbXDAPnK
+	id S933471AbXDAP6N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 11:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933473AbXDAP6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 11:43:10 -0400
-Received: from raven.upol.cz ([158.194.120.4]:43480 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933471AbXDAPnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 11:43:09 -0400
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       stable@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jan Beulich <jbeulich@novell.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] kbuild: fix dependency generation
-In-Reply-To: <20070401104551.GA7560@uranus.ravnborg.org>
-References: <20070401104551.GA7560@uranus.ravnborg.org>
-Date: Sun, 1 Apr 2007 17:51:05 +0200
-Message-Id: <E1HY2Kf-0002QC-O3@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	Sun, 1 Apr 2007 11:58:13 -0400
+Received: from web51601.mail.re2.yahoo.com ([206.190.38.206]:44350 "HELO
+	web51601.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933471AbXDAP6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 11:58:12 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Apr 2007 11:58:12 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=N4Ob9OqokC76nUR1tez04Ua7Uuej/+01vt1njvLf8r9m9jfNitXFELB4zYrlW6A6rPWGxODuoC2q7G9YAlhUwrBnL5hwKzR5Up/gOdYqVHXqH4o2lZZhAhytjNZo09lu3sQynJ84FGRQvpMZcMVUf/AbjD6J8wiCpcVgH35IOL0=  ;
+Message-ID: <20070401155132.34029.qmail@web51601.mail.re2.yahoo.com>
+X-YMail-OSG: wK4DddgVM1l_dol6yTEcAN8eBD.baz8CCBv18MoiNddeoB3g2fKFJ0bJJfNitZjyJ4Oh9_2kMUYvqCDY1doNhE2_3f2J3r.xRa0zl4TeOHfD71TASjKD0gQAv8FKlw--
+Date: Sun, 1 Apr 2007 08:51:32 -0700 (PDT)
+From: Ashish Singhai <hybrid.rules@yahoo.com>
+Subject: PCI: iomem bigger than 4GB
+To: linux-kernel@vger.kernel.org
+Cc: hybrid.rules@yahoo.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Sam Ravnborg
-> Newsgroups: gmane.linux.kernel
-> Subject: [PATCH] kbuild: fix dependency generation
-> Date: Sun, 1 Apr 2007 12:45:51 +0200
->
-[]
->  scripts/basic/fixdep.c |   10 +++++++---
->  1 files changed, 7 insertions(+), 3 deletions(-)
->
-> diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
-> index 668a11a..24144a2 100644
-> --- a/scripts/basic/fixdep.c
-> +++ b/scripts/basic/fixdep.c
-> @@ -28,9 +28,11 @@
->   * the dependency on linux/autoconf.h by a dependency on every config
->   * option which is mentioned in any of the listed prequisites.
->   *
-> - * To be exact, split-include populates a tree in include/config/,
-> - * e.g. include/config/his/driver.h, which contains the #define/#undef
-> - * for the CONFIG_HIS_DRIVER option.
-> + * kconfig populates a tree in include/config/ with an empty file
-> + * for each config symbol and when the configuration is updated
-> + * the files representing changed config options are touched
-> + * which thern let make pick up the changes and the files that uses
-            ^ then?                                               ^ use?
-> + * the config symbols are rebuild.
-                             ^ rebuilt?
+Hello,
 
-Just in case that's wrong (IANALang, of course :)
+Please refer to Andrew' post on this thread on PCI
+subsystem assigning prefetchable memory bigger than
+4GB:
 
->   *
->   * So if the user changes his CONFIG_HIS_DRIVER option, only the objects
->   * which depend on "include/linux/config/his/driver.h" will be rebuilt,
-> @@ -245,6 +247,8 @@ void parse_config_file(char *map, size_t len)
->  		continue;
->  
->  	found:
-> +		if (!memcmp(q - 7, "_MODULE", 7))
-> +			q -= 7;
->  		use_config(p+7, q-p-7);
->  	}
->  }
-> -- 
-> 1.5.1.rc3.20.gaa453
->
-____
+http://lkml.org/lkml/2006/11/24/160
+
+This patch is not included in 2.6.20.1 or earlier --
+it would be helpful if we could have this patch
+considered. I have tried it in a simulated environment
+and it works.
+
+Thanks.
+
+Ashish
+
+PS: Pls. CC: me on any replies since I am not
+subscribed to LKML.
+
+
+ 
+____________________________________________________________________________________
+Never miss an email again!
+Yahoo! Toolbar alerts you the instant new Mail arrives.
+http://tools.search.yahoo.com/toolbar/features/mail/
