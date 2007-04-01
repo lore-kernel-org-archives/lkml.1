@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXDAUgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbXDAUhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752320AbXDAUgH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 16:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbXDAUgH
+	id S1752418AbXDAUhL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 16:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbXDAUhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 16:36:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50508 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752320AbXDAUgG convert rfc822-to-8bit (ORCPT
+	Sun, 1 Apr 2007 16:37:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:28023 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752418AbXDAUhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 16:36:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc5-mm3
-Date: Sun, 1 Apr 2007 22:39:01 +0200
-User-Agent: KMail/1.9.5
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org> <460FD70C.1040602@googlemail.com> <20070401120305.932a493b.akpm@linux-foundation.org>
-In-Reply-To: <20070401120305.932a493b.akpm@linux-foundation.org>
+	Sun, 1 Apr 2007 16:37:08 -0400
+Date: Sun, 1 Apr 2007 23:37:02 +0300
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Fr??d??ric Riss <frederic.riss@gmail.com>,
+       Tino Keitel <tino.keitel@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       pavel@suse.cz, linux-pm@lists.osdl.org,
+       Soeren Sonnenburg <kernel@nn7.de>, Ingo Molnar <mingo@elte.hu>,
+       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, maximlevitsky@gmail.com
+Subject: Re: [4/4] 2.6.21-rc5: known regressions (v2)
+Message-ID: <20070401203651.GA5072@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+	<20070330214956.GQ14134@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704012239.01964.rjw@sisk.pl>
+In-Reply-To: <20070330214956.GQ14134@stusta.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 1 April 2007 21:03, Andrew Morton wrote:
-> On Sun, 01 Apr 2007 18:00:12 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> 
-> > Andrew Morton napisał(a):
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/
-> > > 
-> > 
-> > BUG: at /mnt/md0/devel/linux-mm/arch/i386/kernel/smp.c:571 native_smp_call_function_mask()
-> >  [<c01051a1>] dump_trace+0x63/0x1eb
-> >  [<c0105343>] show_trace_log_lvl+0x1a/0x30
-> >  [<c0105f8a>] show_trace+0x12/0x14
-> >  [<c0106027>] dump_stack+0x16/0x18
-> >  [<c0113a92>] native_smp_call_function_mask+0x57/0x14b
-> >  [<c0113c9b>] smp_call_function+0x1e/0x22
-> >  [<c0129a60>] on_each_cpu+0x2a/0x73
-> >  [<c013a12d>] clock_was_set+0x1b/0x1d
-> >  [<c013b99d>] timekeeping_resume+0xb5/0xbb
-> >  [<c027af35>] __sysdev_resume+0x17/0x5d
-> >  [<c027b2aa>] sysdev_resume+0x19/0x4b
-> >  [<c027fd12>] device_power_up+0xb/0x12
-> >  [<c014f30b>] swsusp_suspend+0x55/0x63
-> >  [<c014fad0>] pm_suspend_disk+0x163/0x28f
-> >  [<c014e7be>] enter_state+0x54/0x1d5
-> >  [<c014e9c5>] state_store+0x86/0x9c
-> >  [<c01bfe47>] subsys_attr_store+0x23/0x2b
-> >  [<c01bff89>] sysfs_write_file+0xc1/0xe9
-> >  [<c0186485>] vfs_write+0xd1/0x15a
-> >  [<c0186ab7>] sys_write+0x3d/0x72
-> >  [<c010424c>] syscall_call+0x7/0xb
-> >  [<b7f9b410>] 0xb7f9b410
-> 
-> We're calling smp_call_function() with local interrupts disabled, which is
-> deadlockable.
-> 
-> This, I expect, is because swsusp_suspend() optimistically tries to run
-> everything with local interrupts disabled.
+> Subject    : after resume: X hangs after drawing a couple of windows
+>              workaround: clocksource=acpi_pm
+> References : http://lkml.org/lkml/2007/3/8/117
+>              http://lkml.org/lkml/2007/3/25/20
+>              http://lkml.org/lkml/2007/3/26/151
+> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> Status     : problem is being debugged
 
-Well, not everything, but device_power_down()/device_power_up() which only
-handle sysdevs.
+Seems to be resolved with 399afa4fc9238fbae42116cf25a54671c0e8f56e.
+Thanks Maxim!
 
-> I don't know why this has suddenly started happening -
-> timekeeping_resume()->clock_was_set()->on_each_cpu() has been there for a
-> while.  Doesn't mainline do the same thing?
 
-Yes, and it has always done it.  It even is documented in
-Documentation/power/devices.txt:System Devices . ;-)
-
-> Not sure what to do about this.  The best fix would be to teach swsusp to
-> not be so optmistic: resume functions are called with local irqs _enabled_
-> - that's part of their call environment.  swsusp tries to call them with
-> local irqs disabled and bad things happen.
-
-I think timekeeping_resume() shouldn't call smp_call_function() ...
+-- 
+MST
