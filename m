@@ -1,122 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbXDASRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbXDASRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752211AbXDASRb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933794AbXDASQy
+	id S1752184AbXDASRc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXDASRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:16:54 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:39897 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933795AbXDASQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:16:51 -0400
-Date: Sun, 1 Apr 2007 20:15:20 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 07/16] kconfig-dynamic-frequency.diff
-In-Reply-To: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704012006060.12316@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
+	Sun, 1 Apr 2007 14:17:31 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:40774 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933721AbXDASRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:17:16 -0400
+Message-ID: <460FF726.7090601@gmail.com>
+Date: Sun, 01 Apr 2007 20:17:10 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+References: <460B6E4B.3060004@gmail.com> <200703291639.41515.rjw@sisk.pl>
+In-Reply-To: <200703291639.41515.rjw@sisk.pl>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki napsal(a):
+> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
+>> Hi,
+>>
+>> I'm getting this while trying to swsups the machine in -rc5, -rc4 is fine:
+>>
+>> Disabling non-boot CPUs
+>> CPU 1 is now offline
+>> SMP alternatives: switching to UP code
+>> CPU1 is down
+>> swsusp: critical section:
+>> swsusp: Need to copy 131380 pages
+>> swsusp: Not enough free memory
+>> Error -12 suspending
+>> Enabling non-boot CPUs ...
+>>
+>> # cat /sys/power/resume
+>> 8:6
+>> # cat /proc/swaps
+>> Filename                                Type            Size    Used    Priority
+>> /dev/sda6                               partition       1004020 0       -1
+>>
+>> Any other info needed?
+> 
+> Beats me.  There were no changes that could result in such a thing between
+> -rc4 and -rc5, at least not in the swsusp department.
+> 
+> Could you please try to bisect?
 
-Make HZ fully configurable through menuconfig.
+Hm, there is some kind of magic.
 
-Already posted at http://lkml.org/lkml/2006/6/18/111
+First, I have fglrx, that taints kernel. If I use vesa drv with X, it
+doesn't resume the card. If I try console, it doesn't resume it too.
 
-Signed-off-by: Jan Engelhardt
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk> (http://lkml.org/lkml/2006/11/8/307)
-Cc: Sam Ravnborg <sam@ravnborg.org>
+fglrx + suspend.sf.net seems to work -- 3 unsuccesfull disk >
+sys/power/state and after s2dsk with backspace during suspend, disk >
+sys/power/state works. But this sceniario happened only once...
 
- Kconfig.hz |   70 +++++++++++++++++++++++--------------------------------------
- 1 file changed, 27 insertions(+), 43 deletions(-)
+Next, it was so early to utter -rc4 is good, it happens there too, so it's
+not a regression.
 
-Index: linux-2.6.21-rc5/kernel/Kconfig.hz
-===================================================================
---- linux-2.6.21-rc5.orig/kernel/Kconfig.hz
-+++ linux-2.6.21-rc5/kernel/Kconfig.hz
-@@ -2,50 +2,34 @@
- # Timer Interrupt Frequency Configuration
- #
- 
--choice
--	prompt "Timer frequency"
--	default HZ_250
--	help
--	 Allows the configuration of the timer frequency. It is customary
--	 to have the timer interrupt run at 1000 Hz but 100 Hz may be more
--	 beneficial for servers and NUMA systems that do not need to have
--	 a fast response for user interaction and that may experience bus
--	 contention and cacheline bounces as a result of timer interrupts.
--	 Note that the timer interrupt occurs on each processor in an SMP
--	 environment leading to NR_CPUS * HZ number of timer interrupts
--	 per second.
--
--
--	config HZ_100
--		bool "100 HZ"
--	help
--	  100 Hz is a typical choice for servers, SMP and NUMA systems
--	  with lots of processors that may show reduced performance if
--	  too many timer interrupts are occurring.
--
--	config HZ_250
--		bool "250 HZ"
--	help
--	 250 Hz is a good compromise choice allowing server performance
--	 while also showing good interactive responsiveness even
--	 on SMP and NUMA systems. If you are going to be using NTSC video
--	 or multimedia, selected 300Hz instead.
--
--	config HZ_300
--		bool "300 HZ"
--	help
--	 300 Hz is a good compromise choice allowing server performance
--	 while also showing good interactive responsiveness even
--	 on SMP and NUMA systems and exactly dividing by both PAL and
--	 NTSC frame rates for video and multimedia work.
--
--	config HZ_1000
--		bool "1000 HZ"
--	help
--	 1000 Hz is the preferred choice for desktop systems and other
--	 systems requiring fast interactive responses to events.
-+config HZ
-+    int "Timer frequency"
-+    default 100
-+    ---help---
-+        Allows the configuration of the timer frequency. It is customary
-+        to have the timer interrupt run at 1000 Hz but 100 Hz may be more
-+        beneficial for servers and NUMA systems that do not need to have
-+        a fast response for user interaction and that may experience bus
-+        contention and cacheline bounces as a result of timer interrupts.
-+        Note that the timer interrupt occurs on each processor in an SMP
-+        environment leading to NR_CPUS * HZ number of timer interrupts
-+        per second.
-+
-+        100 Hz is a typical choice for servers, SMP and NUMA systems
-+        with lots of processors that may show reduced performance if
-+        too many timer interrupts are occurring.
-+
-+        250 Hz is a good compromise choice allowing server performance
-+        while also showing good interactive responsiveness even on SMP
-+        and NUMA systems.
-+
-+        300 Hz is a good compromise choice allowing server performance
-+        while also showing good interactive responsiveness even
-+        on SMP and NUMA systems and exactly dividing by both PAL and
-+        NTSC frame rates for video and multimedia work.
- 
--endchoice
-+        1000 Hz is the preferred choice for desktop systems and other
-+        systems requiring fast interactive responses to events.
- 
- config HZ
- 	int
-#<EOF>
+I have no idea what's wrong, is there any possibility to figure out, what
+happens (esp. kick fglrx off)? Disable higmem? Try UP?
+
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
