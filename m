@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbXDAOPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbXDAOUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933069AbXDAOPt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 10:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933068AbXDAOPt
+	id S933068AbXDAOUr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 10:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933075AbXDAOUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 10:15:49 -0400
-Received: from mail.musicgenome.com ([212.150.69.147]:43664 "EHLO
+	Sun, 1 Apr 2007 10:20:47 -0400
+Received: from mail.musicgenome.com ([212.150.69.147]:44273 "EHLO
 	mail.musicgenome.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933069AbXDAOPs (ORCPT
+	with ESMTP id S933068AbXDAOUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 10:15:48 -0400
-X-Greylist: delayed 727 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Apr 2007 10:15:47 EDT
-Date: Sun, 1 Apr 2007 16:55:58 +0300
+	Sun, 1 Apr 2007 10:20:46 -0400
+Date: Sun, 1 Apr 2007 17:13:08 +0300
 From: Tal Kelrich <tal@musicgenome.com>
 To: linux-kernel@vger.kernel.org
-Subject: [2.4] Watchdog wdt977 (Winbond W83977EF) driver
-Message-ID: <20070401165558.3b63c47e@shodan.orpak.com>
+Subject: [2.4] Watchdog wdt83627 (Winbond W83627HF/F/HG/G) driver, 2.6
+ backport
+Message-ID: <20070401171308.1116c990@shodan.orpak.com>
 X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.6.10; i686-redhat-linux-gnu)
 X-Habeas-SWE-1: winter into spring
 X-Habeas-SWE-2: brightly anticipated
@@ -27,7 +27,7 @@ X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
 X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
 X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_R=WPXR7xs0.n_+h3xqFZ.xc"
+Content-Type: multipart/mixed; boundary="MP_qGHk/w4z1+295VnzohaAczo"
 X-Musicgenome-MailScanner-Information: Please contact the ISP for more information
 X-Musicgenome-MailScanner: Found to be clean
 X-Musicgenome-MailScanner-SpamCheck: not spam, SpamAssassin (score=-5.899,
@@ -36,483 +36,240 @@ X-Musicgenome-MailScanner-From: tal@musicgenome.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_R=WPXR7xs0.n_+h3xqFZ.xc
+--MP_qGHk/w4z1+295VnzohaAczo
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 Hello,
 
-This is my first submitted kernel patch, please be gentle.
+Tested and working on Kontron JREX-PM.
+fairly straightforward backport of w83627hf_wdt.c from 2.6.20.1
 
-Tested and working on AAEON GENE-6310B Subcompact Board
-(also configured for same by default, should work elsewhere)
-patch is against kernel 2.4.34.2
-
-Changes/Features:
-
-Added ioctl support
-Disables watchdog on driver load
-Supports timeout in seconds
-Timeout defaults to 2 minutes
-No longer under NetWinder arch
-Configurable output GP (defaults to GP16)
-Configurable base IO address
-Non standard read only proc interface for status (/proc/watchdog)
+Changes from 2.6 version
+Default timeout set to 120 seconds
+Nonstandard read only proc interface (/proc/watchdog)
+Always reset timer on driver load
+Changed timeout limit to 255
+Ignores failure to acquire IO port
 
 Caveats:
-
-No idea if this breaks netwinder, although it really shouldn't
-Only tested with GP16
-Utterly ignores inability to get its IO port, mostly because it's
-already taken. I didn't know a way around that.
-release_region is called regardless of having acquired the region, this
-might be trouble.
+Ignores failure to acquire IO port since it is always taken, there's
+probably a better way around that.
+Releases IO port regardless of having acquired it.
 
 -- 
 Tal Kelrich
 PGP fingerprint: 3EDF FCC5 60BB 4729 AB2F  CAE6 FEC1 9AAC 12B9 AA69
 Key Available at: http://www.hasturkun.com/pub.txt
 ----
-To err is human, to forgive is against company policy.
+The real reason psychology is hard is that psychologists are trying to
+do the impossible.
 ----
 
+--MP_qGHk/w4z1+295VnzohaAczo
+Content-Type: text/plain; name=linux-2.4.34.2-w83627hf.patch
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=linux-2.4.34.2-w83627hf.patch
 
---MP_R=WPXR7xs0.n_+h3xqFZ.xc
-Content-Type: text/x-patch; name=linux-2.4.34.2-wdt977.patch
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=linux-2.4.34.2-wdt977.patch
+LS0tIGxpbnV4LTIuNC4zNC4yL2RyaXZlcnMvY2hhci9Db25maWcuaW4JU2F0IE1hciAyNCAwODo0
+NDo1NCAyMDA3DQorKysgbGludXgtMi40LjM0LjItdzgzNjI3aGYvZHJpdmVycy9jaGFyL0NvbmZp
+Zy5pbglTdW4gQXByICAxIDE2OjIzOjAxIDIwMDcNCkBAIC0yNjMsNiArMjYzLDcgQEANCiAgICB0
+cmlzdGF0ZSAnICBXODM4NzdGIChFTUFDUykgV2F0Y2hkb2cgVGltZXInIENPTkZJR19XODM4NzdG
+X1dEVA0KICAgIHRyaXN0YXRlICcgIFdEVCBXYXRjaGRvZyB0aW1lcicgQ09ORklHX1dEVA0KICAg
+IHRyaXN0YXRlICcgIFdEVCBQQ0kgV2F0Y2hkb2cgdGltZXInIENPTkZJR19XRFRQQ0kNCisgICB0
+cmlzdGF0ZSAnICBXODM2MjdIRi9GL0hHL0cgV2F0Y2hkb2cnIENPTkZJR19XRFRfVzgzNjI3DQog
+ICAgaWYgWyAiJENPTkZJR19XRFQiICE9ICJuIiBdOyB0aGVuDQogICAgICAgYm9vbCAnICAgIFdE
+VDUwMSBmZWF0dXJlcycgQ09ORklHX1dEVF81MDENCiAgICAgICBpZiBbICIkQ09ORklHX1dEVF81
+MDEiID0gInkiIF07IHRoZW4NCi0tLSBsaW51eC0yLjQuMzQuMi9kcml2ZXJzL2NoYXIvTWFrZWZp
+bGUJU2F0IE1hciAyNCAwODo0NDo1NCAyMDA3DQorKysgbGludXgtMi40LjM0LjItdzgzNjI3aGYv
+ZHJpdmVycy9jaGFyL01ha2VmaWxlCVN1biBBcHIgIDEgMTY6MjM6MDEgMjAwNw0KQEAgLTMyMyw2
+ICszMjMsNyBAQA0KIG9iai0kKENPTkZJR19TT0ZUX1dBVENIRE9HKSArPSBzb2Z0ZG9nLm8NCiBv
+YmotJChDT05GSUdfSU5EWURPRykgKz0gaW5keWRvZy5vDQogb2JqLSQoQ09ORklHXzh4eF9XRFQp
+ICs9IG1wYzh4eF93ZHQubw0KK29iai0kKENPTkZJR19XRFRfVzgzNjI3KSArPSB3ZHQ4MzYyNy5v
+DQogDQogc3ViZGlyLSQoQ09ORklHX01XQVZFKSArPSBtd2F2ZQ0KIGlmZXEgKCQoQ09ORklHX01X
+QVZFKSx5KQ0KLS0tIGxpbnV4LTIuNC4zNC4yL2RyaXZlcnMvY2hhci93ZHQ4MzYyNy5jCVRodSBK
+YW4gIDEgMDI6MDA6MDAgMTk3MA0KKysrIGxpbnV4LTIuNC4zNC4yLXc4MzYyN2hmL2RyaXZlcnMv
+Y2hhci93ZHQ4MzYyNy5jCVN1biBBcHIgIDEgMTY6MjI6MzUgMjAwNw0KQEAgLTAsMCArMSw0MTYg
+QEANCisvKg0KKyAqCXc4MzYyN2hmIFdEVCBkcml2ZXINCisgKg0KKyAqIAliYWNrcG9ydGVkIGZy
+b20gdzgzNjI3aGZfd2R0LmMga2VybmVsIDIuNi4yMC4xDQorICogCShjKSBDb3B5cmlnaHQgMjAw
+NyBPcnBhayBTeXN0ZW1zIEx0ZC4gKFRhbCBLZWxyaWNoIDx0YWxAb3JwYWsuY29tPikNCisgKg0K
+KyAqCShjKSBDb3B5cmlnaHQgMjAwMyBQ4WRyYWlnIEJyYWR5IDxQQGRyYWlnQnJhZHkuY29tPg0K
+KyAqDQorICoJQmFzZWQgb24gYWR2YW50ZWNod2R0LmMgd2hpY2ggaXMgYmFzZWQgb24gd2R0LmMu
+DQorICoJT3JpZ2luYWwgY29weXJpZ2h0IG1lc3NhZ2VzOg0KKyAqDQorICoJKGMpIENvcHlyaWdo
+dCAyMDAwLTIwMDEgTWFyZWsgTWljaGFsa2lld2ljeiA8bWFyZWttQGxpbnV4Lm9yZy5wbD4NCisg
+Kg0KKyAqCShjKSBDb3B5cmlnaHQgMTk5NiBBbGFuIENveCA8YWxhbkByZWRoYXQuY29tPiwgQWxs
+IFJpZ2h0cyBSZXNlcnZlZC4NCisgKgkJCQlodHRwOi8vd3d3LnJlZGhhdC5jb20NCisgKg0KKyAq
+CVRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBh
+bmQvb3INCisgKgltb2RpZnkgaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQ
+dWJsaWMgTGljZW5zZQ0KKyAqCWFzIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2FyZSBGb3Vu
+ZGF0aW9uOyBlaXRoZXIgdmVyc2lvbg0KKyAqCTIgb2YgdGhlIExpY2Vuc2UsIG9yIChhdCB5b3Vy
+IG9wdGlvbikgYW55IGxhdGVyIHZlcnNpb24uDQorICoNCisgKglOZWl0aGVyIEFsYW4gQ294IG5v
+ciBDeW1ydU5ldCBMdGQuIGFkbWl0IGxpYWJpbGl0eSBub3IgcHJvdmlkZQ0KKyAqCXdhcnJhbnR5
+IGZvciBhbnkgb2YgdGhpcyBzb2Z0d2FyZS4gVGhpcyBtYXRlcmlhbCBpcyBwcm92aWRlZA0KKyAq
+CSJBUy1JUyIgYW5kIGF0IG5vIGNoYXJnZS4NCisgKg0KKyAqCShjKSBDb3B5cmlnaHQgMTk5NSAg
+ICBBbGFuIENveCA8YWxhbkByZWRoYXQuY29tPg0KKyAqLw0KKw0KKyNpbmNsdWRlIDxsaW51eC9t
+b2R1bGUuaD4NCisjaW5jbHVkZSA8bGludXgvdHlwZXMuaD4NCisjaW5jbHVkZSA8bGludXgvbWlz
+Y2RldmljZS5oPg0KKyNpbmNsdWRlIDxsaW51eC93YXRjaGRvZy5oPg0KKyNpbmNsdWRlIDxsaW51
+eC9mcy5oPg0KKyNpbmNsdWRlIDxsaW51eC9pb3BvcnQuaD4NCisjaW5jbHVkZSA8bGludXgvbm90
+aWZpZXIuaD4NCisjaW5jbHVkZSA8bGludXgvcmVib290Lmg+DQorI2luY2x1ZGUgPGxpbnV4L2lu
+aXQuaD4NCisjaW5jbHVkZSA8bGludXgvc3BpbmxvY2suaD4NCisjaW5jbHVkZSA8bGludXgvcHJv
+Y19mcy5oPg0KKw0KKyNpbmNsdWRlIDxhc20vaW8uaD4NCisjaW5jbHVkZSA8YXNtL3VhY2Nlc3Mu
+aD4NCisjaW5jbHVkZSA8YXNtL3N5c3RlbS5oPg0KKyNpbmNsdWRlIDxhc20vcGFnZS5oPg0KKw0K
+KyNkZWZpbmUgV0FUQ0hET0dfTkFNRSAiVzgzNjI3SEYgV0RUIg0KKyNkZWZpbmUgUEZYIFdBVENI
+RE9HX05BTUUgIjogIg0KKyNkZWZpbmUgV0FUQ0hET0dfVElNRU9VVCAxMjAJCS8qIDEyMCBzZWMg
+ZGVmYXVsdCB0aW1lb3V0ICovDQorDQorI2lmZGVmIENPTkZJR19XQVRDSERPR19OT1dBWU9VVA0K
+KyNkZWZpbmUgV0FUQ0hET0dfTk9XQVlPVVQgMQ0KKyNlbHNlDQorI2RlZmluZSBXQVRDSERPR19O
+T1dBWU9VVCAwDQorI2VuZGlmDQorDQorc3RhdGljIHVuc2lnbmVkIGxvbmcgd2R0X2lzX29wZW47
+DQorc3RhdGljIGNoYXIgZXhwZWN0X2Nsb3NlOw0KK3N0YXRpYyBzcGlubG9ja190IGlvX2xvY2s7
+DQorDQorLyogWW91IG11c3Qgc2V0IHRoaXMgLSB0aGVyZSBpcyBubyBzYW5lIHdheSB0byBwcm9i
+ZSBmb3IgdGhpcyBib2FyZC4gKi8NCitzdGF0aWMgaW50IHdkdF9pbyA9IDB4MkU7DQorTU9EVUxF
+X1BBUk0od2R0X2lvLCAiaSIpOw0KK01PRFVMRV9QQVJNX0RFU0Mod2R0X2lvLCAidzgzNjI3aGYg
+V0RUIGlvIHBvcnQgKGRlZmF1bHQgMHgyRSkiKTsNCisNCitzdGF0aWMgaW50IHRpbWVvdXQgPSBX
+QVRDSERPR19USU1FT1VUOwkvKiBpbiBzZWNvbmRzICovDQorTU9EVUxFX1BBUk0odGltZW91dCwg
+ImkiKTsNCitNT0RVTEVfUEFSTV9ERVNDKHRpbWVvdXQsICJXYXRjaGRvZyB0aW1lb3V0IGluIHNl
+Y29uZHMuIDE8PSB0aW1lb3V0IDw9MjU1LCBkZWZhdWx0PSIgX19NT0RVTEVfU1RSSU5HKFdBVENI
+RE9HX1RJTUVPVVQpICIuIik7DQorDQorc3RhdGljIGludCBub3dheW91dCA9IFdBVENIRE9HX05P
+V0FZT1VUOw0KK01PRFVMRV9QQVJNKG5vd2F5b3V0LCAiaSIpOw0KK01PRFVMRV9QQVJNX0RFU0Mo
+bm93YXlvdXQsICJXYXRjaGRvZyBjYW5ub3QgYmUgc3RvcHBlZCBvbmNlIHN0YXJ0ZWQgKGRlZmF1
+bHQ9IiBfX01PRFVMRV9TVFJJTkcoQ09ORklHX1dBVENIRE9HX05PV0FZT1VUKSIpIik7DQorDQor
+LyoNCisgKglLZXJuZWwgbWV0aG9kcy4NCisgKi8NCisNCisjZGVmaW5lIFdEVF9FRkVSICh3ZHRf
+aW8rMCkgICAvKiBFeHRlbmRlZCBGdW5jdGlvbiBFbmFibGUgUmVnaXN0ZXJzICovDQorI2RlZmlu
+ZSBXRFRfRUZJUiAod2R0X2lvKzApICAgLyogRXh0ZW5kZWQgRnVuY3Rpb24gSW5kZXggUmVnaXN0
+ZXIgKHNhbWUgYXMgRUZFUikgKi8NCisjZGVmaW5lIFdEVF9FRkRSIChXRFRfRUZJUisxKSAvKiBF
+eHRlbmRlZCBGdW5jdGlvbiBEYXRhIFJlZ2lzdGVyICovDQorDQorLyogTm9uIHN0YW5kYXJkIHBy
+b2MgYml0cywgYWRkZWQgYnkgcmVxdWVzdCwgd2FudGVkIHNvbWUgZmVlZGJhY2sgKi8NCisNCitz
+dGF0aWMgaW50IHdkdF9yZWFkcHJvYyhjaGFyICpwYWdlLCBjaGFyICoqc3RhcnQsIG9mZl90IG9m
+ZiwgaW50IGNvdW50LA0KKwkJaW50ICplb2YsIHZvaWQgKmRhdGEpDQorew0KKwlpbnQgbGVuOw0K
+Kwl1bnNpZ25lZCBjaGFyIHJlbWFpbmluZzsNCisJdW5zaWduZWQgY2hhciBmaXJlZDsNCisJc3Bp
+bl9sb2NrKCZpb19sb2NrKTsNCisJdzgzNjI3aGZfc2VsZWN0X3dkX3JlZ2lzdGVyKCk7DQorCW91
+dGJfcCgweEY2LCBXRFRfRUZJUik7LyogZ2V0IGN1cnJlbnQgdGltZXIgdmFsICovDQorCXJlbWFp
+bmluZz1pbmJfcChXRFRfRUZEUik7DQorCW91dGJfcCgweEY3LCBXRFRfRUZJUik7DQorCWZpcmVk
+PWluYl9wKFdEVF9FRkRSKTsNCisJLyogY2xlYXIgdGhhdCBiaXQgKGJpdCA0KSAqLw0KKwlvdXRi
+X3AoZmlyZWQmKH4weDEwKSxXRFRfRUZEUik7DQorCXc4MzYyN2hmX3Vuc2VsZWN0X3dkX3JlZ2lz
+dGVyKCk7DQorCXNwaW5fdW5sb2NrKCZpb19sb2NrKTsNCisJZmlyZWQ9KGZpcmVkJjB4MTApIT0w
+Ow0KKwlsZW49c25wcmludGYocGFnZSxQQUdFX1NJWkUsDQorCQkJIlc4MzYyN0hGIFdEVFxuIg0K
+KwkJCSJhY3RpdmU9JWRcbiINCisJCQkiaW9iYXNlPSUwNFhcbiINCisJCQkibm93YXlvdXQ9JWRc
+biINCisJCQkidGltZW91dD0lZFxuIg0KKwkJCSJyZW1haW5pbmc9JWRcbiINCisJCQkiZmlyZWQ9
+JWRcbiIsDQorCQkJd2R0X2lzX29wZW4sd2R0X2lvLG5vd2F5b3V0LHRpbWVvdXQscmVtYWluaW5n
+LGZpcmVkKTsNCisJKmVvZj0xOw0KKwlyZXR1cm4gbGVuOw0KK30NCisNCitzdGF0aWMgdm9pZA0K
+K3c4MzYyN2hmX3NlbGVjdF93ZF9yZWdpc3Rlcih2b2lkKQ0KK3sNCisJb3V0Yl9wKDB4ODcsIFdE
+VF9FRkVSKTsgLyogRW50ZXIgZXh0ZW5kZWQgZnVuY3Rpb24gbW9kZSAqLw0KKwlvdXRiX3AoMHg4
+NywgV0RUX0VGRVIpOyAvKiBBZ2FpbiBhY2NvcmRpbmcgdG8gbWFudWFsICovDQorDQorCW91dGJf
+cCgweDA3LCBXRFRfRUZFUik7IC8qIHBvaW50IHRvIGxvZ2ljYWwgZGV2aWNlIG51bWJlciByZWcg
+Ki8NCisJb3V0Yl9wKDB4MDgsIFdEVF9FRkRSKTsgLyogc2VsZWN0IGxvZ2ljYWwgZGV2aWNlIDgg
+KEdQSU8yKSAqLw0KKwlvdXRiX3AoMHgzMCwgV0RUX0VGRVIpOyAvKiBzZWxlY3QgQ1IzMCAqLw0K
+KwlvdXRiX3AoMHgwMSwgV0RUX0VGRFIpOyAvKiBzZXQgYml0IDAgdG8gYWN0aXZhdGUgR1BJTzIg
+Ki8NCit9DQorDQorc3RhdGljIHZvaWQNCit3ODM2MjdoZl91bnNlbGVjdF93ZF9yZWdpc3Rlcih2
+b2lkKQ0KK3sNCisJb3V0Yl9wKDB4QUEsIFdEVF9FRkVSKTsgLyogTGVhdmUgZXh0ZW5kZWQgZnVu
+Y3Rpb24gbW9kZSAqLw0KK30NCisNCisvKiB0eWFuIG1vdGhlcmJvYXJkcyBzZWVtIHRvIHNldCBG
+NSB0byAweDRDID8NCisgKiBTbyBleHBsaWNpdGx5IGluaXQgdG8gYXBwcm9wcmlhdGUgdmFsdWUu
+ICovDQorc3RhdGljIHZvaWQNCit3ODM2MjdoZl9pbml0KHZvaWQpDQorew0KKwl1bnNpZ25lZCBj
+aGFyIHQ7DQorDQorCXc4MzYyN2hmX3NlbGVjdF93ZF9yZWdpc3RlcigpOw0KKw0KKwlvdXRiX3Ao
+MHhGNiwgV0RUX0VGRVIpOyAvKiBTZWxlY3QgQ1JGNiAqLw0KKwlvdXRiX3AoMCwgV0RUX0VGRFIp
+OyAgICAvKiBzZXQgdG8gMCBpbml0aWFsbHkgKi8NCisJb3V0Yl9wKDB4RjUsIFdEVF9FRkVSKTsg
+LyogU2VsZWN0IENSRjUgKi8NCisJdD1pbmJfcChXRFRfRUZEUik7ICAgICAgLyogcmVhZCBDUkY1
+ICovDQorCXQmPX4weDBDOyAgICAgICAgICAgICAgIC8qIHNldCBzZWNvbmQgbW9kZSAmIGRpc2Fi
+bGUga2V5Ym9hcmQgdHVybmluZyBvZmYgd2F0Y2hkb2cgKi8NCisJb3V0Yl9wKHQsIFdEVF9FRkRS
+KTsgICAgLyogV3JpdGUgYmFjayB0byBDUkY1ICovDQorDQorCXc4MzYyN2hmX3Vuc2VsZWN0X3dk
+X3JlZ2lzdGVyKCk7DQorfQ0KKw0KK3N0YXRpYyB2b2lkDQord2R0X2N0cmwoaW50IHRpbWVvdXQp
+DQorew0KKwlzcGluX2xvY2soJmlvX2xvY2spOw0KKwkNCisJdzgzNjI3aGZfc2VsZWN0X3dkX3Jl
+Z2lzdGVyKCk7DQorDQorCW91dGJfcCgweEY2LCBXRFRfRUZFUik7ICAgIC8qIFNlbGVjdCBDUkY2
+ICovDQorCW91dGJfcCh0aW1lb3V0LCBXRFRfRUZEUik7IC8qIFdyaXRlIFRpbWVvdXQgY291bnRl
+ciB0byBDUkY2ICovDQorDQorCXc4MzYyN2hmX3Vuc2VsZWN0X3dkX3JlZ2lzdGVyKCk7DQorDQor
+CXNwaW5fdW5sb2NrKCZpb19sb2NrKTsNCit9DQorDQorc3RhdGljIGludA0KK3dkdF9waW5nKHZv
+aWQpDQorew0KKwl3ZHRfY3RybCh0aW1lb3V0KTsNCisJcmV0dXJuIDA7DQorfQ0KKw0KK3N0YXRp
+YyBpbnQNCit3ZHRfZGlzYWJsZSh2b2lkKQ0KK3sNCisJd2R0X2N0cmwoMCk7DQorCXJldHVybiAw
+Ow0KK30NCisNCitzdGF0aWMgaW50DQord2R0X3NldF9oZWFydGJlYXQoaW50IHQpDQorew0KKwlp
+ZiAoKHQgPCAxKSB8fCAodCA+IDI1NSkpDQorCQlyZXR1cm4gLUVJTlZBTDsNCisNCisJdGltZW91
+dCA9IHQ7DQorCXJldHVybiAwOw0KK30NCisNCitzdGF0aWMgc3NpemVfdA0KK3dkdF93cml0ZShz
+dHJ1Y3QgZmlsZSAqZmlsZSwgY29uc3QgY2hhciAqYnVmLCBzaXplX3QgY291bnQsIGxvZmZfdCAq
+cHBvcykNCit7DQorCS8qICBDYW4ndCBzZWVrIChwd3JpdGUpIG9uIHRoaXMgZGV2aWNlICAqLw0K
+KyAgICAgICAgaWYgKHBwb3MgIT0gJmZpbGUtPmZfcG9zKQ0KKyAgICAgICAgICAgICAgICByZXR1
+cm4gLUVTUElQRTsNCisJaWYgKGNvdW50KSB7DQorCQlpZiAoIW5vd2F5b3V0KSB7DQorCQkJc2l6
+ZV90IGk7DQorDQorCQkJZXhwZWN0X2Nsb3NlID0gMDsNCisNCisJCQlmb3IgKGkgPSAwOyBpICE9
+IGNvdW50OyBpKyspIHsNCisJCQkJY2hhciBjOw0KKwkJCQlpZiAoZ2V0X3VzZXIoYywgYnVmK2kp
+KQ0KKwkJCQkJcmV0dXJuIC1FRkFVTFQ7DQorCQkJCWlmIChjID09ICdWJykNCisJCQkJCWV4cGVj
+dF9jbG9zZSA9IDQyOw0KKwkJCX0NCisJCX0NCisJCXdkdF9waW5nKCk7DQorCX0NCisJcmV0dXJu
+IGNvdW50Ow0KK30NCisNCitzdGF0aWMgaW50DQord2R0X2lvY3RsKHN0cnVjdCBpbm9kZSAqaW5v
+ZGUsIHN0cnVjdCBmaWxlICpmaWxlLCB1bnNpZ25lZCBpbnQgY21kLA0KKwkgIHVuc2lnbmVkIGxv
+bmcgYXJnKQ0KK3sNCisJdm9pZCAqYXJncCA9ICh2b2lkICopYXJnOw0KKwlpbnQgKnAgPSBhcmdw
+Ow0KKwlpbnQgbmV3X3RpbWVvdXQ7DQorCXN0YXRpYyBzdHJ1Y3Qgd2F0Y2hkb2dfaW5mbyBpZGVu
+dCA9IHsNCisJCS5vcHRpb25zID0gV0RJT0ZfS0VFUEFMSVZFUElORyB8IFdESU9GX1NFVFRJTUVP
+VVQgfCBXRElPRl9NQUdJQ0NMT1NFLA0KKwkJLmZpcm13YXJlX3ZlcnNpb24gPSAxLA0KKwkJLmlk
+ZW50aXR5ID0gIlc4MzYyN0hGIFdEVCIsDQorCX07DQorDQorCXN3aXRjaCAoY21kKSB7DQorCWNh
+c2UgV0RJT0NfR0VUU1VQUE9SVDoNCisJICBpZiAoY29weV90b191c2VyKGFyZ3AsICZpZGVudCwg
+c2l6ZW9mKGlkZW50KSkpDQorCSAgICByZXR1cm4gLUVGQVVMVDsNCisJICBicmVhazsNCisNCisJ
+Y2FzZSBXRElPQ19HRVRTVEFUVVM6DQorCWNhc2UgV0RJT0NfR0VUQk9PVFNUQVRVUzoNCisJICBy
+ZXR1cm4gcHV0X3VzZXIoMCwgcCk7DQorDQorCWNhc2UgV0RJT0NfS0VFUEFMSVZFOg0KKwkgIHdk
+dF9waW5nKCk7DQorCSAgYnJlYWs7DQorDQorCWNhc2UgV0RJT0NfU0VUVElNRU9VVDoNCisJICBp
+ZiAoZ2V0X3VzZXIobmV3X3RpbWVvdXQsIHApKQ0KKwkJICByZXR1cm4gLUVGQVVMVDsNCisJICBp
+ZiAod2R0X3NldF9oZWFydGJlYXQobmV3X3RpbWVvdXQpKQ0KKwkJICByZXR1cm4gLUVJTlZBTDsN
+CisJICB3ZHRfcGluZygpOw0KKwkgIC8qIEZhbGwgKi8NCisNCisJY2FzZSBXRElPQ19HRVRUSU1F
+T1VUOg0KKwkgIHJldHVybiBwdXRfdXNlcih0aW1lb3V0LCBwKTsNCisNCisJY2FzZSBXRElPQ19T
+RVRPUFRJT05TOg0KKwl7DQorCSAgaW50IG9wdGlvbnMsIHJldHZhbCA9IC1FSU5WQUw7DQorDQor
+CSAgaWYgKGdldF91c2VyKG9wdGlvbnMsIHApKQ0KKwkgICAgcmV0dXJuIC1FRkFVTFQ7DQorDQor
+CSAgaWYgKG9wdGlvbnMgJiBXRElPU19ESVNBQkxFQ0FSRCkgew0KKwkgICAgd2R0X2Rpc2FibGUo
+KTsNCisJICAgIHJldHZhbCA9IDA7DQorCSAgfQ0KKw0KKwkgIGlmIChvcHRpb25zICYgV0RJT1Nf
+RU5BQkxFQ0FSRCkgew0KKwkgICAgd2R0X3BpbmcoKTsNCisJICAgIHJldHZhbCA9IDA7DQorCSAg
+fQ0KKw0KKwkgIHJldHVybiByZXR2YWw7DQorCX0NCisNCisJZGVmYXVsdDoNCisJICByZXR1cm4g
+LUVOT1RUWTsNCisJfQ0KKwlyZXR1cm4gMDsNCit9DQorDQorc3RhdGljIGludA0KK3dkdF9vcGVu
+KHN0cnVjdCBpbm9kZSAqaW5vZGUsIHN0cnVjdCBmaWxlICpmaWxlKQ0KK3sNCisJaWYgKHRlc3Rf
+YW5kX3NldF9iaXQoMCwgJndkdF9pc19vcGVuKSkNCisJCXJldHVybiAtRUJVU1k7DQorCS8qDQor
+CSAqCUFjdGl2YXRlDQorCSAqLw0KKw0KKwl3ZHRfcGluZygpOw0KKwlyZXR1cm4gMDsNCit9DQor
+DQorc3RhdGljIGludA0KK3dkdF9jbG9zZShzdHJ1Y3QgaW5vZGUgKmlub2RlLCBzdHJ1Y3QgZmls
+ZSAqZmlsZSkNCit7DQorCWlmIChleHBlY3RfY2xvc2UgPT0gNDIpIHsNCisJCXdkdF9kaXNhYmxl
+KCk7DQorCX0gZWxzZSB7DQorCQlwcmludGsoS0VSTl9DUklUIFBGWCAiVW5leHBlY3RlZCBjbG9z
+ZSwgbm90IHN0b3BwaW5nIHdhdGNoZG9nIVxuIik7DQorCQl3ZHRfcGluZygpOw0KKwl9DQorCWV4
+cGVjdF9jbG9zZSA9IDA7DQorCWNsZWFyX2JpdCgwLCAmd2R0X2lzX29wZW4pOw0KKwlyZXR1cm4g
+MDsNCit9DQorDQorLyoNCisgKglOb3RpZmllciBmb3Igc3lzdGVtIGRvd24NCisgKi8NCisNCitz
+dGF0aWMgaW50DQord2R0X25vdGlmeV9zeXMoc3RydWN0IG5vdGlmaWVyX2Jsb2NrICp0aGlzLCB1
+bnNpZ25lZCBsb25nIGNvZGUsDQorCXZvaWQgKnVudXNlZCkNCit7DQorCWlmIChjb2RlID09IFNZ
+U19ET1dOIHx8IGNvZGUgPT0gU1lTX0hBTFQpIHsNCisJCS8qIFR1cm4gdGhlIFdEVCBvZmYgKi8N
+CisJCXdkdF9kaXNhYmxlKCk7DQorCX0NCisJcmV0dXJuIE5PVElGWV9ET05FOw0KK30NCisNCisv
+Kg0KKyAqCUtlcm5lbCBJbnRlcmZhY2VzDQorICovDQorDQorc3RhdGljIGNvbnN0IHN0cnVjdCBm
+aWxlX29wZXJhdGlvbnMgd2R0X2ZvcHMgPSB7DQorCS5vd25lcgkJPSBUSElTX01PRFVMRSwNCisJ
+LndyaXRlCQk9IHdkdF93cml0ZSwNCisJLmlvY3RsCQk9IHdkdF9pb2N0bCwNCisJLm9wZW4JCT0g
+d2R0X29wZW4sDQorCS5yZWxlYXNlCT0gd2R0X2Nsb3NlLA0KK307DQorDQorc3RhdGljIHN0cnVj
+dCBtaXNjZGV2aWNlIHdkdF9taXNjZGV2ID0gew0KKwkubWlub3IgPSBXQVRDSERPR19NSU5PUiwN
+CisJLm5hbWUgPSAid2F0Y2hkb2ciLA0KKwkuZm9wcyA9ICZ3ZHRfZm9wcywNCit9Ow0KKw0KKy8q
+DQorICoJVGhlIFdEVCBuZWVkcyB0byBsZWFybiBhYm91dCBzb2Z0IHNodXRkb3ducyBpbiBvcmRl
+ciB0bw0KKyAqCXR1cm4gdGhlIHRpbWVib21iIHJlZ2lzdGVycyBvZmYuDQorICovDQorDQorc3Rh
+dGljIHN0cnVjdCBub3RpZmllcl9ibG9jayB3ZHRfbm90aWZpZXIgPSB7DQorCS5ub3RpZmllcl9j
+YWxsID0gd2R0X25vdGlmeV9zeXMsDQorfTsNCisNCitzdGF0aWMgaW50IF9faW5pdA0KK3dkdF9p
+bml0KHZvaWQpDQorew0KKwlpbnQgcmV0Ow0KKw0KKwlzcGluX2xvY2tfaW5pdCgmaW9fbG9jayk7
+DQorDQorCXByaW50ayhLRVJOX0lORk8gIldEVCBkcml2ZXIgZm9yIHRoZSBXaW5ib25kKFRNKSBX
+ODM2MjdIRiBTdXBlciBJL08gY2hpcCBpbml0aWFsaXNpbmcuXG4iKTsNCisNCisJaWYgKHdkdF9z
+ZXRfaGVhcnRiZWF0KHRpbWVvdXQpKSB7DQorCQl3ZHRfc2V0X2hlYXJ0YmVhdChXQVRDSERPR19U
+SU1FT1VUKTsNCisJCXByaW50ayAoS0VSTl9JTkZPIFBGWCAidGltZW91dCB2YWx1ZSBtdXN0IGJl
+IDE8PXRpbWVvdXQ8PTYzLCB1c2luZyAlZFxuIiwNCisJCQlXQVRDSERPR19USU1FT1VUKTsNCisJ
+fQ0KKwkvKiBvbiB0aGUgYm9hcmQgSSB3YXMgd29ya2luZyBvbiwgd2R0X2lvIGNvbnNpc3RlbnRs
+eSBjb2luY2lkZWQgd2l0aCB0aGluZ3MgYWxyZWFkeQ0KKwkgKiBiZWluZyB1c2VkLCBoZW5jZSB0
+aGUgY29udGludWluZyBoZXJlLg0KKwkgKiB0aGVyZSdzIHByb2JhYmx5IGEgYmV0dGVyIHNvbHV0
+aW9uIHRvIHRoaXMgKi8NCisJaWYgKCFyZXF1ZXN0X3JlZ2lvbih3ZHRfaW8sIDEsIFdBVENIRE9H
+X05BTUUpKSB7DQorCQlwcmludGsgKEtFUk5fV0FSTklORyBQRlggIkkvTyBhZGRyZXNzIDB4JTA0
+eCBhbHJlYWR5IGluIHVzZSwgY29udGludWluZyBhbnl3YXlcbiIsDQorCQkJd2R0X2lvKTsNCisJ
+fQ0KKwlpZighY3JlYXRlX3Byb2NfcmVhZF9lbnRyeSgid2F0Y2hkb2ciLDAsTlVMTCwmd2R0X3Jl
+YWRwcm9jLE5VTEwpKQ0KKwkJZ290byB1bnJlZ19yZWdpb25zOw0KKw0KKwl3ODM2MjdoZl9pbml0
+KCk7DQorDQorCXJldCA9IHJlZ2lzdGVyX3JlYm9vdF9ub3RpZmllcigmd2R0X25vdGlmaWVyKTsN
+CisJaWYgKHJldCAhPSAwKSB7DQorCQlwcmludGsgKEtFUk5fRVJSIFBGWCAiY2Fubm90IHJlZ2lz
+dGVyIHJlYm9vdCBub3RpZmllciAoZXJyPSVkKVxuIiwNCisJCQlyZXQpOw0KKwkJZ290byB1bnJl
+Z19wcm9jOw0KKwl9DQorDQorCXJldCA9IG1pc2NfcmVnaXN0ZXIoJndkdF9taXNjZGV2KTsNCisJ
+aWYgKHJldCAhPSAwKSB7DQorCQlwcmludGsgKEtFUk5fRVJSIFBGWCAiY2Fubm90IHJlZ2lzdGVy
+IG1pc2NkZXYgb24gbWlub3I9JWQgKGVycj0lZClcbiIsDQorCQkJV0FUQ0hET0dfTUlOT1IsIHJl
+dCk7DQorCQlnb3RvIHVucmVnX3JlYm9vdDsNCisJfQ0KKw0KKwlwcmludGsgKEtFUk5fSU5GTyBQ
+RlggImluaXRpYWxpemVkLiB0aW1lb3V0PSVkIHNlYyAobm93YXlvdXQ9JWQpXG4iLA0KKwkJdGlt
+ZW91dCwgbm93YXlvdXQpOw0KKw0KK291dDoNCisJcmV0dXJuIHJldDsNCit1bnJlZ19yZWJvb3Q6
+DQorCXVucmVnaXN0ZXJfcmVib290X25vdGlmaWVyKCZ3ZHRfbm90aWZpZXIpOw0KK3VucmVnX3By
+b2M6DQorCXJlbW92ZV9wcm9jX2VudHJ5KCJ3YXRjaGRvZyIsTlVMTCk7DQordW5yZWdfcmVnaW9u
+czoNCisJcmVsZWFzZV9yZWdpb24od2R0X2lvLCAxKTsNCisJZ290byBvdXQ7DQorfQ0KKw0KK3N0
+YXRpYyB2b2lkIF9fZXhpdA0KK3dkdF9leGl0KHZvaWQpDQorew0KKwlyZW1vdmVfcHJvY19lbnRy
+eSgid2F0Y2hkb2ciLE5VTEwpOw0KKwltaXNjX2RlcmVnaXN0ZXIoJndkdF9taXNjZGV2KTsNCisJ
+dW5yZWdpc3Rlcl9yZWJvb3Rfbm90aWZpZXIoJndkdF9ub3RpZmllcik7DQorCXJlbGVhc2VfcmVn
+aW9uKHdkdF9pbywxKTsNCisJLyogd2UgbWlnaHQgbm90IGhhdmUgZ290dGVuIGl0Li4uIGlzIHRo
+aXMgc2FmZT8gKi8NCit9DQorDQorbW9kdWxlX2luaXQod2R0X2luaXQpOw0KK21vZHVsZV9leGl0
+KHdkdF9leGl0KTsNCisNCitNT0RVTEVfTElDRU5TRSgiR1BMIik7DQorTU9EVUxFX0FVVEhPUigi
+UOFkcmFpZyBCcmFkeSA8UEBkcmFpZ0JyYWR5LmNvbT4iKTsNCitNT0RVTEVfREVTQ1JJUFRJT04o
+Inc4MzYyN2hmIFdEVCBkcml2ZXIiKTsNCg==
 
-diff -udr linux-2.4.34.2/drivers/char/Config.in linux-2.4.34.2-wdt977/drivers/char/Config.in
---- linux-2.4.34.2/drivers/char/Config.in	Sat Mar 24 08:44:54 2007
-+++ linux-2.4.34.2-wdt977/drivers/char/Config.in	Wed Mar 28 10:49:02 2007
-@@ -247,10 +247,8 @@
-    tristate '  Berkshire Products PC Watchdog' CONFIG_PCWATCHDOG
-    if [ "$CONFIG_FOOTBRIDGE" = "y" ]; then
-       tristate '  DC21285 watchdog' CONFIG_21285_WATCHDOG
--      if [ "$CONFIG_ARCH_NETWINDER" = "y" ]; then
--         tristate '  NetWinder WB83C977 watchdog' CONFIG_977_WATCHDOG
--      fi
-    fi
-+   tristate '  Winbond W83977EF Watchdog Timer' CONFIG_977_WATCHDOG
-    tristate '  Eurotech CPU-1220/1410 Watchdog Timer' CONFIG_EUROTECH_WDT
-    tristate '  IB700 SBC Watchdog Timer' CONFIG_IB700_WDT
-    tristate '  ICP ELectronics Wafer 5823 Watchdog' CONFIG_WAFER_WDT
---- linux-2.4.34.2/drivers/char/wdt977.c	Sat Mar 24 08:44:54 2007
-+++ linux-2.4.34.2-wdt977/drivers/char/wdt977.c	Wed Mar 28 10:52:23 2007
-@@ -1,5 +1,7 @@
- /*
-- *	Wdt977	0.02:	A Watchdog Device for Netwinder W83977AF chip
-+ *	Wdt83977 0.03:	A Watchdog Device for Winbond W83977EF chip
-+ *	(c) Copyright 2007 Orpak Systems Ltd. (Tal Kelrich <tal@orpak.com>)
-+ *	based on wdt977 driver by Woody Suwalski <woody@netwinder.org>
-  *
-  *	(c) Copyright 1998 Rebel.com (Woody Suwalski <woody@netwinder.org>)
-  *
-@@ -9,10 +11,6 @@
-  *	modify it under the terms of the GNU General Public License
-  *	as published by the Free Software Foundation; either version
-  *	2 of the License, or (at your option) any later version.
-- *
-- *			-----------------------
-- *      14-Dec-2001 Matt Domsch <Matt_Domsch@dell.com>
-- *           Added nowayout module option to override CONFIG_WATCHDOG_NOWAYOUT
-  */
-  
- #include <linux/module.h>
-@@ -23,17 +21,25 @@
- #include <linux/miscdevice.h>
- #include <linux/init.h>
- #include <linux/smp_lock.h>
-+#include <linux/ioport.h>
-+#include <linux/spinlock.h>
-+#include <linux/watchdog.h>
-+#include <linux/proc_fs.h>
- 
- #include <asm/io.h>
- #include <asm/system.h>
--#include <asm/mach-types.h>
-+#include <asm/uaccess.h>
-+#include <asm/page.h>
- 
- #define WATCHDOG_MINOR	130
- 
--static	int timeout = 3;
-+static	int timeout = 120;
- static	int timer_alive;
--static	int testmode;
- static	int expect_close = 0;
-+static spinlock_t wdt_lock;
-+
-+/* port is either 0X370 or 0x3F0. there's probably no way to detect this */
-+static int wdt_io = 0x370;
- 
- #ifdef CONFIG_WATCHDOG_NOWAYOUT
- static int nowayout = 1;
-@@ -41,14 +47,77 @@
- static int nowayout = 0;
- #endif
- 
-+static int whichgp = 16;
-+
-+MODULE_PARM(wdt_io,"i");
-+MODULE_PARM_DESC(wdt_io,"WDT io port base (0x370/0x3F0)");
-+
-+MODULE_PARM(whichgp,"i");
-+MODULE_PARM_DESC(whichgp,"which gp? (12/13/16)");
-+
-+MODULE_PARM(timeout,"i");
-+
- MODULE_PARM(nowayout,"i");
- MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=CONFIG_WATCHDOG_NOWAYOUT)");
- 
-+#define WDT_EFER (wdt_io+0)   /* Extended Function Enable Registers */
-+#define WDT_EFIR (wdt_io+0)   /* Extended Function Index Register (same as EFER) */
-+#define WDT_EFDR (WDT_EFIR+1) /* Extended Function Data Register */
-+
-+#define WDT_OUT(reg,data) {outb_p(reg,WDT_EFIR);outb_p(data,WDT_EFDR);}
-+#define WDT_IN(reg,out) {outb_p(reg,WDT_EFIR);out=inb_p(WDT_EFDR);}
-+#define WDT_DEV(device) {WDT_OUT(0x07,device);}
-+#define WDT_ENABLE	{outb_p(0x87,WDT_EFER);outb_p(0x87,WDT_EFER);}
-+#define WDT_DISABLE	{outb_p(0xAA,WDT_EFER);}
-+
-+static int wdt977_readproc(char *page, char **start, off_t off, int count,
-+		int *eof, void *data)
-+{
-+	int len;
-+	unsigned char remaining;
-+	unsigned char fired;
-+	spin_lock(&wdt_lock);
-+	WDT_ENABLE;
-+	WDT_DEV(0x08);
-+	WDT_IN(0xF2,remaining); /* get remaining time */
-+	WDT_IN(0xF4,fired); /* and some nice status bits */
-+	/* and clear the bit we care about */
-+	WDT_OUT(0xF4,fired&(~0x01));
-+	WDT_DISABLE;
-+	spin_unlock(&wdt_lock);
-+	fired=fired & 0x01;
-+	len=snprintf(page,PAGE_SIZE,
-+			"W83977EF device\n"
-+			"active=%d\n"
-+			"iobase=%0X\n"
-+			"gp=%d\n"
-+			"nowayout=%d\n"
-+			"timeout=%d\n"
-+			"remaining=%d\n"
-+			"fired=%d\n",
-+			timer_alive,wdt_io,whichgp,nowayout,timeout,remaining,fired);
-+	*eof=1;
-+	return len;
-+}
-+
-+static void wdt977_ctrl(int timeout)
-+{
-+	unsigned char status;
-+	spin_lock(&wdt_lock);
-+	WDT_ENABLE;
-+	WDT_DEV(0x08);
-+	WDT_OUT(0x30,0x01); /* enable */
-+	WDT_OUT(0xF2,timeout);
-+	WDT_IN(0xF4, status); /* so we don't set bit 0 */
-+	WDT_OUT(0xF4,(status&0x01)|0x40); /* and seconds! */
-+	WDT_DISABLE;
-+	spin_unlock(&wdt_lock);
-+}
- 
- /*
-  *	Allow only one person to hold it open
-  */
-- 
-+
- static int wdt977_open(struct inode *inode, struct file *file)
- {
- 	if(timer_alive)
-@@ -59,42 +128,12 @@
- 	timer_alive++;
- 
- 	//max timeout value = 255 minutes (0xFF). Write 0 to disable WatchDog.
--	if (timeout>255)
-+	if (timeout>255 || timeout <1)
- 	    timeout = 255;
- 
- 	printk(KERN_INFO "Watchdog: active, current timeout %d min.\n",timeout);
- 
--	// unlock the SuperIO chip
--	outb(0x87,0x370); 
--	outb(0x87,0x370); 
--	
--	//select device Aux2 (device=8) and set watchdog regs F2, F3 and F4
--	//F2 has the timeout in minutes
--	//F3 could be set to the POWER LED blink (with GP17 set to PowerLed)
--	//   at timeout, and to reset timer on kbd/mouse activity (not now)
--	//F4 is used to just clear the TIMEOUT'ed state (bit 0)
--	
--	outb(0x07,0x370);
--	outb(0x08,0x371);
--	outb(0xF2,0x370);
--	outb(timeout,0x371);
--	outb(0xF3,0x370);
--	outb(0x00,0x371);	//another setting is 0E for kbd/mouse/LED
--	outb(0xF4,0x370);
--	outb(0x00,0x371);
--	
--	//at last select device Aux1 (dev=7) and set GP16 as a watchdog output
--	if (!testmode)
--	{
--		outb(0x07,0x370);
--		outb(0x07,0x371);
--		outb(0xE6,0x370);
--		outb(0x08,0x371);
--	}
--		
--	// lock the SuperIO chip
--	outb(0xAA,0x370); 
--
-+	wdt977_ctrl(timeout);
- 	return 0;
- }
- 
-@@ -104,50 +143,23 @@
- 	 *	Shut off the timer.
- 	 * 	Lock it in if it's a module and we set nowayout
- 	 */
--	lock_kernel();
- 	if (expect_close) {
--
--		// unlock the SuperIO chip
--		outb(0x87,0x370); 
--		outb(0x87,0x370); 
--	
--		//select device Aux2 (device=8) and set watchdog regs F2,F3 and F4
--		//F3 is reset to its default state
--		//F4 can clear the TIMEOUT'ed state (bit 0) - back to default
--		//We can not use GP17 as a PowerLed, as we use its usage as a RedLed
--	
--		outb(0x07,0x370);
--		outb(0x08,0x371);
--		outb(0xF2,0x370);
--		outb(0xFF,0x371);
--		outb(0xF3,0x370);
--		outb(0x00,0x371);
--		outb(0xF4,0x370);
--		outb(0x00,0x371);
--		outb(0xF2,0x370);
--		outb(0x00,0x371);
--	
--		//at last select device Aux1 (dev=7) and set GP16 as a watchdog output
--		outb(0x07,0x370);
--		outb(0x07,0x371);
--		outb(0xE6,0x370);
--		outb(0x08,0x371);
--	
--		// lock the SuperIO chip
--		outb(0xAA,0x370);
-+		wdt977_ctrl(0); /* disable timer */
- 		printk(KERN_INFO "Watchdog: shutdown.\n");
- 	} else {
- 		printk(KERN_CRIT "WDT device closed unexpectedly.  WDT will not stop!\n");
- 	}
- 
- 	timer_alive=0;
--	unlock_kernel();
- 
- 	return 0;
- }
- 
- static ssize_t wdt977_write(struct file *file, const char *data, size_t len, loff_t *ppos)
- {
-+	/*  Can't seek (pwrite) on this device  */
-+	if (ppos != &file->f_pos)
-+		return -ESPIPE;
- 	if (!nowayout) {
- 		size_t i;
- 
-@@ -170,36 +182,79 @@
- 	/*
- 	 *	Refresh the timer.
- 	 */
--		
--	//we have a hw bug somewhere, so each 977 minute is actually only 30sec
--	//as such limit the max timeout to half of max of 255 minutes...
--//	if (timeout>126)
--//	    timeout = 126;
--	
--	// unlock the SuperIO chip
--	outb(0x87,0x370); 
--	outb(0x87,0x370); 
--	
--	//select device Aux2 (device=8) and kicks watchdog reg F2
--	//F2 has the timeout in minutes
--	
--	outb(0x07,0x370);
--	outb(0x08,0x371);
--	outb(0xF2,0x370);
--	outb(timeout,0x371);
--	
--	// lock the SuperIO chip
--	outb(0xAA,0x370); 
-+
-+	wdt977_ctrl(timeout);	
- 	
- 	return 1;
- }
- 
-+static int wdt977_ioctl(struct inode *inode, struct file *file,
-+		unsigned int cmd, unsigned long arg)
-+{
-+	int new_timeout;
-+	static struct watchdog_info ident = {
-+		.options = WDIOF_SETTIMEOUT | WDIOF_MAGICCLOSE | WDIOF_KEEPALIVEPING,
-+		.firmware_version = 1,
-+		.identity = "WDT83977 WDT",
-+	};
-+	void *argp = (void *)arg;
-+	int *p = argp;
-+	switch (cmd)
-+	{
-+		case WDIOC_GETSUPPORT:
-+			if(copy_to_user(argp, &ident, sizeof(ident)))
-+				return -EFAULT;
-+			break;
-+
-+		case WDIOC_GETSTATUS:
-+			return put_user(timer_alive, p);
-+
-+		case WDIOC_KEEPALIVE:
-+			wdt977_ctrl(timeout);
-+			
-+		case WDIOC_SETTIMEOUT:
-+			if(get_user(new_timeout, p))
-+				return -EFAULT;
-+			if(new_timeout>255 || new_timeout < 1)
-+				return -EINVAL;
-+			timeout=new_timeout;
-+			wdt977_ctrl(timeout);
-+			/* FALLTHROUGH */
-+			
-+		case WDIOC_GETTIMEOUT:
-+			return put_user(timeout,p);
-+
-+		case WDIOC_SETOPTIONS:
-+			{
-+				int options, retval = -EINVAL;
-+				if(get_user(options, p))
-+					return -EFAULT;
-+
-+				if(options & WDIOS_DISABLECARD)
-+				{
-+					wdt977_ctrl(0);
-+					retval = 0;
-+				}
-+				if(options & WDIOS_ENABLECARD)
-+				{
-+					wdt977_ctrl(timeout);
-+					retval = 0;
-+				}
-+				return retval;
-+			}
-+		default:
-+			return -ENOTTY;
-+	}
-+	return 0;
-+}
-+
- static struct file_operations wdt977_fops=
- {
- 	owner:		THIS_MODULE,
- 	write:		wdt977_write,
- 	open:		wdt977_open,
- 	release:	wdt977_release,
-+	ioctl:		wdt977_ioctl,
- };
- 
- static struct miscdevice wdt977_miscdev=
-@@ -211,17 +266,80 @@
- 
- static int __init nwwatchdog_init(void)
- {
--	if (!machine_is_netwinder())
--		return -ENODEV;
--
--	misc_register(&wdt977_miscdev);
--	printk(KERN_INFO "NetWinder Watchdog sleeping.\n");
-+	unsigned char status;
-+	int ret;
-+	spin_lock_init(&wdt_lock);
-+	ret = misc_register(&wdt977_miscdev);
-+	if(ret != 0)
-+		goto out;
-+	if(!request_region(wdt_io, 1, "W83977EF"))
-+	{
-+		/* Failure to get region is because on the board I was working on, wdt_io is
-+		 * consistently in use. there's probably a better solution to this */
-+		printk(KERN_WARNING "W83977EF: IO address %04X already in use, continuing anyway\n",wdt_io);
-+	}
-+	if(!create_proc_read_entry("watchdog",0,NULL,&wdt977_readproc,NULL))
-+		goto unreg_misc;
-+	WDT_ENABLE;
-+	/* select dev 7 */
-+	WDT_DEV(0x07);
-+	/* activate it */
-+	WDT_OUT(0x30,0x01);
-+	switch(whichgp)
-+	{
-+		case 12:
-+			ret=0xE2;
-+			break;
-+		case 13:
-+			ret=0xE3;
-+			break;
-+		default:
-+			whichgp=16;
-+		case 16:
-+			ret=0xE6;
-+			break;
-+	}
-+	WDT_OUT(ret,0x0A);
-+	/* select dev 8 */
-+	WDT_DEV(0x08);
-+	/* enable it */
-+	WDT_OUT(0x30,0x01);
-+	/* power led cycle on wdog timeout */
-+	WDT_OUT(0xF3,0x08);
-+	switch(whichgp)
-+	{
-+		case 12:
-+			WDT_IN(0x2A,ret); /* sets ret */
-+			WDT_OUT(0x2A,ret|0x80); /* sets GP12 on */
-+			break;
-+		case 13:
-+			WDT_IN(0x2B,ret);
-+			WDT_OUT(0x2B,ret|0x01);
-+			break;
-+		case 16:
-+			WDT_IN(0x2C,ret);
-+			WDT_OUT(0x2C,ret|0x10);
-+			break;
-+	}
-+	/* set timer to 0 initially */
-+	WDT_OUT(0xF2,0);
-+	WDT_IN(0xF4, status); /* so we don't set bit 0 by accident */
-+	WDT_OUT(0xF4,(status&0x01)|0x40); /* bit 6 for seconds! */
-+	WDT_DISABLE;
-+	printk(KERN_INFO "W83977EF: initialized, using port %x, GP%d. timeout=%d nowayout=%d\n",wdt_io,whichgp,timeout,nowayout);
- 	return 0;
-+unreg_misc:
-+	misc_deregister(&wdt977_miscdev);
-+out:
-+	return ret;
- }	
- 
- static void __exit nwwatchdog_exit(void)
- {
-+	remove_proc_entry("watchdog",NULL);
- 	misc_deregister(&wdt977_miscdev);
-+	release_region(wdt_io,2);
-+	/* we might not have gotten it... is this safe? */
- }
- 
- EXPORT_NO_SYMBOLS;
-
---MP_R=WPXR7xs0.n_+h3xqFZ.xc--
+--MP_qGHk/w4z1+295VnzohaAczo--
