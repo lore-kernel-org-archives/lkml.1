@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933622AbXDAQVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbXDAQat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933622AbXDAQVU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 12:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933629AbXDAQVU
+	id S933605AbXDAQat (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 12:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933632AbXDAQat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 12:21:20 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:21253 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933622AbXDAQVT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 12:21:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=cj+wzBrVK6z/koCuJ5WfvR+/VP/RhnJ680BK5xShjX0uP/9U6D2PDCBVvuDzr6fy3JbShJyw/RBZ6qGXTF4amG20mYIYJD90XmJHdar1eV4oca8loEro0HRABLZzN2UU2FRvrZb9ElraEK8eLa5CI/reyEDxQAaBPLLJ7IrjEo0=
-Message-ID: <460FDBF8.4040002@gmail.com>
-Date: Mon, 02 Apr 2007 01:21:12 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, jgarzik@pobox.com,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [-mm patch] make drivers/ata/pata_ali.c:ali_tf_load() static
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org> <20070331204856.GY14134@stusta.de>
-In-Reply-To: <20070331204856.GY14134@stusta.de>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Apr 2007 12:30:49 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1034 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933605AbXDAQas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 12:30:48 -0400
+Date: Sun, 1 Apr 2007 16:30:31 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "Brown, Len" <len.brown@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc5: Thinkpad X60 gets critical thermal shutdowns
+Message-ID: <20070401163031.GA5762@ucw.cz>
+References: <460E0158.7090705@goop.org> <200703311131.54704.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703311131.54704.ak@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Fri, Mar 30, 2007 at 01:05:59AM -0700, Andrew Morton wrote:
->> ...
->> Changes since 2.6.21-rc5-mm2:
->> ...
->> +testing-patch-for-ali-pata-fixes-hopefully-for-the-problems-with-atapi-dma.patch
->>
->>  pata experiment
->> ...
-> 
-> 
-> This patch makes the needlesly global ali_tf_load() static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Hi!
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+> > When I run 2.6.21-rc5 + Andi's x86 patches + paravirt_ops patches, I've
+> > been getting my machine shut down with critical thermal shutdown messages:
+> 
+> Hmm, don't think there's anything either in x86 that would touch this code.
+> But can you double check with plain rc5? 
+> 
+> > Mar 30 23:19:03 localhost kernel: ACPI: Critical trip point
+> > Mar 30 23:19:03 localhost kernel: Critical temperature reached (128 C), shutting down.
+> > Mar 30 23:19:03 localhost kernel: Critical temperature reached (128 C), shutting down.
+> > Mar 30 23:19:03 localhost shutdown[19417]: shutting down for system halt
+> > 
+> > and the machine does feel pretty hot.
+> 
+> Pavel has been complaining about higher power consumption on his laptop versus
+> .20 too.
+
+Yep, sometimes it takes 30W instead of 12W... Anyway, this seems to
+be measurement error. Notice how acpi claims 128C. I do not think cpu
+can work at 128C and hardware should kill us before cpu is that hot.
+
+Are you running lm_sensors?
 
 -- 
-tejun
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
