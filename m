@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933840AbXDASUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933780AbXDAS04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933840AbXDASUA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXDASUA
+	id S933780AbXDAS04 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933795AbXDAS0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:20:00 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:41246 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933816AbXDASTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:19:43 -0400
-Date: Sun, 1 Apr 2007 20:18:12 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Jouni Malinen <jkmaline@cc.hut.fi>, Jeroen Vreeken <pe1rxq@amsat.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 15/16] use-regular-eth-suffix.diff
-In-Reply-To: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704012010530.12316@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
+	Sun, 1 Apr 2007 14:26:55 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2246 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933780AbXDAS0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:26:54 -0400
+Date: Sun, 1 Apr 2007 14:26:51 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Pavel Machek <pavel@ucw.cz>
+cc: David Zeuthen <davidz@redhat.com>, Maxim <maximlevitsky@gmail.com>,
+       Pete Zaitcev <zaitcev@redhat.com>, <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
+In-Reply-To: <20070401175020.GE11146@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.44L0.0704011422460.1054-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 1 Apr 2007, Pavel Machek wrote:
 
-Some radio adapter drivers wrongly(?) name their devices "wlan%d"
-instead of "eth%d" (if you ask me, it should be %u - but not today).
+> Hi!
+> 
+> > > > > The GNOME hath spoken?
+> > > 
+> > > > 	I also thought about that,
+> > > > 	
+> > > > 	I think that the best solution is still to hide connect/disconnect of usb devices from userspace (now it also causes corruption)
+> > > > 	But to refuse suspend with any usb mass storage device connected with mounted systems (and add a module param override
+> > > > 	 for users who know what they are doing)
+> > > > 
+> > > > 	What do you think ?
+> > > 
+> > > Agreed... and notice how easy is to do that in userspace :-))).
+> > 
+> > The problem with refusing to suspend with usb mass storage devices
+> > mounted is just not going to work; the way we want desktop power
+> 
+> Problem is that suspending _with_ removable mass storage devices
+> attached just will not work. User will unplug them, then complain
+> about corruption. Advanced user will unplug them, work with them
+> somewhere else, replug them, then loose filesystem.
+> 
+> Feel free to send patch to teach filesystems to handle this.
 
-Technically, they operate like Ethernet, and in fact, running
-`/sbin/ip a` shows "link/ether" instead of "link/ieee80211".
-This patch renames them back, but I would appreciate some comment,
-explanation or at least link why they actually have wlan%d there.
+Actually what's needed is a Persistent Logical Volume Manager.  With it,
+you could even mount a filesystem on a USB device, unplug the device, plug
+it back into a different port, and still be able to use the filesystem.
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-Cc: Jouni Malinen <jkmaline@cc.hut.fi> (hostap)
-Cc: Jeroen Vreeken <pe1rxq@amsat.org> (zd1201)
+But you're still likely to run into trouble if you unplug a storage
+device, move it to another system and write on it, then plug it back into
+the original system.  The PLVM would somehow have to recognize that the
+data had been changed.  I don't know a foolproof way of doing that.
 
- hostap/hostap_hw.c |    4 ++--
- zd1201.c           |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Alan Stern
 
-Index: linux-2.6.21-rc5/drivers/net/wireless/hostap/hostap_hw.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/net/wireless/hostap/hostap_hw.c
-+++ linux-2.6.21-rc5/drivers/net/wireless/hostap/hostap_hw.c
-@@ -81,10 +81,10 @@ static int dtim_period[MAX_PARM_DEVICES]
- module_param_array(dtim_period, int, NULL, 0444);
- MODULE_PARM_DESC(dtim_period, "DTIM period");
- 
--static char dev_template[16] = "wlan%d";
-+static char dev_template[16] = "eth%d";
- module_param_string(dev_template, dev_template, sizeof(dev_template), 0444);
- MODULE_PARM_DESC(dev_template, "Prefix for network device name (default: "
--		 "wlan%d)");
-+		 "eth%d)");
- 
- #ifdef final_version
- #define EXTRA_EVENTS_WTERR 0
-Index: linux-2.6.21-rc5/drivers/net/wireless/zd1201.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/net/wireless/zd1201.c
-+++ linux-2.6.21-rc5/drivers/net/wireless/zd1201.c
-@@ -1787,7 +1787,7 @@ static int zd1201_probe(struct usb_inter
- 	zd->dev->tx_timeout = zd1201_tx_timeout;
- 	zd->dev->set_multicast_list = zd1201_set_multicast;
- 	zd->dev->set_mac_address = zd1201_set_mac_address;
--	strcpy(zd->dev->name, "wlan%d");
-+	strcpy(zd->dev->name, "eth%d");
- 
- 	err = zd1201_getconfig(zd, ZD1201_RID_CNFOWNMACADDR, 
- 	    zd->dev->dev_addr, zd->dev->addr_len);
-#<EOF>
