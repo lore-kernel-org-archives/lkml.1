@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964893AbXDAUU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbXDAUYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964893AbXDAUU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 16:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964896AbXDAUU1
+	id S1752280AbXDAUYM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 16:24:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXDAUYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 16:20:27 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:48924 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964893AbXDAUU0 (ORCPT
+	Sun, 1 Apr 2007 16:24:12 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:42884 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752094AbXDAUYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 16:20:26 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 1 Apr 2007 13:20:23 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Avi Kivity <avi@argo.co.il>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [patch 13/13] signal/timer/event fds v9 - KAIO eventfd support
- example ...
-In-Reply-To: <461011E0.1020607@argo.co.il>
-Message-ID: <Pine.LNX.4.64.0704011315480.26550@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.16816.1175371778.13>
- <460FCA90.4000003@argo.co.il> <Pine.LNX.4.64.0704011000470.26331@alien.or.mcafeemobile.com>
- <460FFD0F.7080107@argo.co.il> <Pine.LNX.4.64.0704011146380.26550@alien.or.mcafeemobile.com>
- <461011E0.1020607@argo.co.il>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 1 Apr 2007 16:24:11 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Sun, 1 Apr 2007 16:22:42 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Kyle Moffett <mrmacman_g4@mac.com>
+cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 07/16] kconfig-dynamic-frequency.diff
+In-Reply-To: <2E204ACD-E697-42C6-8F01-22C1B7B4A85B@mac.com>
+Message-ID: <Pine.LNX.4.64.0704011620380.18733@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0704012006060.12316@yvahk01.tjqt.qr>
+ <B118D361-9F40-456F-96B7-E61B16B98432@mac.com> <Pine.LNX.4.61.0704012040220.15102@yvahk01.tjqt.qr>
+ <2E204ACD-E697-42C6-8F01-22C1B7B4A85B@mac.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Apr 2007, Avi Kivity wrote:
+On Sun, 1 Apr 2007, Kyle Moffett wrote:
 
-> Davide Libenzi wrote:
-> 
->  
-> > > I think it's a bit too fine grained, and a new system call (io_bindfd()?)
-> > > would be easier to use.  In addition, you would move the eventfd_fget()
-> > > out of
-> > > the submission path.
-> > >     
-> > 
-> > IMO the cost of the eventfd_fget() (have you seen it?) is not worth adding a
-> > new syscall.
-> >   
-> 
-> There's an atomic op there (and another on the way out).  Probably on a busy
-> cacheline.  Still it's probably lost in the noise.
-> 
-> Regardless of that, I think that specifying the fd per submission is wrong.
-> It feels like a setup thing that needs to be done once.  We shouldn't skimp on
-> syscalls, especially on something as important as unifying the async event
-> model.
+> On Apr 01, 2007, at 14:42:59, Jan Engelhardt wrote:
 
-For userspace that wants to do that (that is, having iocbs signaled to an 
-eventfd), do not really matter much. They have their own iocb setup function
-and they'd simply set a flag more and set the resfd.
-The global setting may be good for some users, with others that may 
-complain in having to create another ctx just to set an fd.
-Again, IMO is not worth a new API. What do other folks think?
+> ... The point is to encourage the average kernel builder not to
+> change from one of the default options unless they really know what
+> they're doing.
 
+conversely, if someone truly wants to set a kernel config option to
+some outrageous value, they should have that freedom.  it's called
+"playing."
 
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-
-- Davide
-
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
