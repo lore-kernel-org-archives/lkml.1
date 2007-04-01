@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXDAQEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXDAQEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933602AbXDAQEc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 12:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbXDAQEF
+	id S933585AbXDAQEd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 12:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933584AbXDAQD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 12:04:05 -0400
-Received: from haxent.com ([65.99.219.155]:2906 "EHLO haxent.com"
+	Sun, 1 Apr 2007 12:03:58 -0400
+Received: from haxent.com ([65.99.219.155]:2915 "EHLO haxent.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933543AbXDAQDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 12:03:24 -0400
-Message-Id: <20070401160310.777964000@haxent.com.br>
+	id S933576AbXDAQD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 12:03:29 -0400
+Message-Id: <20070401160311.766553000@haxent.com.br>
 References: <20070401155810.277757000@haxent.com.br>
 User-Agent: quilt/0.46-1
-Date: Sun, 01 Apr 2007 12:58:14 -0300
+Date: Sun, 01 Apr 2007 12:58:18 -0300
 From: davi@haxent.com.br
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Davide Libenzi <davidel@xmailserver.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 04/12] pollfs: pollable signal
-Content-Disposition: inline; filename=pollfs-signal.patch
+Subject: [patch 08/12] pollfs: pollable futex
+Content-Disposition: inline; filename=pollfs-futex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Retrieve multiple per-process signals through a file descriptor.
+Asynchronously wait for FUTEX_WAKE operation on a futex if it still contains
+a given value. There can be only one futex wait per file descriptor. However,
+it can be rearmed (possibly at a different address) anytime.
+
+Building block for pollable semaphores and user-defined events.
 
 Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
 ---
 
-Index: linux-2.6/fs/pollfs/signal.c
+Index: linux-2.6/fs/pollfs/Makefile
+===================================================================
+--- linux-2.6.orig/fs/pollfs/Makefile
++++ linux-2.6/fs/pollfs/Makefile
+@@ -3,3 +3,4 @@ pollfs-y := file.o
+ 
+ pollfs-$(CONFIG_POLLFS_SIGNAL) += signal.o
+ pollfs-$(CONFIG_POLLFS_TIMER) += timer.o
++pollfs-$(CONFIG_POLLFS_FUTEX) += futex.o
+Index: linux-2.6/fs/pollfs/futex.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/fs/pollfs/signal.c
-@@ -0,0 +1,144 @@
++++ linux-2.6/fs/pollfs/futex.c
+@@ -0,0 +1,155 @@
 +/*
-+ * sigtimedwait4, retrieve multiple signals with one call.
++ * pollable futex
 + *
 + * Copyright (C) 2007 Davi E. M. Arnaut
 + *
@@ -47,159 +60,161 @@ Index: linux-2.6/fs/pollfs/signal.c
 +#include <linux/slab.h>
 +#include <linux/err.h>
 +#include <linux/wait.h>
-+#include <asm/uaccess.h>
 +#include <linux/poll.h>
 +#include <linux/pollfs_fs.h>
-+#include <linux/signal.h>
++#include <linux/futex.h>
 +
-+struct pfs_signal {
-+	sigset_t set;
-+	spinlock_t lock;
-+	struct task_struct *task;
++struct futex_event {
++	union {
++		void __user *addr;
++		u64 padding;
++	};
++	int val;
++};
++
++struct pfs_futex {
++	struct futex_q q;
++	struct futex_event fevt;
++	struct mutex mutex;
++	unsigned volatile queued;
 +	struct pfs_file file;
 +};
 +
-+static void inline sigset_adjust(sigset_t *set)
++static ssize_t read(struct pfs_futex *evs, struct futex_event __user *ufevt)
 +{
-+	/* SIGKILL and SIGSTOP cannot be caught, blocked, or ignored */
-+	sigdelsetmask(set, sigmask(SIGKILL) | sigmask(SIGSTOP));
++	int ret;
++	struct futex_event fevt;
 +
-+	/* Signals we don't want to dequeue */
-+	signotset(set);
-+}
++	mutex_lock(&evs->mutex);
 +
-+static ssize_t read(struct pfs_signal *evs, siginfo_t __user *infoup)
-+{
-+	int signo;
-+	siginfo_t info;
++	fevt = evs->fevt;
 +
-+	signo = dequeue_signal_lock(evs->task, &evs->set, &info);
-+	if (!signo)
-+		return -EAGAIN;
++	ret = -EAGAIN;
 +
-+	if (copy_siginfo_to_user(infoup, &info))
++	if (!evs->queued)
++		ret = -EINVAL;
++	else if (list_empty(&evs->q.list))
++		ret = futex_wait_unqueue(&evs->q);
++
++	switch (ret) {
++	case 1:
++		ret = -EAGAIN;
++	case 0:
++		evs->queued = 0;
++	}
++
++	mutex_unlock(&evs->mutex);
++
++	if (ret < 0)
++		return ret;
++
++	if (copy_to_user(ufevt, &fevt, sizeof(fevt)))
 +		return -EFAULT;
 +
 +	return 0;
 +}
 +
-+static ssize_t write(struct pfs_signal *evs, const sigset_t __user *uset)
++static ssize_t write(struct pfs_futex *evs,
++		     const struct futex_event __user *ufevt)
 +{
-+	sigset_t set;
++	int ret;
++	struct futex_event fevt;
 +
-+	if (copy_from_user(&set, uset, sizeof(sigset_t)))
++	if (copy_from_user(&fevt, ufevt, sizeof(fevt)))
 +		return -EFAULT;
 +
-+	sigset_adjust(&set);
++	mutex_lock(&evs->mutex);
 +
-+	spin_lock_irq(&evs->lock);
-+	sigemptyset(&evs->set);
-+	sigorsets(&evs->set, &evs->set, &set);
-+	spin_unlock_irq(&evs->lock);
++	if (evs->queued)
++		futex_wait_unqueue(&evs->q);
 +
-+	return 0;
-+}
++	ret = futex_wait_queue(&evs->q, fevt.addr, fevt.val);
 +
-+static int poll(struct pfs_signal *evs)
-+{
-+	int ret = 0;
-+	sigset_t pending;
-+	unsigned long flags;
++	if (!ret) {
++		evs->queued = 1;
++		evs->fevt = fevt;
++	} else {
++		evs->queued = 0;
++		evs->fevt.addr = NULL;
++	}
 +
-+	rcu_read_lock();
-+
-+	if (!lock_task_sighand(evs->task, &flags))
-+		goto out_unlock;
-+
-+	sigorsets(&pending, &evs->task->pending.signal,
-+		  &evs->task->signal->shared_pending.signal);
-+
-+	unlock_task_sighand(evs->task, &flags);
-+
-+	spin_lock_irqsave(&evs->lock, flags);
-+	signandsets(&pending, &pending, &evs->set);
-+	spin_unlock_irqrestore(&evs->lock, flags);
-+
-+	if (!sigisemptyset(&pending))
-+		ret = POLLIN;
-+
-+out_unlock:
-+	rcu_read_unlock();
++	mutex_unlock(&evs->mutex);
 +
 +	return ret;
 +}
 +
-+static int release(struct pfs_signal *evs)
++static int poll(struct pfs_futex *evs)
 +{
-+	put_task_struct(evs->task);
++	int ret;
++
++	while (!mutex_trylock(&evs->mutex))
++		cpu_relax();
++
++	ret = evs->queued && list_empty(&evs->q.list) ? POLLIN : 0;
++
++	mutex_unlock(&evs->mutex);
++
++	return ret;
++}
++
++static int release(struct pfs_futex *evs)
++{
++	if (evs->queued)
++		futex_wait_unqueue(&evs->q);
++
++	mutex_destroy(&evs->mutex);
++
 +	kfree(evs);
 +
 +	return 0;
 +}
 +
-+static const struct pfs_operations signal_ops = {
-+	.read		= PFS_READ(read, struct pfs_signal, siginfo_t),
-+	.write		= PFS_WRITE(write, struct pfs_signal, sigset_t),
-+	.poll		= PFS_POLL(poll, struct pfs_signal),
-+	.release	= PFS_RELEASE(release, struct pfs_signal),
-+	.rsize		= sizeof(siginfo_t),
-+	.wsize		= sizeof(sigset_t),
++static const struct pfs_operations futex_ops = {
++	.read = PFS_READ(read, struct pfs_futex, struct futex_event),
++	.write = PFS_WRITE(write, struct pfs_futex, struct futex_event),
++	.poll = PFS_POLL(poll, struct pfs_futex),
++	.release = PFS_RELEASE(release, struct pfs_futex),
++	.rsize = sizeof(struct futex_event),
++	.wsize = sizeof(struct futex_event),
 +};
 +
-+asmlinkage long sys_plsignal(const sigset_t __user *uset)
++asmlinkage long sys_plfutex(void)
 +{
 +	long error;
-+	struct pfs_signal *evs;
++	struct pfs_futex *evs;
 +
-+	evs = kmalloc(sizeof(*evs), GFP_KERNEL);
++	evs = kzalloc(sizeof(*evs), GFP_KERNEL);
 +	if (!evs)
 +		return -ENOMEM;
 +
-+	if (copy_from_user(&evs->set, uset, sizeof(sigset_t))) {
-+		kfree(evs);
-+		return -EFAULT;
-+	}
-+
-+	spin_lock_init(&evs->lock);
-+
-+	evs->task = current;
-+	get_task_struct(current);
-+
-+	sigset_adjust(&evs->set);
++	mutex_init(&evs->mutex);
++	init_waitqueue_head(&evs->q.waiters);
 +
 +	evs->file.data = evs;
-+	evs->file.fops = &signal_ops;
-+	evs->file.wait = &evs->task->sigwait;
++	evs->file.fops = &futex_ops;
++	evs->file.wait = &evs->q.waiters;
 +
 +	error = pfs_open(&evs->file);
++
 +	if (error < 0)
 +		release(evs);
 +
 +	return error;
 +}
-Index: linux-2.6/fs/pollfs/Makefile
-===================================================================
---- linux-2.6.orig/fs/pollfs/Makefile
-+++ linux-2.6/fs/pollfs/Makefile
-@@ -1,2 +1,4 @@
- obj-$(CONFIG_POLLFS) += pollfs.o
- pollfs-y := file.o
-+
-+pollfs-$(CONFIG_POLLFS_SIGNAL) += signal.o
 Index: linux-2.6/init/Kconfig
 ===================================================================
 --- linux-2.6.orig/init/Kconfig
 +++ linux-2.6/init/Kconfig
-@@ -469,6 +469,13 @@ config POLLFS
+@@ -483,6 +483,13 @@ config POLLFS_TIMER
  	help
- 	 Pollfs support
+ 	 Pollable timer support
  
-+config POLLFS_SIGNAL
-+	bool "Enable pollfs signal" if EMBEDDED
++config POLLFS_FUTEX
++	bool "Enable pollfs futex" if EMBEDDED
 +	default y
-+	depends on POLLFS
++	depends on POLLFS && FUTEX
 +	help
-+	 Pollable signal support
++	 Pollable futex support
 +
  config SHMEM
  	bool "Use full shmem filesystem" if EMBEDDED
