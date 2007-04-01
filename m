@@ -1,34 +1,57 @@
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S1752715AbXCaXfW (ORCPT <rfc822;ralf@linux-mips.org>); Sat, 31 Mar 2007 19:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbXCaXfW (ORCPT <rfc822;linux-kernel-outgoing>); Sat, 31 Mar 2007 19:35:22 -0400
-Received: from 219-89-195-43.adsl.xtra.co.nz ([219.89.195.43]:21512 "EHLO ght1.GatewayHousingTrust.local" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP id S1752715AbXCaXfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Sat, 31 Mar 2007 19:35:21 -0400
-X-Greylist: delayed 890 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Mar 2007 19:35:21 EDT
-X-eSCM-MailFrom: <suyvkowcvuivfb@adm.usherb.ca>
-X-eSCM-MailFrom: <suyvkowcvuivfb@adm.usherb.ca>
-Date: Sun, 01 Apr 2007 05:10:29 +0500
-From: "Dora Allen" <suyvkowcvuivfb@adm.usherb.ca>
-To: linux-fai@uni-koeln.de
-Cc: linux-future-request@nl.linux.org, linux-hardware-request@nl.linux.org, linux-kernel@vger.kernel.org, linux-legal-request@nl.linux.org, linux-lvm@redhat.com, linux-mac68k-cvs-request@nl.linux.org, linux-mac68k-request@nl.linux.org, linux-mm-www-request@nl.linux.org, linux-mm@kvack.org, linux-openlvm-request@nl.linux.org, linux-programming@linux.or.id, linux-testers-request@nl.linux.org, linux-utf8-request@nl.linux.org, linux-xfs@oss.sgi.com, linux.editor@gmail.com
-Subject: new list of 100k chiropractors
-Message-ID: <6A407EE3.7684.8B15C2D5@localhost>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752820AbXDAEN5@vger.kernel.org>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+	id S1752820AbXDAEN5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 00:13:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbXDAEN5
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 1 Apr 2007 00:13:57 -0400
+Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:35858 "HELO
+	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752820AbXDAENz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 00:13:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=nbQ3EDYaLCz+H0Beu6K1GHSO5Vo+VfTtUXLAOXOXT/Vk590KZmw8zm0fDmeyA1XsHyRsZ4TRIHz/Rh7w3370ywxeD0/0k4jtRh2uDSPRLn8QuIOWYbvmr9+Idab6GmEjJLj5imTiqqt8b1BgiYVNu07yZZPqPiNPqAKUmPr4Oxs=  ;
+X-YMail-OSG: XIp54b0VM1lPxxq5_Uucbnxjt2W5.wdjEk_muDfOEykQOY5jKj8j.DIFs4063nB_XXiAho0UUKCADpdcfgtjzPT6ClqS9CJm1MkIB1KBjnFz1iQ0KpyGiYiyhRpXx4YI9yDfBIkzmxMAJg--
+From: David Brownell <david-b@pacbell.net>
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
+Date: Sat, 31 Mar 2007 21:13:51 -0700
+User-Agent: KMail/1.7.1
+Cc: linux-pm@lists.linux-foundation.org, "Adrian Bunk" <bunk@stusta.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de,
+       "Ingo Molnar" <mingo@elte.hu>, "Jens Axboe" <jens.axboe@oracle.com>,
+       jgarzik@pobox.com, "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "Maxim Levitsky" <maximlevitsky@gmail.com>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703311232.57505.david-b@pacbell.net> <b6a2187b0703312013o6c305e00v829894f215812550@mail.gmail.com>
+In-Reply-To: <b6a2187b0703312013o6c305e00v829894f215812550@mail.gmail.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-X-OriginalArrivalTime: 31 Mar 2007 23:18:57.0531 (UTC) FILETIME=[F51E8CB0:01C773EA]
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703312113.52789.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752715AbXCaXfW@vger.kernel.org>
 
+On Saturday 31 March 2007 8:13 pm, Jeff Chua wrote:
+> On 4/1/07, David Brownell <david-b@pacbell.net> wrote:
+> > for those will all get grouped together ... suspended "very late" and
+> > resumed "very early", regardless of when they get registered.  Pretty
+> > much the driver model parts of what Linus was suggesting; clockevent
+> > bits would still be needed.
+> 
+> I tested your patch with CONFIG_NO_HZ=y, but it still hangs while
+> suspending to disk (before the percent saving).
 
-
-
-Just completed - 100,000 American Chiropractor's Offices
-
-FIELDS: Office Name, Full Address, Phone, Fax, Email and Website
-
-Special Promotional Price: $199 (valid until March 30)--LAST CHANCE- EXTENDED UNTIL APR 3!
-
-contact doctor.data@hotmail.com or call (206) 600-5313 for more info.
-
-For exclusion from future emails please send an email with "exclude" in the subject
-
-
+Of course.  No clockevent updates...
 
