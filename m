@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751023AbXDAXjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750944AbXDAXon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751023AbXDAXjX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 19:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbXDAXjX
+	id S1750944AbXDAXon (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 19:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbXDAXon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 19:39:23 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:58841 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbXDAXjW (ORCPT
+	Sun, 1 Apr 2007 19:44:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:27761 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbXDAXom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 19:39:22 -0400
+	Sun, 1 Apr 2007 19:44:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=HeVJtiKgfNYQEyvpQe+1OkWQgZs/KAh3OLbum8/XgLrgEa7GI4av3EwZLE0DoLALuQtM4YnuxFudd91NmzGKzRZm41z1Eg6t33UZ7D/70dmsmjkHlbm/HlyNFyEWR0zDloK2xIPVfxwsfBQiNP2vA2nzhMiVbooz94UNZX8rqSs=
-Subject: Re: [PATCH resend] vt: fix potential race in VT_WAITACTIVE handler
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: spock@gentoo.org
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <20070401124323.GA4040@spock.one.pl>
-References: <20070401124323.GA4040@spock.one.pl>
-Content-Type: text/plain
-Date: Mon, 02 Apr 2007 07:39:07 +0800
-Message-Id: <1175470747.7772.14.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=BcEDN+mPObmED6hOhJ5NlTZOuEWgUyHoLkmDfrGjw5vONCBlkCzXdDD8nhjRoWLtpijbcVvKXB7A0EOrbDh0fX10otFVwtMpwM0igaS6bV9QGAJBOeQ5j0Vr+2aBfk58ZLfKuCJZTBjT9zXm395zfj3aJrg9x2FVJxNQ/GGuGy8=
+Message-ID: <21d7e9970704011644n3adbef2brc6bfeb288f5d0866@mail.gmail.com>
+Date: Mon, 2 Apr 2007 09:44:41 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       dri-devel <dri-devel@lists.sourceforge.net>
+Subject: drm + 4GB RAM + swiotlb = drm craps out
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-01 at 14:43 +0200, Michal Januszewski wrote:
-> From: Michal Januszewski <spock@gentoo.org>
-> 
-> On a multiprocessor machine the VT_WAITACTIVE ioctl call may return 0
-> if fg_console has already been updated in redraw_screen() but the
-> console switch itself hasn't been completed. Fix this by checking
-> fg_console in vt_waitactive() with the console sem held.
-> 
-> Signed-off-by: Michal Januszewski <spock@gentoo.org>
-Acked-by: Antonino Daplas <adaplas@pol.net>
+Okay I've got a bug reported before and now again about > 4GB + radeon
+blows up the DRM... on Intel hw...
 
-Andrew,
+What the drm currently does for the PCI GART table is it allocates a
+chunk of memory (8MB) with vmalloc_32(), then when it decides to use
+it it goes through every page of it calls pci_map_single() (with
+PCI_DMA_TODEVICE, which is probably wrong...) with every page from the
+vmalloc mapping and puts the bus addresses of the pages into the PCI
+GART table on the GPU.
 
-Drop the old version I sent to you.
+So when swiotlb happens, as you can guess it all falls apart as the
+drm never calls sync functions at any stage...
 
-Tony
+The main problem is the ring buffer and scratch write back, these
+values are read/write from both the CPU and GPU quite a lot, so this
+leads me to think I should really just be using dma_alloc_coherent for
+the whole lot, however this is an 8MB mapping and possibly could be
+getting larger in the future and dynamic as we do dynamic PCIEGART
+support for the radeons...
 
+So I suppose I'm asking for ideas on the "correct" way to do this, and
+perhaps any quick way to patch up the problem I'm seeing now by making
+swiotlb not get involved ....
 
+Regards,
+Dave.
