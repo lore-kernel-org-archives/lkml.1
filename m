@@ -1,52 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbXDAUhL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964931AbXDAUlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752418AbXDAUhL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 16:37:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbXDAUhK
+	id S964931AbXDAUlU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 16:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965026AbXDAUlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 16:37:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:28023 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752418AbXDAUhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 16:37:08 -0400
-Date: Sun, 1 Apr 2007 23:37:02 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Fr??d??ric Riss <frederic.riss@gmail.com>,
-       Tino Keitel <tino.keitel@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       pavel@suse.cz, linux-pm@lists.osdl.org,
-       Soeren Sonnenburg <kernel@nn7.de>, Ingo Molnar <mingo@elte.hu>,
-       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, maximlevitsky@gmail.com
-Subject: Re: [4/4] 2.6.21-rc5: known regressions (v2)
-Message-ID: <20070401203651.GA5072@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	<20070330214956.GQ14134@stusta.de>
-MIME-Version: 1.0
+	Sun, 1 Apr 2007 16:41:20 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:51287 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964931AbXDAUlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 16:41:19 -0400
+Date: Sun, 1 Apr 2007 22:42:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [pp] kbuild: asm-offsets generalized
+Message-ID: <20070401204203.GA10761@uranus.ravnborg.org>
+References: <1171012827.2718.42.camel@localhost.localdomain> <200702091109.20061.ak@muc.de> <1171024771.2718.129.camel@localhost.localdomain> <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz> <20070216155527.GA14687@flower.upol.cz> <20070216155929.GA14713@flower.upol.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070330214956.GQ14134@stusta.de>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070216155929.GA14713@flower.upol.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject    : after resume: X hangs after drawing a couple of windows
->              workaround: clocksource=acpi_pm
-> References : http://lkml.org/lkml/2007/3/8/117
->              http://lkml.org/lkml/2007/3/25/20
->              http://lkml.org/lkml/2007/3/26/151
-> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-> Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> Status     : problem is being debugged
+On Fri, Feb 16, 2007 at 04:59:29PM +0100, Oleg Verych wrote:
+> > > 
+> > > Proposition will follow.
+> > > 
+> > []
+> > 
+> > [patch proposition] kbuild: lguest with private asm-offsets
+> [] 
+> >  * needs "asm-offsets magic demystified, generalized".
+> [] 
+> 
+> [patch proposition] kbuild: asm-offsets generalized
+> 
+>  * scripts/mkCconstants:
+>    - asm-offsets magic demystified, generalized,
+> 
+>  * (hopefully) more readable sed scripts,
+> 
+>  * top Kbuild may be updated...
+> 
+>  * file needs `chmod u+x`, i don't know, how it's done in patch(1).
 
-Seems to be resolved with 399afa4fc9238fbae42116cf25a54671c0e8f56e.
-Thanks Maxim!
+Can I ask you to provide a complete patch that replaces the current
+asm-offset stuff with your more readable script version.
+
+Name the script: mkasm-offset.sh to make a direct connection to 
+the resulting .h file name.
+
+Thanks,
+
+	Sam
 
 
--- 
-MST
+> 
+> pp-by: Oleg Verych
+> ---
+>  scripts/mkCconstants           |  50 +++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 50 insertions(+), 0 deletions(-)
+> 
+> Index: linux-2.6.20/scripts/mkCconstants
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.20/scripts/mkCconstants	2007-02-16 15:33:51.696900750 +0100
+> @@ -0,0 +1,50 @@
+> +#!/bin/sh
+> +
+> +# Input file, where values of interest are stored is produced by
+> +# `cmd_cc_s_c'. It yields calculation of constants, needed in
+> +# assembler modules. Output is a suitable header file.
+> +#
+> +# $1 - input filename;
+> +# $2 - output filename;
+> +# $3 - header file format: "normal" (default), "mips".
+> +
+> +set -e
+> +
+> +[ -z "$1" ] || [ -z "$2" ] && exit 1
+> +
+> +case $3 in
+> +    mips)
+> +	SED_SCRIPT='
+> +/^@@@/{
+> +s/^@@@//;
+> +s/ \#.*\$//;
+> +p;
+> +}'
+> +	;;
+> +    normal | *)
+> +	SED_SCRIPT='
+> +/^->/{
+> +s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:;
+> +s:->::;
+> +p;
+> +}'
+> +	;;
+> +esac
+> +
+> +cat << "EOF"  > $2
+> +#ifndef __ASM_OFFSETS_H__
+> +#define __ASM_OFFSETS_H__
+> +
+> +/*
+> + * This file was generated by scripts/mkCconstants
+> + */
+> +
+> +EOF
+> +
+> +sed -ne "$SED_SCRIPT" $1 >> $2
+> +
+> +cat << "EOF" >> $2
+> +
+> +#endif
+> +
+> +EOF
+> 
+> --
+> -o--=O`C  info emacs : not found
+>  #oo'L O  info make  : not found
+> <___=E M  man gcc    : not found
