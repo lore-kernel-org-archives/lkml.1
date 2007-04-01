@@ -1,76 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbXDAKVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXDAKpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932388AbXDAKVc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 06:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932418AbXDAKVb
+	id S932418AbXDAKpK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 06:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932424AbXDAKpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 06:21:31 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:42066 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932388AbXDAKVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 06:21:30 -0400
-Date: Sun, 1 Apr 2007 13:21:28 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Pedram M <pmessri@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Fwd: kswapd issues + kernel 2.4.21-32.0.1.ELsmp
-Message-ID: <20070401102127.GA16987@localdomain>
-References: <9c9aa5d00703310110s2a21f19l37544c3d46be53c9@mail.gmail.com> <9c9aa5d00703310111w3809fd56t75bcde9d5047ca81@mail.gmail.com>
-MIME-Version: 1.0
+	Sun, 1 Apr 2007 06:45:10 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60747 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932418AbXDAKpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 06:45:08 -0400
+Date: Sun, 1 Apr 2007 12:45:51 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       stable@kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Jan Beulich <jbeulich@novell.com>
+Subject: [PATCH] kbuild: fix dependency generation
+Message-ID: <20070401104551.GA7560@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <9c9aa5d00703310111w3809fd56t75bcde9d5047ca81@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 31, 2007 at 01:11:29AM -0700, Pedram M wrote:
-> Hi,
-> 
-> I've seen this around, and have heard about it in forums and else-where,
-> could somebody enlighten me with more information or with experiences
-> they have had.  Looks like kswapd begins to eat CPU dramatically till the
-> box eventually locks up.
+From: Jan Beulich <jbeulich@novell.com>
 
-My experience with kswapd eating a lot of CPU tells that this particular 
-problem with Linux 2.4 manifests itself on this scenario:
+Commit 2e3646e51b2d6415549b310655df63e7e0d7a080 changed the way
+the split config tree is built, but failed to also adjust fixdep
+accordingly - if changing a config option from or to m, files
+referencing the respective CONFIG_..._MODULE (but not the
+corresponding CONFIG_...) didn't get rebuilt.
 
- * No swap is configured (we are blessed with RAM).
+The problem is that trisate symbol are represent with three
+different symbols:
+SYMBOL=n => no symbol defined
+SYMBOL=y => CONFIG_SYMBOL defined to '1'
+SYMBOL=m => CONFIG_SYMBOL_MODULE defined to '1'
 
-_AND_:
+But conf_split_config do not distingush between the =y and =m case,
+so only the =y case is honoured.
+This is fixed in fixdep so when a CONFIG symbol with
+_MODULE is found we skip that part and only look
+for the CONFIG_SYMBOL version.
 
- * A lot of memory is allocated (for my case: a lot of anonymous pages 
-used for applications).
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
 
-Looking at this problem with kdb, I noticed that the CPU spends a lot 
-of time in swap_out(), even though there are no swap devices...
+The patch can be pulled from:
+ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fix.git
+[Contains only this fix]
 
-So...
+Included below for reference and for -stable.
 
-mm/vmscan.c, replace swap_out with this:
+This should be applied to both latest -rc and stable.
 
-    static int swap_out(zone_t * classzone)
-    {
-            return 0;
-    }
+	Sam
 
-Now, this might raise some eyebrows for those MM gurus reading this
-mail but I assure you I've been doing this for a lot of time (and 
-a lot of machines) on 2.4.27, and it took care of my kswapd issues
-quite nicely.
 
-I hope it helps...
+ scripts/basic/fixdep.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
+diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
+index 668a11a..24144a2 100644
+--- a/scripts/basic/fixdep.c
++++ b/scripts/basic/fixdep.c
+@@ -28,9 +28,11 @@
+  * the dependency on linux/autoconf.h by a dependency on every config
+  * option which is mentioned in any of the listed prequisites.
+  *
+- * To be exact, split-include populates a tree in include/config/,
+- * e.g. include/config/his/driver.h, which contains the #define/#undef
+- * for the CONFIG_HIS_DRIVER option.
++ * kconfig populates a tree in include/config/ with an empty file
++ * for each config symbol and when the configuration is updated
++ * the files representing changed config options are touched
++ * which thern let make pick up the changes and the files that uses
++ * the config symbols are rebuild.
+  *
+  * So if the user changes his CONFIG_HIS_DRIVER option, only the objects
+  * which depend on "include/linux/config/his/driver.h" will be rebuilt,
+@@ -245,6 +247,8 @@ void parse_config_file(char *map, size_t len)
+ 		continue;
+ 
+ 	found:
++		if (!memcmp(q - 7, "_MODULE", 7))
++			q -= 7;
+ 		use_config(p+7, q-p-7);
+ 	}
+ }
 -- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+1.5.1.rc3.20.gaa453
+
