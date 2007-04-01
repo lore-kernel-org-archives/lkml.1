@@ -1,86 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751878AbXDAGy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbXDAHK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751878AbXDAGy0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 02:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXDAGy0
+	id S1752063AbXDAHK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 03:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXDAHK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 02:54:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49562 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751878AbXDAGyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 02:54:25 -0400
-Date: Sun, 1 Apr 2007 08:51:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: amanda-hackers@amanda.org, linux-kernel@vger.kernel.org,
-       amanda-users@amanda.org, Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
-Message-ID: <20070401065101.GA17729@elte.hu>
-References: <200704010100.19016.gene.heskett@verizon.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704010100.19016.gene.heskett@verizon.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 1 Apr 2007 03:10:27 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36612 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752063AbXDAHK0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 03:10:26 -0400
+From: Christoph Lameter <clameter@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       linux-mm@kvack.org, Christoph Lameter <clameter@sgi.com>,
+       Andi Kleen <ak@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+Subject: [PATCH 1/2] Generic Virtual Memmap suport for SPARSEMEM
+Date: Sat, 31 Mar 2007 23:10:24 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Spare Virtual: Virtual Memmap support for SPARSEMEM
 
-* Gene Heskett <gene.heskett@verizon.net> wrote:
+SPARSEMEM is a pretty nice framework that unifies quite a bit of
+code over all the arches. It would be great if it could be the default
+so that we can get rid of various forms of DISCONTIG and other variations
+on memory maps. So far what has hindered this are the additional lookups
+that SPARSEMEM introduces for virt_to_page and page_address. This goes
+so far that the code to do this has to be kept in a separate function
+and cannot be used inline.
 
-> Hi Ingo;
-> 
-> Running 2.6.21-rc5 tonight.
-> 
-> It appears that as of 2.6.21-rc5, (actually anything with a 2.6.21 in 
-> its version string) amanda is still a loser. [...]
+This patch introduces virtual memmap support for sparsemem. virt_to_page
+page_address and consorts become simple shift/add operations. No page flag
+fields, no table lookups nothing involving memory is required.
 
-here 'is a loser' means: "tries to back up way too much stuff instead of 
-doing a nice incremental backup like it does on 2.6.20.4", correct?
+The two key operations pfn_to_page and page_to_page become:
 
-since it appears to be caused by a kernel change, this is a serious 
-regression in v2.6.21-to-be.
+#define pfn_to_page(pfn)     (vmemmap + (pfn))
+#define page_to_pfn(page)    ((page) - vmemmap)
 
-> Good, 2.6.20.4 was running
-> sendsize.20070331000507.debug:sendsize[762]: time 248.361: getting size via gnutar for /usr/music level 0
-> sendsize.20070331000507.debug:sendsize[762]: estimate time for /usr/music level 0: 1.239
-> sendsize.20070331000507.debug:sendsize[762]: estimate size for /usr/music level 0: 2466050 KB
-> sendsize.20070331000507.debug:sendsize[762]: time 249.605: getting size via gnutar for /usr/music level 1
-> sendsize.20070331000507.debug:sendsize[762]: estimate time for /usr/music level 1: 0.027
-> sendsize.20070331000507.debug:sendsize[762]: estimate size for /usr/music level 1: 80 KB
-> 
-> Bad, 2.6.21-rc5 is running
-> sendsize.20070401000504.debug:sendsize[18465]: time 167.371: getting size via gnutar for /usr/music level 0
-> sendsize.20070401000504.debug:sendsize[18465]: estimate time for /usr/music level 0: 0.398
-> sendsize.20070401000504.debug:sendsize[18465]: estimate size for /usr/music level 0: 2466050 KB
-> sendsize.20070401000504.debug:sendsize[18465]: time 167.773: getting size via gnutar for /usr/music level 1
-> sendsize.20070401000504.debug:sendsize[18465]: estimate time for /usr/music level 1: 0.049
-> sendsize.20070401000504.debug:sendsize[18465]: estimate size for /usr/music level 1: 2448290 KB
-> 
-> Yesterdays run, dated 20070331000507 were correct as that directory 
-> hasn't been write accessed in a couple of months.
-> 
-> Today's, dated 20070401000504, shows totally bogus figures for exactly 
-> the same data.
+In order for this to work we will have to use a virtual mapping.
+These are usually for free since kernel memory is already mapped
+via a 1-1 mapping requiring a page tabld. The virtual mapping must
+be big enough to span all of memory that an arch support which may
+make a virtual memmap difficult to use on funky 32 bit platforms
+that support 36 address bits.
 
-'totally bogus figures' needs to be analyzed further. What system call 
-or library calls returns incorrect data?
+However, if there is enough virtual space available and the arch
+already maps its 1-1 kernel space using TLBs (f.e. true of IA64
+and x86_64) then this technique makes sparsemem lookups as efficient
+as CONFIG_FLATMEM.
 
-> This effect I have isolated down to something in the 31 patches from 
-> 2.6.20.4 to 2.6.20.5-rc1, but I'm going to need additional guidance in 
-> setting up the bisect to find it.  If indeed its a kernel problem.
-> 
-> This same effect has been present in any and every 2.6.21.* release.
+Maybe this patch will allow us to make SPARSEMEM the default
+configuration that will work on UP, SMP and NUMA on most platforms?
+Then we may hopefully be able to remove the various forms of support
+for FLATMEM, DISCONTIG etc etc.
 
-maybe it's some sort of timestamp problem, on the FS level?
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-	Ingo
+Index: linux-2.6.21-rc5-mm2/include/asm-generic/memory_model.h
+===================================================================
+--- linux-2.6.21-rc5-mm2.orig/include/asm-generic/memory_model.h	2007-03-31 22:47:14.000000000 -0700
++++ linux-2.6.21-rc5-mm2/include/asm-generic/memory_model.h	2007-03-31 22:59:35.000000000 -0700
+@@ -47,6 +47,13 @@
+ })
+ 
+ #elif defined(CONFIG_SPARSEMEM)
++#ifdef CONFIG_SPARSE_VIRTUAL
++/*
++ * We have a virtual memmap that makes lookups very simple
++ */
++#define __pfn_to_page(pfn)	(vmemmap + (pfn))
++#define __page_to_pfn(page)	((page) - vmemmap)
++#else
+ /*
+  * Note: section's mem_map is encorded to reflect its start_pfn.
+  * section[i].section_mem_map == mem_map's address - start_pfn;
+@@ -62,6 +69,7 @@
+ 	struct mem_section *__sec = __pfn_to_section(__pfn);	\
+ 	__section_mem_map_addr(__sec) + __pfn;		\
+ })
++#endif
+ #endif /* CONFIG_FLATMEM/DISCONTIGMEM/SPARSEMEM */
+ 
+ #ifdef CONFIG_OUT_OF_LINE_PFN_TO_PAGE
+Index: linux-2.6.21-rc5-mm2/mm/sparse.c
+===================================================================
+--- linux-2.6.21-rc5-mm2.orig/mm/sparse.c	2007-03-31 22:47:14.000000000 -0700
++++ linux-2.6.21-rc5-mm2/mm/sparse.c	2007-03-31 22:59:35.000000000 -0700
+@@ -9,6 +9,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/vmalloc.h>
+ #include <asm/dma.h>
++#include <asm/pgalloc.h>
+ 
+ /*
+  * Permanent SPARSEMEM data:
+@@ -101,7 +102,7 @@ static inline int sparse_index_init(unsi
+ 
+ /*
+  * Although written for the SPARSEMEM_EXTREME case, this happens
+- * to also work for the flat array case becase
++ * to also work for the flat array case because
+  * NR_SECTION_ROOTS==NR_MEM_SECTIONS.
+  */
+ int __section_nr(struct mem_section* ms)
+@@ -211,6 +212,90 @@ static int sparse_init_one_section(struc
+ 	return 1;
+ }
+ 
++#ifdef CONFIG_SPARSE_VIRTUAL
++
++void *vmemmap_alloc_block(unsigned long size, int node)
++{
++	if (slab_is_available()) {
++		struct page *page =
++			alloc_pages_node(node, GFP_KERNEL,
++				get_order(size));
++
++		BUG_ON(!page);
++		return page_address(page);
++	} else
++		return __alloc_bootmem_node(NODE_DATA(node), size, size,
++					__pa(MAX_DMA_ADDRESS));
++}
++
++
++#ifndef ARCH_POPULATES_VIRTUAL_MEMMAP
++/*
++ * Virtual memmap populate functionality for architectures that support
++ * PMDs for huge pages like i386, x86_64 etc.
++ */
++static void vmemmap_pop_pmd(pud_t *pud, unsigned long addr,
++				unsigned long end, int node)
++{
++	pmd_t *pmd;
++
++	end = pmd_addr_end(addr, end);
++
++	for (pmd = pmd_offset(pud, addr); addr < end;
++			pmd++, addr += PMD_SIZE) {
++  		if (pmd_none(*pmd)) {
++  			void *block;
++			pte_t pte;
++
++			block = vmemmap_alloc_block(PMD_SIZE, node);
++			pte = pfn_pte(__pa(block) >> PAGE_SHIFT,
++						PAGE_KERNEL);
++			pte_mkdirty(pte);
++			pte_mkwrite(pte);
++			pte_mkyoung(pte);
++			mk_pte_huge(pte);
++			set_pmd(pmd, __pmd(pte_val(pte)));
++		}
++	}
++}
++
++static void vmemmap_pop_pud(pgd_t *pgd, unsigned long addr,
++					unsigned long end, int node)
++{
++	pud_t *pud;
++
++	end = pud_addr_end(addr, end);
++	for (pud = pud_offset(pgd, addr); addr < end;
++				pud++, addr += PUD_SIZE) {
++
++		if (pud_none(*pud))
++			pud_populate(&init_mm, pud,
++				vmemmap_alloc_block(PAGE_SIZE, node));
++
++		vmemmap_pop_pmd(pud, addr, end, node);
++	}
++}
++
++static void vmemmap_populate(struct page *start_page, unsigned long nr,
++								int node)
++{
++	pgd_t *pgd;
++	unsigned long addr = (unsigned long)(start_page);
++	unsigned long end = pgd_addr_end(addr,
++			(unsigned long)((start_page + nr)));
++
++	for (pgd = pgd_offset_k(addr); addr < end;
++				pgd++, addr += PGDIR_SIZE) {
++
++		if (pgd_none(*pgd))
++			pgd_populate(&init_mm, pgd,
++				vmemmap_alloc_block(PAGE_SIZE, node));
++		vmemmap_pop_pud(pgd, addr, end, node);
++	}
++}
++#endif
++#endif /* CONFIG_SPARSE_VIRTUAL */
++
+ static struct page *sparse_early_mem_map_alloc(unsigned long pnum)
+ {
+ 	struct page *map;
+@@ -221,8 +306,13 @@ static struct page *sparse_early_mem_map
+ 	if (map)
+ 		return map;
+ 
++#ifdef CONFIG_SPARSE_VIRTUAL
++	map = pfn_to_page(pnum * PAGES_PER_SECTION);
++	vmemmap_populate(map, PAGES_PER_SECTION, nid);
++#else
+ 	map = alloc_bootmem_node(NODE_DATA(nid),
+ 			sizeof(struct page) * PAGES_PER_SECTION);
++#endif
+ 	if (map)
+ 		return map;
+ 
+Index: linux-2.6.21-rc5-mm2/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.21-rc5-mm2.orig/include/linux/mmzone.h	2007-03-31 22:47:14.000000000 -0700
++++ linux-2.6.21-rc5-mm2/include/linux/mmzone.h	2007-03-31 23:01:03.000000000 -0700
+@@ -836,6 +836,8 @@ void sparse_init(void);
+ 
+ void memory_present(int nid, unsigned long start, unsigned long end);
+ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
++void vmemmap_populate(struct page *start_page, unsigned long pages, int node);
++void *vmemmap_alloc_block(unsigned long size, int node);
+ 
+ /*
+  * If it is possible to have holes within a MAX_ORDER_NR_PAGES, then we
