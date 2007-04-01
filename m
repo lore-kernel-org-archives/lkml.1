@@ -1,82 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933291AbXDAOjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933297AbXDAOjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933291AbXDAOjB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 10:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXDAOiz
+	id S933297AbXDAOjs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 10:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbXDAOfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 10:38:55 -0400
-Received: from il.qumranet.com ([82.166.9.18]:47541 "EHLO il.qumranet.com"
+	Sun, 1 Apr 2007 10:35:44 -0400
+Received: from il.qumranet.com ([82.166.9.18]:47530 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933291AbXDAOfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 10:35:45 -0400
+	id S933102AbXDAOfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 10:35:40 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Dor Laor <dor.laor@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 37/41] KVM: Add mmu cache clear function
-Date: Sun,  1 Apr 2007 17:35:34 +0300
-Message-Id: <1175438139458-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 00/41] kvm updates for 2.6.22
+Date: Sun,  1 Apr 2007 17:34:57 +0300
+Message-Id: <1175438138288-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.5
-In-Reply-To: <11754381392948-git-send-email-avi@qumranet.com>
-References: <1175438138288-git-send-email-avi@qumranet.com> <11754381381990-git-send-email-avi@qumranet.com> <11754381384009-git-send-email-avi@qumranet.com> <1175438138805-git-send-email-avi@qumranet.com> <11754381382515-git-send-email-avi@qumranet.com> <11754381383730-git-send-email-avi@qumranet.com> <11754381383144-git-send-email-avi@qumranet.com> <11754381381597-git-send-email-avi@qumranet.com> <1175438139242-git-send-email-avi@qumranet.com> <1175438139494-git-send-email-avi@qumranet.com> <11754381392046-git-send-email-avi@qumranet.com> <1175438139795-git-send-email-avi@qumranet.com> <1175438139430-git-send-email-avi@qumranet.com> <11754381393496-git-send-email-avi@qumranet.com> <11754381391514-git-send-email-avi@qumranet.com> <11754381392382-git-send-email-avi@qumranet.com> <11754381392358-git-send-email-avi@qumranet.com> <1175438139872-git-send-email-avi@qumranet.com> <11754381392921-git-send-email-avi@qumranet.com> <117543813978-git-send-email-avi@qumranet.com> <117543
- 81393061-git-send-email-avi@qumranet.com> <11754381392186-git-send-email-avi@qumranet.com> <117543813916-git-send-email-avi@qumranet.com> <1175438139530-git-send-email-avi@qumranet.com> <1175438139960-git-send-email-avi@qumranet.com> <1175438139816-git-send-email-avi@qumranet.com> <1175438139141-git-send-email-avi@qumranet.com> <11754381391993-git-send-email-avi@qumranet.com> <1175438139877-git-send-email-avi@qumranet.com> <11754381391119-git-send-email-avi@qumranet.com> <1175438139312-git-send-email-avi@qumranet.com> <11754381392527-git-send-email-avi@qumranet.com> <11754381393184-git-send-email-avi@qumranet.com> <1175438139249-git-send-email-avi@qumranet.com> <11754381391161-git-send-email-avi@qumranet.com> <11754381393714-git-send-email-avi@qumranet.com> <11754381392948-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dor Laor <dor.laor@qumranet.com>
+Following is my current 2.6.22 kvm queue.  It contains userspace interface
+updates, improved guest support, cleanups, and plain bugfixes.  It will
+likely grow slightly by the time the merge window opens.
 
-Functions that play around with the physical memory map
-need a way to clear mappings to possibly nonexistent or
-invalid memory.  Both the mmu cache and the processor tlb
-are cleared.
+Avi Kivity (34):
+      KVM: Use own minor number
+      KVM: Export <linux/kvm.h>
+      KVM: Fix bogus sign extension in mmu mapping audit
+      KVM: Use a shared page for kernel/user communication when runing a vcpu
+      KVM: Do not communicate to userspace through cpu registers during PIO
+      KVM: Handle cpuid in the kernel instead of punting to userspace
+      KVM: Remove the 'emulated' field from the userspace interface
+      KVM: Remove minor wart from KVM_CREATE_VCPU ioctl
+      KVM: Renumber ioctls
+      KVM: Add method to check for backwards-compatible API extensions
+      KVM: Allow userspace to process hypercalls which have no kernel handler
+      KVM: Fold kvm_run::exit_type into kvm_run::exit_reason
+      KVM: Add a special exit reason when exiting due to an interrupt
+      KVM: Initialize the apic_base msr on svm too
+      KVM: Add guest mode signal mask
+      KVM: Allow kernel to select size of mmap() buffer
+      KVM: Future-proof argument-less ioctls
+      KVM: Avoid guest virtual addresses in string pio userspace interface
+      KVM: MMU: Remove unnecessary check for pdptr access
+      KVM: MMU: Remove global pte tracking
+      KVM: Workaround vmx inability to virtualize the reset state
+      KVM: Remove set_cr0_no_modeswitch() arch op
+      KVM: Modify guest segments after potentially switching modes
+      KVM: Hack real-mode segments on vmx from KVM_SET_SREGS
+      KVM: Don't allow the guest to turn off the cpu cache
+      KVM: Remove unused and write-only variables
+      KVM: MMU: Fix hugepage pdes mapping same physical address with different access
+      KVM: SVM: Ensure timestamp counter monotonicity
+      KVM: Use list_move()
+      KVM: Remove debug message
+      KVM: x86 emulator: fix bit string operations operand size
+      KVM: Simply gfn_to_page()
+      KVM: Add physical memory aliasing feature
+      KVM: Add fpu get/set operations
 
-Signed-off-by: Dor Laor <dor.laor@qumranet.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- drivers/kvm/kvm.h |    1 +
- drivers/kvm/mmu.c |   17 +++++++++++++++++
- 2 files changed, 18 insertions(+), 0 deletions(-)
+Dor Laor (3):
+      KVM: Fix guest register corruption on paravirt hypercall
+      KVM: Use the generic skip_emulated_instruction() in hypercall code
+      KVM: Add mmu cache clear function
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index 6d0bd7a..59357be 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -430,6 +430,7 @@ int kvm_mmu_setup(struct kvm_vcpu *vcpu);
- 
- int kvm_mmu_reset_context(struct kvm_vcpu *vcpu);
- void kvm_mmu_slot_remove_write_access(struct kvm_vcpu *vcpu, int slot);
-+void kvm_mmu_zap_all(struct kvm_vcpu *vcpu);
- 
- hpa_t gpa_to_hpa(struct kvm_vcpu *vcpu, gpa_t gpa);
- #define HPA_MSB ((sizeof(hpa_t) * 8) - 1)
-diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index c2487b6..707f63c 100644
---- a/drivers/kvm/mmu.c
-+++ b/drivers/kvm/mmu.c
-@@ -1313,6 +1313,23 @@ void kvm_mmu_slot_remove_write_access(struct kvm_vcpu *vcpu, int slot)
- 	}
- }
- 
-+void kvm_mmu_zap_all(struct kvm_vcpu *vcpu)
-+{
-+	destroy_kvm_mmu(vcpu);
-+
-+	while (!list_empty(&vcpu->kvm->active_mmu_pages)) {
-+		struct kvm_mmu_page *page;
-+
-+		page = container_of(vcpu->kvm->active_mmu_pages.next,
-+				    struct kvm_mmu_page, link);
-+		kvm_mmu_zap_page(vcpu, page);
-+	}
-+
-+	mmu_free_memory_caches(vcpu);
-+	kvm_arch_ops->tlb_flush(vcpu);
-+	init_kvm_mmu(vcpu);
-+}
-+
- #ifdef AUDIT
- 
- static const char *audit_msg;
--- 
-1.5.0.5
+Joerg Roedel (2):
+      KVM: SVM: forbid guest to execute monitor/mwait
+      KVM: SVM: enable LBRV virtualization if available
 
+Michal Piotrowski (1):
+      KVM: Remove unused function
+
+Sergey Kiselev (1):
+      KVM: Handle writes to MCG_STATUS msr
+
+ drivers/kvm/kvm.h          |   57 +++-
+ drivers/kvm/kvm_main.c     |  649 ++++++++++++++++++++++++++++++++++++++++----
+ drivers/kvm/kvm_svm.h      |    2 -
+ drivers/kvm/mmu.c          |   69 +++--
+ drivers/kvm/paging_tmpl.h  |   10 +-
+ drivers/kvm/svm.c          |  111 +++++---
+ drivers/kvm/svm.h          |    6 +
+ drivers/kvm/vmx.c          |   88 +++----
+ drivers/kvm/x86_emulate.c  |    5 +-
+ include/linux/Kbuild       |    1 +
+ include/linux/kvm.h        |  135 +++++++---
+ include/linux/miscdevice.h |    1 +
+ 12 files changed, 898 insertions(+), 236 deletions(-)
