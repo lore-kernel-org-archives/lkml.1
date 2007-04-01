@@ -1,105 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXDAOrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933251AbXDAOsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933175AbXDAOrg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 10:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933277AbXDAOrV
+	id S933251AbXDAOsG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 10:48:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933227AbXDAOrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 10:47:21 -0400
-Received: from il.qumranet.com ([82.166.9.18]:47554 "EHLO il.qumranet.com"
+	Sun, 1 Apr 2007 10:47:39 -0400
+Received: from il.qumranet.com ([82.166.9.18]:47552 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933175AbXDAOfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933152AbXDAOfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 1 Apr 2007 10:35:42 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 13/41] KVM: Allow userspace to process hypercalls which have no kernel handler
-Date: Sun,  1 Apr 2007 17:35:10 +0300
-Message-Id: <11754381393496-git-send-email-avi@qumranet.com>
+Subject: [PATCH 11/41] KVM: Renumber ioctls
+Date: Sun,  1 Apr 2007 17:35:08 +0300
+Message-Id: <1175438139795-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.5
-In-Reply-To: <1175438139430-git-send-email-avi@qumranet.com>
-References: <1175438138288-git-send-email-avi@qumranet.com> <11754381381990-git-send-email-avi@qumranet.com> <11754381384009-git-send-email-avi@qumranet.com> <1175438138805-git-send-email-avi@qumranet.com> <11754381382515-git-send-email-avi@qumranet.com> <11754381383730-git-send-email-avi@qumranet.com> <11754381383144-git-send-email-avi@qumranet.com> <11754381381597-git-send-email-avi@qumranet.com> <1175438139242-git-send-email-avi@qumranet.com> <1175438139494-git-send-email-avi@qumranet.com> <11754381392046-git-send-email-avi@qumranet.com> <1175438139795-git-send-email-avi@qumranet.com> <1175438139430-git-send-email-avi@qumranet.com>
+In-Reply-To: <11754381392046-git-send-email-avi@qumranet.com>
+References: <1175438138288-git-send-email-avi@qumranet.com> <11754381381990-git-send-email-avi@qumranet.com> <11754381384009-git-send-email-avi@qumranet.com> <1175438138805-git-send-email-avi@qumranet.com> <11754381382515-git-send-email-avi@qumranet.com> <11754381383730-git-send-email-avi@qumranet.com> <11754381383144-git-send-email-avi@qumranet.com> <11754381381597-git-send-email-avi@qumranet.com> <1175438139242-git-send-email-avi@qumranet.com> <1175438139494-git-send-email-avi@qumranet.com> <11754381392046-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is useful for paravirtualized graphics devices, for example.
+The recent changes have left the ioctl numbers in complete disarray.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm_main.c |   18 +++++++++++++++++-
- include/linux/kvm.h    |   10 +++++++++-
- 2 files changed, 26 insertions(+), 2 deletions(-)
+ include/linux/kvm.h |   34 +++++++++++++++++-----------------
+ 1 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 39cf8fd..de93117 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1203,7 +1203,16 @@ int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run)
- 	}
- 	switch (nr) {
- 	default:
--		;
-+		run->hypercall.args[0] = a0;
-+		run->hypercall.args[1] = a1;
-+		run->hypercall.args[2] = a2;
-+		run->hypercall.args[3] = a3;
-+		run->hypercall.args[4] = a4;
-+		run->hypercall.args[5] = a5;
-+		run->hypercall.ret = ret;
-+		run->hypercall.longmode = is_long_mode(vcpu);
-+		kvm_arch_ops->decache_regs(vcpu);
-+		return 0;
- 	}
- 	vcpu->regs[VCPU_REGS_RAX] = ret;
- 	kvm_arch_ops->decache_regs(vcpu);
-@@ -1599,6 +1608,13 @@ static int kvm_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 
- 	vcpu->mmio_needed = 0;
- 
-+	if (kvm_run->exit_type == KVM_EXIT_TYPE_VM_EXIT
-+	    && kvm_run->exit_reason == KVM_EXIT_HYPERCALL) {
-+		kvm_arch_ops->cache_regs(vcpu);
-+		vcpu->regs[VCPU_REGS_RAX] = kvm_run->hypercall.ret;
-+		kvm_arch_ops->decache_regs(vcpu);
-+	}
-+
- 	r = kvm_arch_ops->run(vcpu, kvm_run);
- 
- 	vcpu_put(vcpu);
 diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index c93cf53..9151ebf 100644
+index d89189a..93472da 100644
 --- a/include/linux/kvm.h
 +++ b/include/linux/kvm.h
-@@ -11,7 +11,7 @@
- #include <asm/types.h>
- #include <linux/ioctl.h>
- 
--#define KVM_API_VERSION 6
-+#define KVM_API_VERSION 7
+@@ -229,34 +229,34 @@ struct kvm_cpuid {
+ /*
+  * ioctls for /dev/kvm fds:
+  */
+-#define KVM_GET_API_VERSION       _IO(KVMIO, 1)
+-#define KVM_CREATE_VM             _IO(KVMIO, 2) /* returns a VM fd */
+-#define KVM_GET_MSR_INDEX_LIST    _IOWR(KVMIO, 15, struct kvm_msr_list)
++#define KVM_GET_API_VERSION       _IO(KVMIO,   0x00)
++#define KVM_CREATE_VM             _IO(KVMIO,   0x01) /* returns a VM fd */
++#define KVM_GET_MSR_INDEX_LIST    _IOWR(KVMIO, 0x02, struct kvm_msr_list)
  
  /*
-  * Architectural interrupt line count, and the size of the bitmap needed
-@@ -41,6 +41,7 @@ enum kvm_exit_reason {
- 	KVM_EXIT_UNKNOWN          = 0,
- 	KVM_EXIT_EXCEPTION        = 1,
- 	KVM_EXIT_IO               = 2,
-+	KVM_EXIT_HYPERCALL        = 3,
- 	KVM_EXIT_DEBUG            = 4,
- 	KVM_EXIT_HLT              = 5,
- 	KVM_EXIT_MMIO             = 6,
-@@ -103,6 +104,13 @@ struct kvm_run {
- 			__u32 len;
- 			__u8  is_write;
- 		} mmio;
-+		/* KVM_EXIT_HYPERCALL */
-+		struct {
-+			__u64 args[6];
-+			__u64 ret;
-+			__u32 longmode;
-+			__u32 pad;
-+		} hypercall;
- 	};
- };
+  * ioctls for VM fds
+  */
+-#define KVM_SET_MEMORY_REGION     _IOW(KVMIO, 10, struct kvm_memory_region)
++#define KVM_SET_MEMORY_REGION     _IOW(KVMIO, 0x40, struct kvm_memory_region)
+ /*
+  * KVM_CREATE_VCPU receives as a parameter the vcpu slot, and returns
+  * a vcpu fd.
+  */
+-#define KVM_CREATE_VCPU           _IO(KVMIO, 11)
+-#define KVM_GET_DIRTY_LOG         _IOW(KVMIO, 12, struct kvm_dirty_log)
++#define KVM_CREATE_VCPU           _IO(KVMIO,  0x41)
++#define KVM_GET_DIRTY_LOG         _IOW(KVMIO, 0x42, struct kvm_dirty_log)
  
+ /*
+  * ioctls for vcpu fds
+  */
+-#define KVM_RUN                   _IO(KVMIO, 16)
+-#define KVM_GET_REGS              _IOR(KVMIO, 3, struct kvm_regs)
+-#define KVM_SET_REGS              _IOW(KVMIO, 4, struct kvm_regs)
+-#define KVM_GET_SREGS             _IOR(KVMIO, 5, struct kvm_sregs)
+-#define KVM_SET_SREGS             _IOW(KVMIO, 6, struct kvm_sregs)
+-#define KVM_TRANSLATE             _IOWR(KVMIO, 7, struct kvm_translation)
+-#define KVM_INTERRUPT             _IOW(KVMIO, 8, struct kvm_interrupt)
+-#define KVM_DEBUG_GUEST           _IOW(KVMIO, 9, struct kvm_debug_guest)
+-#define KVM_GET_MSRS              _IOWR(KVMIO, 13, struct kvm_msrs)
+-#define KVM_SET_MSRS              _IOW(KVMIO, 14, struct kvm_msrs)
+-#define KVM_SET_CPUID             _IOW(KVMIO, 17, struct kvm_cpuid)
++#define KVM_RUN                   _IO(KVMIO,   0x80)
++#define KVM_GET_REGS              _IOR(KVMIO,  0x81, struct kvm_regs)
++#define KVM_SET_REGS              _IOW(KVMIO,  0x82, struct kvm_regs)
++#define KVM_GET_SREGS             _IOR(KVMIO,  0x83, struct kvm_sregs)
++#define KVM_SET_SREGS             _IOW(KVMIO,  0x84, struct kvm_sregs)
++#define KVM_TRANSLATE             _IOWR(KVMIO, 0x85, struct kvm_translation)
++#define KVM_INTERRUPT             _IOW(KVMIO,  0x86, struct kvm_interrupt)
++#define KVM_DEBUG_GUEST           _IOW(KVMIO,  0x87, struct kvm_debug_guest)
++#define KVM_GET_MSRS              _IOWR(KVMIO, 0x88, struct kvm_msrs)
++#define KVM_SET_MSRS              _IOW(KVMIO,  0x89, struct kvm_msrs)
++#define KVM_SET_CPUID             _IOW(KVMIO,  0x8a, struct kvm_cpuid)
+ 
+ #endif
 -- 
 1.5.0.5
 
