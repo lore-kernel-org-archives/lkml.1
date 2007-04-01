@@ -1,161 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964796AbXDATUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964785AbXDATUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964796AbXDATUS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 15:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964785AbXDATUS
+	id S964785AbXDATUw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 15:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933932AbXDATUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 15:20:18 -0400
-Received: from rwcrmhc15.comcast.net ([204.127.192.85]:61786 "EHLO
-	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933920AbXDATUQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 15:20:16 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Apr 2007 15:20:16 EDT
-Message-ID: <461004CE.1030009@ieee.org>
-Date: Sun, 01 Apr 2007 15:15:26 -0400
-From: Dave Sperry <dave_sperry@ieee.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sun, 1 Apr 2007 15:20:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50358 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933928AbXDATUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 15:20:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Sun, 1 Apr 2007 21:23:54 +0200
+User-Agent: KMail/1.9.5
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+References: <460B6E4B.3060004@gmail.com> <200703291639.41515.rjw@sisk.pl> <460FF726.7090601@gmail.com>
+In-Reply-To: <460FF726.7090601@gmail.com>
 MIME-Version: 1.0
-To: linux-rt-users@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: Poor UDP performance using 2.6.21-rc5-rt5
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704012123.54797.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-I have a dual core Opteron machine that exhibits poor UDP performance 
-(RT consumes more than 2X cpu) with the 2.6.21-rc5-rt5 as compared to 
-2.6.21-rc5. Top shows the IRQ handler consuming a lot of CPU.
+On Sunday, 1 April 2007 20:17, Jiri Slaby wrote:
+> Rafael J. Wysocki napsal(a):
+> > On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
+> >> Hi,
+> >>
+> >> I'm getting this while trying to swsups the machine in -rc5, -rc4 is fine:
+> >>
+> >> Disabling non-boot CPUs
+> >> CPU 1 is now offline
+> >> SMP alternatives: switching to UP code
+> >> CPU1 is down
+> >> swsusp: critical section:
+> >> swsusp: Need to copy 131380 pages
+> >> swsusp: Not enough free memory
+> >> Error -12 suspending
+> >> Enabling non-boot CPUs ...
+> >>
+> >> # cat /sys/power/resume
+> >> 8:6
+> >> # cat /proc/swaps
+> >> Filename                                Type            Size    Used    Priority
+> >> /dev/sda6                               partition       1004020 0       -1
+> >>
+> >> Any other info needed?
+> > 
+> > Beats me.  There were no changes that could result in such a thing between
+> > -rc4 and -rc5, at least not in the swsusp department.
+> > 
+> > Could you please try to bisect?
+> 
+> Hm, there is some kind of magic.
+> 
+> First, I have fglrx, that taints kernel. If I use vesa drv with X, it
+> doesn't resume the card. If I try console, it doesn't resume it too.
+> 
+> fglrx + suspend.sf.net seems to work -- 3 unsuccesfull disk >
+> sys/power/state and after s2dsk with backspace during suspend, disk >
+> sys/power/state works. But this sceniario happened only once...
+> 
+> Next, it was so early to utter -rc4 is good, it happens there too, so it's
+> not a regression.
+> 
+> I have no idea what's wrong, is there any possibility to figure out, what
+> happens (esp. kick fglrx off)? Disable higmem? Try UP?
 
-The mother board is a Supermicro H8DME-2 with one dual core Opteron 
-installed. The networking is provided by the on board nVidia MCP55Pro chip.
+Well, I suspect this is somehow related to highmem, so you can try to check
+if disabling highmem helps.
 
-The RT test is done using netperf 2.4.3 with the server on an IBM LS20 
-blade running RHEL4U2 and the Supermicro running netperf under RHEL5 
-with 2.6.21-rc5-rt5. 
+Still, I'd like to understand why it occurs (I can't reproduce it, so far) and
+I have a theory.  Namely, I think that on your system the initial image size
+is greater than 50% of RAM (you can check that by running
+"cat /sys/power/image_size" before you suspend for the first time after a
+fresh boot) and the memory shrinker fails to do its job in that case.
 
-The Non-RT test was done on the exact same setup except 2.6.21-rc5-rt5 
-was loaded on the SuperMicro board.
+What s2disk does is to set image_size below 50% of the RAM size and that's why
+the subsequent "echo disk > ..." suspend works too.
 
-Cyclesoak was used to measure CPU utilization in all cases.
+As a workaround, you can try to change the initial image size so that it's
+smaller than a half of the RAM size.  If that works, I'd like to send you a
+debug patch, if you don't mind. :-)
 
-
-
-Here are the RT results
-########################################################3
-## 2.6.21-rc5-rt5
-#######################################################
-$ !netper
-netperf -l 100 -H 192.168.70.11 -t UDP_STREAM -- -m 1025
-UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 
-192.168.70.11 (192.168.70.11) port 0 AF_INET
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
-126976    1025   100.00    8676376      0     711.46
-135168           100.00    8676376            711.46
-
-########## cyclesoak during test
-$ ./cyclesoak
-using 2 CPUs
-System load: -0.1%
-System load: 40.5%
-System load: 51.6%
-System load: 51.5%
-System load: 50.9%
-System load: 50.7%
-System load: 50.8%
-System load: 50.7%
-System load: 50.6%
-
-######## top during test
-top - 13:26:48 up 8 min,  4 users,  load average: 1.74, 0.46, 0.15
-Tasks: 149 total,   4 running, 145 sleeping,   0 stopped,   0 zombie
-Cpu(s):  0.7%us, 16.8%sy, 50.6%ni,  0.0%id,  0.0%wa, 25.6%hi,  6.3%si,  
-0.0%st
-Mem:   2035444k total,   465888k used,  1569556k free,    28840k buffers
-Swap:  3068372k total,        0k used,  3068372k free,   318668k cached
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
- 3865 eadi      39  19  6804 1164  108 R  100  0.1   0:38.25 cyclesoak
- 2715 root     -51  -5     0    0    0 S   51  0.0   0:09.52 IRQ-8406
- 3867 eadi      25   0  6440  632  480 R   34  0.0   0:06.03 netperf       
-   19 root     -51   0     0    0    0 S   13  0.0   0:02.33 softirq-net-tx/
- 3866 eadi      39  19  6804 1164  108 R    1  0.1   0:20.47 cyclesoak
- 3167 root      25   0 29888 1180  888 S    0  0.1   0:00.93 automount
- 3861 eadi      15   0 12712 1076  788 R    0  0.1   0:00.19 top
-    1 root      18   0 10308  668  552 S    0  0.0   0:00.67 init      
-    2 root      RT   0     0    0    0 S    0  0.0   0:00.00 migration/0   
-    3 root      RT   0     0    0    0 S    0  0.0   0:00.00 posix_cpu_timer
-    4 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-high/0
-    5 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-timer/0
-    6 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-net-tx/
-    7 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-net-rx/
-    8 root     -51   0     0    0    0 S    0  0.0   0:00.00 softirq-block/0
- 
-########################
-The baseline results:
-RHEL5 with 2.6.21-rc5 kernel
-##############################
-
-$  netperf -l 100 -H 192.168.70.11 -t UDP_STREAM -- -m 1025
-
-UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 
-192.168.70.11 (192.168.70.11) port 0 AF_INET
-Socket  Message  Elapsed      Messages
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   10^6bits/sec
-
-126976    1025   100.00    11405485      0     935.24
-135168           100.00    11405485            935.24
-
-#######################################
-$ ./cyclesoak
-using 2 CPUs
-System load:  7.6%
-System load: 29.6%
-System load: 29.6%
-System load: 28.9%
-System load: 24.9%
-System load: 25.0%
-System load: 24.8%
-System load: 24.9%
-
-#######################################
-top:top - 13:52:22 up 10 min,  6 users,  load average: 1.46, 0.43, 0.17
-Tasks: 118 total,   4 running, 114 sleeping,   0 stopped,   0 zombie
-Cpu(s):  0.5%us,  9.8%sy, 75.7%ni,  0.0%id,  0.0%wa,  5.8%hi,  8.1%si,  
-0.0%st
-Mem:   2057200k total,   459128k used,  1598072k free,    29020k buffers
-Swap:  3068372k total,        0k used,  3068372k free,   318968k cached
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
- 3882 eadi      39  19  6804 1164  108 R  100  0.1   0:52.11 cyclesoak
- 3881 eadi      39  19  6804 1164  108 R   65  0.1   0:38.47 cyclesoak
- 3883 eadi      15   0  6436  632  480 R   35  0.0   0:18.26 netperf
- 3879 eadi      15   0 12580 1052  788 R    0  0.1   0:00.15 top
-    1 root      18   0 10308  664  552 S    0  0.0   0:00.48 init      
-    2 root      RT   0     0    0    0 S    0  0.0   0:00.00 migration/0
-    3 root      34  19     0    0    0 S    0  0.0   0:00.01 ksoftirqd/0
-    4 root      RT   0     0    0    0 S    0  0.0   0:00.00 watchdog/0
-    5 root      RT   0     0    0    0 S    0  0.0   0:00.00 migration/1
-    6 root      34  19     0    0    0 S    0  0.0   0:00.00 ksoftirqd/1
- 
-Any thoughts on how to fix this?
-
-Thanks,
--Dave
-
-
-
-
-
-
-
-
-
-
-
+Greetings,
+Rafael
