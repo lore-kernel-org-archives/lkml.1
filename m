@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932753AbXDAGaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXDAGeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932753AbXDAGaK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 02:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932812AbXDAGaJ
+	id S932812AbXDAGeZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 02:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932819AbXDAGeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 02:30:09 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51472 "EHLO smtp.osdl.org"
+	Sun, 1 Apr 2007 02:34:25 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:51571 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932753AbXDAGaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 02:30:07 -0400
-Date: Sat, 31 Mar 2007 23:29:57 -0700
+	id S932812AbXDAGeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 02:34:25 -0400
+Date: Sat, 31 Mar 2007 23:34:22 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Jurriaan <thunder7@xs4all.nl>, Helge Hafting <helgehaf@aitel.hist.no>,
-       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>
-Subject: Re: 2.6.21-rc5-mm3 - no boot, "address not 2M aligned"
-Message-Id: <20070331232957.e1c93f19.akpm@linux-foundation.org>
-In-Reply-To: <m1ircghb6w.fsf@ebiederm.dsl.xmission.com>
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
-	<20070331071220.GA26910@aitel.hist.no>
-	<20070331005303.354411f0.akpm@linux-foundation.org>
-	<20070401052932.GA9894@amd64.of.nowhere>
-	<m1ircghb6w.fsf@ebiederm.dsl.xmission.com>
+To: "Cong WANG" <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: [-mm3 patch]Warning fix: check the return value of kobject_add
+ etc.
+Message-Id: <20070331233422.f171ff4c.akpm@linux-foundation.org>
+In-Reply-To: <2375c9f90703312320m3e895bbap735c2d49da9d5ff9@mail.gmail.com>
+References: <2375c9f90703301930k4963168u4ba4dbc4c43ce2ee@mail.gmail.com>
+	<20070331223136.6019d98f.akpm@linux-foundation.org>
+	<2375c9f90703312320m3e895bbap735c2d49da9d5ff9@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,14 +27,36 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 01 Apr 2007 00:15:51 -0600 ebiederm@xmission.com (Eric W. Biederman) wrote:
+On Sun, 1 Apr 2007 14:20:46 +0800 "Cong WANG" <xiyou.wangcong@gmail.com> wrote:
 
-> Does anyone know how to express the constraint of a 2M aligned number in Kconfig?
+> 
+> >
+> > Also, please always prepare patches in `patch -p1' form, as per
+> > http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt, thanks.
+> >
+> >
+> 
+> Sorry. I am confused with this. Does that mean I should make patches
+> _upon_ the root kernel source directory or first make a copy of the
+> original source code and then diff against the two dirs? But I was
+> told that "patches should be based _in_ the root kernel source
+> directory" and when only one file was modified just to diff it with
+> the original single file. (See Documentation/SubmittingPatches.)
 
-Nope, but we could make CONFIG_PHYSICAL_START be in units of 2MB, which
-would be a bit hard to use.
+The headers should look like:
 
-Adding a BUILD_BUG_ON which checks this constraint might help.  Plus a
-useful comment right at the BUILD_BUG_ON site explaining what to do about
-it.
+--- a/arch/cris/kernel/crisksyms.c
++++ a/arch/cris/kernel/crisksyms.c
 
+I don't know how people do that.  One obvious way is to do
+
+cd /usr/src
+diff -u linux-orig/arch/cris/kernel/crisksyms.c linux-new/arch/cris/kernel/crisksyms.c
+
+other people probably alter the diff headers.
+
+> And should I remake this patch?
+
+Sure, but please change it to perform correct error handling first.  And
+test that error handling, if you can.  That will involve adding artificial
+errors.
