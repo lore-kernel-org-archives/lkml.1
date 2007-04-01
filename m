@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964801AbXDATmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964821AbXDATnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964801AbXDATmZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 15:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964804AbXDATmY
+	id S964821AbXDATnG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 15:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964804AbXDATnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 15:42:24 -0400
-Received: from smtpout.mac.com ([17.250.248.184]:55758 "EHLO smtpout.mac.com"
+	Sun, 1 Apr 2007 15:43:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42839 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964801AbXDATmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 15:42:24 -0400
-In-Reply-To: <Pine.LNX.4.61.0704012058060.16977@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012006060.12316@yvahk01.tjqt.qr> <B118D361-9F40-456F-96B7-E61B16B98432@mac.com> <Pine.LNX.4.61.0704012040220.15102@yvahk01.tjqt.qr> <2E204ACD-E697-42C6-8F01-22C1B7B4A85B@mac.com> <Pine.LNX.4.61.0704012058060.16977@yvahk01.tjqt.qr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: multipart/mixed; boundary=Apple-Mail-1--419165573
-Message-Id: <D260104B-C775-474E-B246-6298CD175205@mac.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@osdl.org>
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: [PATCH]
-Date: Sun, 1 Apr 2007 15:42:09 -0400
+	id S964828AbXDATnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 15:43:04 -0400
+Date: Sun, 1 Apr 2007 15:42:50 -0400
+From: Dave Jones <davej@redhat.com>
 To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 11/16] samba-eintr-fix.diff
+Message-ID: <20070401194250.GB20060@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012009230.12316@yvahk01.tjqt.qr> <20070401190938.GA20060@redhat.com> <Pine.LNX.4.61.0704012111000.16977@yvahk01.tjqt.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0704012111000.16977@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 01, 2007 at 09:28:03PM +0200, Jan Engelhardt wrote:
+ > 
+ > On Apr 1 2007 15:09, Dave Jones wrote:
+ > >On Sun, Apr 01, 2007 at 08:16:22PM +0200, Jan Engelhardt wrote:
+ > 
+ > > > From: Dave Jones
+ > > > Already posted at http://lkml.org/lkml/2005/7/7/255
+ > >
+ > >I had to stop and think if this was an April 1st :)
+ > 
+ > Read the mail entitled "[PATCH 0/16] Assorted patches".
 
---Apple-Mail-1--419165573
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	delsp=yes;
-	format=flowed
+That's what happens when you read inbox before mailing list folders :)
 
-Add a CONFIG_I_KNOW_WHAT_THE_HELL_I_AM_DOING variable with a really  
-strong
-warning attached to it (and a shorter CONFIG_EXPERT variable for use in
-Kconfig files where it's a PITA to type out the full name)
+ > >As to whether the patch is worthwhile/correct..
+ > >I really don't know.  I posted it back then in the hopes
+ > >that someone smbfs-savvy would pop up and review it.
+ > >As you can see from the archive, no-one did.
+ > 
+ > It seems to have been resent once, 7 days after you:
+ > 	http://lkml.org/lkml/2005/7/15/231
 
-Signed-off-by: Kyle Moffett <mrmacman_g4@mac.com>
+Hmm, with no changelog. I wonder if JA was hitting that bug
+and independantly came up with that patch, or was just
+resubmitting on my behalf.
 
----
+ > At that time, I had experienced strange copy failures ("No such file or 
+ > directory") while the directory being copied was not modified. With the 
+ > patch, I at least got EINTR instead of ENOENT, which I think made cp 
+ > think once more to retry.
 
-Since my mailer tends to mangle patches I've attached this one
+I suppose we could throw it in -mm and see if anyone screams. Andrew?
 
+	Dave
 
---Apple-Mail-1--419165573
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	x-unix-mode=0644;
-	name=config_expert.patch.txt
-Content-Disposition: attachment;
-	filename=config_expert.patch.txt
-
-Index: linux-2.6.20.1/init/Kconfig
-===================================================================
---- linux-2.6.20.1.orig/init/Kconfig
-+++ linux-2.6.20.1/init/Kconfig
-@@ -40,6 +40,35 @@
- 	you say Y here, you will be offered the choice of using features or
- 	drivers that are currently considered to be in the alpha-test phase.
- 
-+config I_KNOW_WHAT_THE_HELL_I_AM_DOING
-+	bool "Prompt for config options which will break your computer"
-+	---help---
-+	  Some kernel developers sometimes need to tune kernel parameters
-+	  outside of their normal limits.  Without complete knowledge of
-+	  exactly what you are doing you are likely to corrupt the laws of
-+	  physics and destroy the universe (well, not quite, but you'll
-+	  certainly corrupt your data and crash your box).  If you really
-+	  know what you're doing and accept that if it breaks you get to
-+	  keep the pieces, then go ahead and enable this option.
-+	  
-+	  NOTICE:  Bug reports where this option is turned on in the kernel
-+	  config will be: (not necessarily in this order)
-+	    1)  Laughed at hysterically
-+	    2)  Made much fun of
-+	    3)  Ridiculed until we're red in the face
-+	    4)  Ignored
-+	  
-+	  WARNING:  If you are building a kernel for a distribution, DO NOT
-+	  TURN THIS OPTION ON!!!  Instead you should submit a patch which
-+	  adds a new safe value to the list of possibilities for the config
-+	  option you're interested in.  Otherwise your users might have a
-+	  hard time getting kernel support on the LKML.
-+
-+config EXPERT
-+	bool
-+	depends on I_KNOW_WHAT_THE_HELL_I_AM_DOING
-+	default y
-+
- config BROKEN
- 	bool
- 
-
---Apple-Mail-1--419165573--
+-- 
+http://www.codemonkey.org.uk
