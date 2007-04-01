@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933056AbXDANAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbXDANpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933056AbXDANAa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 09:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933046AbXDANAa
+	id S933054AbXDANpH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 09:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933058AbXDANpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 09:00:30 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37920 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933045AbXDANA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 09:00:29 -0400
-To: Aaron Lehmann <aaronl@vitelus.com>
-Cc: Jim Paris <jim@jtan.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Silent corruption on AMD64
-References: <20070401012736.GT15189@vitelus.com>
-	<20070401030315.GA24080@jim.sh> <20070401043905.GV15189@vitelus.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 01 Apr 2007 15:58:59 +0200
-In-Reply-To: <20070401043905.GV15189@vitelus.com>
-Message-ID: <p737iswqjq4.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 1 Apr 2007 09:45:07 -0400
+Received: from bart.webpack.hosteurope.de ([217.115.142.76]:42967 "EHLO
+	bart.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933054AbXDANpF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 09:45:05 -0400
+X-Greylist: delayed 1372 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Apr 2007 09:45:05 EDT
+Subject: Bug?
+From: Sascha Curth <info@sascha-curth.de>
+Reply-To: info@sascha-curth.de
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 01 Apr 2007 15:39:13 +0200
+Message-Id: <1175434753.8986.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.2 
+Content-Transfer-Encoding: 7bit
+X-bounce-key: webpack.hosteurope.de;info@sascha-curth.de;1175435105;ae249579;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aaron Lehmann <aaronl@vitelus.com> writes:
+Hi,
 
-[adding netdev]
-[meta-comment: I wish people wouldn't use such unnecessarily broad subjects 
--- how is it the x86-64 port's or AMD's fault when you have broken hardware? 
-Would anybody write "Silent corruption on i386" or "Silent corruption 
-on Intel" or "Silent corruption on Linux"?]
+i hav essen this in my logfiles. The server wasn't rechable any more and
+a hard reset was needed....
 
-> On Sat, Mar 31, 2007 at 08:03:16PM -0700, Jim Paris wrote:
-> > Since it shows up under heavy load that includes unrelated devices, I
-> > think ruling out hardware problems is important.  Some suggestions:
-> 
-> I've been able to narrow it down to the Realtek Ethernet card. I can't
-> reproduce the problem using onboard Ethernet, whereas the Realtek card
-> causes trouble in any slot. However, I still don't know whether it's a
-> hardware or software issue, or whether it's caused directly or
-> indirectly by the Realtek card.
 
-You could disable the hardware checksumming support in the card with
-the appended patch. Then hopefully Linux will catch most corruptions
-(but perhaps not all because TCP checksums are not very strong) 
-You can watch failed checksums then with netstat -s
 
--Andi
+Kernel: 2.6.18
+Logfile:
 
-Index: linux-2.6.21-rc3-net/drivers/net/r8169.c
-===================================================================
---- linux-2.6.21-rc3-net.orig/drivers/net/r8169.c
-+++ linux-2.6.21-rc3-net/drivers/net/r8169.c
-@@ -2477,6 +2477,7 @@ static inline int rtl8169_fragmented_fra
- 
- static inline void rtl8169_rx_csum(struct sk_buff *skb, struct RxDesc *desc)
- {
-+#if 0
- 	u32 opts1 = le32_to_cpu(desc->opts1);
- 	u32 status = opts1 & RxProtoMask;
- 
-@@ -2485,6 +2486,7 @@ static inline void rtl8169_rx_csum(struc
- 	    ((status == RxProtoIP) && !(opts1 & IPFail)))
- 		skb->ip_summed = CHECKSUM_UNNECESSARY;
- 	else
-+#endif
- 		skb->ip_summed = CHECKSUM_NONE;
- }
- 
+Mar 29 22:18:07 seven ------------[ cut here ]------------
+Mar 29 22:18:07 seven kernel BUG at mm/rmap.c:522!
+Mar 29 22:18:07 seven invalid opcode: 0000 [#1]
+Mar 29 22:18:07 seven SMP 
+Mar 29 22:18:07 seven Modules linked in: capi capifs st fcdsl
+Mar 29 22:18:07 seven CPU:    0
+Mar 29 22:18:07 seven EIP:    0060:[<c0151a46>]    Tainted: P S    VLI
+Mar 29 22:18:07 seven EFLAGS: 00210286   (2.6.18-gentoo-r3 #1) 
+Mar 29 22:18:07 seven EIP is at page_remove_rmap+0x26/0x30
+Mar 29 22:18:07 seven eax: ffffffff   ebx: d54dda88   ecx: c1ffaa40
+edx: 00000000
+Mar 29 22:18:07 seven esi: c1ffaa40   edi: b7ea2000   ebp: b7ea4000
+esp: ca969edc
+Mar 29 22:18:07 seven ds: 007b   es: 007b   ss: 0068
+Mar 29 22:18:07 seven Process exim (pid: 14060, ti=ca968000
+task=f6565580 task.ti=ca968000)
+Mar 29 22:18:07 seven Stack: c014bb06 00000000 f639af98 ca969f48
+00000000 00000001 d6f50b7c f7c1a900 
+Mar 29 22:18:07 seven c200be20 00000000 fffffffc c12a9bac d6f50b7c
+7fd52025 b7ea3fff 00294bfc 
+Mar 29 22:18:07 seven b7ea4000 00000000 ca969f48 dd471128 f7c1a900
+ca968000 c014e989 ffffffff 
+Mar 29 22:18:07 seven Call Trace:
+Mar 29 22:18:07 seven [<c014bb06>] unmap_vmas+0x286/0x520
+Mar 29 22:18:07 seven [<c014e989>] exit_mmap+0x79/0x100
+Mar 29 22:18:07 seven [<c011b9c3>] mmput+0x33/0xa0
+Mar 29 22:18:07 seven [<c0120c23>] do_exit+0xf3/0x8b0
+Mar 29 22:18:07 seven [<c01126b7>] do_page_fault+0xe7/0x5ab
+Mar 29 22:18:07 seven [<c0121413>] do_group_exit+0x33/0x90
+Mar 29 22:18:07 seven [<c0102e2d>] sysenter_past_esp+0x56/0x79
+Mar 29 22:18:07 seven Code: bf 00 00 00 00 89 c1 90 83 40 08 ff 0f 98 c0
+84 c0 75 02 f3 c3 8b 41 08 40 78 10 8b 51 10 89 c8 83 f2 01 83 e2 01 e9
+ba 81 ff f
+f <0f> 0b 0a 02 88 90 51 c0 eb e6 83 ec 20 89 74 24 14 89 d6 89 5c 
+Mar 29 22:18:07 seven EIP: [<c0151a46>] page_remove_rmap+0x26/0x30
+SS:ESP 0068:ca969edc
+Mar 29 22:18:07 seven <1>Fixing recursive fault but reboot is needed!
+
 
