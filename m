@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXDAKpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbXDAKrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932418AbXDAKpK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 06:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932424AbXDAKpK
+	id S932424AbXDAKrJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 06:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbXDAKrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 06:45:10 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60747 "EHLO pasmtpA.tele.dk"
+	Sun, 1 Apr 2007 06:47:09 -0400
+Received: from mail.suse.de ([195.135.220.2]:59266 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932418AbXDAKpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 06:45:08 -0400
-Date: Sun, 1 Apr 2007 12:45:51 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       stable@kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, Jan Beulich <jbeulich@novell.com>
-Subject: [PATCH] kbuild: fix dependency generation
-Message-ID: <20070401104551.GA7560@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932424AbXDAKrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 06:47:07 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+Date: Sun, 1 Apr 2007 12:46:51 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com> <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
+In-Reply-To: <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200704011246.52238.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Beulich <jbeulich@novell.com>
+On Sunday 01 April 2007 09:10, Christoph Lameter wrote:
+> x86_64 make SPARSE_VIRTUAL the default
+> 
+> x86_64 is using 2M page table entries to map its 1-1 kernel space.
+> We implement the virtual memmap also using 2M page table entries.
+> So there is no difference at all to FLATMEM. Both schemes require
+> a page table and a TLB.
 
-Commit 2e3646e51b2d6415549b310655df63e7e0d7a080 changed the way
-the split config tree is built, but failed to also adjust fixdep
-accordingly - if changing a config option from or to m, files
-referencing the respective CONFIG_..._MODULE (but not the
-corresponding CONFIG_...) didn't get rebuilt.
+Hmm, this means there is at least 2MB worth of struct page on every node?
+Or do you have overlaps with other memory (I think you have)
+In that case you have to handle the overlap in change_page_attr()
 
-The problem is that trisate symbol are represent with three
-different symbols:
-SYMBOL=n => no symbol defined
-SYMBOL=y => CONFIG_SYMBOL defined to '1'
-SYMBOL=m => CONFIG_SYMBOL_MODULE defined to '1'
+Also your "generic" vmemmap code doesn't look very generic, but
+rather x86 specific. I didn't think huge pages could be easily
+set up this way in many other architectures.  
 
-But conf_split_config do not distingush between the =y and =m case,
-so only the =y case is honoured.
-This is fixed in fixdep so when a CONFIG symbol with
-_MODULE is found we skip that part and only look
-for the CONFIG_SYMBOL version.
+And when you reserve virtual space somewhere you should 
+update Documentation/x86_64/mm.txt. Also you didn't adjust 
+the end of the vmalloc area so in theory vmalloc could run
+into your vmemmap.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
+> Thus the SPARSEMEM becomes the most efficient way of handling
+> virt_to_page, pfn_to_page and friends for UP, SMP and NUMA.
 
-The patch can be pulled from:
-ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fix.git
-[Contains only this fix]
+Do you have any benchmarks numbers to prove it? There seem to be a few
+benchmarks where the discontig virt_to_page is a problem
+(although I know ways to make it more efficient), and sparsemem
+is normally slower. Still some numbers would be good.
 
-Included below for reference and for -stable.
-
-This should be applied to both latest -rc and stable.
-
-	Sam
-
-
- scripts/basic/fixdep.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
-index 668a11a..24144a2 100644
---- a/scripts/basic/fixdep.c
-+++ b/scripts/basic/fixdep.c
-@@ -28,9 +28,11 @@
-  * the dependency on linux/autoconf.h by a dependency on every config
-  * option which is mentioned in any of the listed prequisites.
-  *
-- * To be exact, split-include populates a tree in include/config/,
-- * e.g. include/config/his/driver.h, which contains the #define/#undef
-- * for the CONFIG_HIS_DRIVER option.
-+ * kconfig populates a tree in include/config/ with an empty file
-+ * for each config symbol and when the configuration is updated
-+ * the files representing changed config options are touched
-+ * which thern let make pick up the changes and the files that uses
-+ * the config symbols are rebuild.
-  *
-  * So if the user changes his CONFIG_HIS_DRIVER option, only the objects
-  * which depend on "include/linux/config/his/driver.h" will be rebuilt,
-@@ -245,6 +247,8 @@ void parse_config_file(char *map, size_t len)
- 		continue;
- 
- 	found:
-+		if (!memcmp(q - 7, "_MODULE", 7))
-+			q -= 7;
- 		use_config(p+7, q-p-7);
- 	}
- }
--- 
-1.5.1.rc3.20.gaa453
+-Andi
 
