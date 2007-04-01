@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbXDAWqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751677AbXDAXOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753080AbXDAWqa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 18:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXDAWqa
+	id S1751677AbXDAXOn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 19:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbXDAXOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 18:46:30 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:32954 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752776AbXDAWq2 (ORCPT
+	Sun, 1 Apr 2007 19:14:43 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:56870 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbXDAXOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 18:46:28 -0400
-X-Sasl-enc: ImXmwAqLyxfnhodKADivDcE5UQyYl/z5zg5MBVajANMx 1175467588
-Date: Sun, 1 Apr 2007 19:46:25 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.21-rc5: Thinkpad X60 gets critical thermal shutdowns
-Message-ID: <20070401224625.GB28561@khazad-dum.debian.net>
-References: <460E0158.7090705@goop.org> <8f8ff01d0703310033y74421cfcl747ece1be003471@mail.gmail.com> <460F511E.2090102@goop.org> <20070401163204.GB5762@ucw.cz>
-MIME-Version: 1.0
+	Sun, 1 Apr 2007 19:14:42 -0400
+Date: Mon, 2 Apr 2007 09:14:40 +1000
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Powerpc build unhappy in 2.6.20.4?
+Message-ID: <20070401231440.GK12768@bakeyournoodle.com>
+Mail-Followup-To: Rob Landley <rob@landley.net>,
+	linux-kernel@vger.kernel.org
+References: <200703301753.27379.rob@landley.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070401163204.GB5762@ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200703301753.27379.rob@landley.net>
+User-Agent: Mutt/1.5.9i
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 01 Apr 2007, Pavel Machek wrote:
-> ACPI is misdesigned, and lm_sensors can't cope with that.
+On Fri, Mar 30, 2007 at 05:53:26PM -0400, Rob Landley wrote:
+> So doing:
+> 
+>   make ARCH=powerpc CROSS=powerpc-
+> 
+> Chugs along fine for a while, but then it ends with:
+> 
+>     MODPOST vmlinux
 
-Err, HOW exactly are you accessing the ThinkPad i2c buses directly? Or did
-Lenovo change completely the hardware project of thinkpads in the X60?
+There should be a lot of activity between this step and the error below.
 
-Or did anyone add an lm-sensors that attach to the ACPI EC ports now?
+>   ln: accessing `arch/powerpc/boot/zImage': No such file or directory
+>   make[1]: *** [arch/powerpc/boot/zImage] Error 1
+>   make: *** [zImage] Error 2
+> 
+> I.E. it builds vmlinux, then dies because there's no zImage, which it never 
+> tried to build...
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+zImage is built later, AFAICT
+ 
+> Is there no working default "make" target for powerpc, or did I do something 
+> wrong?  Could this be a .config issue?
+
+Possibly, can we see your .config?
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
