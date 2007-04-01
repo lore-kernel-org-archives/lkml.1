@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751451AbXDACZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbXDACwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751451AbXDACZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Mar 2007 22:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbXDACZ0
+	id S1751458AbXDACwi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Mar 2007 22:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbXDACwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Mar 2007 22:25:26 -0400
-Received: from raven.upol.cz ([158.194.120.4]:34522 "EHLO raven.upol.cz"
+	Sat, 31 Mar 2007 22:52:38 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:45927 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751280AbXDACZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Mar 2007 22:25:25 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Eduard Bloch <edi@gmx.de>, linux-kernel@vger.kernel.org,
-       debburn-devel@lists.alioth.debian.org
-Subject: Re: broken device locking, sg vs. sg_io on block devices
-In-Reply-To: <20070401011452.7c0cbce9@the-village.bc.nu>
-References: <200703261811.21448.gerald@itzgrund.net> <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de> <20070330134327.GA24030@infradead.org> <20070330142114.GA31685@rotes76.wohnheim.uni-kl.de> <20070330191038.067c346b@the-village.bc.nu> <20070331170703.GA8179@rotes76.wohnheim.uni-kl.de> <20070331232002.7b478f37@the-village.bc.nu> <20070331224021.GA6488@rotes76.wohnheim.uni-kl.de> <20070401011452.7c0cbce9@the-village.bc.nu>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: jed + slrn/0.9.8.1pl1 (x86_64-pc-linux-gnu-debian)
-Date: Sun, 1 Apr 2007 04:34:16 +0200
-Message-Id: <E1HXptY-00017P-FP@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	id S1751458AbXDACwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Mar 2007 22:52:37 -0400
+Date: Sat, 31 Mar 2007 19:52:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Aaron Lehmann <aaronl@vitelus.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Silent corruption on AMD64
+Message-Id: <20070331195236.7c818ed5.akpm@linux-foundation.org>
+In-Reply-To: <20070401012736.GT15189@vitelus.com>
+References: <20070401012736.GT15189@vitelus.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Alan Cox
-> Newsgroups: gmane.linux.kernel
-> Subject: Re: broken device locking, sg vs. sg_io on block devices
-> Date: Sun, 1 Apr 2007 01:14:52 +0100
->
-[]
->> Again, it doesn't have to. It can pass the locking operations to the
->> related block device driver.
->
-> No it can't. The driver has no idea what the locking rules are for
-> arbitary command blocks send to arbitary devices. /dev/sg is a *raw*
-> interface. You can send anything to anyone, and the locking rules for
-> that are far too complex for a giant morass of kernel code to get added.
->
-> The mess begins because you use /dev/sg and put it in a cdrom group
-> instead of using SG_IO on the /dev/sr device.
+> On Sat, 31 Mar 2007 18:27:36 -0700 Aaron Lehmann <aaronl@vitelus.com> wrote:
+> I have spent a lot of time trying to find a simpler test case. So far,
+> as far as I can tell, there are three conditions that must be
+> satisfied for corruption to occur:
+> 
+> 1. Heavy Ethernet load (nc remotehost < /dev/zero)
+> 2. Heavy disk write load on any non-sata_sil drive (cat /dev/zero > /path)
+> 3. Heavy disk read load on any other drive (tar c /path | cat > /dev/null)
+> 
+> With these conditions satisfied, data read off sda or sdb (the drives
+> associated with sata_sil) is often corrupted. Since I can only see
+> this problem with files on those two drives, I'm inclined to suspect
+> the sata_sil driver, but I really have no idea what's going on. I know
+> this is not a recent issue - I experienced very similar corruption at
+> least a year ago. I wasn't able to reproduce it at the time, because
+> it only appeared in the backups I was restoring from.
 
-(offtop: 'cdrom' is as ugly as 'floppy' for anything like usb,
-firewire connected storage, why not use 'optics' and 'external' or
-something?)
+Are you able to provide us with some before-and-after data so we
+can see this corruption.
 
-> The mess continues because of the user of O_EXCL locking thus forcing
-> re-open/close by HAL
-
-Manpage states something bad about it also...
-
-> instead of fcntl based co-operative locking.
-
-> > > getty/modem/uucp/terminal emulator/slip/ppp/..
-
-Programs you've mentioned may have co-operative locking, but 'dd' or
-'cat' have no knowledge of it for sure. Yet nothing prevents allowed user
-program to use this tools on /dev/tty*.
-
-AFAIK kernel developers are always ready for very broken userspace, yet
-co-operative locking is a job of the userspace programmers of very
-different tools.
-
-> The job of the kernel is not and never has been to anticipate and correct
-> everything stupid someone tries to do in user space.
-
-
-> As I said before the people wanting to arbitrate serial ports got this
-> right in the mid 1970's your situation is not much more complicated,
-
-Do you mean co-operative locking or carrier detection as a pre-hotplug
-thing (:?
-
-Tell me, please, somebody, why non-exclusive co-operative locking (if it
-was implemented anyways), racy and already used in userspace applications
-O_EXCL are better than _mandatory locking_? I've found this helpful against
-any broken userspace, trying hijack my device and read or write bytes
-to it.
-____
+See, if it's dropped-bits or shifted-data or eight-byte-aligned
+kernel addresses or whatever, that helps us generate theories..
