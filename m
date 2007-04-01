@@ -1,143 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933721AbXDASSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933769AbXDASSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933721AbXDASSQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbXDASSJ
+	id S933769AbXDASSR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933795AbXDASSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:18:09 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:40174 "EHLO tmailer.gwdg.de"
+	Sun, 1 Apr 2007 14:18:07 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:40217 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933721AbXDASRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:17:34 -0400
-Date: Sun, 1 Apr 2007 20:16:49 +0200 (MEST)
+	id S933794AbXDASRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:17:39 -0400
+Date: Sun, 1 Apr 2007 20:17:24 +0200 (MEST)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Roland Dreier <roland@digitalvampire.org>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 12/16] cifs-use-mutex.diff
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 13/16] show-pipesize-in-stat.diff
 In-Reply-To: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704012009410.12316@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704012010040.12316@yvahk01.tjqt.qr>
 References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Spam-Report: Content analysis: 0.0 points, 6.0 required
 	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Verbatim copy of original mail:
+Show the fill status of a pipe (in bytes) when stat'ing one.
 
-*>>>
->From http://lkml.org/lkml/2006/9/2/86
-
-The recent change to "allow Windows blocking locks to be cancelled
-via a CANCEL_LOCK call" introduced a new semaphore in struct
-cifsFileInfo, lock_sem.  However, semaphores used as mutexes are
-deprecated these days, and there's no reason to add a new one to the
-kernel. Therefore, convert lock_sem to a struct mutex (and also fix
-one indentation glitch on one of the lines changed anyway).
-
-Compile tested only, since I don't use CIFS.
-
-Signed-off-by: Roland Dreier <roland@digitalvampire.org>
-*<<<
-
-
-My 2¢:
-Compile tested. Runtime tested. Did not break.
-
-From: Roland Dreier <roland@digitalvampire.org>
 Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-Cc: Roland Dreier <roland@digitalvampire.org>
 
- cifsglob.h |    2 +-
- dir.c      |    2 +-
- file.c     |   14 +++++++-------
- 3 files changed, 9 insertions(+), 9 deletions(-)
+ fs/stat.c             |   31 ++++++++++++++++++++++++++++++-
+ include/linux/un.h    |    2 ++
+ include/net/af_unix.h |    3 +++
+ net/unix/af_unix.c    |   10 ++++++++++
+ 4 files changed, 45 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.21-rc5/fs/cifs/cifsglob.h
+Index: linux-2.6.21-rc5/fs/stat.c
 ===================================================================
---- linux-2.6.21-rc5.orig/fs/cifs/cifsglob.h
-+++ linux-2.6.21-rc5/fs/cifs/cifsglob.h
-@@ -311,7 +311,7 @@ struct cifsFileInfo {
- 	/* lock scope id (0 if none) */
- 	struct file * pfile; /* needed for writepage */
- 	struct inode * pInode; /* needed for oplock break */
--	struct semaphore lock_sem;
-+	struct mutex lock_mutex;
- 	struct list_head llist; /* list of byte range locks we have. */
- 	unsigned closePend:1;	/* file is marked to close */
- 	unsigned invalidHandle:1;  /* file closed via session abend */
-Index: linux-2.6.21-rc5/fs/cifs/dir.c
+--- linux-2.6.21-rc5.orig/fs/stat.c
++++ linux-2.6.21-rc5/fs/stat.c
+@@ -14,6 +14,10 @@
+ #include <linux/namei.h>
+ #include <linux/security.h>
+ #include <linux/syscalls.h>
++#include <linux/blkdev.h>
++#include <linux/genhd.h>
++#include <linux/pipe_fs_i.h>
++#include <net/af_unix.h>
+ #include <linux/pagemap.h>
+ 
+ #include <asm/uaccess.h>
+@@ -31,7 +35,32 @@ void generic_fillattr(struct inode *inod
+ 	stat->atime = inode->i_atime;
+ 	stat->mtime = inode->i_mtime;
+ 	stat->ctime = inode->i_ctime;
+-	stat->size = i_size_read(inode);
++	stat->size = 0;
++	if (S_ISFIFO(inode->i_mode)) {
++		const struct pipe_inode_info *info = inode->i_pipe;
++		int i;
++		stat->size = 0;
++		if (info != NULL) {
++			for (i = 0; i < PIPE_BUFFERS; ++i) {
++				const struct pipe_buffer *buf = &info->bufs[i];
++				if (buf != NULL && buf->page != NULL)
++					stat->size += buf->len;
++			}
++		}
++	} else if (S_ISSOCK(inode->i_mode)) {
++#ifdef CONFIG_UNIX_MODULE
++		loff_t (*uxsize)(struct inode *) = __symbol_get("unixsock_size");
++		if (uxsize != NULL) {
++			stat->size = uxsize(inode);
++			symbol_put("unixsock_size");
++		}
++#endif
++#if defined(CONFIG_UNIX) && !defined(CONFIG_UNIX_MODULE)
++		stat->size = unixsock_size(inode);
++#endif
++	} else {
++		stat->size = i_size_read(inode);
++	}
+ 	stat->blocks = inode->i_blocks;
+ 	stat->blksize = (1 << inode->i_blkbits);
+ }
+Index: linux-2.6.21-rc5/include/linux/un.h
 ===================================================================
---- linux-2.6.21-rc5.orig/fs/cifs/dir.c
-+++ linux-2.6.21-rc5/fs/cifs/dir.c
-@@ -274,7 +274,7 @@ cifs_create(struct inode *inode, struct 
- 			pCifsFile->invalidHandle = FALSE;
- 			pCifsFile->closePend     = FALSE;
- 			init_MUTEX(&pCifsFile->fh_sem);
--			init_MUTEX(&pCifsFile->lock_sem);
-+			mutex_init(&pCifsFile->lock_mutex);
- 			INIT_LIST_HEAD(&pCifsFile->llist);
- 			atomic_set(&pCifsFile->wrtPending,0);
+--- linux-2.6.21-rc5.orig/include/linux/un.h
++++ linux-2.6.21-rc5/include/linux/un.h
+@@ -3,6 +3,8 @@
  
-Index: linux-2.6.21-rc5/fs/cifs/file.c
+ #define UNIX_PATH_MAX	108
+ 
++#include <linux/socket.h>
++
+ struct sockaddr_un {
+ 	sa_family_t sun_family;	/* AF_UNIX */
+ 	char sun_path[UNIX_PATH_MAX];	/* pathname */
+Index: linux-2.6.21-rc5/include/net/af_unix.h
 ===================================================================
---- linux-2.6.21-rc5.orig/fs/cifs/file.c
-+++ linux-2.6.21-rc5/fs/cifs/file.c
-@@ -48,7 +48,7 @@ static inline struct cifsFileInfo *cifs_
- 	private_data->netfid = netfid;
- 	private_data->pid = current->tgid;	
- 	init_MUTEX(&private_data->fh_sem);
--	init_MUTEX(&private_data->lock_sem);
-+	mutex_init(&private_data->lock_mutex);
- 	INIT_LIST_HEAD(&private_data->llist);
- 	private_data->pfile = file; /* needed for writepage */
- 	private_data->pInode = inode;
-@@ -508,12 +508,12 @@ int cifs_close(struct inode *inode, stru
+--- linux-2.6.21-rc5.orig/include/net/af_unix.h
++++ linux-2.6.21-rc5/include/net/af_unix.h
+@@ -2,6 +2,7 @@
+ #define __LINUX_NET_AFUNIX_H
  
- 		/* Delete any outstanding lock records.
- 		   We'll lose them when the file is closed anyway. */
--		down(&pSMBFile->lock_sem);
-+		mutex_lock(&pSMBFile->lock_mutex);
- 		list_for_each_entry_safe(li, tmp, &pSMBFile->llist, llist) {
- 			list_del(&li->llist);
- 			kfree(li);
- 		}
--		up(&pSMBFile->lock_sem);
-+		mutex_unlock(&pSMBFile->lock_mutex);
+ #include <linux/socket.h>
++#include <linux/types.h>
+ #include <linux/un.h>
+ #include <linux/mutex.h>
+ #include <net/sock.h>
+@@ -88,6 +89,8 @@ struct unix_sock {
+ };
+ #define unix_sk(__sk) ((struct unix_sock *)__sk)
  
- 		write_lock(&GlobalSMBSeslock);
- 		list_del(&pSMBFile->flist);
-@@ -598,9 +598,9 @@ static int store_file_lock(struct cifsFi
- 	li->offset = offset;
- 	li->length = len;
- 	li->type = lockType;
--	down(&fid->lock_sem);
-+	mutex_lock(&fid->lock_mutex);
- 	list_add(&li->llist, &fid->llist);
--	up(&fid->lock_sem);
-+	mutex_unlock(&fid->lock_mutex);
- 	return 0;
++extern loff_t unixsock_size(struct inode *);
++
+ #ifdef CONFIG_SYSCTL
+ extern int sysctl_unix_max_dgram_qlen;
+ extern void unix_sysctl_register(void);
+Index: linux-2.6.21-rc5/net/unix/af_unix.c
+===================================================================
+--- linux-2.6.21-rc5.orig/net/unix/af_unix.c
++++ linux-2.6.21-rc5/net/unix/af_unix.c
+@@ -744,6 +744,16 @@ fail:
+ 	return NULL;
  }
  
-@@ -757,7 +757,7 @@ int cifs_lock(struct file *file, int cmd
- 			struct cifsLockInfo *li, *tmp;
++loff_t unixsock_size(struct inode *inode) {
++    struct sock *sk = unix_find_socket_byinode(inode);
++    loff_t eax;
++
++    if(sk == NULL) { return 0; }
++    eax = sk->sk_rcvbuf;
++    sock_put(sk);
++    return eax;
++}
++EXPORT_SYMBOL(unixsock_size);
  
- 			rc = 0;
--			down(&fid->lock_sem);
-+			mutex_lock(&fid->lock_mutex);
- 			list_for_each_entry_safe(li, tmp, &fid->llist, llist) {
- 				if (pfLock->fl_start <= li->offset &&
- 						length >= li->length) {
-@@ -771,7 +771,7 @@ int cifs_lock(struct file *file, int cmd
- 					kfree(li);
- 				}
- 			}
--			up(&fid->lock_sem);
-+			mutex_unlock(&fid->lock_mutex);
- 		}
- 	}
- 
+ static int unix_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
+ {
 #<EOF>
