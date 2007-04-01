@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964883AbXDAUIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964888AbXDAULW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964883AbXDAUIg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 16:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964888AbXDAUIg
+	id S964888AbXDAULW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 16:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXDAULW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 16:08:36 -0400
-Received: from smtpout.mac.com ([17.250.248.171]:54852 "EHLO smtpout.mac.com"
+	Sun, 1 Apr 2007 16:11:22 -0400
+Received: from mtaout5.012.net.il ([84.95.2.13]:8465 "EHLO mtaout5.012.net.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964883AbXDAUIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 16:08:35 -0400
-In-Reply-To: <Pine.LNX.4.61.0704012143120.16977@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012006060.12316@yvahk01.tjqt.qr> <B118D361-9F40-456F-96B7-E61B16B98432@mac.com> <Pine.LNX.4.61.0704012040220.15102@yvahk01.tjqt.qr> <2E204ACD-E697-42C6-8F01-22C1B7B4A85B@mac.com> <Pine.LNX.4.61.0704012058060.16977@yvahk01.tjqt.qr> <D260104B-C775-474E-B246-6298CD175205@mac.com> <Pine.LNX.4.61.0704012143120.16977@yvahk01.tjqt.qr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6B47532D-DD6A-4F1B-9A23-6AA67F6959BD@mac.com>
+	id S964888AbXDAULV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 16:11:21 -0400
+Date: Sun, 01 Apr 2007 23:11:12 +0300
+From: Avi Kivity <avi@argo.co.il>
+Subject: Re: [patch 13/13] signal/timer/event fds v9 - KAIO eventfd support
+ example ...
+In-reply-to: <Pine.LNX.4.64.0704011146380.26550@alien.or.mcafeemobile.com>
+To: Davide Libenzi <davidel@xmailserver.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@osdl.org>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH]
-Date: Sun, 1 Apr 2007 16:07:52 -0400
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>
+Message-id: <461011E0.1020607@argo.co.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+X-Greylist: Sender IP whitelisted,
+ not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Sun,
+ 01 Apr 2007 23:11:12 +0300 (IDT)
+References: <send-serie.davidel@xmailserver.org.16816.1175371778.13>
+ <460FCA90.4000003@argo.co.il>
+ <Pine.LNX.4.64.0704011000470.26331@alien.or.mcafeemobile.com>
+ <460FFD0F.7080107@argo.co.il>
+ <Pine.LNX.4.64.0704011146380.26550@alien.or.mcafeemobile.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 01, 2007, at 15:47:18, Jan Engelhardt wrote:
-> +config I_KNOW_WHAT_THE_HELL_I_AM_DOING
+Davide Libenzi wrote:
+
+  
+
+>> I think it's a bit too fine grained, and a new system call (io_bindfd()?)
+>> would be easier to use.  In addition, you would move the eventfd_fget() out of
+>> the submission path.
+>>     
 >
-> Let's just hope kconfig does not bust the stack.
-> Perhaps we could shorten that: I_KNOW_WTF_I_AM_DOING
+> IMO the cost of the eventfd_fget() (have you seen it?) is not worth adding 
+> a new syscall.
+>   
 
-Ah, good point, but I think it fits.
+There's an atomic op there (and another on the way out).  Probably on a 
+busy cacheline.  Still it's probably lost in the noise.
 
-> +	bool "Prompt for config options which will break your computer"
+Regardless of that, I think that specifying the fd per submission is 
+wrong.  It feels like a setup thing that needs to be done once.  We 
+shouldn't skimp on syscalls, especially on something as important as 
+unifying the async event model.
+
+
+> Actually, the flags field that Linus suggested may be given an extra meaning of 
+> "bind to ctx", that'd solve the problem w/out new syscalls.
 >
-> s/will break (.*)/could break $1 if done wrong/;
+>   
 
-Well, we've had problems in the past where people turn on options  
-under CONFIG_EXPERIMENTAL or CONFIG_EMBEDDED and it breaks in exactly  
-the specified fashion and they complain on LKML.  The point of this  
-is to expose kconfig tunables which a "normal" kconfig user would get  
-wrong 99% of the time and would break in obscure ways.  For example,  
-the "CONFIG_MULTITHREAD_PCI_PROBE" option, if it was re-added for  
-more tinkering, could go under this option.
+I don't see how.  It's still per submission.  You could do it on the 
+first iocb, but that's just adding warts to the API.
 
-> +config EXPERT
-> +	bool
-> +	depends on I_KNOW_WHAT_THE_HELL_I_AM_DOING
-> +	default y
->
-> Given that, I hope the number of options dependent on CONFIG_EXPERT  
-> will outnumber those depending on CONFIG_I_KNOW_WTF_I_AM_DOING.
+You could add an IO_CMD_BIND_EVENTFD, but that feels wrong too, as it 
+isn't really an I/O command.
 
-Ah, see, due to the magic of kconfig language this does not show up  
-as a separate option (no text for the "bool") identifier.  It's just  
-an alias for I_KNOW_WHAT_THE_HELL_I_AM_DOING to make it easier to use  
-in other Kconfig files ("depends EXPERT && SOME_OPTION!=n &&  
-ANOTHER_OPTION") instead of s/EXPERT/I_KNOW_WHAT_THE_HELL_I_AM_DOING/g.
 
-> If you want my answer: not-so-ACK, move the text to CONFIG_EXPERT  
-> and let's stay sane for the next 366 days until next April 01.
-
-:-D
-
-Cheers,
-Kyle Moffett
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
