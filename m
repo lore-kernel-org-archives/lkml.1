@@ -1,126 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964931AbXDAUlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965055AbXDAUu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964931AbXDAUlU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 16:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965026AbXDAUlU
+	id S965055AbXDAUu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 16:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXDAUu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 16:41:20 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:51287 "EHLO pasmtpA.tele.dk"
+	Sun, 1 Apr 2007 16:50:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50548 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964931AbXDAUlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 16:41:19 -0400
-Date: Sun, 1 Apr 2007 22:42:03 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [pp] kbuild: asm-offsets generalized
-Message-ID: <20070401204203.GA10761@uranus.ravnborg.org>
-References: <1171012827.2718.42.camel@localhost.localdomain> <200702091109.20061.ak@muc.de> <1171024771.2718.129.camel@localhost.localdomain> <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz> <20070216155527.GA14687@flower.upol.cz> <20070216155929.GA14713@flower.upol.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S965095AbXDAUuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 16:50:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
+Date: Sun, 1 Apr 2007 22:53:37 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>, David Zeuthen <davidz@redhat.com>,
+       Maxim <maximlevitsky@gmail.com>, Pete Zaitcev <zaitcev@redhat.com>,
+       gregkh@suse.de, Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+References: <20070401175020.GE11146@elf.ucw.cz> <Pine.LNX.4.44L0.0704011422460.1054-100000@netrider.rowland.org> <20070401183437.GH11146@elf.ucw.cz>
+In-Reply-To: <20070401183437.GH11146@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070216155929.GA14713@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200704012253.38931.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 04:59:29PM +0100, Oleg Verych wrote:
+Hi,
+
+On Sunday, 1 April 2007 20:34, Pavel Machek wrote:
+> Hi!
+> 
+> > > Problem is that suspending _with_ removable mass storage devices
+> > > attached just will not work. User will unplug them, then complain
+> > > about corruption. Advanced user will unplug them, work with them
+> > > somewhere else, replug them, then loose filesystem.
 > > > 
-> > > Proposition will follow.
-> > > 
-> > []
+> > > Feel free to send patch to teach filesystems to handle this.
 > > 
-> > [patch proposition] kbuild: lguest with private asm-offsets
-> [] 
-> >  * needs "asm-offsets magic demystified, generalized".
-> [] 
+> > Actually what's needed is a Persistent Logical Volume Manager.  With it,
+> > you could even mount a filesystem on a USB device, unplug the device, plug
+> > it back into a different port, and still be able to use the filesystem.
+> > 
+> > But you're still likely to run into trouble if you unplug a storage
+> > device, move it to another system and write on it, then plug it back into
+> > the original system.  The PLVM would somehow have to recognize that the
+> > data had been changed.  I don't know a foolproof way of doing that.
 > 
-> [patch proposition] kbuild: asm-offsets generalized
+> Such detection should be possible when done at filesystem level.
 > 
->  * scripts/mkCconstants:
->    - asm-offsets magic demystified, generalized,
+> I.e. ext3 would notice that someone replayed the journal.
 > 
->  * (hopefully) more readable sed scripts,
-> 
->  * top Kbuild may be updated...
-> 
->  * file needs `chmod u+x`, i don't know, how it's done in patch(1).
+> Or we could create ext5 where each r/w mount would update mount
+> time... actually we probably already have last mount time in ext3,
+> so...
 
-Can I ask you to provide a complete patch that replaces the current
-asm-offset stuff with your more readable script version.
+I'm thinking we'll need to introduce something like freezing notifiers, ie.
+the ability to register a notifier by an interested subsystem that will be
+called right after user space processes have been frozen and right before
+we start to thaw them (that may allow us to handle the microcode issue in
+a clean way, for example).
 
-Name the script: mkasm-offset.sh to make a direct connection to 
-the resulting .h file name.
+Now if a filesystem registers a freezing notifier, it may be unmounted during
+the suspend and remounted during the resume in more or less transparent
+way.  I think an additional mount flag would be needed for filesystem that
+should install such notifiers, like "removable".
 
-Thanks,
-
-	Sam
-
-
-> 
-> pp-by: Oleg Verych
-> ---
->  scripts/mkCconstants           |  50 +++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 50 insertions(+), 0 deletions(-)
-> 
-> Index: linux-2.6.20/scripts/mkCconstants
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6.20/scripts/mkCconstants	2007-02-16 15:33:51.696900750 +0100
-> @@ -0,0 +1,50 @@
-> +#!/bin/sh
-> +
-> +# Input file, where values of interest are stored is produced by
-> +# `cmd_cc_s_c'. It yields calculation of constants, needed in
-> +# assembler modules. Output is a suitable header file.
-> +#
-> +# $1 - input filename;
-> +# $2 - output filename;
-> +# $3 - header file format: "normal" (default), "mips".
-> +
-> +set -e
-> +
-> +[ -z "$1" ] || [ -z "$2" ] && exit 1
-> +
-> +case $3 in
-> +    mips)
-> +	SED_SCRIPT='
-> +/^@@@/{
-> +s/^@@@//;
-> +s/ \#.*\$//;
-> +p;
-> +}'
-> +	;;
-> +    normal | *)
-> +	SED_SCRIPT='
-> +/^->/{
-> +s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:;
-> +s:->::;
-> +p;
-> +}'
-> +	;;
-> +esac
-> +
-> +cat << "EOF"  > $2
-> +#ifndef __ASM_OFFSETS_H__
-> +#define __ASM_OFFSETS_H__
-> +
-> +/*
-> + * This file was generated by scripts/mkCconstants
-> + */
-> +
-> +EOF
-> +
-> +sed -ne "$SED_SCRIPT" $1 >> $2
-> +
-> +cat << "EOF" >> $2
-> +
-> +#endif
-> +
-> +EOF
-> 
-> --
-> -o--=O`C  info emacs : not found
->  #oo'L O  info make  : not found
-> <___=E M  man gcc    : not found
+Greetings,
+Rafael
