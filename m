@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbXDASOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933788AbXDASOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933781AbXDASOm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbXDASOj
+	id S933788AbXDASOi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbXDASOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:14:39 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:39039 "EHLO tmailer.gwdg.de"
+	Sun, 1 Apr 2007 14:14:37 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:39061 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933760AbXDASO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:14:29 -0400
-Date: Sun, 1 Apr 2007 20:14:14 +0200 (MEST)
+	id S933775AbXDASOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:14:32 -0400
+Date: Sun, 1 Apr 2007 20:14:32 +0200 (MEST)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 3/16] vt-underline-color.diff
+Subject: [PATCH 4/16] vt-printk-color.diff
 In-Reply-To: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704012002570.12316@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704012003180.12316@yvahk01.tjqt.qr>
 References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,259 +24,132 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add color support to the "underline" and "italic" attributes as in
-OpenBSD/NetBSD-style (vt220) and xterm.
+Colored kernel message output
+
+Gives kernel messages on the console an OpenBSD-esque color to distinguish
+them from regular tty (as long as that's not colored too) text.
+
+Inspired by cko (iirc http://freshmeat.net/p/cko/), but better
+implementation done by myself (handles newlines correctly).
 
 Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
- drivers/char/vt.c               |   34 ++++++++++++++++++++++++++++------
- drivers/video/console/mdacon.c  |    3 ++-
- drivers/video/console/promcon.c |    3 ++-
- drivers/video/console/sticon.c  |    2 +-
- drivers/video/console/vgacon.c  |   12 ++++++++----
- include/linux/console.h         |    2 +-
- include/linux/console_struct.h  |    3 +++
- 7 files changed, 45 insertions(+), 14 deletions(-)
+ Kconfig |   28 ++++++++++++++++++++++++++++
+ vt.c    |   22 ++++++++++++++++++++++
+ 2 files changed, 50 insertions(+)
 
+Index: linux-2.6.21-rc5/drivers/char/Kconfig
+===================================================================
+--- linux-2.6.21-rc5.orig/drivers/char/Kconfig
++++ linux-2.6.21-rc5/drivers/char/Kconfig
+@@ -57,6 +57,34 @@ config VT_CONSOLE
+ 
+ 	  If unsure, say Y.
+ 
++config VT_CKO
++	hex "Colored kernel message output"
++	range 0x00 0xFF
++	depends on VT_CONSOLE
++	default 0x17
++	---help---
++	This option will give you ability to change the color of
++	kernel messages.
++
++	The value you need to enter here is the ASCII color value
++	composed (OR'ed) by one foreground color, one background
++	color and any number of attributes as follows:
++
++	Foreground:     Background:    Attributes:
++	0x01 blue       0x10 blue      0x08 highlight foreground
++	0x02 green      0x20 green     0x80 blinking foreground
++	0x03 cyan       0x30 cyan
++	0x04 red        0x40 red
++	0x05 magenta    0x50 red
++	0x06 brown      0x60 brown
++	0x07 gray       0x70 gray
++
++	Thus, 0x17 will yield gray-on-blue like you can see in
++	OpenBSD, 0x02 the green-on-black like on NetBSD.
++	Using "highlight foreground" does not work when you use
++	VGA Console and fonts with 512 glyphs.
++	VGA Framebuffer is not affected.
++
+ config HW_CONSOLE
+ 	bool
+ 	depends on VT && !S390 && !UML
 Index: linux-2.6.21-rc5/drivers/char/vt.c
 ===================================================================
 --- linux-2.6.21-rc5.orig/drivers/char/vt.c
 +++ linux-2.6.21-rc5/drivers/char/vt.c
-@@ -348,10 +348,12 @@ void update_region(struct vc_data *vc, u
+@@ -73,6 +73,7 @@
+  */
  
- /* Structure of attributes is hardware-dependent */
+ #include <linux/module.h>
++#include <linux/moduleparam.h>
+ #include <linux/types.h>
+ #include <linux/sched.h>
+ #include <linux/tty.h>
+@@ -2234,6 +2235,17 @@ struct tty_driver *console_driver;
  
--static u8 build_attr(struct vc_data *vc, u8 _color, u8 _intensity, u8 _blink, u8 _underline, u8 _reverse)
-+static u8 build_attr(struct vc_data *vc, u8 _color, u8 _intensity, u8 _blink,
-+    u8 _underline, u8 _reverse, u8 _italic)
- {
- 	if (vc->vc_sw->con_build_attr)
--		return vc->vc_sw->con_build_attr(vc, _color, _intensity, _blink, _underline, _reverse);
-+		return vc->vc_sw->con_build_attr(vc, _color, _intensity,
-+		       _blink, _underline, _reverse, _italic);
+ #ifdef CONFIG_VT_CONSOLE
  
- #ifndef VT_BUF_VRAM_ONLY
- /*
-@@ -368,10 +370,13 @@ static u8 build_attr(struct vc_data *vc,
- 	u8 a = vc->vc_color;
- 	if (!vc->vc_can_do_color)
- 		return _intensity |
-+		       (_italic ? 2 : 0) |
- 		       (_underline ? 4 : 0) |
- 		       (_reverse ? 8 : 0) |
- 		       (_blink ? 0x80 : 0);
--	if (_underline)
-+	if (_italic)
-+		a = (a & 0xF0) | vc->vc_itcolor;
-+	else if (_underline)
- 		a = (a & 0xf0) | vc->vc_ulcolor;
- 	else if (_intensity == 0)
- 		a = (a & 0xf0) | vc->vc_ulcolor;
-@@ -392,8 +397,10 @@ static u8 build_attr(struct vc_data *vc,
- 
- static void update_attr(struct vc_data *vc)
- {
--	vc->vc_attr = build_attr(vc, vc->vc_color, vc->vc_intensity, vc->vc_blink, vc->vc_underline, vc->vc_reverse ^ vc->vc_decscnm);
--	vc->vc_video_erase_char = (build_attr(vc, vc->vc_color, 1, vc->vc_blink, 0, vc->vc_decscnm) << 8) | ' ';
-+	vc->vc_attr = build_attr(vc, vc->vc_color, vc->vc_intensity,
-+	              vc->vc_blink, vc->vc_underline,
-+	              vc->vc_reverse ^ vc->vc_decscnm, vc->vc_italic);
-+	vc->vc_video_erase_char = (build_attr(vc, vc->vc_color, 1, vc->vc_blink, 0, vc->vc_decscnm, 0) << 8) | ' ';
- }
- 
- /* Note: inverting the screen twice should revert to the original state */
-@@ -1136,6 +1143,7 @@ static void csi_X(struct vc_data *vc, in
- static void default_attr(struct vc_data *vc)
- {
- 	vc->vc_intensity = 1;
-+	vc->vc_italic = 0;
- 	vc->vc_underline = 0;
- 	vc->vc_reverse = 0;
- 	vc->vc_blink = 0;
-@@ -1158,6 +1166,9 @@ static void csi_m(struct vc_data *vc)
- 			case 2:
- 				vc->vc_intensity = 0;
- 				break;
-+			case 3:
-+				vc->vc_italic = 1;
-+				break;
- 			case 4:
- 				vc->vc_underline = 1;
- 				break;
-@@ -1198,6 +1209,9 @@ static void csi_m(struct vc_data *vc)
- 			case 22:
- 				vc->vc_intensity = 1;
- 				break;
-+			case 23:
-+				vc->vc_italic = 0;
-+				break;
- 			case 24:
- 				vc->vc_underline = 0;
- 				break;
-@@ -1458,6 +1472,7 @@ static void save_cur(struct vc_data *vc)
- 	vc->vc_saved_x		= vc->vc_x;
- 	vc->vc_saved_y		= vc->vc_y;
- 	vc->vc_s_intensity	= vc->vc_intensity;
-+	vc->vc_s_italic         = vc->vc_italic;
- 	vc->vc_s_underline	= vc->vc_underline;
- 	vc->vc_s_blink		= vc->vc_blink;
- 	vc->vc_s_reverse	= vc->vc_reverse;
-@@ -1472,6 +1487,7 @@ static void restore_cur(struct vc_data *
- {
- 	gotoxy(vc, vc->vc_saved_x, vc->vc_saved_y);
- 	vc->vc_intensity	= vc->vc_s_intensity;
-+	vc->vc_italic		= vc->vc_s_italic;
- 	vc->vc_underline	= vc->vc_s_underline;
- 	vc->vc_blink		= vc->vc_s_blink;
- 	vc->vc_reverse		= vc->vc_s_reverse;
-@@ -2585,6 +2601,11 @@ static void con_close(struct tty_struct 
- 	mutex_unlock(&tty_mutex);
- }
- 
-+static int default_italic_color    = 2; // green (ASCII)
-+static int default_underline_color = 3; // cyan (ASCII)
-+module_param_named(italic, default_italic_color, int, S_IRUGO | S_IWUSR);
-+module_param_named(underline, default_underline_color, int, S_IRUGO | S_IWUSR);
++static unsigned int cko_color = CONFIG_VT_CKO;
 +
- static void vc_init(struct vc_data *vc, unsigned int rows,
- 		    unsigned int cols, int do_clear)
- {
-@@ -2604,7 +2625,8 @@ static void vc_init(struct vc_data *vc, 
- 		vc->vc_palette[k++] = default_blu[j] ;
++static __init int set_cko(char *str)
++{
++	cko_color = simple_strtoul(str, NULL, 0);
++	return 1;
++}
++
++__setup("cko=", set_cko);
++module_param(cko_color, uint, S_IRUGO | S_IWUSR);
++
+ /*
+  *	Console on virtual terminal
+  *
+@@ -2274,12 +2286,16 @@ static void vt_console_print(struct cons
+ 		hide_cursor(vc);
+ 
+ 	start = (ushort *)vc->vc_pos;
++	vc->vc_color = cko_color;
++	update_attr(vc);
+ 
+ 	/* Contrived structure to try to emulate original need_wrap behaviour
+ 	 * Problems caused when we have need_wrap set on '\n' character */
+ 	while (count--) {
+ 		c = *b++;
+ 		if (c == 10 || c == 13 || c == 8 || vc->vc_need_wrap) {
++			vc->vc_color = vc->vc_def_color;
++			update_attr(vc);
+ 			if (cnt > 0) {
+ 				if (CON_IS_VISIBLE(vc))
+ 					vc->vc_sw->con_putcs(vc, start, cnt, vc->vc_y, vc->vc_x);
+@@ -2292,6 +2308,8 @@ static void vt_console_print(struct cons
+ 				bs(vc);
+ 				start = (ushort *)vc->vc_pos;
+ 				myx = vc->vc_x;
++				vc->vc_color = cko_color;
++				update_attr(vc);
+ 				continue;
+ 			}
+ 			if (c != 13)
+@@ -2299,6 +2317,8 @@ static void vt_console_print(struct cons
+ 			cr(vc);
+ 			start = (ushort *)vc->vc_pos;
+ 			myx = vc->vc_x;
++			vc->vc_color = cko_color;
++			update_attr(vc);
+ 			if (c == 10 || c == 13)
+ 				continue;
+ 		}
+@@ -2320,6 +2340,8 @@ static void vt_console_print(struct cons
+ 			vc->vc_need_wrap = 1;
+ 		}
  	}
- 	vc->vc_def_color       = 0x07;   /* white */
--	vc->vc_ulcolor		= 0x0f;   /* bold white */
-+	vc->vc_ulcolor         = default_underline_color;
-+	vc->vc_itcolor         = default_italic_color;
- 	vc->vc_halfcolor       = 0x08;   /* grey */
- 	init_waitqueue_head(&vc->paste_wait);
- 	reset_terminal(vc, do_clear);
-Index: linux-2.6.21-rc5/drivers/video/console/mdacon.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/video/console/mdacon.c
-+++ linux-2.6.21-rc5/drivers/video/console/mdacon.c
-@@ -384,7 +384,7 @@ static inline u16 mda_convert_attr(u16 c
- }
++	vc->vc_color = vc->vc_def_color;
++	update_attr(vc);
+ 	set_cursor(vc);
  
- static u8 mdacon_build_attr(struct vc_data *c, u8 color, u8 intensity, 
--			    u8 blink, u8 underline, u8 reverse)
-+			    u8 blink, u8 underline, u8 reverse, u8 italic)
- {
- 	/* The attribute is just a bit vector:
- 	 *
-@@ -397,6 +397,7 @@ static u8 mdacon_build_attr(struct vc_da
- 	return (intensity & 3) |
- 		((underline & 1) << 2) |
- 		((reverse   & 1) << 3) |
-+		(!!italic << 4) |
- 		((blink     & 1) << 7);
- }
- 
-Index: linux-2.6.21-rc5/drivers/video/console/promcon.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/video/console/promcon.c
-+++ linux-2.6.21-rc5/drivers/video/console/promcon.c
-@@ -548,7 +548,8 @@ promcon_scroll(struct vc_data *conp, int
- }
- 
- #if !(PROMCON_COLOR)
--static u8 promcon_build_attr(struct vc_data *conp, u8 _color, u8 _intensity, u8 _blink, u8 _underline, u8 _reverse)
-+static u8 promcon_build_attr(struct vc_data *conp, u8 _color, u8 _intensity,
-+    u8 _blink, u8 _underline, u8 _reverse, u8 _italic)
- {
- 	return (_reverse) ? 0xf : 0x7;
- }
-Index: linux-2.6.21-rc5/drivers/video/console/sticon.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/video/console/sticon.c
-+++ linux-2.6.21-rc5/drivers/video/console/sticon.c
-@@ -314,7 +314,7 @@ static unsigned long sticon_getxy(struct
- }
- 
- static u8 sticon_build_attr(struct vc_data *conp, u8 color, u8 intens,
--			    u8 blink, u8 underline, u8 reverse)
-+			    u8 blink, u8 underline, u8 reverse, u8 italic)
- {
-     u8 attr = ((color & 0x70) >> 1) | ((color & 7));
- 
-Index: linux-2.6.21-rc5/drivers/video/console/vgacon.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/video/console/vgacon.c
-+++ linux-2.6.21-rc5/drivers/video/console/vgacon.c
-@@ -87,7 +87,7 @@ static void vgacon_save_screen(struct vc
- static int vgacon_scroll(struct vc_data *c, int t, int b, int dir,
- 			 int lines);
- static u8 vgacon_build_attr(struct vc_data *c, u8 color, u8 intensity,
--			    u8 blink, u8 underline, u8 reverse);
-+			    u8 blink, u8 underline, u8 reverse, u8);
- static void vgacon_invert_region(struct vc_data *c, u16 * p, int count);
- static unsigned long vgacon_uni_pagedir[2];
- 
-@@ -577,12 +577,14 @@ static void vgacon_deinit(struct vc_data
- }
- 
- static u8 vgacon_build_attr(struct vc_data *c, u8 color, u8 intensity,
--			    u8 blink, u8 underline, u8 reverse)
-+			    u8 blink, u8 underline, u8 reverse, u8 italic)
- {
- 	u8 attr = color;
- 
- 	if (vga_can_do_color) {
--		if (underline)
-+		if (italic)
-+			attr = (attr & 0xF0) | c->vc_itcolor;
-+		else if (underline)
- 			attr = (attr & 0xf0) | c->vc_ulcolor;
- 		else if (intensity == 0)
- 			attr = (attr & 0xf0) | c->vc_halfcolor;
-@@ -596,7 +598,9 @@ static u8 vgacon_build_attr(struct vc_da
- 	if (intensity == 2)
- 		attr ^= 0x08;
- 	if (!vga_can_do_color) {
--		if (underline)
-+		if (italic)
-+			attr = (attr & 0xF8) | 0x02;
-+		else if (underline)
- 			attr = (attr & 0xf8) | 0x01;
- 		else if (intensity == 0)
- 			attr = (attr & 0xf0) | 0x08;
-Index: linux-2.6.21-rc5/include/linux/console.h
-===================================================================
---- linux-2.6.21-rc5.orig/include/linux/console.h
-+++ linux-2.6.21-rc5/include/linux/console.h
-@@ -51,7 +51,7 @@ struct consw {
- 	int	(*con_scrolldelta)(struct vc_data *, int);
- 	int	(*con_set_origin)(struct vc_data *);
- 	void	(*con_save_screen)(struct vc_data *);
--	u8	(*con_build_attr)(struct vc_data *, u8, u8, u8, u8, u8);
-+	u8	(*con_build_attr)(struct vc_data *, u8, u8, u8, u8, u8, u8);
- 	void	(*con_invert_region)(struct vc_data *, u16 *, int);
- 	u16    *(*con_screen_pos)(struct vc_data *, int);
- 	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
-Index: linux-2.6.21-rc5/include/linux/console_struct.h
-===================================================================
---- linux-2.6.21-rc5.orig/include/linux/console_struct.h
-+++ linux-2.6.21-rc5/include/linux/console_struct.h
-@@ -37,6 +37,7 @@ struct vc_data {
- 	unsigned char	vc_color;		/* Foreground & background */
- 	unsigned char	vc_s_color;		/* Saved foreground & background */
- 	unsigned char	vc_ulcolor;		/* Color for underline mode */
-+	unsigned char   vc_itcolor;
- 	unsigned char	vc_halfcolor;		/* Color for half intensity mode */
- 	/* cursor */
- 	unsigned int	vc_cursor_type;
-@@ -71,10 +72,12 @@ struct vc_data {
- 	unsigned int	vc_deccolm	: 1;	/* 80/132 Column Mode */
- 	/* attribute flags */
- 	unsigned int	vc_intensity	: 2;	/* 0=half-bright, 1=normal, 2=bold */
-+	unsigned int    vc_italic:1;
- 	unsigned int	vc_underline	: 1;
- 	unsigned int	vc_blink	: 1;
- 	unsigned int	vc_reverse	: 1;
- 	unsigned int	vc_s_intensity	: 2;	/* saved rendition */
-+	unsigned int    vc_s_italic:1;
- 	unsigned int	vc_s_underline	: 1;
- 	unsigned int	vc_s_blink	: 1;
- 	unsigned int	vc_s_reverse	: 1;
+ quit:
 #<EOF>
 
