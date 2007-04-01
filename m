@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932953AbXDAMn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbXDAMrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932953AbXDAMn0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 08:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbXDAMn0
+	id S932886AbXDAMrq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 08:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbXDAMrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 08:43:26 -0400
-Received: from ipn26-148.piekary.net ([83.238.26.148]:42989 "EHLO
+	Sun, 1 Apr 2007 08:47:46 -0400
+Received: from ipn26-148.piekary.net ([83.238.26.148]:53275 "EHLO
 	ipn26-148.piekary.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932953AbXDAMn0 (ORCPT
+	with ESMTP id S932886AbXDAMrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 08:43:26 -0400
-Date: Sun, 1 Apr 2007 14:43:23 +0200
+	Sun, 1 Apr 2007 08:47:46 -0400
+Date: Sun, 1 Apr 2007 14:47:44 +0200
 From: Michal Januszewski <spock@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: [PATCH resend] vt: fix potential race in VT_WAITACTIVE handler
-Message-ID: <20070401124323.GA4040@spock.one.pl>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fbcon: don't draw cursor when it's disabled
+Message-ID: <20070401124744.GB4040@spock.one.pl>
 Reply-To: spock@gentoo.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -29,45 +27,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Michal Januszewski <spock@gentoo.org>
 
-On a multiprocessor machine the VT_WAITACTIVE ioctl call may return 0
-if fg_console has already been updated in redraw_screen() but the
-console switch itself hasn't been completed. Fix this by checking
-fg_console in vt_waitactive() with the console sem held.
+When the cursor and echo are disabled on the current console, pressing a
+key will cause a black rectangle to be painted in the cursor's position.
+Fix this by not touching the framebuffer in fbcon_cursor() when the
+cursor is off.
 
 Signed-off-by: Michal Januszewski <spock@gentoo.org>
 ---
-This is the 2nd version of this patch. It incorporates Andrew's
-suggestions, ie. calls set_current_state() after down() and adds
-a comment explaining why acquiring the console sem is necessary.
 
- drivers/char/vt_ioctl.c |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
+ drivers/video/console/fbcon.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index 1fa2da8..0508293 100644
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -1039,10 +1039,20 @@ int vt_waitactive(int vt)
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index f721341..7089aa8 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1330,7 +1330,7 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 	int y;
+  	int c = scr_readw((u16 *) vc->vc_pos);
  
- 	add_wait_queue(&vt_activate_queue, &wait);
- 	for (;;) {
--		set_current_state(TASK_INTERRUPTIBLE);
- 		retval = 0;
--		if (vt == fg_console)
-+
-+		/* Synchronize with redraw_screen(). By acquiring the console
-+		 * semaphore we make sure that the console switch is completed
-+		 * before we return. If we didn't wait for the semaphore, we
-+		 * could return at a point where fg_console has already been
-+		 * updated, but the console switch hasn't been completed. */
-+		acquire_console_sem();
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		if (vt == fg_console) {
-+			release_console_sem();
- 			break;
-+		}
-+		release_console_sem();
- 		retval = -EINTR;
- 		if (signal_pending(current))
- 			break;
+-	if (fbcon_is_inactive(vc, info))
++	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+ 		return;
+ 
+ 	ops->cursor_flash = (mode == CM_ERASE) ? 0 : 1;
 
