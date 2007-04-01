@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933847AbXDASgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbXDASjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933847AbXDASgO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 14:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXDASgO
+	id S933853AbXDASjc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 14:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933855AbXDASjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 14:36:14 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:48734 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933847AbXDASgN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 14:36:13 -0400
-Date: Sun, 01 Apr 2007 20:36:11 +0200
-Message-Id: <1714123823@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: Ken Chen <kenchen@google.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] remove artificial software max_loop limit
-Organization: http://freemail.web.de/
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Apr 2007 14:39:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37614 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933853AbXDASjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Apr 2007 14:39:31 -0400
+Date: Sun, 1 Apr 2007 20:39:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rui Nuno Capela <rncbc@rncbc.org>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: 2.6.21-rc5-rt6 make errors
+Message-ID: <20070401183928.GB27614@elte.hu>
+References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org> <460FE7F3.4060303@rncbc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <460FE7F3.4060303@rncbc.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Blame on the dual meaning of max_loop that it uses currently: to
->initialize a set of loop devices and as a side effect, it also sets
->the upper limit.  People are complaining about the former constrain,
->isn't it?  Does anyone uses the 2nd meaning of upper limit?
->
->- Ken
 
-what sense would it make to set an upper limit at all?
+* Rui Nuno Capela <rncbc@rncbc.org> wrote:
 
-we`re so happy to have none anymore :)
+> Hi,
+> 
+> Just tried to build 2.6.21-rc5-rt6 and it is failing on build time.
 
-i think andrew`s suggestion is just good:
+> Just to let you know that -rt5 was doing fine with very same .config .
 
->So if we're worried about not breaking existing setups, we should retain
->this module parameter as a do-nothing thing, maybe with a
->this-is-going-away warning printk, too.
+oops - indeed! I've uploaded -rc5-rt7 with the fix. (it includes a few 
+other fixes as well)
 
+note that for Fedora-ish distros there's an easy yum test-kernel 
+available from the rt-testing repo:
 
-roland
+cat > /etc/yum.repos.d/rt-testing.repo
+[rt-testing]
+name=Ingo's Real-Time (-rt) test-kernel for FC6
+baseurl=http://people.redhat.com/mingo/realtime-preempt/yum-testing/yum/
+enabled=1
+gpgcheck=0
+<Ctrl-D>
 
+this includes Linus-git-bleeding-edge as well as the base kernel. (rt7 
+is based on upstream HEAD 755948cfca16c7)
 
+[the rt-testing repo currently includes the rt6 rpm, i've just started 
+the rt7 build, it should be available in half an hour or so]
 
-_______________________________________________________________
-SMS schreiben mit WEB.DE FreeMail - einfach, schnell und
-kostenguenstig. Jetzt gleich testen! http://f.web.de/?mc=021192
-
+	Ingo
