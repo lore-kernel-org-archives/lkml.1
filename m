@@ -1,73 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbXDBHeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbXDBHh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751218AbXDBHeQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXDBHeQ
+	id S1753380AbXDBHh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXDBHh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:34:16 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:44290 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbXDBHeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:34:15 -0400
-Date: Mon, 2 Apr 2007 09:31:37 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
-       Daniel Jacobowitz <dan@debian.org>
-Subject: [PATCH 17/16] Do not reset UTF8 on terminal reset
-In-Reply-To: <1175496595.4614.11.camel@daplas>
-Message-ID: <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> 
- <Pine.LNX.4.61.0704012001130.12316@yvahk01.tjqt.qr> <1175496595.4614.11.camel@daplas>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Mon, 2 Apr 2007 03:37:28 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49130 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753380AbXDBHh1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:37:27 -0400
+Date: Mon, 2 Apr 2007 10:37:25 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Rene Herman <rene.herman@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mcdx -- do_request(): non-read command to cd!!
+In-Reply-To: <20070402071018.GE11996@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0704021036130.25134@sbz-30.cs.Helsinki.FI>
+References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk>
+ <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com>
+ <4610481D.8000102@gmail.com> <46104954.50608@gmail.com>
+ <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI>
+ <20070402071018.GE11996@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2 Apr 2007, Jens Axboe wrote:
+> Updated patch attached :-)
+> 
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index 0bc8b0b..cff761a 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -324,3 +324,10 @@ Why:	the i8xx_tco watchdog driver has been replaced by the iTCO_wdt
+>  Who:	Wim Van Sebroeck <wim@iguana.be>
+>  
+>  ---------------------------
+> +
+> +What:	The legacy CDROM drivers (drivers/cdrom/, except cdrom.c)
+> +When:	In 2.6.23
+> +Why:	They are all terminally broken (most don't even compile)
+> +Who:	Jens Axboe <jens.axboe@oracle.com>
+> +
+> +---------------------------
 
-On Apr 2 2007 14:49, Antonino A. Daplas wrote:
->On Sun, 2007-04-01 at 20:13 +0200, Jan Engelhardt wrote:
->
->> Allow for the palette to be exposed and changed via sysfs. A call to
->> /usr/bin/reset will slurp the new definitions in for the current
->> console.
->
->I like this. The escape sequences to change the palette does not stay
->permanently.
+I am certainly ok with that. But until then, update patch below =)
 
-As much as you like it, there is a slight problem with it. Linux will
-currently throw virtual consoles out of UTF8 mode when reset is called.
+			Pekka
 
-Also see:
-	http://lkml.org/lkml/2005/5/17/289
-	http://lkml.org/lkml/2005/5/17/297
-
-These posts argue about terminfo being the culprit. But how can terminfo 
-be at fault, when `echo -en "\ec"` triggers it too?
-
-Since I am in a patch mood, here's my stance/patch, which is compile and 
-run tested and behaves as expected (both with `echo` and `reset`).
-
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-Cc: Andrew Morton <akpm@osdl.org>
-Cc: Daniel Jacobowitz <dan@debian.org>
-Cc: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
-Obsoletes: https://bugzilla.novell.com/show_bug.cgi?id=225853
-
-Index: linux-2.6.21-rc5/drivers/char/vt.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/char/vt.c
-+++ linux-2.6.21-rc5/drivers/char/vt.c
-@@ -1518,7 +1518,6 @@ static void reset_terminal(struct vc_dat
- 	vc->vc_charset		= 0;
- 	vc->vc_need_wrap	= 0;
- 	vc->vc_report_mouse	= 0;
--	vc->vc_utf		= 0;
- 	vc->vc_utf_count	= 0;
+diff --git a/drivers/cdrom/mcdx.c b/drivers/cdrom/mcdx.c
+index f574962..a1e4297 100644
+--- a/drivers/cdrom/mcdx.c
++++ b/drivers/cdrom/mcdx.c
+@@ -577,56 +577,57 @@ static void do_mcdx_request(request_queu
+ 	if (!req)
+ 		return;
  
- 	vc->vc_disp_ctrl	= 0;
-#<EOF>
++	if (!blk_fs_request(req)) {
++		end_request(req, 0);
++		goto again;
++	}
++
+ 	stuffp = req->rq_disk->private_data;
+ 
+ 	if (!stuffp->present) {
+ 		xwarn("do_request(): bad device: %s\n",req->rq_disk->disk_name);
+ 		xtrace(REQUEST, "end_request(0): bad device\n");
+ 		end_request(req, 0);
+-		return;
++		goto again;
+ 	}
+ 
+ 	if (stuffp->audio) {
+ 		xwarn("do_request() attempt to read from audio cd\n");
+ 		xtrace(REQUEST, "end_request(0): read from audio\n");
+ 		end_request(req, 0);
+-		return;
++		goto again;
+ 	}
+ 
+ 	xtrace(REQUEST, "do_request() (%lu + %lu)\n",
+ 	       req->sector, req->nr_sectors);
+ 
+-	if (req->cmd != READ) {
++	if (rq_data_dir(req) != READ) {
+ 		xwarn("do_request(): non-read command to cd!!\n");
+ 		xtrace(REQUEST, "end_request(0): write\n");
+ 		end_request(req, 0);
+-		return;
+-	}
+-	else {
+-		stuffp->status = 0;
+-		while (req->nr_sectors) {
+-			int i;
+-
+-			i = mcdx_transfer(stuffp,
+-					  req->buffer,
+-					  req->sector,
+-					  req->nr_sectors);
+-
+-			if (i == -1) {
+-				end_request(req, 0);
+-				goto again;
+-			}
+-			req->sector += i;
+-			req->nr_sectors -= i;
+-			req->buffer += (i * 512);
+-		}
+-		end_request(req, 1);
+ 		goto again;
+-
+-		xtrace(REQUEST, "end_request(1)\n");
+-		end_request(req, 1);
+ 	}
+ 
++	stuffp->status = 0;
++	while (req->nr_sectors) {
++		int i;
++
++		spin_unlock_irq(q->queue_lock);
++		i = mcdx_transfer(stuffp,
++				  req->buffer,
++				  req->sector,
++				  req->nr_sectors);
++		spin_lock_irq(q->queue_lock);
++
++		if (i == -1) {
++			end_request(req, 0);
++			goto again;
++		}
++		req->sector += i;
++		req->nr_sectors -= i;
++		req->buffer += (i * 512);
++	}
++	end_request(req, 1);
+ 	goto again;
+ }
+ 
+ 
