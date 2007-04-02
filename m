@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965957AbXDBVk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965961AbXDBVmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965957AbXDBVk3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965961AbXDBVk3
+	id S965961AbXDBVmx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965964AbXDBVmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:40:29 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:51363 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965957AbXDBVk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:40:28 -0400
-Date: Mon, 2 Apr 2007 14:39:49 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Chris Wright <chrisw@sous-sol.org>, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/5] x86_64: enable clockevents and dynticks
-Message-ID: <20070402213949.GD10574@sequoia.sous-sol.org>
-References: <20070331083149.997762000@sous-sol.org> <1175419332.28263.67.camel@localhost.localdomain> <20070401185402.GZ10574@sequoia.sous-sol.org> <1175549504.28263.184.camel@localhost.localdomain>
+	Mon, 2 Apr 2007 17:42:53 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:42719 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965961AbXDBVmv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:42:51 -0400
+Subject: Re: [PATCH 1/2] Generic Virtual Memmap suport for SPARSEMEM
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       Andi Kleen <ak@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0704021428340.2272@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+	 <1175547000.22373.89.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0704021351590.1224@schroedinger.engr.sgi.com>
+	 <1175548924.22373.109.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0704021428340.2272@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 14:42:31 -0700
+Message-Id: <1175550151.22373.116.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1175549504.28263.184.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Thomas Gleixner (tglx@linutronix.de) wrote:
-> On Sun, 2007-04-01 at 11:54 -0700, Chris Wright wrote:
-> > * Thomas Gleixner (tglx@linutronix.de) wrote:
-> > > On Sat, 2007-03-31 at 01:31 -0700, Chris Wright wrote:
-> > > > This series converts x86_64 timers to clockevents drivers
-> > > > and then enables dynticks.  There's some minor cleanups along
-> > > > the way.  The lapic broadcast mechanism is untested, I'm sure it
-> > > > still needs work, there's still some cruft in lapic_setup_timer.
-> > > > 
-> > > > This is just for comments at this point, now that it's working
-> > > > on my test box in both NO_HZ=n and NO_HZ=n configurations (typically
-> > > > using hpet).
-> > > 
-> > > Have you checked, if we could share the code between i386 and x86_64 at
-> > > least for PIT and HPET. I'm not sure about the local APIC, but I think
-> > > it might be doable as well.
-> > 
-> > Yes, that's part of why I did some of the cleanups that way, so that we
-> > could merge the two together later.
+On Mon, 2007-04-02 at 14:31 -0700, Christoph Lameter wrote:
+> On Mon, 2 Apr 2007, Dave Hansen wrote:
 > 
-> I'd prefer to get this done now. If we plug it in as is, the "merge
-> later" probably will never happen.
+> > > > Hmmmmmmm.  Can we combine this with sparse_index_alloc()?  Also, why not
+> > > > just use the slab for this?
+> > > 
+> > > Use a slab for page sized allocations? No.
+> > 
+> > Why not?  We use it above for sparse_index_alloc() and if it is doing
+> > something wrong, I'd love to fix it.  Can you elaborate?
+> 
+> The slab allocator purposes is to deliver small sub page sized chunks.
+> The page allocator is there to allocate pages. Both are optimized for its 
+> purpose.
 
-that's fine, this is just RFC to see if there's obvious broken bits, etc.
-also, i still need to do some split out of the pit.  it and hpet are nearly
-identical though, so i don't noticing any issues with this.
+I understand that, in general, but how does that optimization help,
+here, exactly?  My argument is that if we use the slab, it means more
+code sharing with existing code in sparse.c.  Other than ideology, what
+practical reasons are there in this case that keep us from doing that
+otherwise attractive code sharing.
 
-the part i know is broken is lapic broadcast, so i'd like to fix that
-up too.  trouble is, it's broken on vanilla too, so i'm not 100% sure
-what i'm debugging yet.
+> > > I just extended this in V2 to also work on IA64. Its pretty generic.
+> > 
+> > Can you extend it to work on ppc? ;)
+> 
+> I do not know enough about how ppc handles large pages.
 
-thanks,
--chris
+I don't think the pagetable walks are generic enough to ever get used on
+ppc, unless they start walking the Linux pagetables for the kernel
+virtual address area.  I was trying to poke you into getting the
+pagetable walks out of sparse.c. ;)
+
+> > > > Then, do whatever magic you want in alloc_vmemmap().
+> > > 
+> > > That would break if alloc_vmemmap returns NULL because it cannot allocate 
+> > > memory.
+> > 
+> > OK, that makes sense.  However, it would still be nice to hide that
+> > #ifdef somewhere that people are a bit less likely to run into it.  It's
+> > just one #ifdef, so if you can kill it, great.  Otherwise, they pile up
+> > over time and _do_ cause real readability problems.
+> 
+> Well think about how to handle the case that the allocatiopn of a page 
+> table page or a vmemmap block fails. Once we have that sorted out then we 
+> can cleanup the higher layers.
+
+I think it is best to just completely replace
+sparse_early_mem_map_alloc() for the vmemmap case.  It really is a
+completely different beast.  You'd never, for instance, have
+alloc_remap() come into play.
+
+-- Dave
+
