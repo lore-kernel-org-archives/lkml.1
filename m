@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXDBQVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752192AbXDBQXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbXDBQVV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 12:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXDBQVV
+	id S1752192AbXDBQXH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 12:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbXDBQXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 12:21:21 -0400
-Received: from styx.suse.cz ([82.119.242.94]:45088 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752082AbXDBQVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 12:21:20 -0400
-Date: Mon, 2 Apr 2007 16:48:24 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: dtor@insightbb.com, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, stuart_hayes@dell.com
-Subject: Re: usb hid: reset NumLock
-In-Reply-To: <20070401222410.2ff7ecd7.zaitcev@redhat.com>
-Message-ID: <Pine.LNX.4.64.0704021641190.3808@jikos.suse.cz>
-References: <20070330105924.01a16dd6.zaitcev@redhat.com>
- <Pine.LNX.4.64.0703312122100.6040@jikos.suse.cz> <20070401222410.2ff7ecd7.zaitcev@redhat.com>
+	Mon, 2 Apr 2007 12:23:07 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:46239 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192AbXDBQXG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 12:23:06 -0400
+Message-ID: <46112D40.20508@zytor.com>
+Date: Mon, 02 Apr 2007 09:20:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <ak@suse.de>
+CC: Alexey Dobriyan <adobriyan@sw.ru>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, devel@openvz.org,
+       cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
+Subject: Re: [PATCH 1/3] Introduce cpuid_on_cpu() and cpuid_eax_on_cpu()
+References: <20070402113831.GA6785@localhost.sw.ru> <200704021410.29623.ak@suse.de>
+In-Reply-To: <200704021410.29623.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Apr 2007, Pete Zaitcev wrote:
+Andi Kleen wrote:
+> On Monday 02 April 2007 13:38, Alexey Dobriyan wrote:
+>> They will be used by cpuid driver and powernow-k8 cpufreq driver.
+>>
+>> With these changes powernow-k8 driver could run correctly on OpenVZ kernels
+>> with virtual cpus enabled (SCHED_VCPU).
+> 
+> This means openvz has multiple virtual CPU levels? One for cpuid/rdmsr and one
+> for the rest of the kernel? Both powernow-k8 and cpuid attempt to schedule
+> to the target CPU so they should already run there. But it is some other CPU,
+> but when they ask your _on_cpu() functions they suddenly get a "real" CPU?
+> Where is the difference between these levels of virtualness? 
+> 
 
-> diff --git a/drivers/usb/input/hid-core.c b/drivers/usb/input/hid-core.c
-> index ef09952..7338e81 100644
-> --- a/drivers/usb/input/hid-core.c
-> +++ b/drivers/usb/input/hid-core.c
-> @@ -548,6 +548,28 @@ void usbhid_init_reports(struct hid_device *hid)
->  		warn("timeout initializing reports");
->  }
->  
-> +/*
-> + * Reset LEDs which BIOS might have left on.
-> + */
-> +static int hid_find_field_early(struct hid_device *hid, unsigned int page,
-> +    unsigned int hid_code, struct hid_field **field);
+The CPUID and MSR drivers do not schedule to the target CPU; instead, on 
+hardware, they rely on IPI'ing the target processor if it is not the one 
+that's currently running.
 
-Hi Pete,
+There were a lot of discussion back when about which was the better 
+solution.  Alan Cox, in particular, really preferred the interrupt 
+solution as being less likely to cause implicit deadlock.
 
-could you please change the order of the two functions, so that you 
-don't have to put the forward declaration here?
+I do want to add that it's been on my list for some time -- in fact, I 
+keep implementing it half-way and then having other things to do -- to 
+add MSR and CPUID ioctls() that allow the full register file to be set 
+and read back, in order to support architecturally broken MSR and CPUID 
+levels.
 
-> +	/*
-> +	 * Just reset Num Lock for now.
-> +	 * This is called for non-keyboard devices too, so no printk if field
-> +	 * is not found.
-> +	 */
-
-I'd say this is a little bit overcommented.
-
-> The main reason is, I have a USB-to-PS/2 adapter where early acces to 
-> LEDs does not work. Apparently, it is still initializing the PS/2 part 
-> when it reports to USB that it's ready, and needs a delay. So, I figured 
-> that I may be breaking some odd devices. Some may crash or whatnot. This 
-> is why I asked Stuart to get me VID/PID for involved keyboards.
-
-Fair enough, thanks.
-
-Besides the trivial nitpicks above, I think that this fixed version is 
-fine. So as soon as you have the VIDs and PIDs of the hardware which 
-requires this, could you please update the patch and send it to me again?
-
-Thanks,
-
--- 
-Jiri Kosina
+	-hpa
