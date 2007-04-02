@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXDBCix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbXDBCyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752083AbXDBCix (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 22:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXDBCiw
+	id S1752169AbXDBCyH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 22:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXDBCyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 22:38:52 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34354 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752083AbXDBCiv (ORCPT
+	Sun, 1 Apr 2007 22:54:07 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2557 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752191AbXDBCyG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 22:38:51 -0400
-X-Sasl-enc: 61OGHxq/P1b5ok+56cN8blx/b5HHG8k5mzfHSfbInzm8 1175481531
-Date: Sun, 1 Apr 2007 23:38:46 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Alexey Starikovskiy <aystarik@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.21-rc5: Thinkpad X60 gets critical thermal shutdowns
-Message-ID: <20070402023846.GC28561@khazad-dum.debian.net>
-References: <460E0158.7090705@goop.org> <8f8ff01d0703310033y74421cfcl747ece1be003471@mail.gmail.com> <460F511E.2090102@goop.org> <46103DF2.30001@goop.org>
+	Sun, 1 Apr 2007 22:54:06 -0400
+Date: Sun, 1 Apr 2007 22:54:02 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pavel Machek <pavel@ucw.cz>, David Zeuthen <davidz@redhat.com>,
+       Maxim <maximlevitsky@gmail.com>, Pete Zaitcev <zaitcev@redhat.com>,
+       <gregkh@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
+In-Reply-To: <200704012253.38931.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0704012241530.23464-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46103DF2.30001@goop.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 01 Apr 2007, Jeremy Fitzhardinge wrote:
-> control problems.  Perhaps the ambient temperature was lower when I
-> reported success.
+On Sun, 1 Apr 2007, Rafael J. Wysocki wrote:
 
-You can use ibm-acpi to properly track your thinkpad thermal sensors, load
-it with the "experimental=1" parameter, and look at what gets exported at
-/proc/acpi/ibm/thermal.
+> Hi,
+> 
+> On Sunday, 1 April 2007 20:34, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > Problem is that suspending _with_ removable mass storage devices
+> > > > attached just will not work. User will unplug them, then complain
+> > > > about corruption. Advanced user will unplug them, work with them
+> > > > somewhere else, replug them, then loose filesystem.
+> > > > 
+> > > > Feel free to send patch to teach filesystems to handle this.
+> > > 
+> > > Actually what's needed is a Persistent Logical Volume Manager.  With it,
+> > > you could even mount a filesystem on a USB device, unplug the device, plug
+> > > it back into a different port, and still be able to use the filesystem.
+> > > 
+> > > But you're still likely to run into trouble if you unplug a storage
+> > > device, move it to another system and write on it, then plug it back into
+> > > the original system.  The PLVM would somehow have to recognize that the
+> > > data had been changed.  I don't know a foolproof way of doing that.
+> > 
+> > Such detection should be possible when done at filesystem level.
+> > 
+> > I.e. ext3 would notice that someone replayed the journal.
+> > 
+> > Or we could create ext5 where each r/w mount would update mount
+> > time... actually we probably already have last mount time in ext3,
+> > so...
+> 
+> I'm thinking we'll need to introduce something like freezing notifiers, ie.
+> the ability to register a notifier by an interested subsystem that will be
+> called right after user space processes have been frozen and right before
+> we start to thaw them (that may allow us to handle the microcode issue in
+> a clean way, for example).
+> 
+> Now if a filesystem registers a freezing notifier, it may be unmounted during
+> the suspend and remounted during the resume in more or less transparent
+> way.  I think an additional mount flag would be needed for filesystem that
+> should install such notifiers, like "removable".
 
-You can also use /proc/acpi/ibm/fan to check the fan's state.  And use the
-"level 7" /proc/acpi/ibm/fan command to set the emergency cooling level, and
-"level disengaged" command to set the really badass fan cooling level (might
-damage your hardware, we don't know if it is safe and IBM/Lenovo isn't
-talking).
+"Unmounted" and "remounted" aren't quite the right words.  All you really
+need to do is check (during the resume) that the superblock is still in
+the same state as it was when the suspend occurred.  After all, if someone
+else had mounted the dirty filesystem during the interim, they surely
+would have altered the superblock.  Note that even a read-only mount of a
+dirty ext3 filesystem will recover the journal; presumably that will alter
+the superblock too.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I don't think a "removable" flag is needed.  There's no reason not to do 
+this for every mounted filesystem.
+
+(Also "removable" isn't the right word either, since hot-pluggable devices 
+with non-removable media would need the same treatment.  In fact, while 
+the system is hibernating someone could even remove an internal IDE drive 
+and then put it back!)
+
+One final nit:  It's possible for someone to alter the data sectors 
+directly, without mounting the filesystem.  This is sufficiently perverse 
+that we probably shouldn't worry about it.
+
+Alan Stern
+
