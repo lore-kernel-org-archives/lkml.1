@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXDBFsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932419AbXDBFuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbXDBFsL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 01:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932315AbXDBFsL
+	id S932419AbXDBFuz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 01:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932409AbXDBFuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 01:48:11 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:36559 "EHLO smtp.osdl.org"
+	Mon, 2 Apr 2007 01:50:55 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:36620 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932310AbXDBFsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 01:48:09 -0400
-Date: Sun, 1 Apr 2007 22:48:04 -0700
+	id S932339AbXDBFuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 01:50:54 -0400
+Date: Sun, 1 Apr 2007 22:50:39 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/16] show-partitions-on-mount-error.diff
-Message-Id: <20070401224804.ab39b41b.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.61.0704012008590.12316@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-	<Pine.LNX.4.61.0704012008590.12316@yvahk01.tjqt.qr>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] enhance initcall_debug, measure latency
+Message-Id: <20070401225039.c3f65841.akpm@linux-foundation.org>
+In-Reply-To: <20070401181614.GA25648@elte.hu>
+References: <20070401181614.GA25648@elte.hu>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,10 +24,22 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Apr 2007 20:15:53 +0200 (MEST) Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+On Sun, 1 Apr 2007 20:16:14 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-> Display all possible partitions when the root filesystem is not mounted.
-> This helps to track spell'o's and missing drivers.
+> +		if (initcall_debug) {
+> +			t1 = ktime_get();
+> +			delta = ktime_sub(t1, t0);
+> +
+> +			printk("initcall 0x%p", *call);
+> +			print_fn_descriptor_symbol(": %s()",
+> +					(unsigned long) *call);
+> +			printk(" returned %d.\n", result);
+> +
+> +			printk("initcall 0x%p ran for %Ld msecs: ",
+> +				*call, delta.tv64 >> 20);
+> +			print_fn_descriptor_symbol("%s()\n",
+> +				(unsigned long) *call);
+> +		}
 
-It would be nice to include a sample of the resulting output for people
-to review.
+This might come out a bit better if it were to use -mm's
+sprint_symbol().
