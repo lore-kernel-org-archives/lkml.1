@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbXDBHM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbXDBHNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbXDBHM5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXDBHM5
+	id S1753359AbXDBHNI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbXDBHNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:12:57 -0400
-Received: from mx2.suse.de ([195.135.220.15]:45161 "EHLO mx2.suse.de"
+	Mon, 2 Apr 2007 03:13:08 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42217 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753350AbXDBHM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:12:56 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch 12/17] Consistently wrap paravirt ops callsites to make them patchable
-Date: Mon, 2 Apr 2007 09:11:50 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
-       Anthony Liguori <anthony@codemonkey.ws>
-References: <20070402055652.610711908@goop.org> <20070402055705.090656820@goop.org>
-In-Reply-To: <20070402055705.090656820@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	id S1753359AbXDBHNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:13:04 -0400
+Date: Mon, 2 Apr 2007 00:13:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: CaT <cat@zip.com.au>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: intermittant petabyte usage reported with broadcom nic
+Message-Id: <20070402001300.3b66007d.akpm@linux-foundation.org>
+In-Reply-To: <20070402014319.GA8345@zip.com.au>
+References: <20070402014319.GA8345@zip.com.au>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704020911.50623.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 April 2007 07:57, Jeremy Fitzhardinge wrote:
-> Wrap a set of interesting paravirt_ops calls in a wrapper which makes
-> the callsites available for patching.  Unfortunately this is pretty
-> ugly because there's no way to get gcc to generate a function call,
-> but also wrap just the callsite itself with the necessary labels.
+On Mon, 2 Apr 2007 11:43:19 +1000 CaT <cat@zip.com.au> wrote:
+
+> I take minute by minute snapshots of network traffic by sampling
+> /proc/net/dev and most of the time everything works fine. Occasionally
+> though I get petabyte byte traffic and corresponding packet traffic.
+
+How frequently?
+
+Are you able to provide some actual numbers (expected and actual values),
+so we can look at the bit patterns?
+
+> This happens on an AMD64, dual core smp box with Broadcom NetXtreme II
+> nics.
+
+What driver drivers that?  b44.c?
+
+> The issue happens with both nics but at different times. The same
+> sampling code runs on p4 boxes with ht on and e1000 nics without issues
+> so I don't believe it's an issue with my code (famous last words :)
+> which just does an re to extract the data on a per-line basis and prints
+> it out. Still, I'll be adding code to log any big readings and hopefully
+> it'll happen again sooner rather then later.
 > 
-> This patch supports functions with 0-4 arguments, and either void or
-> returning a value.  64-bit arguments must be split into a pair of
-> 32-bit arguments (lower word first).  Small structures are returned in
-> registers.
+> There is no preemption involved and the kernel is a monolythic build of
+> 2.6.19.[12] (there are two servers).
 
-Can you please add some comments to the code explaining this a little?
-Best would be perhaps a overview document in Documentation too.
+We do perform racy 64-bit updates of some of the stats counters.  But
+that'll only affect 32-bit kernels and I'm assuming you're running a 64-bit
+kernel on that AMD64 box (are you?)
 
-> +#define PVOP_CALL0(__rettype, __op)					\
+Plus it's odd that both the byte-counters and the packet-counters go wonky
+at the same time.
 
-The __s shouldn't be needed for the macro arguments because
-there is no shared name space with the caller.
-
-> +	({								\
-> +		__rettype __ret;					\
-> +		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-> +			unsigned long long __tmp;			\
-> +			unsigned long __ecx;				\
-> +			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-
-Not having the volatile would probably generate better code, but it 
-seems much safer for now.
-
-> +				     : "=A" (__tmp), "=c" (__ecx)	\
-> +				     : paravirt_type(__op),		\
-> +				       paravirt_clobber(CLBR_ANY)	\
-> +				     : "memory", "cc");			\
-
-And the cc clobber is also not needed
-
--Andi
