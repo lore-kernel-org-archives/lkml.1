@@ -1,95 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965042AbXDBJES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbXDBJMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965042AbXDBJES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 05:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933942AbXDBJES
+	id S933190AbXDBJMh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 05:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965148AbXDBJMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 05:04:18 -0400
-Received: from mx01.qsc.de ([213.148.129.14]:42886 "EHLO mx01.qsc.de"
+	Mon, 2 Apr 2007 05:12:37 -0400
+Received: from post.fh-kl.de ([143.93.17.200]:59552 "EHLO post.fh-kl.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933281AbXDBJEQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 05:04:16 -0400
-X-Greylist: delayed 1668 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 05:04:16 EDT
-From: Rene Rebe <rene@exactcode.de>
-Organization: ExactCODE
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: 2.6.21-rc5: Thinkpad X60 gets critical thermal shutdowns
-Date: Mon, 2 Apr 2007 10:35:40 +0200
+	id S933190AbXDBJMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 05:12:36 -0400
+X-Greylist: delayed 1562 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 05:12:36 EDT
+From: Wilhelm Meier <wilhelm.meier@fh-kl.de>
+Organization: University of applied sciences Kaiserslautern / Germany
+To: linux-cifs-client@lists.samba.org
+Subject: Re: [linux-cifs-client] Re: cifs and kthread_run / kernel_thread
+Date: Mon, 2 Apr 2007 10:58:36 +0200
 User-Agent: KMail/1.9.6
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       "Brown, Len" <len.brown@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <460E0158.7090705@goop.org> <8393D4C0-57C5-4CD2-8CA4-E4241E74FB4E@mac.com>
-In-Reply-To: <8393D4C0-57C5-4CD2-8CA4-E4241E74FB4E@mac.com>
+Cc: "Q (Igor Mammedov)" <qwerty0987654321@mail.ru>,
+       "Steve French (smfltc)" <smfltc@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070331120030.BE6A916387F@lists.samba.org> <46100407.30403@us.ibm.com> <4610B80F.9020102@mail.ru>
+In-Reply-To: <4610B80F.9020102@mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704021035.40672.rene@exactcode.de>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: Spam detection software, running on the system "grum.localhost", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  On Sunday 01 April 2007 20:57:57 Kyle Moffett wrote: >
-	On Mar 31, 2007, at 02:36:08, Jeremy Fitzhardinge wrote: > > When I run
-	2.6.21-rc5 + Andi's x86 patches + paravirt_ops patches, > > I've been
-	getting my machine shut down with critical thermal > > shutdown
-	messages: > > > > Mar 30 23:19:03 localhost kernel: ACPI: Critical trip
-	point > > Mar 30 23:19:03 localhost kernel: Critical temperature reached
-	(128 > > C), shutting down. > > Mar 30 23:19:03 localhost kernel:
-	Critical temperature reached (128 > > C), shutting down. > > Mar 30
-	23:19:03 localhost shutdown[19417]: shutting down for system > > halt >
-	> > > and the machine does feel pretty hot. Interestingly, when the > >
-	machine reboots, the fan spins up to a noticeably higher speed, so > >
-	it seems that maybe something is getting fan speed control wrong. > >
-	Well, 128C is more than hot enough to boil water and well above the >
-	thermal tolerances of most CPUs, so I would imagine that were your > CPU
-	actually that hot it wouldn't be capable of printing the > "Critical
-	temperature reached" messages, let alone properly rebooting. [...] 
-	Content analysis details:   (-1.4 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+Message-Id: <200704021058.37987.wilhelm.meier@fh-kl.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 April 2007 20:57:57 Kyle Moffett wrote:
-> On Mar 31, 2007, at 02:36:08, Jeremy Fitzhardinge wrote:
-> > When I run 2.6.21-rc5 + Andi's x86 patches + paravirt_ops patches,  
-> > I've been getting my machine shut down with critical thermal  
-> > shutdown messages:
+Hi Steve, hi Igor,
+
+Am Montag, 2. April 2007 schrieb Q (Igor Mammedov):
 > >
-> > Mar 30 23:19:03 localhost kernel: ACPI: Critical trip point
-> > Mar 30 23:19:03 localhost kernel: Critical temperature reached (128  
-> > C), shutting down.
-> > Mar 30 23:19:03 localhost kernel: Critical temperature reached (128  
-> > C), shutting down.
-> > Mar 30 23:19:03 localhost shutdown[19417]: shutting down for system  
-> > halt
-> >
-> > and the machine does feel pretty hot.  Interestingly, when the  
-> > machine reboots, the fan spins up to a noticeably higher speed, so  
-> > it seems that maybe something is getting fan speed control wrong.
-> 
-> Well, 128C is more than hot enough to boil water and well above the  
-> thermal tolerances of most CPUs, so I would imagine that were your  
-> CPU actually that hot it wouldn't be capable of printing the  
-> "Critical temperature reached" messages, let alone properly rebooting.
+> > No - IIRC the original patch (for the switch of cifs from kernel_thread
+> > to kthread) had a
+> > minor implementation problem in handling the cifs_demultiplex thread, so
+> > this one small
+> > area was left with the old style.
 
-IIRC a MSI Megabook S270 (I formerly owned) BIOS notifies this
-"Critical temperature reached (128C)" when the battery run empty
-when the OS did no action due to battery low indications. I guess
-the BIOS people thought this is a good last resort to let the OS
-really shutdown before the box just turns off.
+can you remember what the problems (if any) were with this patch from Igor?
 
-Yours,
+>
+> It seems to me that I rewrote cifs_demultiplex_thread to use kthread_run
+> in DFS patch.
 
--- 
-  René Rebe - ExactCODE GmbH - Europe, Germany, Berlin
-  http://exactcode.de | http://t2-project.org | http://rene.rebe.name
-  +49 (0)30 / 255 897 45
+o.k., I found the patch on the list. Will do some testing with it.
+
+-
+Wilhelm
