@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbXDBQRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbXDBQSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069AbXDBQRw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 12:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbXDBQRw
+	id S1752245AbXDBQSS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 12:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXDBQSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 12:17:52 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:28306 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbXDBQRv (ORCPT
+	Mon, 2 Apr 2007 12:18:18 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50349 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752346AbXDBQSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 12:17:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=MFA9PmgVmMgFZRar8dEkKW2ZKY19zNYykjQn15+6uepYSI+Do99f8sPgjj1JCDfQ99w77BCU652Epql0/lpnq/xBBZLE+okD4EEs2lIfGpMhUmrS4pzziJwBo4OoWWweiQ1dwD1OSqLRQHbrekWCYE7/V9o3uKzJFAhIaZbTpqk=
-Message-ID: <6278d2220704020917h69d7c0d1t7ac61a544ec23f4@mail.gmail.com>
-Date: Mon, 2 Apr 2007 17:17:48 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Zoltan Menyhart" <Zoltan.Menyhart@bull.net>
-Subject: Re: copy_one_pte()
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Mon, 2 Apr 2007 12:18:16 -0400
+Date: Mon, 2 Apr 2007 09:18:16 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+In-Reply-To: <200704011246.52238.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0704020914280.30634@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+ <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
+ <200704011246.52238.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13 Mar, 20:20, Zoltan Menyhart <Zoltan.Menyh...@free.fr> wrote:
-> I had a look at copy_one_pte().
-> I cannot see any ioproc_update_page() call, not even for the COW pages.
-> Is it intentional?
+On Sun, 1 Apr 2007, Andi Kleen wrote:
 
-There could be an ioproc_update_range() call in
-memory.c:copy_pte_range(), after the pte_unmap_unlock(), and this
-would be an optimisation, since explicitly updating the mappings in
-the Quadrics RDMA NIC avoids the need for the NIC to trap and update
-it's MMU later.
+> Or do you have overlaps with other memory (I think you have)
 
-The code which implements [1] this takes the pagetable locks with
-pte_offset_map_lock(), and uses one of the kmap_atomic slots, so has
-to be after the pagetables are unlocked. The
-ioproc_invalidate_page/range() calls are different and can't live with
-this race, so have to be used with the pagetable locks held.
+We may get into a case where some page structs are physically located
+on other nodes if there are no holes between nodes. This would be 
+particularly significant for 64MB node sizes using numa emulation.
+But there it really does not matter where the real memory is located.
+(this is really inherent in sparsemems way of mapping memory).
 
-Daniel
+> In that case you have to handle the overlap in change_page_attr()
 
---- [1]
+Why would we use change_page_attr on page structs? I can see that the 
+pages themselves should be subject to change_page_attr but why the 
+page_structs? I think the system would panic if one would set page structs 
+to read only.
 
-http://lwn.net/Articles/133627/
-http://www.quadrics.com/linux
-
-> We can live with a COW page for a considerably long time.
-> How could the IO-PROC. know that a process-ID / user virt. addr. pair
-> refers to the same page?
->
-> The comment above ioproc_update_page() says that every time when a PTE
-> is created / modified...
->
-> Thanks,
->
-> ZoltanMenyhart
--- 
-Daniel J Blueman
