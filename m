@@ -1,83 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932932AbXDBPoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbXDBPqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932932AbXDBPoz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 11:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXDBPoz
+	id S932382AbXDBPqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 11:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932569AbXDBPqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 11:44:55 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46383 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932881AbXDBPox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 11:44:53 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-Date: Mon, 2 Apr 2007 17:44:39 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com> <200704011246.52238.ak@suse.de> <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
+	Mon, 2 Apr 2007 11:46:34 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:58921 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932382AbXDBPqe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 11:46:34 -0400
+Message-ID: <46112500.2010403@gmail.com>
+Date: Mon, 02 Apr 2007 17:45:04 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+CC: Jens Axboe <jens.axboe@oracle.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mcdx -- do_request(): non-read command to cd!!
+References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk> <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com> <4610481D.8000102@gmail.com> <46104954.50608@gmail.com> <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI> <20070402071018.GE11996@kernel.dk> <Pine.LNX.4.64.0704021152280.27165@sbz-30.cs.Helsinki.FI> <46111ED7.20201@gmail.com>
+In-Reply-To: <46111ED7.20201@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704021744.39880.ak@suse.de>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 April 2007 17:37, Christoph Lameter wrote:
-> On Sun, 1 Apr 2007, Andi Kleen wrote:
-> 
-> > Hmm, this means there is at least 2MB worth of struct page on every node?
-> > Or do you have overlaps with other memory (I think you have)
-> > In that case you have to handle the overlap in change_page_attr()
-> 
-> Correct. 2MB worth of struct page is 128 mb of memory. Are there nodes 
-> with smaller amounts of memory? 
+On 04/02/2007 05:18 PM, Rene Herman wrote:
 
-Yes the discontigmem minimum is 64MB and there are some setups
-(mostly with numa emulation) where you end up with nodes that small.
+> Thanks again, spinning!
 
-BTW there is no guarantee the node size is a multiple of 128MB so
-you likely need to handle the overlap case. Otherwise we can 
-get cache corruptions
+Oh, forgot to mention. Yes, earlier PREEMPT was on and it's now disabled.
 
-> Note also that the default sparsemem 
-> section size is (include/asm-x86_64/sparsemem.h)
-> 
-> #define SECTION_SIZE_BITS       27 /* matt - 128 is convenient right now */
-> 
-> 128MB ....
-> 
-> So you currently cannot have smaller sections of memory anyways.
-
-Sparsemem is still quite experimental; discontigmem is the default
-on x86-64.
-
-> 
-> > Also your "generic" vmemmap code doesn't look very generic, but
-> > rather x86 specific. I didn't think huge pages could be easily
-> > set up this way in many other architectures.  
-> 
-> We do this pmd special casing in other parts of the core VM. I have also a 
-> patch for IA64 that workks with this.
-> 
-> > Do you have any benchmarks numbers to prove it? There seem to be a few
-> > benchmarks where the discontig virt_to_page is a problem
-> > (although I know ways to make it more efficient), and sparsemem
-> > is normally slower. Still some numbers would be good.
-> 
-> You want a benchmark to prove that the removal of memory references and 
-> code improves performance?
-
-You're just moving them into MMU, not really removing it.  And need more TLB entries.
-It might be faster or it might not. There are some unexpected issues, like most x86-64 
-CPUs have a quite small number of large TLBs so you can get thrashing etc.
-
-So numbers with TLB intensive workloads would be good. 
-
--Andi
+Rene.
