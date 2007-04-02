@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965638AbXDBSNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965635AbXDBSQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965638AbXDBSNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 14:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965636AbXDBSNV
+	id S965635AbXDBSQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 14:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965646AbXDBSQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 14:13:21 -0400
-Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:53349 "EHLO
-	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965634AbXDBSNU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 14:13:20 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
-content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 3/4] [SCSI]stex: fix reset recovery for console device
-Date: Mon, 2 Apr 2007 11:14:56 -0700
-Message-ID: <B70A50D07063384EB9BCE3330D18414F0327EBC5@nonameb.ptu.promise.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/4] [SCSI]stex: fix reset recovery for console device
-Thread-Index: AcdzxSCFjV2dtSPySvOLFL/ZEJabKgBi8Pdg
-From: "Ed Lin" <ed.lin@promise.com>
-To: "James Bottomley" <James.Bottomley@SteelEye.com>
-Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>, "jeff" <jeff@garzik.org>,
-       "Promise_Linux" <Promise_Linux@promise.com>
+	Mon, 2 Apr 2007 14:16:57 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1672 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965635AbXDBSQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 14:16:57 -0400
+Date: Mon, 2 Apr 2007 13:22:55 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Message-ID: <20070402132255.GB6739@ucw.cz>
+References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070402061612.GA7072@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
 
-> -----Original Message-----
-> From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
-> Sent: Saturday, March 31, 2007 11:46 AM
-> To: Ed Lin
-> Cc: linux-scsi; linux-kernel; jeff; Promise_Linux
-> Subject: Re: [PATCH 3/4] [SCSI]stex: fix reset recovery for 
-> console device
-> 
-> 
-> On Fri, 2007-03-30 at 15:21 -0700, Ed Lin wrote:
-> > After reset completed, the scsi error handler sends out START_STOP
-> > and TEST_UNIT_READY to the device. For 'normal' devices these
-> > commands will be handled by firmware. However, because the RAID
-> > console only interfaces to scsi mid layer, the firmware 
-> will not process
-> > these commands for it. This will make the console to be 
-> offlined right
-> > after reset. Add the handling in driver to fix this problem.
-> 
-> I don't see how this explanation can be correct.  The error 
-> handler only
-> sends a START_STOP command if sdev->allow_restart is one, 
-> which you have
-> to set in the slave_configure routines (which stex doesn't).  
-> If you're
-> seeing a START_STOP in the eh path, there's something else wrong.
-> TEST_UNIT_READY, certainly ... it's part of a restart check.
-> 
+> i'm wondering about how TASK_UNINTERRUPTIBLE tasks are handled by the 
+> freezer: are they assumed frozen immediately, or do we wait until they 
+> notice their PF_FREEZING and go into try_to_freeze()? I'd expect 
 
-I just saw the routine name scsi_eh_try_stu, and didn't notice the
-allow_restart (partly because I thought it was not harmful...).
-But the TEST_UNIT_READY must stay.
+They have to wait. We need all tasks frozen _with no locks held_.
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
