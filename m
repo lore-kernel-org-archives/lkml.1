@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbXDBIRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940AbXDBIZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbXDBIRT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 04:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbXDBIRT
+	id S1752940AbXDBIZJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 04:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbXDBIZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 04:17:19 -0400
-Received: from rwcrmhc14.comcast.net ([204.127.192.84]:50909 "EHLO
-	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752940AbXDBIRS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 04:17:18 -0400
-X-Greylist: delayed 46922 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 04:17:18 EDT
-Message-ID: <4610BC15.5030800@ieee.org>
-Date: Mon, 02 Apr 2007 04:17:25 -0400
-From: Dave Sperry <dave_sperry@ieee.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 2 Apr 2007 04:25:09 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:45860 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752940AbXDBIZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 04:25:07 -0400
+Message-ID: <4610BDD7.5070201@gmail.com>
+Date: Mon, 02 Apr 2007 10:24:55 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
-References: <461004CE.1030009@ieee.org> <20070402072111.GA21356@elte.hu>
-In-Reply-To: <20070402072111.GA21356@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+References: <460B6E4B.3060004@gmail.com> <200703291639.41515.rjw@sisk.pl> <460FF726.7090601@gmail.com> <200704012123.54797.rjw@sisk.pl>
+In-Reply-To: <200704012123.54797.rjw@sisk.pl>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Dave Sperry <dave_sperry@ieee.org> wrote:
->
->> I have a dual core Opteron machine that exhibits poor UDP performance 
->> (RT consumes more than 2X cpu) with the 2.6.21-rc5-rt5 as compared to 
->> 2.6.21-rc5. Top shows the IRQ handler consuming a lot of CPU.
->
-> update: even with acpi_pm clocksource on vanilla i can reproduce similar 
-> overhead using netperf.
->
-> 	Ingo
->
-Hi Ingo
-I checked the clock source and in both the vanilla and rt cases and they 
-were both acpi_pm
+Rafael J. Wysocki napsal(a):
+>>> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
+>>>> swsusp: critical section:
+>>>> swsusp: Need to copy 131380 pages
+>>>> swsusp: Not enough free memory
+>>>> Error -12 suspending
+>>>> Enabling non-boot CPUs ...
 
-Here's the oprofile for my vanilla case:
+> As a workaround, you can try to change the initial image size so that it's
+> smaller than a half of the RAM size.  If that works, I'd like to send you a
+> debug patch, if you don't mind. :-)
 
- CPU: AMD64 processors, speed 2211.37 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a 
-unit mask of 0x00 (No unit mask) count 100000
-samples  %        image name               app name                 
-symbol name
-36264    18.2763  forcedeth.ko             forcedeth                
-nv_nic_irq_optimized
-25602    12.9029  vmlinux                  vmlinux                  
-spurious_interrupt
-10067     5.0736  forcedeth.ko             forcedeth                
-nv_start_xmit_optimized
-8671      4.3700  vmlinux                  vmlinux                  
-unregister_kprobe
-8270      4.1679  vmlinux                  vmlinux                  
-ctrl_dumpfamily
-8042      4.0530  vmlinux                  vmlinux                  
-expand_files
-5064      2.5521  vmlinux                  vmlinux                  kfree
-4365      2.1999  libc-2.5.so              libc-2.5.so              
-__sendto_nocancel
-4067      2.0497  vmlinux                  vmlinux                  
-unix_bind
-4010      2.0210  vmlinux                  vmlinux                  bad_gs
-3929      1.9801  vmlinux                  vmlinux                  
-__alloc_skb
-3859      1.9449  vmlinux                  vmlinux                  
-stack_segment
-3107      1.5659  vmlinux                  vmlinux                  
-__find_get_block
-2816      1.4192  vmlinux                  vmlinux                  
-vfs_create
-2611      1.3159  vmlinux                  vmlinux                  
-ide_end_drive_cmd
-2604      1.3124  vmlinux                  vmlinux                  
-ide_end_request
-2560      1.2902  vmlinux                  vmlinux                  
-find_get_page
-2458      1.2388  vmlinux                  vmlinux                  
-hrtimer_run_queues
-2456      1.2378  vmlinux                  vmlinux                  
-get_wchan
-2403      1.2111  forcedeth.ko             forcedeth                
-nv_tx_done_optimized
-2231      1.1244  vmlinux                  vmlinux                  
-do_sys_poll
+Yes, post it.
 
-Any thoughts?
+# cat /sys/power/image_size
+524288000
+# echo disk >/sys/power/state
+error
+# echo disk >/sys/power/state
+error
+# echo $((400*1024*1024)) > /sys/power/image_size
+# echo disk >/sys/power/state
+ok
+# dmesg|grep Memory:
+Memory: 1027160k/1048256k available (2559k kernel code, 20348k reserved,
+1114k data, 188k init)
 
-Thanks
-Dave
+I don't undestand it too much, but can't be shared video memory involved
+somehow?
+
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
