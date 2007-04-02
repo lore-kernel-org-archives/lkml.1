@@ -1,54 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753433AbXDBI5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965042AbXDBJES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753433AbXDBI5M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 04:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbXDBI5M
+	id S965042AbXDBJES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 05:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933942AbXDBJES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 04:57:12 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:35765 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753433AbXDBI5K (ORCPT
+	Mon, 2 Apr 2007 05:04:18 -0400
+Received: from mx01.qsc.de ([213.148.129.14]:42886 "EHLO mx01.qsc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933281AbXDBJEQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 04:57:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=AldWl51m+cjpEqUPokf0YNx8SAju4SPW4I8MWEN+wufcfL6W7jLM14TtP5o0lLi9GABeDHuIY4d9Pu0G7feO421NNCW/TUca02ExC2HDHlR1uo03pcK3uqJX+XjUvnAewxe/oUDCYhTO8aysQXq0wY3oynsMRepSeF0ZTZpPgSg=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Clockevents: one-shoot mode is never enabled if local apic timer is disabled
-Date: Mon, 2 Apr 2007 11:57:03 +0300
+	Mon, 2 Apr 2007 05:04:16 -0400
+X-Greylist: delayed 1668 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 05:04:16 EDT
+From: Rene Rebe <rene@exactcode.de>
+Organization: ExactCODE
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: 2.6.21-rc5: Thinkpad X60 gets critical thermal shutdowns
+Date: Mon, 2 Apr 2007 10:35:40 +0200
 User-Agent: KMail/1.9.6
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       "Brown, Len" <len.brown@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <460E0158.7090705@goop.org> <8393D4C0-57C5-4CD2-8CA4-E4241E74FB4E@mac.com>
+In-Reply-To: <8393D4C0-57C5-4CD2-8CA4-E4241E74FB4E@mac.com>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704021157.03368.maximlevitsky@gmail.com>
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704021035.40672.rene@exactcode.de>
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: Spam detection software, running on the system "grum.localhost", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  On Sunday 01 April 2007 20:57:57 Kyle Moffett wrote: >
+	On Mar 31, 2007, at 02:36:08, Jeremy Fitzhardinge wrote: > > When I run
+	2.6.21-rc5 + Andi's x86 patches + paravirt_ops patches, > > I've been
+	getting my machine shut down with critical thermal > > shutdown
+	messages: > > > > Mar 30 23:19:03 localhost kernel: ACPI: Critical trip
+	point > > Mar 30 23:19:03 localhost kernel: Critical temperature reached
+	(128 > > C), shutting down. > > Mar 30 23:19:03 localhost kernel:
+	Critical temperature reached (128 > > C), shutting down. > > Mar 30
+	23:19:03 localhost shutdown[19417]: shutting down for system > > halt >
+	> > > and the machine does feel pretty hot. Interestingly, when the > >
+	machine reboots, the fan spins up to a noticeably higher speed, so > >
+	it seems that maybe something is getting fan speed control wrong. > >
+	Well, 128C is more than hot enough to boil water and well above the >
+	thermal tolerances of most CPUs, so I would imagine that were your > CPU
+	actually that hot it wouldn't be capable of printing the > "Critical
+	temperature reached" messages, let alone properly rebooting. [...] 
+	Content analysis details:   (-1.4 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sunday 01 April 2007 20:57:57 Kyle Moffett wrote:
+> On Mar 31, 2007, at 02:36:08, Jeremy Fitzhardinge wrote:
+> > When I run 2.6.21-rc5 + Andi's x86 patches + paravirt_ops patches,  
+> > I've been getting my machine shut down with critical thermal  
+> > shutdown messages:
+> >
+> > Mar 30 23:19:03 localhost kernel: ACPI: Critical trip point
+> > Mar 30 23:19:03 localhost kernel: Critical temperature reached (128  
+> > C), shutting down.
+> > Mar 30 23:19:03 localhost kernel: Critical temperature reached (128  
+> > C), shutting down.
+> > Mar 30 23:19:03 localhost shutdown[19417]: shutting down for system  
+> > halt
+> >
+> > and the machine does feel pretty hot.  Interestingly, when the  
+> > machine reboots, the fan spins up to a noticeably higher speed, so  
+> > it seems that maybe something is getting fan speed control wrong.
+> 
+> Well, 128C is more than hot enough to boil water and well above the  
+> thermal tolerances of most CPUs, so I would imagine that were your  
+> CPU actually that hot it wouldn't be capable of printing the  
+> "Critical temperature reached" messages, let alone properly rebooting.
 
-I finally figured out why one-shoot mode is enabled on my system only and only if local apic is enabled.
+IIRC a MSI Megabook S270 (I formerly owned) BIOS notifies this
+"Critical temperature reached (128C)" when the battery run empty
+when the OS did no action due to battery low indications. I guess
+the BIOS people thought this is a good last resort to let the OS
+really shutdown before the box just turns off.
 
-While reading through dynatic code it looks that all clockevent devices are put in periodic mode.
-Then hrtimer_run_queues (which runs nevertheless CONFIG_HIGH_RES_TIMERS enabled or not) calls
-indirectly (through tick_check_oneshot_change or hrtimer_switch_to_hres) to tick_switch_to_oneshot
+Yours,
 
-tick_switch_to_oneshot checks that current cpu's clockevents device (and it is lapic even if not used) is not a dummy device
-and it is , so it never calls tick_broadcast_switch_to_oneshot
-
-To put it simply if broadcast is used, it works in periodic mode only. tick_broadcast_switch_to_oneshot is never called
-(well it is called when broadcast is not used, but it is unnecessary, on my system for example it brings HPET on one-shoot mode,
-and HPET is not used at all)
-
-I tried to remove this check and this resulted in hard lock-up during boot with nolapic_timer
-Maybe this was connected to the fact that this function is called on both cpus, and if one set a 
-broadcasting device(HPET) to one shoot mode, second is still not aware of this.
-
-Is it a bug or feature ?
-
-	Best regards,
-		Maxim Levitsky
+-- 
+  René Rebe - ExactCODE GmbH - Europe, Germany, Berlin
+  http://exactcode.de | http://t2-project.org | http://rene.rebe.name
+  +49 (0)30 / 255 897 45
