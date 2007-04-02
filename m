@@ -1,86 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933826AbXDBGE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933641AbXDBGE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933826AbXDBGE4 (ORCPT <rfc822;w@1wt.eu>);
+	id S933641AbXDBGE4 (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 2 Apr 2007 02:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933641AbXDBGEU
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933900AbXDBGCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 02:04:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33218 "EHLO mx2.mail.elte.hu"
+	Mon, 2 Apr 2007 02:02:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:38284 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933753AbXDBGEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 02:04:15 -0400
-Date: Mon, 2 Apr 2007 08:04:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] enhance initcall_debug, measure latency
-Message-ID: <20070402060408.GA6505@elte.hu>
-References: <20070401181614.GA25648@elte.hu> <20070401182801.GA25956@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070401182801.GA25956@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S933644AbXDBF7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 01:59:12 -0400
+Message-Id: <20070402055705.606126251@goop.org>
+References: <20070402055652.610711908@goop.org>
+User-Agent: quilt/0.46-1
+Date: Sun, 01 Apr 2007 22:57:09 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>,
+       Dan Hecht <dhecht@vmware.com>, john stultz <johnstul@us.ibm.com>
+Subject: [patch 17/17] Add a sched_clock paravirt_op
+Content-Disposition: inline; filename=paravirt-sched-clock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The tsc-based get_scheduled_cycles interface is not a good match for
+Xen's runstate accounting, which reports everything in nanoseconds.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+This patch replaces this interface with a sched_clock interface, which
+matches both Xen and VMI's requirements.
 
-> some boot time analysis using this facility:
+In order to do this, we:
+   1. replace get_scheduled_cycles with sched_clock
+   2. hoist cycles_2_ns into a common header
+   3. update vmi accordingly
 
-using a non-allyesconfig kernel gives the results below. The entries 
-that seem to take a bit too long (considering what they do):
+One thing to note: because sched_clock is implemented as a weak
+function in kernel/sched.c, we must define a real function in order to
+override this weak binding.  This means the usual paravirt_ops
+technique of using an inline function won't work in this case.
 
-initcall 0xc069bac5 ran for 519 msecs: init_nic+0x0/0x2c()
-initcall 0xc0699610 ran for 344 msecs: isapnp_init+0x0/0x435()
-initcall 0xc069af66 ran for 245 msecs: serial8250_init+0x0/0x112()
-initcall 0xc06981e8 ran for 183 msecs: acpi_pci_link_init+0x0/0x43()
-initcall 0xc06a07b0 ran for 175 msecs: pci_acpi_init+0x0/0x9b()
-initcall 0xc06980ef ran for 110 msecs: acpi_pci_root_init+0x0/0x25()
-initcall 0xc069fa24 ran for 69 msecs: pcibios_assign_resources+0x0/0x92()
-initcall 0xc0246fd6 ran for 64 msecs: pci_init+0x0/0x2c()
-initcall 0xc0695fc2 ran for 62 msecs: pcie_portdrv_init+0x0/0x46()
-initcall 0xc0698656 ran for 54 msecs: pnp_system_init+0x0/0xf()
-initcall 0xc06a27ac ran for 43 msecs: inet_init+0x0/0x390()
-initcall 0xc069f88e ran for 28 msecs: init_acpi_pm_clocksource+0x0/0x173()
 
-these amount to almost 50% of the ~4 seconds total bootup initcall time!
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Dan Hecht <dhecht@vmware.com>
+Cc: john stultz <johnstul@us.ibm.com>
 
-	Ingo
+---
+ arch/i386/kernel/paravirt.c    |    2 -
+ arch/i386/kernel/sched-clock.c |   39 ++++++++++++++--------------------
+ arch/i386/kernel/vmi.c         |    2 -
+ arch/i386/kernel/vmitime.c     |    6 ++---
+ include/asm-i386/paravirt.h    |    7 ++++--
+ include/asm-i386/timer.h       |   45 +++++++++++++++++++++++++++++++++++++++-
+ include/asm-i386/vmi_time.h    |    2 -
+ 7 files changed, 71 insertions(+), 32 deletions(-)
 
-initcall 0xc069c43b ran for 1147 msecs: ide_init+0x0/0x8a()
-initcall 0xc069bac5 ran for 519 msecs: init_nic+0x0/0x2c()
-initcall 0xc069cbe0 ran for 497 msecs: ide_generic_init+0x0/0x11()
-initcall 0xc0699610 ran for 344 msecs: isapnp_init+0x0/0x435()
-initcall 0xc069af66 ran for 245 msecs: serial8250_init+0x0/0x112()
-initcall 0xc06981e8 ran for 183 msecs: acpi_pci_link_init+0x0/0x43()
-initcall 0xc06a07b0 ran for 175 msecs: pci_acpi_init+0x0/0x9b()
-initcall 0xc06980ef ran for 110 msecs: acpi_pci_root_init+0x0/0x25()
-initcall 0xc068b878 ran for 97 msecs: check_nmi_watchdog+0x0/0x1d1()
-initcall 0xc069cbf1 ran for 75 msecs: idedisk_init+0x0/0xf()
-initcall 0xc069fa24 ran for 69 msecs: pcibios_assign_resources+0x0/0x92()
-initcall 0xc0246fd6 ran for 64 msecs: pci_init+0x0/0x2c()
-initcall 0xc0695fc2 ran for 62 msecs: pcie_portdrv_init+0x0/0x46()
-initcall 0xc0698656 ran for 54 msecs: pnp_system_init+0x0/0xf()
-initcall 0xc06a27ac ran for 43 msecs: inet_init+0x0/0x390()
-initcall 0xc069f88e ran for 28 msecs: init_acpi_pm_clocksource+0x0/0x173()
-initcall 0xc069bb07 ran for 23 msecs: rtl8139_init_module+0x0/0x16()
-initcall 0xc069eeae ran for 18 msecs: psmouse_init+0x0/0x64()
-initcall 0xc0111a26 ran for 18 msecs: powernowk8_init+0x0/0x78()
-initcall 0xc069e932 ran for 17 msecs: i8042_init+0x0/0x321()
-initcall 0xc069baf1 ran for 16 msecs: cp_init+0x0/0x16()
-initcall 0xc06979b8 ran for 16 msecs: acpi_init+0x0/0x1ff()
-initcall 0xc0697bfc ran for 15 msecs: acpi_scan_init+0x0/0xfc()
-initcall 0xc06a3154 ran for 12 msecs: netlbl_init+0x0/0x71()
-initcall 0xc069e512 ran for 11 msecs: usb_init+0x0/0x103()
-initcall 0xc06986cd ran for 11 msecs: pnpacpi_init+0x0/0x69()
+===================================================================
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -269,7 +269,7 @@ struct paravirt_ops paravirt_ops = {
+ 	.write_msr = native_write_msr_safe,
+ 	.read_tsc = native_read_tsc,
+ 	.read_pmc = native_read_pmc,
+-	.get_scheduled_cycles = native_read_tsc,
++	.sched_clock = native_sched_clock,
+ 	.get_cpu_khz = native_calculate_cpu_khz,
+ 	.load_tr_desc = native_load_tr_desc,
+ 	.set_ldt = native_set_ldt,
+===================================================================
+--- a/arch/i386/kernel/sched-clock.c
++++ b/arch/i386/kernel/sched-clock.c
+@@ -37,26 +37,7 @@
+ 
+ #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+ 
+-struct sc_data {
+-	unsigned int cyc2ns_scale;
+-	unsigned char unstable;
+-	unsigned long long last_tsc;
+-	unsigned long long ns_base;
+-};
+-
+-static DEFINE_PER_CPU(struct sc_data, sc_data);
+-
+-static inline unsigned long long cycles_2_ns(unsigned long long cyc)
+-{
+-	const struct sc_data *sc = &__get_cpu_var(sc_data);
+-	unsigned long long ns;
+-
+-	cyc -= sc->last_tsc;
+-	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
+-	ns += sc->ns_base;
+-
+-	return ns;
+-}
++DEFINE_PER_CPU(struct sc_data, sc_data);
+ 
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+@@ -66,7 +47,7 @@ static inline unsigned long long cycles_
+  * [1] no attempt to stop CPU instruction reordering, which can hit
+  * in a 100 instruction window or so.
+  */
+-unsigned long long sched_clock(void)
++unsigned long long native_sched_clock(void)
+ {
+ 	unsigned long long r;
+ 	const struct sc_data *sc = &get_cpu_var(sc_data);
+@@ -75,7 +56,7 @@ unsigned long long sched_clock(void)
+ 		/* TBD find a cheaper fallback timer than this */
+ 		r = ktime_to_ns(ktime_get());
+ 	} else {
+-		get_scheduled_cycles(r);
++		rdtscll(r);
+ 		r = cycles_2_ns(r);
+ 	}
+ 
+@@ -83,6 +64,18 @@ unsigned long long sched_clock(void)
+ 
+ 	return r;
+ }
++
++/* We need to define a real function for sched_clock, to override the
++   weak default version */
++#ifdef CONFIG_PARAVIRT
++unsigned long long sched_clock(void)
++{
++	return paravirt_sched_clock();
++}
++#else
++unsigned long long sched_clock(void)
++	__attribute__((alias("native_sched_clock")));
++#endif
+ 
+ /* Resync with new CPU frequency */
+ static void resync_sc_freq(struct sc_data *sc, unsigned int newfreq)
+@@ -95,7 +88,7 @@ static void resync_sc_freq(struct sc_dat
+ 	   because sched_clock callers should be able to tolerate small
+ 	   errors. */
+ 	sc->ns_base = ktime_to_ns(ktime_get());
+-	get_scheduled_cycles(sc->last_tsc);
++	rdtscll(sc->last_tsc);
+ 	sc->cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR) / newfreq;
+ 	sc->unstable = 0;
+ }
+===================================================================
+--- a/arch/i386/kernel/vmi.c
++++ b/arch/i386/kernel/vmi.c
+@@ -866,7 +866,7 @@ static inline int __init activate_vmi(vo
+ 		paravirt_ops.setup_boot_clock = vmi_timer_setup_boot_alarm;
+ 		paravirt_ops.setup_secondary_clock = vmi_timer_setup_secondary_alarm;
+ #endif
+-		paravirt_ops.get_scheduled_cycles = vmi_get_sched_cycles;
++		paravirt_ops.sched_clock = vmi_sched_clock;
+  		paravirt_ops.get_cpu_khz = vmi_cpu_khz;
+ 
+ 		/* We have true wallclock functions; disable CMOS clock sync */
+===================================================================
+--- a/arch/i386/kernel/vmitime.c
++++ b/arch/i386/kernel/vmitime.c
+@@ -163,9 +163,9 @@ int vmi_set_wallclock(unsigned long now)
+ 	return -1;
+ }
+ 
+-unsigned long long vmi_get_sched_cycles(void)
+-{
+-	return read_available_cycles();
++unsigned long long vmi_sched_clock(void)
++{
++	return cycles_2_ns(read_available_cycles());
+ }
+ 
+ unsigned long vmi_cpu_khz(void)
+===================================================================
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -88,7 +88,7 @@ struct paravirt_ops
+ 
+ 	u64 (*read_tsc)(void);
+ 	u64 (*read_pmc)(void);
+- 	u64 (*get_scheduled_cycles)(void);
++ 	unsigned long long (*sched_clock)(void);
+ 	unsigned long (*get_cpu_khz)(void);
+ 
+ 	void (*load_tr_desc)(void);
+@@ -529,7 +529,10 @@ static inline void halt(void)
+ 
+ #define rdtscll(val) (val = PVOP_CALL0(u64, read_tsc))
+ 
+-#define get_scheduled_cycles(val) (val = paravirt_ops.get_scheduled_cycles())
++static inline unsigned long long paravirt_sched_clock(void)
++{
++	return PVOP_CALL0(unsigned long long, sched_clock);
++}
+ #define calculate_cpu_khz() (paravirt_ops.get_cpu_khz())
+ 
+ #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
+===================================================================
+--- a/include/asm-i386/timer.h
++++ b/include/asm-i386/timer.h
+@@ -15,8 +15,51 @@ extern int recalibrate_cpu_khz(void);
+ extern int recalibrate_cpu_khz(void);
+ 
+ #ifndef CONFIG_PARAVIRT
+-#define get_scheduled_cycles(val) rdtscll(val)
+ #define calculate_cpu_khz() native_calculate_cpu_khz()
+ #endif
+ 
++/* Accellerators for sched_clock()
++ * convert from cycles(64bits) => nanoseconds (64bits)
++ *  basic equation:
++ *		ns = cycles / (freq / ns_per_sec)
++ *		ns = cycles * (ns_per_sec / freq)
++ *		ns = cycles * (10^9 / (cpu_khz * 10^3))
++ *		ns = cycles * (10^6 / cpu_khz)
++ *
++ *	Then we use scaling math (suggested by george@mvista.com) to get:
++ *		ns = cycles * (10^6 * SC / cpu_khz) / SC
++ *		ns = cycles * cyc2ns_scale / SC
++ *
++ *	And since SC is a constant power of two, we can convert the div
++ *  into a shift.
++ *
++ *  We can use khz divisor instead of mhz to keep a better percision, since
++ *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
++ *  (mathieu.desnoyers@polymtl.ca)
++ *
++ *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
++ */
++struct sc_data {
++	unsigned int cyc2ns_scale;
++	unsigned char unstable;
++	unsigned long long last_tsc;
++	unsigned long long ns_base;
++};
++
++DECLARE_PER_CPU(struct sc_data, sc_data);
++
++#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
++
++static inline unsigned long long cycles_2_ns(unsigned long long cyc)
++{
++	const struct sc_data *sc = &__get_cpu_var(sc_data);
++	unsigned long long ns;
++
++	cyc -= sc->last_tsc;
++	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
++	ns += sc->ns_base;
++
++	return ns;
++}
++
+ #endif
+===================================================================
+--- a/include/asm-i386/vmi_time.h
++++ b/include/asm-i386/vmi_time.h
+@@ -49,7 +49,7 @@ extern void __init vmi_time_init(void);
+ extern void __init vmi_time_init(void);
+ extern unsigned long vmi_get_wallclock(void);
+ extern int vmi_set_wallclock(unsigned long now);
+-extern unsigned long long vmi_get_sched_cycles(void);
++extern unsigned long long vmi_sched_clock(void);
+ extern unsigned long vmi_cpu_khz(void);
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+
+-- 
 
