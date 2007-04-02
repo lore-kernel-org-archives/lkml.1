@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933984AbXDBMKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934006AbXDBMWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933984AbXDBMKo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 08:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933998AbXDBMKo
+	id S934006AbXDBMWN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 08:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933998AbXDBMWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 08:10:44 -0400
-Received: from ns2.suse.de ([195.135.220.15]:32962 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933984AbXDBMKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 08:10:40 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Subject: Re: [PATCH 1/3] Introduce cpuid_on_cpu() and cpuid_eax_on_cpu()
-Date: Mon, 2 Apr 2007 14:10:29 +0200
-User-Agent: KMail/1.9.5
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
-       cpufreq@lists.linux.org.uk, hpa@zytor.com, davej@codemonkey.org.uk
-References: <20070402113831.GA6785@localhost.sw.ru>
-In-Reply-To: <20070402113831.GA6785@localhost.sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 2 Apr 2007 08:22:13 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:44653 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934007AbXDBMWM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 08:22:12 -0400
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Li Yu <liyu@ccoss.com.cn>,
+       yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, LKML <linux-kernel@vger.kernel.org>,
+       Li Yu <raise.sail@gmail.com>
+In-Reply-To: <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
+References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com>
+	 <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn>
+	 <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>
+	 <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 14:21:55 +0200
+Message-Id: <1175516515.5815.347.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704021410.29623.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 April 2007 13:38, Alexey Dobriyan wrote:
-> They will be used by cpuid driver and powernow-k8 cpufreq driver.
+Hi Dmitry,
+
+> > The crucial thing here is that all reports but the ones that the driver
+> > registered to will be processed in a standard way by the generic hid bus
+> > layer, and those reports that the driver registered to will be ignored by
+> > the layer, and passed for processing to the driver.
+> >
 > 
-> With these changes powernow-k8 driver could run correctly on OpenVZ kernels
-> with virtual cpus enabled (SCHED_VCPU).
+> I don't think it is a good idea to register driver for specific
+> usages/reports. Quite often you want to adjust processing of a report
+> for a specific device. What if there are 2 devices that need such
+> quirks? How will you do hotplug and module loading? Emit new uevent
+> for every report? Also, what about users and Kconfig? "Driver for
+> usage 0x000012345. Say Y if your hardware does not wotk correctly with
+> defautl handler for this usage and require special processing"???
+> 
+> Just register based on VID/PID and provide standard
+> hid_default_input_event() to drivers so they would call it for reports
+> they don't need to do special processing on.
 
-This means openvz has multiple virtual CPU levels? One for cpuid/rdmsr and one
-for the rest of the kernel? Both powernow-k8 and cpuid attempt to schedule
-to the target CPU so they should already run there. But it is some other CPU,
-but when they ask your _on_cpu() functions they suddenly get a "real" CPU?
-Where is the difference between these levels of virtualness? 
+I like this idea, but it might not solve the case where you have parts
+of the driver in kernel space and other parts in user space. For example
+the control of a LCD display on the keyboard. However in most cases
+registering drivers for a report id should be enough.
 
-That sounds quite fragile and will likely break often.  I just rejected a similar 
-concept -- virtual nodes and "physical nodes" for similar reasons.
+Regards
 
-Also it has weird semantics. For example if you have multiple
-virtual CPUs mapping to a single CPU then would the powernow-k8 driver
-try to set the frequency multiple times on the same physical CPU? That might
-go wrong actually because the CPU might not be happy to be poked again
-while it is already in a frequency change. Also there is no locking
-so in theory two vcpus might try to change frequency in parallel with
-probably quite bad effects. 
+Marcel
 
-I'm sure there are other scenarios with similar problems. e.g. what
-happens with microcode updates etc.? 
 
-Before adding any hacks like this I think your vcpu concept
-needs to be discussed properly on l-k. For me it doesn't look like it is 
-something good right now though.
-
--Andi
