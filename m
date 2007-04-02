@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbXDBICR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbXDBILj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751924AbXDBICR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 04:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXDBICQ
+	id S1753401AbXDBILj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 04:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXDBILi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 04:02:16 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:38549 "EHLO tmailer.gwdg.de"
+	Mon, 2 Apr 2007 04:11:38 -0400
+Received: from smtp1.osdl.org ([65.172.181.25]:33626 "EHLO smtp1.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751924AbXDBICO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 04:02:14 -0400
-Date: Mon, 2 Apr 2007 10:01:52 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/16] vt-pure-colors.diff
-In-Reply-To: <1175500241.4614.23.camel@daplas>
-Message-ID: <Pine.LNX.4.61.0704020952530.29350@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> 
- <Pine.LNX.4.61.0704012002330.12316@yvahk01.tjqt.qr>  <1175496592.4614.9.camel@daplas>
-  <Pine.LNX.4.61.0704020902200.1245@yvahk01.tjqt.qr> <1175500241.4614.23.camel@daplas>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1752848AbXDBILh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 04:11:37 -0400
+X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 04:11:37 EDT
+Date: Mon, 2 Apr 2007 01:01:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: NeilBrown <neilb@suse.de>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] md: Avoid a deadlock when removing a device from an md
+ array via sysfs.
+Message-Id: <20070402010141.3ad5516d.akpm@linux-foundation.org>
+In-Reply-To: <1070402074417.31093@suse.de>
+References: <20070402174319.30997.patches@notabene>
+	<1070402074417.31093@suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2 Apr 2007 17:44:17 +1000 NeilBrown <neilb@suse.de> wrote:
 
-On Apr 2 2007 15:50, Antonino A. Daplas wrote:
->On Mon, 2007-04-02 at 09:04 +0200, Jan Engelhardt wrote:
->> On Apr 2 2007 14:49, Antonino A. Daplas wrote:
->> >
->> >Not too sure about this, the default palette is based on ANSI/ECMA
->> >standards (at least for the first 8 colors). Also, this will have subtle
->> >effects on the 16-color logo. Since your first patch already allows us
->> >to change the palette, let's leave the default alone.
->> 
->> Ok.
->> But to note: xterm and anything graphical (including MS Windows)
->> uses the anti-pale color (255,0,0) instead of (255,170,170).
->
->Actually, what threw me off was index 4 in default_blu, which has a
->value of 0x90.  This looks weird to me, but I guess that is a typo. I
->really have nothing against using 0, 0, 255 instead of 170, 170, 255 in
->the intense version of the first 8.
+> (This patch should go in 2.6.21 as it fixes a recent regression - NB)
+> 
+> A device can be removed from an md array via e.g.
+>   echo remove > /sys/block/md3/md/dev-sde/state
+> 
+> This will try to remove the 'dev-sde' subtree which will deadlock
+> since
+>   commit e7b0d26a86943370c04d6833c6edba2a72a6e240
+> 
+> With this patch we run the kobject_del via schedule_work so as to
+> avoid the deadlock.
+> 
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Neil Brown <neilb@suse.de>
+> 
+> ### Diffstat output
+>  ./drivers/md/md.c           |   13 ++++++++++++-
+>  ./include/linux/raid/md_k.h |    1 +
+>  2 files changed, 13 insertions(+), 1 deletion(-)
+> 
+> diff .prev/drivers/md/md.c ./drivers/md/md.c
+> --- .prev/drivers/md/md.c	2007-04-02 17:43:03.000000000 +1000
+> +++ ./drivers/md/md.c	2007-04-02 17:38:46.000000000 +1000
+> @@ -1389,6 +1389,12 @@ static int bind_rdev_to_array(mdk_rdev_t
+>  	return err;
+>  }
+>  
+> +static void delayed_delete(struct work_struct *ws)
+> +{
+> +	mdk_rdev_t *rdev = container_of(ws, mdk_rdev_t, del_work);
+> +	kobject_del(&rdev->kobj);
+> +}
+> +
+>  static void unbind_rdev_from_array(mdk_rdev_t * rdev)
+>  {
+>  	char b[BDEVNAME_SIZE];
+> @@ -1401,7 +1407,12 @@ static void unbind_rdev_from_array(mdk_r
+>  	printk(KERN_INFO "md: unbind<%s>\n", bdevname(rdev->bdev,b));
+>  	rdev->mddev = NULL;
+>  	sysfs_remove_link(&rdev->kobj, "block");
+> -	kobject_del(&rdev->kobj);
+> +
+> +	/* We need to delay this, otherwise we can deadlock when
+> +	 * writing to 'remove' to "dev/state"
+> +	 */
+> +	INIT_WORK(&rdev->del_work, delayed_delete);
+> +	schedule_work(&rdev->del_work);
+>  }
+>  
+>  /*
+> 
+> diff .prev/include/linux/raid/md_k.h ./include/linux/raid/md_k.h
+> --- .prev/include/linux/raid/md_k.h	2007-04-02 17:43:03.000000000 +1000
+> +++ ./include/linux/raid/md_k.h	2007-04-02 17:36:32.000000000 +1000
+> @@ -104,6 +104,7 @@ struct mdk_rdev_s
+>  					   * for reporting to userspace and storing
+>  					   * in superblock.
+>  					   */
+> +	struct work_struct del_work;	/* used for delayed sysfs removal */
+>  };
+>  
 
-That one is a psychological thing. :-) People like blue backgrounds, because a
-green or red one would not really fit as a bg color for Midnight Commander,
-pine and your-favorite-editor. So you choose blue because it fits nicely. (See
-http://img81.imageshack.us/img81/8858/blueqj6.png for an example, and compare
-with http://img81.imageshack.us/img81/7498/reddm1.png and
-http://img142.imageshack.us/img142/8470/greennq2.png for counterexamples. Even
-a bright blue (0,0,192) is still better than red/green, the reason being that
-blue is much less percepted by the eye than green or red. You will find various
-formulas on the 'net that will convert from color to grayscale - these formulas
-have the 'perception' levels, which are, summarized, 76*r, 151*g, 26*b on a 255
-scale.) Personally I find the regular blue (0,0,170/0xA0) a little too bright
-so I turned it down to 0x90. Adjust for your preference.
+What guarantees that *rdev is still valid when delayed_delete() runs?
 
+And what guarantees that the md module hasn't been rmmodded when
+delayed_delete() tries to run?
 
-Jan
--- 
