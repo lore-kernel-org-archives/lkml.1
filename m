@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbXDBO7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbXDBPMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbXDBO7r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 10:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbXDBO7r
+	id S1752141AbXDBPMp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 11:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbXDBPMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 10:59:47 -0400
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:1165 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753498AbXDBO7q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 10:59:46 -0400
-Date: Mon, 2 Apr 2007 16:59:26 +0200
-From: thunder7@xs4all.nl
-To: thunder7@xs4all.nl
-Cc: Vivek Goyal <vgoyal@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm3 - no boot, "address not 2M aligned"
-Message-ID: <20070402145926.GA25824@amd64.of.nowhere>
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org> <20070331071220.GA26910@aitel.hist.no> <20070331005303.354411f0.akpm@linux-foundation.org> <20070401052932.GA9894@amd64.of.nowhere> <m1ircghb6w.fsf@ebiederm.dsl.xmission.com> <20070331232957.e1c93f19.akpm@linux-foundation.org> <20070402074159.GA13704@in.ibm.com> <20070402111745.GA9882@amd64.of.nowhere> <20070402113639.GD13704@in.ibm.com> <20070402144914.GA22725@amd64.of.nowhere>
+	Mon, 2 Apr 2007 11:12:44 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:58595 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751165AbXDBPMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 11:12:44 -0400
+Message-ID: <46111D66.8060208@us.ibm.com>
+Date: Mon, 02 Apr 2007 10:12:38 -0500
+From: "Steve French (smfltc)" <smfltc@us.ibm.com>
+User-Agent: Mozilla Thunderbird 1.0 (Windows/20041206)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070402144914.GA22725@amd64.of.nowhere>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Q (Igor Mammedov)" <qwerty0987654321@mail.ru>
+CC: linux-cifs-client@lists.samba.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-cifs-client] Re: cifs and kthread_run / kernel_thread
+References: <20070331120030.BE6A916387F@lists.samba.org> <46100407.30403@us.ibm.com> <4610B80F.9020102@mail.ru>
+In-Reply-To: <4610B80F.9020102@mail.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: thunder7@xs4all.nl <thunder7@xs4all.nl>
-Date: Mon, Apr 02, 2007 at 04:49:14PM +0200
-> 
-> I used a working 2.6.21-rc3-mm2 tree, patched it up to 2.6.21-rc5-mm3
-> and applied your patch. I ended up with the .config later in this email,
-> and got this error:
-> 
->   CC      arch/x86_64/kernel/head64.o
-> arch/x86_64/kernel/head64.c: In function 'x86_64_start_kernel':
-> arch/x86_64/kernel/head64.c:70: error: size of array 'type name' is negative
-> make[1]: *** [arch/x86_64/kernel/head64.o] Error 1
-> make: *** [arch/x86_64/kernel] Error 2
-> 
-> After reverting your patch, the build didn't fail, but of course the
-> kernel won't build.
-> 
-That should, of course, read 'kernel won't boot'.
+Q (Igor Mammedov) wrote:
 
-Sorry,
-Jurriaan
--- 
-Debian (Unstable) GNU/Linux 2.6.21-rc5-mm3 2x4826 bogomips load 0.92
-the Jack Vance Integral Edition: http://www.integralarchive.org
+> Steve French (smfltc) wrote:
+>
+>> No - IIRC the original patch (for the switch of cifs from 
+>> kernel_thread to kthread) had a
+>> minor implementation problem in handling the cifs_demultiplex thread, 
+>> so this one small
+>> area was left with the old style.
+>>
+>>> iii) Is it difficult to switch to the new interface?
+>>>  
+>>>
+>> No, I don't think so, but I have not investigated it.  We would be happy
+>> to review and test a patch for this though.
+>>
+>>> ***************************
+>>
+>
+> It seems to me that I rewrote cifs_demultiplex_thread to use 
+> kthread_run in DFS patch.
+>
+Yes - Q's  patch has the final change to kthread (as part of a larger 
+DFS change).  The original
+patch which switched to kthread was done long before this.
+
+I have not broken all the large dfs patch into small pieces but will 
+look to see if just this part
+can be done easily
