@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965980AbXDBVxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965984AbXDBV4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965980AbXDBVxs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965978AbXDBVxs
+	id S965984AbXDBV4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965983AbXDBV4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:53:48 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:44519 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965980AbXDBVxp (ORCPT
+	Mon, 2 Apr 2007 17:56:19 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:48024 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965981AbXDBV4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:53:45 -0400
-Message-ID: <46117B62.9030902@us.ibm.com>
-Date: Mon, 02 Apr 2007 16:53:38 -0500
-From: Anthony Liguori <aliguori@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <ak@suse.de>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Jeff Garzik <jeff@garzik.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com, virtualization@lists.linux-foundation.org
-Subject: Re: A set of "standard" virtual devices?
-References: <4611652F.700@zytor.com> <200704022312.39195.ak@suse.de>	<4611768D.1080801@garzik.org> <200704022336.43136.ak@suse.de> <461178D9.402@goop.org>
-In-Reply-To: <461178D9.402@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 2 Apr 2007 17:56:17 -0400
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+	 <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
+	 <200704011246.52238.ak@suse.de>
+	 <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
+	 <1175544797.22373.62.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com>
+	 <1175548086.22373.99.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 14:56:08 -0700
+Message-Id: <1175550968.22373.122.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
->> The implementation wouldn't need to use PCI at all. There wouldn't 
->> even need to be PCI like registers internally. Just a pci device
->> with an ID somewhere in sysfs. PCI with unique IDs
->> is just a convenient and well established key into the driver module
->> collection. Once you have the right driver it can do what it wants.
-> 
-> But I understood hpa's suggestion to mean that there would be a standard
-> PCI interface for a hardware RNG, and a single linux driver for that
-> device, which all hypervisors would be expected to implement.  But
-> that's only reasonable if the virtualization environment has some notion
-> of PCI to expose to the Linux guest.
+On Mon, 2007-04-02 at 14:28 -0700, Christoph Lameter wrote:
+> I do not care what its called as long as it 
+> covers all the bases and is not a glaring performance regresssion (like 
+> SPARSEMEM so far). 
 
-The actual PCI bus could paravirtualized.  It's just a question of 
-whether one reinvents a device discovery mechanism (like XenBus) or 
-whether one piggy backs on existing mechanisms.
+I honestly don't doubt that there are regressions, somewhere.  Could you
+elaborate, and perhaps actually show us some numbers on this?  Perhaps
+instead of adding a completely new model, we can adapt the existing ones
+somehow.
 
-Furthermore, in the future, I strongly suspect that HVM will become much 
-more important for Xen than PV and since that already has a PCI bus it's 
-not really that big of a deal.
+But, without some cold, hard, data, we mere mortals without the 1024-way
+machines can only guess. ;)
 
-Regards,
-
-Anthony Liguori
-
->     J
+-- Dave
 
