@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXDBP6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXDBQF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933159AbXDBP6i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 11:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXDBP6i
+	id S933224AbXDBQF3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 12:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933191AbXDBQF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 11:58:38 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:5504 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933030AbXDBP6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 11:58:36 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=Qw6vGPRGVpKYIIBSe+qXJJRIyykr/20Hhq1AbEf/J1kWfNC8gItFQElUYLAqQW7nm
-	Q+rpPX38JPSkkQtTkhr4w==
-Message-ID: <4611269C.2000709@google.com>
-Date: Mon, 02 Apr 2007 08:51:56 -0700
-From: "Martin J. Bligh" <mbligh@google.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Mon, 2 Apr 2007 12:05:29 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:49214 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933104AbXDBQF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 12:05:28 -0400
+Message-ID: <461129C1.30507@us.ibm.com>
+Date: Mon, 02 Apr 2007 11:05:21 -0500
+From: Brian King <brking@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-mm@kvack.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com> <200704011246.52238.ak@suse.de> <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com> <200704021744.39880.ak@suse.de>
-In-Reply-To: <200704021744.39880.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ed Lin <ed.lin@promise.com>
+CC: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "james.Bottomley" <james.Bottomley@SteelEye.com>,
+       jeff <jeff@garzik.org>, promise_linux <promise_linux@promise.com>
+Subject: Re: [PATCH 4/4] [SCSI]stex: minor cleanup and version update
+References: <NONAMEBj81EYtN3Isam000005d6@nonameb.ptu.promise.com>
+In-Reply-To: <NONAMEBj81EYtN3Isam000005d6@nonameb.ptu.promise.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cc: apw ... seeing as he wrote sparsemem in the first place, please copy
-him on this stuff ?
+Ed Lin wrote:
+> @@ -1007,6 +1008,11 @@ static int stex_abort(struct scsi_cmnd *
+>  	u32 data;
+>  	int result = SUCCESS;
+>  	unsigned long flags;
+> +
+> +	printk(KERN_INFO DRV_NAME
+> +		"(%s): aborting command\n", pci_name(hba->pdev));
+> +	scsi_print_command(cmd);
+> +
 
-Andi Kleen wrote:
-> On Monday 02 April 2007 17:37, Christoph Lameter wrote:
->> On Sun, 1 Apr 2007, Andi Kleen wrote:
->>
->>> Hmm, this means there is at least 2MB worth of struct page on every node?
->>> Or do you have overlaps with other memory (I think you have)
->>> In that case you have to handle the overlap in change_page_attr()
->> Correct. 2MB worth of struct page is 128 mb of memory. Are there nodes 
->> with smaller amounts of memory? 
+scmd_printk is probably what you want here rather than just a printk.
+
+scmd_printk(KERN_ERR, cmd, "aborting command\n");
+
+
+> @@ -1092,6 +1098,10 @@ static int stex_reset(struct scsi_cmnd *
+>  	unsigned long before;
+>  	hba = (struct st_hba *) &cmd->device->host->hostdata[0];
 > 
-> Yes the discontigmem minimum is 64MB and there are some setups
-> (mostly with numa emulation) where you end up with nodes that small.
+> +	printk(KERN_INFO DRV_NAME
+> +		"(%s): resetting host\n", pci_name(hba->pdev));
+> +	scsi_print_command(cmd);
+> +
 
-We're actually using numa emulation to do real (container) things with.
-However, 128MB is still pretty small for that ... and worst case, we
-just waste 1MB for a 64MB node, right? Which isn't beautiful, but
-doesn't seem like the end of the world for an obscure corner case.
+Same here.
 
->>> Do you have any benchmarks numbers to prove it? There seem to be a few
->>> benchmarks where the discontig virt_to_page is a problem
->>> (although I know ways to make it more efficient), and sparsemem
->>> is normally slower. Still some numbers would be good.
->> You want a benchmark to prove that the removal of memory references and 
->> code improves performance?
-> 
-> You're just moving them into MMU, not really removing it.  And need more TLB entries.
-> It might be faster or it might not. There are some unexpected issues, like most x86-64 
-> CPUs have a quite small number of large TLBs so you can get thrashing etc.
-> 
-> So numbers with TLB intensive workloads would be good. 
+Brian
 
-There's also the possibility it just doesn't make enough difference
-to affect a real benchmark ...
-
-M.
+-- 
+Brian King
+eServer Storage I/O
+IBM Linux Technology Center
