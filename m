@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbXDBHja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXDBHmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753373AbXDBHja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbXDBHja
+	id S1753381AbXDBHmM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXDBHmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:39:30 -0400
-Received: from nessie.weebeastie.net ([220.233.7.36]:2244 "EHLO
-	bunyip.lochness.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753373AbXDBHj3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:39:29 -0400
-Date: Mon, 2 Apr 2007 17:41:08 +1000
-From: CaT <cat@zip.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: intermittant petabyte usage reported with broadcom nic
-Message-ID: <20070402074108.GB8345@zip.com.au>
-References: <20070402014319.GA8345@zip.com.au> <20070402001300.3b66007d.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Mon, 2 Apr 2007 03:42:11 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36663 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753381AbXDBHmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:42:10 -0400
+Date: Mon, 2 Apr 2007 00:42:10 -0700
+From: Greg KH <greg@kroah.com>
+To: Li Yu <raise.sail@gmail.com>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Jiri Kosina <jkosina@suse.cz>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+Message-ID: <20070402074210.GA25320@kroah.com>
+References: <200703051532096508636@gmail.com> <Pine.LNX.4.64.0704010002280.6040@jikos.suse.cz> <4610609C.9030101@gmail.com> <200704020015.44167.dtor@insightbb.com> <4610ABB1.3080606@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070402001300.3b66007d.akpm@linux-foundation.org>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <4610ABB1.3080606@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 12:13:00AM -0700, Andrew Morton wrote:
-> On Mon, 2 Apr 2007 11:43:19 +1000 CaT <cat@zip.com.au> wrote:
+On Mon, Apr 02, 2007 at 03:07:29PM +0800, Li Yu wrote:
+> Dmitry Torokhov wrote:
+> >
+> > No, please don't do that. As soon as there is a special driver written
+> > for a device that device's VID/PID should be added to generic HID
+> > blacklist. This way udev will load the proper driver right away and
+> > there will not be any flip-flopping of input devices. 
+> >   
+> Hi, I do not think that using blacklist in base driver for this purpose
+> is good idea. If so, we need modify source when each new HID device
+> driver come, that's so ugly. I think the blacklist only should be used
+> for those really broken/buggy hardware, not for these normal hardware
+> with extended feature.
 > 
-> > I take minute by minute snapshots of network traffic by sampling
-> > /proc/net/dev and most of the time everything works fine. Occasionally
-> > though I get petabyte byte traffic and corresponding packet traffic.
-> 
-> How frequently?
+> Er, I also want to know what are drawbacks of "flip-flopping" ?
 
-I can count about 6 over the past month.
+You have to create some kind of userspace program to disconnect the
+device from the hid driver, and bind it to the new driver, for every new
+device/driver that comes along.
 
-> Are you able to provide some actual numbers (expected and actual values),
-> so we can look at the bit patterns?
+Yes, you can do this, but the blacklist is simpler and easier.
 
-I have them in an rrd file. I think though that the numbers will be
-'adjusted' to fit in with the timekeeping. The logging code I've added
-should provide exact numbers as it'll just dump what it reads from /proc
-into syslog.
+thanks,
 
-> > This happens on an AMD64, dual core smp box with Broadcom NetXtreme II
-> > nics.
-> 
-> What driver drivers that?  b44.c?
-
-bnx2
-
-> > The issue happens with both nics but at different times. The same
-> > sampling code runs on p4 boxes with ht on and e1000 nics without issues
-> > so I don't believe it's an issue with my code (famous last words :)
-> > which just does an re to extract the data on a per-line basis and prints
-> > it out. Still, I'll be adding code to log any big readings and hopefully
-> > it'll happen again sooner rather then later.
-> > 
-> > There is no preemption involved and the kernel is a monolythic build of
-> > 2.6.19.[12] (there are two servers).
-> 
-> We do perform racy 64-bit updates of some of the stats counters.  But
-> that'll only affect 32-bit kernels and I'm assuming you're running a 64-bit
-> kernel on that AMD64 box (are you?)
-
-Correct. The environment is 64bit clean, though the kernel is compiled
-with 32bit support so that I can run static 32bit binaries if need be.
-
-> Plus it's odd that both the byte-counters and the packet-counters go wonky
-> at the same time.
-
-If you want I can toss you the rrd graphs that result from the data. The
-values do not appear to be static. For example, the resent 2 hits
-(within 10 minutes of each other) gave almost 3petabytes and just over 4
-petabytes. Interesting is that the incoming data is driven upto
-petabytes whilst the outgoing data hits megabytes at that point. This is
-consistant and the server is generally quiet.
-
--- 
-    "To the extent that we overreact, we proffer the terrorists the
-    greatest tribute."
-    	- High Court Judge Michael Kirby
+greg k-h
