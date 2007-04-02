@@ -1,106 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXDBOSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965472AbXDBOT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965521AbXDBOSJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 10:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965513AbXDBOSI
+	id S965472AbXDBOT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 10:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965489AbXDBOTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 10:18:08 -0400
-Received: from rwcrmhc11.comcast.net ([204.127.192.81]:61170 "EHLO
-	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965496AbXDBOSH (ORCPT
+	Mon, 2 Apr 2007 10:19:55 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:44894 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965472AbXDBOTz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 10:18:07 -0400
-From: dasperry@comcast.net (dave_sperry@ieee.org)
-To: Ingo Molnar <mingo@elte.hu>, Dave Sperry <dave_sperry@ieee.org>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
-Date: Mon, 02 Apr 2007 14:09:29 +0000
-Message-Id: <040220071409.15202.46110E98000A743600003B622205886172979D9D0A9F9C0E0B@comcast.net>
-X-Mailer: AT&T Message Center Version 1 (Oct  4 2006)
-X-Authenticated-Sender: ZGFzcGVycnlAY29tY2FzdC5uZXQ=
+	Mon, 2 Apr 2007 10:19:55 -0400
+Date: Mon, 2 Apr 2007 19:57:27 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: menage@google.com, akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com,
+       dev@sw.ru, xemul@sw.ru, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070402142727.GF2456@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com> <20070331024722.GA808@in.ibm.com> <20070402140938.GF17710@sergelap.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070402140938.GF17710@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for all the input Ingo, Here's a list of all the permutations I've tried:
+On Mon, Apr 02, 2007 at 09:09:39AM -0500, Serge E. Hallyn wrote:
+> Losing the directory isn't a big deal though.  And both unsharing a
+> namespace (which causes a ns_container_clone) and mounting the hierarchy
+> are done by userspace, so if for some installation it is a big deal,
+> the init scripts on initrd can mount the hierarchy before doing any
+> unsharing.
 
-setup                    Thruput      CPU% from cyclesoak
-2.6.21-rc5 vanilla       935          29%
+Yes I thought of that after posting this (that initrd can mount the
+hierarchies), so this should not be an issue in practice ..
 
-2.6.21-rc5-rt5           711          50% //basically all of 1 cpu
+> Can you think of a reason why losing a few directories matters?
 
-2.6.21-rc5-rt8           733          52%
+If we loose directories, then we don't have a way to manage the
+task-group it represents thr' the filesystem interface, so I consider
+that bad. As we agree, this will not be an issue if initrd
+mounts the ns hierarchy atleast at bootup.
 
-2.6.21-rc5-rt8           824          64%
-   netperf @50        
-   hardirq @50
-   softirq @50
-
-2.6.21-rc5-rt8           937          74%
-   netperf @51
-   hardirq @50
-   softirq @50
-
-2.6.21-rc5-rt8           106          8%
-   netperf @51
-   hardirq @49
-   softirq @50
-
-2.6.21-rc5-rt8           233          14%
-   netperf @51
-   hardirq @49
-   softirq @48
-
-2.6.21-rc5-rt8           67           5%
-   netperf @batch
-   hardirq @batch
-   softirq @batch
-
-2.6.21-rc5-rt8           331           OFF
-   netperf @batch
-   hardirq @batch
-   softirq @batch
-   cyclesoak off   
-
-
-Any thoughts?
-
--Dave
-
-
-
- -------------- Original message ----------------------
-From: Ingo Molnar <mingo@elte.hu>
-> 
-> * Dave Sperry <dave_sperry@ieee.org> wrote:
-> 
-> > I checked the clock source and in both the vanilla and rt cases and 
-> > they were both acpi_pm
-> 
-> ok, thanks for double-checking that.
-> 
-> > Here's the oprofile for my vanilla case:
-> 
-> i tried your workload and i think i managed to optimize it some more: i 
-> have uploaded the -rt8 kernel with these improvements included - could 
-> you try it? Is there any measurable improvement relative to -rt5?
-> 
-> one more thing to improve netperf performance is to do this before 
-> running it:
-> 
->   chrt -f -p 50 $$
-> 
-> this will put netperf on the same priority level as the net hardirq and 
-> the net softirq (which both default to SCHED_FIFO:50), and should result 
-> in a (much) reduced context-switch rate.
-> 
-> Or, if networking is not latency-critical, then you could move the net 
-> hardirq and softirq threads to SCHED_BATCH, and run netperf under 
-> SCHED_BATCH as well, using:
-> 
->   chrt -b -p 0 $$
-> 
-> and figuring out the active softirq hardirq thread PIDs and "chrt -b" 
-> -ing them too.
-> 
-> 	Ingo
-
+-- 
+Regards,
+vatsa
