@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940AbXDBIZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbXDBIhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752940AbXDBIZJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 04:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbXDBIZJ
+	id S1753394AbXDBIhl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 04:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbXDBIhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 04:25:09 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:45860 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752940AbXDBIZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 04:25:07 -0400
-Message-ID: <4610BDD7.5070201@gmail.com>
-Date: Mon, 02 Apr 2007 10:24:55 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Mon, 2 Apr 2007 04:37:41 -0400
+Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:36736 "EHLO
+	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753394AbXDBIhk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 04:37:40 -0400
+X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 04:37:39 EDT
+From: Joerg Schilling <schilling@fokus.fraunhofer.de>
+Message-Id: <200704020828.l328SICc009264@burner.fokus.fraunhofer.de>
+Date: Mon, 02 Apr 2007 10:28:18 +0200
+To: stern@rowland.harvard.edu
+Cc: dougg@torque.net, James.Bottomley@steeleye.com, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls Re:
+ [PATCH] Block layer: separate out queue-oriented ioctls
+User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-References: <460B6E4B.3060004@gmail.com> <200703291639.41515.rjw@sisk.pl> <460FF726.7090601@gmail.com> <200704012123.54797.rjw@sisk.pl>
-In-Reply-To: <200704012123.54797.rjw@sisk.pl>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
->>> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
->>>> swsusp: critical section:
->>>> swsusp: Need to copy 131380 pages
->>>> swsusp: Not enough free memory
->>>> Error -12 suspending
->>>> Enabling non-boot CPUs ...
+Hi,
 
-> As a workaround, you can try to change the initial image size so that it's
-> smaller than a half of the RAM size.  If that works, I'd like to send you a
-> debug patch, if you don't mind. :-)
+this is a repost as I like to know the current state of the problem...
 
-Yes, post it.
+The USB DMA size problem is known to exist on Linux since February 2004.
+I am still in hope that there will be a fix soon.
 
-# cat /sys/power/image_size
-524288000
-# echo disk >/sys/power/state
-error
-# echo disk >/sys/power/state
-error
-# echo $((400*1024*1024)) > /sys/power/image_size
-# echo disk >/sys/power/state
-ok
-# dmesg|grep Memory:
-Memory: 1027160k/1048256k available (2559k kernel code, 20348k reserved,
-1114k data, 188k init)
+/*--------------------------------------------------------------------------*/
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-I don't undestand it too much, but can't be shared video memory involved
-somehow?
+> Well, if Doug wants to reduce the value returned by SG_GET_RESERVED_SIZE, 
+> it's okay with me.  An advantage of doing this is that older versions of 
+> cdrecord would then work correctly.
+>
+> However you don't seem to realize that people can use programs like
+> cdrecord with devices whose drivers don't support SG_GET_RESERVED_SIZE --
+> because that ioctl works only with sg.  Programs would have to try
+> SG_GET_RESERVED_SIZE and if it faied, then try BLKSECTGET.
 
-regards,
+Is there any reason not to have one single ioctl for one basic feature?
+
+> Remember also, the "reserved size" is _not_ the maximum allowed size of a
+> DMA transfer.  Rather, it is the size of an internal buffer maintained by
+> sg.  It's legal to do an I/O transfer larger than the "reserved size", but 
+> it is not legal to do an I/O transfer larger than max_sectors.
+
+At the time the call SG_GET_RESERVED_SIZE has been discussed/defined, we did 
+originally agree that the max value should be limited to what the HW allows
+as DMA size. This is why I did originally files a bug against 
+SG_GET_RESERVED_SIZE.
+/*--------------------------------------------------------------------------*/
+
+Jörg
+
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
-
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
