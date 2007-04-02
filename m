@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934008AbXDBNGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934039AbXDBNUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934008AbXDBNGK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 09:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbXDBNGK
+	id S934039AbXDBNUR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 09:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934041AbXDBNUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 09:06:10 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:47533 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934008AbXDBNGI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 09:06:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pI/7Tgb1xuyUuAewBipbVPzPNMy5CajSCs+TIpFsh6tEtMYA6GrZVrKerNEndg2tC40nTarFm0H5PPHly3mRWcwr9EGro63uPvv9wRng0QLdbQRSvDrJqKmiXoUQftRYa9vf+wOB3UiOvkoxcZfOjRfMhUPSvEnKC0wz3+srTEw=
-Message-ID: <d120d5000704020606y620df4bfu1cf3728070f02a38@mail.gmail.com>
-Date: Mon, 2 Apr 2007 09:06:07 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Dan Engel" <dan@sourceharvest.com>
-Subject: Re: [PATCH] hid: add two led codes to hid input mapping
-Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <1175508842.12355.34.camel@monica.engel.home>
+	Mon, 2 Apr 2007 09:20:17 -0400
+Received: from cel.leonerd.org.uk ([62.49.94.186]:3816 "EHLO cel.leo"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934039AbXDBNUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 09:20:16 -0400
+Date: Mon, 2 Apr 2007 14:20:14 +0100
+From: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Daniel Jacobowitz <dan@debian.org>
+Subject: Re: [PATCH 17/16] Do not reset UTF8 on terminal reset
+Message-ID: <20070402132013.GM26707@cel.leo>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012001130.12316@yvahk01.tjqt.qr> <1175496595.4614.11.camel@daplas> <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr> <20070402112607.GK26707@cel.leo> <1175514253.4431.7.camel@daplas> <20070402115411.GL26707@cel.leo> <1175518079.4545.3.camel@daplas>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="84ND8YJRMFlzkrP4"
 Content-Disposition: inline
-References: <1175396188.7857.15.camel@monica.engel.home>
-	 <Pine.LNX.4.64.0704011941310.6040@jikos.suse.cz>
-	 <1175484539.12355.18.camel@monica.engel.home>
-	 <200704020004.51861.dtor@insightbb.com>
-	 <1175508842.12355.34.camel@monica.engel.home>
+In-Reply-To: <1175518079.4545.3.camel@daplas>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/2/07, Dan Engel <dan@sourceharvest.com> wrote:
-> On Mon, 2007-04-02 at 00:04 -0400, Dmitry Torokhov wrote:
->
-> > Actually I want to keep input subystm out of the loop here, since LEDs
-> > such as mail, charging, etc have nothing to do with user input but
-> > rather reflect overall system/application state.
-> >
->
-> What if I just added a HID_QUIRK_HIDDEV for the vendor/product id's in
-> the blacklist table in hiddev.c. That would force the creation of a
-> hiddev device, through which a user-space program could access the HID
-> usages directly.
->
-> It would be awkward, though, since there would also be an input event
-> device, but one through which the full functionality is not accessible.
 
-What other evets/usages does this device support?
+--84ND8YJRMFlzkrP4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Is there a HID_QUIRK that would force creation of a hiddev *instead of*
-> (rather than in addition to) an event dev?
+On Mon, Apr 02, 2007 at 08:47:59PM +0800, Antonino A. Daplas wrote:
+> How about this? This should allow us to reset the terminal without
+> affecting utf, and also allows setting of a global utf default that can
+> be set via boot option or sysfs:
+>=20
+> echo 1 > /sys/module/vt/parameters/default_utf
 
-No but it could be added.
+That's almost exactly what my suggestion was :)
 
->
-> Two things to keep in mind:
->
-> 1) The device in question (it's a Belkin USB Flip KVM switch, just to
-> restate from the OP) has nothing to do with LED's. It just overloads the
-> LED HID usage codes to receive control from the PC.
+(except that mine went into /proc/tty/vt/default_utf8_mode, but anywhere
+is good really)
 
-Ah, OK.
+--=20
+Paul "LeoNerd" Evans
 
-> 2) No matter what we do in terms of presenting this device to user-land,
-> under the hood it's a HID-class USB device, and it probably doesn't make
-> sense to not make use of that.
+leonerd@leonerd.org.uk
+ICQ# 4135350       |  Registered Linux# 179460
+http://www.leonerd.org.uk/
 
-It may be a HID-class device but it is definetly not an input device
-and it would be wrong to present it to userspace as a device having 2
-LEDs on it - it would be a lie. If we did that then some application
-might mistake the device for something else and decide to switch that
-LED off thus turning your KVM off. A random application should not be
-aware how a random vendor decided to interpret the specs.
+--84ND8YJRMFlzkrP4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
--- 
-Dmitry
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGEQMN7eTlovtaLtYRAoMVAKDAtu4dCEHTeNBmprvqtYd3Xjp/8gCfabOM
+eVbX11DH6hIpc3kBK2djFJw=
+=lYTT
+-----END PGP SIGNATURE-----
+
+--84ND8YJRMFlzkrP4--
