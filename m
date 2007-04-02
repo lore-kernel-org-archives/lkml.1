@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965469AbXDBNyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965449AbXDBOJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965469AbXDBNyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 09:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965475AbXDBNyR
+	id S965449AbXDBOJq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 10:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXDBOJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 09:54:17 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4744 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965469AbXDBNyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 09:54:16 -0400
-Date: Mon, 2 Apr 2007 09:54:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Joerg Schilling <schilling@fokus.fraunhofer.de>
-cc: dougg@torque.net, James Bottomley <James.Bottomley@steeleye.com>,
-       <jens.axboe@oracle.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls Re:
- [PATCH] Block layer: separate out queue-oriented ioctls
-In-Reply-To: <200704020828.l328SICc009264@burner.fokus.fraunhofer.de>
-Message-ID: <Pine.LNX.4.44L0.0704020951180.1743-100000@netrider.rowland.org>
+	Mon, 2 Apr 2007 10:09:45 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47869 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965449AbXDBOJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 10:09:44 -0400
+Date: Mon, 2 Apr 2007 09:09:39 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: menage@google.com, akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com,
+       dev@sw.ru, xemul@sw.ru, serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070402140938.GF17710@sergelap.austin.ibm.com>
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com> <20070331024722.GA808@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070331024722.GA808@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Joerg Schilling wrote:
-
-> Hi,
+Quoting Srivatsa Vaddagiri (vatsa@in.ibm.com):
+> On Mon, Feb 12, 2007 at 12:15:28AM -0800, menage@google.com wrote:
+> > +int ns_container_clone(struct task_struct *tsk)
+> > +{
+> > +	return container_clone(tsk, &ns_subsys);
+> > +}
 > 
-> this is a repost as I like to know the current state of the problem...
-> 
-> The USB DMA size problem is known to exist on Linux since February 2004.
-> I am still in hope that there will be a fix soon.
+> This function is a no-op if ns hierarchy is not mounted at this point.
+> This would mean that we will miss out on some directories in ns
+> hierarchy if it happened to be mounted later. It would be nice to
+> recreate such missing directories upon mount. However I suspect it would
+> not be easy ..Maybe we need to scan the task list and (re-)invoke
+> ns_container_clone() for every new tsk->nsproxy we find in the list.
+> Alternately perhaps we could auto mount (kern_mount) ns hierarchy very early at
+> bootup? On the flip side that would require remount support so that additional
+> controllers (like cpuset, mem) can be bound to (non-empty) ns hierarchy after
+> bootup.
 
-Me too.  I submitted the most recent version of the patch (labelled as857) 
-over a month ago and have received essentially no feedback on it.
+Losing the directory isn't a big deal though.  And both unsharing a
+namespace (which causes a ns_container_clone) and mounting the hierarchy
+are done by userspace, so if for some installation it is a big deal,
+the init scripts on initrd can mount the hierarchy before doing any
+unsharing.
 
-Douglas, James...  What's the story?
+Can you think of a reason why losing a few directories matters?
 
-Alan Stern
-
+-serge
