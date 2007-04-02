@@ -1,109 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933963AbXDBLok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933962AbXDBLuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933963AbXDBLok (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 07:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933965AbXDBLok
+	id S933962AbXDBLuA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 07:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933965AbXDBLuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 07:44:40 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:48852 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933963AbXDBLoe (ORCPT
+	Mon, 2 Apr 2007 07:50:00 -0400
+Received: from poseidon.ceid.upatras.gr ([150.140.141.169]:1557 "EHLO
+	poseidon.ceid.upatras.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933962AbXDBLt7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 07:44:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer;
-        b=hXg+HbPl2CWdQNjjA4QtwSpIQm0Mt1xosCYxhPG6CBcbogt7s6h+2HSJSPoVYZkgCadW2yjLoDzpzV84bIB8N7J6VaEwS09LZzJoaPNVLfiT2sPWJoGIAUwE3iVJPb6cLVDGUXW5f30HntOmMbeGeAt+9dMIQe5GpMmZ3mI8/ig=
-Subject: Re: [PATCH 17/16] Do not reset UTF8 on terminal reset
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Daniel Jacobowitz <dan@debian.org>
-In-Reply-To: <20070402112607.GK26707@cel.leo>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-	 <Pine.LNX.4.61.0704012001130.12316@yvahk01.tjqt.qr>
-	 <1175496595.4614.11.camel@daplas>
-	 <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr>
-	 <20070402112607.GK26707@cel.leo>
-Content-Type: multipart/mixed; boundary="=-QUVbUkpUqQKkZN0swhgD"
-Date: Mon, 02 Apr 2007 19:44:13 +0800
-Message-Id: <1175514253.4431.7.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Mon, 2 Apr 2007 07:49:59 -0400
+Message-ID: <4610EDF9.9000601@sciensis.com>
+Date: Mon, 02 Apr 2007 14:50:17 +0300
+From: Tasos Parisinos <t.parisinos@sciensis.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, indan@nul.nu
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+References: <4610D25F.7080005@ceid.upatras.gr> <p73r6r3yn9f.fsf@bingen.suse.de>
+In-Reply-To: <p73r6r3yn9f.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> Tasos Parisinos <parisino@ceid.upatras.gr> writes:
+>
+>   
+>> From: Tasos Parisinos <t.parisinos@sciensis.com>
+>>
+>> This patch adds module rsa.ko in the kernel (built-in or as a kernel
+>> module) and offers an API to do fast modular exponentiation, using the
+>> Montgomery algorithm, thus the exponentiation is not generic but can
+>> be used only when
+>> the modulus is odd, such as RSA public/private key pairs. This module is the
+>> computational core (using multiple precision integer arithmetics) and does not
+>> provide any means to do key management, implement padding schemas e.t.c. so the
+>> calling code should implement all those as needed. Signed-off-by:
+>> Tasos Parisinos <t.parisinos@sciensis.com>
+>>     
+>
+> You forgot to answer the most important question.
+>
+> What would want to use RSA in the kernel and why?  
+>
+> -Andi
+>
+>   
 
---=-QUVbUkpUqQKkZN0swhgD
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+The main purpose behind the creation of this module was to create the
+cryptographic infrastructure to develop an in-kernel system of signed
+modules.
 
-On Mon, 2007-04-02 at 12:26 +0100, Paul LeoNerd Evans wrote:
-> On Mon, Apr 02, 2007 at 09:31:37AM +0200, Jan Engelhardt wrote:
-> > Also see:
-> > 	http://lkml.org/lkml/2005/5/17/289
-> > 	http://lkml.org/lkml/2005/5/17/297
-> > 
-> > These posts argue about terminfo being the culprit. But how can terminfo 
-> > be at fault, when `echo -en "\ec"` triggers it too?
-> > 
-> > Since I am in a patch mood, here's my stance/patch, which is compile and 
-> > run tested and behaves as expected (both with `echo` and `reset`).
-> 
-> ...
-> 
-> > Index: linux-2.6.21-rc5/drivers/char/vt.c
-> > ===================================================================
-> > --- linux-2.6.21-rc5.orig/drivers/char/vt.c
-> > +++ linux-2.6.21-rc5/drivers/char/vt.c
-> > @@ -1518,7 +1518,6 @@ static void reset_terminal(struct vc_dat
-> >  	vc->vc_charset		= 0;
-> >  	vc->vc_need_wrap	= 0;
-> >  	vc->vc_report_mouse	= 0;
-> > -	vc->vc_utf		= 0;
-> >  	vc->vc_utf_count	= 0;
-> >  
-> >  	vc->vc_disp_ctrl	= 0;
-> > #<EOF>
-> 
-> Is it OK to do that? I recall when I was originally looking at the code
-> I didn't want to just remove that line, because it looked like that was
-> being used to first initialise the vc* structure when it is created, as
-> well as reset it every time. Doesn't this leave vc->vc_utf uninitialised
-> when a new VC is allocated?
+The best environment to deploy such functionality is in updating by remote,
+executable code (programs, libs and modules) on embedded devices running
+Linux, that have some form of kernel physical security, so one can't 
+tamper the
+kernel, but can read it. In this case only a public key would be 
+revealed. The
+vendor of the devices can sign and distribute/update executable code to 
+the devices,
+and the kernel will not load/run any of them if they don't match with 
+their signatures.
+The signature can be embedded in the elf, so this system is portable and 
+centralized.
+Although this functionality can be achieved using userland helper 
+programs this may
+create the need to physically secure entire filesystems which adds to 
+the cost of
+developing such devices. In such cases one needs to use asymmetric 
+cryptography
+because in the case of symmetric it would be very easy to give away the 
+key and
+end with having all your devices being attacked.
 
-That's true.  We can move the line vc->vc_utf = 0; in vc_init()
-instead. 
+There are already some systems that implement and utilize such 
+functionality that
+use windows platforms, and other Linux distros that use userland 
+programs to do
+so, assuming physical security of the host computer.
 
-Tony
+Moreover a same system that would use hashes is easier to brake and more 
+difficult
+to update each time new code must be loaded to the host devices.
+
+See also this thread
+
+http://lkml.org/lkml/2007/3/19/447
 
 
---=-QUVbUkpUqQKkZN0swhgD
-Content-Disposition: attachment; filename=vc_reset.diff
-Content-Type: text/x-patch; name=vc_reset.diff; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 1bbb45b..23e4432 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -1497,7 +1497,6 @@ static void reset_terminal(struct vc_dat
- 	vc->vc_charset		= 0;
- 	vc->vc_need_wrap	= 0;
- 	vc->vc_report_mouse	= 0;
--	vc->vc_utf		= 0;
- 	vc->vc_utf_count	= 0;
- 
- 	vc->vc_disp_ctrl	= 0;
-@@ -2590,6 +2589,7 @@ static void vc_init(struct vc_data *vc, 
- 	vc->vc_rows = rows;
- 	vc->vc_size_row = cols << 1;
- 	vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
-+	vc->vc_utf = 0;
- 
- 	set_origin(vc);
- 	vc->vc_pos = vc->vc_origin;
-
---=-QUVbUkpUqQKkZN0swhgD--
 
