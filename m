@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965818AbXDBUR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965820AbXDBUSH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965818AbXDBUR0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965819AbXDBUR0
+	id S965820AbXDBUSH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:18:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965813AbXDBUSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:17:26 -0400
-Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:44874 "HELO
-	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965818AbXDBURZ (ORCPT
+	Mon, 2 Apr 2007 16:18:07 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:60501 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965820AbXDBUSF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:17:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=AuxNO9sQKf89mzKpsFGYE7A7MUKuWw9qjWCwUYdNtsJCbSr5tqVnnwQLgL9QQXxlKvPuSd/dZ/1Z0DFRVDbqWE4ecMEy60+4r2aPU4I2bZ5AHYgTeztWTVmKhuJ9jAqJnEOpdKA7IyLWf9V00H5TpVygEusuDH58TGtMaSvnomc=  ;
-X-YMail-OSG: dXHr0jgVM1nZFLs8TNcyKrLfW307sWHcP8Dp6xOXyLv_O_m7YlTVE.68GTo5y.qdrgVpPC5Y1Q--
-From: David Brownell <david-b@pacbell.net>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Subject: Re: [patch 2.6.21-rc5-git 1/2] fix hotplug for legacy platform drivers
-Date: Mon, 2 Apr 2007 13:17:22 -0700
-User-Agent: KMail/1.7.1
-Cc: "Greg KH" <gregkh@suse.de>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Andres Salomon" <dilinger@debian.org>
-References: <200703311455.38490.david-b@pacbell.net> <d120d5000704021310r777e1796rf2025d873404afeb@mail.gmail.com>
-In-Reply-To: <d120d5000704021310r777e1796rf2025d873404afeb@mail.gmail.com>
+	Mon, 2 Apr 2007 16:18:05 -0400
+Message-ID: <001f01c77564$86416300$eeeea8c0@aldipc>
+From: "roland" <devzero@web.de>
+To: "Jeff Dike" <jdike@addtoit.com>, "Andrew Morton" <akpm@osdl.org>
+Cc: "LKML" <linux-kernel@vger.kernel.org>,
+       "uml-devel" <user-mode-linux-devel@lists.sourceforge.net>
+References: <20070402165012.GA7626@c2.user-mode-linux.org>
+Subject: Re: [PATCH 4/4] UML - kernel_thread shouldn't panic
+Date: Mon, 2 Apr 2007 22:21:38 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704021317.22909.david-b@pacbell.net>
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 8bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2869
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 April 2007 1:10 pm, Dmitry Torokhov wrote:
-> On 3/31/07, David Brownell <david-b@pacbell.net> wrote:
-> > @@ -349,6 +360,13 @@ EXPORT_SYMBOL_GPL(platform_device_unregi
-> >  *     memory allocated for the device allows drivers using such devices
-> >  *     to be unloaded iwithout waiting for the last reference to the device
-> >  *     to be dropped.
-> > + *
-> > + *     This interface is primarily intended for use with legacy drivers
-> > + *     which probe hardware directly.  Because such drivers create device
-> > + *     nodes themselves, rather than letting system infrastructure handle
-> > + *     such device enumeration tasks, they don't fully conform to the Linux
-> > + *     driver model.  In particular, when such drivers are built as modules,
-> > + *     they can't be "hotplugged".
-> >  */
-> >  struct platform_device *platform_device_register_simple(char *name, unsigned int id,
+i´d like to acknowledge that this fixes the problem i had when creating 
+loop-devices inside uml.
+
+instead of crashing the whole uml, losetup now tells:
+
+ioctl: LOOP_SET_FD: Resource temporarily unavailable
+
+and dmesg:
+
+Apr  2 20:17:53 localhost udevd[641]: udev_event_run: fork of child failed: 
+Resource temporarily unavailable
+Apr  2 20:17:54 localhost last message repeated 4 times
+Apr  2 20:17:54 localhost udevd-event[3014]: run_program: fork of 
+'/lib/udev/udev_run_hotplugd' failed:Resource temporarily unavailable
+Apr  2 20:17:54 localhost udevd-event[3014]: run_program: fork of 
+'/lib/udev/udev_run_devd' failed: Resource temporarily unavailable
+Apr  2 20:17:54 localhost udevd-event[3014]: run_program: fork of 
+'/sbin/pam_console_apply' failed: Resource temporarily unavailable
+Apr  2 20:17:54 localhost udevd[641]: udev_event_run: fork of child failed: 
+Resource temporarily unavailable
+
+so, this should be right behaviour now when running out of memory.
+
+regards
+roland
+
+----- Original Message ----- 
+From: "Jeff Dike" <jdike@addtoit.com>
+To: "Andrew Morton" <akpm@osdl.org>; <devzero@web.de>
+Cc: "LKML" <linux-kernel@vger.kernel.org>; "uml-devel" 
+<user-mode-linux-devel@lists.sourceforge.net>
+Sent: Monday, April 02, 2007 6:50 PM
+Subject: [PATCH 4/4] UML - kernel_thread shouldn't panic
+
+
+> kernel_thread should just return an error value on do_fork failure, not 
+> panic.
+>
+> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+> --
+> arch/um/kernel/process.c |    2 --
+> 1 file changed, 2 deletions(-)
+>
+> Index: linux-2.6.21-mm/arch/um/kernel/process.c
+> ===================================================================
+> --- linux-2.6.21-mm.orig/arch/um/kernel/process.c 2007-04-02 
+> 11:51:43.000000000 -0400
+> +++ linux-2.6.21-mm/arch/um/kernel/process.c 2007-04-02 
+> 12:01:00.000000000 -0400
+> @@ -97,8 +97,6 @@ int kernel_thread(int (*fn)(void *), voi
+>  current->thread.request.u.thread.arg = arg;
+>  pid = do_fork(CLONE_VM | CLONE_UNTRACED | flags, 0,
+>        &current->thread.regs, 0, NULL, NULL);
+> - if(pid < 0)
+> - panic("do_fork failed in kernel_thread, errno = %d", pid);
+>  return pid;
+> }
 > 
-> I find this comment misleading. Many of these drivers do not create
-> any devices (as in /dev/xxx) but rather create underlying hardware
-> abstraction objects.
 
-When I refresh this patch, I'll make it say "create sysfs device nodes" to
-make clear which type of device node (not the /dev/ kind) it's referring to.
-
-- Dave
