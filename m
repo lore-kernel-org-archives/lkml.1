@@ -1,58 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965851AbXDBU5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbXDBVAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965851AbXDBU5L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:57:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965866AbXDBU5K
+	id S1752821AbXDBVAQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXDBVAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:57:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:47288 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965865AbXDBU5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:57:09 -0400
-Message-ID: <46116E12.5070206@goop.org>
-Date: Mon, 02 Apr 2007 13:56:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 2 Apr 2007 17:00:16 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57831 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752821AbXDBVAO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:00:14 -0400
+Date: Mon, 2 Apr 2007 14:00:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dave Hansen <hansendc@us.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       Andi Kleen <ak@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/2] Generic Virtual Memmap suport for SPARSEMEM
+In-Reply-To: <1175547000.22373.89.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0704021351590.1224@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+ <1175547000.22373.89.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: A set of "standard" virtual devices?
-References: <4611652F.700@zytor.com>
-In-Reply-To: <4611652F.700@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On the subject of virtualization; there are a number of devices which
-> keep being invented and reinvented by just about every virtualization
-> vendor for no really good reason.
->
-> I personally recently pointed out that a proper virtualization
-> solution should handle entropy collection at the lowest level (where
-> the physical hardware drivers are) and present a hw_rng interface to
-> the guests. Unfortunately, none of the hardware-based hw_rng
-> interfaces is sane enough to do that with, which calls for a virtual
-> driver.
->
-> It would be nice if there was one, and not a dozen, such drivers.
->
-> I would therefore like to propose that the Linux Foundation register a
-> PCI ID for use by LANANA ($3000/year), and we set up a LANANA registry
-> for these device IDs, together with a description of the device
-> interface each of them expect.  Similarly, a Subsystem ID registry can
-> be used (for virtualization vendors which don't have their own VID
-> already) to distinguish different implementations.
->
-> Obviously, anyone who adheres to the published interface can use one
-> of these VID:DIDs -- as far as I'm concerned, even hardware vendors;
-> we'll use the SID to distinguish between implementations. 
+On Mon, 2 Apr 2007, Dave Hansen wrote:
 
-How would that work in the case where virtualized guests don't have a
-visible PCI bus, and the virtual environment doesn't pretend to emulate
-a PCI bus?
+> First of all, nice set of patches.
+> 
+> On Sat, 2007-03-31 at 23:10 -0800, Christoph Lameter wrote:
+> > --- linux-2.6.21-rc5-mm2.orig/include/asm-generic/memory_model.h	2007-03-31 22:47:14.000000000 -0700
+> > +++ linux-2.6.21-rc5-mm2/include/asm-generic/memory_model.h	2007-03-31 22:59:35.000000000 -0700
+> > @@ -47,6 +47,13 @@
+> >  })
+> > 
+> >  #elif defined(CONFIG_SPARSEMEM)
+> > +#ifdef CONFIG_SPARSE_VIRTUAL
+> > +/*
+> > + * We have a virtual memmap that makes lookups very simple
+> > + */
+> > +#define __pfn_to_page(pfn)	(vmemmap + (pfn))
+> > +#define __page_to_pfn(page)	((page) - vmemmap)
+> > +#else
+> >  /*
+> >   * Note: section's mem_map is encorded to reflect its start_pfn.
+> >   * section[i].section_mem_map == mem_map's address - start_pfn;
+> > @@ -62,6 +69,7 @@
+> >  	struct mem_section *__sec = __pfn_to_section(__pfn);	\
+> >  	__section_mem_map_addr(__sec) + __pfn;		\
+> >  })
+> > +#endif
+> >  #endif /* CONFIG_FLATMEM/DISCONTIGMEM/SPARSEMEM */
+> 
+> Any chance this can be done without embedding this inside another
+> #ifdef?  I really hate untangling the mess when an #endif goes
+> missing.  
+> 
+> Any reason this can't just be another #elif?
 
-    J
+Sure.
+
+> > +	} else
+> > +		return __alloc_bootmem_node(NODE_DATA(node), size, size,
+> > +					__pa(MAX_DMA_ADDRESS));
+> > +}
+> 
+> Hmmmmmmm.  Can we combine this with sparse_index_alloc()?  Also, why not
+> just use the slab for this?
+
+Use a slab for page sized allocations? No.
+
+> Let's get rid of the _block() part, too.  I'm not sure it does any good.
+> At least make it _bytes() so that we know what the units are.  Also, if
+> you're just going to round up internally and _not_ use the slab, can you
+> just make the argument in pages, or even order?
+
+Its used for page sized allocations.
+ 
+> Can you think of any times when we'd want that BUG_ON() to be a
+> WARN_ON(), instead?  I can see preferring having my mem_map[] on the
+> wrong node than hitting a BUG().
+
+We should probably have some error handling there instead of the BUG.
+
+> > +#ifndef ARCH_POPULATES_VIRTUAL_MEMMAP
+> > +/*
+> > + * Virtual memmap populate functionality for architectures that support
+> > + * PMDs for huge pages like i386, x86_64 etc.
+> > + */
+> 
+> How about:
+> 
+> /*
+>  * Virtual memmap support for architectures that use Linux pagetables
+>  * natively in hardware, and support mapping huge pages with PMD
+>  * entries.
+>  */
+> 
+> It wouldn't make sense to map the vmemmap area with Linux pagetables on
+> an arch that didn't use them in hardware, right?  So, perhaps this
+> doesn't quite belong in mm/sparse.c.  Perhaps we need
+> arch/x86/sparse.c. ;)
+
+I just extended this in V2 to also work on IA64. Its pretty generic.
+
+> > +static void vmemmap_pop_pmd(pud_t *pud, unsigned long addr,
+> > +				unsigned long end, int node)
+> > +{
+> > +	pmd_t *pmd;
+> > +
+> > +	end = pmd_addr_end(addr, end);
+> > +
+> > +	for (pmd = pmd_offset(pud, addr); addr < end;
+> > +			pmd++, addr += PMD_SIZE) {
+> > +  		if (pmd_none(*pmd)) {
+> > +  			void *block;
+> > +			pte_t pte;
+> > +
+> > +			block = vmemmap_alloc_block(PMD_SIZE, node);
+> > +			pte = pfn_pte(__pa(block) >> PAGE_SHIFT,
+> > +						PAGE_KERNEL);
+> > +			pte_mkdirty(pte);
+> > +			pte_mkwrite(pte);
+> > +			pte_mkyoung(pte);
+> > +			mk_pte_huge(pte);
+> > +			set_pmd(pmd, __pmd(pte_val(pte)));
+> > +		}
+> > +	}
+> > +}
+> 
+> Nitpick: I think this would look quite a bit neater with a little less
+> indentation.
+> 
+> How about making the loop start with
+> 
+> 	if (!pmd_none(*pmd))
+> 		continue;
+> 
+> It should bring the rest of the code in a bit and make that long line
+> more readable.
+
+V2 has the pmd setup separated out in a separate function.
+
+> > +{
+> > +	pgd_t *pgd;
+> > +	unsigned long addr = (unsigned long)(start_page);
+> > +	unsigned long end = pgd_addr_end(addr,
+> > +			(unsigned long)((start_page + nr)));
+> 
+> There appear to be a few extra parentheses on these lines.
+
+Right. Fixed.
+
+> > +	for (pgd = pgd_offset_k(addr); addr < end;
+> > +				pgd++, addr += PGDIR_SIZE) {
+> > +
+> > +		if (pgd_none(*pgd))
+> > +			pgd_populate(&init_mm, pgd,
+> > +				vmemmap_alloc_block(PAGE_SIZE, node));
+> > +		vmemmap_pop_pud(pgd, addr, end, node);
+> > +	}
+> > +}
+> > +#endif
+> > +#endif /* CONFIG_SPARSE_VIRTUAL */
+> 
+> We don't really need these #ifdefs embedded inside of each other,
+> either, right?  Kconfig should take care of enforcing the dependency.
+
+Ok.
+
+> > +#ifdef CONFIG_SPARSE_VIRTUAL
+> > +	map = pfn_to_page(pnum * PAGES_PER_SECTION);
+> > +	vmemmap_populate(map, PAGES_PER_SECTION, nid);
+> > +#else
+> >  	map = alloc_bootmem_node(NODE_DATA(nid),
+> >  			sizeof(struct page) * PAGES_PER_SECTION);
+> > +#endif
+> 
+> We really worked hard to keep #ifdefs out of the code flow in that file
+> and keep it as clean as possible.  Could we hide this behind a helper?  
+
+This is a major diffference in how sparsemem works. I think this needs to 
+stay.
+
+> 
+>          map = alloc_remap(nid, sizeof(struct page) * PAGES_PER_SECTION);
+>          if (map)
+>                  return map;
+> 
+> +        map = alloc_vmemmap(map, PAGES_PER_SECTION, nid);
+> +        if (map)
+> +                return map;
+> +
+>          map = alloc_bootmem_node(NODE_DATA(nid),
+>                          sizeof(struct page) * PAGES_PER_SECTION);
+>          if (map)
+>                  return map;
+> 
+> Then, do whatever magic you want in alloc_vmemmap().
+
+That would break if alloc_vmemmap returns NULL because it cannot allocate 
+memory.
+
+
