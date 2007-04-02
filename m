@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965820AbXDBUSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965819AbXDBUSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965820AbXDBUSH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965813AbXDBUSH
+	id S965819AbXDBUSU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965822AbXDBUSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:18:07 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:60501 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965820AbXDBUSF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:18:05 -0400
-Message-ID: <001f01c77564$86416300$eeeea8c0@aldipc>
-From: "roland" <devzero@web.de>
-To: "Jeff Dike" <jdike@addtoit.com>, "Andrew Morton" <akpm@osdl.org>
-Cc: "LKML" <linux-kernel@vger.kernel.org>,
-       "uml-devel" <user-mode-linux-devel@lists.sourceforge.net>
-References: <20070402165012.GA7626@c2.user-mode-linux.org>
-Subject: Re: [PATCH 4/4] UML - kernel_thread shouldn't panic
-Date: Mon, 2 Apr 2007 22:21:38 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 8bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2869
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
+	Mon, 2 Apr 2007 16:18:20 -0400
+Received: from verein.lst.de ([213.95.11.210]:59344 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965819AbXDBUSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 16:18:17 -0400
+Date: Mon, 2 Apr 2007 22:12:57 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Steve French <smfrench@austin.rr.com>
+Cc: linux-kernel@vger.kernel.org, hch@lst.de, akpm@linux-foundation.org
+Subject: Re: + cifs-remove-unneeded-checks.patch added to -mm tree
+Message-ID: <20070402201257.GA8705@lst.de>
+References: <OFD0781213.454F562D-ON872572B1.0067861B-862572B1.00679895@us.ibm.com> <1175546161.4306.9.camel@smf-t60p.smfdom>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1175546161.4306.9.camel@smf-t60p.smfdom>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i´d like to acknowledge that this fixes the problem i had when creating 
-loop-devices inside uml.
-
-instead of crashing the whole uml, losetup now tells:
-
-ioctl: LOOP_SET_FD: Resource temporarily unavailable
-
-and dmesg:
-
-Apr  2 20:17:53 localhost udevd[641]: udev_event_run: fork of child failed: 
-Resource temporarily unavailable
-Apr  2 20:17:54 localhost last message repeated 4 times
-Apr  2 20:17:54 localhost udevd-event[3014]: run_program: fork of 
-'/lib/udev/udev_run_hotplugd' failed:Resource temporarily unavailable
-Apr  2 20:17:54 localhost udevd-event[3014]: run_program: fork of 
-'/lib/udev/udev_run_devd' failed: Resource temporarily unavailable
-Apr  2 20:17:54 localhost udevd-event[3014]: run_program: fork of 
-'/sbin/pam_console_apply' failed: Resource temporarily unavailable
-Apr  2 20:17:54 localhost udevd[641]: udev_event_run: fork of child failed: 
-Resource temporarily unavailable
-
-so, this should be right behaviour now when running out of memory.
-
-regards
-roland
-
------ Original Message ----- 
-From: "Jeff Dike" <jdike@addtoit.com>
-To: "Andrew Morton" <akpm@osdl.org>; <devzero@web.de>
-Cc: "LKML" <linux-kernel@vger.kernel.org>; "uml-devel" 
-<user-mode-linux-devel@lists.sourceforge.net>
-Sent: Monday, April 02, 2007 6:50 PM
-Subject: [PATCH 4/4] UML - kernel_thread shouldn't panic
+On Mon, Apr 02, 2007 at 03:36:01PM -0500, Steve French wrote:
+> I merged most of Christoph's cifs-remove-unneeded-checks patch into the
+> cifs-2.6 development tree. The part I did not merge was a little harder
+> to verify and vaguely reminded me of the old bug report.  The part I
+> left out is attached (I don't mind leaving that part in mm a little
+> longer to make sure it is safe).
 
 
-> kernel_thread should just return an error value on do_fork failure, not 
-> panic.
->
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> --
-> arch/um/kernel/process.c |    2 --
-> 1 file changed, 2 deletions(-)
->
-> Index: linux-2.6.21-mm/arch/um/kernel/process.c
-> ===================================================================
-> --- linux-2.6.21-mm.orig/arch/um/kernel/process.c 2007-04-02 
-> 11:51:43.000000000 -0400
-> +++ linux-2.6.21-mm/arch/um/kernel/process.c 2007-04-02 
-> 12:01:00.000000000 -0400
-> @@ -97,8 +97,6 @@ int kernel_thread(int (*fn)(void *), voi
->  current->thread.request.u.thread.arg = arg;
->  pid = do_fork(CLONE_VM | CLONE_UNTRACED | flags, 0,
->        &current->thread.regs, 0, NULL, NULL);
-> - if(pid < 0)
-> - panic("do_fork failed in kernel_thread, errno = %d", pid);
->  return pid;
-> }
-> 
+diff -Nau /home/stevef/linux-2.6/fs/cifs/file.c /home/stevef/virtfs-2.6/fs/cifs/file.c
+--- /home/stevef/linux-2.6/fs/cifs/file.c	2007-04-02 13:55:36.000000000 -0500
++++ /home/stevef/virtfs-2.6/fs/cifs/file.c	2007-04-02 13:48:29.000000000 -0500
+@@ -352,8 +352,6 @@
+ 	int disposition = FILE_OPEN;
+ 	__u16 netfid;
+ 
+-	if (inode == NULL)
+-		return -EBADF;
 
+This is cifs_reopen_file.  One of the callers (find_writable_file) calls
+this with the &cifs_inode->vfs_inode as inode argument, which can't be
+NULL per definition.  All other callers pass
+file->f_path.dentry->d_inode as inode argument, which per definition is
+not never zero, because there are not file structs arount that don't
+point to an inode.
+
+Note that you could nicely simplify the find_writable_file calling
+conventions by not passing the inode argument explicitly at all, but
+rather always deriving it from file->f_path.dentry->d_inode inside
+the function body.
+
+ 	if (file->private_data) {
+ 		pCifsFile = (struct cifsFileInfo *)file->private_data;
+ 	} else
+@@ -367,12 +365,6 @@
+ 		return 0;
+ 	}
+ 
+-	if (file->f_path.dentry == NULL) {
+-		up(&pCifsFile->fh_sem);
+-		cFYI(1, ("failed file reopen, no valid name if dentry freed"));
+-		FreeXid(xid);
+-		return -EBADF;
+-	}
+
+@@ -784,6 +776,7 @@
+ ssize_t cifs_user_write(struct file *file, const char __user *write_data,
+ 	size_t write_size, loff_t *poffset)
+ {
++	struct inode *inode = file->f_path.dentry->d_inode;
+ 	int rc = 0;
+ 	unsigned int bytes_written = 0;
+ 	unsigned int total_written;
+@@ -831,11 +824,6 @@
+ 					return -EBADF;
+ 			}
+ 			if (open_file->invalidHandle) {
+-				if ((file->f_path.dentry == NULL) ||
+-				    (file->f_path.dentry->d_inode == NULL)) {
+-					FreeXid(xid);
+-					return total_written;
+-				}
+
+Same again here, there's no fscking chance read/write could ever work
+without a dentry or inode.
