@@ -1,108 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbXDBOQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965494AbXDBOQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965475AbXDBOQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 10:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965489AbXDBOQR
+	id S965494AbXDBOQp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 10:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965508AbXDBOQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 10:16:17 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:41645 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965475AbXDBOQQ (ORCPT
+	Mon, 2 Apr 2007 10:16:45 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4876 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965494AbXDBOQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 10:16:16 -0400
-Date: Mon, 2 Apr 2007 19:46:03 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, paulmck@us.ibm.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
-Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
-Message-ID: <20070402141603.GA25958@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu> <20070402092818.GE2456@in.ibm.com> <20070402111828.GA14771@elte.hu> <20070402124200.GA9566@in.ibm.com>
+	Mon, 2 Apr 2007 10:16:44 -0400
+Date: Mon, 2 Apr 2007 10:16:43 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: David Brownell <david-b@pacbell.net>
+cc: Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
+Message-ID: <Pine.LNX.4.44L0.0704021000450.1743-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070402124200.GA9566@in.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 06:12:00PM +0530, Srivatsa Vaddagiri wrote:
-> On Mon, Apr 02, 2007 at 01:18:28PM +0200, Ingo Molnar wrote:
-> > > 	if (freezing(current))
-> > > 		freeze_process(p);	/* function exported by freezer */
-> > 
-> > yeah. (is that safe with tasklist_lock held?)
+On Saturday March 31, 2007, David Brownell wrote:
+
+> I'm about ready to test the appended patch... a "move one device" call
+> might be safest at this point in the release cycle though.
 > 
-> from my scan of the code, it appears to be safe ..
-
-I quickly coded this up and ran my tests again. Unfortunately, the
-results are negative. I printk'd the state of the unfrozen task and 
-this is how the serial console output looks like:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Stopping user space processes timed out after 20 seconds (7 tasks
-refusing to freeze)
-make:TASK_UNINTERRUPTIBLE
-make:TASK_UNINTERRUPTIBLE
-make:TASK_UNINTERRUPTIBLE
-make:TASK_UNINTERRUPTIBLE
-make:TASK_UNINTERRUPTIBLE
-make:TASK_UNINTERRUPTIBLE
-make:TASK_UNINTERRUPTIBLE
-Restarting tasks ... done.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-I couldn't see any reduction in the number of
-freeze-failures. Thus Ingo right.  These failures are due
-to the TASK_UNINTERRUPTIBLE tasks which fail to freeze within the
-timeout period and not because of the fork race.
-
+> - Dave
 > 
-> > i'm wondering whether we could do even better than the signal approach. 
-> > I _think_ the best approach would be to only wait for tasks that are _on 
-> > the runqueue_. I.e. any task that has scheduled away with 
-> > TASK_UNINTERRUPTIBLE (and might not be able to process signal events for 
-> > a long time) is still freezable because it scheduled away.
+> ========================	SNIP!
+> Change how the PM list is constructed, so that devices are added right
+> after their parents (when they have one) rather than at the end of the
+> list.  This preserves sequencing guarantees, but enables sequencing of
+> suspend/resume operations by more important characteristics than "when
+> device happened to enumerate" ... e.g. clocksources and clockevents
+> at a clearly defined point during suspend and resume.
 > 
-> I am slightly uncomfortable with "not waiting for tasks inside the
-> kernel to get out" part, even if it that is done only for
-> TASK_UNINTERRUPTIBLE tasks. For ex: consider this:
-> 
-> flush_workqueue() <- One of biggest offenders of lock_cpu_hotplug() to date
-> 	for_each_online_cpu(cpu)
-> 		flush_cpu_workqueue
-> 			TASK_UNINTERRUPTIBLE sleep
-> 
-> If we don't wait for this thread from being frozen "voluntarily" (because it is 
-> in TASK_UNINTERRUPTIBLE sleep), then flush_workqueue is clearly racy wrt
-> cpu hotplug.
-> 
+> This patch has a potential downside for devices that have multiple
+> power dependencies and which "just happened to work" before.
 
-The other option would be to have another state equivalent to 
-TASK_UNINTERRUPTIBLE_NOFREEZE, so that Ingo's solution can be applied
-for regular TASK_UNINTERRUPTIBLE tasks. Thus TASK_UNINTERRUPTBLE tasks
-from a for_each_online_cpu context should now do a
-TASK_UNINTERRUPTIBLE_NOFREEZE instead. 
+Dave:
 
-Hmm, lots of audit and hence defeats the purpose.
+Would you mind retracting this patch?  It will interfere with some work
+I've been doing in USB, work that relies on exactly the sort of multiple 
+power dependency you mention.
 
-> I would imagine other situations like this are possible where "not waiting
-> for everyone to /voluntarily/ quiece" can break cpu hotplug. In fact,
-> the biggest reason why we are moving to freezer based hotplug is the
-> fact that it quiesces everyone, leading to (hopefully) zero race conditions.
-> 
-> -- 
-> Regards,
-> vatsa
+The problem is this: When a low- or full-speed USB device is resumed 
+following a power loss (this is part of the "persistent USB" patch), it's 
+necessary for the corresponding EHCI root hub to be resumed first so that 
+the port's OWNER bit can be set properly.
 
-Thanks and Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+It works fine as long as devices are resumed in order of registration,
+because a low- or full-speed USB device can't be registered before the
+high-speed root hub.  (If it was, it would be disconnected when the
+high-speed root hub initialized and took control of the port.)  So this
+isn't a "just happened to work" situation; it really is a critical
+ordering dependency.
+
+The clock source problem can be solved in other ways.  For instance, right 
+now things are set up so that clock sources are registered at various 
+random times and the clockevents code adapts to use the best available 
+device, right?.  So simply arrange for a clock source to "depart" as it is 
+suspended; then clockevents can fall back to using other lower-precision 
+sources.  As long as devices suspend in reverse order of discovery, the 
+system should always function properly.
+
+Alan Stern
+
