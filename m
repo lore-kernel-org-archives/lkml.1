@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+akpm=40zip.com.au-S1751250AbXD2PQI@vger.kernel.org>
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751250AbXD2PQI (ORCPT <rfc822;akpm@zip.com.au>);
-	Sun, 29 Apr 2007 11:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbXD2PQI
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 11:16:08 -0400
-Received: from naig.caltech.edu ([131.215.239.125]:48441 "EHLO
-	naig.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbXD2PQG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 11:16:06 -0400
-Date: Sun, 29 Apr 2007 17:15:54 +0200
-From: "Mhyar Deisenroth" <Mhyar_Deisenroth@anonpairot.com>
-Reply-To: "Mhyar Deisenroth" <Mhyar_Deisenroth@anonpairot.com>
-Message-ID: <285519889819.703050045182@anonpairot.com>
-To: <mlist-linux-kernel@nntp-server.caltech.edu>
-Subject: Symbol alert.
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S965680AbXDBS4o (ORCPT <rfc822;ralf@linux-mips.org>); Mon, 2 Apr 2007 14:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965686AbXDBS4o (ORCPT <rfc822;linux-kernel-outgoing>); Mon, 2 Apr 2007 14:56:44 -0400
+Received: from mtaout4.012.net.il ([84.95.2.10]:42185 "EHLO mtaout4.012.net.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP id S965680AbXDBS4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Mon, 2 Apr 2007 14:56:44 -0400
+Date: Mon, 02 Apr 2007 22:04:08 +0300 (IDT)
+Date-warning: Date header was inserted by i_mtaout4.012.net.il
+From: organz@yahoo.co.uk
+Subject: Good day!
+To: linux-kernel@vger.kernel.org
+Message-id: <0JFV00IZ4WYWWI41@i_mtaout4.012.net.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=windows-1251
+Content-transfer-encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S965680AbXDBS4o@vger.kernel.org>
 
-I used those words to make my meaning easier to understand.
-http://s6.bilder-hosting.de/img/VONK3.jpg
-GERMAN EXCHANGES ARE HOT!
+Good day! We are glad to present you new escorts from Russia - "Etoile Noire".
+ Our agency were started in 2002 in Moscow. From the very first steps of our
+ existence we run into difficulties,like strict competition with other
+ agencies. But attention to our clients,
+ good level of providing service and professional staff of designers,
+ photographers, managers and models helped us to bolt our leading position in
+ providing escort world over. For more information use this link http:
+ //www.etoilenoire.org Hope you will become our permanent client!
+ ======================= All the best for you! Manager Ludmila Enjoy your time
+ with "ETOILE NOIRE" office@etoilenoire.org http://www.etoilenoire.org
 
