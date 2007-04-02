@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965864AbXDBUvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965847AbXDBUxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965864AbXDBUvo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965862AbXDBUvo
+	id S965847AbXDBUxS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965862AbXDBUxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:51:44 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52648 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965858AbXDBUvn (ORCPT
+	Mon, 2 Apr 2007 16:53:18 -0400
+Received: from gundega.hpl.hp.com ([192.6.19.190]:57269 "EHLO
+	gundega.hpl.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965847AbXDBUxR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:51:43 -0400
-Date: Mon, 2 Apr 2007 13:51:41 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Martin Bligh <mbligh@google.com>
-cc: Dave Hansen <hansendc@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-In-Reply-To: <461169CF.6060806@google.com>
-Message-ID: <Pine.LNX.4.64.0704021345110.1224@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
-  <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com> 
- <200704011246.52238.ak@suse.de>  <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
- <1175544797.22373.62.camel@localhost.localdomain>
- <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com>
- <461169CF.6060806@google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 2 Apr 2007 16:53:17 -0400
+Date: Mon, 2 Apr 2007 13:52:58 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       perfmon@napali.hpl.hp.com
+Subject: Re: exposing FSB clock speed in /sys
+Message-ID: <20070402205258.GB32024@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070330153937.GC16059@frankl.hpl.hp.com> <p73bqiaqh32.fsf@bingen.suse.de> <20070331081832.GB17535@frankl.hpl.hp.com> <20070402161443.GD3510@csclub.uwaterloo.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070402161443.GD3510@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Martin Bligh wrote:
+Len,
 
-> > Its just the opposite. The vmemmap code is so efficient that we can remove
-> > lots of other code and gops of these alternate implementations. On x86_64
-> > its even superior to FLATMEM since FLATMEM still needs a memory reference
-> > for the mem_map area. So if we make SPARSE standard for all configurations
-> > then there is no need anymore for FLATMEM DISCONTIG etc etc. Can we not
-> > cleanup all this mess? Get rid of all the gazillions of #ifdefs please? This
-> > would ease code maintenance significantly. I hate having to constantly
-> > navigate my way through all the alternatives.
+On Mon, Apr 02, 2007 at 12:14:43PM -0400, Lennart Sorensen wrote:
+> On Sat, Mar 31, 2007 at 12:18:32AM -0800, Stephane Eranian wrote:
+> > Well, I am talking about the bus that connects the processor socket to the
+> > chipset on Intel machines. On Intel Core 2 Duo (aka Woodcrest), you have 
+> > 2 sockets, thus two buses connecting to the chipset which then connects
+> > to the memory (among other things).
+> > 
+> > The Woodcrest (Intel Core PMU) is capable of measuring the number of bus
+> > transactions to memory (look at the BUS_* events). You can count per core
+> > or for the entire socket (both cores). In order to know if you saturate
+> > the bus (from socket to chipset), you need to know the theoretical peak
+> > number of transactions the bus can sustain. For that you need to bus
+> > frequency. 
+> > 
+> > I am not interested in older processors, but I think for all recent Intel
+> > processors, there is a fairly simple algorithm to get the frequency using
+> > a couple of MSRs (including MSR_IA32_EBL_CR_POWERON or MSR_FSB_FREQ).
+> > 
+> > Don't we already have /sys entries that exits only for certain processors
+> > or platforms?
+> > 
+> > I think the Opteron have HYPERTRANSPORT-related events which could be used
+> > to obtain similar metrics.
+> > 
+> > Knowledge of bus saturation is important for multi-core programming.
 > 
-> The original plan when this was first merged was pretty much that -
-> for sparsemem to replace discontigmem once it was well tested. Seems
-> to have got stalled halfway through ;-(
+> How about the speed between ram and the chipset?  Is it single or dual
+> channel?  Are there PCI devices currently doing DMA transfers to ram
+> taking up bandwidth?  What are the latencies of the ram, Etc, etc, etc.
 
-But you made big boboo in SPARSEMEM. Virtual memmap is a textbook case 
-that was not covered. Instead this horrible stuff that involves calling 
-functions in VM primitives. We could have been there years ago...
+This is information you can normally collect form chipset performance
+counters. Unfortunately, those are rarely public.
 
-> Not sure we'll get away with replacing flatmem for all arches, but
-> we could at least get rid of discontigmem, it seems.
+I am focusing on what you can measure using the CPU performance counters.
 
-I think we could start with x86_64 and ia64. Both will work fine with 
-SPARSE VIRTUAL (and SGIs concerns about performance are addressed) and we 
-could remove the other alternatives. That is going to throw out lots of 
-stuff. Then proceed to other arches
+> 
+> And what could your software do differently if it knew this information?
+> 
+That is a good question! Thanks for asking.
 
-Could the SPARSEMEM folks take this over this patch? You have more 
-resources and I am all alone on this. I will post another patchset today 
-that also includes an IA64 implementation.
+Assuming you are using a dual core machine, if you would know the bus utilization,
+you could determine whether or not it is worth using the 2nd core for your workload.
+If one thread already saturates the bus, you can either use the 2nd core for a
+non memory-bound workload, or just leave it unused. As you can guess, this information
+could be used for thread placement.
+
+Similarly, if you see a low bus utilization for a memory-bound program, then this
+could be a sign that the program is not well optimized, e.g., not issuing software
+prefetch. Here this is about code tuning.
+
+There a lot of information to be gleaned for using the performance counters especially
+for multi-core platforms.
+
+-- 
+-Stephane
