@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXDBKOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965356AbXDBKOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965352AbXDBKOH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 06:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965356AbXDBKOH
+	id S965356AbXDBKOK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 06:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965369AbXDBKOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 06:14:07 -0400
-Received: from rwcrmhc12.comcast.net ([216.148.227.152]:58382 "EHLO
-	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965352AbXDBKOG (ORCPT
+	Mon, 2 Apr 2007 06:14:10 -0400
+Received: from server225-han.de-nserver.de ([85.158.176.91]:55917 "EHLO
+	server225-han.de-nserver.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965356AbXDBKOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 06:14:06 -0400
-Subject: Re: [PATCH] hid: add two led codes to hid input mapping
-From: Dan Engel <dan@sourceharvest.com>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <200704020004.51861.dtor@insightbb.com>
-References: <1175396188.7857.15.camel@monica.engel.home>
-	 <Pine.LNX.4.64.0704011941310.6040@jikos.suse.cz>
-	 <1175484539.12355.18.camel@monica.engel.home>
-	 <200704020004.51861.dtor@insightbb.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-TPecLyS3U6EntT4nFK2K"
-Date: Mon, 02 Apr 2007 06:14:02 -0400
-Message-Id: <1175508842.12355.34.camel@monica.engel.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	Mon, 2 Apr 2007 06:14:08 -0400
+Message-ID: <4610D771.4020806@codemercs.com>
+Date: Mon, 02 Apr 2007 12:14:09 +0200
+From: Robert Marquardt <marquardt@codemercs.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Dmitry Torokhov <dtor@insightbb.com>, Li Yu <raise.sail@gmail.com>,
+       yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+References: <200703051532096508636@gmail.com> <200703300033.22059.dtor@insightbb.com> <Pine.LNX.4.64.0704010002280.6040@jikos.suse.cz> <200704020009.26345.dtor@insightbb.com> <Pine.LNX.4.64.0704021134250.3808@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0704021134250.3808@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-User-Auth: Auth by marquardt@codemercs.com through 87.187.41.158
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jiri Kosina wrote:
 
---=-TPecLyS3U6EntT4nFK2K
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I agree. I am aware of devices for which just inspecting the parsed data 
+> would be OK (some keyboards with usage mappings which are not defined by 
+> HUT, for example), but also of devices which require special handling on 
+> the report level - Robert Marquardt pointed me in a private mail to a few 
+> devices which are broken par-excellence, and for which handling on report 
+> level would be convenient.
+> 
+> Also, handling on report level would be nice to have so that we could hook 
+> a hidraw driver to it.
 
-On Mon, 2007-04-02 at 00:04 -0400, Dmitry Torokhov wrote:
+Just forgot to use "Reply All".
 
-> Actually I want to keep input subystm out of the loop here, since LEDs
-> such as mail, charging, etc have nothing to do with user input but
-> rather reflect overall system/application state.
->=20
+Here is the text (expanded):
+Definitely. I know of several devices where the HID descriptor and the 
+data sent completely disagree.
+A Metex USB Multimeter for example tells that it has a 4 byte report 
+divided into a 3 byte and a 1 byte element. The device sends two reports 
+each containing two 2 byte elements with one in the second report not 
+containing data.
+The wierdest device is a CD archive torus which shows up as a simple 
+standard mouse. Commands are sent by *reading* strings.
+The Office Rocket Launcher is posing as a keyboard and reacts to the 
+LEDs being set (this is of interest for the Num-Lock thread here).
+I definitely hope that the latter two devices will never get official 
+kernel support in any way.
 
-What if I just added a HID_QUIRK_HIDDEV for the vendor/product id's in
-the blacklist table in hiddev.c. That would force the creation of a
-hiddev device, through which a user-space program could access the HID
-usages directly.
-
-It would be awkward, though, since there would also be an input event
-device, but one through which the full functionality is not accessible.
-Is there a HID_QUIRK that would force creation of a hiddev *instead of*
-(rather than in addition to) an event dev?
-
-Two things to keep in mind:
-
-1) The device in question (it's a Belkin USB Flip KVM switch, just to
-restate from the OP) has nothing to do with LED's. It just overloads the
-LED HID usage codes to receive control from the PC.
-
-2) No matter what we do in terms of presenting this device to user-land,
-under the hood it's a HID-class USB device, and it probably doesn't make
-sense to not make use of that.
-
-Thanks,
--Dan
-
---=-TPecLyS3U6EntT4nFK2K
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGENdqeDYVehSTx+URAqnkAKCZSK3+1Qq3VzPUzKHdFpGIKFzDuACdGtua
-13Z1SxiIhzAx+L/0IExcZyo=
-=Vg61
------END PGP SIGNATURE-----
-
---=-TPecLyS3U6EntT4nFK2K--
-
+Why is the report parsed on driver level at all? It should be possible 
+to allow drivers to manipulate the reports, but i see no reason to split 
+the report into usages that early. The Windows HID API parses the report 
+happily in the HID.DLL for user programs. Drivers have the same API 
+available on kernel level.
+So a raw API for the drivers should be the primary API. It is usually 
+easier to manipulate the report directly instead of abstract operations. 
+It is also fairly safe. The device has been identified so the offending 
+report layout can be presumed. Parsing for specific usages should be 
+done from the driver. Preparsing the report before the data is handed to 
+the driver only wastes CPU cycles.
