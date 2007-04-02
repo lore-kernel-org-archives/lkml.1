@@ -1,48 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934014AbXDBMui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934030AbXDBMwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934014AbXDBMui (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 08:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934030AbXDBMui
+	id S934030AbXDBMwB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 08:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934032AbXDBMwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 08:50:38 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:51508 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934014AbXDBMuh (ORCPT
+	Mon, 2 Apr 2007 08:52:00 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:48929 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934030AbXDBMwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 08:50:37 -0400
-X-Greylist: delayed 5315 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 08:50:37 EDT
-Date: Mon, 2 Apr 2007 14:50:34 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Antoine Martin <antoine@nagafix.co.uk>
-Cc: Jeff Dike <jdike@addtoit.com>, Blaisorblade <blaisorblade@yahoo.it>,
-       devzero@web.de, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [uml-devel] [RFC] UML kernel & rootfs bundle with every kernel
- release ?
-In-Reply-To: <Pine.LNX.4.64.0704021318410.1276@anakin>
-Message-ID: <Pine.LNX.4.64.0704021450070.1276@anakin>
-References: <1712880100@web.de> <200704012108.14597.blaisorblade@yahoo.it>
- <46100EF5.7040802@nagafix.co.uk> <20070402020530.GA589@c2.user-mode-linux.org>
- <4610D937.20002@nagafix.co.uk> <Pine.LNX.4.64.0704021318410.1276@anakin>
+	Mon, 2 Apr 2007 08:52:00 -0400
+Date: Mon, 2 Apr 2007 14:52:12 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: John Williams <jwilliams@itee.uq.edu.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ENOENT creating /dev/root on MTD RAM partition
+Message-ID: <20070402125212.GA11522@aepfle.de>
+References: <4610A598.4050206@itee.uq.edu.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4610A598.4050206@itee.uq.edu.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Geert Uytterhoeven wrote:
-> Gerd Kraxel^H^H^H^H^H^HHoffmann did one using plain X11, which worked
-       ^^^^^^
-Sorry, this should have been `Knorr'.
+On Mon, Apr 02, John Williams wrote:
 
-> great when I gave it a try.
+> Any comments or suggestions on a possible cause or approach to track it
+> down would be greatly appreciated.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Just a guess:
+Check if '/dev' exists. I think it is now possible to not add the built-in
+cpio archive with the mandatory /dev, /dev/console and /root entries.
