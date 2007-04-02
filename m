@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965539AbXDBOyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965552AbXDBOz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965539AbXDBOyw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 10:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXDBOyw
+	id S965552AbXDBOz3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 10:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965558AbXDBOz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 10:54:52 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:5348 "EHLO relay.sw.ru"
+	Mon, 2 Apr 2007 10:55:28 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:2410 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965539AbXDBOyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 10:54:51 -0400
-Date: Mon, 2 Apr 2007 19:02:40 +0400
+	id S965552AbXDBOz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 10:55:26 -0400
+Date: Mon, 2 Apr 2007 19:03:16 +0400
 From: Alexey Dobriyan <adobriyan@sw.ru>
 To: rusty@rustcorp.com.au, pmarques@grupopie.com
 Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH 4/5] Fix race between cat /proc/*/wchan and rmmod et al
-Message-ID: <20070402150240.GD6735@localhost.sw.ru>
+Subject: [PATCH 5/5] Fix race between cat /proc/slab_allocators and rmmod
+Message-ID: <20070402150316.GE6735@localhost.sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -22,66 +22,34 @@ User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kallsyms_lookup() can go iterating over modules list unprotected
-which is OK for emergency situations (oops), but not OK for regular
-stuff like /proc/*/wchan.
-
-Introduce lookup_symbol_name()/lookup_module_symbol_name() which copy
-symbol name into caller-supplied buffer or return -ERANGE. All copying
-is done with module_mutex held, so...
+Same story as with cat /proc/*/wchan race vs rmmod race, only
+/proc/slab_allocators want more info than just symbol name.
 
 Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
 ---
 
- fs/proc/base.c            |   11 +++++------
- include/linux/kallsyms.h  |    7 +++++++
- include/linux/module.h    |    6 ++++++
- kernel/kallsyms.c         |   17 +++++++++++++++++
- kernel/module.c           |   23 +++++++++++++++++++++++
- kernel/time/timer_list.c  |   11 ++++-------
- kernel/time/timer_stats.c |   10 ++++------
- 7 files changed, 66 insertions(+), 19 deletions(-)
+ include/linux/kallsyms.h |    6 ++++++
+ include/linux/module.h   |    6 ++++++
+ kernel/kallsyms.c        |   19 +++++++++++++++++++
+ kernel/module.c          |   27 +++++++++++++++++++++++++++
+ mm/slab.c                |   10 +++-------
+ 5 files changed, 61 insertions(+), 7 deletions(-)
 
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -275,16 +275,15 @@ #ifdef CONFIG_KALLSYMS
-  */
- static int proc_pid_wchan(struct task_struct *task, char *buffer)
- {
--	const char *sym_name;
- 	unsigned long wchan;
--	char namebuf[KSYM_NAME_LEN+1];
-+	char symname[KSYM_NAME_LEN+1];
- 
- 	wchan = get_wchan(task);
- 
--	sym_name = kallsyms_lookup(wchan, NULL, NULL, NULL, namebuf);
--	if (sym_name)
--		return sprintf(buffer, "%s", sym_name);
--	return sprintf(buffer, "%lu", wchan);
-+	if (lookup_symbol_name(wchan, symname) < 0)
-+		return sprintf(buffer, "%lu", wchan);
-+	else
-+		return sprintf(buffer, "%s", symname);
- }
- #endif /* CONFIG_KALLSYMS */
- 
 --- a/include/linux/kallsyms.h
 +++ b/include/linux/kallsyms.h
-@@ -22,6 +22,8 @@ const char *kallsyms_lookup(unsigned lon
- 			    unsigned long *offset,
+@@ -23,6 +23,7 @@ const char *kallsyms_lookup(unsigned lon
  			    char **modname, char *namebuf);
  
-+int lookup_symbol_name(unsigned long addr, char *symname);
-+
+ int lookup_symbol_name(unsigned long addr, char *symname);
++int lookup_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name);
+ 
  /* Replace "%s" in format with address, if found */
  extern void __print_symbol(const char *fmt, unsigned long address);
- 
-@@ -47,6 +49,11 @@ static inline const char *kallsyms_looku
- 	return NULL;
+@@ -54,6 +55,11 @@ static inline int lookup_symbol_name(uns
+ 	return -ERANGE;
  }
  
-+static inline int lookup_symbol_name(unsigned long addr, char *symname)
++static inline int lookup_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name)
 +{
 +	return -ERANGE;
 +}
@@ -91,19 +59,19 @@ Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
  #endif /*CONFIG_KALLSYMS*/
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
-@@ -456,6 +456,7 @@ const char *module_address_lookup(unsign
- 				  unsigned long *symbolsize,
+@@ -457,6 +457,7 @@ const char *module_address_lookup(unsign
  				  unsigned long *offset,
  				  char **modname);
-+int lookup_module_symbol_name(unsigned long addr, char *symname);
+ int lookup_module_symbol_name(unsigned long addr, char *symname);
++int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name);
  
  /* For extable.c to search modules' exception tables. */
  const struct exception_table_entry *search_module_extables(unsigned long addr);
-@@ -527,6 +528,11 @@ static inline const char *module_address
- 	return NULL;
+@@ -533,6 +534,11 @@ static inline int lookup_module_symbol_n
+ 	return -ERANGE;
  }
  
-+static inline int lookup_module_symbol_name(unsigned long addr, char *symname)
++static inline int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name)
 +{
 +	return -ERANGE;
 +}
@@ -113,25 +81,27 @@ Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
  					char *module_name, int *exported)
 --- a/kernel/kallsyms.c
 +++ b/kernel/kallsyms.c
-@@ -269,6 +269,23 @@ const char *kallsyms_lookup(unsigned lon
- 	return NULL;
+@@ -286,6 +286,25 @@ int lookup_symbol_name(unsigned long add
+ 	return lookup_module_symbol_name(addr, symname);
  }
  
-+int lookup_symbol_name(unsigned long addr, char *symname)
++int lookup_symbol_attrs(unsigned long addr, unsigned long *size,
++			unsigned long *offset, char *modname, char *name)
 +{
-+	symname[0] = '\0';
-+	symname[KSYM_NAME_LEN] = '\0';
++	name[0] = '\0';
++	name[KSYM_NAME_LEN] = '\0';
 +
 +	if (is_ksym_addr(addr)) {
 +		unsigned long pos;
 +
-+		pos = get_symbol_pos(addr, NULL, NULL);
++		pos = get_symbol_pos(addr, size, offset);
 +		/* Grab name */
-+		kallsyms_expand_symbol(get_symbol_offset(pos), symname);
++		kallsyms_expand_symbol(get_symbol_offset(pos), name);
++		modname[0] = '\0';
 +		return 0;
 +	}
 +	/* see if it's in a module */
-+	return lookup_module_symbol_name(addr, symname);
++	return lookup_module_symbol_attrs(addr, size, offset, modname, name);
 +}
 +
  /* Replace "%s" in format with address, or returns -errno. */
@@ -139,11 +109,12 @@ Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
  {
 --- a/kernel/module.c
 +++ b/kernel/module.c
-@@ -2122,6 +2122,29 @@ const char *module_address_lookup(unsign
- 	return NULL;
+@@ -2145,6 +2145,33 @@ out:
+ 	return -ERANGE;
  }
  
-+int lookup_module_symbol_name(unsigned long addr, char *symname)
++int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size,
++			unsigned long *offset, char *modname, char *name)
 +{
 +	struct module *mod;
 +
@@ -153,10 +124,13 @@ Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
 +		    within(addr, mod->module_core, mod->core_size)) {
 +			const char *sym;
 +
-+			sym = get_ksymbol(mod, addr, NULL, NULL);
++			sym = get_ksymbol(mod, addr, size, offset);
 +			if (!sym)
 +				goto out;
-+			strlcpy(symname, sym, KSYM_NAME_LEN + 1);
++			if (modname)
++				strlcpy(modname, mod->name, MODULE_NAME_LEN + 1);
++			if (name)
++				strlcpy(name, sym, KSYM_NAME_LEN + 1);
 +			mutex_unlock(&module_mutex);
 +			return 0;
 +		}
@@ -169,47 +143,26 @@ Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
  int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
  			char *name, char *module_name, int *exported)
  {
---- a/kernel/time/timer_list.c
-+++ b/kernel/time/timer_list.c
-@@ -38,15 +38,12 @@ #define SEQ_printf(m, x...)			\
- 
- static void print_name_offset(struct seq_file *m, void *sym)
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -4380,16 +4380,12 @@ static void handle_slab(unsigned long *n
+ static void show_symbol(struct seq_file *m, unsigned long address)
  {
--	unsigned long addr = (unsigned long)sym;
+ #ifdef CONFIG_KALLSYMS
+-	char *modname;
+-	const char *name;
+ 	unsigned long offset, size;
 -	char namebuf[KSYM_NAME_LEN+1];
--	const char *sym_name;
-+	char symname[KSYM_NAME_LEN+1];
+-
+-	name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
++	char modname[MODULE_NAME_LEN + 1], name[KSYM_NAME_LEN + 1];
  
--	sym_name = kallsyms_lookup(addr, NULL, NULL, NULL, namebuf);
--	if (sym_name)
--		SEQ_printf(m, "%s", sym_name);
--	else
-+	if (lookup_symbol_name((unsigned long)sym, symname) < 0)
- 		SEQ_printf(m, "<%p>", sym);
-+	else
-+		SEQ_printf(m, "%s", symname);
- }
- 
- static void
---- a/kernel/time/timer_stats.c
-+++ b/kernel/time/timer_stats.c
-@@ -257,14 +257,12 @@ void timer_stats_update_stats(void *time
- 
- static void print_name_offset(struct seq_file *m, unsigned long addr)
- {
--	char namebuf[KSYM_NAME_LEN+1];
--	const char *sym_name;
-+	char symname[KSYM_NAME_LEN+1];
- 
--	sym_name = kallsyms_lookup(addr, NULL, NULL, NULL, namebuf);
--	if (sym_name)
--		seq_printf(m, "%s", sym_name);
--	else
-+	if (lookup_symbol_name(addr, symname) < 0)
- 		seq_printf(m, "<%p>", (void *)addr);
-+	else
-+		seq_printf(m, "%s", symname);
- }
- 
- static int tstats_show(struct seq_file *m, void *v)
+-	if (name) {
++	if (lookup_symbol_attrs(address, &size, &offset, modname, name) == 0) {
+ 		seq_printf(m, "%s+%#lx/%#lx", name, offset, size);
+-		if (modname)
++		if (modname[0])
+ 			seq_printf(m, " [%s]", modname);
+ 		return;
+ 	}
 
