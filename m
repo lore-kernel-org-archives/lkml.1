@@ -1,364 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965672AbXDBSv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965691AbXDBSw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965672AbXDBSv0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 14:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965673AbXDBSv0
+	id S965691AbXDBSw7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 14:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965686AbXDBSw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 14:51:26 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:48345 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965672AbXDBSvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 14:51:25 -0400
-Date: Mon, 2 Apr 2007 20:50:32 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 09/16] zlib-decompression-status.diff
-In-Reply-To: <20070402174801.GA23326@lazybastard.org>
-Message-ID: <Pine.LNX.4.61.0704022042070.17673@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0704012007390.12316@yvahk01.tjqt.qr> <20070402174801.GA23326@lazybastard.org>
+	Mon, 2 Apr 2007 14:52:59 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:13840 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965673AbXDBSw5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 14:52:57 -0400
+Date: Mon, 2 Apr 2007 20:52:52 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch 1/8] Processor degredation support.
+Message-ID: <20070402185252.GA9338@osiris.ibm.com>
+References: <20070326212459.711271424@de.ibm.com> <20070326212634.931820139@de.ibm.com> <20070327213529.GB5842@ucw.cz> <20070328065443.GA8146@osiris.boeblingen.de.ibm.com> <20070328084145.GA3988@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070328084145.GA3988@ucw.cz>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Mar 28, 2007 at 08:41:45AM +0000, Pavel Machek wrote:
+> On Wed 2007-03-28 08:54:43, Heiko Carstens wrote:
+> > > > +++ linux-2.6/drivers/s390/char/sclp_confmgm.c
+> > > 
+> > > Can we get less cyptic name?
+> > 
+> > Would you like to see sclp_configuration_management.c?
+> 
+> No, but maybe sclp_manager.c or sclp_config.c?
+> 
+> 
+> > > > +static void sclp_conf_receiver_fn(struct evbuf_header *evbuf)
+> > > > +{
+> > > > +	struct conf_mgm_data *cdata;
+> > > > +
+> > > > +	cdata = (struct conf_mgm_data *)(evbuf + 1);
+> > > > +	if (cdata->ev_qualifier == EV_QUAL_CAP_CHANGE)
+> > > > +		/* Will be parsed. Don't change. */
+> > > > +		printk(KERN_WARNING "sclp: CPU capability changed.\n");
+> > > > +}
+> > > 
+> > > What's that? I do not think printk provides guaranteed delivery.
+> > 
+> > True. But which generic interface is currently used to notify user space
+> > of state changes? Maybe a uevent for the cpu device..
+> 
+> Maybe.
 
+Thanks for reviewing and your comments!
+So how about the patch below? I think it addresses all your objections.
 
-On Apr 2 2007 19:48, Jörn Engel wrote:
->On Sun, 1 April 2007 20:15:42 +0200, Jan Engelhardt wrote:
->>  
->> +static inline void putstr(const char *s) {
->> +    printk("%s", s);
->> +    return;
->> +}
->> +
->>  static int __init crd_load(int in_fd, int out_fd)
->>  {
->>  	int result;
->> @@ -418,7 +423,7 @@ static int __init crd_load(int in_fd, in
->>  		return -1;
->>  	}
->>  	makecrc();
->> -	result = gunzip();
->> +	result = gunzip(putstr);
->
->You are sure this wasn't meant as an April fools joke?
+Subject: [PATCH] Processor degredation support.
 
-It actually has use (for my 20 MHz 386 *hug*)
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
->Passing the address of an inline function certainly has a humorous aspect. ;)
+Generate uevents for all cpus if cpu capability changes. This can
+happen e.g. because the cpus are overheating. The cpu capability can
+be read via /sys/devices/system/cpu/cpuN/capability.
 
-You bet. Well, "inline" is, as far as I hear the voices of the C standard, just
-a "hint" to the compiler that this function should be inlined. If it cannot do
-that, well, then do not inline it. But you have a point, it gets interesting
-when "inline" expands to __attribute__((always_inline)). Well, let's hope that
-gcc 'carries the inlining over' into gunzip().
-
->Also, you can remove the "return;" in the void function and possibly
->change this bit to match Documentation/CodingStyle.
-
-Yup.
-
->> +    if(putstr != NULL) putstr("*");
->
->The patch alternately uses puts() and putstr(), which looks rather odd.
-
-It is because some arches seem to have a arch-specific "output function"
-called puts() try the following:
-
-$ grep -r 'puts(' arch/arm26/
-(results)
-$ grep -r 'puts(' arch/i386/
-(no results)
-
-So yes, I would need some advice what people were thinking here. If it
-was not for this arch specific stuff, the putstr() function I added in
-lib/ would also be gone and the "*" could be directly printed in
-gunzip(), making the extra argument to gunzip superfluous.
-
-The extra putstr() in init/initramfs.c [cf. putstr() in lib/inflate.c]
-is also something I did not know how to really do better.
-
-Thoughts are appreciated and stylofixed patch below.
-(lib/inflate.c does not even use tabs, what could I possibly do more wrong than
-already? :p)
-
-
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
 
-Shows some stars during decompression. This is particularly useful on old 386s
-where one asterisk is probably printed every second - making the long linux and
-initramfs uncompress progress more evident.
-Not compile tested outside {i386, x86_64} - don't have other machines.
+ arch/s390/kernel/smp.c          |   48 +++++++++++++++++++++++--
+ drivers/s390/char/Makefile      |    2 -
+ drivers/s390/char/sclp.h        |    2 +
+ drivers/s390/char/sclp_config.c |   74 ++++++++++++++++++++++++++++++++++++++++
+ drivers/s390/sysinfo.c          |   18 +++++++++
+ include/asm-s390/processor.h    |    1 
+ 6 files changed, 139 insertions(+), 6 deletions(-)
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-
- arch/alpha/boot/misc.c                    |    2 +-
- arch/arm/boot/compressed/misc.c           |    4 ++--
- arch/arm26/boot/compressed/misc.c         |    4 ++--
- arch/cris/arch-v10/boot/compressed/misc.c |    2 +-
- arch/cris/arch-v32/boot/compressed/misc.c |    2 +-
- arch/i386/boot/compressed/misc.c          |    2 +-
- arch/m32r/boot/compressed/misc.c          |    2 +-
- arch/sh/boot/compressed/misc.c            |    2 +-
- arch/sh64/boot/compressed/misc.c          |    2 +-
- arch/x86_64/boot/compressed/misc.c        |    2 +-
- init/do_mounts_rd.c                       |    7 ++++++-
- init/initramfs.c                          |    7 ++++++-
- lib/inflate.c                             |   10 ++++++----
- 13 files changed, 30 insertions(+), 18 deletions(-)
-
-Index: linux-2.6.21-rc5/arch/alpha/boot/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/alpha/boot/misc.c
-+++ linux-2.6.21-rc5/arch/alpha/boot/misc.c
-@@ -201,7 +201,7 @@ decompress_kernel(void *output_start,
+diff -urpN linux-2.6/arch/s390/kernel/smp.c linux-2.6-patched/arch/s390/kernel/smp.c
+--- linux-2.6/arch/s390/kernel/smp.c	2007-04-02 18:11:11.000000000 +0200
++++ linux-2.6-patched/arch/s390/kernel/smp.c	2007-04-02 18:11:20.000000000 +0200
+@@ -821,19 +821,57 @@ int setup_profiling_timer(unsigned int m
  
- 	makecrc();
- /*	puts("Uncompressing Linux..."); */
--	gunzip();
-+	gunzip(NULL);
- /*	puts(" done, booting the kernel.\n"); */
- 	return output_ptr;
- }
-Index: linux-2.6.21-rc5/arch/arm/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/arm/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/arm/boot/compressed/misc.c
-@@ -355,7 +355,7 @@ decompress_kernel(ulg output_start, ulg 
+ static DEFINE_PER_CPU(struct cpu, cpu_devices);
  
- 	makecrc();
- 	putstr("Uncompressing Linux...");
--	gunzip();
-+	gunzip(putstr);
- 	putstr(" done, booting the kernel.\n");
- 	return output_ptr;
- }
-@@ -369,7 +369,7 @@ int main()
- 
- 	makecrc();
- 	putstr("Uncompressing Linux...");
--	gunzip();
-+	gunzip(putstr);
- 	putstr("done.\n");
- 	return 0;
- }
-Index: linux-2.6.21-rc5/arch/arm26/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/arm26/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/arm26/boot/compressed/misc.c
-@@ -294,7 +294,7 @@ decompress_kernel(ulg output_start, ulg 
- 
- 	makecrc();
- 	puts("Uncompressing Linux...");
--	gunzip();
-+	gunzip(puts);
- 	puts(" done, booting the kernel.\n");
- 	return output_ptr;
- }
-@@ -308,7 +308,7 @@ int main()
- 
- 	makecrc();
- 	puts("Uncompressing Linux...");
--	gunzip();
-+	gunzip(puts);
- 	puts("done.\n");
- 	return 0;
- }
-Index: linux-2.6.21-rc5/arch/cris/arch-v10/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/cris/arch-v10/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/cris/arch-v10/boot/compressed/misc.c
-@@ -267,6 +267,6 @@ decompress_kernel()
- 	}
- 
- 	puts("Uncompressing Linux...\n");
--	gunzip();
-+	gunzip(puts);
- 	puts("Done. Now booting the kernel.\n");
- }
-Index: linux-2.6.21-rc5/arch/cris/arch-v32/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/cris/arch-v32/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/cris/arch-v32/boot/compressed/misc.c
-@@ -312,6 +312,6 @@ decompress_kernel()
- 	}
- 
- 	puts("Uncompressing Linux...\n");
--	gunzip();
-+	gunzip(puts);
- 	puts("Done. Now booting the kernel.\n");
- }
-Index: linux-2.6.21-rc5/arch/i386/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/i386/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/i386/boot/compressed/misc.c
-@@ -373,7 +373,7 @@ asmlinkage void decompress_kernel(void *
- 
- 	makecrc();
- 	putstr("Uncompressing Linux... ");
--	gunzip();
-+	gunzip(putstr);
- 	putstr("Ok, booting the kernel.\n");
- 	return;
- }
-Index: linux-2.6.21-rc5/arch/m32r/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/m32r/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/m32r/boot/compressed/misc.c
-@@ -204,6 +204,6 @@ decompress_kernel(int mmu_on, unsigned c
- 
- 	makecrc();
- 	puts("Uncompressing Linux... ");
--	gunzip();
-+	gunzip(puts);
- 	puts("Ok, booting the kernel.\n");
- }
-Index: linux-2.6.21-rc5/arch/sh/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/sh/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/sh/boot/compressed/misc.c
-@@ -236,6 +236,6 @@ void decompress_kernel(void)
- 
- 	makecrc();
- 	puts("Uncompressing Linux... ");
--	gunzip();
-+	gunzip(puts);
- 	puts("Ok, booting the kernel.\n");
- }
-Index: linux-2.6.21-rc5/arch/sh64/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/sh64/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/sh64/boot/compressed/misc.c
-@@ -218,7 +218,7 @@ void decompress_kernel(void)
- 	makecrc();
- 	puts("Uncompressing Linux... ");
- 	cache_control(CACHE_ENABLE);
--	gunzip();
-+	gunzip(puts);
- 	puts("\n");
- 
- #if 0
-Index: linux-2.6.21-rc5/arch/x86_64/boot/compressed/misc.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/x86_64/boot/compressed/misc.c
-+++ linux-2.6.21-rc5/arch/x86_64/boot/compressed/misc.c
-@@ -351,7 +351,7 @@ int decompress_kernel(struct moveparams 
- 
- 	makecrc();
- 	putstr(".\nDecompressing Linux...");
--	gunzip();
-+	gunzip(putstr);
- 	putstr("done.\nBooting the kernel.\n");
- 	if (high_loaded) close_output_buffer_if_we_run_high(mv);
- 	return high_loaded;
-Index: linux-2.6.21-rc5/init/do_mounts_rd.c
-===================================================================
---- linux-2.6.21-rc5.orig/init/do_mounts_rd.c
-+++ linux-2.6.21-rc5/init/do_mounts_rd.c
-@@ -393,6 +393,11 @@ static void __init error(char *x)
- 	unzip_error = 1;
- }
- 
-+static void putstr(const char *s)
++static ssize_t show_capability(struct sys_device *dev, char *buf)
 +{
-+	printk("%s", s);
++	unsigned int capability;
++	int rc;
++
++	rc = get_cpu_capability(&capability);
++	if (rc)
++		return rc;
++	return sprintf(buf, "%u\n", capability);
++}
++static SYSDEV_ATTR(capability, 0444, show_capability, NULL);
++
++static int __cpuinit smp_cpu_notify(struct notifier_block *self,
++				    unsigned long action, void *hcpu)
++{
++	unsigned int cpu = (unsigned int)(long)hcpu;
++	struct cpu *c = &per_cpu(cpu_devices, cpu);
++	struct sys_device *s = &c->sysdev;
++
++	switch (action) {
++	case CPU_ONLINE:
++		if (sysdev_create_file(s, &attr_capability))
++			return NOTIFY_BAD;
++		break;
++	case CPU_DEAD:
++		sysdev_remove_file(s, &attr_capability);
++		break;
++	}
++	return NOTIFY_OK;
 +}
 +
- static int __init crd_load(int in_fd, int out_fd)
++static struct notifier_block __cpuinitdata smp_cpu_nb = {
++	.notifier_call	= smp_cpu_notify,
++};
++
+ static int __init topology_init(void)
  {
- 	int result;
-@@ -418,7 +423,7 @@ static int __init crd_load(int in_fd, in
- 		return -1;
- 	}
- 	makecrc();
--	result = gunzip();
-+	result = gunzip(putstr);
- 	if (unzip_error)
- 		result = 1;
- 	kfree(inbuf);
-Index: linux-2.6.21-rc5/init/initramfs.c
-===================================================================
---- linux-2.6.21-rc5.orig/init/initramfs.c
-+++ linux-2.6.21-rc5/init/initramfs.c
-@@ -441,6 +441,11 @@ static void __init flush_window(void)
- 	outcnt = 0;
- }
+ 	int cpu;
+-	int ret;
++
++	register_cpu_notifier(&smp_cpu_nb);
  
-+static void putstr(const char *s)
+ 	for_each_possible_cpu(cpu) {
+ 		struct cpu *c = &per_cpu(cpu_devices, cpu);
++		struct sys_device *s = &c->sysdev;
+ 
+ 		c->hotpluggable = 1;
+-		ret = register_cpu(c, cpu);
+-		if (ret)
+-			printk(KERN_WARNING "topology_init: register_cpu %d "
+-			       "failed (%d)\n", cpu, ret);
++		register_cpu(c, cpu);
++		if (!cpu_online(cpu))
++			continue;
++		s = &c->sysdev;
++		sysdev_create_file(s, &attr_capability);
+ 	}
+ 	return 0;
+ }
+diff -urpN linux-2.6/drivers/s390/char/Makefile linux-2.6-patched/drivers/s390/char/Makefile
+--- linux-2.6/drivers/s390/char/Makefile	2007-04-02 18:11:11.000000000 +0200
++++ linux-2.6-patched/drivers/s390/char/Makefile	2007-04-02 18:11:20.000000000 +0200
+@@ -3,7 +3,7 @@
+ #
+ 
+ obj-y += ctrlchar.o keyboard.o defkeymap.o sclp.o sclp_rw.o sclp_quiesce.o \
+-	 sclp_info.o sclp_chp.o
++	 sclp_info.o sclp_config.o sclp_chp.o
+ 
+ obj-$(CONFIG_TN3270) += raw3270.o
+ obj-$(CONFIG_TN3270_CONSOLE) += con3270.o
+diff -urpN linux-2.6/drivers/s390/char/sclp_config.c linux-2.6-patched/drivers/s390/char/sclp_config.c
+--- linux-2.6/drivers/s390/char/sclp_config.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6-patched/drivers/s390/char/sclp_config.c	2007-04-02 18:11:20.000000000 +0200
+@@ -0,0 +1,74 @@
++/*
++ *  drivers/s390/char/sclp_config.c
++ *
++ *    Copyright IBM Corp. 2007
++ *    Author(s): Heiko Carstens <heiko.carstens@de.ibm.com>
++ */
++
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/cpu.h>
++#include <linux/sysdev.h>
++#include <linux/workqueue.h>
++#include "sclp.h"
++
++#define TAG	"sclp_config: "
++
++struct conf_mgm_data {
++	u8 reserved;
++	u8 ev_qualifier;
++} __attribute__((packed));
++
++#define EV_QUAL_CAP_CHANGE	3
++
++static struct work_struct sclp_cpu_capability_work;
++
++static void sclp_cpu_capability_notify(struct work_struct *work)
 +{
-+	printk("%s", s);
++	int cpu;
++	struct sys_device *sysdev;
++
++	lock_cpu_hotplug();
++	for_each_online_cpu(cpu) {
++		sysdev = get_cpu_sysdev(cpu);
++		kobject_uevent(&sysdev->kobj, KOBJ_CHANGE);
++	}
++	unlock_cpu_hotplug();
 +}
 +
- static char * __init unpack_to_rootfs(char *buf, unsigned len, int check_only)
- {
- 	int written;
-@@ -477,7 +482,7 @@ static char * __init unpack_to_rootfs(ch
- 		bytes_out = 0;
- 		crc = (ulg)0xffffffffL; /* shift register contents */
- 		makecrc();
--		gunzip();
-+		gunzip(putstr);
- 		if (state != Reset)
- 			error("junk in gzipped archive");
- 		this_header = saved_offset + inptr;
-Index: linux-2.6.21-rc5/lib/inflate.c
-===================================================================
---- linux-2.6.21-rc5.orig/lib/inflate.c
-+++ linux-2.6.21-rc5/lib/inflate.c
-@@ -151,7 +151,7 @@ STATIC int INIT inflate_stored OF((void)
- STATIC int INIT inflate_fixed OF((void));
- STATIC int INIT inflate_dynamic OF((void));
- STATIC int INIT inflate_block OF((int *));
--STATIC int INIT inflate OF((void));
-+STATIC int INIT inflate OF((void (*)(const char *)));
++static void sclp_conf_receiver_fn(struct evbuf_header *evbuf)
++{
++	struct conf_mgm_data *cdata;
++
++	cdata = (struct conf_mgm_data *)(evbuf + 1);
++	if (cdata->ev_qualifier == EV_QUAL_CAP_CHANGE)
++		schedule_work(&sclp_cpu_capability_work);
++}
++
++static struct sclp_register sclp_conf_register =
++{
++	.receive_mask = EVTYP_CONFMGMDATA_MASK,
++	.receiver_fn  = sclp_conf_receiver_fn,
++};
++
++static int __init sclp_conf_init(void)
++{
++	int rc;
++
++	INIT_WORK(&sclp_cpu_capability_work, sclp_cpu_capability_notify);
++
++	rc = sclp_register(&sclp_conf_register);
++	if (rc) {
++		printk(KERN_ERR TAG "failed to register (%d).\n", rc);
++		return rc;
++	}
++
++	if (!(sclp_conf_register.sclp_receive_mask & EVTYP_CONFMGMDATA_MASK)) {
++		printk(KERN_WARNING TAG "no configuration management.\n");
++		sclp_unregister(&sclp_conf_register);
++		rc = -ENOSYS;
++	}
++	return rc;
++}
++
++__initcall(sclp_conf_init);
+diff -urpN linux-2.6/drivers/s390/char/sclp.h linux-2.6-patched/drivers/s390/char/sclp.h
+--- linux-2.6/drivers/s390/char/sclp.h	2007-04-02 18:11:17.000000000 +0200
++++ linux-2.6-patched/drivers/s390/char/sclp.h	2007-04-02 18:11:20.000000000 +0200
+@@ -27,6 +27,7 @@
+ #define EVTYP_CNTLPROGIDENT	0x0B
+ #define EVTYP_SIGQUIESCE	0x1D
+ #define EVTYP_VT220MSG		0x1A
++#define EVTYP_CONFMGMDATA	0x04
+ #define EVTYP_SDIAS		0x1C
  
+ #define EVTYP_OPCMD_MASK	0x80000000
+@@ -37,6 +38,7 @@
+ #define EVTYP_CTLPROGIDENT_MASK	0x00200000
+ #define EVTYP_SIGQUIESCE_MASK	0x00000008
+ #define EVTYP_VT220MSG_MASK	0x00000040
++#define EVTYP_CONFMGMDATA_MASK	0x10000000
+ #define EVTYP_SDIAS_MASK	0x00000010
  
- /* The inflate algorithm uses a sliding 32 K byte window on the uncompressed
-@@ -983,7 +983,7 @@ STATIC int INIT inflate_block(
+ #define GNRLMSGFLGS_DOM		0x8000
+diff -urpN linux-2.6/drivers/s390/sysinfo.c linux-2.6-patched/drivers/s390/sysinfo.c
+--- linux-2.6/drivers/s390/sysinfo.c	2007-04-02 18:10:40.000000000 +0200
++++ linux-2.6-patched/drivers/s390/sysinfo.c	2007-04-02 18:11:20.000000000 +0200
+@@ -357,6 +357,24 @@ static __init int create_proc_sysinfo(vo
  
+ __initcall(create_proc_sysinfo);
  
- 
--STATIC int INIT inflate(void)
-+STATIC int INIT inflate(void (*putstr)(const char *))
- /* decompress an inflated entry */
- {
-   int e;                /* last block flag */
-@@ -1000,6 +1000,8 @@ STATIC int INIT inflate(void)
-   /* decompress until the last block */
-   h = 0;
-   do {
-+    if(putstr != NULL)
-+      putstr("*");
-     hufts = 0;
-     gzip_mark(&ptr);
-     if ((r = inflate_block(&e)) != 0) {
-@@ -1093,7 +1095,7 @@ makecrc(void)
++int get_cpu_capability(unsigned int *capability)
++{
++	struct sysinfo_1_2_2 *info;
++	int rc;
++
++	info = (void *) get_zeroed_page(GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++	rc = stsi(info, 1, 2, 2);
++	if (rc == -ENOSYS)
++		goto out;
++	rc = 0;
++	*capability = info->capability;
++out:
++	free_page((unsigned long) info);
++	return rc;
++}
++
  /*
-  * Do the uncompression!
+  * CPU capability might have changed. Therefore recalculate loops_per_jiffy.
   */
--static int INIT gunzip(void)
-+static int INIT gunzip(void (*putstr)(const char *))
- {
-     uch flags;
-     unsigned char magic[2]; /* magic header */
-@@ -1157,7 +1159,7 @@ static int INIT gunzip(void)
-     }
+diff -urpN linux-2.6/include/asm-s390/processor.h linux-2.6-patched/include/asm-s390/processor.h
+--- linux-2.6/include/asm-s390/processor.h	2007-04-02 18:10:54.000000000 +0200
++++ linux-2.6-patched/include/asm-s390/processor.h	2007-04-02 18:11:20.000000000 +0200
+@@ -57,6 +57,7 @@ struct cpuinfo_S390
  
-     /* Decompress */
--    if ((res = inflate())) {
-+    if ((res = inflate(putstr))) {
- 	    switch (res) {
- 	    case 0:
- 		    break;
-#<EOF>
-
-
-Jan
--- 
+ extern void s390_adjust_jiffies(void);
+ extern void print_cpu_info(struct cpuinfo_S390 *);
++extern int get_cpu_capability(unsigned int *);
+ 
+ /* Lazy FPU handling on uni-processor */
+ extern struct task_struct *last_task_used_math;
