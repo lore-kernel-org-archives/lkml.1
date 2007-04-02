@@ -1,147 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965698AbXDBTFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965699AbXDBTGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965698AbXDBTFN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 15:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965699AbXDBTFN
+	id S965699AbXDBTGv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 15:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965709AbXDBTGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 15:05:13 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:22170 "EHLO
-	outbound3-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965698AbXDBTFK convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 15:05:10 -0400
-X-BigFish: VP
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 2 Apr 2007 15:06:51 -0400
+Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:20754 "HELO
+	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965699AbXDBTGt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 15:06:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=0rFjUYTibaT7wRVK/MycHok1XNE+zgq6cq3GCessykpfEaGuZNxm0wL+myBrPYQ58wvr00J/MmiBADDai2bDlcKrh5BufB4BpNwUw8PL+foTCpXIf/Yr7hCgh5qrUbBoHhjcmhsbh340L2JC5Psfvfr5PNcnHnS9X8F4iZBSZHQ=  ;
+X-YMail-OSG: XmwDgacVM1lYnR.4WEdaxfJaURmfBgsylBN__Kdl4EYsbXOdsy.19756eS6mvvOJV.LSxkVHEA--
+From: David Brownell <david-b@pacbell.net>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: [patch 2.6.21-rc5-git 1/2] fix hotplug for legacy platform drivers
+Date: Mon, 2 Apr 2007 09:59:28 -0700
+User-Agent: KMail/1.7.1
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andres Salomon <dilinger@debian.org>
+References: <200703311455.38490.david-b@pacbell.net> <20070402124944.0ad74092@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070402124944.0ad74092@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: Warning: unable to open an initial console.
-Date: Mon, 2 Apr 2007 12:04:56 -0700
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Warning: unable to open an initial console.
-Thread-Index: Acd1Wc1hrKotbialRiSww9D+/60QIg==
-From: "Tom Strader" <tom.strader@xilinx.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 02 Apr 2007 19:04:57.0182 (UTC) FILETIME=[CDFD57E0:01C77559]
-Message-Id: <20070402190458.0EDD039005F@mail42-fra.bigfish.com>
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704020959.28875.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have seen quite a few posts regarding unable to open an initial console, but my system seems to have the necessary things in place so I come looking for help.  I have not yet subscribed to this mailing list so please CC the responses to me.  Quick summary before we get to console output, this is running on a PXA270 with 16MB flash at 0x00000000, 128MB RAM at 0xa0000000.  I am able to bring up U-boot and run ls /dev and the console appears there.  The only components on the board are memory so I am just going for a basic boot for now.  I guess my question is, what are some of the reasons for the console not to start.  Also just as a side note, the kernel appears to continue past "Warning: unable to open an initial console." And find /sbin/init but then goes to an idle loop.  With that said here is the output so hopefully we can fix it.  I am fairly new to linux so if I missed anything let me know.
+On Monday 02 April 2007 3:49 am, Cornelia Huck wrote:
+> On Sat, 31 Mar 2007 14:55:38 -0700,
+> David Brownell <david-b@pacbell.net> wrote:
+> 
+> > This fix uses the newish per-device flag controlling issuance of "add" events.
+> > (A previous version of this patch used a per-device "driver can hotplug" flag,
+> > which only scrubbed $MODALIAS from the environment rather than suppressing the
+> > entire hotplug event.)  It also shrinks that flag to one bit, saving a word in
+> > "struct device".
+> 
+> Would this still work on top of
+> driver-core-suppress-uevents-via-filter.patch (in -mm), which
+> suppresses all uevents (not just the add event)? I'd think yes, but I'm
+> not that familiar with platform devices :)
 
-Thanks,
-Tom.Strader@Xilinx.com
+It depends what "yes" means.  ;)
 
-U-Boot 1.1.6 (Mar 30 2007 - 14:52:10)
+Yes, as far as I can tell the only additional change (today) from
+that "supress all events" patch would be that "remove" events would
+also go away ... last time I checked, only add/remove events were
+issued for those devices.
 
-U-Boot code: A1700000 -> A17201BC  BSS: -> A175240C
-RAM Configuration:
-Bank #0: a0000000 64 MB
-Bank #1: a4000000  0 kB
-Bank #2: a8000000  0 kB
-Bank #3: ac000000  0 kB
-Flash: 16 MB
-In:    serial
-Out:   serial
-Err:   serial
-Hit any key to stop autoboot:  0
-## Booting image at 00040000 ...
-   Image Name:   Linux-2.6.17-pcm027-3
-   Image Type:   ARM Linux Kernel Image (uncompressed)
-   Data Size:    754152 Bytes = 736.5 kB
-   Load Address: a0008000
-   Entry Point:  a0008000
-   Verifying Checksum ... OK
-OK
+But long term, I wonder.  Isn't "no kevents issued" an extremely
+blunt tool, which could cause lots of damage?  It might be better
+to have selective filters, one per event family:  core (add/remove),
+online/offline, mount/unmount, etc.
 
-Starting kernel ...
+Specifically with respect to legacy drivers, it might make sense
+that managing the devices they create not be confusable with managing
+"real" devices, so I don't immediately suspect that suppressing ALL
+the hotplug events might be troublesome.
 
-Uncompressing Linux................................................... done, booting the kernel.
-Linux version 2.6.17-pcm027-3 (tstrader@xsjcfs20611) (gcc version 4.0.2) #7 PREEMPT Mon Apr 2 10:16:43 PDT 2007
-CPU: XScale-PXA270 [69054117] revision 7 (ARMv5TE)
-Machine: LogicPD PXA270 Card Engine
-Memory policy: ECC disabled, Data cache writeback
-On node 0 totalpages: 16384
-  DMA zone: 16384 pages, LIFO batch:3
-Run Mode clock: 91.00MHz (*7)
-Turbo Mode clock: 182.00MHz (*2.0, inactive)
-Memory clock: 91.00MHz (/1)
-System bus clock: 45.50MHz
-CPU0: D VIVT undefined 5 cache
-CPU0: I cache: 32768 bytes, associativity 32, 32 byte lines, 32 sets
-CPU0: D cache: 32768 bytes, associativity 32, 32 byte lines, 32 sets
-Built 1 zonelists
-Kernel command line: console=ttyS0,115200 loglevel=8 mtdparts=phys_mapped_flash:256k(uboot)ro,4096k(kernel),5m(uRamdisk),
--(jffs2_root) root=/dev/mtdblock3 rootfstype=jffs2
-PID hash table entries: 512 (order: 9, 2048 bytes)
-Console: colour dummy device 80x30
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Memory: 64MB 0MB 0MB 0MB = 64MB total
-Memory: 63268KB available (1256K code, 261K data, 76K init)
-Calibrating delay loop... 90.52 BogoMIPS (lpj=452608)
-Mount-cache hash table entries: 512
-CPU: Testing write buffer coherency: ok
-Device 'sa1100-rtc' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-i2s' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-i2c.0' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-ir' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-uart.2' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-uart.1' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-uart.0' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-fb' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-udc' does not have a release() function, it is broken and must be fixed.
-Device 'pxa2xx-mci' does not have a release() function, it is broken and must be fixed.
-Initialising gpio device class.
-gpio: Unrecognized option ""
-JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
-fuse init (API version 7.6)
-io scheduler noop registered (default)
-RAMDISK driver initialized: 8 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-physmap flash device: 1000000 at 0
-phys_mapped_flash: Found 1 x16 devices at 0x0 in 16-bit bank
- Amd/Fujitsu Extended Query Table at 0x0040
-Using buffer write method
-phys_mapped_flash: CFI does not contain boot bank location. Assuming top.
-number of CFI chips: 1
-cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-4 cmdlinepart partitions found on MTD device phys_mapped_flash
-Creating 4 MTD partitions on "phys_mapped_flash":
-0x00000000-0x00040000 : "uboot"
-mtd: Giving out device 0 to uboot
-0x00040000-0x00440000 : "kernel"
-mtd: Giving out device 1 to kernel
-0x00440000-0x00940000 : "uRamdisk"
-mtd: Giving out device 2 to uRamdisk
-0x00940000-0x01000000 : "jffs2_root"
-mtd: Giving out device 3 to jffs2_root
-mice: PS/2 mouse device common for all mice
-i2c /dev entries driver
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a1c: 0x3e18 instead
-Empty flash at 0x003c7a28 ends at 0x003c7a2c
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a38: 0x3e38 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a3c: 0x3e38 instead
-Empty flash at 0x003c7a48 ends at 0x003c7a4c
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a58: 0x3e58 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a5c: 0x3e58 instead
-Empty flash at 0x003c7a68 ends at 0x003c7a6c
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a78: 0x3e78 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a7c: 0x3e78 instead
-Empty flash at 0x003c7a88 ends at 0x003c7a8c
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a98: 0x3e98 instead
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a9c: 0x3e98 instead
-Empty flash at 0x003c7aa8 ends at 0x003c7aac
-jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7ab8: 0x3eb8 instead
-Further such events for this erase block will not be printed
-Empty flash at 0x003c7ac8 ends at 0x003c7acc
-...
-Empty flash at 0x003cffe8 ends at 0x003cffec
-VFS: Mounted root (jffs2 filesystem).
-Freeing init memory: 76K
-Warning: unable to open an initial console.
+But in general it's worth thinking about.  The comments on that
+"suppress all kevents" patch didn't include any motivation at all.
+Why do you want to prevent all kevents, rather than just a subset?
 
-
+- Dave
