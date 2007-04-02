@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965992AbXDBWMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965978AbXDBWYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965992AbXDBWMU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 18:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965993AbXDBWMU
+	id S965978AbXDBWYm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 18:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965981AbXDBWYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 18:12:20 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:41653 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965992AbXDBWMT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 18:12:19 -0400
-Message-ID: <46117F72.6020506@zytor.com>
-Date: Mon, 02 Apr 2007 15:10:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <ak@suse.de>, Jeff Garzik <jeff@garzik.org>,
-       virtualization@lists.linux-foundation.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com
-Subject: Re: A set of "standard" virtual devices?
-References: <4611652F.700@zytor.com> <200704022312.39195.ak@suse.de> <4611768D.1080801@garzik.org> <200704022336.43136.ak@suse.de> <461178D9.402@goop.org>
-In-Reply-To: <461178D9.402@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Apr 2007 18:24:42 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:36223 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965978AbXDBWYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 18:24:41 -0400
+Date: Mon, 2 Apr 2007 15:17:42 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chris Wright <chrisw@sous-sol.org>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/5] x86_64: enable clockevents and dynticks
+Message-ID: <20070402221742.GE10574@sequoia.sous-sol.org>
+References: <20070331083149.997762000@sous-sol.org> <1175419332.28263.67.camel@localhost.localdomain> <20070401185402.GZ10574@sequoia.sous-sol.org> <1175549504.28263.184.camel@localhost.localdomain> <20070402213949.GD10574@sequoia.sous-sol.org> <1175550764.28263.190.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1175550764.28263.190.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
->> The implementation wouldn't need to use PCI at all. There wouldn't 
->> even need to be PCI like registers internally. Just a pci device
->> with an ID somewhere in sysfs. PCI with unique IDs
->> is just a convenient and well established key into the driver module
->> collection. Once you have the right driver it can do what it wants.
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> On Mon, 2007-04-02 at 14:39 -0700, Chris Wright wrote:
+> > the part i know is broken is lapic broadcast, so i'd like to fix that
+> > up too.  trouble is, it's broken on vanilla too, so i'm not 100% sure
+> > what i'm debugging yet.
 > 
-> But I understood hpa's suggestion to mean that there would be a standard
-> PCI interface for a hardware RNG, and a single linux driver for that
-> device, which all hypervisors would be expected to implement.  But
-> that's only reasonable if the virtualization environment has some notion
-> of PCI to expose to the Linux guest.
+> You need to remove switch_APIC_timer_to_ipi and counterpart so that the
+> clockevents broadcast gets control over broadcasting. This requires a
+> change in drivers/acpi/processor_idle.c as well
 > 
+> commit e9e2cdb412412326c4827fc78ba27f410d837e6e has the basic changes. 
 
-That is, of course, true, although "some notion of" is very broad, and 
-one could also use this for detection and some hypervisor-specific 
-communication for the actual I/O.
+Yeah, I saw that, and while I didn't remove it yet, it shouldn't be
+getting called from anywhere because of CONFIG_GENERIC_CLOCKEVENTS
+being set.  In fact, acpi_propagate_timer_broadcast() does get called,
+and all that does it drop me back to hpet because of C3.  But, I didn't add
+DUMMY yet, and I must've missed smth else.  Some of that got a little
+tangled into the nice calibration cleanup, which I didn't want to suck
+in until I understood what I had broken ;-)
 
-However, one probably wants to think about what the heck one actually 
-means with "virtualization" in the absence of a lot of this stuff.  PCI 
-is probably the closest thing we have to a lowest common denominator for 
-device detection.
-
-	-hpa
+thanks,
+-chris
