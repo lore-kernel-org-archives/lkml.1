@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965187AbXDBJSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965280AbXDBJU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965187AbXDBJSq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 05:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933942AbXDBJSq
+	id S965280AbXDBJU6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 05:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965267AbXDBJU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 05:18:46 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:24634 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933281AbXDBJSo (ORCPT
+	Mon, 2 Apr 2007 05:20:58 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:45208 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965280AbXDBJU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 05:18:44 -0400
-Date: Mon, 2 Apr 2007 11:20:48 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>, gregkh@suse.de,
-       hugh@veritas.com, dmitry.torokhov@gmail.com, oneukum@suse.de,
-       maneesh@in.ibm.com, rpurdie@rpsys.net, Jeff Garzik <jgarzik@pobox.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       SCSI Mailing List <linux-scsi@vger.kernel.org>
-Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
-Message-ID: <20070402112048.047867c1@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070401195943.GA29627@htj.dyndns.org>
-References: <460CDBA6.5030608@gmail.com>
-	<1175257751.3760.19.camel@mulgrave.il.steeleye.com>
-	<460D12B8.6050101@gmail.com>
-	<1175278774.3760.44.camel@mulgrave.il.steeleye.com>
-	<20070401195943.GA29627@htj.dyndns.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+	Mon, 2 Apr 2007 05:20:57 -0400
+Date: Mon, 2 Apr 2007 14:58:18 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Message-ID: <20070402092818.GE2456@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070402061612.GA7072@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007 04:59:43 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+On Mon, Apr 02, 2007 at 08:16:12AM +0200, Ingo Molnar wrote:
+> hm, shouldnt the make be frozen immediately?
+> 
+> doesnt the 'please freeze ASAP' flag get propagated to all tasks, 
+> immediately? After that point any cloning activity should duplicate that 
+> flag too, resulting in any new child freezing immediately too.
 
-> Okay, here's preliminary patch.  I've tested it very lightly so it's
-> likely to contain bugs and definitely needs to be splitted.
+afaics, setting the 'please freeze asap' flag is racy wrt dup_task_struct
+(where the child's tsk->thread_info->flags are copied from its parent?). 
+Secondly, from what I understand, it takes a 'flag to be set + signal marked
+pending' for the child task to be frozen. If that is the case, then
+copy_process may not propogae the signal to the child, which could mean
+mean that we can be in a catch-up game in freeze_processes, trying to
+freeze processes we didnt see in earlier passes.
 
-Cool. However, there's something fishy there (not sure whether it's in
-your patch or a latent bug in the ccw bus code that just has been
-uncovered):
+I think copy_process() can check for something like this:
 
-------------[ cut here ]------------
-kernel BUG at mm/slab.c:607!
-illegal operation: 0001 [#1]
-CPU:    1    Not tainted
-Process kslowcrw (pid: 36, task: 0000000001a80cc0, ksp:
-0000000001a87ce0) Krnl PSW : 0404000180000000 00000000000b21b0
-(kfree+0x144/0x154) R:0 T:1 IO:0 EX:0 Key:0 M:1 W:0 P:0 AS:0 CC:0 PM:0
-EA:3 Krnl GPRS: 0000000000000000 0000000000000000 00000000009836d8
-000003fffd22ffe0 00000000000b20aa 0000000000396ba8 0000000001a6d100
-0000000000986c88 0700000001a879d8 0000000000555428 000000000344a5b0
-0000000001a879c8 000000000344a500 0000000000390ca8 00000000000b20aa
-0000000001a879c8 Krnl Code: 00000000000b21a2: e392c0480024
-stg     %r9,72(%r2,%r12) 00000000000b21a8: a7f4ffc9           brc
-15,1000b213a 00000000000b21ac: a7f40001           brc     15,b21ae
-          >00000000000b21b0: a7f4ff9d           brc     15,1000b20ea
-           00000000000b21b4: e33030100004       lg      %r3,16(%r3)
-           00000000000b21ba: a7f4ff90           brc     15,1000b20da
-           00000000000b21be: 0707               bcr     0,%r7
-           00000000000b21c0: eb8ff0580024       stmg
-%r8,%r15,88(%r15) Call Trace:
-([<00000000000b20aa>] kfree+0x3e/0x154)
- [<00000000001166f2>] release_sysfs_dirent+0x3e/0xf4
- [<0000000000114914>] sysfs_hash_and_remove+0x150/0x154
- [<0000000000118aec>] remove_files+0x48/0x68
- [<0000000000118b84>] sysfs_remove_group+0x78/0xe8
- [<00000000001cce3c>] device_remove_groups+0x48/0x68
- [<00000000001cd4c0>] device_remove_attrs+0x3c/0x7c
- [<00000000001cd70e>] device_del+0x20e/0x3a8
- [<00000000001cd8d2>] device_unregister+0x2a/0x44
- [<000000000022fb2c>] css_sch_device_unregister+0x3c/0x54
- [<0000000000230124>] css_evaluate_subchannel+0x2f0/0x400
- [<000000000023041a>] css_trigger_slow_path+0xda/0x154
- [<0000000000054c9a>] run_workqueue+0x136/0x1fc
- [<0000000000054e3a>] worker_thread+0xda/0x170
- [<000000000005b05a>] kthread+0x122/0x15c
- [<0000000000019912>] kernel_thread_starter+0x6/0xc
- [<000000000001990c>] kernel_thread_starter+0x0/0xc
+	write_lock_irq(&tasklist_lock);
 
-This happens when I detach a device (which causes it to be
-unregistered). I'll look at it when I'm fully operational.
+	...
+
+	if (freezing(current))
+		freeze_process(p);	/* function exported by freezer */
+
+	...
+
+	write_unlock_irq(&tasklist_lock);
+
+
+-- 
+Regards,
+vatsa
