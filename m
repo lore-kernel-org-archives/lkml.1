@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965940AbXDBV1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965912AbXDBV2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965940AbXDBV1g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965944AbXDBV1g
+	id S965912AbXDBV2c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965949AbXDBV2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:27:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51831 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965940AbXDBV1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:27:36 -0400
-Date: Mon, 2 Apr 2007 18:28:20 -0300
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH 2/2] Arch-specific includes
-Message-ID: <20070402212820.GD7711@redhat.com>
+	Mon, 2 Apr 2007 17:28:32 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33187 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965912AbXDBV2b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:28:31 -0400
+Date: Mon, 2 Apr 2007 14:28:30 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dave Hansen <hansendc@us.ibm.com>
+cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+In-Reply-To: <1175548086.22373.99.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+  <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com> 
+ <200704011246.52238.ak@suse.de>  <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
+  <1175544797.22373.62.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com>
+ <1175548086.22373.99.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="DiL7RhKs8rK9YGuF"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2 Apr 2007, Dave Hansen wrote:
 
---DiL7RhKs8rK9YGuF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Mon, 2007-04-02 at 13:30 -0700, Christoph Lameter wrote:
+> > On Mon, 2 Apr 2007, Dave Hansen wrote:
+> > > I completely agree, it looks like it should be faster.  The code
+> > > certainly has potential benefits.  But, to add this neato, apparently
+> > > more performant feature, we unfortunately have to add code.  Adding the
+> > > code has a cost: code maintenance.  This isn't a runtime cost, but it is
+> > > a real, honest to goodness tradeoff.
+> > 
+> > Its just the opposite. The vmemmap code is so efficient that we can remove 
+> > lots of other code and gops of these alternate implementations.
+> 
+> We do want to make sure that there isn't anyone relying on these.  Are
+> you thinking of simple sparsemem vs. extreme vs. sparsemem vmemmap?  Or,
+> are you thinking of sparsemem vs. discontig?
 
-Sorry if this gets resent. My fault ;-)
+I am thinking sparsemem default and then get rid discontig, flatmem etc.
+On many platforms this will work. Flatmem for embedded could just be a 
+variation on sparse_virtual.
 
-All that is left for the architectures, is the room for some specific
-definitions.
+> Amen, brother.  I'd love to see DISCONTIG die, with sufficient testing,
+> of course.  Andi, do you have any ideas on how to get sparsemem out of
+> the 'experimental' phase?
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+Note that these arguments on DISCONTIG are flame bait for many SGIers. 
+We usually see this as an attack on DISCONTIG/VMEMMAP which is the 
+existing best performing implementation for page_to_pfn and vice 
+versa. Please lets stop the polarization. We want one consistent scheme 
+to manage memory everywhere. I do not care what its called as long as it 
+covers all the bases and is not a glaring performance regresssion (like 
+SPARSEMEM so far).
 
--- 
-Glauber de Oliveira Costa
-Red Hat Inc.
-"Free as in Freedom"
+> I have noticed before that sparsemem should be able to cover the flatmem
+> case if we make MAX_PHYSMEM_BITS == SECTION_SIZE_BITS and massage from
+> there.  
 
---DiL7RhKs8rK9YGuF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="lgarchdefs.patch"
-
---- /dev/null	2007-04-02 15:35:49.510433377 -0300
-+++ i386/lguest_defs.h	2007-04-02 16:19:27.000000000 -0300
-@@ -0,0 +1,7 @@
-+#ifndef _LGUEST_DEFS_H_
-+#define _LGUEST_DEFS_H_
-+
-+/* LGUEST_TOP_ADDRESS comes from the Makefile */
-+#define RESERVE_TOP_ADDRESS LGUEST_GUEST_TOP - 1024*1024
-+
-+#endif
---- /dev/null	2007-04-02 15:35:49.510433377 -0300
-+++ x86_64/lguest_defs.h	2007-04-02 16:19:27.000000000 -0300
-@@ -0,0 +1,11 @@
-+#ifndef _LGUEST_DEFS_H_
-+#define _LGUEST_DEFS_H_
-+
-+#include <asm/vsyscall.h>
-+
-+/* LGUEST_TOP_ADDRESS comes from the Makefile */
-+#define RESERVE_TOP_ADDRESS LGUEST_GUEST_TOP
-+
-+#define BOOT_PGTABLE "boot_level4_pgt"
-+
-+#endif
-
---DiL7RhKs8rK9YGuF--
+Right. But for embedded the memorymap base cannot be constant because 
+they may not be able to have a fixed address in memory. So memory map 
+needs to become a variable.
