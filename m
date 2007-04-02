@@ -1,61 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965849AbXDBUjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965853AbXDBUpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965849AbXDBUjk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965847AbXDBUjk
+	id S965853AbXDBUpT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965839AbXDBUpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:39:40 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:46660 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965844AbXDBUjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:39:39 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=fyk5NEGC7xGNHFoWI4UTgM6OnvAMA4X0LNvGSj1CEInhJCODEdJw4xjB1dabZeBaC
-	EbNdtaptCDGDq5Q2PNHhA==
-Message-ID: <461169CF.6060806@google.com>
-Date: Mon, 02 Apr 2007 13:38:39 -0700
-From: Martin Bligh <mbligh@google.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Mon, 2 Apr 2007 16:45:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55304 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965853AbXDBUpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 16:45:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/8] Enhance process freezer interface for usage beyond software suspend
+Date: Mon, 2 Apr 2007 22:48:24 +0200
+User-Agent: KMail/1.9.5
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu, dipankar@in.ibm.com,
+       dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402053705.GA12962@in.ibm.com> <20070402135632.GC6739@ucw.cz>
+In-Reply-To: <20070402135632.GC6739@ucw.cz>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Dave Hansen <hansendc@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>  <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>  <200704011246.52238.ak@suse.de>  <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com> <1175544797.22373.62.camel@localhost.localdomain> <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704022248.25948.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Mon, 2 Apr 2007, Dave Hansen wrote:
+On Monday, 2 April 2007 15:56, Pavel Machek wrote:
+> Hi!
 > 
->> I completely agree, it looks like it should be faster.  The code
->> certainly has potential benefits.  But, to add this neato, apparently
->> more performant feature, we unfortunately have to add code.  Adding the
->> code has a cost: code maintenance.  This isn't a runtime cost, but it is
->> a real, honest to goodness tradeoff.
+> >  This patch provides an interface to extend the use of the process
+> >  freezer beyond Suspend.
+> > 
+> > The tasks can selectively mark themselves to be exempted from specific
+> > freeze events like SUSPEND /KPROBES/CPU_HOTPLUG.
+> > 
+> > This patch however, *does not* sort non freezable threads into
+> > different categories based on the freeze events. Thus all 
+> > tasks which were previously marked PF_NOFREEZE are now
+> > exempted from freezer using 
+> > 	freezer_exempt(FE_ALL);
+> > which means exempt from all kinds of freezes.
+> > 
+> > Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> > Cc: Pavel Machek <pavel@ucw.cz>
+> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 > 
-> Its just the opposite. The vmemmap code is so efficient that we can remove 
-> lots of other code and gops of these alternate implementations. On x86_64 
-> its even superior to FLATMEM since FLATMEM still needs a memory reference 
-> for the mem_map area. So if we make SPARSE standard for all 
-> configurations then there is no need anymore for FLATMEM DISCONTIG etc 
-> etc. Can we not cleanup all this mess? Get rid of all the gazillions 
-> of #ifdefs please? This would ease code maintenance significantly. I hate 
-> having to constantly navigate my way through all the alternatives.
+> Actually no, I was not in cc. 
+> 
+> > +/* Per process freezer specific flags */
+> > +#define PF_FE_SUSPEND	0x00008000	/* This thread should not be frozen
+> > +					 * for suspend
+> > +					 */
+> > +
+> > +#define PF_FE_KPROBES	0x00000010	/* This thread should not be frozen
+> > +					 * for Kprobes
+> > +					 */
+> 
+> Just put the comment before the define for long comments?
 
-The original plan when this was first merged was pretty much that -
-for sparsemem to replace discontigmem once it was well tested. Seems
-to have got stalled halfway through ;-(
+Agreed.
 
-Not sure we'll get away with replacing flatmem for all arches, but
-we could at least get rid of discontigmem, it seems.
+> > -#ifdef CONFIG_PM
+> > +#if defined(CONFIG_PM) || defined(CONFIG_HOTPLUG_CPU) || \
+> > +					defined(CONFIG_KPROBES)
+> 
+> Should we create CONFIG_FREEZER?
 
-M.
+Why do you think so?  I think the freezer should be compiled automatically
+if any of the above is set, which is what this directive really means.
+
+> > Index: linux-2.6.21-rc5/kernel/softlockup.c
+> > ===================================================================
+> > --- linux-2.6.21-rc5.orig/kernel/softlockup.c
+> > +++ linux-2.6.21-rc5/kernel/softlockup.c
+> > @@ -96,7 +96,7 @@ static int watchdog(void * __bind_cpu)
+> >  	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+> >  
+> >  	sched_setscheduler(current, SCHED_FIFO, &param);
+> > -	current->flags |= PF_NOFREEZE;
+> > +	freezer_exempt(FE_ALL);
+> >  
+> >  	/*
+> >  	 * Run briefly once per second to reset the softlockup timestamp.
+> 
+> Hmmm, I do not really like softlockup watchdog running during suspend.
+> Can we make this freezeable and make watchdog shut itself off while
+> suspending?
+
+Generally, I agree, but this patch only replaces the existing instances
+of PF_NOFREEZE with the new mechanism.  The changes you're talking about
+require a separate patch series (or at least one separate patch), I think, and
+they need not be so simple to make.
+
+> > Index: linux-2.6.21-rc5/kernel/rcutorture.c
+> > ===================================================================
+> > --- linux-2.6.21-rc5.orig/kernel/rcutorture.c
+> > +++ linux-2.6.21-rc5/kernel/rcutorture.c
+> > @@ -559,7 +559,7 @@ rcu_torture_fakewriter(void *arg)
+> >  
+> >  	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
+> >  	set_user_nice(current, 19);
+> > -	current->flags |= PF_NOFREEZE;
+> > +	freezer_exempt(FE_ALL);
+> 
+> 
+> Fix rcutorture instead. It has no business running while suspending.
+> 
+> >  
+> >  	do {
+> >  		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
+> > @@ -590,7 +590,7 @@ rcu_torture_reader(void *arg)
+> >  
+> >  	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
+> >  	set_user_nice(current, 19);
+> > -	current->flags |= PF_NOFREEZE;
+> > +	freezer_exempt(FE_ALL);
+> >  
+> 
+> Same here.
+> 
+> Eventually, we should fix apm, too.
+> 
+> > Index: linux-2.6.21-rc5/init/do_mounts_initrd.c
+> > ===================================================================
+> > --- linux-2.6.21-rc5.orig/init/do_mounts_initrd.c
+> > +++ linux-2.6.21-rc5/init/do_mounts_initrd.c
+> > @@ -55,7 +55,7 @@ static void __init handle_initrd(void)
+> >  	sys_mount(".", "/", NULL, MS_MOVE, NULL);
+> >  	sys_chroot(".");
+> >  
+> > -	current->flags |= PF_NOFREEZE;
+> > +	freezer_exempt(FE_ALL);
+> >  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
+> >  	if (pid > 0) {
+> >  		while (pid != sys_wait4(-1, NULL, 0, NULL))
+> 
+> Does this mean we have userland /linuxrc running with PF_NOFREEZE?
+> That would be very bad...
+
+No, actually it is _required_ for the userland resume to work.  Well, perhaps
+I should place a comment in there so that I don't have to explain this again
+and again. :-)
+
+> > --- linux-2.6.21-rc5.orig/kernel/kprobes.c
+> > +++ linux-2.6.21-rc5/kernel/kprobes.c
+> > @@ -104,7 +104,7 @@ static int __kprobes check_safety(void)
+> >  {
+> >  	int ret = 0;
+> >  #if defined(CONFIG_PREEMPT) && defined(CONFIG_PM)
+> 
+> Eh? Why does kprobes code depend on config_pm?
+
+Because it uses the freezer? ;-)
+
+Greetings,
+Rafael
