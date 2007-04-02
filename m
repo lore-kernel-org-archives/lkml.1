@@ -1,163 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965853AbXDBUpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965861AbXDBUuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965853AbXDBUpT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965839AbXDBUpT
+	id S965861AbXDBUuK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965860AbXDBUuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:45:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55304 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965853AbXDBUpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:45:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/8] Enhance process freezer interface for usage beyond software suspend
-Date: Mon, 2 Apr 2007 22:48:24 +0200
-User-Agent: KMail/1.9.5
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
-       paulmck@us.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
-       Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu, dipankar@in.ibm.com,
-       dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402053705.GA12962@in.ibm.com> <20070402135632.GC6739@ucw.cz>
-In-Reply-To: <20070402135632.GC6739@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 2 Apr 2007 16:50:09 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:58020 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965839AbXDBUuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 16:50:06 -0400
+Subject: Re: [PATCH 1/2] Generic Virtual Memmap suport for SPARSEMEM
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       Andi Kleen <ak@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 13:50:00 -0700
+Message-Id: <1175547000.22373.89.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704022248.25948.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 2 April 2007 15:56, Pavel Machek wrote:
-> Hi!
-> 
-> >  This patch provides an interface to extend the use of the process
-> >  freezer beyond Suspend.
-> > 
-> > The tasks can selectively mark themselves to be exempted from specific
-> > freeze events like SUSPEND /KPROBES/CPU_HOTPLUG.
-> > 
-> > This patch however, *does not* sort non freezable threads into
-> > different categories based on the freeze events. Thus all 
-> > tasks which were previously marked PF_NOFREEZE are now
-> > exempted from freezer using 
-> > 	freezer_exempt(FE_ALL);
-> > which means exempt from all kinds of freezes.
-> > 
-> > Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-> 
-> Actually no, I was not in cc. 
-> 
-> > +/* Per process freezer specific flags */
-> > +#define PF_FE_SUSPEND	0x00008000	/* This thread should not be frozen
-> > +					 * for suspend
-> > +					 */
-> > +
-> > +#define PF_FE_KPROBES	0x00000010	/* This thread should not be frozen
-> > +					 * for Kprobes
-> > +					 */
-> 
-> Just put the comment before the define for long comments?
+First of all, nice set of patches.
 
-Agreed.
+On Sat, 2007-03-31 at 23:10 -0800, Christoph Lameter wrote:
+> --- linux-2.6.21-rc5-mm2.orig/include/asm-generic/memory_model.h	2007-03-31 22:47:14.000000000 -0700
+> +++ linux-2.6.21-rc5-mm2/include/asm-generic/memory_model.h	2007-03-31 22:59:35.000000000 -0700
+> @@ -47,6 +47,13 @@
+>  })
+> 
+>  #elif defined(CONFIG_SPARSEMEM)
+> +#ifdef CONFIG_SPARSE_VIRTUAL
+> +/*
+> + * We have a virtual memmap that makes lookups very simple
+> + */
+> +#define __pfn_to_page(pfn)	(vmemmap + (pfn))
+> +#define __page_to_pfn(page)	((page) - vmemmap)
+> +#else
+>  /*
+>   * Note: section's mem_map is encorded to reflect its start_pfn.
+>   * section[i].section_mem_map == mem_map's address - start_pfn;
+> @@ -62,6 +69,7 @@
+>  	struct mem_section *__sec = __pfn_to_section(__pfn);	\
+>  	__section_mem_map_addr(__sec) + __pfn;		\
+>  })
+> +#endif
+>  #endif /* CONFIG_FLATMEM/DISCONTIGMEM/SPARSEMEM */
 
-> > -#ifdef CONFIG_PM
-> > +#if defined(CONFIG_PM) || defined(CONFIG_HOTPLUG_CPU) || \
-> > +					defined(CONFIG_KPROBES)
-> 
-> Should we create CONFIG_FREEZER?
+Any chance this can be done without embedding this inside another
+#ifdef?  I really hate untangling the mess when an #endif goes
+missing.  
 
-Why do you think so?  I think the freezer should be compiled automatically
-if any of the above is set, which is what this directive really means.
+Any reason this can't just be another #elif?
 
-> > Index: linux-2.6.21-rc5/kernel/softlockup.c
-> > ===================================================================
-> > --- linux-2.6.21-rc5.orig/kernel/softlockup.c
-> > +++ linux-2.6.21-rc5/kernel/softlockup.c
-> > @@ -96,7 +96,7 @@ static int watchdog(void * __bind_cpu)
-> >  	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
-> >  
-> >  	sched_setscheduler(current, SCHED_FIFO, &param);
-> > -	current->flags |= PF_NOFREEZE;
-> > +	freezer_exempt(FE_ALL);
-> >  
-> >  	/*
-> >  	 * Run briefly once per second to reset the softlockup timestamp.
+>  #ifdef CONFIG_OUT_OF_LINE_PFN_TO_PAGE
+> Index: linux-2.6.21-rc5-mm2/mm/sparse.c
+> ===================================================================
+> --- linux-2.6.21-rc5-mm2.orig/mm/sparse.c	2007-03-31 22:47:14.000000000 -0700
+> +++ linux-2.6.21-rc5-mm2/mm/sparse.c	2007-03-31 22:59:35.000000000 -0700
+> @@ -9,6 +9,7 @@
+>  #include <linux/spinlock.h>
+>  #include <linux/vmalloc.h>
+>  #include <asm/dma.h>
+> +#include <asm/pgalloc.h>
 > 
-> Hmmm, I do not really like softlockup watchdog running during suspend.
-> Can we make this freezeable and make watchdog shut itself off while
-> suspending?
+>  /*
+>   * Permanent SPARSEMEM data:
+> @@ -101,7 +102,7 @@ static inline int sparse_index_init(unsi
+> 
+>  /*
+>   * Although written for the SPARSEMEM_EXTREME case, this happens
+> - * to also work for the flat array case becase
+> + * to also work for the flat array case because
+>   * NR_SECTION_ROOTS==NR_MEM_SECTIONS.
+>   */
+>  int __section_nr(struct mem_section* ms)
+> @@ -211,6 +212,90 @@ static int sparse_init_one_section(struc
+>  	return 1;
+>  }
+> 
+> +#ifdef CONFIG_SPARSE_VIRTUAL
+> +
+> +void *vmemmap_alloc_block(unsigned long size, int node)
+> +{
+> +	if (slab_is_available()) {
+> +		struct page *page =
+> +			alloc_pages_node(node, GFP_KERNEL,
+> +				get_order(size));
+> +
+> +		BUG_ON(!page);
+> +		return page_address(page);
+> +	} else
+> +		return __alloc_bootmem_node(NODE_DATA(node), size, size,
+> +					__pa(MAX_DMA_ADDRESS));
+> +}
 
-Generally, I agree, but this patch only replaces the existing instances
-of PF_NOFREEZE with the new mechanism.  The changes you're talking about
-require a separate patch series (or at least one separate patch), I think, and
-they need not be so simple to make.
+Hmmmmmmm.  Can we combine this with sparse_index_alloc()?  Also, why not
+just use the slab for this?
 
-> > Index: linux-2.6.21-rc5/kernel/rcutorture.c
-> > ===================================================================
-> > --- linux-2.6.21-rc5.orig/kernel/rcutorture.c
-> > +++ linux-2.6.21-rc5/kernel/rcutorture.c
-> > @@ -559,7 +559,7 @@ rcu_torture_fakewriter(void *arg)
-> >  
-> >  	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
-> >  	set_user_nice(current, 19);
-> > -	current->flags |= PF_NOFREEZE;
-> > +	freezer_exempt(FE_ALL);
-> 
-> 
-> Fix rcutorture instead. It has no business running while suspending.
-> 
-> >  
-> >  	do {
-> >  		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
-> > @@ -590,7 +590,7 @@ rcu_torture_reader(void *arg)
-> >  
-> >  	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
-> >  	set_user_nice(current, 19);
-> > -	current->flags |= PF_NOFREEZE;
-> > +	freezer_exempt(FE_ALL);
-> >  
-> 
-> Same here.
-> 
-> Eventually, we should fix apm, too.
-> 
-> > Index: linux-2.6.21-rc5/init/do_mounts_initrd.c
-> > ===================================================================
-> > --- linux-2.6.21-rc5.orig/init/do_mounts_initrd.c
-> > +++ linux-2.6.21-rc5/init/do_mounts_initrd.c
-> > @@ -55,7 +55,7 @@ static void __init handle_initrd(void)
-> >  	sys_mount(".", "/", NULL, MS_MOVE, NULL);
-> >  	sys_chroot(".");
-> >  
-> > -	current->flags |= PF_NOFREEZE;
-> > +	freezer_exempt(FE_ALL);
-> >  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
-> >  	if (pid > 0) {
-> >  		while (pid != sys_wait4(-1, NULL, 0, NULL))
-> 
-> Does this mean we have userland /linuxrc running with PF_NOFREEZE?
-> That would be very bad...
+Let's get rid of the _block() part, too.  I'm not sure it does any good.
+At least make it _bytes() so that we know what the units are.  Also, if
+you're just going to round up internally and _not_ use the slab, can you
+just make the argument in pages, or even order?
 
-No, actually it is _required_ for the userland resume to work.  Well, perhaps
-I should place a comment in there so that I don't have to explain this again
-and again. :-)
+Can you think of any times when we'd want that BUG_ON() to be a
+WARN_ON(), instead?  I can see preferring having my mem_map[] on the
+wrong node than hitting a BUG().
 
-> > --- linux-2.6.21-rc5.orig/kernel/kprobes.c
-> > +++ linux-2.6.21-rc5/kernel/kprobes.c
-> > @@ -104,7 +104,7 @@ static int __kprobes check_safety(void)
-> >  {
-> >  	int ret = 0;
-> >  #if defined(CONFIG_PREEMPT) && defined(CONFIG_PM)
+> +#ifndef ARCH_POPULATES_VIRTUAL_MEMMAP
+> +/*
+> + * Virtual memmap populate functionality for architectures that support
+> + * PMDs for huge pages like i386, x86_64 etc.
+> + */
+
+How about:
+
+/*
+ * Virtual memmap support for architectures that use Linux pagetables
+ * natively in hardware, and support mapping huge pages with PMD
+ * entries.
+ */
+
+It wouldn't make sense to map the vmemmap area with Linux pagetables on
+an arch that didn't use them in hardware, right?  So, perhaps this
+doesn't quite belong in mm/sparse.c.  Perhaps we need
+arch/x86/sparse.c. ;)
+
+> +static void vmemmap_pop_pmd(pud_t *pud, unsigned long addr,
+> +				unsigned long end, int node)
+> +{
+> +	pmd_t *pmd;
+> +
+> +	end = pmd_addr_end(addr, end);
+> +
+> +	for (pmd = pmd_offset(pud, addr); addr < end;
+> +			pmd++, addr += PMD_SIZE) {
+> +  		if (pmd_none(*pmd)) {
+> +  			void *block;
+> +			pte_t pte;
+> +
+> +			block = vmemmap_alloc_block(PMD_SIZE, node);
+> +			pte = pfn_pte(__pa(block) >> PAGE_SHIFT,
+> +						PAGE_KERNEL);
+> +			pte_mkdirty(pte);
+> +			pte_mkwrite(pte);
+> +			pte_mkyoung(pte);
+> +			mk_pte_huge(pte);
+> +			set_pmd(pmd, __pmd(pte_val(pte)));
+> +		}
+> +	}
+> +}
+
+Nitpick: I think this would look quite a bit neater with a little less
+indentation.
+
+How about making the loop start with
+
+	if (!pmd_none(*pmd))
+		continue;
+
+It should bring the rest of the code in a bit and make that long line
+more readable.
+
+> +static void vmemmap_pop_pud(pgd_t *pgd, unsigned long addr,
+> +					unsigned long end, int node)
+> +{
+> +	pud_t *pud;
+> +
+> +	end = pud_addr_end(addr, end);
+> +	for (pud = pud_offset(pgd, addr); addr < end;
+> +				pud++, addr += PUD_SIZE) {
+> +
+> +		if (pud_none(*pud))
+> +			pud_populate(&init_mm, pud,
+> +				vmemmap_alloc_block(PAGE_SIZE, node));
+> +
+> +		vmemmap_pop_pmd(pud, addr, end, node);
+> +	}
+> +}
+> +
+> +static void vmemmap_populate(struct page *start_page, unsigned long nr,
+> +								int node)
+> +{
+> +	pgd_t *pgd;
+> +	unsigned long addr = (unsigned long)(start_page);
+> +	unsigned long end = pgd_addr_end(addr,
+> +			(unsigned long)((start_page + nr)));
+
+There appear to be a few extra parentheses on these lines.
+
+> +	for (pgd = pgd_offset_k(addr); addr < end;
+> +				pgd++, addr += PGDIR_SIZE) {
+> +
+> +		if (pgd_none(*pgd))
+> +			pgd_populate(&init_mm, pgd,
+> +				vmemmap_alloc_block(PAGE_SIZE, node));
+> +		vmemmap_pop_pud(pgd, addr, end, node);
+> +	}
+> +}
+> +#endif
+> +#endif /* CONFIG_SPARSE_VIRTUAL */
+
+We don't really need these #ifdefs embedded inside of each other,
+either, right?  Kconfig should take care of enforcing the dependency.
+
+>   static struct page *sparse_early_mem_map_alloc(unsigned long pnum)
+>  {
+>  	struct page *map;
+> @@ -221,8 +306,13 @@ static struct page *sparse_early_mem_map
+>  	if (map)
+>  		return map;
 > 
-> Eh? Why does kprobes code depend on config_pm?
+> +#ifdef CONFIG_SPARSE_VIRTUAL
+> +	map = pfn_to_page(pnum * PAGES_PER_SECTION);
+> +	vmemmap_populate(map, PAGES_PER_SECTION, nid);
+> +#else
+>  	map = alloc_bootmem_node(NODE_DATA(nid),
+>  			sizeof(struct page) * PAGES_PER_SECTION);
+> +#endif
 
-Because it uses the freezer? ;-)
+We really worked hard to keep #ifdefs out of the code flow in that file
+and keep it as clean as possible.  Could we hide this behind a helper?  
 
-Greetings,
-Rafael
+         map = alloc_remap(nid, sizeof(struct page) * PAGES_PER_SECTION);
+         if (map)
+                 return map;
+
++        map = alloc_vmemmap(map, PAGES_PER_SECTION, nid);
++        if (map)
++                return map;
++
+         map = alloc_bootmem_node(NODE_DATA(nid),
+                         sizeof(struct page) * PAGES_PER_SECTION);
+         if (map)
+                 return map;
+
+Then, do whatever magic you want in alloc_vmemmap().
+
+-- Dave
+
