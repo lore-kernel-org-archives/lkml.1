@@ -1,74 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbXDBIxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbXDBIz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbXDBIxO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 04:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbXDBIxO
+	id S1753424AbXDBIz4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 04:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbXDBIz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 04:53:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49437 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753420AbXDBIxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 04:53:13 -0400
-From: Neil Brown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 2 Apr 2007 18:53:04 +1000
-MIME-Version: 1.0
+	Mon, 2 Apr 2007 04:55:56 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:57503 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbXDBIzz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 04:55:55 -0400
+Date: Mon, 2 Apr 2007 11:55:54 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Rene Herman <rene.herman@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mcdx -- do_request(): non-read command to cd!!
+In-Reply-To: <20070402071018.GE11996@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0704021152280.27165@sbz-30.cs.Helsinki.FI>
+References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk>
+ <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com>
+ <4610481D.8000102@gmail.com> <46104954.50608@gmail.com>
+ <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI>
+ <20070402071018.GE11996@kernel.dk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <17936.50288.892586.831178@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] md: Avoid a deadlock when removing a device from an md
- array via sysfs.
-In-Reply-To: message from Andrew Morton on Monday April 2
-References: <20070402174319.30997.patches@notabene>
-	<1070402074417.31093@suse.de>
-	<20070402010141.3ad5516d.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday April 2, akpm@linux-foundation.org wrote:
-> 
-> What guarantees that *rdev is still valid when delayed_delete() runs?
+On Mon, 2 Apr 2007, Jens Axboe wrote:
+> But as I wrote earlier, it'll take lots more to make this driver close 
+> to functional.
 
-Because that is how kobjects and krefs work.  There is an embedded
-refcount etc etc..
+Heh, looking at the driver, that's quite an understatement =). Rene, 
+here's an untested attempt to use a mutex instead of the horribly broken 
+waitqueue "synchronization" in mcdx. It may or may not help so give it a 
+spin if you want.
 
-> 
-> And what guarantees that the md module hasn't been rmmodded when
-> delayed_delete() tries to run?
+			Pekka
 
-Good point.  Nothing.  Maybe this patch is needed.
+---
+ drivers/cdrom/mcdx.c |  121 ++++++++++++++++++---------------------------------
+ 1 file changed, 44 insertions(+), 77 deletions(-)
 
-Thanks,
-NeilBrown
-
----------------------------
-Avoid a deadlock when removing a device from an md array via sysfs. - fix
-
-Make sure any delayed_delete calls finish before module unload.
-For simplicity, flush the queue when we stop the array.
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./drivers/md/md.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2007-04-02 17:38:46.000000000 +1000
-+++ ./drivers/md/md.c	2007-04-02 18:49:24.000000000 +1000
-@@ -3410,6 +3410,9 @@ static int do_md_stop(mddev_t * mddev, i
- 				sysfs_remove_link(&mddev->kobj, nm);
- 			}
+Index: 2.6/drivers/cdrom/mcdx.c
+===================================================================
+--- 2.6.orig/drivers/cdrom/mcdx.c	2007-04-02 11:50:40.000000000 +0300
++++ 2.6/drivers/cdrom/mcdx.c	2007-04-02 11:51:20.000000000 +0300
+@@ -58,6 +58,7 @@     = "$Id: mcdx.c,v 1.21 1997/01/26 07:
  
-+		/* make sure all delayed_delete calls have finished */
-+		flush_scheduled_work();
+ #include <linux/module.h>
+ 
++#include <linux/delay.h>
+ #include <linux/errno.h>
+ #include <linux/interrupt.h>
+ #include <linux/fs.h>
+@@ -151,15 +152,14 @@ struct s_version {
+ /* Per drive/controller stuff **************************************/
+ 
+ struct s_drive_stuff {
++	struct mutex mutex;
 +
- 		export_array(mddev);
+ 	/* waitqueues */
+ 	wait_queue_head_t busyq;
+-	wait_queue_head_t lockq;
+-	wait_queue_head_t sleepq;
  
- 		mddev->array_size = 0;
+ 	/* flags */
+ 	volatile int introk;	/* status of last irq operation */
+ 	volatile int busy;	/* drive performs an operation */
+-	volatile int lock;	/* exclusive usage */
+ 
+ 	/* cd infos */
+ 	struct s_diskinfo di;
+@@ -266,7 +266,6 @@ static unsigned int uint2bcd(unsigned in
+ static unsigned int bcd2uint(unsigned char);
+ static unsigned port(int *);
+ static int irq(int *);
+-static void mcdx_delay(struct s_drive_stuff *, long jifs);
+ static int mcdx_transfer(struct s_drive_stuff *, char *buf, int sector,
+ 			 int nr_sectors);
+ static int mcdx_xfer(struct s_drive_stuff *, char *buf, int sector,
+@@ -287,7 +286,7 @@ static int mcdx_requestmultidiskinfo(str
+ static int mcdx_requesttocdata(struct s_drive_stuff *, struct s_diskinfo *,
+ 			       int);
+ static int mcdx_getstatus(struct s_drive_stuff *, int);
+-static int mcdx_getval(struct s_drive_stuff *, int to, int delay, char *);
++static int mcdx_getval(struct s_drive_stuff *, int to, int delay_sec, char *);
+ static int mcdx_talk(struct s_drive_stuff *,
+ 		     const unsigned char *cmd, size_t,
+ 		     void *buffer, size_t size, unsigned int timeout, int);
+@@ -577,56 +576,57 @@ static void do_mcdx_request(request_queu
+ 	if (!req)
+ 		return;
+ 
++	if (!blk_fs_request(req)) {
++		end_request(req, 0);
++		goto again;
++	}
++
+ 	stuffp = req->rq_disk->private_data;
+ 
+ 	if (!stuffp->present) {
+ 		xwarn("do_request(): bad device: %s\n",req->rq_disk->disk_name);
+ 		xtrace(REQUEST, "end_request(0): bad device\n");
+ 		end_request(req, 0);
+-		return;
++		goto again;
+ 	}
+ 
+ 	if (stuffp->audio) {
+ 		xwarn("do_request() attempt to read from audio cd\n");
+ 		xtrace(REQUEST, "end_request(0): read from audio\n");
+ 		end_request(req, 0);
+-		return;
++		goto again;
+ 	}
+ 
+ 	xtrace(REQUEST, "do_request() (%lu + %lu)\n",
+ 	       req->sector, req->nr_sectors);
+ 
+-	if (req->cmd != READ) {
++	if (rq_data_dir(req) != READ) {
+ 		xwarn("do_request(): non-read command to cd!!\n");
+ 		xtrace(REQUEST, "end_request(0): write\n");
+ 		end_request(req, 0);
+-		return;
+-	}
+-	else {
+-		stuffp->status = 0;
+-		while (req->nr_sectors) {
+-			int i;
+-
+-			i = mcdx_transfer(stuffp,
+-					  req->buffer,
+-					  req->sector,
+-					  req->nr_sectors);
+-
+-			if (i == -1) {
+-				end_request(req, 0);
+-				goto again;
+-			}
+-			req->sector += i;
+-			req->nr_sectors -= i;
+-			req->buffer += (i * 512);
+-		}
+-		end_request(req, 1);
+ 		goto again;
+-
+-		xtrace(REQUEST, "end_request(1)\n");
+-		end_request(req, 1);
+ 	}
+ 
++	stuffp->status = 0;
++	while (req->nr_sectors) {
++		int i;
++
++		spin_unlock_irq(q->queue_lock);
++		i = mcdx_transfer(stuffp,
++				  req->buffer,
++				  req->sector,
++				  req->nr_sectors);
++		spin_lock_irq(q->queue_lock);
++
++		if (i == -1) {
++			end_request(req, 0);
++			goto again;
++		}
++		req->sector += i;
++		req->nr_sectors -= i;
++		req->buffer += (i * 512);
++	}
++	end_request(req, 1);
+ 	goto again;
+ }
+ 
+@@ -825,26 +825,6 @@ __setup("mcdx=", mcdx_setup);
+ 
+ /* DIRTY PART ******************************************************/
+ 
+-static void mcdx_delay(struct s_drive_stuff *stuff, long jifs)
+-/* This routine is used for sleeping.
+- * A jifs value <0 means NO sleeping,
+- *              =0 means minimal sleeping (let the kernel
+- *                 run for other processes)
+- *              >0 means at least sleep for that amount.
+- *	May be we could use a simple count loop w/ jumps to itself, but
+- *	I wanna make this independent of cpu speed. [1 jiffy is 1/HZ] sec */
+-{
+-	if (jifs < 0)
+-		return;
+-
+-	xtrace(SLEEP, "*** delay: sleepq\n");
+-	interruptible_sleep_on_timeout(&stuff->sleepq, jifs);
+-	xtrace(SLEEP, "delay awoken\n");
+-	if (signal_pending(current)) {
+-		xtrace(SLEEP, "got signal\n");
+-	}
+-}
+-
+ static irqreturn_t mcdx_intr(int irq, void *dev_id)
+ {
+ 	struct s_drive_stuff *stuffp = dev_id;
+@@ -902,13 +882,7 @@ static int mcdx_talk(struct s_drive_stuf
+ 	if ((discard = (buffer == NULL)))
+ 		buffer = &c;
+ 
+-	while (stuffp->lock) {
+-		xtrace(SLEEP, "*** talk: lockq\n");
+-		interruptible_sleep_on(&stuffp->lockq);
+-		xtrace(SLEEP, "talk: awoken\n");
+-	}
+-
+-	stuffp->lock = 1;
++	mutex_lock(&stuffp->mutex);
+ 
+ 	/* An operation other then reading data destroys the
+ 	   * data already requested and remembered in stuffp->request, ... */
+@@ -992,8 +966,7 @@ 			xtrace(TALK, "talk() got 0x%02x\n", *
+ 		xinfo("talk() giving up\n");
+ #endif
+ 
+-	stuffp->lock = 0;
+-	wake_up_interruptible(&stuffp->lockq);
++	mutex_unlock(&stuffp->mutex);
+ 
+ 	xtrace(TALK, "talk() done with 0x%02x\n", st);
+ 	return st;
+@@ -1106,9 +1079,9 @@ 	stuffp->present = 0;	/* this should be 
+ 	stuffp->wreg_hcon = stuffp->wreg_reset + 1;
+ 	stuffp->wreg_chn = stuffp->wreg_hcon + 1;
+ 
++	mutex_init(&stuffp->mutex);
++
+ 	init_waitqueue_head(&stuffp->busyq);
+-	init_waitqueue_head(&stuffp->lockq);
+-	init_waitqueue_head(&stuffp->sleepq);
+ 
+ 	/* check if i/o addresses are available */
+ 	if (!request_region(stuffp->wreg_data, MCDX_IO_SIZE, "mcdx")) {
+@@ -1203,7 +1176,7 @@ 		return 0;
+ 	xtrace(INIT, "init() get garbage\n");
+ 	{
+ 		int i;
+-		mcdx_delay(stuffp, HZ / 2);
++		msleep_interruptible(500);
+ 		for (i = 100; i; i--)
+ 			(void) inb(stuffp->rreg_status);
+ 	}
+@@ -1327,10 +1300,6 @@ 	int done = 0;
+ 		return -1;
+ 	}
+ 
+-	while (stuffp->lock) {
+-		interruptible_sleep_on(&stuffp->lockq);
+-	}
+-
+ 	if (stuffp->valid && (sector >= stuffp->pending)
+ 	    && (sector < stuffp->low_border)) {
+ 
+@@ -1346,7 +1315,7 @@ 	int done = 0;
+ 						sector + nr_sectors)
+ 		    ? stuffp->high_border : border;
+ 
+-		stuffp->lock = current->pid;
++		mutex_lock(&stuffp->mutex);
+ 
+ 		do {
+ 
+@@ -1366,11 +1335,11 @@ 	int done = 0;
+ 				} else
+ 					continue;
+ 
+-				stuffp->lock = 0;
++				mutex_unlock(&stuffp->mutex);
++
+ 				stuffp->busy = 0;
+ 				stuffp->valid = 0;
+ 
+-				wake_up_interruptible(&stuffp->lockq);
+ 				xtrace(XFER, "transfer() done (-1)\n");
+ 				return -1;
+ 			}
+@@ -1405,9 +1374,7 @@ 				insb(stuffp->rreg_data, &dummy[0], C
+ 			}
+ 		} while (++(stuffp->pending) < border);
+ 
+-		stuffp->lock = 0;
+-		wake_up_interruptible(&stuffp->lockq);
+-
++		mutex_unlock(&stuffp->mutex);
+ 	} else {
+ 
+ 		/* The requested sector(s) is/are out of the
+@@ -1654,7 +1621,7 @@ 	       cmd[0], cmd[1], cmd[2], cmd[3], 
+ 
+ 	outsb(stuffp->wreg_data, cmd, sizeof cmd);
+ 
+-	if (-1 == mcdx_getval(stuffp, 3 * HZ, 0, NULL)) {
++	if (-1 == mcdx_getval(stuffp, 3, 0, NULL)) {
+ 		xwarn("playmsf() timeout\n");
+ 		return -1;
+ 	}
+@@ -1907,7 +1874,7 @@ 	return mcdx_talk(stuffp, "\x40", 1, NUL
+ }
+ 
+ static int
+-mcdx_getval(struct s_drive_stuff *stuffp, int to, int delay, char *buf)
++mcdx_getval(struct s_drive_stuff *stuffp, int to, int delay_sec, char *buf)
+ {
+ 	unsigned long timeout = to + jiffies;
+ 	char c;
+@@ -1918,7 +1885,7 @@ mcdx_getval(struct s_drive_stuff *stuffp
+ 	while (inb(stuffp->rreg_status) & MCDX_RBIT_STEN) {
+ 		if (time_after(jiffies, timeout))
+ 			return -1;
+-		mcdx_delay(stuffp, delay);
++		msleep_interruptible(delay_sec * 1000);
+ 	}
+ 
+ 	*buf = (unsigned char) inb(stuffp->rreg_data) & 0xff;
