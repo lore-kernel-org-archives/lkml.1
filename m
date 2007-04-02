@@ -1,64 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965280AbXDBJU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965267AbXDBJXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965280AbXDBJU6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 05:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965267AbXDBJU6
+	id S965267AbXDBJXG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 05:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965287AbXDBJXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 05:20:58 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:45208 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965280AbXDBJU5 (ORCPT
+	Mon, 2 Apr 2007 05:23:05 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:37016 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965267AbXDBJXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 05:20:57 -0400
-Date: Mon, 2 Apr 2007 14:58:18 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
-       paulmck@us.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
-       masami.hiramatsu.pt@hitachi.com
-Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
-Message-ID: <20070402092818.GE2456@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu>
+	Mon, 2 Apr 2007 05:23:04 -0400
+Date: Mon, 2 Apr 2007 14:56:36 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm@linux-foundation.org, Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       Maneesh Soni <maneesh@in.ibm.com>
+Subject: [PATCH] Kprobes: Print details of kretprobe on assertion failure
+Message-ID: <20070402092636.GA27905@in.ibm.com>
+Reply-To: ananth@in.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070402061612.GA7072@elte.hu>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 08:16:12AM +0200, Ingo Molnar wrote:
-> hm, shouldnt the make be frozen immediately?
-> 
-> doesnt the 'please freeze ASAP' flag get propagated to all tasks, 
-> immediately? After that point any cloning activity should duplicate that 
-> flag too, resulting in any new child freezing immediately too.
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-afaics, setting the 'please freeze asap' flag is racy wrt dup_task_struct
-(where the child's tsk->thread_info->flags are copied from its parent?). 
-Secondly, from what I understand, it takes a 'flag to be set + signal marked
-pending' for the child task to be frozen. If that is the case, then
-copy_process may not propogae the signal to the child, which could mean
-mean that we can be in a catch-up game in freeze_processes, trying to
-freeze processes we didnt see in earlier passes.
+In certain cases like when the real return address can't be found or
+when the number of tracked calls to a kretprobed function is less than
+the number of returns, we may not be able to find the correct return
+address after processing a kretprobe. Currently we just do a BUG_ON, but
+no information is provided about the actual failing kretprobe.
 
-I think copy_process() can check for something like this:
+Print out details of the kretprobe before calling BUG().
 
-	write_lock_irq(&tasklist_lock);
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-	...
+---
+ arch/i386/kernel/kprobes.c    |    6 +++++-
+ arch/ia64/kernel/kprobes.c    |    7 ++++++-
+ arch/powerpc/kernel/kprobes.c |    7 ++++++-
+ arch/x86_64/kernel/kprobes.c  |    7 ++++++-
+ 4 files changed, 23 insertions(+), 4 deletions(-)
 
-	if (freezing(current))
-		freeze_process(p);	/* function exported by freezer */
-
-	...
-
-	write_unlock_irq(&tasklist_lock);
-
-
--- 
-Regards,
-vatsa
+Index: linux-2.6.21-rc5/arch/i386/kernel/kprobes.c
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/i386/kernel/kprobes.c
++++ linux-2.6.21-rc5/arch/i386/kernel/kprobes.c
+@@ -440,7 +440,11 @@ fastcall void *__kprobes trampoline_hand
+ 			break;
+ 	}
+ 
+-	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
++	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
++		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
++				ri->rp, ri->rp->kp.addr);
++		BUG();
++	}
+ 
+ 	spin_unlock_irqrestore(&kretprobe_lock, flags);
+ 
+Index: linux-2.6.21-rc5/arch/ia64/kernel/kprobes.c
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/ia64/kernel/kprobes.c
++++ linux-2.6.21-rc5/arch/ia64/kernel/kprobes.c
+@@ -444,7 +444,12 @@ int __kprobes trampoline_probe_handler(s
+ 			break;
+ 	}
+ 
+-	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
++	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
++		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
++				ri->rp, ri->rp->kp.addr);
++		BUG();
++	}
++
+ 	regs->cr_iip = orig_ret_address;
+ 
+ 	reset_current_kprobe();
+Index: linux-2.6.21-rc5/arch/powerpc/kernel/kprobes.c
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/powerpc/kernel/kprobes.c
++++ linux-2.6.21-rc5/arch/powerpc/kernel/kprobes.c
+@@ -293,7 +293,12 @@ int __kprobes trampoline_probe_handler(s
+ 			break;
+ 	}
+ 
+-	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
++	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
++		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
++				ri->rp, ri->rp->kp.addr);
++		BUG();
++	}
++
+ 	regs->nip = orig_ret_address;
+ 
+ 	reset_current_kprobe();
+Index: linux-2.6.21-rc5/arch/x86_64/kernel/kprobes.c
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/x86_64/kernel/kprobes.c
++++ linux-2.6.21-rc5/arch/x86_64/kernel/kprobes.c
+@@ -438,7 +438,12 @@ int __kprobes trampoline_probe_handler(s
+ 			break;
+ 	}
+ 
+-	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
++	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
++		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
++				ri->rp, ri->rp->kp.addr);
++		BUG();
++	}
++
+ 	regs->rip = orig_ret_address;
+ 
+ 	reset_current_kprobe();
