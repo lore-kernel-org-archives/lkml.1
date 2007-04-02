@@ -1,128 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965915AbXDBVSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965928AbXDBVSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965915AbXDBVSD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:18:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965918AbXDBVSD
+	id S965928AbXDBVSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965920AbXDBVSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:18:03 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:46291 "EHLO smtp.osdl.org"
+	Mon, 2 Apr 2007 17:18:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49067 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965915AbXDBVSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:18:00 -0400
-Date: Mon, 2 Apr 2007 14:17:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ananth@in.ibm.com
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       Maneesh Soni <maneesh@in.ibm.com>
-Subject: Re: [PATCH] Kprobes: Print details of kretprobe on assertion
- failure
-Message-Id: <20070402141732.166f50bd.akpm@linux-foundation.org>
-In-Reply-To: <20070402092636.GA27905@in.ibm.com>
-References: <20070402092636.GA27905@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S965928AbXDBVSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:18:30 -0400
+Date: Mon, 2 Apr 2007 16:46:10 -0300
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.osdl.org
+Subject: [PATCH 1/2] Makefile for common loader
+Message-ID: <20070402194610.GB7711@redhat.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="s/l3CgOIzMHHjg/5"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007 14:56:36 +0530
-Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
 
-> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> 
-> In certain cases like when the real return address can't be found or
-> when the number of tracked calls to a kretprobed function is less than
-> the number of returns, we may not be able to find the correct return
-> address after processing a kretprobe. Currently we just do a BUG_ON, but
-> no information is provided about the actual failing kretprobe.
-> 
-> Print out details of the kretprobe before calling BUG().
-> 
-> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> 
-> ---
->  arch/i386/kernel/kprobes.c    |    6 +++++-
->  arch/ia64/kernel/kprobes.c    |    7 ++++++-
->  arch/powerpc/kernel/kprobes.c |    7 ++++++-
->  arch/x86_64/kernel/kprobes.c  |    7 ++++++-
->  4 files changed, 23 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6.21-rc5/arch/i386/kernel/kprobes.c
-> ===================================================================
-> --- linux-2.6.21-rc5.orig/arch/i386/kernel/kprobes.c
-> +++ linux-2.6.21-rc5/arch/i386/kernel/kprobes.c
-> @@ -440,7 +440,11 @@ fastcall void *__kprobes trampoline_hand
->  			break;
->  	}
->  
-> -	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
-> +	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
-> +		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
-> +				ri->rp, ri->rp->kp.addr);
-> +		BUG();
-> +	}
->  
->  	spin_unlock_irqrestore(&kretprobe_lock, flags);
->  
-> Index: linux-2.6.21-rc5/arch/ia64/kernel/kprobes.c
-> ===================================================================
-> --- linux-2.6.21-rc5.orig/arch/ia64/kernel/kprobes.c
-> +++ linux-2.6.21-rc5/arch/ia64/kernel/kprobes.c
-> @@ -444,7 +444,12 @@ int __kprobes trampoline_probe_handler(s
->  			break;
->  	}
->  
-> -	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
-> +	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
-> +		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
-> +				ri->rp, ri->rp->kp.addr);
-> +		BUG();
-> +	}
-> +
->  	regs->cr_iip = orig_ret_address;
->  
->  	reset_current_kprobe();
-> Index: linux-2.6.21-rc5/arch/powerpc/kernel/kprobes.c
-> ===================================================================
-> --- linux-2.6.21-rc5.orig/arch/powerpc/kernel/kprobes.c
-> +++ linux-2.6.21-rc5/arch/powerpc/kernel/kprobes.c
-> @@ -293,7 +293,12 @@ int __kprobes trampoline_probe_handler(s
->  			break;
->  	}
->  
-> -	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
-> +	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
-> +		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
-> +				ri->rp, ri->rp->kp.addr);
-> +		BUG();
-> +	}
-> +
->  	regs->nip = orig_ret_address;
->  
->  	reset_current_kprobe();
-> Index: linux-2.6.21-rc5/arch/x86_64/kernel/kprobes.c
-> ===================================================================
-> --- linux-2.6.21-rc5.orig/arch/x86_64/kernel/kprobes.c
-> +++ linux-2.6.21-rc5/arch/x86_64/kernel/kprobes.c
-> @@ -438,7 +438,12 @@ int __kprobes trampoline_probe_handler(s
->  			break;
->  	}
->  
-> -	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
-> +	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
-> +		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
-> +				ri->rp, ri->rp->kp.addr);
-> +		BUG();
-> +	}
-> +
->  	regs->rip = orig_ret_address;
->  
+--s/l3CgOIzMHHjg/5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-A lot of copying-and-pasting there.  Would it be better if this assertion
-was performed in a library function in kernel/kprobes.c?
+This patch moves lguest's loader Makefile one level bellow, and adds
+arch-specific code to arch directories
 
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 
+-- 
+Glauber de Oliveira Costa
+Red Hat Inc.
+"Free as in Freedom"
+
+--s/l3CgOIzMHHjg/5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="lgmake.patch"
+
+--- i386/Makefile	2007-04-02 16:11:56.000000000 -0300
++++ Makefile	2007-04-02 16:11:56.000000000 -0300
+@@ -1,12 +1,13 @@
+ # This creates the demonstration utility "lguest" which runs a Linux guest.
+ 
+-# We rely on CONFIG_PAGE_OFFSET to know where to put lguest binary.
+-# Some shells (dash - ubunu) can't handle numbers that big so we cheat.
+-include ../../../.config
+-LGUEST_GUEST_TOP := ($(CONFIG_PAGE_OFFSET) - 0x08000000)
+ 
+-CFLAGS:=-Wall -Wmissing-declarations -Wmissing-prototypes -O3 \
+-	-static -DLGUEST_GUEST_TOP="$(LGUEST_GUEST_TOP)" -Wl,-T,lguest.lds
++#we could uname -i, but it seems to return unknown on a bunch locations
++ARCH:=$(shell uname -m | sed s/i[3456]86/i386/)
++
++include $(ARCH)/defines
++
++CFLAGS:=-g -Wall -Wmissing-declarations -Wmissing-prototypes -O3 \
++	-static -DLGUEST_GUEST_TOP="$(LGUEST_GUEST_TOP)" -Wl,-T,lguest.lds -I$(ARCH)
+ LDLIBS:=-lz
+ 
+ all: lguest.lds lguest
+--- /dev/null	2007-04-02 15:35:49.510433377 -0300
++++ i386/defines	2007-04-02 16:13:43.000000000 -0300
+@@ -0,0 +1,4 @@
++# We rely on CONFIG_PAGE_OFFSET to know where to put lguest binary.
++# Some shells (dash - ubunu) can't handle numbers that big so we cheat.
++include ../../.config
++LGUEST_GUEST_TOP := ($(CONFIG_PAGE_OFFSET) - 0x08000000)
+--- /dev/null	2007-04-02 15:35:49.510433377 -0300
++++ x86_64/defines	2007-04-02 16:11:56.000000000 -0300
+@@ -0,0 +1,4 @@
++# For now on x86_64 we'll hard code the location of the lguest binary loader.
++# But when we can get a relocatable kernel, we'll have to work to make this
++# dynamic.
++LGUEST_GUEST_TOP := 0x7f000000
+
+--s/l3CgOIzMHHjg/5--
