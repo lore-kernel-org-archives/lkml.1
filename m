@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965997AbXDBWaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966005AbXDBWbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965997AbXDBWaz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 18:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966001AbXDBWaz
+	id S966005AbXDBWbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 18:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966004AbXDBWbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 18:30:55 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:52026 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965997AbXDBWay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 18:30:54 -0400
-Message-ID: <46118410.2060904@zytor.com>
-Date: Mon, 02 Apr 2007 15:30:40 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Mon, 2 Apr 2007 18:31:49 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40012 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965993AbXDBWbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 18:31:48 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Dave Hansen <hansendc@us.ibm.com>
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+Date: Tue, 3 Apr 2007 00:31:24 +0200
+User-Agent: KMail/1.9.6
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com> <1175550968.22373.122.camel@localhost.localdomain>
+In-Reply-To: <1175550968.22373.122.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       virtualization@lists.linux-foundation.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com
-Subject: Re: A set of "standard" virtual devices?
-References: <4611652F.700@zytor.com> <200704022312.39195.ak@suse.de> <4611768D.1080801@garzik.org> <200704022336.43136.ak@suse.de> <461178D9.402@goop.org> <46117F72.6020506@zytor.com> <461182BE.5040902@garzik.org>
-In-Reply-To: <461182BE.5040902@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704030031.24898.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
+On Monday 02 April 2007 23:56:08 Dave Hansen wrote:
+> On Mon, 2007-04-02 at 14:28 -0700, Christoph Lameter wrote:
+> > I do not care what its called as long as it 
+> > covers all the bases and is not a glaring performance regresssion (like 
+> > SPARSEMEM so far). 
 > 
-> Sure, but let's look beyond device detection.  For instance, it does not 
-> necessarily follow that emulating PCI DMA is the best way to go for 
-> communication with a virtual device, once detected.
-> 
+> I honestly don't doubt that there are regressions, somewhere.  Could you
+> elaborate, and perhaps actually show us some numbers on this?  Perhaps
+> instead of adding a completely new model, we can adapt the existing ones
+> somehow.
 
-This is true, of course.  However, there are going to be a set of 
-virtual devices which don't necessarily have to have super-high 
-performance.  In the case of a hwrng device, even doing DMA is probably 
-overkill.
+If it works I would be inclined to replaced old sparsemem with Christoph's
+new one on x86-64. Perhaps that could cut down the bewildering sparsemem
+ifdef jungle that is there currently.
 
-> Outside of pci_device_id driver matching, is there much value here?
+But I presume it won't work on 32bit because of the limited address space?
 
-If we can get a set of device drivers that if not all then at least a 
-number of hypervisors and/or emulators can agree upon, I think that's 
-much won.
+> But, without some cold, hard, data, we mere mortals without the 1024-way
+> machines can only guess. ;)
 
-	-hpa
+Yep.
+
+-Andi (who would be scared of a 1024 way x86 machine)
+ 
