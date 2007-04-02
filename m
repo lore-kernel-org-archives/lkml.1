@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965662AbXDBS17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965685AbXDBS2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965662AbXDBS17 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 14:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965661AbXDBS17
+	id S965685AbXDBS2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 14:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXDBS2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 14:27:59 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:60727 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965522AbXDBS16 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 14:27:58 -0400
-Subject: RE: [PATCH 3/4] [SCSI]stex: fix reset recovery for console device
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Ed Lin <ed.lin@promise.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, jeff <jeff@garzik.org>,
-       Promise_Linux <Promise_Linux@promise.com>
-In-Reply-To: <B70A50D07063384EB9BCE3330D18414F0327EBC5@nonameb.ptu.promise.com>
-References: <B70A50D07063384EB9BCE3330D18414F0327EBC5@nonameb.ptu.promise.com>
-Content-Type: text/plain
-Date: Mon, 02 Apr 2007 13:27:55 -0500
-Message-Id: <1175538475.3680.69.camel@mulgrave.il.steeleye.com>
+	Mon, 2 Apr 2007 14:28:37 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3339 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965668AbXDBS2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 14:28:36 -0400
+Date: Mon, 2 Apr 2007 18:28:24 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Mark Lord <lkml@rtr.ca>
+Cc: David Zeuthen <davidz@redhat.com>, Maxim <maximlevitsky@gmail.com>,
+       Pete Zaitcev <zaitcev@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>, gregkh@suse.de,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
+Message-ID: <20070402182824.GA4345@ucw.cz>
+References: <200703271824.46804.maximlevitsky@gmail.com> <Pine.LNX.4.44L0.0703271306230.2558-100000@iolanthe.rowland.org> <20070327110524.975e7113.zaitcev@redhat.com> <200703280129.10197.maximlevitsky@gmail.com> <20070401152957.GA5068@ucw.cz> <1175449366.3008.120.camel@zelda.fubar.dk> <20070401175020.GE11146@elf.ucw.cz> <461117E4.3060504@rtr.ca>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <461117E4.3060504@rtr.ca>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-02 at 11:14 -0700, Ed Lin wrote:
-> I just saw the routine name scsi_eh_try_stu, and didn't notice the
-> allow_restart (partly because I thought it was not harmful...).
-> But the TEST_UNIT_READY must stay.
+Hi!
 
-Sure ... I was just checking since your change log implied you'd seen
-the problem from the error handler ... however, we can add it ...
-there's a possibility of getting spin up on init from sd anyway.
+> >Problem is that suspending _with_ removable mass 
+> >storage devices
+> >attached just will not work. User will unplug them, 
+> >then complain
+> >about corruption. Advanced user will unplug them, work 
+> >with them
+> >somewhere else, replug them, then loose filesystem.
+> >
+> >Feel free to send patch to teach filesystems to handle 
+> >this.
+> 
+> People have already fixed this:  sync() before suspend,
+> and use a journalling filesystem.  Problem solved.
 
-James
+Does not solve the 'user removed it and mounted it somewhere else in
+the meantime' problem.
 
-
+Alan proposed one possible solution....
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
