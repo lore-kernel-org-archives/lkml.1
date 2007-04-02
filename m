@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbXDBDLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbXDBDa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752249AbXDBDLj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 23:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXDBDLj
+	id S1752668AbXDBDa1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 23:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbXDBDa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 23:11:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37805
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752192AbXDBDLi (ORCPT
+	Sun, 1 Apr 2007 23:30:27 -0400
+Received: from rwcrmhc15.comcast.net ([204.127.192.85]:54743 "EHLO
+	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbXDBDa0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 23:11:38 -0400
-Date: Sun, 01 Apr 2007 20:11:34 -0700 (PDT)
-Message-Id: <20070401.201134.82699692.davem@davemloft.net>
-To: airlied@gmail.com
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: Re: drm + 4GB RAM + swiotlb = drm craps out
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <21d7e9970704011644n3adbef2brc6bfeb288f5d0866@mail.gmail.com>
-References: <21d7e9970704011644n3adbef2brc6bfeb288f5d0866@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sun, 1 Apr 2007 23:30:26 -0400
+Subject: Re: [PATCH] hid: add two led codes to hid input mapping
+From: Dan Engel <dan@sourceharvest.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0704011941310.6040@jikos.suse.cz>
+References: <1175396188.7857.15.camel@monica.engel.home>
+	 <Pine.LNX.4.64.0704011057420.6040@jikos.suse.cz>
+	 <200704011057.40725.dtor@insightbb.com>
+	 <Pine.LNX.4.64.0704011941310.6040@jikos.suse.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4IxmMH9cX7ZCz8i6LcZY"
+Date: Sun, 01 Apr 2007 23:28:59 -0400
+Message-Id: <1175484539.12355.18.camel@monica.engel.home>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Dave Airlie" <airlied@gmail.com>
-Date: Mon, 2 Apr 2007 09:44:41 +1000
 
-> Okay I've got a bug reported before and now again about > 4GB + radeon
-> blows up the DRM... on Intel hw...
-> 
-> What the drm currently does for the PCI GART table is it allocates a
-> chunk of memory (8MB) with vmalloc_32(), then when it decides to use
-> it it goes through every page of it calls pci_map_single() (with
-> PCI_DMA_TODEVICE, which is probably wrong...) with every page from the
-> vmalloc mapping and puts the bus addresses of the pages into the PCI
-> GART table on the GPU.
-> 
-> So when swiotlb happens, as you can guess it all falls apart as the
-> drm never calls sync functions at any stage...
+--=-4IxmMH9cX7ZCz8i6LcZY
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-You would have hit this on any platform that does caching
-in the PCI controller as well.
+On Sun, 2007-04-01 at 19:43 +0200, Jiri Kosina wrote:
+> On Sun, 1 Apr 2007, Dmitry Torokhov wrote:
+>=20
+> > No, I do not want to add any more LED constants to input. In fact I=20
+> > think that adding constants beyond keyboard indicators was a mistake. W=
+e=20
+> > have led subsystem that provides interface to control arbitrary leds an=
+d=20
+> > we should use it.
+>=20
+> Ah, of course. Dan, could you please redo the patch to use the leds=20
+> infrastructure and send it to me?
 
-> The main problem is the ring buffer and scratch write back, these
-> values are read/write from both the CPU and GPU quite a lot, so this
-> leads me to think I should really just be using dma_alloc_coherent for
-> the whole lot, however this is an 8MB mapping and possibly could be
-> getting larger in the future and dynamic as we do dynamic PCIEGART
-> support for the radeons...
-> 
-> So I suppose I'm asking for ideas on the "correct" way to do this, and
-> perhaps any quick way to patch up the problem I'm seeing now by making
-> swiotlb not get involved ....
+Perhaps I could find a way to do that, but it seem rather a round-about
+way to go about it. The fact is that the input subsystem is already the
+home of this device.
 
-Coherent memory was created for precisely the case where the cpu
-and the device frequently access the memory.
+As far as I can tell, the led subsystem doesn't already provide any
+framework for mapping LED's to HID input events. I could possibly create
+a driver in the led subsystem that sends the corresponding events to the
+input subsystem, but those events would be dropped by the input system,
+anyway, since the event class would still have to be EV_LED and the code
+would still be unrecognized without those two mappings.
 
-8MB is indeed a lot for the kind of allocation that the coherent
-DMA implementation uses.
+Given that the HID or input subsystem still needs to be in the loop,
+however the driver is written, can you give any advice for accomplishing
+that without adding the extra LED mappings?
 
-Does it really have to be all in one big 8MB chunk?  I doubt it.
-Perhaps you can therefore create multiple DMA pools instead?  See
-include/linux/dmapool.h
+Thanks for any help,
+-Dan Engel
+
+
+--=-4IxmMH9cX7ZCz8i6LcZY
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGEHh7eDYVehSTx+URAmTeAKCw40uuvaAwZk9t1ond59I8nX0xlgCdFgOn
+sCgbIPejDbkRY/IGHu+Se6M=
+=oCtq
+-----END PGP SIGNATURE-----
+
+--=-4IxmMH9cX7ZCz8i6LcZY--
+
