@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965951AbXDBVbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965953AbXDBVeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965951AbXDBVbk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965954AbXDBVbk
+	id S965953AbXDBVeF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965954AbXDBVeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:31:40 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56970 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965951AbXDBVbi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:31:38 -0400
-Date: Mon, 2 Apr 2007 14:31:37 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dave Hansen <hansendc@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
-       Andi Kleen <ak@suse.de>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/2] Generic Virtual Memmap suport for SPARSEMEM
-In-Reply-To: <1175548924.22373.109.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704021428340.2272@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
-  <1175547000.22373.89.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0704021351590.1224@schroedinger.engr.sgi.com>
- <1175548924.22373.109.camel@localhost.localdomain>
+	Mon, 2 Apr 2007 17:34:05 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58204 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965953AbXDBVeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:34:03 -0400
+Message-ID: <4611768D.1080801@garzik.org>
+Date: Mon, 02 Apr 2007 17:33:01 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <ak@suse.de>
+CC: virtualization@lists.linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+Subject: Re: A set of "standard" virtual devices?
+References: <4611652F.700@zytor.com> <46116E12.5070206@goop.org> <200704022312.39195.ak@suse.de>
+In-Reply-To: <200704022312.39195.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Dave Hansen wrote:
-
-> > > Hmmmmmmm.  Can we combine this with sparse_index_alloc()?  Also, why not
-> > > just use the slab for this?
-> > 
-> > Use a slab for page sized allocations? No.
+Andi Kleen wrote:
+>> How would that work in the case where virtualized guests don't have a
+>> visible PCI bus, and the virtual environment doesn't pretend to emulate
+>> a PCI bus?
 > 
-> Why not?  We use it above for sparse_index_alloc() and if it is doing
-> something wrong, I'd love to fix it.  Can you elaborate?
+> If they emulated one with the appropiate device 
+> then distribution driver auto probing would just work transparently for them.
 
-The slab allocator purposes is to deliver small sub page sized chunks.
-The page allocator is there to allocate pages. Both are optimized for its 
-purpose.
+Yes, but, ideally with paravirtualization you should be able to avoid 
+the overhead of emulating many major classes of device (storage, 
+network, RNG, etc.) by developing a low-overhead passthrough interface 
+that does not involve PCI at all.
 
-> > I just extended this in V2 to also work on IA64. Its pretty generic.
-> 
-> Can you extend it to work on ppc? ;)
+	Jeff
 
-I do not know enough about how ppc handles large pages.
-
-> You haven't posted V2, right?
-
-No tests are still running.
-
-> > > Then, do whatever magic you want in alloc_vmemmap().
-> > 
-> > That would break if alloc_vmemmap returns NULL because it cannot allocate 
-> > memory.
-> 
-> OK, that makes sense.  However, it would still be nice to hide that
-> #ifdef somewhere that people are a bit less likely to run into it.  It's
-> just one #ifdef, so if you can kill it, great.  Otherwise, they pile up
-> over time and _do_ cause real readability problems.
-
-Well think about how to handle the case that the allocatiopn of a page 
-table page or a vmemmap block fails. Once we have that sorted out then we 
-can cleanup the higher layers.
 
