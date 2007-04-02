@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXDBQF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933264AbXDBQJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933224AbXDBQF3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 12:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933191AbXDBQF3
+	id S933264AbXDBQJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 12:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933215AbXDBQJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 12:05:29 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:49214 "EHLO e6.ny.us.ibm.com"
+	Mon, 2 Apr 2007 12:09:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46555 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933104AbXDBQF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 12:05:28 -0400
-Message-ID: <461129C1.30507@us.ibm.com>
-Date: Mon, 02 Apr 2007 11:05:21 -0500
-From: Brian King <brking@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	id S933264AbXDBQJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 12:09:16 -0400
+Message-ID: <46112AAA.9050207@redhat.com>
+Date: Mon, 02 Apr 2007 12:09:14 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Ed Lin <ed.lin@promise.com>
-CC: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "james.Bottomley" <james.Bottomley@SteelEye.com>,
-       jeff <jeff@garzik.org>, promise_linux <promise_linux@promise.com>
-Subject: Re: [PATCH 4/4] [SCSI]stex: minor cleanup and version update
-References: <NONAMEBj81EYtN3Isam000005d6@nonameb.ptu.promise.com>
-In-Reply-To: <NONAMEBj81EYtN3Isam000005d6@nonameb.ptu.promise.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ashish Singhai <hybrid.rules@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PCI: iomem bigger than 4GB
+References: <20070401155132.34029.qmail@web51601.mail.re2.yahoo.com>
+In-Reply-To: <20070401155132.34029.qmail@web51601.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ed Lin wrote:
-> @@ -1007,6 +1008,11 @@ static int stex_abort(struct scsi_cmnd *
->  	u32 data;
->  	int result = SUCCESS;
->  	unsigned long flags;
-> +
-> +	printk(KERN_INFO DRV_NAME
-> +		"(%s): aborting command\n", pci_name(hba->pdev));
-> +	scsi_print_command(cmd);
-> +
-
-scmd_printk is probably what you want here rather than just a printk.
-
-scmd_printk(KERN_ERR, cmd, "aborting command\n");
-
-
-> @@ -1092,6 +1098,10 @@ static int stex_reset(struct scsi_cmnd *
->  	unsigned long before;
->  	hba = (struct st_hba *) &cmd->device->host->hostdata[0];
+Ashish Singhai wrote:
+> Hello,
 > 
-> +	printk(KERN_INFO DRV_NAME
-> +		"(%s): resetting host\n", pci_name(hba->pdev));
-> +	scsi_print_command(cmd);
-> +
+> Please refer to Andrew' post on this thread on PCI
+> subsystem assigning prefetchable memory bigger than
+> 4GB:
+> 
+> http://lkml.org/lkml/2006/11/24/160
+> 
+> This patch is not included in 2.6.20.1 or earlier --
+> it would be helpful if we could have this patch
+> considered. I have tried it in a simulated environment
+> and it works.
 
-Same here.
+What bug does it fix?
 
-Brian
 
--- 
-Brian King
-eServer Storage I/O
-IBM Linux Technology Center
