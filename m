@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965301AbXDBJhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965263AbXDBJjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965301AbXDBJhp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 05:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965310AbXDBJho
+	id S965263AbXDBJjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 05:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965310AbXDBJjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 05:37:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41253 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965301AbXDBJhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 05:37:43 -0400
-X-Greylist: delayed 53892 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 05:37:43 EDT
-Date: Mon, 2 Apr 2007 11:37:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Sperry <dave_sperry@ieee.org>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
-Message-ID: <20070402093740.GA10091@elte.hu>
-References: <461004CE.1030009@ieee.org> <20070402072111.GA21356@elte.hu> <4610BC15.5030800@ieee.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4610BC15.5030800@ieee.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 2 Apr 2007 05:39:49 -0400
+Received: from styx.suse.cz ([82.119.242.94]:51833 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965263AbXDBJjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 05:39:48 -0400
+Date: Mon, 2 Apr 2007 11:34:07 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Li Yu <raise.sail@gmail.com>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+In-Reply-To: <4610ABB1.3080606@gmail.com>
+Message-ID: <Pine.LNX.4.64.0704021126280.3808@jikos.suse.cz>
+References: <200703051532096508636@gmail.com> <Pine.LNX.4.64.0704010002280.6040@jikos.suse.cz>
+ <4610609C.9030101@gmail.com> <200704020015.44167.dtor@insightbb.com>
+ <4610ABB1.3080606@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2 Apr 2007, Li Yu wrote:
 
-* Dave Sperry <dave_sperry@ieee.org> wrote:
+> Hi, I do not think that using blacklist in base driver for this purpose 
+> is good idea. If so, we need modify source when each new HID device 
+> driver come, that's so ugly. 
 
-> I checked the clock source and in both the vanilla and rt cases and 
-> they were both acpi_pm
+Hi Li,
 
-ok, thanks for double-checking that.
+well, the drivers are exceptions from the generic handling, so creating an 
+exceptional rule (entry in hid_blacklist) for them is not that bad. OK, 
+it's not the nicest thing on earth probably, but serves the purpose in 
+current vendors-trying-to-break-hardware-in-the-most-original-way world 
+quite well.
 
-> Here's the oprofile for my vanilla case:
+This is going to cause some headache to out-of-tree drivers. Oh well, do 
+we care that much? 
 
-i tried your workload and i think i managed to optimize it some more: i 
-have uploaded the -rt8 kernel with these improvements included - could 
-you try it? Is there any measurable improvement relative to -rt5?
+In your scenario you'll still need a way how to unbind the device from the 
+hid driver and bind it to the new specific device, won't you?. This could 
+be done by a separate userspace program, but well ... I think just 
+blacklisting the hardware is much cleaner, than needing to ship a separate 
+userspace program along with the driver.
 
-one more thing to improve netperf performance is to do this before 
-running it:
+Thanks,
 
-  chrt -f -p 50 $$
-
-this will put netperf on the same priority level as the net hardirq and 
-the net softirq (which both default to SCHED_FIFO:50), and should result 
-in a (much) reduced context-switch rate.
-
-Or, if networking is not latency-critical, then you could move the net 
-hardirq and softirq threads to SCHED_BATCH, and run netperf under 
-SCHED_BATCH as well, using:
-
-  chrt -b -p 0 $$
-
-and figuring out the active softirq hardirq thread PIDs and "chrt -b" 
--ing them too.
-
-	Ingo
+-- 
+Jiri Kosina
