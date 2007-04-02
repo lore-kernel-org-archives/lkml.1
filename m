@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbXDBRfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752979AbXDBRor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbXDBRfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 13:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbXDBRfv
+	id S1752979AbXDBRor (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 13:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbXDBRor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 13:35:51 -0400
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:51001 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752655AbXDBRft convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 13:35:49 -0400
-Date: Mon, 2 Apr 2007 18:35:44 +0100
-From: Ken Moffat <zarniwhoop@ntlworld.com>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andy Polyakov <appro@fy.chalmers.se>
-Subject: Re: mmap error?
-Message-ID: <20070402173544.GA19343@deepthought>
-References: <200704021030.29747.gene.heskett@gmail.com>
+	Mon, 2 Apr 2007 13:44:47 -0400
+Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:49097 "EHLO
+	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752900AbXDBRoq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 13:44:46 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
+content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200704021030.29747.gene.heskett@gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/4] [SCSI]stex: fix id mapping issue
+Date: Mon, 2 Apr 2007 10:46:17 -0700
+Message-ID: <B70A50D07063384EB9BCE3330D18414F0327EBB2@nonameb.ptu.promise.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/4] [SCSI]stex: fix id mapping issue
+Thread-Index: AcdzdvhUKtzBqQBVSO6Qjrj1Nn4gkAB0/w6g
+From: "Ed Lin" <ed.lin@promise.com>
+To: "Christoph Hellwig" <hch@infradead.org>
+Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "james.Bottomley" <james.Bottomley@SteelEye.com>,
+       "jeff" <jeff@garzik.org>, "Promise_Linux" <Promise_Linux@promise.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gene,
 
-On Mon, Apr 02, 2007 at 10:30:29AM -0400, Gene Heskett wrote:
-> Greetings all;
-> 
-> Has something been changed recently, say post 2.6.19, that would effect 
-> this error from k3b when I click start (the burn), with a fresh dvd+r in 
-> the drive:
-> 
-> --------
-> Using growisofs 7.0 Copyright (C) Andy Polyakov <appro@fy.chalmers.se>
-> Starting writing...
-> :-( unable to anonymously mmap 33554432; resource temporarily 
-> unavailable...
-> Fatal error at startup, resource temporarily unavailable...
-> --------
- Known problem, please see
-http://fy.chalmers.se/~appro/linux/DVD+RW/tools/ (third paragraph)
-for a workaround.
 
-ĸen
--- 
-das eine Mal als Tragödie, das andere Mal als Farce
+> -----Original Message-----
+> From: Christoph Hellwig [mailto:hch@infradead.org] 
+> Sent: Saturday, March 31, 2007 2:27 AM
+> To: Ed Lin
+> Cc: linux-scsi; linux-kernel; james.Bottomley; jeff; Promise_Linux
+> Subject: Re: [PATCH 1/4] [SCSI]stex: fix id mapping issue
+> 
+> 
+> On Fri, Mar 30, 2007 at 03:21:33PM -0700, Ed Lin wrote:
+> > +	if (hba->cardtype == st_shasta) {
+> >  		req->lun = lun;
+> >  		req->target = id;
+> > +	} else if (hba->cardtype == st_yosemite){
+> > +		req->lun = id * ST_MAX_LUN_PER_TARGET + lun;
+> > +		req->target = 0;
+> > +	} else {
+> > +		/* st_vsc and st_vsc1 */
+> > +		req->lun = 0;
+> > +		req->target = id * ST_MAX_LUN_PER_TARGET + lun;
+> 
+> I don't get why you can't export id as targer and lun as lun for
+> the !st_shasta types.  Could you explain in detail what the problem
+> with that approach would be?
+> 
+>
+
+Of course I can do that. That will result in 1 target and 128 lun
+for st_yosemite and 128 target and 1 lun for st_vsc. That seems
+a little weird and I am afraid it will be turned down. Also
+I can keep a same mapping for the console in the original code.
+
+If you think it's ok, that's really better, because it makes the
+hot path a bit faster. Also because of the CONFIG_SCSI_MULTI_LUN
+option, I have to map lun to channel otherwise many entities
+will disappear when that option is not selected. Plus I have to
+reserve a slot for the RAID console, so the final mapping may be:
+
+channel:0~7, id:0~16(st_shasta, channel 0,id 16 is reserved for console)
+channel:0~127, id:0~1(st_yosemite, channel 0,id 1 is reserved for
+console)
+channel:0, id:0~128(st_vsc, channel 0,id 128 is reserved for console)
+
+I don't know whether this is acceptable. 
