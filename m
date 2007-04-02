@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbXDBPhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbXDBPjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752368AbXDBPhf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 11:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXDBPhf
+	id S932253AbXDBPjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 11:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932404AbXDBPjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 11:37:35 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45953 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752366AbXDBPhe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 11:37:34 -0400
-Date: Mon, 2 Apr 2007 08:37:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-In-Reply-To: <200704011246.52238.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
- <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
- <200704011246.52238.ak@suse.de>
+	Mon, 2 Apr 2007 11:39:20 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:38696 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932253AbXDBPjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 11:39:20 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+Date: Mon, 2 Apr 2007 09:38:40 -0600
+User-Agent: KMail/1.9.5
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Luck, Tony" <tony.luck@intel.com>, "Thomas Meyer" <thomas@m3y3r.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Len Brown" <lenb@kernel.org>
+References: <617E1C2C70743745A92448908E030B2A0148323B@scsmsx411.amr.corp.intel.com> <m1r6rbz7mg.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1r6rbz7mg.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704020938.40482.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Apr 2007, Andi Kleen wrote:
+On Monday 26 March 2007 21:29, Eric W. Biederman wrote:
+> "Luck, Tony" <tony.luck@intel.com> writes:
+> 
+> >> What I'm proposing we do is move the irq allocation code out of
+> >> pci_enable_device and the irq freeing code out of pci_disable_device
+> >> in the future.
+> >
+> > Sounds rational ... in a world that wasn't dominated by PCI it would
+> > seem to be the logical approach (since the irq code would have much
+> > more utility independent of the PCI code).
+> 
+> Right.  We can even do this earlier in the pci code.  Just doing this
+> on demand when the device driver needs it is problematic.  As devices
+> drivers like to keep the requested over a pci_disable_device pci_enable_device
+> pair.
+> 
+> The big practical issue is that we will like wind up allocating an irq
+> number to all usable irqs on ia64.  Which means we will like need many
+> more irq numbers...  Although I guess if we keep it at the pci layer
+> we should be fairly safe.
 
-> Hmm, this means there is at least 2MB worth of struct page on every node?
-> Or do you have overlaps with other memory (I think you have)
-> In that case you have to handle the overlap in change_page_attr()
+The main reason we wait until pci_enable_device() to allocate an
+IRQ number is that ia64 currently only has about 180 device vectors,
+and there are machines with more PCI slots than that.
 
-Correct. 2MB worth of struct page is 128 mb of memory. Are there nodes 
-with smaller amounts of memory? Note also that the default sparsemem
-section size is (include/asm-x86_64/sparsemem.h)
+I also think it's nice that we don't do anything with a device until
+we have a driver to claim it.  But there certainly have been cases
+where delaying IRQ allocation has caused troubles.
 
-#define SECTION_SIZE_BITS       27 /* matt - 128 is convenient right now */
+I really like the idea of moving to the IRQ == GSI model for ia64.
+But of course, we'll have to get rid of the 180-vector limit to
+make that work, too.
 
-128MB ....
-
-So you currently cannot have smaller sections of memory anyways.
-
-> Also your "generic" vmemmap code doesn't look very generic, but
-> rather x86 specific. I didn't think huge pages could be easily
-> set up this way in many other architectures.  
-
-We do this pmd special casing in other parts of the core VM. I have also a 
-patch for IA64 that workks with this.
-
-> Do you have any benchmarks numbers to prove it? There seem to be a few
-> benchmarks where the discontig virt_to_page is a problem
-> (although I know ways to make it more efficient), and sparsemem
-> is normally slower. Still some numbers would be good.
-
-You want a benchmark to prove that the removal of memory references and 
-code improves performance?
-
+Bjorn
