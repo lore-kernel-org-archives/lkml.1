@@ -1,73 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965650AbXDBSTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965662AbXDBS17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965650AbXDBSTf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 14:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965654AbXDBSTf
+	id S965662AbXDBS17 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 14:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965661AbXDBS17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 14:19:35 -0400
-Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:54303 "EHLO
-	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965650AbXDBSTe convert rfc822-to-8bit (ORCPT
+	Mon, 2 Apr 2007 14:27:59 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:60727 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965522AbXDBS16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 14:19:34 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
-content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 4/4] [SCSI]stex: minor cleanup and version update
-Date: Mon, 2 Apr 2007 11:21:08 -0700
-Message-ID: <B70A50D07063384EB9BCE3330D18414F0327EBC8@nonameb.ptu.promise.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 4/4] [SCSI]stex: minor cleanup and version update
-Thread-Index: Acd1QPecSMW04BhUQEqwxqmAeFi/MgAEixyA
-From: "Ed Lin" <ed.lin@promise.com>
-To: "Brian King" <brking@us.ibm.com>
-Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "james.Bottomley" <james.Bottomley@SteelEye.com>,
-       "jeff" <jeff@garzik.org>, "Promise_Linux" <Promise_Linux@promise.com>
+	Mon, 2 Apr 2007 14:27:58 -0400
+Subject: RE: [PATCH 3/4] [SCSI]stex: fix reset recovery for console device
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Ed Lin <ed.lin@promise.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, jeff <jeff@garzik.org>,
+       Promise_Linux <Promise_Linux@promise.com>
+In-Reply-To: <B70A50D07063384EB9BCE3330D18414F0327EBC5@nonameb.ptu.promise.com>
+References: <B70A50D07063384EB9BCE3330D18414F0327EBC5@nonameb.ptu.promise.com>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 13:27:55 -0500
+Message-Id: <1175538475.3680.69.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-04-02 at 11:14 -0700, Ed Lin wrote:
+> I just saw the routine name scsi_eh_try_stu, and didn't notice the
+> allow_restart (partly because I thought it was not harmful...).
+> But the TEST_UNIT_READY must stay.
+
+Sure ... I was just checking since your change log implied you'd seen
+the problem from the error handler ... however, we can add it ...
+there's a possibility of getting spin up on init from sd anyway.
+
+James
 
 
-> -----Original Message-----
-> From: Brian King [mailto:brking@us.ibm.com] 
-> Sent: Monday, April 02, 2007 9:05 AM
-> To: Ed Lin
-> Cc: linux-scsi; linux-kernel; james.Bottomley; jeff; Promise_Linux
-> Subject: Re: [PATCH 4/4] [SCSI]stex: minor cleanup and version update
-> 
-> 
-> Ed Lin wrote:
-> > @@ -1007,6 +1008,11 @@ static int stex_abort(struct scsi_cmnd *
-> >  	u32 data;
-> >  	int result = SUCCESS;
-> >  	unsigned long flags;
-> > +
-> > +	printk(KERN_INFO DRV_NAME
-> > +		"(%s): aborting command\n", pci_name(hba->pdev));
-> > +	scsi_print_command(cmd);
-> > +
-> 
-> scmd_printk is probably what you want here rather than just a printk.
-> 
-> scmd_printk(KERN_ERR, cmd, "aborting command\n");
-> 
-> 
-> > @@ -1092,6 +1098,10 @@ static int stex_reset(struct scsi_cmnd *
-> >  	unsigned long before;
-> >  	hba = (struct st_hba *) &cmd->device->host->hostdata[0];
-> > 
-> > +	printk(KERN_INFO DRV_NAME
-> > +		"(%s): resetting host\n", pci_name(hba->pdev));
-> > +	scsi_print_command(cmd);
-> > +
-> 
-> Same here.
-
-Well it's just because printk with pci_name stuff is used across
-the driver, and I didn't want to break the rule... 
