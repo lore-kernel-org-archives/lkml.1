@@ -1,35 +1,34 @@
-Return-Path: <linux-kernel-owner+akpm=40zip.com.au-S932184AbXDAHlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40zip.com.au-S965606AbXDBSHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932184AbXDAHlG (ORCPT <rfc822;akpm@zip.com.au>);
-	Sun, 1 Apr 2007 03:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXDAHlF
+	id S965606AbXDBSHI (ORCPT <rfc822;akpm@zip.com.au>);
+	Mon, 2 Apr 2007 14:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965621AbXDBSHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 03:41:05 -0400
-Received: from esc69.midphase.com ([205.234.196.230]:36497 "EHLO
-	esc69.midphase.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932184AbXDAHlE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 03:41:04 -0400
+	Mon, 2 Apr 2007 14:07:07 -0400
+Received: from mtaout4.012.net.il ([84.95.2.10]:24745 "EHLO mtaout4.012.net.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965606AbXDBSHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 14:07:06 -0400
+Date: Mon, 02 Apr 2007 21:06:45 +0300 (IDT)
+Date-warning: Date header was inserted by i_mtaout4.012.net.il
+From: organzz@msmnyc.edu
+Subject: Good day!
 To: linux-kernel@vger.kernel.org
-Subject: Test
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: andrew.wbeelsoi@gmail.com
-X-Originating-IP: [127.0.0.1]
-X-Originating-Email: [andrew.wbeelsoi@gmail.com]
-X-Mailer: 
-Message-Id: <E1HXugZ-00032N-WC@esc69.midphase.com>
-Date: Sun, 01 Apr 2007 03:41:11 -0400
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - esc69.midphase.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [99 99] / [47 12]
-X-AntiAbuse: Sender Address Domain - esc69.midphase.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Message-id: <0JFV00I53UB9WIV0@i_mtaout4.012.net.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=windows-1251
+Content-transfer-encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Good day! We are glad to present you new escorts from Russia - "Etoile Noire".
+ Our agency were started in 2002 in Moscow. From the very first steps of our
+ existence we run into difficulties,like strict competition with other
+ agencies. But attention to our clients,
+ good level of providing service and professional staff of designers,
+ photographers, managers and models helped us to bolt our leading position in
+ providing escort world over. For more information use this link http:
+ //www.etoilenoire.org Hope you will become our permanent client!
+ ======================= All the best for you! Manager Ludmila Enjoy your time
+ with "ETOILE NOIRE" office@etoilenoire.org http://www.etoilenoire.org
 
-testtt
