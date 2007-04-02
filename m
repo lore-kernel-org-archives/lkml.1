@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965417AbXDBNam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965426AbXDBNdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965417AbXDBNam (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 09:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965425AbXDBNam
+	id S965426AbXDBNdv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 09:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965427AbXDBNdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 09:30:42 -0400
-Received: from inetc.connecttech.com ([64.7.140.42]:3013 "EHLO
-	inetc.connecttech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965417AbXDBNal (ORCPT
+	Mon, 2 Apr 2007 09:33:51 -0400
+Received: from rwcrmhc12.comcast.net ([216.148.227.152]:35336 "EHLO
+	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965426AbXDBNdu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 09:30:41 -0400
-From: "Stuart MacDonald" <stuartm@connecttech.com>
-To: "'Aaron Lehmann'" <aaronl@vitelus.com>, "'Jim Paris'" <jim@jtan.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>
-Subject: RE: Silent corruption on AMD64
-Date: Mon, 2 Apr 2007 09:30:18 -0400
-Organization: Connect Tech Inc.
-Message-ID: <003c01c7752b$0e678fa0$294b82ce@stuartm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook, Build 10.0.6626
-In-Reply-To: <20070401043905.GV15189@vitelus.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
+	Mon, 2 Apr 2007 09:33:50 -0400
+Subject: Re: [PATCH] hid: add two led codes to hid input mapping
+From: Dan Engel <dan@sourceharvest.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
+In-Reply-To: <d120d5000704020606y620df4bfu1cf3728070f02a38@mail.gmail.com>
+References: <1175396188.7857.15.camel@monica.engel.home>
+	 <Pine.LNX.4.64.0704011941310.6040@jikos.suse.cz>
+	 <1175484539.12355.18.camel@monica.engel.home>
+	 <200704020004.51861.dtor@insightbb.com>
+	 <1175508842.12355.34.camel@monica.engel.home>
+	 <d120d5000704020606y620df4bfu1cf3728070f02a38@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rBGpATzT0FC1jshuaOvi"
+Date: Mon, 02 Apr 2007 09:33:48 -0400
+Message-Id: <1175520828.12355.84.camel@monica.engel.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: On Behalf Of Aaron Lehmann
-> I've been able to narrow it down to the Realtek Ethernet card. I can't
-> reproduce the problem using onboard Ethernet, whereas the Realtek card
-> causes trouble in any slot. However, I still don't know whether it's a
-> hardware or software issue, or whether it's caused directly or
-> indirectly by the Realtek card.
 
-I had a similar issue recently:
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=223216
+--=-rBGpATzT0FC1jshuaOvi
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I recommend trying Doug Ledford's memtest script:
-http://people.redhat.com/dledford/memtest.html
+On Mon, 2007-04-02 at 09:06 -0400, Dmitry Torokhov wrote:
+> It may be a HID-class device but it is definetly not an input device
+> and it would be wrong to present it to userspace as a device having 2
+> LEDs on it - it would be a lie. If we did that then some application
+> might mistake the device for something else and decide to switch that
+> LED off thus turning your KVM off. A random application should not be
+> aware how a random vendor decided to interpret the specs.
 
-It helped me prove the issue was the hardware and not something else.
+Okay, I did a little more exploration of the total device (I was
+focusing on the PC control of switching up until now.)
 
-..Stu
+This HID interface has two aspects:
+
+One is the PC control over switching. This is represented by a single
+report, with 3 fields, each with a single on/off usage. It can switch
+KVM only, audio only, or both. This is the one that overloads the HID
+LED usages, and is (as you say) not properly an input device.
+
+The other one appears to have something to do with the case where you've
+switched only audio. It's a single input report with four fields that
+map to the key usages volume up, volume down, mute (I think), and
+eject.=20
+
+So, I think the "right" thing to is to allow it to be driven as both a
+hiddev and an evdev (which is what the HID_QUIRK_HIDDEV does for this
+device.)
+
+Then, the switch controls would be accessed only through hiddev, while
+the key events, if they're ever actually generated, would still be
+received by the evdev driver.
+
+On a side note, I'm not sure why those input key events are there. The
+basic idea of the device is that you can switch KVM control back and
+forth, while keeping audio on a single computer (e.g., to listen to
+music), and at first I thought those key events were to feed audio
+controls through from the computer with KVM focus to the one with audio
+focus, so that if you're working on either computer you can adjust the
+volume, etc. However, the computer that does not have KVM focus will
+never receive these events, since switching KVM focus effectively
+disconnects the device completely from the computer.
+
+
+
+--=-rBGpATzT0FC1jshuaOvi
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGEQY8eDYVehSTx+URAo9OAJ9aA9BJL5HwuP5EcSH1jeJj7YrY8QCgsFoB
+lFqEX9lnShbW9wm8emnOOeg=
+=C+yj
+-----END PGP SIGNATURE-----
+
+--=-rBGpATzT0FC1jshuaOvi--
 
