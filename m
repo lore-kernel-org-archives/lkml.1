@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965912AbXDBV2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965949AbXDBVbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965912AbXDBV2c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965949AbXDBV2c
+	id S965949AbXDBVbh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965951AbXDBVbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:28:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33187 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965912AbXDBV2b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:28:31 -0400
-Date: Mon, 2 Apr 2007 14:28:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dave Hansen <hansendc@us.ibm.com>
-cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-In-Reply-To: <1175548086.22373.99.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
-  <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com> 
- <200704011246.52238.ak@suse.de>  <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
-  <1175544797.22373.62.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com>
- <1175548086.22373.99.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 2 Apr 2007 17:31:37 -0400
+Received: from www.osadl.org ([213.239.205.134]:34481 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965949AbXDBVbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:31:36 -0400
+Subject: Re: [RFC PATCH 0/5] x86_64: enable clockevents and dynticks
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070401185402.GZ10574@sequoia.sous-sol.org>
+References: <20070331083149.997762000@sous-sol.org>
+	 <1175419332.28263.67.camel@localhost.localdomain>
+	 <20070401185402.GZ10574@sequoia.sous-sol.org>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 23:31:44 +0200
+Message-Id: <1175549504.28263.184.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Dave Hansen wrote:
-
-> On Mon, 2007-04-02 at 13:30 -0700, Christoph Lameter wrote:
-> > On Mon, 2 Apr 2007, Dave Hansen wrote:
-> > > I completely agree, it looks like it should be faster.  The code
-> > > certainly has potential benefits.  But, to add this neato, apparently
-> > > more performant feature, we unfortunately have to add code.  Adding the
-> > > code has a cost: code maintenance.  This isn't a runtime cost, but it is
-> > > a real, honest to goodness tradeoff.
+On Sun, 2007-04-01 at 11:54 -0700, Chris Wright wrote:
+> * Thomas Gleixner (tglx@linutronix.de) wrote:
+> > On Sat, 2007-03-31 at 01:31 -0700, Chris Wright wrote:
+> > > This series converts x86_64 timers to clockevents drivers
+> > > and then enables dynticks.  There's some minor cleanups along
+> > > the way.  The lapic broadcast mechanism is untested, I'm sure it
+> > > still needs work, there's still some cruft in lapic_setup_timer.
+> > > 
+> > > This is just for comments at this point, now that it's working
+> > > on my test box in both NO_HZ=n and NO_HZ=n configurations (typically
+> > > using hpet).
 > > 
-> > Its just the opposite. The vmemmap code is so efficient that we can remove 
-> > lots of other code and gops of these alternate implementations.
+> > Have you checked, if we could share the code between i386 and x86_64 at
+> > least for PIT and HPET. I'm not sure about the local APIC, but I think
+> > it might be doable as well.
 > 
-> We do want to make sure that there isn't anyone relying on these.  Are
-> you thinking of simple sparsemem vs. extreme vs. sparsemem vmemmap?  Or,
-> are you thinking of sparsemem vs. discontig?
+> Yes, that's part of why I did some of the cleanups that way, so that we
+> could merge the two together later.
 
-I am thinking sparsemem default and then get rid discontig, flatmem etc.
-On many platforms this will work. Flatmem for embedded could just be a 
-variation on sparse_virtual.
+I'd prefer to get this done now. If we plug it in as is, the "merge
+later" probably will never happen.
 
-> Amen, brother.  I'd love to see DISCONTIG die, with sufficient testing,
-> of course.  Andi, do you have any ideas on how to get sparsemem out of
-> the 'experimental' phase?
+	tglx
 
-Note that these arguments on DISCONTIG are flame bait for many SGIers. 
-We usually see this as an attack on DISCONTIG/VMEMMAP which is the 
-existing best performing implementation for page_to_pfn and vice 
-versa. Please lets stop the polarization. We want one consistent scheme 
-to manage memory everywhere. I do not care what its called as long as it 
-covers all the bases and is not a glaring performance regresssion (like 
-SPARSEMEM so far).
 
-> I have noticed before that sparsemem should be able to cover the flatmem
-> case if we make MAX_PHYSMEM_BITS == SECTION_SIZE_BITS and massage from
-> there.  
-
-Right. But for embedded the memorymap base cannot be constant because 
-they may not be able to have a fixed address in memory. So memory map 
-needs to become a variable.
