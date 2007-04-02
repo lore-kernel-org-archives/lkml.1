@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933430AbXDBF7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933826AbXDBGE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933430AbXDBF7H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 01:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933634AbXDBF7H
+	id S933826AbXDBGE4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 02:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933641AbXDBGEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 01:59:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:38245 "EHLO mail.goop.org"
+	Mon, 2 Apr 2007 02:04:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33218 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932684AbXDBF7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 01:59:03 -0400
-Message-Id: <20070402055652.610711908@goop.org>
-User-Agent: quilt/0.46-1
-Date: Sun, 01 Apr 2007 22:56:52 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 00/17] paravirt_ops updates
+	id S933753AbXDBGEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 02:04:15 -0400
+Date: Mon, 2 Apr 2007 08:04:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] enhance initcall_debug, measure latency
+Message-ID: <20070402060408.GA6505@elte.hu>
+References: <20070401181614.GA25648@elte.hu> <20070401182801.GA25956@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070401182801.GA25956@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
 
-This series of patches updates paravirt_ops in various ways.  Some of the
-changes are plain cleanups and improvements, and some add some interfaces
-necessary for Xen.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-The brief overview:
+> some boot time analysis using this facility:
 
-add-MAINTAINERS.patch			- obvious
-remove-CONFIG_DEBUG_PARAVIRT.patch	- no longer needed
-paravirt-nop.patch			- mark nop operations consistently
-paravirt-pte-accessors.patch		- operations to pack/unpack ptes
-paravirt-memory-init.patch		- hooks for memory/pagetable init
-paravirt-fixmap.patch			- add fixmap for paravirt boot
-shared-kernel-pmd.patch			- allow selectable shared kernel pmd
-mm-lifetime-hooks.patch			- hooks for mm dup/activate/exit
-paravirt-patch-rename-paravirt_patch.patch - rename patch structure for clarity
-paravirt-use-offset-site-ids.patch	- use patch-site id derived from offset
-paravirt-fix-clobbers.patch		- fix register clobbers for patch sites
-paravirt-patchable-call-wrappers.patch	- wrap paravirt calls for patching
-paravirt-patch-machinery.patch		- common patch machinery
-paravirt-flush_tlb_others.patch		- paravirt hook for cross-cpu tlb flushing
-revert-map_pt_hook.patch		- back out map_pt_hook
-paravirt-kmap_atomic_pte.patch		- add kmap_atomic_pte for highpte
-paravirt-sched-clock.patch		- hook to measure schedulable time
+using a non-allyesconfig kernel gives the results below. The entries 
+that seem to take a bit too long (considering what they do):
 
-Thanks,
-	J
+initcall 0xc069bac5 ran for 519 msecs: init_nic+0x0/0x2c()
+initcall 0xc0699610 ran for 344 msecs: isapnp_init+0x0/0x435()
+initcall 0xc069af66 ran for 245 msecs: serial8250_init+0x0/0x112()
+initcall 0xc06981e8 ran for 183 msecs: acpi_pci_link_init+0x0/0x43()
+initcall 0xc06a07b0 ran for 175 msecs: pci_acpi_init+0x0/0x9b()
+initcall 0xc06980ef ran for 110 msecs: acpi_pci_root_init+0x0/0x25()
+initcall 0xc069fa24 ran for 69 msecs: pcibios_assign_resources+0x0/0x92()
+initcall 0xc0246fd6 ran for 64 msecs: pci_init+0x0/0x2c()
+initcall 0xc0695fc2 ran for 62 msecs: pcie_portdrv_init+0x0/0x46()
+initcall 0xc0698656 ran for 54 msecs: pnp_system_init+0x0/0xf()
+initcall 0xc06a27ac ran for 43 msecs: inet_init+0x0/0x390()
+initcall 0xc069f88e ran for 28 msecs: init_acpi_pm_clocksource+0x0/0x173()
 
--- 
+these amount to almost 50% of the ~4 seconds total bootup initcall time!
+
+	Ingo
+
+initcall 0xc069c43b ran for 1147 msecs: ide_init+0x0/0x8a()
+initcall 0xc069bac5 ran for 519 msecs: init_nic+0x0/0x2c()
+initcall 0xc069cbe0 ran for 497 msecs: ide_generic_init+0x0/0x11()
+initcall 0xc0699610 ran for 344 msecs: isapnp_init+0x0/0x435()
+initcall 0xc069af66 ran for 245 msecs: serial8250_init+0x0/0x112()
+initcall 0xc06981e8 ran for 183 msecs: acpi_pci_link_init+0x0/0x43()
+initcall 0xc06a07b0 ran for 175 msecs: pci_acpi_init+0x0/0x9b()
+initcall 0xc06980ef ran for 110 msecs: acpi_pci_root_init+0x0/0x25()
+initcall 0xc068b878 ran for 97 msecs: check_nmi_watchdog+0x0/0x1d1()
+initcall 0xc069cbf1 ran for 75 msecs: idedisk_init+0x0/0xf()
+initcall 0xc069fa24 ran for 69 msecs: pcibios_assign_resources+0x0/0x92()
+initcall 0xc0246fd6 ran for 64 msecs: pci_init+0x0/0x2c()
+initcall 0xc0695fc2 ran for 62 msecs: pcie_portdrv_init+0x0/0x46()
+initcall 0xc0698656 ran for 54 msecs: pnp_system_init+0x0/0xf()
+initcall 0xc06a27ac ran for 43 msecs: inet_init+0x0/0x390()
+initcall 0xc069f88e ran for 28 msecs: init_acpi_pm_clocksource+0x0/0x173()
+initcall 0xc069bb07 ran for 23 msecs: rtl8139_init_module+0x0/0x16()
+initcall 0xc069eeae ran for 18 msecs: psmouse_init+0x0/0x64()
+initcall 0xc0111a26 ran for 18 msecs: powernowk8_init+0x0/0x78()
+initcall 0xc069e932 ran for 17 msecs: i8042_init+0x0/0x321()
+initcall 0xc069baf1 ran for 16 msecs: cp_init+0x0/0x16()
+initcall 0xc06979b8 ran for 16 msecs: acpi_init+0x0/0x1ff()
+initcall 0xc0697bfc ran for 15 msecs: acpi_scan_init+0x0/0xfc()
+initcall 0xc06a3154 ran for 12 msecs: netlbl_init+0x0/0x71()
+initcall 0xc069e512 ran for 11 msecs: usb_init+0x0/0x103()
+initcall 0xc06986cd ran for 11 msecs: pnpacpi_init+0x0/0x69()
 
