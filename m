@@ -1,95 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933962AbXDBLuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbXDBLwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933962AbXDBLuA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 07:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933965AbXDBLuA
+	id S933965AbXDBLwO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 07:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933973AbXDBLwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 07:50:00 -0400
-Received: from poseidon.ceid.upatras.gr ([150.140.141.169]:1557 "EHLO
-	poseidon.ceid.upatras.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933962AbXDBLt7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 07:49:59 -0400
-Message-ID: <4610EDF9.9000601@sciensis.com>
-Date: Mon, 02 Apr 2007 14:50:17 +0300
-From: Tasos Parisinos <t.parisinos@sciensis.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Mon, 2 Apr 2007 07:52:13 -0400
+Received: from cel.leonerd.org.uk ([62.49.94.186]:3545 "EHLO cel.leo"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933965AbXDBLwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 07:52:13 -0400
+X-Greylist: delayed 1562 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 07:52:12 EDT
+Date: Mon, 2 Apr 2007 12:26:07 +0100
+From: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
+       Daniel Jacobowitz <dan@debian.org>
+Subject: Re: [PATCH 17/16] Do not reset UTF8 on terminal reset
+Message-ID: <20070402112607.GK26707@cel.leo>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012001130.12316@yvahk01.tjqt.qr> <1175496595.4614.11.camel@daplas> <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, indan@nul.nu
-Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
-References: <4610D25F.7080005@ceid.upatras.gr> <p73r6r3yn9f.fsf@bingen.suse.de>
-In-Reply-To: <p73r6r3yn9f.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="tqI+Z3u+9OQ7kwn0"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Tasos Parisinos <parisino@ceid.upatras.gr> writes:
->
->   
->> From: Tasos Parisinos <t.parisinos@sciensis.com>
->>
->> This patch adds module rsa.ko in the kernel (built-in or as a kernel
->> module) and offers an API to do fast modular exponentiation, using the
->> Montgomery algorithm, thus the exponentiation is not generic but can
->> be used only when
->> the modulus is odd, such as RSA public/private key pairs. This module is the
->> computational core (using multiple precision integer arithmetics) and does not
->> provide any means to do key management, implement padding schemas e.t.c. so the
->> calling code should implement all those as needed. Signed-off-by:
->> Tasos Parisinos <t.parisinos@sciensis.com>
->>     
->
-> You forgot to answer the most important question.
->
-> What would want to use RSA in the kernel and why?  
->
-> -Andi
->
->   
 
-The main purpose behind the creation of this module was to create the
-cryptographic infrastructure to develop an in-kernel system of signed
-modules.
+--tqI+Z3u+9OQ7kwn0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The best environment to deploy such functionality is in updating by remote,
-executable code (programs, libs and modules) on embedded devices running
-Linux, that have some form of kernel physical security, so one can't 
-tamper the
-kernel, but can read it. In this case only a public key would be 
-revealed. The
-vendor of the devices can sign and distribute/update executable code to 
-the devices,
-and the kernel will not load/run any of them if they don't match with 
-their signatures.
-The signature can be embedded in the elf, so this system is portable and 
-centralized.
-Although this functionality can be achieved using userland helper 
-programs this may
-create the need to physically secure entire filesystems which adds to 
-the cost of
-developing such devices. In such cases one needs to use asymmetric 
-cryptography
-because in the case of symmetric it would be very easy to give away the 
-key and
-end with having all your devices being attacked.
+On Mon, Apr 02, 2007 at 09:31:37AM +0200, Jan Engelhardt wrote:
+> Also see:
+> 	http://lkml.org/lkml/2005/5/17/289
+> 	http://lkml.org/lkml/2005/5/17/297
+>=20
+> These posts argue about terminfo being the culprit. But how can terminfo=
+=20
+> be at fault, when `echo -en "\ec"` triggers it too?
+>=20
+> Since I am in a patch mood, here's my stance/patch, which is compile and=
+=20
+> run tested and behaves as expected (both with `echo` and `reset`).
 
-There are already some systems that implement and utilize such 
-functionality that
-use windows platforms, and other Linux distros that use userland 
-programs to do
-so, assuming physical security of the host computer.
+=2E..
 
-Moreover a same system that would use hashes is easier to brake and more 
-difficult
-to update each time new code must be loaded to the host devices.
+> Index: linux-2.6.21-rc5/drivers/char/vt.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.21-rc5.orig/drivers/char/vt.c
+> +++ linux-2.6.21-rc5/drivers/char/vt.c
+> @@ -1518,7 +1518,6 @@ static void reset_terminal(struct vc_dat
+>  	vc->vc_charset		=3D 0;
+>  	vc->vc_need_wrap	=3D 0;
+>  	vc->vc_report_mouse	=3D 0;
+> -	vc->vc_utf		=3D 0;
+>  	vc->vc_utf_count	=3D 0;
+> =20
+>  	vc->vc_disp_ctrl	=3D 0;
+> #<EOF>
 
-See also this thread
+Is it OK to do that? I recall when I was originally looking at the code
+I didn't want to just remove that line, because it looked like that was
+being used to first initialise the vc* structure when it is created, as
+well as reset it every time. Doesn't this leave vc->vc_utf uninitialised
+when a new VC is allocated?
 
-http://lkml.org/lkml/2007/3/19/447
+--=20
+Paul "LeoNerd" Evans
 
+leonerd@leonerd.org.uk
+ICQ# 4135350       |  Registered Linux# 179460
+http://www.leonerd.org.uk/
 
+--tqI+Z3u+9OQ7kwn0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGEOhP7eTlovtaLtYRAl5HAKCDf1G68+xdkQAwcWPPh2x7kNVi0QCeKrcu
+3G5vQ83s3wCnFWUySoDD8Ms=
+=WqLn
+-----END PGP SIGNATURE-----
+
+--tqI+Z3u+9OQ7kwn0--
