@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965626AbXDBSCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965554AbXDBSFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965626AbXDBSCS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 14:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXDBSCS
+	id S965554AbXDBSFm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 14:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965624AbXDBSFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 14:02:18 -0400
-Received: from smtpout.mac.com ([17.250.248.178]:59636 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965626AbXDBSCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 14:02:17 -0400
-In-Reply-To: <200704021354.32636.gene.heskett@gmail.com>
-References: <200704021030.29747.gene.heskett@gmail.com> <20070402173544.GA19343@deepthought> <200704021354.32636.gene.heskett@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8EF5AE61-FC1C-4BA2-BB8D-B55221D8846B@mac.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: mmap error?
-Date: Mon, 2 Apr 2007 14:02:11 -0400
-To: Gene Heskett <gene.heskett@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Mon, 2 Apr 2007 14:05:42 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44945 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965554AbXDBSFl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 14:05:41 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: vatsa@in.ibm.com
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, menage@google.com, akpm@osdl.org,
+       pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       ebiederm@xmission.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       mbligh@google.com, winget@google.com, rohitseth@google.com,
+       devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+References: <20070212081521.808338000@menage.corp.google.com>
+	<20070212085105.170265000@menage.corp.google.com>
+	<20070331024722.GA808@in.ibm.com>
+	<20070402140938.GF17710@sergelap.austin.ibm.com>
+	<20070402142727.GF2456@in.ibm.com>
+Date: Mon, 02 Apr 2007 12:02:35 -0600
+In-Reply-To: <20070402142727.GF2456@in.ibm.com> (Srivatsa Vaddagiri's message
+	of "Mon, 2 Apr 2007 19:57:27 +0530")
+Message-ID: <m1slbiejt0.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 02, 2007, at 13:54:28, Gene Heskett wrote:
-> Ahh, thank you very much.  But I have 7.0, supposedly fixed,  
-> sigh...  That did fix it, the dvd is burning as I type, again thanks.
+Srivatsa Vaddagiri <vatsa@in.ibm.com> writes:
+
+> On Mon, Apr 02, 2007 at 09:09:39AM -0500, Serge E. Hallyn wrote:
+>> Losing the directory isn't a big deal though.  And both unsharing a
+>> namespace (which causes a ns_container_clone) and mounting the hierarchy
+>> are done by userspace, so if for some installation it is a big deal,
+>> the init scripts on initrd can mount the hierarchy before doing any
+>> unsharing.
 >
-> ???? Can I put this into rc.local so its global?  I guess I will  
-> just for effects.  Or is there an option in a make xconfig to reset  
-> this to a usable sized limit?, because I can see cups also having  
-> problems since I have its render cache set for 127 megs, which  
-> should also trigger this.
+> Yes I thought of that after posting this (that initrd can mount the
+> hierarchies), so this should not be an issue in practice ..
+>
+>> Can you think of a reason why losing a few directories matters?
+>
+> If we loose directories, then we don't have a way to manage the
+> task-group it represents thr' the filesystem interface, so I consider
+> that bad. As we agree, this will not be an issue if initrd
+> mounts the ns hierarchy atleast at bootup.
 
-Well, that's not a limit on how much memory you can map, it's a limit  
-on how many pages you can lock into memory (as in, cannot be swapped  
-out or written back to disk and reused).  For low-latency  
-applications (IE: cd burning) you need to have all memory mlocked so  
-that you don't get a low-latency wakup and then promptly lose all  
-latency guarantees by swapping madly, but something like CUPS doesn't  
-have a problem because it doesn't use mlock() or mlockall().
+I suspect that could be a problem if we have recursive containers.
+Even by having a separate mount namespace for isolation you really
+don't want to share the mount.  If you can see all of the processes
+you do want to be able to see and control everything.
 
-Cheers,
-Kyle Moffett
+I guess I want to ask before this gets to far.  Why are all of the
+namespaces lumped into one group?  I would think it would make much
+more sense to treat each namespace individually (at least for the
+user space interface).
 
+Eric
