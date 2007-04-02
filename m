@@ -1,491 +1,390 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbXDBGCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbXDBGCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933450AbXDBGCv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 02:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933455AbXDBGCe
+	id S933455AbXDBGCw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 02:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933920AbXDBGCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 02:02:34 -0400
-Received: from gw.goop.org ([64.81.55.164]:38281 "EHLO mail.goop.org"
+	Mon, 2 Apr 2007 02:02:31 -0400
+Received: from gw.goop.org ([64.81.55.164]:38280 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933450AbXDBF7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933455AbXDBF7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 2 Apr 2007 01:59:09 -0400
-Message-Id: <20070402055704.647770478@goop.org>
+Message-Id: <20070402055704.549969028@goop.org>
 References: <20070402055652.610711908@goop.org>
 User-Agent: quilt/0.46-1
-Date: Sun, 01 Apr 2007 22:57:00 -0700
+Date: Sun, 01 Apr 2007 22:56:59 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Zachary Amsden <zach@vmware.com>, Christoph Lameter <clameter@sgi.com>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 08/17] add hooks to intercept mm creation and destruction
-Content-Disposition: inline; filename=mm-lifetime-hooks.patch
+Subject: [patch 07/17] Allow paravirt backend to choose kernel PMD sharing
+Content-Disposition: inline; filename=shared-kernel-pmd.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add hooks to allow a paravirt implementation to track the lifetime of
-an mm.  Paravirtualization requires three hooks, but only two are
-needed in common code.  They are:
+Normally when running in PAE mode, the 4th PMD maps the kernel address
+space, which can be shared among all processes (since they all need
+the same kernel mappings).
 
-arch_dup_mmap, which is called when a new mmap is created at fork
+Xen, however, does not allow guests to have the kernel pmd shared
+between page tables, so parameterize pgtable.c to allow both modes of
+operation.
 
-arch_exit_mmap, which is called when the last process reference to an
-  mm is dropped, which typically happens on exit and exec.
+There are several side-effects of this.  One is that vmalloc will
+update the kernel address space mappings, and those updates need to be
+propagated into all processes if the kernel mappings are not
+intrinsically shared.  In the non-PAE case, this is done by
+maintaining a pgd_list of all processes; this list is used when all
+process pagetables must be updated.  pgd_list is threaded via
+otherwise unused entries in the page structure for the pgd, which
+means that the pgd must be page-sized for this to work.
 
-The third hook is activate_mm, which is called from the arch-specific
-activate_mm() macro/function, and so doesn't need stub versions for
-other architectures.  It's called when an mm is first used.
+Normally the PAE pgd is only 4x64 byte entries large, but Xen requires
+the PAE pgd to page aligned anyway, so this patch forces the pgd to be
+page aligned+sized when the kernel pmd is unshared, to accomodate both
+these requirements.
+
+Also, since there may be several distinct kernel pmds (if the
+user/kernel split is below 3G), there's no point in allocating them
+from a slab cache; they're just allocated with get_free_page and
+initialized appropriately.  (Of course the could be cached if there is
+just a single kernel pmd - which is the default with a 3G user/kernel
+split - but it doesn't seem worthwhile to add yet another case into
+this code).
+
+[ Many thanks to wli for review comments. ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: linux-arch@vger.kernel.org
-Cc: James Bottomley <James.Bottomley@SteelEye.com>
+Signed-off-by: William Lee Irwin III <wli@holomorphy.com>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Christoph Lameter <clameter@sgi.com>
 Acked-by: Ingo Molnar <mingo@elte.hu>
-
 ---
- arch/i386/kernel/paravirt.c         |    4 ++++
- include/asm-alpha/mmu_context.h     |    1 +
- include/asm-arm/mmu_context.h       |    1 +
- include/asm-arm26/mmu_context.h     |    2 ++
- include/asm-avr32/mmu_context.h     |    1 +
- include/asm-cris/mmu_context.h      |    2 ++
- include/asm-frv/mmu_context.h       |    1 +
- include/asm-generic/mm_hooks.h      |   18 ++++++++++++++++++
- include/asm-h8300/mmu_context.h     |    1 +
- include/asm-i386/mmu_context.h      |   17 +++++++++++++++--
- include/asm-i386/paravirt.h         |   23 +++++++++++++++++++++++
- include/asm-ia64/mmu_context.h      |    1 +
- include/asm-m32r/mmu_context.h      |    1 +
- include/asm-m68k/mmu_context.h      |    1 +
- include/asm-m68knommu/mmu_context.h |    1 +
- include/asm-mips/mmu_context.h      |    1 +
- include/asm-parisc/mmu_context.h    |    1 +
- include/asm-powerpc/mmu_context.h   |    1 +
- include/asm-ppc/mmu_context.h       |    1 +
- include/asm-s390/mmu_context.h      |    2 ++
- include/asm-sh/mmu_context.h        |    1 +
- include/asm-sh64/mmu_context.h      |    2 +-
- include/asm-sparc/mmu_context.h     |    2 ++
- include/asm-sparc64/mmu_context.h   |    1 +
- include/asm-um/mmu_context.h        |    2 ++
- include/asm-v850/mmu_context.h      |    2 ++
- include/asm-x86_64/mmu_context.h    |    1 +
- include/asm-xtensa/mmu_context.h    |    1 +
- kernel/fork.c                       |    2 ++
- mm/mmap.c                           |    4 ++++
- 30 files changed, 96 insertions(+), 3 deletions(-)
+ arch/i386/kernel/paravirt.c            |    1 
+ arch/i386/mm/fault.c                   |    6 +-
+ arch/i386/mm/init.c                    |   18 +++++-
+ arch/i386/mm/pageattr.c                |    2 
+ arch/i386/mm/pgtable.c                 |   84 ++++++++++++++++++++++++++------
+ include/asm-i386/paravirt.h            |    1 
+ include/asm-i386/pgtable-2level-defs.h |    2 
+ include/asm-i386/pgtable-2level.h      |    2 
+ include/asm-i386/pgtable-3level-defs.h |    6 ++
+ include/asm-i386/pgtable-3level.h      |    2 
+ include/asm-i386/pgtable.h             |    7 ++
+ 11 files changed, 105 insertions(+), 26 deletions(-)
 
 ===================================================================
 --- a/arch/i386/kernel/paravirt.c
 +++ b/arch/i386/kernel/paravirt.c
-@@ -520,6 +520,10 @@ struct paravirt_ops paravirt_ops = {
- 	.irq_enable_sysexit = native_irq_enable_sysexit,
- 	.iret = native_iret,
+@@ -604,6 +604,7 @@ struct paravirt_ops paravirt_ops = {
+ 	.name = "bare hardware",
+ 	.paravirt_enabled = 0,
+ 	.kernel_rpl = 0,
++	.shared_kernel_pmd = 1,	/* Only used when CONFIG_X86_PAE is set */
  
-+	.dup_mmap = paravirt_nop,
-+	.exit_mmap = paravirt_nop,
-+	.activate_mm = paravirt_nop,
-+
- 	.startup_ipi_hook = paravirt_nop,
- };
- 
+  	.patch = native_patch,
+ 	.banner = default_banner,
 ===================================================================
---- a/include/asm-alpha/mmu_context.h
-+++ b/include/asm-alpha/mmu_context.h
-@@ -10,6 +10,7 @@
- #include <asm/system.h>
- #include <asm/machvec.h>
- #include <asm/compiler.h>
-+#include <asm-generic/mm_hooks.h>
+--- a/arch/i386/mm/fault.c
++++ b/arch/i386/mm/fault.c
+@@ -588,8 +588,7 @@ do_sigbus:
+ 	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
+ }
  
- /*
-  * Force a context reload. This is needed when we change the page
-===================================================================
---- a/include/asm-arm/mmu_context.h
-+++ b/include/asm-arm/mmu_context.h
-@@ -16,6 +16,7 @@
- #include <linux/compiler.h>
- #include <asm/cacheflush.h>
- #include <asm/proc-fns.h>
-+#include <asm-generic/mm_hooks.h>
- 
- void __check_kvm_seq(struct mm_struct *mm);
- 
-===================================================================
---- a/include/asm-arm26/mmu_context.h
-+++ b/include/asm-arm26/mmu_context.h
-@@ -12,6 +12,8 @@
-  */
- #ifndef __ASM_ARM_MMU_CONTEXT_H
- #define __ASM_ARM_MMU_CONTEXT_H
-+
-+#include <asm-generic/mm_hooks.h>
- 
- #define init_new_context(tsk,mm)	0
- #define destroy_context(mm)		do { } while(0)
-===================================================================
---- a/include/asm-avr32/mmu_context.h
-+++ b/include/asm-avr32/mmu_context.h
-@@ -15,6 +15,7 @@
- #include <asm/tlbflush.h>
- #include <asm/pgalloc.h>
- #include <asm/sysreg.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * The MMU "context" consists of two things:
-===================================================================
---- a/include/asm-cris/mmu_context.h
-+++ b/include/asm-cris/mmu_context.h
-@@ -1,5 +1,7 @@
- #ifndef __CRIS_MMU_CONTEXT_H
- #define __CRIS_MMU_CONTEXT_H
-+
-+#include <asm-generic/mm_hooks.h>
- 
- extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
- extern void get_mmu_context(struct mm_struct *mm);
-===================================================================
---- a/include/asm-frv/mmu_context.h
-+++ b/include/asm-frv/mmu_context.h
-@@ -15,6 +15,7 @@
- #include <asm/setup.h>
- #include <asm/page.h>
- #include <asm/pgalloc.h>
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+-#ifndef CONFIG_X86_PAE
+-void vmalloc_sync_all(void)
++void _vmalloc_sync_all(void)
  {
-===================================================================
---- /dev/null
-+++ b/include/asm-generic/mm_hooks.h
-@@ -0,0 +1,18 @@
-+/*
-+ * Define generic no-op hooks for arch_dup_mmap and arch_exit_mmap, to
-+ * be included in asm-FOO/mmu_context.h for any arch FOO which doesn't
-+ * need to hook these.
-+ */
-+#ifndef _ASM_GENERIC_MM_HOOKS_H
-+#define _ASM_GENERIC_MM_HOOKS_H
+ 	/*
+ 	 * Note that races in the updates of insync and start aren't
+@@ -600,6 +599,8 @@ void vmalloc_sync_all(void)
+ 	static DECLARE_BITMAP(insync, PTRS_PER_PGD);
+ 	static unsigned long start = TASK_SIZE;
+ 	unsigned long address;
 +
-+static inline void arch_dup_mmap(struct mm_struct *oldmm,
-+				 struct mm_struct *mm)
-+{
-+}
-+
-+static inline void arch_exit_mmap(struct mm_struct *mm)
-+{
-+}
-+
-+#endif	/* _ASM_GENERIC_MM_HOOKS_H */
-===================================================================
---- a/include/asm-h8300/mmu_context.h
-+++ b/include/asm-h8300/mmu_context.h
-@@ -4,6 +4,7 @@
- #include <asm/setup.h>
- #include <asm/page.h>
- #include <asm/pgalloc.h>
-+#include <asm-generic/mm_hooks.h>
++	BUG_ON(SHARED_KERNEL_PMD);
  
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ 	BUILD_BUG_ON(TASK_SIZE & ~PGDIR_MASK);
+ 	for (address = start; address >= TASK_SIZE; address += PGDIR_SIZE) {
+@@ -623,4 +624,3 @@ void vmalloc_sync_all(void)
+ 			start = address + PGDIR_SIZE;
+ 	}
+ }
+-#endif
+===================================================================
+--- a/arch/i386/mm/init.c
++++ b/arch/i386/mm/init.c
+@@ -715,6 +715,8 @@ struct kmem_cache *pmd_cache;
+ 
+ void __init pgtable_cache_init(void)
  {
++	size_t pgd_size = PTRS_PER_PGD*sizeof(pgd_t);
++
+ 	if (PTRS_PER_PMD > 1) {
+ 		pmd_cache = kmem_cache_create("pmd",
+ 					PTRS_PER_PMD*sizeof(pmd_t),
+@@ -724,13 +726,23 @@ void __init pgtable_cache_init(void)
+ 					NULL);
+ 		if (!pmd_cache)
+ 			panic("pgtable_cache_init(): cannot create pmd cache");
++
++		if (!SHARED_KERNEL_PMD) {
++			/* If we're in PAE mode and have a non-shared
++			   kernel pmd, then the pgd size must be a
++			   page size.  This is because the pgd_list
++			   links through the page structure, so there
++			   can only be one pgd per page for this to
++			   work. */
++			pgd_size = PAGE_SIZE;
++		}
+ 	}
+ 	pgd_cache = kmem_cache_create("pgd",
+-				PTRS_PER_PGD*sizeof(pgd_t),
+-				PTRS_PER_PGD*sizeof(pgd_t),
++				pgd_size,
++				pgd_size,
+ 				0,
+ 				pgd_ctor,
+-				PTRS_PER_PMD == 1 ? pgd_dtor : NULL);
++				(!SHARED_KERNEL_PMD) ? pgd_dtor : NULL);
+ 	if (!pgd_cache)
+ 		panic("pgtable_cache_init(): Cannot create pgd cache");
+ }
 ===================================================================
---- a/include/asm-i386/mmu_context.h
-+++ b/include/asm-i386/mmu_context.h
-@@ -5,6 +5,16 @@
- #include <asm/atomic.h>
- #include <asm/pgalloc.h>
- #include <asm/tlbflush.h>
-+#include <asm/paravirt.h>
-+#ifndef CONFIG_PARAVIRT
-+#include <asm-generic/mm_hooks.h>
-+
-+static inline void paravirt_activate_mm(struct mm_struct *prev,
-+					struct mm_struct *next)
+--- a/arch/i386/mm/pageattr.c
++++ b/arch/i386/mm/pageattr.c
+@@ -91,7 +91,7 @@ static void set_pmd_pte(pte_t *kpte, uns
+ 	unsigned long flags;
+ 
+ 	set_pte_atomic(kpte, pte); 	/* change init_mm */
+-	if (PTRS_PER_PMD > 1)
++	if (SHARED_KERNEL_PMD)
+ 		return;
+ 
+ 	spin_lock_irqsave(&pgd_lock, flags);
+===================================================================
+--- a/arch/i386/mm/pgtable.c
++++ b/arch/i386/mm/pgtable.c
+@@ -238,35 +238,56 @@ static inline void pgd_list_del(pgd_t *p
+ 		set_page_private(next, (unsigned long)pprev);
+ }
+ 
++#if (PTRS_PER_PMD == 1)
++/* Non-PAE pgd constructor */
+ void pgd_ctor(void *pgd, struct kmem_cache *cache, unsigned long unused)
+ {
+ 	unsigned long flags;
+ 
+-	if (PTRS_PER_PMD == 1) {
+-		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
+-		spin_lock_irqsave(&pgd_lock, flags);
+-	}
++	/* !PAE, no pagetable sharing */
++	memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
+ 
+ 	clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
+ 			swapper_pg_dir + USER_PTRS_PER_PGD,
+ 			KERNEL_PGD_PTRS);
+ 
+-	if (PTRS_PER_PMD > 1)
+-		return;
++	spin_lock_irqsave(&pgd_lock, flags);
+ 
+ 	/* must happen under lock */
+ 	paravirt_alloc_pd_clone(__pa(pgd) >> PAGE_SHIFT,
+-			__pa(swapper_pg_dir) >> PAGE_SHIFT,
+-			USER_PTRS_PER_PGD, PTRS_PER_PGD - USER_PTRS_PER_PGD);
++				__pa(swapper_pg_dir) >> PAGE_SHIFT,
++				USER_PTRS_PER_PGD,
++				KERNEL_PGD_PTRS);
+ 
+ 	pgd_list_add(pgd);
+ 	spin_unlock_irqrestore(&pgd_lock, flags);
+ }
+-
+-/* never called when PTRS_PER_PMD > 1 */
++#else  /* PTRS_PER_PMD > 1 */
++/* PAE pgd constructor */
++void pgd_ctor(void *pgd, struct kmem_cache *cache, unsigned long unused)
 +{
-+}
-+#endif	/* !CONFIG_PARAVIRT */
++	/* PAE, kernel PMD may be shared */
 +
++	if (SHARED_KERNEL_PMD) {
++		clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
++				swapper_pg_dir + USER_PTRS_PER_PGD,
++				KERNEL_PGD_PTRS);
++	} else {
++		unsigned long flags;
++
++		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
++		spin_lock_irqsave(&pgd_lock, flags);
++		pgd_list_add(pgd);
++		spin_unlock_irqrestore(&pgd_lock, flags);
++	}
++}
++#endif	/* PTRS_PER_PMD */
++
+ void pgd_dtor(void *pgd, struct kmem_cache *cache, unsigned long unused)
+ {
+ 	unsigned long flags; /* can be called from interrupt context */
++
++	BUG_ON(SHARED_KERNEL_PMD);
  
- /*
-  * Used for LDT copy/destruction.
-@@ -65,7 +75,10 @@ static inline void switch_mm(struct mm_s
- #define deactivate_mm(tsk, mm)			\
- 	asm("movl %0,%%gs": :"r" (0));
+ 	paravirt_release_pd(__pa(pgd) >> PAGE_SHIFT);
+ 	spin_lock_irqsave(&pgd_lock, flags);
+@@ -274,6 +295,37 @@ void pgd_dtor(void *pgd, struct kmem_cac
+ 	spin_unlock_irqrestore(&pgd_lock, flags);
+ }
  
--#define activate_mm(prev, next) \
--	switch_mm((prev),(next),NULL)
-+#define activate_mm(prev, next)				\
-+	do {						\
-+		paravirt_activate_mm(prev, next);	\
-+		switch_mm((prev),(next),NULL);		\
-+	} while(0);
++#define UNSHARED_PTRS_PER_PGD				\
++	(SHARED_KERNEL_PMD ? USER_PTRS_PER_PGD : PTRS_PER_PGD)
++
++/* If we allocate a pmd for part of the kernel address space, then
++   make sure its initialized with the appropriate kernel mappings.
++   Otherwise use a cached zeroed pmd.  */
++static pmd_t *pmd_cache_alloc(int idx)
++{
++	pmd_t *pmd;
++
++	if (idx >= USER_PTRS_PER_PGD) {
++		pmd = (pmd_t *)__get_free_page(GFP_KERNEL);
++
++		if (pmd)
++			memcpy(pmd,
++			       (void *)pgd_page_vaddr(swapper_pg_dir[idx]),
++			       sizeof(pmd_t) * PTRS_PER_PMD);
++	} else
++		pmd = kmem_cache_alloc(pmd_cache, GFP_KERNEL);
++
++	return pmd;
++}
++
++static void pmd_cache_free(pmd_t *pmd, int idx)
++{
++	if (idx >= USER_PTRS_PER_PGD)
++		free_page((unsigned long)pmd);
++	else
++		kmem_cache_free(pmd_cache, pmd);
++}
++
+ pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+ 	int i;
+@@ -282,10 +334,12 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
+ 	if (PTRS_PER_PMD == 1 || !pgd)
+ 		return pgd;
  
- #endif
+-	for (i = 0; i < USER_PTRS_PER_PGD; ++i) {
+-		pmd_t *pmd = kmem_cache_alloc(pmd_cache, GFP_KERNEL);
++ 	for (i = 0; i < UNSHARED_PTRS_PER_PGD; ++i) {
++		pmd_t *pmd = pmd_cache_alloc(i);
++
+ 		if (!pmd)
+ 			goto out_oom;
++
+ 		paravirt_alloc_pd(__pa(pmd) >> PAGE_SHIFT);
+ 		set_pgd(&pgd[i], __pgd(1 + __pa(pmd)));
+ 	}
+@@ -296,7 +350,7 @@ out_oom:
+ 		pgd_t pgdent = pgd[i];
+ 		void* pmd = (void *)__va(pgd_val(pgdent)-1);
+ 		paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
+-		kmem_cache_free(pmd_cache, pmd);
++		pmd_cache_free(pmd, i);
+ 	}
+ 	kmem_cache_free(pgd_cache, pgd);
+ 	return NULL;
+@@ -308,11 +362,11 @@ void pgd_free(pgd_t *pgd)
+ 
+ 	/* in the PAE case user pgd entries are overwritten before usage */
+ 	if (PTRS_PER_PMD > 1)
+-		for (i = 0; i < USER_PTRS_PER_PGD; ++i) {
++		for (i = 0; i < UNSHARED_PTRS_PER_PGD; ++i) {
+ 			pgd_t pgdent = pgd[i];
+ 			void* pmd = (void *)__va(pgd_val(pgdent)-1);
+ 			paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
+-			kmem_cache_free(pmd_cache, pmd);
++			pmd_cache_free(pmd, i);
+ 		}
+ 	/* in the non-PAE case, free_pgtables() clears user pgd entries */
+ 	kmem_cache_free(pgd_cache, pgd);
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -119,6 +119,12 @@ struct paravirt_ops
- 
- 	void (*io_delay)(void);
- 
-+	void (*activate_mm)(struct mm_struct *prev,
-+			    struct mm_struct *next);
-+	void (*dup_mmap)(struct mm_struct *oldmm,
-+			 struct mm_struct *mm);
-+	void (*exit_mmap)(struct mm_struct *mm);
-+
- #ifdef CONFIG_X86_LOCAL_APIC
- 	void (*apic_write)(unsigned long reg, unsigned long v);
- 	void (*apic_write_atomic)(unsigned long reg, unsigned long v);
-@@ -394,6 +400,23 @@ static inline void startup_ipi_hook(int 
- }
- #endif
- 
-+static inline void paravirt_activate_mm(struct mm_struct *prev,
-+					struct mm_struct *next)
-+{
-+	paravirt_ops.activate_mm(prev, next);
-+}
-+
-+static inline void arch_dup_mmap(struct mm_struct *oldmm,
-+				 struct mm_struct *mm)
-+{
-+	paravirt_ops.dup_mmap(oldmm, mm);
-+}
-+
-+static inline void arch_exit_mmap(struct mm_struct *mm)
-+{
-+	paravirt_ops.exit_mmap(mm);
-+}
-+
- #define __flush_tlb() paravirt_ops.flush_tlb_user()
- #define __flush_tlb_global() paravirt_ops.flush_tlb_kernel()
- #define __flush_tlb_single(addr) paravirt_ops.flush_tlb_single(addr)
-===================================================================
---- a/include/asm-ia64/mmu_context.h
-+++ b/include/asm-ia64/mmu_context.h
-@@ -29,6 +29,7 @@
- #include <linux/spinlock.h>
- 
- #include <asm/processor.h>
-+#include <asm-generic/mm_hooks.h>
- 
- struct ia64_ctx {
- 	spinlock_t lock;
-===================================================================
---- a/include/asm-m32r/mmu_context.h
-+++ b/include/asm-m32r/mmu_context.h
-@@ -15,6 +15,7 @@
- #include <asm/pgalloc.h>
- #include <asm/mmu.h>
- #include <asm/tlbflush.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * Cache of MMU context last used.
-===================================================================
---- a/include/asm-m68k/mmu_context.h
-+++ b/include/asm-m68k/mmu_context.h
-@@ -1,6 +1,7 @@
- #ifndef __M68K_MMU_CONTEXT_H
- #define __M68K_MMU_CONTEXT_H
- 
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+@@ -34,6 +34,7 @@ struct paravirt_ops
+ struct paravirt_ops
  {
+ 	unsigned int kernel_rpl;
++	int shared_kernel_pmd;
+  	int paravirt_enabled;
+ 	const char *name;
+ 
 ===================================================================
---- a/include/asm-m68knommu/mmu_context.h
-+++ b/include/asm-m68knommu/mmu_context.h
-@@ -4,6 +4,7 @@
- #include <asm/setup.h>
- #include <asm/page.h>
- #include <asm/pgalloc.h>
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-===================================================================
---- a/include/asm-mips/mmu_context.h
-+++ b/include/asm-mips/mmu_context.h
-@@ -20,6 +20,7 @@
- #include <asm/mipsmtregs.h>
- #include <asm/smtc.h>
- #endif /* SMTC */
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * For the fast tlb miss handlers, we keep a per cpu array of pointers
-===================================================================
---- a/include/asm-parisc/mmu_context.h
-+++ b/include/asm-parisc/mmu_context.h
-@@ -5,6 +5,7 @@
- #include <asm/atomic.h>
- #include <asm/pgalloc.h>
- #include <asm/pgtable.h>
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-===================================================================
---- a/include/asm-powerpc/mmu_context.h
-+++ b/include/asm-powerpc/mmu_context.h
-@@ -10,6 +10,7 @@
- #include <linux/mm.h>	
- #include <asm/mmu.h>	
- #include <asm/cputable.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * Copyright (C) 2001 PPC 64 Team, IBM Corp
-===================================================================
---- a/include/asm-ppc/mmu_context.h
-+++ b/include/asm-ppc/mmu_context.h
-@@ -6,6 +6,7 @@
- #include <asm/bitops.h>
- #include <asm/mmu.h>
- #include <asm/cputable.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * On 32-bit PowerPC 6xx/7xx/7xxx CPUs, we use a set of 16 VSIDs
-===================================================================
---- a/include/asm-s390/mmu_context.h
-+++ b/include/asm-s390/mmu_context.h
-@@ -10,6 +10,8 @@
- #define __S390_MMU_CONTEXT_H
- 
- #include <asm/pgalloc.h>
-+#include <asm-generic/mm_hooks.h>
-+
- /*
-  * get a new mmu context.. S390 don't know about contexts.
-  */
-===================================================================
---- a/include/asm-sh/mmu_context.h
-+++ b/include/asm-sh/mmu_context.h
-@@ -12,6 +12,7 @@
- #include <asm/tlbflush.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * The MMU "context" consists of two things:
-===================================================================
---- a/include/asm-sh64/mmu_context.h
-+++ b/include/asm-sh64/mmu_context.h
-@@ -27,7 +27,7 @@ extern unsigned long mmu_context_cache;
- extern unsigned long mmu_context_cache;
- 
- #include <asm/page.h>
--
-+#include <asm-generic/mm_hooks.h>
- 
- /* Current mm's pgd */
- extern pgd_t *mmu_pdtp_cache;
-===================================================================
---- a/include/asm-sparc/mmu_context.h
-+++ b/include/asm-sparc/mmu_context.h
-@@ -4,6 +4,8 @@
- #include <asm/btfixup.h>
- 
- #ifndef __ASSEMBLY__
-+
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-===================================================================
---- a/include/asm-sparc64/mmu_context.h
-+++ b/include/asm-sparc64/mmu_context.h
-@@ -9,6 +9,7 @@
- #include <linux/spinlock.h>
- #include <asm/system.h>
- #include <asm/spitfire.h>
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-===================================================================
---- a/include/asm-um/mmu_context.h
-+++ b/include/asm-um/mmu_context.h
-@@ -5,6 +5,8 @@
- 
- #ifndef __UM_MMU_CONTEXT_H
- #define __UM_MMU_CONTEXT_H
-+
-+#include <asm-generic/mm_hooks.h>
- 
- #include "linux/sched.h"
- #include "choose-mode.h"
-===================================================================
---- a/include/asm-v850/mmu_context.h
-+++ b/include/asm-v850/mmu_context.h
+--- a/include/asm-i386/pgtable-2level-defs.h
++++ b/include/asm-i386/pgtable-2level-defs.h
 @@ -1,5 +1,7 @@
- #ifndef __V850_MMU_CONTEXT_H__
- #define __V850_MMU_CONTEXT_H__
+ #ifndef _I386_PGTABLE_2LEVEL_DEFS_H
+ #define _I386_PGTABLE_2LEVEL_DEFS_H
 +
-+#include <asm-generic/mm_hooks.h>
- 
- #define destroy_context(mm)		((void)0)
- #define init_new_context(tsk,mm)	0
-===================================================================
---- a/include/asm-x86_64/mmu_context.h
-+++ b/include/asm-x86_64/mmu_context.h
-@@ -7,6 +7,7 @@
- #include <asm/pda.h>
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
-+#include <asm-generic/mm_hooks.h>
++#define SHARED_KERNEL_PMD	0
  
  /*
-  * possibly do the LDT unload here?
+  * traditional i386 two-level paging structure:
 ===================================================================
---- a/include/asm-xtensa/mmu_context.h
-+++ b/include/asm-xtensa/mmu_context.h
-@@ -18,6 +18,7 @@
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
- #include <asm/tlbflush.h>
-+#include <asm-generic/mm_hooks.h>
+--- a/include/asm-i386/pgtable-2level.h
++++ b/include/asm-i386/pgtable-2level.h
+@@ -65,6 +65,4 @@ static inline int pte_exec_kernel(pte_t 
+ #define __pte_to_swp_entry(pte)		((swp_entry_t) { (pte).pte_low })
+ #define __swp_entry_to_pte(x)		((pte_t) { (x).val })
  
- #define XCHAL_MMU_ASID_BITS	8
- 
+-void vmalloc_sync_all(void);
+-
+ #endif /* _I386_PGTABLE_2LEVEL_H */
 ===================================================================
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -286,6 +286,8 @@ static inline int dup_mmap(struct mm_str
- 		if (retval)
- 			goto out;
- 	}
-+	/* a new mm has just been created */
-+	arch_dup_mmap(oldmm, mm);
- 	retval = 0;
- out:
- 	up_write(&mm->mmap_sem);
-===================================================================
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -29,6 +29,7 @@
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
- #include <asm/tlb.h>
-+#include <asm/mmu_context.h>
- 
- #ifndef arch_mmap_check
- #define arch_mmap_check(addr, len, flags)	(0)
-@@ -1976,6 +1977,9 @@ void exit_mmap(struct mm_struct *mm)
- 	struct vm_area_struct *vma = mm->mmap;
- 	unsigned long nr_accounted = 0;
- 	unsigned long end;
+--- a/include/asm-i386/pgtable-3level-defs.h
++++ b/include/asm-i386/pgtable-3level-defs.h
+@@ -1,5 +1,11 @@
+ #ifndef _I386_PGTABLE_3LEVEL_DEFS_H
+ #define _I386_PGTABLE_3LEVEL_DEFS_H
 +
-+	/* mm's last user has gone, and its about to be pulled down */
-+	arch_exit_mmap(mm);
++#ifdef CONFIG_PARAVIRT
++#define SHARED_KERNEL_PMD	(paravirt_ops.shared_kernel_pmd)
++#else
++#define SHARED_KERNEL_PMD	1
++#endif
  
- 	lru_add_drain();
- 	flush_cache_mm(mm);
+ /*
+  * PGDIR_SHIFT determines what a top-level page table entry can map
+===================================================================
+--- a/include/asm-i386/pgtable-3level.h
++++ b/include/asm-i386/pgtable-3level.h
+@@ -180,6 +180,4 @@ static inline pmd_t pfn_pmd(unsigned lon
+ 
+ #define __pmd_free_tlb(tlb, x)		do { } while (0)
+ 
+-#define vmalloc_sync_all() ((void)0)
+-
+ #endif /* _I386_PGTABLE_3LEVEL_H */
+===================================================================
+--- a/include/asm-i386/pgtable.h
++++ b/include/asm-i386/pgtable.h
+@@ -244,6 +244,13 @@ static inline pte_t pte_mkwrite(pte_t pt
+ static inline pte_t pte_mkwrite(pte_t pte)	{ (pte).pte_low |= _PAGE_RW; return pte; }
+ static inline pte_t pte_mkhuge(pte_t pte)	{ (pte).pte_low |= _PAGE_PSE; return pte; }
+ 
++extern void _vmalloc_sync_all(void);
++static inline void vmalloc_sync_all(void)
++{
++	if (!SHARED_KERNEL_PMD)
++		_vmalloc_sync_all();
++}
++
+ #ifdef CONFIG_X86_PAE
+ # include <asm/pgtable-3level.h>
+ #else
 
 -- 
 
