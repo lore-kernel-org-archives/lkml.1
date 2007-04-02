@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965524AbXDBOYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965512AbXDBO2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965524AbXDBOYI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 10:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965513AbXDBOYH
+	id S965512AbXDBO2y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 10:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXDBO2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 10:24:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37375 "EHLO mx2.mail.elte.hu"
+	Mon, 2 Apr 2007 10:28:54 -0400
+Received: from brick.kernel.dk ([62.242.22.158]:2782 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965489AbXDBOYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 10:24:06 -0400
-Date: Mon, 2 Apr 2007 16:23:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "dave_sperry@ieee.org" <dasperry@comcast.net>
-Cc: Dave Sperry <dave_sperry@ieee.org>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
-Message-ID: <20070402142358.GA32103@elte.hu>
-References: <040220071409.15202.46110E98000A743600003B622205886172979D9D0A9F9C0E0B@comcast.net>
+	id S965491AbXDBO2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 10:28:53 -0400
+Date: Mon, 2 Apr 2007 16:23:20 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Joerg Schilling <schilling@fokus.fraunhofer.de>, dougg@torque.net,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls Re:  [PATCH] Block layer: separate out queue-oriented ioctls
+Message-ID: <20070402142318.GA14256@kernel.dk>
+References: <200704020828.l328SICc009264@burner.fokus.fraunhofer.de> <Pine.LNX.4.44L0.0704020951180.1743-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <040220071409.15202.46110E98000A743600003B622205886172979D9D0A9F9C0E0B@comcast.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.44L0.0704020951180.1743-100000@netrider.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 02 2007, Alan Stern wrote:
+> On Mon, 2 Apr 2007, Joerg Schilling wrote:
+> 
+> > Hi,
+> > 
+> > this is a repost as I like to know the current state of the problem...
+> > 
+> > The USB DMA size problem is known to exist on Linux since February 2004.
+> > I am still in hope that there will be a fix soon.
+> 
+> Me too.  I submitted the most recent version of the patch (labelled as857) 
+> over a month ago and have received essentially no feedback on it.
+> 
+> Douglas, James...  What's the story?
 
-* dave_sperry@ieee.org <dasperry@comcast.net> wrote:
+FWIW, it had my ack, I think we were just waiting for Doug to ack the sg
+bits.
 
-> Thanks for all the input Ingo, Here's a list of all the permutations 
-> I've tried:
+-- 
+Jens Axboe
 
-one thing i noticed is that cyclesoak interferes with the netperf 
-workload. This is quite surprising. 'top' and 'vmstat' output is 
-reliable on -rt, and the overhead goes down if i stop cyclesoak.
-
-	Ingo
