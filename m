@@ -1,307 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965453AbXDBNrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965452AbXDBNrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965453AbXDBNrL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 09:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965456AbXDBNrL
+	id S965452AbXDBNrg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 09:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965461AbXDBNrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 09:47:11 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:10806
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965453AbXDBNrJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 09:47:09 -0400
-Message-Id: <461125A1.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Mon, 02 Apr 2007 14:47:45 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: [PATCH] x86: tighten kernel image page access rights (v2,
-	against firstfloor tree)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Apr 2007 09:47:36 -0400
+Received: from styx.suse.cz ([82.119.242.94]:38167 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965452AbXDBNrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 09:47:35 -0400
+Date: Mon, 2 Apr 2007 15:54:46 +0200
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: [PATCH 0/6] UDF cleanup and fixes
+Message-ID: <20070402135446.GL3728@duck.suse.cz>
+References: <20070306164447.GC3661@duck.suse.cz> <20070330045923.GA5528@dose.home.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070330045923.GA5528@dose.home.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On x86-64, kernel memory freed after init can be entirely unmapped instead
-of just getting 'poisoned' by overwriting with a debug pattern.
+On Fri 30-03-07 06:59:23, Tino Keitel wrote:
+> On Tue, Mar 06, 2007 at 17:44:47 +0100, Jan Kara wrote:
+> >   Hello,
+> > 
+> >   the patches attached to six following emails implement some cleanup and
+> > fixes in the UDF code. The main two fixes are:
+> >   1) UDF now works correctly for files larger than 1GB.
+> 
+> Hi,
+> 
+> I tried 2.6.20 with your patches and got the following behaviour:
+> 
+> $ ls -la dvd.udf 
+> -rw-r--r-- 1 root root 4699717632 Mar 29 15:36 dvd.udf
+> $ mount -o loop -t udf dvd.udf /media/udf/
+> $ df /media/udf/
+> Filesystem           1K-blocks      Used Available Use% Mounted on
+> /home/storage/dvd.udf
+>                        4588506 -8584746354 8589334860   -  /media/udf
+>                                ^^^^^^^^^^^^^^^^^^^^^^
+> $ ls -la /media/udf/
+> total 4587521
+> drwxr-xr-x 3 root root        144 Mar 29 15:36 .
+> drwxr-xr-x 9 root root       1024 Mar 20 12:02 ..
+> -rw-r--r-- 1 root root 4697620480 Mar 29 15:57 bk_usr.tar
+> drwxr-xr-x 2 root root         40 Mar 29 15:36 lost+found
+  Looking more into this it looks like a bug in accounting of free blocks
+than some overflow. Was dvd.udf a freshly created image by mkudffs? Are
+there any errors in the log or did fs report anything like ENOSPC?
 
-On i386 and x86-64 (under CONFIG_DEBUG_RODATA), kernel text and bug table
-can also be write-protected.
-
-Compared to the first version, this one prevents re-creating deleted
-mappings in the kernel image range on x86-64, if those got removed
-previously. This, together with the original changes, prevents temporarily
-having inconsistent mappings when cacheability attributes are being
-changed on such pages (e.g. from AGP code). While on i386 such duplicate
-mappings don't exist, the same change is done there, too, both for
-consistency and because checking pte_present() before using various other
-pte_XXX functions is a requirement anyway. At once, i386 code gets
-adjusted to use pte_huge() instead of open coding this.
-
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
---- linux-2.6.21-rc5-ff/arch/i386/kernel/vmlinux.lds.S	2007-03-29 13:09:08.000000000 +0200
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/arch/i386/kernel/vmlinux.lds.S	2007-03-21 12:29:00.000000000 +0100
-@@ -61,8 +61,6 @@ SECTIONS
-   	__stop___ex_table = .;
-   }
- 
--  RODATA
--
-   BUG_TABLE
- 
-   . = ALIGN(4);
-@@ -72,6 +70,8 @@ SECTIONS
-   	__tracedata_end = .;
-   }
- 
-+  RODATA
-+
-   /* writeable */
-   . = ALIGN(4096);
-   .data : AT(ADDR(.data) - LOAD_OFFSET) {	/* Data */
---- linux-2.6.21-rc5-ff/arch/i386/mm/init.c	2007-03-29 13:11:17.000000000 +0200
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/arch/i386/mm/init.c	2007-03-21 12:29:00.000000000 +0100
-@@ -22,6 +22,7 @@
- #include <linux/init.h>
- #include <linux/highmem.h>
- #include <linux/pagemap.h>
-+#include <linux/pfn.h>
- #include <linux/poison.h>
- #include <linux/bootmem.h>
- #include <linux/slab.h>
-@@ -751,13 +752,25 @@ static int noinline do_test_wp_bit(void)
- 
- void mark_rodata_ro(void)
- {
--	unsigned long addr = (unsigned long)__start_rodata;
-+	unsigned long start = PFN_ALIGN(_text);
-+	unsigned long size = PFN_ALIGN(_etext) - start;
- 
--	for (; addr < (unsigned long)__end_rodata; addr += PAGE_SIZE)
--		change_page_attr(virt_to_page(addr), 1, PAGE_KERNEL_RO);
--
--	printk("Write protecting the kernel read-only data: %uk\n",
--			(__end_rodata - __start_rodata) >> 10);
-+#ifdef CONFIG_HOTPLUG_CPU
-+	/* It must still be possible to apply SMP alternatives. */
-+	if (num_possible_cpus() <= 1)
-+#endif
-+	{
-+		change_page_attr(virt_to_page(start),
-+		                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
-+		printk("Write protecting the kernel text: %luk\n", size >> 10);
-+	}
-+
-+	start += size;
-+	size = (unsigned long)__end_rodata - start;
-+	change_page_attr(virt_to_page(start),
-+	                 size >> PAGE_SHIFT, PAGE_KERNEL_RO);
-+	printk("Write protecting the kernel read-only data: %luk\n",
-+	       size >> 10);
- 
- 	/*
- 	 * change_page_attr() requires a global_flush_tlb() call after it.
-@@ -781,7 +794,7 @@ void free_init_pages(char *what, unsigne
- 		__free_page(page);
- 		totalram_pages++;
- 	}
--	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
-+	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
- }
- 
- void free_initmem(void)
---- linux-2.6.21-rc5-ff/arch/i386/mm/pageattr.c	2007-03-29 13:09:09.000000000 +0200
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/arch/i386/mm/pageattr.c	2007-04-02 15:16:59.000000000 +0200
-@@ -140,9 +140,11 @@ __change_page_attr(struct page *page, pg
- 	kpte = lookup_address(address);
- 	if (!kpte)
- 		return -EINVAL;
-+	if (!pte_present(*kpte))
-+		return 0;
- 	kpte_page = virt_to_page(kpte);
- 	if (pgprot_val(prot) != pgprot_val(PAGE_KERNEL)) { 
--		if ((pte_val(*kpte) & _PAGE_PSE) == 0) { 
-+		if (!pte_huge(*kpte)) {
- 			set_pte_atomic(kpte, mk_pte(page, prot)); 
- 		} else {
- 			pgprot_t ref_prot;
-@@ -158,7 +160,7 @@ __change_page_attr(struct page *page, pg
- 			kpte_page = split;
- 		}
- 		page_private(kpte_page)++;
--	} else if ((pte_val(*kpte) & _PAGE_PSE) == 0) { 
-+	} else if (!pte_huge(*kpte)) {
- 		set_pte_atomic(kpte, mk_pte(page, PAGE_KERNEL));
- 		BUG_ON(page_private(kpte_page) == 0);
- 		page_private(kpte_page)--;
---- linux-2.6.21-rc5-ff/arch/x86_64/kernel/head.S	2007-03-29 13:11:17.000000000 +0200
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/arch/x86_64/kernel/head.S	2007-03-21 12:29:00.000000000 +0100
-@@ -280,7 +280,6 @@ early_idt_ripmsg:
- 
- .balign PAGE_SIZE
- ENTRY(stext)
--ENTRY(_stext)
- 
- #define NEXT_PAGE(name) \
- 	.balign	PAGE_SIZE; \
---- linux-2.6.21-rc5-ff/arch/x86_64/kernel/vmlinux.lds.S	2007-03-29 13:11:15.000000000 +0200
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/arch/x86_64/kernel/vmlinux.lds.S	2007-03-21 12:29:00.000000000 +0100
-@@ -29,6 +29,7 @@ SECTIONS
-   .text :  AT(ADDR(.text) - LOAD_OFFSET) {
- 	/* First the code that has to be first for bootstrapping */
- 	*(.bootstrap.text)
-+	_stext = .;
- 	/* Then all the functions that are "hot" in profiles, to group them
-            onto the same hugetlb entry */
- 	#include "functionlist"
-@@ -50,10 +51,10 @@ SECTIONS
-   __ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) { *(__ex_table) }
-   __stop___ex_table = .;
- 
--  RODATA
--
-   BUG_TABLE
- 
-+  RODATA
-+
-   . = ALIGN(PAGE_SIZE);        /* Align data segment to page size boundary */
- 				/* Data */
-   .data : AT(ADDR(.data) - LOAD_OFFSET) {
---- linux-2.6.21-rc5-ff/arch/x86_64/mm/init.c	2007-03-29 13:11:20.000000000 +0200
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/arch/x86_64/mm/init.c	2007-03-21 12:29:00.000000000 +0100
-@@ -22,6 +22,7 @@
- #include <linux/bootmem.h>
- #include <linux/proc_fs.h>
- #include <linux/pci.h>
-+#include <linux/pfn.h>
- #include <linux/poison.h>
- #include <linux/dma-mapping.h>
- #include <linux/module.h>
-@@ -569,21 +570,23 @@ void free_init_pages(char *what, unsigne
- 	if (begin >= end)
- 		return;
- 
--	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
-+	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
- 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
- 		struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
- 		ClearPageReserved(page);
- 		init_page_count(page);
- 		memset(page_address(page), POISON_FREE_INITMEM, PAGE_SIZE);
-+		if (addr >= __START_KERNEL_map)
-+			change_page_attr_addr(addr, 1, __pgprot(0));
- 		__free_page(page);
- 		totalram_pages++;
- 	}
-+	if (addr > __START_KERNEL_map)
-+		global_flush_tlb();
- }
- 
- void free_initmem(void)
- {
--	memset(__initdata_begin, POISON_FREE_INITDATA,
--		__initdata_end - __initdata_begin);
- 	free_init_pages("unused kernel memory",
- 			__pa_symbol(&__init_begin),
- 			__pa_symbol(&__init_end));
-@@ -593,14 +596,18 @@ void free_initmem(void)
- 
- void mark_rodata_ro(void)
- {
--	unsigned long addr = (unsigned long)__va(__pa_symbol(&__start_rodata));
--	unsigned long end  = (unsigned long)__va(__pa_symbol(&__end_rodata));
-+	unsigned long start = PFN_ALIGN(__va(__pa_symbol(&_stext))), size;
- 
--	for (; addr < end; addr += PAGE_SIZE)
--		change_page_attr_addr(addr, 1, PAGE_KERNEL_RO);
-+#ifdef CONFIG_HOTPLUG_CPU
-+	/* It must still be possible to apply SMP alternatives. */
-+	if (num_possible_cpus() > 1)
-+		start = PFN_ALIGN(__va(__pa_symbol(&_etext)));
-+#endif
-+	size = (unsigned long)__va(__pa_symbol(&__end_rodata)) - start;
-+	change_page_attr_addr(start, size >> PAGE_SHIFT, PAGE_KERNEL_RO);
- 
--	printk ("Write protecting the kernel read-only data: %luk\n",
--			(__end_rodata - __start_rodata) >> 10);
-+	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
-+	       size >> 10);
- 
- 	/*
- 	 * change_page_attr_addr() requires a global_flush_tlb() call after it.
---- linux-2.6.21-rc5-ff/arch/x86_64/mm/pageattr.c	2007-03-29 13:11:17.000000000 +0200
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/arch/x86_64/mm/pageattr.c	2007-04-02 15:16:59.000000000 +0200
-@@ -126,7 +126,7 @@ __change_page_attr(unsigned long address
- 	struct page *kpte_page;
- 	pgprot_t ref_prot2;
- 	kpte = lookup_address(address);
--	if (!kpte) return 0;
-+	if (!kpte || !pte_present(*kpte)) return 0;
- 	kpte_page = virt_to_page(((unsigned long)kpte) & PAGE_MASK);
- 	if (pgprot_val(prot) != pgprot_val(ref_prot)) { 
- 		if (!pte_huge(*kpte)) {
-@@ -179,16 +179,24 @@ __change_page_attr(unsigned long address
- int change_page_attr_addr(unsigned long address, int numpages, pgprot_t prot)
- {
- 	unsigned long phys_base_pfn = __pa_symbol(__START_KERNEL_map) >> PAGE_SHIFT;
--	int err = 0; 
-+	int err = 0, kernel_map = 0;
- 	int i; 
- 
-+	if (address >= __START_KERNEL_map
-+	    && address < __START_KERNEL_map + KERNEL_TEXT_SIZE) {
-+		address = (unsigned long)__va(__pa(address));
-+		kernel_map = 1;
-+	}
-+
- 	down_write(&init_mm.mmap_sem);
- 	for (i = 0; i < numpages; i++, address += PAGE_SIZE) {
- 		unsigned long pfn = __pa(address) >> PAGE_SHIFT;
- 
--		err = __change_page_attr(address, pfn, prot, PAGE_KERNEL);
--		if (err) 
--			break; 
-+		if (!kernel_map || pte_present(pfn_pte(0, prot))) {
-+			err = __change_page_attr(address, pfn, prot, PAGE_KERNEL);
-+			if (err)
-+				break;
-+		}
- 		/* Handle kernel mapping too which aliases part of the
- 		 * lowmem */
- 		if ((pfn >= phys_base_pfn) &&
---- linux-2.6.21-rc5-ff/include/asm-i386/pgtable.h	2007-03-29 13:09:50.000000000 +0200
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/include/asm-i386/pgtable.h	2007-03-21 12:29:00.000000000 +0100
-@@ -159,6 +159,7 @@ void paging_init(void);
- 
- extern unsigned long long __PAGE_KERNEL, __PAGE_KERNEL_EXEC;
- #define __PAGE_KERNEL_RO		(__PAGE_KERNEL & ~_PAGE_RW)
-+#define __PAGE_KERNEL_RX		(__PAGE_KERNEL_EXEC & ~_PAGE_RW)
- #define __PAGE_KERNEL_NOCACHE		(__PAGE_KERNEL | _PAGE_PCD)
- #define __PAGE_KERNEL_LARGE		(__PAGE_KERNEL | _PAGE_PSE)
- #define __PAGE_KERNEL_LARGE_EXEC	(__PAGE_KERNEL_EXEC | _PAGE_PSE)
-@@ -166,6 +167,7 @@ extern unsigned long long __PAGE_KERNEL,
- #define PAGE_KERNEL		__pgprot(__PAGE_KERNEL)
- #define PAGE_KERNEL_RO		__pgprot(__PAGE_KERNEL_RO)
- #define PAGE_KERNEL_EXEC	__pgprot(__PAGE_KERNEL_EXEC)
-+#define PAGE_KERNEL_RX		__pgprot(__PAGE_KERNEL_RX)
- #define PAGE_KERNEL_NOCACHE	__pgprot(__PAGE_KERNEL_NOCACHE)
- #define PAGE_KERNEL_LARGE	__pgprot(__PAGE_KERNEL_LARGE)
- #define PAGE_KERNEL_LARGE_EXEC	__pgprot(__PAGE_KERNEL_LARGE_EXEC)
---- linux-2.6.21-rc5-ff/include/linux/poison.h	2007-02-04 19:44:54.000000000 +0100
-+++ 2.6.21-rc5-ff-x86-init-page-attribs/include/linux/poison.h	2007-03-21 12:29:00.000000000 +0100
-@@ -26,9 +26,6 @@
- /********** arch/$ARCH/mm/init.c **********/
- #define POISON_FREE_INITMEM	0xcc
- 
--/********** arch/x86_64/mm/init.c **********/
--#define	POISON_FREE_INITDATA	0xba
--
- /********** arch/ia64/hp/common/sba_iommu.c **********/
- /*
-  * arch/ia64/hp/common/sba_iommu.c uses a 16-byte poison string with a
-
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
