@@ -1,113 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965717AbXDBTQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965692AbXDBTYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965717AbXDBTQZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 15:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965719AbXDBTQZ
+	id S965692AbXDBTYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 15:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965735AbXDBTYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 15:16:25 -0400
-Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:30732 "HELO
-	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965717AbXDBTQY (ORCPT
+	Mon, 2 Apr 2007 15:24:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48905
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965724AbXDBTYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 15:16:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=m4O2shmyilLhlCO/RwYK5e8jdB+m/N5yMnde+Npb2NYWTalXLqz06peBXUJoclYgn2JSCD4L7LiSw/k5OeAILVGLDCj4qRQF7JiLTCjBKwM6uW59r2GGHEcWRwMcJ7ABCqRG3gyxz8Lm4WqiB4Mc+33elNVUP6YZA5DwYC16ddU=  ;
-X-YMail-OSG: Jdwq9vcVM1kYvSroFxRKVudvvu4yL_yc9Eq9XgMLCKYT_iUG
-From: David Brownell <david-b@pacbell.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
-Date: Mon, 2 Apr 2007 12:16:21 -0700
-User-Agent: KMail/1.7.1
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-References: <Pine.LNX.4.44L0.0704021000450.1743-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0704021000450.1743-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 2 Apr 2007 15:24:40 -0400
+Date: Mon, 02 Apr 2007 12:24:39 -0700 (PDT)
+Message-Id: <20070402.122439.71098419.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+CC: linux-scsi@vger.kernel.org, hch@lst.de, tcallawa@redhat.com
+Subject: [PATCH]: Fix scsi_send_eh_cmnd scatterlist handling
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704021216.22280.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 April 2007 7:16 am, Alan Stern wrote:
-> On Saturday March 31, 2007, David Brownell wrote:
-> 
-> > Change how the PM list is constructed, so that devices are added right
-> > after their parents (when they have one) rather than at the end of the
-> > list.  ...
-> > 
-> > This patch has a potential downside for devices that have multiple
-> > power dependencies and which "just happened to work" before.
-> 
-> Dave:
-> 
-> Would you mind retracting this patch?  It will interfere with some work
-> I've been doing in USB, work that relies on exactly the sort of multiple 
-> power dependency you mention.
 
-It's out there for discussion right now more than merging.
+This fixes a regression caused by commit:
 
-What the driver model does now is problematic.  Even if the clockevent
-stuff gets different fixes, those driver model issues still exist:  the
-existence of dependencies that are not part of the device tree.
+2dc611de5a3fd955cd0298c50691d4c05046db97
 
+The sense buffer code in scsi_send_eh_cmnd was changed to use
+alloc_page() and a scatter list, but the sense data copy was not
+updated to match so what we actually get in the sense buffer is total
+grabage starting with the kernel address of the struct page we got.
+Basically the stack frame of scsi_send_eh_cmd() is what ends up
+in the sense buffer.
 
-> The problem is this: When a low- or full-speed USB device is resumed 
-> following a power loss (this is part of the "persistent USB" patch), it's 
+Depending upon how pointers look on a given platform, you can
+end up getting sr_ioctl.c errors when you mount a cdrom.  If
+the CDROM gives a check condition for GPCMD_GET_CONFIGURATION issued
+by drivers/cdrom/cdrom.c:cdrom_mmc_profile(), sr_ioctl will
+spit out this error message in sr_do_ioctl() with the way pointers
+are on sparc64:
 
-Yeah, that "persistent USB" stuff that I don't like at all!   Power off
-is power off, and should be treated just like any other case of the USB
-circuit being broken.  (Offtopic here, of course.)
+		default:
+			printk(KERN_ERR "%s: CDROM (ioctl) error, command: ", cd->cdi.name);
+			__scsi_print_command(cgc->cmd);
+			scsi_print_sense_hdr("sr", &sshdr);
+			err = -EIO;
 
+This is the error Tom Callaway reported in:
 
-> necessary for the corresponding EHCI root hub to be resumed first so that 
-> the port's OWNER bit can be set properly.
-> 
-> It works fine as long as devices are resumed in order of registration,
-> because a low- or full-speed USB device can't be registered before the
-> high-speed root hub.  (If it was, it would be disconnected when the
-> high-speed root hub initialized and took control of the port.)  So this
-> isn't a "just happened to work" situation; it really is a critical
-> ordering dependency.
+http://marc.info/?l=linux-sparc&m=117407453208101&w=2
 
-No, it's a "just happened to work" because the only ordering promise
-that was explicitly made is that the parent/child relationships will
-be obeyed.  Any additional ordering dependency is out-of-scope of the
-current driver model -- and that's a proble that eventually needs to
-be fixed.
+Anyways, fix this by using page_address(sgl.page) which is OK
+because we know this is low-mem due to GFP_ATOMIC.
 
-This is the kind of thing that the pm_parent relationship was (AFAICT)
-originally supposed to handle.  Of course, it doesn't/can't, given the
-current implementation ... that relationship is never used.
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-
-> The clock source problem can be solved in other ways.  For instance, right 
-> now things are set up so that clock sources are registered at various 
-> random times and the clockevents code adapts to use the best available 
-> device, right?.
-
-Clocksource ~= counter, clockevent ~= timer irq ... you're mixing the
-two, they're different!  Both can be registered at various times; and
-the best available instance of both is used.  (Unfortunately "best" is
-not a static policy on x86 hardware.)
-
-
-> So simply arrange for a clock source to "depart" as it is  
-> suspended; then clockevents can fall back to using other lower-precision 
-> sources.  As long as devices suspend in reverse order of discovery, the 
-> system should always function properly.
-
-It's not that simple though, especially with HPET.  The BIOS may expect
-the PIT to work, but Linux currently (and problematically!) uses HPET in
-"legacy replacement mode".  And ISTR the problems are coming up when the
-system is already in a low-functionality state:  IRQs off everywhere,
-even timer ticks have stopped.
-
-- Dave
+diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+index b8edcf5..918bb60 100644
+--- a/drivers/scsi/scsi_error.c
++++ b/drivers/scsi/scsi_error.c
+@@ -716,7 +716,7 @@ static int scsi_send_eh_cmnd(struct scsi_cmnd *scmd, unsigned char *cmnd,
+ 	 */
+ 	if (copy_sense) {
+ 		if (!SCSI_SENSE_VALID(scmd)) {
+-			memcpy(scmd->sense_buffer, scmd->request_buffer,
++			memcpy(scmd->sense_buffer, page_address(sgl.page),
+ 			       sizeof(scmd->sense_buffer));
+ 		}
+ 		__free_page(sgl.page);
