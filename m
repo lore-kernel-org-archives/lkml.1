@@ -1,79 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752979AbXDBRor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965425AbXDBRqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752979AbXDBRor (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 13:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbXDBRor
+	id S965425AbXDBRqN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 13:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965164AbXDBRqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 13:44:47 -0400
-Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:49097 "EHLO
-	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752900AbXDBRoq convert rfc822-to-8bit (ORCPT
+	Mon, 2 Apr 2007 13:46:13 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:56156 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965425AbXDBRqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 13:44:46 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
-content-class: urn:content-classes:message
+	Mon, 2 Apr 2007 13:46:11 -0400
+Message-ID: <4611414A.3050606@nortel.com>
+Date: Mon, 02 Apr 2007 11:45:46 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/4] [SCSI]stex: fix id mapping issue
-Date: Mon, 2 Apr 2007 10:46:17 -0700
-Message-ID: <B70A50D07063384EB9BCE3330D18414F0327EBB2@nonameb.ptu.promise.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/4] [SCSI]stex: fix id mapping issue
-Thread-Index: AcdzdvhUKtzBqQBVSO6Qjrj1Nn4gkAB0/w6g
-From: "Ed Lin" <ed.lin@promise.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "james.Bottomley" <james.Bottomley@SteelEye.com>,
-       "jeff" <jeff@garzik.org>, "Promise_Linux" <Promise_Linux@promise.com>
+To: linux-kernel@vger.kernel.org
+Subject: question on comment in __oom_kill_task()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Apr 2007 17:45:50.0439 (UTC) FILETIME=[C0B5D770:01C7754E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+In __oom_kill_task(), there is a comment that says,
 
-> -----Original Message-----
-> From: Christoph Hellwig [mailto:hch@infradead.org] 
-> Sent: Saturday, March 31, 2007 2:27 AM
-> To: Ed Lin
-> Cc: linux-scsi; linux-kernel; james.Bottomley; jeff; Promise_Linux
-> Subject: Re: [PATCH 1/4] [SCSI]stex: fix id mapping issue
-> 
-> 
-> On Fri, Mar 30, 2007 at 03:21:33PM -0700, Ed Lin wrote:
-> > +	if (hba->cardtype == st_shasta) {
-> >  		req->lun = lun;
-> >  		req->target = id;
-> > +	} else if (hba->cardtype == st_yosemite){
-> > +		req->lun = id * ST_MAX_LUN_PER_TARGET + lun;
-> > +		req->target = 0;
-> > +	} else {
-> > +		/* st_vsc and st_vsc1 */
-> > +		req->lun = 0;
-> > +		req->target = id * ST_MAX_LUN_PER_TARGET + lun;
-> 
-> I don't get why you can't export id as targer and lun as lun for
-> the !st_shasta types.  Could you explain in detail what the problem
-> with that approach would be?
-> 
->
+"We give our sacrificial lamb high priority and access to all the memory 
+it needs. That way it should be able to exit() and clear out its 
+resources quickly..."
 
-Of course I can do that. That will result in 1 target and 128 lun
-for st_yosemite and 128 target and 1 lun for st_vsc. That seems
-a little weird and I am afraid it will be turned down. Also
-I can keep a same mapping for the console in the original code.
+However, we don't actually change the priority at that point, we just 
+give it a large timeslice.
 
-If you think it's ok, that's really better, because it makes the
-hot path a bit faster. Also because of the CONFIG_SCSI_MULTI_LUN
-option, I have to map lun to channel otherwise many entities
-will disappear when that option is not selected. Plus I have to
-reserve a slot for the RAID console, so the final mapping may be:
+Would it make sense to actually change the priority/policy using 
+sched_setscheduler() to give the process a deeply negative nice level or 
+maybe even make it realtime?
 
-channel:0~7, id:0~16(st_shasta, channel 0,id 16 is reserved for console)
-channel:0~127, id:0~1(st_yosemite, channel 0,id 1 is reserved for
-console)
-channel:0, id:0~128(st_vsc, channel 0,id 128 is reserved for console)
+This seems to help on some of our OOM stress tests.
 
-I don't know whether this is acceptable. 
+Chris
