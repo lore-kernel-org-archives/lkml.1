@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933948AbXDBGwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965180AbXDBGwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933948AbXDBGwI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 02:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933955AbXDBGwI
+	id S965180AbXDBGwL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 02:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964935AbXDBGwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 2 Apr 2007 02:52:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:55436 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933966AbXDBGwI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 2 Apr 2007 02:52:08 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:32904 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933948AbXDBGwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 02:52:05 -0400
-Date: Mon, 2 Apr 2007 08:51:44 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 16/16] warn-on-kthread-name-truncation.diff
-In-Reply-To: <20070401230041.adb1647a.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.61.0704020848220.1245@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0704012011430.12316@yvahk01.tjqt.qr>
- <20070401230041.adb1647a.akpm@linux-foundation.org>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rj7RB1TiFBCB1agERcuso8EDOUR7WlfVkC4zHnl65aOdf2EfCA0c9NYqmhl6ixS4UsKDfEM/zdcfPc657Owg5g1j0LgojzrzaGEqaca2zc7glQVejm6WZcWikR2ZLWKMlvB6zbDUiDRRQCfMpJmtADZDyrlzgGR5CotRtR/cuSI=
+Message-ID: <21d7e9970704012352t277a6cadx259172641531fc39@mail.gmail.com>
+Date: Mon, 2 Apr 2007 16:52:04 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: drm + 4GB RAM + swiotlb = drm craps out
+Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070402064046.GA24269@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <21d7e9970704011644n3adbef2brc6bfeb288f5d0866@mail.gmail.com>
+	 <20070401.201134.82699692.davem@davemloft.net>
+	 <21d7e9970704012108m5fd9797bk45c4b39892c8d36f@mail.gmail.com>
+	 <20070401.220841.89389711.davem@davemloft.net>
+	 <21d7e9970704012215n67487549vbc7592a4f181e288@mail.gmail.com>
+	 <p731wj31ear.fsf@bingen.suse.de>
+	 <21d7e9970704012238x2c5e6c62hc30933d9575910cf@mail.gmail.com>
+	 <20070402064046.GA24269@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Apr 1 2007 23:00, Andrew Morton wrote:
->On Sun, 1 Apr 2007 20:18:22 +0200 (MEST) Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
 >
->I'm not sure that it's a big enough problem to go adding code for, really.
+> > need, this just seems overly cumbersome when what I really want is
+> > vmalloc_32 to just work correctly on 64-bit systems... (why doesn't
+> > vmalloc_32 pass __GFP_DMA32 to the allocator????)
+>
+> It probably should, but see second part of sentence above.
+>
+> And please never put closed lists in cc of l-k posts. Evil cc dropped.
 
-No, not really. If there are any kthread spawners that do exceed the limit,
-I would have probably gotten a message by now over the last handful of kernel
-releases. So everything seems clear.
+Ah okay I'll just do an allocator based on single pages and see if I
+can fix the kernel side to have the sg knowledge....
 
+btw Its not a closed list, it's is a moderated list, all the posts do
+get through to it and the people on it are probably interested...
 
-Jan
--- 
+Dave.
