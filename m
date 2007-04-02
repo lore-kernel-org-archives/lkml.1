@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965760AbXDBTzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965780AbXDBUEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965760AbXDBTzF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 15:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965766AbXDBTzF
+	id S965780AbXDBUEr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965781AbXDBUEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 15:55:05 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40853 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965765AbXDBTzC (ORCPT
+	Mon, 2 Apr 2007 16:04:47 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4084 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965780AbXDBUEq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 15:55:02 -0400
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-From: Dave Hansen <hansendc@us.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0704020851300.30394@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
-	 <200704011246.52238.ak@suse.de>
-	 <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
-	 <200704021744.39880.ak@suse.de>
-	 <Pine.LNX.4.64.0704020851300.30394@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 02 Apr 2007 12:54:56 -0700
-Message-Id: <1175543696.22373.51.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Apr 2007 16:04:46 -0400
+Date: Mon, 2 Apr 2007 16:04:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: David Brownell <david-b@pacbell.net>
+cc: Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
+In-Reply-To: <200704021216.22280.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-02 at 08:54 -0700, Christoph Lameter wrote:
-> > BTW there is no guarantee the node size is a multiple of 128MB so
-> > you likely need to handle the overlap case. Otherwise we can 
-> > get cache corruptions
+On Mon, 2 Apr 2007, David Brownell wrote:
+
+> What the driver model does now is problematic.  Even if the clockevent
+> stuff gets different fixes, those driver model issues still exist:  the
+> existence of dependencies that are not part of the device tree.
+
+> No, it's a "just happened to work" because the only ordering promise
+> that was explicitly made is that the parent/child relationships will
+> be obeyed.  Any additional ordering dependency is out-of-scope of the
+> current driver model -- and that's a proble that eventually needs to
+> be fixed.
 > 
-> How does sparsemem handle that? 
+> This is the kind of thing that the pm_parent relationship was (AFAICT)
+> originally supposed to handle.  Of course, it doesn't/can't, given the
+> current implementation ... that relationship is never used.
 
-It doesn't. :)
+Just so.  In fact, there almost certainly are other dependencies that 
+nobody is aware of, simply because they have never had a chance to bite.
 
-In practice, this situation never happens because we don't have any
-actual architectures that have any node boundaries on less than
-MAX_ORDER, and the section size is at least MAX_ORDER.  If we *did* have
-this, then the page allocator would already be broken for these
-nodes. ;)
+Such things can be rather difficult to pin down when they occur.  I would
+be happy enough to leave matters as they are, with a strict LIFO approach.  
+If someone ever tries to parallelize suspend/resume in multiple threads,
+they will have their work cut out for them -- even probing ran into
+trouble when attempts were made to parallelize it, and it's a lot simpler.
 
-So, this SPARSE_VIRTUAL does introduce a new dependency, which Andi
-calculated above.  But, in reality, I don't think it's a big deal.  Just
-to spell it out a bit more, if this:
 
-	VMEMMAP_MAPPING_SIZE/sizeof(struct page) * PAGE_SIZE
+> It's not that simple though, especially with HPET.  The BIOS may expect
+> the PIT to work, but Linux currently (and problematically!) uses HPET in
+> "legacy replacement mode".  And ISTR the problems are coming up when the
+> system is already in a low-functionality state:  IRQs off everywhere,
+> even timer ticks have stopped.
 
-(where VMEMMAP_MAPPING_SIZE is PMD_SIZE in your case) is any larger than
-the granularity on which your NUMA nodes are divided, then you might
-have a problem with mem_map for one NUMA node getting allocated on
-another.  
+I know nothing about the workings of the HPET and other clock code.  My 
+point was this: Suspend passes through various intermediate stages in 
+which some devices are available and others aren't.  So long as those 
+stages are exact duplicates (in reverse order) of the stages that occurred 
+during startup, it should be possible to make them all work.
 
-It might be worth a comment, or at least some kind of WARN_ON().
-Perhaps we can stick something in online_page() to check if:
-
-	page_to_nid(page) == page_to_nid(virt_to_page(page))
-
--- Dave
+Alan Stern
 
