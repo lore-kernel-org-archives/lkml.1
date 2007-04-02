@@ -1,66 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965277AbXDBJay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXDBJdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965277AbXDBJay (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 05:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965289AbXDBJay
+	id S965292AbXDBJdY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 05:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965297AbXDBJdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 05:30:54 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:58055 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965277AbXDBJax (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 05:30:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lYYvE+Nc1w/Rx2pkLU5qY38UXQ0Udc6FMjs2NSAYyqyu9gJCY63Fc5u94ZmLXBEibHEiyVjYgvLFIGqD2F37J3cG2pjkXfn60POn+sxwd5sEz4r0wl2/CZl+2ZRq2RK/niKlU2k37lxkQIkUCXM0KVDXc+iAB/xnhFzSjURJ8p4=
-Subject: Re: [PATCH 17/16] Do not reset UTF8 on terminal reset
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
-       Daniel Jacobowitz <dan@debian.org>
-In-Reply-To: <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
-	 <Pine.LNX.4.61.0704012001130.12316@yvahk01.tjqt.qr>
-	 <1175496595.4614.11.camel@daplas>
-	 <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr>
-Content-Type: text/plain
-Date: Mon, 02 Apr 2007 17:30:45 +0800
-Message-Id: <1175506245.4431.0.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Apr 2007 05:33:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42892 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965289AbXDBJdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 05:33:22 -0400
+Date: Mon, 2 Apr 2007 02:33:24 -0700
+From: Greg KH <gregkh@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>, hugh@veritas.com,
+       cornelia.huck@de.ibm.com, dmitry.torokhov@gmail.com, oneukum@suse.de,
+       maneesh@in.ibm.com, rpurdie@rpsys.net, Jeff Garzik <jgarzik@pobox.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       SCSI Mailing List <linux-scsi@vger.kernel.org>
+Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
+Message-ID: <20070402093324.GA21857@suse.de>
+References: <460CDBA6.5030608@gmail.com> <1175257751.3760.19.camel@mulgrave.il.steeleye.com> <460D12B8.6050101@gmail.com> <1175278774.3760.44.camel@mulgrave.il.steeleye.com> <20070401195943.GA29627@htj.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070401195943.GA29627@htj.dyndns.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-02 at 09:31 +0200, Jan Engelhardt wrote:
-> On Apr 2 2007 14:49, Antonino A. Daplas wrote:
-> >On Sun, 2007-04-01 at 20:13 +0200, Jan Engelhardt wrote:
-> >
-> >> Allow for the palette to be exposed and changed via sysfs. A call to
-> >> /usr/bin/reset will slurp the new definitions in for the current
-> >> console.
-> >
-> >I like this. The escape sequences to change the palette does not stay
-> >permanently.
+On Mon, Apr 02, 2007 at 04:59:43AM +0900, Tejun Heo wrote:
 > 
-> As much as you like it, there is a slight problem with it. Linux will
-> currently throw virtual consoles out of UTF8 mode when reset is called.
+> Dependencies between sysfs/kobject objects are clearer now and I think
+> I got the locking and referencing correct.  This patch immediately
+> fixes 'sysfs attr grabbing the wrong kobject and module' problem -
+> sysfs and module lifetimes are unrelated now.  We can drop
+> half-working attr->owner.
 > 
-> Also see:
-> 	http://lkml.org/lkml/2005/5/17/289
-> 	http://lkml.org/lkml/2005/5/17/297
+> * A sysfs node no longer hold reference to its kobject.  It just
+>   attaches itself to the kobject on creation and detaches on deletion.
 > 
-> These posts argue about terminfo being the culprit. But how can terminfo 
-> be at fault, when `echo -en "\ec"` triggers it too?
+> * For a dir node, sysfs_dirent no longer directly points to kobject.
+>   It points to sysfs_dir which contains pointer to kobject and a rwsem
+>   to protect it.
 > 
-> Since I am in a patch mood, here's my stance/patch, which is compile and 
-> run tested and behaves as expected (both with `echo` and `reset`).
+> * An open file doesn't hold a reference to kobject.  It holds a
+>   reference to sysfs_dirent.  kobject pointer is verified and
+>   show/store are performed with rwsem read-locked.  Deletion
+>   disconnects the sysfs from its kobject while the rwsem is
+>   write-locked.  This mechanism replaces buffer orphaning and kobject
+>   validation during open.
 
-Tested and works here too.
+Ah, very nice.
 
-Tony
+> * attr ops is determined on sysfs node creation not on open.  This is
+>   a step toward making kobject opaque in sysfs.
+> 
+> * bin files are handled similarly but mmap makes the open file hold
+>   reference to the kobject till it's closed.  Any better ideas?
 
+This is probably needed, and might be acceptable, and I think we can
+live with it as there is only a very small number of sysfs files that
+fall into this category.
 
+> * symlink is reimplemented in terms of sysfs_dirents instead of
+>   kobjects.  sysfs_dirent->s_parent is added and each sysfs_dirent
+>   holds reference to its parent.  Currently walking up the tree
+>   requires read locking and unlocking sysfs_dir at each level.  This
+>   can be removed if name is added to sysfs_dirent.
+> 
+> * As kobject can be disconnected anytime and sysfs code still needs to
+>   look follow dentry link in kobject, kobject->dentry is protected by
+>   dcache_lock.  Once kobject becomes opaque to sysfs, this hack can go
+>   away.  All in all, making kobject completely opaque in sysfs isn't
+>   too far away after this patch although it would require mass code
+>   update.
+
+What would need to be updated after this?
+
+> What do you think about this approach?  If it's acceptable, I'll test
+> further and split the patch into logical steps to get it reviewed
+> better.
+
+At first glance, I think it looks fine, but Maneesh is the one who
+understands this code better than anyone, so I would like to get his
+opinion on it.
+
+I think you should start splitting it all up into steps, which will help
+us review it a whole lot easier, as overall, I think this is a very
+worthy goal.
+
+thanks so much for doing this work,
+
+greg k-h
