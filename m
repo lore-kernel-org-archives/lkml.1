@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965793AbXDBULU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965808AbXDBUNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965793AbXDBULU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965795AbXDBULT
+	id S965808AbXDBUNZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965796AbXDBUNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:11:19 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:52605 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965793AbXDBULS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:11:18 -0400
-X-Greylist: delayed 1810 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 16:11:18 EDT
-Date: Mon, 2 Apr 2007 20:41:00 +0100 (BST)
-From: Christian Kujau <evil@g-house.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: linux-kernel@vger.kernel.org
-cc: netdev@vger.kernel.org, malte@g-house.de
-Subject: 2.6.20.4: NETDEV WATCHDOG and lockups
-Message-ID: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 2 Apr 2007 16:13:24 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:32890 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965808AbXDBUNX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 16:13:23 -0400
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+	 <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
+	 <200704011246.52238.ak@suse.de>
+	 <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 13:13:17 -0700
+Message-Id: <1175544797.22373.62.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-04-02 at 08:37 -0700, Christoph Lameter wrote:
+> You want a benchmark to prove that the removal of memory references and 
+> code improves performance? 
 
-Hi there,
+Yes, please. ;)
 
-we have serious problems with 2 of our servers: both shiny new amd64 
-dual core, with both 2GB RAM, 32bit kernel+userland (Debian/testing).
-Both servers have 2 NICs, RTL8139 (eth0, irq10) and RTL8169s
-(eth1, irq11).
+I completely agree, it looks like it should be faster.  The code
+certainly has potential benefits.  But, to add this neato, apparently
+more performant feature, we unfortunately have to add code.  Adding the
+code has a cost: code maintenance.  This isn't a runtime cost, but it is
+a real, honest to goodness tradeoff.
 
-Both boxes are running fine but after "a while" they lock up and 
-eventually restart all of a sudden. The last messages in the logfile 
-are:
+So, let's get some kind of concrete idea what the tradeoffs are.  Is it,
+400 lines of code gets us a 10% performance boost across the board, or
+that 400,000 lines gets us 0.1% on one specialized benchmark?
 
-14:15:11 db2 kernel: NETDEV WATCHDOG: eth0: transmit timed out
-14:15:14 db2 kernel: eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
+BTW, I like the patches.  Very nice and clean.  
 
-Then the box reboots, nothing else in the log.
+-- Dave
 
-As the servers have been set up recently, we only know that it happend 
-with Debian's 2.6.17-? kernel. When we upgraded the installation, we 
-went to 2.6.18-4-k7 and the problem persistent. We're using now vanilla 
-2.6.20.4 and while the problem persists, it takes longer to lockup (~20h 
-as opposed to 4-5h). While this is a good thing for us, it's now harder
-to reproduce (we have to wait longer).
-
-Searching the archives turned up quite a few results but no real fix and 
-lots of old postings too. We then disabled ACPI completely and booted 
-with 'noapic'. Now both boxes are running for > 20h and we're curious 
-how long they make it. However, booting with 'noapic' slowed down both 
-servers *a lot*.
-
->From /proc/interrupts we can see that only CPU0 (core 0) is handling 
-interrupts while CPU1 does not. We compiled with CONFIG_IRQBALANCE=n so 
-that irqbalance(1) would work - but to no avail.
-
-Please see http://nerdbynature.de/bits/2.6.20.4/ for details for both 
-hosts and feel free to ask for more details. Although both boxes are in 
-production we'll be happy test more bootoptions/patches and the like.
-
-TIA,
-Christian.
--- 
-BOFH excuse #266:
-
-All of the packets are empty.
