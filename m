@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965958AbXDBVwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965979AbXDBVxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965958AbXDBVwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965966AbXDBVwf
+	id S965979AbXDBVxi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965978AbXDBVxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:52:35 -0400
-Received: from www.osadl.org ([213.239.205.134]:55971 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965958AbXDBVwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:52:34 -0400
-Subject: Re: [RFC PATCH 0/5] x86_64: enable clockevents and dynticks
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070402213949.GD10574@sequoia.sous-sol.org>
-References: <20070331083149.997762000@sous-sol.org>
-	 <1175419332.28263.67.camel@localhost.localdomain>
-	 <20070401185402.GZ10574@sequoia.sous-sol.org>
-	 <1175549504.28263.184.camel@localhost.localdomain>
-	 <20070402213949.GD10574@sequoia.sous-sol.org>
-Content-Type: text/plain
-Date: Mon, 02 Apr 2007 23:52:44 +0200
-Message-Id: <1175550764.28263.190.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Apr 2007 17:53:38 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35727 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965966AbXDBVxh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:53:37 -0400
+Date: Mon, 2 Apr 2007 14:53:34 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dave Hansen <hansendc@us.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       Andi Kleen <ak@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/2] Generic Virtual Memmap suport for SPARSEMEM
+In-Reply-To: <1175550151.22373.116.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0704021449200.2272@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+  <1175547000.22373.89.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0704021351590.1224@schroedinger.engr.sgi.com> 
+ <1175548924.22373.109.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0704021428340.2272@schroedinger.engr.sgi.com>
+ <1175550151.22373.116.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-02 at 14:39 -0700, Chris Wright wrote:
-> > > Yes, that's part of why I did some of the cleanups that way, so that we
-> > > could merge the two together later.
-> > 
-> > I'd prefer to get this done now. If we plug it in as is, the "merge
-> > later" probably will never happen.
+On Mon, 2 Apr 2007, Dave Hansen wrote:
+
+> > The slab allocator purposes is to deliver small sub page sized chunks.
+> > The page allocator is there to allocate pages. Both are optimized for its 
+> > purpose.
 > 
-> that's fine, this is just RFC to see if there's obvious broken bits, etc.
-> also, i still need to do some split out of the pit.  it and hpet are nearly
-> identical though, so i don't noticing any issues with this.
+> I understand that, in general, but how does that optimization help,
+> here, exactly?  My argument is that if we use the slab, it means more
+> code sharing with existing code in sparse.c.  Other than ideology, what
+> practical reasons are there in this case that keep us from doing that
+> otherwise attractive code sharing.
 
-Ok.
+F.e. you are wasting memory that the slab needs to uselessly track these 
+allocations. You would need to create a special slab that has page sized
+(or huge page sized) alignment to have the proper allocation behavior. Not 
+good.
 
-> the part i know is broken is lapic broadcast, so i'd like to fix that
-> up too.  trouble is, it's broken on vanilla too, so i'm not 100% sure
-> what i'm debugging yet.
+The rest of sparse is not MMU bound. So you may be fine. I'd recommend 
+though to use the page allocator if you are doing large allocations. I do 
+not see the point of using slab there.
 
-You need to remove switch_APIC_timer_to_ipi and counterpart so that the
-clockevents broadcast gets control over broadcasting. This requires a
-change in drivers/acpi/processor_idle.c as well
+> I don't think the pagetable walks are generic enough to ever get used on
+> ppc, unless they start walking the Linux pagetables for the kernel
+> virtual address area.  I was trying to poke you into getting the
+> pagetable walks out of sparse.c. ;)
 
-commit e9e2cdb412412326c4827fc78ba27f410d837e6e has the basic changes. 
+If I would be doing that then we would end up adding these pagetable walks
+to multiple architectures. I already need to cover IA64 and x86_64 and 
+this will also do i386. Lets try to keep them generic. PPC may need to 
+disable these walks and do its own thing.
 
-	tglx
+> > Well think about how to handle the case that the allocatiopn of a page 
+> > table page or a vmemmap block fails. Once we have that sorted out then we 
+> > can cleanup the higher layers.
+> 
+> I think it is best to just completely replace
+> sparse_early_mem_map_alloc() for the vmemmap case.  It really is a
+> completely different beast.  You'd never, for instance, have
+> alloc_remap() come into play.
 
+What is the purpose of alloc_remap? Could not figure that one out.
 
