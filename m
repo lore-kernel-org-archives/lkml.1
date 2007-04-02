@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbXDBHMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbXDBHM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbXDBHMK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbXDBHMK
+	id S1753350AbXDBHM5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXDBHM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:12:10 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:23387 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753345AbXDBHMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:12:08 -0400
-Date: Mon, 2 Apr 2007 09:10:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Rene Herman <rene.herman@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mcdx -- do_request(): non-read command to cd!!
-Message-ID: <20070402071018.GE11996@kernel.dk>
-References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk> <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com> <4610481D.8000102@gmail.com> <46104954.50608@gmail.com> <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI>
+	Mon, 2 Apr 2007 03:12:57 -0400
+Received: from mx2.suse.de ([195.135.220.15]:45161 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753350AbXDBHM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:12:56 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch 12/17] Consistently wrap paravirt ops callsites to make them patchable
+Date: Mon, 2 Apr 2007 09:11:50 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       Anthony Liguori <anthony@codemonkey.ws>
+References: <20070402055652.610711908@goop.org> <20070402055705.090656820@goop.org>
+In-Reply-To: <20070402055705.090656820@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Message-Id: <200704020911.50623.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02 2007, Pekka J Enberg wrote:
-> On Mon, 2 Apr 2007, Rene Herman wrote:
-> > +       if (!blk_fs_request(req)) {
-> > +               spin_lock_irq(q->queue_lock);
+On Monday 02 April 2007 07:57, Jeremy Fitzhardinge wrote:
+> Wrap a set of interesting paravirt_ops calls in a wrapper which makes
+> the callsites available for patching.  Unfortunately this is pretty
+> ugly because there's no way to get gcc to generate a function call,
+> but also wrap just the callsite itself with the necessary labels.
 > 
-> Contrary to what I said, this spin_lock_irq() is wrong...
-> 
-> > +               end_request(req, 0);
-> > +               goto again;
-> > +       }
-> > +
-> > +       spin_unlock_irq(q->queue_lock);
-> 
-> ...because we drop the lock here.
+> This patch supports functions with 0-4 arguments, and either void or
+> returning a value.  64-bit arguments must be split into a pair of
+> 32-bit arguments (lower word first).  Small structures are returned in
+> registers.
 
-well you did make it overly complex, you should just have dropped the
-lock around
+Can you please add some comments to the code explaining this a little?
+Best would be perhaps a overview document in Documentation too.
 
-        spin_unlock_irq(q->queue_lock);
-        i = mcdx_transfer(...);
-        spin_lock_irq(q->queue_lock);
+> +#define PVOP_CALL0(__rettype, __op)					\
 
-and be done with it. But as I wrote earlier, it'll take lots more to
-make this driver close to functional. For one, most of the return
-statements in do_mcdx_request() really want to be goto again's.
+The __s shouldn't be needed for the macro arguments because
+there is no shared name space with the caller.
 
-Updated patch attached :-)
+> +	({								\
+> +		__rettype __ret;					\
+> +		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
+> +			unsigned long long __tmp;			\
+> +			unsigned long __ecx;				\
+> +			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 0bc8b0b..cff761a 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -324,3 +324,10 @@ Why:	the i8xx_tco watchdog driver has been replaced by the iTCO_wdt
- Who:	Wim Van Sebroeck <wim@iguana.be>
- 
- ---------------------------
-+
-+What:	The legacy CDROM drivers (drivers/cdrom/, except cdrom.c)
-+When:	In 2.6.23
-+Why:	They are all terminally broken (most don't even compile)
-+Who:	Jens Axboe <jens.axboe@oracle.com>
-+
-+---------------------------
+Not having the volatile would probably generate better code, but it 
+seems much safer for now.
 
--- 
-Jens Axboe
+> +				     : "=A" (__tmp), "=c" (__ecx)	\
+> +				     : paravirt_type(__op),		\
+> +				       paravirt_clobber(CLBR_ANY)	\
+> +				     : "memory", "cc");			\
 
+And the cc clobber is also not needed
+
+-Andi
