@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933264AbXDBQJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751642AbXDBQOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933264AbXDBQJR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 12:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933215AbXDBQJR
+	id S1751642AbXDBQOg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 12:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXDBQOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 12:09:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46555 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933264AbXDBQJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 12:09:16 -0400
-Message-ID: <46112AAA.9050207@redhat.com>
-Date: Mon, 02 Apr 2007 12:09:14 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ashish Singhai <hybrid.rules@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: PCI: iomem bigger than 4GB
-References: <20070401155132.34029.qmail@web51601.mail.re2.yahoo.com>
-In-Reply-To: <20070401155132.34029.qmail@web51601.mail.re2.yahoo.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Apr 2007 12:14:36 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:54326 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751642AbXDBQOf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 12:14:35 -0400
+Date: Mon, 2 Apr 2007 12:14:43 -0400
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       perfmon@napali.hpl.hp.com
+Subject: Re: exposing FSB clock speed in /sys
+Message-ID: <20070402161443.GD3510@csclub.uwaterloo.ca>
+References: <20070330153937.GC16059@frankl.hpl.hp.com> <p73bqiaqh32.fsf@bingen.suse.de> <20070331081832.GB17535@frankl.hpl.hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070331081832.GB17535@frankl.hpl.hp.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ashish Singhai wrote:
-> Hello,
+On Sat, Mar 31, 2007 at 12:18:32AM -0800, Stephane Eranian wrote:
+> Well, I am talking about the bus that connects the processor socket to the
+> chipset on Intel machines. On Intel Core 2 Duo (aka Woodcrest), you have 
+> 2 sockets, thus two buses connecting to the chipset which then connects
+> to the memory (among other things).
 > 
-> Please refer to Andrew' post on this thread on PCI
-> subsystem assigning prefetchable memory bigger than
-> 4GB:
+> The Woodcrest (Intel Core PMU) is capable of measuring the number of bus
+> transactions to memory (look at the BUS_* events). You can count per core
+> or for the entire socket (both cores). In order to know if you saturate
+> the bus (from socket to chipset), you need to know the theoretical peak
+> number of transactions the bus can sustain. For that you need to bus
+> frequency. 
 > 
-> http://lkml.org/lkml/2006/11/24/160
+> I am not interested in older processors, but I think for all recent Intel
+> processors, there is a fairly simple algorithm to get the frequency using
+> a couple of MSRs (including MSR_IA32_EBL_CR_POWERON or MSR_FSB_FREQ).
 > 
-> This patch is not included in 2.6.20.1 or earlier --
-> it would be helpful if we could have this patch
-> considered. I have tried it in a simulated environment
-> and it works.
+> Don't we already have /sys entries that exits only for certain processors
+> or platforms?
+> 
+> I think the Opteron have HYPERTRANSPORT-related events which could be used
+> to obtain similar metrics.
+> 
+> Knowledge of bus saturation is important for multi-core programming.
 
-What bug does it fix?
+How about the speed between ram and the chipset?  Is it single or dual
+channel?  Are there PCI devices currently doing DMA transfers to ram
+taking up bandwidth?  What are the latencies of the ram, Etc, etc, etc.
 
+And what could your software do differently if it knew this information?
 
+--
+Len Sorensen
