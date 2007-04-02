@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966064AbXDBXAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966056AbXDBXBC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966064AbXDBXAY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 19:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966051AbXDBXAW
+	id S966056AbXDBXBC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 19:01:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966065AbXDBXBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 19:00:22 -0400
-Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:23215 "EHLO
-	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966030AbXDBXAR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 19:00:17 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
-content-class: urn:content-classes:message
+	Mon, 2 Apr 2007 19:01:01 -0400
+Received: from holomorphy.com ([66.93.40.71]:47864 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966056AbXDBXBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 19:01:00 -0400
+Date: Mon, 2 Apr 2007 16:00:51 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@osdl.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       mpm@selenic.com
+Subject: Re: [SLUB 2/2] i386 arch page size slab fixes
+Message-ID: <20070402230051.GI2986@holomorphy.com>
+References: <20070331193056.1800.68058.sendpatchset@schroedinger.engr.sgi.com> <20070331193107.1800.28259.sendpatchset@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C7757A.E7BBD9BA"
-Subject: RE: [PATCH 3/4] [SCSI]stex: fix reset recovery for console device
-Date: Mon, 2 Apr 2007 16:01:53 -0700
-Message-ID: <B70A50D07063384EB9BCE3330D18414F0327EBFF@nonameb.ptu.promise.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/4] [SCSI]stex: fix reset recovery for console device
-Thread-Index: Acd1VN76j0K+sq1YQYa76niYhwQLGwAI1B4Q
-From: "Ed Lin" <ed.lin@promise.com>
-To: "James Bottomley" <James.Bottomley@SteelEye.com>
-Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>, "jeff" <jeff@garzik.org>,
-       "Promise_Linux" <Promise_Linux@promise.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070331193107.1800.28259.sendpatchset@schroedinger.engr.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Sat, Mar 31, 2007 at 11:31:07AM -0800, Christoph Lameter wrote:
+> Patch by William Irwin with only very minor modifications by me which are
+> 1. Removal of HIGHMEM64G slab caches. It seems that virtualization hosts
+>    require a a full pgd page.
 
-------_=_NextPart_001_01C7757A.E7BBD9BA
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+The HIGHMEM64G slab allocations are meaningfully performant vs.
+page-sized allocations where virtualization is absent. I would
+personally rather whip Xen into shape enough to be able to handle the
+minimal pgd allocations than retain the oversized pgd allocations even
+in only the Xen case. Also, the entire unshared kernel pmd shenanigan
+in Xen is an artifact of its recursive pagetable affair, which can also
+be done away with a SMOP.
 
 
+On Sat, Mar 31, 2007 at 11:31:07AM -0800, Christoph Lameter wrote:
+> 2. Add missing virtualization hook. Seems that we need a new way
+>    of serializing paravirt_alloc(). It may need to do its own serialization.
+> 3. Remove ARCH_USES_SLAB_PAGE_STRUCT
 
-> -----Original Message-----
-> From: James Bottomley [mailto:James.Bottomley@SteelEye.com]=20
-> Sent: Monday, April 02, 2007 11:28 AM
-> To: Ed Lin
-> Cc: linux-scsi; linux-kernel; jeff; Promise_Linux
-> Subject: RE: [PATCH 3/4] [SCSI]stex: fix reset recovery for=20
-> console device
->=20
->=20
-> On Mon, 2007-04-02 at 11:14 -0700, Ed Lin wrote:
-> > I just saw the routine name scsi_eh_try_stu, and didn't notice the
-> > allow_restart (partly because I thought it was not harmful...).
-> > But the TEST_UNIT_READY must stay.
->=20
-> Sure ... I was just checking since your change log implied you'd seen
-> the problem from the error handler ... however, we can add it ...
-> there's a possibility of getting spin up on init from sd anyway.
->=20
+This doesn't quite cover all bases. The changes to pageattr.c and
+fault.c are dubious and need verification at the very least. They were
+largely slapped together to get the files past the compiler for the
+performance comparisons that were never properly done.
 
-You make the decision. But after reconsideration, I think it's better
-to remove unused code. It also needs change since the patch about
-id mapping is modified in another mail.
 
-How about the attachment here?
-
-------_=_NextPart_001_01C7757A.E7BBD9BA
-Content-Type: application/octet-stream;
-	name="s3"
-Content-Transfer-Encoding: base64
-Content-Description: s3
-Content-Disposition: attachment;
-	filename="s3"
-
-QWZ0ZXIgcmVzZXQgY29tcGxldGVkLCB0aGUgc2NzaSBlcnJvciBoYW5kbGVyIHNlbmRzIG91dCBU
-RVNUX1VOSVRfUkVBRFkgdG8KdGhlIGRldmljZS4gRm9yICdub3JtYWwnIGRldmljZXMgdGhpcyBj
-b21tYW5kIHdpbGwgYmUgaGFuZGxlZCBieSBmaXJtd2FyZS4KSG93ZXZlciwgYmVjYXVzZSB0aGUg
-UkFJRCBjb25zb2xlIG9ubHkgaW50ZXJmYWNlcyB0byBzY3NpIG1pZCBsYXllciwgdGhlCmZpcm13
-YXJlIHdpbGwgbm90IHByb2Nlc3MgdGhpcyBjb21tYW5kIGZvciBpdC4gVGhpcyB3aWxsIG1ha2Ug
-dGhlIGNvbnNvbGUKdG8gYmUgb2ZmbGluZWQgcmlnaHQgYWZ0ZXIgcmVzZXQuIEFkZCB0aGUgaGFu
-ZGxpbmcgaW4gZHJpdmVyIHRvIGZpeCB0aGlzCnByb2JsZW0uCgpTaWduZWQtb2ZmLWJ5OiBFZCBM
-aW4gPGVkLmxpbkBwcm9taXNlLmNvbT4KLS0tCmRpZmYgLS1naXQgYS9kcml2ZXJzL3Njc2kvc3Rl
-eC5jIGIvZHJpdmVycy9zY3NpL3N0ZXguYwppbmRleCA0YzZjZTZhLi44NWM3NzliIDEwMDY0NAot
-LS0gYS9kcml2ZXJzL3Njc2kvc3RleC5jCisrKyBiL2RyaXZlcnMvc2NzaS9zdGV4LmMKQEAgLTYw
-MSw2ICs2MDEsMTMgQEAgc3RleF9xdWV1ZWNvbW1hbmQoc3RydWN0IHNjc2lfY21uZCAqY21kLAog
-CQkJc3RleF9pbnZhbGlkX2ZpZWxkKGNtZCwgZG9uZSk7CiAJCXJldHVybiAwOwogCX0KKwljYXNl
-IFRFU1RfVU5JVF9SRUFEWToKKwkJaWYgKGlkID09IGhvc3QtPm1heF9pZCAtIDEpIHsKKwkJCWNt
-ZC0+cmVzdWx0ID0gRElEX09LIDw8IDE2IHwgQ09NTUFORF9DT01QTEVURSA8PCA4OworCQkJZG9u
-ZShjbWQpOworCQkJcmV0dXJuIDA7CisJCX0KKwkJYnJlYWs7CiAJY2FzZSBJTlFVSVJZOgogCQlp
-ZiAoaWQgIT0gaG9zdC0+bWF4X2lkIC0gMSkKIAkJCWJyZWFrOwo=
-
-------_=_NextPart_001_01C7757A.E7BBD9BA--
+-- wli
