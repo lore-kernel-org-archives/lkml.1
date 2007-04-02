@@ -1,99 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbXDBILj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbXDBIRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbXDBILj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 04:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXDBILi
+	id S1753407AbXDBIRT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 04:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbXDBIRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 04:11:38 -0400
-Received: from smtp1.osdl.org ([65.172.181.25]:33626 "EHLO smtp1.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752848AbXDBILh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 04:11:37 -0400
-X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 04:11:37 EDT
-Date: Mon, 2 Apr 2007 01:01:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: NeilBrown <neilb@suse.de>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] md: Avoid a deadlock when removing a device from an md
- array via sysfs.
-Message-Id: <20070402010141.3ad5516d.akpm@linux-foundation.org>
-In-Reply-To: <1070402074417.31093@suse.de>
-References: <20070402174319.30997.patches@notabene>
-	<1070402074417.31093@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Apr 2007 04:17:19 -0400
+Received: from rwcrmhc14.comcast.net ([204.127.192.84]:50909 "EHLO
+	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752940AbXDBIRS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 04:17:18 -0400
+X-Greylist: delayed 46922 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 04:17:18 EDT
+Message-ID: <4610BC15.5030800@ieee.org>
+Date: Mon, 02 Apr 2007 04:17:25 -0400
+From: Dave Sperry <dave_sperry@ieee.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
+References: <461004CE.1030009@ieee.org> <20070402072111.GA21356@elte.hu>
+In-Reply-To: <20070402072111.GA21356@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007 17:44:17 +1000 NeilBrown <neilb@suse.de> wrote:
+Ingo Molnar wrote:
+> * Dave Sperry <dave_sperry@ieee.org> wrote:
+>
+>> I have a dual core Opteron machine that exhibits poor UDP performance 
+>> (RT consumes more than 2X cpu) with the 2.6.21-rc5-rt5 as compared to 
+>> 2.6.21-rc5. Top shows the IRQ handler consuming a lot of CPU.
+>
+> update: even with acpi_pm clocksource on vanilla i can reproduce similar 
+> overhead using netperf.
+>
+> 	Ingo
+>
+Hi Ingo
+I checked the clock source and in both the vanilla and rt cases and they 
+were both acpi_pm
 
-> (This patch should go in 2.6.21 as it fixes a recent regression - NB)
-> 
-> A device can be removed from an md array via e.g.
->   echo remove > /sys/block/md3/md/dev-sde/state
-> 
-> This will try to remove the 'dev-sde' subtree which will deadlock
-> since
->   commit e7b0d26a86943370c04d6833c6edba2a72a6e240
-> 
-> With this patch we run the kobject_del via schedule_work so as to
-> avoid the deadlock.
-> 
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
-> ### Diffstat output
->  ./drivers/md/md.c           |   13 ++++++++++++-
->  ./include/linux/raid/md_k.h |    1 +
->  2 files changed, 13 insertions(+), 1 deletion(-)
-> 
-> diff .prev/drivers/md/md.c ./drivers/md/md.c
-> --- .prev/drivers/md/md.c	2007-04-02 17:43:03.000000000 +1000
-> +++ ./drivers/md/md.c	2007-04-02 17:38:46.000000000 +1000
-> @@ -1389,6 +1389,12 @@ static int bind_rdev_to_array(mdk_rdev_t
->  	return err;
->  }
->  
-> +static void delayed_delete(struct work_struct *ws)
-> +{
-> +	mdk_rdev_t *rdev = container_of(ws, mdk_rdev_t, del_work);
-> +	kobject_del(&rdev->kobj);
-> +}
-> +
->  static void unbind_rdev_from_array(mdk_rdev_t * rdev)
->  {
->  	char b[BDEVNAME_SIZE];
-> @@ -1401,7 +1407,12 @@ static void unbind_rdev_from_array(mdk_r
->  	printk(KERN_INFO "md: unbind<%s>\n", bdevname(rdev->bdev,b));
->  	rdev->mddev = NULL;
->  	sysfs_remove_link(&rdev->kobj, "block");
-> -	kobject_del(&rdev->kobj);
-> +
-> +	/* We need to delay this, otherwise we can deadlock when
-> +	 * writing to 'remove' to "dev/state"
-> +	 */
-> +	INIT_WORK(&rdev->del_work, delayed_delete);
-> +	schedule_work(&rdev->del_work);
->  }
->  
->  /*
-> 
-> diff .prev/include/linux/raid/md_k.h ./include/linux/raid/md_k.h
-> --- .prev/include/linux/raid/md_k.h	2007-04-02 17:43:03.000000000 +1000
-> +++ ./include/linux/raid/md_k.h	2007-04-02 17:36:32.000000000 +1000
-> @@ -104,6 +104,7 @@ struct mdk_rdev_s
->  					   * for reporting to userspace and storing
->  					   * in superblock.
->  					   */
-> +	struct work_struct del_work;	/* used for delayed sysfs removal */
->  };
->  
+Here's the oprofile for my vanilla case:
 
-What guarantees that *rdev is still valid when delayed_delete() runs?
+ CPU: AMD64 processors, speed 2211.37 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a 
+unit mask of 0x00 (No unit mask) count 100000
+samples  %        image name               app name                 
+symbol name
+36264    18.2763  forcedeth.ko             forcedeth                
+nv_nic_irq_optimized
+25602    12.9029  vmlinux                  vmlinux                  
+spurious_interrupt
+10067     5.0736  forcedeth.ko             forcedeth                
+nv_start_xmit_optimized
+8671      4.3700  vmlinux                  vmlinux                  
+unregister_kprobe
+8270      4.1679  vmlinux                  vmlinux                  
+ctrl_dumpfamily
+8042      4.0530  vmlinux                  vmlinux                  
+expand_files
+5064      2.5521  vmlinux                  vmlinux                  kfree
+4365      2.1999  libc-2.5.so              libc-2.5.so              
+__sendto_nocancel
+4067      2.0497  vmlinux                  vmlinux                  
+unix_bind
+4010      2.0210  vmlinux                  vmlinux                  bad_gs
+3929      1.9801  vmlinux                  vmlinux                  
+__alloc_skb
+3859      1.9449  vmlinux                  vmlinux                  
+stack_segment
+3107      1.5659  vmlinux                  vmlinux                  
+__find_get_block
+2816      1.4192  vmlinux                  vmlinux                  
+vfs_create
+2611      1.3159  vmlinux                  vmlinux                  
+ide_end_drive_cmd
+2604      1.3124  vmlinux                  vmlinux                  
+ide_end_request
+2560      1.2902  vmlinux                  vmlinux                  
+find_get_page
+2458      1.2388  vmlinux                  vmlinux                  
+hrtimer_run_queues
+2456      1.2378  vmlinux                  vmlinux                  
+get_wchan
+2403      1.2111  forcedeth.ko             forcedeth                
+nv_tx_done_optimized
+2231      1.1244  vmlinux                  vmlinux                  
+do_sys_poll
 
-And what guarantees that the md module hasn't been rmmodded when
-delayed_delete() tries to run?
+Any thoughts?
 
+Thanks
+Dave
