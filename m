@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965774AbXDCMn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965769AbXDCMn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965774AbXDCMn0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 08:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965775AbXDCMn0
+	id S965769AbXDCMn2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 08:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965775AbXDCMn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 08:43:26 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4216 "EHLO spitz.ucw.cz"
+	Tue, 3 Apr 2007 08:43:28 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4220 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965774AbXDCMnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 08:43:25 -0400
-Date: Mon, 2 Apr 2007 18:59:59 +0000
+	id S965769AbXDCMn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 08:43:27 -0400
+Date: Mon, 2 Apr 2007 18:50:15 +0000
 From: Pavel Machek <pavel@ucw.cz>
 To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 10/16] show-partitions-on-mount-error.diff
-Message-ID: <20070402185958.GB4628@ucw.cz>
-References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012008590.12316@yvahk01.tjqt.qr>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
+       Daniel Jacobowitz <dan@debian.org>
+Subject: Re: [PATCH 17/16] Do not reset UTF8 on terminal reset
+Message-ID: <20070402185015.GA4628@ucw.cz>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012001130.12316@yvahk01.tjqt.qr> <1175496595.4614.11.camel@daplas> <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0704012008590.12316@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0704020904460.1245@yvahk01.tjqt.qr>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
->  block/genhd.c         |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/genhd.h |    1 
->  init/do_mounts.c      |    7 +++++-
->  3 files changed, 61 insertions(+), 1 deletion(-)
+> >> Allow for the palette to be exposed and changed via sysfs. A call to
+> >> /usr/bin/reset will slurp the new definitions in for the current
+> >> console.
+> >
+> >I like this. The escape sequences to change the palette does not stay
+> >permanently.
 > 
-> Index: linux-2.6.21-rc5/block/genhd.c
-> ===================================================================
-> --- linux-2.6.21-rc5.orig/block/genhd.c
-> +++ linux-2.6.21-rc5/block/genhd.c
-> @@ -215,6 +215,60 @@ struct gendisk *get_gendisk(dev_t dev, i
->  	return  kobj ? to_disk(kobj) : NULL;
->  }
->  
-> +/*
-> + * printk a full list of all partitions - intended for
-> + * places where the root filesystem can't be mounted and thus
-> + * to give the victim some idea of what went wrong
-> + */
-> +void printk_all_partitions(void)
-> +{
-> +	int n;
-> +        struct gendisk* sgp;
-> +	mutex_lock(&block_subsys_lock);
+> As much as you like it, there is a slight problem with it. Linux will
+> currently throw virtual consoles out of UTF8 mode when reset is called.
+> 
+> Also see:
+> 	http://lkml.org/lkml/2005/5/17/289
+> 	http://lkml.org/lkml/2005/5/17/297
+> 
+> These posts argue about terminfo being the culprit. But how can terminfo 
+> be at fault, when `echo -en "\ec"` triggers it too?
+> 
+> Since I am in a patch mood, here's my stance/patch, which is compile and 
+> run tested and behaves as expected (both with `echo` and `reset`).
 
-tabs-vs-spaces problem.
-
-
+Should not reset actually reset terminal? This introduces
+bug/unexpected behaviour...
+							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
