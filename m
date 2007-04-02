@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966098AbXDBXYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966102AbXDBX0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966098AbXDBXYR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 19:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966102AbXDBXYR
+	id S966102AbXDBX0p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 19:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966103AbXDBX0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 19:24:17 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52628 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966098AbXDBXYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 19:24:16 -0400
-Date: Mon, 2 Apr 2007 16:23:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, pmarques@grupopie.com,
-       linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH 5/5] Fix race between cat /proc/slab_allocators and
- rmmod
-Message-Id: <20070402162324.d9dd27c1.akpm@linux-foundation.org>
-In-Reply-To: <1175555395.12230.451.camel@localhost.localdomain>
-References: <20070402150316.GE6735@localhost.sw.ru>
-	<1175555395.12230.451.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Apr 2007 19:26:45 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:41236 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966102AbXDBX0p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 19:26:45 -0400
+Message-ID: <461190F6.3060108@zytor.com>
+Date: Mon, 02 Apr 2007 16:25:42 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@sw.ru>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
+       cpufreq@lists.linux.org.uk, ak@suse.de, davej@codemonkey.org.uk
+Subject: Re: [PATCH 3/3] cpuid: switch to cpuid_on_cpu()
+References: <20070402113947.GC6785@localhost.sw.ru>
+In-Reply-To: <20070402113947.GC6785@localhost.sw.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Apr 2007 09:09:55 +1000
-Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> On Mon, 2007-04-02 at 19:03 +0400, Alexey Dobriyan wrote:
-> > Same story as with cat /proc/*/wchan race vs rmmod race, only
-> > /proc/slab_allocators want more info than just symbol name.
-> > 
-> > Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+Alexey Dobriyan wrote:
+> Now that cpuid_on_cpu() is in core, cpuid driver can be shrinked.
 > 
-> All these look excellent.  I hope Andrew picked them up?
-> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
 
-I wasn't cc'ed on them, but I'll push them into the hole marked "In" anyway.
+Hi Alexey,
 
+This, and your other changes in this area does conflict with the work 
+that I've been doing on extending the usability of the CPUID and MSR 
+drivers (which is part of why this work has dragged out seemingly forever.)
+
+I would really appreciate it if we could work together on this; there 
+needs to be new paravirtualization entry points for this.  Consequently, 
+I just updated and uploaded a git tree with the current status.  It 
+still needs porting to x86-64, however.
+
+The current cpuid/msr work is at:
+
+http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-cpuidmsr.git;a=summary
+
+	-hpa
