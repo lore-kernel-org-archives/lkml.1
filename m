@@ -1,129 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933601AbXDBGEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbXDBGEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933601AbXDBGEK (ORCPT <rfc822;w@1wt.eu>);
+	id S932065AbXDBGEK (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 2 Apr 2007 02:04:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXDBGCT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933644AbXDBGCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 02:02:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:38282 "EHLO mail.goop.org"
+	Mon, 2 Apr 2007 02:02:17 -0400
+Received: from gw.goop.org ([64.81.55.164]:38290 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933641AbXDBF7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933253AbXDBF7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 2 Apr 2007 01:59:12 -0400
-Message-Id: <20070402055705.399001017@goop.org>
+Message-Id: <20070402055705.199510785@goop.org>
 References: <20070402055652.610711908@goop.org>
 User-Agent: quilt/0.46-1
-Date: Sun, 01 Apr 2007 22:57:07 -0700
+Date: Sun, 01 Apr 2007 22:57:05 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>
-Subject: [patch 15/17] revert map_pt_hook.
-Content-Disposition: inline; filename=revert-map_pt_hook.patch
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 13/17] add common patching machinery
+Content-Disposition: inline; filename=paravirt-patch-machinery.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Back out the map_pt_hook to clear the way for kmap_atomic_pte.
+Implement the actual patching machinery.  paravirt_patch_default()
+contains the logic to automatically patch a callsite based on a few
+simple rules:
+
+ - if the paravirt_op function is paravirt_nop, then patch nops
+ - if the paravirt_op function is a jmp target, then jmp to it
+ - if the paravirt_op function is callable and doesn't clobber too much
+    for the callsite, call it directly
+
+paravirt_patch_default is suitable as a default implementation of
+paravirt_ops.patch, will remove most of the expensive indirect calls
+in favour of either a direct call or a pile of nops.
+
+Backends may implement their own patcher, however.  There are several
+helper functions to help with this:
+
+paravirt_patch_nop	nop out a callsite
+paravirt_patch_ignore	leave the callsite as-is
+paravirt_patch_call	patch a call if the caller and callee
+			have compatible clobbers
+paravirt_patch_jmp	patch in a jmp
+paravirt_patch_insns	patch some literal instructions over
+			the callsite, if they fit
+
+This patch also implements more direct patches for the native case, so
+that when running on native hardware many common operations are
+implemented inline.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Zachary Amsden <zach@vmware.com>
-
+Cc: Anthony Liguori <anthony@codemonkey.ws>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/i386/kernel/paravirt.c |    2 --
- arch/i386/kernel/vmi.c      |    2 ++
- include/asm-i386/paravirt.h |    7 -------
- include/asm-i386/pgtable.h  |   23 ++++-------------------
- 4 files changed, 6 insertions(+), 28 deletions(-)
+ arch/i386/kernel/alternative.c |    5 -
+ arch/i386/kernel/paravirt.c    |  165 ++++++++++++++++++++++++++++++++--------
+ include/asm-i386/paravirt.h    |   11 ++
+ 3 files changed, 149 insertions(+), 32 deletions(-)
 
+===================================================================
+--- a/arch/i386/kernel/alternative.c
++++ b/arch/i386/kernel/alternative.c
+@@ -361,11 +361,14 @@ void apply_paravirt(struct paravirt_patc
+ 		used = paravirt_ops.patch(p->instrtype, p->clobbers, p->instr,
+ 					  p->len);
+ 
++		BUG_ON(used > p->len);
++
+ 		/* Pad the rest with nops */
+ 		nop_out(p->instr + used, p->len - used);
+ 	}
+ 
+-	/* Sync to be conservative, in case we patched following instructions */
++	/* Sync to be conservative, in case we patched following
++	   instructions */
+ 	sync_core();
+ }
+ #endif	/* CONFIG_PARAVIRT */
 ===================================================================
 --- a/arch/i386/kernel/paravirt.c
 +++ b/arch/i386/kernel/paravirt.c
-@@ -303,8 +303,6 @@ struct paravirt_ops paravirt_ops = {
- 	.flush_tlb_single = native_flush_tlb_single,
- 	.flush_tlb_others = native_flush_tlb_others,
- 
--	.map_pt_hook = paravirt_nop,
+@@ -54,40 +54,143 @@ char *memory_setup(void)
+ #define DEF_NATIVE(name, code)					\
+ 	extern const char start_##name[], end_##name[];		\
+ 	asm("start_" #name ": " code "; end_" #name ":")
+-DEF_NATIVE(cli, "cli");
+-DEF_NATIVE(sti, "sti");
+-DEF_NATIVE(popf, "push %eax; popf");
+-DEF_NATIVE(pushf, "pushf; pop %eax");
++
++DEF_NATIVE(irq_disable, "cli");
++DEF_NATIVE(irq_enable, "sti");
++DEF_NATIVE(restore_fl, "push %eax; popf");
++DEF_NATIVE(save_fl, "pushf; pop %eax");
+ DEF_NATIVE(iret, "iret");
+-DEF_NATIVE(sti_sysexit, "sti; sysexit");
 -
- 	.alloc_pt = paravirt_nop,
- 	.alloc_pd = paravirt_nop,
- 	.alloc_pd_clone = paravirt_nop,
-===================================================================
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -819,8 +819,10 @@ static inline int __init activate_vmi(vo
- 		paravirt_ops.release_pt = vmi_release_pt;
- 		paravirt_ops.release_pd = vmi_release_pd;
- 	}
-+#if 0
- 	para_wrap(map_pt_hook, vmi_map_pt_hook, set_linear_mapping,
- 		  SetLinearMapping);
-+#endif
+-static const struct native_insns
+-{
+-	const char *start, *end;
+-} native_insns[] = {
+-	[PARAVIRT_PATCH(irq_disable)] = { start_cli, end_cli },
+-	[PARAVIRT_PATCH(irq_enable)] = { start_sti, end_sti },
+-	[PARAVIRT_PATCH(restore_fl)] = { start_popf, end_popf },
+-	[PARAVIRT_PATCH(save_fl)] = { start_pushf, end_pushf },
+-	[PARAVIRT_PATCH(iret)] = { start_iret, end_iret },
+-	[PARAVIRT_PATCH(irq_enable_sysexit)] = { start_sti_sysexit, end_sti_sysexit },
+-};
++DEF_NATIVE(irq_enable_sysexit, "sti; sysexit");
++DEF_NATIVE(read_cr2, "mov %cr2, %eax");
++DEF_NATIVE(write_cr3, "mov %eax, %cr3");
++DEF_NATIVE(read_cr3, "mov %cr3, %eax");
++DEF_NATIVE(clts, "clts");
++DEF_NATIVE(read_tsc, "rdtsc");
++
++DEF_NATIVE(pushf_cli, "pushf; pop %eax; cli");
++DEF_NATIVE(ud2a, "ud2a");
  
- 	/*
- 	 * These MUST always be patched.  Don't support indirect jumps
+ static unsigned native_patch(u8 type, u16 clobbers, void *insns, unsigned len)
+ {
+-	unsigned int insn_len;
+-
+-	/* Don't touch it if we don't have a replacement */
+-	if (type >= ARRAY_SIZE(native_insns) || !native_insns[type].start)
+-		return len;
+-
+-	insn_len = native_insns[type].end - native_insns[type].start;
+-
+-	/* Similarly if we can't fit replacement. */
+-	if (len < insn_len)
+-		return len;
+-
+-	memcpy(insns, native_insns[type].start, insn_len);
++	const unsigned char *start, *end;
++	unsigned ret;
++
++	switch(type) {
++#define SITE(x)	case PARAVIRT_PATCH(x):	start = start_##x; end = end_##x; goto patch_site
++		SITE(irq_disable);
++		SITE(irq_enable);
++		SITE(restore_fl);
++		SITE(save_fl);
++		SITE(iret);
++		SITE(irq_enable_sysexit);
++		SITE(read_cr2);
++		SITE(read_cr3);
++		SITE(write_cr3);
++		SITE(clts);
++		SITE(read_tsc);
++#undef SITE
++
++	patch_site:
++		ret = paravirt_patch_insns(insns, len, start, end);
++		break;
++
++	case PARAVIRT_PATCH(make_pgd):
++	case PARAVIRT_PATCH(make_pte):
++	case PARAVIRT_PATCH(pgd_val):
++	case PARAVIRT_PATCH(pte_val):
++#ifdef CONFIG_X86_PAE
++	case PARAVIRT_PATCH(make_pmd):
++	case PARAVIRT_PATCH(pmd_val):
++#endif
++		/* These functions end up returning exactly what
++		   they're passed, in the same registers. */
++		ret = paravirt_patch_nop();
++		break;
++
++	default:
++		ret = paravirt_patch_default(type, clobbers, insns, len);
++		break;
++	}
++
++	return ret;
++}
++
++unsigned paravirt_patch_nop(void)
++{
++	return 0;
++}
++
++unsigned paravirt_patch_ignore(unsigned len)
++{
++	return len;
++}
++
++unsigned paravirt_patch_call(void *target, u16 tgt_clobbers,
++			     void *site, u16 site_clobbers,
++			     unsigned len)
++{
++	unsigned char *call = site;
++	unsigned long delta = (unsigned long)target - (unsigned long)(call+5);
++
++	if (tgt_clobbers & ~site_clobbers)
++		return len;	/* target would clobber too much for this site */
++	if (len < 5)
++		return len;	/* call too long for patch site */
++
++	*call++ = 0xe8;		/* call */
++	*(unsigned long *)call = delta;
++
++	return 5;
++}
++
++unsigned paravirt_patch_jmp(void *target, void *site, unsigned len)
++{
++	unsigned char *jmp = site;
++	unsigned long delta = (unsigned long)target - (unsigned long)(jmp+5);
++
++	if (len < 5)
++		return len;	/* call too long for patch site */
++
++	*jmp++ = 0xe9;		/* jmp */
++	*(unsigned long *)jmp = delta;
++
++	return 5;
++}
++
++unsigned paravirt_patch_default(u8 type, u16 clobbers, void *site, unsigned len)
++{
++	void *opfunc = *((void **)&paravirt_ops + type);
++	unsigned ret;
++
++	if (opfunc == NULL)
++		/* If there's no function, patch it with a ud2a (BUG) */
++		ret = paravirt_patch_insns(site, len, start_ud2a, end_ud2a);
++	else if (opfunc == paravirt_nop)
++		/* If the operation is a nop, then nop the callsite */
++		ret = paravirt_patch_nop();
++	else if (type == PARAVIRT_PATCH(iret) ||
++		 type == PARAVIRT_PATCH(irq_enable_sysexit))
++		/* If operation requires a jmp, then jmp */
++		ret = paravirt_patch_jmp(opfunc, site, len);
++	else
++		/* Otherwise call the function; assume target could
++		   clobber any caller-save reg */
++		ret = paravirt_patch_call(opfunc, CLBR_ANY,
++					  site, clobbers, len);
++
++	return ret;
++}
++
++unsigned paravirt_patch_insns(void *site, unsigned len,
++			      const char *start, const char *end)
++{
++	unsigned insn_len = end - start;
++
++	if (insn_len > len || start == NULL)
++		insn_len = len;
++	else
++		memcpy(site, start, insn_len);
++
+ 	return insn_len;
+ }
+ 
+@@ -110,7 +213,7 @@ static void native_flush_tlb_global(void
+ 	__native_flush_tlb_global();
+ }
+ 
+-static void native_flush_tlb_single(u32 addr)
++static void native_flush_tlb_single(unsigned long addr)
+ {
+ 	__native_flush_tlb_single(addr);
+ }
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -128,8 +128,6 @@ struct paravirt_ops
- 	void (*flush_tlb_single)(unsigned long addr);
- 	void (*flush_tlb_others)(const cpumask_t *cpus, struct mm_struct *mm,
- 				 unsigned long va);
--
--	void (*map_pt_hook)(int type, pte_t *va, u32 pfn);
+@@ -933,6 +933,17 @@ struct paravirt_patch_site {
+ 	u16 clobbers;		/* what registers you may clobber */
+ };
  
- 	void (*alloc_pt)(u32 pfn);
- 	void (*alloc_pd)(u32 pfn);
-@@ -740,11 +738,6 @@ static inline void flush_tlb_others(cpum
- 	PVOP_VCALL3(flush_tlb_others, &cpumask, mm, va);
- }
++unsigned paravirt_patch_nop(void);
++unsigned paravirt_patch_ignore(unsigned len);
++unsigned paravirt_patch_call(void *target, u16 tgt_clobbers,
++			     void *site, u16 site_clobbers,
++			     unsigned len);
++unsigned paravirt_patch_jmp(void *target, void *site, unsigned len);
++unsigned paravirt_patch_default(u8 type, u16 clobbers, void *site, unsigned len);
++
++unsigned paravirt_patch_insns(void *site, unsigned len,
++			      const char *start, const char *end);
++
+ extern struct paravirt_patch_site __start_parainstructions[],
+ 	__stop_parainstructions[];
  
--static inline void paravirt_map_pt_hook(int type, pte_t *va, u32 pfn)
--{
--	PVOP_VCALL3(map_pt_hook, type, va, pfn);
--}
--
- static inline void paravirt_alloc_pt(unsigned pfn)
- {
- 	PVOP_VCALL1(alloc_pt, pfn);
-===================================================================
---- a/include/asm-i386/pgtable.h
-+++ b/include/asm-i386/pgtable.h
-@@ -272,7 +272,6 @@ static inline void vmalloc_sync_all(void
-  */
- #define pte_update(mm, addr, ptep)		do { } while (0)
- #define pte_update_defer(mm, addr, ptep)	do { } while (0)
--#define paravirt_map_pt_hook(slot, va, pfn)	do { } while (0)
- 
- #define raw_ptep_get_and_clear(xp)     native_ptep_get_and_clear(xp)
- #endif
-@@ -481,24 +480,10 @@ extern pte_t *lookup_address(unsigned lo
- #endif
- 
- #if defined(CONFIG_HIGHPTE)
--#define pte_offset_map(dir, address)				\
--({								\
--	pte_t *__ptep;						\
--	unsigned pfn = pmd_val(*(dir)) >> PAGE_SHIFT;	   	\
--	__ptep = (pte_t *)kmap_atomic(pfn_to_page(pfn),KM_PTE0);\
--	paravirt_map_pt_hook(KM_PTE0,__ptep, pfn);		\
--	__ptep = __ptep + pte_index(address);			\
--	__ptep;							\
--})
--#define pte_offset_map_nested(dir, address)			\
--({								\
--	pte_t *__ptep;						\
--	unsigned pfn = pmd_val(*(dir)) >> PAGE_SHIFT;	   	\
--	__ptep = (pte_t *)kmap_atomic(pfn_to_page(pfn),KM_PTE1);\
--	paravirt_map_pt_hook(KM_PTE1,__ptep, pfn);		\
--	__ptep = __ptep + pte_index(address);			\
--	__ptep;							\
--})
-+#define pte_offset_map(dir, address) \
-+	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
-+#define pte_offset_map_nested(dir, address) \
-+	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
- #define pte_unmap(pte) kunmap_atomic(pte, KM_PTE0)
- #define pte_unmap_nested(pte) kunmap_atomic(pte, KM_PTE1)
- #else
 
 -- 
 
