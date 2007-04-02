@@ -1,97 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbXDBHmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbXDBHo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbXDBHmP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbXDBHmP
+	id S1753391AbXDBHo1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXDBHo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:42:15 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43433 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbXDBHmO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:42:14 -0400
-Date: Mon, 2 Apr 2007 13:11:59 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
+	Mon, 2 Apr 2007 03:44:27 -0400
+Received: from mx2.suse.de ([195.135.220.15]:46551 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753391AbXDBHoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:44:25 -0400
+From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Jurriaan <thunder7@xs4all.nl>,
-       Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm3 - no boot, "address not 2M aligned"
-Message-ID: <20070402074159.GA13704@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org> <20070331071220.GA26910@aitel.hist.no> <20070331005303.354411f0.akpm@linux-foundation.org> <20070401052932.GA9894@amd64.of.nowhere> <m1ircghb6w.fsf@ebiederm.dsl.xmission.com> <20070331232957.e1c93f19.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070331232957.e1c93f19.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Date: Mon, 2 Apr 2007 17:44:17 +1000
+Message-Id: <1070402074417.31093@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] md: Avoid a deadlock when removing a device from an md array via sysfs.
+References: <20070402174319.30997.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 31, 2007 at 11:29:57PM -0700, Andrew Morton wrote:
-> On Sun, 01 Apr 2007 00:15:51 -0600 ebiederm@xmission.com (Eric W. Biederman) wrote:
-> 
-> > Does anyone know how to express the constraint of a 2M aligned number in Kconfig?
-> 
-> Nope, but we could make CONFIG_PHYSICAL_START be in units of 2MB, which
-> would be a bit hard to use.
-> 
-> Adding a BUILD_BUG_ON which checks this constraint might help.  Plus a
-> useful comment right at the BUILD_BUG_ON site explaining what to do about
-> it.
+(This patch should go in 2.6.21 as it fixes a recent regression - NB)
 
-How about attached patch?
+A device can be removed from an md array via e.g.
+  echo remove > /sys/block/md3/md/dev-sde/state
 
-Thanks
-Vivek
+This will try to remove the 'dev-sde' subtree which will deadlock
+since
+  commit e7b0d26a86943370c04d6833c6edba2a72a6e240
 
+With this patch we run the kobject_del via schedule_work so as to
+avoid the deadlock.
 
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Neil Brown <neilb@suse.de>
 
-o X86_64 kernel should run from 2MB aligned address for two reasons.
-	- Performance.
-	- For relocatable kernels, page tables are updated based on difference
-	  between compile time address and load time physical address.
-	  This difference should be multiple of 2MB as kernel text and data
-	  is mapped using 2MB pages and PMD should be pointing to a 2MB
-	  aligned address. Life is simpler if both compile time and load time
-	  kernel addresses are 2MB aligned.
+### Diffstat output
+ ./drivers/md/md.c           |   13 ++++++++++++-
+ ./include/linux/raid/md_k.h |    1 +
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
-o Flag the error at compile time if one is trying to build a kernel which
-  does not meet alignment restrictions.
-
-Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
----
-
- arch/x86_64/kernel/head64.c |    8 ++++++++
- include/asm-x86_64/page.h   |    1 +
- 2 files changed, 9 insertions(+)
-
-diff -puN arch/x86_64/kernel/head64.c~x86_64-check-for-config-physical-start-aligned-2M arch/x86_64/kernel/head64.c
---- linux-2.6.21-rc5-mm3-vanilla/arch/x86_64/kernel/head64.c~x86_64-check-for-config-physical-start-aligned-2M	2007-04-02 20:46:43.000000000 +0530
-+++ linux-2.6.21-rc5-mm3-vanilla-root/arch/x86_64/kernel/head64.c	2007-04-02 21:20:45.000000000 +0530
-@@ -62,6 +62,14 @@ void __init x86_64_start_kernel(char * r
- {
- 	int i;
+diff .prev/drivers/md/md.c ./drivers/md/md.c
+--- .prev/drivers/md/md.c	2007-04-02 17:43:03.000000000 +1000
++++ ./drivers/md/md.c	2007-04-02 17:38:46.000000000 +1000
+@@ -1389,6 +1389,12 @@ static int bind_rdev_to_array(mdk_rdev_t
+ 	return err;
+ }
  
-+	/*
-+	 * Make sure kernel is aligned to 2MB address. Catching it at compile
-+	 * time is better. Change your config file and compile the kernel
-+	 * for a 2MB aligned address (CONFIG_PHYSICAL_START)
-+	 */
-+	BUILD_BUG_ON(ALIGN(CONFIG_PHYSICAL_START, __KERNEL_ALIGN)
-+			!= CONFIG_PHYSICAL_START);
++static void delayed_delete(struct work_struct *ws)
++{
++	mdk_rdev_t *rdev = container_of(ws, mdk_rdev_t, del_work);
++	kobject_del(&rdev->kobj);
++}
 +
- 	/* clear bss before set_intr_gate with early_idt_handler */
- 	clear_bss();
+ static void unbind_rdev_from_array(mdk_rdev_t * rdev)
+ {
+ 	char b[BDEVNAME_SIZE];
+@@ -1401,7 +1407,12 @@ static void unbind_rdev_from_array(mdk_r
+ 	printk(KERN_INFO "md: unbind<%s>\n", bdevname(rdev->bdev,b));
+ 	rdev->mddev = NULL;
+ 	sysfs_remove_link(&rdev->kobj, "block");
+-	kobject_del(&rdev->kobj);
++
++	/* We need to delay this, otherwise we can deadlock when
++	 * writing to 'remove' to "dev/state"
++	 */
++	INIT_WORK(&rdev->del_work, delayed_delete);
++	schedule_work(&rdev->del_work);
+ }
  
-diff -puN include/asm-x86_64/page.h~x86_64-check-for-config-physical-start-aligned-2M include/asm-x86_64/page.h
---- linux-2.6.21-rc5-mm3-vanilla/include/asm-x86_64/page.h~x86_64-check-for-config-physical-start-aligned-2M	2007-04-02 20:50:55.000000000 +0530
-+++ linux-2.6.21-rc5-mm3-vanilla-root/include/asm-x86_64/page.h	2007-04-02 20:51:34.000000000 +0530
-@@ -79,6 +79,7 @@ extern unsigned long phys_base;
- #endif /* !__ASSEMBLY__ */
+ /*
+
+diff .prev/include/linux/raid/md_k.h ./include/linux/raid/md_k.h
+--- .prev/include/linux/raid/md_k.h	2007-04-02 17:43:03.000000000 +1000
++++ ./include/linux/raid/md_k.h	2007-04-02 17:36:32.000000000 +1000
+@@ -104,6 +104,7 @@ struct mdk_rdev_s
+ 					   * for reporting to userspace and storing
+ 					   * in superblock.
+ 					   */
++	struct work_struct del_work;	/* used for delayed sysfs removal */
+ };
  
- #define __PHYSICAL_START	CONFIG_PHYSICAL_START
-+#define __KERNEL_ALIGN		0x200000
- #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
- #define __START_KERNEL_map	0xffffffff80000000
- #define __PAGE_OFFSET           0xffff810000000000
-_
+ struct mddev_s
