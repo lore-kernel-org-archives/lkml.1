@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965749AbXDCMlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965774AbXDCMn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965749AbXDCMlN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 08:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965769AbXDCMlN
+	id S965774AbXDCMn0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 08:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965775AbXDCMn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 08:41:13 -0400
-Received: from rwcrmhc13.comcast.net ([204.127.192.83]:50328 "EHLO
-	rwcrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965749AbXDCMlN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 08:41:13 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Apr 2007 08:41:13 EDT
-Subject: [PATCH] hid: add QUIRK_HIDDEV for Belkin Flip KVM
-From: Dan Engel <dan@sourceharvest.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Content-Type: text/plain
-Date: Tue, 03 Apr 2007 08:36:09 -0400
-Message-Id: <1175603769.9387.11.camel@monica.engel.home>
+	Tue, 3 Apr 2007 08:43:26 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4216 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965774AbXDCMnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 08:43:25 -0400
+Date: Mon, 2 Apr 2007 18:59:59 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 10/16] show-partitions-on-mount-error.diff
+Message-ID: <20070402185958.GB4628@ucw.cz>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704012008590.12316@yvahk01.tjqt.qr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0704012008590.12316@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel P. Engel <dengel@sourceharvest.com>
+Hi!
 
-Add HID_QUIRK_HIDDEV for the Belkin Flip USB KVM to the hid-core
-blacklist table. The Belkin Flip USB KVM provides for software
-control of switching via a HID class interface. It overloads
-three HID LED usages, two of which aren't mapped in the ev_dev input
-subsection, and which it doesn't make sense to map. In order to
-force the creation of a hiddev device for controlling
-the Flip, this quirk flag is needed.
+>  block/genhd.c         |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/genhd.h |    1 
+>  init/do_mounts.c      |    7 +++++-
+>  3 files changed, 61 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.21-rc5/block/genhd.c
+> ===================================================================
+> --- linux-2.6.21-rc5.orig/block/genhd.c
+> +++ linux-2.6.21-rc5/block/genhd.c
+> @@ -215,6 +215,60 @@ struct gendisk *get_gendisk(dev_t dev, i
+>  	return  kobj ? to_disk(kobj) : NULL;
+>  }
+>  
+> +/*
+> + * printk a full list of all partitions - intended for
+> + * places where the root filesystem can't be mounted and thus
+> + * to give the victim some idea of what went wrong
+> + */
+> +void printk_all_partitions(void)
+> +{
+> +	int n;
+> +        struct gendisk* sgp;
+> +	mutex_lock(&block_subsys_lock);
 
-Signed-off-by: Daniel P. Engel <dengel@sourceharvest.com>
----
-
-This patch was created against kernel version 2.6.20.4. It patches
-only one file, drivers/input/hid-core.c.
-
---- linux-2.6/drivers/usb/input/hid-core.c.orig	2007-03-30 13:42:01.000000000 -0400
-+++ linux-2.6/drivers/usb/input/hid-core.c	2007-03-30 13:43:16.000000000 -0400
-@@ -792,6 +792,9 @@ void usbhid_init_reports(struct hid_devi
- #define USB_VENDOR_ID_IMATION		0x0718
- #define USB_DEVICE_ID_DISC_STAKKA	0xd000
- 
-+#define USB_VENDOR_ID_BELKIN		0x050d
-+#define USB_DEVICE_ID_FLIP_KVM		0x3201
-+
- /*
-  * Alphabetically sorted blacklist by quirk type.
-  */
-@@ -969,6 +972,8 @@ static const struct hid_blacklist {
- 
- 	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_USB_RECEIVER, HID_QUIRK_BAD_RELATIVE_KEYS },
- 
-+	{ USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM, HID_QUIRK_HIDDEV },
-+
- 	{ 0, 0 }
- };
- 
+tabs-vs-spaces problem.
 
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
