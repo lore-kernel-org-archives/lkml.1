@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbXDBHJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbXDBHMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbXDBHJR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbXDBHJR
+	id S1753345AbXDBHMK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbXDBHMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:09:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59153 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753369AbXDBHJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:09:16 -0400
-Date: Mon, 2 Apr 2007 09:09:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] enhance initcall_debug, measure latency
-Message-ID: <20070402070907.GA18480@elte.hu>
-References: <20070401181614.GA25648@elte.hu> <20070401182801.GA25956@elte.hu> <p73vegfyzlw.fsf@bingen.suse.de>
-Mime-Version: 1.0
+	Mon, 2 Apr 2007 03:12:10 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23387 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753345AbXDBHMI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:12:08 -0400
+Date: Mon, 2 Apr 2007 09:10:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Rene Herman <rene.herman@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mcdx -- do_request(): non-read command to cd!!
+Message-ID: <20070402071018.GE11996@kernel.dk>
+References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk> <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com> <4610481D.8000102@gmail.com> <46104954.50608@gmail.com> <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p73vegfyzlw.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> Ingo Molnar <mingo@elte.hu> writes:
+On Mon, Apr 02 2007, Pekka J Enberg wrote:
+> On Mon, 2 Apr 2007, Rene Herman wrote:
+> > +       if (!blk_fs_request(req)) {
+> > +               spin_lock_irq(q->queue_lock);
 > 
-> > so 93.6% of the allyesconfig bootup time is in 2.5% of the 
-> > initcalls. If they were fixed then an allyesconfig bzImage, which 
-> > would be capable to run on every PC known to mankind without any 
-> > module whatsoever, would
+> Contrary to what I said, this spin_lock_irq() is wrong...
 > 
-> Assuming that every PC has enough memory @) Allyes is >35MB
-
-yes :)
-
-> > take around 10 seconds to boot up (which is acceptable for kernel 
-> > bootup time).
+> > +               end_request(req, 0);
+> > +               goto again;
+> > +       }
+> > +
+> > +       spin_unlock_irq(q->queue_lock);
 > 
-> It might make sense to measure idle ticks vs busy ticks too. If it's 
-> idle cycles perhaps things can be more easily fixed by multi threading 
-> the initialization. If it's busy cycles perhaps they can be converted 
-> into sleeping cycles.
-> 
-> Perhaps you should tell the individual maintainers for those? If they 
-> still have one. A lot of them look like old hardware where there might 
-> be no working ones left, perhaps just deprecation would make sense.
+> ...because we drop the lock here.
 
-note that i have done another run today too, with common drivers (see 
-the same thread).
+well you did make it overly complex, you should just have dropped the
+lock around
 
-But obviously it doesnt really scale for me to notify every maintainer, 
-we've basically got no infrastructure to bulk-mail maintainers based on 
-a list of symbols. (maybe git could be extended to know about things 
-like who-owns-this-and-that-file? Or the source could be annotated so 
-that automated tools could parse it out.) So i did the notification the 
-usual way: by mailing to lkml ;-)
+        spin_unlock_irq(q->queue_lock);
+        i = mcdx_transfer(...);
+        spin_lock_irq(q->queue_lock);
 
-> > initcall 0xc1f5487d ran for 23083 msecs: pca_isa_init+0x0/0x143() 
-> > initcall 0xc1f54fba ran for 17121 msecs: pcf8574_init+0x0/0x20()
-> 
-> e.g. those just look like bugs.
+and be done with it. But as I wrote earlier, it'll take lots more to
+make this driver close to functional. For one, most of the return
+statements in do_mcdx_request() really want to be goto again's.
 
-it's ok i think: it's ISA so it spends its time fairly to tickle the 
-ports in a loop.
+Updated patch attached :-)
 
-	Ingo
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 0bc8b0b..cff761a 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -324,3 +324,10 @@ Why:	the i8xx_tco watchdog driver has been replaced by the iTCO_wdt
+ Who:	Wim Van Sebroeck <wim@iguana.be>
+ 
+ ---------------------------
++
++What:	The legacy CDROM drivers (drivers/cdrom/, except cdrom.c)
++When:	In 2.6.23
++Why:	They are all terminally broken (most don't even compile)
++Who:	Jens Axboe <jens.axboe@oracle.com>
++
++---------------------------
+
+-- 
+Jens Axboe
+
