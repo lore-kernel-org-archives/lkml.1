@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbXDBGzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933955AbXDBG5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbXDBGzM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 02:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbXDBGzM
+	id S933955AbXDBG5u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 02:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933960AbXDBG5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 02:55:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49656 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbXDBGzK (ORCPT
+	Mon, 2 Apr 2007 02:57:50 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:18880 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933955AbXDBG5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 02:55:10 -0400
-Date: Mon, 2 Apr 2007 08:55:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: drm + 4GB RAM + swiotlb = drm craps out
-Message-ID: <20070402065508.GB24269@one.firstfloor.org>
-References: <21d7e9970704011644n3adbef2brc6bfeb288f5d0866@mail.gmail.com> <20070401.201134.82699692.davem@davemloft.net> <21d7e9970704012108m5fd9797bk45c4b39892c8d36f@mail.gmail.com> <20070401.220841.89389711.davem@davemloft.net> <21d7e9970704012215n67487549vbc7592a4f181e288@mail.gmail.com> <p731wj31ear.fsf@bingen.suse.de> <21d7e9970704012238x2c5e6c62hc30933d9575910cf@mail.gmail.com> <20070402064046.GA24269@one.firstfloor.org> <21d7e9970704012352t277a6cadx259172641531fc39@mail.gmail.com>
+	Mon, 2 Apr 2007 02:57:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=HsrRaB/kv0btiti2fDBGhmDGc37Rh11XEIqe+JHGKngufm7njNvB+p68mzZ3xY+jke8rX+BzonUrxC95O14ODhqt8LVX25Fzag47dQzdjeqaBZmwAB8WkTbVxSpMO8B+ynoNqr1Q9tsTA2fDS0PrhznVDRQWdheXhFXYH6UEnb8=
+Subject: Re: [PATCH 3/16] vt-underline-color.diff
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <Pine.LNX.4.61.0704012002570.12316@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
+	 <Pine.LNX.4.61.0704012002570.12316@yvahk01.tjqt.qr>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 14:57:37 +0800
+Message-Id: <1175497057.4614.18.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21d7e9970704012352t277a6cadx259172641531fc39@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 04:52:04PM +1000, Dave Airlie wrote:
-> >
-> >> need, this just seems overly cumbersome when what I really want is
-> >> vmalloc_32 to just work correctly on 64-bit systems... (why doesn't
-> >> vmalloc_32 pass __GFP_DMA32 to the allocator????)
-> >
-> >It probably should, but see second part of sentence above.
-> >
-> >And please never put closed lists in cc of l-k posts. Evil cc dropped.
-> 
-> Ah okay I'll just do an allocator based on single pages and see if I
-> can fix the kernel side to have the sg knowledge....
+On Sun, 2007-04-01 at 20:14 +0200, Jan Engelhardt wrote:
+> Add color support to the "underline" and "italic" attributes as in
+> OpenBSD/NetBSD-style (vt220) and xterm.
 
-I fixed vmalloc_32 now, but that's probably better to do it this 
-way.
+The italic attribute is indeed part of ANSI standard, though not widely
+implemented. Fbcon (monochrome mode) already supports inverse,
+underline, and bold. I'll try to implement italics (if I can) too if
+this gets in.
 
-> btw Its not a closed list, it's is a moderated list, all the posts do
-> get through to it and the people on it are probably interested...
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+Acked-by: Antonino Daplas <adaplas@gmail.com>
 
-Too late now. Anything that bounces emails is evil.
+Tony
 
--Andi
