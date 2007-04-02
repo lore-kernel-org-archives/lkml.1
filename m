@@ -1,45 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932516AbXDBPnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbXDBPoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932516AbXDBPnl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 11:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932569AbXDBPnk
+	id S932619AbXDBPoN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 11:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932738AbXDBPoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 11:43:40 -0400
-Received: from mail.nagafix.co.uk ([194.145.196.85]:46672 "EHLO
-	mail.nagafix.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932516AbXDBPnj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 11:43:39 -0400
-Message-ID: <461124A9.7080609@nagafix.co.uk>
-Date: Mon, 02 Apr 2007 16:43:37 +0100
-From: Antoine Martin <antoine@nagafix.co.uk>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070304)
+	Mon, 2 Apr 2007 11:44:12 -0400
+Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:6139 "EHLO
+	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932700AbXDBPoL convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 11:44:11 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
+content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Blaisorblade <blaisorblade@yahoo.it>, devzero@web.de,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [uml-devel] [RFC] UML kernel & rootfs bundle with every kernel
- release ?
-References: <1712880100@web.de> <200704012108.14597.blaisorblade@yahoo.it> <46100EF5.7040802@nagafix.co.uk> <20070402020530.GA589@c2.user-mode-linux.org> <4610D937.20002@nagafix.co.uk> <Pine.LNX.4.64.0704021318410.1276@anakin> <20070402145300.GA6179@c2.user-mode-linux.org>
-In-Reply-To: <20070402145300.GA6179@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Questions regarding ACPI vs FADT dump on HP XW6200 using 2.6.16 - 2.6.20 kernels?
+Date: Mon, 2 Apr 2007 11:43:37 -0400
+Message-ID: <8E8F647D7835334B985D069AE964A4F7033AB5BC@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Questions regarding ACPI vs FADT dump on HP XW6200 using 2.6.16 - 2.6.20 kernels?
+Thread-Index: Acd1Hh9Sb1eMatUVTo2qKsRYY4rSzQAHOpoA
+References: <56464.192.54.193.51.1175515024.squirrel@rousalka.dyndns.org>
+From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 Apr 2007 15:43:38.0004 (UTC) FILETIME=[AE3D0D40:01C7753D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> On Mon, Apr 02, 2007 at 01:22:00PM +0200, Geert Uytterhoeven wrote:
->> There are patches floating around for a UML frame buffer device.
->> Gerd Kraxel^H^H^H^H^H^HHoffmann did one using plain X11, which worked
->> great when I gave it a try.
->>
->> I suggest taking a look at Gerd's patches. IIRC, he posted them to lkml
->> last year.
-> 
-> I have Gerd's patch sitting in my tree, but it's never really worked
-> for me, so I haven't pushed it.
-Yep, I tried them and it didn't work for me either, I'll try again though.
+Hi all,
 
-Antoine
+In reference to this Bugzilla entry:
+http://bugzilla.kernel.org/show_bug.cgi?id=7110
+
+I'm getting ACPI errors in the dmesg:
+[    7.443482] ACPI Error (evgpe-0711): No handler or method for GPE[
+0], disabling event [20060707]
+[    7.449881] ACPI Error (evgpe-0711): No handler or method for GPE[
+1], disabling event [20060707]
+[    7.456145] ACPI Error (evgpe-0711): No handler or method for GPE[
+2], disabling event [20060707]
+[    7.462271] ACPI Error (evgpe-0711): No handler or method for GPE[
+5], disabling event [20060707]
+[    7.468310] ACPI Error (evgpe-0711): No handler or method for GPE[
+6], disabling event [20060707]
+[    7.474260] ACPI Error (evgpe-0711): No handler or method for GPE[
+7], disabling event [20060707]
+[    7.480124] ACPI Error (evgpe-0711): No handler or method for GPE[
+9], disabling event [20060707]
+[    7.485893] ACPI Error (evgpe-0711): No handler or method for GPE[
+A], disabling event [20060707]
+[    7.491473] ACPI Error (evgpe-0711): No handler or method for GPE[
+F], disabling event [20060707]
+[    7.491484] ACPI Error (evgpe-0711): No handler or method for
+GPE[10], disabling event [20060707]
+[    7.491489] ACPI Error (evgpe-0711): No handler or method for
+GPE[11], disabling event [20060707]
+[    7.491494] ACPI Error (evgpe-0711): No handler or method for
+GPE[12], disabling event [20060707]
+[    7.491499] ACPI Error (evgpe-0711): No handler or method for
+GPE[13], disabling event [20060707]
+[    7.491504] ACPI Error (evgpe-0711): No handler or method for
+GPE[14], disabling event [20060707]
+[    7.491509] ACPI Error (evgpe-0711): No handler or method for
+GPE[15], disabling event [20060707]
+[    7.491514] ACPI Error (evgpe-0711): No handler or method for
+GPE[16], disabling event [20060707]
+[    7.491519] ACPI Error (evgpe-0711): No handler or method for
+GPE[17], disabling event [20060707]
+[    7.491527] ACPI Error (evgpe-0711): No handler or method for
+GPE[19], disabling event [20060707]
+[    7.491532] ACPI Error (evgpe-0711): No handler or method for
+GPE[1A], disabling event [20060707]
+[    7.491537] ACPI Error (evgpe-0711): No handler or method for
+GPE[1B], disabling event [20060707]
+[    7.491542] ACPI Error (evgpe-0711): No handler or method for
+GPE[1C], disabling event [20060707]
+[    7.491547] ACPI Error (evgpe-0711): No handler or method for
+GPE[1D], disabling event [20060707]
+[    7.491552] ACPI Error (evgpe-0711): No handler or method for
+GPE[1E], disabling event [20060707]
+[    7.491557] ACPI Error (evgpe-0711): No handler or method for
+GPE[1F], disabling event [20060707]
+
+The ACPI: FADT dmesg entry is:
+[    0.000000] ACPI: RSDP (v002 COMPAQ                                )
+@ 0x000e8e10
+[    0.000000] ACPI: XSDT (v001 COMPAQ CPQ0063  0x20051222  0x00000000)
+@ 0xbfff50ec
+[    0.000000] ACPI: FADT (v003 COMPAQ TUMWATER 0x00000001  0x00000000)
+@ 0xbfff52ac
+[    0.000000] ACPI: SSDT (v001 COMPAQ  PROJECT 0x00000001 MSFT
+0x0100000e) @ 0xbfff657a
+[    0.000000] ACPI: MADT (v001 COMPAQ TUMWATER 0x00000001  0x00000000)
+@ 0xbfff53b8
+[    0.000000] ACPI: ASF! (v032 COMPAQ TUMWATER 0x00000001  0x00000000)
+@ 0xbfff543c
+[    0.000000] ACPI: MCFG (v001 COMPAQ TUMWATER 0x00000001  0x00000000)
+@ 0xbfff54a6
+[    0.000000] ACPI: DSDT (v001 COMPAQ     DSDT 0x00000001 MSFT
+0x0100000e) @ 0x00000000
+
+I've been told to use this command to dump this memory segment:
+dd if=/dev/mem skip=$[0xbfff52ac] bs=1c count=244 2> /dev/null >
+fadt.bin
+But I'm always getting an empty file?
+
+My questions are:
+1) How can I dump the FADT ?
+2) Could this be related to this memory detection bug
+http://bugzilla.kernel.org/show_bug.cgi?id=7111 ?
+
+Thnx!
+
+- vin
