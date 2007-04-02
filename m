@@ -1,128 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbXDBEVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbXDBEft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753138AbXDBEVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 00:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXDBEVa
+	id S1753179AbXDBEft (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 00:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXDBEft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 00:21:30 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:44485 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbXDBEVa convert rfc822-to-8bit (ORCPT
+	Mon, 2 Apr 2007 00:35:49 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:39857 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbXDBEfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 00:21:30 -0400
-Date: Mon, 02 Apr 2007 00:20:57 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
-In-reply-to: <200704011141.53105.gene.heskett@verizon.net>
-To: linux-kernel@vger.kernel.org
-Cc: ray-gmail@madrabbit.org, "Ingo Molnar" <mingo@elte.hu>,
-       amanda-hackers@amanda.org, amanda-users@amanda.org
-Message-id: <200704020021.02393.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-disposition: inline
-References: <200704010100.19016.gene.heskett@verizon.net>
- <2c0942db0704010033r61f967c3y7d05e3ec0a9f6931@mail.gmail.com>
- <200704011141.53105.gene.heskett@verizon.net>
-User-Agent: KMail/1.9.6
+	Mon, 2 Apr 2007 00:35:48 -0400
+Date: Mon, 2 Apr 2007 10:09:13 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] kprobes: kretprobes simplifcations
+Message-ID: <20070402043913.GA9073@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20070331135929.GC17406@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070331135929.GC17406@lst.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 April 2007, Gene Heskett wrote:
->On Sunday 01 April 2007, Ray Lee wrote:
->>On 3/31/07, Gene Heskett <gene.heskett@verizon.net> wrote:
->>> This effect I have isolated down to something in the 31 patches from
->>> 2.6.20.4 to 2.6.20.5-rc1, but I'm going to need additional guidance
->>> in setting up the bisect to find it.  If indeed its a kernel problem.
->>
->>First, set up a *small* test case, for your own sanity as well as
->>ours. (Set up a new backup job that does just part of your home
->>directory, for example. No, even better, just one file.) Then verify
->>that the small test case also fails the same was that you noticed your
->>big one does between 2.6.20.3 and 2.6.20.4.
->
->That will require I setup a vtape someplace else on the system.
->Later, I find the vtapes locations etc are hardcoded into the amanda
->executables, so I'm going to have to rebuild and reinstall amanda after
->copying my regular config driver to a backup version.  Not terribly
->difficult, but I will have to shut down the user amanda's crontab entry
->till we are done with the testing.  This is all part of amanda's
-> security model.
->
->Ok, got that done. All logs and such will be to a different location so
-> as not to disturb the normal backup once it has been resumed.  The
-> disklist has been stripped down to /home.  I guess its time to reboot
-> and test run.  I'll reply to this message's thread with the results.
->
->>Then, download everything in http://madrabbit.org/~ray/2.6.20.4 . That
->>has all the patches that Greg has in git, but your git is ancient so
->>let's just use the patches, hmm?
->
->My git & quilt is now the latest from the FC6 repos.
->
->>It also has a control file (called
->>'series') that lists the order they should be applied in. Save
->>everything to the root of your 2.6.20.3 source tree. It'll be messy,
->>but it'll make things easier.
->>
->>Once you have that, then go and apply the first half of the patches.
->> (As in: head -n 16 series | xargs -n 1 patch -p1
->>at the base of the tree.
->>
->>Compile and install that kernel, run your test case to see if the
->>problem is there. If it *is*, cut it in half again (Revert those 16
->>patches by adding a -R to the patch command (at the very end), then
->>redo the above command with an 8 instead of a 16.) If the problem
->>isn't there, cut the range [16,31] in half, giving you a 24 for the
->>next trial. Then repeat. Make sense?
->>
->>Ray
+On Sat, Mar 31, 2007 at 03:59:29PM +0200, Christoph Hellwig wrote:
+>  - consolidate duplicate code in all arch_prepare_kretprobe instances
+>    into common code
+>  - replace various odd helpers that use hlist_for_each_entry to get
+>    the first elemenet of a list with either a hlist_for_each_entry_save
+>    or an opencoded access to the first element in the caller
+>  - inline add_rp_inst into it's only remaining caller
+>  - use kretprobe_inst_table_head instead of opencoding it
 
-I haven't gotten that far yet.  A gentleman named Dave Dillow has shown me 
-how to demo the problem using only tar in a scripting environment, and it 
-is repeatable on a per kernel good or bad basis.
-So far, the only difference that I'm seeing is in the Device: line of a 
-stat . report, that first number of that line changes from good kernel to 
-bad kernel.
+This certainly looks better... Thanks Christoph
+ 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
->From another email I sent Dave an hour or so ago:
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-For a good kernel, 2.6.20.3-rdsl-0.31:
-[root@coyote bad-kernel]# cd /usr/music
-[root@coyote music]# stat .
-  File: `.'
-  Size: 4096            Blocks: 16         IO Block: 4096   directory
-Device: fd00h/64768d    Inode: 10354963    Links: 39
-Access: (0755/drwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
-Access: 2007-04-01 21:07:14.000000000 -0400
-Modify: 2006-11-12 06:41:00.000000000 -0500
-Change: 2007-01-19 13:15:22.000000000 -0500
-[root@coyote music]#                                                               
-
-Now rebooted to 2.6.21-rc5:
-[root@coyote ~]# cd /usr/music
-[root@coyote music]# stat .
-  File: `.'
-  Size: 4096            Blocks: 16         IO Block: 4096   directory
-Device: ee00h/60928d    Inode: 10354963    Links: 39
-Access: (0755/drwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
-Access: 2007-04-01 21:07:14.000000000 -0400
-Modify: 2006-11-12 06:41:00.000000000 -0500
-Change: 2007-01-19 13:15:22.000000000 -0500
-
-What is this difference in the Device: line supposed to mean?
-
-And are we 'getting warmer' here?
-
-Thanks.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-i dont even know if it makes sense at all :) This is an experimental patch
-for an experimental kernel :))
-	-- Ingo Molnar on linux-kernel
+> 
+> Index: linux-2.6/arch/i386/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.orig/arch/i386/kernel/kprobes.c	2007-03-31 14:31:24.000000000 +0200
+> +++ linux-2.6/arch/i386/kernel/kprobes.c	2007-03-31 14:47:40.000000000 +0200
+> @@ -226,24 +226,15 @@ static void __kprobes prepare_singlestep
+>  }
+> 
+>  /* Called with kretprobe_lock held */
+> -void __kprobes arch_prepare_kretprobe(struct kretprobe *rp,
+> +void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  				      struct pt_regs *regs)
+>  {
+>  	unsigned long *sara = (unsigned long *)&regs->esp;
+> 
+> -	struct kretprobe_instance *ri;
+> +	ri->ret_addr = (kprobe_opcode_t *) *sara;
+> 
+> -	if ((ri = get_free_rp_inst(rp)) != NULL) {
+> -		ri->rp = rp;
+> -		ri->task = current;
+> -		ri->ret_addr = (kprobe_opcode_t *) *sara;
+> -
+> -		/* Replace the return addr with trampoline addr */
+> -		*sara = (unsigned long) &kretprobe_trampoline;
+> -		add_rp_inst(ri);
+> -	} else {
+> -		rp->nmissed++;
+> -	}
+> +	/* Replace the return addr with trampoline addr */
+> +	*sara = (unsigned long) &kretprobe_trampoline;
+>  }
+> 
+>  /*
+> Index: linux-2.6/arch/ia64/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.orig/arch/ia64/kernel/kprobes.c	2007-03-31 14:31:24.000000000 +0200
+> +++ linux-2.6/arch/ia64/kernel/kprobes.c	2007-03-31 14:35:39.000000000 +0200
+> @@ -464,23 +464,13 @@ int __kprobes trampoline_probe_handler(s
+>  }
+> 
+>  /* Called with kretprobe_lock held */
+> -void __kprobes arch_prepare_kretprobe(struct kretprobe *rp,
+> +void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  				      struct pt_regs *regs)
+>  {
+> -	struct kretprobe_instance *ri;
+> +	ri->ret_addr = (kprobe_opcode_t *)regs->b0;
+> 
+> -	if ((ri = get_free_rp_inst(rp)) != NULL) {
+> -		ri->rp = rp;
+> -		ri->task = current;
+> -		ri->ret_addr = (kprobe_opcode_t *)regs->b0;
+> -
+> -		/* Replace the return addr with trampoline addr */
+> -		regs->b0 = ((struct fnptr *)kretprobe_trampoline)->ip;
+> -
+> -		add_rp_inst(ri);
+> -	} else {
+> -		rp->nmissed++;
+> -	}
+> +	/* Replace the return addr with trampoline addr */
+> +	regs->b0 = ((struct fnptr *)kretprobe_trampoline)->ip;
+>  }
+> 
+>  int __kprobes arch_prepare_kprobe(struct kprobe *p)
+> Index: linux-2.6/arch/powerpc/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/kprobes.c	2007-03-31 14:31:24.000000000 +0200
+> +++ linux-2.6/arch/powerpc/kernel/kprobes.c	2007-03-31 14:35:21.000000000 +0200
+> @@ -124,22 +124,13 @@ static void __kprobes set_current_kprobe
+>  }
+> 
+>  /* Called with kretprobe_lock held */
+> -void __kprobes arch_prepare_kretprobe(struct kretprobe *rp,
+> +void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  				      struct pt_regs *regs)
+>  {
+> -	struct kretprobe_instance *ri;
+> +	ri->ret_addr = (kprobe_opcode_t *)regs->link;
+> 
+> -	if ((ri = get_free_rp_inst(rp)) != NULL) {
+> -		ri->rp = rp;
+> -		ri->task = current;
+> -		ri->ret_addr = (kprobe_opcode_t *)regs->link;
+> -
+> -		/* Replace the return addr with trampoline addr */
+> -		regs->link = (unsigned long)kretprobe_trampoline;
+> -		add_rp_inst(ri);
+> -	} else {
+> -		rp->nmissed++;
+> -	}
+> +	/* Replace the return addr with trampoline addr */
+> +	regs->link = (unsigned long)kretprobe_trampoline;
+>  }
+> 
+>  static int __kprobes kprobe_handler(struct pt_regs *regs)
+> Index: linux-2.6/arch/s390/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.orig/arch/s390/kernel/kprobes.c	2007-03-31 14:31:24.000000000 +0200
+> +++ linux-2.6/arch/s390/kernel/kprobes.c	2007-03-31 14:35:09.000000000 +0200
+> @@ -271,23 +271,13 @@ static void __kprobes set_current_kprobe
+>  }
+> 
+>  /* Called with kretprobe_lock held */
+> -void __kprobes arch_prepare_kretprobe(struct kretprobe *rp,
+> +void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  					struct pt_regs *regs)
+>  {
+> -	struct kretprobe_instance *ri;
+> +	ri->ret_addr = (kprobe_opcode_t *) regs->gprs[14];
+> 
+> -	if ((ri = get_free_rp_inst(rp)) != NULL) {
+> -		ri->rp = rp;
+> -		ri->task = current;
+> -		ri->ret_addr = (kprobe_opcode_t *) regs->gprs[14];
+> -
+> -		/* Replace the return addr with trampoline addr */
+> -		regs->gprs[14] = (unsigned long)&kretprobe_trampoline;
+> -
+> -		add_rp_inst(ri);
+> -	} else {
+> -		rp->nmissed++;
+> -	}
+> +	/* Replace the return addr with trampoline addr */
+> +	regs->gprs[14] = (unsigned long)&kretprobe_trampoline;
+>  }
+> 
+>  static int __kprobes kprobe_handler(struct pt_regs *regs)
+> Index: linux-2.6/arch/x86_64/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86_64/kernel/kprobes.c	2007-03-31 14:31:24.000000000 +0200
+> +++ linux-2.6/arch/x86_64/kernel/kprobes.c	2007-03-31 14:34:46.000000000 +0200
+> @@ -266,23 +266,14 @@ static void __kprobes prepare_singlestep
+>  }
+> 
+>  /* Called with kretprobe_lock held */
+> -void __kprobes arch_prepare_kretprobe(struct kretprobe *rp,
+> +void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  				      struct pt_regs *regs)
+>  {
+>  	unsigned long *sara = (unsigned long *)regs->rsp;
+> -	struct kretprobe_instance *ri;
+> 
+> -	if ((ri = get_free_rp_inst(rp)) != NULL) {
+> -		ri->rp = rp;
+> -		ri->task = current;
+> -		ri->ret_addr = (kprobe_opcode_t *) *sara;
+> -
+> -		/* Replace the return addr with trampoline addr */
+> -		*sara = (unsigned long) &kretprobe_trampoline;
+> -		add_rp_inst(ri);
+> -	} else {
+> -		rp->nmissed++;
+> -	}
+> +	ri->ret_addr = (kprobe_opcode_t *) *sara;
+> +	/* Replace the return addr with trampoline addr */
+> +	*sara = (unsigned long) &kretprobe_trampoline;
+>  }
+> 
+>  int __kprobes kprobe_handler(struct pt_regs *regs)
+> Index: linux-2.6/include/linux/kprobes.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/kprobes.h	2007-03-31 14:36:00.000000000 +0200
+> +++ linux-2.6/include/linux/kprobes.h	2007-03-31 14:41:13.000000000 +0200
+> @@ -123,7 +123,8 @@ DECLARE_PER_CPU(struct kprobe *, current
+>  DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+> 
+>  #ifdef ARCH_SUPPORTS_KRETPROBES
+> -extern void arch_prepare_kretprobe(struct kretprobe *rp, struct pt_regs *regs);
+> +extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
+> +				   struct pt_regs *regs);
+>  #else /* ARCH_SUPPORTS_KRETPROBES */
+>  static inline void arch_prepare_kretprobe(struct kretprobe *rp,
+>  					struct pt_regs *regs)
+> @@ -199,8 +200,6 @@ void jprobe_return(void);
+>  int register_kretprobe(struct kretprobe *rp);
+>  void unregister_kretprobe(struct kretprobe *rp);
+> 
+> -struct kretprobe_instance *get_free_rp_inst(struct kretprobe *rp);
+> -void add_rp_inst(struct kretprobe_instance *ri);
+>  void kprobe_flush_task(struct task_struct *tk);
+>  void recycle_rp_inst(struct kretprobe_instance *ri, struct hlist_head *head);
+>  #else /* CONFIG_KPROBES */
+> Index: linux-2.6/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/kprobes.c	2007-03-31 14:26:22.000000000 +0200
+> +++ linux-2.6/kernel/kprobes.c	2007-03-31 14:46:54.000000000 +0200
+> @@ -357,46 +357,6 @@ void __kprobes kprobes_inc_nmissed_count
+>  }
+> 
+>  /* Called with kretprobe_lock held */
+> -struct kretprobe_instance __kprobes *get_free_rp_inst(struct kretprobe *rp)
+> -{
+> -	struct hlist_node *node;
+> -	struct kretprobe_instance *ri;
+> -	hlist_for_each_entry(ri, node, &rp->free_instances, uflist)
+> -		return ri;
+> -	return NULL;
+> -}
+> -
+> -/* Called with kretprobe_lock held */
+> -static struct kretprobe_instance __kprobes *get_used_rp_inst(struct kretprobe
+> -							      *rp)
+> -{
+> -	struct hlist_node *node;
+> -	struct kretprobe_instance *ri;
+> -	hlist_for_each_entry(ri, node, &rp->used_instances, uflist)
+> -		return ri;
+> -	return NULL;
+> -}
+> -
+> -/* Called with kretprobe_lock held */
+> -void __kprobes add_rp_inst(struct kretprobe_instance *ri)
+> -{
+> -	/*
+> -	 * Remove rp inst off the free list -
+> -	 * Add it back when probed function returns
+> -	 */
+> -	hlist_del(&ri->uflist);
+> -
+> -	/* Add rp inst onto table */
+> -	INIT_HLIST_NODE(&ri->hlist);
+> -	hlist_add_head(&ri->hlist,
+> -			&kretprobe_inst_table[hash_ptr(ri->task, KPROBE_HASH_BITS)]);
+> -
+> -	/* Also add this rp inst to the used list. */
+> -	INIT_HLIST_NODE(&ri->uflist);
+> -	hlist_add_head(&ri->uflist, &ri->rp->used_instances);
+> -}
+> -
+> -/* Called with kretprobe_lock held */
+>  void __kprobes recycle_rp_inst(struct kretprobe_instance *ri,
+>  				struct hlist_head *head)
+>  {
+> @@ -449,7 +409,9 @@ void __kprobes kprobe_flush_task(struct 
+>  static inline void free_rp_inst(struct kretprobe *rp)
+>  {
+>  	struct kretprobe_instance *ri;
+> -	while ((ri = get_free_rp_inst(rp)) != NULL) {
+> +	struct hlist_node *pos, *next;
+> +
+> +	hlist_for_each_entry_safe(ri, pos, next, &rp->free_instances, uflist) {
+>  		hlist_del(&ri->uflist);
+>  		kfree(ri);
+>  	}
+> @@ -731,7 +693,21 @@ static int __kprobes pre_handler_kretpro
+> 
+>  	/*TODO: consider to only swap the RA after the last pre_handler fired */
+>  	spin_lock_irqsave(&kretprobe_lock, flags);
+> -	arch_prepare_kretprobe(rp, regs);
+> +	if (!hlist_empty(&rp->free_instances)) {
+> +		struct kretprobe_instance *ri;
+> +
+> +		ri = hlist_entry(rp->free_instances.first,
+> +				 struct kretprobe_instance, uflist);
+> +		ri->rp = rp;
+> +		ri->task = current;
+> +		arch_prepare_kretprobe(ri, regs);
+> +
+> +		/* XXX(hch): why is there no hlist_move_head? */
+> +		hlist_del(&ri->uflist);
+> +		hlist_add_head(&ri->uflist, &ri->rp->used_instances);
+> +		hlist_add_head(&ri->hlist, kretprobe_inst_table_head(ri->task));
+> +	} else
+> +		rp->nmissed++;
+>  	spin_unlock_irqrestore(&kretprobe_lock, flags);
+>  	return 0;
+>  }
+> @@ -794,11 +770,13 @@ void __kprobes unregister_kretprobe(stru
+>  {
+>  	unsigned long flags;
+>  	struct kretprobe_instance *ri;
+> +	struct hlist_node *pos, *next;
+> 
+>  	unregister_kprobe(&rp->kp);
+> +
+>  	/* No race here */
+>  	spin_lock_irqsave(&kretprobe_lock, flags);
+> -	while ((ri = get_used_rp_inst(rp)) != NULL) {
+> +	hlist_for_each_entry_safe(ri, pos, next, &rp->used_instances, uflist) {
+>  		ri->rp = NULL;
+>  		hlist_del(&ri->uflist);
+>  	}
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
