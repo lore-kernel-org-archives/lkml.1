@@ -1,131 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXDBIol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbXDBIxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbXDBIol (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 04:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbXDBIol
+	id S1753425AbXDBIxO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 04:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbXDBIxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 04:44:41 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37177 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbXDBIok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 04:44:40 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: vgoyal@in.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jurriaan <thunder7@xs4all.nl>,
-       Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm3 - no boot, "address not 2M aligned"
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
-	<20070331071220.GA26910@aitel.hist.no>
-	<20070331005303.354411f0.akpm@linux-foundation.org>
-	<20070401052932.GA9894@amd64.of.nowhere>
-	<m1ircghb6w.fsf@ebiederm.dsl.xmission.com>
-	<20070331232957.e1c93f19.akpm@linux-foundation.org>
-	<20070402074159.GA13704@in.ibm.com>
-Date: Mon, 02 Apr 2007 02:43:56 -0600
-In-Reply-To: <20070402074159.GA13704@in.ibm.com> (Vivek Goyal's message of
-	"Mon, 2 Apr 2007 13:11:59 +0530")
-Message-ID: <m1abxrf9o3.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 2 Apr 2007 04:53:14 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49437 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753420AbXDBIxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 04:53:13 -0400
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 2 Apr 2007 18:53:04 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17936.50288.892586.831178@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] md: Avoid a deadlock when removing a device from an md
+ array via sysfs.
+In-Reply-To: message from Andrew Morton on Monday April 2
+References: <20070402174319.30997.patches@notabene>
+	<1070402074417.31093@suse.de>
+	<20070402010141.3ad5516d.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@in.ibm.com> writes:
+On Monday April 2, akpm@linux-foundation.org wrote:
+> 
+> What guarantees that *rdev is still valid when delayed_delete() runs?
 
-> On Sat, Mar 31, 2007 at 11:29:57PM -0700, Andrew Morton wrote:
->> On Sun, 01 Apr 2007 00:15:51 -0600 ebiederm@xmission.com (Eric W. Biederman)
-> wrote:
->> 
->> > Does anyone know how to express the constraint of a 2M aligned number in
-> Kconfig?
->> 
->> Nope, but we could make CONFIG_PHYSICAL_START be in units of 2MB, which
->> would be a bit hard to use.
->> 
->> Adding a BUILD_BUG_ON which checks this constraint might help.  Plus a
->> useful comment right at the BUILD_BUG_ON site explaining what to do about
->> it.
->
-> How about attached patch?
+Because that is how kobjects and krefs work.  There is an embedded
+refcount etc etc..
 
-Looks like that will work.
+> 
+> And what guarantees that the md module hasn't been rmmodded when
+> delayed_delete() tries to run?
 
-Vivek.  If I can get the x86_64 vmlinux to have type ET_DYN (to mark
-it as relocatable) is there any reason to keep CONFIG_PHYSICAL_START?
-I think I can switch the vmlinux header type in about 100 lines or so
-of code.  Assuming I can ever get 30 minutes with the appropriate
-kernel.
+Good point.  Nothing.  Maybe this patch is needed.
 
-> Thanks
-> Vivek
->
->
->
-> o X86_64 kernel should run from 2MB aligned address for two reasons.
-> 	- Performance.
-> 	- For relocatable kernels, page tables are updated based on difference
-> 	  between compile time address and load time physical address.
-> 	  This difference should be multiple of 2MB as kernel text and data
-> 	  is mapped using 2MB pages and PMD should be pointing to a 2MB
-> 	  aligned address. Life is simpler if both compile time and load time
-> 	  kernel addresses are 2MB aligned.
->
-> o Flag the error at compile time if one is trying to build a kernel which
->   does not meet alignment restrictions.
->
-> Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
-> ---
->
->  arch/x86_64/kernel/head64.c |    8 ++++++++
->  include/asm-x86_64/page.h   |    1 +
->  2 files changed, 9 insertions(+)
->
-> diff -puN
-> arch/x86_64/kernel/head64.c~x86_64-check-for-config-physical-start-aligned-2M
-> arch/x86_64/kernel/head64.c
-> ---
-> linux-2.6.21-rc5-mm3-vanilla/arch/x86_64/kernel/head64.c~x86_64-check-for-config-physical-start-aligned-2M
-> 2007-04-02 20:46:43.000000000 +0530
-> +++ linux-2.6.21-rc5-mm3-vanilla-root/arch/x86_64/kernel/head64.c 2007-04-02
-> 21:20:45.000000000 +0530
-> @@ -62,6 +62,14 @@ void __init x86_64_start_kernel(char * r
->  {
->  	int i;
->  
-> +	/*
-> +	 * Make sure kernel is aligned to 2MB address. Catching it at compile
-> +	 * time is better. Change your config file and compile the kernel
-> +	 * for a 2MB aligned address (CONFIG_PHYSICAL_START)
-> +	 */
-> +	BUILD_BUG_ON(ALIGN(CONFIG_PHYSICAL_START, __KERNEL_ALIGN)
-> +			!= CONFIG_PHYSICAL_START);
+Thanks,
+NeilBrown
 
-Just as a nit.
-     	BUILD_BUG_ON(CONFIG_PHYSICAL_START & (__KERNEL_ALIGN - 1))
-is a little shorter...   Although maybe not quite as readable.
-> +
->  	/* clear bss before set_intr_gate with early_idt_handler */
->  	clear_bss();
->  
-> diff -puN
-> include/asm-x86_64/page.h~x86_64-check-for-config-physical-start-aligned-2M
-> include/asm-x86_64/page.h
-> ---
-> linux-2.6.21-rc5-mm3-vanilla/include/asm-x86_64/page.h~x86_64-check-for-config-physical-start-aligned-2M
-> 2007-04-02 20:50:55.000000000 +0530
-> +++ linux-2.6.21-rc5-mm3-vanilla-root/include/asm-x86_64/page.h 2007-04-02
-> 20:51:34.000000000 +0530
-> @@ -79,6 +79,7 @@ extern unsigned long phys_base;
->  #endif /* !__ASSEMBLY__ */
->  
->  #define __PHYSICAL_START	CONFIG_PHYSICAL_START
-> +#define __KERNEL_ALIGN		0x200000
->  #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
->  #define __START_KERNEL_map	0xffffffff80000000
->  #define __PAGE_OFFSET           0xffff810000000000
+---------------------------
+Avoid a deadlock when removing a device from an md array via sysfs. - fix
 
-Do we want to use the __KERNEL_ALIGN directive in the test in misc.c?
+Make sure any delayed_delete calls finish before module unload.
+For simplicity, flush the queue when we stop the array.
 
-Eric
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./drivers/md/md.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff .prev/drivers/md/md.c ./drivers/md/md.c
+--- .prev/drivers/md/md.c	2007-04-02 17:38:46.000000000 +1000
++++ ./drivers/md/md.c	2007-04-02 18:49:24.000000000 +1000
+@@ -3410,6 +3410,9 @@ static int do_md_stop(mddev_t * mddev, i
+ 				sysfs_remove_link(&mddev->kobj, nm);
+ 			}
+ 
++		/* make sure all delayed_delete calls have finished */
++		flush_scheduled_work();
++
+ 		export_array(mddev);
+ 
+ 		mddev->array_size = 0;
