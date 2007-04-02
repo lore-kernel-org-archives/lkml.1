@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965051AbXDBRaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752352AbXDBRek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965051AbXDBRaS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 13:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965052AbXDBRaR
+	id S1752352AbXDBRek (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 13:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXDBRek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 13:30:17 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:49836 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965051AbXDBRaQ (ORCPT
+	Mon, 2 Apr 2007 13:34:40 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59440 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752366AbXDBRej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 13:30:16 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 2 Apr 2007 10:30:11 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 6/13] signal/timer/event fds v9 - timerfd core ...
-In-Reply-To: <1175498549.28263.88.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704021025570.26489@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.16816.1175371772.6> 
- <1175418341.28263.64.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0704010941490.26331@alien.or.mcafeemobile.com>
- <1175498549.28263.88.camel@localhost.localdomain>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 2 Apr 2007 13:34:39 -0400
+Date: Mon, 2 Apr 2007 10:34:38 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+In-Reply-To: <200704021914.07541.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0704021032150.31053@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+ <200704021744.39880.ak@suse.de> <Pine.LNX.4.64.0704020851300.30394@schroedinger.engr.sgi.com>
+ <200704021914.07541.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Thomas Gleixner wrote:
+On Mon, 2 Apr 2007, Andi Kleen wrote:
 
-> The DoS is simple: create a bunch of periodic timers with 10usec period.
-> This can be done by any user.
-
-Ok, that's what I immagined. Agreed, that's a problem.
-
-
-
-> There is no inaccuracy when you rearm the timer on read: hrtimer_forward
-> takes care, that the period is accurate. It does not start the timer out
-> of the periodic order, i.e. on a different time frame.
+> > No no no. For the gazillions time: All of 1-1 mapped kernel memory on 
+> > x86_64 needs a 2 MB page table entry. The virtual memmap uses the same. 
+> > There are *no* additional TLBs used.
 > 
-> Where is the win of keeping the timer running, when nobody cares about
-> the expiry at all ? It just generates interrupts and events for nothing.
+> But why do you reserve an own virtual area then if you claim to not use any
+> additional mappings? 
 
-Then you'd lose the ability to know if you lost one or more (yes, you 
-could figure it out by reading the time and with a few calculations). I 
-think that the capping (to a sane value) idea solves the DoS issue and at 
-the same time have the ability to report you missed ticks. What are your 
-strong points against that solution?
+The 1-1 area using mappings for 2MB pages right? So it uses a virtual 1-1 
+area. It already has a virtual mapping.
 
+What we do for virtual memmap here is also use 2MB pages but order the 
+pages a bit different so that they provide a linear memory map.
 
-
-- Davide
-
+So the number of TLBs in use stays the same. There are a few additional 
+higher level page table pages that are needed to provide the alternate 
+view that generates the linear mapping but that is just a couple of pages.
 
