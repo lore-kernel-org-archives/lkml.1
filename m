@@ -1,93 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965701AbXDBTE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965698AbXDBTFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965701AbXDBTE6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 15:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965698AbXDBTE6
+	id S965698AbXDBTFN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 15:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965699AbXDBTFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 15:04:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51091 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965692AbXDBTE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 15:04:57 -0400
-Date: Mon, 2 Apr 2007 21:04:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "dave_sperry@ieee.org" <dasperry@comcast.net>
-Cc: Dave Sperry <dave_sperry@ieee.org>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
-Message-ID: <20070402190445.GB2081@elte.hu>
-References: <040220071750.11488.461142790008679B00002CE02206424413979D9D0A9F9C0E0B@comcast.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <040220071750.11488.461142790008679B00002CE02206424413979D9D0A9F9C0E0B@comcast.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 2 Apr 2007 15:05:13 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:22170 "EHLO
+	outbound3-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965698AbXDBTFK convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 15:05:10 -0400
+X-BigFish: VP
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: Warning: unable to open an initial console.
+Date: Mon, 2 Apr 2007 12:04:56 -0700
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Warning: unable to open an initial console.
+Thread-Index: Acd1Wc1hrKotbialRiSww9D+/60QIg==
+From: "Tom Strader" <tom.strader@xilinx.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 Apr 2007 19:04:57.0182 (UTC) FILETIME=[CDFD57E0:01C77559]
+Message-Id: <20070402190458.0EDD039005F@mail42-fra.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have seen quite a few posts regarding unable to open an initial console, but my system seems to have the necessary things in place so I come looking for help.  I have not yet subscribed to this mailing list so please CC the responses to me.  Quick summary before we get to console output, this is running on a PXA270 with 16MB flash at 0x00000000, 128MB RAM at 0xa0000000.  I am able to bring up U-boot and run ls /dev and the console appears there.  The only components on the board are memory so I am just going for a basic boot for now.  I guess my question is, what are some of the reasons for the console not to start.  Also just as a side note, the kernel appears to continue past "Warning: unable to open an initial console." And find /sbin/init but then goes to an idle loop.  With that said here is the output so hopefully we can fix it.  I am fairly new to linux so if I missed anything let me know.
 
-* dave_sperry@ieee.org <dasperry@comcast.net> wrote:
+Thanks,
+Tom.Strader@Xilinx.com
 
-> The Intel NIC seems to behave better under RT
+U-Boot 1.1.6 (Mar 30 2007 - 14:52:10)
 
-yeah.
+U-Boot code: A1700000 -> A17201BC  BSS: -> A175240C
+RAM Configuration:
+Bank #0: a0000000 64 MB
+Bank #1: a4000000  0 kB
+Bank #2: a8000000  0 kB
+Bank #3: ac000000  0 kB
+Flash: 16 MB
+In:    serial
+Out:   serial
+Err:   serial
+Hit any key to stop autoboot:  0
+## Booting image at 00040000 ...
+   Image Name:   Linux-2.6.17-pcm027-3
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    754152 Bytes = 736.5 kB
+   Load Address: a0008000
+   Entry Point:  a0008000
+   Verifying Checksum ... OK
+OK
 
-> I think there is some kind of bad behavior happening in the Nvidia 
-> driver with respect to softirq-net-tx and IRQ-8406.
+Starting kernel ...
 
-yes. Part of the problem is that the forcedeth.c driver does not fully 
-support NAPI - today i've implemented those bits (see them below), based 
-on your testcase. The other part is that the Intel NIC uses MSI, while 
-foredeth uses fasteoi, correct? [you can see this in /proc/interrupts]
+Uncompressing Linux................................................... done, booting the kernel.
+Linux version 2.6.17-pcm027-3 (tstrader@xsjcfs20611) (gcc version 4.0.2) #7 PREEMPT Mon Apr 2 10:16:43 PDT 2007
+CPU: XScale-PXA270 [69054117] revision 7 (ARMv5TE)
+Machine: LogicPD PXA270 Card Engine
+Memory policy: ECC disabled, Data cache writeback
+On node 0 totalpages: 16384
+  DMA zone: 16384 pages, LIFO batch:3
+Run Mode clock: 91.00MHz (*7)
+Turbo Mode clock: 182.00MHz (*2.0, inactive)
+Memory clock: 91.00MHz (/1)
+System bus clock: 45.50MHz
+CPU0: D VIVT undefined 5 cache
+CPU0: I cache: 32768 bytes, associativity 32, 32 byte lines, 32 sets
+CPU0: D cache: 32768 bytes, associativity 32, 32 byte lines, 32 sets
+Built 1 zonelists
+Kernel command line: console=ttyS0,115200 loglevel=8 mtdparts=phys_mapped_flash:256k(uboot)ro,4096k(kernel),5m(uRamdisk),
+-(jffs2_root) root=/dev/mtdblock3 rootfstype=jffs2
+PID hash table entries: 512 (order: 9, 2048 bytes)
+Console: colour dummy device 80x30
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 64MB 0MB 0MB 0MB = 64MB total
+Memory: 63268KB available (1256K code, 261K data, 76K init)
+Calibrating delay loop... 90.52 BogoMIPS (lpj=452608)
+Mount-cache hash table entries: 512
+CPU: Testing write buffer coherency: ok
+Device 'sa1100-rtc' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-i2s' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-i2c.0' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-ir' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-uart.2' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-uart.1' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-uart.0' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-fb' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-udc' does not have a release() function, it is broken and must be fixed.
+Device 'pxa2xx-mci' does not have a release() function, it is broken and must be fixed.
+Initialising gpio device class.
+gpio: Unrecognized option ""
+JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
+fuse init (API version 7.6)
+io scheduler noop registered (default)
+RAMDISK driver initialized: 8 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+physmap flash device: 1000000 at 0
+phys_mapped_flash: Found 1 x16 devices at 0x0 in 16-bit bank
+ Amd/Fujitsu Extended Query Table at 0x0040
+Using buffer write method
+phys_mapped_flash: CFI does not contain boot bank location. Assuming top.
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+4 cmdlinepart partitions found on MTD device phys_mapped_flash
+Creating 4 MTD partitions on "phys_mapped_flash":
+0x00000000-0x00040000 : "uboot"
+mtd: Giving out device 0 to uboot
+0x00040000-0x00440000 : "kernel"
+mtd: Giving out device 1 to kernel
+0x00440000-0x00940000 : "uRamdisk"
+mtd: Giving out device 2 to uRamdisk
+0x00940000-0x01000000 : "jffs2_root"
+mtd: Giving out device 3 to jffs2_root
+mice: PS/2 mouse device common for all mice
+i2c /dev entries driver
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a1c: 0x3e18 instead
+Empty flash at 0x003c7a28 ends at 0x003c7a2c
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a38: 0x3e38 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a3c: 0x3e38 instead
+Empty flash at 0x003c7a48 ends at 0x003c7a4c
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a58: 0x3e58 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a5c: 0x3e58 instead
+Empty flash at 0x003c7a68 ends at 0x003c7a6c
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a78: 0x3e78 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a7c: 0x3e78 instead
+Empty flash at 0x003c7a88 ends at 0x003c7a8c
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a98: 0x3e98 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7a9c: 0x3e98 instead
+Empty flash at 0x003c7aa8 ends at 0x003c7aac
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x003c7ab8: 0x3eb8 instead
+Further such events for this erase block will not be printed
+Empty flash at 0x003c7ac8 ends at 0x003c7acc
+...
+Empty flash at 0x003cffe8 ends at 0x003cffec
+VFS: Mounted root (jffs2 filesystem).
+Freeing init memory: 76K
+Warning: unable to open an initial console.
 
-there are a few other things i'm working on to improve this. I've 
-uploaded -rt9 which is the current state of affairs. Note that using 
--rt9 you'll likely only see IRQ-8406 overhead in the system, because 
-i've added an optimization to do process the softirq-net-tx workload in 
-the hardirq thread if the priority of the two is the same (which is the 
-default behavior). But -rt9 is still work in progress that is not fully 
-finished yet: in some cases i'm seeing 'fluctuating performance' 
-problems on forcedeth that werent there before.
 
-	Ingo
-
---------------------->
-From: Ingo Molnar <mingo@elte.hu>
-Subject: [patch] forcedeth.c: improve NAPI handler
-
-another forcedeth.c thing: i noticed that its NAPI handler does not do 
-tx-ring processing. The patch below implements this - tested on 
-DESC_VER_2 hardware, with CONFIG_FORCEDETH_NAPI=y.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-Index: linux/drivers/net/forcedeth.c
-===================================================================
---- linux.orig/drivers/net/forcedeth.c
-+++ linux/drivers/net/forcedeth.c
-@@ -3118,9 +3118,17 @@ static int nv_napi_poll(struct net_devic
- 	int retcode;
- 
- 	if (np->desc_ver == DESC_VER_1 || np->desc_ver == DESC_VER_2) {
-+		spin_lock_irqsave(&np->lock, flags);
-+		nv_tx_done(dev);
-+		spin_unlock_irqrestore(&np->lock, flags);
-+
- 		pkts = nv_rx_process(dev, limit);
- 		retcode = nv_alloc_rx(dev);
- 	} else {
-+		spin_lock_irqsave(&np->lock, flags);
-+		nv_tx_done_optimized(dev, np->tx_ring_size);
-+		spin_unlock_irqrestore(&np->lock, flags);
-+
- 		pkts = nv_rx_process_optimized(dev, limit);
- 		retcode = nv_alloc_rx_optimized(dev);
- 	}
