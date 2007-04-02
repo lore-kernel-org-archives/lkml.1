@@ -1,933 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932773AbXDBGAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933413AbXDBGAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932773AbXDBGAm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 02:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbXDBGAU
+	id S933413AbXDBGAn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 02:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbXDBGAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 02:00:20 -0400
-Received: from gw.goop.org ([64.81.55.164]:38285 "EHLO mail.goop.org"
+	Mon, 2 Apr 2007 02:00:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:38307 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933631AbXDBF7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 01:59:14 -0400
-Message-Id: <20070402055705.090656820@goop.org>
+	id S932773AbXDBF7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 01:59:15 -0400
+Message-Id: <20070402055705.499213579@goop.org>
 References: <20070402055652.610711908@goop.org>
 User-Agent: quilt/0.46-1
-Date: Sun, 01 Apr 2007 22:57:04 -0700
+Date: Sun, 01 Apr 2007 22:57:08 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: [patch 12/17] Consistently wrap paravirt ops callsites to make them patchable
-Content-Disposition: inline; filename=paravirt-patchable-call-wrappers.patch
+       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>
+Subject: [patch 16/17] add kmap_atomic_pte for mapping highpte pages
+Content-Disposition: inline; filename=paravirt-kmap_atomic_pte.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap a set of interesting paravirt_ops calls in a wrapper which makes
-the callsites available for patching.  Unfortunately this is pretty
-ugly because there's no way to get gcc to generate a function call,
-but also wrap just the callsite itself with the necessary labels.
+Xen and VMI both have special requirements when mapping a highmem pte
+page into the kernel address space.  These can be dealt with by adding
+a new kmap_atomic_pte() function for mapping highptes, and hooking it
+into the paravirt_ops infrastructure.
 
-This patch supports functions with 0-4 arguments, and either void or
-returning a value.  64-bit arguments must be split into a pair of
-32-bit arguments (lower word first).  Small structures are returned in
-registers.
+Xen specifically wants to map the pte page RO, so this patch exposes a
+helper function, kmap_atomic_prot, which maps the page with the
+specified page protections.
+
+This also adds a kmap_flush_unused() function to clear out the cached
+kmap mappings.  Xen needs this to clear out any potential stray RW
+mappings of pages which will become part of a pagetable.
+
+[ Zach - vmi.c will need some attention after this patch.  It wasn't
+  immediately obvious to me what needs to be done. ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Zachary Amsden <zach@vmware.com>
-Cc: Anthony Liguori <anthony@codemonkey.ws>
 
 ---
- include/asm-i386/paravirt.h |  715 ++++++++++++++++++++++++++++++++++---------
- 1 file changed, 569 insertions(+), 146 deletions(-)
+ arch/i386/kernel/paravirt.c |    7 +++++++
+ arch/i386/mm/highmem.c      |    9 +++++++--
+ include/asm-i386/highmem.h  |   11 +++++++++++
+ include/asm-i386/paravirt.h |   13 ++++++++++++-
+ include/asm-i386/pgtable.h  |    4 ++--
+ include/linux/highmem.h     |    6 ++++++
+ mm/highmem.c                |    9 +++++++++
+ 7 files changed, 54 insertions(+), 5 deletions(-)
 
+===================================================================
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -20,6 +20,7 @@
+ #include <linux/efi.h>
+ #include <linux/bcd.h>
+ #include <linux/start_kernel.h>
++#include <linux/highmem.h>
+ 
+ #include <asm/bug.h>
+ #include <asm/paravirt.h>
+@@ -318,6 +319,12 @@ struct paravirt_ops paravirt_ops = {
+ 
+ 	.ptep_get_and_clear = native_ptep_get_and_clear,
+ 
++#ifdef CONFIG_HIGHPTE
++	.kmap_atomic_pte = native_kmap_atomic_pte,
++#else
++	.kmap_atomic_pte = paravirt_nop,
++#endif
++
+ #ifdef CONFIG_X86_PAE
+ 	.set_pte_atomic = native_set_pte_atomic,
+ 	.set_pte_present = native_set_pte_present,
+===================================================================
+--- a/arch/i386/mm/highmem.c
++++ b/arch/i386/mm/highmem.c
+@@ -26,7 +26,7 @@ void kunmap(struct page *page)
+  * However when holding an atomic kmap is is not legal to sleep, so atomic
+  * kmaps are appropriate for short, tight code paths only.
+  */
+-void *kmap_atomic(struct page *page, enum km_type type)
++void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
+ {
+ 	enum fixed_addresses idx;
+ 	unsigned long vaddr;
+@@ -41,9 +41,14 @@ void *kmap_atomic(struct page *page, enu
+ 		return page_address(page);
+ 
+ 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+-	set_pte(kmap_pte-idx, mk_pte(page, kmap_prot));
++	set_pte(kmap_pte-idx, mk_pte(page, prot));
+ 
+ 	return (void*) vaddr;
++}
++
++void *kmap_atomic(struct page *page, enum km_type type)
++{
++	return kmap_atomic_prot(page, type, kmap_prot);
+ }
+ 
+ void kunmap_atomic(void *kvaddr, enum km_type type)
+===================================================================
+--- a/include/asm-i386/highmem.h
++++ b/include/asm-i386/highmem.h
+@@ -24,6 +24,7 @@
+ #include <linux/threads.h>
+ #include <asm/kmap_types.h>
+ #include <asm/tlbflush.h>
++#include <asm/paravirt.h>
+ 
+ /* declarations for highmem.c */
+ extern unsigned long highstart_pfn, highend_pfn;
+@@ -67,10 +68,20 @@ extern void FASTCALL(kunmap_high(struct 
+ 
+ void *kmap(struct page *page);
+ void kunmap(struct page *page);
++void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot);
+ void *kmap_atomic(struct page *page, enum km_type type);
+ void kunmap_atomic(void *kvaddr, enum km_type type);
+ void *kmap_atomic_pfn(unsigned long pfn, enum km_type type);
+ struct page *kmap_atomic_to_page(void *ptr);
++
++static inline void *native_kmap_atomic_pte(struct page *page, enum km_type type)
++{
++	return kmap_atomic(page, type);
++}
++
++#ifndef CONFIG_PARAVIRT
++#define kmap_atomic_pte(page, type)	kmap_atomic(page, type)
++#endif
+ 
+ #define flush_cache_kmaps()	do { } while (0)
+ 
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -124,7 +124,7 @@ struct paravirt_ops
- 
- 	void (*flush_tlb_user)(void);
- 	void (*flush_tlb_kernel)(void);
--	void (*flush_tlb_single)(u32 addr);
-+	void (*flush_tlb_single)(unsigned long addr);
- 
- 	void (*map_pt_hook)(int type, pte_t *va, u32 pfn);
- 
-@@ -188,7 +188,7 @@ extern struct paravirt_ops paravirt_ops;
- #define paravirt_clobber(clobber)		\
- 	[paravirt_clobber] "i" (clobber)
- 
--#define PARAVIRT_CALL	"call *paravirt_ops+%c[paravirt_typenum]*4;"
-+#define PARAVIRT_CALL	"call *(paravirt_ops+%c[paravirt_typenum]*4);"
- 
- #define _paravirt_alt(insn_string, type, clobber)	\
- 	"771:\n\t" insn_string "\n" "772:\n"		\
-@@ -199,26 +199,234 @@ extern struct paravirt_ops paravirt_ops;
- 	"  .short " clobber "\n"			\
- 	".popsection\n"
- 
--#define paravirt_alt(insn_string)				\
-+#define paravirt_alt(insn_string)					\
- 	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
- 
--#define paravirt_enabled() (paravirt_ops.paravirt_enabled)
-+#define PVOP_CALL0(__rettype, __op)					\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;		\
-+			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-+				     : "=a" (__tmp), "=d" (__edx),	\
-+				       "=c" (__ecx)			\
-+				     : paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL0(__op)						\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile(paravirt_alt(PARAVIRT_CALL)		\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : paravirt_type(__op),			\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+#define PVOP_CALL1(__rettype, __op, arg1)				\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : "a" ((u32)(arg1)),		\
-+				       paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;		\
-+			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-+				     : "=a" (__tmp), "=d" (__edx),	\
-+				       "=c" (__ecx)			\
-+				     : "0" ((u32)(arg1)),		\
-+				       paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL1(__op, arg1)						\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile(paravirt_alt(PARAVIRT_CALL)		\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : "0" ((u32)(arg1)),			\
-+			       paravirt_type(__op),			\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+#define PVOP_CALL2(__rettype, __op, arg1, arg2)				\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : "a" ((u32)(arg1)),		\
-+				       "d" ((u32)(arg2)),		\
-+				       paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;		\
-+			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-+				     : "=a" (__tmp), "=d" (__edx),	\
-+				       "=c" (__ecx)			\
-+				     : "0" ((u32)(arg1)),		\
-+				       "1" ((u32)(arg2)),		\
-+				       paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL2(__op, arg1, arg2)					\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile(paravirt_alt(PARAVIRT_CALL)		\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : "0" ((u32)(arg1)),			\
-+			       "1" ((u32)(arg2)),			\
-+			       paravirt_type(__op),			\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+#define PVOP_CALL3(__rettype, __op, arg1, arg2, arg3)			\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : "a" ((u32)(arg1)),		\
-+				       "d" ((u32)(arg2)),		\
-+				       "1" ((u32)(arg3)),		\
-+				       paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;	\
-+			asm volatile(paravirt_alt(PARAVIRT_CALL)	\
-+				     : "=a" (__tmp), "=d" (__edx),	\
-+				       "=c" (__ecx)			\
-+				     : "0" ((u32)(arg1)),		\
-+				       "1" ((u32)(arg2)),		\
-+				       "2" ((u32)(arg3)),		\
-+				       paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL3(__op, arg1, arg2, arg3)				\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile(paravirt_alt(PARAVIRT_CALL)		\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : "0" ((u32)(arg1)),			\
-+			       "1" ((u32)(arg2)),			\
-+			       "2" ((u32)(arg3)),			\
-+			       paravirt_type(__op),			\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+#define PVOP_CALL4(__rettype, __op, arg1, arg2, arg3, arg4)		\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile("push %[_arg4]; "			\
-+				     paravirt_alt(PARAVIRT_CALL)	\
-+				     "lea 4(%%esp),%%esp"		\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : "a" ((u32)(arg1)),		\
-+				       "d" ((u32)(arg2)),		\
-+				       "1" ((u32)(arg3)),		\
-+				       [_arg4] "mr" ((u32)(arg4)),	\
-+				       paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc",);		\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;		\
-+			asm volatile("push %[_arg4]; "			\
-+				     paravirt_alt(PARAVIRT_CALL)	\
-+				     "lea 4(%%esp),%%esp"		\
-+				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
-+				     : "0" ((u32)(arg1)),		\
-+				       "1" ((u32)(arg2)),		\
-+				       "2" ((u32)(arg3)),		\
-+				       [_arg4]"mr" ((u32)(arg4)),	\
-+				       paravirt_type(__op),		\
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL4(__op, arg1, arg2, arg3, arg4)			\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile("push %[_arg4]; "				\
-+			     paravirt_alt(PARAVIRT_CALL)		\
-+			     "lea 4(%%esp),%%esp"			\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : "0" ((u32)(arg1)),			\
-+			       "1" ((u32)(arg2)),			\
-+			       "2" ((u32)(arg3)),			\
-+			       [_arg4]"mr" ((u32)(arg4)),		\
-+			       paravirt_type(__op),			\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+static inline int paravirt_enabled(void)
-+{
-+	return paravirt_ops.paravirt_enabled;
-+}
- 
- static inline void load_esp0(struct tss_struct *tss,
- 			     struct thread_struct *thread)
- {
--	paravirt_ops.load_esp0(tss, thread);
-+	PVOP_VCALL2(load_esp0, tss, thread);
- }
- 
- #define ARCH_SETUP			paravirt_ops.arch_setup();
- static inline unsigned long get_wallclock(void)
- {
--	return paravirt_ops.get_wallclock();
-+	return PVOP_CALL0(unsigned long, get_wallclock);
- }
- 
- static inline int set_wallclock(unsigned long nowtime)
- {
--	return paravirt_ops.set_wallclock(nowtime);
-+	return PVOP_CALL1(int, set_wallclock, nowtime);
- }
- 
- static inline void (*choose_time_init(void))(void)
-@@ -230,127 +438,208 @@ static inline void __cpuid(unsigned int 
- static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
- 			   unsigned int *ecx, unsigned int *edx)
- {
--	paravirt_ops.cpuid(eax, ebx, ecx, edx);
-+	PVOP_VCALL4(cpuid, eax, ebx, ecx, edx);
- }
- 
- /*
-  * These special macros can be used to get or set a debugging register
-  */
--#define get_debugreg(var, reg) var = paravirt_ops.get_debugreg(reg)
--#define set_debugreg(val, reg) paravirt_ops.set_debugreg(reg, val)
+@@ -16,7 +16,9 @@
+ #ifndef __ASSEMBLY__
+ #include <linux/types.h>
+ #include <linux/cpumask.h>
 -
--#define clts() paravirt_ops.clts()
--
--#define read_cr0() paravirt_ops.read_cr0()
--#define write_cr0(x) paravirt_ops.write_cr0(x)
--
--#define read_cr2() paravirt_ops.read_cr2()
--#define write_cr2(x) paravirt_ops.write_cr2(x)
--
--#define read_cr3() paravirt_ops.read_cr3()
--#define write_cr3(x) paravirt_ops.write_cr3(x)
--
--#define read_cr4() paravirt_ops.read_cr4()
--#define read_cr4_safe(x) paravirt_ops.read_cr4_safe()
--#define write_cr4(x) paravirt_ops.write_cr4(x)
--
--#define raw_ptep_get_and_clear(xp)	(paravirt_ops.ptep_get_and_clear(xp))
-+static inline unsigned long paravirt_get_debugreg(int reg)
-+{
-+	return PVOP_CALL1(unsigned long, get_debugreg, reg);
-+}
-+#define get_debugreg(var, reg) var = paravirt_get_debugreg(reg)
-+static inline void set_debugreg(unsigned long val, int reg)
-+{
-+	PVOP_VCALL2(set_debugreg, reg, val);
-+}
++#include <asm/kmap_types.h>
 +
-+static inline void clts(void)
-+{
-+	PVOP_VCALL0(clts);
-+}
-+
-+static inline unsigned long read_cr0(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr0);
-+}
-+
-+static inline void write_cr0(unsigned long x)
-+{
-+	PVOP_VCALL1(write_cr0, x);
-+}
-+
-+static inline unsigned long read_cr2(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr2);
-+}
-+
-+static inline void write_cr2(unsigned long x)
-+{
-+	PVOP_VCALL1(write_cr2, x);
-+}
-+
-+static inline unsigned long read_cr3(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr3);
-+}
-+
-+static inline void write_cr3(unsigned long x)
-+{
-+	PVOP_VCALL1(write_cr3, x);
-+}
-+
-+static inline unsigned long read_cr4(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr4);
-+}
-+static inline unsigned long read_cr4_safe(void)
-+{
-+	return PVOP_CALL0(unsigned long, read_cr4_safe);
-+}
-+
-+static inline void write_cr4(unsigned long x)
-+{
-+	PVOP_VCALL1(write_cr4, x);
-+}
++struct page;
+ struct thread_struct;
+ struct Xgt_desc_struct;
+ struct tss_struct;
+@@ -143,6 +145,8 @@ struct paravirt_ops
+ 	void (*pte_update_defer)(struct mm_struct *mm, unsigned long addr, pte_t *ptep);
  
- static inline void raw_safe_halt(void)
- {
--	paravirt_ops.safe_halt();
-+	PVOP_VCALL0(safe_halt);
+  	pte_t (*ptep_get_and_clear)(pte_t *ptep);
++
++	void *(*kmap_atomic_pte)(struct page *page, enum km_type type);
+ 
+ #ifdef CONFIG_X86_PAE
+ 	void (*set_pte_atomic)(pte_t *ptep, pte_t pteval);
+@@ -768,6 +772,13 @@ static inline void paravirt_release_pd(u
+ 	PVOP_VCALL1(release_pd, pfn);
  }
  
- static inline void halt(void)
- {
--	paravirt_ops.safe_halt();
--}
--#define wbinvd() paravirt_ops.wbinvd()
-+	PVOP_VCALL0(safe_halt);
++static inline void *kmap_atomic_pte(struct page *page, enum km_type type)
++{
++	unsigned long ret;
++	ret = PVOP_CALL2(unsigned long, kmap_atomic_pte, page, type);
++	return (void *)ret;
 +}
 +
-+static inline void wbinvd(void)
-+{
-+	PVOP_VCALL0(wbinvd);
-+}
+ static inline void pte_update(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep)
+ {
+===================================================================
+--- a/include/asm-i386/pgtable.h
++++ b/include/asm-i386/pgtable.h
+@@ -481,9 +481,9 @@ extern pte_t *lookup_address(unsigned lo
  
- #define get_kernel_rpl()  (paravirt_ops.kernel_rpl)
+ #if defined(CONFIG_HIGHPTE)
+ #define pte_offset_map(dir, address) \
+-	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
++	((pte_t *)kmap_atomic_pte(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
+ #define pte_offset_map_nested(dir, address) \
+-	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
++	((pte_t *)kmap_atomic_pte(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
+ #define pte_unmap(pte) kunmap_atomic(pte, KM_PTE0)
+ #define pte_unmap_nested(pte) kunmap_atomic(pte, KM_PTE1)
+ #else
+===================================================================
+--- a/include/linux/highmem.h
++++ b/include/linux/highmem.h
+@@ -27,6 +27,8 @@ unsigned int nr_free_highpages(void);
+ unsigned int nr_free_highpages(void);
+ extern unsigned long totalhigh_pages;
  
-+static inline u64 paravirt_read_msr(unsigned msr, int *err)
-+{
-+	return PVOP_CALL2(u64, read_msr, msr, err);
-+}
-+static inline int paravirt_write_msr(unsigned msr, unsigned low, unsigned high)
-+{
-+	return PVOP_CALL3(int, write_msr, msr, low, high);
-+}
++void kmap_flush_unused(void);
 +
- /* These should all do BUG_ON(_err), but our headers are too tangled. */
--#define rdmsr(msr,val1,val2) do {				\
--	int _err;						\
--	u64 _l = paravirt_ops.read_msr(msr,&_err);		\
--	val1 = (u32)_l;						\
--	val2 = _l >> 32;					\
-+#define rdmsr(msr,val1,val2) do {		\
-+	int _err;				\
-+	u64 _l = paravirt_read_msr(msr, &_err);	\
-+	val1 = (u32)_l;				\
-+	val2 = _l >> 32;			\
- } while(0)
+ #else /* CONFIG_HIGHMEM */
  
--#define wrmsr(msr,val1,val2) do {				\
--	u64 _l = ((u64)(val2) << 32) | (val1);			\
--	paravirt_ops.write_msr((msr), _l);			\
-+#define wrmsr(msr,val1,val2) do {		\
-+	paravirt_write_msr(msr, val1, val2);	\
- } while(0)
+ static inline unsigned int nr_free_highpages(void) { return 0; }
+@@ -44,9 +46,13 @@ static inline void *kmap(struct page *pa
  
--#define rdmsrl(msr,val) do {					\
--	int _err;						\
--	val = paravirt_ops.read_msr((msr),&_err);		\
-+#define rdmsrl(msr,val) do {			\
-+	int _err;				\
-+	val = paravirt_read_msr(msr, &_err);	\
- } while(0)
- 
--#define wrmsrl(msr,val) (paravirt_ops.write_msr((msr),(val)))
--#define wrmsr_safe(msr,a,b) ({					\
--	u64 _l = ((u64)(b) << 32) | (a);			\
--	paravirt_ops.write_msr((msr),_l);			\
--})
-+#define wrmsrl(msr,val)		((void)paravirt_write_msr(msr, val, 0))
-+#define wrmsr_safe(msr,a,b)	paravirt_write_msr(msr, a, b)
- 
- /* rdmsr with exception handling */
--#define rdmsr_safe(msr,a,b) ({					\
--	int _err;						\
--	u64 _l = paravirt_ops.read_msr(msr,&_err);		\
--	(*a) = (u32)_l;						\
--	(*b) = _l >> 32;					\
-+#define rdmsr_safe(msr,a,b) ({			\
-+	int _err;				\
-+	u64 _l = paravirt_read_msr(msr, &_err);	\
-+	(*a) = (u32)_l;				\
-+	(*b) = _l >> 32;			\
- 	_err; })
- 
--#define rdtsc(low,high) do {					\
--	u64 _l = paravirt_ops.read_tsc();			\
--	low = (u32)_l;						\
--	high = _l >> 32;					\
+ #define kmap_atomic(page, idx) \
+ 	({ pagefault_disable(); page_address(page); })
++#define kmap_atomic_prot(page, idx, prot)	kmap_atomic(page, idx)
 +
-+static inline u64 paravirt_read_tsc(void)
-+{
-+	return PVOP_CALL0(u64, read_tsc);
-+}
-+#define rdtsc(low,high) do {			\
-+	u64 _l = paravirt_read_tsc();		\
-+	low = (u32)_l;				\
-+	high = _l >> 32;			\
- } while(0)
- 
--#define rdtscl(low) do {					\
--	u64 _l = paravirt_ops.read_tsc();			\
--	low = (int)_l;						\
-+#define rdtscl(low) do {			\
-+	u64 _l = paravirt_read_tsc();		\
-+	low = (int)_l;				\
- } while(0)
- 
--#define rdtscll(val) (val = paravirt_ops.read_tsc())
-+#define rdtscll(val) (val = paravirt_read_tsc())
- 
- #define get_scheduled_cycles(val) (val = paravirt_ops.get_scheduled_cycles())
- #define calculate_cpu_khz() (paravirt_ops.get_cpu_khz())
- 
- #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
- 
--#define rdpmc(counter,low,high) do {				\
--	u64 _l = paravirt_ops.read_pmc();			\
--	low = (u32)_l;						\
--	high = _l >> 32;					\
-+static inline unsigned long long paravirt_read_pmc(int counter)
-+{
-+	return PVOP_CALL1(u64, read_pmc, counter);
-+}
+ #define kunmap_atomic(addr, idx)	do { pagefault_enable(); } while (0)
+ #define kmap_atomic_pfn(pfn, idx)	kmap_atomic(pfn_to_page(pfn), (idx))
+ #define kmap_atomic_to_page(ptr)	virt_to_page(ptr)
 +
-+#define rdpmc(counter,low,high) do {		\
-+	u64 _l = paravirt_read_pmc(counter);	\
-+	low = (u32)_l;				\
-+	high = _l >> 32;			\
- } while(0)
- 
--#define load_TR_desc() (paravirt_ops.load_tr_desc())
--#define load_gdt(dtr) (paravirt_ops.load_gdt(dtr))
--#define load_idt(dtr) (paravirt_ops.load_idt(dtr))
--#define set_ldt(addr, entries) (paravirt_ops.set_ldt((addr), (entries)))
--#define store_gdt(dtr) (paravirt_ops.store_gdt(dtr))
--#define store_idt(dtr) (paravirt_ops.store_idt(dtr))
--#define store_tr(tr) ((tr) = paravirt_ops.store_tr())
--#define load_TLS(t,cpu) (paravirt_ops.load_tls((t),(cpu)))
--#define write_ldt_entry(dt, entry, low, high)				\
--	(paravirt_ops.write_ldt_entry((dt), (entry), (low), (high)))
--#define write_gdt_entry(dt, entry, low, high)				\
--	(paravirt_ops.write_gdt_entry((dt), (entry), (low), (high)))
--#define write_idt_entry(dt, entry, low, high)				\
--	(paravirt_ops.write_idt_entry((dt), (entry), (low), (high)))
--#define set_iopl_mask(mask) (paravirt_ops.set_iopl_mask(mask))
--
--#define __pte(x)	paravirt_ops.make_pte(x)
--#define __pgd(x)	paravirt_ops.make_pgd(x)
--
--#define pte_val(x)	paravirt_ops.pte_val(x)
--#define pgd_val(x)	paravirt_ops.pgd_val(x)
--
--#ifdef CONFIG_X86_PAE
--#define __pmd(x)	paravirt_ops.make_pmd(x)
--#define pmd_val(x)	paravirt_ops.pmd_val(x)
--#endif
-+static inline void load_TR_desc(void)
-+{
-+	PVOP_VCALL0(load_tr_desc);
-+}
-+static inline void load_gdt(const struct Xgt_desc_struct *dtr)
-+{
-+	PVOP_VCALL1(load_gdt, dtr);
-+}
-+static inline void load_idt(const struct Xgt_desc_struct *dtr)
-+{
-+	PVOP_VCALL1(load_idt, dtr);
-+}
-+static inline void set_ldt(const void *addr, unsigned entries)
-+{
-+	PVOP_VCALL2(set_ldt, addr, entries);
-+}
-+static inline void store_gdt(struct Xgt_desc_struct *dtr)
-+{
-+	PVOP_VCALL1(store_gdt, dtr);
-+}
-+static inline void store_idt(struct Xgt_desc_struct *dtr)
-+{
-+	PVOP_VCALL1(store_idt, dtr);
-+}
-+static inline unsigned long paravirt_store_tr(void)
-+{
-+	return PVOP_CALL0(unsigned long, store_tr);
-+}
-+#define store_tr(tr)	((tr) = paravirt_store_tr())
-+static inline void load_TLS(struct thread_struct *t, unsigned cpu)
-+{
-+	PVOP_VCALL2(load_tls, t, cpu);
-+}
-+static inline void write_ldt_entry(void *dt, int entry, u32 low, u32 high)
-+{
-+	PVOP_VCALL4(write_ldt_entry, dt, entry, low, high);
-+}
-+static inline void write_gdt_entry(void *dt, int entry, u32 low, u32 high)
-+{
-+	PVOP_VCALL4(write_gdt_entry, dt, entry, low, high);
-+}
-+static inline void write_idt_entry(void *dt, int entry, u32 low, u32 high)
-+{
-+	PVOP_VCALL4(write_idt_entry, dt, entry, low, high);
-+}
-+static inline void set_iopl_mask(unsigned mask)
-+{
-+	PVOP_VCALL1(set_iopl_mask, mask);
-+}
- 
- /* The paravirtualized I/O functions */
- static inline void slow_down_io(void) {
-@@ -368,27 +657,27 @@ static inline void slow_down_io(void) {
-  */
- static inline void apic_write(unsigned long reg, unsigned long v)
- {
--	paravirt_ops.apic_write(reg,v);
-+	PVOP_VCALL2(apic_write, reg, v);
- }
- 
- static inline void apic_write_atomic(unsigned long reg, unsigned long v)
- {
--	paravirt_ops.apic_write_atomic(reg,v);
-+	PVOP_VCALL2(apic_write_atomic, reg, v);
- }
- 
- static inline unsigned long apic_read(unsigned long reg)
- {
--	return paravirt_ops.apic_read(reg);
-+	return PVOP_CALL1(unsigned long, apic_read, reg);
- }
- 
- static inline void setup_boot_clock(void)
- {
--	paravirt_ops.setup_boot_clock();
-+	PVOP_VCALL0(setup_boot_clock);
- }
- 
- static inline void setup_secondary_clock(void)
- {
--	paravirt_ops.setup_secondary_clock();
-+	PVOP_VCALL0(setup_secondary_clock);
- }
++#define kmap_flush_unused()	do {} while(0)
  #endif
  
-@@ -408,93 +697,205 @@ static inline void startup_ipi_hook(int 
- static inline void startup_ipi_hook(int phys_apicid, unsigned long start_eip,
- 				    unsigned long start_esp)
- {
--	return paravirt_ops.startup_ipi_hook(phys_apicid, start_eip, start_esp);
-+	PVOP_VCALL3(startup_ipi_hook, phys_apicid, start_eip, start_esp);
- }
- #endif
- 
- static inline void paravirt_activate_mm(struct mm_struct *prev,
- 					struct mm_struct *next)
- {
--	paravirt_ops.activate_mm(prev, next);
-+	PVOP_VCALL2(activate_mm, prev, next);
- }
- 
- static inline void arch_dup_mmap(struct mm_struct *oldmm,
- 				 struct mm_struct *mm)
- {
--	paravirt_ops.dup_mmap(oldmm, mm);
-+	PVOP_VCALL2(dup_mmap, oldmm, mm);
+ #endif /* CONFIG_HIGHMEM */
+===================================================================
+--- a/mm/highmem.c
++++ b/mm/highmem.c
+@@ -97,6 +97,15 @@ static void flush_all_zero_pkmaps(void)
+ 		set_page_address(page, NULL);
+ 	}
+ 	flush_tlb_kernel_range(PKMAP_ADDR(0), PKMAP_ADDR(LAST_PKMAP));
++}
++
++/* Flush all unused kmap mappings in order to remove stray
++   mappings. */
++void kmap_flush_unused(void)
++{
++	spin_lock(&kmap_lock);
++	flush_all_zero_pkmaps();
++	spin_unlock(&kmap_lock);
  }
  
- static inline void arch_exit_mmap(struct mm_struct *mm)
- {
--	paravirt_ops.exit_mmap(mm);
--}
--
--#define __flush_tlb() paravirt_ops.flush_tlb_user()
--#define __flush_tlb_global() paravirt_ops.flush_tlb_kernel()
--#define __flush_tlb_single(addr) paravirt_ops.flush_tlb_single(addr)
--
--#define paravirt_map_pt_hook(type, va, pfn) paravirt_ops.map_pt_hook(type, va, pfn)
--
--#define paravirt_alloc_pt(pfn) paravirt_ops.alloc_pt(pfn)
--#define paravirt_release_pt(pfn) paravirt_ops.release_pt(pfn)
--
--#define paravirt_alloc_pd(pfn) paravirt_ops.alloc_pd(pfn)
--#define paravirt_alloc_pd_clone(pfn, clonepfn, start, count) \
--	paravirt_ops.alloc_pd_clone(pfn, clonepfn, start, count)
--#define paravirt_release_pd(pfn) paravirt_ops.release_pd(pfn)
-+	PVOP_VCALL1(exit_mmap, mm);
-+}
-+
-+static inline void __flush_tlb(void)
-+{
-+	PVOP_VCALL0(flush_tlb_user);
-+}
-+static inline void __flush_tlb_global(void)
-+{
-+	PVOP_VCALL0(flush_tlb_kernel);
-+}
-+static inline void __flush_tlb_single(unsigned long addr)
-+{
-+	PVOP_VCALL1(flush_tlb_single, addr);
-+}
-+
-+static inline void paravirt_map_pt_hook(int type, pte_t *va, u32 pfn)
-+{
-+	PVOP_VCALL3(map_pt_hook, type, va, pfn);
-+}
-+
-+static inline void paravirt_alloc_pt(unsigned pfn)
-+{
-+	PVOP_VCALL1(alloc_pt, pfn);
-+}
-+static inline void paravirt_release_pt(unsigned pfn)
-+{
-+	PVOP_VCALL1(release_pt, pfn);
-+}
-+
-+static inline void paravirt_alloc_pd(unsigned pfn)
-+{
-+	PVOP_VCALL1(alloc_pd, pfn);
-+}
-+
-+static inline void paravirt_alloc_pd_clone(unsigned pfn, unsigned clonepfn,
-+					   unsigned start, unsigned count)
-+{
-+	PVOP_VCALL4(alloc_pd_clone, pfn, clonepfn, start, count);
-+}
-+static inline void paravirt_release_pd(unsigned pfn)
-+{
-+	PVOP_VCALL1(release_pd, pfn);
-+}
-+
-+static inline void pte_update(struct mm_struct *mm, unsigned long addr,
-+			      pte_t *ptep)
-+{
-+	PVOP_VCALL3(pte_update, mm, addr, ptep);
-+}
-+
-+static inline void pte_update_defer(struct mm_struct *mm, unsigned long addr,
-+				    pte_t *ptep)
-+{
-+	PVOP_VCALL3(pte_update_defer, mm, addr, ptep);
-+}
-+
-+#ifdef CONFIG_X86_PAE
-+static inline pte_t __pte(unsigned long long val)
-+{
-+	unsigned long long ret = PVOP_CALL2(unsigned long long, make_pte,
-+					    val, val >> 32);
-+	return (pte_t) { ret, ret >> 32 };
-+}
-+
-+static inline pmd_t __pmd(unsigned long long val)
-+{
-+	return (pmd_t) { PVOP_CALL2(unsigned long long, make_pmd, val, val >> 32) };
-+}
-+
-+static inline pgd_t __pgd(unsigned long long val)
-+{
-+	return (pgd_t) { PVOP_CALL2(unsigned long long, make_pgd, val, val >> 32) };
-+}
-+
-+static inline unsigned long long pte_val(pte_t x)
-+{
-+	return PVOP_CALL2(unsigned long long, pte_val, x.pte_low, x.pte_high);
-+}
-+
-+static inline unsigned long long pmd_val(pmd_t x)
-+{
-+	return PVOP_CALL2(unsigned long long, pmd_val, x.pmd, x.pmd >> 32);
-+}
-+
-+static inline unsigned long long pgd_val(pgd_t x)
-+{
-+	return PVOP_CALL2(unsigned long long, pgd_val, x.pgd, x.pgd >> 32);
-+}
- 
- static inline void set_pte(pte_t *ptep, pte_t pteval)
- {
--	paravirt_ops.set_pte(ptep, pteval);
-+	PVOP_VCALL3(set_pte, ptep, pteval.pte_low, pteval.pte_high);
- }
- 
- static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
- 			      pte_t *ptep, pte_t pteval)
- {
-+	/* 5 arg words */
- 	paravirt_ops.set_pte_at(mm, addr, ptep, pteval);
- }
- 
-+static inline void set_pte_atomic(pte_t *ptep, pte_t pteval)
-+{
-+	PVOP_VCALL3(set_pte_atomic, ptep, pteval.pte_low, pteval.pte_high);
-+}
-+
-+static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
-+				   pte_t *ptep, pte_t pte)
-+{
-+	/* 5 arg words */
-+	paravirt_ops.set_pte_present(mm, addr, ptep, pte);
-+}
-+
- static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
- {
--	paravirt_ops.set_pmd(pmdp, pmdval);
--}
--
--static inline void pte_update(struct mm_struct *mm, u32 addr, pte_t *ptep)
--{
--	paravirt_ops.pte_update(mm, addr, ptep);
--}
--
--static inline void pte_update_defer(struct mm_struct *mm, u32 addr, pte_t *ptep)
--{
--	paravirt_ops.pte_update_defer(mm, addr, ptep);
--}
--
--#ifdef CONFIG_X86_PAE
--static inline void set_pte_atomic(pte_t *ptep, pte_t pteval)
--{
--	paravirt_ops.set_pte_atomic(ptep, pteval);
--}
--
--static inline void set_pte_present(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte)
--{
--	paravirt_ops.set_pte_present(mm, addr, ptep, pte);
-+	PVOP_VCALL3(set_pmd, pmdp, pmdval.pmd, pmdval.pmd >> 32);
- }
- 
- static inline void set_pud(pud_t *pudp, pud_t pudval)
- {
--	paravirt_ops.set_pud(pudp, pudval);
-+	PVOP_VCALL3(set_pud, pudp, pudval.pgd.pgd, pudval.pgd.pgd >> 32);
- }
- 
- static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
- {
--	paravirt_ops.pte_clear(mm, addr, ptep);
-+	PVOP_VCALL3(pte_clear, mm, addr, ptep);
- }
- 
- static inline void pmd_clear(pmd_t *pmdp)
- {
--	paravirt_ops.pmd_clear(pmdp);
--}
--#endif
-+	PVOP_VCALL1(pmd_clear, pmdp);
-+}
-+
-+static inline pte_t raw_ptep_get_and_clear(pte_t *p)
-+{
-+	unsigned long long val = PVOP_CALL1(unsigned long long, ptep_get_and_clear, p);
-+	return (pte_t) { val, val >> 32 };
-+}
-+#else  /* !CONFIG_X86_PAE */
-+static inline pte_t __pte(unsigned long val)
-+{
-+	return (pte_t) { PVOP_CALL1(unsigned long, make_pte, val) };
-+}
-+
-+static inline pgd_t __pgd(unsigned long val)
-+{
-+	return (pgd_t) { PVOP_CALL1(unsigned long, make_pgd, val) };
-+}
-+
-+static inline unsigned long pte_val(pte_t x)
-+{
-+	return PVOP_CALL1(unsigned long, pte_val, x.pte_low);
-+}
-+
-+static inline unsigned long pgd_val(pgd_t x)
-+{
-+	return PVOP_CALL1(unsigned long, pgd_val, x.pgd);
-+}
-+
-+static inline void set_pte(pte_t *ptep, pte_t pteval)
-+{
-+	PVOP_VCALL2(set_pte, ptep, pteval.pte_low);
-+}
-+
-+static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
-+			      pte_t *ptep, pte_t pteval)
-+{
-+	PVOP_VCALL4(set_pte_at, mm, addr, ptep, pteval.pte_low);
-+}
-+
-+static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
-+{
-+	PVOP_VCALL2(set_pmd, pmdp, pmdval.pud.pgd.pgd);
-+}
-+
-+static inline pte_t raw_ptep_get_and_clear(pte_t *p)
-+{
-+	return (pte_t) { PVOP_CALL1(unsigned long, ptep_get_and_clear, p) };
-+}
-+#endif	/* CONFIG_X86_PAE */
- 
- /* Lazy mode for batching updates / context switch */
- #define PARAVIRT_LAZY_NONE 0
-@@ -502,12 +903,24 @@ static inline void pmd_clear(pmd_t *pmdp
- #define PARAVIRT_LAZY_CPU  2
- 
- #define  __HAVE_ARCH_ENTER_LAZY_CPU_MODE
--#define arch_enter_lazy_cpu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_CPU)
--#define arch_leave_lazy_cpu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
-+static inline void arch_enter_lazy_cpu_mode(void)
-+{
-+	PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_CPU);
-+}
-+static inline void arch_leave_lazy_cpu_mode(void)
-+{
-+	PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_NONE);
-+}
- 
- #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
--#define arch_enter_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_MMU)
--#define arch_leave_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
-+static inline void arch_enter_lazy_mmu_mode(void)
-+{
-+	PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_MMU);
-+}
-+static inline void arch_leave_lazy_mmu_mode(void)
-+{
-+	PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_NONE);
-+}
- 
- void _paravirt_nop(void);
- #define paravirt_nop	((void *)_paravirt_nop)
-@@ -600,6 +1013,16 @@ static inline unsigned long __raw_local_
- 	paravirt_clobber(CLBR_EAX)
- 
- #undef PARAVIRT_CALL
-+#undef PVOP_VCALL0
-+#undef PVOP_CALL0
-+#undef PVOP_VCALL1
-+#undef PVOP_CALL1
-+#undef PVOP_VCALL2
-+#undef PVOP_CALL2
-+#undef PVOP_VCALL3
-+#undef PVOP_CALL3
-+#undef PVOP_VCALL4
-+#undef PVOP_CALL4
- 
- #else  /* __ASSEMBLY__ */
- 
+ static inline unsigned long map_new_virtual(struct page *page)
 
 -- 
 
