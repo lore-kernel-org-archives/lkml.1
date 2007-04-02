@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965981AbXDBW3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965997AbXDBWaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965981AbXDBW3G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 18:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965999AbXDBW3G
+	id S965997AbXDBWaz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 18:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966001AbXDBWaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 18:29:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34201 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965981AbXDBW3E (ORCPT
+	Mon, 2 Apr 2007 18:30:55 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:52026 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965997AbXDBWay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 18:29:04 -0400
-Date: Mon, 2 Apr 2007 15:29:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dave Hansen <hansendc@us.ibm.com>
-cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-In-Reply-To: <1175550968.22373.122.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704021526390.23601@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
-  <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com> 
- <200704011246.52238.ak@suse.de>  <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
-  <1175544797.22373.62.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com> 
- <1175548086.22373.99.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com>
- <1175550968.22373.122.camel@localhost.localdomain>
+	Mon, 2 Apr 2007 18:30:54 -0400
+Message-ID: <46118410.2060904@zytor.com>
+Date: Mon, 02 Apr 2007 15:30:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jeff@garzik.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       virtualization@lists.linux-foundation.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+Subject: Re: A set of "standard" virtual devices?
+References: <4611652F.700@zytor.com> <200704022312.39195.ak@suse.de> <4611768D.1080801@garzik.org> <200704022336.43136.ak@suse.de> <461178D9.402@goop.org> <46117F72.6020506@zytor.com> <461182BE.5040902@garzik.org>
+In-Reply-To: <461182BE.5040902@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Dave Hansen wrote:
-
-> On Mon, 2007-04-02 at 14:28 -0700, Christoph Lameter wrote:
-> > I do not care what its called as long as it 
-> > covers all the bases and is not a glaring performance regresssion (like 
-> > SPARSEMEM so far). 
+Jeff Garzik wrote:
 > 
-> I honestly don't doubt that there are regressions, somewhere.  Could you
-> elaborate, and perhaps actually show us some numbers on this?  Perhaps
-> instead of adding a completely new model, we can adapt the existing ones
-> somehow.
+> Sure, but let's look beyond device detection.  For instance, it does not 
+> necessarily follow that emulating PCI DMA is the best way to go for 
+> communication with a virtual device, once detected.
+> 
 
-Just look at pfn_to_page and friends on ia64 and see what atrocities 
-sparsemem does with those if you enable it.
+This is true, of course.  However, there are going to be a set of 
+virtual devices which don't necessarily have to have super-high 
+performance.  In the case of a hwrng device, even doing DMA is probably 
+overkill.
+
+> Outside of pci_device_id driver matching, is there much value here?
+
+If we can get a set of device drivers that if not all then at least a 
+number of hypervisors and/or emulators can agree upon, I think that's 
+much won.
+
+	-hpa
