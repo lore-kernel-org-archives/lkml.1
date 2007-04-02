@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbXDBPoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932700AbXDBPoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbXDBPoN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 11:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932738AbXDBPoM
+	id S932700AbXDBPoa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 11:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932738AbXDBPoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 11:44:12 -0400
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:6139 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932700AbXDBPoL convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 11:44:11 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-content-class: urn:content-classes:message
+	Mon, 2 Apr 2007 11:44:30 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46702 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932508AbXDBPo1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 11:44:27 -0400
+Date: Mon, 2 Apr 2007 08:44:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+In-Reply-To: <200704011246.52238.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0704020840370.30394@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+ <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
+ <200704011246.52238.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Questions regarding ACPI vs FADT dump on HP XW6200 using 2.6.16 - 2.6.20 kernels?
-Date: Mon, 2 Apr 2007 11:43:37 -0400
-Message-ID: <8E8F647D7835334B985D069AE964A4F7033AB5BC@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Questions regarding ACPI vs FADT dump on HP XW6200 using 2.6.16 - 2.6.20 kernels?
-Thread-Index: Acd1Hh9Sb1eMatUVTo2qKsRYY4rSzQAHOpoA
-References: <56464.192.54.193.51.1175515024.squirrel@rousalka.dyndns.org>
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 02 Apr 2007 15:43:38.0004 (UTC) FILETIME=[AE3D0D40:01C7753D]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sun, 1 Apr 2007, Andi Kleen wrote:
 
-In reference to this Bugzilla entry:
-http://bugzilla.kernel.org/show_bug.cgi?id=7110
+> And when you reserve virtual space somewhere you should 
+> update Documentation/x86_64/mm.txt. Also you didn't adjust 
+> the end of the vmalloc area so in theory vmalloc could run
+> into your vmemmap.
 
-I'm getting ACPI errors in the dmesg:
-[    7.443482] ACPI Error (evgpe-0711): No handler or method for GPE[
-0], disabling event [20060707]
-[    7.449881] ACPI Error (evgpe-0711): No handler or method for GPE[
-1], disabling event [20060707]
-[    7.456145] ACPI Error (evgpe-0711): No handler or method for GPE[
-2], disabling event [20060707]
-[    7.462271] ACPI Error (evgpe-0711): No handler or method for GPE[
-5], disabling event [20060707]
-[    7.468310] ACPI Error (evgpe-0711): No handler or method for GPE[
-6], disabling event [20060707]
-[    7.474260] ACPI Error (evgpe-0711): No handler or method for GPE[
-7], disabling event [20060707]
-[    7.480124] ACPI Error (evgpe-0711): No handler or method for GPE[
-9], disabling event [20060707]
-[    7.485893] ACPI Error (evgpe-0711): No handler or method for GPE[
-A], disabling event [20060707]
-[    7.491473] ACPI Error (evgpe-0711): No handler or method for GPE[
-F], disabling event [20060707]
-[    7.491484] ACPI Error (evgpe-0711): No handler or method for
-GPE[10], disabling event [20060707]
-[    7.491489] ACPI Error (evgpe-0711): No handler or method for
-GPE[11], disabling event [20060707]
-[    7.491494] ACPI Error (evgpe-0711): No handler or method for
-GPE[12], disabling event [20060707]
-[    7.491499] ACPI Error (evgpe-0711): No handler or method for
-GPE[13], disabling event [20060707]
-[    7.491504] ACPI Error (evgpe-0711): No handler or method for
-GPE[14], disabling event [20060707]
-[    7.491509] ACPI Error (evgpe-0711): No handler or method for
-GPE[15], disabling event [20060707]
-[    7.491514] ACPI Error (evgpe-0711): No handler or method for
-GPE[16], disabling event [20060707]
-[    7.491519] ACPI Error (evgpe-0711): No handler or method for
-GPE[17], disabling event [20060707]
-[    7.491527] ACPI Error (evgpe-0711): No handler or method for
-GPE[19], disabling event [20060707]
-[    7.491532] ACPI Error (evgpe-0711): No handler or method for
-GPE[1A], disabling event [20060707]
-[    7.491537] ACPI Error (evgpe-0711): No handler or method for
-GPE[1B], disabling event [20060707]
-[    7.491542] ACPI Error (evgpe-0711): No handler or method for
-GPE[1C], disabling event [20060707]
-[    7.491547] ACPI Error (evgpe-0711): No handler or method for
-GPE[1D], disabling event [20060707]
-[    7.491552] ACPI Error (evgpe-0711): No handler or method for
-GPE[1E], disabling event [20060707]
-[    7.491557] ACPI Error (evgpe-0711): No handler or method for
-GPE[1F], disabling event [20060707]
+Ok. will add to the doc in the next release.
 
-The ACPI: FADT dmesg entry is:
-[    0.000000] ACPI: RSDP (v002 COMPAQ                                )
-@ 0x000e8e10
-[    0.000000] ACPI: XSDT (v001 COMPAQ CPQ0063  0x20051222  0x00000000)
-@ 0xbfff50ec
-[    0.000000] ACPI: FADT (v003 COMPAQ TUMWATER 0x00000001  0x00000000)
-@ 0xbfff52ac
-[    0.000000] ACPI: SSDT (v001 COMPAQ  PROJECT 0x00000001 MSFT
-0x0100000e) @ 0xbfff657a
-[    0.000000] ACPI: MADT (v001 COMPAQ TUMWATER 0x00000001  0x00000000)
-@ 0xbfff53b8
-[    0.000000] ACPI: ASF! (v032 COMPAQ TUMWATER 0x00000001  0x00000000)
-@ 0xbfff543c
-[    0.000000] ACPI: MCFG (v001 COMPAQ TUMWATER 0x00000001  0x00000000)
-@ 0xbfff54a6
-[    0.000000] ACPI: DSDT (v001 COMPAQ     DSDT 0x00000001 MSFT
-0x0100000e) @ 0x00000000
+No need to adjust the end of the vmalloc area because
+the vmemmap starts at the end of it:
 
-I've been told to use this command to dump this memory segment:
-dd if=/dev/mem skip=$[0xbfff52ac] bs=1c count=244 2> /dev/null >
-fadt.bin
-But I'm always getting an empty file?
+include/asm-x86_64/pgtable.h:
 
-My questions are:
-1) How can I dump the FADT ?
-2) Could this be related to this memory detection bug
-http://bugzilla.kernel.org/show_bug.cgi?id=7111 ?
+#define VMALLOC_START    0xffffc20000000000UL
+#define VMALLOC_END      0xffffe1ffffffffffUL
 
-Thnx!
+Index: linux-2.6.21-rc5-mm2/include/asm-x86_64/page.h
 
-- vin
+#define vmemmap ((struct page *)0xffffe20000000000UL)
+
+According to Documentation/x86_64/mm.txt this is an unused hole:
+
+ffffc20000000000 - ffffe1ffffffffff (=45 bits) vmalloc/ioremap space
+... unused hole ...
+ffffffff80000000 - ffffffff82800000 (=40 MB)   kernel text mapping, from phys 0
+... unused hole ...
+
