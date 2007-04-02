@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965263AbXDBJjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965310AbXDBJmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965263AbXDBJjt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 05:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965310AbXDBJjt
+	id S965310AbXDBJmn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 05:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965312AbXDBJmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 05:39:49 -0400
-Received: from styx.suse.cz ([82.119.242.94]:51833 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965263AbXDBJjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 05:39:48 -0400
-Date: Mon, 2 Apr 2007 11:34:07 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Li Yu <raise.sail@gmail.com>
-Cc: Dmitry Torokhov <dtor@insightbb.com>, yanghong@ccoss.com.cn,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       hongzhiyi@ccoss.com.cn, Marcel Holtmann <marcel@holtmann.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
-In-Reply-To: <4610ABB1.3080606@gmail.com>
-Message-ID: <Pine.LNX.4.64.0704021126280.3808@jikos.suse.cz>
-References: <200703051532096508636@gmail.com> <Pine.LNX.4.64.0704010002280.6040@jikos.suse.cz>
- <4610609C.9030101@gmail.com> <200704020015.44167.dtor@insightbb.com>
- <4610ABB1.3080606@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 2 Apr 2007 05:42:43 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45531 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965310AbXDBJmm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 05:42:42 -0400
+Date: Mon, 2 Apr 2007 12:42:40 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Boaz Harrosh <bharrosh@panasas.com>
+cc: Jens Axboe <jens.axboe@oracle.com>, Rene Herman <rene.herman@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mcdx -- do_request(): non-read command to cd!!
+In-Reply-To: <4610CDB4.4050708@panasas.com>
+Message-ID: <Pine.LNX.4.64.0704021240110.28994@sbz-30.cs.Helsinki.FI>
+References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk>
+ <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com>
+ <4610481D.8000102@gmail.com> <46104954.50608@gmail.com>
+ <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI>
+ <20070402071018.GE11996@kernel.dk> <Pine.LNX.4.64.0704021152280.27165@sbz-30.cs.Helsinki.FI>
+ <4610CDB4.4050708@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Li Yu wrote:
+On Mon, 2 Apr 2007, Boaz Harrosh wrote:
+> Why are you using req->buffer in new code.
 
-> Hi, I do not think that using blacklist in base driver for this purpose 
-> is good idea. If so, we need modify source when each new HID device 
-> driver come, that's so ugly. 
+You did read the patch, right? It's not new code. Feel free to send a 
+patch, though. Thanks.
 
-Hi Li,
-
-well, the drivers are exceptions from the generic handling, so creating an 
-exceptional rule (entry in hid_blacklist) for them is not that bad. OK, 
-it's not the nicest thing on earth probably, but serves the purpose in 
-current vendors-trying-to-break-hardware-in-the-most-original-way world 
-quite well.
-
-This is going to cause some headache to out-of-tree drivers. Oh well, do 
-we care that much? 
-
-In your scenario you'll still need a way how to unbind the device from the 
-hid driver and bind it to the new specific device, won't you?. This could 
-be done by a separate userspace program, but well ... I think just 
-blacklisting the hardware is much cleaner, than needing to ship a separate 
-userspace program along with the driver.
-
-Thanks,
-
--- 
-Jiri Kosina
+				Pekka
