@@ -1,129 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965862AbXDBVPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965915AbXDBVSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965862AbXDBVPM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965871AbXDBVPM
+	id S965915AbXDBVSD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965918AbXDBVSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:15:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55421 "EHLO ogre.sisk.pl"
+	Mon, 2 Apr 2007 17:18:03 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:46291 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965862AbXDBVPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:15:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Mon, 2 Apr 2007 23:18:27 +0200
-User-Agent: KMail/1.9.5
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-References: <460B6E4B.3060004@gmail.com> <200704012123.54797.rjw@sisk.pl> <4610BDD7.5070201@gmail.com>
-In-Reply-To: <4610BDD7.5070201@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S965915AbXDBVSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:18:00 -0400
+Date: Mon, 2 Apr 2007 14:17:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ananth@in.ibm.com
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       Maneesh Soni <maneesh@in.ibm.com>
+Subject: Re: [PATCH] Kprobes: Print details of kretprobe on assertion
+ failure
+Message-Id: <20070402141732.166f50bd.akpm@linux-foundation.org>
+In-Reply-To: <20070402092636.GA27905@in.ibm.com>
+References: <20070402092636.GA27905@in.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704022318.28451.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 2 April 2007 10:24, Jiri Slaby wrote:
-> Rafael J. Wysocki napsal(a):
-> >>> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
-> >>>> swsusp: critical section:
-> >>>> swsusp: Need to copy 131380 pages
-> >>>> swsusp: Not enough free memory
-> >>>> Error -12 suspending
-> >>>> Enabling non-boot CPUs ...
+On Mon, 2 Apr 2007 14:56:36 +0530
+Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+
+> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 > 
-> > As a workaround, you can try to change the initial image size so that it's
-> > smaller than a half of the RAM size.  If that works, I'd like to send you a
-> > debug patch, if you don't mind. :-)
+> In certain cases like when the real return address can't be found or
+> when the number of tracked calls to a kretprobed function is less than
+> the number of returns, we may not be able to find the correct return
+> address after processing a kretprobe. Currently we just do a BUG_ON, but
+> no information is provided about the actual failing kretprobe.
 > 
-> Yes, post it.
-
-Appended.  Please send me the dmesg output from after a failing suspend
-(or in case it doesn't fail, from after the first one).
-
-> # cat /sys/power/image_size
-> 524288000
-> # echo disk >/sys/power/state
-> error
-> # echo disk >/sys/power/state
-> error
-> # echo $((400*1024*1024)) > /sys/power/image_size
-> # echo disk >/sys/power/state
-> ok
-> # dmesg|grep Memory:
-> Memory: 1027160k/1048256k available (2559k kernel code, 20348k reserved,
-> 1114k data, 188k init)
+> Print out details of the kretprobe before calling BUG().
 > 
-> I don't undestand it too much, but can't be shared video memory involved
-> somehow?
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> 
+> ---
+>  arch/i386/kernel/kprobes.c    |    6 +++++-
+>  arch/ia64/kernel/kprobes.c    |    7 ++++++-
+>  arch/powerpc/kernel/kprobes.c |    7 ++++++-
+>  arch/x86_64/kernel/kprobes.c  |    7 ++++++-
+>  4 files changed, 23 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6.21-rc5/arch/i386/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.21-rc5.orig/arch/i386/kernel/kprobes.c
+> +++ linux-2.6.21-rc5/arch/i386/kernel/kprobes.c
+> @@ -440,7 +440,11 @@ fastcall void *__kprobes trampoline_hand
+>  			break;
+>  	}
+>  
+> -	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
+> +	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
+> +		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
+> +				ri->rp, ri->rp->kp.addr);
+> +		BUG();
+> +	}
+>  
+>  	spin_unlock_irqrestore(&kretprobe_lock, flags);
+>  
+> Index: linux-2.6.21-rc5/arch/ia64/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.21-rc5.orig/arch/ia64/kernel/kprobes.c
+> +++ linux-2.6.21-rc5/arch/ia64/kernel/kprobes.c
+> @@ -444,7 +444,12 @@ int __kprobes trampoline_probe_handler(s
+>  			break;
+>  	}
+>  
+> -	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
+> +	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
+> +		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
+> +				ri->rp, ri->rp->kp.addr);
+> +		BUG();
+> +	}
+> +
+>  	regs->cr_iip = orig_ret_address;
+>  
+>  	reset_current_kprobe();
+> Index: linux-2.6.21-rc5/arch/powerpc/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.21-rc5.orig/arch/powerpc/kernel/kprobes.c
+> +++ linux-2.6.21-rc5/arch/powerpc/kernel/kprobes.c
+> @@ -293,7 +293,12 @@ int __kprobes trampoline_probe_handler(s
+>  			break;
+>  	}
+>  
+> -	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
+> +	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
+> +		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
+> +				ri->rp, ri->rp->kp.addr);
+> +		BUG();
+> +	}
+> +
+>  	regs->nip = orig_ret_address;
+>  
+>  	reset_current_kprobe();
+> Index: linux-2.6.21-rc5/arch/x86_64/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.21-rc5.orig/arch/x86_64/kernel/kprobes.c
+> +++ linux-2.6.21-rc5/arch/x86_64/kernel/kprobes.c
+> @@ -438,7 +438,12 @@ int __kprobes trampoline_probe_handler(s
+>  			break;
+>  	}
+>  
+> -	BUG_ON(!orig_ret_address || (orig_ret_address == trampoline_address));
+> +	if (!orig_ret_address || (orig_ret_address == trampoline_address)) {
+> +		printk("kretprobe BUG!: Processing kretprobe %p @ %p\n",
+> +				ri->rp, ri->rp->kp.addr);
+> +		BUG();
+> +	}
+> +
+>  	regs->rip = orig_ret_address;
+>  
 
-No, I don't think so.  There probably is a bug in swsusp_shrink_memory().
+A lot of copying-and-pasting there.  Would it be better if this assertion
+was performed in a library function in kernel/kprobes.c?
 
-Greetings,
-Rafael
 
----
----
- kernel/power/snapshot.c |    2 +-
- kernel/power/swsusp.c   |   10 +++++++---
- 2 files changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.21-rc5/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.21-rc5.orig/kernel/power/snapshot.c
-+++ linux-2.6.21-rc5/kernel/power/snapshot.c
-@@ -1093,7 +1093,7 @@ static int enough_free_mem(unsigned int 
- 	}
- 
- 	nr_pages += count_pages_for_highmem(nr_highmem);
--	pr_debug("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
-+	printk("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
- 		nr_pages, PAGES_FOR_IO, meta, free);
- 
- 	return free > nr_pages + PAGES_FOR_IO + meta;
-Index: linux-2.6.21-rc5/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
-+++ linux-2.6.21-rc5/kernel/power/swsusp.c
-@@ -227,22 +227,26 @@ int swsusp_shrink_memory(void)
- 		size = count_data_pages() + PAGES_FOR_IO;
- 		tmp = size;
- 		size += highmem_size;
--		for_each_zone (zone)
-+		for_each_zone (zone) {
-+			printk("Normal pages needed: %lu\n", tmp);
-+			printk("Highmem pages needed: %lu\n", highmem_size);
- 			if (populated_zone(zone)) {
-+				tmp += snapshot_additional_pages(zone);
- 				if (is_highmem(zone)) {
- 					highmem_size -=
- 					zone_page_state(zone, NR_FREE_PAGES);
- 				} else {
- 					tmp -= zone_page_state(zone, NR_FREE_PAGES);
- 					tmp += zone->lowmem_reserve[ZONE_NORMAL];
--					tmp += snapshot_additional_pages(zone);
- 				}
- 			}
-+		}
- 
- 		if (highmem_size < 0)
- 			highmem_size = 0;
- 
- 		tmp += highmem_size;
-+		printk("Pages needed (total): %lu\n", tmp);
- 		if (tmp > 0) {
- 			tmp = __shrink_memory(tmp);
- 			if (!tmp)
-@@ -252,7 +256,7 @@ int swsusp_shrink_memory(void)
- 			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
- 			pages += tmp;
- 		}
--		printk("\b%c", p[i++%4]);
-+		/*printk("\b%c", p[i++%4]);*/
- 	} while (tmp > 0);
- 	do_gettimeofday(&stop);
- 	printk("\bdone (%lu pages freed)\n", pages);
