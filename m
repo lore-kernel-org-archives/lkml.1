@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965979AbXDBVxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965980AbXDBVxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965979AbXDBVxi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965978AbXDBVxi
+	id S965980AbXDBVxs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965978AbXDBVxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:53:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35727 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965966AbXDBVxh (ORCPT
+	Mon, 2 Apr 2007 17:53:48 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:44519 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965980AbXDBVxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:53:37 -0400
-Date: Mon, 2 Apr 2007 14:53:34 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dave Hansen <hansendc@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
-       Andi Kleen <ak@suse.de>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/2] Generic Virtual Memmap suport for SPARSEMEM
-In-Reply-To: <1175550151.22373.116.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704021449200.2272@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
-  <1175547000.22373.89.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0704021351590.1224@schroedinger.engr.sgi.com> 
- <1175548924.22373.109.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0704021428340.2272@schroedinger.engr.sgi.com>
- <1175550151.22373.116.camel@localhost.localdomain>
+	Mon, 2 Apr 2007 17:53:45 -0400
+Message-ID: <46117B62.9030902@us.ibm.com>
+Date: Mon, 02 Apr 2007 16:53:38 -0500
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andi Kleen <ak@suse.de>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Jeff Garzik <jeff@garzik.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com, virtualization@lists.linux-foundation.org
+Subject: Re: A set of "standard" virtual devices?
+References: <4611652F.700@zytor.com> <200704022312.39195.ak@suse.de>	<4611768D.1080801@garzik.org> <200704022336.43136.ak@suse.de> <461178D9.402@goop.org>
+In-Reply-To: <461178D9.402@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Dave Hansen wrote:
-
-> > The slab allocator purposes is to deliver small sub page sized chunks.
-> > The page allocator is there to allocate pages. Both are optimized for its 
-> > purpose.
+Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+>> The implementation wouldn't need to use PCI at all. There wouldn't 
+>> even need to be PCI like registers internally. Just a pci device
+>> with an ID somewhere in sysfs. PCI with unique IDs
+>> is just a convenient and well established key into the driver module
+>> collection. Once you have the right driver it can do what it wants.
 > 
-> I understand that, in general, but how does that optimization help,
-> here, exactly?  My argument is that if we use the slab, it means more
-> code sharing with existing code in sparse.c.  Other than ideology, what
-> practical reasons are there in this case that keep us from doing that
-> otherwise attractive code sharing.
+> But I understood hpa's suggestion to mean that there would be a standard
+> PCI interface for a hardware RNG, and a single linux driver for that
+> device, which all hypervisors would be expected to implement.  But
+> that's only reasonable if the virtualization environment has some notion
+> of PCI to expose to the Linux guest.
 
-F.e. you are wasting memory that the slab needs to uselessly track these 
-allocations. You would need to create a special slab that has page sized
-(or huge page sized) alignment to have the proper allocation behavior. Not 
-good.
+The actual PCI bus could paravirtualized.  It's just a question of 
+whether one reinvents a device discovery mechanism (like XenBus) or 
+whether one piggy backs on existing mechanisms.
 
-The rest of sparse is not MMU bound. So you may be fine. I'd recommend 
-though to use the page allocator if you are doing large allocations. I do 
-not see the point of using slab there.
+Furthermore, in the future, I strongly suspect that HVM will become much 
+more important for Xen than PV and since that already has a PCI bus it's 
+not really that big of a deal.
 
-> I don't think the pagetable walks are generic enough to ever get used on
-> ppc, unless they start walking the Linux pagetables for the kernel
-> virtual address area.  I was trying to poke you into getting the
-> pagetable walks out of sparse.c. ;)
+Regards,
 
-If I would be doing that then we would end up adding these pagetable walks
-to multiple architectures. I already need to cover IA64 and x86_64 and 
-this will also do i386. Lets try to keep them generic. PPC may need to 
-disable these walks and do its own thing.
+Anthony Liguori
 
-> > Well think about how to handle the case that the allocatiopn of a page 
-> > table page or a vmemmap block fails. Once we have that sorted out then we 
-> > can cleanup the higher layers.
-> 
-> I think it is best to just completely replace
-> sparse_early_mem_map_alloc() for the vmemmap case.  It really is a
-> completely different beast.  You'd never, for instance, have
-> alloc_remap() come into play.
-
-What is the purpose of alloc_remap? Could not figure that one out.
+>     J
 
