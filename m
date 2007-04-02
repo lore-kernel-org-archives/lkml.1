@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965804AbXDBULH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965793AbXDBULU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965804AbXDBULH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965796AbXDBULH
+	id S965793AbXDBULU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965795AbXDBULT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:11:07 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52311 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965793AbXDBULF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:11:05 -0400
-Date: Mon, 2 Apr 2007 13:11:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dave Hansen <hansendc@us.ibm.com>
-cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-In-Reply-To: <1175543696.22373.51.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704021258500.31698@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
-  <200704011246.52238.ak@suse.de>  <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
-  <200704021744.39880.ak@suse.de>  <Pine.LNX.4.64.0704020851300.30394@schroedinger.engr.sgi.com>
- <1175543696.22373.51.camel@localhost.localdomain>
+	Mon, 2 Apr 2007 16:11:19 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:52605 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965793AbXDBULS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 16:11:18 -0400
+X-Greylist: delayed 1810 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 16:11:18 EDT
+Date: Mon, 2 Apr 2007 20:41:00 +0100 (BST)
+From: Christian Kujau <evil@g-house.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: linux-kernel@vger.kernel.org
+cc: netdev@vger.kernel.org, malte@g-house.de
+Subject: 2.6.20.4: NETDEV WATCHDOG and lockups
+Message-ID: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Dave Hansen wrote:
 
-> MAX_ORDER, and the section size is at least MAX_ORDER.  If we *did* have
-> this, then the page allocator would already be broken for these
-> nodes. ;)
+Hi there,
 
-Ahh... Ok.
- 
-> So, this SPARSE_VIRTUAL does introduce a new dependency, which Andi
-> calculated above.  But, in reality, I don't think it's a big deal.  Just
-> to spell it out a bit more, if this:
-> 
-> 	VMEMMAP_MAPPING_SIZE/sizeof(struct page) * PAGE_SIZE
-> 
-> (where VMEMMAP_MAPPING_SIZE is PMD_SIZE in your case) is any larger than
-> the granularity on which your NUMA nodes are divided, then you might
-> have a problem with mem_map for one NUMA node getting allocated on
-> another.  
+we have serious problems with 2 of our servers: both shiny new amd64 
+dual core, with both 2GB RAM, 32bit kernel+userland (Debian/testing).
+Both servers have 2 NICs, RTL8139 (eth0, irq10) and RTL8169s
+(eth1, irq11).
 
-This is only a problem if
+Both boxes are running fine but after "a while" they lock up and 
+eventually restart all of a sudden. The last messages in the logfile 
+are:
 
-1. We are not on NUMA emulation. In that case: Who cares. The SPARSEMEM
-   sections make sure that the MAX_ORDER blocks do not overlap.
+14:15:11 db2 kernel: NETDEV WATCHDOG: eth0: transmit timed out
+14:15:14 db2 kernel: eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
 
-2. There is a hole less than 128 MB between the nodes.
+Then the box reboots, nothing else in the log.
 
-3. The maximum overlap can then be theoretically less than 2M in terms of
-   page structs. That is less than 128MB can overlap at the beginning of a 
-   node. Typically the start of a node gets used for allocation system
-   control areas. I.e. node data, vmemmap 2M blocks etc. For those we
-   only use the page structs during bootstrap. They are not performance
-   critical. We can just ignore the problem for those.
+As the servers have been set up recently, we only know that it happend 
+with Debian's 2.6.17-? kernel. When we upgraded the installation, we 
+went to 2.6.18-4-k7 and the problem persistent. We're using now vanilla 
+2.6.20.4 and while the problem persists, it takes longer to lockup (~20h 
+as opposed to 4-5h). While this is a good thing for us, it's now harder
+to reproduce (we have to wait longer).
 
-   In order for this to become a problem the overlap would need to
-   more than the management data at the front of a node. The larger 
-   the zone is the more 2M blocks will be allocated from the beginning a 
-   node and the less we can actually get into this situation.
+Searching the archives turned up quite a few results but no real fix and 
+lots of old postings too. We then disabled ACPI completely and booted 
+with 'noapic'. Now both boxes are running for > 20h and we're curious 
+how long they make it. However, booting with 'noapic' slowed down both 
+servers *a lot*.
 
-If this is an actual problem then we could take out this particular
-2M page and replace it with single 4K pages that can be individually
-placed. Yaw.... Too complex.
+>From /proc/interrupts we can see that only CPU0 (core 0) is handling 
+interrupts while CPU1 does not. We compiled with CONFIG_IRQBALANCE=n so 
+that irqbalance(1) would work - but to no avail.
 
-I think we can ignore this. The only problem could be reduced performance
-accessing page structs of some small portion of a node.
+Please see http://nerdbynature.de/bits/2.6.20.4/ for details for both 
+hosts and feel free to ask for more details. Although both boxes are in 
+production we'll be happy test more bootoptions/patches and the like.
 
-> It might be worth a comment, or at least some kind of WARN_ON().
-> Perhaps we can stick something in online_page() to check if:
-> 
-> 	page_to_nid(page) == page_to_nid(virt_to_page(page))
+TIA,
+Christian.
+-- 
+BOFH excuse #266:
 
-Could do that but the check is going to be too agressive. Check would 
-have to be done after all control information has been allocated. WARN_ON 
-would be sufficient since this is not going to impact functionality.
+All of the packets are empty.
