@@ -1,105 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbXDBLSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbXDBLTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbXDBLSR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 07:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbXDBLSR
+	id S1753469AbXDBLTL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 07:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbXDBLTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 07:18:17 -0400
-Received: from smtp-vbr7.xs4all.nl ([194.109.24.27]:3278 "EHLO
-	smtp-vbr7.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbXDBLSQ (ORCPT
+	Mon, 2 Apr 2007 07:19:10 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:65359 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753469AbXDBLTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 07:18:16 -0400
-Date: Mon, 2 Apr 2007 13:17:45 +0200
-From: thunder7@xs4all.nl
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jurriaan <thunder7@xs4all.nl>, Helge Hafting <helgehaf@aitel.hist.no>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm3 - no boot, "address not 2M aligned"
-Message-ID: <20070402111745.GA9882@amd64.of.nowhere>
-Reply-To: Jurriaan <thunder7@xs4all.nl>
-References: <20070330010559.2a232d9a.akpm@linux-foundation.org> <20070331071220.GA26910@aitel.hist.no> <20070331005303.354411f0.akpm@linux-foundation.org> <20070401052932.GA9894@amd64.of.nowhere> <m1ircghb6w.fsf@ebiederm.dsl.xmission.com> <20070331232957.e1c93f19.akpm@linux-foundation.org> <20070402074159.GA13704@in.ibm.com>
+	Mon, 2 Apr 2007 07:19:09 -0400
+Date: Mon, 2 Apr 2007 16:49:00 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Message-ID: <20070402111900.GA30946@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070402074159.GA13704@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070402061612.GA7072@elte.hu>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vivek Goyal <vgoyal@in.ibm.com>
-Date: Mon, Apr 02, 2007 at 01:11:59PM +0530
+On Mon, Apr 02, 2007 at 08:16:12AM +0200, Ingo Molnar wrote:
 > 
-> How about attached patch?
+> * Gautham R Shenoy <ego@in.ibm.com> wrote:
 > 
-> o X86_64 kernel should run from 2MB aligned address for two reasons.
-> 	- Performance.
-> 	- For relocatable kernels, page tables are updated based on difference
-> 	  between compile time address and load time physical address.
-> 	  This difference should be multiple of 2MB as kernel text and data
-> 	  is mapped using 2MB pages and PMD should be pointing to a 2MB
-> 	  aligned address. Life is simpler if both compile time and load time
-> 	  kernel addresses are 2MB aligned.
+> > Hello Everybody,
+> > 
+> > This is another attempt towards process-freezer based cpu-hotplug. 
+> > This patchset covers just about everything that was discussed on the 
+> > LKML with respect to the freezer-based cpu-hotplug.
 > 
-> o Flag the error at compile time if one is trying to build a kernel which
->   does not meet alignment restrictions.
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
-> ---
-> 
->  arch/x86_64/kernel/head64.c |    8 ++++++++
->  include/asm-x86_64/page.h   |    1 +
->  2 files changed, 9 insertions(+)
-> 
-> diff -puN arch/x86_64/kernel/head64.c~x86_64-check-for-config-physical-start-aligned-2M arch/x86_64/kernel/head64.c
-> --- linux-2.6.21-rc5-mm3-vanilla/arch/x86_64/kernel/head64.c~x86_64-check-for-config-physical-start-aligned-2M	2007-04-02 20:46:43.000000000 +0530
-> +++ linux-2.6.21-rc5-mm3-vanilla-root/arch/x86_64/kernel/head64.c	2007-04-02 21:20:45.000000000 +0530
-> @@ -62,6 +62,14 @@ void __init x86_64_start_kernel(char * r
->  {
->  	int i;
->  
-> +	/*
-> +	 * Make sure kernel is aligned to 2MB address. Catching it at compile
-> +	 * time is better. Change your config file and compile the kernel
-> +	 * for a 2MB aligned address (CONFIG_PHYSICAL_START)
-> +	 */
-> +	BUILD_BUG_ON(ALIGN(CONFIG_PHYSICAL_START, __KERNEL_ALIGN)
-> +			!= CONFIG_PHYSICAL_START);
-> +
->  	/* clear bss before set_intr_gate with early_idt_handler */
->  	clear_bss();
->  
-> diff -puN include/asm-x86_64/page.h~x86_64-check-for-config-physical-start-aligned-2M include/asm-x86_64/page.h
-> --- linux-2.6.21-rc5-mm3-vanilla/include/asm-x86_64/page.h~x86_64-check-for-config-physical-start-aligned-2M	2007-04-02 20:50:55.000000000 +0530
-> +++ linux-2.6.21-rc5-mm3-vanilla-root/include/asm-x86_64/page.h	2007-04-02 20:51:34.000000000 +0530
-> @@ -79,6 +79,7 @@ extern unsigned long phys_base;
->  #endif /* !__ASSEMBLY__ */
->  
->  #define __PHYSICAL_START	CONFIG_PHYSICAL_START
-> +#define __KERNEL_ALIGN		0x200000
->  #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
->  #define __START_KERNEL_map	0xffffffff80000000
->  #define __PAGE_OFFSET           0xffff810000000000
-> _
+> wow - you have made really nice progress!
 
-I'm only a user, so I'm not uptodate on these addresses and how they
-work. However, how does this solve the problem that running 
+The discussions on the list helped clear up a lot of issues.
 
-make oldconfig
+> 
+> > I believe that the reasons for freezer failing as N increases are :
+> > - 'make -jN' keeps forking new tasks every now and then, thereby resulting
+> >   in a never-ending catching up game in the do_while loop inside
+> >   try_to_freeze_tasks (kernel/power/process.c)
+> 
+> hm, shouldnt the make be frozen immediately?
+> 
+> doesnt the 'please freeze ASAP' flag get propagated to all tasks, 
+> immediately? After that point any cloning activity should duplicate that 
+> flag too, resulting in any new child freezing immediately too.
+> 
+> > Instead of waiting for all the tasks to call try_to_freeze in the 
+> > above mentioned do_while loop, I wonder if we can put some hooks in 
+> > sched.c so asto not schedule the task marked PF_FREEZING/PF_FROZEN.
+> 
+> we could definitely do that - but i think it should be unnecessary: if 
+> we mark all tasks as PF_FREEZING atomically, that should result in 
+> _every_ task immediately dropping dead (once they get back from 
+> TASK_UNINTERRUPTIBLE). No excuses. If there's some longer delay then 
+> that can only be explained by some new cloned task/thread slipping 
+> through the net somehow. (i.e. the PF_FREEZING flag not being duplicated 
+> across fork?)
+> 
 
-on a working 2.6.21-rc3-mm2 .config gives an unbootable 2.6.21-rc5-mm3
-kernel? If I read things correctly, you now get a BUG, but the kernel
-still won't boot. If that is correct, than I, as a user, don't think
-that this is the solution that I feel comfortable with. 
+I will try again  Vatsa's suggestion of having a 
 
-If the kernel only boots CONFIG_PHYSICAL_START is aligned on a 2MB
-address, then we should align it, not BUG out when it's not, and
-especially not when it's unaligned through no fault of the user.
+if (freezing(current))
+	freeze_process(p);
 
-Kind regards,
-Jurriaan
+in copy processes() and check if we can do away with the fork race. 
+That sounds lot simpler than the scheduler hooks.
+
+> i'm wondering about how TASK_UNINTERRUPTIBLE tasks are handled by the 
+> freezer: are they assumed frozen immediately, or do we wait until they 
+> notice their PF_FREEZING and go into try_to_freeze()? I'd expect 
+> TASK_UNINTERRUPTIBLE to be the largest source of latency. (and hence be 
+> the primary source for freezing 'failures')
+
+>From what I can make out, we fail to freeze if we have some task in
+the TASK_UNINTERRUPTIBLE state for more than the timeout period. 
+
+The kernel threads have to call try_to_freeze() explicitly and for the
+userspace tasks, try_to_freeze() is called in get_signal_to_deliver().
+The system is considered frozen only when *all* the freezeable tasks
+call try_to_freeze() one way or the other. This is unlikely in case of
+a TASK_UNINTERRUPTIBLE task.
+
+Question is can we have some task in TASK_UNINTERRUPTIBLE state for such
+a long duration (20sec) ??
+
+> 
+> 	Ingo
+
+Thanks and Regards
+gautham.
 -- 
-Debian (Unstable) GNU/Linux 2.6.21-rc5-mm3 2x2010 bogomips load 0.89
-the Jack Vance Integral Edition: http://www.integralarchive.org
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
