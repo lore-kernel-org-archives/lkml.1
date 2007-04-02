@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbXDBHCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbXDBHEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbXDBHCW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbXDBHCW
+	id S1753321AbXDBHEn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbXDBHEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:02:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44656 "EHLO mx2.suse.de"
+	Mon, 2 Apr 2007 03:04:43 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:40446 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbXDBHCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:02:21 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] enhance initcall_debug, measure latency
-References: <20070401181614.GA25648@elte.hu> <20070401182801.GA25956@elte.hu>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 02 Apr 2007 10:00:59 +0200
-In-Reply-To: <20070401182801.GA25956@elte.hu>
-Message-ID: <p73vegfyzlw.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1753321AbXDBHEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:04:43 -0400
+Date: Mon, 2 Apr 2007 09:04:24 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/16] vt-pure-colors.diff
+In-Reply-To: <1175496592.4614.9.camel@daplas>
+Message-ID: <Pine.LNX.4.61.0704020902200.1245@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr> 
+ <Pine.LNX.4.61.0704012002330.12316@yvahk01.tjqt.qr> <1175496592.4614.9.camel@daplas>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
 
-> so 93.6% of the allyesconfig bootup time is in 2.5% of the initcalls. If 
-> they were fixed then an allyesconfig bzImage, which would be capable to 
-> run on every PC known to mankind without any module whatsoever, would 
+On Apr 2 2007 14:49, Antonino A. Daplas wrote:
+>
+>Not too sure about this, the default palette is based on ANSI/ECMA
+>standards (at least for the first 8 colors). Also, this will have subtle
+>effects on the 16-color logo. Since your first patch already allows us
+>to change the palette, let's leave the default alone.
 
-Assuming that every PC has enough memory @) Allyes is >35MB
+Ok.
+But to note: xterm and anything graphical (including MS Windows)
+uses the anti-pale color (255,0,0) instead of (255,170,170).
 
-> take around 10 seconds to boot up (which is acceptable for kernel bootup 
-> time).
 
-It might make sense to measure idle ticks vs busy ticks too.
-If it's idle cycles perhaps things can be more easily fixed by multi threading
-the initialization. If it's busy cycles perhaps they can be converted
-into sleeping cycles.
-
-Perhaps you should tell the individual maintainers for those?
-If they still have one. A lot of them look like old hardware
-where there might be no working ones left, perhaps just deprecation
-would make sense.
-
-> initcall 0xc1f5487d ran for 23083 msecs: pca_isa_init+0x0/0x143()
-> initcall 0xc1f54fba ran for 17121 msecs: pcf8574_init+0x0/0x20()
-
-e.g. those just look like bugs.
-
-> initcall 0xc1f0c06f ran for 14710 msecs: net_olddevs_init+0x0/0x169()
-
-That's many drivers initialized together for compatibility ordering reasons.
-
--Andi
-
+Jan
+-- 
