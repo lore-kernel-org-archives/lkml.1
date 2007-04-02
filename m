@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965962AbXDBVoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965975AbXDBVsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965962AbXDBVoO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965965AbXDBVoN
+	id S965975AbXDBVsa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965977AbXDBVsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:44:13 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:55983 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965962AbXDBVoM (ORCPT
+	Mon, 2 Apr 2007 17:48:30 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:41601 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965975AbXDBVsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:44:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=ajxRLaox+aYNScHuNPjxk0t3PWRqkpnrvG6WHLauEEZuHZWXcjgp+nZoCpYaMY8LR
-	kE5YDB/+veTIbf+azPv2w==
-Message-ID: <46117916.2040601@google.com>
-Date: Mon, 02 Apr 2007 14:43:50 -0700
-From: Martin Bligh <mbligh@google.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Dave Hansen <hansendc@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>  <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>  <200704011246.52238.ak@suse.de>  <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>  <1175544797.22373.62.camel@localhost.localdomain>  <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com> <1175548086.22373.99.camel@localhost.localdomain> <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Apr 2007 17:48:30 -0400
+Date: Mon, 2 Apr 2007 17:44:34 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: roland <devzero@web.de>
+Cc: Antoine Martin <antoine@nagafix.co.uk>,
+       Blaisorblade <blaisorblade@yahoo.it>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [uml-devel] [RFC] UML kernel & rootfs bundle with every kernel release ?
+Message-ID: <20070402214434.GA10205@c2.user-mode-linux.org>
+References: <1712880100@web.de> <200704012108.14597.blaisorblade@yahoo.it> <46100EF5.7040802@nagafix.co.uk> <20070402020530.GA589@c2.user-mode-linux.org> <4610D937.20002@nagafix.co.uk> <005601c77567$1ceddb60$eeeea8c0@aldipc>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <005601c77567$1ceddb60$eeeea8c0@aldipc>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Note that these arguments on DISCONTIG are flame bait for many SGIers. 
-> We usually see this as an attack on DISCONTIG/VMEMMAP which is the 
-> existing best performing implementation for page_to_pfn and vice 
-> versa. Please lets stop the polarization. We want one consistent scheme 
-> to manage memory everywhere. I do not care what its called as long as it 
-> covers all the bases and is not a glaring performance regresssion (like 
-> SPARSEMEM so far).
+On Mon, Apr 02, 2007 at 10:40:10PM +0200, roland wrote:
+> btw - i think besides that packaged uml+rootfs, the same thing could be 
+> distributed in other formats, i.e. qemu, vmware, M$ virtual pc (add your 
+> favourite v12n solution here)
 
-The main conceptual difference (in my mind) was not having one
-bastardized data structure (pg_data_t) that meant different
-things in different situations (is it a node, or a section
-of discontig mem?). Also we didn't support discontig mem within
-a node (at least with the old discontigmem), which was partly
-the result of that hybridization.
+There are sites (http://uml.nagafix.co.uk/ being the best one I know
+of) where, with two downloads, two uncompressions, and one command
+line later, you have a booted UML.
 
-Beyond that, it's just naming really.
+The only way I know of to improve on this, aside from inprovements in
+the booted distro, is to package the filesystem as a rootfs within the
+UML kernel binary.  I've considered this, but haven't done anything
+with it.
 
-M.
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
