@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbXDBHWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXDBHWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753202AbXDBHWI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXDBHWH
+	id S1753376AbXDBHWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbXDBHWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:22:07 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35664 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753202AbXDBHWE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:22:04 -0400
-Date: Mon, 2 Apr 2007 09:22:02 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] enhance initcall_debug, measure latency
-Message-ID: <20070402072202.GC24269@one.firstfloor.org>
-References: <20070401181614.GA25648@elte.hu> <20070401182801.GA25956@elte.hu> <p73vegfyzlw.fsf@bingen.suse.de> <20070402070907.GA18480@elte.hu>
+	Mon, 2 Apr 2007 03:22:23 -0400
+Received: from www.osadl.org ([213.239.205.134]:37977 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753376AbXDBHWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:22:22 -0400
+Subject: Re: [patch 6/13] signal/timer/event fds v9 - timerfd core ...
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704010941490.26331@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.16816.1175371772.6>
+	 <1175418341.28263.64.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0704010941490.26331@alien.or.mcafeemobile.com>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 09:22:28 +0200
+Message-Id: <1175498549.28263.88.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070402070907.GA18480@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > initcall 0xc1f5487d ran for 23083 msecs: pca_isa_init+0x0/0x143() 
-> > > initcall 0xc1f54fba ran for 17121 msecs: pcf8574_init+0x0/0x20()
+On Sun, 2007-04-01 at 10:00 -0700, Davide Libenzi wrote:
+> > For periodic timers we probably want to know also about missed ticks,
+> > i.e. when the timer was delayed.
 > > 
-> > e.g. those just look like bugs.
+> > I changed recently the rearm handling code of itimers to prevent DoS
+> > attacks. See commit 8bfd9a7a229b5f3d3eda5d7d45c2eebec5b4ba16. The posix
+> > timer code has a similar mechanism.
+> > 
+> > Probably we should do the same here. That means that we defer the
+> > restart of the timer to the process context.
 > 
-> it's ok i think: it's ISA so it spends its time fairly to tickle the 
-> ports in a loop.
+> But timerfd has that implicit, in the ticks counter. So if you get ticks > 1
+> it means you did not read-out (miss) one or more.
+> By re-arming the timer whenever you read it, that may be some time after 
+> it expired. IMO the behaviour is better as it is now, and if you want the 
+> new timer sequence start at a new timeframe, you just use timerfd with the 
+> same fd.
+> I do not know about DoS on timers (did not follow the thread), but I could 
+> easily implement it here, by capping the counter to some value, and return 
+> POLLERR in poll().
+> I'd prefer that instead of the re-arm on read thing.
 
-23 or 17 seconds long?  That's just broken imho.
+The DoS is simple: create a bunch of periodic timers with 10usec period.
+This can be done by any user.
 
-I presume one could define a background_module_init() for those, 
-but it's still buggy.
+There is no inaccuracy when you rearm the timer on read: hrtimer_forward
+takes care, that the period is accurate. It does not start the timer out
+of the periodic order, i.e. on a different time frame.
 
--Andi
+Where is the win of keeping the timer running, when nobody cares about
+the expiry at all ? It just generates interrupts and events for nothing.
+
+	tglx
+
+
+
+
