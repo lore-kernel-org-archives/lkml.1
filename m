@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbXDBGrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933936AbXDBGsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932339AbXDBGrw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 02:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933941AbXDBGrw
+	id S933936AbXDBGsf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 02:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933941AbXDBGse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 02:47:52 -0400
-Received: from gw.goop.org ([64.81.55.164]:59960 "EHLO mail.goop.org"
+	Mon, 2 Apr 2007 02:48:34 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:58995 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932339AbXDBGrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 02:47:52 -0400
-Message-ID: <4610A70A.7010105@goop.org>
-Date: Sun, 01 Apr 2007 23:47:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S933936AbXDBGsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 02:48:33 -0400
+Date: Mon, 2 Apr 2007 08:48:12 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 13/16] show-pipesize-in-stat.diff
+In-Reply-To: <20070401225833.ffb9fbd5.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.61.0704020834370.1245@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704011900470.8018@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0704012010040.12316@yvahk01.tjqt.qr>
+ <20070401225833.ffb9fbd5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>,
-       Dan Hecht <dhecht@vmware.com>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [patch 17/17] Add a sched_clock paravirt_op
-References: <20070402055652.610711908@goop.org> <20070402055705.606126251@goop.org> <200704020809.42373.ak@suse.de>
-In-Reply-To: <200704020809.42373.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> I think it would be much cleaner if you didn't implement your own sched_clock,
-> but you adjust ns_base/last_tsc to account for your lost cycles.
-> This could be done cleanly by adding a new function to sched-clock.c
-> Possibly such a function could be used by other parts of the kernel
-> in the future too.
->   
 
-Cleaner how?  This seems pretty straightforward to me.  Xen can return a
-clock measuring unstolen nanoseconds, which maps directly to the
-sched_clock interface, doesn't need any of the existing sched_clock
-code.  I suppose I could map the Xen interface onto some abstract
-"cycles" notion and hook it into the tsc machinery, but it seems like it
-would be a forced fit.  In general, my approach has been to choose the
-higher-level interface over a lower-level one, all other things being equal.
+On Apr 1 2007 22:58, Andrew Morton wrote:
+>On Sun, 1 Apr 2007 20:17:24 +0200 (MEST) Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+>
+>> Show the fill status of a pipe (in bytes) when stat'ing one.
+>
+>Is this useful?  It seems rather an obscure thing, and we generally need a
+>good reason to go adding Linux-specific goodies to standard system calls
+>like this.  What do "other operating systems" do here?
 
-The only reason I hoisted the cycles_2_ns stuff was for vmi.  It returns
-a tsc-like cycles interface, and so it can make use of the existing
-cycles_2_ns code (though I don't think a changing timebase is an issue).
+Other OS seem to always show 0, as Linux does usually. So I do not think
+programs actually rely on it having any specific value.
+I thought adding pipesize might be helpful in dianosing pipe cases, akin to
+Miklos's procfs-fdinfo patch for regular files.
 
-    J
+>> +		}
+>> +	} else if (S_ISSOCK(inode->i_mode)) {
+>> +#ifdef CONFIG_UNIX_MODULE
+>> +		loff_t (*uxsize)(struct inode *) = __symbol_get("unixsock_size");
+>> +		if (uxsize != NULL) {
+>> +			stat->size = uxsize(inode);
+>> +			symbol_put("unixsock_size");
+>> +		}
+>> +#endif
+>> +#if defined(CONFIG_UNIX) && !defined(CONFIG_UNIX_MODULE)
+>> +		stat->size = unixsock_size(inode);
+>> +#endif
+>> +	} else {
+>> +		stat->size = i_size_read(inode);
+>> +	}
+>
+>That's a bit fugly.
+
+Drop for now.
+
+>> +loff_t unixsock_size(struct inode *inode) {
+>> +    struct sock *sk = unix_find_socket_byinode(inode);
+>> +    loff_t eax;
+>> +
+>> +    if(sk == NULL) { return 0; }
+>> +    eax = sk->sk_rcvbuf;
+>> +    sock_put(sk);
+>> +    return eax;
+>> +}
+>> +EXPORT_SYMBOL(unixsock_size);
+>
+>That's wildly incorrect coding style, and it doesn't use tabs.
+
+Which means I something really went wrong, because I knew I went through it for
+cleanup.
