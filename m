@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750944AbXDAXon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751033AbXDBADx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750944AbXDAXon (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Apr 2007 19:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbXDAXon
+	id S1751033AbXDBADx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Apr 2007 20:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbXDBADx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Apr 2007 19:44:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:27761 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbXDAXom (ORCPT
+	Sun, 1 Apr 2007 20:03:53 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:37826 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751033AbXDBADx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Apr 2007 19:44:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=BcEDN+mPObmED6hOhJ5NlTZOuEWgUyHoLkmDfrGjw5vONCBlkCzXdDD8nhjRoWLtpijbcVvKXB7A0EOrbDh0fX10otFVwtMpwM0igaS6bV9QGAJBOeQ5j0Vr+2aBfk58ZLfKuCJZTBjT9zXm395zfj3aJrg9x2FVJxNQ/GGuGy8=
-Message-ID: <21d7e9970704011644n3adbef2brc6bfeb288f5d0866@mail.gmail.com>
-Date: Mon, 2 Apr 2007 09:44:41 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       dri-devel <dri-devel@lists.sourceforge.net>
-Subject: drm + 4GB RAM + swiotlb = drm craps out
+	Sun, 1 Apr 2007 20:03:53 -0400
+Message-ID: <4610481D.8000102@gmail.com>
+Date: Mon, 02 Apr 2007 02:02:37 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Jens Axboe <jens.axboe@oracle.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mcdx -- do_request(): non-read command to cd!!
+References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk>	 <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com>
+In-Reply-To: <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay I've got a bug reported before and now again about > 4GB + radeon
-blows up the DRM... on Intel hw...
+On 04/01/2007 12:06 PM, Pekka Enberg wrote:
 
-What the drm currently does for the PCI GART table is it allocates a
-chunk of memory (8MB) with vmalloc_32(), then when it decides to use
-it it goes through every page of it calls pci_map_single() (with
-PCI_DMA_TODEVICE, which is probably wrong...) with every page from the
-vmalloc mapping and puts the bus addresses of the pages into the PCI
-GART table on the GPU.
+> Looks like mcdx_xfer is sleeping while holding q->queue_lock. The 
+> attached (untested) patch should fix it.
 
-So when swiotlb happens, as you can guess it all falls apart as the
-drm never calls sync functions at any stage...
+This (including your followup) does indeed avoid the traces in the 
+kernel log, but unfortunately, the driver seems to need a bit more.
 
-The main problem is the ring buffer and scratch write back, these
-values are read/write from both the CPU and GPU quite a lot, so this
-leads me to think I should really just be using dma_alloc_coherent for
-the whole lot, however this is an 8MB mapping and possibly could be
-getting larger in the future and dynamic as we do dynamic PCIEGART
-support for the radeons...
+This may be expected, I'm not sure:
 
-So I suppose I'm asking for ideas on the "correct" way to do this, and
-perhaps any quick way to patch up the problem I'm seeing now by making
-swiotlb not get involved ....
+root@5va2:~# dd if=/dev/mcdx0 of=/dev/null bs=2048
+0+0 records in
+0+0 records out
+0 bytes (0 B) copied, 0.000221955 seconds, 0.0 kB/s
+root@5va2:~#
 
-Regards,
-Dave.
+This I know isn't:
+
+root@5va2:~# readcd dev=/dev/mcdx0 f=/dev/null
+Segmentation fault
+root@5va2:~#
+
+(leaves a "note: readcd[1174] exited with preempt_count 1" in the log)
+
+and after a "mount -t iso9660 /dev/mcdx0 /mnt/cdrom",  a:
+
+root@5va2:~# tar cv /mnt/cdrom >/dev/null
+
+has upto now done all of:
+
+1) segfault
+2) make the kernel oops
+3) reset the machine
+
+This thing is just so badly broken... ;-(
+
+I've attached the current patches from Jens and yourself (against 
+2.6.20.4) as a double check, but the driver's still totally unuseable 
+even with them...
+
+I own two other legacy drives; a Panasonic CR562 (sbpcd.c) and a Sony 
+CDU33A (cdu31a.c) which together with this Mitsumi LU005S (mcdx.c) make 
+up also all but one of the controllers I have; a few standalone, but 
+most on old ISA soundcards. When I last tested, cdu31a somewhat worked 
+and sbpcd didn't. Had high hopes for mcdx.c upon seeing it compile 
+without warnings, but alas.
+
+Last time Al Viro suggested ripping them out, I slightly objected:
+
+http://lkml.org/lkml/2004/5/2/123
+
+but well, although I like playing with this stuff, I still don't know 
+the first thing about the block layer and given the shape these things 
+are in...
+
+Many thanks for looking though!
+
+Rene.
+
