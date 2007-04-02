@@ -1,54 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbXDBQsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964777AbXDBQyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933347AbXDBQsJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 12:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXDBQsJ
+	id S964777AbXDBQyJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 12:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933741AbXDBQyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 12:48:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58938 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933347AbXDBQsH (ORCPT
+	Mon, 2 Apr 2007 12:54:09 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:40607 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S933699AbXDBQyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 12:48:07 -0400
-Date: Mon, 02 Apr 2007 12:44:24 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] Two DVB fixes for 2.6.21 and -stable
-Message-Id: <1175532441.4564.0.camel@localhost>
+	Mon, 2 Apr 2007 12:54:08 -0400
+Date: Mon, 2 Apr 2007 12:50:09 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 0/4] UML - cleanups
+Message-ID: <20070402165009.GA7632@c2.user-mode-linux.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0-1.1mdv2007.0 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+These patches tidy up various things and can wait till 2.6.22.
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+				Jeff
 
-For the following:
-
-   - Tda10086: fix DiSEqC message length
-   - Pluto2: fix incorrect TSCR register setting
-
-Cheers,
-Mauro.
-
----
-
- drivers/media/dvb/frontends/tda10086.c |    2 +-
- drivers/media/dvb/pluto2/pluto2.c      |   22 ++++++++++++++--------
- 2 files changed, 15 insertions(+), 9 deletions(-)
-
-Andreas Oberritter:
-      V4L/DVB (5495): Tda10086: fix DiSEqC message length
-      V4L/DVB (5496): Pluto2: fix incorrect TSCR register setting
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
-
+-- 
+Work email - jdike at linux dot intel dot com
