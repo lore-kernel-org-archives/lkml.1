@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965808AbXDBUNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965796AbXDBUQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965808AbXDBUNZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 16:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965796AbXDBUNY
+	id S965796AbXDBUQH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 16:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965809AbXDBUQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 16:13:24 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:32890 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965808AbXDBUNX (ORCPT
+	Mon, 2 Apr 2007 16:16:07 -0400
+Received: from wx-out-0506.google.com ([66.249.82.227]:31201 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965796AbXDBUQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 16:13:23 -0400
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-From: Dave Hansen <hansendc@us.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Martin Bligh <mbligh@google.com>,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
-	 <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
-	 <200704011246.52238.ak@suse.de>
-	 <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 02 Apr 2007 13:13:17 -0700
-Message-Id: <1175544797.22373.62.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 2 Apr 2007 16:16:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Y/KrGe2kU9oSShq0r6szaw/tHuSS54shvvbugNeTrIvJyHkHzQtjTMppU5Ce/KAI9y6Sn+RBMcbF2AI2A7z9/pT3FBkfgc6ePR9nGVRZIq+41ajOfaZJAc16hCnql3WAJHbExoL/I0k2iK1H6vn8vbmmsV/K9+ZCA1UnED5gf24=
+Message-ID: <d120d5000704021316o7e30d51ej3f4a749ce5a49b5a@mail.gmail.com>
+Date: Mon, 2 Apr 2007 16:16:03 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [patch 2.6.21-rc5-git 2/2] update Documentation/driver-model/platform.txt
+Cc: "Greg KH" <gregkh@suse.de>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Andres Salomon" <dilinger@debian.org>
+In-Reply-To: <200703311458.43800.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703311458.43800.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-02 at 08:37 -0700, Christoph Lameter wrote:
-> You want a benchmark to prove that the removal of memory references and 
-> code improves performance? 
+On 3/31/07, David Brownell <david-b@pacbell.net> wrote:
+> +A better solution is usually:
+> +
+> +       struct platform_device *platform_device_register_simple(
+> +                       char *name, unsigned id,
+> +                       struct resource *res, unsigned nres);
+> +
+> +You can use platform_device_register_simple() as a one-step call to allocate
+> +and register a device.
 
-Yes, please. ;)
+DIdn't Russell want to convert eberything to platform_device_alloc and
+then nuke platfrom_device_register_simple()?
 
-I completely agree, it looks like it should be faster.  The code
-certainly has potential benefits.  But, to add this neato, apparently
-more performant feature, we unfortunately have to add code.  Adding the
-code has a cost: code maintenance.  This isn't a runtime cost, but it is
-a real, honest to goodness tradeoff.
-
-So, let's get some kind of concrete idea what the tradeoffs are.  Is it,
-400 lines of code gets us a 10% performance boost across the board, or
-that 400,000 lines gets us 0.1% on one specialized benchmark?
-
-BTW, I like the patches.  Very nice and clean.  
-
--- Dave
-
+-- 
+Dmitry
