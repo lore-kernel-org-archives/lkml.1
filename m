@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965512AbXDBO2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965508AbXDBOaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965512AbXDBO2y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 10:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXDBO2y
+	id S965508AbXDBOaq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 10:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXDBOaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 10:28:54 -0400
-Received: from brick.kernel.dk ([62.242.22.158]:2782 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965491AbXDBO2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 10:28:53 -0400
-Date: Mon, 2 Apr 2007 16:23:20 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Joerg Schilling <schilling@fokus.fraunhofer.de>, dougg@torque.net,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls Re:  [PATCH] Block layer: separate out queue-oriented ioctls
-Message-ID: <20070402142318.GA14256@kernel.dk>
-References: <200704020828.l328SICc009264@burner.fokus.fraunhofer.de> <Pine.LNX.4.44L0.0704020951180.1743-100000@netrider.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0704020951180.1743-100000@netrider.rowland.org>
+	Mon, 2 Apr 2007 10:30:46 -0400
+Received: from vms048pub.verizon.net ([206.46.252.48]:57468 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965508AbXDBOap (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 10:30:45 -0400
+Date: Mon, 02 Apr 2007 10:30:29 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: mmap error?
+To: linux-kernel@vger.kernel.org, Andy Polyakov <appro@fy.chalmers.se>
+Message-id: <200704021030.29747.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02 2007, Alan Stern wrote:
-> On Mon, 2 Apr 2007, Joerg Schilling wrote:
-> 
-> > Hi,
-> > 
-> > this is a repost as I like to know the current state of the problem...
-> > 
-> > The USB DMA size problem is known to exist on Linux since February 2004.
-> > I am still in hope that there will be a fix soon.
-> 
-> Me too.  I submitted the most recent version of the patch (labelled as857) 
-> over a month ago and have received essentially no feedback on it.
-> 
-> Douglas, James...  What's the story?
+Greetings all;
 
-FWIW, it had my ack, I think we were just waiting for Doug to ack the sg
-bits.
+Has something been changed recently, say post 2.6.19, that would effect 
+this error from k3b when I click start (the burn), with a fresh dvd+r in 
+the drive:
+
+--------
+Using growisofs 7.0 Copyright (C) Andy Polyakov <appro@fy.chalmers.se>
+Starting writing...
+:-( unable to anonymously mmap 33554432; resource temporarily 
+unavailable...
+Fatal error at startup, resource temporarily unavailable...
+--------
+
+And k3b then ejects the tray.
+
+Selinux is disabled.
+Currently booted kernel 2.6.21-rc5
 
 -- 
-Jens Axboe
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Why be difficult when, with a bit of effort, you could be impossible?
