@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965554AbXDBSFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965638AbXDBSNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965554AbXDBSFm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 14:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965624AbXDBSFm
+	id S965638AbXDBSNV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 14:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965636AbXDBSNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 14:05:42 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44945 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965554AbXDBSFl (ORCPT
+	Mon, 2 Apr 2007 14:13:21 -0400
+Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:53349 "EHLO
+	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965634AbXDBSNU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 14:05:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: vatsa@in.ibm.com
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, menage@google.com, akpm@osdl.org,
-       pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       ebiederm@xmission.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       mbligh@google.com, winget@google.com, rohitseth@google.com,
-       devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
-References: <20070212081521.808338000@menage.corp.google.com>
-	<20070212085105.170265000@menage.corp.google.com>
-	<20070331024722.GA808@in.ibm.com>
-	<20070402140938.GF17710@sergelap.austin.ibm.com>
-	<20070402142727.GF2456@in.ibm.com>
-Date: Mon, 02 Apr 2007 12:02:35 -0600
-In-Reply-To: <20070402142727.GF2456@in.ibm.com> (Srivatsa Vaddagiri's message
-	of "Mon, 2 Apr 2007 19:57:27 +0530")
-Message-ID: <m1slbiejt0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 2 Apr 2007 14:13:20 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
+content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 3/4] [SCSI]stex: fix reset recovery for console device
+Date: Mon, 2 Apr 2007 11:14:56 -0700
+Message-ID: <B70A50D07063384EB9BCE3330D18414F0327EBC5@nonameb.ptu.promise.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/4] [SCSI]stex: fix reset recovery for console device
+Thread-Index: AcdzxSCFjV2dtSPySvOLFL/ZEJabKgBi8Pdg
+From: "Ed Lin" <ed.lin@promise.com>
+To: "James Bottomley" <James.Bottomley@SteelEye.com>
+Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>, "jeff" <jeff@garzik.org>,
+       "Promise_Linux" <Promise_Linux@promise.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri <vatsa@in.ibm.com> writes:
 
-> On Mon, Apr 02, 2007 at 09:09:39AM -0500, Serge E. Hallyn wrote:
->> Losing the directory isn't a big deal though.  And both unsharing a
->> namespace (which causes a ns_container_clone) and mounting the hierarchy
->> are done by userspace, so if for some installation it is a big deal,
->> the init scripts on initrd can mount the hierarchy before doing any
->> unsharing.
->
-> Yes I thought of that after posting this (that initrd can mount the
-> hierarchies), so this should not be an issue in practice ..
->
->> Can you think of a reason why losing a few directories matters?
->
-> If we loose directories, then we don't have a way to manage the
-> task-group it represents thr' the filesystem interface, so I consider
-> that bad. As we agree, this will not be an issue if initrd
-> mounts the ns hierarchy atleast at bootup.
 
-I suspect that could be a problem if we have recursive containers.
-Even by having a separate mount namespace for isolation you really
-don't want to share the mount.  If you can see all of the processes
-you do want to be able to see and control everything.
+> -----Original Message-----
+> From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
+> Sent: Saturday, March 31, 2007 11:46 AM
+> To: Ed Lin
+> Cc: linux-scsi; linux-kernel; jeff; Promise_Linux
+> Subject: Re: [PATCH 3/4] [SCSI]stex: fix reset recovery for 
+> console device
+> 
+> 
+> On Fri, 2007-03-30 at 15:21 -0700, Ed Lin wrote:
+> > After reset completed, the scsi error handler sends out START_STOP
+> > and TEST_UNIT_READY to the device. For 'normal' devices these
+> > commands will be handled by firmware. However, because the RAID
+> > console only interfaces to scsi mid layer, the firmware 
+> will not process
+> > these commands for it. This will make the console to be 
+> offlined right
+> > after reset. Add the handling in driver to fix this problem.
+> 
+> I don't see how this explanation can be correct.  The error 
+> handler only
+> sends a START_STOP command if sdev->allow_restart is one, 
+> which you have
+> to set in the slave_configure routines (which stex doesn't).  
+> If you're
+> seeing a START_STOP in the eh path, there's something else wrong.
+> TEST_UNIT_READY, certainly ... it's part of a restart check.
+> 
 
-I guess I want to ask before this gets to far.  Why are all of the
-namespaces lumped into one group?  I would think it would make much
-more sense to treat each namespace individually (at least for the
-user space interface).
-
-Eric
+I just saw the routine name scsi_eh_try_stu, and didn't notice the
+allow_restart (partly because I thought it was not harmful...).
+But the TEST_UNIT_READY must stay.
