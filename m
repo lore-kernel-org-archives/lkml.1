@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbXDBQSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXDBQVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752245AbXDBQSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 12:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXDBQSS
+	id S1752082AbXDBQVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 12:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXDBQVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 12:18:18 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50349 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752346AbXDBQSQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 12:18:16 -0400
-Date: Mon, 2 Apr 2007 09:18:16 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
-In-Reply-To: <200704011246.52238.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0704020914280.30634@schroedinger.engr.sgi.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
- <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
- <200704011246.52238.ak@suse.de>
+	Mon, 2 Apr 2007 12:21:21 -0400
+Received: from styx.suse.cz ([82.119.242.94]:45088 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752082AbXDBQVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 12:21:20 -0400
+Date: Mon, 2 Apr 2007 16:48:24 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: dtor@insightbb.com, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, stuart_hayes@dell.com
+Subject: Re: usb hid: reset NumLock
+In-Reply-To: <20070401222410.2ff7ecd7.zaitcev@redhat.com>
+Message-ID: <Pine.LNX.4.64.0704021641190.3808@jikos.suse.cz>
+References: <20070330105924.01a16dd6.zaitcev@redhat.com>
+ <Pine.LNX.4.64.0703312122100.6040@jikos.suse.cz> <20070401222410.2ff7ecd7.zaitcev@redhat.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Apr 2007, Andi Kleen wrote:
+On Sun, 1 Apr 2007, Pete Zaitcev wrote:
 
-> Or do you have overlaps with other memory (I think you have)
+> diff --git a/drivers/usb/input/hid-core.c b/drivers/usb/input/hid-core.c
+> index ef09952..7338e81 100644
+> --- a/drivers/usb/input/hid-core.c
+> +++ b/drivers/usb/input/hid-core.c
+> @@ -548,6 +548,28 @@ void usbhid_init_reports(struct hid_device *hid)
+>  		warn("timeout initializing reports");
+>  }
+>  
+> +/*
+> + * Reset LEDs which BIOS might have left on.
+> + */
+> +static int hid_find_field_early(struct hid_device *hid, unsigned int page,
+> +    unsigned int hid_code, struct hid_field **field);
 
-We may get into a case where some page structs are physically located
-on other nodes if there are no holes between nodes. This would be 
-particularly significant for 64MB node sizes using numa emulation.
-But there it really does not matter where the real memory is located.
-(this is really inherent in sparsemems way of mapping memory).
+Hi Pete,
 
-> In that case you have to handle the overlap in change_page_attr()
+could you please change the order of the two functions, so that you 
+don't have to put the forward declaration here?
 
-Why would we use change_page_attr on page structs? I can see that the 
-pages themselves should be subject to change_page_attr but why the 
-page_structs? I think the system would panic if one would set page structs 
-to read only.
+> +	/*
+> +	 * Just reset Num Lock for now.
+> +	 * This is called for non-keyboard devices too, so no printk if field
+> +	 * is not found.
+> +	 */
 
+I'd say this is a little bit overcommented.
+
+> The main reason is, I have a USB-to-PS/2 adapter where early acces to 
+> LEDs does not work. Apparently, it is still initializing the PS/2 part 
+> when it reports to USB that it's ready, and needs a delay. So, I figured 
+> that I may be breaking some odd devices. Some may crash or whatnot. This 
+> is why I asked Stuart to get me VID/PID for involved keyboards.
+
+Fair enough, thanks.
+
+Besides the trivial nitpicks above, I think that this fixed version is 
+fine. So as soon as you have the VIDs and PIDs of the hardware which 
+requires this, could you please update the patch and send it to me again?
+
+Thanks,
+
+-- 
+Jiri Kosina
