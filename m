@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbXDBLW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753465AbXDBL2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbXDBLW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 07:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbXDBLW0
+	id S1753465AbXDBL2a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 07:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbXDBL2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 07:22:26 -0400
-Received: from hoefnix.telenet-ops.be ([195.130.132.54]:57519 "EHLO
-	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753460AbXDBLWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 07:22:25 -0400
-Date: Mon, 2 Apr 2007 13:22:00 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Antoine Martin <antoine@nagafix.co.uk>
-Cc: Jeff Dike <jdike@addtoit.com>, Blaisorblade <blaisorblade@yahoo.it>,
-       devzero@web.de, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [uml-devel] [RFC] UML kernel & rootfs bundle with every kernel
- release ?
-In-Reply-To: <4610D937.20002@nagafix.co.uk>
-Message-ID: <Pine.LNX.4.64.0704021318410.1276@anakin>
-References: <1712880100@web.de> <200704012108.14597.blaisorblade@yahoo.it>
- <46100EF5.7040802@nagafix.co.uk> <20070402020530.GA589@c2.user-mode-linux.org>
- <4610D937.20002@nagafix.co.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 2 Apr 2007 07:28:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34311 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753465AbXDBL23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 07:28:29 -0400
+Date: Mon, 2 Apr 2007 13:27:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Message-ID: <20070402112745.GB27891@elte.hu>
+References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu> <20070402111900.GA30946@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070402111900.GA30946@in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Antoine Martin wrote:
-> Jeff Dike wrote:
-> > On Sun, Apr 01, 2007 at 08:58:45PM +0100, Antoine Martin wrote:
-> >> I reckon that one critical thing which could drastically increase the 
-> >> user base would be to have a working virtual framebuffer implementation.
-> > 
-> > Why?  I've never understood what a framebuffer gives you that you
-> > don't have now.
-> Just like the network auto-configuration via dhcp, it would allow users 
-> to download images+kernel and run them like appliances without 
-> understanding anything about X or UML, just click and run.
-> We are all capable of setting up Xvfb here, but most users are not, 
-> which is why they download ready-made images.
-> It would also make it a lot easier to focus on writing a management UI, 
-> hell if there isn't one shortly after, I'll do one myself!
-> Think of a UML browser image (running IE via wine in a limited image 
-> with just X + wine + IE - I would much prefer that to having wine+IE 
-> installed locally), testing framebuffer apps like gtk-fb/cairo-fb 
-> without risking your dev environment, etc...
 
-There are patches floating around for a UML frame buffer device.
-Gerd Kraxel^H^H^H^H^H^HHoffmann did one using plain X11, which worked
-great when I gave it a try.
+* Gautham R Shenoy <ego@in.ibm.com> wrote:
 
-A few years ago I tried doing one myself using gdk/gtk, but it didn't
-work reliably on all systems. My main motivation was doing development for
-different frame buffer memory organizations (think Amiga and Atari bitplanes)
-on UML.
+> From what I can make out, we fail to freeze if we have some task in 
+> the TASK_UNINTERRUPTIBLE state for more than the timeout period.
 
-I suggest taking a look at Gerd's patches. IIRC, he posted them to lkml
-last year.
+> Question is can we have some task in TASK_UNINTERRUPTIBLE state for 
+> such a long duration (20sec) ??
 
-Gr{oetje,eeting}s,
+yes, easily so - just have a really long disk queue. Or really heavy 
+mutex contention.
 
-						Geert
+i really think we should add a freezing hook to schedule too (no need to 
+change anything else - just add a PF_FREEZE check into the schedule() 
+function) - and add a wakeup method that moves TASK_UNINTERRUPTIBLE 
+tasks to the runqueue but does not touch their task->state.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+( the copy_process() handling is still needed, so that no new tasks
+  without PF_FREEZE get created that could slip out of control. )
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Such a wakeup will cause them to execute again but without disturbing 
+their task->state value, at which point a second hook in schedule() 
+could catch and freeze them. (and can restart the sleep afterwards, if 
+the task is still TASK_UNINTERRUPTIBLE)
+
+i.e. two easy hooks in schedule() plus a try_to_wake_up() variant that 
+does not touch p->state. In fact the second hook could be used instead 
+of the first one so one might be enough. (I can code up the scheduler 
+bits for you if that would be helpful.)
+
+	Ingo
