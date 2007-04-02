@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965955AbXDBVgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965957AbXDBVk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965955AbXDBVgs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 17:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965957AbXDBVgs
+	id S965957AbXDBVk3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 17:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965961AbXDBVk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 17:36:48 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37054 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965955AbXDBVgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 17:36:47 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: A set of "standard" virtual devices?
-Date: Mon, 2 Apr 2007 23:36:42 +0200
-User-Agent: KMail/1.9.6
-Cc: virtualization@lists.linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com
-References: <4611652F.700@zytor.com> <200704022312.39195.ak@suse.de> <4611768D.1080801@garzik.org>
-In-Reply-To: <4611768D.1080801@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Apr 2007 17:40:29 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:51363 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965957AbXDBVk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 17:40:28 -0400
+Date: Mon, 2 Apr 2007 14:39:49 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chris Wright <chrisw@sous-sol.org>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/5] x86_64: enable clockevents and dynticks
+Message-ID: <20070402213949.GD10574@sequoia.sous-sol.org>
+References: <20070331083149.997762000@sous-sol.org> <1175419332.28263.67.camel@localhost.localdomain> <20070401185402.GZ10574@sequoia.sous-sol.org> <1175549504.28263.184.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704022336.43136.ak@suse.de>
+In-Reply-To: <1175549504.28263.184.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 April 2007 23:33:01 Jeff Garzik wrote:
-> Andi Kleen wrote:
-> >> How would that work in the case where virtualized guests don't have a
-> >> visible PCI bus, and the virtual environment doesn't pretend to emulate
-> >> a PCI bus?
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> On Sun, 2007-04-01 at 11:54 -0700, Chris Wright wrote:
+> > * Thomas Gleixner (tglx@linutronix.de) wrote:
+> > > On Sat, 2007-03-31 at 01:31 -0700, Chris Wright wrote:
+> > > > This series converts x86_64 timers to clockevents drivers
+> > > > and then enables dynticks.  There's some minor cleanups along
+> > > > the way.  The lapic broadcast mechanism is untested, I'm sure it
+> > > > still needs work, there's still some cruft in lapic_setup_timer.
+> > > > 
+> > > > This is just for comments at this point, now that it's working
+> > > > on my test box in both NO_HZ=n and NO_HZ=n configurations (typically
+> > > > using hpet).
+> > > 
+> > > Have you checked, if we could share the code between i386 and x86_64 at
+> > > least for PIT and HPET. I'm not sure about the local APIC, but I think
+> > > it might be doable as well.
 > > 
-> > If they emulated one with the appropiate device 
-> > then distribution driver auto probing would just work transparently for them.
+> > Yes, that's part of why I did some of the cleanups that way, so that we
+> > could merge the two together later.
 > 
-> Yes, but, ideally with paravirtualization you should be able to avoid 
-> the overhead of emulating many major classes of device (storage, 
-> network, RNG, etc.) by developing a low-overhead passthrough interface 
-> that does not involve PCI at all.
+> I'd prefer to get this done now. If we plug it in as is, the "merge
+> later" probably will never happen.
 
-The implementation wouldn't need to use PCI at all. There wouldn't 
-even need to be PCI like registers internally. Just a pci device
-with an ID somewhere in sysfs. PCI with unique IDs
-is just a convenient and well established key into the driver module
-collection. Once you have the right driver it can do what it wants.
+that's fine, this is just RFC to see if there's obvious broken bits, etc.
+also, i still need to do some split out of the pit.  it and hpet are nearly
+identical though, so i don't noticing any issues with this.
 
--Andi 
+the part i know is broken is lapic broadcast, so i'd like to fix that
+up too.  trouble is, it's broken on vanilla too, so i'm not 100% sure
+what i'm debugging yet.
+
+thanks,
+-chris
