@@ -1,87 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbXDBHo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751473AbXDBHpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbXDBHo1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXDBHo1
+	id S1751473AbXDBHpQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXDBHpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:44:27 -0400
-Received: from mx2.suse.de ([195.135.220.15]:46551 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753391AbXDBHoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:44:25 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 2 Apr 2007 17:44:17 +1000
-Message-Id: <1070402074417.31093@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH] md: Avoid a deadlock when removing a device from an md array via sysfs.
-References: <20070402174319.30997.patches@notabene>
+	Mon, 2 Apr 2007 03:45:16 -0400
+Received: from gum.itee.uq.edu.au ([130.102.66.1]:48360 "EHLO
+	gum.itee.uq.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751473AbXDBHpO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 03:45:14 -0400
+X-Greylist: delayed 3820 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Apr 2007 03:45:13 EDT
+Message-ID: <4610A598.4050206@itee.uq.edu.au>
+Date: Mon, 02 Apr 2007 16:41:28 +1000
+From: John Williams <jwilliams@itee.uq.edu.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060418 Red Hat/1.7.13-1.1.3.1.centos3
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: ENOENT creating /dev/root on MTD RAM partition
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(This patch should go in 2.6.21 as it fixes a recent regression - NB)
+Hello,
 
-A device can be removed from an md array via e.g.
-  echo remove > /sys/block/md3/md/dev-sde/state
+I'm working on the 2.6 kernel port for MicroBlaze (embedded, NOMMU) 
+arch. Like some other nommu archs, we typically mount root on an MTD RAM
+partition (either CRAMFS or ROMFS).
 
-This will try to remove the 'dev-sde' subtree which will deadlock
-since
-  commit e7b0d26a86943370c04d6833c6edba2a72a6e240
+All of this is working fine on 2.6.19 plus SnapGear 2.6.19-uc0-bigpatch 
+NOMMU patchset.
 
-With this patch we run the kobject_del via schedule_work so as to
-avoid the deadlock.
+However, since coming forward to 2.6.20 (plus equiv. SnapGear patchset) 
+mount_root is failing.
 
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Neil Brown <neilb@suse.de>
+Details follow, but basically create_dev(/dev/root, ROOT_DEV) is 
+returning -ENOENT.  ROOT_DEV points to a valid MTD RAM partition, with a 
+valid ROMFS (or CRAMFS, doesn't matter which) image. I've dumped the 
+memory, the image is good.
 
-### Diffstat output
- ./drivers/md/md.c           |   13 ++++++++++++-
- ./include/linux/raid/md_k.h |    1 +
- 2 files changed, 13 insertions(+), 1 deletion(-)
+Googling the various archives finds one or two past references to 
+create_dev or do_mount_root returning -ENOENT on MTD RAM partitions, but 
+I found no followups or solutions posted.
 
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2007-04-02 17:43:03.000000000 +1000
-+++ ./drivers/md/md.c	2007-04-02 17:38:46.000000000 +1000
-@@ -1389,6 +1389,12 @@ static int bind_rdev_to_array(mdk_rdev_t
- 	return err;
- }
- 
-+static void delayed_delete(struct work_struct *ws)
-+{
-+	mdk_rdev_t *rdev = container_of(ws, mdk_rdev_t, del_work);
-+	kobject_del(&rdev->kobj);
-+}
-+
- static void unbind_rdev_from_array(mdk_rdev_t * rdev)
- {
- 	char b[BDEVNAME_SIZE];
-@@ -1401,7 +1407,12 @@ static void unbind_rdev_from_array(mdk_r
- 	printk(KERN_INFO "md: unbind<%s>\n", bdevname(rdev->bdev,b));
- 	rdev->mddev = NULL;
- 	sysfs_remove_link(&rdev->kobj, "block");
--	kobject_del(&rdev->kobj);
-+
-+	/* We need to delay this, otherwise we can deadlock when
-+	 * writing to 'remove' to "dev/state"
-+	 */
-+	INIT_WORK(&rdev->del_work, delayed_delete);
-+	schedule_work(&rdev->del_work);
- }
- 
- /*
+ From my bootlog:
 
-diff .prev/include/linux/raid/md_k.h ./include/linux/raid/md_k.h
---- .prev/include/linux/raid/md_k.h	2007-04-02 17:43:03.000000000 +1000
-+++ ./include/linux/raid/md_k.h	2007-04-02 17:36:32.000000000 +1000
-@@ -104,6 +104,7 @@ struct mdk_rdev_s
- 					   * for reporting to userspace and storing
- 					   * in superblock.
- 					   */
-+	struct work_struct del_work;	/* used for delayed sysfs removal */
- };
- 
- struct mddev_s
+uclinux[mtd]: RAM probe address=0x22182cc8 size=0x21d000
+Creating 1 MTD partitions on "RAM":
+0x00000000-0x0021d000 : "ROMfs"
+mtd: Giving out device 5 to ROMfs
+uclinux[mtd]: set ROMfs to be root filesystem index=5
+
+...
+
+((my debug output in namei.c))
+hello from __link_path_walk(/dev/root)
+__link_path_walk says -ENOENT
+next:0x23ff4694
+next.dentry:0x23e12d08
+
+...
+
+Kernel panic - not syncing: VFS: Unable to mount root fs on
+unknown-block(31,5)
+  <0>Rebooting in 120 seconds..Machine restart...
+
+I traced down into fs/namei.c - it's a fragment in
+__link_path_walk("/dev/root"):
+
+line 892:
+                 /* This does the actual lookups.. */
+                 err = do_lookup(nd, &this, &next);
+                 if (err)
+                         break;
+
+
+
+                 err = -ENOENT;
+                 inode = next.dentry->d_inode;
+                 if (!inode) {
+---> we are hitting this error path
+                         goto out_dput;
+
+                 }
+
+So, it seems that do_lookup is returning a dentry with no inode.
+
+I've tried this with both ROMFS and CRAMFS types, with the same result.
+If it was a random memory corruption event I'd expect to see
+different failure modes for the two filesystem types.
+
+Any comments or suggestions on a possible cause or approach to track it
+down would be greatly appreciated.
+
+Thanks,
+
+John
+
