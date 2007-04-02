@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbXDBPjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXDBPki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932253AbXDBPjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 11:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932404AbXDBPjU
+	id S932404AbXDBPki (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 11:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932406AbXDBPkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 11:39:20 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:38696 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932253AbXDBPjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 11:39:20 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
-Date: Mon, 2 Apr 2007 09:38:40 -0600
-User-Agent: KMail/1.9.5
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Luck, Tony" <tony.luck@intel.com>, "Thomas Meyer" <thomas@m3y3r.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Len Brown" <lenb@kernel.org>
-References: <617E1C2C70743745A92448908E030B2A0148323B@scsmsx411.amr.corp.intel.com> <m1r6rbz7mg.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1r6rbz7mg.fsf@ebiederm.dsl.xmission.com>
+	Mon, 2 Apr 2007 11:40:37 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:60180 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932404AbXDBPkh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 11:40:37 -0400
+Message-ID: <4611239D.3070008@gmail.com>
+Date: Mon, 02 Apr 2007 17:39:09 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Pekka J Enberg <penberg@cs.helsinki.fi>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mcdx -- do_request(): non-read command to cd!!
+References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk> <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com> <4610481D.8000102@gmail.com> <46104954.50608@gmail.com> <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI> <20070402071018.GE11996@kernel.dk>
+In-Reply-To: <20070402071018.GE11996@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704020938.40482.bjorn.helgaas@hp.com>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 March 2007 21:29, Eric W. Biederman wrote:
-> "Luck, Tony" <tony.luck@intel.com> writes:
+On 04/02/2007 09:10 AM, Jens Axboe wrote:
+
+> Updated patch attached :-)
 > 
-> >> What I'm proposing we do is move the irq allocation code out of
-> >> pci_enable_device and the irq freeing code out of pci_disable_device
-> >> in the future.
-> >
-> > Sounds rational ... in a world that wasn't dominated by PCI it would
-> > seem to be the logical approach (since the irq code would have much
-> > more utility independent of the PCI code).
-> 
-> Right.  We can even do this earlier in the pci code.  Just doing this
-> on demand when the device driver needs it is problematic.  As devices
-> drivers like to keep the requested over a pci_disable_device pci_enable_device
-> pair.
-> 
-> The big practical issue is that we will like wind up allocating an irq
-> number to all usable irqs on ia64.  Which means we will like need many
-> more irq numbers...  Although I guess if we keep it at the pci layer
-> we should be fairly safe.
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index 0bc8b0b..cff761a 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -324,3 +324,10 @@ Why:	the i8xx_tco watchdog driver has been replaced by the iTCO_wdt
+>  Who:	Wim Van Sebroeck <wim@iguana.be>
+>  
+>  ---------------------------
+> +
+> +What:	The legacy CDROM drivers (drivers/cdrom/, except cdrom.c)
+> +When:	In 2.6.23
 
-The main reason we wait until pci_enable_device() to allocate an
-IRQ number is that ia64 currently only has about 180 device vectors,
-and there are machines with more PCI slots than that.
+Not going to complain about it loudly. I like playing with these old 
+drives, but the drivers are so immensely broken that they don't seem to 
+serve a very useful purpose anymore; even if I, or someone else, would 
+ever get around to try and revive this hardware under Linux; the current 
+state of these drivers seems to imply we'd be better of starting from 
+scratch.
 
-I also think it's nice that we don't do anything with a device until
-we have a driver to claim it.  But there certainly have been cases
-where delaying IRQ allocation has caused troubles.
+And even more so since I expect that any new attempts should do the "no 
+really, I'm a scsi drive" thing that most anything else is doing these 
+days. Using a different infrastructure like that would, I presume, mean 
+that really only the hardware details would remain useful from the old 
+drivers, and those will be present inside linux-2.6.22.tar.gz same as 
+before.
 
-I really like the idea of moving to the IRQ == GSI model for ia64.
-But of course, we'll have to get rid of the 180-vector limit to
-make that work, too.
+Having said that, it would still be good to have mcdx functional so 
+please don't let me keep you, Pekka, or anyone else from looking :-)
 
-Bjorn
+With a bit of luck sbpcd and cdu31a (and cm206 as the other controller 
+that I have) will be similarly broken and having an example in mcdx will 
+be useful whatever happens to the drivers in the upstream tree...
+
+> +Why:	They are all terminally broken (most don't even compile)
+
+That's not true though... I just checked and they all compile on 
+2.6.20.4. sbpcd and cm206 with cli/sti warnings, the others without even.
+
+Rene.
