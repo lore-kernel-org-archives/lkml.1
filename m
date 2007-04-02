@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbXDBHHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbXDBHIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbXDBHHe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 03:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbXDBHHe
+	id S1753320AbXDBHIs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 03:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbXDBHIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 03:07:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:10057 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753325AbXDBHHd (ORCPT
+	Mon, 2 Apr 2007 03:08:48 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:40185 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753320AbXDBHIr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 03:07:33 -0400
+	Mon, 2 Apr 2007 03:08:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=IIVj1Uj9Ub0c6Cna5Spi0kjQOuNxiF5fnE/sz5OcSMgqAy47a1Ml/NHwcN6nIhvl4/T7CagEW/b1o91pFlL33E3VqYXI+BE1xXVF48ob+Ff5gQ9WwV8DkFVplKM/hwDZ0uHuGBcrTH+iDyoFvC5zoeF9KCHarg8u4FVfKc9aIQE=
-Message-ID: <84144f020704020007x879f781x45f395298d92cbe@mail.gmail.com>
-Date: Mon, 2 Apr 2007 10:07:31 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: mcdx -- do_request(): non-read command to cd!!
-Cc: "Jens Axboe" <jens.axboe@oracle.com>, "Al Viro" <viro@ftp.linux.org.uk>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4610481D.8000102@gmail.com>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=hwoex5aD/T1/FzxO299kOQRwytw2iNSqLS71uOC310QoKq/w8Lq6SdMaBMRInb/8ffssu0kmAUFD/RP+nfPWkkYHSJfR5K4VHjGl5iNamDmjoO3kLAA0kS1l8GYmVB/zhFXUkAYqQ4FbgPdykb7+n0eOdD98RfK0C7XjbUeuGMc=
+Message-ID: <4610ABB1.3080606@gmail.com>
+Date: Mon, 02 Apr 2007 15:07:29 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Dmitry Torokhov <dtor@insightbb.com>
+CC: Li Yu <raise.sail@gmail.com>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Jiri Kosina <jkosina@suse.cz>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+References: <200703051532096508636@gmail.com>	<Pine.LNX.4.64.0704010002280.6040@jikos.suse.cz>	<4610609C.9030101@gmail.com> <200704020015.44167.dtor@insightbb.com>
+In-Reply-To: <200704020015.44167.dtor@insightbb.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk>
-	 <460EA727.8070306@gmail.com>
-	 <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com>
-	 <4610481D.8000102@gmail.com>
-X-Google-Sender-Auth: 175c6c105e891a67
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rene,
+Dmitry Torokhov wrote:
+>
+> No, please don't do that. As soon as there is a special driver written
+> for a device that device's VID/PID should be added to generic HID
+> blacklist. This way udev will load the proper driver right away and
+> there will not be any flip-flopping of input devices. 
+>   
+Hi, I do not think that using blacklist in base driver for this purpose
+is good idea. If so, we need modify source when each new HID device
+driver come, that's so ugly. I think the blacklist only should be used
+for those really broken/buggy hardware, not for these normal hardware
+with extended feature.
 
-On 4/2/07, Rene Herman <rene.herman@gmail.com> wrote:
-> root@5va2:~# dd if=/dev/mcdx0 of=/dev/null bs=2048
-> 0+0 records in
-> 0+0 records out
-> 0 bytes (0 B) copied, 0.000221955 seconds, 0.0 kB/s
-> root@5va2:~#
->
-> This I know isn't:
->
-> root@5va2:~# readcd dev=/dev/mcdx0 f=/dev/null
-> Segmentation fault
-> root@5va2:~#
->
-> (leaves a "note: readcd[1174] exited with preempt_count 1" in the log)
->
-> and after a "mount -t iso9660 /dev/mcdx0 /mnt/cdrom",  a:
->
-> root@5va2:~# tar cv /mnt/cdrom >/dev/null
->
-> has upto now done all of:
+Er, I also want to know what are drawbacks of "flip-flopping" ?
 
-[snip]
 
-Try with CONFIG_PREEMPT_NONE as suggested by Jens. Can we see strace
-for the dd, readcd, and tar runs, please?
+>  
+>   
+>> When user A remove this shadow driver, the USB/base driver should resume
+>> work for this joystick, IOW, it should register back its input device again.
+>>
+>>     
+>
+> Why would we want to revert to using generic HID's implementation if we
+> know that it is broken for that particular device???
+>
+>   
+
+Well, many devices just only can not play its full feature, not broken.
+so base driver still can work for us.
