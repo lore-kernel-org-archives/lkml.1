@@ -1,138 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbXDCP7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXDCQDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752109AbXDCP7d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 11:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbXDCP7d
+	id S1753507AbXDCQDb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 12:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbXDCQDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 11:59:33 -0400
-Received: from mail.screens.ru ([213.234.233.54]:41864 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbXDCP7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 11:59:32 -0400
-Date: Tue, 3 Apr 2007 19:03:36 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
-       paulmck@us.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       mingo@elte.hu, dipankar@in.ibm.com, dino@in.ibm.com,
-       masami.hiramatsu.pt@hitachi.com
-Subject: Re: [PATCH 7/8] Clean up workqueue.c with respect to the freezer based cpu-hotplug
-Message-ID: <20070403150336.GA850@tv-sign.ru>
-References: <20070402053457.GA9076@in.ibm.com> <20070402054206.GG12962@in.ibm.com> <20070403114729.GA776@tv-sign.ru> <20070403135919.GB32444@in.ibm.com>
+	Tue, 3 Apr 2007 12:03:31 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2696 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753507AbXDCQDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 12:03:30 -0400
+Date: Tue, 3 Apr 2007 16:03:07 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Tasos Parisinos <t.parisinos@sciensis.com>
+Cc: Andi Kleen <andi@firstfloor.org>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, indan@nul.nu
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+Message-ID: <20070403160307.GA5266@ucw.cz>
+References: <4610D25F.7080005@ceid.upatras.gr> <p73r6r3yn9f.fsf@bingen.suse.de> <4610EDF9.9000601@sciensis.com> <20070402132820.GA28983@one.firstfloor.org> <46111D03.5020905@sciensis.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070403135919.GB32444@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <46111D03.5020905@sciensis.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03, Srivatsa Vaddagiri wrote:
->
-> On Tue, Apr 03, 2007 at 03:47:29PM +0400, Oleg Nesterov wrote:
-> > 
-> > 		for (;;) {
-> > 			try_to_freeze();
-> > 
-> > 			prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
-> > 			if (!kthread_should_stop() && list_empty(&cwq->worklist))
-> > 				schedule();
-> > 			finish_wait(&cwq->more_work, &wait);
-> > 
-> > 			if (kthread_should_stop(cwq))
-> > 				break;
-> > 
-> > 			run_workqueue(cwq);
-> > 		}
+Hi!
+
+> >>The best environment to deploy such functionality is 
+> >>in updating by remote,
+> >>executable code (programs, libs and modules) on 
+> >>embedded devices running
+> >>Linux, that have some form of kernel physical 
+> >>security, so one can't 
+> >
+> >How would that physical security look like? Would it 
+> >include DMA
+> >protection?
+> >
+> >For example to do any useful form of graphics you need
+> >user controllable DMA, which can normally touch 
+> >everything.
+> >There are various other similar "backdoors" for root.
+> >
+> >I'm somewhat sceptical because all kernels will need 
+> >access
+> >to the direct mapping to operate and there are also 
+> >various
+> >interfaces that can be as root (ab)used to change it.
+> >
+> >And when you can do that they can change function 
+> >pointers
+> >and jump to arbitary code or change the kernel page 
+> >tables
+> >and map arbitary code.
+> >
+> >Disallowing all this would probably end up with a quite
+> >useless kernel. 
+> >
+> >  
+> >>There are already some systems that implement and 
+> >>utilize such functionality that
+> >>use windows platforms, and other Linux distros that 
+> >>use userland 
+> >
+> >Yes, at least the Vista variant was just broken. And 
+> >its designers spent
+> >a lot of effort on it, but it didn't help.
+> >  
+> Please read the thread i gave you for some details for 
+> things you ask
 > 
-> cleanup_workqueue_thread (in Gautham's patches) does this:
-> 
-> 	thaw_process()
-> 	kthread_stop()
+> Have in thought that we mostly talk here about embedded 
+> devices
+> that run Linux in a very restricted environment where 
+> only specific
+> applications are allowed to exist and run, there are no 
+> user logons
+> and these applications need to be updated by remote once 
+> in a while
+> over public networks. These applications need not be 
+> tampered with
 
-Yes, thanks.
+What kind of applications are we talking about here? I'd like to hack
+hardware I own.
 
-> We could do what you are suggesting if the thaw_process() part was
-> integrated into kthread_stop() code [basically thaw_process after
-> setting the kthread_stop_info.k flag].
-
-I think it would be nice to do. I believe we can cleanup ksoftirqd()
-and migration_thread() as well (kill wait_to_die: loop). Probably it
-is better to introduce a new helper for that, kthread_thaw_stop() or
-something.
-
-> > >  void fastcall flush_workqueue(struct workqueue_struct *wq)
-> > >  {
-> > > -	const cpumask_t *cpu_map = wq_cpu_map(wq);
-> > >  	int cpu;
-> > >
-> > >  	might_sleep();
-> > > -	for_each_cpu_mask(cpu, *cpu_map)
-> > > +	for_each_online_cpu(cpu)
-> > >  		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
-> > >  }
-> > 
-> > Hm... I can't understand this change. I believe it is wrong.
-> 
-> Why?
-
-What if is_single_threaded(wq) == true? In that case we should call
-flush_cpu_workqueue(cpu) only if cpu == singlethread_cpu, otherwise
-this is unneeded and wrong, because per_cpu_ptr(wq->cpu_wq, cpu) was
-not initialized.
-
-> > > +		kthread_stop(cwq->thread);
-> > >  		cwq->thread = NULL;
-> > > -		spin_unlock_wait(&cwq->lock);
-> > >  	}
-> > >  }
-> > 
-> > Deadlockable. Suppose that the freezing is in progress, cwq->thread is not
-> > frozen yet. cleanup_workqueue_thread() calls thaw_process(cwq->thread),
-> > then cwq->thread() goes to refrigerator, kthread_stop() blocks forever.
-> 
-> Good catch! Can cleanup_workqueue_thread take some mutex to serialize
-> with freezer here (say freezer_mutex)?
-> 
-> Or better, since this seems to be a general problem for anyone who wants to do a
-> kthread_stop, how abt modifying kthread_stop like below:
-> 
-> kthread_stop(p)
-> {
-> 	int old_exempt_flags;
-> 
-> 	task_lock(p);
-> 	old_exempt_flags = p->flags;
-> 	p->flags |= PFE_ALL;	/* Exempt 'p' from being frozen? */
-
-I agree, we should mark this thread as non-freezable, but we can't modify
-p->flags, this is racy. "current" owns its ->flags and it is not atomic.
-Note that thaw_process() checks frozen(p) when it clears PF_FROZEN.
-
-Actually, we should do this before destroy_workqueue() calls flush_workqueue().
-Otherwise flush_cpu_workqueue() can hang forever in a similar manner.
-
-Needs more thinking, I guess.
-
-> > This means that the work_struct on single_threaded wq can't use any of
-> > 
-> > 	__create_workqueue()
-> > 	destroy_workqueue()
-> > 	flush_workqueue()
-> > 	cancel_work_sync()
-> 
-> The workqueue_mutex() should serialize these with workqueue_cpu_callback() to 
-> an extent, but  ..
-
-No, no, workqueue_mutex can't help. Just for example: CPU_UP_PREPARE completes
-and drops workqueue_mutex. __create_workqueue(wq) doesn't see the new cpu, it
-is not on cpu_online_map, so it doesn't create cwq->thread. CPU_ONLINE oopses.
-
-> Yes I agree, we should target freezing everybody here. It feels much
-> safer that way!
-
-Good!
-
-Oleg.
-
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
