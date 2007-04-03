@@ -1,86 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422651AbXDCTAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422656AbXDCTDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422651AbXDCTAM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422654AbXDCTAM
+	id S1422656AbXDCTDk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422658AbXDCTDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:00:12 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:33445 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422651AbXDCTAK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:00:10 -0400
-Date: Tue, 3 Apr 2007 17:31:04 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
-       masami.hiramatsu.pt@hitachi.com
-Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
-Message-ID: <20070403120104.GB29308@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu>
+	Tue, 3 Apr 2007 15:03:40 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45900 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422656AbXDCTDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 15:03:40 -0400
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       sam@ravnborg.org, davem@davemloft.net
+Subject: Re: [PATCH] make csum_partial obj-y
+References: <20070403112604.129610b1.randy.dunlap@oracle.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 03 Apr 2007 22:02:12 +0200
+In-Reply-To: <20070403112604.129610b1.randy.dunlap@oracle.com>
+Message-ID: <p731wj1z0or.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070402061612.GA7072@elte.hu>
-User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 08:16:12AM +0200, Ingo Molnar wrote:
+Randy Dunlap <randy.dunlap@oracle.com> writes:
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> i'm wondering about how TASK_UNINTERRUPTIBLE tasks are handled by the 
-> freezer: are they assumed frozen immediately, or do we wait until they 
-> notice their PF_FREEZING and go into try_to_freeze()? I'd expect 
-> TASK_UNINTERRUPTIBLE to be the largest source of latency. (and hence be 
-> the primary source for freezing 'failures')
-
-Ok, we might be in some luck. I panic()ed on freezer fail and checked
-the stacktrace of the unfrozen tasks. The stacktrace of each one looks
-like:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-PID: 7697   TASK: cc354a70  CPU: 7   COMMAND: "make"
-#0 [cc37fe50] schedule at c0431752
-#1 [cc37fec4] wait_for_completion at c04318d0
-#2 [cc37ff24] do_fork at c01249a6
-#3 [cc37ff94] sys_vfork at c0103c1f
-#4 [cc37ffb4] system_call at c0104d8d
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Rafael had sent out a patch to fix the vfork race, which can be found at
-http://lkml.org/lkml/2007/3/1/212
-
-However, the hunk
-
-@@ -1393,7 +1394,9 @@ long do_fork(unsigned long clone_flags,
-		tracehook_report_clone_complete(clone_flags, nr, p);
-
-		if (clone_flags & CLONE_VFORK) {
-+			freezer_do_not_count();
-			wait_for_completion(&vfork);
-+			freezer_count();
-			tracehook_report_vfork_done(p, nr);
-		}
-	} else {
-
-Seems to be missing in the latest -mm's.
-
-Rafael / Andrew, 
-	Any reasons for leaving this hunk out?
-
-I will rerun my tests with this hunk applied and report back.
-
+> Fixes kernel bugzilla #8242:
 > 
-> 	Ingo
+> Move csum_partial() from lib-y to obj-$(CONFIG_CSUM_PARTIAL)
+> so that modules can use it.
+> 
+> CONFIG_BLK_DEV_MD (md/raid driver) needs csum_partial(),
+> even when CONFIG_NET=n and BLK_DEV_MD=m, so build it as an
+> object to force it being built and available.
+> 
+> REISERFS with XATTR=y also needs csum_partial(), so that
+> is enforced here.
 
-Thanks and Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+They are all broken because csum_partial gives different values
+on different architectures.   You're just extending that to
+possibly more subsystems.
+
+-Andi
