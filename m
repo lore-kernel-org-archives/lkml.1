@@ -1,54 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbXDCHZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXDCH3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbXDCHZg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 03:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXDCHZg
+	id S932203AbXDCH3w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 03:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXDCH3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 03:25:36 -0400
-Received: from bay0-omc1-s18.bay0.hotmail.com ([65.54.246.90]:65159 "EHLO
-	bay0-omc1-s18.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753492AbXDCHZf (ORCPT
+	Tue, 3 Apr 2007 03:29:52 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:41880 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932203AbXDCH3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 03:25:35 -0400
-X-Greylist: delayed 845 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Apr 2007 03:25:35 EDT
-Message-ID: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl>
-X-Originating-IP: [88.114.147.249]
-X-Originating-Email: [paapaa125@hotmail.com]
-From: "Paa Paa" <paapaa125@hotmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Lower HD transfer rate with NCQ enabled?
-Date: Tue, 03 Apr 2007 07:11:28 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-X-OriginalArrivalTime: 03 Apr 2007 07:11:29.0956 (UTC) FILETIME=[4D4EC640:01C775BF]
+	Tue, 3 Apr 2007 03:29:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type;
+  b=fQGNbJ8F97rKYRpF7FpccN212jK8sEHhDsTjg+QdZtxqhzfMaUwexT+FDDZZCLFaj22juq5oxa4XPUAEhRZjlBq4JSISDW+8EulZmB+V5yf0ZpjBKVrbWFGjTBax8q5OHyBTcnWcdv+qY/cayNVYr57Zmaw8YJlU/jirpXHTM58=  ;
+X-YMail-OSG: wsmu1oAVM1nsIjOcF78fJjzAoWgxdA9Az8mDqpr4cs2JnUjzzsqpsnGAEFWaJwK3NXsvR0yesQ--
+Message-ID: <46120254.9080205@yahoo.com.au>
+Date: Tue, 03 Apr 2007 17:29:24 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: akpm@osdl.org, linux-mm@kvack.org, mpm@selenic.com,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [SLUB 1/2] SLUB core
+References: <20070331193056.1800.68058.sendpatchset@schroedinger.engr.sgi.com> <20070331193102.1800.29162.sendpatchset@schroedinger.engr.sgi.com>
+In-Reply-To: <20070331193102.1800.29162.sendpatchset@schroedinger.engr.sgi.com>
+Content-Type: multipart/mixed;
+ boundary="------------030709000406090007070102"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm using Linux 2.6.20.4. I noticed that I get lower SATA hard drive 
-throughput with 2.6.20.4 than with 2.6.19. The reason was that 2.6.20 
-enables NCQ by defauly (queue_depth = 31/32 instead of 0/32). Transfer rate 
-was measured using "hdparm -t":
+This is a multi-part message in MIME format.
+--------------030709000406090007070102
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-With NCQ (queue_depth == 31): 50MB/s.
-Without NCQ (queue_depth == 0): 60MB/s.
+Christoph Lameter wrote:
+> SLUB Core patch V6
+> 
+> This provides basic SLUB functionality and allows a choice of
+> slab allocators during kernel configuration. The default is still
+> slab. SLUB has been tested in various configurations but I think we
+> can be quite sure that there are still remaining issues.
+> 
+> SLUB is not selectable on platforms that modify the page structs of
+> slab memory (i386, FRV) but see the next patch for a i386 fix.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> Index: linux-2.6.21-rc5-mm3/include/linux/mm_types.h
+> ===================================================================
+> --- linux-2.6.21-rc5-mm3.orig/include/linux/mm_types.h	2007-03-30 21:50:18.000000000 -0700
+> +++ linux-2.6.21-rc5-mm3/include/linux/mm_types.h	2007-03-30 21:50:42.000000000 -0700
+> @@ -19,10 +19,16 @@ struct page {
+>  	unsigned long flags;		/* Atomic flags, some possibly
+>  					 * updated asynchronously */
+>  	atomic_t _count;		/* Usage count, see below. */
+> -	atomic_t _mapcount;		/* Count of ptes mapped in mms,
+> +	union {
+> +		atomic_t _mapcount;	/* Count of ptes mapped in mms,
+>  					 * to show when page is mapped
+>  					 * & limit reverse map searches.
+>  					 */
+> +		struct {	/* SLUB uses */
+> +			short unsigned int inuse;
+> +			short unsigned int offset;
+> +		};
+> +	};
+>  	union {
+>  	    struct {
+>  		unsigned long private;		/* Mapping-private opaque data:
+> @@ -43,8 +49,15 @@ struct page {
+>  #if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
+>  	    spinlock_t ptl;
+>  #endif
+> +	    struct {			/* SLUB uses */
+> +		struct page *first_page;	/* Compound pages */
+> +		struct kmem_cache *slab;	/* Pointer to slab */
+> +	    };
+> +	};
+> +	union {
+> +		pgoff_t index;		/* Our offset within mapping. */
+> +		void *freelist;		/* SLUB: pointer to free object */
+>  	};
+> -	pgoff_t index;			/* Our offset within mapping. */
+>  	struct list_head lru;		/* Pageout list, eg. active_list
+>  					 * protected by zone->lru_lock !
+>  					 */
 
-20% difference is quite a lot. This is with Intel ICH8R controller and 
-Western Digital WD1600YS hard disk in AHCI mode. I also used the next 
-command to cat-copy a biggish (540MB) file and time it:
+I have an alternate suggestion for the struct page overloading issue.
 
-rm temp && sync && time sh -c 'cat quite_big_file > temp && sync'
+I think anonymous unions are probably better than nothing, because they
+make the .c code more readable, but they clutter up the header badly
+and don't provide so strong type checking as we could implement.
 
-Here I noticed no differences at all with and without NCQ. The times (real 
-time) were basically the same in many successive runs. Around 19s.
+This is just an incomplete RFC patch, because it actually requires a
+fair amount of types in .c code to be changed if we are to implement it
+(which I didn't want to do if nobody likes the idea).
 
-Q: What conclusion can I make on "hdparm -t" results or can I make any 
-conclusions? Do I really have lower performance with NCQ or not? If I do, is 
-this because of my HD or because of kernel?
+(sorry it's an attachment, this mailer is broken)
 
-Best regards,
-Paapaa
+-- 
+SUSE Labs, Novell Inc.
 
-_________________________________________________________________
-Express yourself instantly with MSN Messenger! Download today it's FREE! 
-http://messenger.msn.click-url.com/go/onm00200471ave/direct/01/
+--------------030709000406090007070102
+Content-Type: text/plain;
+ name="mm-multi-page.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mm-multi-page.patch"
 
+Index: linux-2.6/include/linux/mm_types.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm_types.h
++++ linux-2.6/include/linux/mm_types.h
+@@ -23,27 +23,20 @@ struct page {
+ 					 * to show when page is mapped
+ 					 * & limit reverse map searches.
+ 					 */
+-	union {
+-	    struct {
+-		unsigned long private;		/* Mapping-private opaque data:
+-					 	 * usually used for buffer_heads
+-						 * if PagePrivate set; used for
+-						 * swp_entry_t if PageSwapCache;
+-						 * indicates order in the buddy
+-						 * system if PG_buddy is set.
+-						 */
+-		struct address_space *mapping;	/* If low bit clear, points to
+-						 * inode address_space, or NULL.
+-						 * If page mapped as anonymous
+-						 * memory, low bit is set, and
+-						 * it points to anon_vma object:
+-						 * see PAGE_MAPPING_ANON below.
+-						 */
+-	    };
+-#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
+-	    spinlock_t ptl;
+-#endif
+-	};
++	unsigned long private;		/* Mapping-private opaque data:
++				 	 * usually used for buffer_heads
++					 * if PagePrivate set; used for
++					 * swp_entry_t if PageSwapCache;
++					 * indicates order in the buddy
++					 * system if PG_buddy is set.
++					 */
++	struct address_space *mapping;	/* If low bit clear, points to
++					 * inode address_space, or NULL.
++					 * If page mapped as anonymous
++					 * memory, low bit is set, and
++					 * it points to anon_vma object:
++					 * see PAGE_MAPPING_ANON below.
++					 */
+ 	pgoff_t index;			/* Our offset within mapping. */
+ 	struct list_head lru;		/* Pageout list, eg. active_list
+ 					 * protected by zone->lru_lock !
+@@ -64,4 +57,45 @@ struct page {
+ #endif /* WANT_PAGE_VIRTUAL */
+ };
+ 
++/*
++ * We can provide alternate delcarations for 'struct page', instead of
++ * overloading fields that we would like to use for non-pagecache (eg.
++ * page tables or slab pages). However flags and _count must always be
++ * in the correct position, and not overloaded, because they might be
++ * accessed by thing without a direct reference (eg. buddy allocator,
++ * swsusp). So flags and _count get defined for us, and our struct is
++ * automatically padded out to the size of struct page. A compile time
++ * check ensures that this size isn't exceeded.
++ */
++#define DEFINE_PAGE_STRUCT(name)	\
++struct name {				\
++	union {				\
++		struct {		\
++			unsigned long flags; \
++			atomic_t _count; \
++			struct
++
++#define END_PAGE_STRUCT(name)		\
++			;		\
++		};			\
++		struct page ___page;	\
++	};				\
++};					\
++					\
++static inline void struct_##name##_build_bug_on(void) \
++{					\
++	BUILD_BUG_ON(sizeof(struct name) > sizeof(struct page)); \
++}
++
++DEFINE_PAGE_STRUCT(pt_page) {
++#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++	spinlock_t ptl;
++#endif
++} END_PAGE_STRUCT(pt_page)
++
++DEFINE_PAGE_STRUCT(buddy_page) {
++	unsigned int order;
++	struct list_head list;
++} END_PAGE_STRUCT(buddy_page)
++
+ #endif /* _LINUX_MM_TYPES_H */
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c
++++ linux-2.6/mm/slab.c
+@@ -446,6 +446,11 @@ struct kmem_cache {
+ #endif
+ };
+ 
++DEFINE_PAGE_STRUCT(slab_page) {
++	struct list_head *cache;
++	struct list_head *slab;
++} END_PAGE_STRUCT(slab_page)
++
+ #define CFLGS_OFF_SLAB		(0x80000000UL)
+ #define	OFF_SLAB(x)	((x)->flags & CFLGS_OFF_SLAB)
+ 
+
+--------------030709000406090007070102--
