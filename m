@@ -1,155 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbXDCGCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbXDCGIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752784AbXDCGCS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 02:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXDCGCS
+	id S1753198AbXDCGIK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 02:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXDCGIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 02:02:18 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:34558 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752784AbXDCGCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 02:02:16 -0400
-Date: Mon, 2 Apr 2007 23:01:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Chinner <dgc@sgi.com>
-Cc: xfs-masters@oss.sgi.com, Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, reiserfs-dev@namesys.com
-Subject: Re: [xfs-masters] Re: [PATCH] Cleanup and kernelify shrinker
- registration (rc5-mm2)
-Message-Id: <20070402230158.4fcdd455.akpm@linux-foundation.org>
-In-Reply-To: <20070403054419.GV32597093@melbourne.sgi.com>
-References: <1175571885.12230.473.camel@localhost.localdomain>
-	<20070402205825.12190e52.akpm@linux-foundation.org>
-	<1175575503.12230.484.camel@localhost.localdomain>
-	<20070402215702.6e3782a9.akpm@linux-foundation.org>
-	<20070403054419.GV32597093@melbourne.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 02:08:10 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43263 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753234AbXDCGII (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 02:08:08 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] net: Ignore sysfs network device rename bugs.
+Date: Tue, 03 Apr 2007 00:07:30 -0600
+Message-ID: <m1vegec7od.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007 15:44:19 +1000 David Chinner <dgc@sgi.com> wrote:
 
-> In XFS, one of the shrinkers cwthat gets registered calls causes all
-> the xfsbufd's in the system to run and write back delayed write
-> metadata - this can't be freed up until it is clean, and this is the
-> only hook we have that can be used to trigger writeback on memory
-> pressure. We need this because we can potentially have hundreds of
-> megabytes of dirty metadata per XFS filesystem.
-> 
+The generic networking code ensures that no two networking devices
+have the same name, so  there is no time except when sysfs has
+implementation bugs that device_rename when called from
+dev_change_name will fail. 
 
-<looks>
+The current error handling for errors from device_rename in
+dev_change_name is wrong and results in an unusable and unrecoverable
+network device if device_rename is happens to return an error.
 
-Gad, someone went mad in there.  Can we do this (please)?
+This patch removes the buggy error handling.  Which confines the mess
+when device_rename hits a problem to sysfs, instead of propagating it
+the rest of the network stack.  Making linux a little more robust.
 
+Without this patch you can observe what happens when sysfs has a bug
+when CONFIG_SYSFS_DEPRECATED is not set and you attempt to rename
+a real network device to a name like (broken_parity_status, device,
+modalias, power, resource2, subsystem_vendor, class,  driver, irq,
+msi_bus, resource, subsystem, uevent, config, enable, local_cpus,
+numa_node, resource0, subsystem_device, vendor)
 
+Greg has a patch that fixes the sysfs bugs but he doesn't trust it
+for a 2.6.21 timeframe.  This patch which just ignores errors should
+be safe and it keeps the system from going completely wacky.
 
-From: Andrew Morton <akpm@linux-foundation.org>
-
-Strip away lots of needless wrapping and type obfuscation in XFS's handling of
-cache shrinker registration.
-
-Cc: David Chinner <dgc@sgi.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
+ net/core/dev.c |   11 ++++-------
+ 1 files changed, 4 insertions(+), 7 deletions(-)
 
- fs/xfs/linux-2.6/kmem.h    |   19 -------------------
- fs/xfs/linux-2.6/xfs_buf.c |    6 +++---
- fs/xfs/quota/xfs_qm.c      |    6 +++---
- 3 files changed, 6 insertions(+), 25 deletions(-)
-
-diff -puN fs/xfs/linux-2.6/kmem.h~xfs-clean-up-shrinker-games fs/xfs/linux-2.6/kmem.h
---- a/fs/xfs/linux-2.6/kmem.h~xfs-clean-up-shrinker-games
-+++ a/fs/xfs/linux-2.6/kmem.h
-@@ -100,25 +100,6 @@ kmem_zone_destroy(kmem_zone_t *zone)
- extern void *kmem_zone_alloc(kmem_zone_t *, unsigned int __nocast);
- extern void *kmem_zone_zalloc(kmem_zone_t *, unsigned int __nocast);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 5984b55..cf054f9 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -751,13 +751,10 @@ int dev_change_name(struct net_device *dev, char *newname)
+ 	else
+ 		strlcpy(dev->name, newname, IFNAMSIZ);
  
--/*
-- * Low memory cache shrinkers
-- */
--
--typedef struct shrinker *kmem_shaker_t;
--typedef int (*kmem_shake_func_t)(int, gfp_t);
--
--static inline kmem_shaker_t
--kmem_shake_register(kmem_shake_func_t sfunc)
--{
--	return set_shrinker(DEFAULT_SEEKS, sfunc);
--}
--
--static inline void
--kmem_shake_deregister(kmem_shaker_t shrinker)
--{
--	remove_shrinker(shrinker);
--}
--
- static inline int
- kmem_shake_allow(gfp_t gfp_mask)
- {
-diff -puN fs/xfs/linux-2.6/xfs_buf.c~xfs-clean-up-shrinker-games fs/xfs/linux-2.6/xfs_buf.c
---- a/fs/xfs/linux-2.6/xfs_buf.c~xfs-clean-up-shrinker-games
-+++ a/fs/xfs/linux-2.6/xfs_buf.c
-@@ -35,7 +35,7 @@
- #include <linux/freezer.h>
+-	err = device_rename(&dev->dev, dev->name);
+-	if (!err) {
+-		hlist_del(&dev->name_hlist);
+-		hlist_add_head(&dev->name_hlist, dev_name_hash(dev->name));
+-		raw_notifier_call_chain(&netdev_chain,
+-				NETDEV_CHANGENAME, dev);
+-	}
++	device_rename(&dev->dev, dev->name);
++	hlist_del(&dev->name_hlist);
++	hlist_add_head(&dev->name_hlist, dev_name_hash(dev->name));
++	raw_notifier_call_chain(&netdev_chain, NETDEV_CHANGENAME, dev);
  
- static kmem_zone_t *xfs_buf_zone;
--static kmem_shaker_t xfs_buf_shake;
-+static struct shrinker *xfs_buf_shake;
- STATIC int xfsbufd(void *);
- STATIC int xfsbufd_wakeup(int, gfp_t);
- STATIC void xfs_buf_delwri_queue(xfs_buf_t *, int);
-@@ -1837,7 +1837,7 @@ xfs_buf_init(void)
- 	if (!xfsdatad_workqueue)
- 		goto out_destroy_xfslogd_workqueue;
- 
--	xfs_buf_shake = kmem_shake_register(xfsbufd_wakeup);
-+	xfs_buf_shake = set_shrinker(DEFAULT_SEEKS, xfsbufd_wakeup);
- 	if (!xfs_buf_shake)
- 		goto out_destroy_xfsdatad_workqueue;
- 
-@@ -1859,7 +1859,7 @@ xfs_buf_init(void)
- void
- xfs_buf_terminate(void)
- {
--	kmem_shake_deregister(xfs_buf_shake);
-+	remove_shrinker(xfs_buf_shake);
- 	destroy_workqueue(xfsdatad_workqueue);
- 	destroy_workqueue(xfslogd_workqueue);
- 	kmem_zone_destroy(xfs_buf_zone);
-diff -puN fs/xfs/quota/xfs_qm.c~xfs-clean-up-shrinker-games fs/xfs/quota/xfs_qm.c
---- a/fs/xfs/quota/xfs_qm.c~xfs-clean-up-shrinker-games
-+++ a/fs/xfs/quota/xfs_qm.c
-@@ -62,7 +62,7 @@ uint		ndquot;
- 
- kmem_zone_t	*qm_dqzone;
- kmem_zone_t	*qm_dqtrxzone;
--static kmem_shaker_t	xfs_qm_shaker;
-+static struct shrinker *xfs_qm_shaker;
- 
- static cred_t	xfs_zerocr;
- static xfs_inode_t	xfs_zeroino;
-@@ -150,7 +150,7 @@ xfs_Gqm_init(void)
- 	} else
- 		xqm->qm_dqzone = qm_dqzone;
- 
--	xfs_qm_shaker = kmem_shake_register(xfs_qm_shake);
-+	xfs_qm_shaker = set_shrinker(DEFAULT_SEEKS, xfs_qm_shake);
- 
- 	/*
- 	 * The t_dqinfo portion of transactions.
-@@ -182,7 +182,7 @@ xfs_qm_destroy(
- 
- 	ASSERT(xqm != NULL);
- 	ASSERT(xqm->qm_nrefs == 0);
--	kmem_shake_deregister(xfs_qm_shaker);
-+	remove_shrinker(xfs_qm_shaker);
- 	hsize = xqm->qm_dqhashmask + 1;
- 	for (i = 0; i < hsize; i++) {
- 		xfs_qm_list_destroy(&(xqm->qm_usr_dqhtable[i]));
-_
+ 	return err;
+ }
+-- 
+1.5.0.4
 
