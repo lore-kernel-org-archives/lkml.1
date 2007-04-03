@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934043AbXDCXoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbXDCXpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934043AbXDCXoD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 19:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030224AbXDCXoD
+	id S934041AbXDCXpV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 19:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934044AbXDCXpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 19:44:03 -0400
-Received: from smtp.ono.com ([62.42.230.12]:26849 "EHLO resmaa03.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934043AbXDCXoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 19:44:01 -0400
-Date: Wed, 4 Apr 2007 01:43:13 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc5-mm4
-Message-ID: <20070404014313.66ca1f99@werewolf-wl>
-In-Reply-To: <17464.1175642567@turing-police.cc.vt.edu>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org>
-	<20070404004005.2f21d514@werewolf-wl>
-	<20070403155135.ff7f3043.akpm@linux-foundation.org>
-	<20070404005826.5c849ab6@werewolf-wl>
-	<17464.1175642567@turing-police.cc.vt.edu>
-X-Mailer: Claws Mail 2.8.1cvs80 (GTK+ 2.10.11; i686-pc-linux-gnu)
+	Tue, 3 Apr 2007 19:45:21 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:49106 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934041AbXDCXpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 19:45:17 -0400
+Date: Tue, 3 Apr 2007 16:44:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+Message-Id: <20070403164455.83ae7b36.akpm@linux-foundation.org>
+In-Reply-To: <20070403144948.fe8eede6.akpm@linux-foundation.org>
+References: <46128051.9000609@redhat.com>
+	<p73648dz5oa.fsf@bingen.suse.de>
+	<46128CC2.9090809@redhat.com>
+	<20070403172841.GB23689@one.firstfloor.org>
+	<20070403125903.3e8577f4.akpm@linux-foundation.org>
+	<4612B645.7030902@redhat.com>
+	<20070403202937.GE355@devserv.devel.redhat.com>
+	<20070403144948.fe8eede6.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Apr 2007 19:22:47 -0400, Valdis.Kletnieks@vt.edu wrote:
+On Tue, 3 Apr 2007 14:49:48 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Wed, 04 Apr 2007 00:58:26 +0200, "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" said:
+> > int
+> > main (void)
+> > {
+> >   pthread_t th[32];
+> >   int i;
+> >   for (i = 0; i < 32; i++)
+> >     if (pthread_create (&th[i], NULL, tf, NULL))
+> >       exit (4);
+> >   for (i = 0; i < 32; i++)
+> >     pthread_join (th[i], NULL);
+> >   return 0;
+> > }
+> > 
 > 
-> > Anyways, I have just remembered I use the (in)famous nVidia driver.
-> > Will try to reproduce without it. This was more like a probe to see if
-> > somebody else is suffering it...
+> whee.  135,000 context switches/sec on a slow 2-way.  mmap_sem, most
+> likely.  That is ungood.
 > 
-> The nVidia driver will get some truly astounding indigestion if you accidentally
-> upgrade your xorg userspace libraries and forget to re-install the nVidia
-> userspace.  Is that what's biting you?
+> Did anyone monitor the context switch rate with the mysql test?
 > 
+> Interestingly, your test app (with s/100000/1000) runs to completion in 13
+> seocnd on the slow 2-way.  On a fast 8-way, it took 52 seconds and
+> sustained 40,000 context switches/sec.  That's a bit unexpected.
+> 
+> Both machines show ~8% idle time, too :(
 
-No, in my distro (mandriva), libraries and drivers from ndivia are in different
-places so they don't get overriden in xorg reinstall. Use is controlled
-with ld.so.conf and ModulePath.
-In fact, X works fine until the saver plays on...
+Rohit solved this puzzle.
 
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.20-jam08 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #1 SMP PREEMPT
+The 2-way is a single package, hyperthreaded.
+
+The 8-way is two-package, four cores in each.
+
+So on the 8-way, that lock is getting transferred between the two packages
+like crazy.  Running the benchmark on just cpus 0 and 1 (taskset -c 0,1)
+took the runtime down to eight seconds (from 52!) and the context switch
+rate went up to 200,000/sec (from 45,000).
+
+
