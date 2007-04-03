@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422653AbXDCS5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422651AbXDCTAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422653AbXDCS5v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 14:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422651AbXDCS5v
+	id S1422651AbXDCTAM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422654AbXDCTAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 14:57:51 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:65318 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422654AbXDCS5u (ORCPT
+	Tue, 3 Apr 2007 15:00:12 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:33445 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422651AbXDCTAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 14:57:50 -0400
-Subject: real time hang w/ latency tracing
-From: Daniel Walker <dwalker@mvista.com>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 03 Apr 2007 11:57:05 -0700
-Message-Id: <1175626625.10738.21.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 15:00:10 -0400
+Date: Tue, 3 Apr 2007 17:31:04 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Message-ID: <20070403120104.GB29308@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070402061612.GA7072@elte.hu>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 02, 2007 at 08:16:12AM +0200, Ingo Molnar wrote:
+> 
+> i'm wondering about how TASK_UNINTERRUPTIBLE tasks are handled by the 
+> freezer: are they assumed frozen immediately, or do we wait until they 
+> notice their PF_FREEZING and go into try_to_freeze()? I'd expect 
+> TASK_UNINTERRUPTIBLE to be the largest source of latency. (and hence be 
+> the primary source for freezing 'failures')
 
-With 2.6.21-rc5-rt8 / i386 . If I disable wakeup timing , and enable
-interrupt off timing with latency tracing I can cause,
+Ok, we might be in some luck. I panic()ed on freezer fail and checked
+the stacktrace of the unfrozen tasks. The stacktrace of each one looks
+like:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PID: 7697   TASK: cc354a70  CPU: 7   COMMAND: "make"
+#0 [cc37fe50] schedule at c0431752
+#1 [cc37fec4] wait_for_completion at c04318d0
+#2 [cc37ff24] do_fork at c01249a6
+#3 [cc37ff94] sys_vfork at c0103c1f
+#4 [cc37ffb4] system_call at c0104d8d
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-BUG: scheduling with irqs disabled: IRQ-16/0x00000000/909
-caller is rt_spin_lock_slowlock+0x94/0x190
- [<c010577a>] show_trace_log_lvl+0x3a/0x60
- [<c0105fdd>] show_trace+0x2d/0x30
- [<c01060c7>] dump_stack+0x27/0x30
- [<c03f52db>] schedule+0x12b/0x130
- [<c03f6314>] rt_spin_lock_slowlock+0x94/0x190
- [<c03f6b35>] rt_spin_lock+0x25/0x30
- [<c02f19bf>] serial8250_console_write+0x16f/0x190
- [<c012b3aa>] __call_console_drivers+0x7a/0xa0
- [<c012b427>] _call_console_drivers+0x57/0xa0
- [<c012b58d>] release_console_sem+0xdd/0x1e0
- [<c012bd46>] vprintk+0x226/0x3b0
- [<c012bef0>] printk+0x20/0x30
- [<c0158d29>] print_traces+0x49/0x100
- [<c0105792>] show_trace_log_lvl+0x52/0x60
- [<c0105fdd>] show_trace+0x2d/0x30
- [<c01060c7>] dump_stack+0x27/0x30
- [<c0158481>] check_critical_timing+0x2b1/0x380
- [<c01585f6>] trace_hardirqs_on+0xa6/0xc0
- [<c01046e5>] restore_nocheck+0x12/0x15
- =======================
+Rafael had sent out a patch to fix the vfork race, which can be found at
+http://lkml.org/lkml/2007/3/1/212
 
-I do this by running,
+However, the hunk
 
-echo 1 > /proc/sys/kernel/preempt_thresh
+@@ -1393,7 +1394,9 @@ long do_fork(unsigned long clone_flags,
+		tracehook_report_clone_complete(clone_flags, nr, p);
 
-which clearly causes loads of output .. Then while the output is
-screaming along I hold down the left arrow key and eventually the
-message above starts to appear often .. Then the system hangs.
+		if (clone_flags & CLONE_VFORK) {
++			freezer_do_not_count();
+			wait_for_completion(&vfork);
++			freezer_count();
+			tracehook_report_vfork_done(p, nr);
+		}
+	} else {
 
-Also I'm using an NFS root which might help to bring out the error ..
+Seems to be missing in the latest -mm's.
 
-Daniel
+Rafael / Andrew, 
+	Any reasons for leaving this hunk out?
 
+I will rerun my tests with this hunk applied and report back.
+
+> 
+> 	Ingo
+
+Thanks and Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
