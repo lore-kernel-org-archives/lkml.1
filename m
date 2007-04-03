@@ -1,40 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbXDCFep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbXDCFoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752937AbXDCFep (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 01:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbXDCFep
+	id S1752999AbXDCFoc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 01:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXDCFoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 01:34:45 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:35135 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752937AbXDCFeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 01:34:44 -0400
-Date: Tue, 3 Apr 2007 06:34:37 +0100 (BST)
-From: Christian Kujau <christian@g-house.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Chuck Ebbert <cebbert@redhat.com>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de
-Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
-In-Reply-To: <46116570.3050109@redhat.com>
-Message-ID: <Pine.LNX.4.64.0704030633200.3963@sheep.housecafe.de>
-References: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
- <46116570.3050109@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 3 Apr 2007 01:44:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41233 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752999AbXDCFob (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 01:44:31 -0400
+Date: Tue, 3 Apr 2007 15:44:19 +1000
+From: David Chinner <dgc@sgi.com>
+To: xfs-masters@oss.sgi.com
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, reiserfs-dev@namesys.com
+Subject: Re: [xfs-masters] Re: [PATCH] Cleanup and kernelify shrinker registration (rc5-mm2)
+Message-ID: <20070403054419.GV32597093@melbourne.sgi.com>
+References: <1175571885.12230.473.camel@localhost.localdomain> <20070402205825.12190e52.akpm@linux-foundation.org> <1175575503.12230.484.camel@localhost.localdomain> <20070402215702.6e3782a9.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070402215702.6e3782a9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Chuck Ebbert wrote:
-> Where is the info from before you changed to "noapic"? Or were the
-> machines always using XT-PIC for all the interrupts???
+On Mon, Apr 02, 2007 at 09:57:02PM -0700, Andrew Morton wrote:
+> On Tue, 03 Apr 2007 14:45:02 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > On Mon, 2007-04-02 at 20:58 -0700, Andrew Morton wrote:
+> > > On Tue, 03 Apr 2007 13:44:45 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > 
+> > > > 
+> > > > I can never remember what the function to register to receive VM pressure
+> > > > is called.  I have to trace down from __alloc_pages() to find it.
+> > > > 
+> > > > It's called "set_shrinker()", and it needs Your Help.
+> > > > 
+> > > > New version:
+> > > > 1) Don't hide struct shrinker.  It contains no magic.
+> > > > 2) Don't allocate "struct shrinker".  It's not helpful.
+> > > > 3) Call them "register_shrinker" and "unregister_shrinker".
+> > > > 4) Call the function "shrink" not "shrinker".
+> > > > 5) Rename "nr_to_scan" argument to "nr_to_free".
+> > > 
+> > > No, it is actually the number to scan.  This is >= the number of freed
+> > > objects.
+> > > 
+> > > This is because, for better of for worse, the VM tries to balance the
+> > > scanning rate of the various caches, not the reclaiming rate.
+> > 
+> > Err, ok, I completely missed that distinction.
+> > 
+> > Does that mean the to function correctly every user needs some internal
+> > cursor so it doesn't end up scanning the first N entries over and over?
+> > 
+> 
+> If it wants to be well-behaved, and to behave as the VM expects, yes. 
+> 
+> There's an expectation that the callback will be performing some scan-based
+> aging operation and of course to do LRU (or whatever) aging, the callback
+> will need to remember where it was up to last time it was called.
+> 
+> But it's just a guideline - callbacks could do something different but
+> in-the-spirit, I guess.
 
-XT-PIC is only used since we switched to noapic, before there was 
-IO-APIC-fasteoi on both ethernet cards and interrupts were balanced 
-well.
+In XFS, one of the shrinkers cwthat gets registered calls causes all
+the xfsbufd's in the system to run and write back delayed write
+metadata - this can't be freed up until it is clean, and this is the
+only hook we have that can be used to trigger writeback on memory
+pressure. We need this because we can potentially have hundreds of
+megabytes of dirty metadata per XFS filesystem.
 
-Thanks,
-Christian.
+IOW, the way the VM expects the shrinkers to work can be far, far
+away from what subsystems need the shrinker callbacks for....
+
+Cheers,
+
+Dave.
 -- 
-BOFH excuse #340:
-
-Well fix that in the next (upgrade, update, patch release, service pack).
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
