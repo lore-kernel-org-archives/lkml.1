@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965765AbXDCRUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965918AbXDCRXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965765AbXDCRUQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965920AbXDCRUQ
+	id S965918AbXDCRXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965934AbXDCRXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:20:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51280 "EHLO mx1.redhat.com"
+	Tue, 3 Apr 2007 13:23:25 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49362 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965765AbXDCRUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:20:14 -0400
-Message-ID: <46128CC2.9090809@redhat.com>
-Date: Tue, 03 Apr 2007 10:20:02 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jakub Jelinek <jakub@redhat.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de>
-In-Reply-To: <p73648dz5oa.fsf@bingen.suse.de>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig55DE0CEACF1EBF576272AE34"
+	id S965918AbXDCRXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:23:24 -0400
+Date: Tue, 3 Apr 2007 23:00:48 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, containers@lists.osdl.org,
+       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       mbligh@google.com, winget@google.com, rohitseth@google.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070403173048.GL2456@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070331024722.GA808@in.ibm.com> <20070402140938.GF17710@sergelap.austin.ibm.com> <20070402142727.GF2456@in.ibm.com> <m1slbiejt0.fsf@ebiederm.dsl.xmission.com> <20070403153220.GA24946@sergelap.austin.ibm.com> <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com> <20070403164615.GJ2456@in.ibm.com> <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com> <20070403171155.GK2456@in.ibm.com> <6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig55DE0CEACF1EBF576272AE34
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 03, 2007 at 10:10:35AM -0700, Paul Menage wrote:
+> > Even if nsproxy objects are made larger a bit, the number of such object will
+> 
+> You're not making them "a bit" larger, you're adding N+M pointers
+> where N is the number of container hierarchies and M is the number of
+> subsystem slots.
 
-Andi Kleen wrote:
-> Why do you need a lock for that? I don't see any problem with
-> two threads doing that in parallel. The kernel would
-> serialize it internally and one would fail, but that shouldn't
-> be a problem.=20
+Hmm no .. I currently have nsproxy having just M additional pointers, where 
+M is the maximum number of resource controllers and a single dentry
+pointer. As tasks get moved around in different hierarchies, new nsproxy's get 
+created to point to proper objects in those hierarchies (which can be done with 
+just M pointers in nsproxy). I have not considered the case of "search/reuse
+nsproxy that has the combination you want" just to keep it simple, but
+we should at some point in time do that.
 
-There is no lock at all at userlevel.  I'm talking about locks in the
-kernel.
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
-
-
---------------enig55DE0CEACF1EBF576272AE34
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGEozC2ijCOnn/RHQRAmqJAKCQR0RSmg3qjSRg7jniAADyPYdnTwCgkj4r
-/qjQERP211JdXh805MtX2Dc=
-=+kk0
------END PGP SIGNATURE-----
-
---------------enig55DE0CEACF1EBF576272AE34--
+-- 
+Regards,
+vatsa
