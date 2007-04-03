@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966206AbXDCRiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966201AbXDCRmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966206AbXDCRiJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966201AbXDCRiI
+	id S966201AbXDCRmq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966209AbXDCRmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:38:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57376 "EHLO mx1.redhat.com"
+	Tue, 3 Apr 2007 13:42:46 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:37408 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966206AbXDCRiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:38:05 -0400
-Message-ID: <461290ED.2030303@redhat.com>
-Date: Tue, 03 Apr 2007 10:37:49 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S966208AbXDCRmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:42:45 -0400
+Date: Tue, 3 Apr 2007 19:42:21 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       e1000-devel@lists.sourceforge.net
+Subject: Re: 2.6.21-rc5-mm4
+In-Reply-To: <46128C92.2020908@intel.com>
+Message-ID: <Pine.LNX.4.64.0704031940080.28249@twin.jikos.cz>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704031455200.10589@twin.jikos.cz> <46126EAA.3050000@intel.com>
+ <Pine.LNX.4.64.0704031725300.28249@twin.jikos.cz> <46128C92.2020908@intel.com>
 MIME-Version: 1.0
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com> <Pine.LNX.4.61.0704031427210.32278@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.61.0704031427210.32278@chaos.analogic.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig89840F58A2CEAF04415D3802"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig89840F58A2CEAF04415D3802
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, 3 Apr 2007, Kok, Auke wrote:
 
-linux-os (Dick Johnson) wrote:
-> Shouldn't it just be another system call? 223 is currently unused. You
-> could fill that up with __NR_nr_cpus. The value already exists in
-> the kernel.
+> we're also having problems reproducing it on that same combination 
+> (2.6.21-rc4 + my tree), so it points to something in -mm. Since your 
+> trace is completely different right now it looks like something else is 
+> fuzzing it up.
+> Since the e1000 changes are in rc5-mm3 as well, that might help to 
+> narrow it down quickly.
 
-You forget about Linus' credo "there shall be no sysconf-like syscall".
- I'd be all for sys_sysconf or even the limited sys_nr_cpus although
-ideally then we'd have two syscalls (probed CPUs, active CPUs, in which
-case sys_sysconf is the better choice).
+I don't know (yet) whether rc5-mm3 was OK in this respect, I didn't boot 
+it on this machine. I only know that both rc5 and rc5 + e1000 tree are OK, 
+but rc5-mm4 panics on ifconfig/dhclient on e1000 card immediately on my 
+system.
 
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
+I will start bisection when I get back to the respective machine 
+(tomorrow) and will let you know.
 
-
---------------enig89840F58A2CEAF04415D3802
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGEpDt2ijCOnn/RHQRAiKqAJ4saOeXPJw54hW5TwjXRVQf8sJv3gCgp67M
-rZuUoXisRxGbRWp/7H/NQTA=
-=MEbD
------END PGP SIGNATURE-----
-
---------------enig89840F58A2CEAF04415D3802--
+-- 
+Jiri Kosina
