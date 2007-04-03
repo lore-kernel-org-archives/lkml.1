@@ -1,49 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXDCFYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbXDCFYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbXDCFYH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 01:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXDCFYH
+	id S1752848AbXDCFYj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 01:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXDCFYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 01:24:07 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42599 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752812AbXDCFYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 01:24:06 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/yVJ0hYzjyIHsX1oVWQkN5NfB+cMwnCggvJ9JGAk
-	0TcpExHQ8B7Hu8
-Subject: Re: [test] hackbench.c interactivity results: vanilla versus
-	SD/RSDL
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200704031234.48863.kernel@kolivas.org>
-References: <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com>
-	 <200704031234.48863.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Tue, 03 Apr 2007 07:24:01 +0200
-Message-Id: <1175577841.6342.4.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Tue, 3 Apr 2007 01:24:39 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60334 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbXDCFYi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 01:24:38 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: vgoyal@in.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jurriaan <thunder7@xs4all.nl>,
+       Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org,
+       Magnus Damm <magnus@valinux.co.jp>, Horms <horms@verge.net.au>
+Subject: Re: 2.6.21-rc5-mm3 - no boot, "address not 2M aligned"
+References: <20070330010559.2a232d9a.akpm@linux-foundation.org>
+	<20070331071220.GA26910@aitel.hist.no>
+	<20070331005303.354411f0.akpm@linux-foundation.org>
+	<20070401052932.GA9894@amd64.of.nowhere>
+	<m1ircghb6w.fsf@ebiederm.dsl.xmission.com>
+	<20070331232957.e1c93f19.akpm@linux-foundation.org>
+	<20070402074159.GA13704@in.ibm.com>
+	<m1abxrf9o3.fsf@ebiederm.dsl.xmission.com>
+	<20070402094520.GC13704@in.ibm.com>
+	<m1648eg01d.fsf@ebiederm.dsl.xmission.com>
+	<20070403040152.GA5108@in.ibm.com>
+Date: Mon, 02 Apr 2007 23:23:17 -0600
+In-Reply-To: <20070403040152.GA5108@in.ibm.com> (Vivek Goyal's message of
+	"Tue, 3 Apr 2007 09:31:52 +0530")
+Message-ID: <m1zm5qc9q2.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-03 at 12:34 +1000, Con Kolivas wrote:
-> On Saturday 31 March 2007 19:28, Xenofon Antidides wrote:
-> > For long time now I use windows to work 
-> > problems. I cannot play wine games with audio, I
-> > cannot sample video, I cannot use skype, I cannot play
-> > midi. And even linux only things I try do I cannot
-> > share my X, I cannot use more than one vmware. All
-> > those is fix for me with SD.
-> 
-> Any semblance of cpu bandwidth and latency guarantees are easily shot on 
-> mainline by a single process going wild (eg open tab in firefox).
+Vivek Goyal <vgoyal@in.ibm.com> writes:
 
-I've written a patch which I believe fixes that.
+>> I guess at this point the easy case is that we modify /sbin/kexec to support
+>> it.  And the other bootloaders can come be upgraded if the feature is
+>> interesting enough.
+>> 
+>> > On i386, somebody already found an interesting usage of
+> CONFIG_PHYSICAL_START
+>> > where he was running his kernel above 16MB so that he can maximize on
+>> > DMA ZONE. Can't think of any usage for x86_64 at the moment but I think
+>> > down the line people might come up with such usages.
+>> 
+>> Agreed.  We do have CONFIG_PHYSICAL_ALIGN that can handle that case,
+>> although I admit that is a bit of a hack.
+>> 
+>
+> Yes, but x86_64 will not have any of those options and only way to run 
+> kernel will be either use kexec or modify your boot-loader to so that
+> it can handle relocatable images.
 
-	-Mike
+True.
 
+>> > To me, retaining CONFIG_PHYSICAL_START gives added flexibility to the user,
+>> > at the expense of reduced simplicity. We should definitely change the type
+>> > of vmlinux to ET_DYN but at the same time it might still be worth to retain
+>> > CONFIG_PHYSICAL_START option.
+>> 
+>> I think something like CONFIG_PHYSICAL_START currently gives us very
+>> little gain, and is hard to use correctly, and there are alternative
+>> solutions.  So if we can get rid of it, by only inconveniencing users
+>> who want load their kernels at a weird address it is worth it.
+>> 
+>> >> I think I can switch the vmlinux header type in about 100 lines or so
+>> >> of code.  Assuming I can ever get 30 minutes with the appropriate
+>> >> kernel.
+>> >> 
+>> >
+>> > That would be awesome. Then vmlinux will be relocatable too. (Officially).
+>> 
+>> Yes.  For x86_64 I can do this.  i386 is more difficult.  (Although with
+>> a little cleverness we can move the code that processes relocations into
+>> vmlinux).  
+>> 
+>
+> Performing relocations in vmlinux will be interesting. That way i386 vmlinux
+> too will become relocatable and only piece of puzzle to solve will be to
+> make vmlinux of type ET_DYN.
+
+Actually making vmlinux have type ET_DYN is the easier piece.  Basically
+the quick way to do this is to have an arch specific: "cmd_vmlinux__"
+like uml does so we can edit things after the make.
+
+Changing an integer in an ELF header is simple.
+
+Inserting the code to perform the relocations feels a bit trickier but
+we can probably just dump it in head.S like we do on x86_64.  We still need
+to insert the actual relocations to process though.  Which requires all of the
+post processing we currently do just called at a slightly different location.
+
+Eric
