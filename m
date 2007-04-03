@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030339AbXDCPSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030333AbXDCPTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030339AbXDCPSE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 11:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030333AbXDCPSD
+	id S1030333AbXDCPTx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 11:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030332AbXDCPTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 11:18:03 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:36254 "EHLO mail.g-house.de"
+	Tue, 3 Apr 2007 11:19:52 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:36299 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030327AbXDCPSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 11:18:01 -0400
-Date: Tue, 3 Apr 2007 16:17:55 +0100 (BST)
+	id S1030319AbXDCPTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 11:19:51 -0400
+Date: Tue, 3 Apr 2007 16:19:46 +0100 (BST)
 From: Christian Kujau <christian@g-house.de>
 X-X-Sender: evil@sheep.housecafe.de
-To: Chuck Ebbert <cebbert@redhat.com>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+To: Jarek Poplawski <jarkao2@o2.pl>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de
 Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
-In-Reply-To: <46116570.3050109@redhat.com>
-Message-ID: <Pine.LNX.4.64.0704031424570.3963@sheep.housecafe.de>
-References: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
- <46116570.3050109@redhat.com>
+In-Reply-To: <20070403065810.GA1832@ff.dom.local>
+Message-ID: <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de>
+References: <20070403065810.GA1832@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Chuck Ebbert wrote:
-> Where is the info from before you changed to "noapic"? Or were the
-> machines always using XT-PIC for all the interrupts???
+On Tue, 3 Apr 2007, Jarek Poplawski wrote:
+> Did you try with 8139cp instead of 8139too?
 
-We booted with 'acpi=off lapic' (with ACPI options compiled in, to be 
-able to boot with acpi=on later on) and the box locked up again.
+Tried that, 8139cp could not be loaded :(
 
-I'll try to boot with a slightly different .config later on. With 
-'lapic' /proc/interrupts looks like:
+> (Maybe even try some other card to narrow the problem?)
+> You could also try to test without ehci, if it's possible.
 
-           CPU0       CPU1
-   0:      63656      63396   IO-APIC-edge      timer
-   1:          0          8   IO-APIC-edge      i8042
-   2:          0          0    XT-PIC-XT        cascade
-   4:          6          1   IO-APIC-edge      serial
-   6:          0          3   IO-APIC-edge      floppy
-   8:          0          1   IO-APIC-edge      rtc
-  17:      17050          1   IO-APIC-fasteoi   eth1
-  18:        102      80615   IO-APIC-fasteoi   eth0
-  20:     195817      77721   IO-APIC-fasteoi   libata
-NMI:          0          0
-LOC:     126969     126970
-ERR:          0
-MIS:          0
+USB has been disabled completely. After booting with 'acpi=off lapic' 
+the box survived ~30min then locked up again and rebooted.
 
 Christian.
-
 -- 
-BOFH excuse #146:
+BOFH excuse #305:
 
-Communications satellite used by the military for star wars.
+IRQ-problems with the Un-Interruptible-Power-Supply
