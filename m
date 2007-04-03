@@ -1,35 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbXDCTSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXDCTTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630AbXDCTSn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbXDCTSn
+	id S1753634AbXDCTTV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbXDCTTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:18:43 -0400
-Received: from mail.samba.org ([66.70.73.150]:59995 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbXDCTSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:18:42 -0400
-Date: Tue, 3 Apr 2007 12:18:39 -0700
-From: Jeremy Allison <jra@samba.org>
-To: Steve French <smfrench@austin.rr.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-cifs-client@lists.samba.org
-Subject: Re: [linux-cifs-client] Re: cifs and kthread_run / kernel_thread
-Message-ID: <20070403191839.GH16492@samba1>
-Reply-To: Jeremy Allison <jra@samba.org>
-References: <4612A867.6050609@austin.rr.com>
+	Tue, 3 Apr 2007 15:19:21 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:1811 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753626AbXDCTTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 15:19:20 -0400
+Message-ID: <4612A8C5.1080103@cfl.rr.com>
+Date: Tue, 03 Apr 2007 15:19:33 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4612A867.6050609@austin.rr.com>
-User-Agent: Mutt/1.5.11
+To: Ameya Mitragotri <ameya.mitragotri@gmail.com>
+CC: linux-kernel@vger.kernel.org, suparna@in.ibm.com, pbadari@gmail.com
+Subject: Re: fadvise+sync_file_range Vs O_DIRECT
+References: <88df6dda0704030351u44fab6bcj20f9b48d24de861a@mail.gmail.com>
+In-Reply-To: <88df6dda0704030351u44fab6bcj20f9b48d24de861a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Apr 2007 19:19:33.0260 (UTC) FILETIME=[0295FCC0:01C77625]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15094.000
+X-TM-AS-Result: No--7.676800-5.000000-2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 02:17:59PM -0500, Steve French wrote:
+Ameya Mitragotri wrote:
+> Hello,
+> I am doing some benchmarking on writes to the hdd from a simple
+> application (attached).
+> Im benchmarking the writes using the following
+> - write with O_DIRECT
+> - write with fadvise + O_SYNC
+> - write with fadvise + sync_file_range
 
-> Now merged into cifs-2.6 git tree.  Thanks to Q and Wilhelm
+Did you use overlapped aio with O_DIRECT or just send down one request 
+at a time?
 
-Up to date SVN please ! :-).
-
-Jeremy.
