@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbXDCTXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbXDCTZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbXDCTXw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXDCTXw
+	id S1753638AbXDCTZI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966105AbXDCTZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:23:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54810 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753638AbXDCTXv (ORCPT
+	Tue, 3 Apr 2007 15:25:07 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:36816 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753622AbXDCTZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:23:51 -0400
-Date: Tue, 3 Apr 2007 21:23:49 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, sam@ravnborg.org, davem@davemloft.net
-Subject: Re: [PATCH] make csum_partial obj-y
-Message-ID: <20070403192349.GA24243@one.firstfloor.org>
-References: <20070403112604.129610b1.randy.dunlap@oracle.com> <p731wj1z0or.fsf@bingen.suse.de> <4612A66D.5090009@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4612A66D.5090009@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 3 Apr 2007 15:25:05 -0400
+Date: Tue, 03 Apr 2007 21:24:02 +0200
+From: markus reichelt <ml@mareichelt.de>
+Subject: Strange performance drop with reconnected external drives
+To: linux-crypto@nl.linux.org
+Cc: linux-kernel@vger.kernel.org
+Mail-followup-to: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
+Message-id: <20070403192402.GE4034@tatooine.rebelbase.local>
+Organization: still stuck in reorganization mode
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=HG+GLK89HZ1zG0kk
+Content-disposition: inline
+X-PGP-Key: 0xC2A3FEE4
+X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
+X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 12:09:33PM -0700, Randy Dunlap wrote:
-> Andi Kleen wrote:
-> >Randy Dunlap <randy.dunlap@oracle.com> writes:
-> >
-> >>From: Randy Dunlap <randy.dunlap@oracle.com>
-> >>
-> >>Fixes kernel bugzilla #8242:
-> >>
-> >>Move csum_partial() from lib-y to obj-$(CONFIG_CSUM_PARTIAL)
-> >>so that modules can use it.
-> >>
-> >>CONFIG_BLK_DEV_MD (md/raid driver) needs csum_partial(),
-> >>even when CONFIG_NET=n and BLK_DEV_MD=m, so build it as an
-> >>object to force it being built and available.
-> >>
-> >>REISERFS with XATTR=y also needs csum_partial(), so that
-> >>is enforced here.
-> >
-> >They are all broken because csum_partial gives different values
-> >on different architectures.   You're just extending that to
-> >possibly more subsystems.
-> 
-> So the ones that can be localized (BLK_DEV_MD and REISERFS)
-> should have their own versions?
 
-They would need some compat code to still be able to read
-old versions and a new format that is portable.
+--HG+GLK89HZ1zG0kk
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Currently it means you likely have architecture specific MD
-and reiserfs data structures on disk which is broken.
+Hi,
 
-BTW It might be better to just switch to a stronger checksum.
-The TCP checksum is quite weak and we already have CRC functions.
+I'm encountered the following scenario:
 
-> How does the networking code work across multiple architectures?
+Several encrypted external USB HDDs were mounted (via a hub) when
+Something Bad happened: Accidentially the cable connecting the hub to
+the laptop was disconnected. The devices used at that time were
+/dev/sda and /dev/sdb.
 
-It folds the csum_partial output together with a pseudo header
-into the final checksum. Just skipping the folding step is broken
-because the presentation before that is architecture specific.
-e.g. some hold it in 32bit and others in 64bit.
+Logfiles showed the usual USB stuff: disconnections, nothing really
+worrysome, no oops, no bugs.
 
--Andi
+So I almost immediately replugged one drive and mounted it again, the
+device used was /dev/sdc and performance was as usual. A few minutes
+later I replugged the other drive and the device it was associated
+with was /dev/sda. There were no error messages, the mount operation
+proceeded normally, filesystem recovery went smoothly. The filesystem
+was not corrupted during normal use afterwards.
+
+I don't think the hub is the issue, but the recycling of used
+/dev/sd* devices:
+
+The really strange thing was the considerable loss in performance.
+Writing files at ~ 1,5 MB/s was about a 10th of the normal
+throughput. Reading was also slow. I noticed that the drive's LED was
+blinking slower than usual during drive access, as if there was a
+delay of ~ 100 ms during write operations.
+
+The kernel used was 2.6.21-rc3 with recent loop-aes v 3.1f.
+
+I strongly suspect the code of handling SCSI-compatible devices (or
+whatever the code handling external USB HDDs is called exactly ;-).
+Earlier kernels (2.6.16.x) just used the next available devices e.g.
+/dev/sdc & /dev/sdd and did not recycle ones that had been in use
+already.
+
+Is there a way (apart from going back to earlier kernels) to get the
+old behaviour back? I'd very much like that. A .config option, boot
+parameter, patch, anything?
+
+--=20
+left blank, right bald
+
+--HG+GLK89HZ1zG0kk
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFGEqnSLMyTO8Kj/uQRAod6AJ4hrolq/W5PRjQ8uAsIaPJ5Xcf33gCfacxY
+U/oGOc7Y0XgQUpaht/NGGmI=
+=awrI
+-----END PGP SIGNATURE-----
+
+--HG+GLK89HZ1zG0kk--
+
