@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161024AbXDCRn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161020AbXDCRnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161024AbXDCRn0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161029AbXDCRn0
+	id S1161020AbXDCRnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161010AbXDCRnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:43:26 -0400
-Received: from smtp005.mail.ukl.yahoo.com ([217.12.11.36]:32103 "HELO
-	smtp005.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1161024AbXDCRnZ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:43:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=1Y4i+KKtY4y0KfOuBeFE8JXDvhASnhc4iFGukXk476iwv7f33aGFVnTZC7EIgXarQ4B+DBu9/u0k9DJ+asnqs4GQl4v6t0FP7FuFrkavqUcpF5VDfSKZgjWwTs+MBWatbyMsg3gyrlOY54Fwl2EG2izTH6jq9vOcIkTNaWtuKVY=  ;
-X-YMail-OSG: 7CWLbbYVM1m37dxWW57qbEO1uDbHhbFTVO7W1BIhbTCIh8AuC.4UPCtEqGS978kXeBb8R7LKa55_VgKTyAq2gVhRV2MYsMdlpx__gGhbcPQvSDig
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: Antoine Martin <antoine@nagafix.co.uk>
-Subject: Re: [uml-devel] [RFC] UML kernel & rootfs bundle with every kernel release ?
-Date: Tue, 3 Apr 2007 19:43:14 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeff Dike <jdike@addtoit.com>, devzero@web.de,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <1712880100@web.de> <20070402020530.GA589@c2.user-mode-linux.org> <4610D937.20002@nagafix.co.uk>
-In-Reply-To: <4610D937.20002@nagafix.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+	Tue, 3 Apr 2007 13:43:42 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:32864 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161020AbXDCRnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:43:41 -0400
+Date: Tue, 3 Apr 2007 23:21:01 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, rohitseth@google.com,
+       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       mbligh@google.com, winget@google.com, containers@lists.osdl.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070403175101.GN2456@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070402142727.GF2456@in.ibm.com> <m1slbiejt0.fsf@ebiederm.dsl.xmission.com> <20070403153220.GA24946@sergelap.austin.ibm.com> <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com> <20070403164615.GJ2456@in.ibm.com> <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com> <20070403171155.GK2456@in.ibm.com> <6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com> <20070403173048.GL2456@in.ibm.com> <6599ad830704031030n2311bcd7hca9f34e64c66337f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704031943.15001.blaisorblade@yahoo.it>
+In-Reply-To: <6599ad830704031030n2311bcd7hca9f34e64c66337f@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On lunedì 2 aprile 2007, Antoine Martin wrote:
-> Jeff Dike wrote:
-> > On Sun, Apr 01, 2007 at 08:58:45PM +0100, Antoine Martin wrote:
-> >> I reckon that one critical thing which could drastically increase the
-> >> user base would be to have a working virtual framebuffer implementation.
-> >
-> > Why?  I've never understood what a framebuffer gives you that you
-> > don't have now.
->
-> Just like the network auto-configuration via dhcp,
-Hmm... for that to be completely plug-and-play you need to make sure a dhcp 
-server on the host exists.
+On Tue, Apr 03, 2007 at 10:30:28AM -0700, Paul Menage wrote:
+> So how do you implement something like the /proc/<PID>/container info
+> file in my patches? 
 
-Vmware runs a separate DHCP server exactly for this, even if we should avoid 
-that as much as possible.
+I havent implemented that yet, so I will look at your next question:
 
-> it would allow users 
-> to download images+kernel and run them like appliances without
-> understanding anything about X or UML, just click and run.
+> (Or more generally, tell which container a task is
+> in for a given hierarchy?)
 
-> We are all capable of setting up Xvfb here, but most users are not,
-> which is why they download ready-made images.
+Why is the hierarchy bit important here? Usually controllers need to
+know "tell me what cpuset this task belongs to", which is answered
+by tsk->nsproxy->ctlr_data[CPUSET_ID].
 
-What about installing and pre-configuring Xnest on the image? With a suitable 
-script calling xhost on the host, it just works.
-
-This project did it:
-http://umlbuilder.sourceforge.net/
-
-although it stopped working for me ages ago (probably for some UML bug). I 
-built a Mandrake image (that I now lost) with Xnest configured. With a script 
-on the host which passes the host IP and that calls xhost, it should work 
-easily. And btw, we need a standard startup script anyway.
-
-> It would also make it a lot easier to focus on writing a management UI,
-> hell if there isn't one shortly after, I'll do one myself!
-
-Why not one management UI running from the host, a-la vmware? Possibly, with 
-as much code as possible in scripting languages, for better transparency.
-
-> Think of a UML browser image (running IE via wine in a limited image
-> with just X + wine + IE - I would much prefer that to having wine+IE
-> installed locally), testing framebuffer apps like gtk-fb/cairo-fb
-> without risking your dev environment, etc...
->
-> Antoine
-
-
+The only usecase of storing hierarchy I have found is in container_clone()
+where you need to create a directory in the right hierarchy, so knowing
+the hierarchy to which a controller is bound becomes important.
 
 -- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
+Regards,
+vatsa
