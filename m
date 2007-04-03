@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945911AbXDCUcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945924AbXDCUey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945911AbXDCUcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 16:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945915AbXDCUcr
+	id S1945924AbXDCUey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 16:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945916AbXDCUey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 16:32:47 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:47473 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945911AbXDCUcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 16:32:46 -0400
-Message-ID: <4612B9D1.4060404@cosmosbay.com>
-Date: Tue, 03 Apr 2007 22:32:17 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403174457.GA15704@linux-os.sc.intel.com> <4612B12A.30609@redhat.com> <20070403201316.GC15704@linux-os.sc.intel.com> <4612B6C1.8080509@redhat.com>
-In-Reply-To: <4612B6C1.8080509@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 03 Apr 2007 22:32:26 +0200 (CEST)
+	Tue, 3 Apr 2007 16:34:54 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42529 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945924AbXDCUex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 16:34:53 -0400
+Date: Tue, 3 Apr 2007 13:24:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ego@in.ibm.com, Ingo Molnar <mingo@elte.hu>, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com,
+       dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Message-Id: <20070403132427.88308b59.akpm@linux-foundation.org>
+In-Reply-To: <200704032134.29720.rjw@sisk.pl>
+References: <20070402053457.GA9076@in.ibm.com>
+	<20070402061612.GA7072@elte.hu>
+	<20070403120104.GB29308@in.ibm.com>
+	<200704032134.29720.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper a écrit :
-> Siddha, Suresh B wrote:
->> No. Logical cpu hotplug uses these interfaces to make a cpu go offline
->> and online.
+On Tue, 3 Apr 2007 21:34:28 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> > However, the hunk
+> > 
+> > @@ -1393,7 +1394,9 @@ long do_fork(unsigned long clone_flags,
+> > 		tracehook_report_clone_complete(clone_flags, nr, p);
+> > 
+> > 		if (clone_flags & CLONE_VFORK) {
+> > +			freezer_do_not_count();
+> > 			wait_for_completion(&vfork);
+> > +			freezer_count();
+> > 			tracehook_report_vfork_done(p, nr);
+> > 		}
+> > 	} else {
+> > 
+> > Seems to be missing in the latest -mm's.
 > 
-> You missed my sarcasms, email is bad for conveying it.  The point is
-> nobody really cares about that hotplug nonsense to have noticed the bug.
->  And still does this nonsense prevent real problems from being addressed.
+> Good catch!
 > 
+> > Rafael / Andrew, 
+> > 	Any reasons for leaving this hunk out?
+> 
+> No, absolutely not.  It's needed.
+> 
+> Moreover, freezer-fix-vfork-problem.patch from the broken-out -rc5-mm3
+> contains it, so some other patch must have reverted this change.
+> 
+> [looks]
+> 
+> Ah, it's utrace-prep-2.patch .  Andrew?
 
-Please dont focus on /sys being your holy gral.
+urgh, I screwed up, sorry.
 
-1) AFAIK /sys/devices/system/cpu was not designed to meet glibc needs.
+utrace-prep-2 reverts a bit of the underlying tree so that the utrace
+patches (which are against mainline) don't throw a tremendous reject which
+has to be fixed each time I pull Roland's tree.  I'm supposed to reapply
+that change after the utrace patches but forgot.
 
-2) Many production machines dont mount /sys at all
-
-$ uname -r
-2.6.20
-$ ls -al /sys/devices/system/cpu
-ls: /sys/devices/system/cpu: No such file or directory
-$ grep processor /proc/cpuinfo
-processor       : 0
-processor       : 1
+--- a/kernel/fork.c~undo-utrace-prep-2
++++ a/kernel/fork.c
+@@ -1387,7 +1387,9 @@ long do_fork(unsigned long clone_flags,
+ 			tracehook_report_clone_complete(clone_flags, nr, p);
+ 
+ 		if (clone_flags & CLONE_VFORK) {
++			freezer_do_not_count();
+ 			wait_for_completion(&vfork);
++			freezer_count();
+ 			if (likely(is_user))
+ 				tracehook_report_vfork_done(p, nr);
+ 		}
+_
 
