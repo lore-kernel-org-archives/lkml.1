@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422694AbXDCUT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945907AbXDCUVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422694AbXDCUT0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 16:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422699AbXDCUTZ
+	id S1945907AbXDCUVP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 16:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945905AbXDCUVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 16:19:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42793 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422694AbXDCUTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 16:19:24 -0400
-Message-ID: <4612B6C1.8080509@redhat.com>
-Date: Tue, 03 Apr 2007 13:19:13 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 3 Apr 2007 16:21:15 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51289 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422695AbXDCUVO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 16:21:14 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 03 Apr 2007 13:21:11 -0700
+Subject: [patch 5/5] new fds fixes for 2.6.21-rc5.mm4 - eventfd include files diet ...
 MIME-Version: 1.0
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403174457.GA15704@linux-os.sc.intel.com> <4612B12A.30609@redhat.com> <20070403201316.GC15704@linux-os.sc.intel.com>
-In-Reply-To: <20070403201316.GC15704@linux-os.sc.intel.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2398AEEFE3200DFBB2A14A40"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.27063.1175631673.5>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2398AEEFE3200DFBB2A14A40
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Siddha, Suresh B wrote:
-> No. Logical cpu hotplug uses these interfaces to make a cpu go offline
-> and online.
-
-You missed my sarcasms, email is bad for conveying it.  The point is
-nobody really cares about that hotplug nonsense to have noticed the bug.
- And still does this nonsense prevent real problems from being addressed.=
+Removes a few unneeded include files from the eventfd code.
 
 
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
---------------enig2398AEEFE3200DFBB2A14A40
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+- Davide
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-iD8DBQFGErbC2ijCOnn/RHQRAu9GAJ9LW4lrypbj203fLgMf8KYE+3GwXgCgwh6y
-qn3f2XoyrJm/2xMxR1R64cQ=
-=VAyy
------END PGP SIGNATURE-----
 
---------------enig2398AEEFE3200DFBB2A14A40--
+Index: linux-2.6.21-rc5.mm4/fs/eventfd.c
+===================================================================
+--- linux-2.6.21-rc5.mm4.orig/fs/eventfd.c	2007-04-03 13:17:25.000000000 -0700
++++ linux-2.6.21-rc5.mm4/fs/eventfd.c	2007-04-03 13:17:39.000000000 -0700
+@@ -7,20 +7,15 @@
+ 
+ #include <linux/file.h>
+ #include <linux/poll.h>
+-#include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/fs.h>
+-#include <linux/mount.h>
+-#include <linux/module.h>
++#include <linux/sched.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+ #include <linux/spinlock.h>
+-#include <linux/jiffies.h>
+ #include <linux/anon_inodes.h>
+ #include <linux/eventfd.h>
+ 
+-#include <asm/uaccess.h>
+-
+ struct eventfd_ctx {
+ 	spinlock_t lock;
+ 	wait_queue_head_t wqh;
+
