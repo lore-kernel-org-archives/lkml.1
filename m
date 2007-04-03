@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964813AbXDCJ07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXDCJ1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964813AbXDCJ07 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 05:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbXDCJ07
+	id S965034AbXDCJ1f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 05:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbXDCJ1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 05:26:59 -0400
-Received: from ns1.suse.de ([195.135.220.2]:37919 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964989AbXDCJ06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 05:26:58 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: A set of "standard" virtual devices?
-Date: Tue, 3 Apr 2007 11:26:52 +0200
-User-Agent: KMail/1.9.6
-Cc: Christian Borntraeger <borntrae@de.ibm.com>,
-       virtualization@lists.linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com
-References: <4611652F.700@zytor.com> <200704031030.36473.ak@suse.de> <20070403111731.52f2102a@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070403111731.52f2102a@gondolin.boeblingen.de.ibm.com>
+	Tue, 3 Apr 2007 05:27:34 -0400
+Received: from styx.suse.cz ([82.119.242.94]:45654 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964989AbXDCJ1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 05:27:13 -0400
+Date: Tue, 3 Apr 2007 11:32:35 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Robert Marquardt <marquardt@codemercs.com>
+Cc: Pete Zaitcev <zaitcev@redhat.com>, stuart_hayes@dell.com,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: usb hid: reset NumLock
+In-Reply-To: <46121703.307@codemercs.com>
+Message-ID: <Pine.LNX.4.64.0704031128500.3808@jikos.suse.cz>
+References: <20070330105924.01a16dd6.zaitcev@redhat.com>
+ <Pine.LNX.4.64.0703312122100.6040@jikos.suse.cz> <20070401222410.2ff7ecd7.zaitcev@redhat.com>
+ <Pine.LNX.4.64.0704021641190.3808@jikos.suse.cz> <20070402161225.2866c002.zaitcev@redhat.com>
+ <Pine.LNX.4.64.0704031046320.3808@jikos.suse.cz> <46121703.307@codemercs.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704031126.52750.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> On s390, it would be more than strangeness. There's no implementation
-> of PCI at all, someone would have to cook it up - and it wouldn't have
-> any use beyond those special devices. Since there isn't any bus type
-> that is available on *all* architectures, a generic "virtual" bus with
-> very simple probing seems much saner...
+On Tue, 3 Apr 2007, Robert Marquardt wrote:
 
-You just have to change all the distribution installers then. 
-Ok I suppose on s390 that's not that big issue because there are not
-that many for s390. But for x86 there exist quite a lot. I suppose
-it's easier to change it in the kernel.
+> > As this quirk is only needed once in the initialization method, we 
+> > could probably get rid of it and just put and explicit test for PID 
+> > and VID there (with apropriate comment). We can't afford wasting quirk 
+> > entries, as we are slowly running out of them.
+> Is it a problem of table size or number of table entries? For the number 
+> of entries a simple change to PID ranges should help. It would also 
+> allow to move Wacom to the blacklist. I have sent a patch for that 
+> already, but it was rejected by Greg.
 
--Andi
+The issue is that 32 bits of the quirk bitmask are going to be taken by 
+the quirk entries (so no, it's not related to the size of the table).
+
+Thanks,
+
+-- 
+Jiri Kosina
