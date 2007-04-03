@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966121AbXDCAXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966065AbXDCA1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966121AbXDCAXb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 20:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966124AbXDCAXb
+	id S966065AbXDCA1R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 20:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966124AbXDCA1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 20:23:31 -0400
-Received: from graphe.net ([209.204.138.32]:34386 "EHLO graphe.net"
+	Mon, 2 Apr 2007 20:27:16 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:34728 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966121AbXDCAXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 20:23:30 -0400
-Date: Mon, 2 Apr 2007 17:23:20 -0700 (PDT)
-From: Christoph Lameter <christoph@lameter.com>
-X-X-Sender: christoph@graphe.net
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-cc: Andi Kleen <andi@firstfloor.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: non-NUMA cache_free_alien() (was Re: [RFC] SLAB : NUMA
- cache_free_alien() very expensive because of virt_to_slab(objp); nodeid =
- slabp->nodeid;)
-In-Reply-To: <20070402225512.GA31026@linux-os.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0704021722300.20493@graphe.net>
-References: <20070320181235.77d28864.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0703201248530.12664@graphe.net> <20070320213218.GA13952@one.firstfloor.org>
- <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org>
- <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com>
- <4602FF57.7030001@cosmosbay.com> <20070322224045.GA3200@linux-os.sc.intel.com>
- <20070323141210.GA20548@one.firstfloor.org> <20070402225512.GA31026@linux-os.sc.intel.com>
+	id S966065AbXDCA1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 20:27:16 -0400
+Date: Tue, 3 Apr 2007 02:23:40 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Paul LeoNerd Evans <leonerd@leonerd.org.uk>
+Subject: Re: [PATCH] vt: Do not clear UTF when resetting console
+In-Reply-To: <1175559377.7267.13.camel@daplas>
+Message-ID: <Pine.LNX.4.61.0704030220140.18387@yvahk01.tjqt.qr>
+References: <46110F88.5040905@gmail.com>  <46113ED6.4060005@zytor.com>
+ <1175559377.7267.13.camel@daplas>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Apr 2007, Siddha, Suresh B wrote:
 
-> Set the node_possible_map at runtime. On a non NUMA system,
-> num_possible_nodes() will now say '1'
+On Apr 3 2007 08:16, Antonino A. Daplas wrote:
+>
+>That would be the cleanest and purest behavior. But it's possible to set
+>one console to UTF-8 and another to legacy mode.
 
-How does this relate to nr_node_ids?
+The question would be: why would you want to have mixed consoles?
+Switching to UTF8 IMO does not take away any characters, and I mean
+no-framebuffer 80x25 that is limited to 256 glyphs.
 
+
+Jan
+-- 
