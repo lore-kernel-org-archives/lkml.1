@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbXDCQf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934011AbXDCQjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933999AbXDCQf4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 12:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934011AbXDCQf4
+	id S934011AbXDCQjH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 12:39:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934012AbXDCQjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 12:35:56 -0400
-Received: from cel.leonerd.org.uk ([62.49.94.186]:3644 "EHLO cel.leo"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933999AbXDCQf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 12:35:56 -0400
-Date: Tue, 3 Apr 2007 17:35:54 +0100
-From: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] vt: Expose system-wide UTF-8 default setting via sysfs
-Message-ID: <20070403163553.GO26707@cel.leo>
-References: <4611ACCD.5000305@gmail.com> <20070403162051.GB5266@ucw.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/Zw+/jwnNHcBRYYu"
+	Tue, 3 Apr 2007 12:39:07 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58692 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934011AbXDCQjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 12:39:04 -0400
+Date: Tue, 3 Apr 2007 22:16:15 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@osdl.org, pj@sgi.com,
+       sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070403164615.GJ2456@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com> <20070331024722.GA808@in.ibm.com> <20070402140938.GF17710@sergelap.austin.ibm.com> <20070402142727.GF2456@in.ibm.com> <m1slbiejt0.fsf@ebiederm.dsl.xmission.com> <20070403153220.GA24946@sergelap.austin.ibm.com> <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070403162051.GB5266@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 03, 2007 at 08:45:37AM -0700, Paul Menage wrote:
+> Whilst I've got no objection in general to using nsproxy rather than
+> the container_group object that I introduced in my latest patches,
 
---/Zw+/jwnNHcBRYYu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+So are you saying lets (re-)use tsk->nsproxy but also retain 'struct
+container' to store general per-group state? If so, I think that would 
+address my main concern of redundant/avoidable new pointers in
+task_struct introduced in the container patches ..
 
-On Tue, Apr 03, 2007 at 04:20:52PM +0000, Pavel Machek wrote:
-> HPA is right... this should be fixed in userland. Reset should reset a
-> console, and if you want utf-8, do \ec\ewhatever to get it.
 
-As I've already said elsewhere, does anything say that "reset" means
-that UTF-8 is turned off, or merely reset back to some known state? I
-personally would consider that UTF-8 being on is the default, and if
-something wants it off it should ask specifically..
-
-Consider any other terminal emulator, such as those running on X11; when
-they're reset, they know to keep UTF-8 mode turned on, because it said
-so in their config, or in the locale. Kernel doesn't really have nice
-access to the LANG environment variable, but we can give it something
-similar; namely, via a module parameter.
-
---=20
-Paul "LeoNerd" Evans
-
-leonerd@leonerd.org.uk
-ICQ# 4135350       |  Registered Linux# 179460
-http://www.leonerd.org.uk/
-
---/Zw+/jwnNHcBRYYu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGEoJp7eTlovtaLtYRAg3ZAJ4hGKB5vSNnj6eldmSKOJxN6dulwgCfd4Ws
-yOdmdgfB1tdYF8ium4ni0Bg=
-=mezh
------END PGP SIGNATURE-----
-
---/Zw+/jwnNHcBRYYu--
+-- 
+Regards,
+vatsa
