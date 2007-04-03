@@ -1,247 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965104AbXDCJiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965528AbXDCJmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965104AbXDCJiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 05:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbXDCJiQ
+	id S965528AbXDCJmb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 05:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966150AbXDCJmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 05:38:16 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:49737 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965104AbXDCJiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 05:38:15 -0400
-Date: Tue, 3 Apr 2007 18:37:47 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Vivek Goyal <vgoyal@in.ibm.com>, fastboot@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] kdump/kexec: calculate note size at compile time
-Message-ID: <20070403093745.GA7145@verge.net.au>
+	Tue, 3 Apr 2007 05:42:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:53606 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965528AbXDCJma convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 05:42:30 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: A set of "standard" virtual devices?
+Date: Tue, 3 Apr 2007 11:41:49 +0200
+User-Agent: KMail/1.9.6
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       virtualization@lists.linux-foundation.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+References: <4611652F.700@zytor.com> <461178D9.402@goop.org> <46117F72.6020506@zytor.com>
+In-Reply-To: <46117F72.6020506@zytor.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: mutt-ng/devel-r804 (Debian)
+Message-Id: <200704031141.50045.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18B44/fhQ1v1w50VZxFOQuB4UhkW1wWczpBC/t
+ G/2nEZK/Exq6SUNle4aDBqotGjLwMTvNEf2Rkg2dZCnrnDgO/1
+ Vg4GjAOhFpofXIAuyLKtQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] kdump/kexec: calculate note size at compile time
+On Tuesday 03 April 2007, H. Peter Anvin wrote:
+> However, one probably wants to think about what the heck one actually 
+> means with "virtualization" in the absence of a lot of this stuff.  PCI 
+> is probably the closest thing we have to a lowest common denominator for 
+> device detection.
 
-Currently the size of the per-cpu region reserved to save crash
-notes is set by the per-architecture value MAX_NOTE_BYTES. Which
-in turn is currently set to 1024 on all supported architectures.
+I think that's true outside of s390, but a standardized virtual device
+interface should be able to work there as well. Interestingly, the
+s390 channel I/O also uses two 16 bit numbers to identify a device
+(type and model), just like PCI or USB, so in that light, we might
+be able to use the same number space for something entirely different
+depending on the virtual bus.
 
-While testing ia64 I recently discovered that this value is
-in fact too small. The particular setup I was using actually
-needs 1172 bytes. This lead to very tedious failure mode
-where the tail of one elf note would overwrite the head of
-another if they ended up being alocated sequentially by kmalloc,
-which was often the case.
-
-It seems to me that a far better approach is to caclculate the size
-that the area needs to be. This patch does just that.
-
-If a simpler stop-gap patch for ia64 to be squeezed into 2.6.21(.X)
-is needed then this should be as easy as making MAX_NOTE_BYTES
-larger in arch/asm-ia64/kexec.h. Perhaps 2048 would be a good choice.
-However, I think that the approach in this patch is a much more robust
-idea.
-
-Signed-off-by: Simon Horman <horms@verge.net.au>
-Acked-by:  Vivek Goyal <vgoyal@in.ibm.com>
---- 
-
- As suggested by Milton Miller
-
- * Changed KEXEC_NOTE_NAME_BYTES to KEXEC_CORE_NOTE_NAME_BYTES and
-   KEXEC_NOTE_DESC_BYTES to KEXEC_CORE_NOTE_DESC_BYTES to avoid
-   a possible name-clash if additional notes are added in the future.
-
- * Use KEXEC_CORE_NOTE_NAME in the definition of KEXEC_CORE_NOTE_NAME_BYTES
-
- * Clean up comment about the notes area being a lit of notes
-
- arch/ia64/kernel/crash.c    |    2 +-
- include/asm-arm/kexec.h     |    2 --
- include/asm-i386/kexec.h    |    2 --
- include/asm-ia64/kexec.h    |    2 --
- include/asm-mips/kexec.h    |    2 --
- include/asm-powerpc/kexec.h |    2 --
- include/asm-s390/kexec.h    |    2 --
- include/asm-sh/kexec.h      |    2 --
- include/asm-x86_64/kexec.h  |    2 --
- include/linux/kexec.h       |   17 ++++++++++++++++-
- kernel/kexec.c              |    4 ++--
- 11 files changed, 19 insertions(+), 20 deletions(-)
-Index: linux-2.6/include/asm-ia64/kexec.h
-===================================================================
---- linux-2.6.orig/include/asm-ia64/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/asm-ia64/kexec.h	2007-04-03 18:14:39.000000000 +0900
-@@ -14,8 +14,6 @@
- /* The native architecture */
- #define KEXEC_ARCH KEXEC_ARCH_IA_64
- 
--#define MAX_NOTE_BYTES 1024
--
- #define kexec_flush_icache_page(page) do { \
-                 unsigned long page_addr = (unsigned long)page_address(page); \
-                 flush_icache_range(page_addr, page_addr + PAGE_SIZE); \
-Index: linux-2.6/include/linux/kexec.h
-===================================================================
---- linux-2.6.orig/include/linux/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/linux/kexec.h	2007-04-03 18:19:03.000000000 +0900
-@@ -7,6 +7,8 @@
- #include <linux/linkage.h>
- #include <linux/compat.h>
- #include <linux/ioport.h>
-+#include <linux/elfcore.h>
-+#include <linux/elf.h>
- #include <asm/kexec.h>
- 
- /* Verify architecture specific macros are defined */
-@@ -31,6 +33,19 @@
- #error KEXEC_ARCH not defined
- #endif
- 
-+#define KEXEC_NOTE_HEAD_BYTES ALIGN(sizeof(struct elf_note), 4)
-+#define KEXEC_CORE_NOTE_NAME "CORE"
-+#define KEXEC_CORE_NOTE_NAME_BYTES ALIGN(sizeof(KEXEC_CORE_NOTE_NAME), 4)
-+#define KEXEC_CORE_NOTE_DESC_BYTES ALIGN(sizeof(struct elf_prstatus), 4)
-+/*
-+ * The per-cpu notes area is a list of notes terminated by a "NULL"
-+ * note header.  For kdump, the code in vmcore.c runs in the context
-+ * of the second kernel to combine them into one note.
-+ */
-+#define KEXEC_NOTE_BYTES ( (KEXEC_NOTE_HEAD_BYTES * 2) +		\
-+			    KEXEC_CORE_NOTE_NAME_BYTES +		\
-+			    KEXEC_CORE_NOTE_DESC_BYTES )
-+
- /*
-  * This structure is used to hold the arguments that are used when loading
-  * kernel binaries.
-@@ -136,7 +151,7 @@
- /* Location of a reserved region to hold the crash kernel.
-  */
- extern struct resource crashk_res;
--typedef u32 note_buf_t[MAX_NOTE_BYTES/4];
-+typedef u32 note_buf_t[KEXEC_NOTE_BYTES/4];
- extern note_buf_t *crash_notes;
- 
- 
-Index: linux-2.6/include/asm-arm/kexec.h
-===================================================================
---- linux-2.6.orig/include/asm-arm/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/asm-arm/kexec.h	2007-04-03 18:14:39.000000000 +0900
-@@ -16,8 +16,6 @@
- 
- #ifndef __ASSEMBLY__
- 
--#define MAX_NOTE_BYTES 1024
--
- struct kimage;
- /* Provide a dummy definition to avoid build failures. */
- static inline void crash_setup_regs(struct pt_regs *newregs,
-Index: linux-2.6/include/asm-i386/kexec.h
-===================================================================
---- linux-2.6.orig/include/asm-i386/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/asm-i386/kexec.h	2007-04-03 18:14:39.000000000 +0900
-@@ -47,8 +47,6 @@
- /* The native architecture */
- #define KEXEC_ARCH KEXEC_ARCH_386
- 
--#define MAX_NOTE_BYTES 1024
--
- /* CPU does not save ss and esp on stack if execution is already
-  * running in kernel mode at the time of NMI occurrence. This code
-  * fixes it.
-Index: linux-2.6/include/asm-mips/kexec.h
-===================================================================
---- linux-2.6.orig/include/asm-mips/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/asm-mips/kexec.h	2007-04-03 18:14:39.000000000 +0900
-@@ -21,8 +21,6 @@
- /* The native architecture */
- #define KEXEC_ARCH KEXEC_ARCH_MIPS
- 
--#define MAX_NOTE_BYTES 1024
--
- static inline void crash_setup_regs(struct pt_regs *newregs,
- 				    struct pt_regs *oldregs)
- {
-Index: linux-2.6/include/asm-powerpc/kexec.h
-===================================================================
---- linux-2.6.orig/include/asm-powerpc/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/asm-powerpc/kexec.h	2007-04-03 18:14:39.000000000 +0900
-@@ -108,8 +108,6 @@
- 					struct pt_regs *oldregs) { }
- #endif /* !__powerpc64 __ */
- 
--#define MAX_NOTE_BYTES 1024
--
- extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
- 					  master to copy new code to 0 */
- extern int crashing_cpu;
-Index: linux-2.6/include/asm-s390/kexec.h
-===================================================================
---- linux-2.6.orig/include/asm-s390/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/asm-s390/kexec.h	2007-04-03 18:14:39.000000000 +0900
-@@ -34,8 +34,6 @@
- /* The native architecture */
- #define KEXEC_ARCH KEXEC_ARCH_S390
- 
--#define MAX_NOTE_BYTES 1024
--
- /* Provide a dummy definition to avoid build failures. */
- static inline void crash_setup_regs(struct pt_regs *newregs,
- 					struct pt_regs *oldregs) { }
-Index: linux-2.6/include/asm-sh/kexec.h
-===================================================================
---- linux-2.6.orig/include/asm-sh/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/asm-sh/kexec.h	2007-04-03 18:14:39.000000000 +0900
-@@ -23,8 +23,6 @@
- /* The native architecture */
- #define KEXEC_ARCH KEXEC_ARCH_SH
- 
--#define MAX_NOTE_BYTES 1024
--
- /* Provide a dummy definition to avoid build failures. */
- static inline void crash_setup_regs(struct pt_regs *newregs,
- 					struct pt_regs *oldregs) { }
-Index: linux-2.6/include/asm-x86_64/kexec.h
-===================================================================
---- linux-2.6.orig/include/asm-x86_64/kexec.h	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/include/asm-x86_64/kexec.h	2007-04-03 18:14:39.000000000 +0900
-@@ -48,8 +48,6 @@
- /* The native architecture */
- #define KEXEC_ARCH KEXEC_ARCH_X86_64
- 
--#define MAX_NOTE_BYTES 1024
--
- /*
-  * Saving the registers of the cpu on which panic occured in
-  * crash_kexec to save a valid sp. The registers of other cpus
-Index: linux-2.6/arch/ia64/kernel/crash.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/crash.c	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/arch/ia64/kernel/crash.c	2007-04-03 18:19:36.000000000 +0900
-@@ -74,7 +74,7 @@
- 	buf = (u64 *) per_cpu_ptr(crash_notes, cpu);
- 	if (!buf)
- 		return;
--	buf = append_elf_note(buf, "CORE", NT_PRSTATUS, prstatus,
-+	buf = append_elf_note(buf, KEXEC_CORE_NOTE_NAME, NT_PRSTATUS, prstatus,
- 			sizeof(*prstatus));
- 	final_note(buf);
- }
-Index: linux-2.6/kernel/kexec.c
-===================================================================
---- linux-2.6.orig/kernel/kexec.c	2007-04-02 21:50:46.000000000 +0900
-+++ linux-2.6/kernel/kexec.c	2007-04-03 18:20:36.000000000 +0900
-@@ -1118,8 +1118,8 @@
- 	memset(&prstatus, 0, sizeof(prstatus));
- 	prstatus.pr_pid = current->pid;
- 	elf_core_copy_regs(&prstatus.pr_reg, regs);
--	buf = append_elf_note(buf, "CORE", NT_PRSTATUS, &prstatus,
--				sizeof(prstatus));
-+	buf = append_elf_note(buf, KEXEC_CORE_NOTE_NAME, NT_PRSTATUS,
-+		      	      &prstatus, sizeof(prstatus));
- 	final_note(buf);
- }
- 
+	Arnd <><
