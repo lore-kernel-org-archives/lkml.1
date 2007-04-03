@@ -1,107 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966152AbXDCCiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXDCCmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966152AbXDCCiM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 22:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933945AbXDCCiM
+	id S1751724AbXDCCmp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 22:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbXDCCmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 22:38:12 -0400
-Received: from mail33.syd.optusnet.com.au ([211.29.132.104]:54365 "EHLO
-	mail33.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934015AbXDCCiL (ORCPT
+	Mon, 2 Apr 2007 22:42:45 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:61125 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXDCCmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 22:38:11 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH] sched: staircase deadline misc fixes
-Date: Tue, 3 Apr 2007 12:37:21 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-References: <200703290237.38777.kernel@kolivas.org> <200703290944.45888.kernel@kolivas.org> <1175147455.6430.91.camel@Homer.simpson.net>
-In-Reply-To: <1175147455.6430.91.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_h3bEGWO6su7lDaf"
-Message-Id: <200704031237.21946.kernel@kolivas.org>
+	Mon, 2 Apr 2007 22:42:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=H3obaniIz8yVtizFQ9XWLux7thXickCKrIl9jOu7xfOqFcU3C95dDs6CYd13iSEvGqr4ABaxEm3Tr+7XwMoxvJ7TVw4cr1/5OvPf19u0LU7IQ7PriQ7UYG0SV9Pb8gDhhJJFTqTi5beaD6pCMkrUm7ormbEZ2Lpk1J8EvLI5oZQ=
+Date: Tue, 3 Apr 2007 08:13:45 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org, e1000-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       auke-jan.h.kok@intel.com, john.ronciak@intel.com,
+       jesse.brandeburg@intel.com, ayyappan.veeraiyan@intel.com
+Subject: [KJ][PATCH]ROUND_UP macro cleanup in drivers/net/ixgb
+Message-ID: <20070403024345.GB9479@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_h3bEGWO6su7lDaf
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+IXGB_ROUNDUP macro cleanup ,use ALIGN
 
-On Thursday 29 March 2007 15:50, Mike Galbraith wrote:
-> On Thu, 2007-03-29 at 09:44 +1000, Con Kolivas wrote:
-> + * This contains a bitmap for each dynamic priority level with empty slots
-> + * for the valid priorities each different nice level can have. It allows
-> + * us to stagger the slots where differing priorities run in a way that
-> + * keeps latency differences between different nice levels at a minimum.
-> + * ie, where 0 means a slot for that priority, priority running from left
-> to + * right:
-> + * nice -20 0000000000000000000000000000000000000000
-> + * nice -10 1001000100100010001001000100010010001000
-> + * nice   0 0101010101010101010101010101010101010101
-> + * nice   5 1101011010110101101011010110101101011011
-> + * nice  10 0110111011011101110110111011101101110111
-> + * nice  15 0111110111111011111101111101111110111111
-> + * nice  19 1111111111111111111011111111111111111111
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-Try two instances of chew.c at _differing_ nice levels on one cpu on mainline, 
-and then SD. This is why you can't renice X on mainline.
+---
 
-> 	-Mike
+ ixgb.h         |    3 ---
+ ixgb_ethtool.c |    4 ++--
+ ixgb_main.c    |    4 ++--
+ ixgb_param.c   |    4 ++--
+ 4 files changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ixgb/ixgb.h b/drivers/net/ixgb/ixgb.h
+index cf30a10..c8e9086 100644
+--- a/drivers/net/ixgb/ixgb.h
++++ b/drivers/net/ixgb/ixgb.h
+@@ -111,9 +111,6 @@ struct ixgb_adapter;
+ /* How many Rx Buffers do we bundle into one write to the hardware ? */
+ #define IXGB_RX_BUFFER_WRITE	8	/* Must be power of 2 */
+ 
+-/* only works for sizes that are powers of 2 */
+-#define IXGB_ROUNDUP(i, size) ((i) = (((i) + (size) - 1) & ~((size) - 1)))
+-
+ /* wrapper around a pointer to a socket buffer,
+  * so a DMA handle can be stored along with the buffer */
+ struct ixgb_buffer {
+diff --git a/drivers/net/ixgb/ixgb_ethtool.c b/drivers/net/ixgb/ixgb_ethtool.c
+index d6628bd..cdefaff 100644
+--- a/drivers/net/ixgb/ixgb_ethtool.c
++++ b/drivers/net/ixgb/ixgb_ethtool.c
+@@ -577,11 +577,11 @@ ixgb_set_ringparam(struct net_device *netdev,
+ 
+ 	rxdr->count = max(ring->rx_pending,(uint32_t)MIN_RXD);
+ 	rxdr->count = min(rxdr->count,(uint32_t)MAX_RXD);
+-	IXGB_ROUNDUP(rxdr->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE); 
++	rxdr->count = ALIGN(rxdr->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE); 
+ 
+ 	txdr->count = max(ring->tx_pending,(uint32_t)MIN_TXD);
+ 	txdr->count = min(txdr->count,(uint32_t)MAX_TXD);
+-	IXGB_ROUNDUP(txdr->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE); 
++	txdr->count = ALIGN(txdr->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE); 
+ 
+ 	if(netif_running(adapter->netdev)) {
+ 		/* Try to get new resources before deleting old */
+diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
+index afc2ec7..158c71e 100644
+--- a/drivers/net/ixgb/ixgb_main.c
++++ b/drivers/net/ixgb/ixgb_main.c
+@@ -685,7 +685,7 @@ ixgb_setup_tx_resources(struct ixgb_adapter *adapter)
+ 	/* round up to nearest 4K */
+ 
+ 	txdr->size = txdr->count * sizeof(struct ixgb_tx_desc);
+-	IXGB_ROUNDUP(txdr->size, 4096);
++	txdr->size = ALIGN(txdr->size, 4096);
+ 
+ 	txdr->desc = pci_alloc_consistent(pdev, txdr->size, &txdr->dma);
+ 	if(!txdr->desc) {
+@@ -774,7 +774,7 @@ ixgb_setup_rx_resources(struct ixgb_adapter *adapter)
+ 	/* Round up to nearest 4K */
+ 
+ 	rxdr->size = rxdr->count * sizeof(struct ixgb_rx_desc);
+-	IXGB_ROUNDUP(rxdr->size, 4096);
++	rxdr->size = ALIGN(rxdr->size, 4096);
+ 
+ 	rxdr->desc = pci_alloc_consistent(pdev, rxdr->size, &rxdr->dma);
+ 
+diff --git a/drivers/net/ixgb/ixgb_param.c b/drivers/net/ixgb/ixgb_param.c
+index b27442a..ee8cc67 100644
+--- a/drivers/net/ixgb/ixgb_param.c
++++ b/drivers/net/ixgb/ixgb_param.c
+@@ -284,7 +284,7 @@ ixgb_check_options(struct ixgb_adapter *adapter)
+ 		} else {
+ 			tx_ring->count = opt.def;
+ 		}
+-		IXGB_ROUNDUP(tx_ring->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE);
++		tx_ring->count = ALIGN(tx_ring->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE);
+ 	}
+ 	{ /* Receive Descriptor Count */
+ 		struct ixgb_option opt = {
+@@ -303,7 +303,7 @@ ixgb_check_options(struct ixgb_adapter *adapter)
+ 		} else {
+ 			rx_ring->count = opt.def;
+ 		}
+-		IXGB_ROUNDUP(rx_ring->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE);
++		rx_ring->count = ALIGN(rx_ring->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE);
+ 	}
+ 	{ /* Receive Checksum Offload Enable */
+ 		struct ixgb_option opt = {
+
 
 -- 
--ck
-
---Boundary-00=_h3bEGWO6su7lDaf
-Content-Type: text/x-csrc;
-  charset="utf-8";
-  name="chew.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="chew.c"
-
-/*
- * orignal idea by Chris Friesen.  Thanks.
- */
-
-#include <stdio.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-
-#define THRESHOLD_USEC 2000
-
-unsigned long long stamp()
-{
-        struct timeval tv;
-        gettimeofday(&tv, 0);
-        return (unsigned long long) tv.tv_usec + ((unsigned long long) tv.tv_sec)*1000000;
-}
-
-int main()
-{
-        unsigned long long thresh_ticks = THRESHOLD_USEC;
-        unsigned long long cur,last;
-        struct timespec ts;
-
-        sched_rr_get_interval(0, &ts);
-        printf("pid %d, prio %3d, interval of %d nsec\n", getpid(), getpriority(PRIO_PROCESS, 0), ts.tv_nsec);
-
-        last = stamp();
-        while(1) {
-                cur = stamp();
-                unsigned long long delta = cur-last;
-                if (delta > thresh_ticks) {
-                        printf("pid %d, prio %3d, out for %4llu ms\n", getpid(), getpriority(PRIO_PROCESS, 0), delta/1000);
-                        cur = stamp();
-                }
-                last = cur;
-        }
-
-        return 0;
-}
-
---Boundary-00=_h3bEGWO6su7lDaf--
+Milind Arun Choudhary
