@@ -1,123 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXDCCmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751027AbXDCCwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751724AbXDCCmp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 22:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbXDCCmp
+	id S1751027AbXDCCwO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 22:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXDCCwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 22:42:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:61125 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbXDCCmo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 22:42:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=H3obaniIz8yVtizFQ9XWLux7thXickCKrIl9jOu7xfOqFcU3C95dDs6CYd13iSEvGqr4ABaxEm3Tr+7XwMoxvJ7TVw4cr1/5OvPf19u0LU7IQ7PriQ7UYG0SV9Pb8gDhhJJFTqTi5beaD6pCMkrUm7ormbEZ2Lpk1J8EvLI5oZQ=
-Date: Tue, 3 Apr 2007 08:13:45 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: kernel-janitors@lists.osdl.org, e1000-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       auke-jan.h.kok@intel.com, john.ronciak@intel.com,
-       jesse.brandeburg@intel.com, ayyappan.veeraiyan@intel.com
-Subject: [KJ][PATCH]ROUND_UP macro cleanup in drivers/net/ixgb
-Message-ID: <20070403024345.GB9479@arun.site>
+	Mon, 2 Apr 2007 22:52:14 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:43694 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751027AbXDCCwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 22:52:13 -0400
+Subject: [RFC] [PATCH] persistent_clock() for x86_64
+From: john stultz <johnstul@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 02 Apr 2007 19:52:09 -0700
+Message-Id: <1175568729.5201.87.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IXGB_ROUNDUP macro cleanup ,use ALIGN
+This patch converts the get_cmos_time() function to
+read_persistent_clock(), which allows x86_64 to utilize the full generic
+timekeeping suspend/resume code path.
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Unfortunately I don't have any x86_64 boxes that suspend/resume to play
+w/ so this is mostly untested (but uses the same generic code path as
+i386).
 
----
+Any thoughts or comments?
 
- ixgb.h         |    3 ---
- ixgb_ethtool.c |    4 ++--
- ixgb_main.c    |    4 ++--
- ixgb_param.c   |    4 ++--
- 4 files changed, 6 insertions(+), 9 deletions(-)
+thanks
+-john
 
-diff --git a/drivers/net/ixgb/ixgb.h b/drivers/net/ixgb/ixgb.h
-index cf30a10..c8e9086 100644
---- a/drivers/net/ixgb/ixgb.h
-+++ b/drivers/net/ixgb/ixgb.h
-@@ -111,9 +111,6 @@ struct ixgb_adapter;
- /* How many Rx Buffers do we bundle into one write to the hardware ? */
- #define IXGB_RX_BUFFER_WRITE	8	/* Must be power of 2 */
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+
+ time.c |   43 +------------------------------------------
+ 1 file changed, 1 insertion(+), 42 deletions(-)
+
+diff --git a/arch/x86_64/kernel/time.c b/arch/x86_64/kernel/time.c
+index 75d73a9..df09c65 100644
+--- a/arch/x86_64/kernel/time.c
++++ b/arch/x86_64/kernel/time.c
+@@ -201,7 +201,7 @@ static irqreturn_t timer_interrupt(int i
+ 	return IRQ_HANDLED;
+ }
  
--/* only works for sizes that are powers of 2 */
--#define IXGB_ROUNDUP(i, size) ((i) = (((i) + (size) - 1) & ~((size) - 1)))
+-static unsigned long get_cmos_time(void)
++unsigned long read_persistent_clock(void)
+ {
+ 	unsigned int year, mon, day, hour, min, sec;
+ 	unsigned long flags;
+@@ -327,11 +327,6 @@ void __init time_init(void)
+ {
+ 	if (nohpet)
+ 		hpet_address = 0;
+-	xtime.tv_sec = get_cmos_time();
+-	xtime.tv_nsec = 0;
 -
- /* wrapper around a pointer to a socket buffer,
-  * so a DMA handle can be stored along with the buffer */
- struct ixgb_buffer {
-diff --git a/drivers/net/ixgb/ixgb_ethtool.c b/drivers/net/ixgb/ixgb_ethtool.c
-index d6628bd..cdefaff 100644
---- a/drivers/net/ixgb/ixgb_ethtool.c
-+++ b/drivers/net/ixgb/ixgb_ethtool.c
-@@ -577,11 +577,11 @@ ixgb_set_ringparam(struct net_device *netdev,
+-	set_normalized_timespec(&wall_to_monotonic,
+-	                        -xtime.tv_sec, -xtime.tv_nsec);
  
- 	rxdr->count = max(ring->rx_pending,(uint32_t)MIN_RXD);
- 	rxdr->count = min(rxdr->count,(uint32_t)MAX_RXD);
--	IXGB_ROUNDUP(rxdr->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE); 
-+	rxdr->count = ALIGN(rxdr->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE); 
+ 	if (hpet_arch_init())
+ 		hpet_address = 0;
+@@ -364,59 +359,23 @@ void __init time_init(void)
+ }
  
- 	txdr->count = max(ring->tx_pending,(uint32_t)MIN_TXD);
- 	txdr->count = min(txdr->count,(uint32_t)MAX_TXD);
--	IXGB_ROUNDUP(txdr->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE); 
-+	txdr->count = ALIGN(txdr->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE); 
  
- 	if(netif_running(adapter->netdev)) {
- 		/* Try to get new resources before deleting old */
-diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
-index afc2ec7..158c71e 100644
---- a/drivers/net/ixgb/ixgb_main.c
-+++ b/drivers/net/ixgb/ixgb_main.c
-@@ -685,7 +685,7 @@ ixgb_setup_tx_resources(struct ixgb_adapter *adapter)
- 	/* round up to nearest 4K */
+-static long clock_cmos_diff;
+-static unsigned long sleep_start;
+-
+ /*
+  * sysfs support for the timer.
+  */
  
- 	txdr->size = txdr->count * sizeof(struct ixgb_tx_desc);
--	IXGB_ROUNDUP(txdr->size, 4096);
-+	txdr->size = ALIGN(txdr->size, 4096);
+-static int timer_suspend(struct sys_device *dev, pm_message_t state)
+-{
+-	/*
+-	 * Estimate time zone so that set_time can update the clock
+-	 */
+-	long cmos_time =  get_cmos_time();
+-
+-	clock_cmos_diff = -cmos_time;
+-	clock_cmos_diff += get_seconds();
+-	sleep_start = cmos_time;
+-	return 0;
+-}
+-
+ static int timer_resume(struct sys_device *dev)
+ {
+-	unsigned long flags;
+-	unsigned long sec;
+-	unsigned long ctime = get_cmos_time();
+-	long sleep_length = (ctime - sleep_start) * HZ;
+-
+-	if (sleep_length < 0) {
+-		printk(KERN_WARNING "Time skew detected in timer resume!\n");
+-		/* The time after the resume must not be earlier than the time
+-		 * before the suspend or some nasty things will happen
+-		 */
+-		sleep_length = 0;
+-		ctime = sleep_start;
+-	}
+ 	if (hpet_address)
+ 		hpet_reenable();
+ 	else
+ 		i8254_timer_resume();
  
- 	txdr->desc = pci_alloc_consistent(pdev, txdr->size, &txdr->dma);
- 	if(!txdr->desc) {
-@@ -774,7 +774,7 @@ ixgb_setup_rx_resources(struct ixgb_adapter *adapter)
- 	/* Round up to nearest 4K */
+-	sec = ctime + clock_cmos_diff;
+-	write_seqlock_irqsave(&xtime_lock,flags);
+-	xtime.tv_sec = sec;
+-	xtime.tv_nsec = 0;
+-	jiffies += sleep_length;
+-	write_sequnlock_irqrestore(&xtime_lock,flags);
+ 	touch_softlockup_watchdog();
+ 	return 0;
+ }
  
- 	rxdr->size = rxdr->count * sizeof(struct ixgb_rx_desc);
--	IXGB_ROUNDUP(rxdr->size, 4096);
-+	rxdr->size = ALIGN(rxdr->size, 4096);
+ static struct sysdev_class timer_sysclass = {
+ 	.resume = timer_resume,
+-	.suspend = timer_suspend,
+ 	set_kset_name("timer"),
+ };
  
- 	rxdr->desc = pci_alloc_consistent(pdev, rxdr->size, &rxdr->dma);
- 
-diff --git a/drivers/net/ixgb/ixgb_param.c b/drivers/net/ixgb/ixgb_param.c
-index b27442a..ee8cc67 100644
---- a/drivers/net/ixgb/ixgb_param.c
-+++ b/drivers/net/ixgb/ixgb_param.c
-@@ -284,7 +284,7 @@ ixgb_check_options(struct ixgb_adapter *adapter)
- 		} else {
- 			tx_ring->count = opt.def;
- 		}
--		IXGB_ROUNDUP(tx_ring->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE);
-+		tx_ring->count = ALIGN(tx_ring->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE);
- 	}
- 	{ /* Receive Descriptor Count */
- 		struct ixgb_option opt = {
-@@ -303,7 +303,7 @@ ixgb_check_options(struct ixgb_adapter *adapter)
- 		} else {
- 			rx_ring->count = opt.def;
- 		}
--		IXGB_ROUNDUP(rx_ring->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE);
-+		rx_ring->count = ALIGN(rx_ring->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE);
- 	}
- 	{ /* Receive Checksum Offload Enable */
- 		struct ixgb_option opt = {
 
 
--- 
-Milind Arun Choudhary
