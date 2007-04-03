@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030301AbXDCOrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030299AbXDCOuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030301AbXDCOrs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 10:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXDCOrm
+	id S1030299AbXDCOuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 10:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030293AbXDCOuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 10:47:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47605 "EHLO mx1.redhat.com"
+	Tue, 3 Apr 2007 10:50:18 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:43739 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030301AbXDCOr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 10:47:26 -0400
-Message-Id: <20070403144224.610538071@taijtu.programming.kicks-ass.net>
-References: <20070403144047.073283598@taijtu.programming.kicks-ass.net>
-User-Agent: quilt/0.46-1
-Date: Tue, 03 Apr 2007 16:40:52 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl
-Subject: [PATCH 5/6] mm: expose BDI statistics in sysfs.
-Content-Disposition: inline; filename=bdi_stat_sysfs.patch
+	id S1030295AbXDCOuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 10:50:16 -0400
+Date: Tue, 3 Apr 2007 18:55:55 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Andi Kleen <ak@suse.de>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
+       cpufreq@lists.linux.org.uk, hpa@zytor.com, davej@codemonkey.org.uk
+Subject: Re: [PATCH 1/3] Introduce cpuid_on_cpu() and cpuid_eax_on_cpu()
+Message-ID: <20070403145555.GA6531@localhost.sw.ru>
+References: <20070402113831.GA6785@localhost.sw.ru> <200704021410.29623.ak@suse.de> <20070403133946.GA6536@localhost.sw.ru> <200704031542.50630.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704031542.50630.ak@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose the per BDI stats in /sys/block/<dev>/queue/*
+On Tue, Apr 03, 2007 at 03:42:50PM +0200, Andi Kleen wrote:
+> > > Both powernow-k8 and cpuid attempt to schedule
+> > > to the target CPU so they should already run there. But it is some other CPU,
+> > > but when they ask your _on_cpu() functions they suddenly get a "real" CPU?
+> > > Where is the difference between these levels of virtualness?
+> >
+> > *_on_cpu functions do some work on given physical CPU.
+> > set_cpus_allowed() in openvz operates on VCPU level, so process doing
+> > set_cpus_allowed() still could be scheduled anywhere.
+>
+> Ok so you have multple levels.
+>
+> > > Also it has weird semantics. For example if you have multiple
+> > > virtual CPUs mapping to a single CPU then would the powernow-k8 driver
+> > > try to set the frequency multiple times on the same physical CPU?
+> >
+> > If core cpufreq locking is OK, why would it?
+>
+> It won't know about multiple CPUs mapping to a single CPU.
+>
+> > apply_microcode() looks small enough to convert it to IPIs, but so far
+> > nobody asked for microcode updates in openvz.
+>
+> Well if they try it they will probably have problems.
+>
+> > > Before adding any hacks like this I think your vcpu concept
+> > > needs to be discussed properly on l-k. For me it doesn't look like it is
+> > > something good right now though.
+> >
+> > Andi, I think it all relies on correctness of core cpufreq locking.
+>
+> I have my doubts it will cope with you changing all reasonable expected semantics
+> under it.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- block/ll_rw_blk.c   |   81 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- mm/page-writeback.c |    2 -
- 2 files changed, 82 insertions(+), 1 deletion(-)
+Synchronization promitives work as expected. Otherwise openvz'd be buried in bugs
+all over the map.
 
-Index: linux-2.6/block/ll_rw_blk.c
-===================================================================
---- linux-2.6.orig/block/ll_rw_blk.c
-+++ linux-2.6/block/ll_rw_blk.c
-@@ -3975,6 +3975,20 @@ static ssize_t queue_max_hw_sectors_show
- 	return queue_var_show(max_hw_sectors_kb, (page));
- }
- 
-+static ssize_t queue_nr_dirty_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lu\n", bdi_stat(&q->backing_dev_info, BDI_DIRTY));
-+}
-+
-+static ssize_t queue_nr_writeback_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lu\n", bdi_stat(&q->backing_dev_info, BDI_WRITEBACK));
-+}
-+
-+static ssize_t queue_nr_unstable_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lu\n", bdi_stat(&q->backing_dev_info, BDI_UNSTABLE));
-+}
- 
- static struct queue_sysfs_entry queue_requests_entry = {
- 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
-@@ -4005,6 +4019,21 @@ static struct queue_sysfs_entry queue_ma
- 	.show = queue_max_hw_sectors_show,
- };
- 
-+static struct queue_sysfs_entry queue_dirty_entry = {
-+	.attr = {.name = "dirty_pages", .mode = S_IRUGO },
-+	.show = queue_nr_dirty_show,
-+};
-+
-+static struct queue_sysfs_entry queue_writeback_entry = {
-+	.attr = {.name = "writeback_pages", .mode = S_IRUGO },
-+	.show = queue_nr_writeback_show,
-+};
-+
-+static struct queue_sysfs_entry queue_unstable_entry = {
-+	.attr = {.name = "unstable_pages", .mode = S_IRUGO },
-+	.show = queue_nr_unstable_show,
-+};
-+
- static struct queue_sysfs_entry queue_iosched_entry = {
- 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
- 	.show = elv_iosched_show,
-@@ -4017,6 +4046,9 @@ static struct attribute *default_attrs[]
- 	&queue_initial_ra_entry.attr,
- 	&queue_max_hw_sectors_entry.attr,
- 	&queue_max_sectors_entry.attr,
-+	&queue_dirty_entry.attr,
-+	&queue_writeback_entry.attr,
-+	&queue_unstable_entry.attr,
- 	&queue_iosched_entry.attr,
- 	NULL,
- };
+Core cpufreq has per-cpu array of rw-semaphores but the index of
+semaphore one want to down comes from userspace not from number of CPU
+process is executing virtual or physical.
 
--- 
+Probably davej could say something.
 
