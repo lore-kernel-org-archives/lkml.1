@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933372AbXDCIvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933307AbXDCIxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933372AbXDCIvl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 04:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933307AbXDCIvl
+	id S933307AbXDCIxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 04:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933364AbXDCIxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 04:51:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42925 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933372AbXDCIvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 04:51:39 -0400
-Date: Tue, 3 Apr 2007 10:51:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Sperry <dave_sperry@ieee.org>
-Cc: "'dave_sperry@ieee.org'" <dasperry@comcast.net>,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
-Message-ID: <20070403085132.GA15344@elte.hu>
-References: <20070402190445.GB2081@elte.hu> <001d01c77584$6a92ffe0$7901a8c0@dad>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <001d01c77584$6a92ffe0$7901a8c0@dad>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 3 Apr 2007 04:53:42 -0400
+Received: from styx.suse.cz ([82.119.242.94]:44566 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933307AbXDCIxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 04:53:41 -0400
+Date: Tue, 3 Apr 2007 10:57:41 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Li Yu <raise.sail@gmail.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+In-Reply-To: <4611AAC1.8050303@gmail.com>
+Message-ID: <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>
+References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com> 
+ <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn> 
+ <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz> 
+ <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com> 
+ <1175516515.5815.347.camel@violet>  <Pine.LNX.4.64.0704021429420.3808@jikos.suse.cz>
+ <1175532439.5815.375.camel@violet> <4611AAC1.8050303@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 3 Apr 2007, Li Yu wrote:
 
-* David Sperry <dave_sperry@ieee.org> wrote:
+> What's the position of hidraw? It only is used when all other driver is 
+> not usable on some report? or, it should be stick every working device.
 
-> > there are a few other things i'm working on to improve this. I've 
-> > uploaded -rt9 which is the current state of affairs. Note that using 
-> > -rt9 you'll likely only see IRQ-8406 overhead in the system, because 
-> > i've added an optimization to do process the softirq-net-tx workload 
-> > in the hardirq thread if the priority of the two is the same (which 
-> > is the default behavior). But -rt9 is still work in progress that is 
-> > not fully finished yet: in some cases i'm seeing 'fluctuating 
-> > performance' problems on forcedeth that werent there before.
-> 
-> I tried -rt9 and saw some odd 'fluctuating performance'. I'll try it 
-> again tomorrow when I am much closer to the box's power button.
+Current implementation (as you can see it in -mm or in my hid.git tree) is 
+creating hidraw interface for just every HID device/interface. But this 
+will get changed before merge.
 
-could you try -rt10? I've improved hardirq/softirq threading performance 
-some more, and have tuned the forcedeth driver too.
+Passing just everything to hidraw is not a good option, as this could lead 
+to confusion and duplicating of input events (i.e. in-kernel hid driver 
+processes the report and generates input_event(), and also userland driver 
+obtains data from hidraw and generates input event through uinput ... not 
+good).
 
-	Ingo
+> PS: In last broken "flip-flopping" resolution, the USBHID work also need
+> some changes ;)
+
+BTW as soon as you have some presentable code, could you please send it so 
+that we could see what aproach you have taken? Debating over code is 
+usualy more efficient than just ranting random ideas :)
+
+Thanks,
+
+-- 
+Jiri Kosina
