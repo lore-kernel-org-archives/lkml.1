@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030317AbXDCPRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030339AbXDCPSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030317AbXDCPRY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 11:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030319AbXDCPRX
+	id S1030339AbXDCPSE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 11:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030333AbXDCPSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 11:17:23 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:37734 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030317AbXDCPRX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 11:17:23 -0400
-Date: Tue, 3 Apr 2007 08:18:53 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Carlo Florendo <subscribermail@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel source dependency
-Message-Id: <20070403081853.6590ef84.randy.dunlap@oracle.com>
-In-Reply-To: <46120EBE.8080705@gmail.com>
-References: <46120EBE.8080705@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 3 Apr 2007 11:18:03 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:36254 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030327AbXDCPSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 11:18:01 -0400
+Date: Tue, 3 Apr 2007 16:17:55 +0100 (BST)
+From: Christian Kujau <christian@g-house.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Chuck Ebbert <cebbert@redhat.com>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+In-Reply-To: <46116570.3050109@redhat.com>
+Message-ID: <Pine.LNX.4.64.0704031424570.3963@sheep.housecafe.de>
+References: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
+ <46116570.3050109@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Apr 2007 16:22:22 +0800 Carlo Florendo wrote:
+On Mon, 2 Apr 2007, Chuck Ebbert wrote:
+> Where is the info from before you changed to "noapic"? Or were the
+> machines always using XT-PIC for all the interrupts???
 
-> Hello,
-> 
-> I'm not sure whether a fix is necessary for the following scenario.
-> 
-> The kernel configure target "make menuconfig" requires ncurses.   FWIW, it
-> could probably be better if the error message would indicate that that
-> ncurses is necessary for "make menuconfig" to run and that the user could
-> be prompted to install the package.
+We booted with 'acpi=off lapic' (with ACPI options compiled in, to be 
+able to boot with acpi=on later on) and the box locked up again.
 
-Hi,
-Without ncurses installed, you should see these messages:
+I'll try to boot with a slightly different .config later on. With 
+'lapic' /proc/interrupts looks like:
 
-	echo " *** Unable to find the ncurses libraries."
-	echo " *** make menuconfig require the ncurses libraries"
-	echo " *** "
-	echo " *** Install ncurses (ncurses-devel) and try again"
-	echo " *** "
+           CPU0       CPU1
+   0:      63656      63396   IO-APIC-edge      timer
+   1:          0          8   IO-APIC-edge      i8042
+   2:          0          0    XT-PIC-XT        cascade
+   4:          6          1   IO-APIC-edge      serial
+   6:          0          3   IO-APIC-edge      floppy
+   8:          0          1   IO-APIC-edge      rtc
+  17:      17050          1   IO-APIC-fasteoi   eth1
+  18:        102      80615   IO-APIC-fasteoi   eth0
+  20:     195817      77721   IO-APIC-fasteoi   libata
+NMI:          0          0
+LOC:     126969     126970
+ERR:          0
+MIS:          0
 
-Do you not see them?  or do you need something different?
+Christian.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+BOFH excuse #146:
+
+Communications satellite used by the military for star wars.
