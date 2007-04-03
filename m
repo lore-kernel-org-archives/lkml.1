@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbXDCVA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945940AbXDCVAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753661AbXDCVA1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 17:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbXDCVA0
+	id S1945940AbXDCVAf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 17:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXDCVAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 17:00:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59981 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753651AbXDCVA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 17:00:26 -0400
-Message-ID: <4612C059.8070702@redhat.com>
-Date: Tue, 03 Apr 2007 17:00:09 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jakub Jelinek <jakub@redhat.com>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com> <20070403135154.61e1b5f3.akpm@linux-foundation.org>
-In-Reply-To: <20070403135154.61e1b5f3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 17:00:34 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:59316 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753651AbXDCVAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 17:00:33 -0400
+Date: Tue, 3 Apr 2007 22:57:44 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Christian Kujau <evil@g-house.de>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+Message-ID: <20070403205744.GB12969@electric-eye.fr.zoreil.com>
+References: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+Christian Kujau <evil@g-house.de> :
+[...]
+> Please see http://nerdbynature.de/bits/2.6.20.4/ for details for both 
+> hosts and feel free to ask for more details. Although both boxes are in 
+> production we'll be happy test more bootoptions/patches and the like.
 
-> Oh.  I was assuming that we'd want to unmap these pages from pagetables and
-> mark then super-easily-reclaimable.  So a later touch would incur a minor
-> fault.
-> 
-> But you think that we should leave them mapped into pagetables so no such
-> fault occurs.
-
-> Leaving the pages mapped into pagetables means that they are considerably
-> less likely to be reclaimed.
-
-If we move the pages to a place where they are very likely to be
-reclaimed quickly (end of the inactive list, or a separate
-reclaim list) and clear the dirty and referenced lists, we can
-both reclaim the page easily *and* avoid the page fault penalty.
+If the apic voodoo makes no difference, you can:
+1 - leave it enabled
+2 - check that netconsole is not used with the 8139 (it is busted)
+3 - check that netconsole is not used at all
+4 - try:
+    http://www.fr.zoreil.com/linux/kernel/2.6.x/2.6.21-rc5/r8169-20070402
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Ueimor
