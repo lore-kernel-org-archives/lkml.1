@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422663AbXDCTv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934021AbXDCTzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422663AbXDCTv7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422665AbXDCTv7
+	id S934021AbXDCTzc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXDCTzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:51:59 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:51260 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422663AbXDCTv7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:51:59 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 3 Apr 2007 12:51:54 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc5-mm4
-In-Reply-To: <20070403124854.7a5742e6.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0704031250440.23808@alien.or.mcafeemobile.com>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org>
- <20070403124854.7a5742e6.randy.dunlap@oracle.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 3 Apr 2007 15:55:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:40173 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934021AbXDCTzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 15:55:31 -0400
+Message-ID: <4612B123.2040105@goop.org>
+Date: Tue, 03 Apr 2007 12:55:15 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Cornelia Huck <cornelia.huck@de.ibm.com>, Andi Kleen <ak@suse.de>,
+       Christian Borntraeger <borntrae@de.ibm.com>,
+       virtualization@lists.linux-foundation.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+Subject: Re: A set of "standard" virtual devices?
+References: <4611652F.700@zytor.com> <200704031951.00544.arnd@arndb.de> <4612A5F0.2080609@goop.org> <200704032142.51976.arnd@arndb.de>
+In-Reply-To: <200704032142.51976.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007, Randy Dunlap wrote:
+Arnd Bergmann wrote:
+> We already have device drivers for physical devices that can be attached
+> to different buses. The EHCI USB is an example of a driver that can 
+> be for instance PCI, OF or an on-chip device. Moreover, you can have an
+> abstracted device behind it that does not need to know about the transport,
+> like the SCSI disk driver does not care if it is talking to an ATA, 
+> parallel SCSI or SAS chip, or even which controller that is.
+>   
 
-> On Mon, 2 Apr 2007 22:47:45 -0700 Andrew Morton wrote:
-> 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
-> > 
-> > - The oops in git-net.patch has been fixed, so that tree has been restored. 
-> >   It is huge.
-> > 
-> > - Added the device-mapper development tree to the -mm lineup (Alasdair
-> >   Kergon).  It is a quilt tree, living at
-> >   ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/.
-> > 
-> > - Added davidel's signalfd stuff.
->           ~~~~~~~~~~~~~~~~~~
-> 
-> with those new CONFIGs=n:  (we are discussing it)
-> 
-> arch/x86_64/kernel/built-in.o:(.rodata+0x18a8): undefined reference to `sys_signal
-> fd'
-> arch/x86_64/kernel/built-in.o:(.rodata+0x18b0): undefined reference to `sys_timerf
-> d'
-> arch/x86_64/kernel/built-in.o:(.rodata+0x18b8): undefined reference to `sys_eventf
-> d'
-> arch/x86_64/ia32/ia32entry.S:(.rodata+0xa08): undefined reference to `sys_signalfd
-> '
-> arch/x86_64/ia32/ia32entry.S:(.rodata+0xa10): undefined reference to `sys_timerfd'
-> arch/x86_64/ia32/ia32entry.S:(.rodata+0xa18): undefined reference to `sys_eventfd'
-> make: *** [.tmp_vmlinux1] Error 1
+Yes, that kind of layering is useful when there's enough of an
+abstraction gap to fit the layers into.  USB is particularly simple in
+that way, since it can be made to travel nicely over any number of
+transports.
 
-I'll be sending Andrew patches against -mm4. The ones that fix the above, 
-and the one for the include-files diet.
+> console is also the least problematic interface, you can do it over
+> practically anything.
+>   
 
+Sure.  But its interesting that there are savings to be had.
 
+> Doing a SCSI driver has been tried before, with ibmvscsi. Not good.
+>   
 
-- Davide
+OK, interesting.  People had proposed using SCSI as the interface, but I
+wasn't aware of any results from doing that.  How is it not good?
 
+> The interesting question about block devices is how to handle concurrency
+> and interrupt mitigation. An efficient interface should
+>
+> - have asynchronous notification, not sleep until the transfer is complete
+> - allow multiple blocks to be in flight simultaneously, so the host can
+>   reorder the requests if it is smart enough
+> - give only a single interrupt when multiple transfers have completed
+>   
 
+Yes.  The Xen block interface is already pretty efficient in these respects.
+
+>> I'm not sure what similar common code could be extracted for network
+>> devices.  I haven't looked into it all that closely.
+>>     
+>
+> One way to do networking would be to simply provide a shared memory area
+> that everyone can write to, then use a ring buffer and atomic operations
+> to synchronize between the guests, and a method to send interrupts to the
+> others for flow control.
+>   
+
+Yes, and that's the core of the Xen netfront.  But is there really much
+code which can be shared between different hypervisors?  When you get
+down to it, all the real code is hypervisor-specific stuff for setting
+up ringbuffers and dealing with interrupts.  Like all the other network
+drivers.
+
+    J
