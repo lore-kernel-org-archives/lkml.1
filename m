@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933982AbXDCCfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934019AbXDCCfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933982AbXDCCfR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 22:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933945AbXDCCfR
+	id S934019AbXDCCfx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 22:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934015AbXDCCfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 22:35:17 -0400
-Received: from mail01.syd.optusnet.com.au ([211.29.132.182]:49065 "EHLO
-	mail01.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933982AbXDCCfQ (ORCPT
+	Mon, 2 Apr 2007 22:35:53 -0400
+Received: from mail15.syd.optusnet.com.au ([211.29.132.196]:41485 "EHLO
+	mail15.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934035AbXDCCfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 22:35:16 -0400
+	Mon, 2 Apr 2007 22:35:51 -0400
 From: Con Kolivas <kernel@kolivas.org>
-Subject: Re: [test] hackbench.c interactivity results: vanilla versus SD/RSDL
-Date: Tue, 3 Apr 2007 12:34:48 +1000
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH] sched: staircase deadline misc fixes
+Date: Tue, 3 Apr 2007 12:35:31 +1000
 User-Agent: KMail/1.9.5
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com>
-In-Reply-To: <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+References: <200703290237.38777.kernel@kolivas.org> <1175147455.6430.91.camel@Homer.simpson.net> <1175156283.6430.143.camel@Homer.simpson.net>
+In-Reply-To: <1175156283.6430.143.camel@Homer.simpson.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-To: "Undisclosed.Recipients":;
-Message-Id: <200704031234.48863.kernel@kolivas.org>
+Message-Id: <200704031235.31563.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 March 2007 19:28, Xenofon Antidides wrote:
-> For long time now I use windows to work 
-> problems. I cannot play wine games with audio, I
-> cannot sample video, I cannot use skype, I cannot play
-> midi. And even linux only things I try do I cannot
-> share my X, I cannot use more than one vmware. All
-> those is fix for me with SD.
+On Thursday 29 March 2007 18:18, Mike Galbraith wrote:
+> Rereading to make sure I wasn't unclear anywhere...
+>
+> On Thu, 2007-03-29 at 07:50 +0200, Mike Galbraith wrote:
+> > I don't see what a < 95% load really means.
+>
+> Egad.  Here I'm pondering the numbers and light load as I'm typing, and
+> my fingers (seemingly independent when mind wanders off) typed < 95% as
+> in not fully committed, instead of "light".
 
-Any semblance of cpu bandwidth and latency guarantees are easily shot on 
-mainline by a single process going wild (eg open tab in firefox).
-
-> I sorry I answer kernel 
-> email and go away now for good.
-
-respected; dropped from cc
+95% of cases where load is less than 4; not 95% load.
 
 -- 
 -ck
