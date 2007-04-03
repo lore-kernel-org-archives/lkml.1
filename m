@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030325AbXDCPWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030320AbXDCP0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030325AbXDCPWb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 11:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030332AbXDCPWb
+	id S1030320AbXDCP0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 11:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030332AbXDCP0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 11:22:31 -0400
-Received: from mga07.intel.com ([143.182.124.22]:3400 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030325AbXDCPWa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 11:22:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,366,1170662400"; 
-   d="scan'208"; a="207431298:sNHT25444664"
-Message-ID: <46127134.7000108@foo-projects.org>
-Date: Tue, 03 Apr 2007 08:22:28 -0700
-From: "Kok, Auke" <sofar@foo-projects.org>
-User-Agent: Mail/News 1.5.0.10 (X11/20070311)
+	Tue, 3 Apr 2007 11:26:46 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:37595 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030320AbXDCP0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 11:26:45 -0400
+Date: Tue, 3 Apr 2007 16:26:37 +0100 (BST)
+From: Christian Kujau <christian@g-house.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Robert Hancock <hancockr@shaw.ca>
+cc: Christian Kujau <christian@g-house.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+In-Reply-To: <4612648D.4090904@shaw.ca>
+Message-ID: <Pine.LNX.4.64.0704031620510.3963@sheep.housecafe.de>
+References: <fa.P3upyx4QAcXHtp/c/s+b4/cKk5w@ifi.uio.no>
+ <fa.u/RjoL2ybMMaAY+GDfTzm7jO5d0@ifi.uio.no> <fa.G7qJfhdvOynxlffny+Xc1kIaqBY@ifi.uio.no>
+ <4612648D.4090904@shaw.ca>
 MIME-Version: 1.0
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-CC: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       video4linux-list@redhat.com, Michael Bueker <m.bueker@berlin.de>
-Subject: Re: OHCI: USB webcam works, but not on USB Hub
-References: <53190.192.54.193.51.1175611316.squirrel@rousalka.dyndns.org>
-In-Reply-To: <53190.192.54.193.51.1175611316.squirrel@rousalka.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Apr 2007 15:22:30.0179 (UTC) FILETIME=[E4F80F30:01C77603]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Mailhot wrote:
-> Michael Bueker wrote :
-> 
->> I'm using a USB Webcam with the gspca driver (from
->> http://mxhaard.free.fr/download.html), which has been working fine with the
->> latest kernels.
-> 
-> ...
-> 
->> Now, I'm writing to this list because one of the followups to that post
->> (http://lists.zerezo.com/spca50x-devs/msg00665.html) states that this is
-> due
->> to a problem with the Linux USB layer:
->>> pls file a bug "ohci driver can't handle low+fullspeed devices on the same
->>> root hub" to linux usb devel list.
-> 
-> Do the gspca driver authors even intend to merge their module in mainline
-> anytime soon? This kind of problem if typical of out-of-tree development.
+On Tue, 3 Apr 2007, Robert Hancock wrote:
+> These days I think it's usually best to have ACPI on with current systems.
 
-even plugging a gspca-device in a UHCI hub has issues - it doesn't work together 
-  with any other device on the HUB the last time I checked.
+Whooha, really? While I honor the acpi-folks' work when using a desktop 
+machine I am otherwise always reminded to the comment in 
+arch/i386/kernel/apm.c, which basically says: "write bios code, does it 
+compile? does it boot win98? ->ship it" ;))
 
-Having the gspca driver move into the main tree would help a lot though.
+> Although it's not as bad with servers, many machines are designed to run only 
+> Windows (which normally always uses ACPI) and simply aren't tested well or at 
+> all with ACPI disabled so you can run into a lot of problems which are just 
+> bugs in the BIOS, etc.
 
-Cheers,
+I only thought it was the other way around: less (active, used) code - 
+less bug (caused by strange ACPI implementations). But I can see your 
+point.
 
-Auke
+> Also, on the server side, if ACPI is disabled you can't take advantage of CPU 
+> clock frequency scaling to save power.
+
+I'm happy to do this with the new cpufreq interface, but right now I 
+could not care less about saving power :(
+
+Christian.
+-- 
+BOFH excuse #305:
+
+IRQ-problems with the Un-Interruptible-Power-Supply
