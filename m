@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965522AbXDCQ6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXDCRGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965522AbXDCQ6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 12:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965513AbXDCQ6j
+	id S965550AbXDCRGH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965641AbXDCRGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 12:58:39 -0400
-Received: from tapsys.com ([72.36.178.242]:47105 "EHLO tapsys.com"
+	Tue, 3 Apr 2007 13:06:07 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:36840 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965418AbXDCQ6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 12:58:38 -0400
-Message-ID: <461287A6.9080409@madrabbit.org>
-Date: Tue, 03 Apr 2007 09:58:14 -0700
-From: Ray Lee <ray-lk@madrabbit.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: [PATCH] [TRIVIAL]  remove duplicate include
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S965550AbXDCRGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:06:05 -0400
+Date: Tue, 3 Apr 2007 22:41:55 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
+       rohitseth@google.com, pj@sgi.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mbligh@google.com,
+       winget@google.com, containers@lists.osdl.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070403171155.GK2456@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com> <20070331024722.GA808@in.ibm.com> <20070402140938.GF17710@sergelap.austin.ibm.com> <20070402142727.GF2456@in.ibm.com> <m1slbiejt0.fsf@ebiederm.dsl.xmission.com> <20070403153220.GA24946@sergelap.austin.ibm.com> <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com> <20070403164615.GJ2456@in.ibm.com> <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas's patch for including <asm/apic.h> for x86 UP builds came into
-Linus's tree from two different directions, both of which were merged.
-This reverts the latter, yanking out the duplicate #include and comment.
+On Tue, Apr 03, 2007 at 09:52:35AM -0700, Paul Menage wrote:
+> I'm not saying "let's use nsproxy" - I'm not yet convinced that the
+> lifetime/mutation/correlation rate of a pointer in an nsproxy is
+> likely to be the same as for a container subsystem; if not, then
+> reusing nsproxy could actually increase space overheads (since you'd
+> end up with more, larger nsproxy objects, compared to smaller numbers
+> of smaller nsproxy objects and smaller numbers of smaller
+> container_group objects), even though it saved (just) one pointer per
+> task_struct.
 
-Signed-off-by: Ray Lee <ray-lk@madrabbit.org>
-Cc: Len Brown <lenb@kernel.org>
-
----
-
-Len, would you like to take this?
-
- drivers/acpi/processor_idle.c |    8 --------
- 1 file changed, 8 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 562124e..0abf740 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -51,14 +51,6 @@
- #include <asm/apic.h>
- #endif
-
--/*
-- * Include the apic definitions for x86 to have the APIC timer related defines
-- * available also for UP (on SMP it gets magically included via linux/smp.h).
-- */
--#ifdef CONFIG_X86
--#include <asm/apic.h>
--#endif
--
- #include <asm/io.h>
- #include <asm/uaccess.h>
+Even if nsproxy objects are made larger a bit, the number of such object will
+be -much- lesser compared to number of task_structs I would think, so
+the win/lose in space savings would need to take that into account.
 
 
-
+-- 
+Regards,
+vatsa
