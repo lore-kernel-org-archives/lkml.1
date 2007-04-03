@@ -1,36 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965693AbXDCRUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965765AbXDCRUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965693AbXDCRUF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965934AbXDCRUF
+	id S965765AbXDCRUQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965920AbXDCRUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:20:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36274 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965693AbXDCRUD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:20:03 -0400
-Date: Tue, 3 Apr 2007 18:22:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
+	Tue, 3 Apr 2007 13:20:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51280 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965765AbXDCRUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:20:14 -0400
+Message-ID: <46128CC2.9090809@redhat.com>
+Date: Tue, 03 Apr 2007 10:20:02 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: getting processor numbers
-Message-ID: <20070403182241.4b9abab6@the-village.bc.nu>
-In-Reply-To: <46128C1B.1090900@redhat.com>
-References: <461286D6.2040407@redhat.com>
-	<p73abxpz5u1.fsf@bingen.suse.de>
-	<46128C1B.1090900@redhat.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de>
+In-Reply-To: <p73648dz5oa.fsf@bingen.suse.de>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig55DE0CEACF1EBF576272AE34"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> benefit for the common use cases.  But as it is, the number of
-> processors is not necessarily constant over the lifetime of a process.
-> The machine architecture is.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig55DE0CEACF1EBF576272AE34
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Not once you have migration capable virtualisation it isnt.
+Andi Kleen wrote:
+> Why do you need a lock for that? I don't see any problem with
+> two threads doing that in parallel. The kernel would
+> serialize it internally and one would fail, but that shouldn't
+> be a problem.=20
+
+There is no lock at all at userlevel.  I'm talking about locks in the
+kernel.
+
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
+
+
+--------------enig55DE0CEACF1EBF576272AE34
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGEozC2ijCOnn/RHQRAmqJAKCQR0RSmg3qjSRg7jniAADyPYdnTwCgkj4r
+/qjQERP211JdXh805MtX2Dc=
+=+kk0
+-----END PGP SIGNATURE-----
+
+--------------enig55DE0CEACF1EBF576272AE34--
