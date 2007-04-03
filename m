@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbXDCVA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbXDCVBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbXDCVA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 17:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbXDCVA4
+	id S1753665AbXDCVBh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 17:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbXDCVBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 17:00:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:55337 "EHLO mail.goop.org"
+	Tue, 3 Apr 2007 17:01:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60781 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753665AbXDCVAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 17:00:55 -0400
-Message-ID: <4612C077.60502@goop.org>
-Date: Tue, 03 Apr 2007 14:00:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1753664AbXDCVBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 17:01:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] swsusp: Fix memory shrinker
+Date: Tue, 3 Apr 2007 23:04:53 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Arnd Bergmann <arnd@arndb.de>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Andi Kleen <ak@suse.de>, Christian Borntraeger <borntrae@de.ibm.com>,
-       virtualization@lists.linux-foundation.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com
-Subject: Re: A set of "standard" virtual devices?
-References: <4611652F.700@zytor.com> <200704031951.00544.arnd@arndb.de> <4612A5F0.2080609@goop.org> <200704032142.51976.arnd@arndb.de> <4612B123.2040105@goop.org> <4612B303.5000109@zytor.com>
-In-Reply-To: <4612B303.5000109@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704032304.53747.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> However, there are other things; console is some, or my original
-> example, which was random number generation.  For those, the benefit
-> of unification is proportionally greater, simply because the win of
-> anything hypervisor-specific is much smaller. 
+Hi,
 
-So, what you're saying is:
+I think this is 2.6.21 material.
 
-   1. assuming there's going to be a vast number of miscellaneous devices
-   2. it would be best if there were one per device rather than one per
-      hypervisor per device
-   3. so we'd have one linux device driver
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-But this implies that the work is just pushed off into all the
-hypervisors to support this new device over the generic interface;
-there's no overall reduction of code or complexity, other than making
-"wc" on the kernel source smaller.
+Fix a bug in the swsusp's memory shrinker that causes some systems using
+highmem to refuse to suspend to disk if image_size is set above 1/2 of
+available RAM.
 
-That said, something like USB is probably the best bet for this kind of
-low-performance device.  I think.  Not that I really know anything about
-USB.
+Special thanks to Jiri Slaby for reporting the problem and assistance in
+debugging it.
 
-    J
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/swsusp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.21-rc5/kernel/power/swsusp.c
+===================================================================
+--- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
++++ linux-2.6.21-rc5/kernel/power/swsusp.c
+@@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
+ 		size += highmem_size;
+ 		for_each_zone (zone)
+ 			if (populated_zone(zone)) {
++				tmp += snapshot_additional_pages(zone);
+ 				if (is_highmem(zone)) {
+ 					highmem_size -=
+ 					zone_page_state(zone, NR_FREE_PAGES);
+ 				} else {
+ 					tmp -= zone_page_state(zone, NR_FREE_PAGES);
+ 					tmp += zone->lowmem_reserve[ZONE_NORMAL];
+-					tmp += snapshot_additional_pages(zone);
+ 				}
+ 			}
+ 
