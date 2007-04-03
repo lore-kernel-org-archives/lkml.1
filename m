@@ -1,105 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965964AbXDCOdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965965AbXDCOel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965964AbXDCOdS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 10:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965965AbXDCOdR
+	id S965965AbXDCOel (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 10:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966172AbXDCOek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 10:33:17 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36734 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965964AbXDCOdQ (ORCPT
+	Tue, 3 Apr 2007 10:34:40 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:11958 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965965AbXDCOek (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 10:33:16 -0400
-Date: Tue, 3 Apr 2007 17:33:14 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Rene Herman <rene.herman@gmail.com>
-cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: mcdx -- do_request(): non-read command to cd!!
-In-Reply-To: <461256C1.4020906@gmail.com>
-Message-ID: <Pine.LNX.4.64.0704031723580.3355@sbz-30.cs.Helsinki.FI>
-References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk>
- <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com>
- <4610481D.8000102@gmail.com> <46104954.50608@gmail.com>
- <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI>
- <20070402071018.GE11996@kernel.dk> <Pine.LNX.4.64.0704021152280.27165@sbz-30.cs.Helsinki.FI>
- <46111ED7.20201@gmail.com> <Pine.LNX.4.64.0704021837480.6518@sbz-30.cs.Helsinki.FI>
- <46112650.8080208@gmail.com> <Pine.LNX.4.64.0704021906040.7500@sbz-30.cs.Helsinki.FI>
- <461165FD.2010508@gmail.com> <Pine.LNX.4.64.0704030908420.20080@sbz-30.cs.Helsinki.FI>
- <Pine.LNX.4.64.0704030956330.20741@sbz-30.cs.Helsinki.FI> <461256C1.4020906@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 10:34:40 -0400
+Date: Tue, 03 Apr 2007 08:33:39 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: OHCI: USB webcam works, but not on USB Hub
+In-reply-to: <fa.R4OJEk76c3blNmi9oUs1xDRZGis@ifi.uio.no>
+To: Michael Bueker <m.bueker@berlin.de>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <461265C3.4060900@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.R4OJEk76c3blNmi9oUs1xDRZGis@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/2007 08:57 AM, Pekka J Enberg wrote:
-> > Does this change the dd case?
-> > 
-> > diff --git a/drivers/cdrom/mcdx.c b/drivers/cdrom/mcdx.c
-> > index f574962..6c613d0 100644
-> > --- a/drivers/cdrom/mcdx.c
-> > +++ b/drivers/cdrom/mcdx.c
-> > @@ -1248,6 +1248,7 @@ #endif
-> >   disk->private_data = stuffp;
-> >   disk->queue = mcdx_queue;
-> >   add_disk(disk);
-> > +	blk_queue_hardsect_size(mcdx_queue, MCDX_CDBLK);
-> >   printk(msg);
-> >   return 0;
-> >  }
-
-On Tue, 3 Apr 2007, Rene Herman wrote:
-> No, I'm afraid not. It's still the same effect:
+Michael Bueker wrote:
+> [please CC me on this thread]
 > 
-> root@5va2:~# dmesg -c >/dev/null
-> root@5va2:~# strace -o dd.strace dd if=/dev/mcdx0 of=/dev/null
-> 0+0 records in
-> 0+0 records out
-> 0 bytes (0 B) copied, 0.00438956 seconds, 0.0 kB/s
-> root@5va2:~# dmesg >dd.xtrace
+> Hi everyone,
+> 
+> My system has an nForce4 motherboard with an OHCI USB controller.
+> 
+> I'm using a USB Webcam with the gspca driver (from
+> http://mxhaard.free.fr/download.html), which has been working fine with the
+> latest kernels.
+> 
+> Today, I connected a USB Hub and the camera to it, after which it stopped
+> working with the error message:
+>> ERROR opening V4L interface
+>> : Function not implemented
+> However, it works fine when not connected to the Hub, but a motherboard's own
+> USB port. The Hub also works fine with any other USB device.
+> 
+> I googled around for a solution and found one for an older version of my
+> driver, where the (apparently very ugly) fix was to manually set a fixed
+> bandwidth for the USB device, instead of using a somehow other determined
+> value. See this posting for a more elaborate description:
+> http://lists.zerezo.com/spca50x-devs/msg00664.html
+> 
+> Now, I'm writing to this list because one of the followups to that post
+> (http://lists.zerezo.com/spca50x-devs/msg00665.html) states that this is due
+> to a problem with the Linux USB layer:
+>> pls file a bug "ohci driver can't handle low+fullspeed devices on the same
+>> root hub" to linux usb devel list.
+> 
+> That's about all I can tell you for now. I've attached two outputs of
+> lsusb -vv, one with the hub attached, with the camera and a USB stick
+> connected (notice the error message), and one without the hub and the
+> camera connected directly (which is the setup where it works fine).
 
-Looking at the dd strace:
+I looked into this at one point previously with spca5xx. Certainly in my 
+case it was no fault of the kernel. The isochronous descriptor that the 
+driver was deciding to use required so much bandwidth that it couldn't 
+be accomodated if anything else was using timeslots on the bus - even a 
+USB keyboard/mouse on the same hub would prevent it from getting enough 
+bandwidth.
 
-> close(0)                                = 0
-> open("/dev/mcdx0", O_RDONLY|O_LARGEFILE) = 0
-> _llseek(0, 0, [0], SEEK_CUR)            = 0
+Essentially the driver should fallback to a lower-bandwidth descriptor 
+if the one it tries to use fails rather than just bailing out.
 
-The block device is open, dd has the current offset.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-> close(1)                                = 0
-> open("/dev/null", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) = 1
-
-[snip]
-
-> read(0, "", 512)                        = 0
-
-We start to read but get nothing!
-
-> close(0)                                = 0
-> close(1)                                = 0
-
-Now looking at the driver debug trace:
-
-> mcdx open() Single Session disk found
-> mcdx mcdx_media_changed called for device mcdx0
-> mcdx:: talk() 1 / 5000 tries, res.size 1, command 0x40<7>mcdx:: 
-
-We do mcdx_getstatus() here...
-
-> mcdx:: talk() command sent
-> mcdx:: *** delay: sleepq
-> mcdx:: delay awoken
-> mcdx:: *** delay: sleepq
-> mcdx:: delay awoken
-> mcdx:: talk() got status 0x50
-> mcdx:: talk() done with 0x50
-
-...and the status bits seem to be MCDX_RBIT_CHECK and MCDX_RBIT_CHECK.
-
-> mcdx:: close()
-
-However, we never hit do_mcdx_request(). Jens, do we need to do 
-set_capacity() somewhere? I don't see other cdrom drivers doing it but 
-they could be broken too...
-
-				Pekka
