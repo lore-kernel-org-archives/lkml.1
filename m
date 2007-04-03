@@ -1,94 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945976AbXDCVah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945978AbXDCVbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945976AbXDCVah (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 17:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945975AbXDCVah
+	id S1945978AbXDCVbK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 17:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945977AbXDCVbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 17:30:37 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:50866 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945977AbXDCVah (ORCPT
+	Tue, 3 Apr 2007 17:31:09 -0400
+Received: from bay0-omc1-s11.bay0.hotmail.com ([65.54.246.83]:56338 "EHLO
+	bay0-omc1-s11.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1945978AbXDCVbH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 17:30:37 -0400
-Message-ID: <4612C759.6090708@cosmosbay.com>
-Date: Tue, 03 Apr 2007 23:30:01 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jakub Jelinek <jakub@redhat.com>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com> <20070403135154.61e1b5f3.akpm@linux-foundation.org> <4612C059.8070702@redhat.com> <4612C2B6.3010302@cosmosbay.com> <4612C401.3010507@redhat.com>
-In-Reply-To: <4612C401.3010507@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 03 Apr 2007 23:30:10 +0200 (CEST)
+	Tue, 3 Apr 2007 17:31:07 -0400
+Message-ID: <BAY20-F2534ADD292CC02D5ACAFBCF9670@phx.gbl>
+X-Originating-IP: [88.114.147.249]
+X-Originating-Email: [paapaa125@hotmail.com]
+In-Reply-To: <46121BCF.50401@yahoo.com.au>
+From: "Paa Paa" <paapaa125@hotmail.com>
+To: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org
+Subject: Re: Lower HD transfer rate with NCQ enabled?
+Date: Tue, 03 Apr 2007 21:31:04 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
+X-OriginalArrivalTime: 03 Apr 2007 21:31:06.0994 (UTC) FILETIME=[639E3520:01C77637]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel a écrit :
-> Eric Dumazet wrote:
->> Rik van Riel a écrit :
->>> Andrew Morton wrote:
->>>
->>>> Oh.  I was assuming that we'd want to unmap these pages from 
->>>> pagetables and
->>>> mark then super-easily-reclaimable.  So a later touch would incur a 
->>>> minor
->>>> fault.
->>>>
->>>> But you think that we should leave them mapped into pagetables so no 
->>>> such
->>>> fault occurs.
->>>
->>>> Leaving the pages mapped into pagetables means that they are 
->>>> considerably
->>>> less likely to be reclaimed.
->>>
->>> If we move the pages to a place where they are very likely to be
->>> reclaimed quickly (end of the inactive list, or a separate
->>> reclaim list) and clear the dirty and referenced lists, we can
->>> both reclaim the page easily *and* avoid the page fault penalty.
->>>
->>
->> There is one possible speedup :
->>
->> - If an user app does a madvise(MADV_DONTNEED), we can assume the 
->> pages can later be bring back without need to zero them. The 
->> application doesnt care.
-> 
-> ... however, the application that previously used that page might
-> care a lot!
+>>Q: What conclusion can I make on "hdparm -t" results or can I make any 
+>>conclusions? Do I really have lower performance with NCQ or not? If I do, 
+>>is this because of my HD or because of kernel?
+>
+>What IO scheduler are you using? If AS or CFQ, could you try with deadline?
 
-The application that does madvise(MADV_WHATEVER_MEANS_KENREL_CAN_DROP)
-doesnt care. It it cares, it would use munmap(), or no syscall at all.
+I was using CFQ. I now tried with Deadline and that doesn't seem to degrade 
+the performance at all! With Deadline I got 60MB/s both with and without 
+NCQ. This was with "hdparm -t".
 
-> 
->> mmap()/brk() must give fresh NULL pages, but maybe 
->> madvise(MADV_DONTNEED) can relax this requirement (if the pages were 
->> reclaimed, then a page fault could bring a new page with random content)
-> 
-> If we bring in a new page, it has to be zeroed for security
-> reasons.
-> 
-> You don't want somebody else's process to get a page with
-> your password in it.
+So what does this tell us?
 
-Then an application that cares of passwd wont use 
-madvise(MADV_WHATEVER_MEANS_I_DONT_CARE)
-
-;)
-
-Maybe I was not clear, but I was refering to a pool of 'discardable' pages, 
-that would be feeded by applications that want to notify kernel some pages can 
-be completly discarded (contains no security data of course, nor data that the 
-applications dont want to forget), and might be given to a consumer without 
-the need of zeroing it.
-
-We might make this pool private to each process, but then it would benefit to 
-less workloads I guess...
+_________________________________________________________________
+Express yourself instantly with MSN Messenger! Download today it's FREE! 
+http://messenger.msn.click-url.com/go/onm00200471ave/direct/01/
 
