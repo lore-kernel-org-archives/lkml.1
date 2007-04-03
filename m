@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422654AbXDCUOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945894AbXDCUQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422654AbXDCUOP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 16:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945894AbXDCUOP
+	id S1945894AbXDCUQg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 16:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422676AbXDCUQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 16:14:15 -0400
-Received: from mga02.intel.com ([134.134.136.20]:8838 "EHLO mga02.intel.com"
+	Tue, 3 Apr 2007 16:16:36 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:41651 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422654AbXDCUOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 16:14:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,366,1170662400"; 
-   d="scan'208"; a="221305514:sNHT18732994"
-Date: Tue, 3 Apr 2007 13:13:16 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+	id S1422688AbXDCUQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 16:16:35 -0400
+Date: Tue, 3 Apr 2007 13:16:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ulrich Drepper <drepper@redhat.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: getting processor numbers
-Message-ID: <20070403201316.GC15704@linux-os.sc.intel.com>
-References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403174457.GA15704@linux-os.sc.intel.com> <4612B12A.30609@redhat.com>
+Message-Id: <20070403131623.c6831607.akpm@linux-foundation.org>
+In-Reply-To: <461286D6.2040407@redhat.com>
+References: <461286D6.2040407@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4612B12A.30609@redhat.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 12:55:22PM -0700, Ulrich Drepper wrote:
-> Siddha, Suresh B wrote:a
-> > Not all of the cpu* directories in /sys/devices/system/cpu may be
-> > online.
-> 
-> Apparently this information isn't needed.  It's very easy to verify:
-> 
-> $ ls /sys/devices/system/cpu/*/online
-> /sys/devices/system/cpu/cpu1/online  /sys/devices/system/cpu/cpu2/online
->  /sys/devices/system/cpu/cpu3/online
-> 
-> This is a quad core machine and cpu0 doesn't have the 'online' file
-> (2.6.19 kernel).
+On Tue, 03 Apr 2007 09:54:46 -0700
+Ulrich Drepper <drepper@redhat.com> wrote:
 
-I think that is expected and intentional, as the current cpu hotplug code
-doesn't support offlining cpu0.
+> More and more code depends on knowing the number of processors in the
+> system to efficiently scale the code.  E.g., in OpenMP it is used by
+> default to determine how many threads to create.  Creating more threads
+> than there are processors/cores doesn't make sense.
 
->  So, if nobody noticed this it's not needed and we can
-> just remove CPUs from /sys/devices/system/cpu when they are brought
-> offline, right?
+but...  It would be a mistake for an application to assume that it is
+allowed to _use_ all the present CPUs.  People can and do run applications
+within cpusets, and under sched_setaffinity().
 
-No. Logical cpu hotplug uses these interfaces to make a cpu go offline
-and online.
+So I'd have thought that in general an application should be querying its
+present affinity mask - something like sched_getaffinity()?  That fixes the
+CPU hotplug issues too, of course.
 
-thanks,
-suresh
+But we discussed this all a couple years back and it was decided that
+sched_getaffinity() was unsuitable.  I remember at the time not really
+understanding why?
+
