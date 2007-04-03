@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965778AbXDCMuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965880AbXDCM5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965778AbXDCMuD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 08:50:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965881AbXDCMuB
+	id S965880AbXDCM5o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 08:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965881AbXDCM5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 08:50:01 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:52647 "EHLO
-	outbound3-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965778AbXDCMuA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 08:50:00 -0400
-X-BigFish: VP
-X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
-Message-ID: <46124D66.7030309@amd.com>
-Date: Tue, 03 Apr 2007 14:49:42 +0200
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	Tue, 3 Apr 2007 08:57:44 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:52122 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965880AbXDCM5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 08:57:43 -0400
+Date: Tue, 3 Apr 2007 14:57:00 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: 2.6.21-rc5-mm4
+In-Reply-To: <20070402224745.71a25af7.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704031455200.10589@twin.jikos.cz>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: discuss@x86-64.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>,
-       linux-kernel@vger.kernel.org,
-       "Nagendra, Bhavana" <bhavana.nagendra@amd.com>
-Subject: [PATCH] i386 mce check capability
-X-OriginalArrivalTime: 03 Apr 2007 12:49:48.0488 (UTC)
- FILETIME=[902CF480:01C775EE]
-X-WSS-ID: 6A0C92FB2X04488422-01-01
-Content-Type: multipart/mixed;
- boundary=------------090806060603000703000502
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090806060603000703000502
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 7bit
+On Mon, 2 Apr 2007, Andrew Morton wrote:
 
-Currently the i386 architecture checks the family for mce capability and this removes that and uses the CPUID information.  Tested on a K8 revE and a family10h processor.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
 
--Joachim
+[proper CCs added]
 
---------------090806060603000703000502
-Content-Type: text/x-patch;
- name=i386_mce_check_capability.patch
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename=i386_mce_check_capability.patch
+On boot (e1000 compiled as module)
 
-VGhpcyBlbGltaW5hdGVzIGNoZWNraW5nIG9mIGEgc2V0IEFNRCBwcm9jZXNvciBmYW1pbHkg
-aWYgbWNlIGlzIAphbGxvd2VkIGFuZCByZWxpZXMgb24gdGhlIGluZm9ybWF0aW9uIGJlaW5n
-IGluIENQVUlELgoKU2lnbmVkLW9mZi1ieTogSm9hY2hpbSBEZWd1YXJhIDxqb2FjaGltLmRl
-Z3VhcmFAYW1kLmNvbT4KCkluZGV4OiAyLjYtbGludXMtZ2l0L2FyY2gvaTM4Ni9rZXJuZWwv
-Y3B1L21jaGVjay9tY2UuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSAyLjYtbGludXMtZ2l0Lm9yaWcv
-YXJjaC9pMzg2L2tlcm5lbC9jcHUvbWNoZWNrL21jZS5jCisrKyAyLjYtbGludXMtZ2l0L2Fy
-Y2gvaTM4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2UuYwpAQCAtMzgsOCArMzgsNyBAQCB2b2lk
-IG1jaGVja19pbml0KHN0cnVjdCBjcHVpbmZvX3g4NiAqYykKIAogCXN3aXRjaCAoYy0+eDg2
-X3ZlbmRvcikgewogCQljYXNlIFg4Nl9WRU5ET1JfQU1EOgotCQkJaWYgKGMtPng4Nj09NiB8
-fCBjLT54ODY9PTE1KQotCQkJCWFtZF9tY2hlY2tfaW5pdChjKTsKKwkJCWFtZF9tY2hlY2tf
-aW5pdChjKTsKIAkJCWJyZWFrOwogCiAJCWNhc2UgWDg2X1ZFTkRPUl9JTlRFTDoKSW5kZXg6
-IDIuNi1saW51cy1naXQvYXJjaC9pMzg2L2tlcm5lbC9jcHUvbWNoZWNrL2s3LmMKPT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PQotLS0gMi42LWxpbnVzLWdpdC5vcmlnL2FyY2gvaTM4Ni9rZXJuZWwvY3B1L21j
-aGVjay9rNy5jCisrKyAyLjYtbGludXMtZ2l0L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L21jaGVj
-ay9rNy5jCkBAIC03NSw2ICs3NSw5IEBAIHZvaWQgYW1kX21jaGVja19pbml0KHN0cnVjdCBj
-cHVpbmZvX3g4NiAKIAltYWNoaW5lX2NoZWNrX3ZlY3RvciA9IGs3X21hY2hpbmVfY2hlY2s7
-CiAJd21iKCk7CiAKKwlpZiAoIWNwdV9oYXMoYywgWDg2X0ZFQVRVUkVfTUNFKSkKKwkJcmV0
-dXJuOworCiAJcHJpbnRrIChLRVJOX0lORk8gIkludGVsIG1hY2hpbmUgY2hlY2sgYXJjaGl0
-ZWN0dXJlIHN1cHBvcnRlZC5cbiIpOwogCXJkbXNyIChNU1JfSUEzMl9NQ0dfQ0FQLCBsLCBo
-KTsKIAlpZiAobCAmICgxPDw4KSkJLyogQ29udHJvbCByZWdpc3RlciBwcmVzZW50ID8gKi8K
+BUG: unable to handle kernel paging request at virtual address ffffffff
+ printing eip:
+ffffffff
+*pde = 00005067
+*pte = 00000000
+Oops: 0000 [#1]
+SMP
+last sysfs file: 
+devices/pci0000:00/0000:00:1c.0/0000:02:00.0/subsystem_device
+Modules linked in: cpufreq_conservative cpufreq_ondemand cpufreq_userspace 
+cpufreq_powersave acpi_cpufreq freq_table button battery ac loop dm_mod 
+usbhid fe
+CPU:    0
+EIP:    0060:[<ffffffff>]    Not tainted VLI
+EFLAGS: 00010002   (2.6.21-rc5-mm4-default #3)
+EIP is at 0xffffffff
+eax: 80080783   ebx: c242c794   ecx: 00000000   edx: c2371ac0
+esi: 00000007   edi: f8cc0000   ebp: 0000003c   esp: c3885ddc
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process ifplugd (pid: 3185, ti=c3884000 task=c3474070 task.ti=c3884000)
+Stack: f8c8a5ed 00000060 00000202 00000000 00000000 c2371ac0 f8c8648c 
+c242c794
+       c2371ac0 c242c000 f8c810b6 00000001 0000000f 00000000 00008002 
+c242c794
+       c2371ac0 c242c794 f8c9552c 00000001 0000000f c242c580 c242c000 
+c242c240
+Call Trace:
+ [<f8c8a5ed>] e1000_mc_addr_list_update_generic+0x87/0x146 [e1000]
+ [<f8c8648c>] e1000_mc_addr_list_update_82571+0x0/0x3c [e1000]
+ [<f8c810b6>] e1000_mc_addr_list_update+0x21/0x27 [e1000]
+ [<f8c9552c>] e1000_set_multi+0xe4/0x10c [e1000]
+ [<c0272d9f>] __dev_mc_upload+0x23/0x27
+ [<c0272ecc>] dev_mc_upload+0x27/0x3b
+ [<c027113f>] dev_open+0x4d/0x6d
+ [<c026f9c3>] dev_change_flags+0x50/0x104
+ [<c02ae726>] devinet_ioctl+0x259/0x57c
+ [<c01d8645>] copy_to_user+0x3c/0x53
+ [<c0265f4b>] sock_ioctl+0x1a4/0x1c7
+ [<c0265da7>] sock_ioctl+0x0/0x1c7
+ [<c0180617>] do_ioctl+0x1f/0x64
+ [<c018088d>] vfs_ioctl+0x231/0x244
+ [<c0267898>] sys_socketcall+0x7a/0x261
+ [<c01808ec>] sys_ioctl+0x4c/0x68
+ [<c0103dc8>] sysenter_past_esp+0x5d/0x99
+ =======================
+INFO: lockdep is turned off.
+Code:  Bad EIP value.
+EIP: [<ffffffff>] 0xffffffff SS:ESP 0068:c3885ddc
+Kernel panic - not syncing: Fatal exception in interrupt
 
---------------090806060603000703000502--
-
-
+-- 
+Jiri Kosina
