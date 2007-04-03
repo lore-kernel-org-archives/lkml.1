@@ -1,60 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965620AbXDCKjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965646AbXDCKqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965620AbXDCKjE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 06:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965646AbXDCKjD
+	id S965646AbXDCKqt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 06:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965655AbXDCKqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 06:39:03 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:10408 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965620AbXDCKjB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 06:39:01 -0400
-Date: Tue, 3 Apr 2007 12:41:08 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andi Kleen <ak@suse.de>, Jeff Garzik <jeff@garzik.org>,
-       virtualization@lists.linux-foundation.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com
-Subject: Re: A set of "standard" virtual devices?
-Message-ID: <20070403124108.06108665@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <200704031141.50045.arnd@arndb.de>
-References: <4611652F.700@zytor.com>
-	<461178D9.402@goop.org>
-	<46117F72.6020506@zytor.com>
-	<200704031141.50045.arnd@arndb.de>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Tue, 3 Apr 2007 06:46:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58199 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965646AbXDCKqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 06:46:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Tue, 3 Apr 2007 12:50:06 +0200
+User-Agent: KMail/1.9.5
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+References: <460B6E4B.3060004@gmail.com> <200704022318.28451.rjw@sisk.pl> <46120449.7070302@gmail.com>
+In-Reply-To: <46120449.7070302@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704031250.07307.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007 11:41:49 +0200,
-Arnd Bergmann <arnd@arndb.de> wrote:
-
-> On Tuesday 03 April 2007, H. Peter Anvin wrote:
-> > However, one probably wants to think about what the heck one actually 
-> > means with "virtualization" in the absence of a lot of this stuff.  PCI 
-> > is probably the closest thing we have to a lowest common denominator for 
-> > device detection.
+On Tuesday, 3 April 2007 09:37, Jiri Slaby wrote:
+> Rafael J. Wysocki napsal(a):
+> > On Monday, 2 April 2007 10:24, Jiri Slaby wrote:
+> >> Rafael J. Wysocki napsal(a):
+> >>>>> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
+> >>>>>> swsusp: critical section:
+> >>>>>> swsusp: Need to copy 131380 pages
+> >>>>>> swsusp: Not enough free memory
+> >>>>>> Error -12 suspending
+> >>>>>> Enabling non-boot CPUs ...
+> >>> As a workaround, you can try to change the initial image size so that it's
+> >>> smaller than a half of the RAM size.  If that works, I'd like to send you a
+> >>> debug patch, if you don't mind. :-)
+> >> Yes, post it.
+> > 
+> > Appended.  Please send me the dmesg output from after a failing suspend
+> > (or in case it doesn't fail, from after the first one).
 > 
-> I think that's true outside of s390, but a standardized virtual device
-> interface should be able to work there as well. Interestingly, the
-> s390 channel I/O also uses two 16 bit numbers to identify a device
-> (type and model), just like PCI or USB, so in that light, we might
-> be able to use the same number space for something entirely different
-> depending on the virtual bus.
+> It doesn't fail, here is the output:
 
-Even if we used those ids for cu_type and dev_type, it would still be
-ugly IMO. It would be much cleaner to just define a very simple, easy
-to implement virtual bus without dragging implementation details for
-other types of devices around.
+Okay, so I think the appended patch is needed.  Could you please revert the
+debug one, apply the appended one instead and see if it helps?
+
+> Shrinking memory...  Normal pages needed: 135122
+> Highmem pages needed: 0
+> Normal pages needed: 132256
+> Highmem pages needed: 0
+> Normal pages needed: 8271
+> Highmem pages needed: 0
+> Pages needed (total): 8271
+> Normal pages needed: 119657
+> Highmem pages needed: 0
+> Normal pages needed: 116791
+> Highmem pages needed: 0
+> Normal pages needed: 18446744073709528969
+> Highmem pages needed: 0
+> Pages needed (total): 18446744073709528969
+> 
+> Heh :), tmp is signed, this is -22647, I guess.
+
+Yup.
+
+> done (15505 pages freed)
+> Freed 62020 kbytes in 0.16 seconds (387.62 MB/s)
+> 
+> Complete dmesg may be obtained here:
+> http://www.fi.muni.cz/~xslaby/sklad/dmesg.swsusp
+
+Thanks for testing.
+
+Greetings,
+Rafael
+
+---
+ kernel/power/swsusp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.21-rc5/kernel/power/swsusp.c
+===================================================================
+--- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
++++ linux-2.6.21-rc5/kernel/power/swsusp.c
+@@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
+ 		size += highmem_size;
+ 		for_each_zone (zone)
+ 			if (populated_zone(zone)) {
++				tmp += snapshot_additional_pages(zone);
+ 				if (is_highmem(zone)) {
+ 					highmem_size -=
+ 					zone_page_state(zone, NR_FREE_PAGES);
+ 				} else {
+ 					tmp -= zone_page_state(zone, NR_FREE_PAGES);
+ 					tmp += zone->lowmem_reserve[ZONE_NORMAL];
+-					tmp += snapshot_additional_pages(zone);
+ 				}
+ 			}
+ 
