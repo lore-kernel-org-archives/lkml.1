@@ -1,96 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992482AbXDCXBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992484AbXDCXBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992482AbXDCXBM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 19:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992483AbXDCXBL
+	id S2992484AbXDCXBw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 19:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992485AbXDCXBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 19:01:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42288 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992482AbXDCXBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 19:01:10 -0400
-Message-ID: <4612DCA2.2090400@redhat.com>
-Date: Tue, 03 Apr 2007 16:00:50 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Paul Jackson <pj@sgi.com>
-Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com>	<20070403131623.c6831607.akpm@linux-foundation.org>	<4612BB89.8040102@redhat.com>	<20070403141348.9bcdb13e.akpm@linux-foundation.org>	<4612D175.30604@redhat.com> <20070403154831.37bde672.akpm@linux-foundation.org>
-In-Reply-To: <20070403154831.37bde672.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig57DD67FE212B30AFAE70CA39"
+	Tue, 3 Apr 2007 19:01:52 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40956 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992484AbXDCXBv (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 19:01:51 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Maxim Uvarov <muvarov@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Performance Stats: Kernel patch
+In-Reply-To: Your message of "Tue, 03 Apr 2007 16:54:43 +0400."
+             <46124E93.2000408@ru.mvista.com>
+From: Valdis.Kletnieks@vt.edu
+References: <46124E93.2000408@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1175641303_7609P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 03 Apr 2007 19:01:43 -0400
+Message-ID: <16797.1175641303@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig57DD67FE212B30AFAE70CA39
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+--==_Exmh_1175641303_7609P
+Content-Type: text/plain; charset=us-ascii
 
-Andrew Morton wrote:
-> Now it could be argued that the current behaviour is that sane thing: w=
-e
-> allow the process to "pin" itself to not-present CPUs and just handle i=
-t in
-> the CPU scheduler.
+On Tue, 03 Apr 2007 16:54:43 +0400, Maxim Uvarov said:
 
-As a stop-gap solution Jakub will likely implement the sched_getaffinity
-hack.  So, it would realy be best to get the masks updated.
+> What do you think about it? Patch is bellow.
+
+Was this patch actually compile and run tested?
+
+> Index: linux-2.6.18/fs/proc/array.c
+> ===================================================================
+> --- linux-2.6.18.orig/fs/proc/array.c
+> +++ linux-2.6.18/fs/proc/array.c
+> @@ -295,6 +295,18 @@ static inline char *task_cap(struct task
+>                             cap_t(p->cap_effective));
+>  }
+> 
+> +#ifdef THREAD_PERF_STAT
+
+This needs to be CONFIG_THREAD_PERF_STAT everyplace except the Kconfig stuff.
+
+> +static inline char *task_perf(struct task_struct *p, char *buffer)
+> +{
+> +    return buffer + sprintf(buffer, "Nvcsw:\t%lu\n"
+> +                           "Nivcsw:\t%lu\n"
+> +                           "Syscalls:\t%d\n",
+> +                           cap_t(p->nvcsw),
+> +                           cap_t(p->nivcsw),
+> +                           cap_t(p->sysc_cnt));
+> +}
+
+You might want a #else that defines a null body for this inline, to
+avoid a problem a bit later.
+
+> +#endif /* THREAD_PERF_STAT */
+> +
+>  #define get_blocked_on(t)      (-1)
+> 
+>  static char *show_blocked_on(struct task_struct *task, char *buffer)
+> @@ -327,6 +339,7 @@ int proc_pid_status(struct task_struct *
+>         buffer = task_show_regs(task, buffer);
+>  #endif
+>         buffer = show_blocked_on(task,buffer);
+> +       buffer = task_perf(task, buffer);
+
+What will this call if you don't have THREAD_PERF_STAT defined?
+
+Here's where you need the #else clause providing a null body for you....
+
+I don't see how this could possibly have built cleanly, since the CONFIG_
+issue above would have prevented you from defining a task_perf() function...
 
 
-But all this of course does not solve the issue sysconf() has.  In
-sysconf we cannot use sched_getaffinity since all the systems CPUs must
-be reported.
 
-
-> Is it kernel overhead, or userspace?  The overhead of counting the bits=
-?
-
-The overhead I meant is userland.
-
-
-> Because sched_getaffinity() could be easily sped up in the case where
-> it is operating on the current process.
-
-If there is possibility to treat this case special and make it faster,
-please do so.  It would be best to allow pid=3D=3D0 as a special case so
-that callers don't have to find out the TID (which they shouldn't have
-to know).
-
-
-> Anyway, where do we stand?  Assuming we can address the CPU hotplug iss=
-ues,
-> does sched_getaffinity() look like it will be suitable?
-
-It's only usable for the special case on the OpenMP code where the
-number of threads is used to determine the number of worker threads.
-For sysconf() we still need better support.  Maybe now somebody will
-step up and say they need faster sysconf as well.
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
-
-
---------------enig57DD67FE212B30AFAE70CA39
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--==_Exmh_1175641303_7609P
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFGEtyi2ijCOnn/RHQRAsTQAJ0Qnv9ERvT0vt5xjocIlYknfcE8XgCcCixW
-uQKXXF5BzTFJT11wdA02DVA=
-=2UFm
+iD8DBQFGEtzXcC3lWbTT17ARAp+FAKCXvZp3qFWOeTGIKu4CETVOmhQV/ACfQBKN
+d42SV/a/wDxa5h189JnzAlI=
+=4tut
 -----END PGP SIGNATURE-----
 
---------------enig57DD67FE212B30AFAE70CA39--
+--==_Exmh_1175641303_7609P--
