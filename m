@@ -1,173 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXDCXcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933890AbXDCXi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932478AbXDCXcY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 19:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXDCXcY
+	id S933890AbXDCXi0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 19:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933945AbXDCXi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 19:32:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:2188 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932478AbXDCXcX (ORCPT
+	Tue, 3 Apr 2007 19:38:26 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:45246 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933890AbXDCXiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 19:32:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=J5K1uQa8y3WkCN0Bbh2eno1c5qUky6/Gg7aa4PP/ZcuxZGOkq5V3zS4o6TS8yfiGvZaAeH56/b9hFTmy3PeUMFFEBFaEXrWeph+gVJUgakzv2mq7RGbyb+WiYCkjpuYLBC8Sm8h3heu2pmaugKTSeGqEJcAC1Bc9ROZ2uS+XmIA=
-Message-ID: <4612E3C3.6020806@googlemail.com>
-Date: Wed, 04 Apr 2007 01:31:15 +0200
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+	Tue, 3 Apr 2007 19:38:24 -0400
 Subject: Re: 2.6.21-rc5-mm4
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> <46127CBF.8040803@googlemail.com> <4612D32E.20105@googlemail.com> <200704040831.35225.kernel@kolivas.org>
-In-Reply-To: <200704040831.35225.kernel@kolivas.org>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+	 <1175637332.6185.4.camel@dyn9047017100.beaverton.ibm.com>
+	 <1175642398.6185.9.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 16:38:27 -0700
+Message-Id: <1175643507.6185.12.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas napisał(a):
-> On Wednesday 04 April 2007 08:20, Michal Piotrowski wrote:
->> Michal Piotrowski napisał(a):
->>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm4/m
->>> m-oops
->>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm4/m
->>> m-config
->> Sorry for a delay.
+On Tue, 2007-04-03 at 16:27 -0700, Christoph Lameter wrote:
+> On Tue, 3 Apr 2007, Badari Pulavarty wrote:
 > 
-> Never apologise! 
+> > On Tue, 2007-04-03 at 14:55 -0700, Badari Pulavarty wrote:
+> > > On Mon, 2007-04-02 at 22:47 -0700, Andrew Morton wrote:
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
+> > > 
+> > > 
+> > > 
+> > > SLUB code paniced my x86-64 box also :(
+> > 
+> > More on this panic.. line of code causing the issue is:
+> > 
+> > mm/slub.c:1133
+> >     2df1:       49 8b 04 c4             mov    (%r12,%rax,8),%rax
+> >     2df5:       48 89 43 20             mov    %rax,0x20(%rbx)
+> >       
+> > page->freelist = object[page->offset];
+> > 
+> > Hope this helps.
 > 
-> (I'm trying hard to stay offline for my own health so I may have huge delays).
+> Yes. Could you boot with "slub_debug" set? Looks like a slab object may 
+> be getting corrupted.
 > 
->> Con, I think that your
->> sched-implement-staircase-deadline-cpu-scheduler-staircase-improvements.pat
->> ch is causing this oops.
-> 
-> Thanks for heads up!
-> 
-> Try this patch please?
+> x86_64 with numa emulation 4 nodes boots fine here.
 
-I still get the same oops.
+Not sure, if this helps any (slub_debug = 1) :(
 
-BUG: unable to handle kernel paging request at virtual address 0743c798
- printing eip:
-c011d80a
-*pde = 00000000
-Oops: 0000 [#1]
-PREEMPT SMP 
-last sysfs file: devices/platform/w83627hf.656/temp2_input
-Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nfsd exportfs lockd nfs_acl autofs4 sunrpc af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd soundcore snd_page_alloc evdev i2c_i801 intel_agp agpgart ide_cd cdrom rtc unix
-CPU:    0
-EIP:    0060:[<c011d80a>]    Not tainted VLI
-EFLAGS: 00210006   (2.6.21-rc5-mm4 #15)
-EIP is at recalc_task_prio+0xc0/0x162
+Thanks,
+Badari
 
-l *0xc011d80a
-0xc011d80a is in recalc_task_prio (/mnt/md0/devel/linux-mm/kernel/sched.c:722).
-717              * a queued better static_prio's prio_level.
-718              */
-719             if (p->static_prio < rq->best_static_prio) {
-720                     search_prio = MAX_RT_PRIO;
-721                     if (likely(p->policy != SCHED_BATCH))
-722                             rq->best_static_prio = p->static_prio;
-723             } else if (p->static_prio == rq->best_static_prio)
-724                     search_prio = rq->prio_level[uprio];
-725             else {
-726                     search_prio = max(rq->prio_level[uprio],
-
-
-eax: 1000008b   ebx: 10000027   ecx: 0000008b   edx: c743c27c
-esi: cc33d510   edi: c743bda0   ebp: ce4a9ec0   esp: ce4a9e98
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process operapluginwrap (pid: 3559, ti=ce4a8000 task=ce006ac0 task.ti=ce4a8000)
-Stack: 00000000 c743c27c 00000001 c011defe c01240b5 c04eac14 ce4a9ed0 cc33d510 
-       c743bda0 cc33d510 ce4a9ed0 c011d9f1 00000001 cc33d510 ce4a9f00 c011f2ef 
-       00000000 c052cda0 ce4a9f00 c743bda0 c8ada023 00000029 cc33d510 003d0f00 
+Linux version 2.6.21-rc5-mm4 (root@elm3b29) (gcc version 4.1.0 (SUSE
+Linux)) #2 SMP Tue Apr 3 17:36:21 PDT 2007
+Command line: root=/dev/hda2 vga=0x314  selinux=0   console=tty0
+console=ttyS0,38400 resume=/dev/hda1 resume=/dev/hda1  splash=silent
+showopts
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009f000 (usable)
+ BIOS-e820: 000000000009f000 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000ca000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 00000000dfef0000 (usable)
+ BIOS-e820: 00000000dfef0000 - 00000000dfeff000 (ACPI data)
+ BIOS-e820: 00000000dfeff000 - 00000000dff00000 (ACPI NVS)
+ BIOS-e820: 00000000dff00000 - 00000000e0000000 (usable)
+ BIOS-e820: 00000000fec00000 - 00000000fec00400 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+ BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 00000001e0000000 (usable)
+end_pfn_map = 1966080
+DMI 2.3 present.
+ACPI: RSDP 000F6970, 0024 (r2 PTLTD )
+ACPI: XSDT DFEFC625, 003C (r1 PTLTD      XSDT    6040000  LTP        0)
+ACPI: FACP DFEFED02, 00F4 (r3 AMD    HAMMER    6040000 PTEC    F4240)
+ACPI: DSDT DFEFC661, 262D (r1 AMD-K8  AMDACPI  6040000 MSFT  100000D)
+ACPI: FACS DFEFFFC0, 0040
+ACPI: SRAT DFEFEDF6, 0160 (r1 AMD    HAMMER    6040000 AMD         1)
+ACPI: APIC DFEFEF56, 00AA (r1 PTLTD      APIC    6040000  LTP        0)
+SRAT: PXM 0 -> APIC 0 -> Node 0
+SRAT: PXM 1 -> APIC 1 -> Node 1
+SRAT: PXM 2 -> APIC 2 -> Node 2
+SRAT: PXM 3 -> APIC 3 -> Node 3
+SRAT: Node 0 PXM 0 0-a0000
+SRAT: Node 0 PXM 0 0-e0000000
+SRAT: Node 0 PXM 0 0-180000000
+SRAT: PXM 1 (100000000-1a0000000) overlaps with PXM 0 (0-180000000)
+SRAT: SRAT not used.
+Scanning NUMA topology in Northbridge 24
+Number of nodes 4
+Node 0 MemBase 0000000000000000 Limit 0000000180000000
+Node 1 MemBase 0000000180000000 Limit 00000001a0000000
+Node 2 MemBase 00000001a0000000 Limit 00000001c0000000
+Node 3 MemBase 00000001c0000000 Limit 00000001e0000000
+Using node hash shift of 29
+Bootmem setup node 0 0000000000000000-0000000180000000
+Bootmem setup node 1 0000000180000000-00000001a0000000
+Bootmem setup node 2 00000001a0000000-00000001c0000000
+Bootmem setup node 3 00000001c0000000-00000001e0000000
+Zone PFN ranges:
+  DMA             0 ->     4096
+  DMA32        4096 ->  1048576
+  Normal    1048576 ->  1966080
+Movable zone start PFN for each node
+early_node_map[7] active PFN ranges
+    0:        0 ->      159
+    0:      256 ->   917232
+    0:   917248 ->   917504
+    0:  1048576 ->  1572864
+    1:  1572864 ->  1703936
+    2:  1703936 ->  1835008
+    3:  1835008 ->  1966080
+ACPI: PM-Timer IO Port: 0x8008
+ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+Processor #0 (Bootup-CPU)
+ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+Processor #1
+ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] enabled)
+Processor #2
+ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] enabled)
+Processor #3
+ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
+ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1])
+ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+IOAPIC[0]: apic_id 4, address 0xfec00000, GSI 0-23
+ACPI: IOAPIC (id[0x05] address[0xfa3e0000] gsi_base[24])
+IOAPIC[1]: apic_id 5, address 0xfa3e0000, GSI 24-27
+ACPI: IOAPIC (id[0x06] address[0xfa3e1000] gsi_base[28])
+IOAPIC[2]: apic_id 6, address 0xfa3e1000, GSI 28-31
+ACPI: IOAPIC (id[0x07] address[0xfa3e2000] gsi_base[32])
+IOAPIC[3]: apic_id 7, address 0xfa3e2000, GSI 32-35
+ACPI: IOAPIC (id[0x08] address[0xfa3e4000] gsi_base[36])
+IOAPIC[4]: apic_id 8, address 0xfa3e4000, GSI 36-39
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
+Setting APIC routing to flat
+Using ACPI (MADT) for SMP configuration information
+Allocating PCI resources starting at e2000000 (gap: e0000000:1ec00000)
+PERCPU: Allocating 41984 bytes of per cpu data
+Built 4 zonelists.  Total pages: 1771993
+Kernel command line: root=/dev/hda2 vga=0x314  selinux=0   console=tty0
+console=ttyS0,38400 resume=/dev/hda1 resume=/dev/hda1  splash=silent
+showopts
+Initializing CPU#0
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+Extended CMOS year: 2000
+time.c: Detected 1398.191 MHz processor.
+Console: colour dummy device 80x25
+Checking aperture...
+CPU 0: aperture @ 0 size 32 MB
+No AGP bridge found
+Your BIOS doesn't leave a aperture memory hole
+Please enable the IOMMU option in the BIOS setup
+This costs you 64 MB of RAM
+Mapping aperture over 65536 KB of RAM @ 4000000
+Memory: 7021948k/7864320k available (3113k kernel code, 317632k
+reserved, 1229k data, 364k init)
+SLUB V6: General Slabs=18, HW alignment=128, Processors=4, Nodes=64
+Calibrating delay using timer specific routine.. 2799.03 BogoMIPS
+(lpj=5598079)
+Security Framework v1.0.0 initialized
+Dentry cache hash table entries: 1048576 (order: 11, 8388608 bytes)
+Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
+Mount-cache hash table entries: 256
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 0/0 -> Node 0
+Freeing SMP alternatives: 36k freed
+ACPI: Core revision 20070126
+Using local APIC timer interrupts.
+result 12483855
+Detected 12.483 MHz APIC timer.
+Booting processor 1/4 APIC 0x1
+Initializing CPU#1
+Calibrating delay using timer specific routine.. 2796.59 BogoMIPS
+(lpj=5593189)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 1/1 -> Node 1
+Opteron MP w/ 1MB stepping 00
+Booting processor 2/4 APIC 0x2
+Initializing CPU#2
+Calibrating delay using timer specific routine.. 2796.57 BogoMIPS
+(lpj=5593147)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 2/2 -> Node 2
+Opteron MP w/ 1MB stepping 00
+Booting processor 3/4 APIC 0x3
+Initializing CPU#3
+Calibrating delay using timer specific routine.. 2796.56 BogoMIPS
+(lpj=5593127)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 3/3 -> Node 3
+Opteron MP w/ 1MB stepping 00
+Brought up 4 CPUs
+migration_cost=0,766
+NET: Registered protocol family 16
+ACPI: bus type pci registered
+PCI: Using configuration type 1
+ACPI: Interpreter enabled
+ACPI: Using IOAPIC for interrupt routing
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+0000:00:07.1: cannot adjust BAR0 (not I/O)
+0000:00:07.1: cannot adjust BAR1 (not I/O)
+0000:00:07.1: cannot adjust BAR2 (not I/O)
+0000:00:07.1: cannot adjust BAR3 (not I/O)
+ACPI: PCI Root Bridge [PCI1] (0000:08)
+ACPI: PCI Interrupt Link [LNKA] (IRQs 3 *5 10 11)
+ACPI: PCI Interrupt Link [LNKB] (IRQs 3 5 *10 11)
+ACPI: PCI Interrupt Link [LNKC] (IRQs 3 5 10 *11)
+ACPI: PCI Interrupt Link [LNKD] (IRQs 3 5 10 *11)
+Linux Plug and Play Support v0.97 (c) Adam Belay
+pnp: PnP ACPI init
+pnp: PnP ACPI: found 14 devices
+PCI: Using ACPI for IRQ routing
+PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a
+report
+PCI-DMA: Disabling AGP.
+PCI-DMA: aperture base @ 4000000 size 65536 KB
+PCI-DMA: using GART IOMMU.
+PCI-DMA: Reserving 64MB of IOMMU area in the AGP aperture
+general protection fault: 0000 [1] <6>Time: tsc clocksource has been
+installed.
+SMP
+last sysfs file:
+CPU 0
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.21-rc5-mm4 #2
+RIP: 0010:[<ffffffff802860e1>]  [<ffffffff802860e1>] kmem_cache_alloc
++0xc1/0x1a0RSP: 0000:ffff8101c031bdd0  EFLAGS: 00010006
+RAX: 0000000000000000 RBX: ffff81017400e900 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: 00000000000000d0 RDI: ffffffff8068dac0
+RBP: ffff8101c031be00 R08: ffff810000180d3a R09: 0000000000000000
+R10: ffff810000180c00 R11: 0000000000000100 R12: f000ff53f000ff53
+R13: ffffffff8068dac0 R14: 0000000000000282 R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffffffff8063e000(0000)
+knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+Process swapper (pid: 1, threadinfo ffff8101c031a000, task
+ffff810000068000)
+Stack:  00000000000000d0 00000000000000d0 ffffffff80601d60
+000000000000000d
+ ffffffff805991c5 ffffffff805991c5 ffff8101c031be20 ffffffff80286551
+ ffffffffffffffed ffff810000180c00 ffff8101c031be50 ffffffff802a3642
 Call Trace:
- [<c011d9f1>] enqueue_task+0x31/0x7d
- [<c011f2ef>] activate_task+0xba/0xce
- [<c01223bb>] wake_up_new_task+0x65/0x125
- [<c01243d5>] do_fork+0x10f/0x181
- [<c010223f>] sys_clone+0x33/0x39
- [<c010424c>] syscall_call+0x7/0xb
- [<4cefd258>] 0x4cefd258
- =======================
-INFO: lockdep is turned off.
-Code: 7d 29 31 d2 83 7e 5c 03 0f 95 c2 b8 74 4c 4a c0 e8 04 e4 0f 00 c7 45 e0 64 00 00 00 85 c0 74 23 8b 46 1c 89 87 fc 09 00 00 eb 18 <8b> 94 9f 5c 09 00 00 74 0c 8b 84 8f cc 07 00 00 39 d0 0f 4d d0 
-EIP: [<c011d80a>] recalc_task_prio+0xc0/0x162 SS:ESP 0068:ce4a9e98
-BUG: NMI Watchdog detected LOCKUP on CPU0, eip c021ad9a, registers:
-Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nfsd exportfs lockd nfs_acl autofs4 sunrpc af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd soundcore snd_page_alloc evdev i2c_i801 intel_agp agpgart ide_cd cdrom rtc unix
-CPU:    0
-EIP:    0060:[<c021ad9a>]    Not tainted VLI
-EFLAGS: 00200006   (2.6.21-rc5-mm4 #15)
-EIP is at _raw_spin_lock+0xb5/0x128
-
-l *0xc021ad9a
-0xc021ad9a is in _raw_spin_lock (/mnt/md0/devel/linux-mm/lib/spinlock_debug.c:109).
-104             u64 loops = loops_per_jiffy * HZ;
-105             int print_once = 1;
-106
-107             for (;;) {
-108                     for (i = 0; i < loops; i++) {
-109                             if (__raw_spin_trylock(&lock->raw_lock))
-110                                     return;
-111                             __delay(1);
-112                     }
-113                     /* lockup suspected: */
+ [<ffffffff80286551>] __kmalloc+0x21/0x30
+ [<ffffffff802a3642>] alloc_vfsmnt+0xd2/0x110
+ [<ffffffff8028c4ac>] vfs_kern_mount+0x3c/0x160
+ [<ffffffff8028c5e0>] kern_mount+0x10/0x20
+ [<ffffffff806cef6b>] anon_inode_init+0x2b/0x130
+ [<ffffffff806b2a04>] kernel_init+0x154/0x330
+ [<ffffffff8020a8c8>] child_rip+0xa/0x12
+ [<ffffffff806b28b0>] kernel_init+0x0/0x330
+ [<ffffffff8020a8be>] child_rip+0x0/0x12
 
 
-eax: 00000000   ebx: c743bda0   ecx: 88044b58   edx: 00000078
-esi: 01f2bd6f   edi: 00000001   ebp: ce4a9c88   esp: ce4a9c60
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process operapluginwrap (pid: 3559, ti=ce4a8000 task=ce006ac0 task.ti=ce4a8000)
-Stack: 00000000 00000002 00000001 c011defe 000f4240 000026ec a6ca8450 c743bda0 
-       c743bda0 ce4a9d18 ce4a9ca8 c034f47e 00000000 00000002 c011defe c0140275 
-       c0852720 c052cda0 ce4a9cc8 c011defe c0852720 000f4240 c9855510 c9799f00 
-Call Trace:
- [<c034f47e>] _spin_lock+0x3c/0x42
- [<c011defe>] task_rq_lock+0x36/0x70
- [<c011f31d>] try_to_wake_up+0x1a/0x36b
- [<c011f67c>] default_wake_function+0xe/0x10
- [<c0136f8a>] autoremove_wake_function+0x17/0x3a
- [<c011c773>] __wake_up_common+0x32/0x55
- [<c011d62b>] __wake_up+0x31/0x42
- [<c012541f>] wake_up_klogd+0x36/0x38
- [<c020e34a>] bust_spinlocks+0x2a/0x2c
- [<c01058bd>] die+0x16c/0x22c
- [<c011b9ed>] do_page_fault+0x47c/0x55b
- [<c034fdb1>] error_code+0x79/0x80
- [<c011d80a>] recalc_task_prio+0xc0/0x162
- [<c011d9f1>] enqueue_task+0x31/0x7d
- [<c011f2ef>] activate_task+0xba/0xce
- [<c01223bb>] wake_up_new_task+0x65/0x125
- [<c01243d5>] do_fork+0x10f/0x181
- [<c010223f>] sys_clone+0x33/0x39
- [<c010424c>] syscall_call+0x7/0xb
- [<4cefd258>] 0x4cefd258
- =======================
-INFO: lockdep is turned off.
-Code: 9e c2 b8 38 16 4c c0 e8 7d 0e 00 00 85 c0 74 74 69 05 88 07 4a c0 e8 03 00 00 89 45 f0 bf 01 00 00 00 31 f6 eb 13 31 c0 86 03 46 <84> c0 7f 55 b8 01 00 00 00 e8 e8 20 ff ff 3b 75 f0 75 e8 85 ff 
+Code: 49 8b 04 c4 48 89 43 20 f0 0f ba 2b 02 8b 03 a8 01 74 4c f0
+RIP  [<ffffffff802860e1>] kmem_cache_alloc+0xc1/0x1a0
+ RSP <ffff8101c031bdd0>
+Kernel panic - not syncing: Attempted to kill init!
 
-serial console log
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm4/mm-oops2
 
-BTW. I want to do some scheduler benchmarks tomorrow.
-Do sched-implement-staircase-deadline-cpu-scheduler-staircase-improvements.patch
-is really important for staircase scheduler performance?
 
-Regards,
-Michal
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
