@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbXDCFtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbXDCFvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbXDCFtu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 01:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbXDCFtt
+	id S1753160AbXDCFvz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 01:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbXDCFvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 01:49:49 -0400
-Received: from jericho.provo.novell.com ([137.65.248.124]:52032 "EHLO
-	jericho.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbXDCFts (ORCPT
+	Tue, 3 Apr 2007 01:51:54 -0400
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2855 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753112AbXDCFvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 01:49:48 -0400
-Message-ID: <4611EADC.3000306@suse.de>
-Date: Tue, 03 Apr 2007 14:49:16 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: linux@horizon.com
-CC: dan.j.williams@intel.com, linux-ide@vger.kernel.org, neilb@suse.de,
-       cebbert@redhat.com, jens.axboe@oracle.com, linux-kernel@dale.us,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
-References: <20070323174630.31051.qmail@science.horizon.com>
-In-Reply-To: <20070323174630.31051.qmail@science.horizon.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 3 Apr 2007 01:51:53 -0400
+Date: Tue, 3 Apr 2007 07:49:38 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
+Subject: Re: Could the k8temp driver be interfering with ACPI?
+Message-Id: <20070403074938.bc222b7e.khali@linux-fr.org>
+In-Reply-To: <20070402192209.GB15810@redhat.com>
+References: <45D7461A.2040808@redhat.com>
+	<20070218183805.5a4fd813.khali@linux-fr.org>
+	<20070228213803.GA4877@ucw.cz>
+	<20070301152655.f232db64.khali@linux-fr.org>
+	<20070302114023.GD2163@elf.ucw.cz>
+	<20070302114747.GB1212@srcf.ucam.org>
+	<20070302135810.GF2156@elf.ucw.cz>
+	<20070302220052.f93f3976.khali@linux-fr.org>
+	<20070401153951.GE5095@ucw.cz>
+	<20070402174859.80b74b05.khali@linux-fr.org>
+	<20070402192209.GB15810@redhat.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[resending.  my mail service was down for more than a week and this
-message didn't get delivered.]
+Hi Dave,
 
-linux@horizon.com wrote:
-> > Anyway, what's annoying is that I can't figure out how to bring the
-> > drive back on line without resetting the box.  It's in a hot-swap
-enclosure,
-> > but power cycling the drive doesn't seem to help.  I thought libata
-hotplug
-> > was working?  (SiI3132 card, using the sil24 driver.)
+On Mon, 2 Apr 2007 15:22:09 -0400, Dave Jones wrote:
+> On Mon, Apr 02, 2007 at 05:48:59PM +0200, Jean Delvare wrote:
+>  > +	u8  val;
+>  > +#ifdef CONFIG_ACPI
+>  > +	acpi_ut_acquire_mutex(ACPI_MTX_INTERPRETER);
+>  > +#endif
+>  >  	outb(reg, data->addr + ADDR_REG_OFFSET);
+>  > -	return inb(data->addr + DATA_REG_OFFSET);
+>  > +	val = inb(data->addr + DATA_REG_OFFSET);
+>  > +#ifdef CONFIG_ACPI
+>  > +	acpi_ut_release_mutex(ACPI_MTX_INTERPRETER);
+>  > +#endif
+>  > +	return val;
+>  > ... deletia, more of the same.
+> 
+> it'd probably end up a lot cleaner to #define them to empty macros
+> in the !ACPI case in acpi/acpi.h and just #include it unconditionally.
 
-Yeah, it's working but failing resets are considered highly dangerous
-(in that the controller status is unknown and may cause something
-dangerous like screaming interrupts) and port is muted after that.  The
-plan is to handle this with polling hotplug such that libata tries to
-revive the port if PHY status change is detected by polling.  Patches
-are available but they need other things to resolved to get integrated.
- I think it'll happen before the summer.
-
-Anyways, you can tell libata to retry the port by manually telling it to
-rescan the port (echo - - - > /sys/class/scsi_host/hostX/scan).
-
-> > (H'm... after rebooting, reallocated sectors jumped from 26 to 39.
-> > Something is up with that drive.)
-
-Yeap, seems like a broken drive to me.
-
-Thanks.
+Sure, the implementation details can be refined later. I'm only trying
+to see what can be done for now.
 
 -- 
-tejun
+Jean Delvare
