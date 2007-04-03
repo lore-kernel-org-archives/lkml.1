@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966148AbXDCCKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966149AbXDCCPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966148AbXDCCKu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 22:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966150AbXDCCKu
+	id S966149AbXDCCPc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 22:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966151AbXDCCPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 22:10:50 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55261 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966148AbXDCCKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 22:10:50 -0400
-Date: Mon, 2 Apr 2007 19:09:21 -0700
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: agl@us.ibm.com, dwg@au1.ibm.com
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: hugetlb: Unable to handle kernel NULL pointer dereference
-Message-ID: <20070403020921.GA7444@us.ibm.com>
-References: <20070403014608.GA29601@us.ibm.com>
+	Mon, 2 Apr 2007 22:15:32 -0400
+Received: from gum.itee.uq.edu.au ([130.102.66.1]:46887 "EHLO
+	gum.itee.uq.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966149AbXDCCPb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 22:15:31 -0400
+Message-ID: <4611B8BA.6000406@itee.uq.edu.au>
+Date: Tue, 03 Apr 2007 12:15:22 +1000
+From: John Williams <jwilliams@itee.uq.edu.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060418 Red Hat/1.7.13-1.1.3.1.centos3
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070403014608.GA29601@us.ibm.com>
-X-Operating-System: Linux 2.6.21-rc5-g59117d3f (x86_64)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Olaf Hering <olaf@aepfle.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ENOENT creating /dev/root on MTD RAM partition
+References: <4610A598.4050206@itee.uq.edu.au> <20070402125212.GA11522@aepfle.de>
+In-Reply-To: <20070402125212.GA11522@aepfle.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02.04.2007 [18:46:08 -0700], Nishanth Aravamudan wrote:
-> Adam, David,
+Olaf Hering wrote:
+> On Mon, Apr 02, John Williams wrote:
 > 
-> Just got the following Oops and recursive fault running `make func`
-> (apparently the `shared` test in particular) with kernel HEAD at
-> efab03d998da03f67836ffc664b04e0400f85448 on my x86_64. Will pull latest
-> Linus and reboot, but haven't seen it posted yet. This occurs both with
-> my branch and master from libhugetlbfs.
+>>Any comments or suggestions on a possible cause or approach to track it
+>>down would be greatly appreciated.
+> 
+> Just a guess:
+> Check if '/dev' exists. I think it is now possible to not add the built-in
+> cpio archive with the mandatory /dev, /dev/console and /root entries.
 
-Bah, blame operator error, perhaps. Not able to reproduce with current
-Linus tip.
+Thanks Olaf - you got me on the right track.  Turned out to be an arch 
+link script error whereby the "rootfs" initcalls were not placed in the 
+initcall table - thus the init ramfs wasn't yet mounted, and /dev wasn't 
+there.
 
-Thanks,
-Nish
+Cheers,
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+John
