@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966137AbXDCBRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966139AbXDCBYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966137AbXDCBRD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 21:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966138AbXDCBRD
+	id S966139AbXDCBYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 21:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966140AbXDCBYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 21:17:03 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:5957 "EHLO
+	Mon, 2 Apr 2007 21:24:54 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:7993 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966137AbXDCBRB (ORCPT
+	with ESMTP id S966139AbXDCBYu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 21:17:01 -0400
+	Mon, 2 Apr 2007 21:24:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=I/qlqtydeBg3Dd5kx99rGX/JaKdMPEskSVKlW1U+DLWeb8SrqaLJq8RyTb52JmJ66ZMfBIFi0RK9zmRakz4NIEAqF+LS7P2fH/JM0Tq/IS7yItBS7iZvqLAgeH0Gqt9U/Qxpfs13tq+GKjFTar4Gr1CNFaq9idsmSl1v8GXeb50=
-Message-ID: <4611AAC1.8050303@gmail.com>
-Date: Tue, 03 Apr 2007 09:15:45 +0800
-From: Li Yu <raise.sail@gmail.com>
-User-Agent: Thunderbird 1.5 (X11/20051201)
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=P7I/Fj0M0ezBtmVLPUk/kKF7k1WD4yRHuMTuRyE6x90gyyzZlZHjE/GFhdG1r0uYmEeIkjqTS6XEm9SFC/ZUFvTQKtbqRvL/k0GMqn9dZq30i8q1/FmLY2Pi7eaeynhGkhK3QpOrMwUCixo1rw73l4ZL+lpc0uoDzDXnnRhyg/Q=
+Message-ID: <4611ACCD.5000305@gmail.com>
+Date: Tue, 03 Apr 2007 09:24:29 +0800
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>
-CC: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       yanghong@ccoss.com.cn,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       hongzhiyi@ccoss.com.cn, LKML <linux-kernel@vger.kernel.org>,
-       Li Yu <raise.sail@gmail.com>
-Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
-References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com>	 <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn>	 <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>	 <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>	 <1175516515.5815.347.camel@violet>	 <Pine.LNX.4.64.0704021429420.3808@jikos.suse.cz> <1175532439.5815.375.camel@violet>
-In-Reply-To: <1175532439.5815.375.camel@violet>
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@osdl.org>
+CC: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] vt: Expose system-wide UTF-8 default setting via sysfs
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcel Holtmann wrote:
-> The cleanest solution without a layer violation is that you can
-> register a driver for a specific VID/PID and then report id (one or
-> more). All
-> reports with ids that we don't have a special driver for are handled by
-> the default HID->input driver or handed over to hidraw if not parseable.
-> The reports for ids with a special driver are handed over to the driver.
->
-> And for hidraw it would be nice if we can apply filters for specific
-> report ids to keep the round-trips and overhead at a minimum.
->
->   
-If we don't use "flip-flopping" means, the common driver and specific
-driver concepts also don't need. They are completely same driver for HID
-bus, just one without some hooks, another without. The common event
-processing is an API from HID core. so, here have not round-trips.
+Create a variable, default_utf8, that defines the system-wide default UTF-8
+setting.  This variable can be altered via sysfs. If the variable is properly
+set, this should mimimize breakage of UTF-8 encoded consoles when doing a
+reset or echo -e '\033c' and of newly opened/allocated consoles.
 
-What's the position of hidraw? It only is used when all other driver is
-not usable on some report? or, it should be stick every working device.
+This is based from patches by Jan Engelhardt and Paul LeoNerd Evans.
 
-PS: In last broken "flip-flopping" resolution, the USBHID work also need
-some changes ;)
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
+> I think you're missing the whole point of console reset.  Its purpose is 
+> to force the console into a known-good state.  The fewer pieces of state 
+> it leaves unset, the better.  To some degree it's less important what 
+> that state actually is.
 
+Okay, you convinced me. Hopefully this is acceptable to all parties.
+
+Andrew,
+
+If everybody agrees, can you drop the previous patch I sent to you, and use
+this instead?
+
+Tony
+
+ drivers/char/vt.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 1bbb45b..8aca96f 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -157,6 +157,8 @@ static void blank_screen_t(unsigned long
+ static void set_palette(struct vc_data *vc);
+ 
+ static int printable;		/* Is console ready for printing? */
++static int default_utf8;
++module_param(default_utf8, int, S_IRUGO | S_IWUSR);
+ 
+ /*
+  * ignore_poke: don't unblank the screen when things are typed.  This is
+@@ -1497,7 +1499,7 @@ static void reset_terminal(struct vc_dat
+ 	vc->vc_charset		= 0;
+ 	vc->vc_need_wrap	= 0;
+ 	vc->vc_report_mouse	= 0;
+-	vc->vc_utf		= 0;
++	vc->vc_utf              = default_utf8;
+ 	vc->vc_utf_count	= 0;
+ 
+ 	vc->vc_disp_ctrl	= 0;
