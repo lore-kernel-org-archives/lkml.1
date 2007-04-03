@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966030AbXDCSGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966091AbXDCSLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966030AbXDCSGE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 14:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966188AbXDCSGE
+	id S966091AbXDCSLD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 14:11:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966104AbXDCSLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 14:06:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39780 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966030AbXDCSGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 14:06:02 -0400
-Message-ID: <4612977D.4060903@redhat.com>
-Date: Tue, 03 Apr 2007 11:05:49 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+	Tue, 3 Apr 2007 14:11:03 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38255 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966091AbXDCSLB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 14:11:01 -0400
+Date: Tue, 3 Apr 2007 20:11:00 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403173505.GD23689@one.firstfloor.org> <461292BF.5020803@redhat.com> <20070403175827.GA24033@one.firstfloor.org>
-In-Reply-To: <20070403175827.GA24033@one.firstfloor.org>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCA70753D9FF5529C246BDBB0"
+Message-ID: <20070403181100.GE23689@one.firstfloor.org>
+References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403173505.GD23689@one.firstfloor.org> <461292BF.5020803@redhat.com> <20070403175827.GA24033@one.firstfloor.org> <4612977D.4060903@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4612977D.4060903@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCA70753D9FF5529C246BDBB0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 03, 2007 at 11:05:49AM -0700, Ulrich Drepper wrote:
+> Andi Kleen wrote:
+> >> There is an inexpensive solution: finally make the vdso concept a bit
+> >> more flexible.  You could add a vdso call to get the processor count.
+> >> The vdso code itself can use a data page mapped in from the kernel.
+> > 
+> > The ELF aux vector is exactly that already.
+> 
+> No.  The aux vector cannot be changed after the process is changed.  The
+> memory belong to the process and not the kernel.  It must be possible at
+> any time to get the correct information even if the system changed.
 
-Andi Kleen wrote:
->> There is an inexpensive solution: finally make the vdso concept a bit
->> more flexible.  You could add a vdso call to get the processor count.
->> The vdso code itself can use a data page mapped in from the kernel.
->=20
-> The ELF aux vector is exactly that already.
+That's probably debatable, but ok.
 
-No.  The aux vector cannot be changed after the process is changed.  The
-memory belong to the process and not the kernel.  It must be possible at
-any time to get the correct information even if the system changed.
+I would be opposed for adding another page per process at least
+because the per process memory footprint in Linux is imho already
+too large.
+ 
+> >> This page (read-only at userlevel) would contain global information such
+> >> as processor count and topology.
+> > 
+> > You would still need an event notification mechanism, won't you?
+> 
+> No, why?  The vdso call would be so inexpensive (just a simple function
+> call) that it can be done whenever a topology-based decision has to be
+> made.  Use cookies to determine whether nothing has been changed since
+> the last call etc.
 
+But how would that mix with the OpenMP use case where you have
+thread pools that normally don't make decisions afer startup, but 
+just stay around? I think for those you would need events of some sort
+to start or remove threads as needed. 
 
->> This page (read-only at userlevel) would contain global information su=
-ch
->> as processor count and topology.
->=20
-> You would still need an event notification mechanism, won't you?
+Asking the kernel every time you submit some work to the threads
+would probably not fly.
+ 
+> > If you want it cheap look for some other way.
+> 
+> Well, who's brace enough to submit sys_sysconf() again?
 
-No, why?  The vdso call would be so inexpensive (just a simple function
-call) that it can be done whenever a topology-based decision has to be
-made.  Use cookies to determine whether nothing has been changed since
-the last call etc.
+If there's a good use case fine for me. However I suspect it's
+either "slow is ok" or "want it very fast" where even a syscall
+would hurt.
 
-
-> The cost will be still large. Accessing sysfs will be never cheap.
-> For once anything going through the VFS tens to take a two sometimes
-> three digit number of locks.
-
-That stat solution actually ain't that bad.  It takes ~7400 cycles on my
-machine.
-
-
-> If you want it cheap look for some other way.
-
-Well, who's brace enough to submit sys_sysconf() again?
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
-
-
---------------enigCA70753D9FF5529C246BDBB0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGEpd+2ijCOnn/RHQRAqv0AJ0XKyRqUUXKvlPkS4fMz45Mz1/BIwCfeTpL
-2vXyMnep/g9/MJKIJrulCF4=
-=l5DS
------END PGP SIGNATURE-----
-
---------------enigCA70753D9FF5529C246BDBB0--
+-Andi
