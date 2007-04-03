@@ -1,58 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030302AbXDCPF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030314AbXDCPKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030302AbXDCPF2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 11:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030308AbXDCPF2
+	id S1030314AbXDCPKk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 11:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030316AbXDCPKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 11:05:28 -0400
-Received: from styx.suse.cz ([82.119.242.94]:32788 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030302AbXDCPF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 11:05:27 -0400
-Subject: Re: Recursive ->i_mutex lockdep complaint
-From: Miklos Szeredi <mszeredi@suse.cz>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070403142143.GA6535@localhost.sw.ru>
-References: <200703270735.l2R7Zg9t010611@shell0.pdx.osdl.net>
-	 <20070403142143.GA6535@localhost.sw.ru>
-Content-Type: text/plain
-Date: Tue, 03 Apr 2007 17:05:20 +0200
-Message-Id: <1175612720.9736.7.camel@tucsk.pomaz.szeredi.hu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 11:10:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35038 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030314AbXDCPKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 11:10:39 -0400
+Date: Tue, 3 Apr 2007 17:10:36 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] add new_id to PCMCIA drivers
+Message-ID: <20070403151036.GA6974@strauss.suse.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-03 at 18:21 +0400, Alexey Dobriyan wrote:
-> On Mon, Mar 26, 2007 at 11:35:42PM -0800, akpm@linux-foundation.org wrote:
-> > The patch titled
-> >      add file position info to proc
-> > has been added to the -mm tree.  Its filename is
-> >      add-file-position-info-to-proc.patch
-> 
-> I tried to stress-test it with the following program and script and
-> lockdep barfs on me reasonably quickly:
+PCI drivers have the new_id file in sysfs which allows new IDs to be added at
+runtime. The advantage is to avoid re-compilation of a driver that works for a
+new device, but it's ID table doesn't contain the new device. This mechanism is
+only meant for testing, after the driver has been tested successfully, the ID
+should be added in source code so that new revisions of the kernel
+automatically detect the device.
 
-Ugh.  As I see it, this is independent from the above patch, as the same
-can happen with /proc/PID/fd.  Or did I miss something?
+The implementation follows the PCI implementation. The interface is documented
+in Documentation/pcmcia/driver.txt. Computations should be done in userspace,
+so the sysfs string contains the raw structure members for matching.
 
-And it seems quite benign, one of the mutexes is for the proc inode, the
-other is for the pipe inode, and hopefully they haven't got anything
-else to do with each other.
 
-> It seems that lockdep is unhappy about ->i_mutex taken in
-> ->release/pipe_read_release()/pipe_read_fasync()
-> which is triggered from put_files_struct() in proc_readfd_common()
-> 
-> Now checking if giving pipe's i_mutex its own lockdep class with fix
-> things.
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+---
+ Documentation/pcmcia/driver.txt |   30 ++++++++++
+ drivers/pcmcia/ds.c             |  113 +++++++++++++++++++++++++++++++++++++++-
+ include/pcmcia/ds.h             |    6 ++
+ 3 files changed, 148 insertions(+), 1 deletion(-)
 
-Should help.  Although I'm wondering if it's worth bothering with, as it
-doesn't seem to happen in real life for lockdep users.
-
-Thanks,
-Miklos
-
+Index: mainline-2.6.21-rc5-mm2-new_id/drivers/pcmcia/ds.c
+===================================================================
+--- mainline-2.6.21-rc5-mm2-new_id.orig/drivers/pcmcia/ds.c
++++ mainline-2.6.21-rc5-mm2-new_id/drivers/pcmcia/ds.c
+@@ -234,6 +234,89 @@ static void pcmcia_check_driver(struct p
+ /*======================================================================*/
+ 
+ 
++struct pcmcia_dynid {
++	struct list_head 		node;
++	struct pcmcia_device_id 	id;
++};
++
++/**
++ * pcmcia_store_new_id - add a new PCMCIA device ID to this driver and re-probe devices
++ * @driver: target device driver
++ * @buf: buffer for scanning device ID data
++ * @count: input size
++ *
++ * Adds a new dynamic PCMCIA device ID to this driver,
++ * and causes the driver to probe for all devices again.
++ */
++static ssize_t
++pcmcia_store_new_id(struct device_driver *driver, const char *buf, size_t count)
++{
++	struct pcmcia_dynid *dynid;
++	struct pcmcia_driver *pdrv = to_pcmcia_drv(driver);
++	__u16 match_flags, manf_id, card_id;
++	__u8 func_id, function, device_no;
++	__u32 prod_id_hash[4] = {0, 0, 0, 0};
++	int fields=0;
++	int retval = 0;
++
++	fields = sscanf(buf, "%hx %hx %hx %hhx %hhx %hhx %x %x %x %x",
++			&match_flags, &manf_id, &card_id, &func_id, &function, &device_no,
++			&prod_id_hash[0], &prod_id_hash[1], &prod_id_hash[2], &prod_id_hash[3]);
++	if (fields < 6)
++		return -EINVAL;
++
++	dynid = kzalloc(sizeof(struct pcmcia_dynid), GFP_KERNEL);
++	if (!dynid)
++		return -ENOMEM;
++
++	INIT_LIST_HEAD(&dynid->node);
++	dynid->id.match_flags = match_flags;
++	dynid->id.manf_id = manf_id;
++	dynid->id.card_id = card_id;
++	dynid->id.func_id = func_id;
++	dynid->id.function = function;
++	dynid->id.device_no = device_no;
++	memcpy(dynid->id.prod_id_hash, prod_id_hash, sizeof(__u32) * 4);
++
++	spin_lock(&pdrv->dynids.lock);
++	list_add_tail(&pdrv->dynids.list, &dynid->node);
++	spin_unlock(&pdrv->dynids.lock);
++
++	if (get_driver(&pdrv->drv)) {
++		retval = driver_attach(&pdrv->drv);
++		put_driver(&pdrv->drv);
++	}
++
++	if (retval)
++		return retval;
++	return count;
++}
++static DRIVER_ATTR(new_id, S_IWUSR, NULL, pcmcia_store_new_id);
++
++static void
++pcmcia_free_dynids(struct pcmcia_driver *drv)
++{
++	struct pcmcia_dynid *dynid, *n;
++
++	spin_lock(&drv->dynids.lock);
++	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
++		list_del(&dynid->node);
++		kfree(dynid);
++	}
++	spin_unlock(&drv->dynids.lock);
++}
++
++static int
++pcmcia_create_newid_file(struct pcmcia_driver *drv)
++{
++	int error = 0;
++	if (drv->probe != NULL)
++		error = sysfs_create_file(&drv->drv.kobj,
++					  &driver_attr_new_id.attr);
++	return error;
++}
++
++
+ /**
+  * pcmcia_register_driver - register a PCMCIA driver with the bus core
+  *
+@@ -241,6 +324,8 @@ static void pcmcia_check_driver(struct p
+  */
+ int pcmcia_register_driver(struct pcmcia_driver *driver)
+ {
++	int error;
++
+ 	if (!driver)
+ 		return -EINVAL;
+ 
+@@ -249,10 +334,20 @@ int pcmcia_register_driver(struct pcmcia
+ 	/* initialize common fields */
+ 	driver->drv.bus = &pcmcia_bus_type;
+ 	driver->drv.owner = driver->owner;
++	spin_lock_init(&driver->dynids.lock);
++	INIT_LIST_HEAD(&driver->dynids.list);
+ 
+ 	ds_dbg(3, "registering driver %s\n", driver->drv.name);
+ 
+-	return driver_register(&driver->drv);
++	error = driver_register(&driver->drv);
++	if (error < 0)
++		return error;
++
++	error = pcmcia_create_newid_file(driver);
++	if (error)
++		driver_unregister(&driver->drv);
++
++	return error;
+ }
+ EXPORT_SYMBOL(pcmcia_register_driver);
+ 
+@@ -263,6 +358,7 @@ void pcmcia_unregister_driver(struct pcm
+ {
+ 	ds_dbg(3, "unregistering driver %s\n", driver->drv.name);
+ 	driver_unregister(&driver->drv);
++	pcmcia_free_dynids(driver);
+ }
+ EXPORT_SYMBOL(pcmcia_unregister_driver);
+ 
+@@ -927,6 +1023,21 @@ static int pcmcia_bus_match(struct devic
+ 	struct pcmcia_device * p_dev = to_pcmcia_dev(dev);
+ 	struct pcmcia_driver * p_drv = to_pcmcia_drv(drv);
+ 	struct pcmcia_device_id *did = p_drv->id_table;
++	struct pcmcia_dynid *dynid;
++
++	/* match dynamic devices first */
++	spin_lock(&p_drv->dynids.lock);
++	list_for_each_entry(dynid, &p_drv->dynids.list, node) {
++		ds_dbg(3, "trying to match %s to %s\n", dev->bus_id,
++		       drv->name);
++		if (pcmcia_devmatch(p_dev, &dynid->id)) {
++			ds_dbg(0, "matched %s to %s\n", dev->bus_id,
++			       drv->name);
++			spin_unlock(&p_drv->dynids.lock);
++			return 1;
++		}
++	}
++	spin_unlock(&p_drv->dynids.lock);
+ 
+ 	while (did && did->match_flags) {
+ 		ds_dbg(3, "trying to match %s to %s\n", dev->bus_id,
+Index: mainline-2.6.21-rc5-mm2-new_id/include/pcmcia/ds.h
+===================================================================
+--- mainline-2.6.21-rc5-mm2-new_id.orig/include/pcmcia/ds.h
++++ mainline-2.6.21-rc5-mm2-new_id/include/pcmcia/ds.h
+@@ -108,6 +108,11 @@ typedef struct dev_node_t {
+ struct pcmcia_socket;
+ struct config_t;
+ 
++struct pcmcia_dynids {
++	spinlock_t		lock;
++	struct list_head	list;
++};
++
+ struct pcmcia_driver {
+ 	int (*probe)		(struct pcmcia_device *dev);
+ 	void (*remove)		(struct pcmcia_device *dev);
+@@ -118,6 +123,7 @@ struct pcmcia_driver {
+ 	struct module		*owner;
+ 	struct pcmcia_device_id	*id_table;
+ 	struct device_driver	drv;
++	struct pcmcia_dynids	dynids;
+ };
+ 
+ /* driver registration */
+Index: mainline-2.6.21-rc5-mm2-new_id/Documentation/pcmcia/driver.txt
+===================================================================
+--- /dev/null
++++ mainline-2.6.21-rc5-mm2-new_id/Documentation/pcmcia/driver.txt
+@@ -0,0 +1,30 @@
++PCMCIA Driver
++-------------
++
++
++sysfs
++-----
++
++New PCMCIA IDs may be added to a device driver pcmcia_device_id table at
++runtime as shown below:
++
++echo "match_flags manf_id card_id func_id function device_no \
++prod_id_hash[0] prod_id_hash[1] prod_id_hash[2] prod_id_hash[3]" > \
++/sys/bus/pcmcia/drivers/{driver}/new_id
++
++All fields are passed in as hexadecimal values (no leading 0x).
++The meaning is described in the PCMCIA specification, the match_flags is
++a bitwise or-ed combination from PCMCIA_DEV_ID_MATCH_* constants
++defined in include/linux/mod_devicetable.h.
++
++Once added, the driver probe routine will be invoked for any unclaimed
++PCMCIA device listed in its (newly updated) pcmcia_device_id list.
++
++A common use-case is to add a new device according to the manufacturer ID
++and the card ID (form the manf_id and card_id file in the device tree).
++For this, just use:
++
++echo "0x3 manf_id card_id 0 0 0 0 0 0 0" > \
++        /sys/bus/pcmcia/drivers/{driver}/new_id
++
++after loading the driver.
