@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965663AbXDCRPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965730AbXDCRPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965663AbXDCRPS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXDCRPS
+	id S965730AbXDCRPz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965752AbXDCRPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:15:18 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35746 "EHLO
-	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965663AbXDCRPP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:15:15 -0400
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Message-ID: <46128B84.3070303@amd.com>
-Date: Tue, 03 Apr 2007 12:14:44 -0500
-From: "Mark Langsdorf" <mark.langsdorf@amd.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 3 Apr 2007 13:15:55 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39548 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965730AbXDCRPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:15:54 -0400
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 03 Apr 2007 20:14:29 +0200
+In-Reply-To: <46128051.9000609@redhat.com>
+Message-ID: <p73648dz5oa.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] allocate GART/IOMMU aperture from any node
-X-OriginalArrivalTime: 03 Apr 2007 17:14:58.0321 (UTC)
- FILETIME=[9B2CD010:01C77613]
-X-WSS-ID: 6A0C54182EW3035609-01-01
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux always tries to allocate the GART/IOMMU aperture from the
-boot node memory.  However, it is legal to boot with no memory
-attached to the boot node, in which case the system crashes with
-invalid memory assignments.  Generalize the memory allocation to
-support any node in the system with memory.
+Ulrich Drepper <drepper@redhat.com> writes:
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+>   to free:      mmap(PROT_NONE) over the area
 
---- linux-2.6.20/arch/x86_64/kernel/aperture.c.old	2007-04-02 
-17:11:18.000000000 -0500
-+++ linux-2.6.20/arch/x86_64/kernel/aperture.c	2007-04-02 
-19:03:43.000000000 -0500
-@@ -51,7 +51,6 @@ static void __init insert_aperture_resou
+Why do you need a lock for that? I don't see any problem with
+two threads doing that in parallel. The kernel would
+serialize it internally and one would fail, but that shouldn't
+be a problem. 
 
-  static u32 __init allocate_aperture(void)
-  {
--	pg_data_t *nd0 = NODE_DATA(0);
-  	u32 aper_size;
-  	void *p;
+Of course having the lock should also not make much difference --
+if glibc doesn't do it then it kernel would anyways and run
+into the same scalability issue on mmap_sem.
 
-@@ -65,12 +64,12 @@ static u32 __init allocate_aperture(void
-  	 * Unfortunately we cannot move it up because that would make the
-  	 * IOMMU useless.
-  	 */
--	p = __alloc_bootmem_node(nd0, aper_size, aper_size, 0);
-+	p = __alloc_bootmem(aper_size, aper_size, 0);
-  	if (!p || __pa(p)+aper_size > 0xffffffff) {
-  		printk("Cannot allocate aperture memory hole (%p,%uK)\n",
-  		       p, aper_size>>10);
-  		if (p)
--			free_bootmem_node(nd0, __pa(p), aper_size);
-+			free_bootmem(__pa(p), aper_size);
-  		return 0;
-  	}
-  	printk("Mapping aperture over %d KB of RAM @ %lx\n",
-
+-Andi
 
