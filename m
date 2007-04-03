@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXDCRGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965654AbXDCRK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965550AbXDCRGH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965641AbXDCRGH
+	id S965654AbXDCRK3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965656AbXDCRK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:06:07 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36840 "EHLO e2.ny.us.ibm.com"
+	Tue, 3 Apr 2007 13:10:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47802 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965550AbXDCRGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:06:05 -0400
-Date: Tue, 3 Apr 2007 22:41:55 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
-       rohitseth@google.com, pj@sgi.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, mbligh@google.com,
-       winget@google.com, containers@lists.osdl.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
-Message-ID: <20070403171155.GK2456@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com> <20070331024722.GA808@in.ibm.com> <20070402140938.GF17710@sergelap.austin.ibm.com> <20070402142727.GF2456@in.ibm.com> <m1slbiejt0.fsf@ebiederm.dsl.xmission.com> <20070403153220.GA24946@sergelap.austin.ibm.com> <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com> <20070403164615.GJ2456@in.ibm.com> <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	id S965654AbXDCRK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:10:28 -0400
+Message-ID: <46128A77.4080008@redhat.com>
+Date: Tue, 03 Apr 2007 10:10:15 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com> <46128708.9030900@redhat.com>
+In-Reply-To: <46128708.9030900@redhat.com>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF0A3BDF995F011D58844B357"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 09:52:35AM -0700, Paul Menage wrote:
-> I'm not saying "let's use nsproxy" - I'm not yet convinced that the
-> lifetime/mutation/correlation rate of a pointer in an nsproxy is
-> likely to be the same as for a container subsystem; if not, then
-> reusing nsproxy could actually increase space overheads (since you'd
-> end up with more, larger nsproxy objects, compared to smaller numbers
-> of smaller nsproxy objects and smaller numbers of smaller
-> container_group objects), even though it saved (just) one pointer per
-> task_struct.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF0A3BDF995F011D58844B357
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Even if nsproxy objects are made larger a bit, the number of such object will
-be -much- lesser compared to number of task_structs I would think, so
-the win/lose in space savings would need to take that into account.
+Rik van Riel wrote:
+> I already started looking into implementing this.
+>=20
+> Basically:
+> [...]
+
+Sounds good.  Except:
 
 
--- 
-Regards,
-vatsa
+> 1) on MADV_DONTNEED, mark pages clean, not accessed and move them
+>    to some "dontneed" LRU list.
+
+LRU is likely the wrong answer.  The longer a page has not been reused
+the more likely it won't be.  So, the dontneed-list  should be a simple
+FIFO.
+
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
+
+
+--------------enigF0A3BDF995F011D58844B357
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGEop32ijCOnn/RHQRAtxwAKCBUHkaxTVwh91ovGvDRg6wAM42wACgvSR7
+NECukCED3otQdSOqejaOPXk=
+=An8H
+-----END PGP SIGNATURE-----
+
+--------------enigF0A3BDF995F011D58844B357--
