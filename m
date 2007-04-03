@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735AbXDCEF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751861AbXDCEGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751735AbXDCEF7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 00:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXDCEF7
+	id S1751861AbXDCEGa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 00:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbXDCEG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 00:05:59 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:39704 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751735AbXDCEF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 00:05:58 -0400
-Message-ID: <4611D2C6.3090102@ums.usu.ru>
-Date: Tue, 03 Apr 2007 10:06:30 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] vt: Expose system-wide UTF-8 default setting via sysfs
-References: <4611ACCD.5000305@gmail.com>
-In-Reply-To: <4611ACCD.5000305@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+	Tue, 3 Apr 2007 00:06:29 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:37931 "EHLO
+	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbXDCEGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 00:06:12 -0400
+Date: Mon, 02 Apr 2007 22:05:29 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: [PATCH] libata: add NCQ blacklist entries from Silicon Image Windows
+ driver (v2)
+In-reply-to: <20070331181940.GV14134@stusta.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jgarzik@pobox.com
+Message-id: <4611D289.5090209@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+ <20070331181940.GV14134@stusta.de>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Antonino A. Daplas wrote:
-> Create a variable, default_utf8, that defines the system-wide default UTF-8
-> setting.  This variable can be altered via sysfs. If the variable is properly
-> set, this should mimimize breakage of UTF-8 encoded consoles when doing a
-> reset or echo -e '\033c' and of newly opened/allocated consoles.
-> 
-> This is based from patches by Jan Engelhardt and Paul LeoNerd Evans.
-> 
-> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-> ---
->> I think you're missing the whole point of console reset.  Its purpose is 
->> to force the console into a known-good state.  The fewer pieces of state 
->> it leaves unset, the better.  To some degree it's less important what 
->> that state actually is.
-> 
-> Okay, you convinced me. Hopefully this is acceptable to all parties.
-> 
-> Andrew,
-> 
-> If everybody agrees, can you drop the previous patch I sent to you, and use
-> this instead?
-> 
-> Tony
-> +static int default_utf8;
-> +module_param(default_utf8, int, S_IRUGO | S_IWUSR);
+This adds some NCQ blacklist entries taken from the Silicon Image 3124/3132
+Windows driver .inf files. There are some confirming reports of problems
+with these drives under Linux (for example http://lkml.org/lkml/2007/3/4/178)
+so let's disable NCQ on these drives.
 
-Module parameter without description and documentation? Yes, I understand 
-that it is impossible to make vt a module. How about adding a line to 
-Documentation/kernel-parameters.txt?
+Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 
-Other than that, the patch looks like a useful change.
+--- linux-2.6.21-rc5-git9/drivers/ata/libata-core.c	2007-04-02 21:03:29.000000000 -0600
++++ linux-2.6.21-rc5-git9edit/drivers/ata/libata-core.c	2007-04-02 21:26:23.000000000 -0600
+@@ -3363,6 +3363,11 @@ static const struct ata_blacklist_entry 
+ 	{ "Maxtor 6L250S0",     "BANC1G10",     ATA_HORKAGE_NONCQ },
+ 	/* NCQ hard hangs device under heavier load, needs hard power cycle */
+ 	{ "Maxtor 6B250S0",	"BANC1B70",	ATA_HORKAGE_NONCQ },
++	/* Blacklist entries taken from Silicon Image 3124/3132
++	   Windows driver .inf file - also several Linux problem reports */
++	{ "HTS541060G9SA00",    "MB3OC60D",     ATA_HORKAGE_NONCQ, },
++	{ "HTS541080G9SA00",    "MB4OC60D",     ATA_HORKAGE_NONCQ, },
++	{ "HTS541010G9SA00",    "MBZOC60D",     ATA_HORKAGE_NONCQ, },
+ 
+ 	/* Devices with NCQ limits */
+ 
 
--- 
-Alexander E. Patrakov
