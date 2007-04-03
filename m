@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422642AbXDCSx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422653AbXDCS5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422642AbXDCSx2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 14:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422649AbXDCSx2
+	id S1422653AbXDCS5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 14:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422651AbXDCS5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 14:53:28 -0400
-Received: from mga09.intel.com ([134.134.136.24]:5302 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422642AbXDCSx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 14:53:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,366,1170662400"; 
-   d="scan'208"; a="68186265:sNHT18402030"
-Date: Tue, 3 Apr 2007 11:52:19 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Williams, Mitch A" <mitch.a.williams@intel.com>
-Subject: Re: [PATCH] msi: Immediately mask and unmask msi-x irqs.
-Message-ID: <20070403185219.GB15704@linux-os.sc.intel.com>
-References: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com> <m1lkh9dhvm.fsf@ebiederm.dsl.xmission.com>
+	Tue, 3 Apr 2007 14:57:51 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:65318 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422654AbXDCS5u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 14:57:50 -0400
+Subject: real time hang w/ latency tracing
+From: Daniel Walker <dwalker@mvista.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 11:57:05 -0700
+Message-Id: <1175626625.10738.21.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1lkh9dhvm.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 01:41:49AM -0600, Eric W. Biederman wrote:
-> When we mask or unmask a msi-x irqs the writes may be posted because
-> we are writing to memory mapped region.  This means the mask and
-> unmask don't happen immediately but at some unspecified time in the
-> future.  Which is out of sync with how the mask/unmask logic work
-> for ioapic irqs.
-> 
-> The practical result is that we get very subtle and hard to track down
-> irq migration bugs.
-> 
-> This patch performs a read flush after writes to the MSI-X table for mask
-> and unmask operations.  Since the SMP affinity is set while the interrupt
-> is masked, and since it's unmasked immediately after, no additional flushes
-> are required in the various affinity setting routines.
 
-set_msi_irq_affinity() is already doing read_msi_msg(). So the mask operation
-before this should atleast get flushed before we modify the irq destination
-information.
+With 2.6.21-rc5-rt8 / i386 . If I disable wakeup timing , and enable
+interrupt off timing with latency tracing I can cause,
 
-With this patch however, unmask happens immediately.
+BUG: scheduling with irqs disabled: IRQ-16/0x00000000/909
+caller is rt_spin_lock_slowlock+0x94/0x190
+ [<c010577a>] show_trace_log_lvl+0x3a/0x60
+ [<c0105fdd>] show_trace+0x2d/0x30
+ [<c01060c7>] dump_stack+0x27/0x30
+ [<c03f52db>] schedule+0x12b/0x130
+ [<c03f6314>] rt_spin_lock_slowlock+0x94/0x190
+ [<c03f6b35>] rt_spin_lock+0x25/0x30
+ [<c02f19bf>] serial8250_console_write+0x16f/0x190
+ [<c012b3aa>] __call_console_drivers+0x7a/0xa0
+ [<c012b427>] _call_console_drivers+0x57/0xa0
+ [<c012b58d>] release_console_sem+0xdd/0x1e0
+ [<c012bd46>] vprintk+0x226/0x3b0
+ [<c012bef0>] printk+0x20/0x30
+ [<c0158d29>] print_traces+0x49/0x100
+ [<c0105792>] show_trace_log_lvl+0x52/0x60
+ [<c0105fdd>] show_trace+0x2d/0x30
+ [<c01060c7>] dump_stack+0x27/0x30
+ [<c0158481>] check_critical_timing+0x2b1/0x380
+ [<c01585f6>] trace_hardirqs_on+0xa6/0xc0
+ [<c01046e5>] restore_nocheck+0x12/0x15
+ =======================
 
-> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-> index ad33e01..435c195 100644
-> --- a/drivers/pci/msi.c
-> +++ b/drivers/pci/msi.c
-> @@ -94,6 +94,7 @@ static void msi_set_mask_bit(unsigned int irq, int flag)
->  		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
->  			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
->  		writel(flag, entry->mask_base + offset);
-> +		readl(entry->mask_base + offset);
+I do this by running,
 
-Don't we need the flush for the PCI_CAP_ID_MSI case aswell.
+echo 1 > /proc/sys/kernel/preempt_thresh
 
-thanks,
-suresh
+which clearly causes loads of output .. Then while the output is
+screaming along I hold down the left arrow key and eventually the
+message above starts to appear often .. Then the system hangs.
+
+Also I'm using an NFS root which might help to bring out the error ..
+
+Daniel
+
