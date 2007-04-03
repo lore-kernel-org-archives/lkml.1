@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933612AbXDCQb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbXDCQf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933612AbXDCQb5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 12:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933636AbXDCQb5
+	id S933999AbXDCQf4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 12:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934011AbXDCQf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 12:31:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60277 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933612AbXDCQb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 12:31:56 -0400
-Message-ID: <46128175.2090506@redhat.com>
-Date: Tue, 03 Apr 2007 12:31:49 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
+	Tue, 3 Apr 2007 12:35:56 -0400
+Received: from cel.leonerd.org.uk ([62.49.94.186]:3644 "EHLO cel.leo"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933999AbXDCQf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 12:35:56 -0400
+Date: Tue, 3 Apr 2007 17:35:54 +0100
+From: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] vt: Expose system-wide UTF-8 default setting via sysfs
+Message-ID: <20070403163553.GO26707@cel.leo>
+References: <4611ACCD.5000305@gmail.com> <20070403162051.GB5266@ucw.cz>
 MIME-Version: 1.0
-To: Paa Paa <paapaa125@hotmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Lower HD transfer rate with NCQ enabled?
-References: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl>
-In-Reply-To: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/Zw+/jwnNHcBRYYu"
+Content-Disposition: inline
+In-Reply-To: <20070403162051.GB5266@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paa Paa wrote:
-> I'm using Linux 2.6.20.4. I noticed that I get lower SATA hard drive 
-> throughput with 2.6.20.4 than with 2.6.19. The reason was that 2.6.20 
-> enables NCQ by defauly (queue_depth = 31/32 instead of 0/32). Transfer 
-> rate was measured using "hdparm -t":
-> 
-> With NCQ (queue_depth == 31): 50MB/s.
-> Without NCQ (queue_depth == 0): 60MB/s.
-> 
-> 20% difference is quite a lot. This is with Intel ICH8R controller and 
-> Western Digital WD1600YS hard disk in AHCI mode. I also used the next 
-> command to cat-copy a biggish (540MB) file and time it:
-> 
-> rm temp && sync && time sh -c 'cat quite_big_file > temp && sync'
-> 
-> Here I noticed no differences at all with and without NCQ. The times 
-> (real time) were basically the same in many successive runs. Around 19s.
-> 
-> Q: What conclusion can I make on "hdparm -t" results or can I make any 
-> conclusions? Do I really have lower performance with NCQ or not? If I 
-> do, is this because of my HD or because of kernel?
 
-hdparm -t is a perfect example of a synthetic benchmark.  NCQ was 
-designed to optimize real-world workloads.  The overhead gets hidden 
-pretty well when there are multiple requests in flight simultaneously, 
-as tends to be the case when you have a user thread reading data while a 
-kernel thread is asynchronously flushing the user thread's buffered 
-writes.  Given that you're breaking even with one user thread and one 
-kernel thread doing I/O, you'll probably get performance improvements 
-with higher thread counts.
+--/Zw+/jwnNHcBRYYu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	-- Chris
+On Tue, Apr 03, 2007 at 04:20:52PM +0000, Pavel Machek wrote:
+> HPA is right... this should be fixed in userland. Reset should reset a
+> console, and if you want utf-8, do \ec\ewhatever to get it.
+
+As I've already said elsewhere, does anything say that "reset" means
+that UTF-8 is turned off, or merely reset back to some known state? I
+personally would consider that UTF-8 being on is the default, and if
+something wants it off it should ask specifically..
+
+Consider any other terminal emulator, such as those running on X11; when
+they're reset, they know to keep UTF-8 mode turned on, because it said
+so in their config, or in the locale. Kernel doesn't really have nice
+access to the LANG environment variable, but we can give it something
+similar; namely, via a module parameter.
+
+--=20
+Paul "LeoNerd" Evans
+
+leonerd@leonerd.org.uk
+ICQ# 4135350       |  Registered Linux# 179460
+http://www.leonerd.org.uk/
+
+--/Zw+/jwnNHcBRYYu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGEoJp7eTlovtaLtYRAg3ZAJ4hGKB5vSNnj6eldmSKOJxN6dulwgCfd4Ws
+yOdmdgfB1tdYF8ium4ni0Bg=
+=mezh
+-----END PGP SIGNATURE-----
+
+--/Zw+/jwnNHcBRYYu--
