@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbXDCXzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbXDCXzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbXDCXzT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 19:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbXDCXzT
+	id S1753722AbXDCXzm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 19:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbXDCXzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 19:55:19 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35279 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753250AbXDCXzR (ORCPT
+	Tue, 3 Apr 2007 19:55:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44654
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753701AbXDCXzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 19:55:17 -0400
-Date: Tue, 3 Apr 2007 16:55:17 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Badari Pulavarty <pbadari@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc5-mm4
-In-Reply-To: <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com>
-Message-ID: <Pine.LNX.4.64.0704031653060.12109@schroedinger.engr.sgi.com>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> 
- <1175637332.6185.4.camel@dyn9047017100.beaverton.ibm.com> 
- <1175642398.6185.9.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com> 
- <1175643507.6185.12.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031638570.12109@schroedinger.engr.sgi.com>
- <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Apr 2007 19:55:25 -0400
+Date: Tue, 03 Apr 2007 16:55:18 -0700 (PDT)
+Message-Id: <20070403.165518.55726194.davem@davemloft.net>
+To: paulus@samba.org
+Cc: dwmw2@infradead.org, linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007, Badari Pulavarty wrote:
+From: Paul Mackerras <paulus@samba.org>
+Date: Wed, 4 Apr 2007 09:14:20 +1000
 
-> Hmm. booted fine with slub_debug :(
+> David Woodhouse writes:
+> 
+> > There are proper device numbers registered for pmac_zilog now. Use them.
+> 
+> Sigh.  I guess this is inevitable, but IMNSHO this exposes a weakness
+> in our serial subsystem.
+> 
+> The problem is that this means that a user has to know "oh, the serial
+> port on my computer is implemented with a Z85C30 chip, therefore it's
+> /dev/ttyPZ0 not /dev/ttyS0, like it would be if the designers had used
+> a 16C550".
+...
+> Why should a user know or care about that?  It really should be "it's
+> the built-in serial port on my computer therefore it's /dev/ttyS0".
 
-Try to selectively disable debug options... if you got the 
-time...
+I totally agree with Paul, the onboard serial device should get
+ttyS0 regardless of what hardare is used to drive it.
 
-F.e. Try with sanity checks only
+We dish out the minors sequentially on sparc in order to handle
+the case of multiple onboard serial controllers of different
+types which can happen on sparc.
 
-slub_debug=F
-
-then with redzoning
-
-slub_debug=FZ
-
-and do one with poisoning
-
-slub_debug=FP
-
-Maybe slub_debug avoided a race condition.
-
-
+Generalizing this minor number allocation for ttyS? might be the
+best way to handle this.
