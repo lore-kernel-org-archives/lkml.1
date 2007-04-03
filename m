@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbXDCFvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbXDCFyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160AbXDCFvz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 01:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbXDCFvy
+	id S1753088AbXDCFyo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 01:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbXDCFyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 01:51:54 -0400
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2855 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753112AbXDCFvx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 01:51:53 -0400
-Date: Tue, 3 Apr 2007 07:49:38 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070403074938.bc222b7e.khali@linux-fr.org>
-In-Reply-To: <20070402192209.GB15810@redhat.com>
-References: <45D7461A.2040808@redhat.com>
-	<20070218183805.5a4fd813.khali@linux-fr.org>
-	<20070228213803.GA4877@ucw.cz>
-	<20070301152655.f232db64.khali@linux-fr.org>
-	<20070302114023.GD2163@elf.ucw.cz>
-	<20070302114747.GB1212@srcf.ucam.org>
-	<20070302135810.GF2156@elf.ucw.cz>
-	<20070302220052.f93f3976.khali@linux-fr.org>
-	<20070401153951.GE5095@ucw.cz>
-	<20070402174859.80b74b05.khali@linux-fr.org>
-	<20070402192209.GB15810@redhat.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+	Tue, 3 Apr 2007 01:54:44 -0400
+Received: from www.osadl.org ([213.239.205.134]:42278 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753116AbXDCFyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 01:54:44 -0400
+Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: David Brownell <david-b@pacbell.net>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 07:54:45 +0200
+Message-Id: <1175579686.28263.204.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
-
-On Mon, 2 Apr 2007 15:22:09 -0400, Dave Jones wrote:
-> On Mon, Apr 02, 2007 at 05:48:59PM +0200, Jean Delvare wrote:
->  > +	u8  val;
->  > +#ifdef CONFIG_ACPI
->  > +	acpi_ut_acquire_mutex(ACPI_MTX_INTERPRETER);
->  > +#endif
->  >  	outb(reg, data->addr + ADDR_REG_OFFSET);
->  > -	return inb(data->addr + DATA_REG_OFFSET);
->  > +	val = inb(data->addr + DATA_REG_OFFSET);
->  > +#ifdef CONFIG_ACPI
->  > +	acpi_ut_release_mutex(ACPI_MTX_INTERPRETER);
->  > +#endif
->  > +	return val;
->  > ... deletia, more of the same.
+On Mon, 2007-04-02 at 16:04 -0400, Alan Stern wrote:
+> > It's not that simple though, especially with HPET.  The BIOS may expect
+> > the PIT to work, but Linux currently (and problematically!) uses HPET in
+> > "legacy replacement mode".  And ISTR the problems are coming up when the
+> > system is already in a low-functionality state:  IRQs off everywhere,
+> > even timer ticks have stopped.
 > 
-> it'd probably end up a lot cleaner to #define them to empty macros
-> in the !ACPI case in acpi/acpi.h and just #include it unconditionally.
+> I know nothing about the workings of the HPET and other clock code.  My 
+> point was this: Suspend passes through various intermediate stages in 
+> which some devices are available and others aren't.  So long as those 
+> stages are exact duplicates (in reverse order) of the stages that occurred 
+> during startup, it should be possible to make them all work.
 
-Sure, the implementation details can be refined later. I'm only trying
-to see what can be done for now.
+Unfortunately it is not a fully linear problem. Devices are initialized
+late and put the system into a more complex state (i.e. dynticks,
+highres) which needs to be suspended and resumed. If we want to do this
+completely linear we need to do a full reverse rollback of the system
+states, which moves even more complexity into such systems.
 
--- 
-Jean Delvare
+Also the linear approach is not working with other devices, as one can
+see with the still unresolved "IRQ#X nobody cared" issues at resume,
+which break my laptop. It works nice on startup of the system, but
+breaks on resume.
+
+	tglx
+
+
