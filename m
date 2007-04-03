@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946003AbXDCWIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946005AbXDCWKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946003AbXDCWIk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 18:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbXDCWIk
+	id S1946005AbXDCWKj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 18:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946006AbXDCWKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 18:08:40 -0400
-Received: from lazybastard.de ([212.112.238.170]:50382 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753688AbXDCWIk (ORCPT
+	Tue, 3 Apr 2007 18:10:39 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:60336 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946005AbXDCWKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 18:08:40 -0400
-Date: Tue, 3 Apr 2007 23:12:38 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jakub Jelinek <jakub@redhat.com>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-Message-ID: <20070403211238.GB26860@lazybastard.org>
-References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403135154.61e1b5f3.akpm@linux-foundation.org> <4612C059.8070702@redhat.com> <4612C2B6.3010302@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4612C2B6.3010302@cosmosbay.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 3 Apr 2007 18:10:37 -0400
+Message-ID: <4612D0CA.3070209@zytor.com>
+Date: Tue, 03 Apr 2007 15:10:18 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, Andi Kleen <ak@suse.de>,
+       Christian Borntraeger <borntrae@de.ibm.com>,
+       virtualization@lists.linux-foundation.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+Subject: Re: A set of "standard" virtual devices?
+References: <4611652F.700@zytor.com> <4612B303.5000109@zytor.com> <4612C077.60502@goop.org> <200704032351.17823.arnd@arndb.de>
+In-Reply-To: <200704032351.17823.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 April 2007 23:10:14 +0200, Eric Dumazet wrote:
+Arnd Bergmann wrote:
 > 
-> mmap()/brk() must give fresh NULL pages, but maybe madvise(MADV_DONTNEED) 
-> can relax this requirement (if the pages were reclaimed, then a page fault 
-> could bring a new page with random content)
+> One interesting aspect of the PS3 hypervisor is that some of the
+> low-speed interfaces are implemented as a virtual UART, meaning
+> something that only has read and write operations and uses an
+> interrupt for flow control. The implementation in 
+> drivers/ps3/vuart.c is probably more complex than what we want
+> as a generic transport mechanism, but simply having a bidirectional
+> data stream sounds like an ideal abstraction for the "simple"
+> case. Some more or less obvious users of this include:
+> 
+> - console
+> - additional tty
+> - random
+> - slow network (using ppp)
+> - printer
+> - watchdog
+> - hid (e.g. mouse)
+> - system management (like ps3)
+> - fast network (in combination with
+>   shared memory segment)
+> 
+> The transport can be hypervisor specific, e.g. there could be
+> a virtual PCI serial port on kvm, an hcall interface on the ps3
+> and a virtual CTC on s390 (kidding), while all of them can have
+> the same kind of hardware _behind_ the serial connection.
+> 
 
-...provided that it doesn't leak information from the kernel?
+Note that at least for PIO-based devices, there is nothing that says you 
+can't implement PCI over another transport, if you wish.  It's really 
+just a very simple RPC protocol.
 
-Jörn
+DMA is trickier, as it makes the data appear into the address space of 
+the guest in a way that is both device- and host-dependent (in the 
+presence of PCI domains, IOMMU etc.)  There may be reason to avoid DMA 
+for that reason.
 
--- 
-All art is but imitation of nature.
--- Lucius Annaeus Seneca
+	-hpa
