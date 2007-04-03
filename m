@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753652AbXDCU6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbXDCVA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753652AbXDCU6Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 16:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbXDCU6Z
+	id S1753661AbXDCVA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 17:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbXDCVA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 16:58:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:16538 "EHLO mga01.intel.com"
+	Tue, 3 Apr 2007 17:00:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59981 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753652AbXDCU6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 16:58:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,366,1170662400"; 
-   d="scan'208"; a="224199927:sNHT62892991"
-Date: Tue, 3 Apr 2007 13:57:25 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Williams, Mitch A" <mitch.a.williams@intel.com>
-Subject: Re: [PATCH] msi: Immediately mask and unmask msi-x irqs.
-Message-ID: <20070403205725.GD15704@linux-os.sc.intel.com>
-References: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com> <m1lkh9dhvm.fsf@ebiederm.dsl.xmission.com> <20070403185219.GB15704@linux-os.sc.intel.com> <m18xd9ckn4.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m18xd9ckn4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.1i
+	id S1753651AbXDCVA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 17:00:26 -0400
+Message-ID: <4612C059.8070702@redhat.com>
+Date: Tue, 03 Apr 2007 17:00:09 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jakub Jelinek <jakub@redhat.com>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com> <20070403135154.61e1b5f3.akpm@linux-foundation.org>
+In-Reply-To: <20070403135154.61e1b5f3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 01:39:43PM -0600, Eric W. Biederman wrote:
-> "Siddha, Suresh B" <suresh.b.siddha@intel.com> writes:
+Andrew Morton wrote:
+
+> Oh.  I was assuming that we'd want to unmap these pages from pagetables and
+> mark then super-easily-reclaimable.  So a later touch would incur a minor
+> fault.
 > 
-> Further now that we cache the msi message that read_msi_msg should go
-> away and we should use the cached version from the msi_desc.
+> But you think that we should leave them mapped into pagetables so no such
+> fault occurs.
 
-Ok. Then this patch is a must.
+> Leaving the pages mapped into pagetables means that they are considerably
+> less likely to be reclaimed.
 
-> > Don't we need the flush for the PCI_CAP_ID_MSI case aswell.
-> 
-> At least the 3.0 pci spec does not allow pci configuration access to
-> be posted.  So unless we find some hardware that actually does post
-> pci configuration writes we should be ok.
+If we move the pages to a place where they are very likely to be
+reclaimed quickly (end of the inactive list, or a separate
+reclaim list) and clear the dirty and referenced lists, we can
+both reclaim the page easily *and* avoid the page fault penalty.
 
-ok. Thanks.
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
