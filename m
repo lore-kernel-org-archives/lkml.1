@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbXDCGKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbXDCGLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753027AbXDCGKH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 02:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbXDCGKH
+	id S1753188AbXDCGLz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 02:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbXDCGLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 02:10:07 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:34757 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753027AbXDCGKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 02:10:06 -0400
-Date: Mon, 2 Apr 2007 23:09:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, xfs-masters@oss.sgi.com, reiserfs-dev@namesys.com
-Subject: Re: [PATCH] Cleanup and kernelify shrinker registration (rc5-mm2)
-Message-Id: <20070402230954.27840721.akpm@linux-foundation.org>
-In-Reply-To: <1175579225.12230.504.camel@localhost.localdomain>
-References: <1175571885.12230.473.camel@localhost.localdomain>
-	<20070402205825.12190e52.akpm@linux-foundation.org>
-	<1175575503.12230.484.camel@localhost.localdomain>
-	<20070402215702.6e3782a9.akpm@linux-foundation.org>
-	<1175579225.12230.504.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 3 Apr 2007 02:11:55 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38177 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753188AbXDCGLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 02:11:54 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+Y/fM7J1SYoXgFWKcDfBZE2kKmmDWAUaL2CXIH5Y
+	RPXEMSQgYHT8Tb
+Subject: Re: [PATCH] sched: staircase deadline misc fixes
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+In-Reply-To: <20070403060109.GA6708@elte.hu>
+References: <200703290237.38777.kernel@kolivas.org>
+	 <200703290944.45888.kernel@kolivas.org>
+	 <1175147455.6430.91.camel@Homer.simpson.net>
+	 <200704031237.21946.kernel@kolivas.org>
+	 <1175578270.6342.12.camel@Homer.simpson.net>
+	 <20070403060109.GA6708@elte.hu>
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 08:11:50 +0200
+Message-Id: <1175580710.6751.10.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Apr 2007 15:47:05 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> On Mon, 2007-04-02 at 21:57 -0700, Andrew Morton wrote:
-> > On Tue, 03 Apr 2007 14:45:02 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > Does that mean the to function correctly every user needs some internal
-> > > cursor so it doesn't end up scanning the first N entries over and over?
-> > > 
-> > 
-> > If it wants to be well-behaved, and to behave as the VM expects, yes. 
-> > 
-> > There's an expectation that the callback will be performing some scan-based
-> > aging operation and of course to do LRU (or whatever) aging, the callback
-> > will need to remember where it was up to last time it was called.
-> > 
-> > But it's just a guideline - callbacks could do something different but
-> > in-the-spirit, I guess.
+On Tue, 2007-04-03 at 08:01 +0200, Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
 > 
-> Hmm, actually the callers I looked at (nfs, dcache, mbcache) seem to use
-> an LRU list and just walk the first "nr_to_scan" entries, and nr_to_scan
-> is always 128.
-
-That's just because of the batching logic up in shrink_slab().  And iirc we
-only break the scanning into lumps of 128 items so we can add a
-cond_resched() into it.
-
-> Someone who keeps a cursor will be disadvantaged: the other shrinkers
-> could well get less effective on repeated calls, but we won't.  Someone
-> who picks entries at random might have the same issue.
-
-To examine the balancing one would need to examine the value of total_scan
-in shrink_slab(), rather than looking at the value which shrink_slab()
-passes into the callback.
-
-> I think it is clearest to describe how we expect everyone to work, and
-> let whoever is getting creative worry about it themselves.
+> > > Try two instances of chew.c at _differing_ nice levels on one cpu on 
+> > > mainline, and then SD. This is why you can't renice X on mainline.
+> > 
+> > How about something more challenging instead :)
+> > 
+> > The numbers below are from my scheduler tree with massive_intr running 
+> > at nice 0, and chew at nice 5.  Below these numbers are 100 lines from 
+> > the exact center of chew's output.
+> > 
+> > (interactivity remains intact with this rather heavy load)
 > 
-> How's this:
-> ==
-> Cleanup and kernelify shrinker registration.
+> looks interesting - could you send the patch?
 
-hm, well, six-of-one, VI of the other.  We save maybe four kmallocs across
-the entire uptime at the cost of exposing stuff kernel-side which doesn't
-need to be exposed.
+Sorry, that tree is not _even_ ready for viewing yet.
+(and it's got an occasional oops bug i have to kill)
 
-But I think we need to weed that crappiness out of XFS first.
+	-Mike
 
