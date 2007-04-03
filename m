@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945949AbXDCVOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945952AbXDCVRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945949AbXDCVOu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 17:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945950AbXDCVOu
+	id S1945952AbXDCVRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 17:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945953AbXDCVRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 17:14:50 -0400
-Received: from cel.leonerd.org.uk ([62.49.94.186]:3212 "EHLO cel.leo"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1945949AbXDCVOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 17:14:49 -0400
-Date: Tue, 3 Apr 2007 22:14:38 +0100
-From: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vt: Do not clear UTF when resetting console
-Message-ID: <20070403221438.77c40a53@nim.leo>
-In-Reply-To: <4611A60F.90505@zytor.com>
-References: <46110F88.5040905@gmail.com>
-	<46113ED6.4060005@zytor.com>
-	<1175559377.7267.13.camel@daplas>
-	<Pine.LNX.4.61.0704030220140.18387@yvahk01.tjqt.qr>
-	<4611A60F.90505@zytor.com>
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 3 Apr 2007 17:17:20 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44513 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945952AbXDCVRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 17:17:19 -0400
+Date: Tue, 3 Apr 2007 14:16:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jakub Jelinek <jakub@redhat.com>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+Message-Id: <20070403141656.1e25b878.akpm@linux-foundation.org>
+In-Reply-To: <4612C059.8070702@redhat.com>
+References: <46128051.9000609@redhat.com>
+	<p73648dz5oa.fsf@bingen.suse.de>
+	<46128CC2.9090809@redhat.com>
+	<20070403172841.GB23689@one.firstfloor.org>
+	<20070403125903.3e8577f4.akpm@linux-foundation.org>
+	<4612B645.7030902@redhat.com>
+	<20070403135154.61e1b5f3.akpm@linux-foundation.org>
+	<4612C059.8070702@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_q_I11bhqybqwE=Xs_QqfpMI";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_q_I11bhqybqwE=Xs_QqfpMI
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tue, 03 Apr 2007 17:00:09 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-On Mon, 02 Apr 2007 17:55:43 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
+> Andrew Morton wrote:
+> 
+> > Oh.  I was assuming that we'd want to unmap these pages from pagetables and
+> > mark then super-easily-reclaimable.  So a later touch would incur a minor
+> > fault.
+> > 
+> > But you think that we should leave them mapped into pagetables so no such
+> > fault occurs.
+> 
+> > Leaving the pages mapped into pagetables means that they are considerably
+> > less likely to be reclaimed.
+> 
+> If we move the pages to a place where they are very likely to be
+> reclaimed quickly (end of the inactive list, or a separate
+> reclaim list) and clear the dirty and referenced lists, we can
+> both reclaim the page easily *and* avoid the page fault penalty.
+> 
 
-> I think you're missing the whole point of console reset.  Its purpose is=
-=20
-> to force the console into a known-good state.  The fewer pieces of state=
-=20
-> it leaves unset, the better.  To some degree it's less important what=20
-> that state actually is.
-
-Ultimately, does the patch actually change that?
-
-Without this change, utf mode gets reset to zero because that's what the
-kernel source code says.
-
-With this change, utf mode gets reset to zero because that's what the
-module parameter says and the user hasn't changed it..
-
-.. only with the change, users get the ability to change that policy.
-
-For the last 2 years since I originally submitted that patch, I've been
-running it on my box. For those last 2 years, finally, UTF-8 input
-actually worked on the VTs. Previous to that, lots of things broke.
-
---=20
-Paul "LeoNerd" Evans
-
-leonerd@leonerd.org.uk
-ICQ# 4135350       |  Registered Linux# 179460
-http://www.leonerd.org.uk/
-
---Sig_q_I11bhqybqwE=Xs_QqfpMI
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGEsPG7eTlovtaLtYRArKwAJ9u0lGkLdeaBOUfk7ur1Fj+0AkXXQCdEvgi
-1Yq7xzfM3Wkx9pdqsgOfktk=
-=bbBu
------END PGP SIGNATURE-----
-
---Sig_q_I11bhqybqwE=Xs_QqfpMI--
+ah, yes, you're right.  That part should work nicely.
