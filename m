@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965655AbXDCKrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966150AbXDCKtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965655AbXDCKrA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 06:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966150AbXDCKrA
+	id S966150AbXDCKtd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 06:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966156AbXDCKtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 06:47:00 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:33120 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965655AbXDCKq7 (ORCPT
+	Tue, 3 Apr 2007 06:49:33 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:3695 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966150AbXDCKtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 06:46:59 -0400
-Message-ID: <46122F98.8030302@hitachi.com>
-Date: Tue, 03 Apr 2007 19:42:32 +0900
-From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       yumiko.sugita.yf@hitachi.com, masami.hiramatsu.pt@hitachi.com,
-       hidehiro.kawai.ez@hitachi.com, yuji.kakutani.uw@hitachi.com,
-       soshima@redhat.com, haoki@redhat.com
-Subject: Re: [PATCH 0/3] VM throttling: avoid blocking occasional writers
-References: <45F7EDC6.5090303@hitachi.com> <20070315110745.af867b10.akpm@linux-foundation.org> <45FD53DB.5000207@tmr.com> <460218D2.40701@hitachi.com> <46026B78.3080401@tmr.com> <4607A01D.1060401@hitachi.com> <4607FECD.1090101@tmr.com>
-In-Reply-To: <4607FECD.1090101@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 3 Apr 2007 06:49:32 -0400
+Date: Tue, 3 Apr 2007 12:51:39 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Christian Borntraeger <borntrae@de.ibm.com>,
+       virtualization@lists.linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+Subject: Re: A set of "standard" virtual devices?
+Message-ID: <20070403125139.3d610c1c@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <200704031126.52750.ak@suse.de>
+References: <4611652F.700@zytor.com>
+	<200704031030.36473.ak@suse.de>
+	<20070403111731.52f2102a@gondolin.boeblingen.de.ibm.com>
+	<200704031126.52750.ak@suse.de>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Thanks for your comments.
-I'm sorry for my late reply.
+On Tue, 3 Apr 2007 11:26:52 +0200,
+Andi Kleen <ak@suse.de> wrote:
 
-Bill Davidsen wrote:
->> Then, what do you think of the following idea?
->>
->> (4) add `dirty_start_writeback_ratio' as percentage of memory,
->>     at which a generator of dirty pages itself starts writeback
->>     (that is, non-blocking ratio).
->>
->> In this way, `dirty_ratio' is used as the blocking ratio, so we don't
->> need to modify the sysctl.conf etc. I think it's easier to understand
->> for administrators of systems, because the interface is similar as
->> `dirty_background_ratio' and`dirty_ratio.'
->>
-> It sounds good to me, just be sure behavior is sane for for both
-> blocking less than start_writeback and vice versa.
+> > 
+> > On s390, it would be more than strangeness. There's no implementation
+> > of PCI at all, someone would have to cook it up - and it wouldn't have
+> > any use beyond those special devices. Since there isn't any bus type
+> > that is available on *all* architectures, a generic "virtual" bus with
+> > very simple probing seems much saner...
+> 
+> You just have to change all the distribution installers then. 
+> Ok I suppose on s390 that's not that big issue because there are not
+> that many for s390. But for x86 there exist quite a lot. I suppose
+> it's easier to change it in the kernel.
 
-Then I'm going to post the new patchset.
-In my new patchset, if dirty_ratio < dirty_start_writeback_ratio,
-dirty_start_writeback_ratio is just regarded as the same value as
-dirty_ratio, and then the kernel behaves similarly as the current kernel.
+Huh? I don't follow you here. Why should this be easier for s390 vs.
+x86? (And since there seems to be a trend to use HAL as a device
+discovery tool recently: A new bus type is easy enough to add there.)
 
-Regards,
--- 
-Tomoki Sekiyama
-Hitachi, Ltd., Systems Development Laboratory
-
+And I really think we should have a clean design in the kernel instead
+of trying to wedge virtual devices into a known system. Exposing
+virtual devices (which may be handled totally differently) as PCI
+devices just seems hackish to me.
