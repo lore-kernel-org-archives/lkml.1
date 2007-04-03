@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965564AbXDCLvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752100AbXDCMN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965564AbXDCLvJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 07:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965565AbXDCLvJ
+	id S1752100AbXDCMN7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 08:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXDCMN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 07:51:09 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:43017 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965564AbXDCLvI (ORCPT
+	Tue, 3 Apr 2007 08:13:59 -0400
+Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:53785 "EHLO
+	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752100AbXDCMN6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 07:51:08 -0400
-Message-ID: <46123F98.2010706@s5r6.in-berlin.de>
-Date: Tue, 03 Apr 2007 13:50:48 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Carlo Florendo <subscribermail@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: kernel source dependency
-References: <46120EBE.8080705@gmail.com>
-In-Reply-To: <46120EBE.8080705@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 08:13:58 -0400
+X-Greylist: delayed 1949 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Apr 2007 08:13:58 EDT
+Date: Tue, 3 Apr 2007 13:41:27 +0200
+From: Martin Mares <mj@ucw.cz>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Paul LeoNerd Evans <leonerd@leonerd.org.uk>
+Subject: Re: [PATCH] vt: Do not clear UTF when resetting console
+Message-ID: <mj+md-20070403.114037.27180.nikam@ucw.cz>
+References: <46110F88.5040905@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46110F88.5040905@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carlo Florendo wrote:
-> The kernel configure target "make menuconfig" requires ncurses.   FWIW, it
-> could probably be better if the error message would indicate that that
-> ncurses is necessary for "make menuconfig" to run and that the user could
-> be prompted to install the package.
+Hello!
 
-You could select your distributor's kernel source package in the package
-manager of your choice and see which packages are auto-selected or
-reported as required.
+> Resetting the console, either by ANSI escape sequences or by the reset utility,
+> will drop the console back to legacy (non-UTF-8) mode.
+
+Yes, and as far as I understand the logic behind these escape sequences,
+it's the intended behavior, not a bug.
+
+The escape sequence for terminal reset should reset as much as possible,
+I see no reason for making an exception for the UTF-8 mode.
+
+				Have a nice fortnight
 -- 
-Stefan Richter
--=====-=-=== -=-- ---==
-http://arcgraph.de/sr/
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+Lottery -- a tax on people who can't do math.
