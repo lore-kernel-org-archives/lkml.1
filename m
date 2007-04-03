@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966067AbXDCTVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbXDCTXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966067AbXDCTVz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXDCTVz
+	id S1753641AbXDCTXw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXDCTXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:21:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60446 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753626AbXDCTVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:21:54 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ego@in.ibm.com
-Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
-Date: Tue, 3 Apr 2007 21:25:13 +0200
-User-Agent: KMail/1.9.5
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, paulmck@us.ibm.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com, dino@in.ibm.com,
-       masami.hiramatsu.pt@hitachi.com
-References: <20070402053457.GA9076@in.ibm.com> <20070403125619.GA32444@in.ibm.com> <20070403141516.GB14900@in.ibm.com>
-In-Reply-To: <20070403141516.GB14900@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 15:23:52 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54810 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753638AbXDCTXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 15:23:51 -0400
+Date: Tue, 3 Apr 2007 21:23:49 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, sam@ravnborg.org, davem@davemloft.net
+Subject: Re: [PATCH] make csum_partial obj-y
+Message-ID: <20070403192349.GA24243@one.firstfloor.org>
+References: <20070403112604.129610b1.randy.dunlap@oracle.com> <p731wj1z0or.fsf@bingen.suse.de> <4612A66D.5090009@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704032125.14742.rjw@sisk.pl>
+In-Reply-To: <4612A66D.5090009@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 3 April 2007 16:15, Gautham R Shenoy wrote:
-> On Tue, Apr 03, 2007 at 06:26:19PM +0530, Srivatsa Vaddagiri wrote:
-> > 
-> > Besides, how problematic is this in practise (that threads sleep for
-> > extended durations in TASK_INTERRUPTIBLE state breaking
-> > freezer/suspend/hotplug)?
-> > 
-> > Should we ignore this for the timebeing and take up later as and when
-> > users report problems?
+On Tue, Apr 03, 2007 at 12:09:33PM -0700, Randy Dunlap wrote:
+> Andi Kleen wrote:
+> >Randy Dunlap <randy.dunlap@oracle.com> writes:
+> >
+> >>From: Randy Dunlap <randy.dunlap@oracle.com>
+> >>
+> >>Fixes kernel bugzilla #8242:
+> >>
+> >>Move csum_partial() from lib-y to obj-$(CONFIG_CSUM_PARTIAL)
+> >>so that modules can use it.
+> >>
+> >>CONFIG_BLK_DEV_MD (md/raid driver) needs csum_partial(),
+> >>even when CONFIG_NET=n and BLK_DEV_MD=m, so build it as an
+> >>object to force it being built and available.
+> >>
+> >>REISERFS with XATTR=y also needs csum_partial(), so that
+> >>is enforced here.
+> >
+> >They are all broken because csum_partial gives different values
+> >on different architectures.   You're just extending that to
+> >possibly more subsystems.
 > 
-> In my case, the problem of freezer failing was due to the vfork freezer race
-> in do_fork. The parent task was waiting_for_completion() while the child was
-> frozen.
-> 
-> Rafael has already sent out the fix for that, but for some reason I
-> don't see it in the -mm.
+> So the ones that can be localized (BLK_DEV_MD and REISERFS)
+> should have their own versions?
 
-Hm, freezer-fix-vfork-problem.patch is in -rc5-mm3.  Is it the patch you're
-talking about or is there another one?
+They would need some compat code to still be able to read
+old versions and a new format that is portable.
 
-Rafael
+Currently it means you likely have architecture specific MD
+and reiserfs data structures on disk which is broken.
+
+BTW It might be better to just switch to a stronger checksum.
+The TCP checksum is quite weak and we already have CRC functions.
+
+> How does the networking code work across multiple architectures?
+
+It folds the csum_partial output together with a pseudo header
+into the final checksum. Just skipping the folding step is broken
+because the presentation before that is architecture specific.
+e.g. some hold it in 32bit and others in 64bit.
+
+-Andi
