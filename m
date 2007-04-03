@@ -1,432 +1,479 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbXDCFrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072AbXDCFsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbXDCFrv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 01:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXDCFrv
+	id S1753072AbXDCFsI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 01:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbXDCFsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 01:47:51 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:34042 "EHLO smtp.osdl.org"
+	Tue, 3 Apr 2007 01:48:08 -0400
+Received: from ozlabs.org ([203.10.76.45]:33193 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753071AbXDCFrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 01:47:49 -0400
-Date: Mon, 2 Apr 2007 22:47:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.21-rc5-mm4
-Message-Id: <20070402224745.71a25af7.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1753072AbXDCFsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 01:48:04 -0400
+Subject: Re: [PATCH] Cleanup and kernelify shrinker registration (rc5-mm2)
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, xfs-masters@oss.sgi.com, reiserfs-dev@namesys.com
+In-Reply-To: <20070402215702.6e3782a9.akpm@linux-foundation.org>
+References: <1175571885.12230.473.camel@localhost.localdomain>
+	 <20070402205825.12190e52.akpm@linux-foundation.org>
+	 <1175575503.12230.484.camel@localhost.localdomain>
+	 <20070402215702.6e3782a9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 15:47:05 +1000
+Message-Id: <1175579225.12230.504.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
-
-- The oops in git-net.patch has been fixed, so that tree has been restored. 
-  It is huge.
-
-- Added the device-mapper development tree to the -mm lineup (Alasdair
-  Kergon).  It is a quilt tree, living at
-  ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/.
-
-- Added davidel's signalfd stuff.
-
-
-
-Boilerplate:
-
-- See the `hot-fixes' directory for any important updates to this patchset.
-
-- To fetch an -mm tree using git, use (for example)
-
-  git-fetch git://git.kernel.org/pub/scm/linux/kernel/git/smurf/linux-trees.git tag v2.6.16-rc2-mm1
-  git-checkout -b local-v2.6.16-rc2-mm1 v2.6.16-rc2-mm1
-
-- -mm kernel commit activity can be reviewed by subscribing to the
-  mm-commits mailing list.
-
-        echo "subscribe mm-commits" | mail majordomo@vger.kernel.org
-
-- If you hit a bug in -mm and it is not obvious which patch caused it, it is
-  most valuable if you can perform a bisection search to identify which patch
-  introduced the bug.  Instructions for this process are at
-
-        http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
-
-  But beware that this process takes some time (around ten rebuilds and
-  reboots), so consider reporting the bug first and if we cannot immediately
-  identify the faulty patch, then perform the bisection search.
-
-- When reporting bugs, please try to Cc: the relevant maintainer and mailing
-  list on any email.
-
-- When reporting bugs in this kernel via email, please also rewrite the
-  email Subject: in some manner to reflect the nature of the bug.  Some
-  developers filter by Subject: when looking for messages to read.
-
-- Occasional snapshots of the -mm lineup are uploaded to
-  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/ and are announced on
-  the mm-commits list.
-
-
-
-
-Changes since 2.6.21-rc5-mm3:
-
-
- origin.patch
- git-acpi.patch
- git-alsa.patch
- git-agpgart.patch
- git-arm.patch
- git-avr32.patch
- git-cifs.patch
- git-cpufreq.patch
- git-powerpc.patch
- git-drm.patch
- git-dvb.patch
- git-gfs2-nmw.patch
- git-hid.patch
- git-ia64.patch
- git-ieee1394.patch
- git-infiniband.patch
- git-input.patch
- git-kbuild.patch
- git-kvm.patch
- git-leds.patch
- git-libata-all.patch
- git-md-accel.patch
- git-md-accel-fix.patch
- git-mips.patch
- git-mmc.patch
- git-mtd.patch
- git-ubi.patch
- git-netdev-all.patch
- git-e1000.patch
- git-net.patch
- git-ioat.patch
- git-ocfs2.patch
- git-parisc.patch
- git-r8169.patch
- git-selinux.patch
- git-pciseg.patch
- git-s390.patch
- git-scsi-misc.patch
- git-block.patch
- git-unionfs.patch
- git-watchdog.patch
- git-wireless.patch
- git-ipwireless_cs.patch
- git-cryptodev.patch
- git-gccbug.patch
-
- git trees.
-
--proc-fix-linkage-with-config_sysctl=y-config_proc_sysctl=n.patch
--uml-fix-unreasonably-long-udelay.patch
--fix-firmware-sample-code.patch
--jdelvare-i2c-i2c-algo-bit-document-udelay.patch
--pcmcia-allow-pcmcia-scsi-drivers-to-be-built-into-the.patch
--gregkh-pci-pci-set-pci-bfsort-for-poweredge-r900.patch
--fix-gregkh-pci-pci-piggy-bus.patch
--drivers-scsi-dpt_i2oc-remove-dead-code.patch
--scsi-whitespace-cleanup-in-the-dpt-driver.patch
--drivers-scsi-aic7xxx-make-functions-static.patch
--remove-some-unused-scsi-related-kernel-config-variables.patch
--drivers-scsi-aacraid-cleanups.patch
--make-mptspi_target_destroy-static.patch
--qla2xxx-remove-duplicate-pci_disable_device-call.patch
--gregkh-usb-usb-gtcoc-fix-a-use-before-check.patch
--gregkh-usb-usb-ati_remote2-add-channel-support.patch
--usb-serial-whiteheat-convert-to-generic-boolean.patch
--x86_64-mm-dont-probe-for-ddc-on-vbe1_2.patch
--x86_64-mm-remove-hardcoding-of-hard_smp_processor_id-on-up-systems.patch
--drivers-mfd-sm501c-fix-an-off-by-one.patch
-
- Merged into mainline or a subsystem tree.
-
-+md-avoid-a-deadlock-when-removing-a-device-from-an-md-array-via-sysfs.patch
-+md-avoid-a-deadlock-when-removing-a-device-from-an-md-array-via-sysfs-fix.patch
-+revert-driver-core-do-not-wait-unnecessarily-in-driver_unregister.patch
-
- 2.6.21 queue.
-
-+vmi-paravirt-ops-bugfix-for-2621.patch
-
- Might be 2.6.21 queue.
-
-+drivers-acpi-kconfig-formulation-fixpatch.patch
-
- ACPI fixlet
-
-+pata_platform-for-arm-riscpc.patch
-
- ARM/pata fix
-
-+cifs-use-mutexdiff.patch
-
- CIFS cleanup
-
-+agk-dm-dm-merge-max_hw_sector.patch
-+agk-dm-dm-raid1-one-kmirrord-per-mirror.patch
-+agk-dm-dm-crypt-disable-barriers.patch
-+agk-dm-dm-crypt-add-null-iv.patch
-+agk-dm-dm-mpath-log-device-name.patch
-+agk-dm-dm-allow-offline-devices.patch
-+agk-dm-dm-log-fault-detection.patch
-+agk-dm-dm-log-report-fault-status.patch
-+agk-dm-dm-raid1-add-handle_errors-feature-flag.patch
-+agk-dm-dm-io-delay-dec_count.patch
-+agk-dm-dm-io-prepare-for-new-interface.patch
-+agk-dm-dm-io-new-interface.patch
-+agk-dm-dm-kcopyd-update-dm-io-interface.patch
-+agk-dm-dm-exception-store-update-dm-io-interface.patch
-+agk-dm-dm-log-update-dm-io-interface.patch
-+agk-dm-dm-raid1-update-dm-io-interface.patch
-+agk-dm-dm-io-remove-old-interface.patch
-
- Device mapper development tree.
-
-+uevent-use-add_uevent_var-instead-of-open-coding-it.patch
-
- uevent cleanup
-
-+jdelvare-i2c-i2c-algo-bit-50-50-duty-cycle-4.patch
-+jdelvare-i2c-i2c-algo-bit-improve-debug-4.patch
-
- I2C tree updates
-
-+hid-add-two-led-codes-to-hid-input-mapping.patch
-
- HID fixlet.
-
-+convert-input-core-to-struct-device.patch
-+add-locking-to-evdev.patch
-
- Input updates
-
--kbuild-override-build-timestamp.patch
-
- Dropped, I think.
-
-+testing-patch-for-ali-pata-fixes-hopefully-for-the-problems-with-atapi-dma-fix.patch
-
- Fix
- testing-patch-for-ali-pata-fixes-hopefully-for-the-problems-with-atapi-dma.patch
-
-+git-mmc-versus-uevent-use-add_uevent_var-instead-of-open-coding-it.patch
-
- Fix git-mmc for the uevent changes in -mm.
-
-+drivers-net-vioc-possible-cleanups.patch
-
- Netdev fixes
-
-+2621-rc5-mm3-fix-e1000-compilation.patch
-
- Fix git-e1000.patch compilation.
-
-+make-drivers-net-qla3xxxcphy_devices-static.patch
-+forcedeth-improve-napi-logic.patch
-
- netdev fixes
-
-+git-net-fixup.patch
-+git-net-vs-git-netdev-all.patch
-
- Fix things due to git-net.patch.
-
-+round_up-macro-cleanup-in-drivers-parisc.patch
-
- parisc cleanup
-
-+gregkh-pci-pci-flush-msi-x-table-writes.patch
-+gregkh-pci-pci-remove-the-broken-pci_multithread_probe-option.patch
-
- PCI tree updates
-
-+fix-gregkh-pci-pci-remove-the-broken-pci_multithread_probe-option.patch
-
- Remove now-dead code.
-
-+pci-define-pci_request-release_regions-for-config_pci=n.patch
-+round_up-macro-cleanup-in-drivers-pci.patch
-
- PCI updates
-
-+gregkh-usb-usb-nikon-d80-unusual-device-patch.patch
-+gregkh-usb-usb-cypress_cy7c63-race-disconnect-sysfs-read-write-leading-to-following-null-pointer.patch
-+gregkh-usb-usb-fix-catc-error-handling.patch
-+gregkh-usb-usb-fix-error-handling-in-kl5kusb.patch
-+gregkh-usb-usb-fix-error-handling-for-mct_u232.patch
-+gregkh-usb-usb-fix-omninet-write-vs-close-race.patch
-+gregkh-usb-usb-whiteheat-convert-to-generic-boolean.patch
-+gregkh-usb-usb-add-last_busy-field-for-use-in-autosuspend.patch
-
- USB tree updates
-
-+git-wireless-debug-build-fixes.patch
-
- Fix git-wireless.patch
-
-+git-wireless-vs-git-net.patch
-+git-wireless-vs-git-net-2.patch
-
- Fix clashes between git-wireless and git-net.
-
-+x86_64-mm-x86-64-eflags-header.patch
-
- x86_64 tree update
-
-+fix-x86_64-mm-relocatable-kernel-support.patch
-
- Fix patch in x86_64 tree
-
-+cxgb3-safeguard-tcam-size-usage.patch
-+cxgb3-detect-nic-only-adapters.patch
-+cxgb3-tighten-xgmac-workaround.patch
-+cxgb3-firwmare-update.patch
-+fix-hotplug-for-legacy-platform-drivers.patch
-+update-documentation-driver-model-platformtxt.patch
-+forcedeth-work-around-null-skb-dereference-crash.patch
-+fix-scsi_send_eh_cmnd-scatterlist-handling.patch
-
- These are patches which I think should be in 2.6.21, but vie the relevant
- subsystem maintainers.
-
-+slab-mark-set_up_list3s-__init.patch
-+slab-mention-slab-name-when-listing-corrupt-objects.patch
-+slub-core.patch
-+slub-add-slabinfo-tool.patch
-
- Memory management updates
-
-+blackfin-arch-fix-bug-interrupt-setup-problem-request_irq.patch
-+blackfin-arch-pnav-and-bluetechnix-cm-bf537-use-the-mac.patch
-
- Blackfin updates
-
-+uml-fix-umid-in-xterm-titles.patch
-+uml-speed-up-exec.patch
-+uml-no-locking-needed-in-tlsc.patch
-+uml-tidy-processc.patch
-+uml-remove-page_size.patch
-+uml-kernel_thread-shouldnt-panic.patch
-
- UML updates
-
-+provide-dummy-devm_ioport_-if-has_ioport.patch
-
- Needed for ARM pata support.
-
--add-an-anonymous-inode-source.patch
--add-an-anonymous-inode-source-tidy.patch
--epoll-use-anonymous.patch
-
- Dropped - new versions were merged.
-
-+add-file-position-info-to-proc-fix.patch
-
- Fix add-file-position-info-to-proc.patch
-
-+move-die-notifier-handling-to-common-code-fix-vmalloc_sync_all.patch
-
- Fix move-die-notifier-handling-to-common-code.patch some more.
-
-+fix-82875-pci-setup.patch
-+make-dev-port-conditional-on-config-symbol.patch
-+clean-up-elf-note-generation.patch
-+remove-artificial-software-max_loop-limit.patch
-+kdump-kexec-calculate-note-size-at-compile-time.patch
-+kdump-kexec-calculate-note-size-at-compile-time-update.patch
-+fix-kevents-childs-priority-greediness.patch
-+fix-kevents-childs-priority-greediness-fix.patch
-+display-all-possible-partitions-when-the-root-filesystem-failed-to-mount.patch
-+display-all-possible-partitions-when-the-root-filesystem-failed-to-mount-fix.patch
-+enhance-initcall_debug-measure-latency.patch
-+kprobes-print-details-of-kretprobe-on-assertion-failure.patch
-+reregister_binfmt-returns-with-ebusy.patch
-
- Misc
-
-+sched-implement-staircase-deadline-cpu-scheduler-staircase-improvements.patch
-
- Staircase scheduler update
-
-+rtc-cmos-wakeup-interface.patch
-+acpi-wakeup-hooks-for-rtc-cmos.patch
-
- RTC stuff.
-
-+sys_futex64-allows-64bit-futexes-workaround-for-uml.patch
-
- Fix sys_futex64-allows-64bit-futexes.patch some more.
-
-+clocksource-arm-initialize-list-value.patch
-+clocksource-parisc-initialize-list-value.patch
-+clocksource-avr32-initialize-list-value.patch
-+clocksource-mips-initialize-list-value.patch
-+clocksource-i386-initialize-list-value.patch
-+clocksource-x86_64-initialize-list-value.patch
-+clocksource-s390-initialize-list-value.patch
-+clocksource-driver-initialize-list-value.patch
-+clocksource-refactor-duplicate-registration-checking.patch
-
- clocksource cleanup
-
-+kprobes-use-hlist_for_each_entry.patch
-+kprobes-codingstyle-cleanups.patch
-+kprobes-kretprobes-simplifcations.patch
-
- kprobes cleanups
-
-+utrace-uml-make-uml-compile-with-utrace-enabled.patch
-
- Fix utrace on UML
-
-+signal-timer-event-fds-v9-anonymous-inode-source.patch
-+signal-timer-event-fds-v9-signalfd-core.patch
-+signal-timer-event-fds-v9-signalfd-core-fix.patch
-+signal-timer-event-fds-v9-signalfd-wire-up-i386-arch.patch
-+signal-timer-event-fds-v9-signalfd-wire-up-x86_64-arch.patch
-+signal-timer-event-fds-v9-signalfd-compat-code.patch
-+signal-timer-event-fds-v9-timerfd-core.patch
-+signal-timer-event-fds-v9-timerfd-wire-up-i386-arch.patch
-+signal-timer-event-fds-v9-timerfd-wire-up-x86_64-arch.patch
-+signal-timer-event-fds-v9-timerfd-compat-code.patch
-+signal-timer-event-fds-v9-eventfd-core.patch
-+signal-timer-event-fds-v9-eventfd-core-fix.patch
-+signal-timer-event-fds-v9-eventfd-wire-up-i386-arch.patch
-+signal-timer-event-fds-v9-eventfd-wire-up-x86_64-arch.patch
-+signal-timer-event-fds-v9-kaio-eventfd-support-example.patch
-+epoll-use-anonymous-inodes.patch
-
- New types of fds for delivering signals, timers and misc events.
-
-+revoke-wire-up-i386-system-calls-x86_64-fix.patch
-
- Fix revoke for i386-on-x86_64
-
-+nvidiafb-fix-reversed-ddc-port.patch
-+vt-allow-for-the-palette-to-be-exposed-and-changed-via-sysfs.patch
-+vt-add-color-support-to-the-underline-and-italic-attributes.patch
-+vt-add-color-support-to-the-underline-and-italic-attributes-fix.patch
-+fbcon-dont-draw-cursor-when-its-disabled.patch
-+vt-expose-system-wide-utf-8-default-setting-via-sysfs.patch
-
- fbdev updates
-
--mm-only-hrtimers-debug-patch.patch
--mm-only-hrtimers-debug-patch-fix.patch
-
- This broke.
-
-
-
-All 1254 patches:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/patch-list
+On Mon, 2007-04-02 at 21:57 -0700, Andrew Morton wrote:
+> On Tue, 03 Apr 2007 14:45:02 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > Does that mean the to function correctly every user needs some internal
+> > cursor so it doesn't end up scanning the first N entries over and over?
+> > 
+> 
+> If it wants to be well-behaved, and to behave as the VM expects, yes. 
+> 
+> There's an expectation that the callback will be performing some scan-based
+> aging operation and of course to do LRU (or whatever) aging, the callback
+> will need to remember where it was up to last time it was called.
+> 
+> But it's just a guideline - callbacks could do something different but
+> in-the-spirit, I guess.
+
+Hmm, actually the callers I looked at (nfs, dcache, mbcache) seem to use
+an LRU list and just walk the first "nr_to_scan" entries, and nr_to_scan
+is always 128.
+
+Someone who keeps a cursor will be disadvantaged: the other shrinkers
+could well get less effective on repeated calls, but we won't.  Someone
+who picks entries at random might have the same issue.
+
+I think it is clearest to describe how we expect everyone to work, and
+let whoever is getting creative worry about it themselves.
+
+How's this:
+==
+Cleanup and kernelify shrinker registration.
+
+I can never remember what the function to register to receive VM pressure
+is called.  I have to trace down from __alloc_pages() to find it.
+
+It's called "set_shrinker()", and it needs Your Help.
+
+New version:
+1) Don't hide struct shrinker.  It contains no magic.
+2) Don't allocate "struct shrinker".  It's not helpful.
+3) Call them "register_shrinker" and "unregister_shrinker".
+4) Call the function "shrink" not "shrinker".
+5) Reduce the 17 lines of waffly comments to 13, but document it properly.
+
+Comments:
+1) The comment in reiserfs4 makes me a little queasy.
+2) The wrapper code in xfs might no longer be needed.
+3) The placing in the x86-64 "hot function list" for seems a little
+   unlikely.  Clearly, Andi was testing if anyone was paying attention.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r 0b43dab739aa arch/x86_64/kernel/functionlist
+--- a/arch/x86_64/kernel/functionlist	Tue Apr 03 15:37:49 2007 +1000
++++ b/arch/x86_64/kernel/functionlist	Tue Apr 03 15:37:53 2007 +1000
+@@ -1118,7 +1118,6 @@
+ *(.text.simple_strtoll)
+ *(.text.set_termios)
+ *(.text.set_task_comm)
+-*(.text.set_shrinker)
+ *(.text.set_normalized_timespec)
+ *(.text.set_brk)
+ *(.text.serial_in)
+diff -r 0b43dab739aa fs/dcache.c
+--- a/fs/dcache.c	Tue Apr 03 15:37:49 2007 +1000
++++ b/fs/dcache.c	Tue Apr 03 15:37:53 2007 +1000
+@@ -884,6 +884,11 @@ static int shrink_dcache_memory(int nr, 
+ 	}
+ 	return (dentry_stat.nr_unused / 100) * sysctl_vfs_cache_pressure;
+ }
++
++static struct shrinker dcache_shrinker = {
++	.shrink = shrink_dcache_memory,
++	.seeks = DEFAULT_SEEKS,
++};
+ 
+ /**
+  * d_alloc	-	allocate a dcache entry
+@@ -2144,8 +2149,8 @@ static void __init dcache_init(unsigned 
+ 					 (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
+ 					 SLAB_MEM_SPREAD),
+ 					 NULL, NULL);
+-	
+-	set_shrinker(DEFAULT_SEEKS, shrink_dcache_memory);
++
++	register_shrinker(&dcache_shrinker);
+ 
+ 	/* Hash may have been set up in dcache_init_early */
+ 	if (!hashdist)
+diff -r 0b43dab739aa fs/dquot.c
+--- a/fs/dquot.c	Tue Apr 03 15:37:49 2007 +1000
++++ b/fs/dquot.c	Tue Apr 03 15:37:53 2007 +1000
+@@ -538,6 +538,11 @@ static int shrink_dqcache_memory(int nr,
+ 	}
+ 	return (dqstats.free_dquots / 100) * sysctl_vfs_cache_pressure;
+ }
++
++static struct shrinker dqcache_shrinker = {
++	.shrink = shrink_dqcache_memory,
++	.seeks = DEFAULT_SEEKS,
++};
+ 
+ /*
+  * Put reference to dquot
+@@ -1871,7 +1876,7 @@ static int __init dquot_init(void)
+ 	printk("Dquot-cache hash table entries: %ld (order %ld, %ld bytes)\n",
+ 			nr_hash, order, (PAGE_SIZE << order));
+ 
+-	set_shrinker(DEFAULT_SEEKS, shrink_dqcache_memory);
++	register_shrinker(&dqcache_shrinker);
+ 
+ 	return 0;
+ }
+diff -r 0b43dab739aa fs/inode.c
+--- a/fs/inode.c	Tue Apr 03 15:37:49 2007 +1000
++++ b/fs/inode.c	Tue Apr 03 15:37:53 2007 +1000
+@@ -474,6 +474,11 @@ static int shrink_icache_memory(int nr, 
+ 	return (inodes_stat.nr_unused / 100) * sysctl_vfs_cache_pressure;
+ }
+ 
++static struct shrinker icache_shrinker = {
++	.shrink = shrink_icache_memory,
++	.seeks = DEFAULT_SEEKS,
++};
++
+ static void __wait_on_freeing_inode(struct inode *inode);
+ /*
+  * Called with the inode lock held.
+@@ -1393,7 +1398,7 @@ void __init inode_init(unsigned long mem
+ 					 SLAB_MEM_SPREAD),
+ 					 init_once,
+ 					 NULL);
+-	set_shrinker(DEFAULT_SEEKS, shrink_icache_memory);
++	register_shrinker(&icache_shrinker);
+ 
+ 	/* Hash may have been set up in inode_init_early */
+ 	if (!hashdist)
+diff -r 0b43dab739aa fs/mbcache.c
+--- a/fs/mbcache.c	Tue Apr 03 15:37:49 2007 +1000
++++ b/fs/mbcache.c	Tue Apr 03 15:37:53 2007 +1000
+@@ -100,7 +100,6 @@ static LIST_HEAD(mb_cache_list);
+ static LIST_HEAD(mb_cache_list);
+ static LIST_HEAD(mb_cache_lru_list);
+ static DEFINE_SPINLOCK(mb_cache_spinlock);
+-static struct shrinker *mb_shrinker;
+ 
+ static inline int
+ mb_cache_indexes(struct mb_cache *cache)
+@@ -118,6 +117,10 @@ mb_cache_indexes(struct mb_cache *cache)
+ 
+ static int mb_cache_shrink_fn(int nr_to_scan, gfp_t gfp_mask);
+ 
++static struct shrinker mb_cache_shrinker = {
++	.shrink = mb_cache_shrink_fn,
++	.seeks = DEFAULT_SEEKS,
++};
+ 
+ static inline int
+ __mb_cache_entry_is_hashed(struct mb_cache_entry *ce)
+@@ -662,13 +665,13 @@ mb_cache_entry_find_next(struct mb_cache
+ 
+ static int __init init_mbcache(void)
+ {
+-	mb_shrinker = set_shrinker(DEFAULT_SEEKS, mb_cache_shrink_fn);
++	register_shrinker(&mb_cache_shrinker);
+ 	return 0;
+ }
+ 
+ static void __exit exit_mbcache(void)
+ {
+-	remove_shrinker(mb_shrinker);
++	unregister_shrinker(&mb_cache_shrinker);
+ }
+ 
+ module_init(init_mbcache)
+diff -r 0b43dab739aa fs/nfs/super.c
+--- a/fs/nfs/super.c	Tue Apr 03 15:37:49 2007 +1000
++++ b/fs/nfs/super.c	Tue Apr 03 15:37:53 2007 +1000
+@@ -138,7 +138,10 @@ static const struct super_operations nfs
+ };
+ #endif
+ 
+-static struct shrinker *acl_shrinker;
++static struct shrinker acl_shrinker = {
++	.shrink		= nfs_access_cache_shrinker,
++	.seeks		= DEFAULT_SEEKS,
++};
+ 
+ /*
+  * Register the NFS filesystems
+@@ -159,7 +162,7 @@ int __init register_nfs_fs(void)
+ 	if (ret < 0)
+ 		goto error_2;
+ #endif
+-	acl_shrinker = set_shrinker(DEFAULT_SEEKS, nfs_access_cache_shrinker);
++	register_shrinker(&acl_shrinker);
+ 	return 0;
+ 
+ #ifdef CONFIG_NFS_V4
+@@ -177,8 +180,7 @@ error_0:
+  */
+ void __exit unregister_nfs_fs(void)
+ {
+-	if (acl_shrinker != NULL)
+-		remove_shrinker(acl_shrinker);
++	unregister_shrinker(&acl_shrinker);
+ #ifdef CONFIG_NFS_V4
+ 	unregister_filesystem(&nfs4_fs_type);
+ 	nfs_unregister_sysctl();
+diff -r 0b43dab739aa fs/reiser4/fsdata.c
+--- a/fs/reiser4/fsdata.c	Tue Apr 03 15:37:49 2007 +1000
++++ b/fs/reiser4/fsdata.c	Tue Apr 03 15:37:53 2007 +1000
+@@ -7,7 +7,6 @@
+ 
+ /* cache or dir_cursors */
+ static struct kmem_cache *d_cursor_cache;
+-static struct shrinker *d_cursor_shrinker;
+ 
+ /* list of unused cursors */
+ static LIST_HEAD(cursor_cache);
+@@ -53,6 +52,18 @@ static int d_cursor_shrink(int nr, gfp_t
+ 	return d_cursor_unused;
+ }
+ 
++/*
++ * actually, d_cursors are "priceless", because there is no way to
++ * recover information stored in them. On the other hand, we don't
++ * want to consume all kernel memory by them. As a compromise, just
++ * assign higher "seeks" value to d_cursor cache, so that it will be
++ * shrunk only if system is really tight on memory.
++ */
++static struct shrinker d_cursor_shrinker = {
++	.shrink = d_cursor_shrink,
++	.seeks = DEFAULT_SEEKS << 3,
++};
++
+ /**
+  * reiser4_init_d_cursor - create d_cursor cache
+  *
+@@ -66,20 +77,7 @@ int reiser4_init_d_cursor(void)
+ 	if (d_cursor_cache == NULL)
+ 		return RETERR(-ENOMEM);
+ 
+-	/*
+-	 * actually, d_cursors are "priceless", because there is no way to
+-	 * recover information stored in them. On the other hand, we don't
+-	 * want to consume all kernel memory by them. As a compromise, just
+-	 * assign higher "seeks" value to d_cursor cache, so that it will be
+-	 * shrunk only if system is really tight on memory.
+-	 */
+-	d_cursor_shrinker = set_shrinker(DEFAULT_SEEKS << 3,
+-					 d_cursor_shrink);
+-	if (d_cursor_shrinker == NULL) {
+-		destroy_reiser4_cache(&d_cursor_cache);
+-		d_cursor_cache = NULL;
+-		return RETERR(-ENOMEM);
+-	}
++	register_shrinker(&d_cursor_shrinker);
+ 	return 0;
+ }
+ 
+@@ -90,9 +88,7 @@ int reiser4_init_d_cursor(void)
+  */
+ void reiser4_done_d_cursor(void)
+ {
+-	BUG_ON(d_cursor_shrinker == NULL);
+-	remove_shrinker(d_cursor_shrinker);
+-	d_cursor_shrinker = NULL;
++	unregister_shrinker(&d_cursor_shrinker);
+ 
+ 	destroy_reiser4_cache(&d_cursor_cache);
+ }
+diff -r 0b43dab739aa fs/xfs/linux-2.6/kmem.h
+--- a/fs/xfs/linux-2.6/kmem.h	Tue Apr 03 15:37:49 2007 +1000
++++ b/fs/xfs/linux-2.6/kmem.h	Tue Apr 03 15:37:53 2007 +1000
+@@ -110,13 +110,23 @@ static inline kmem_shaker_t
+ static inline kmem_shaker_t
+ kmem_shake_register(kmem_shake_func_t sfunc)
+ {
+-	return set_shrinker(DEFAULT_SEEKS, sfunc);
++	/* FIXME: Perhaps caller should setup & hand in the shrinker? */
++	struct shrinker *shrinker = kmalloc(sizeof *shrinker, GFP_ATOMIC);
++	if (shrinker) {
++		shrinker->shrink = sfunc;
++		shrinker->seeks = DEFAULT_SEEKS;
++		register_shrinker(shrinker);
++	}
++	return shrinker;
+ }
+ 
+ static inline void
+ kmem_shake_deregister(kmem_shaker_t shrinker)
+ {
+-	remove_shrinker(shrinker);
++	if (shrinker) {
++		unregister_shrinker(shrinker);
++		kfree(shrinker);
++	}
+ }
+ 
+ static inline int
+diff -r 0b43dab739aa include/linux/mm.h
+--- a/include/linux/mm.h	Tue Apr 03 15:37:49 2007 +1000
++++ b/include/linux/mm.h	Tue Apr 03 15:42:36 2007 +1000
+@@ -813,27 +813,31 @@ extern unsigned long do_mremap(unsigned 
+ 			       unsigned long flags, unsigned long new_addr);
+ 
+ /*
+- * Prototype to add a shrinker callback for ageable caches.
+- * 
+- * These functions are passed a count `nr_to_scan' and a gfpmask.  They should
+- * scan `nr_to_scan' objects, attempting to free them.
+- *
+- * The callback must return the number of objects which remain in the cache.
+- *
+- * The callback will be passed nr_to_scan == 0 when the VM is querying the
+- * cache size, so a fastpath for that case is appropriate.
+- */
+-typedef int (*shrinker_t)(int nr_to_scan, gfp_t gfp_mask);
+-
+-/*
+- * Add an aging callback.  The int is the number of 'seeks' it takes
+- * to recreate one of the objects that these functions age.
+- */
+-
+-#define DEFAULT_SEEKS 2
+-struct shrinker;
+-extern struct shrinker *set_shrinker(int, shrinker_t);
+-extern void remove_shrinker(struct shrinker *shrinker);
++ * A callback you can register to apply pressure to ageable caches.
++ *
++ * 'shrink' is passed a count 'nr_to_scan' and a 'gfpmask'.  It should
++ * look through the least-recently-used 'nr_to_scan' entries and
++ * attempt to free them up.  It should return the number of objects
++ * which remain in the cache.  If it returns -1, it means it cannot do
++ * any scanning at this time (eg. there is a risk of deadlock).
++ *
++ * The 'gfpmask' refers to the allocation we are currently trying to
++ * fulfil.
++ *
++ * Note that 'shrink' will be passed nr_to_scan == 0 when the VM is
++ * querying the cache size, so a fastpath for that case is appropriate.
++ */
++struct shrinker {
++	int (*shrink)(int nr_to_scan, gfp_t gfp_mask);
++	int seeks;	/* seeks to recreate an obj */
++
++	/* These are for internal use */
++	struct list_head list;
++	long nr;	/* objs pending delete */
++};
++#define DEFAULT_SEEKS 2 /* A good number if you don't know better. */
++extern void register_shrinker(struct shrinker *);
++extern void unregister_shrinker(struct shrinker *);
+ 
+ /*
+  * Some shared mappigns will want the pages marked read-only
+diff -r 0b43dab739aa mm/vmscan.c
+--- a/mm/vmscan.c	Tue Apr 03 15:37:49 2007 +1000
++++ b/mm/vmscan.c	Tue Apr 03 15:37:53 2007 +1000
+@@ -72,17 +72,6 @@ struct scan_control {
+ 	int order;
+ };
+ 
+-/*
+- * The list of shrinker callbacks used by to apply pressure to
+- * ageable caches.
+- */
+-struct shrinker {
+-	shrinker_t		shrinker;
+-	struct list_head	list;
+-	int			seeks;	/* seeks to recreate an obj */
+-	long			nr;	/* objs pending delete */
+-};
+-
+ #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+ 
+ #ifdef ARCH_HAS_PREFETCH
+@@ -125,34 +114,25 @@ static DECLARE_RWSEM(shrinker_rwsem);
+ /*
+  * Add a shrinker callback to be called from the vm
+  */
+-struct shrinker *set_shrinker(int seeks, shrinker_t theshrinker)
+-{
+-        struct shrinker *shrinker;
+-
+-        shrinker = kmalloc(sizeof(*shrinker), GFP_KERNEL);
+-        if (shrinker) {
+-	        shrinker->shrinker = theshrinker;
+-	        shrinker->seeks = seeks;
+-	        shrinker->nr = 0;
+-	        down_write(&shrinker_rwsem);
+-	        list_add_tail(&shrinker->list, &shrinker_list);
+-	        up_write(&shrinker_rwsem);
+-	}
+-	return shrinker;
+-}
+-EXPORT_SYMBOL(set_shrinker);
++void register_shrinker(struct shrinker *shrinker)
++{
++	shrinker->nr = 0;
++	down_write(&shrinker_rwsem);
++	list_add_tail(&shrinker->list, &shrinker_list);
++	up_write(&shrinker_rwsem);
++}
++EXPORT_SYMBOL(register_shrinker);
+ 
+ /*
+  * Remove one
+  */
+-void remove_shrinker(struct shrinker *shrinker)
++void unregister_shrinker(struct shrinker *shrinker)
+ {
+ 	down_write(&shrinker_rwsem);
+ 	list_del(&shrinker->list);
+ 	up_write(&shrinker_rwsem);
+-	kfree(shrinker);
+-}
+-EXPORT_SYMBOL(remove_shrinker);
++}
++EXPORT_SYMBOL(unregister_shrinker);
+ 
+ #define SHRINK_BATCH 128
+ /*
+@@ -189,11 +169,11 @@ unsigned long shrink_slab(unsigned long 
+ 	list_for_each_entry(shrinker, &shrinker_list, list) {
+ 		unsigned long long delta;
+ 		unsigned long total_scan;
+-		unsigned long max_pass = (*shrinker->shrinker)(0, gfp_mask);
++		unsigned long max_pass = (*shrinker->shrink)(0, gfp_mask);
+ 
+ 		if (!shrinker->seeks) {
+ 			print_symbol("shrinker %s has zero seeks\n",
+-				(unsigned long)shrinker->shrinker);
++				(unsigned long)shrinker->shrink);
+ 			delta = (4 * scanned) / DEFAULT_SEEKS;
+ 		} else {
+ 			delta = (4 * scanned) / shrinker->seeks;
+@@ -223,8 +203,8 @@ unsigned long shrink_slab(unsigned long 
+ 			int shrink_ret;
+ 			int nr_before;
+ 
+-			nr_before = (*shrinker->shrinker)(0, gfp_mask);
+-			shrink_ret = (*shrinker->shrinker)(this_scan, gfp_mask);
++			nr_before = (*shrinker->shrink)(0, gfp_mask);
++			shrink_ret = (*shrinker->shrink)(this_scan, gfp_mask);
+ 			if (shrink_ret == -1)
+ 				break;
+ 			if (shrink_ret < nr_before)
 
 
