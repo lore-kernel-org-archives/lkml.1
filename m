@@ -1,224 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXDCH3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXDCHiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbXDCH3w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 03:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXDCH3w
+	id S932234AbXDCHiJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 03:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932536AbXDCHiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 03:29:52 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:41880 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932203AbXDCH3v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 03:29:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type;
-  b=fQGNbJ8F97rKYRpF7FpccN212jK8sEHhDsTjg+QdZtxqhzfMaUwexT+FDDZZCLFaj22juq5oxa4XPUAEhRZjlBq4JSISDW+8EulZmB+V5yf0ZpjBKVrbWFGjTBax8q5OHyBTcnWcdv+qY/cayNVYr57Zmaw8YJlU/jirpXHTM58=  ;
-X-YMail-OSG: wsmu1oAVM1nsIjOcF78fJjzAoWgxdA9Az8mDqpr4cs2JnUjzzsqpsnGAEFWaJwK3NXsvR0yesQ--
-Message-ID: <46120254.9080205@yahoo.com.au>
-Date: Tue, 03 Apr 2007 17:29:24 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: akpm@osdl.org, linux-mm@kvack.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [SLUB 1/2] SLUB core
-References: <20070331193056.1800.68058.sendpatchset@schroedinger.engr.sgi.com> <20070331193102.1800.29162.sendpatchset@schroedinger.engr.sgi.com>
-In-Reply-To: <20070331193102.1800.29162.sendpatchset@schroedinger.engr.sgi.com>
-Content-Type: multipart/mixed;
- boundary="------------030709000406090007070102"
+	Tue, 3 Apr 2007 03:38:09 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:34563 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932234AbXDCHiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 03:38:08 -0400
+Date: Tue, 3 Apr 2007 13:08:30 +0530
+From: Maneesh Soni <maneesh@in.ibm.com>
+To: Ethan Solomita <solo@google.com>
+Cc: Dipankar Sarma <dipankar@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Martin Bligh <mbligh@google.com>, Rohit Seth <rohitseth@google.com>,
+       viro@ftp.linux.org.uk, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix sysfs_readdir oops (was Re: sysfs reclaim crash)
+Message-ID: <20070403073830.GA9796@in.ibm.com>
+Reply-To: maneesh@in.ibm.com
+References: <20070319140238.cbf28b2b.akpm@linux-foundation.org> <20070321134654.5wkqpfbpk0ggwks8@imap.linux.ibm.com> <20070321182123.GA12602@in.ibm.com> <20070323043047.GA5641@in.ibm.com> <20070322210504.3b052139.akpm@linux-foundation.org> <46042DDF.5060000@google.com> <20070324030535.GA8874@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070324030535.GA8874@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030709000406090007070102
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Christoph Lameter wrote:
-> SLUB Core patch V6
+On Sat, Mar 24, 2007 at 08:35:35AM +0530, Maneesh Soni wrote:
+> On Fri, Mar 23, 2007 at 12:43:27PM -0700, Ethan Solomita wrote:
+> >     I ran stress testing overnight and came up with a similar failure
+> > (s_dentry == NULL) but in a different location. A NULL pointer
+> > dereference happened in sysfs_readdir():
+> > 
+> > |                                if (next->s_dentry)
+> > |                                        ino =
+> > next->s_dentry->d_inode->i_ino;
+> > 
+> >     It seems that d_inode was NULL. I don't have the pointer to d_inode
+> > to look at, but I have next and, lo and behold, its s_dentry is now
+> > NULL, which it clearly wasn't when the if-clause above ran.
+> > 
+> >     I tried to reconstruct the sysfs_dirents starting with "next". I
+> > filled in all the structure contents that I had data for:
+> > 
+> > sysfs_dirent 0xffff81000fc61690:
+> > s_count         1
+> > s_sibling       ffff81000fc616e8 / ffff81000e0c7468
+> > s_children      ffff81000fc616a8 / ffff81000fc616a8
+> > s_element       ffff81000f4ad1b0
+> >   DOR__ATA1RTS
+> >   ffffffff8800b600
+> >   124
+> > s_type          4
+> > s_mode          8124
+> > s_dentry        NULL
+> > s_iattr         NULL
+> > s_event         0
+> > 
+> > s_sibling.prev:
+> > s_count         1
+> > s_sibling       ffff81000fc61738 / ffff81000fc61698
+> > s_children      ffff81000fc616f8 / ffff81000fc616f8
+> > s_element       ffff81000f4ad148
+> > s_type          4
+> > s_mode          8124
+> > <unknown>
+> > 
+> > s_sibling.next:
+> > s_count         1
+> > s_sibling       ffff81000fc61698 / ffff81000fc61648
+> > s_children      ffff81000e0c7478 / ffff81000e0c7478
+> > s_element       NULL
+> > s_type          0
+> > s_mode          0
+> > s_dentry        NULL
+> > s_iattr         NULL
+> > s_event         0
+> > 
+> > s_sibling.next.next:
+> > s_count         1
+> > s_sibling       ffff81000e0c7468 / ffff81000fc615f8
+> > s_children      ffff81000fc61658 / ffff81000fc61658
+> > s_element       ffff81000f4ad218
+> >   DOR__ATA1RTS
+> >   ffffffff8800b600
+> >   124
+> > s_type          4
+> > s_mode          8124
+> > s_dentry        NULL
+> > s_iattr         NULL
+> > s_event         0
+> > 
+> > s_sibling.next.next.next:
+> > s_count         1
+> > s_sibling       ffff81000fc61648 / ffff81000fc610f8
+> > s_children      ffff81000fc61608 / ffff81000fc61608
+> > s_element       ffff81000f4ad280
+> >   CK??ATCR
+> >   ffffffff8800b600
+> >   124
+> > s_type          4
+> > s_mode          8124
+> > s_dentry        NULL
+> > s_iattr         NULL
+> > s_event         0
+> > 
+> >     I should acknowledge that this is based upon 2.6.18 with some newer
+> > code backported. If there are fixes since 2.6.18 that we should know
+> > about I can try backporting them into our kernel.
+> > 
+> >     Thanks,
+> >     -- Ethan
 > 
-> This provides basic SLUB functionality and allows a choice of
-> slab allocators during kernel configuration. The default is still
-> slab. SLUB has been tested in various configurations but I think we
-> can be quite sure that there are still remaining issues.
 > 
-> SLUB is not selectable on platforms that modify the page structs of
-> slab memory (i386, FRV) but see the next patch for a i386 fix.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> Index: linux-2.6.21-rc5-mm3/include/linux/mm_types.h
-> ===================================================================
-> --- linux-2.6.21-rc5-mm3.orig/include/linux/mm_types.h	2007-03-30 21:50:18.000000000 -0700
-> +++ linux-2.6.21-rc5-mm3/include/linux/mm_types.h	2007-03-30 21:50:42.000000000 -0700
-> @@ -19,10 +19,16 @@ struct page {
->  	unsigned long flags;		/* Atomic flags, some possibly
->  					 * updated asynchronously */
->  	atomic_t _count;		/* Usage count, see below. */
-> -	atomic_t _mapcount;		/* Count of ptes mapped in mms,
-> +	union {
-> +		atomic_t _mapcount;	/* Count of ptes mapped in mms,
->  					 * to show when page is mapped
->  					 * & limit reverse map searches.
->  					 */
-> +		struct {	/* SLUB uses */
-> +			short unsigned int inuse;
-> +			short unsigned int offset;
-> +		};
-> +	};
->  	union {
->  	    struct {
->  		unsigned long private;		/* Mapping-private opaque data:
-> @@ -43,8 +49,15 @@ struct page {
->  #if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
->  	    spinlock_t ptl;
->  #endif
-> +	    struct {			/* SLUB uses */
-> +		struct page *first_page;	/* Compound pages */
-> +		struct kmem_cache *slab;	/* Pointer to slab */
-> +	    };
-> +	};
-> +	union {
-> +		pgoff_t index;		/* Our offset within mapping. */
-> +		void *freelist;		/* SLUB: pointer to free object */
->  	};
-> -	pgoff_t index;			/* Our offset within mapping. */
->  	struct list_head lru;		/* Pageout list, eg. active_list
->  					 * protected by zone->lru_lock !
->  					 */
 
-I have an alternate suggestion for the struct page overloading issue.
+Hi Ethan / Andrew,
 
-I think anonymous unions are probably better than nothing, because they
-make the .c code more readable, but they clutter up the header badly
-and don't provide so strong type checking as we could implement.
+I have modified the previous patch (which was dropped from -mm) and now keeping
+the statement making s_dentry as NULL in sysfs_d_iput(), so this should
+_safely_ fix sysfs_readdir() oops. 
 
-This is just an incomplete RFC patch, because it actually requires a
-fair amount of types in .c code to be changed if we are to implement it
-(which I didn't want to do if nobody likes the idea).
+Please see the other mail for sysfs_d_iput() BUG hit.
 
-(sorry it's an attachment, this mailer is broken)
+Thanks
+Maneesh
 
--- 
-SUSE Labs, Novell Inc.
+--
+Maneesh Soni
+Linux Technology Center,
+IBM India Systems and Technology Lab, 
+Bangalore, India
 
---------------030709000406090007070102
-Content-Type: text/plain;
- name="mm-multi-page.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mm-multi-page.patch"
 
-Index: linux-2.6/include/linux/mm_types.h
-===================================================================
---- linux-2.6.orig/include/linux/mm_types.h
-+++ linux-2.6/include/linux/mm_types.h
-@@ -23,27 +23,20 @@ struct page {
- 					 * to show when page is mapped
- 					 * & limit reverse map searches.
- 					 */
--	union {
--	    struct {
--		unsigned long private;		/* Mapping-private opaque data:
--					 	 * usually used for buffer_heads
--						 * if PagePrivate set; used for
--						 * swp_entry_t if PageSwapCache;
--						 * indicates order in the buddy
--						 * system if PG_buddy is set.
--						 */
--		struct address_space *mapping;	/* If low bit clear, points to
--						 * inode address_space, or NULL.
--						 * If page mapped as anonymous
--						 * memory, low bit is set, and
--						 * it points to anon_vma object:
--						 * see PAGE_MAPPING_ANON below.
--						 */
--	    };
--#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
--	    spinlock_t ptl;
--#endif
--	};
-+	unsigned long private;		/* Mapping-private opaque data:
-+				 	 * usually used for buffer_heads
-+					 * if PagePrivate set; used for
-+					 * swp_entry_t if PageSwapCache;
-+					 * indicates order in the buddy
-+					 * system if PG_buddy is set.
-+					 */
-+	struct address_space *mapping;	/* If low bit clear, points to
-+					 * inode address_space, or NULL.
-+					 * If page mapped as anonymous
-+					 * memory, low bit is set, and
-+					 * it points to anon_vma object:
-+					 * see PAGE_MAPPING_ANON below.
-+					 */
- 	pgoff_t index;			/* Our offset within mapping. */
- 	struct list_head lru;		/* Pageout list, eg. active_list
- 					 * protected by zone->lru_lock !
-@@ -64,4 +57,45 @@ struct page {
- #endif /* WANT_PAGE_VIRTUAL */
- };
+
+
+o sysfs_d_iput() is invoked in dentry reclaim path under memory pressure. This
+  happens without i_mutex. It also nullifies s_dentry to indicate that
+  the associated dentry is evicted. sysfs_readdir() accesses the s_dentry,
+  and gets the inode number from the associated dentry->d_inode, if 
+  there is one, else it invokes iunique(). This can create a race situation,
+  and crash while accessing the d_inode in sysfs_readdir(). 
+
+o The race happens when the dentry is getting reclaimed and detached from
+  the corresponding sysfs_dirent though sysfs_dirent is still a valid
+  node. Accessing dentry fields are ok as it is under RCU but the inode is
+  not hence we may see oops accessing dentry->d_inode->i_no.
+
+o The following patch always use i_unique() to get the inode number in
+  sysfs_readdir. This is ok as sysfs doesnot have permanent inode numbering.
+  It could be slower but avoids the oops. 
+
+
+
+Signed-off-by: Maneesh Soni <maneesh@in.ibm.com>
+---
+
+ linux-2.6.21-rc5-mm3-maneesh/fs/sysfs/dir.c |    5 +----
+ 1 files changed, 1 insertion(+), 4 deletions(-)
+
+diff -puN fs/sysfs/dir.c~fix-sysfs_readdir-oops fs/sysfs/dir.c
+--- linux-2.6.21-rc5-mm3/fs/sysfs/dir.c~fix-sysfs_readdir-oops	2007-04-03 10:39:52.000000000 +0530
++++ linux-2.6.21-rc5-mm3-maneesh/fs/sysfs/dir.c	2007-04-03 10:39:52.000000000 +0530
+@@ -538,10 +538,7 @@ static int sysfs_readdir(struct file * f
  
-+/*
-+ * We can provide alternate delcarations for 'struct page', instead of
-+ * overloading fields that we would like to use for non-pagecache (eg.
-+ * page tables or slab pages). However flags and _count must always be
-+ * in the correct position, and not overloaded, because they might be
-+ * accessed by thing without a direct reference (eg. buddy allocator,
-+ * swsusp). So flags and _count get defined for us, and our struct is
-+ * automatically padded out to the size of struct page. A compile time
-+ * check ensures that this size isn't exceeded.
-+ */
-+#define DEFINE_PAGE_STRUCT(name)	\
-+struct name {				\
-+	union {				\
-+		struct {		\
-+			unsigned long flags; \
-+			atomic_t _count; \
-+			struct
-+
-+#define END_PAGE_STRUCT(name)		\
-+			;		\
-+		};			\
-+		struct page ___page;	\
-+	};				\
-+};					\
-+					\
-+static inline void struct_##name##_build_bug_on(void) \
-+{					\
-+	BUILD_BUG_ON(sizeof(struct name) > sizeof(struct page)); \
-+}
-+
-+DEFINE_PAGE_STRUCT(pt_page) {
-+#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
-+	spinlock_t ptl;
-+#endif
-+} END_PAGE_STRUCT(pt_page)
-+
-+DEFINE_PAGE_STRUCT(buddy_page) {
-+	unsigned int order;
-+	struct list_head list;
-+} END_PAGE_STRUCT(buddy_page)
-+
- #endif /* _LINUX_MM_TYPES_H */
-Index: linux-2.6/mm/slab.c
-===================================================================
---- linux-2.6.orig/mm/slab.c
-+++ linux-2.6/mm/slab.c
-@@ -446,6 +446,11 @@ struct kmem_cache {
- #endif
- };
+ 				name = sysfs_get_name(next);
+ 				len = strlen(name);
+-				if (next->s_dentry)
+-					ino = next->s_dentry->d_inode->i_ino;
+-				else
+-					ino = iunique(sysfs_sb, 2);
++				ino = iunique(sysfs_sb, 2);
  
-+DEFINE_PAGE_STRUCT(slab_page) {
-+	struct list_head *cache;
-+	struct list_head *slab;
-+} END_PAGE_STRUCT(slab_page)
-+
- #define CFLGS_OFF_SLAB		(0x80000000UL)
- #define	OFF_SLAB(x)	((x)->flags & CFLGS_OFF_SLAB)
- 
-
---------------030709000406090007070102--
+ 				if (filldir(dirent, name, len, filp->f_pos, ino,
+ 						 dt_type(next)) < 0)
+_
