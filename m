@@ -1,337 +1,1422 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbXDCM26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965558AbXDCMbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbXDCM26 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 08:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965578AbXDCM26
+	id S965558AbXDCMbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 08:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965573AbXDCMbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 08:28:58 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:60590 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753510AbXDCM24 (ORCPT
+	Tue, 3 Apr 2007 08:31:13 -0400
+Received: from sour.ops.eusc.inter.net ([84.23.254.154]:64803 "EHLO
+	sour.ops.eusc.inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965558AbXDCMbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 08:28:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent:x-url:organization:sender;
-        b=uMXS9UP4e+tjl9rVOMtGXlM3rYVaD21Tako3i/3N1qDwg6URM9L+1625YLGEaOMzWiVjGfAID+jjaQoKr5/kVDen/pZBb6aBXEorumCQQO87aajYMvWRUR25ll0hG7MCW7QdtE0pABqvGd+MbzucOFFKP5xeB7w9LHl6aobyxxE=
-Date: Tue, 3 Apr 2007 09:28:48 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+	Tue, 3 Apr 2007 08:31:10 -0400
+X-Greylist: delayed 1729 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Apr 2007 08:31:09 EDT
+X-Trace: 4d7c6d2e6275656b6572406265726c696e2e64657c39312e36342e302e3139397c
+	31485968694a2d3030304251632d41477c31313735363031373337
+MIME-Version: 1.0
+Date: Tue, 3 Apr 2007 14:02:08 +0200
+From: Michael Bueker <m.bueker@berlin.de>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC] Reorganizing structs to save space
-Message-ID: <20070403122848.GA14224@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	linux-kernel@vger.kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-Url: http://oops.ghostprotocols.net:81/blog
-Organization: OOPS Labs
+Subject: OHCI: USB webcam works, but not on USB Hub
+Message-ID: <2ef6d78dd56bcf59403bc8d9549d9f20@localhost>
+User-Agent: RoundCube Webmail/0.1b
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[please CC me on this thread]
 
-       I implemented a struct reorganizer in pahole, one of the tools in
-the dwarves suite I've been working on, it does several things to reduce
-the size of structs:
+Hi everyone,
 
-1. demotes bitfields to a base type that is enough for the sum of the
-   members.
-2. combines bitfields by moving members
-3. combines alignment holes by moving members
+My system has an nForce4 motherboard with an OHCI USB controller.
 
-	There are some problems related to explicit
-____cacheline_aligned{_in_smp} not being respected in some cases, as there
-is no information in the DWARF tags about these gcc attributes it just tries
-some heuristics to avoid it, I'll be trying using the DW_AT_decl_{file,line}
-DWARF attributes in the future to look at the source code and parse these
-attributes, taking it into account when doing the reorganization.
+I'm using a USB Webcam with the gspca driver (from
+http://mxhaard.free.fr/download.html), which has been working fine with the
+latest kernels.
 
-         Of course this only matters for non exported to userspace ABI structs :-)
+Today, I connected a USB Hub and the camera to it, after which it stopped
+working with the error message:
+> ERROR opening V4L interface
+> : Function not implemented
+However, it works fine when not connected to the Hub, but a motherboard's own
+USB port. The Hub also works fine with any other USB device.
 
-         But even with this current shortcoming the results are interesting,
-below we have a list of structs in a recent x86_64 SMP kernel build, produced
-with the following command:
+I googled around for a solution and found one for an older version of my
+driver, where the (apparently very ugly) fix was to manually set a fixed
+bandwidth for the USB device, instead of using a somehow other determined
+value. See this posting for a more elaborate description:
+http://lists.zerezo.com/spca50x-devs/msg00664.html
 
-[acme@filo pahole]$ pahole --packable --executable examples/vmlinux-x86_64
+Now, I'm writing to this list because one of the followups to that post
+(http://lists.zerezo.com/spca50x-devs/msg00665.html) states that this is due
+to a problem with the Linux USB layer:
+> pls file a bug "ohci driver can't handle low+fullspeed devices on the same
+> root hub" to linux usb devel list.
 
-          After this list we can look at one of the reorganizations, as an
-example, and at the end of this message there is a link for the verbose
-output of --reorganize, using another option, --show_reorg_steps, where all
-the steps performed are show with a comment just before the new state of
-the structure.
+That's about all I can tell you for now. I've attached two outputs of
+lsusb -vv, one with the hub attached, with the camera and a USB stick
+connected (notice the error message), and one without the hub and the
+camera connected directly (which is the setup where it works fine).
 
-          The biggest "savings" come from structs where there are alignment
-constraints, where I really need to use DW_AT_decl{file,line} to take this
-into account, keeping the constraints and using the space just before it to
-move other members, keeping the original intent while using the holes to
-reduce the struct size.
+Many thanks in advance for any responses,
+Michael
 
-                            orig   new
-struct name                 size  size savings
-----------------------------------------------
-net_device                  1664  1448 216
-module                     16960 16848 112
-hh_cache                     192    80 112
-zone                        2752  2672  80
-softnet_data                1792  1728  64
-rcu_ctrlblk                  128    64  64
-inet_hashinfo                384   320  64
-entropy_store                128    64  64
-task_struct                 1856  1800  56
-rchan_buf                    256   208  48
-hwif_s                      3392  3352  40
-tty_struct                  1312  1280  32
-mddev_s                      672   640  32
-usbhid_device               6400  6376  24
-request_queue               1496  1472  24
-device                       680   656  24
-usb_sg_request               104    88  16
-usb_device                  1568  1552  16
-thread_struct                688   672  16
-super_block                  616   600  16
-rtentry                      120   104  16
-pcmcia_socket               1424  1408  16
-mm_struct                    840   824  16
-gendisk                      272   256  16
-floppy_drive_params          128   112  16
-files_struct                 704   688  16
-dio                          856   840  16
-cfq_queue                    160   144  16
-block_device                 200   184  16
-bitmap                       232   216  16
-z_stream_s                    96    88   8
-writeback_control             64    56   8
-vt_spawn_console              24    16   8
-vfsmount                     208   200   8
-usb_host_interface            48    40   8
-usb_host_endpoint             64    56   8
-usb_host_config              552   544   8
-usb_hcd                      312   304   8
-usb_bus                      120   112   8
-udp_iter_state                56    48   8
-uart_port                    168   160   8
-tuple_t                       40    32   8
-tty_ldisc                    136   128   8
-tty_driver                   504   496   8
-tty_bufhead                  152   144   8
-timex                        208   200   8
-tcf_common                   120   112   8
-taskstats                    264   256   8
-sysfs_dirent                  80    72   8
-swsusp_info                 4096  4088   8
-superblock_security_struct    96    88   8
-socket                        80    72   8
-signal_struct                720   712   8
-sighand_struct              2064  2056   8
-shmem_sb_info                 56    48   8
-sg_io_hdr                     88    80   8
-serio                        888   880   8
-semid_ds                      88    80   8
-selinux_class_perm            48    40   8
-scm_cookie                    40    32   8
-rt6_info                     312   304   8
-rq                          4728  4720   8
-rif_cache                     56    48   8
-region_t                      96    88   8
-rchan                       2392  2384   8
-qdisc_rate_table            1056  1048   8
-psmouse_protocol              48    40   8
-proto                      16640 16632   8
-pnp_card                     824   816   8
-platform_device              712   704   8
-pid_namespace               2072  2064   8
-pid_entry                     48    40   8
-pglist_data                14272 14264   8
-pcmcia_device                888   880   8
-pci_dynids                    32    24   8
-pci_dev                     1688  1680   8
-pccard_mem_map                32    24   8
-packet_sock                  680   672   8
-old_serial_port               40    32   8
-nmi_watchdog_ctlblk           32    24   8
-nf_sockopt_ops                88    80   8
-nfsctl_export               2088  2080   8
-nf_bridge_info                72    64   8
-nf_afinfo                     40    32   8
-netlbl_lsm_secattr            40    32   8
-netlbl_dom_map                64    56   8
-neigh_table                  416   408   8
-neighbour                    208   200   8
-ncp_mount_data_v4             80    72   8
-msghdr                        56    48   8
-mousedev                     232   224   8
-mon_reader_text              184   176   8
-mon_reader_bin               152   144   8
-mon_bus                       96    88   8
-mnt_namespace                 64    56   8
-ml_device                    856   848   8
-mdk_rdev_s                   248   240   8
-linux_binprm                 496   488   8
-kprobe                       120   112   8
-kparam_array                  48    40   8
-kmem_list3                   104    96   8
-kmem_cache                  2664  2656   8
-kiocb                        240   232   8
-ip_sf_list                    40    32   8
-ip_mc_list                   136   128   8
-ip6_flowlabel                 80    72   8
-io_context                    56    48   8
-input_dev                   2000  1992   8
-inotify_device               128   120   8
-inode_security_struct         72    64   8
-inode                        560   552   8
-inet_timewait_sock           120   112   8
-inet_timewait_death_row      504   496   8
-inet6_ifaddr                 168   160   8
-inet6_dev                    432   424   8
-in_device                    304   296   8
-ifmcaddr6                    160   152   8
-ide_pci_device_s              96    88   8
-hid_field                    112   104   8
-hid_device                  6656  6648   8
-gen_pool                      32    24   8
-fs_quota_stat                 80    72   8
-font_desc                     40    32   8
-flow_cache_entry             104    96   8
-floppy_write_errors           40    32   8
-floppy_fdc_state              40    32   8
-flock                         32    24   8
-file_lock                    176   168   8
-file                         240   232   8
-fib_rules_ops                128   120   8
-fib_config                    96    88   8
-fb_info                      832   824   8
-ext2_inode_info              720   712   8
-epitem                       144   136   8
-elf_thread_status            872   864   8
-dquot                        208   200   8
-dma_device                   144   136   8
-dev_state                    144   136   8
-cpuset                       136   128   8
-cipso_v4_map_cache_entry      56    48   8
-cfq_data                     440   432   8
-cdrom_generic_command         64    56   8
-cache_detail                 224   216   8
-blk_user_trace_setup          72    64   8
-blk_trace                     80    72   8
-bind_info_t                   96    88   8
-av_inherit                    24    16   8
-audit_watch                   72    64   8
-audit_context               1152  1144   8
-audit_aux_data_mq_sendrecv    56    48   8
-as_io_context                104    96   8
-amd_ide_chip                  24    16   8
-agp_kern_info                 80    72   8
-agp_bridge_data              176   168   8
-acpi_pscope_state             56    48   8
-acpi_prt_entry                56    48   8
-acpi_processor_power         872   864   8
-acpi_processor_performance   136   128   8
-acpi_processor_cx            104    96   8
-acpi_blacklist_item           56    48   8
-rtentry32                     84    80   4
-cistpl_config_t               28    24   4
-cistpl_cftable_entry_t       372   368   4
-cdrom_tocentry                12     8   4
+--- lsusb -vv follows: camera and a USB stick connected to the hub
 
-Now lets look at how struct module becomes with the following command:
+> can't get debug descriptor: Connection timed out
+> ptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               1.10
+>   bDeviceClass            9 Hub
+>   bDeviceSubClass         0 Unused
+>   bDeviceProtocol         0 Full speed hub
+>   bMaxPacketSize0        64
+>   idVendor           0x0000
+>   idProduct          0x0000
+>   bcdDevice            2.06
+>   iManufacturer           3 Linux 2.6.19.7-mb6 ohci_hcd
+>   iProduct                2 OHCI Host Controller
+>   iSerial                 1 0000:00:02.0
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength           25
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0xe0
+>       Self Powered
+>       Remote Wakeup
+>     MaxPower                0mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           1
+>       bInterfaceClass         9 Hub
+>       bInterfaceSubClass      0 Unused
+>       bInterfaceProtocol      0 Full speed hub
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0002  1x 2 bytes
+>         bInterval             255
+> Hub Descriptor:
+>   bLength              11
+>   bDescriptorType      41
+>   nNbrPorts            10
+>   wHubCharacteristic 0x0002
+>     No power switching (usb 1.0)
+>     Ganged overcurrent protection
+>   bPwrOn2PwrGood        1 * 2 milli seconds
+>   bHubContrCurrent      0 milli Ampere
+>   DeviceRemovable    0x00 0x00
+>   PortPwrCtrlMask    0xff 0xc3
+>  Hub Port Status:
+>    Port 1: 0000.0100 power
+>    Port 2: 0000.0100 power
+>    Port 3: 0000.0100 power
+>    Port 4: 0000.0100 power
+>    Port 5: 0000.0100 power
+>    Port 6: 0000.0100 power
+>    Port 7: 0000.0100 power
+>    Port 8: 0000.0100 power
+>    Port 9: 0000.0100 power
+>    Port 10: 0000.0100 power
+> Device Status:     0x0003
+>   Self Powered
+>   Remote Wakeup Enabled
+>
+> Bus 001 Device 010: ID 0204:6025
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   idVendor           0x0204
+>   idProduct          0x6025
+>   bcdDevice            1.00
+>   iManufacturer           1 ChipsBnk
+>   iProduct                2 Flash Disk
+>   iSerial                 3 334011500461
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength           32
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0x80
+>       (Bus Powered)
+>     MaxPower              100mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           2
+>       bInterfaceClass         8 Mass Storage
+>       bInterfaceSubClass      6 SCSI
+>       bInterfaceProtocol     80 Bulk (Zip)
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x01  EP 1 OUT
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+> Device Qualifier (for other device speed):
+>   bLength                10
+>   bDescriptorType         6
+>   bcdUSB               2.00
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   bNumConfigurations      1
+> Device Status:     0x0000
+>   (Bus Powered)
+>
+> Bus 001 Device 009: ID 0c45:613c Microdia
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               1.10
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   idVendor           0x0c45 Microdia
+>   idProduct          0x613c
+>   bcdDevice            1.01
+>   iManufacturer           0
+>   iProduct                1 USB camera
+>   iSerial                 0
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength          279
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0x80
+>       (Bus Powered)
+>     MaxPower              100mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0000  1x 0 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       1
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0080  1x 128 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       2
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0100  1x 256 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       3
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0180  1x 384 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       4
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       5
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x02a8  1x 680 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       6
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0320  1x 800 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       7
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0384  1x 900 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       8
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x03ff  1x 1023 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+> Device Status:     0x0000
+>   (Bus Powered)
+>
+> Bus 001 Device 006: ID 05e3:0606 Genesys Logic, Inc.
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass            9 Hub
+>   bDeviceSubClass         0 Unused
+>   bDeviceProtocol         1 Single TT
+>   bMaxPacketSize0        64
+>   idVendor           0x05e3 Genesys Logic, Inc.
+>   idProduct          0x0606
+>   bcdDevice            7.02
+>   iManufacturer           0
+>   iProduct                1 USB2.0 Hub
+>   iSerial                 0
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength           25
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0xe0
+>       Self Powered
+>       Remote Wakeup
+>     MaxPower              100mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           1
+>       bInterfaceClass         9 Hub
+>       bInterfaceSubClass      0 Unused
+>       bInterfaceProtocol      0 Full speed hub
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval              12
+> Hub Descriptor:
+>   bLength               9
+>   bDescriptorType      41
+>   nNbrPorts             4
+>   wHubCharacteristic 0x00e0
+>     Ganged power switching
+>     Ganged overcurrent protection
+>     TT think time 32 FS bits
+>     Port indicators
+>   bPwrOn2PwrGood       50 * 2 milli seconds
+>   bHubContrCurrent    100 milli Ampere
+>   DeviceRemovable    0x00
+>   PortPwrCtrlMask    0xff
+>  Hub Port Status:
+>    Port 1: 0000.0503 highspeed power enable connect
+>    Port 2: 0000.0100 power
+>    Port 3: 0000.0103 power enable connect
+>    Port 4: 0000.0100 power
+> Device Qualifier (for other device speed):
+>   bLength                10
+>   bDescriptorType         6
+>   bcdUSB               2.00
+>   bDeviceClass            9 Hub
+>   bDeviceSubClass         0 Unused
+>   bDeviceProtocol         0 Full speed hub
+>   bMaxPacketSize0        64
+>   bNumConfigurations      1
+> Device Status:     0x0003
+>   Self Powered
+>   Remote Wakeup Enabled
+>
+> Bus 001 Device 003: ID 05e3:0710 Genesys Logic, Inc. USB 2.0 33-in-1 Card
+> Reader Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   idVendor           0x05e3 Genesys Logic, Inc.
+>   idProduct          0x0710 USB 2.0 33-in-1 Card Reader
+>   bcdDevice           91.32
+>   iManufacturer           0
+>   iProduct                3 USB2.0 card Reader
+>   iSerial                 4 00183
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength           32
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0x80
+>       (Bus Powered)
+>     MaxPower              500mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           2
+>       bInterfaceClass         8 Mass Storage
+>       bInterfaceSubClass      6 SCSI
+>       bInterfaceProtocol     80 Bulk (Zip)
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x02  EP 2 OUT
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+> Device Qualifier (for other device speed):
+>   bLength                10
+>   bDescriptorType         6
+>   bcdUSB               2.00
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   bNumConfigurations      1
+> Device Status:     0x0000
+>   (Bus Powered)
+>
+> Bus 001 Device 001: ID 0000:0000
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass            9 Hub
+>   bDeviceSubClass         0 Unused
+>   bDeviceProtocol         1 Single TT
+>   bMaxPacketSize0        64
+>   idVendor           0x0000
+>   idProduct          0x0000
+>   bcdDevice            2.06
+>   iManufacturer           3 Linux 2.6.19.7-mb6 ehci_hcd
+>   iProduct                2 EHCI Host Controller
+>   iSerial                 1 0000:00:02.1
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength           25
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0xe0
+>       Self Powered
+>       Remote Wakeup
+>     MaxPower                0mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           1
+>       bInterfaceClass         9 Hub
+>       bInterfaceSubClass      0 Unused
+>       bInterfaceProtocol      0 Full speed hub
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0002  1x 2 bytes
+>         bInterval              12
+> Hub Descriptor:
+>   bLength              11
+>   bDescriptorType      41
+>   nNbrPorts            10
+>   wHubCharacteristic 0x000a
+>     No power switching (usb 1.0)
+>     Per-port overcurrent protection
+>     TT think time 8 FS bits
+>   bPwrOn2PwrGood       10 * 2 milli seconds
+>   bHubContrCurrent      0 milli Ampere
+>   DeviceRemovable    0x00 0x00
+>   PortPwrCtrlMask    0xff 0xff
+>  Hub Port Status:
+>    Port 1: 0000.0100 power
+>    Port 2: 0000.0100 power
+>    Port 3: 0000.0100 power
+>    Port 4: 0000.0100 power
+>    Port 5: 0000.0100 power
+>    Port 6: 0000.0100 power
+>    Port 7: 0000.0503 highspeed power enable connect
+>    Port 8: 0000.0503 highspeed power enable connect
+>    Port 9: 0000.0100 power
+>    Port 10: 0000.0100 power
+> Device Status:     0x0003
+>   Self Powered
+>   Remote Wakeup Enabled
 
-[acme@filo pahole]$ pahole --reorganize --executable examples/vmlinux-x86_64 module
+--- lsusb -vv follows: only the camera, connected directly
 
-struct module {
-	enum module_state          state;                /*     0     4 */
-	unsigned int               num_syms;             /*     4     4 */
-	struct list_head           list;                 /*     8    16 */
-	char                       name[56];             /*    24    56 */
-	/* --- cacheline 1 boundary (64 bytes) was 16 bytes ago --- */
-	struct module_kobject      mkobj;                /*    80   120 */
-	/* --- cacheline 3 boundary (192 bytes) was 8 bytes ago --- */
-	struct module_param_attrs * param_attrs;         /*   200     8 */
-	struct module_attribute *  modinfo_attrs;        /*   208     8 */
-	const char  *              version;              /*   216     8 */
-	const char  *              srcversion;           /*   224     8 */
-	struct kobject *           holders_dir;          /*   232     8 */
-	const struct kernel_symbol  * syms;              /*   240     8 */
-	const long unsigned int  * crcs;                 /*   248     8 */
-	/* --- cacheline 4 boundary (256 bytes) --- */
-	const struct kernel_symbol  * gpl_syms;          /*   256     8 */
-	unsigned int               num_gpl_syms;         /*   264     4 */
-	unsigned int               num_unused_syms;      /*   268     4 */
-	const long unsigned int  * gpl_crcs;             /*   272     8 */
-	const struct kernel_symbol  * unused_syms;       /*   280     8 */
-	const long unsigned int  * unused_crcs;          /*   288     8 */
-	const struct kernel_symbol  * unused_gpl_syms;   /*   296     8 */
-	unsigned int               num_unused_gpl_syms;  /*   304     4 */
-	unsigned int               num_gpl_future_syms;  /*   308     4 */
-	const long unsigned int  * unused_gpl_crcs;      /*   312     8 */
-	/* --- cacheline 5 boundary (320 bytes) --- */
-	const struct kernel_symbol  * gpl_future_syms;   /*   320     8 */
-	const long unsigned int  * gpl_future_crcs;      /*   328     8 */
-	unsigned int               num_exentries;        /*   336     4 */
-	unsigned int               num_bugs;             /*   340     4 */
-	const struct exception_table_entry  * extable;   /*   344     8 */
-	int                        (*init)(void);        /*   352     8 */
-	void *                     module_init;          /*   360     8 */
-	void *                     module_core;          /*   368     8 */
-	long unsigned int          init_size;            /*   376     8 */
-	/* --- cacheline 6 boundary (384 bytes) --- */
-	long unsigned int          core_size;            /*   384     8 */
-	long unsigned int          init_text_size;       /*   392     8 */
-	long unsigned int          core_text_size;       /*   400     8 */
-	void *                     unwind_info;          /*   408     8 */
-	struct mod_arch_specific   arch;                 /*   416     0 */
-	int                        unsafe;               /*   416     4 */
-	unsigned int               taints;               /*   420     4 */
-	struct list_head           bug_list;             /*   424    16 */
-	struct bug_entry *         bug_table;            /*   440     8 */
-	/* --- cacheline 7 boundary (448 bytes) --- */
-	char *                     args;                 /*   448     8 */
-	void *                     percpu;               /*   456     8 */
-	struct module_sect_attrs * sect_attrs;           /*   464     8 */
-	char *                     strtab;               /*   472     8 */
-	struct module_ref          ref[255];             /*   480 16320 */
-	/* --- cacheline 262 boundary (16768 bytes) was 32 bytes ago --- */
-	struct list_head           modules_which_use_me; /* 16800    16 */
-	struct task_struct *       waiter;               /* 16816     8 */
-	void                       (*exit)(void);        /* 16824     8 */
-	/* --- cacheline 263 boundary (16832 bytes) --- */
-	Elf64_Sym *                symtab;               /* 16832     8 */
-	long unsigned int          num_symtab;           /* 16840     8 */
-}; /* size: 16848, cachelines: 264 */
-   /* last cacheline: 16 bytes */
-   /* saved 112 bytes and 1 cacheline! */
+> Bus 002 Device 004: ID 0c45:613c Microdia
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               1.10
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   idVendor           0x0c45 Microdia
+>   idProduct          0x613c
+>   bcdDevice            1.01
+>   iManufacturer           0
+>   iProduct                1 USB camera
+>   iSerial                 0
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength          279
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0x80
+>       (Bus Powered)
+>     MaxPower              100mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0000  1x 0 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       1
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0080  1x 128 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       2
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0100  1x 256 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       3
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0180  1x 384 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       4
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       5
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x02a8  1x 680 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       6
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0320  1x 800 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       7
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0384  1x 900 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       8
+>       bNumEndpoints           3
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass    255 Vendor Specific Subclass
+>       bInterfaceProtocol    255 Vendor Specific Protocol
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            1
+>           Transfer Type            Isochronous
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x03ff  1x 1023 bytes
+>         bInterval               1
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x82  EP 2 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0001  1x 1 bytes
+>         bInterval             100
+> Device Status:     0x0000
+>   (Bus Powered)
+>
+> Bus 002 Device 001: ID 0000:0000
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               1.10
+>   bDeviceClass            9 Hub
+>   bDeviceSubClass         0 Unused
+>   bDeviceProtocol         0 Full speed hub
+>   bMaxPacketSize0        64
+>   idVendor           0x0000
+>   idProduct          0x0000
+>   bcdDevice            2.06
+>   iManufacturer           3 Linux 2.6.19.7-mb6 ohci_hcd
+>   iProduct                2 OHCI Host Controller
+>   iSerial                 1 0000:00:02.0
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength           25
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0xe0
+>       Self Powered
+>       Remote Wakeup
+>     MaxPower                0mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           1
+>       bInterfaceClass         9 Hub
+>       bInterfaceSubClass      0 Unused
+>       bInterfaceProtocol      0 Full speed hub
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0002  1x 2 bytes
+>         bInterval             255
+> Hub Descriptor:
+>   bLength              11
+>   bDescriptorType      41
+>   nNbrPorts            10
+>   wHubCharacteristic 0x0002
+>     No power switching (usb 1.0)
+>     Ganged overcurrent protection
+>   bPwrOn2PwrGood        1 * 2 milli seconds
+>   bHubContrCurrent      0 milli Ampere
+>   DeviceRemovable    0x00 0x00
+>   PortPwrCtrlMask    0xff 0x85
+>  Hub Port Status:
+>    Port 1: 0000.0100 power
+>    Port 2: 0000.0100 power
+>    Port 3: 0000.0100 power
+>    Port 4: 0000.0100 power
+>    Port 5: 0000.0100 power
+>    Port 6: 0000.0100 power
+>    Port 7: 0000.0103 power enable connect
+>    Port 8: 0000.0100 power
+>    Port 9: 0000.0100 power
+>    Port 10: 0000.0100 power
+> Device Status:     0x0003
+>   Self Powered
+>   Remote Wakeup Enabled
+>
+> Bus 001 Device 003: ID 05e3:0710 Genesys Logic, Inc. USB 2.0 33-in-1 Card
+> Reader Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   idVendor           0x05e3 Genesys Logic, Inc.
+>   idProduct          0x0710 USB 2.0 33-in-1 Card Reader
+>   bcdDevice           91.32
+>   iManufacturer           0
+>   iProduct                3 USB2.0 card Reader
+>   iSerial                 4 00183
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength           32
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0x80
+>       (Bus Powered)
+>     MaxPower              500mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           2
+>       bInterfaceClass         8 Mass Storage
+>       bInterfaceSubClass      6 SCSI
+>       bInterfaceProtocol     80 Bulk (Zip)
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x02  EP 2 OUT
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+> Device Qualifier (for other device speed):
+>   bLength                10
+>   bDescriptorType         6
+>   bcdUSB               2.00
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   bNumConfigurations      1
+> Device Status:     0x0000
+>   (Bus Powered)
+>
+> Bus 001 Device 001: ID 0000:0000
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass            9 Hub
+>   bDeviceSubClass         0 Unused
+>   bDeviceProtocol         1 Single TT
+>   bMaxPacketSize0        64
+>   idVendor           0x0000
+>   idProduct          0x0000
+>   bcdDevice            2.06
+>   iManufacturer           3 Linux 2.6.19.7-mb6 ehci_hcd
+>   iProduct                2 EHCI Host Controller
+>   iSerial                 1 0000:00:02.1
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength           25
+>     bNumInterfaces          1
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0xe0
+>       Self Powered
+>       Remote Wakeup
+>     MaxPower                0mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           1
+>       bInterfaceClass         9 Hub
+>       bInterfaceSubClass      0 Unused
+>       bInterfaceProtocol      0 Full speed hub
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0002  1x 2 bytes
+>         bInterval              12
+> Hub Descriptor:
+>   bLength              11
+>   bDescriptorType      41
+>   nNbrPorts            10
+>   wHubCharacteristic 0x000a
+>     No power switching (usb 1.0)
+>     Per-port overcurrent protection
+>     TT think time 8 FS bits
+>   bPwrOn2PwrGood       10 * 2 milli seconds
+>   bHubContrCurrent      0 milli Ampere
+>   DeviceRemovable    0x00 0x00
+>   PortPwrCtrlMask    0xff 0xff
+>  Hub Port Status:
+>    Port 1: 0000.0100 power
+>    Port 2: 0000.0100 power
+>    Port 3: 0000.0100 power
+>    Port 4: 0000.0100 power
+>    Port 5: 0000.0100 power
+>    Port 6: 0000.0100 power
+>    Port 7: 0000.0000
+>    Port 8: 0000.0503 highspeed power enable connect
+>    Port 9: 0000.0100 power
+>    Port 10: 0000.0100 power
+> Device Status:     0x0003
+>   Self Powered
+>   Remote Wakeup Enabled
 
-Using:
-
-[acme@filo pahole]$ pahole --reorganize --show_reorg_steps --executable examples/vmlinux-x86_64 module
-
-We get what was done in each step of the reorganization process:
-
-/* Moving 'num_syms' from after 'syms' to after 'state' */
-/* Moving 'num_unused_syms' from after 'unused_syms' to after 'num_gpl_syms' */
-/* Moving 'num_gpl_future_syms' from after 'gpl_future_syms' to after 'num_unused_gpl_syms' */
-/* Moving 'num_bugs' from after 'bug_table' to after 'num_exentries' */
-/* Moving 'args' from after 'percpu' to after 'bug_table' */
-/* Moving 'percpu' from after 'sect_attrs' to after 'args' */
-/* Moving 'sect_attrs' from after 'strtab' to after 'percpu' */
-/* Moving 'strtab' from after 'num_symtab' to after 'sect_attrs' */
-
-The complete output is at:
-http://oops.ghostprotocols.net:81/acme/dwarves/pahole--reorganize--show_reorg_steps--executable_examples_vmlinux-x86_64_module.txt
-
-	The packages for FC6 (SRPM, i386 and x86_65 packages) are at:
-
-http://oops.ghostprotocols.net:81/acme/dwarves/rpm/
-
-	And the git repo is at:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/acme/pahole.git
-
-	There are some people trying these utilities in userspace, where bigger
-savings are possible.
-
-Regards,
-
-- Arnaldo
