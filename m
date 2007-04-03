@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbXDCFL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbXDCFVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbXDCFL7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 01:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXDCFL6
+	id S1752590AbXDCFVu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 01:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXDCFVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 01:11:58 -0400
-Received: from crown.reflexsecurity.com ([72.54.139.163]:40029 "EHLO
-	crown.reflexsecurity.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752653AbXDCFL6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 01:11:58 -0400
-X-Greylist: delayed 1632 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Apr 2007 01:11:58 EDT
-X-Reflex-Keepalives: .
-Date: Tue, 3 Apr 2007 00:44:47 -0400
-From: Jason Lunz <lunz@falooley.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: roland <devzero@web.de>, Antoine Martin <antoine@nagafix.co.uk>,
-       Blaisorblade <blaisorblade@yahoo.it>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [uml-devel] [RFC] UML kernel & rootfs bundle with every kernel release ?
-Message-ID: <20070403044447.GB14297@falooley.org>
-References: <1712880100@web.de> <200704012108.14597.blaisorblade@yahoo.it> <46100EF5.7040802@nagafix.co.uk> <20070402020530.GA589@c2.user-mode-linux.org> <4610D937.20002@nagafix.co.uk> <005601c77567$1ceddb60$eeeea8c0@aldipc> <20070402214434.GA10205@c2.user-mode-linux.org>
+	Tue, 3 Apr 2007 01:21:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54987 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752590AbXDCFVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 01:21:48 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Christian Kujau <evil@g-house.de>
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+Date: Tue, 3 Apr 2007 01:20:29 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de
+References: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
+In-Reply-To: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070402214434.GA10205@c2.user-mode-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704030120.29619.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 05:44:34PM -0400, Jeff Dike wrote:
-> There are sites (http://uml.nagafix.co.uk/ being the best one I know
-> of) where, with two downloads, two uncompressions, and one command
-> line later, you have a booted UML.
+On Monday 02 April 2007 15:41, Christian Kujau wrote:
 > 
-> The only way I know of to improve on this, aside from inprovements in
-> the booted distro, is to package the filesystem as a rootfs within the
-> UML kernel binary.  I've considered this, but haven't done anything
-> with it.
+> Hi there,
+> 
+> we have serious problems with 2 of our servers: both shiny new amd64 
+> dual core, with both 2GB RAM, 32bit kernel+userland (Debian/testing).
+> Both servers have 2 NICs, RTL8139 (eth0, irq10) and RTL8169s
+> (eth1, irq11).
+> 
+> Both boxes are running fine but after "a while" they lock up and 
+> eventually restart all of a sudden. The last messages in the logfile 
+> are:
+> 
+> 14:15:11 db2 kernel: NETDEV WATCHDOG: eth0: transmit timed out
+> 14:15:14 db2 kernel: eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
+> 
+> Then the box reboots, nothing else in the log.
+> 
+> As the servers have been set up recently, we only know that it happend 
+> with Debian's 2.6.17-? kernel. When we upgraded the installation, we 
+> went to 2.6.18-4-k7 and the problem persistent. We're using now vanilla 
+> 2.6.20.4 and while the problem persists, it takes longer to lockup (~20h 
+> as opposed to 4-5h). While this is a good thing for us, it's now harder
+> to reproduce (we have to wait longer).
+> 
+> Searching the archives turned up quite a few results but no real fix and 
+> lots of old postings too. We then disabled ACPI completely and booted 
+> with 'noapic'. Now both boxes are running for > 20h and we're curious 
+> how long they make it. However, booting with 'noapic' slowed down both 
+> servers *a lot*.
 
-I've done the converse: package the uml kernel within the rootfs image,
-and use a script that plays the part of bootloader. With ext2 at least,
-it's fairly easy to use the debugfs 'cat' command for this.
+Which increased stability, disabling ACPI, or disabling the IOAPIC?
+Your box has MPS, so you should be able to use the IOAPIC in either mode.
+Note that you can do these both independently at boot-time with "acpi=off"
+and "noapic", respectively.
+eg. 4 combos
+1. <default - no boot params>
+2. noapic
+3. acpi=off
+4. acpi=off noapic
 
-That way, you simply distribute the fs image with a companion script
-that can boot any number of such images.
+you started with #1, and are running hard-coded #4 now, but skipped #2 and #3
 
-Jason
+cheers,
+-Len
+
+> >From /proc/interrupts we can see that only CPU0 (core 0) is handling 
+> interrupts while CPU1 does not. We compiled with CONFIG_IRQBALANCE=n so 
+> that irqbalance(1) would work - but to no avail.
+> 
+> Please see http://nerdbynature.de/bits/2.6.20.4/ for details for both 
+> hosts and feel free to ask for more details. Although both boxes are in 
+> production we'll be happy test more bootoptions/patches and the like.
+> 
+> TIA,
+> Christian.
