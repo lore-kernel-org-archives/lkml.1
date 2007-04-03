@@ -1,249 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966157AbXDCKuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966159AbXDCKvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966157AbXDCKuZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 06:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966156AbXDCKuZ
+	id S966159AbXDCKvY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 06:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966160AbXDCKvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 06:50:25 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:33276 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966157AbXDCKuY (ORCPT
+	Tue, 3 Apr 2007 06:51:24 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:59618 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966159AbXDCKvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 06:50:24 -0400
-Message-ID: <4612306C.2040600@hitachi.com>
-Date: Tue, 03 Apr 2007 19:46:04 +0900
-From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 3 Apr 2007 06:51:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=rcJrMtxGrCCfoqLFqmz1KZzvLl88KB0xNpA9CGyXWHNXBcaXdyG34SLF8d6OThWO8n3eOwepFecT5AyKc2KJMfSpuwRLxGbMf36hEzvZMoYXcsFXQXFVHDjqHPbR9kgN/0KDzUh/3lxpXGklSdJBfK4v9wN36MK0CGWJ0T7I720=
+Message-ID: <88df6dda0704030351u44fab6bcj20f9b48d24de861a@mail.gmail.com>
+Date: Tue, 3 Apr 2007 16:21:21 +0530
+From: "Ameya Mitragotri" <ameya.mitragotri@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: fadvise+sync_file_range Vs O_DIRECT
+Cc: suparna@in.ibm.com, pbadari@gmail.com
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Cc: Bill Davidsen <davidsen@tmr.com>, yumiko.sugita.yf@hitachi.com,
-       masami.hiramatsu.pt@hitachi.com, hidehiro.kawai.ez@hitachi.com,
-       yuji.kakutani.uw@hitachi.com, soshima@redhat.com, haoki@redhat.com
-Subject: [PATCH 1/2] VM throttling: Start writeback at dirty_writeback_start_ratio
-References: <45F7EDC6.5090303@hitachi.com> <20070315110745.af867b10.akpm@linux-foundation.org> <45FD53DB.5000207@tmr.com> <460218D2.40701@hitachi.com> <46026B78.3080401@tmr.com> <4607A01D.1060401@hitachi.com> <4607FECD.1090101@tmr.com>
-In-Reply-To: <4607FECD.1090101@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_6167_12724477.1175597481625"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset is to avoid the problem that write(2) can be blocked for a
-long time if a system has several disks with different speed and is
-under heavy I/O pressure.
+------=_Part_6167_12724477.1175597481625
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
--Description of the problem:
-While Dirty+Writeback pages get more than 40%(`dirty_ratio') of memory,
-generators of dirty pages are blocked in balance_dirty_pages() until
-they start writeback of a specific number (`write_chunk', typically=1536)
-of dirty pages on the disks they write to.
+Hello,
+I am doing some benchmarking on writes to the hdd from a simple
+application (attached).
+Im benchmarking the writes using the following
+- write with O_DIRECT
+- write with fadvise + O_SYNC
+- write with fadvise + sync_file_range
 
-Under this rule, if a process writes to the disk which has only a few
-(less than 1536) dirty pages, that process will be blocked until
-writeback of the other disks is completed and % of Dirty+Writeback goes
-below 40%.
+Ive tested the writes in chunks of 4/8/16 KB and 1MB
 
-Thus, if a slow device (such as a USB disk) has many dirty pages, the
-processes which write small data to the other disks can be blocked for
-quite a long time.
+The results show fadvise + sync_file_range is on par or better than
+O_DIRECT. Detailed results are attached.
 
--Solution:
-This patch introduces high/low-watermark algorithm in
-balance_dirty_pages() in order to throttle only the processes which
-write to disks with heavy load.
+Now are these results along the expected lines? AFAIK O_DIRECT should
+be faster because it bypasses the cache. Does it make sense for apps
+to use fadvise + sync_file_range rather than use O_DIRECT?
 
-This patch adds `dirty_start_writeback_ratio' for the low-watermark,
-and modifies get_dirty_limits() to calculate and return the writeback
-starting level of dirty pages based on `dirty_start_writeback_ratio'.
+I havent tried benchmarking using tools like Iozone as yet.
 
-If % of Dirty+Writeback > `dirty_writeback_start_ratio', generators of
-dirty pages start writeback of dirty pages by themselves. At that time,
-these processes are not blocked in balance_dirty_pages(), but they may
-be blocked if the write-requests-queue of the written disk is full
-(that is, the length of the queue > `nr_requests'). By this behavior,
-we can throttle only processes which write to the disks with heavy load,
-and can allow processes to write to the other disks without blocking.
+Hardware/OS details
+1) AMD Athlon with 512 MB RAM running plain vanilla 2.6.20 (ext3 partition)
+2) Intel P4 with 512 MB RAM running plain vanilla 2.6.20 (ext3 partition)
 
-If % of Dirty+Writeback > `dirty_ratio', generators of dirty pages
-are throttled as current Linux does, not to fill up memory with dirty
-pages.
+Thanks
+Ameya
 
-Thanks,
+------=_Part_6167_12724477.1175597481625
+Content-Type: application/x-gzip; name=appl.tar.gz
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f0287c7b
+Content-Disposition: attachment; filename="appl.tar.gz"
 
-Signed-off-by: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
----
- include/linux/writeback.h |    1
- mm/page-writeback.c       |   52 ++++++++++++++++++++++++++++++++++++----------
- 2 files changed, 42 insertions(+), 11 deletions(-)
+H4sIACXjEUYAA+1cDXAcxZXuXa1t7SKw/AM4ieuYMnIsgbzeXa1+wDYlWRojg7CNLBtTFozW+6Pd
+sNrd7M6ClEPEZu1DG9kJFZIK3vIRCKRyP+Tiu0quSCXFYexCkOMon891MTknKBUlJx+6K1FHjhQI
+dO9198z0jlaSubPNT+a5enu+7tfdr3u6e970fHJLKrWOXGLxgDTW17O4wV8UcyFeT4PHX9fg8TXW
+EQ8AXyOR6i+1YSjZjBpISxJJhzN9sTn05sv/hEoL3H81nFGVZCiWDgfVS9HG3PffW9dQ18Dvf73f
+68f7X+cDdclzKYwxyx/5/f+y3LHZZrPp2E7KCKKeA45yP8QdV7B0P5HIIlJNVpLPkIUUQ9gHOhBG
+4RrDAggOCGUQlkMly/c7yjEsA7yM59l4oAJlMTSVE4IBy5NKlk/THoc8CFWQ0ARhIc+3o12Q3wF5
+GF4GjGEhbwNDNehXQ9sYJMCSkHfnb9VQqbHQyq+Lx/aui4fWxmOJbL87k3T7WHolt/3WrTv5WLEy
+Tn59Jc+n/ZBokzTt+7f/5gVzWzVEG1dClkLYzvGXOLYJulhRwpTfwHErx90cf9vG8EaON/J8bWGP
+8fwbOL6J59/GcZJjL8df4/o7OX6X538WwvgjjnIclyXkKkIUpbcvmVBwNamKQmAIgzh0DUTZsg1S
+Q7GEks2EQySTSscSaoSksmqG9IX7MmGV9IZVNdYXTkZCgQESjCczYZJMhRPk/kA8ngxC1Vgbr7ov
+EEuQB9IxNUwi6XCY3NqxZVOr4nN72B2x89/ifzb6r5LfQ5TKWOxK1BzgePkRR/lCmLhVEC/CuYMx
+VFaLMaR7MIbO+jGGG9yEMdz8DRgvIqQZY5iTbRjDhGjH2AVzFGNYQ9sxroBxzP82N1E+7oQmxnvw
+53NQ6SsnyHT9StCYXi3BL9ozvRotieLl+dFpkNVoURTzzp+iGC2LYnfOv0AxWhhdgfgYxWhpFKfO
++ScpRouj1YgfpRgtj+Kond9HMfYg2oQ4RTH2JNqMuIdi7FG0HfF2irFnUZy255spxh5GdyP2ANTm
+rvc/783/Ojc2ub2rMyo9gi3Cz527oo6DjvLxXlB8+9FHYUx25CYc46i/Z/+JoeWEDD82BXkHT6sL
+xpfCxe49r5x4lAobv30bu3Gc1Io3V+ZecDy9G4fu9FMYDVcePJ1986UFmG+DQkz/qXbYJg6+oC59
+DtuAC+eIowrTpk+BzuGOKgeYOP3FKdC+a9eOO3MT0RH5DPZqRD5Hb8FrcKsOy9/Jj0z9GDYDQqv5
+778als/l26oqRtqqyiehWxA73oUYFR1V4zd9AOUdVTjnxn8J13n5bG7wLMmugMSFQ9D951BBPort
+nH8IGsB6UBvrwRszLJ/FeryoRrOoimNTM7MFsn73PlZ7Jjd4ZppWew1WGxCqXYPVyqNarbQKR1UU
+Bmf8XSi7fxDm1mLykHNEHkOdNxcOy6N5eWxYHoOOlaMBUGpYPoONHYECkFEjj+YGR8lD9jePC1X2
+YJXfA42n8Cr/4vF3r4v9rHnTYnLfWWJ7/Sd49c5vbP+c/9nwlSFU+Mfj712Xfyn/c9trS954Kjpf
+kbhWxPbykl/k38q/V3P8M/+Sfzn/i7w8nt85MSyPD++cQFPzXVXlYE0tjsNN1F5q+i30ko7mMrjM
+yedsucFz3sVfrWZjRehoH82djN69517lnsOBKT7dcP7cc+Kw+nly+KdrUIvNkPF74XL/iV8uISQ3
+sXJ8DUzWwzlpGm/GJLuokSePD07ah3dOwiS+0Tudf+nw37NWKnMjNja4FWxwy8Gs6WtyLzluGpzM
+vpE7uRJNODG8suoEa3/HT/AhCAvkKRr/YVqtyL3pmD41XAbX2bdzJx177jlhWkNtYNn4KTDrblg5
++Dy20Z0Rnm1qH3P4yOrMutUef8it9qvEJbGtVooEYnHYpF2SnE4n0xLuwrFErxSBVIms7gi5tHU9
+zdf4tLDWbXx/hW2OpHKOcnz2vQzr4fcfTCfb4TmMz8X2h2GfhTgKGCvLQbiCl7ua14P2roA7jhb3
+4N5MnzGEXIt6UC9el0OMzyFcFct4DPcyOQ71g0lJtGUS4lcfZvvphxX0K7TrJ6Ctv4HwPITXIPwK
+wn9B+ADCVeAn/QkEN4RbIGw9wMq1YflbW1tvlqrBXaiR/G6v2yv5PODm3uRrkqo7wyGpPaCy9LW+
+JvAHLoK21+P1mrXrPB+F9qx2uzMDfWpgL8RqmsVR7Qr8gnA6RdyJpBp2t2zaslYN9BJ3byLrjgYy
+UeIODSSgMIvVNMu5P5zOxJKJIqBAXjocRz12kYqrWHsMftUwTHd3BABkJUMBNUDc4agSSQf6wsQd
+VJPpDDTAoi8E07SxQF8sCA0kVfrDamMl92ZALZjs6wsnPsSb0+f4WsH5TX1kG5vDmmi+3/UQFnE9
+6svamC+oiYPH6Kv9D8x11MN11m4z/F1ND8N6wtYa6uH6i9oMv91GDB8Xfcoyrofrtd3O1qnZvtsJ
+Xf+0XVxnr8LFSqFdOw/oFHzA9XB9jtuZfWK7KL3E8KVxfZeXsXUt9gNxStDD/aCyjO0TDt4/TW+A
+14/7De5HqTK2h5jHTxX0hkBvCPROmfQwfFnQw/ejHkiMlhl6mm95UNDD/e/lRWxczO0OE2MejIHe
+GOjdUULvMUHPD082f7mRJ+r9OddDk+i7UzkbB7PeM4JeM+g1z6L314IeOkvts7R7jPcV9eg7WTl7
+H1sg6GH9PxbqQ397uXNmfRieF/TwObAC9DaU0BsR9LpAr8tZuh//xNtHPfQLu53smWLWO02K37uo
+npCgXS7hdWmSggfZv5GZeto90+TZxfBMcrD17yXGenOa6jsKxtmFBNEms+D+QWh5plWtY9Zyu45Z
+hVEds163P6xhdrde1TF926brleFFFOO6ZJiNdKWOnWwsdMxchSEds4OEngMarqAY1wfDV1I8puOr
+KMb5zvBiipse1zBbbc06XsL6o+OlFHfomO2wy49omM2AFTpm3keXjq+huFvH4s6BeAUd8QO8P3bo
+zxIh30Heml4p2ItvnzcI9tpAu0mw1wb2yrw9dkZyLemCePcRLf8asgfiY0J7X4R4dI72ByHeILT/
+FcL9Et7+t4TxtcH4ftdkz99C/OQjRv0jpvr/Vegfsb81PWHC7wvja7NfTZbZivPXmPDNJny7Cd9r
+M+6nzb6M9NqM+yXB+KT5QtHOVA5yrJ2ZfBOfi48wP3Qp9Oe7NmM+In4WMdSHCUtg/H8gLDwJwvMm
+fNrG5qt2BvK6zZjPS2E+v2Fqf5Jj7czGzjcH7czmOnvxmYqb52tnOJs51s5wdtmN/ldC/4OAJ3j7
+S+xXkRRgfN2O8f7t4+W1M5+vc6yd+TxtN+Z7JdzfHwBOCfiHXF87EzoJOCqM1wjP186IXjfVNwr4
+iDY+9gryDmA8B7jazuybshv7x1LcP4LwUiIcK5FgWs2o2UjEjWdCrV3bOpWOLTu6FAVQWxG6rVUH
+4J2l4mE1HHLXN9Y3kRRGDaASSiq98eTeQFyh3p4SyPYT6gUqoWxf34DWgLy1zahfA5s7W+6QdYSN
+addGrUG9VvF4nVqeSofRGVUC6XRggHdNUdAn5UnhRIgot3Zs29TSoWzbvHmH3KV0tWzqkJUZhamm
+WFSrbYbOzBbb7t7acseWVoKuLE/jh3PNzcapGr4CipgfxgUzWdos4SVVn/kEULntfqUz3BvLgFPf
+Gg9kMuEMUSIpJfoAYSXpIZ5YNTsNLNGYcfJXlFl8sCgeIopqeEpYXKfQYQCZpBINJELxsNg1+rIw
+czDo2WRxZfAKoNWFA43HmqKC6uWnmEWlwvT1AW5KQ1ODGwxXUkFFjWYT97n39hN6wsksuPSC33/S
+2YQSCYTuj2XC8DZ28duY7/uf1+fXvv/46uvo9x9/o8f6/nM5pDcYlNYmJbpH8TlQBNxBV999sHdJ
++sGRy71OVHCl+6S16YiQ75q/VUs+LqJ//9Xv98VvA9d4g98/2/qv83jqje//DY10/df7rfV/OeT6
+WCIYz4bCzg34KE26o7e4ipLgiWhOg6dib3FaOJ1OmIsOZNbByKozU9WBVDhTIhme3cWpkWBCjRcn
+ZRPgToSK0lZlBhJBBQ+olXQg0Qt1rHJdHwqDhxF2OrcpbVs65dYup8ePM83IQP1M7Ethp9fjb6pv
+bDBygvgYFrOcWp7kDCazCdXprPe4XDAM2aAqodXwfJdUb62k+ta7XOAxSPgAr65x/anLiSgS2rjW
+u94FFcM8u2FvNqJdJ8DZ3FPvuWc904vVSthsrUT9InaZjETAIwKFbCIT602EQ1I8mehlP6FYBKuK
+JNPVMWmj5FkvxaQNEjURL2+8scbldIINTifzq6qxvVrJ0+/xsJaSEZpUU7Melbjrx7VWCV8HVgHU
+d3cAMVYAegLNVrNu1TAnp1ofvZr1EirFItVUb6O0dWdHB1rEbXI6eXuruhPFHx+6E6tYA05nOqxm
+0wmJDh/IoNMpCf2BimvXeNbUCm1ibiQEZqHXyruyTWntlFu6pAfhqrPtrk4YAqYItqHuRqh/NsNK
+fAWZwzz4pSMJpoAJ2hSjmexG0tuEUPRVqz8Pk4eODs16IArlqr01tKfMIjBU76O0YSO9eSxft9mp
+TxpoQ1fmdg4y3XAcnu2zlxILuPRMGKJaCUfamJa8+6Z1RxVZN4um8I67t7Yqm7fAy0tny9ZbZeWu
+li1dyiZ587ZOGW7JjNzOLV0l07FUy+YuuZO3nkpmYv3aQ2u2trdv27Flt7K5pW2X0rZta9dWWW7T
+jMc+r91oKLNkfptunJEBt0AbfQ+bLM696XDgPpo7WOKW+oRbiisVl0q16nOr9yuZcPAGL3v0ocqN
+LBXeYYI10lrU8pbU8upatFJtlq7uwBVTS7eDmvV0AtK3FBgTvh7g/QfXCkVgKp+1MBEH+SywHLY/
+XkH/b8YT9CK3MY//52lorGP+n8/b4G9oAP/PD/8s/+9yiO5IScxlG8jgoZvoYUmC16W7QnPt6ije
+2TXpDm+Ib+466Z7PNP3QfCwCypKixOqaGhRFL7q1UzFNYqnO63ddH07AtigU64dSDf65C/oaG/WC
+6MHGglIsEUdl9NLMTz3m4dWCSxaJKKr+EOIwsXcAniK1bJ+lqvFAb4a6hnwb5gNePdOQWkl8qvGa
+eAW4d1+cXdv8/ndRKjXJPPxff73PZ+J/1/ms9X95ZDb+7yjn/36Dfaa7pPzffichGET+L007AnkQ
+aiGh2cT/PQT5hyAPw8eF/7uYzOT/YtqF8H/v5Vj7VvQFjreT0nzgAyb9No61b0tpjrVvS7dzrH1L
++grHs/GBd3M8Gx9Y4x938Hzt2EjkB1fn/7/84CIv/wLZwnxHvTDWsG8mf7gUg7iMc4jtRRzipZRD
+XEa+xtM0TvERnt9VcJQvhAEIFRinOFpgnOJ4gXGKUwXGKVYLjFPcX2Cc4gcLjFO8r8A4xQcKjFM8
+VGCc4kMFxil+tMA4xd/AGFp+HOOrdI7xaqQXP4g/72gc4+4Ccox7ChrHGC0TOcZoocgxRktFjjFa
+LHKM0XKRY4w9EDnG2BORY4w9EjnG2DORY4w9FDnG2FORY4w9NjjG06ux59EexBLFOAJR7ND5Ss5L
+FPnHPUOQmxqi/OMDyD/eU5J/3H51Ef94YUn+8TMFgX/8ZIHyjzHS+MeYL/CPh47M5B9jWmn+8f6J
+IYK83VOMgnyW3iG/HWm/T8ygIJ/VKMiePKMg35xHCvITSHb9rEBB/tUHGleYUZA3g9r4X1L+6yHK
+FR4rSUGm/NlVZgoyYbZA1gilIJ/KDZ5iFORdWG2nUO1hSkE+R2tFljERmcjHYJjGxygT+ZzGRB7V
+mMjn8vIo8pEpWfYMI8uewjZzlM47mj+eP3H8veuQrIzkYah2OZJU8h1VFfnuqkqND8wLXcu6V+Gg
+3eK1jgm1fp/VWiOfg1+bPJYbPEceWnB+7zTtu2bxX6DFPiQ649WcrOVnC2ai87H5ivyw8OGIznEc
+7ZNTaDjtwytTOuf5iSkkOp+15QbPehd/9cX36R0htPOH9p/ECaZznekkbUJCsvyHYbkyL08Ny8vz
+8uSwvCIvvz0sr4QWVwwD3vk2XFVC28uHQXPnFA4ioAokMYNRYBByOMZPvDc9zRfMBfGnb3/v0vKn
+0YlA/jSNL5w/XfkR8qfPcP40dK6IPx018aefJqX507sLjD+NXEmRPx3i/OnuWfjTtbli/nRF7v/G
+nz50xChnB19yKYRVEHwQNkHohLAXQhrCwxC+DuE7EP4OwosQTnNezoEjFo/a4lGXlo8Tjxobm4tH
+jes2amfr1WyfyKPG9VZRVtxuKR41rtNa/Ls0MjePGtd59wXwqHFfCJWxtLl41LgvnbkAHvUE6E2A
+3qRJz8yjxvfMUUisFojApXjUuA+WO+fnUVeBXpVzfh61CnpqCf4xisijpu+gs/CKRR71PtDbN4ue
+yKNGp29olnZFHjV9t3XOz6PGd4wu1/w8anwe7HYZ74minsijPgp6R13z86jRv33GdWE8aqp3ATzq
+5664MB712zBBpAVs/fvI7Dzq5dcQcstl4lFHTTzqCp33zHjUtTpmPOpuE486ZOJRnzHxqCdMPOpR
+E48a1wfDjEddpWPGo1Z1zHjU/Tqvma22fTpmLOIhHTMe9SEdsx22q1DMo96tY+aFHNUx41E/o+PS
+PGrkgSKejUfdr/OgGY96n44Zj3pIx4xHTd+/iMGjfrJQzKP2CO0hj7pnjvaRR/2g0D6enRwQ2v+W
+ML4aj1q0B3nUo0Nz86gXQP4unv87ob/Ie54y4Sttxngjr/p6W3F+ownfZsJ7TDhhM+4v8qofsBn3
+D3nVD5t41d808Zopj3rI4FX/yGbMT8Q/BYwvSxpP+B94ee1s67SJV/1rE/69jc1n7SxpymbMd+RZ
+azxqzZ5lHGtnYatNPOtN9uKzqTtNPOuYiWc9YDfGA3nWf4Z/F543eNaPIW95yOBZP23iWf/IxLN+
+yW6sB+RFnwb8nIB/buJZ/zvgY8L4/QfP187eyvgep529XV1WXP9KwK8PGbzrOsB4/rGf866byoz9
+5tPGuzZobabPK59eHjY/AC1WtqjZpajZRefLRp7v483Zvpii8b+1v0+4ZPzvxsb5+d8+X2Odl37/
+q/dY3/8ui4j8bz4HpOI/WJmN/80VLP73J1rM///XR8D/9vm9XuP///LUM/53g7X+L4d8UvnfF5nj
+7fzoWN4Wu/tisrvpBZsQHwnR+1PB7C5NjrY40JZYYoklllhiiSWWWGKJJZZYYoklllhiiSWWWGKJ
+JZZYYoklllhiiSWWWPIxk/8F+uzmDQB4AAA=
+------=_Part_6167_12724477.1175597481625
+Content-Type: text/plain; name=odirect.txt; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f0288y0z
+Content-Disposition: attachment; filename="odirect.txt"
 
-Index: linux-2.6.21-rc5-mm3-writeback/include/linux/writeback.h
-===================================================================
---- linux-2.6.21-rc5-mm3-writeback.orig/include/linux/writeback.h
-+++ linux-2.6.21-rc5-mm3-writeback/include/linux/writeback.h
-@@ -94,6 +94,7 @@ static inline int laptop_spinned_down(vo
+CQkJCU9fRElSRUNUCQkJCQ0KCQkJCQkJCQkNCjRLCQk4SwkJMTZLCQk2NEsJCTFNDQoJCQkJCQkJ
+CQ0KNzU2MjYuMzQJNTMxMzcuNDgJNDkyNjMuNTgJNDgwMTcuODgJNDMxOTkNCgkJCQkJCQkJDQo0
+NDc4NwkJMjU0NTIJCTE3MDUwCQkxMDQ0MgkJODc3NQ0KMzk4OTUJCTk3OTM5CQkzNDAyNAkJMTg4
+NDQJCTMwMjQ0DQoxMTEwNjMJCTI3NTA3CQkyNzEzOQkJMjg4NTAJCTQ0MzU5DQo0ODM0MwkJMjkw
+NDYJCTI4ODU4CQk4MjkwMAkJNDA5MjUNCjQ0Mzg0CQkzMDk4NQkJMTYzNzEJCTQ1Njc5CQkzNTU3
+Nw0KMzY5MTkJCTI4NDgxCQk1Njc0MwkJMzc5MjgJCTM0MTcwDQo0NDM0MwkJMjg4MzYJCTI3NjE3
+CQkzNTQyNgkJMzU4NDQNCjQ1MTQ4CQkyODg2NQkJNzYzMjQJCTM3MzY5CQkzNDgwNg0KNDQ0NTMJ
+CTI4ODYxCQkyNTkxOQkJMzI4ODcJCTI5ODg4DQo0NTYzOQkJMjg4NjgJCTM2Njk0CQk0MzM3NgkJ
+Mzg1ODkNCjQ2ODI5CQkyODg2MgkJNDcwMTQJCTM3MTMzCQk0MjcwMg0KNDQ4MzEJCTI3MTQ2CQkz
+NzE3OAkJMzcxODcJCTMzODQ3DQo0NDkzOQkJMzI4MDgJCTM3MTgwCQkzNzExMwkJMzU4NjUNCjM3
+MTgwCQkyNzE4MwkJMzczNjMJCTM3MTkwCQkzNDA2Mw0KMzY4NDIJCTI4ODIyCQkyMDU2MwkJMzcx
+NTcJCTM1ODAxDQo0MDk2MwkJMjg4NjMJCTEzNjkxMAkJMzU2NjMJCTM1ODk4DQo0MjE1NQkJMjg4
+NjcJCTEzMjcyCQkyODMyMgkJMzU4MTENCjQ0ODU5CQkyODg1OQkJMzMzMDIJCTQ3ODExCQkzOTc1
+Ng0KNDQ3ODMJCTI4ODY3CQkyNzk0NAkJOTAzOAkJNDI2NzENCjQwODEyCQkyNjI2NAkJMTI1MzYJ
+CTYzNzk0CQkzMzg3MQ0KNDk2MDEJCTM5MTg3CQk3Mjg3MQkJMzg2MDQJCTM1ODcwDQo0MjgxMQkJ
+Mzk3MDAJCTEyNjczCQkzNjc1NgkJMzQwODANCjUwNTcxCQkyNzEyOQkJNTExNzUJCTM3MTY0CQkz
+NTgwNg0KMzk0OTkzCQkyODg2MgkJNzkzMzgJCTM3MTU5CQkzNTgxNw0KMzg2NjgJCTI4ODYzCQkx
+MjU3NwkJMTU0NjUJCTE4NzYwDQo0Mjg2NAkJMjg4NjQJCTMyNDI5CQk0OTYyOAkJNDY3ODYNCjQ0
+OTU4CQkyODg2OAkJMjg4NTUJCTM3MDgyCQk0MDk4NA0KNDQ1NjQJCTI5MDQ3CQkyODg2MQkJNDMx
+MjEJCTM0MDY1DQozNzczMwkJMjk0MjAJCTI4ODYyCQkzOTQ5OQkJODQ4MQ0KNDIzMDQJCTI3MjEx
+CQkyODg2NwkJMzcxNDAJCTc4MDUyDQo0NDAyMAkJMjg3OTMJCTI4ODU4CQkzNzE1MwkJODI4Ng0K
+MzkzMDAJCTI4ODc3CQkyNzEzNAkJMzU2NDUJCTI3NTM1DQozODIzNgkJMjg4MzEJCTI4ODYzCQkx
+NTcxNwkJNjkyODANCjQ2MjI1CQkyODg2NgkJMjg4NTgJCTY1ODY0CQk4MjkwDQo0NDk2NQkJMjg4
+NTkJCTI4ODYyCQk2NDg0MgkJMjkzMzUNCjEyNTAyNQkJMTA5MzA0CQkxMDUzMDgJCTk1MjYJCTU0
+NTgxDQoxMjQ4MDAJCTExMzQxNwkJMTg4NTYJCTg4OTY2CQkxMDI0OTUNCjEyMzQyNgkJMjc3NTMJ
+CTE4MTUxNgkJMjA1ODgJCTg2ODYNCjEyMzI5NgkJMTA4MDU4CQkxODk2MwkJMTc1MzkzCQk4NjM0
+DQoxMjMyODYJCTEwNjMyMwkJMTc4MDc2CQkyMTQ2NgkJMTY3NTANCjEyMjAwNQkJMTA3MjY1CQkx
+MDM2MzEJCTE3NTI3NQkJMTc0MDg4DQoxMjA5MjIJCTEwNjg5MwkJMTg3NTkJCTExMTA2CQk4NDY0
+DQoxMjM0MTEJCTEwODA3MgkJMTM3OTAJCTE3NTg2OQkJODU4MjkNCjEyMzk4OAkJMTA2NzMwCQkx
+MDQxNTAJCTk0MDkJCTE0MDk0DQoxMjE5NjQJCTEwNzA1MQkJMjA0NzgJCTg4NTYyCQkxNzk5MTkN
+CjEyMzk2MAkJMTE0NDAwCQkxMzU1MQkJMTA0NzYwCQkxMDM3MDcNCjEyMjY3NwkJMTE0NzIxCQkx
+MDQ5NDAJCTE1MjQ1OAkJODQwMA0KMTIzMTU5CQkxMTIzMzYJCTIwNDU4CQkxMDA3NQkJODU1MjcN
+CjEyNDE0MgkJMTEzMzI1CQkxODczNTgJCTEyMzM2CQk4NDgwDQoxMjQyNzYJCTEwODQ2OAkJMTA0
+MjYxCQkxMDE1NwkJODU0MDcNCg0K
+------=_Part_6167_12724477.1175597481625
+Content-Type: text/plain; name=fadvise+o_sync.txt; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f0289e0f
+Content-Disposition: attachment; filename="fadvise+o_sync.txt"
 
- /* These are exported to sysctl. */
- extern int dirty_background_ratio;
-+extern int dirty_start_writeback_ratio;
- extern int vm_dirty_ratio;
- extern int dirty_writeback_interval;
- extern int dirty_expire_interval;
-Index: linux-2.6.21-rc5-mm3-writeback/mm/page-writeback.c
-===================================================================
---- linux-2.6.21-rc5-mm3-writeback.orig/mm/page-writeback.c
-+++ linux-2.6.21-rc5-mm3-writeback/mm/page-writeback.c
-@@ -72,6 +72,11 @@ int dirty_background_ratio = 10;
- /*
-  * The generator of dirty data starts writeback at this percentage
-  */
-+int dirty_start_writeback_ratio = 35;
-+
-+/*
-+ * The generator of dirty data is blocked at this percentage
-+ */
- int vm_dirty_ratio = 40;
+CQkJCUZhZHZpc2UgKyBPX1NZTkMJCQkJDQoJCQkJCQkJCQ0KNEsJCThLCQkxNksJCTY0SwkJMU0N
+CgkJCQkJCQkJDQozNzYyOTAuODYJMjAyMTI2LjUyCTEzMTk2MC45OAk3NjQ5NC40Ngk1OTE3Ni41
+Mg0KCQkJCQkJCQkNCjMzMDI1NwkJMjg0NDY1CQkxMDAxNTYJCTI0MjMzCQkxOTA1NA0KMzIzOTU4
+CQkxOTM2NTIJCTE0MjkxMQkJNzQ5MTQJCTMwMjI0DQozNTc3MTkJCTE4MzYzOQkJMTQ5NDg3CQk0
+MzQ3NQkJOTAzOTINCjMzNjA2NQkJMTY2ODgxCQkxMzc4NzUJCTExNDk0NwkJMjAwMzMNCjM0MDc0
+MwkJMTkyOTc5CQk4OTUwNwkJNzgwMDgJCTExNzI0NQ0KMzE3NzgzCQkxODE5NzQJCTk4ODk0CQk5
+ODQ5MgkJNDgyMDUNCjM1MTYzNgkJMTYyMzAwCQkxMDkwMzYJCTE5OTY5CQk1MTA0NQ0KMzQ3MTE2
+CQkxNzA1MTUJCTEwNzk2NQkJODE2MjMJCTg5MTQ5DQozMzMzNDgJCTE3MjAyMgkJMTMzOTAzCQkx
+MzMyMTAJCTEyMjAxDQozMjA2MTcJCTE4MDQ0NgkJMTMyODM5CQk2MzE5OAkJOTI5MTMNCjMzOTE1
+MAkJMTQ4NDEwCQkxMDcxMDkJCTMxMjcyCQkxMjMxMQ0KMzM4Mzk4CQkxNjgwMzEJCTEwOTgxMgkJ
+MTAyNjcxCQk4NTEyNA0KMzI5ODg0CQkxNzI3NDgJCTEyMTc0MQkJMjk4NjAJCTEyODk5DQozNDIy
+NzEJCTE1MDA2NwkJMTMzOTgyCQk5NDkyMgkJODQ4MDcNCjMzMDYyOAkJMTgzNTk2CQkxMjMzNzIJ
+CTYyNTU0CQkxMjQ2Nw0KNTU4NzE1CQkxNTY2MTEJCTg5MjMxCQkxMjE2NDAJCTkzNTY2DQozNjU5
+NjAJCTE3Mzc5NAkJMTAzODgwCQk2NjkyNQkJMTIyNDUNCjM1Mzk3MAkJMTU3ODIwCQkxMzE2NzQJ
+CTc2MzUzCQk4NzIzMQ0KMzc2ODA5CQkxNTYzNDgJCTk3NTUyCQk0MTM3OAkJMTI3MDQNCjM0OTcx
+MwkJMTY5NTM1CQkxMTEyMTkJCTExNzU0MwkJODUxMjcNCjM4OTkzOQkJMTYyOTE0CQkxMjE0NDQJ
+CTQ4NTcxCQkxMjI2Ng0KMzY2NjgyCQkxNjYzNjUJCTExMDMyNwkJNzA0MDIJCTg1NDk1DQozMjkw
+ODUJCTE3NjM3NwkJMTM2ODAwCQk4MDUyNQkJMTIzMTQNCjMyMjUxOQkJMTYwOTI4CQkxMTcwMTMJ
+CTc5MTY3CQk3NjU0Ng0KMzcxMTI2CQkxNzA1NjUJCTEyNDkzMgkJNjU4MjIJCTEyMjAwDQozNDAx
+NTEJCTE2NTAyMAkJMTE2MjYzCQkyOTQ3NgkJODQ5ODINCjM2OTk2NQkJMTY1NTAyCQkxMjExNDgJ
+CTE1NjI5NgkJMTI4MjINCjM2MzgxOAkJMTc4MTkyCQkxMTQ2MTUJCTczMTAwCQk4NTA2MQ0KMzU4
+NzQ3CQkxNjM3MzEJCTExMDg4NQkJNjIzMzUJCTEyMjExDQozMjAxMTcJCTE2NzEyNgkJMTMzMTI1
+CQk0MjI4MAkJODU1MzINCjMzMjY2NQkJNDMwOTQzCQkxODc0OTQJCTc1NTIyCQkxMjIyMQ0KMzgx
+NTk2CQkyNjE4ODgJCTExNTg4NQkJNTk4MTQJCTg1NTg2DQozNDMyNDUJCTIwMjg0MgkJMTIyMTg5
+CQk0OTE5NgkJMTIyNjINCjM0OTQzNQkJMTY5Nzc0CQkxNDM2MDkJCTExOTMzOQkJODY2NzUNCjQz
+NTQyMAkJMTk0NDE5CQkxMDQyMDIJCTYzODMyCQkxMjI3OA0KNDIyNzk4CQkyMDcxMzAJCTEyNzY4
+NAkJOTQ5MDcJCTc3MjExDQo0MDU0NDcJCTE3MjE3MwkJOTc1MDYJCTU2NTI0CQkxMjMzMg0KNDEy
+NjYwCQkzOTM2NjAJCTEwMDkyNAkJOTI2NzgJCTEwMjMyNw0KNDA5ODAwCQkyMTgyNjMJCTIwMTE3
+OQkJMTMxOTY0CQkxNjA3NA0KNDEyNzY1CQkyNTAwOTUJCTE3OTIyNgkJMTA2Njc1CQk5OTM3Mg0K
+NDY4MjY1CQkyNDAwNDEJCTE2MzgwMQkJMTA3NDMwCQkxMjcyNQ0KNDQ0NDc2CQkyNDU4NDgJCTE2
+MTExOQkJMjMxMzAJCTE3OTgzNA0KNDYwMjE1CQkyNDY2MDAJCTE2NzYzOQkJMTkwODAJCTEyNzAy
+DQozOTM4OTIJCTIyOTY4MwkJMTk3NDE4CQkxMjQ4NjQJCTE3OTU5OQ0KNDUwNTA5CQkyMzg5ODcJ
+CTE0MTE0MwkJMTE2MzUwCQkxMjczNw0KNDEwNTE0CQkyNTA3NjIJCTE3MzM1MgkJMTEwOTk1CQkx
+Nzg5NzkNCjQxODYzMAkJMjIxOTQ5CQkxODUwNzYJCTExMTc4MQkJMTI5MTANCjQyNzY1MQkJMjUz
+MzczCQkxNTA3NjEJCTIyNjc0CQkxODA2OTANCjQyMTg5MQkJMjQxNjU0CQkxNTQ5NTEJCTE5OTcx
+CQkxMDk3NDMNCjQzNTc4MAkJMjMzNjg5CQkxODQxOTQJCTEzMjgzNgkJMTQxOTgNCgkJCQkJCQkJ
+DQoNCg==
+------=_Part_6167_12724477.1175597481625
+Content-Type: text/plain; name=sync_file_range+fadvise.txt; 
+	charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f0289rej
+Content-Disposition: attachment; filename="sync_file_range+fadvise.txt"
 
- /*
-@@ -112,12 +117,16 @@ static void background_writeout(unsigned
-  * performing lots of scanning.
-  *
-  * We only allow 1/2 of the currently-unmapped memory to be dirtied.
-+ * `vm.dirty_ratio' is ignored if it is larger than that.
-+ * In this case, `vm.dirty_start_writeback_ratio' is also decreased to keep
-+ * writeback independently among disks.
-  *
-  * We don't permit the clamping level to fall below 5% - that is getting rather
-  * excessive.
-  *
-- * We make sure that the background writeout level is below the adjusted
-- * clamping level.
-+ * We make sure that the active writeout level is below the adjusted clamping
-+ * leve, and that the background writeout level is below the active writeout
-+ * level.
-  */
-
- static unsigned long highmem_dirtyable_memory(unsigned long total)
-@@ -158,13 +167,15 @@ static unsigned long determine_dirtyable
- }
-
- static void
--get_dirty_limits(long *pbackground, long *pdirty,
-+get_dirty_limits(long *pbackground, long *pstart_writeback, long *pdirty,
- 					struct address_space *mapping)
- {
- 	int background_ratio;		/* Percentages */
-+	int start_writeback_ratio;
- 	int dirty_ratio;
- 	int unmapped_ratio;
- 	long background;
-+	long start_writeback;
- 	long dirty;
- 	unsigned long available_memory = determine_dirtyable_memory();
- 	struct task_struct *tsk;
-@@ -177,28 +188,40 @@ get_dirty_limits(long *pbackground, long
- 	if (dirty_ratio > unmapped_ratio / 2)
- 		dirty_ratio = unmapped_ratio / 2;
-
-+	start_writeback_ratio = dirty_start_writeback_ratio;
-+	if (start_writeback_ratio > dirty_ratio)
-+		start_writeback_ratio = dirty_ratio;
-+	start_writeback_ratio -= vm_dirty_ratio - dirty_ratio;
-+
- 	if (dirty_ratio < 5)
- 		dirty_ratio = 5;
-+	if (start_writeback_ratio < 2)
-+		start_writeback_ratio = 2;
-
- 	background_ratio = dirty_background_ratio;
--	if (background_ratio >= dirty_ratio)
--		background_ratio = dirty_ratio / 2;
-+	if (background_ratio >= start_writeback_ratio)
-+		background_ratio = start_writeback_ratio / 2;
-
- 	background = (background_ratio * available_memory) / 100;
-+	start_writeback = (start_writeback_ratio * available_memory) / 100;
- 	dirty = (dirty_ratio * available_memory) / 100;
- 	tsk = current;
- 	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
- 		background += background / 4;
-+		start_writeback += start_writeback / 4;
- 		dirty += dirty / 4;
- 	}
- 	*pbackground = background;
-+	*pstart_writeback = start_writeback;
- 	*pdirty = dirty;
- }
-
- /*
-  * balance_dirty_pages() must be called by processes which are generating dirty
-  * data.  It looks at the number of dirty pages in the machine and will force
-- * the caller to perform writeback if the system is over `vm_dirty_ratio'.
-+ * the caller to perform writeback if the system is over
-+ * `start_writeback_thresh'. If the system is over `dirty_thresh' then the
-+ * caller will be blocked unless it cannot writeback enough pages.
-  * If we're over `background_thresh' then pdflush is woken to perform some
-  * writeout.
-  */
-@@ -206,6 +229,7 @@ static void balance_dirty_pages(struct a
- {
- 	long nr_reclaimable;
- 	long background_thresh;
-+	long start_writeback_thresh;
- 	long dirty_thresh;
- 	unsigned long pages_written = 0;
- 	unsigned long write_chunk = sync_writeback_pages();
-@@ -221,11 +245,12 @@ static void balance_dirty_pages(struct a
- 			.range_cyclic	= 1,
- 		};
-
--		get_dirty_limits(&background_thresh, &dirty_thresh, mapping);
-+		get_dirty_limits(&background_thresh, &start_writeback_thresh,
-+				 &dirty_thresh, mapping);
- 		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
- 					global_page_state(NR_UNSTABLE_NFS);
- 		if (nr_reclaimable + global_page_state(NR_WRITEBACK) <=
--			dirty_thresh)
-+			start_writeback_thresh)
- 				break;
-
- 		if (!dirty_exceeded)
-@@ -240,7 +265,8 @@ static void balance_dirty_pages(struct a
- 		if (nr_reclaimable) {
- 			writeback_inodes(&wbc);
- 			get_dirty_limits(&background_thresh,
--					 	&dirty_thresh, mapping);
-+					 &start_writeback_thresh,
-+					 &dirty_thresh, mapping);
- 			nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
- 					global_page_state(NR_UNSTABLE_NFS);
- 			if (nr_reclaimable +
-@@ -329,6 +355,7 @@ EXPORT_SYMBOL(balance_dirty_pages_rateli
- void throttle_vm_writeout(gfp_t gfp_mask)
- {
- 	long background_thresh;
-+	long writeback_thresh;
- 	long dirty_thresh;
-
- 	if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
-@@ -342,7 +369,8 @@ void throttle_vm_writeout(gfp_t gfp_mask
- 	}
-
-         for ( ; ; ) {
--		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
-+		get_dirty_limits(&background_thresh, &writeback_thresh,
-+				 &dirty_thresh, NULL);
-
-                 /*
-                  * Boost the allowable dirty threshold a bit for page
-@@ -375,9 +403,11 @@ static void background_writeout(unsigned
-
- 	for ( ; ; ) {
- 		long background_thresh;
-+		long writeback_thresh;
- 		long dirty_thresh;
-
--		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
-+		get_dirty_limits(&background_thresh, &writeback_thresh,
-+				 &dirty_thresh,  NULL);
- 		if (global_page_state(NR_FILE_DIRTY) +
- 			global_page_state(NR_UNSTABLE_NFS) < background_thresh
- 				&& min_pages <= 0)
+CQkJCUZhZHZpc2UJCQkJDQoJCQkJCQkJCQ0KNEsJCThLCQkxNksJCTY0SwkJMU0NCgkJCQkJCQkJ
+DQo2ODczMS40NAk1NDc4NS4wNAk0MzQyNC4xNgk1MDY3NS43NAk1MzY2Mi4yMg0KCQkJCQkJCQkN
+CjU0MjY3CQkzMTM2MQkJMTg3ODQJCTEyNTQ2CQkxMjYwMA0KNDYyMjUJCTMwMDY1CQk2MTQ4NQkJ
+NzI0NTAJCTY2MjY5DQo0NTMxMQkJMjg4NTMJCTE1MDA5CQkxMTUwOQkJMTE3MDkNCjQ1MTMzCQky
+ODg1MQkJMjk4NTYJCTE1NjA5CQkyMTU3Mg0KNDY3NTcJCTI3MTM3CQkyODg0MQkJNTM5ODAJCTQ0
+MjQxDQo0NDk0MAkJMjg4NjAJCTI5MjI1CQk3Mzg4MQkJNDI5NDMNCjQ1OTgzCQkyODg2NAkJNTg4
+MTQJCTExNDc1CQk2OTczMw0KNDQ2MDEJCTI5MzQ3CQkxNDc1MwkJMTExNDc1CQk3MDY5MA0KMzkx
+NTIJCTI2Mjg0CQkyNDQ1MgkJMTM2NTAJCTExNzAwDQozOTA2NQkJMzYwNDQJCTI4ODU0CQkyODg2
+MQkJMjYxMzANCjQzMzQ1CQkyOTE2MgkJMjcxMzYJCTEwMDMxMgkJNzA2ODQNCjQ1ODg5CQkyODU1
+NQkJMjg4NTcJCTExMjc5CQkxMTY3Ng0KNDU1ODQJCTI4ODYyCQkyODg2NQkJMTQ0MjEJCTI0NTY3
+DQo0Nzg2OAkJMjg4NjEJCTIwMzAzCQk4MDAyNwkJNjYzNTgNCjQzMTAwCQkyODg2MAkJMTc3MDkJ
+CTIyMjkwCQkxMTk1Mw0KMzk1MjkJCTI0MDQzCQk2MTY0NgkJNjM0MzMJCTI3MzMyDQo0NjM4NgkJ
+NDAzMzcJCTU2NDU4CQkxMTQ2OAkJNjkwODcNCjQ2NDM4CQkyODgyNgkJMTQ2ODMJCTE2NzM0CQkx
+MTY5Ng0KMzcyODQJCTI4ODM1CQkxNTU1OQkJMjYxNDAJCTQyMTE3DQo0NzE5OQkJMjg4NTEJCTMw
+NjUzCQkxMDUzMTkJCTMxMDczDQo0Njc4NQkJMjcyMTkJCTExNjU2OQkJMjUyNzIJCTkxMjA1DQo0
+NjMzNQkJMjg3NzIJCTE0MjQ2CQk3NTIxNwkJMzM1NzkNCjQ1MTQxCQkyODg3NwkJNjkyNDEJCTQz
+OTAyCQkzNzI5MA0KNTA1MTYJCTIzNTczCQkyNzc4NAkJNDQwODAJCTEyMzE2DQo0NjM0OAkJNjE1
+NjEJCTE0OTM5CQkxMzQ3MgkJMzU0MzANCjQ1NTkxCQk0MjMyMAkJNTQ0MDAJCTE3MjM2CQk0NzUz
+Mg0KNDE0NzAJCTI4NzI2CQkxNTMxMgkJMTA0MDUyCQk0MDk1MA0KNDc1MDYJCTI4NDMyCQk2NjIw
+MwkJMTI0NDQJCTM1NjA0DQozOTYxMgkJMjg5NzgJCTE1MDI5CQkxNDcxMwkJMTIzMjQNCjQ3NjI5
+CQk0MDgxMQkJMzAzNzQJCTI0MTg4CQkzNTg4Ng0KMzg4MDMJCTI5MTIzCQkyODg1MgkJOTU3MjcJ
+CTY4OTIxDQo1NDI0NQkJMjg2ODUJCTI4ODU0CQkxMTMzNgkJMTE2NjUNCjQ1Njg5CQkyOTAzMAkJ
+Mjk3OTkJCTUwNDk3CQkyNDAxOQ0KNDAwNDMJCTI4NTYwCQkyOTYzNwkJNTk2MzAJCTczMTIyDQo0
+ODgwNwkJMjk1NDMJCTI4NzQ0CQkxMTc5MAkJMTE3NTANCjQ2MTE0CQkyNzk3MwkJMjg4NTIJCTEy
+OTg5CQkyNDM3NA0KMTM2MDMyCQkxNTkxNzQJCTExNDE4MQkJMTA3NTUxCQkxMDI3NTcNCjEzMjg1
+MwkJMTE3NzY2CQkxMDkzMjEJCTE4NDY2CQkxMTc1NQ0KMTI5Mzg2CQkxMTY4NTMJCTI1NzY0CQkx
+MTQ1NQkJMTgxODc2DQoxMjg3MTIJCTExMjIyMwkJMTU5NjgJCTExMzcyCQk5ODYzNA0KMTI0ODg2
+CQkxMTA4NzYJCTI0MzMxCQkxNzk3NDMJCTE2ODkwDQoxMzc4MjYJCTExNjUxMAkJMTQ5MzQJCTE3
+NDIzCQkxNzQ3MDYNCjEzMDc3NgkJMTEyMjg5CQkyMDkyNQkJMTc5NTg4CQkxNzc2OQ0KMTI3MjI2
+CQkxMTI3NjEJCTE4NTUyNQkJMTEzMjcJCTE3NDEyNQ0KMTI2MDAyCQkxMTM5NzMJCTIwNzk4CQkx
+ODIwMDcJCTExODM3DQoxMjg5MDAJCTExMjkwOQkJMTg1MDI0CQkxMDk3MzAJCTE3NDMxMQ0KMTI2
+NjM2CQkxMTM0ODIJCTIyODUzCQkxNzYwNwkJMTgyOTINCjEzMTIxOAkJMTEzNzM0CQkxODI5MjcJ
+CTE4NDE5MwkJMTczNjQ3DQoxMjU3NDYJCTExMjQyMAkJMjMxODMJCTE4NDIxCQkxMTc0OA0KMTI1
+NjgzCQkxMTEyNDEJCTE0Njk3CQkxMTUwMAkJMTc0NjY3DQoNCg==
+------=_Part_6167_12724477.1175597481625--
