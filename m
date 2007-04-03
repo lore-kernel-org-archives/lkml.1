@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbXDCXpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030360AbXDCXtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934041AbXDCXpV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 19:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934044AbXDCXpV
+	id S1030360AbXDCXtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 19:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030351AbXDCXtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 19:45:21 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:49106 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934041AbXDCXpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 19:45:17 -0400
-Date: Tue, 3 Apr 2007 16:44:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-Message-Id: <20070403164455.83ae7b36.akpm@linux-foundation.org>
-In-Reply-To: <20070403144948.fe8eede6.akpm@linux-foundation.org>
-References: <46128051.9000609@redhat.com>
-	<p73648dz5oa.fsf@bingen.suse.de>
-	<46128CC2.9090809@redhat.com>
-	<20070403172841.GB23689@one.firstfloor.org>
-	<20070403125903.3e8577f4.akpm@linux-foundation.org>
-	<4612B645.7030902@redhat.com>
-	<20070403202937.GE355@devserv.devel.redhat.com>
-	<20070403144948.fe8eede6.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Apr 2007 19:49:15 -0400
+Received: from smtpa1.netcabo.pt ([212.113.174.16]:19269 "EHLO
+	exch01smtp03.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030275AbXDCXtO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 19:49:14 -0400
+Message-ID: <4612E803.8070600@rncbc.org>
+Date: Wed, 04 Apr 2007 00:49:23 +0100
+From: Rui Nuno Capela <rncbc@rncbc.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: 2.6.21-rc5-rt10 troubles
+References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org> <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu>
+In-Reply-To: <20070401183928.GB27614@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Apr 2007 23:49:11.0309 (UTC) FILETIME=[AD745BD0:01C7764A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007 14:49:48 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Ingo et al.
 
-> > int
-> > main (void)
-> > {
-> >   pthread_t th[32];
-> >   int i;
-> >   for (i = 0; i < 32; i++)
-> >     if (pthread_create (&th[i], NULL, tf, NULL))
-> >       exit (4);
-> >   for (i = 0; i < 32; i++)
-> >     pthread_join (th[i], NULL);
-> >   return 0;
-> > }
-> > 
-> 
-> whee.  135,000 context switches/sec on a slow 2-way.  mmap_sem, most
-> likely.  That is ungood.
-> 
-> Did anyone monitor the context switch rate with the mysql test?
-> 
-> Interestingly, your test app (with s/100000/1000) runs to completion in 13
-> seocnd on the slow 2-way.  On a fast 8-way, it took 52 seconds and
-> sustained 40,000 context switches/sec.  That's a bit unexpected.
-> 
-> Both machines show ~8% idle time, too :(
+I'm afraid having no good news (once again). After building
+2.6.21-rc5-rt8 and recently on -rt10 I've found some trouble running on
+a Core2 T7200 laptop (SMP). Somehow, specially after starting jackd, the
+whole system starts crawling to death. It just slows down to some kind
+of Big Freeze, with no evidence over the console whatsoever, so that I'm
+ultimately left with a brick on my hands.
 
-Rohit solved this puzzle.
+This behavior is consistent and occurs every time after jackd is
+started. It does not seem to occur on -rt5 and earlier.
 
-The 2-way is a single package, hyperthreaded.
+I wish I could give you more details, but fact is I don't know where to
+look. The machine just freezes silently.
 
-The 8-way is two-package, four cores in each.
-
-So on the 8-way, that lock is getting transferred between the two packages
-like crazy.  Running the benchmark on just cpus 0 and 1 (taskset -c 0,1)
-took the runtime down to eight seconds (from 52!) and the context switch
-rate went up to 200,000/sec (from 45,000).
-
+Bye now.
+-- 
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
 
