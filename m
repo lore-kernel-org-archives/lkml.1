@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753146AbXDCXzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbXDCXzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753146AbXDCXzM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 19:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXDCXzM
+	id S1753250AbXDCXzT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 19:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbXDCXzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 19:55:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55863 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753146AbXDCXzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 19:55:10 -0400
-Message-ID: <4612E93D.2030909@redhat.com>
-Date: Tue, 03 Apr 2007 16:54:37 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 3 Apr 2007 19:55:19 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35279 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753250AbXDCXzR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 19:55:17 -0400
+Date: Tue, 3 Apr 2007 16:55:17 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Badari Pulavarty <pbadari@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc5-mm4
+In-Reply-To: <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com>
+Message-ID: <Pine.LNX.4.64.0704031653060.12109@schroedinger.engr.sgi.com>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org> 
+ <1175637332.6185.4.camel@dyn9047017100.beaverton.ibm.com> 
+ <1175642398.6185.9.camel@dyn9047017100.beaverton.ibm.com> 
+ <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com> 
+ <1175643507.6185.12.camel@dyn9047017100.beaverton.ibm.com> 
+ <Pine.LNX.4.64.0704031638570.12109@schroedinger.engr.sgi.com>
+ <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com>	<20070403131623.c6831607.akpm@linux-foundation.org>	<4612BB89.8040102@redhat.com>	<20070403141348.9bcdb13e.akpm@linux-foundation.org>	<4612D175.30604@redhat.com>	<20070403154831.37bde672.akpm@linux-foundation.org>	<4612DCA2.2090400@redhat.com> <20070403162349.583adf84.akpm@linux-foundation.org>
-In-Reply-To: <20070403162349.583adf84.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigDAECC744AC5D5685A373721D"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigDAECC744AC5D5685A373721D
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, 3 Apr 2007, Badari Pulavarty wrote:
 
-Andrew Morton wrote:
-> Does anyone see a reason why we cannot do this?
+> Hmm. booted fine with slub_debug :(
 
-Shouldn't sched_setaffinity get the same treatment for symmetry reasons?
+Try to selectively disable debug options... if you got the 
+time...
 
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
+F.e. Try with sanity checks only
+
+slub_debug=F
+
+then with redzoning
+
+slub_debug=FZ
+
+and do one with poisoning
+
+slub_debug=FP
+
+Maybe slub_debug avoided a race condition.
 
 
---------------enigDAECC744AC5D5685A373721D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGEuk92ijCOnn/RHQRAhNqAKC48xjJbnOkCpILbzCKrCmHIwG/ZQCgyrBP
-A9chdQmEjyIeqU3BY+99J48=
-=bkkJ
------END PGP SIGNATURE-----
-
---------------enigDAECC744AC5D5685A373721D--
