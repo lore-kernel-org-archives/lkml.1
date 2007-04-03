@@ -1,58 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbXDCXXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbXDCXYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbXDCXXJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 19:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXDCXXJ
+	id S1753697AbXDCXYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 19:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbXDCXYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 19:23:09 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:35191 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157AbXDCXXI (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 19:23:08 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc5-mm4
-In-Reply-To: Your message of "Wed, 04 Apr 2007 00:58:26 +0200."
-             <20070404005826.5c849ab6@werewolf-wl>
-From: Valdis.Kletnieks@vt.edu
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> <20070404004005.2f21d514@werewolf-wl> <20070403155135.ff7f3043.akpm@linux-foundation.org>
-            <20070404005826.5c849ab6@werewolf-wl>
+	Tue, 3 Apr 2007 19:24:37 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:48119 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753695AbXDCXYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 19:24:36 -0400
+Date: Tue, 3 Apr 2007 16:23:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: getting processor numbers
+Message-Id: <20070403162349.583adf84.akpm@linux-foundation.org>
+In-Reply-To: <4612DCA2.2090400@redhat.com>
+References: <461286D6.2040407@redhat.com>
+	<20070403131623.c6831607.akpm@linux-foundation.org>
+	<4612BB89.8040102@redhat.com>
+	<20070403141348.9bcdb13e.akpm@linux-foundation.org>
+	<4612D175.30604@redhat.com>
+	<20070403154831.37bde672.akpm@linux-foundation.org>
+	<4612DCA2.2090400@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175642567_7609P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Tue, 03 Apr 2007 19:22:47 -0400
-Message-ID: <17464.1175642567@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175642567_7609P
-Content-Type: text/plain; charset=us-ascii
+On Tue, 03 Apr 2007 16:00:50 -0700
+Ulrich Drepper <drepper@redhat.com> wrote:
 
-On Wed, 04 Apr 2007 00:58:26 +0200, "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" said:
+> Andrew Morton wrote:
+> > Now it could be argued that the current behaviour is that sane thing: we
+> > allow the process to "pin" itself to not-present CPUs and just handle it in
+> > the CPU scheduler.
+> 
+> As a stop-gap solution Jakub will likely implement the sched_getaffinity
+> hack.  So, it would realy be best to get the masks updated.
+> 
+> 
+> But all this of course does not solve the issue sysconf() has.  In
+> sysconf we cannot use sched_getaffinity since all the systems CPUs must
+> be reported.
 
-> Anyways, I have just remembered I use the (in)famous nVidia driver.
-> Will try to reproduce without it. This was more like a probe to see if
-> somebody else is suffering it...
+OK.
 
-The nVidia driver will get some truly astounding indigestion if you accidentally
-upgrade your xorg userspace libraries and forget to re-install the nVidia
-userspace.  Is that what's biting you?
+This is excecptionally gruesome, but one could run sched_getaffinity()
+against pid 1 (init).  Which will break nicely in the OS-virtualised future
+when the system has multiple pid-1-inits running in containers...
 
+> 
+> > Is it kernel overhead, or userspace?  The overhead of counting the bits?
+> 
+> The overhead I meant is userland.
+> 
 
---==_Exmh_1175642567_7609P
-Content-Type: application/pgp-signature
+OK.  Your cost of counting those bits is proportional to CONFIG_NR_CPUS.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+It's a bit sad that sys_sched_get_get_affinity() returns sizeof(cpumask_t),
+because that means that userspace must handle 256 or whatever CPUs on a
+machine which only has two CPUs.
 
-iD8DBQFGEuHHcC3lWbTT17ARAhX1AKC9AFjS3UzUTPIx5FyaAl4/Z/gWsgCfaX6u
-Fj2SdFddj3+ifrKTOFPXY7U=
-=2QOo
------END PGP SIGNATURE-----
+Does anyone see a reason why sys_sched_getaffinity() cannot be altered to
+return maximum-possible-cpu-id-on-this-machine?  That way, your hweight
+operation will be much faster on sane-sized machines.
 
---==_Exmh_1175642567_7609P--
+> 
+> > Because sched_getaffinity() could be easily sped up in the case where
+> > it is operating on the current process.
+> 
+> If there is possibility to treat this case special and make it faster,
+> please do so.  It would be best to allow pid==0 as a special case so
+> that callers don't have to find out the TID (which they shouldn't have
+> to know).
+> 
+
+OK.
+
+Does anyone see a reason why we cannot do this?
+
+--- a/kernel/sched.c~sched_getaffinity-speedup
++++ a/kernel/sched.c
+@@ -4381,8 +4381,12 @@ long sched_getaffinity(pid_t pid, cpumas
+ 	struct task_struct *p;
+ 	int retval;
+ 
+-	lock_cpu_hotplug();
+-	read_lock(&tasklist_lock);
++	if (pid) {
++		lock_cpu_hotplug();
++		read_lock(&tasklist_lock);
++	} else {
++		preempt_disable();	/* Prevent CPU hotplugging */
++	}
+ 
+ 	retval = -ESRCH;
+ 	p = find_process_by_pid(pid);
+@@ -4396,12 +4400,13 @@ long sched_getaffinity(pid_t pid, cpumas
+ 	cpus_and(*mask, p->cpus_allowed, cpu_online_map);
+ 
+ out_unlock:
+-	read_unlock(&tasklist_lock);
+-	unlock_cpu_hotplug();
+-	if (retval)
+-		return retval;
+-
+-	return 0;
++	if (pid) {
++		read_unlock(&tasklist_lock);
++		unlock_cpu_hotplug();
++	} else {
++		preempt_enable();
++	}
++	return retval;
+ }
+ 
+ /**
+_
+
+> 
+> > Anyway, where do we stand?  Assuming we can address the CPU hotplug issues,
+> > does sched_getaffinity() look like it will be suitable?
+> 
+> It's only usable for the special case on the OpenMP code where the
+> number of threads is used to determine the number of worker threads.
+> For sysconf() we still need better support.  Maybe now somebody will
+> step up and say they need faster sysconf as well.
+
+I guess we could add a simple sys_get_nr_cpus().  If we want more than that
+(ie: topology, SMT/MC/NUMA/numa-distance etc) then it gets much more complex
+and sysfs is more appropriate for that.
+
