@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422672AbXDCUDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422682AbXDCUGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422672AbXDCUDy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 16:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422671AbXDCUDy
+	id S1422682AbXDCUGX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 16:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422684AbXDCUGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 16:03:54 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:45746 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422672AbXDCUDx (ORCPT
+	Tue, 3 Apr 2007 16:06:23 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:40060 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422682AbXDCUGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 16:03:53 -0400
-Message-ID: <4612B303.5000109@zytor.com>
-Date: Tue, 03 Apr 2007 13:03:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Tue, 3 Apr 2007 16:06:22 -0400
+Date: Tue, 3 Apr 2007 19:45:16 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Message-ID: <20070403141516.GB14900@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu> <20070402092818.GE2456@in.ibm.com> <20070402111828.GA14771@elte.hu> <20070402124200.GA9566@in.ibm.com> <20070402185607.GA2081@elte.hu> <20070403125619.GA32444@in.ibm.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Andi Kleen <ak@suse.de>, Christian Borntraeger <borntrae@de.ibm.com>,
-       virtualization@lists.linux-foundation.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com
-Subject: Re: A set of "standard" virtual devices?
-References: <4611652F.700@zytor.com> <200704031951.00544.arnd@arndb.de> <4612A5F0.2080609@goop.org> <200704032142.51976.arnd@arndb.de> <4612B123.2040105@goop.org>
-In-Reply-To: <4612B123.2040105@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070403125619.GA32444@in.ibm.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+On Tue, Apr 03, 2007 at 06:26:19PM +0530, Srivatsa Vaddagiri wrote:
 > 
-> Yes, and that's the core of the Xen netfront.  But is there really much
-> code which can be shared between different hypervisors?  When you get
-> down to it, all the real code is hypervisor-specific stuff for setting
-> up ringbuffers and dealing with interrupts.  Like all the other network
-> drivers.
+> Besides, how problematic is this in practise (that threads sleep for
+> extended durations in TASK_INTERRUPTIBLE state breaking
+> freezer/suspend/hotplug)?
 > 
+> Should we ignore this for the timebeing and take up later as and when
+> users report problems?
 
-One thing, Jeremy, which I think is being a bit misleading here: you're 
-focusing on big, performance-critical stuff.  Those things are going to 
-be the ones which has the most win to implement in hypervisor-specific 
-ways.  Although we can offer models for some hypervisors (and G-d knows 
-there are enough implementations out there of virtual disk which are 
-almost identical), they're clearly not going to be universal.
+In my case, the problem of freezer failing was due to the vfork freezer race
+in do_fork. The parent task was waiting_for_completion() while the child was
+frozen.
 
-However, there are other things; console is some, or my original 
-example, which was random number generation.  For those, the benefit of 
-unification is proportionally greater, simply because the win of 
-anything hypervisor-specific is much smaller.
+Rafael has already sent out the fix for that, but for some reason I
+don't see it in the -mm.
 
-	-hpa
+With that fix, freezer and hence hotplug succeeds even when I am running
+a 'make -j' test.
+
+> 
+> -- 
+> Regards,
+> vatsa
+
+Thanks and Regards
+gautham.
+
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
