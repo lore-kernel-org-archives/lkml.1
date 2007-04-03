@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965570AbXDCMsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965778AbXDCMuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965570AbXDCMsw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 08:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965777AbXDCMsw
+	id S965778AbXDCMuD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 08:50:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965881AbXDCMuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 08:48:52 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:57158 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965570AbXDCMsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 08:48:51 -0400
-Date: Tue, 3 Apr 2007 18:26:19 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
-       paulmck@us.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
-       masami.hiramatsu.pt@hitachi.com
-Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
-Message-ID: <20070403125619.GA32444@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu> <20070402092818.GE2456@in.ibm.com> <20070402111828.GA14771@elte.hu> <20070402124200.GA9566@in.ibm.com> <20070402185607.GA2081@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070402185607.GA2081@elte.hu>
-User-Agent: Mutt/1.5.11
+	Tue, 3 Apr 2007 08:50:01 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:52647 "EHLO
+	outbound3-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965778AbXDCMuA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 08:50:00 -0400
+X-BigFish: VP
+X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
+Message-ID: <46124D66.7030309@amd.com>
+Date: Tue, 03 Apr 2007 14:49:42 +0200
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+MIME-Version: 1.0
+To: discuss@x86-64.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       linux-kernel@vger.kernel.org,
+       "Nagendra, Bhavana" <bhavana.nagendra@amd.com>
+Subject: [PATCH] i386 mce check capability
+X-OriginalArrivalTime: 03 Apr 2007 12:49:48.0488 (UTC)
+ FILETIME=[902CF480:01C775EE]
+X-WSS-ID: 6A0C92FB2X04488422-01-01
+Content-Type: multipart/mixed;
+ boundary=------------090806060603000703000502
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 08:56:07PM +0200, Ingo Molnar wrote:
-> ok. But the only real problem would be for_each_online_cpu() loops that 
-> might sleep, correct? 
+This is a multi-part message in MIME format.
+--------------090806060603000703000502
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 7bit
 
-I would shy from saying that "that's the only problem". It could also be
+Currently the i386 architecture checks the family for mce capability and this removes that and uses the CPUID information.  Tested on a K8 revE and a family10h processor.
 
-	for_each_cpu_mask(some_mask)
-		do_something_which_sleeps();
+-Joachim
 
-where some_mask is suppsoed to represent a subset of online cpus.
+--------------090806060603000703000502
+Content-Type: text/x-patch;
+ name=i386_mce_check_capability.patch
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename=i386_mce_check_capability.patch
 
-For ex: policy->cpus is a mask maintained by cpufreq, which it iterates thr' 
-whenever changing cpu frequency. The cpus in that mask are supposed to be 
-a subset of online cpus (with CPU_ONLINE/DEAD handlers in cpufreq.c adjusting 
-the mask upon hotplug).
+VGhpcyBlbGltaW5hdGVzIGNoZWNraW5nIG9mIGEgc2V0IEFNRCBwcm9jZXNvciBmYW1pbHkg
+aWYgbWNlIGlzIAphbGxvd2VkIGFuZCByZWxpZXMgb24gdGhlIGluZm9ybWF0aW9uIGJlaW5n
+IGluIENQVUlELgoKU2lnbmVkLW9mZi1ieTogSm9hY2hpbSBEZWd1YXJhIDxqb2FjaGltLmRl
+Z3VhcmFAYW1kLmNvbT4KCkluZGV4OiAyLjYtbGludXMtZ2l0L2FyY2gvaTM4Ni9rZXJuZWwv
+Y3B1L21jaGVjay9tY2UuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSAyLjYtbGludXMtZ2l0Lm9yaWcv
+YXJjaC9pMzg2L2tlcm5lbC9jcHUvbWNoZWNrL21jZS5jCisrKyAyLjYtbGludXMtZ2l0L2Fy
+Y2gvaTM4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2UuYwpAQCAtMzgsOCArMzgsNyBAQCB2b2lk
+IG1jaGVja19pbml0KHN0cnVjdCBjcHVpbmZvX3g4NiAqYykKIAogCXN3aXRjaCAoYy0+eDg2
+X3ZlbmRvcikgewogCQljYXNlIFg4Nl9WRU5ET1JfQU1EOgotCQkJaWYgKGMtPng4Nj09NiB8
+fCBjLT54ODY9PTE1KQotCQkJCWFtZF9tY2hlY2tfaW5pdChjKTsKKwkJCWFtZF9tY2hlY2tf
+aW5pdChjKTsKIAkJCWJyZWFrOwogCiAJCWNhc2UgWDg2X1ZFTkRPUl9JTlRFTDoKSW5kZXg6
+IDIuNi1saW51cy1naXQvYXJjaC9pMzg2L2tlcm5lbC9jcHUvbWNoZWNrL2s3LmMKPT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PQotLS0gMi42LWxpbnVzLWdpdC5vcmlnL2FyY2gvaTM4Ni9rZXJuZWwvY3B1L21j
+aGVjay9rNy5jCisrKyAyLjYtbGludXMtZ2l0L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L21jaGVj
+ay9rNy5jCkBAIC03NSw2ICs3NSw5IEBAIHZvaWQgYW1kX21jaGVja19pbml0KHN0cnVjdCBj
+cHVpbmZvX3g4NiAKIAltYWNoaW5lX2NoZWNrX3ZlY3RvciA9IGs3X21hY2hpbmVfY2hlY2s7
+CiAJd21iKCk7CiAKKwlpZiAoIWNwdV9oYXMoYywgWDg2X0ZFQVRVUkVfTUNFKSkKKwkJcmV0
+dXJuOworCiAJcHJpbnRrIChLRVJOX0lORk8gIkludGVsIG1hY2hpbmUgY2hlY2sgYXJjaGl0
+ZWN0dXJlIHN1cHBvcnRlZC5cbiIpOwogCXJkbXNyIChNU1JfSUEzMl9NQ0dfQ0FQLCBsLCBo
+KTsKIAlpZiAobCAmICgxPDw4KSkJLyogQ29udHJvbCByZWdpc3RlciBwcmVzZW50ID8gKi8K
 
-We could adopt a similar trick (get/put_each_cpu_mask) that you describe
-below in those extended cases as well.
+--------------090806060603000703000502--
 
-> the 10% loops that _can_ schedule would trigger the __might_sleep() 
-> atomicity test in schedule()), and those would have to be converted a 
-> bit more cleverly, on a case by case basis.
 
-The real question is how do we convert over those sleeping
-for_each_cpu_mask users (for ex: flush_workqueue) such that they don't
-block freezer/hotplug for long periods?
-
-One option is to probably rewrite them to understand that
-online[or a derived]_map could have changed everytime they come out of a 
-(un)interruptible sleep and deal with arising races appropriately. That
-would mean a bit of maintenance headache unfortunately (I was hoping
-freezer will lead to zero maintenance headache :)
-
-Besides, how problematic is this in practise (that threads sleep for
-extended durations in TASK_INTERRUPTIBLE state breaking
-freezer/suspend/hotplug)?
-
-Should we ignore this for the timebeing and take up later as and when
-users report problems?
-
--- 
-Regards,
-vatsa
