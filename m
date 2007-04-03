@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161048AbXDCR6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161042AbXDCSAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161048AbXDCR6a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161049AbXDCR6a
+	id S1161042AbXDCSAj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 14:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161044AbXDCSAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:58:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46670 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161048AbXDCR63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:58:29 -0400
-Date: Tue, 3 Apr 2007 19:58:27 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
+	Tue, 3 Apr 2007 14:00:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37637 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161042AbXDCSAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 14:00:38 -0400
+Message-ID: <46129619.8050107@redhat.com>
+Date: Tue, 03 Apr 2007 10:59:53 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: getting processor numbers
-Message-ID: <20070403175827.GA24033@one.firstfloor.org>
-References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403173505.GD23689@one.firstfloor.org> <461292BF.5020803@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <461292BF.5020803@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403174457.GA15704@linux-os.sc.intel.com>
+In-Reply-To: <20070403174457.GA15704@linux-os.sc.intel.com>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig8C51418F5B4750BA7E185650"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 10:45:35AM -0700, Ulrich Drepper wrote:
-> Andi Kleen wrote:
-> >>> Topology is dependent on the number of CPUs.
-> >> Not all of it.
-> > 
-> > What is not?
-> 
-> Memory banks can exist without a CPU present.  The places where you can
-> plug in memory don't change and so the memory hierarchy can be described.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8C51418F5B4750BA7E185650
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-There are systems that support node hotplug, like Altix or the larger
-IBM or Unisys x86 systems. Basically they are a bunch of
-smaller systems connected with cables running a cache coherent network
-protocol.  With that memory can appear (and disappear but we don't handle 
-that yet) unexpectedly.
+Siddha, Suresh B wrote:
+> Not all of the cpu* directories in /sys/devices/system/cpu may be
+> online.
 
-That said we might have some idea of that in advance -- it can
-be described in ACPI SRAT -- but the trouble is that many quite
-ordinary x86 server systems always describe hotplug zones even though
-it is unlikely they will ever get any. Trusting that can be quite
-inefficient.
+Brilliant.  You people really know how to create user interfaces.  So
+now in any case per CPU another stat/access syscall is needed to check
+the 'online' pseudo-file?  With this the readdir solution is only
+marginally faster than parsing /proc/cpuinfo which means, it's
+unacceptably slow.
 
-> There is an inexpensive solution: finally make the vdso concept a bit
-> more flexible.  You could add a vdso call to get the processor count.
-> The vdso code itself can use a data page mapped in from the kernel.
+I cannot believe all these big system people are allowed to screw
+everybody else up with their nonsense.
 
-The ELF aux vector is exactly that already.
+So, anybody else has a proposal?  This is a pressing issue and cannot
+wait until someday in the distant future NUMA topology information is
+easily and speedily accessible.
 
-> This page (read-only at userlevel) would contain global information such
-> as processor count and topology.
-
-You would still need an event notification mechanism, won't you?
-> 
-> 
-> But we're getting IMO off topic here.  That's a separate and far more
-> complicated issue.
-
-Yes I agree. Hotplug is best ignored for now
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
 
 
-> Here we now have the concrete issue that determining the CPU count is
-> terribly expensive and there is a simple proposal to make it faster by
-> keeping /sys/devices/system/cpu/ free from anything but cpu* directories.
+--------------enig8C51418F5B4750BA7E185650
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-The cost will be still large. Accessing sysfs will be never cheap.
-For once anything going through the VFS tens to take a two sometimes
-three digit number of locks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-If you want it cheap look for some other way.
+iD8DBQFGEpYZ2ijCOnn/RHQRAibkAJ9WcackAa/1qLAdx8LQ7YKyQxEOwwCcD8Sg
+Ot6uNXrMsjNvUNuJ/UdLFG4=
+=v+kN
+-----END PGP SIGNATURE-----
 
-
--Andi
+--------------enig8C51418F5B4750BA7E185650--
