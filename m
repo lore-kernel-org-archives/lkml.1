@@ -1,90 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966134AbXDCAjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966135AbXDCAkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966134AbXDCAjJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 20:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966135AbXDCAjI
+	id S966135AbXDCAkg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 20:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966136AbXDCAkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 20:39:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52941 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966129AbXDCAit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 20:38:49 -0400
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
-       Andi Kleen <ak@suse.de>, Dave Hansen <hansendc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <clameter@sgi.com>
-Message-Id: <20070403003848.829.88005.sendpatchset@schroedinger.engr.sgi.com>
-In-Reply-To: <20070403003837.829.31019.sendpatchset@schroedinger.engr.sgi.com>
-References: <20070403003837.829.31019.sendpatchset@schroedinger.engr.sgi.com>
-Subject: [PATCH 3/3] IA64: Implement SPARSE_VIRTUAL
-Date: Mon,  2 Apr 2007 17:38:48 -0700 (PDT)
+	Mon, 2 Apr 2007 20:40:36 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55159 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966135AbXDCAkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 20:40:35 -0400
+Date: Mon, 2 Apr 2007 17:40:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "kalash nainwal" <kalash.nainwal@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] (re)register_binfmt returns with -EBUSY
+Message-Id: <20070402174033.ec74aa5b.akpm@linux-foundation.org>
+In-Reply-To: <416aa1ad0704020554u54ec3720oe99eba180ffa11eb@mail.gmail.com>
+References: <416aa1ad0704020554u54ec3720oe99eba180ffa11eb@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[IA64] Sparse virtual implementation
+On Mon, 2 Apr 2007 18:24:15 +0530
+"kalash nainwal" <kalash.nainwal@gmail.com> wrote:
 
-Equip IA64 sparsemem with a virtual memmap. This is similar to the existing
-CONFIG_VMEMMAP functionality for discontig. It uses a page size mapping.
+> When a binary format is unregistered and re-registered,
+> register_binfmt fails with -EBUSY. The reason is that
+> unregister_binfmt does not set fmt->next to NULL, and seeing
+> (fmt->next != NULL), register_binfmt fails with -EBUSY.
+> 
+> One can find his way around by explicitly setting fmt->next to NULL
+> after unregistering, but that is kind of unclean (one should better be
+> using only the interfaces, and not the interal members, isn't it?)
+> 
+> Attached one-liner can fix it (for 2.6.20).
 
-This is provided as a minimally intrusive solution. We split the
-128TB VMALLOC area into two 64TB areas and use one for the virtual memmap.
+Yes, that'll fix it.
 
-I have another patch in testing that uses granule sized 16MB pages to map
-the memmap but this would require changes to the interrupt vector table
-and there are certain discussions that would need to take place
-before we can accept such a large page size for the memmap. That version
-is better because is improves IA64 performance by reducing TLB pressure.
+But I wonder why register_binfmt() even checks that the to-be-registered
+linux_binfmt has a non-null fmt->next?  Presumably that's there to catch
+erroneous re-registration of an already-registered format.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6.21-rc5-mm2/arch/ia64/Kconfig
-===================================================================
---- linux-2.6.21-rc5-mm2.orig/arch/ia64/Kconfig	2007-04-02 16:15:29.000000000 -0700
-+++ linux-2.6.21-rc5-mm2/arch/ia64/Kconfig	2007-04-02 16:15:50.000000000 -0700
-@@ -350,6 +350,10 @@ config ARCH_SPARSEMEM_ENABLE
- 	def_bool y
- 	depends on ARCH_DISCONTIGMEM_ENABLE
- 
-+config SPARSE_VIRTUAL
-+	def_bool y
-+	depends on ARCH_SPARSEMEM_ENABLE
-+
- config ARCH_DISCONTIGMEM_DEFAULT
- 	def_bool y if (IA64_SGI_SN2 || IA64_GENERIC || IA64_HP_ZX1 || IA64_HP_ZX1_SWIOTLB)
- 	depends on ARCH_DISCONTIGMEM_ENABLE
-Index: linux-2.6.21-rc5-mm2/include/asm-ia64/page.h
-===================================================================
---- linux-2.6.21-rc5-mm2.orig/include/asm-ia64/page.h	2007-04-02 16:15:29.000000000 -0700
-+++ linux-2.6.21-rc5-mm2/include/asm-ia64/page.h	2007-04-02 16:15:50.000000000 -0700
-@@ -106,6 +106,9 @@ extern int ia64_pfn_valid (unsigned long
- # define ia64_pfn_valid(pfn) 1
- #endif
- 
-+#define vmemmap ((struct page *)(RGN_BASE(RGN_GATE) + \
-+				(1UL << (4*PAGE_SHIFT - 10))))
-+
- #ifdef CONFIG_VIRTUAL_MEM_MAP
- extern struct page *vmem_map;
- #ifdef CONFIG_DISCONTIGMEM
-Index: linux-2.6.21-rc5-mm2/include/asm-ia64/pgtable.h
-===================================================================
---- linux-2.6.21-rc5-mm2.orig/include/asm-ia64/pgtable.h	2007-04-02 16:15:29.000000000 -0700
-+++ linux-2.6.21-rc5-mm2/include/asm-ia64/pgtable.h	2007-04-02 16:15:50.000000000 -0700
-@@ -236,8 +236,13 @@ ia64_phys_addr_valid (unsigned long addr
- # define VMALLOC_END		vmalloc_end
-   extern unsigned long vmalloc_end;
- #else
-+#if defined(CONFIG_SPARSEMEM) && defined(CONFIG_SPARSE_VIRTUAL)
-+/* SPARSE_VIRTUAL uses half of vmalloc... */
-+# define VMALLOC_END		(RGN_BASE(RGN_GATE) + (1UL << (4*PAGE_SHIFT - 10)))
-+#else
- # define VMALLOC_END		(RGN_BASE(RGN_GATE) + (1UL << (4*PAGE_SHIFT - 9)))
- #endif
-+#endif
- 
- /* fs/proc/kcore.c */
- #define	kc_vaddr_to_offset(v) ((v) - RGN_BASE(RGN_GATE))
+All very odd.  It looks like that code should be converted to list_heads
+anyway...
