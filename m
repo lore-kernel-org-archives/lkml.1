@@ -1,86 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbXDCFoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbXDCFpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbXDCFoc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 01:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbXDCFoc
+	id S1753026AbXDCFpo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 01:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbXDCFpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 01:44:32 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41233 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752999AbXDCFob (ORCPT
+	Tue, 3 Apr 2007 01:45:44 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:63690 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753025AbXDCFpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 01:44:31 -0400
-Date: Tue, 3 Apr 2007 15:44:19 +1000
-From: David Chinner <dgc@sgi.com>
-To: xfs-masters@oss.sgi.com
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, reiserfs-dev@namesys.com
-Subject: Re: [xfs-masters] Re: [PATCH] Cleanup and kernelify shrinker registration (rc5-mm2)
-Message-ID: <20070403054419.GV32597093@melbourne.sgi.com>
-References: <1175571885.12230.473.camel@localhost.localdomain> <20070402205825.12190e52.akpm@linux-foundation.org> <1175575503.12230.484.camel@localhost.localdomain> <20070402215702.6e3782a9.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070402215702.6e3782a9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 3 Apr 2007 01:45:43 -0400
+Date: Mon, 02 Apr 2007 22:45:33 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: [KJ][PATCH]ROUND_UP macro cleanup in drivers/net/ixgb
+In-reply-to: <20070403024345.GB9479@arun.site>
+To: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Cc: kernel-janitors@lists.osdl.org, e1000-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       auke-jan.h.kok@intel.com, john.ronciak@intel.com,
+       jesse.brandeburg@intel.com, ayyappan.veeraiyan@intel.com
+Message-id: <4611E9FD.1080801@intel.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <20070403024345.GB9479@arun.site>
+User-Agent: Mail/News 1.5.0.10 (X11/20070311)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 09:57:02PM -0700, Andrew Morton wrote:
-> On Tue, 03 Apr 2007 14:45:02 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
-> > On Mon, 2007-04-02 at 20:58 -0700, Andrew Morton wrote:
-> > > On Tue, 03 Apr 2007 13:44:45 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > 
-> > > > 
-> > > > I can never remember what the function to register to receive VM pressure
-> > > > is called.  I have to trace down from __alloc_pages() to find it.
-> > > > 
-> > > > It's called "set_shrinker()", and it needs Your Help.
-> > > > 
-> > > > New version:
-> > > > 1) Don't hide struct shrinker.  It contains no magic.
-> > > > 2) Don't allocate "struct shrinker".  It's not helpful.
-> > > > 3) Call them "register_shrinker" and "unregister_shrinker".
-> > > > 4) Call the function "shrink" not "shrinker".
-> > > > 5) Rename "nr_to_scan" argument to "nr_to_free".
-> > > 
-> > > No, it is actually the number to scan.  This is >= the number of freed
-> > > objects.
-> > > 
-> > > This is because, for better of for worse, the VM tries to balance the
-> > > scanning rate of the various caches, not the reclaiming rate.
-> > 
-> > Err, ok, I completely missed that distinction.
-> > 
-> > Does that mean the to function correctly every user needs some internal
-> > cursor so it doesn't end up scanning the first N entries over and over?
-> > 
-> 
-> If it wants to be well-behaved, and to behave as the VM expects, yes. 
-> 
-> There's an expectation that the callback will be performing some scan-based
-> aging operation and of course to do LRU (or whatever) aging, the callback
-> will need to remember where it was up to last time it was called.
-> 
-> But it's just a guideline - callbacks could do something different but
-> in-the-spirit, I guess.
+Milind Arun Choudhary wrote:
+> IXGB_ROUNDUP macro cleanup ,use ALIGN
 
-In XFS, one of the shrinkers cwthat gets registered calls causes all
-the xfsbufd's in the system to run and write back delayed write
-metadata - this can't be freed up until it is clean, and this is the
-only hook we have that can be used to trigger writeback on memory
-pressure. We need this because we can potentially have hundreds of
-megabytes of dirty metadata per XFS filesystem.
+cool beans!
 
-IOW, the way the VM expects the shrinkers to work can be far, far
-away from what subsystems need the shrinker callbacks for....
+Same reply as to the ALIGN patch you sent for e1000 -> We'll take it for a spin 
+and I'll push your patch upstream as part of the regular updates!
 
-Cheers,
+Thanks,
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Auke
+
+
+> 
+> Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+> 
+> ---
+> 
+>  ixgb.h         |    3 ---
+>  ixgb_ethtool.c |    4 ++--
+>  ixgb_main.c    |    4 ++--
+>  ixgb_param.c   |    4 ++--
+>  4 files changed, 6 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/net/ixgb/ixgb.h b/drivers/net/ixgb/ixgb.h
+> index cf30a10..c8e9086 100644
+> --- a/drivers/net/ixgb/ixgb.h
+> +++ b/drivers/net/ixgb/ixgb.h
+> @@ -111,9 +111,6 @@ struct ixgb_adapter;
+>  /* How many Rx Buffers do we bundle into one write to the hardware ? */
+>  #define IXGB_RX_BUFFER_WRITE	8	/* Must be power of 2 */
+>  
+> -/* only works for sizes that are powers of 2 */
+> -#define IXGB_ROUNDUP(i, size) ((i) = (((i) + (size) - 1) & ~((size) - 1)))
+> -
+>  /* wrapper around a pointer to a socket buffer,
+>   * so a DMA handle can be stored along with the buffer */
+>  struct ixgb_buffer {
+> diff --git a/drivers/net/ixgb/ixgb_ethtool.c b/drivers/net/ixgb/ixgb_ethtool.c
+> index d6628bd..cdefaff 100644
+> --- a/drivers/net/ixgb/ixgb_ethtool.c
+> +++ b/drivers/net/ixgb/ixgb_ethtool.c
+> @@ -577,11 +577,11 @@ ixgb_set_ringparam(struct net_device *netdev,
+>  
+>  	rxdr->count = max(ring->rx_pending,(uint32_t)MIN_RXD);
+>  	rxdr->count = min(rxdr->count,(uint32_t)MAX_RXD);
+> -	IXGB_ROUNDUP(rxdr->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE); 
+> +	rxdr->count = ALIGN(rxdr->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE); 
+>  
+>  	txdr->count = max(ring->tx_pending,(uint32_t)MIN_TXD);
+>  	txdr->count = min(txdr->count,(uint32_t)MAX_TXD);
+> -	IXGB_ROUNDUP(txdr->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE); 
+> +	txdr->count = ALIGN(txdr->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE); 
+>  
+>  	if(netif_running(adapter->netdev)) {
+>  		/* Try to get new resources before deleting old */
+> diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
+> index afc2ec7..158c71e 100644
+> --- a/drivers/net/ixgb/ixgb_main.c
+> +++ b/drivers/net/ixgb/ixgb_main.c
+> @@ -685,7 +685,7 @@ ixgb_setup_tx_resources(struct ixgb_adapter *adapter)
+>  	/* round up to nearest 4K */
+>  
+>  	txdr->size = txdr->count * sizeof(struct ixgb_tx_desc);
+> -	IXGB_ROUNDUP(txdr->size, 4096);
+> +	txdr->size = ALIGN(txdr->size, 4096);
+>  
+>  	txdr->desc = pci_alloc_consistent(pdev, txdr->size, &txdr->dma);
+>  	if(!txdr->desc) {
+> @@ -774,7 +774,7 @@ ixgb_setup_rx_resources(struct ixgb_adapter *adapter)
+>  	/* Round up to nearest 4K */
+>  
+>  	rxdr->size = rxdr->count * sizeof(struct ixgb_rx_desc);
+> -	IXGB_ROUNDUP(rxdr->size, 4096);
+> +	rxdr->size = ALIGN(rxdr->size, 4096);
+>  
+>  	rxdr->desc = pci_alloc_consistent(pdev, rxdr->size, &rxdr->dma);
+>  
+> diff --git a/drivers/net/ixgb/ixgb_param.c b/drivers/net/ixgb/ixgb_param.c
+> index b27442a..ee8cc67 100644
+> --- a/drivers/net/ixgb/ixgb_param.c
+> +++ b/drivers/net/ixgb/ixgb_param.c
+> @@ -284,7 +284,7 @@ ixgb_check_options(struct ixgb_adapter *adapter)
+>  		} else {
+>  			tx_ring->count = opt.def;
+>  		}
+> -		IXGB_ROUNDUP(tx_ring->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE);
+> +		tx_ring->count = ALIGN(tx_ring->count, IXGB_REQ_TX_DESCRIPTOR_MULTIPLE);
+>  	}
+>  	{ /* Receive Descriptor Count */
+>  		struct ixgb_option opt = {
+> @@ -303,7 +303,7 @@ ixgb_check_options(struct ixgb_adapter *adapter)
+>  		} else {
+>  			rx_ring->count = opt.def;
+>  		}
+> -		IXGB_ROUNDUP(rx_ring->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE);
+> +		rx_ring->count = ALIGN(rx_ring->count, IXGB_REQ_RX_DESCRIPTOR_MULTIPLE);
+>  	}
+>  	{ /* Receive Checksum Offload Enable */
+>  		struct ixgb_option opt = {
+> 
+> 
+
