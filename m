@@ -1,107 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966168AbXDCNdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966177AbXDCNhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966168AbXDCNdt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 09:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966177AbXDCNdt
+	id S966177AbXDCNhQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 09:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966176AbXDCNhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 09:33:49 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:28894 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966168AbXDCNdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 09:33:49 -0400
-Date: Tue, 3 Apr 2007 17:39:46 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: Andi Kleen <ak@suse.de>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
-       cpufreq@lists.linux.org.uk, hpa@zytor.com, davej@codemonkey.org.uk
-Subject: Re: [PATCH 1/3] Introduce cpuid_on_cpu() and cpuid_eax_on_cpu()
-Message-ID: <20070403133946.GA6536@localhost.sw.ru>
-References: <20070402113831.GA6785@localhost.sw.ru> <200704021410.29623.ak@suse.de>
+	Tue, 3 Apr 2007 09:37:16 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:13090 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965846AbXDCNhN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 09:37:13 -0400
+Date: Tue, 3 Apr 2007 15:39:21 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andi Kleen <ak@suse.de>, Jeff Garzik <jeff@garzik.org>,
+       virtualization@lists.linux-foundation.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+Subject: Re: A set of "standard" virtual devices?
+Message-ID: <20070403153921.491b1e9f@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <200704031415.38381.arnd@arndb.de>
+References: <4611652F.700@zytor.com>
+	<200704031141.50045.arnd@arndb.de>
+	<20070403124108.06108665@gondolin.boeblingen.de.ibm.com>
+	<200704031415.38381.arnd@arndb.de>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704021410.29623.ak@suse.de>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 02:10:29PM +0200, Andi Kleen wrote:
-> On Monday 02 April 2007 13:38, Alexey Dobriyan wrote:
-> > They will be used by cpuid driver and powernow-k8 cpufreq driver.
-> >
-> > With these changes powernow-k8 driver could run correctly on OpenVZ kernels
-> > with virtual cpus enabled (SCHED_VCPU).
->
-> This means openvz has multiple virtual CPU levels?
+On Tue, 3 Apr 2007 14:15:37 +0200,
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-Not sure what do you mean.
+> Right, but an interesting point is the question what to do when running
+> another operating system as a guest under Linux, e.g. with kvm.
+> 
+> Ideally, you'd want to use the same interface to announce the presence
+> of the device, which can be done far more easily with PCI than using
+> a new bus type that you'd need to implement for every OS, instead of
+> just implementing the virtual PCI driver.
 
-> One for cpuid/rdmsr and one for the rest of the kernel?
+That's OK for a virtualized architecture where the base architecture
+already supports PCI. But a traditional s390 OS would be as unhappy
+with a PCI device as with a device of a completely new type :)
 
-Now I think I do. No, only one VCPU level:
+There are several options for virtualized devices (and I don't know why
+they shouldn't coexist):
 
-	+---+ +---+ +---+
-PCPU	| 0 | | 1 | | 2 |
-	+---+ +---+ +---+
-	  |	\
-	  |	 `---,
-	  V	      \
-VCPU	+---+ +---+ +---+
-	| 0 | | 1 | | 2 |
-	+---+ +---+ +---+
+1. Emulate a well-known device (like a e1000 network card on PCI or a
+model 3390 dasd on CCW). Existing operating systems can just use them,
+but it's a lot of work in the hypervisor.
 
-PCPU chooses VCPU, chooses task from it's runqueue, or becomes idle.
+2. Create a virtual PCI device (or a virtual CCW device) with a new id.
+Operating systems would need to write a new device driver, but they can
+use a familiar infrastructure. That seems to be what most people are
+talking about here.
 
-> Both powernow-k8 and cpuid attempt to schedule
-> to the target CPU so they should already run there. But it is some other CPU,
-> but when they ask your _on_cpu() functions they suddenly get a "real" CPU?
-> Where is the difference between these levels of virtualness?
+3. Create a new bus which uses a new access method. This new method can
+be made very simple, but requires support from the guest operating
+system. That's what I was talking about :)
 
-*_on_cpu functions do some work on given physical CPU.
-set_cpus_allowed() in openvz operates on VCPU level, so process doing
-set_cpus_allowed() still could be scheduled anywhere. Which horribly
-breaks cpufreq drivers. To unbreak them, we need a way to do frequency
-changing work on given PCPU whose number comes from /sys/*/cpu/cpu*
-hierarchy.
+[Note: I'm not actually advocating an emulated ccw driver. There be
+dragons.]
 
-> That sounds quite fragile and will likely break often.  I just rejected a similar
-> concept -- virtual nodes and "physical nodes" for similar reasons.
+> Using a 16 bit number to identify a specific interface sounds like
+> a good idea to me, if only for the reason that it is a widely used
+> approach. The alternative would be to use an ascii string, like we
+> have for open-firmware devices on powerpc or sparc.
 
-Care to drop a link, so I could compare them? Don't recall something
-like that posted on l-k.
+OK, we could use common identifiers (and reserve it) for case 2 across
+several busses. Like
 
-> Also it has weird semantics. For example if you have multiple
-> virtual CPUs mapping to a single CPU then would the powernow-k8 driver
-> try to set the frequency multiple times on the same physical CPU?
+#define PCI_VIRT_ID GENERIC_VIRT_ID
+#define CCW_VIRT_DEVTYPE GENERIC_VIRT_ID
 
-If core cpufreq locking is OK, why would it?
+> I think in either way, we need to abstract the driver for the virtual
+> device from the underlying bus infrastructure, which is hypervisor
+> and/or platform dependent.
 
-> That might
-> go wrong actually because the CPU might not be happy to be poked again
-> while it is already in a frequency change. Also there is no locking
-> so in theory two vcpus might try to change frequency in parallel with
-> probably quite bad effects.
->
-> I'm sure there are other scenarios with similar problems. e.g. what
-> happens with microcode updates etc.?
+Yes, that sounds sane for case 3. We should just standardize the
+interface.
 
-apply_microcode() looks small enough to convert it to IPIs, but so far
-nobody asked for microcode updates in openvz.
+> The abstraction could work roughly like this:
+> 
+> 
+> ==========
+> virt_dev.h
+> ==========
+> struct virt_driver { /* platform independent */
+> 	struct device_driver drv;
+> 	struct pci_device_id *ids; /* not necessarily PCI */
+> };
+> struct virt_bus {
+> 	/* platform dependent */
+> 	long (*transfer)(struct virt_dev *dev, void *buffer,
+> 		unsigned long size, int type);
+> };
 
-> Before adding any hacks like this I think your vcpu concept
-> needs to be discussed properly on l-k. For me it doesn't look like it is
-> something good right now though.
+Should this embed a struct bus_type? Or reference a generic_virt_bus?
 
-Andi, I think it all relies on correctness of core cpufreq locking. Core
-cpufreq locking is not changed with these patches so number of bugs
-should stay the same.
+> struct virt_dev {
+> 	struct device dev;
+> 	struct virt_driver *driver;
+> 	struct virt_bus *bus;
+> 	struct pci_device_id id;
+> 	int irq;
+> };
 
-current way				new way
------------				-------
-
-set_cpus_allowed(cpu);
-[frequency change part #1]		[IPI part #1]
-			<=== nasty here ===>
-[frequency change part #2]		[IPI part #2]
-set_cpus_allowed(old)
-
+And that's where I have problems :) The notion of "irq" is far too
+platform specific. I can bend my mind round using PCI-like ids for
+non-PCI virtualized devices, but an integer is far too small and to
+specific for a way to access the device.
