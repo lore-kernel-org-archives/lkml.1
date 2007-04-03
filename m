@@ -1,108 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966142AbXDCBae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965379AbXDCBeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966142AbXDCBae (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 21:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966143AbXDCBae
+	id S965379AbXDCBeP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 21:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXDCBeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 21:30:34 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43637 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966142AbXDCBac (ORCPT
+	Mon, 2 Apr 2007 21:34:15 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:10453 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965379AbXDCBeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 21:30:32 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Tilman Schmidt <tilman@imap.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       reiserfs-dev@namesys.com, Oliver Pinter <oliver.pntr@gmail.com>
-Subject: Re: 2.6.21-rc5 possible regression: KDE processes die silently (was: 2.6.21-rc3-mm2: KDE processes die while system is idle)
-References: <4601B3D0.3060600@imap.cc> <460FCDE2.1080503@imap.cc>
-	<20070402225006.GI14134@stusta.de>
-Date: Mon, 02 Apr 2007 19:25:52 -0600
-In-Reply-To: <20070402225006.GI14134@stusta.de> (Adrian Bunk's message of
-	"Tue, 3 Apr 2007 00:50:06 +0200")
-Message-ID: <m1bqi6dza7.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 2 Apr 2007 21:34:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=r1OnuHuT5A2Ozrlcu4cTD69jHhHDEJnNup+I/4DfvVZD04OopImYewVmrLXEG4cOoANmGdeP7K46AUsNgry6Sw1+8lvNsNHWzpI2zcQppzpHA6T+T8dHU/5kO2ObvzcRW9Nf72z/I54kp3C1XI9QmNiW9kmKvjio228AVNn9N3g=
+Message-ID: <a8e1da0704021834q7911fb56oa0f3f23651ee6be2@mail.gmail.com>
+Date: Tue, 3 Apr 2007 01:34:13 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: "Tom Strader" <tom.strader@xilinx.com>
+Subject: Re: Warning: unable to open an initial console.
+Cc: "Chris Wedgwood" <cw@f00f.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070402232012.6716E64781D@mail78-cpk.bigfish.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070402190458.0EDD039005F@mail42-fra.bigfish.com>
+	 <20070402224923.GA11208@tuatara.stupidest.org>
+	 <20070402232012.6716E64781D@mail78-cpk.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> writes:
+Hi,
+Check if your U-boot enabled the udev, try diable the udev, then using
+mknod to create the /dev/console.
 
-> On Sun, Apr 01, 2007 at 05:21:06PM +0200, Tilman Schmidt wrote:
->> I'm sorry to say this has now happened with kernel 2.6.21-rc5, too.
->> I started a kernel compilation in the evening and came back in the
->> morning to find all KDE decorations gone. All processes normally
->> running for a KDE session and labelled "[kinit]" in ps were gone
->> but everything else was running fine, and the system was still
->> usable via ssh. /var/log/kdm.log and /var/log/Xorg.0.log contained
->> nothing remotely suspicious. /var/log/messages had two lines I
->> never saw before:
->> 
->> Mar 31 02:27:36 gx110 kernel: [153577.891443] ReiserFS: hda3: warning:
-> vs-8115: get_num_ver: not directory or indirect item
->> Mar 31 02:27:36 gx110 kernel: [153577.891559] ReiserFS: hda3: warning:
-> vs-8115: get_num_ver: not directory or indirect item
->
-> Reiserfs people Cc'ed for this.
->
->> But those didn't appear on previous occurrences of the "dying KDE"
->> problem so I guess they are not related.
->> 
->> This is SUSE LINUX 10.0 (i586) running on a Dell OptiPlex GX110
->> (Intel P3, 933 MHz, i810 chipset, 512 MB RAM, 60 GB ATA disk)
->> % uname -a
->> Linux gx110 2.6.21-rc5-noinitrd #1 PREEMPT Sat Mar 31 02:15:19 CEST 2007 i686
-> i686 i386 GNU/Linux
->> % cat /proc/cmdline
->> root=/dev/hda3 selinux=0 x11i=vesa video=intelfb:mode=1280x1024-32@70
-> nmi_watchdog=2 lapic 5
->> Kernel configuration mostly-modular, based on standard SuSE kernel's
->> /proc/config.gz, just compiling into the kernel everything I need to
->> boot without an initrd and omitting some parts I'm not interested in.
->> (.config attached.) What else might be relevant?
->> 
->> Again, this is a Heisenbug, ie. it's not reproducible and invariably
->> happens when I'm away from the machine. (Probably Murphy at work.)
->> It's pretty rare: I have seen it four times on 2.6.21-rc3-mm2 and
->> once on 2.6.21-rc5, on a machine which spends about equal amounts
->> of time running the latest stable, rc, and mm kernels. OTOH, so far
->> it hasn't ever happened with any 2.6.20 or earlier kernel. Nor have
->> I seen it with 2.6.21-rc[1-4] or 2.6.21-rc4-mm* - but for the -rc4
->> and -rc4-mm releases that's not conclusive as those have only been
->> running for a very short time.
->
-> We also have another report of crashes under KDE:
->
-> Subject    : crashes in KDE
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=8157
-> Submitter  : Oliver Pinter <oliver.pntr@gmail.com>
-> Status     : unknown
->
-> We also have one bug kwin ran into that got fixed after -rc5:
->
-> Subject    : kwin dies silently
-> References : http://lkml.org/lkml/2007/2/28/112
-> Submitter  : Sid Boyce <g3vbv@blueyonder.co.uk>
->              Boris Mogwitz <boris@macbeth.rhoen.de>
->              Michael Wu <aluminum.tape@gmail.com>
-> Caused-By  : Eric W. Biederman <ebiederm@xmission.com>
->              commit 0475ac0845f9295bc5f69af45f58dff2c104c8d1
-> Fixed-By   : Eric W. Biederman <ebiederm@xmission.com>
-> Commit     : 14e9d5730adfca26452b3a2838a80af6950556f5
-> Status     : fixed in -rc6
->
-> These might or might not be related issues.
+Regards
+dave
 
-The description above sounds like the kwin bug, except for the trigger.
-(i.e. The set of processes that die are all largely part of the same
- process group, and they sound like the same set of processes).
-So I'm guessing it is the same issue.
 
-The crashes in KDE bug may also be the same problem there isn't enough
-information to make a good guess.  So until -rc6 we get a test
-report from -rc6 after or whatever Linus latest tree is I'm not inclined
-to dig farther.
-
-Eric
+2007/4/2, Tom Strader <tom.strader@xilinx.com>:
+> I checked /dev/ with U-boot and it shows the existence of /dev/console.
+>
+> From U-boot prompt:
+>
+> $ ls /dev
+>  crw-------        0 Mon Apr 02 17:52:27 2007 console
+>  crw-r--r--        0 Mon Apr 02 17:52:27 2007 null
+>  crw-r--r--        0 Mon Apr 02 17:52:27 2007 zero
+>
+>
+> Also, I added a printk in the jffs2_add_fd_to_list() routine in
+> fs/jffs2/nodelist.c to print out the dirent adds and it shows console
+> being added as follows:
+>
+> ...
+> add dirent "var", ino #14
+> add dirent "usr", ino #13
+> add dirent "tmp", ino #12
+> add dirent "sys", ino #11
+> add dirent "sbin", ino #10
+> add dirent "proc", ino #9
+> add dirent "mnt", ino #8
+> add dirent "linuxrc", ino #7
+> add dirent "lib", ino #6
+> add dirent "home", ino #5
+> add dirent "etc", ino #4
+> add dirent "dev", ino #3
+> add dirent "bin", ino #2
+> VFS: Mounted root (jffs2 filesystem).
+> Freeing init memory: 76K
+> add dirent "zero", ino #70
+> add dirent "null", ino #69
+> add dirent "console", ino #68
+> Warning: unable to open an initial console.
+> add dirent "watchdog", ino #262
+> add dirent "udevstart", ino #261
+> add dirent "udevsend", ino #260
+> ...
+>
+> Any other ideas?
+> Thanks,
+> Tom
+>
+>
+> -----Original Message-----
+> From: Chris Wedgwood [mailto:cw@f00f.org]
+> Sent: Monday, April 02, 2007 3:49 PM
+> To: Tom Strader
+> Cc: linux-kernel@vger.kernel.org
+> Subject: Re: Warning: unable to open an initial console.
+>
+> On Mon, Apr 02, 2007 at 12:04:56PM -0700, Tom Strader wrote:
+>
+> > I have seen quite a few posts regarding unable to open an initial
+> > console, but my system seems to have the necessary things in place
+> > so I come looking for help.
+>
+> your rootfs/initramfs/initrd is missing a valid working /dev/console
+>
+> > VFS: Mounted root (jffs2 filesystem).
+>
+> check /dev/ on this filesystem
+>
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
