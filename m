@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbXDCPri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbXDCPt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbXDCPri (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 11:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbXDCPri
+	id S1752837AbXDCPt4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 11:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbXDCPt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 11:47:38 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:57279 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752667AbXDCPrh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 11:47:37 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 3 Apr 2007 11:49:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44690 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752837AbXDCPtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 11:49:55 -0400
+Date: Tue, 3 Apr 2007 08:48:03 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "Kok, Auke" <sofar@foo-projects.org>
+Cc: Nicolas Mailhot <nicolas.mailhot@laposte.net>, video4linux-list@redhat.com,
+       Michael Bueker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, zaitcev@redhat.com
+Subject: Re: OHCI: USB webcam works, but not on USB Hub
+Message-Id: <20070403084803.e578260d.zaitcev@redhat.com>
+In-Reply-To: <46127134.7000108@foo-projects.org>
+References: <53190.192.54.193.51.1175611316.squirrel@rousalka.dyndns.org>
+	<46127134.7000108@foo-projects.org>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <17938.30190.281832.393043@smtp.charter.net>
-Date: Tue, 3 Apr 2007 11:42:38 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Olaf Dabrunz <od@suse.de>
-Cc: John Stoffel <john@stoffel.org>, Gerd Hoffmann <kraxel@suse.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Andi Kleen <ak@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch v2] Fixes and cleanups for earlyprintk aka boot console.
-In-Reply-To: <20070329163714.GA29059@suse.de>
-References: <20070315154638.944768000@suse.de>
-	<17913.45970.178029.519745@smtp.charter.net>
-	<20070329163714.GA29059@suse.de>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 03 Apr 2007 08:22:28 -0700, "Kok, Auke" <sofar@foo-projects.org> wrote:
 
-Sorry, I've been away for the past 10+ days and not reading email at
-all.  
+> Having the gspca driver move into the main tree would help a lot though.
 
-Olaf> On 15-Mar-07, John Stoffel wrote:
->> Would this explain why recent version of GDM don't find the keyboard
->> properly when you boot with a kernel command line of:
->> 
->> kernel ... console=tty0 console=ttyS1,96008N1
->> 
->> until you stop and restart GDM?  This was filed under Debian bug
->> #406457 (see http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=406457)
->> and I could never figure it out until I removed my serial console line
->> at one point.  
+I think we need to articulate better why this is an issue and not just
+an excuse. We know that scheduling issues with ISO transfers exist, but
+with the driver outside we can't find a specific issue let alone fix it.
+These things are hard to fix as it is.
 
-Olaf> Try changing the order of the console= parameters:
+For example, an external 2.0 hub with TT moves all transactions from OHCI
+to EHCI, and adds an interrupt transfer which eats into your schedule.
+I'm completely unsurprised that this fails. Wanna bet that Michael's
+issue is something like that?
 
-Olaf>     kernel ... console=ttyS1,96008N1 console=tty0
+Another thing, requiring them to make the effort comes with an implicit
+promise to fix whatever the user's problem is once they have moved gspca
+in-tree. I'm not ready to tackle Michael's case, so I pretended not to
+see his original mail.
 
-This isn't good for me, since it then drops some output I want to save
-via the serial console to the regular console.  It would be nice if
-all output went to BOTH consoles, though input should only be accepted
-on the first console listed.  
-
-Olaf> Some time ago I understood what this does. Nowadays I can only
-Olaf> remember that this makes both the serial console and directly
-Olaf> attached screen/keyboard console work most of the time. FWIW,
-Olaf> tty0 becomes the so-called "preferred console".
-
-Sure, but I want the serial console to be the preferred console for
-output, so I can capture it all.  But this is still a good idea and
-I'll test it out and see if GDM still has a problem with it like
-that.  I suspect not, but we'll see.
-
-THanks for the suggestion,
-John
+-- Pete
