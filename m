@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXDCTTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966067AbXDCTVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753634AbXDCTTV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbXDCTTV
+	id S966067AbXDCTVz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXDCTVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:19:21 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:1811 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753626AbXDCTTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:19:20 -0400
-Message-ID: <4612A8C5.1080103@cfl.rr.com>
-Date: Tue, 03 Apr 2007 15:19:33 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 3 Apr 2007 15:21:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60446 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753626AbXDCTVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 15:21:54 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ego@in.ibm.com
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Date: Tue, 3 Apr 2007 21:25:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+References: <20070402053457.GA9076@in.ibm.com> <20070403125619.GA32444@in.ibm.com> <20070403141516.GB14900@in.ibm.com>
+In-Reply-To: <20070403141516.GB14900@in.ibm.com>
 MIME-Version: 1.0
-To: Ameya Mitragotri <ameya.mitragotri@gmail.com>
-CC: linux-kernel@vger.kernel.org, suparna@in.ibm.com, pbadari@gmail.com
-Subject: Re: fadvise+sync_file_range Vs O_DIRECT
-References: <88df6dda0704030351u44fab6bcj20f9b48d24de861a@mail.gmail.com>
-In-Reply-To: <88df6dda0704030351u44fab6bcj20f9b48d24de861a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Apr 2007 19:19:33.0260 (UTC) FILETIME=[0295FCC0:01C77625]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15094.000
-X-TM-AS-Result: No--7.676800-5.000000-2
+Content-Disposition: inline
+Message-Id: <200704032125.14742.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ameya Mitragotri wrote:
-> Hello,
-> I am doing some benchmarking on writes to the hdd from a simple
-> application (attached).
-> Im benchmarking the writes using the following
-> - write with O_DIRECT
-> - write with fadvise + O_SYNC
-> - write with fadvise + sync_file_range
+On Tuesday, 3 April 2007 16:15, Gautham R Shenoy wrote:
+> On Tue, Apr 03, 2007 at 06:26:19PM +0530, Srivatsa Vaddagiri wrote:
+> > 
+> > Besides, how problematic is this in practise (that threads sleep for
+> > extended durations in TASK_INTERRUPTIBLE state breaking
+> > freezer/suspend/hotplug)?
+> > 
+> > Should we ignore this for the timebeing and take up later as and when
+> > users report problems?
+> 
+> In my case, the problem of freezer failing was due to the vfork freezer race
+> in do_fork. The parent task was waiting_for_completion() while the child was
+> frozen.
+> 
+> Rafael has already sent out the fix for that, but for some reason I
+> don't see it in the -mm.
 
-Did you use overlapped aio with O_DIRECT or just send down one request 
-at a time?
+Hm, freezer-fix-vfork-problem.patch is in -rc5-mm3.  Is it the patch you're
+talking about or is there another one?
 
+Rafael
