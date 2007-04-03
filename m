@@ -1,77 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbXDCTPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbXDCTRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989AbXDCTPY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbXDCTPY
+	id S1753557AbXDCTRe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXDCTRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:15:24 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:51255 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752989AbXDCTPX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:15:23 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 3 Apr 2007 12:15:14 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ulrich Drepper <drepper@redhat.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: getting processor numbers
-In-Reply-To: <461286D6.2040407@redhat.com>
-Message-ID: <Pine.LNX.4.64.0704031152370.23808@alien.or.mcafeemobile.com>
-References: <461286D6.2040407@redhat.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 3 Apr 2007 15:17:34 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:1782 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753557AbXDCTRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 15:17:33 -0400
+Message-ID: <4612A854.1070702@cfl.rr.com>
+Date: Tue, 03 Apr 2007 15:17:40 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mark Lord <lkml@rtr.ca>
+CC: Chris Snook <csnook@redhat.com>, Paa Paa <paapaa125@hotmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Lower HD transfer rate with NCQ enabled?
+References: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl> <46128175.2090506@redhat.com> <4612852C.2030801@rtr.ca>
+In-Reply-To: <4612852C.2030801@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Apr 2007 19:17:41.0008 (UTC) FILETIME=[BFADB100:01C77624]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15094.000
+X-TM-AS-Result: No--3.205200-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007, Ulrich Drepper wrote:
+Mark Lord wrote:
+> But WD drives, in particular the Raptor series, have a firmware "feature"
+> that disables "drive readahead" whenever NCQ is in use.
 
-> More and more code depends on knowing the number of processors in the
-> system to efficiently scale the code.  E.g., in OpenMP it is used by
-> default to determine how many threads to create.  Creating more threads
-> than there are processors/cores doesn't make sense.
-> 
-> glibc for a long time provides functionality to retrieve the number
-> through sysconf() and this is what fortunately most programs use.  The
-> problem is that we are currently using /proc/cpuinfo since this is all
-> there was available at that time.  Creating /proc/cpuinfo takes the
-> kernel quite a long time, unfortunately (I think Jakub said it is mainly
-> the interrupt information).
-> 
-> The alternative today is to use /sys/devices/system/cpu and count the
-> number of cpu* directories in it.  This is somewhat faster.  But there
-> would be another possibility: simply stat /sys/devices/system/cpu and
-> use st_nlink - 2.
-> 
-> This last step unfortunately it made impossible by recent changes:
-> 
->   http://article.gmane.org/gmane.linux.kernel/413178
-> 
-> I would like to propose changing that patch, move the sched_*
-> pseudo-files in some other directly and permanently ban putting any new
-> file into /sys/devices/system/cpu.
-> 
-> To get some numbers, you can try
-> 
->   http://people.redhat.com/drepper/nproc-timing.c
-> 
-> The numbers I see on x86-64:
-> 
-> cpuinfo 10145810 cycles for 100 accesses
-> readdir /sys 3113870 cycles for 100 accesses
-> stat /sys 741070 cycles for 100 accesses
+Why is this an issue?  Shouldn't the kernel be sending down its own 
+readahead requests to keep the disk busy?
 
-It sucks when seen from a micro-bench POV, but does it really matter 
-overall? The vast majority of software usually calls 
-sysconf(_SC_NPROCESSORS_*) with very little frequency (mostly once at 
-initialization time) anyway. That's what 50us / call?
-
-
-
-- Davide
 
 
