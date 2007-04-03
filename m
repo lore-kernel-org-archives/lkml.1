@@ -1,132 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751027AbXDCCwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbXDCDIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751027AbXDCCwO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 22:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXDCCwO
+	id S1750999AbXDCDIv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 23:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXDCDIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 22:52:14 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43694 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751027AbXDCCwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 22:52:13 -0400
-Subject: [RFC] [PATCH] persistent_clock() for x86_64
-From: john stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 02 Apr 2007 19:52:09 -0700
-Message-Id: <1175568729.5201.87.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Mon, 2 Apr 2007 23:08:51 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:28418 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbXDCDIt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 23:08:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=hZSytN2pri5zKl+evt57eAOd3xoLThXsZ+ExeGG1vA2rJ7CiATa4Hd6cKeBMezL7MR2gaWdJ5maWWzkZ57J4wAn9hreltHaLY4mNKS0G62LGgGYOgv9kqE7Q/aq7jh5/u05flzHL6X55279Bh+9lW0njpMhU7cJcJVmCwu570Lo=
+Message-ID: <4611C538.7050007@gmail.com>
+Date: Tue, 03 Apr 2007 12:08:40 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: James Bottomley <James.Bottomley@SteelEye.com>, gregkh@suse.de,
+       hugh@veritas.com, dmitry.torokhov@gmail.com, oneukum@suse.de,
+       maneesh@in.ibm.com, rpurdie@rpsys.net, Jeff Garzik <jgarzik@pobox.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       SCSI Mailing List <linux-scsi@vger.kernel.org>
+Subject: Re: [RFD driver-core] Lifetime problems of the current driver model
+References: <460CDBA6.5030608@gmail.com>	<1175257751.3760.19.camel@mulgrave.il.steeleye.com>	<460D12B8.6050101@gmail.com>	<1175278774.3760.44.camel@mulgrave.il.steeleye.com>	<20070401195943.GA29627@htj.dyndns.org>	<20070402112048.047867c1@gondolin.boeblingen.de.ibm.com> <20070402173443.0a3b5c51@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070402173443.0a3b5c51@gondolin.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts the get_cmos_time() function to
-read_persistent_clock(), which allows x86_64 to utilize the full generic
-timekeeping suspend/resume code path.
+Cornelia Huck wrote:
+> On Mon, 2 Apr 2007 11:20:48 +0200,
+> Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> 
+>> Cool. However, there's something fishy there (not sure whether it's in
+>> your patch or a latent bug in the ccw bus code that just has been
+>> uncovered):
+> 
+> Similar bug when loading/unloading a module that creates a driver
+> attribute. The winner seems to be kfree(sd->s_element) in
+> release_sysfs_dirent() (in case of an attribute, it will point to the
+> attribute structure, which is usually statically created)...
 
-Unfortunately I don't have any x86_64 boxes that suspend/resume to play
-w/ so this is mostly untested (but uses the same generic code path as
-i386).
+Thanks for finding it out.  I was suspecting that last minute change.
+The code should be
 
-Any thoughts or comments?
+if (dir node)
+	kfree(s_element)
+else if (symlink node)
+	do things and kfree()
 
-thanks
--john
+Thanks.
 
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-
- time.c |   43 +------------------------------------------
- 1 file changed, 1 insertion(+), 42 deletions(-)
-
-diff --git a/arch/x86_64/kernel/time.c b/arch/x86_64/kernel/time.c
-index 75d73a9..df09c65 100644
---- a/arch/x86_64/kernel/time.c
-+++ b/arch/x86_64/kernel/time.c
-@@ -201,7 +201,7 @@ static irqreturn_t timer_interrupt(int i
- 	return IRQ_HANDLED;
- }
- 
--static unsigned long get_cmos_time(void)
-+unsigned long read_persistent_clock(void)
- {
- 	unsigned int year, mon, day, hour, min, sec;
- 	unsigned long flags;
-@@ -327,11 +327,6 @@ void __init time_init(void)
- {
- 	if (nohpet)
- 		hpet_address = 0;
--	xtime.tv_sec = get_cmos_time();
--	xtime.tv_nsec = 0;
--
--	set_normalized_timespec(&wall_to_monotonic,
--	                        -xtime.tv_sec, -xtime.tv_nsec);
- 
- 	if (hpet_arch_init())
- 		hpet_address = 0;
-@@ -364,59 +359,23 @@ void __init time_init(void)
- }
- 
- 
--static long clock_cmos_diff;
--static unsigned long sleep_start;
--
- /*
-  * sysfs support for the timer.
-  */
- 
--static int timer_suspend(struct sys_device *dev, pm_message_t state)
--{
--	/*
--	 * Estimate time zone so that set_time can update the clock
--	 */
--	long cmos_time =  get_cmos_time();
--
--	clock_cmos_diff = -cmos_time;
--	clock_cmos_diff += get_seconds();
--	sleep_start = cmos_time;
--	return 0;
--}
--
- static int timer_resume(struct sys_device *dev)
- {
--	unsigned long flags;
--	unsigned long sec;
--	unsigned long ctime = get_cmos_time();
--	long sleep_length = (ctime - sleep_start) * HZ;
--
--	if (sleep_length < 0) {
--		printk(KERN_WARNING "Time skew detected in timer resume!\n");
--		/* The time after the resume must not be earlier than the time
--		 * before the suspend or some nasty things will happen
--		 */
--		sleep_length = 0;
--		ctime = sleep_start;
--	}
- 	if (hpet_address)
- 		hpet_reenable();
- 	else
- 		i8254_timer_resume();
- 
--	sec = ctime + clock_cmos_diff;
--	write_seqlock_irqsave(&xtime_lock,flags);
--	xtime.tv_sec = sec;
--	xtime.tv_nsec = 0;
--	jiffies += sleep_length;
--	write_sequnlock_irqrestore(&xtime_lock,flags);
- 	touch_softlockup_watchdog();
- 	return 0;
- }
- 
- static struct sysdev_class timer_sysclass = {
- 	.resume = timer_resume,
--	.suspend = timer_suspend,
- 	set_kset_name("timer"),
- };
- 
-
-
+-- 
+tejun
