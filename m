@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbXDCVBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753674AbXDCVGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbXDCVBh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 17:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbXDCVBh
+	id S1753674AbXDCVGW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 17:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbXDCVGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 17:01:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60781 "EHLO ogre.sisk.pl"
+	Tue, 3 Apr 2007 17:06:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60795 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753664AbXDCVBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 17:01:36 -0400
+	id S1753673AbXDCVGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 17:06:21 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] swsusp: Fix memory shrinker
-Date: Tue, 3 Apr 2007 23:04:53 +0200
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.21-rc5 possible regression: KDE processes die silently (was: 2.6.21-rc3-mm2: KDE processes die while system is idle)
+Date: Tue, 3 Apr 2007 23:09:56 +0200
 User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>
+Cc: Tilman Schmidt <tilman@imap.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <4601B3D0.3060600@imap.cc> <200704011848.03971.rjw@sisk.pl> <20070402230640.GJ14134@stusta.de>
+In-Reply-To: <20070402230640.GJ14134@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704032304.53747.rjw@sisk.pl>
+Message-Id: <200704032309.57322.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tuesday, 3 April 2007 01:06, Adrian Bunk wrote:
+> On Sun, Apr 01, 2007 at 06:48:03PM +0200, Rafael J. Wysocki wrote:
+> > On Sunday, 1 April 2007 17:21, Tilman Schmidt wrote:
+> > > I'm sorry to say this has now happened with kernel 2.6.21-rc5, too.
+> > > I started a kernel compilation in the evening and came back in the
+> > > morning to find all KDE decorations gone. All processes normally
+> > > running for a KDE session and labelled "[kinit]" in ps were gone
+> > > but everything else was running fine, and the system was still
+> > > usable via ssh. /var/log/kdm.log and /var/log/Xorg.0.log contained
+> > > nothing remotely suspicious. /var/log/messages had two lines I
+> > > never saw before:
+> > > 
+> > > Mar 31 02:27:36 gx110 kernel: [153577.891443] ReiserFS: hda3: warning: vs-8115: get_num_ver: not directory or indirect item
+> > > Mar 31 02:27:36 gx110 kernel: [153577.891559] ReiserFS: hda3: warning: vs-8115: get_num_ver: not directory or indirect item
+> > > 
+> > > But those didn't appear on previous occurrences of the "dying KDE"
+> > > problem so I guess they are not related.
+> > > 
+> > > This is SUSE LINUX 10.0 (i586) running on a Dell OptiPlex GX110
+> > > (Intel P3, 933 MHz, i810 chipset, 512 MB RAM, 60 GB ATA disk)
+> > > % uname -a
+> > > Linux gx110 2.6.21-rc5-noinitrd #1 PREEMPT Sat Mar 31 02:15:19 CEST 2007 i686 i686 i386 GNU/Linux
+> > > % cat /proc/cmdline
+> > > root=/dev/hda3 selinux=0 x11i=vesa video=intelfb:mode=1280x1024-32@70 nmi_watchdog=2 lapic 5
+> > > Kernel configuration mostly-modular, based on standard SuSE kernel's
+> > > /proc/config.gz, just compiling into the kernel everything I need to
+> > > boot without an initrd and omitting some parts I'm not interested in.
+> > > (.config attached.) What else might be relevant?
+> > > 
+> > > Again, this is a Heisenbug, ie. it's not reproducible and invariably
+> > > happens when I'm away from the machine. (Probably Murphy at work.)
+> > > It's pretty rare: I have seen it four times on 2.6.21-rc3-mm2 and
+> > > once on 2.6.21-rc5, on a machine which spends about equal amounts
+> > > of time running the latest stable, rc, and mm kernels. OTOH, so far
+> > > it hasn't ever happened with any 2.6.20 or earlier kernel. Nor have
+> > > I seen it with 2.6.21-rc[1-4] or 2.6.21-rc4-mm* - but for the -rc4
+> > > and -rc4-mm releases that's not conclusive as those have only been
+> > > running for a very short time.
+> > 
+> > I have a similar problem on x86_64 OpenSUSE 10.2, but it seems to happen
+> > when a sound (eg. notification) is played while the display is suspended
+> > (or "powered off").
+> 
+> Is it easily reproducible and still present with the latest -git?
+> If yes, can you bisect?
 
-I think this is 2.6.21 material.
+Well, I have one system on which it seems to be reproducible, but it takes
+quite some time to reproduce (I have to wait until the box goes into a
+power-saving mode of some sort).
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+> > IMO it's a SUSE bug.
+> 
+> We also have a report of KDE crashes on Debian [1].
+> And just a few days ago a kernel bug kwin ran into was fixed [2].
+> 
+> If the pattern is "works with 2.6.20 but does not work with 2.6.21-rc",
+> then it's most likely a kernel regression. 
 
-Fix a bug in the swsusp's memory shrinker that causes some systems using
-highmem to refuse to suspend to disk if image_size is set above 1/2 of
-available RAM.
+I'm not sure about that.  I'll check, but it'll take time.
 
-Special thanks to Jiri Slaby for reporting the problem and assistance in
-debugging it.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/swsusp.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.21-rc5/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
-+++ linux-2.6.21-rc5/kernel/power/swsusp.c
-@@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
- 		size += highmem_size;
- 		for_each_zone (zone)
- 			if (populated_zone(zone)) {
-+				tmp += snapshot_additional_pages(zone);
- 				if (is_highmem(zone)) {
- 					highmem_size -=
- 					zone_page_state(zone, NR_FREE_PAGES);
- 				} else {
- 					tmp -= zone_page_state(zone, NR_FREE_PAGES);
- 					tmp += zone->lowmem_reserve[ZONE_NORMAL];
--					tmp += snapshot_additional_pages(zone);
- 				}
- 			}
- 
+Greetings,
+Rafael
