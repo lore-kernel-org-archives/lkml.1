@@ -1,138 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966117AbXDCT2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966116AbXDCTay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966117AbXDCT2B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966116AbXDCT2B
+	id S966116AbXDCTay (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966118AbXDCTay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:28:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44546 "EHLO mx1.redhat.com"
+	Tue, 3 Apr 2007 15:30:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60487 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966105AbXDCT17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:27:59 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       trond.myklebust@fys.uio.no, nfsv4@linux-nfs.org
-Subject: [PATCH] Add a struct key pointer to struct nameidata
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 03 Apr 2007 20:26:57 +0100
-Message-ID: <6742.1175628417@redhat.com>
+	id S966116AbXDCTax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 15:30:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ego@in.ibm.com, akpm@linux-foundation.org
+Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
+Date: Tue, 3 Apr 2007 21:34:28 +0200
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com,
+       dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu> <20070403120104.GB29308@in.ibm.com>
+In-Reply-To: <20070403120104.GB29308@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704032134.29720.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, 3 April 2007 14:01, Gautham R Shenoy wrote:
+> On Mon, Apr 02, 2007 at 08:16:12AM +0200, Ingo Molnar wrote:
+> > 
+> > i'm wondering about how TASK_UNINTERRUPTIBLE tasks are handled by the 
+> > freezer: are they assumed frozen immediately, or do we wait until they 
+> > notice their PF_FREEZING and go into try_to_freeze()? I'd expect 
+> > TASK_UNINTERRUPTIBLE to be the largest source of latency. (and hence be 
+> > the primary source for freezing 'failures')
+> 
+> Ok, we might be in some luck. I panic()ed on freezer fail and checked
+> the stacktrace of the unfrozen tasks. The stacktrace of each one looks
+> like:
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> PID: 7697   TASK: cc354a70  CPU: 7   COMMAND: "make"
+> #0 [cc37fe50] schedule at c0431752
+> #1 [cc37fec4] wait_for_completion at c04318d0
+> #2 [cc37ff24] do_fork at c01249a6
+> #3 [cc37ff94] sys_vfork at c0103c1f
+> #4 [cc37ffb4] system_call at c0104d8d
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> 
+> Rafael had sent out a patch to fix the vfork race, which can be found at
+> http://lkml.org/lkml/2007/3/1/212
+> 
+> However, the hunk
+> 
+> @@ -1393,7 +1394,9 @@ long do_fork(unsigned long clone_flags,
+> 		tracehook_report_clone_complete(clone_flags, nr, p);
+> 
+> 		if (clone_flags & CLONE_VFORK) {
+> +			freezer_do_not_count();
+> 			wait_for_completion(&vfork);
+> +			freezer_count();
+> 			tracehook_report_vfork_done(p, nr);
+> 		}
+> 	} else {
+> 
+> Seems to be missing in the latest -mm's.
 
-Hi Al,
+Good catch!
 
-I'd like you to consider approving something like the attached patch.  It
-allows a key to be obtained by a filesystem during a pathwalk to be used in
-subsequent operations in the pathwalk.
+> Rafael / Andrew, 
+> 	Any reasons for leaving this hunk out?
 
-The way I envision it working is this:
+No, absolutely not.  It's needed.
 
- (1) The nameidata::key pointer is initialised to NULL at the start of the
-     pathwalk.  path_release() and co. release the key it points to.
+Moreover, freezer-fix-vfork-problem.patch from the broken-out -rc5-mm3
+contains it, so some other patch must have reverted this change.
 
- (2) Any filesystem operation performed during the pathwalk (lookup,
-     permission, follow_link) can look at the key - if non-NULL - and if it's
-     what they're looking for they can use it.
+[looks]
 
-     If there's a key there of potential interest, the key's type and
-     description should be checked to make sure the key is permissible.
-
-     If so, key_validate() should be called to make sure the key is still
-     usable.  If it isn't, the error should be passed back rather than the key
-     lookup being redone on the basis that some earlier step is now no longer
-     valid.
-
- (3) Any operation that is not interested in the key can either ignore it or
-     release it and clear the pointer.
-
- (4) If an operation wants to put its own key there, it would release the old
-     key and then point the nameidata at its own key, with the usage count
-     incremented.  This could be encapsulated in a function something like
-     this:
-
-	void set_nd_key(struct nameidata *nd, struct key *key)
-	{
-		key_put(nd->key);
-		nd->key = key_get(key);
-	}
-
-Then a filesystem, such as AFS, could call request_key() just once and pass the
-key on between lookup() and permission() calls, as long as the cell doesn't
-change.  The alternative is to call request_key() each time.
-
-Unfortunately there isn't currently a way to pass the key onto the inode
-operations for create, link, unlink, and suchlike, nor is there a way to pass
-it to the open file op without adding a struct key pointer argument to each of
-these.
-
-This might also be useful for NFS and CIFS.
-
-David
-
-diff --git a/fs/namei.c b/fs/namei.c
-index ee60cc4..660d478 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -350,6 +350,7 @@ void path_release(struct nameidata *nd)
- {
- 	dput(nd->dentry);
- 	mntput(nd->mnt);
-+	key_put(nd->key);
- }
- 
- /*
-@@ -360,6 +361,7 @@ void path_release_on_umount(struct nameidata *nd)
- {
- 	dput(nd->dentry);
- 	mntput_no_expire(nd->mnt);
-+	key_put(nd->key);
- }
- 
- /**
-@@ -1108,6 +1110,7 @@ static int fastcall do_path_lookup(int dfd, const char *name,
- 	struct file *file;
- 	struct fs_struct *fs = current->fs;
- 
-+	nd->key = NULL;
- 	nd->last_type = LAST_ROOT; /* if there are only slashes... */
- 	nd->flags = flags;
- 	nd->depth = 0;
-diff --git a/fs/open.c b/fs/open.c
-index c989fb4..740df56 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -822,10 +822,12 @@ struct file *nameidata_to_filp(struct nameidata *nd, int flags)
- 	/* Pick up the filp from the open intent */
- 	filp = nd->intent.open.file;
- 	/* Has the filesystem initialised the file for us? */
--	if (filp->f_path.dentry == NULL)
-+	if (filp->f_path.dentry == NULL) {
- 		filp = __dentry_open(nd->dentry, nd->mnt, flags, filp, NULL);
--	else
-+		key_put(nd->key);
-+	} else {
- 		path_release(nd);
-+	}
- 	return filp;
- }
- 
-diff --git a/include/linux/namei.h b/include/linux/namei.h
-index d39a5a6..d677408 100644
---- a/include/linux/namei.h
-+++ b/include/linux/namei.h
-@@ -17,6 +17,7 @@ enum { MAX_NESTED_LINKS = 8 };
- struct nameidata {
- 	struct dentry	*dentry;
- 	struct vfsmount *mnt;
-+	struct key	*key;
- 	struct qstr	last;
- 	unsigned int	flags;
- 	int		last_type;
+Ah, it's utrace-prep-2.patch .  Andrew?
