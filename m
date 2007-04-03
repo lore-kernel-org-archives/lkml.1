@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422669AbXDCT7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422672AbXDCUDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422669AbXDCT7w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422673AbXDCT7u
+	id S1422672AbXDCUDy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 16:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422671AbXDCUDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:59:50 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:36802 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422672AbXDCT7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:59:49 -0400
-Message-ID: <4612B225.7060003@gmail.com>
-Date: Tue, 03 Apr 2007 21:59:33 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Tue, 3 Apr 2007 16:03:54 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45746 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422672AbXDCUDx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 16:03:53 -0400
+Message-ID: <4612B303.5000109@zytor.com>
+Date: Tue, 03 Apr 2007 13:03:15 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-References: <460B6E4B.3060004@gmail.com> <200704022318.28451.rjw@sisk.pl> <46120449.7070302@gmail.com> <200704031250.07307.rjw@sisk.pl>
-In-Reply-To: <200704031250.07307.rjw@sisk.pl>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Arnd Bergmann <arnd@arndb.de>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Andi Kleen <ak@suse.de>, Christian Borntraeger <borntrae@de.ibm.com>,
+       virtualization@lists.linux-foundation.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+Subject: Re: A set of "standard" virtual devices?
+References: <4611652F.700@zytor.com> <200704031951.00544.arnd@arndb.de> <4612A5F0.2080609@goop.org> <200704032142.51976.arnd@arndb.de> <4612B123.2040105@goop.org>
+In-Reply-To: <4612B123.2040105@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 03 Apr 2007 21:59:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
-> Okay, so I think the appended patch is needed.  Could you please revert the
-[...]
-> Index: linux-2.6.21-rc5/kernel/power/swsusp.c
-> ===================================================================
-> --- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
-> +++ linux-2.6.21-rc5/kernel/power/swsusp.c
-> @@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
->  		size += highmem_size;
->  		for_each_zone (zone)
->  			if (populated_zone(zone)) {
-> +				tmp += snapshot_additional_pages(zone);
->  				if (is_highmem(zone)) {
->  					highmem_size -=
->  					zone_page_state(zone, NR_FREE_PAGES);
->  				} else {
->  					tmp -= zone_page_state(zone, NR_FREE_PAGES);
->  					tmp += zone->lowmem_reserve[ZONE_NORMAL];
-> -					tmp += snapshot_additional_pages(zone);
+Jeremy Fitzhardinge wrote:
+> 
+> Yes, and that's the core of the Xen netfront.  But is there really much
+> code which can be shared between different hypervisors?  When you get
+> down to it, all the real code is hypervisor-specific stuff for setting
+> up ringbuffers and dealing with interrupts.  Like all the other network
+> drivers.
+> 
 
-This seems to work.
+One thing, Jeremy, which I think is being a bit misleading here: you're 
+focusing on big, performance-critical stuff.  Those things are going to 
+be the ones which has the most win to implement in hypervisor-specific 
+ways.  Although we can offer models for some hypervisors (and G-d knows 
+there are enough implementations out there of virtual disk which are 
+almost identical), they're clearly not going to be universal.
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+However, there are other things; console is some, or my original 
+example, which was random number generation.  For those, the benefit of 
+unification is proportionally greater, simply because the win of 
+anything hypervisor-specific is much smaller.
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+	-hpa
