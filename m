@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161039AbXDCRx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161048AbXDCR6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161039AbXDCRx4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161048AbXDCRx4
+	id S1161048AbXDCR6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161049AbXDCR6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:53:56 -0400
-Received: from mail.nagafix.co.uk ([194.145.196.85]:53552 "EHLO
-	mail.nagafix.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161039AbXDCRxz (ORCPT
+	Tue, 3 Apr 2007 13:58:30 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46670 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161048AbXDCR63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:53:55 -0400
-Message-ID: <461294B0.5010303@nagafix.co.uk>
-Date: Tue, 03 Apr 2007 18:53:52 +0100
-From: Antoine Martin <antoine@nagafix.co.uk>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070304)
-MIME-Version: 1.0
-To: Blaisorblade <blaisorblade@yahoo.it>
-CC: Jeff Dike <jdike@addtoit.com>, devzero@web.de,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [uml-devel] [RFC] UML kernel & rootfs bundle with every kernel
- release ?
-References: <1712880100@web.de> <20070402020530.GA589@c2.user-mode-linux.org> <4610D937.20002@nagafix.co.uk> <200704031943.15001.blaisorblade@yahoo.it>
-In-Reply-To: <200704031943.15001.blaisorblade@yahoo.it>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 3 Apr 2007 13:58:29 -0400
+Date: Tue, 3 Apr 2007 19:58:27 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: getting processor numbers
+Message-ID: <20070403175827.GA24033@one.firstfloor.org>
+References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403173505.GD23689@one.firstfloor.org> <461292BF.5020803@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <461292BF.5020803@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Blaisorblade wrote:
-> On lunedì 2 aprile 2007, Antoine Martin wrote:
->> Jeff Dike wrote:
->>> On Sun, Apr 01, 2007 at 08:58:45PM +0100, Antoine Martin wrote:
->>>> I reckon that one critical thing which could drastically increase the
->>>> user base would be to have a working virtual framebuffer implementation.
->>> Why?  I've never understood what a framebuffer gives you that you
->>> don't have now.
->> Just like the network auto-configuration via dhcp,
-> Hmm... for that to be completely plug-and-play you need to make sure a dhcp 
-> server on the host exists.
+On Tue, Apr 03, 2007 at 10:45:35AM -0700, Ulrich Drepper wrote:
+> Andi Kleen wrote:
+> >>> Topology is dependent on the number of CPUs.
+> >> Not all of it.
+> > 
+> > What is not?
 > 
-> Vmware runs a separate DHCP server exactly for this, even if we should avoid 
-> that as much as possible.
-It is trivial to write a shell script that takes care of setting up the 
-interface and checks for the presence of a dhcp server. (the dhcpd.conf 
-can be generated easily)
+> Memory banks can exist without a CPU present.  The places where you can
+> plug in memory don't change and so the memory hierarchy can be described.
 
-The problem lies with the configuration options, I have got a bunch of 
-shell scripts to take care of that, but it is quite hard to make them 
-suitable for global consumption by the average user:
-* even with just tap networking, I use 4 different ways of hooking them 
-up the outside world
-* firewalling and mac address filtering
-* bridging issues and ebtables
-* tmpfs and memory issues
-* selinux and chrooting issues...
-etc...
+There are systems that support node hotplug, like Altix or the larger
+IBM or Unisys x86 systems. Basically they are a bunch of
+smaller systems connected with cables running a cache coherent network
+protocol.  With that memory can appear (and disappear but we don't handle 
+that yet) unexpectedly.
 
-[snip]
-> although it stopped working for me ages ago (probably for some UML bug). I 
-> built a Mandrake image (that I now lost) with Xnest configured. With a script 
-> on the host which passes the host IP and that calls xhost, it should work 
-> easily. And btw, we need a standard startup script anyway.
-It would work, but it's not a pretty solution, it requires 
-customizations to the guest and it would not be intuitive to new users.
-I would much prefer the ability to just run any distro (even framebuffer 
-based ones) without modifications using the virtual framebuffer.
+That said we might have some idea of that in advance -- it can
+be described in ACPI SRAT -- but the trouble is that many quite
+ordinary x86 server systems always describe hotplug zones even though
+it is unlikely they will ever get any. Trusting that can be quite
+inefficient.
 
->> It would also make it a lot easier to focus on writing a management UI,
->> hell if there isn't one shortly after, I'll do one myself!
-> 
-> Why not one management UI running from the host, a-la vmware?
-Yes ,that was what I had in mind.
-> Possibly, with 
-> as much code as possible in scripting languages, for better transparency.
-Definitely, (see above)
+> There is an inexpensive solution: finally make the vdso concept a bit
+> more flexible.  You could add a vdso call to get the processor count.
+> The vdso code itself can use a data page mapped in from the kernel.
 
-The management tools I have written export the guests' settings to the 
-filesystem in the form of a shell script file, all the utility scripts 
-just read those settings and do their stuff. (all in simple shell)
-Antoine
+The ELF aux vector is exactly that already.
 
+> This page (read-only at userlevel) would contain global information such
+> as processor count and topology.
 
->> Think of a UML browser image (running IE via wine in a limited image
->> with just X + wine + IE - I would much prefer that to having wine+IE
->> installed locally), testing framebuffer apps like gtk-fb/cairo-fb
->> without risking your dev environment, etc...
->>
->> Antoine
+You would still need an event notification mechanism, won't you?
 > 
 > 
-> 
+> But we're getting IMO off topic here.  That's a separate and far more
+> complicated issue.
 
+Yes I agree. Hotplug is best ignored for now
+
+
+> Here we now have the concrete issue that determining the CPU count is
+> terribly expensive and there is a simple proposal to make it faster by
+> keeping /sys/devices/system/cpu/ free from anything but cpu* directories.
+
+The cost will be still large. Accessing sysfs will be never cheap.
+For once anything going through the VFS tens to take a two sometimes
+three digit number of locks.
+
+If you want it cheap look for some other way.
+
+
+-Andi
