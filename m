@@ -1,120 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945992AbXDCVuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945964AbXDCVw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945992AbXDCVuL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 17:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945994AbXDCVuL
+	id S1945964AbXDCVw4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 17:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945994AbXDCVw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 17:50:11 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:45334 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945992AbXDCVuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 17:50:09 -0400
-Date: Tue, 3 Apr 2007 14:49:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-Message-Id: <20070403144948.fe8eede6.akpm@linux-foundation.org>
-In-Reply-To: <20070403202937.GE355@devserv.devel.redhat.com>
-References: <46128051.9000609@redhat.com>
-	<p73648dz5oa.fsf@bingen.suse.de>
-	<46128CC2.9090809@redhat.com>
-	<20070403172841.GB23689@one.firstfloor.org>
-	<20070403125903.3e8577f4.akpm@linux-foundation.org>
-	<4612B645.7030902@redhat.com>
-	<20070403202937.GE355@devserv.devel.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 17:52:56 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:52802 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945964AbXDCVwz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 17:52:55 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: A set of "standard" virtual devices?
+Date: Tue, 3 Apr 2007 23:51:16 +0200
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Andi Kleen <ak@suse.de>, Christian Borntraeger <borntrae@de.ibm.com>,
+       virtualization@lists.linux-foundation.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+References: <4611652F.700@zytor.com> <4612B303.5000109@zytor.com> <4612C077.60502@goop.org>
+In-Reply-To: <4612C077.60502@goop.org>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704032351.17823.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+ajq0avkDc1oUYLqSR37Y2g1bJQL5shEKfvmS
+ KDDe/8YluLMj8fVejH7yk67V6316M/MYFz9XBSjVQTX0pzo5pZ
+ X2PiM3+X7U5SgPoECRgSA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007 16:29:37 -0400
-Jakub Jelinek <jakub@redhat.com> wrote:
+On Tuesday 03 April 2007, Jeremy Fitzhardinge wrote:
+> That said, something like USB is probably the best bet for this kind of
+> low-performance device.  I think.  Not that I really know anything about
+> USB.
 
-> On Tue, Apr 03, 2007 at 01:17:09PM -0700, Ulrich Drepper wrote:
-> > Andrew Morton wrote:
-> > > Ulrich, could you suggest a little test app which would demonstrate this
-> > > behaviour?
-> > 
-> > It's not really reliably possible to demonstrate this with a small
-> > program using malloc.  You'd need something like this mysql test case
-> > which Rik said is not hard to run by yourself.
-> > 
-> > If somebody adds a kernel interface I can easily produce a glibc patch
-> > so that the test can be run in the new environment.
-> > 
-> > But it's of course easy enough to simulate the specific problem in a
-> > micro benchmark.  If you want that let me know.
-> 
-> I think something like following testcase which simulates what free
-> and malloc do when trimming/growing a non-main arena.
-> 
-> My guess is that all the page zeroing is pretty expensive as well and
-> takes significant time, but I haven't profiled it.
-> 
-> #include <pthread.h>
-> #include <stdlib.h>
-> #include <sys/mman.h>
-> #include <unistd.h>
-> 
-> void *
-> tf (void *arg)
-> {
->   (void) arg;
->   size_t ps = sysconf (_SC_PAGE_SIZE);
->   void *p = mmap (NULL, 128 * ps, PROT_READ | PROT_WRITE,
->                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
->   if (p == MAP_FAILED)
->     exit (1);
->   int i;
->   for (i = 0; i < 100000; i++)
->     {
->       /* Pretend to use the buffer.  */
->       char *q, *r = (char *) p + 128 * ps;
->       size_t s;
->       for (q = (char *) p; q < r; q += ps)
->         *q = 1;
->       for (s = 0, q = (char *) p; q < r; q += ps)
->         s += *q;
->       /* Free it.  Replace this mmap with
->          madvise (p, 128 * ps, MADV_THROWAWAY) when implemented.  */
->       if (mmap (p, 128 * ps, PROT_NONE,
->                 MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) != p)
->         exit (2);
->       /* And immediately malloc again.  This would then be deleted.  */
->       if (mprotect (p, 128 * ps, PROT_READ | PROT_WRITE))
->         exit (3);
->     }
->   return NULL;
-> }
-> 
-> int
-> main (void)
-> {
->   pthread_t th[32];
->   int i;
->   for (i = 0; i < 32; i++)
->     if (pthread_create (&th[i], NULL, tf, NULL))
->       exit (4);
->   for (i = 0; i < 32; i++)
->     pthread_join (th[i], NULL);
->   return 0;
-> }
-> 
+USB has the disadvantage that it is more complex than PCI and requires
+significantly more code to simulate on the host side.
 
-whee.  135,000 context switches/sec on a slow 2-way.  mmap_sem, most
-likely.  That is ungood.
+On the plus side, I think it should be possible to implement a virtual
+USB host on s390, which is not possible with PCI, but that again takes
+a lot of work to implement.
 
-Did anyone monitor the context switch rate with the mysql test?
+One interesting aspect of the PS3 hypervisor is that some of the
+low-speed interfaces are implemented as a virtual UART, meaning
+something that only has read and write operations and uses an
+interrupt for flow control. The implementation in 
+drivers/ps3/vuart.c is probably more complex than what we want
+as a generic transport mechanism, but simply having a bidirectional
+data stream sounds like an ideal abstraction for the "simple"
+case. Some more or less obvious users of this include:
 
-Interestingly, your test app (with s/100000/1000) runs to completion in 13
-seocnd on the slow 2-way.  On a fast 8-way, it took 52 seconds and
-sustained 40,000 context switches/sec.  That's a bit unexpected.
+- console
+- additional tty
+- random
+- slow network (using ppp)
+- printer
+- watchdog
+- hid (e.g. mouse)
+- system management (like ps3)
+- fast network (in combination with
+  shared memory segment)
 
-Both machines show ~8% idle time, too :(
+The transport can be hypervisor specific, e.g. there could be
+a virtual PCI serial port on kvm, an hcall interface on the ps3
+and a virtual CTC on s390 (kidding), while all of them can have
+the same kind of hardware _behind_ the serial connection.
 
+	Arnd <><
