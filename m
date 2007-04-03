@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXDCQDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbXDCQDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbXDCQDb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 12:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbXDCQDb
+	id S1753509AbXDCQDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 12:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbXDCQDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 12:03:31 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2696 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753507AbXDCQDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 12:03:30 -0400
-Date: Tue, 3 Apr 2007 16:03:07 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Tasos Parisinos <t.parisinos@sciensis.com>
-Cc: Andi Kleen <andi@firstfloor.org>, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, indan@nul.nu
-Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
-Message-ID: <20070403160307.GA5266@ucw.cz>
-References: <4610D25F.7080005@ceid.upatras.gr> <p73r6r3yn9f.fsf@bingen.suse.de> <4610EDF9.9000601@sciensis.com> <20070402132820.GA28983@one.firstfloor.org> <46111D03.5020905@sciensis.com>
+	Tue, 3 Apr 2007 12:03:39 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:60248 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753509AbXDCQDi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 12:03:38 -0400
+Date: Tue, 3 Apr 2007 21:40:58 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, menage@google.com,
+       akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070403161058.GG2456@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com> <20070331024722.GA808@in.ibm.com> <20070402140938.GF17710@sergelap.austin.ibm.com> <20070402142727.GF2456@in.ibm.com> <m1slbiejt0.fsf@ebiederm.dsl.xmission.com> <20070403153220.GA24946@sergelap.austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46111D03.5020905@sciensis.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070403153220.GA24946@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, Apr 03, 2007 at 10:32:20AM -0500, Serge E. Hallyn wrote:
+> But frankly I don't know where we stand right now wrt the containers
+> patches.  Do most people want to go with Vatsa's latest version moving
+> containers into nsproxy?  
 
-> >>The best environment to deploy such functionality is 
-> >>in updating by remote,
-> >>executable code (programs, libs and modules) on 
-> >>embedded devices running
-> >>Linux, that have some form of kernel physical 
-> >>security, so one can't 
-> >
-> >How would that physical security look like? Would it 
-> >include DMA
-> >protection?
-> >
-> >For example to do any useful form of graphics you need
-> >user controllable DMA, which can normally touch 
-> >everything.
-> >There are various other similar "backdoors" for root.
-> >
-> >I'm somewhat sceptical because all kernels will need 
-> >access
-> >to the direct mapping to operate and there are also 
-> >various
-> >interfaces that can be as root (ab)used to change it.
-> >
-> >And when you can do that they can change function 
-> >pointers
-> >and jump to arbitary code or change the kernel page 
-> >tables
-> >and map arbitary code.
-> >
-> >Disallowing all this would probably end up with a quite
-> >useless kernel. 
-> >
-> >  
-> >>There are already some systems that implement and 
-> >>utilize such functionality that
-> >>use windows platforms, and other Linux distros that 
-> >>use userland 
-> >
-> >Yes, at least the Vista variant was just broken. And 
-> >its designers spent
-> >a lot of effort on it, but it didn't help.
-> >  
-> Please read the thread i gave you for some details for 
-> things you ask
-> 
-> Have in thought that we mostly talk here about embedded 
-> devices
-> that run Linux in a very restricted environment where 
-> only specific
-> applications are allowed to exist and run, there are no 
-> user logons
-> and these applications need to be updated by remote once 
-> in a while
-> over public networks. These applications need not be 
-> tampered with
+> Has any other development been going on?
 
-What kind of applications are we talking about here? I'd like to hack
-hardware I own.
+I have another update to the rcfs patches more or less ready to go. I
+hope to post them out this week.
 
-							Pavel
+Note that from user or controller perspective, there should be very
+little difference between the two patches. rcfs is, I would say, same as
+container patches to the extent of 70-80%. The rest of the difference is
+mainly avoiding a new pointer in task_struct and new structures to
+represent a task_group.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards,
+vatsa
