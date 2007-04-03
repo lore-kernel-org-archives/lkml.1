@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945927AbXDCUih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945933AbXDCUkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945927AbXDCUih (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 16:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945929AbXDCUih
+	id S1945933AbXDCUkm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 16:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945934AbXDCUkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 16:38:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50408 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945927AbXDCUig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 16:38:36 -0400
-Message-ID: <4612BB44.3060100@redhat.com>
-Date: Tue, 03 Apr 2007 16:38:28 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Tue, 3 Apr 2007 16:40:42 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50702 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1945933AbXDCUkl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 16:40:41 -0400
+Date: Tue, 3 Apr 2007 13:40:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Badari Pulavarty <pbadari@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc5-mm4
+In-Reply-To: <1175632311.6185.1.camel@dyn9047017100.beaverton.ibm.com>
+Message-ID: <Pine.LNX.4.64.0704031339080.11001@schroedinger.engr.sgi.com>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+ <1175632311.6185.1.camel@dyn9047017100.beaverton.ibm.com>
 MIME-Version: 1.0
-To: Jakub Jelinek <jakub@redhat.com>
-CC: Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com>
-In-Reply-To: <20070403202937.GE355@devserv.devel.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jakub Jelinek wrote:
+On Tue, 3 Apr 2007, Badari Pulavarty wrote:
 
-> My guess is that all the page zeroing is pretty expensive as well and
-> takes significant time, but I haven't profiled it.
+> On Mon, 2007-04-02 at 22:47 -0700, Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
+> > 
+> 
+> SLUB code hangs my ppc64 machine on boot.
 
-I'm pretty sure that page freeing, reallocating and zeroing
-is more expensive than just letting the page sit there and
-only reclaim it lazily when we need the memory.
+Could you enable NMI or something and get me a stackdump? PPC is notorious 
+for having strange NUMA issues. Any fallbacks from node 0 on bootstrap? Is 
+there memory on node 0?
 
-I'll try to whip up a patch this week.
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
