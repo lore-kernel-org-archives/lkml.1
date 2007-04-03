@@ -1,67 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbXDCPyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbXDCP7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752900AbXDCPyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 11:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXDCPyW
+	id S1752109AbXDCP7d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 11:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbXDCP7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 11:54:22 -0400
-Received: from smtp102.sbc.mail.re2.yahoo.com ([68.142.229.103]:32880 "HELO
-	smtp102.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752316AbXDCPyW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 11:54:22 -0400
-X-YMail-OSG: ycB4KzIVM1mI7tHYmUlr5MXNFfnN8jLx4W3IHEsxuZbF5mNe_.fNQ4HniG1vF8BglGLreESI0Dmd3jJzDbPbyowck_RhRGQjL7C8Mab6qE_6JtlyVD8-
-Date: Tue, 3 Apr 2007 10:54:14 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Paul Menage <menage@google.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, vatsa@in.ibm.com,
-       akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, winget@google.com,
-       rohitseth@google.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
-Message-ID: <20070403155414.GA25602@vino.hallyn.com>
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085105.170265000@menage.corp.google.com> <20070331024722.GA808@in.ibm.com> <20070402140938.GF17710@sergelap.austin.ibm.com> <20070402142727.GF2456@in.ibm.com> <m1slbiejt0.fsf@ebiederm.dsl.xmission.com> <20070403153220.GA24946@sergelap.austin.ibm.com> <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com>
-MIME-Version: 1.0
+	Tue, 3 Apr 2007 11:59:33 -0400
+Received: from mail.screens.ru ([213.234.233.54]:41864 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752109AbXDCP7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 11:59:32 -0400
+Date: Tue, 3 Apr 2007 19:03:36 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       mingo@elte.hu, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [PATCH 7/8] Clean up workqueue.c with respect to the freezer based cpu-hotplug
+Message-ID: <20070403150336.GA850@tv-sign.ru>
+References: <20070402053457.GA9076@in.ibm.com> <20070402054206.GG12962@in.ibm.com> <20070403114729.GA776@tv-sign.ru> <20070403135919.GB32444@in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070403135919.GB32444@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Menage (menage@google.com):
-> On 4/3/07, Serge E. Hallyn <serue@us.ibm.com> wrote:
-> >
-> >But frankly I don't know where we stand right now wrt the containers
-> >patches.  Do most people want to go with Vatsa's latest version moving
-> >containers into nsproxy?  Has any other development been going on?
-> >Paul, have you made any updates?
+On 04/03, Srivatsa Vaddagiri wrote:
+>
+> On Tue, Apr 03, 2007 at 03:47:29PM +0400, Oleg Nesterov wrote:
+> > 
+> > 		for (;;) {
+> > 			try_to_freeze();
+> > 
+> > 			prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
+> > 			if (!kthread_should_stop() && list_empty(&cwq->worklist))
+> > 				schedule();
+> > 			finish_wait(&cwq->more_work, &wait);
+> > 
+> > 			if (kthread_should_stop(cwq))
+> > 				break;
+> > 
+> > 			run_workqueue(cwq);
+> > 		}
 > 
-> I've not made major changes since the last patch post, just some small
-> optimizations and fixes - I've been too tied up with other stuff.
+> cleanup_workqueue_thread (in Gautham's patches) does this:
 > 
-> Whilst I've got no objection in general to using nsproxy rather than
-> the container_group object that I introduced in my latest patches, I
+> 	thaw_process()
+> 	kthread_stop()
 
-Hmm, my largest objection had been that the nsproxy as a container
-structure would end up pointing to nsproxy as a namespace proxy.
+Yes, thanks.
 
-But if we do as Eric suggests and have one subsystem per namespace type,
-rather than one subsystem for all namespaces, I guess that is no longer
-a problem.
+> We could do what you are suggesting if the thaw_process() part was
+> integrated into kthread_stop() code [basically thaw_process after
+> setting the kthread_stop_info.k flag].
 
-That still leaves yours.
+I think it would be nice to do. I believe we can cleanup ksoftirqd()
+and migration_thread() as well (kill wait_to_die: loop). Probably it
+is better to introduce a new helper for that, kthread_thaw_stop() or
+something.
 
-> think that Vatsa's approach of losing the general container object is
-> flawed, since it loses any kind of per-group generic state (e.g. "this
-> container is being deleted") and last time I saw it, I think it would
-> tend to lose processes so that they didn't show up in any directory in
-> the container fs.
+> > >  void fastcall flush_workqueue(struct workqueue_struct *wq)
+> > >  {
+> > > -	const cpumask_t *cpu_map = wq_cpu_map(wq);
+> > >  	int cpu;
+> > >
+> > >  	might_sleep();
+> > > -	for_each_cpu_mask(cpu, *cpu_map)
+> > > +	for_each_online_cpu(cpu)
+> > >  		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
+> > >  }
+> > 
+> > Hm... I can't understand this change. I believe it is wrong.
 > 
-> Paul
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Why?
+
+What if is_single_threaded(wq) == true? In that case we should call
+flush_cpu_workqueue(cpu) only if cpu == singlethread_cpu, otherwise
+this is unneeded and wrong, because per_cpu_ptr(wq->cpu_wq, cpu) was
+not initialized.
+
+> > > +		kthread_stop(cwq->thread);
+> > >  		cwq->thread = NULL;
+> > > -		spin_unlock_wait(&cwq->lock);
+> > >  	}
+> > >  }
+> > 
+> > Deadlockable. Suppose that the freezing is in progress, cwq->thread is not
+> > frozen yet. cleanup_workqueue_thread() calls thaw_process(cwq->thread),
+> > then cwq->thread() goes to refrigerator, kthread_stop() blocks forever.
+> 
+> Good catch! Can cleanup_workqueue_thread take some mutex to serialize
+> with freezer here (say freezer_mutex)?
+> 
+> Or better, since this seems to be a general problem for anyone who wants to do a
+> kthread_stop, how abt modifying kthread_stop like below:
+> 
+> kthread_stop(p)
+> {
+> 	int old_exempt_flags;
+> 
+> 	task_lock(p);
+> 	old_exempt_flags = p->flags;
+> 	p->flags |= PFE_ALL;	/* Exempt 'p' from being frozen? */
+
+I agree, we should mark this thread as non-freezable, but we can't modify
+p->flags, this is racy. "current" owns its ->flags and it is not atomic.
+Note that thaw_process() checks frozen(p) when it clears PF_FROZEN.
+
+Actually, we should do this before destroy_workqueue() calls flush_workqueue().
+Otherwise flush_cpu_workqueue() can hang forever in a similar manner.
+
+Needs more thinking, I guess.
+
+> > This means that the work_struct on single_threaded wq can't use any of
+> > 
+> > 	__create_workqueue()
+> > 	destroy_workqueue()
+> > 	flush_workqueue()
+> > 	cancel_work_sync()
+> 
+> The workqueue_mutex() should serialize these with workqueue_cpu_callback() to 
+> an extent, but  ..
+
+No, no, workqueue_mutex can't help. Just for example: CPU_UP_PREPARE completes
+and drops workqueue_mutex. __create_workqueue(wq) doesn't see the new cpu, it
+is not on cpu_online_map, so it doesn't create cwq->thread. CPU_ONLINE oopses.
+
+> Yes I agree, we should target freezing everybody here. It feels much
+> safer that way!
+
+Good!
+
+Oleg.
+
