@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965918AbXDCRXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965815AbXDCRY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965918AbXDCRXZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965934AbXDCRXZ
+	id S965815AbXDCRY4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965920AbXDCRYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:23:25 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49362 "EHLO e4.ny.us.ibm.com"
+	Tue, 3 Apr 2007 13:24:55 -0400
+Received: from mga03.intel.com ([143.182.124.21]:19828 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965918AbXDCRXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:23:24 -0400
-Date: Tue, 3 Apr 2007 23:00:48 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, containers@lists.osdl.org,
-       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       mbligh@google.com, winget@google.com, rohitseth@google.com,
-       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
-Message-ID: <20070403173048.GL2456@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070331024722.GA808@in.ibm.com> <20070402140938.GF17710@sergelap.austin.ibm.com> <20070402142727.GF2456@in.ibm.com> <m1slbiejt0.fsf@ebiederm.dsl.xmission.com> <20070403153220.GA24946@sergelap.austin.ibm.com> <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com> <20070403164615.GJ2456@in.ibm.com> <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com> <20070403171155.GK2456@in.ibm.com> <6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	id S965815AbXDCRYy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:24:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,366,1170662400"; 
+   d="scan'208"; a="207507384:sNHT3162275081"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] msi: Immediately mask and unmask msi-x irqs.
+Date: Tue, 3 Apr 2007 10:24:40 -0700
+Message-ID: <08FE5CC30C9A3F41BF819A502CF7BF6E01043C7D@fmsmsx411.amr.corp.intel.com>
+In-Reply-To: <m1lkh9dhvm.fsf@ebiederm.dsl.xmission.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] msi: Immediately mask and unmask msi-x irqs.
+Thread-Index: Acd1w5eVskTHjDA9QHaxU+uLUiiCkgAUSipA
+From: "Williams, Mitch A" <mitch.a.williams@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-pci@atrey.karlin.mff.cuni.cz>, <linux-kernel@vger.kernel.org>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+X-OriginalArrivalTime: 03 Apr 2007 17:24:41.0251 (UTC) FILETIME=[F6A0DF30:01C77614]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 10:10:35AM -0700, Paul Menage wrote:
-> > Even if nsproxy objects are made larger a bit, the number of such object will
-> 
-> You're not making them "a bit" larger, you're adding N+M pointers
-> where N is the number of container hierarchies and M is the number of
-> subsystem slots.
+Acked-by: Mitch Williams <mitch.a.williams@intel.com>
 
-Hmm no .. I currently have nsproxy having just M additional pointers, where 
-M is the maximum number of resource controllers and a single dentry
-pointer. As tasks get moved around in different hierarchies, new nsproxy's get 
-created to point to proper objects in those hierarchies (which can be done with 
-just M pointers in nsproxy). I have not considered the case of "search/reuse
-nsproxy that has the combination you want" just to keep it simple, but
-we should at some point in time do that.
-
--- 
-Regards,
-vatsa
+>This is a simplified and actually more comprehensive form of a bug
+>fix from Mitch Williams <mitch.a.williams@intel.com>.
+[snip]
+>Then if people do have a kernel message stating "No irq for vector" we
+>will know it is yet another novel cause that needs a complete new
+>investigation.
+>
+>So here is a one liner that will hopefully be a part of 2.6.21.
+>
+>Cc: Mitch Williams <mitch.a.williams@intel.com>
+>Cc: Greg KH <greg@kroah.com>
+>Cc: Andrew Morton <akpm@linux-foundation.org>
+>Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+>---
+> drivers/pci/msi.c |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
+>
+>diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+>index ad33e01..435c195 100644
+>--- a/drivers/pci/msi.c
+>+++ b/drivers/pci/msi.c
+>@@ -94,6 +94,7 @@ static void msi_set_mask_bit(unsigned int 
+>irq, int flag)
+> 		int offset = entry->msi_attrib.entry_nr * 
+>PCI_MSIX_ENTRY_SIZE +
+> 			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
+> 		writel(flag, entry->mask_base + offset);
+>+		readl(entry->mask_base + offset);
+> 		break;
+> 	}
+> 	default:
+>-- 
+>1.5.0.4
+>
