@@ -1,28 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751611AbXDCDpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751537AbXDCDsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751611AbXDCDpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Apr 2007 23:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXDCDpb
+	id S1751537AbXDCDsF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Apr 2007 23:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXDCDsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Apr 2007 23:45:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:39630 "EHLO ozlabs.org"
+	Mon, 2 Apr 2007 23:48:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:42079 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbXDCDpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Apr 2007 23:45:30 -0400
-Subject: [PATCH] Cleanup and kernelify shrinker registration (rc5-mm2)
+	id S1751537AbXDCDsC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Apr 2007 23:48:02 -0400
+Subject: Re: [PATCH] Cleanup and kernelify shrinker registration (rc5-mm2)
 From: Rusty Russell <rusty@rustcorp.com.au>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-mm@kvack.org, xfs-masters@oss.sgi.com, reiserfs-dev@namesys.com
+In-Reply-To: <1175571885.12230.473.camel@localhost.localdomain>
+References: <1175571885.12230.473.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 03 Apr 2007 13:44:45 +1000
-Message-Id: <1175571885.12230.473.camel@localhost.localdomain>
+Date: Tue, 03 Apr 2007 13:47:06 +1000
+Message-Id: <1175572027.12230.476.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-04-03 at 13:45 +1000, Rusty Russell wrote:
+> It's called "set_shrinker()", and it needs Your Help.
+
+Wrong copy.  This is the one which actually compiles reiser4.
+
+==
 I can never remember what the function to register to receive VM pressure
 is called.  I have to trace down from __alloc_pages() to find it.
 
@@ -203,7 +211,7 @@ diff -r a6c8dede237c fs/nfs/super.c
  	nfs_unregister_sysctl();
 diff -r a6c8dede237c fs/reiser4/fsdata.c
 --- a/fs/reiser4/fsdata.c	Tue Apr 03 12:53:59 2007 +1000
-+++ b/fs/reiser4/fsdata.c	Tue Apr 03 13:14:52 2007 +1000
++++ b/fs/reiser4/fsdata.c	Tue Apr 03 13:34:48 2007 +1000
 @@ -7,7 +7,6 @@
  
  /* cache or dir_cursors */
@@ -253,6 +261,17 @@ diff -r a6c8dede237c fs/reiser4/fsdata.c
  	return 0;
  }
  
+@@ -90,9 +88,7 @@ int reiser4_init_d_cursor(void)
+  */
+ void reiser4_done_d_cursor(void)
+ {
+-	BUG_ON(d_cursor_shrinker == NULL);
+-	remove_shrinker(d_cursor_shrinker);
+-	d_cursor_shrinker = NULL;
++	unregister_shrinker(&d_cursor_shrinker);
+ 
+ 	destroy_reiser4_cache(&d_cursor_cache);
+ }
 diff -r a6c8dede237c fs/xfs/linux-2.6/kmem.h
 --- a/fs/xfs/linux-2.6/kmem.h	Tue Apr 03 12:53:59 2007 +1000
 +++ b/fs/xfs/linux-2.6/kmem.h	Tue Apr 03 13:08:40 2007 +1000
