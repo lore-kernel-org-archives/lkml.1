@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030293AbXDCOvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030295AbXDCPAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030293AbXDCOvz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 10:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030295AbXDCOvz
+	id S1030295AbXDCPAo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 11:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030302AbXDCPAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 10:51:55 -0400
-Received: from cel.leonerd.org.uk ([62.49.94.186]:3041 "EHLO cel.leo"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030293AbXDCOvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 10:51:54 -0400
-Date: Tue, 3 Apr 2007 15:51:51 +0100
-From: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
-To: Martin Mares <mj@ucw.cz>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Paul LeoNerd Evans <leonerd@leonerd.org.uk>
-Subject: Re: [PATCH] vt: Do not clear UTF when resetting console
-Message-ID: <20070403145151.GN26707@cel.leo>
-References: <46110F88.5040905@gmail.com> <mj+md-20070403.114037.27180.nikam@ucw.cz>
+	Tue, 3 Apr 2007 11:00:44 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:41795 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030295AbXDCPAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 11:00:43 -0400
+Date: Tue, 3 Apr 2007 17:00:42 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andi Kleen <ak@suse.de>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Christian Borntraeger <borntrae@de.ibm.com>,
+       virtualization@lists.linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com
+Subject: Re: A set of "standard" virtual devices?
+Message-ID: <20070403150042.GK14134@stusta.de>
+References: <4611652F.700@zytor.com> <200704031030.36473.ak@suse.de> <20070403111731.52f2102a@gondolin.boeblingen.de.ibm.com> <200704031126.52750.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/QKKmeG/X/bPShih"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <mj+md-20070403.114037.27180.nikam@ucw.cz>
+In-Reply-To: <200704031126.52750.ak@suse.de>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 03, 2007 at 11:26:52AM +0200, Andi Kleen wrote:
+> > 
+> > On s390, it would be more than strangeness. There's no implementation
+> > of PCI at all, someone would have to cook it up - and it wouldn't have
+> > any use beyond those special devices. Since there isn't any bus type
+> > that is available on *all* architectures, a generic "virtual" bus with
+> > very simple probing seems much saner...
+> 
+> You just have to change all the distribution installers then. 
+> Ok I suppose on s390 that's not that big issue because there are not
+> that many for s390. But for x86 there exist quite a lot. I suppose
+> it's easier to change it in the kernel.
 
---/QKKmeG/X/bPShih
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I don't get this point.
 
-On Tue, Apr 03, 2007 at 01:41:27PM +0200, Martin Mares wrote:
-> > Resetting the console, either by ANSI escape sequences or by the reset =
-utility,
-> > will drop the console back to legacy (non-UTF-8) mode.
->=20
-> Yes, and as far as I understand the logic behind these escape sequences,
-> it's the intended behavior, not a bug.
->=20
-> The escape sequence for terminal reset should reset as much as possible,
-> I see no reason for making an exception for the UTF-8 mode.
+Compared to whatever will be done in the kernel, any change to a 
+distribution installer should be trivial.
 
-Does whatever defines what these escapes mean, have any comment to make
-about UTF-8? If not, why can't we declare that UTF-8 mode is the "reset"
-mode, the default that would be dropped to on a full reset, and if
-anyone wanted to switch that out to non-default not-UTF-8 mode, they
-could, but that a reset will always reenable it again..?
+And a new release of a distribution with a new kernel might anyway 
+usually require some updates to an installer.
 
---=20
-Paul "LeoNerd" Evans
+> -Andi
 
-leonerd@leonerd.org.uk
-ICQ# 4135350       |  Registered Linux# 179460
-http://www.leonerd.org.uk/
+cu
+Adrian
 
---/QKKmeG/X/bPShih
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+-- 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-iD8DBQFGEmoH7eTlovtaLtYRAnEHAJ41KEPzbuvao+Y9qAZAyUeXbiDRegCgrd9Q
-fMORYLo9FK5/bw0bJ6VUxm0=
-=d2Rw
------END PGP SIGNATURE-----
-
---/QKKmeG/X/bPShih--
