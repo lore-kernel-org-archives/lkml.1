@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbXDCXzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbXDCX46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbXDCXzm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 19:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbXDCXzl
+	id S1753705AbXDCX46 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 19:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXDCX46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 19:55:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44654
+	Tue, 3 Apr 2007 19:56:58 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36614
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753701AbXDCXzZ (ORCPT
+	by vger.kernel.org with ESMTP id S1753701AbXDCX45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 19:55:25 -0400
-Date: Tue, 03 Apr 2007 16:55:18 -0700 (PDT)
-Message-Id: <20070403.165518.55726194.davem@davemloft.net>
-To: paulus@samba.org
-Cc: dwmw2@infradead.org, linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
+	Tue, 3 Apr 2007 19:56:57 -0400
+Date: Tue, 03 Apr 2007 16:56:57 -0700 (PDT)
+Message-Id: <20070403.165657.34759233.davem@davemloft.net>
+To: dwmw2@infradead.org
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
        linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+In-Reply-To: <1175642916.10567.24.camel@shinybook.infradead.org>
 References: <1175610345.2665.15.camel@shinybook.infradead.org>
 	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,30 +28,13 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Wed, 4 Apr 2007 09:14:20 +1000
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Tue, 03 Apr 2007 19:28:36 -0400
 
-> David Woodhouse writes:
-> 
-> > There are proper device numbers registered for pmac_zilog now. Use them.
-> 
-> Sigh.  I guess this is inevitable, but IMNSHO this exposes a weakness
-> in our serial subsystem.
-> 
-> The problem is that this means that a user has to know "oh, the serial
-> port on my computer is implemented with a Z85C30 chip, therefore it's
-> /dev/ttyPZ0 not /dev/ttyS0, like it would be if the designers had used
-> a 16C550".
-...
-> Why should a user know or care about that?  It really should be "it's
-> the built-in serial port on my computer therefore it's /dev/ttyS0".
+> Abusing the 8250 device numbers prevents the 8250 module from being
+> loaded at the same time as pmac_zilog, and means you can't have both
+> internal port and PCMCIA or PCI 8250 ports active at the same time.
 
-I totally agree with Paul, the onboard serial device should get
-ttyS0 regardless of what hardare is used to drive it.
-
-We dish out the minors sequentially on sparc in order to handle
-the case of multiple onboard serial controllers of different
-types which can happen on sparc.
-
-Generalizing this minor number allocation for ttyS? might be the
-best way to handle this.
+Dynamic minor number allocation for ttyS? would allow this
+just fine, and that's exactly what we do on sparc as I
+explained in another response.
