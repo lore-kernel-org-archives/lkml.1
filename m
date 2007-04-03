@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbXDCFVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXDCFYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590AbXDCFVu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 01:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXDCFVt
+	id S1752812AbXDCFYH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 01:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXDCFYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 01:21:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54987 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752590AbXDCFVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 01:21:48 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Christian Kujau <evil@g-house.de>
-Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
-Date: Tue, 3 Apr 2007 01:20:29 -0400
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de
-References: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
-In-Reply-To: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 3 Apr 2007 01:24:07 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42599 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752812AbXDCFYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 01:24:06 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/yVJ0hYzjyIHsX1oVWQkN5NfB+cMwnCggvJ9JGAk
+	0TcpExHQ8B7Hu8
+Subject: Re: [test] hackbench.c interactivity results: vanilla versus
+	SD/RSDL
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200704031234.48863.kernel@kolivas.org>
+References: <20070331092857.12651.qmail@web26704.mail.ukl.yahoo.com>
+	 <200704031234.48863.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 07:24:01 +0200
+Message-Id: <1175577841.6342.4.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704030120.29619.lenb@kernel.org>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 April 2007 15:41, Christian Kujau wrote:
+On Tue, 2007-04-03 at 12:34 +1000, Con Kolivas wrote:
+> On Saturday 31 March 2007 19:28, Xenofon Antidides wrote:
+> > For long time now I use windows to work 
+> > problems. I cannot play wine games with audio, I
+> > cannot sample video, I cannot use skype, I cannot play
+> > midi. And even linux only things I try do I cannot
+> > share my X, I cannot use more than one vmware. All
+> > those is fix for me with SD.
 > 
-> Hi there,
-> 
-> we have serious problems with 2 of our servers: both shiny new amd64 
-> dual core, with both 2GB RAM, 32bit kernel+userland (Debian/testing).
-> Both servers have 2 NICs, RTL8139 (eth0, irq10) and RTL8169s
-> (eth1, irq11).
-> 
-> Both boxes are running fine but after "a while" they lock up and 
-> eventually restart all of a sudden. The last messages in the logfile 
-> are:
-> 
-> 14:15:11 db2 kernel: NETDEV WATCHDOG: eth0: transmit timed out
-> 14:15:14 db2 kernel: eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
-> 
-> Then the box reboots, nothing else in the log.
-> 
-> As the servers have been set up recently, we only know that it happend 
-> with Debian's 2.6.17-? kernel. When we upgraded the installation, we 
-> went to 2.6.18-4-k7 and the problem persistent. We're using now vanilla 
-> 2.6.20.4 and while the problem persists, it takes longer to lockup (~20h 
-> as opposed to 4-5h). While this is a good thing for us, it's now harder
-> to reproduce (we have to wait longer).
-> 
-> Searching the archives turned up quite a few results but no real fix and 
-> lots of old postings too. We then disabled ACPI completely and booted 
-> with 'noapic'. Now both boxes are running for > 20h and we're curious 
-> how long they make it. However, booting with 'noapic' slowed down both 
-> servers *a lot*.
+> Any semblance of cpu bandwidth and latency guarantees are easily shot on 
+> mainline by a single process going wild (eg open tab in firefox).
 
-Which increased stability, disabling ACPI, or disabling the IOAPIC?
-Your box has MPS, so you should be able to use the IOAPIC in either mode.
-Note that you can do these both independently at boot-time with "acpi=off"
-and "noapic", respectively.
-eg. 4 combos
-1. <default - no boot params>
-2. noapic
-3. acpi=off
-4. acpi=off noapic
+I've written a patch which I believe fixes that.
 
-you started with #1, and are running hard-coded #4 now, but skipped #2 and #3
+	-Mike
 
-cheers,
--Len
-
-> >From /proc/interrupts we can see that only CPU0 (core 0) is handling 
-> interrupts while CPU1 does not. We compiled with CONFIG_IRQBALANCE=n so 
-> that irqbalance(1) would work - but to no avail.
-> 
-> Please see http://nerdbynature.de/bits/2.6.20.4/ for details for both 
-> hosts and feel free to ask for more details. Although both boxes are in 
-> production we'll be happy test more bootoptions/patches and the like.
-> 
-> TIA,
-> Christian.
