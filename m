@@ -1,46 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966201AbXDCRmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161024AbXDCRn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966201AbXDCRmq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966209AbXDCRmq
+	id S1161024AbXDCRn0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161029AbXDCRn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:42:46 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:37408 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966208AbXDCRmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:42:45 -0400
-Date: Tue, 3 Apr 2007 19:42:21 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc5-mm4
-In-Reply-To: <46128C92.2020908@intel.com>
-Message-ID: <Pine.LNX.4.64.0704031940080.28249@twin.jikos.cz>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704031455200.10589@twin.jikos.cz> <46126EAA.3050000@intel.com>
- <Pine.LNX.4.64.0704031725300.28249@twin.jikos.cz> <46128C92.2020908@intel.com>
+	Tue, 3 Apr 2007 13:43:26 -0400
+Received: from smtp005.mail.ukl.yahoo.com ([217.12.11.36]:32103 "HELO
+	smtp005.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1161024AbXDCRnZ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 13:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=1Y4i+KKtY4y0KfOuBeFE8JXDvhASnhc4iFGukXk476iwv7f33aGFVnTZC7EIgXarQ4B+DBu9/u0k9DJ+asnqs4GQl4v6t0FP7FuFrkavqUcpF5VDfSKZgjWwTs+MBWatbyMsg3gyrlOY54Fwl2EG2izTH6jq9vOcIkTNaWtuKVY=  ;
+X-YMail-OSG: 7CWLbbYVM1m37dxWW57qbEO1uDbHhbFTVO7W1BIhbTCIh8AuC.4UPCtEqGS978kXeBb8R7LKa55_VgKTyAq2gVhRV2MYsMdlpx__gGhbcPQvSDig
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: Antoine Martin <antoine@nagafix.co.uk>
+Subject: Re: [uml-devel] [RFC] UML kernel & rootfs bundle with every kernel release ?
+Date: Tue, 3 Apr 2007 19:43:14 +0200
+User-Agent: KMail/1.9.6
+Cc: Jeff Dike <jdike@addtoit.com>, devzero@web.de,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+References: <1712880100@web.de> <20070402020530.GA589@c2.user-mode-linux.org> <4610D937.20002@nagafix.co.uk>
+In-Reply-To: <4610D937.20002@nagafix.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704031943.15001.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007, Kok, Auke wrote:
+On lunedì 2 aprile 2007, Antoine Martin wrote:
+> Jeff Dike wrote:
+> > On Sun, Apr 01, 2007 at 08:58:45PM +0100, Antoine Martin wrote:
+> >> I reckon that one critical thing which could drastically increase the
+> >> user base would be to have a working virtual framebuffer implementation.
+> >
+> > Why?  I've never understood what a framebuffer gives you that you
+> > don't have now.
+>
+> Just like the network auto-configuration via dhcp,
+Hmm... for that to be completely plug-and-play you need to make sure a dhcp 
+server on the host exists.
 
-> we're also having problems reproducing it on that same combination 
-> (2.6.21-rc4 + my tree), so it points to something in -mm. Since your 
-> trace is completely different right now it looks like something else is 
-> fuzzing it up.
-> Since the e1000 changes are in rc5-mm3 as well, that might help to 
-> narrow it down quickly.
+Vmware runs a separate DHCP server exactly for this, even if we should avoid 
+that as much as possible.
 
-I don't know (yet) whether rc5-mm3 was OK in this respect, I didn't boot 
-it on this machine. I only know that both rc5 and rc5 + e1000 tree are OK, 
-but rc5-mm4 panics on ifconfig/dhclient on e1000 card immediately on my 
-system.
+> it would allow users 
+> to download images+kernel and run them like appliances without
+> understanding anything about X or UML, just click and run.
 
-I will start bisection when I get back to the respective machine 
-(tomorrow) and will let you know.
+> We are all capable of setting up Xvfb here, but most users are not,
+> which is why they download ready-made images.
+
+What about installing and pre-configuring Xnest on the image? With a suitable 
+script calling xhost on the host, it just works.
+
+This project did it:
+http://umlbuilder.sourceforge.net/
+
+although it stopped working for me ages ago (probably for some UML bug). I 
+built a Mandrake image (that I now lost) with Xnest configured. With a script 
+on the host which passes the host IP and that calls xhost, it should work 
+easily. And btw, we need a standard startup script anyway.
+
+> It would also make it a lot easier to focus on writing a management UI,
+> hell if there isn't one shortly after, I'll do one myself!
+
+Why not one management UI running from the host, a-la vmware? Possibly, with 
+as much code as possible in scripting languages, for better transparency.
+
+> Think of a UML browser image (running IE via wine in a limited image
+> with just X + wine + IE - I would much prefer that to having wine+IE
+> installed locally), testing framebuffer apps like gtk-fb/cairo-fb
+> without risking your dev environment, etc...
+>
+> Antoine
+
+
 
 -- 
-Jiri Kosina
+Inform me of my mistakes, so I can add them to my list!
+Paolo Giarrusso, aka Blaisorblade
+http://www.user-mode-linux.org/~blaisorblade
