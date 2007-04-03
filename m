@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966120AbXDCTke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966210AbXDCTlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966120AbXDCTke (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 15:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966188AbXDCTke
+	id S966210AbXDCTlK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 15:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966212AbXDCTlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 15:40:34 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38961 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966120AbXDCTkc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 15:40:32 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Williams, Mitch A" <mitch.a.williams@intel.com>
-Subject: Re: [PATCH] msi: Immediately mask and unmask msi-x irqs.
-References: <08FE5CC30C9A3F41BF819A502CF7BF6E0100376E@fmsmsx411.amr.corp.intel.com>
-	<m1lkh9dhvm.fsf@ebiederm.dsl.xmission.com>
-	<20070403185219.GB15704@linux-os.sc.intel.com>
-Date: Tue, 03 Apr 2007 13:39:43 -0600
-In-Reply-To: <20070403185219.GB15704@linux-os.sc.intel.com> (Suresh
-	B. Siddha's message of "Tue, 3 Apr 2007 11:52:19 -0700")
-Message-ID: <m18xd9ckn4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 3 Apr 2007 15:41:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48605 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966210AbXDCTlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 15:41:08 -0400
+Date: Tue, 3 Apr 2007 15:40:58 -0400
+From: Jakub Jelinek <jakub@redhat.com>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: getting processor numbers
+Message-ID: <20070403194058.GD355@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <461286D6.2040407@redhat.com> <p73abxpz5u1.fsf@bingen.suse.de> <46128C1B.1090900@redhat.com> <20070403172736.GA23689@one.firstfloor.org> <46128F47.2010107@redhat.com> <20070403174457.GA15704@linux-os.sc.intel.com> <46129619.8050107@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46129619.8050107@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Siddha, Suresh B" <suresh.b.siddha@intel.com> writes:
+On Tue, Apr 03, 2007 at 10:59:53AM -0700, Ulrich Drepper wrote:
+> Siddha, Suresh B wrote:
+> > Not all of the cpu* directories in /sys/devices/system/cpu may be
+> > online.
+> 
+> Brilliant.  You people really know how to create user interfaces.  So
+> now in any case per CPU another stat/access syscall is needed to check
+> the 'online' pseudo-file?  With this the readdir solution is only
+> marginally faster than parsing /proc/cpuinfo which means, it's
+> unacceptably slow.
 
-> set_msi_irq_affinity() is already doing read_msi_msg(). So the mask operation
-> before this should atleast get flushed before we modify the irq destination
-> information.
+Note that glibc actually parses /proc/stat in preference of /proc/cpuinfo
+ATM, because /proc/stat is at least uniform while parsing /proc/cpuinfo
+needs a special parser for each architecture.  And /proc/stat reading
+is even slower than /proc/cpuinfo, on x86_64 reading/parsing /proc/stat
+takes about 450usec, while e.g. stat64 on /sys/devices/system/cpu
+is just 2.5usec.
+But if that can't be trusted as the number of online CPUs, can
+somebody please add a short file to proc or sysfs which will contain
+the number of online and number of configured CPUs?
 
-We modify irq reception information in assign_irq_vector, before that.
-With my latest delayed free of irq reception information this is less
-of an issue.
+See e.g. http://openmp.org/pipermail/omp/2007/000714.html
+where the first time after second g++ invocation is with omp_set_dynamic (1)
+and ought to be about as fast as omp_set_dynamic (0) case with the same
+number of threads, but it is far slower due to slow
+sysconf (_SC_NPROCESSORS_ONLN).
 
-Further now that we cache the msi message that read_msi_msg should go
-away and we should use the cached version from the msi_desc.
-
-> With this patch however, unmask happens immediately.
-
-Yes unmask happens immediately as well.  Just as with Mitch Williams
-last patch, and just like we expect.  Further mask/unmask should not be
-called that often so there is no point in micro optimizing them.  At
-least not until some screams they are a performance problem.
-
->> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
->> index ad33e01..435c195 100644
->> --- a/drivers/pci/msi.c
->> +++ b/drivers/pci/msi.c
->> @@ -94,6 +94,7 @@ static void msi_set_mask_bit(unsigned int irq, int flag)
->>  		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
->>  			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
->>  		writel(flag, entry->mask_base + offset);
->> +		readl(entry->mask_base + offset);
->
-> Don't we need the flush for the PCI_CAP_ID_MSI case aswell.
-
-At least the 3.0 pci spec does not allow pci configuration access to
-be posted.  So unless we find some hardware that actually does post
-pci configuration writes we should be ok.
-
-If we do find that hardware that posts pci config writes I expect we
-will make pci config writes non posted in the generic linux pci config
-functions, and only an optimized set of pci accessors functions for
-drivers that really know what they are doing will export the posted
-behavior.
-
-Eric
+	Jakub
