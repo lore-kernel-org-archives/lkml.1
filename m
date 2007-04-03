@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbXDCG0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbXDCGnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbXDCG0u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 02:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbXDCG0t
+	id S1753409AbXDCGnN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 02:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbXDCGnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 02:26:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40863 "EHLO mx3.mail.elte.hu"
+	Tue, 3 Apr 2007 02:43:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50735 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753396AbXDCG0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 02:26:43 -0400
-Date: Tue, 3 Apr 2007 08:26:29 +0200
+	id S1753309AbXDCGnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 02:43:12 -0400
+Date: Tue, 3 Apr 2007 08:43:04 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Ayaz Abdulla <AAbdulla@nvidia.com>
-Cc: akpm@linux-foundation.org, jeff@garzik.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/10] forcedeth: work around NULL skb dereference crash
-Message-ID: <20070403062629.GA13210@elte.hu>
-References: <20070402115325.GA945@elte.hu> <DBFABB80F7FD3143A911F9E6CFD477B0189CB20B@hqemmail02.nvidia.com>
+To: David Sperry <dave_sperry@ieee.org>
+Cc: "'dave_sperry@ieee.org'" <dasperry@comcast.net>,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Poor UDP performance using 2.6.21-rc5-rt5
+Message-ID: <20070403064304.GA17938@elte.hu>
+References: <20070402190445.GB2081@elte.hu> <001d01c77584$6a92ffe0$7901a8c0@dad>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <DBFABB80F7FD3143A911F9E6CFD477B0189CB20B@hqemmail02.nvidia.com>
+In-Reply-To: <001d01c77584$6a92ffe0$7901a8c0@dad>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -34,29 +34,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ayaz Abdulla <AAbdulla@nvidia.com> wrote:
+* David Sperry <dave_sperry@ieee.org> wrote:
 
-> I had responded eariler to the thread asking you to try out the patch
-> found in bug 8058:
-> http://bugzilla.kernel.org/show_bug.cgi?id=8058
+> > > I think there is some kind of bad behavior happening in the Nvidia 
+> > > driver with respect to softirq-net-tx and IRQ-8406.
+> > 
+> > yes. Part of the problem is that the forcedeth.c driver does not 
+> > fully support NAPI - today i've implemented those bits (see them 
+> > below), based on your testcase. The other part is that the Intel NIC 
+> > uses MSI, while foredeth uses fasteoi, correct? [you can see this in 
+> > /proc/interrupts]
 > 
-> I believe that is the caush of the NULL skb dereference issue.
+> In my case forcedeth seems to be picking up MSI for eth2 & eth3
 
-there's a different type of regression now: under high load i dont get a 
-crash, i get a hung interface instead. No error packets or other weird 
-interface state - just a hung interface. The condition happens after a 
-stream of:
+> Could this be part of my problem?
 
- eth1: too many iterations (6) in nv_nic_irq.
- eth1: too many iterations (6) in nv_nic_irq.
- eth1: too many iterations (6) in nv_nic_irq.
- eth1: too many iterations (6) in nv_nic_irq.
- eth1: too many iterations (6) in nv_nic_irq.
-
-If i increase max_interrupt_work from 5 to 50 to paper over this 
-condition then the hangs go away. So i suspect there might still be a 
-queue-wakeup problem in one of these paths - or that a filled up tx ring 
-somehow gets stuck. (and i've got commits 3ba4d093fe8a26f and 
-fcc5f2665c81e08, so all the latest stuff that is upstream at the moment)
+i dont think it should be a problem.
 
 	Ingo
