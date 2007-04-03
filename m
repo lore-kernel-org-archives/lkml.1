@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965513AbXDCRK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965687AbXDCRLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965513AbXDCRK5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965687AbXDCRK5
+	id S965687AbXDCRLK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965663AbXDCRLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:10:57 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:26814 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965663AbXDCRK4 (ORCPT
+	Tue, 3 Apr 2007 13:11:10 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:40974 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965687AbXDCRLI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:10:56 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=cblzRXY3+scBtJFzDWeR90RaPmgVOih5XbZ5J7NBFU67xjpMjo3/UidKN119VFiT+
-	yAX/WnRWx40IoZ8Fax9xw==
-Message-ID: <6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com>
-Date: Tue, 3 Apr 2007 10:10:35 -0700
-From: "Paul Menage" <menage@google.com>
-To: vatsa@in.ibm.com
-Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
-Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
-       rohitseth@google.com, pj@sgi.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, mbligh@google.com,
-       winget@google.com, containers@lists.osdl.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, devel@openvz.org
-In-Reply-To: <20070403171155.GK2456@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 13:11:08 -0400
+Date: Tue, 3 Apr 2007 22:48:20 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       mingo@elte.hu, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [PATCH 7/8] Clean up workqueue.c with respect to the freezer based cpu-hotplug
+Message-ID: <20070403171820.GA8646@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402054206.GG12962@in.ibm.com> <20070403114729.GA776@tv-sign.ru> <20070403135919.GB32444@in.ibm.com> <20070403150336.GA850@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070212081521.808338000@menage.corp.google.com>
-	 <20070331024722.GA808@in.ibm.com>
-	 <20070402140938.GF17710@sergelap.austin.ibm.com>
-	 <20070402142727.GF2456@in.ibm.com>
-	 <m1slbiejt0.fsf@ebiederm.dsl.xmission.com>
-	 <20070403153220.GA24946@sergelap.austin.ibm.com>
-	 <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com>
-	 <20070403164615.GJ2456@in.ibm.com>
-	 <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com>
-	 <20070403171155.GK2456@in.ibm.com>
+In-Reply-To: <20070403150336.GA850@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/3/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
-> On Tue, Apr 03, 2007 at 09:52:35AM -0700, Paul Menage wrote:
-> > I'm not saying "let's use nsproxy" - I'm not yet convinced that the
-> > lifetime/mutation/correlation rate of a pointer in an nsproxy is
-> > likely to be the same as for a container subsystem; if not, then
-> > reusing nsproxy could actually increase space overheads (since you'd
-> > end up with more, larger nsproxy objects, compared to smaller numbers
-> > of smaller nsproxy objects and smaller numbers of smaller
-> > container_group objects), even though it saved (just) one pointer per
-> > task_struct.
->
-> Even if nsproxy objects are made larger a bit, the number of such object will
+On Tue, Apr 03, 2007 at 07:03:36PM +0400, Oleg Nesterov wrote:
+> I think it would be nice to do. I believe we can cleanup ksoftirqd()
+> and migration_thread() as well (kill wait_to_die: loop). Probably it
 
-You're not making them "a bit" larger, you're adding N+M pointers
-where N is the number of container hierarchies and M is the number of
-subsystem slots.
+I doubt whether we can kill it in migration_thread, since that is
+another thread which is unfrozen for hotplug (stop_machine relies on its
+services while rest of the world is frozen).
 
-Basically, it means that anyone that uses containers without
-namespaces or vice versa ends up paying the space overheads for both.
+> is better to introduce a new helper for that, kthread_thaw_stop() or
+> something.
 
-> be -much- lesser compared to number of task_structs I would think, so
-> the win/lose in space savings would need to take that into account.
+Will think of that.
 
-Agreed. So I'm not saying it's fundamentally a bad idea - just that
-merging container_group and nsproxy is a fairly simple space
-optimization that could easily be done later.
 
-Paul
+> > Why?
+> 
+> What if is_single_threaded(wq) == true? In that case we should call
+> flush_cpu_workqueue(cpu) only if cpu == singlethread_cpu, otherwise
+> this is unneeded and wrong, because per_cpu_ptr(wq->cpu_wq, cpu) was
+> not initialized.
+
+Ah yes ..
+
+> > kthread_stop(p)
+> > {
+> > 	int old_exempt_flags;
+> > 
+> > 	task_lock(p);
+> > 	old_exempt_flags = p->flags;
+> > 	p->flags |= PFE_ALL;	/* Exempt 'p' from being frozen? */
+> 
+> I agree, we should mark this thread as non-freezable, but we can't modify
+> p->flags, this is racy. "current" owns its ->flags and it is not atomic.
+> Note that thaw_process() checks frozen(p) when it clears PF_FROZEN.
+
+I suspected that we cannot modify p->flags just like that. How abt
+moving freezer exemption bits to a separate field, which is protected by
+task_lock?
+
+> Actually, we should do this before destroy_workqueue() calls flush_workqueue().
+> Otherwise flush_cpu_workqueue() can hang forever in a similar manner.
+
+Yep. I guess these are a class of freezer deadlocks very similar to vfork
+parent waiting on child case. I get a feeling these should become common
+outside of kthread too (A waits on B for something, B gets frozen, which
+means A won't freeze causing freezer to fail). Can freezer detect this
+dependency somehow and thaw B automatically? Probably not that easy ..
+
+> Needs more thinking, I guess.
+
+[snip]
+
+> No, no, workqueue_mutex can't help. Just for example: CPU_UP_PREPARE completes
+> and drops workqueue_mutex. __create_workqueue(wq) doesn't see the new cpu, it
+> is not on cpu_online_map, so it doesn't create cwq->thread. CPU_ONLINE oopses.
+
+Ok ..sure.
+
+-- 
+Regards,
+vatsa
