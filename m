@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbXDCJPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964844AbXDCJSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933318AbXDCJPZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 05:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933590AbXDCJPZ
+	id S964844AbXDCJSP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 05:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964868AbXDCJSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 05:15:25 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:24828 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933318AbXDCJPZ (ORCPT
+	Tue, 3 Apr 2007 05:18:15 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:43263 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S964844AbXDCJSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 05:15:25 -0400
-Date: Tue, 3 Apr 2007 11:17:31 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Christian Borntraeger <borntrae@de.ibm.com>,
-       virtualization@lists.linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com
-Subject: Re: A set of "standard" virtual devices?
-Message-ID: <20070403111731.52f2102a@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <200704031030.36473.ak@suse.de>
-References: <4611652F.700@zytor.com>
-	<200704022312.39195.ak@suse.de>
-	<200704031029.06819.borntrae@de.ibm.com>
-	<200704031030.36473.ak@suse.de>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Apr 2007 05:18:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=aOOrKUihvkDDN5re0cGW6gHKsahjjASgSVycWSK060pFYjKbt7gsP3onvFpcR8e8bO9XCQOtBjiIv4Zw+6q/SZabmoZFpOpCzUsoaiwzEt5AgmY3nYYiNHwpE+6DnJkxOEQk2yGNwvm3H0p12m33aou4IxHGxownoR/rBE3SohU=  ;
+X-YMail-OSG: FkXarZMVM1npAusbZB1RIVd6YX03YsGnFAhoSx7.0eRk3XGfel33ge_ZNDBLewnxNU87zGqYbA--
+Message-ID: <46121BCF.50401@yahoo.com.au>
+Date: Tue, 03 Apr 2007 19:18:07 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Paa Paa <paapaa125@hotmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Lower HD transfer rate with NCQ enabled?
+References: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl>
+In-Reply-To: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007 10:30:36 +0200,
-Andi Kleen <ak@suse.de> wrote:
-
-> On Tuesday 03 April 2007 10:29:06 Christian Borntraeger wrote:
-> > On Monday 02 April 2007 23:12, Andi Kleen wrote:
-> > > 
-> > > > How would that work in the case where virtualized guests don't have a
-> > > > visible PCI bus, and the virtual environment doesn't pretend to emulate
-> > > > a PCI bus?
-> > > 
-> > > If they emulated one with the appropiate device 
-> > > then distribution driver auto probing would just work transparently for
-> > > them. 
-> > 
-> > Still, that would only make sense for virtualized platforms that usually have 
-> > a PCI bus. Thinking about seeing a PCI device on ,lets say, s390 is strange.
+Paa Paa wrote:
+> I'm using Linux 2.6.20.4. I noticed that I get lower SATA hard drive 
+> throughput with 2.6.20.4 than with 2.6.19. The reason was that 2.6.20 
+> enables NCQ by defauly (queue_depth = 31/32 instead of 0/32). Transfer 
+> rate was measured using "hdparm -t":
 > 
-> If it gets the job done surely you can tolerate a little strangeness?
+> With NCQ (queue_depth == 31): 50MB/s.
+> Without NCQ (queue_depth == 0): 60MB/s.
+> 
+> 20% difference is quite a lot. This is with Intel ICH8R controller and 
+> Western Digital WD1600YS hard disk in AHCI mode. I also used the next 
+> command to cat-copy a biggish (540MB) file and time it:
+> 
+> rm temp && sync && time sh -c 'cat quite_big_file > temp && sync'
+> 
+> Here I noticed no differences at all with and without NCQ. The times 
+> (real time) were basically the same in many successive runs. Around 19s.
+> 
+> Q: What conclusion can I make on "hdparm -t" results or can I make any 
+> conclusions? Do I really have lower performance with NCQ or not? If I 
+> do, is this because of my HD or because of kernel?
 
-On s390, it would be more than strangeness. There's no implementation
-of PCI at all, someone would have to cook it up - and it wouldn't have
-any use beyond those special devices. Since there isn't any bus type
-that is available on *all* architectures, a generic "virtual" bus with
-very simple probing seems much saner...
+What IO scheduler are you using? If AS or CFQ, could you try with deadline?
+
+-- 
+SUSE Labs, Novell Inc.
