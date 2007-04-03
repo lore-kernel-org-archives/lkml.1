@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753674AbXDCVGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945939AbXDCVLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753674AbXDCVGW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 17:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbXDCVGW
+	id S1945939AbXDCVLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 17:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945942AbXDCVLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 17:06:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60795 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753673AbXDCVGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 17:06:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.21-rc5 possible regression: KDE processes die silently (was: 2.6.21-rc3-mm2: KDE processes die while system is idle)
-Date: Tue, 3 Apr 2007 23:09:56 +0200
-User-Agent: KMail/1.9.5
-Cc: Tilman Schmidt <tilman@imap.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4601B3D0.3060600@imap.cc> <200704011848.03971.rjw@sisk.pl> <20070402230640.GJ14134@stusta.de>
-In-Reply-To: <20070402230640.GJ14134@stusta.de>
+	Tue, 3 Apr 2007 17:11:19 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:49851 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945939AbXDCVLS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 17:11:18 -0400
+Message-ID: <4612C2B6.3010302@cosmosbay.com>
+Date: Tue, 03 Apr 2007 23:10:14 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704032309.57322.rjw@sisk.pl>
+To: Rik van Riel <riel@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jakub Jelinek <jakub@redhat.com>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com> <20070403135154.61e1b5f3.akpm@linux-foundation.org> <4612C059.8070702@redhat.com>
+In-Reply-To: <4612C059.8070702@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 03 Apr 2007 23:10:22 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 3 April 2007 01:06, Adrian Bunk wrote:
-> On Sun, Apr 01, 2007 at 06:48:03PM +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 1 April 2007 17:21, Tilman Schmidt wrote:
-> > > I'm sorry to say this has now happened with kernel 2.6.21-rc5, too.
-> > > I started a kernel compilation in the evening and came back in the
-> > > morning to find all KDE decorations gone. All processes normally
-> > > running for a KDE session and labelled "[kinit]" in ps were gone
-> > > but everything else was running fine, and the system was still
-> > > usable via ssh. /var/log/kdm.log and /var/log/Xorg.0.log contained
-> > > nothing remotely suspicious. /var/log/messages had two lines I
-> > > never saw before:
-> > > 
-> > > Mar 31 02:27:36 gx110 kernel: [153577.891443] ReiserFS: hda3: warning: vs-8115: get_num_ver: not directory or indirect item
-> > > Mar 31 02:27:36 gx110 kernel: [153577.891559] ReiserFS: hda3: warning: vs-8115: get_num_ver: not directory or indirect item
-> > > 
-> > > But those didn't appear on previous occurrences of the "dying KDE"
-> > > problem so I guess they are not related.
-> > > 
-> > > This is SUSE LINUX 10.0 (i586) running on a Dell OptiPlex GX110
-> > > (Intel P3, 933 MHz, i810 chipset, 512 MB RAM, 60 GB ATA disk)
-> > > % uname -a
-> > > Linux gx110 2.6.21-rc5-noinitrd #1 PREEMPT Sat Mar 31 02:15:19 CEST 2007 i686 i686 i386 GNU/Linux
-> > > % cat /proc/cmdline
-> > > root=/dev/hda3 selinux=0 x11i=vesa video=intelfb:mode=1280x1024-32@70 nmi_watchdog=2 lapic 5
-> > > Kernel configuration mostly-modular, based on standard SuSE kernel's
-> > > /proc/config.gz, just compiling into the kernel everything I need to
-> > > boot without an initrd and omitting some parts I'm not interested in.
-> > > (.config attached.) What else might be relevant?
-> > > 
-> > > Again, this is a Heisenbug, ie. it's not reproducible and invariably
-> > > happens when I'm away from the machine. (Probably Murphy at work.)
-> > > It's pretty rare: I have seen it four times on 2.6.21-rc3-mm2 and
-> > > once on 2.6.21-rc5, on a machine which spends about equal amounts
-> > > of time running the latest stable, rc, and mm kernels. OTOH, so far
-> > > it hasn't ever happened with any 2.6.20 or earlier kernel. Nor have
-> > > I seen it with 2.6.21-rc[1-4] or 2.6.21-rc4-mm* - but for the -rc4
-> > > and -rc4-mm releases that's not conclusive as those have only been
-> > > running for a very short time.
-> > 
-> > I have a similar problem on x86_64 OpenSUSE 10.2, but it seems to happen
-> > when a sound (eg. notification) is played while the display is suspended
-> > (or "powered off").
+Rik van Riel a écrit :
+> Andrew Morton wrote:
 > 
-> Is it easily reproducible and still present with the latest -git?
-> If yes, can you bisect?
-
-Well, I have one system on which it seems to be reproducible, but it takes
-quite some time to reproduce (I have to wait until the box goes into a
-power-saving mode of some sort).
-
-> > IMO it's a SUSE bug.
+>> Oh.  I was assuming that we'd want to unmap these pages from 
+>> pagetables and
+>> mark then super-easily-reclaimable.  So a later touch would incur a minor
+>> fault.
+>>
+>> But you think that we should leave them mapped into pagetables so no such
+>> fault occurs.
 > 
-> We also have a report of KDE crashes on Debian [1].
-> And just a few days ago a kernel bug kwin ran into was fixed [2].
+>> Leaving the pages mapped into pagetables means that they are considerably
+>> less likely to be reclaimed.
 > 
-> If the pattern is "works with 2.6.20 but does not work with 2.6.21-rc",
-> then it's most likely a kernel regression. 
+> If we move the pages to a place where they are very likely to be
+> reclaimed quickly (end of the inactive list, or a separate
+> reclaim list) and clear the dirty and referenced lists, we can
+> both reclaim the page easily *and* avoid the page fault penalty.
+> 
 
-I'm not sure about that.  I'll check, but it'll take time.
+There is one possible speedup :
 
-Greetings,
-Rafael
+- If an user app does a madvise(MADV_DONTNEED), we can assume the pages can 
+later be bring back without need to zero them. The application doesnt care.
+
+A page fault is not that expensive. But clearing N*PAGE_SIZE bytes is, because 
+it potentially evicts a large part of CPU cache.
+
+If I recall well, mysql bench Ulrich mentioned was allocating/freeing large 
+areas (100 Kbytes or so) in a loop.
+
+mmap()/brk() must give fresh NULL pages, but maybe madvise(MADV_DONTNEED) can 
+relax this requirement (if the pages were reclaimed, then a page fault could 
+bring a new page with random content)
+
