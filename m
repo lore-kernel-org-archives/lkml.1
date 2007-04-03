@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966021AbXDCRaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966046AbXDCRar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966021AbXDCRaZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 13:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966044AbXDCRaZ
+	id S966046AbXDCRar (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 13:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966182AbXDCRar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 13:30:25 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:4795 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966021AbXDCRaX convert rfc822-to-8bit (ORCPT
+	Tue, 3 Apr 2007 13:30:47 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:17518 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966046AbXDCRap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 13:30:23 -0400
+	Tue, 3 Apr 2007 13:30:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=SKUtoL6xXlOXkqsgNtY8K4PtnkIT5YJeQRAPQur1fsztyB+cP5t1YjC7afXWhdkqj
+	WtNOaBD6H1g06LlCQchRA==
+Message-ID: <6599ad830704031030n2311bcd7hca9f34e64c66337f@mail.gmail.com>
+Date: Tue, 3 Apr 2007 10:30:28 -0700
+From: "Paul Menage" <menage@google.com>
+To: vatsa@in.ibm.com
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, containers@lists.osdl.org,
+       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       mbligh@google.com, winget@google.com, rohitseth@google.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
+In-Reply-To: <20070403173048.GL2456@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 03 Apr 2007 17:30:16.0966 (UTC) FILETIME=[BEBAEA60:01C77615]
-Content-class: urn:content-classes:message
-Subject: Re: getting processor numbers
-Date: Tue, 3 Apr 2007 13:30:16 -0400
-Message-ID: <Pine.LNX.4.61.0704031427210.32278@chaos.analogic.com>
-In-Reply-To: <461286D6.2040407@redhat.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: getting processor numbers
-thread-index: Acd2Fb7CMMRZMODyS1ebULe9qxcTRg==
-References: <461286D6.2040407@redhat.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Ulrich Drepper" <drepper@redhat.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070331024722.GA808@in.ibm.com>
+	 <20070402142727.GF2456@in.ibm.com>
+	 <m1slbiejt0.fsf@ebiederm.dsl.xmission.com>
+	 <20070403153220.GA24946@sergelap.austin.ibm.com>
+	 <6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com>
+	 <20070403164615.GJ2456@in.ibm.com>
+	 <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com>
+	 <20070403171155.GK2456@in.ibm.com>
+	 <6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com>
+	 <20070403173048.GL2456@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 4/3/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+>
+> Hmm no .. I currently have nsproxy having just M additional pointers, where
+> M is the maximum number of resource controllers and a single dentry
+> pointer.
 
-On Tue, 3 Apr 2007, Ulrich Drepper wrote:
+So how do you implement something like the /proc/<PID>/container info
+file in my patches? (Or more generally, tell which container a task is
+in for a given hierarchy?)
 
-> More and more code depends on knowing the number of processors in the
-> system to efficiently scale the code.  E.g., in OpenMP it is used by
-> default to determine how many threads to create.  Creating more threads
-> than there are processors/cores doesn't make sense.
->
-> glibc for a long time provides functionality to retrieve the number
-> through sysconf() and this is what fortunately most programs use.  The
-> problem is that we are currently using /proc/cpuinfo since this is all
-> there was available at that time.  Creating /proc/cpuinfo takes the
-> kernel quite a long time, unfortunately (I think Jakub said it is mainly
-> the interrupt information).
->
-> The alternative today is to use /sys/devices/system/cpu and count the
-> number of cpu* directories in it.  This is somewhat faster.  But there
-> would be another possibility: simply stat /sys/devices/system/cpu and
-> use st_nlink - 2.
->
-> This last step unfortunately it made impossible by recent changes:
->
->  http://article.gmane.org/gmane.linux.kernel/413178
->
-> I would like to propose changing that patch, move the sched_*
-> pseudo-files in some other directly and permanently ban putting any new
-> file into /sys/devices/system/cpu.
->
-> To get some numbers, you can try
->
->  http://people.redhat.com/drepper/nproc-timing.c
->
-> The numbers I see on x86-64:
->
-> cpuinfo 10145810 cycles for 100 accesses
-> readdir /sys 3113870 cycles for 100 accesses
-> stat /sys 741070 cycles for 100 accesses
->
-> Note that for the first two methods I skipped the actual parsing part.
-> This means in the real solution the gap between those two and the simple
-> stat() call is even bigger.
->
-> -- 
-> ÿÿ Ulrich Drepper ÿÿ Red Hat, Inc. ÿÿ 444 Castro St ÿÿ Mountain View, CA ÿÿ
->
->
-
-Shouldn't it just be another system call? 223 is currently unused. You
-could fill that up with __NR_nr_cpus. The value already exists in
-the kernel.
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5592.65 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+Paul
