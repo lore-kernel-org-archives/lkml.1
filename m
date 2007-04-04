@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbXDDQLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbXDDQLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753508AbXDDQLR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXDDQLD
+	id S1753512AbXDDQLq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXDDQLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:11:03 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:35025 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752856AbXDDQKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 12:10:55 -0400
-Date: Wed, 4 Apr 2007 18:10:02 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
-       Natalie Protasevich <nataliep@google.com>, Andi Kleen <ak@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       auke-jan.h.kok@intel.com
-Subject: Re: 2.6.21-rc5-mm4
-In-Reply-To: <Pine.LNX.4.64.0704031940080.28249@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.64.0704041748330.28249@twin.jikos.cz>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704031455200.10589@twin.jikos.cz> <46126EAA.3050000@intel.com>
- <Pine.LNX.4.64.0704031725300.28249@twin.jikos.cz> <46128C92.2020908@intel.com>
- <Pine.LNX.4.64.0704031940080.28249@twin.jikos.cz>
+	Wed, 4 Apr 2007 12:11:45 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:46728 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753368AbXDDQL3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 12:11:29 -0400
+Message-ID: <4613CDB6.30306@zytor.com>
+Date: Wed, 04 Apr 2007 09:09:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Russell King <rmk+lkml@arm.linux.org.uk>, Brad Boyer <flar@allandria.com>,
+       Paul Mackerras <paulus@samba.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+References: <1175610345.2665.15.camel@shinybook.infradead.org> <17938.57292.870224.132415@cargo.ozlabs.ibm.com> <1175642916.10567.24.camel@shinybook.infradead.org> <20070403212928.GA12951@cynthia.pants.nu> <1175644642.10567.31.camel@shinybook.infradead.org> <20070403221002.GA13210@cynthia.pants.nu> <1175648051.10567.61.camel@shinybook.infradead.org> <20070403230908.GA13471@cynthia.pants.nu> <20070404085159.GB13134@flint.arm.linux.org.uk> <Pine.LNX.4.64.0704041146290.30582@anakin>
+In-Reply-To: <Pine.LNX.4.64.0704041146290.30582@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007, Jiri Kosina wrote:
+Geert Uytterhoeven wrote:
+> 
+> Oh, and I always thought PTYs were moved to free up more minors for our
+> zillions of serial ports...
+> 
 
-> > we're also having problems reproducing it on that same combination 
-> > (2.6.21-rc4 + my tree), so it points to something in -mm. Since your 
-> > trace is completely different right now it looks like something else 
-> > is fuzzing it up. Since the e1000 changes are in rc5-mm3 as well, that 
-> > might help to narrow it down quickly.
-> I don't know (yet) whether rc5-mm3 was OK in this respect, I didn't boot 
-> it on this machine. I only know that both rc5 and rc5 + e1000 tree are 
-> OK, but rc5-mm4 panics on ifconfig/dhclient on e1000 card immediately on 
-> my system.
-> I will start bisection when I get back to the respective machine 
-> (tomorrow) and will let you know.
+No, PTYs were moved because 64 ptys were woefully inadequate.  256 ptys 
+were enough of a shortage for many users.
 
-And the bisection winner is
+The use of 16-bit Minix device numbers was a major headache in Linux for 
+many, many years.  We didn't get past that one until the 2.6 kernel series.
 
-	i386-irq-kill-nr_irq_vectors-and-increase-nr_irqs.patch
-
-I don't immediately see how it could be causing it, so adding CCs which 
-are listed in the patch.
-
-Original description of the symptoms at http://lkml.org/lkml/2007/4/3/90
-
--- 
-Jiri Kosina
+	-hpa
