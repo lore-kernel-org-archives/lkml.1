@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbXDDO1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbXDDObh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753871AbXDDO1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 10:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbXDDO1r
+	id S1753874AbXDDObh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 10:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbXDDObh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 10:27:47 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:16986 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753871AbXDDO1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 10:27:47 -0400
-Message-ID: <4613B5EF.90805@cfl.rr.com>
-Date: Wed, 04 Apr 2007 10:27:59 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 4 Apr 2007 10:31:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56092 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753874AbXDDObg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 10:31:36 -0400
+Message-ID: <4613B605.4090808@redhat.com>
+Date: Wed, 04 Apr 2007 10:28:21 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: pktsetup and dvd movie
-References: <46129997.3050209@m3y3r.de>
-In-Reply-To: <46129997.3050209@m3y3r.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/37] 2.6.20-stable review
+References: <20070330210334.GA29450@kroah.com>
+In-Reply-To: <20070330210334.GA29450@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Apr 2007 14:27:55.0209 (UTC) FILETIME=[6F590B90:01C776C5]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15096.000
-X-TM-AS-Result: No--7.312700-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer wrote:
-> On my pc i encounter a strange error:
-> the pktsetup is started during system start and set my dvd driver to
-> packet writing mode. then i insert a dvd movie and start xine. and
-> sometimes xine says that it can't play the dvd. BUT after
-> stoping/removing the pktsetup from the dvd drive again, xine plays the
-> dvd movie without problems.
-> 
-> I have no idea were to start! Does anybody encounter a similar error?
-> Any ideas?
+Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.20.5 release.
+> There are 37 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
 
-I am confused.... did you burn this dvd with pktcdvd, or is this a 
-factory pressed dvd that you are unable to play via /dev/pktcdvd but can 
-with /dev/dvd?
+Will this be released anytime soon?
 
