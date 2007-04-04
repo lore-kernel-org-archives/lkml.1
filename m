@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030258AbXDDDXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030369AbXDDDZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030258AbXDDDXX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 23:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030369AbXDDDXX
+	id S1030369AbXDDDZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 23:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030370AbXDDDZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 23:23:23 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:22329 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030258AbXDDDXW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 23:23:22 -0400
-Date: Tue, 3 Apr 2007 20:24:28 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, ak@suse.de
-Subject: [PATCH -mm] fix mtrr sections
-Message-Id: <20070403202428.3b55a8e3.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 3 Apr 2007 23:25:33 -0400
+Received: from h80ad278e.async.vt.edu ([128.173.39.142]:52544 "EHLO
+	h80ad278e.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030369AbXDDDZc (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 23:25:32 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc5-mm4
+In-Reply-To: Your message of "Tue, 03 Apr 2007 19:20:04 PDT."
+             <20070403192004.986b44ec.randy.dunlap@oracle.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070402224745.71a25af7.akpm@linux-foundation.org> <24083.1175650554@turing-police.cc.vt.edu>
+            <20070403192004.986b44ec.randy.dunlap@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1175654767_4927P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Date: Tue, 03 Apr 2007 22:46:07 -0400
+Message-ID: <4963.1175654767@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+--==_Exmh_1175654767_4927P
+Content-Type: text/plain; charset=us-ascii
 
-Fix section mismatch warnings in mtrr code.
-Fix line length on one source line.
+On Tue, 03 Apr 2007 19:20:04 PDT, Randy Dunlap said:
+> On Tue, 03 Apr 2007 21:35:54 -0400 Valdis.Kletnieks@vt.edu wrote:
+> > I do a '/ACPI_SLEEP' inside that, and I get this output:
+> > 
+> > x Symbol: ACPI_SLEEP [=n]                                                 x
+> >   x   Depends on: !X86_NUMAQ && !X86_VISWS && !IA64_HP_SIM && (IA64 || X86)
 
-WARNING: arch/x86_64/kernel/built-in.o - Section mismatch: reference to .init.data: from .text.get_mtrr_state after 'get_mtrr_state' (at offset 0x103)
-WARNING: arch/x86_64/kernel/built-in.o - Section mismatch: reference to .init.text: from .text.get_mtrr_state after 'get_mtrr_state' (at offset 0x180)
-WARNING: arch/x86_64/kernel/built-in.o - Section mismatch: reference to .init.text: from .text.get_mtrr_state after 'get_mtrr_state' (at offset 0x199)
-WARNING: arch/x86_64/kernel/built-in.o - Section mismatch: reference to .init.text: from .text.get_mtrr_state after 'get_mtrr_state' (at offset 0x1c1)
+> > Only problem is that drivers/acpi/Kconfig:49 says:
+> > 
+> > config ACPI_SLEEP
+> >         bool "Sleep States"
+> >         depends on X86 && (!SMP || SUSPEND_SMP)
+> >         depends on PM
+> >         default y
+> > 
+> > Can somebody explain why I'm seeing the different Depends on in the two places?
+> 
+> Due to the top of drivers/acpi/Kconfig:
+> 
+> menu "ACPI (Advanced Configuration and Power Interface) Support"
+> 	depends on !X86_NUMAQ
+> 	depends on !X86_VISWS
+> 	depends on !IA64_HP_SIM
+> 	depends on IA64 || X86
+> 	depends on PM
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/i386/kernel/cpu/mtrr/generic.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+Ah. Further investigation shows that the "&& (!SMP || SUSPEND_SMP)" part
+failed to show up because the line was too long - running 'make menuconfig'
+in an 140-col or so xterm made them show up.
 
---- linux-2.6.21-rc5-mm4.orig/arch/i386/kernel/cpu/mtrr/generic.c
-+++ linux-2.6.21-rc5-mm4/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -26,7 +26,7 @@ static struct mtrr_state mtrr_state = {}
- #undef MODULE_PARAM_PREFIX
- #define MODULE_PARAM_PREFIX "mtrr."
- 
--static __initdata int mtrr_show;
-+static int mtrr_show;
- module_param_named(show, mtrr_show, bool, 0);
- 
- /*  Get the MSR pair relating to a var range  */
-@@ -51,12 +51,13 @@ get_fixed_ranges(mtrr_type * frs)
- 		rdmsr(MTRRfix4K_C0000_MSR + i, p[6 + i * 2], p[7 + i * 2]);
- }
- 
--static void __init print_fixed(unsigned base, unsigned step, const mtrr_type*types)
-+static void __cpuinit print_fixed(unsigned base, unsigned step, const mtrr_type*types)
- {
- 	unsigned i;
- 
- 	for (i = 0; i < 8; ++i, ++types, base += step)
--		printk(KERN_INFO "MTRR %05X-%05X %s\n", base, base + step - 1, mtrr_attrib_to_str(*types));
-+		printk(KERN_INFO "MTRR %05X-%05X %s\n",
-+			base, base + step - 1, mtrr_attrib_to_str(*types));
- }
- 
- /*  Grab all of the MTRR state for this CPU into *state  */
+Anybody ambitious enough to add a "line too long" indicator of some sort? :)
+
+
+--==_Exmh_1175654767_4927P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGExFvcC3lWbTT17ARAhxxAKCNfLFLwSGku4p+0xK8ZEMYvAZxYACgzmYt
+dQO8fj+HbrDspP8KK+u1V3c=
+=LvRc
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1175654767_4927P--
