@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751183AbXDDUus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751244AbXDDUvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751183AbXDDUus (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 16:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXDDUus
+	id S1751244AbXDDUvY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 16:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXDDUvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 16:50:48 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55986 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbXDDUur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 16:50:47 -0400
-Date: Wed, 4 Apr 2007 13:50:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, npiggin@suse.de, hugh@veritas.com,
-       linux-mm@kvack.org, tee@sgi.com, holt@sgi.com, andrea@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-Id: <20070404135030.0683fb49.akpm@linux-foundation.org>
-In-Reply-To: <20070404.131111.62667528.davem@davemloft.net>
-References: <20070330024048.GG19407@wotan.suse.de>
-	<20070404033726.GE18507@wotan.suse.de>
-	<Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
-	<20070404.131111.62667528.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Apr 2007 16:51:24 -0400
+Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:33477 "HELO
+	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751244AbXDDUvW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 16:51:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=LLbXKVus1zyYhAkl70G+t9UaEG6aEzOfAyU6EWLSNZfStMo0KD08sI25WryMzVY26Nrt9aArnwoXJ/+shiss85a48RwT3x5hPvZBCFgh+wY/KUR/ew+0ngLAOx/M5887zAM8L7HhrBCZCBhH9PV+j+ep17ewtmhRemCSEvKf7UA=  ;
+X-YMail-OSG: kwJ_CmYVM1njMV51NCu.D8MCcpbo3n7DGc61bNvIZDyluUgS010exXdwRI5FBIa_yqGITMvBzw--
+From: David Brownell <david-b@pacbell.net>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: [PATCH 25/90] ARM: OMAP: h4 must have blinky leds!!
+Date: Wed, 4 Apr 2007 13:51:18 -0700
+User-Agent: KMail/1.7.1
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Tony Lindgren <tony@atomide.com>,
+       linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+References: <11757099691323-git-send-email-tony@atomide.com> <20070404120025.4c5548dc.randy.dunlap@oracle.com> <Pine.LNX.4.61.0704042205040.22282@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0704042205040.22282@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704041351.19313.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Apr 2007 13:11:11 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+On Wednesday 04 April 2007 1:06 pm, Jan Engelhardt wrote:
+> 
+> On Apr 4 2007 12:00, Randy Dunlap wrote:
+> >
+> >> +static int __init fpga_init(void)
+> >> +{
+> >> +	if (machine_is_omap_h4()
+> >> +			|| machine_is_omap_h3()
+> >> +			|| machine_is_omap_h2()
+> >> +			|| machine_is_omap_perseus2()
+> >> +			)
+> >
+> >Perhaps there is nothing in CodingStyle for if () continuation
+> >lines.  Looks like it is needed.  This is ETOOMUCHINDENTATION by
+> >at least one tab.  Should be more like:
+> >
+> >+	if (machine_is_omap_h4()
+> >+	    || machine_is_omap_h3()
+> >+	    || machine_is_omap_h2()
+> >+	    || machine_is_omap_perseus2())
+> 
+> My stance, || goes at EOL, and final ) not standalone:
 
-> As I understand the patch being considered to remove ZERO_PAGE(), this
-> kind of core dump will cause a lot of pages to be allocated, probably
-> eating up a lot of system time as well as memory.
+You are still violating the "only TABs used for indent" rule.
 
-Point.
 
-Also, what effect will the proposed changes have upon rss reporting,
-and upon the numbers in /proc/pid/[s]maps?
+> 	if (foo ||
+> 	  bar ||
+> 	  baz ||
+> 	  etc)
+> 		do_something;
+> 
+> 
+> 
+> Jan
+> -- 
+> 
