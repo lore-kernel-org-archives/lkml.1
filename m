@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751003AbXDDWb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbXDDWew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751003AbXDDWb0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 18:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbXDDWb0
+	id S1751467AbXDDWew (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 18:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbXDDWew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 18:31:26 -0400
-Received: from the.earth.li ([193.201.200.66]:58677 "EHLO the.earth.li"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbXDDWbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 18:31:25 -0400
-X-Greylist: delayed 1527 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 18:31:25 EDT
-Date: Wed, 4 Apr 2007 23:05:56 +0100
-From: Jonathan McDowell <noodles@earth.li>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/90] ARM: OMAP: Add support for Amstrad Delta keypad
-Message-ID: <20070404220556.GG5188@earth.li>
-References: <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <d120d5000704041357r1dd813c6k33676dfdc44b86c5@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 4 Apr 2007 18:34:52 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59969 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXDDWeu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 18:34:50 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       reiserfs-dev@namesys.com, Oliver Pinter <oliver.pntr@gmail.com>
+Subject: Re: 2.6.21-rc5 possible regression: KDE processes die silently
+References: <4601B3D0.3060600@imap.cc> <460FCDE2.1080503@imap.cc>
+	<20070402225006.GI14134@stusta.de> <46140B98.1080004@imap.cc>
+Date: Wed, 04 Apr 2007 16:30:03 -0600
+In-Reply-To: <46140B98.1080004@imap.cc> (Tilman Schmidt's message of "Wed, 04
+	Apr 2007 22:33:28 +0200")
+Message-ID: <m1mz1n22ok.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000704041357r1dd813c6k33676dfdc44b86c5@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 04:57:57PM -0400, Dmitry Torokhov wrote:
-> On 4/4/07, Tony Lindgren <tony@atomide.com> wrote:
-> 
-> >+       KEY(0, 7, KEY_LEFTSHIFT),       /* Vol up       */
-> 
-> KEY_VOLUMEUP?
-> 
-> >+       KEY(3, 7, KEY_LEFTCTRL),        /* Vol down  */
-> 
-> KEY_VOLUMEDOWN?
+Tilman Schmidt <tilman@imap.cc> writes:
 
-In terms of making the keypad on top of the E3 usable left shift and
-left ctrl make more sense (there are no other keys with this function
-and they are to the left of the qwerty layout), but the keys are in fact
-labelled vol up/down, hence the comments.
+>> We also have another report of crashes under KDE:
+>> 
+>> Subject    : crashes in KDE
+>> References : http://bugzilla.kernel.org/show_bug.cgi?id=8157
+>> Submitter  : Oliver Pinter <oliver.pntr@gmail.com>
+>
+> Could be the same. The report is not detailed enough to say.
+> Oliver provokes his crash with amarok which would fit in with
+> the sound hypothesis.
 
-J.
+Oliver reports the problem not recurring after updating to 2.6.21-rc5-git7.
 
--- 
-Revd. Jonathan McDowell, ULC | noodles is good in nagahama
+>> We also have one bug kwin ran into that got fixed after -rc5:
+>> 
+>> Subject    : kwin dies silently
+> [...]
+>> Fixed-By   : Eric W. Biederman <ebiederm@xmission.com>
+>> Commit     : 14e9d5730adfca26452b3a2838a80af6950556f5
+>
+> Looks promising. Building -rc5-git12 now. Will test that until
+> -rc6 arrives.
+
+Thanks.
+
+Eric
