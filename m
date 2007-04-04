@@ -1,58 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932114AbXDEAQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXDEAQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932114AbXDEAQn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 20:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932140AbXDEAQn
+	id S932081AbXDEAQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 20:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXDEAQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:16:43 -0400
-Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36875 "EHLO
+	Wed, 4 Apr 2007 20:16:44 -0400
+Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36876 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932114AbXDEAQm (ORCPT
+	with ESMTP id S932081AbXDEAQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 20:16:42 -0400
-Message-Id: <20070404191205.293858634@goop.org>
+	Wed, 4 Apr 2007 20:16:43 -0400
+Message-Id: <20070404191205.617690202@goop.org>
 References: <20070404191151.009821039@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Apr 2007 12:11:57 -0700
+Date: Wed, 04 Apr 2007 12:12:00 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 06/20] Allocate a fixmap slot
-Content-Disposition: inline; filename=paravirt-fixmap.patch
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>
+Subject: [patch 09/20] rename struct paravirt_patch to paravirt_patch_site for clarity
+Content-Disposition: inline; filename=paravirt-patch-rename-paravirt_patch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocate a fixmap slot for use by a paravirt_ops implementation.  This
-is intended for early-boot bootstrap mappings.  Once the zones and
-allocator have been set up, it would be better to use get_vm_area() to
-allocate some virtual space.
-
-Xen uses this to map the hypervisor's shared info page, which doesn't
-have a pseudo-physical page number, and therefore can't be mapped
-ordinarily.  It is needed early because it contains the vcpu state,
-including the interrupt mask.
+Rename struct paravirt_patch to paravirt_patch_site, so that it
+clearly refers to a callsite, and not the patch which may be applied
+to that callsite.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Zachary Amsden <zach@vmware.com>
 
 ---
- include/asm-i386/fixmap.h |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/i386/kernel/alternative.c |    9 ++++-----
+ arch/i386/kernel/vmi.c         |    4 ----
+ include/asm-i386/alternative.h |    8 +++++---
+ include/asm-i386/paravirt.h    |    5 ++++-
+ 4 files changed, 13 insertions(+), 13 deletions(-)
 
 ===================================================================
---- a/include/asm-i386/fixmap.h
-+++ b/include/asm-i386/fixmap.h
-@@ -86,6 +86,9 @@ enum fixed_addresses {
- #ifdef CONFIG_PCI_MMCONFIG
- 	FIX_PCIE_MCFG,
+--- a/arch/i386/kernel/alternative.c
++++ b/arch/i386/kernel/alternative.c
+@@ -335,9 +335,10 @@ void alternatives_smp_switch(int smp)
  #endif
-+#ifdef CONFIG_PARAVIRT
-+	FIX_PARAVIRT_BOOTMAP,
-+#endif
- 	__end_of_permanent_fixed_addresses,
- 	/* temporary boot-time mappings, used before ioremap() is functional */
- #define NR_FIX_BTMAPS	16
+ 
+ #ifdef CONFIG_PARAVIRT
+-void apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end)
+-{
+-	struct paravirt_patch *p;
++void apply_paravirt(struct paravirt_patch_site *start,
++		    struct paravirt_patch_site *end)
++{
++	struct paravirt_patch_site *p;
+ 
+ 	if (noreplace_paravirt)
+ 		return;
+@@ -355,8 +356,6 @@ void apply_paravirt(struct paravirt_patc
+ 	/* Sync to be conservative, in case we patched following instructions */
+ 	sync_core();
+ }
+-extern struct paravirt_patch __parainstructions[],
+-	__parainstructions_end[];
+ #endif	/* CONFIG_PARAVIRT */
+ 
+ void __init alternative_instructions(void)
+===================================================================
+--- a/arch/i386/kernel/vmi.c
++++ b/arch/i386/kernel/vmi.c
+@@ -70,10 +70,6 @@ static struct {
+ 	void (*set_initial_ap_state)(int, int);
+ 	void (*halt)(void);
+ } vmi_ops;
+-
+-/* XXX move this to alternative.h */
+-extern struct paravirt_patch __parainstructions[],
+-	__parainstructions_end[];
+ 
+ /*
+  * VMI patching routines.
+===================================================================
+--- a/include/asm-i386/alternative.h
++++ b/include/asm-i386/alternative.h
+@@ -114,12 +114,14 @@ static inline void alternatives_smp_swit
+ #define LOCK_PREFIX ""
+ #endif
+ 
+-struct paravirt_patch;
++struct paravirt_patch_site;
+ #ifdef CONFIG_PARAVIRT
+-void apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end);
++void apply_paravirt(struct paravirt_patch_site *start,
++		    struct paravirt_patch_site *end);
+ #else
+ static inline void
+-apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end)
++apply_paravirt(struct paravirt_patch_site *start,
++	       struct paravirt_patch_site *end)
+ {}
+ #define __parainstructions	NULL
+ #define __parainstructions_end	NULL
+===================================================================
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -502,12 +502,15 @@ void _paravirt_nop(void);
+ #define paravirt_nop	((void *)_paravirt_nop)
+ 
+ /* These all sit in the .parainstructions section to tell us what to patch. */
+-struct paravirt_patch {
++struct paravirt_patch_site {
+ 	u8 *instr; 		/* original instructions */
+ 	u8 instrtype;		/* type of this instruction */
+ 	u8 len;			/* length of original instruction */
+ 	u16 clobbers;		/* what registers you may clobber */
+ };
++
++extern struct paravirt_patch_site __parainstructions[],
++	__parainstructions_end[];
+ 
+ #define paravirt_alt(insn_string, typenum, clobber)	\
+ 	"771:\n\t" insn_string "\n" "772:\n"		\
 
 -- 
 
