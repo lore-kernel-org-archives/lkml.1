@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbXDDRsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751747AbXDDRua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752225AbXDDRsl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXDDRsk
+	id S1751747AbXDDRua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXDDRu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:48:40 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:42874 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752226AbXDDRsj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:48:39 -0400
-Date: Wed, 4 Apr 2007 19:48:39 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Rene Herman <rene.herman@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-Message-ID: <20070404174839.GQ27660@stusta.de>
-References: <46138B4C.2050409@gmail.com> <20070404123311.GA18552@infradead.org> <1175698135.5815.447.camel@violet> <20070404150231.GE27660@stusta.de> <4613C963.6070409@gmail.com> <20070404170016.453d26f1@the-village.bc.nu> <4613D492.2070404@gmail.com> <s5hps6kxefx.wl%tiwai@suse.de>
+	Wed, 4 Apr 2007 13:50:29 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:52032 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751747AbXDDRu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 13:50:28 -0400
+Date: Wed, 4 Apr 2007 12:50:23 -0500
+To: David Lang <david.lang@digitalinsight.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, paulus@samba.org, dwmw2@infradead.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404175023.GV4922@austin.ibm.com>
+References: <20070404024400.56d016e1@the-village.bc.nu> <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <s5hps6kxefx.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 07:00:18PM +0200, Takashi Iwai wrote:
-> At Wed, 04 Apr 2007 18:38:42 +0200,
-> Rene Herman wrote:
-> > 
-> > Other cases-in-point; I've lately been rummaging through sound/isa a 
-> > bit. Nothing much copyrightable again but especially in those situations 
-> > where (some of the) original authors are no longer active, I do again 
-> > want people to contact me about them if needed. And all the "which one 
-> > of the three people listed here is maintaining this" is yet another.
+On Tue, Apr 03, 2007 at 06:23:07PM -0700, David Lang wrote:
 > 
-> Practically, the information can go through subsystem maintainers to
-> specific person (you) in such a case, as the tree is still more or
-> less maintained by subsystem maintainers.
+> people working with ~50 serial ports or ethernet ports aren't useing stock 
+> distros anyway.
+
+???  For "big servers", Suse SLES and RedHat RHEL are the defacto choices, 
+with Ubuntu a rising star. It doesn't get much more stock than that.
+
+> > Which is also another reason for building the "all serial devices"
+> > mapping by using udev, as it can provide multiple simultaneous views. The
+> > serial console unfortunately rather breaks that approach as Dave pointed
+> > out
 > 
-> But in general, it would be nice to have an easy way to find a
-> maintainer (not author) from a module binary, and I agree
-> MODULE_MAINTAINER can work well for such a purpose.  It's no mandatory
-> field, but could be some help.
+> I would reverse this. instead of having a bunch of different names and then 
+> requiring a tool to create sane names from them, start off with a nice nameing 
+> scheme and have a tool that tells you the under-the-covers details.
 
-Yes, it would be nice.
+Except that udev already exists, and is widely deployed by most distros
+to handle the "sane naming" problem. In particular, "sane naming"
+becomes hard if devices can be hotplugged, whether they are usb or pci
+(e.g. a usb-to-serial converter).
 
-But would this information always be kept up-to-date for the whole tree?
-I don't see this happen.
-
-> Takashi
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--linas
 
