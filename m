@@ -1,257 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934058AbXDDIzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992766AbXDDI4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934058AbXDDIzc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 04:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992756AbXDDIzc
+	id S2992766AbXDDI4k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 04:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992770AbXDDI4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 04:55:32 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:25878 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S934058AbXDDIzb (ORCPT
+	Wed, 4 Apr 2007 04:56:40 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:51080 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992766AbXDDI4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 04:55:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type;
-  b=IpN26qK7hbaSbgMUfexZNbt+271c7GgGdiqob/sFqzJB/6R7I3DzIknTrC2YSkqTQDurJXvwLedEcuL5dvQwIl+TiTxJiiYHA2R8Fc0KPfplsOj1lxaawZOwo+wZemhxxoLo6QP8w13eoUHwfVd+d/pba97r53l2xhb0TyBvXis=  ;
-X-YMail-OSG: zNDyn30VM1mgZfiwUynFeyliSomfGvqKRSZmcHCfeYSKz75rGwgDcbz9_96kUYuwvONCPSspBQ--
-Message-ID: <461367F6.10705@yahoo.com.au>
-Date: Wed, 04 Apr 2007 18:55:18 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	 <46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	 <20070403125903.3e8577f4.akpm@linux-foundation.org>	 <4612B645.7030902@redhat.com>	 <20070403202937.GE355@devserv.devel.redhat.com>	 <20070403144948.fe8eede6.akpm@linux-foundation.org>	 <4612DCC6.7000504@cosmosbay.com>  <46130BC8.9050905@yahoo.com.au> <1175675146.6483.26.camel@twins>
-In-Reply-To: <1175675146.6483.26.camel@twins>
-Content-Type: multipart/mixed;
- boundary="------------050503080802060505000407"
+	Wed, 4 Apr 2007 04:56:39 -0400
+Subject: [PATCH 3/4] Use the APIC to determine the hardware processor id -
+	x86_64
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, ak@suse.de, ebiederm@xmission.com,
+       horms@verge.net.au, tony.luck@intel.com, vgoyal@in.ibm.com
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Wed, 04 Apr 2007 17:56:37 +0900
+Message-Id: <1175676997.26920.136.camel@sebastian.intellilink.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050503080802060505000407
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+hard_smp_processor_id used to be just a macro that hard-coded
+hard_smp_processor_id to 0 in the non SMP case.  When booting non SMP
+kernels on hardware where the boot ioapic id is not 0 this turns out to
+be a problem.  This is happens frequently in the case of kdump and once
+in a great while in the case of real hardware.
 
-Peter Zijlstra wrote:
-> On Wed, 2007-04-04 at 12:22 +1000, Nick Piggin wrote:
-> 
->>Eric Dumazet wrote:
-> 
-> 
->>>I do think such workloads might benefit from a vma_cache not shared by 
->>>all threads but private to each thread. A sequence could invalidate the 
->>>cache(s).
->>>
->>>ie instead of a mm->mmap_cache, having a mm->sequence, and each thread 
->>>having a current->mmap_cache and current->mm_sequence
->>
->>I have a patchset to do exactly this, btw.
-> 
-> 
-> /me too
-> 
-> However, I decided against pushing it because when it does happen that a
-> task is not involved with a vma lookup for longer than it takes the seq
-> count to wrap we have a stale pointer...
-> 
-> We could go and walk the tasks once in a while to reset the pointer, but
-> it all got a tad involved.
+Use the APIC to determine the hardware processor id in both UP and SMP
+kernels to fix this issue.
 
-Well here is my core patch (against I think 2.6.16 + a set of vma cache
-cleanups and abstractions). I didn't think the wrapping aspect was
-terribly involved.
+Notice that hard_smp_processor_id is only used by SMP code or by code
+that works
+with apics so we do not need to handle the case when apics are not
+present and hard_smp_processor_id should never be called there.
 
--- 
-SUSE Labs, Novell Inc.
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
---------------050503080802060505000407
-Content-Type: text/plain;
- name="mm-thread-vma-cache.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mm-thread-vma-cache.patch"
+diff -urNp linux-2.6.21-rc5-orig/include/asm-x86_64/smp.h linux-2.6.21-rc5/include/asm-x86_64/smp.h
+--- linux-2.6.21-rc5-orig/include/asm-x86_64/smp.h	2007-04-04 15:57:31.000000000 +0900
++++ linux-2.6.21-rc5/include/asm-x86_64/smp.h	2007-04-04 16:25:52.000000000 +0900
+@@ -59,12 +59,6 @@ static inline int num_booting_cpus(void)
+ 
+ #define raw_smp_processor_id() read_pda(cpunumber)
+ 
+-static inline int hard_smp_processor_id(void)
+-{
+-	/* we don't want to mark this access volatile - bad code generation */
+-	return GET_APIC_ID(*(unsigned int *)(APIC_BASE+APIC_ID));
+-}
+-
+ extern int __cpu_disable(void);
+ extern void __cpu_die(unsigned int cpu);
+ extern void prefill_possible_map(void);
+@@ -73,10 +67,14 @@ extern unsigned __cpuinitdata disabled_c
+ 
+ #define NO_PROC_ID		0xFF		/* No processor magic marker */
+ 
+-#else /* CONFIG_SMP */
+-#define hard_smp_processor_id() 0
+ #endif /* CONFIG_SMP */
+ 
++static inline int hard_smp_processor_id(void)
++{
++	/* we don't want to mark this access volatile - bad code generation */
++	return GET_APIC_ID(*(unsigned int *)(APIC_BASE+APIC_ID));
++}
++
+ /*
+  * Some lowlevel functions might want to know about
+  * the real APIC ID <-> CPU # mapping.
 
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -296,6 +296,8 @@ struct mm_struct {
- 	struct vm_area_struct *mmap;		/* list of VMAs */
- 	struct rb_root mm_rb;
- 	struct vm_area_struct *vma_cache;	/* find_vma cache */
-+ 	unsigned long vma_sequence;
-+
- 	unsigned long (*get_unmapped_area) (struct file *filp,
- 				unsigned long addr, unsigned long len,
- 				unsigned long pgoff, unsigned long flags);
-@@ -693,6 +695,8 @@ enum sleep_type {
- 	SLEEP_INTERRUPTED,
- };
- 
-+#define VMA_CACHE_SIZE	4
-+
- struct task_struct {
- 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
- 	struct thread_info *thread_info;
-@@ -734,6 +738,8 @@ struct task_struct {
- 	struct list_head ptrace_list;
- 
- 	struct mm_struct *mm, *active_mm;
-+	struct vm_area_struct *vma_cache[VMA_CACHE_SIZE];
-+	unsigned long vma_cache_sequence;
- 
- /* task state */
- 	struct linux_binfmt *binfmt;
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c
-+++ linux-2.6/mm/mmap.c
-@@ -32,6 +32,40 @@
- 
- static void vma_cache_touch(struct mm_struct *mm, struct vm_area_struct *vma)
- {
-+	struct task_struct *curr = current;
-+	if (mm == curr->mm) {
-+		int i;
-+		if (curr->vma_cache_sequence != mm->vma_sequence) {
-+			curr->vma_cache_sequence = mm->vma_sequence;
-+			curr->vma_cache[0] = vma;
-+			for (i = 1; i < VMA_CACHE_SIZE; i++)
-+				curr->vma_cache[i] = NULL;
-+		} else {
-+			int update_mm;
-+
-+			if (curr->vma_cache[0] == vma)
-+				return;
-+
-+			for (i = 1; i < VMA_CACHE_SIZE; i++) {
-+				if (curr->vma_cache[i] == vma)
-+					break;
-+			}
-+			update_mm = 0;
-+			if (i == VMA_CACHE_SIZE) {
-+				update_mm = 1;
-+				i = VMA_CACHE_SIZE-1;
-+			}
-+			while (i != 0) {
-+				curr->vma_cache[i] = curr->vma_cache[i-1];
-+				i--;
-+			}
-+			curr->vma_cache[0] = vma;
-+
-+			if (!update_mm)
-+				return;
-+		}
-+	}
-+
- 	if (mm->vma_cache != vma) /* prevent cacheline bouncing */
- 		mm->vma_cache = vma;
- }
-@@ -39,27 +73,56 @@ static void vma_cache_touch(struct mm_st
- static void vma_cache_replace(struct mm_struct *mm, struct vm_area_struct *vma,
- 						struct vm_area_struct *repl)
- {
-+	mm->vma_sequence++;
-+	if (unlikely(mm->vma_sequence == 0)) {
-+		struct task_struct *curr = current, *t;
-+		t = curr;
-+		rcu_read_lock();
-+		do {
-+			t->vma_cache_sequence = -1;
-+			t = next_thread(t);
-+		} while (t != curr);
-+		rcu_read_unlock();
-+	}
-+
- 	if (mm->vma_cache == vma)
- 		mm->vma_cache = repl;
- }
- 
- static void vma_cache_invalidate(struct mm_struct *mm, struct vm_area_struct *vma)
- {
-- 	if (mm->vma_cache == vma)
--		mm->vma_cache = NULL;
-+	vma_cache_replace(mm, vma, NULL);
- }
- 
- static struct vm_area_struct *vma_cache_find(struct mm_struct *mm,
- 						unsigned long addr)
- {
--	struct vm_area_struct *vma = mm->vma_cache;
-+	struct task_struct *curr;
-+	struct vm_area_struct *vma;
- 
- 	preempt_disable();
- 	__inc_page_state(vma_cache_query);
--	if (vma && vma->vm_end > addr && vma->vm_start <= addr)
-+
-+	curr = current;
-+	if (mm == curr->mm && mm->vma_sequence == curr->vma_cache_sequence) {
-+		int i;
-+		for (i = 0; i < VMA_CACHE_SIZE; i++) {
-+			vma = curr->vma_cache[i];
-+			if (vma && vma->vm_end > addr && vma->vm_start <= addr){
-+				__inc_page_state(vma_cache_hit);
-+				goto out;
-+			}
-+		}
-+	}
-+
-+	vma = mm->vma_cache;
-+	if (vma && vma->vm_end > addr && vma->vm_start <= addr) {
- 		__inc_page_state(vma_cache_hit);
--	else
--		vma = NULL;
-+		goto out;
-+	}
-+
-+	vma = NULL;
-+out:
- 	preempt_enable();
- 
- 	return vma;
-@@ -1439,9 +1502,9 @@ struct vm_area_struct * find_vma(struct 
- 				} else
- 					rb_node = rb_node->rb_right;
- 			}
--			if (vma)
--				vma_cache_touch(mm, vma);
- 		}
-+		if (vma)
-+			vma_cache_touch(mm, vma);
- 	}
- 	return vma;
- }
-@@ -1487,6 +1550,9 @@ find_vma_prev(struct mm_struct *mm, unsi
- 	}
- 
- out:
-+	if (vma)
-+		vma_cache_touch(mm, vma);
-+
- 	*pprev = prev;
- 	return prev ? prev->vm_next : vma;
- }
-Index: linux-2.6/kernel/fork.c
-===================================================================
---- linux-2.6.orig/kernel/fork.c
-+++ linux-2.6/kernel/fork.c
-@@ -198,6 +198,7 @@ static inline int dup_mmap(struct mm_str
- 	mm->locked_vm = 0;
- 	mm->mmap = NULL;
- 	mm->vma_cache = NULL;
-+	mm->vma_sequence = 0;
- 	mm->free_area_cache = oldmm->mmap_base;
- 	mm->cached_hole_size = ~0UL;
- 	mm->map_count = 0;
 
---------------050503080802060505000407--
