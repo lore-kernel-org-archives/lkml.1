@@ -1,76 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992565AbXDDEBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992573AbXDDECB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992565AbXDDEBk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 00:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934060AbXDDEBj
+	id S2992573AbXDDECB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 00:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992569AbXDDECB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 00:01:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:49602 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934056AbXDDEBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 00:01:38 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: <linux-arch@vger.kernel.org>, Linux Memory Management <linux-mm@kvack.org>,
-       <linux-kernel@vger.kernel.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 04 Apr 2007 14:01:25 +1000
-Subject: [PATCH 0/14] Pass MAP_FIXED down to get_unmapped_area
-Message-Id: <1175659285.929428.835270667964.qpush@grosgo>
+	Wed, 4 Apr 2007 00:02:01 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:31589 "EHLO
+	asav08.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992557AbXDDEBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 00:01:48 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswMAJy/EkZKhRO4UGdsb2JhbACHO4hDAQEq
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Subject: Re: [PATCH] Add Cobalt button interface driver support
+Date: Wed, 4 Apr 2007 00:01:41 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+References: <20070216123608.733f04a3.yoichi_yuasa@tripeaks.co.jp> <d120d5000702160715x6f64853y59abb8a22e7d164c@mail.gmail.com> <20070217012242.6a51f55b.yoichi_yuasa@tripeaks.co.jp>
+In-Reply-To: <20070217012242.6a51f55b.yoichi_yuasa@tripeaks.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704040001.41494.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a "first step" as there are still cleanups to be done in various
-areas touched by that code but I think it's probably good to go as is and
-at least enables me to implement what I need for PowerPC.
+Hi Yoichi,
 
-The current get_unmapped_area code calls the f_ops->get_unmapped_area or
-the arch one (via the mm) only when MAP_FIXED is not passed. That makes
-it impossible for archs to impose proper constraints on regions of the
-virtual address space. To work around that, get_unmapped_area() then
-calls some hugetlbfs specific hacks.
+Could you please try the patch below? It moves platform device creation
+code into cobalt arch code to belletr follow driver model.
 
-This cause several problems, among others:
+Thank you!
 
- - It makes it impossible for a driver or filesystem to do the same thing
-that hugetlbfs does (for example, to allow a driver to use larger page
-sizes to map external hardware) if that requires applying a constraint
-on the addresses (constraining that mapping in certain regions and other
-mappings out of those regions).
+-- 
+Dmitry
 
- - Some archs like arm, mips, sparc, sparc64, sh and sh64 already want
-MAP_FIXED to be passed down in order to deal with aliasing issues.
-The code is there to handle it... but is never called.
+Input: cobalt buttons - separate device and driver registration
 
-This serie of patches moves the logic to handle MAP_FIXED down to the
-various arch/driver get_unmapped_area() implementations, and then changes
-the generic code to always call them. The hugetlbfs hacks then disappear
-from the generic code.
+Create platform device for cobalt buttons as part of arch setup.
+This makes the driver follow current driver model more closely.
 
-Since I need to do some special 64K pages mappings for SPEs on cell, I need
-to work around the first problem at least. I have further patches thus
-implementing a "slices" layer that handles multiple page sizes through
-slices of the address space for use by hugetlbfs, the SPE code, and possibly
-others, but it requires that serie of patches first/
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
 
-There is still a potential (but not practical) issue due to the fact that
-filesystems/drivers implemeting g_u_a will effectively bypass all arch
-checks. This is not an issue in practice as the only filesystems/drivers
-using that hook are doing so for arch specific purposes in the first place.
+ arch/mips/cobalt/Makefile        |    2 -
+ arch/mips/cobalt/buttons.c       |   54 +++++++++++++++++++++++++++++++++++++++
+ drivers/input/misc/cobalt_btns.c |   24 -----------------
+ 3 files changed, 56 insertions(+), 24 deletions(-)
 
-There is also a problem with mremap that will completely bypass all arch
-checks. I'll try to address that separately, I'm not 100% certain yet how,
-possibly by making it not work when the vma has a file whose f_ops has a
-get_unmapped_area callback, and by making it use is_hugepage_only_range()
-before expanding into a new area.
-
-Also, I want to turn is_hugepage_only_range() into a more generic
-is_normal_page_range() as that's really what it will end up meaning
-when used in stack grow, brk grow and mremap.
-
-None of the above "issues" however are introduced by this patch, they are
-already there, so I think the patch can go in after review of the individual
-bits by respective maintainers I suppose.
-
-Cheers,
-Ben.
-
+Index: work/arch/mips/cobalt/Makefile
+===================================================================
+--- work.orig/arch/mips/cobalt/Makefile
++++ work/arch/mips/cobalt/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the Cobalt micro systems family specific parts of the kernel
+ #
+ 
+-obj-y	 := irq.o reset.o setup.o
++obj-y	 := irq.o reset.o setup.o buttons.o
+ 
+ obj-$(CONFIG_EARLY_PRINTK)	+= console.o
+ obj-$(CONFIG_MTD_PHYSMAP)	+= mtd.o
+Index: work/arch/mips/cobalt/buttons.c
+===================================================================
+--- /dev/null
++++ work/arch/mips/cobalt/buttons.c
+@@ -0,0 +1,54 @@
++/*
++ *  Cobalt buttons platform device.
++ *
++ *  Copyright (C) 2007  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#include <linux/platform_device.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++
++static struct resource cobalt_buttons_resource __initdata = {
++	.start	= 0x1d000000,
++	.end	= 0x1d000003,
++	.flags	= IORESOURCE_MEM,
++};
++
++static __init int cobalt_add_buttons(void)
++{
++	struct platform_device *pd;
++	int error;
++
++	pd = platform_device_alloc("Cobalt buttons", -1);
++	if (!pd)
++		return -ENOMEM;
++
++	error = platform_device_add_resources(pd, &cobalt_buttons_resource, 1);
++	if (error)
++		goto err_free_device;
++
++	error = platform_device_add(pd);
++	if (error)
++		goto err_free_device;
++
++	return 0;
++
++ err_free_device:
++	platform_device_put(pd);
++	return error;
++}
++device_initcall(cobalt_add_buttons);
+Index: work/drivers/input/misc/cobalt_btns.c
+===================================================================
+--- work.orig/drivers/input/misc/cobalt_btns.c
++++ work/drivers/input/misc/cobalt_btns.c
+@@ -50,14 +50,6 @@ static struct buttons_map buttons_map[] 
+ 	{ 0x80000000, KEY_SELECT, },
+ };
+ 
+-static struct resource cobalt_buttons_resource __initdata = {
+-	.start	= 0x1d000000,
+-	.end	= 0x1d000003,
+-	.flags	= IORESOURCE_MEM,
+-};
+-
+-static struct platform_device *cobalt_buttons_device;
+-
+ static struct timer_list buttons_timer;
+ 
+ static void handle_buttons(unsigned long data)
+@@ -183,26 +175,12 @@ static struct platform_driver cobalt_but
+ 
+ static int __init cobalt_buttons_init(void)
+ {
+-	int retval;
+-
+-	cobalt_buttons_device = platform_device_register_simple("Cobalt buttons", -1,
+-	                                                        &cobalt_buttons_resource, 1);
+-	if (IS_ERR(cobalt_buttons_device)) {
+-		retval = PTR_ERR(cobalt_buttons_device);
+-		return retval;
+-	}
+-
+-	retval = platform_driver_register(&cobalt_buttons_driver);
+-	if (retval < 0)
+-		platform_device_unregister(cobalt_buttons_device);
+-
+-	return retval;
++	return platform_driver_register(&cobalt_buttons_driver);
+ }
+ 
+ static void __exit cobalt_buttons_exit(void)
+ {
+ 	platform_driver_unregister(&cobalt_buttons_driver);
+-	platform_device_unregister(cobalt_buttons_device);
+ }
+ 
+ module_init(cobalt_buttons_init);
