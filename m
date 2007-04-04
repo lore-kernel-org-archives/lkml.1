@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbXDDOPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbXDDORS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbXDDOPz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 10:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbXDDOPz
+	id S1753868AbXDDORS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 10:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbXDDORS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 10:15:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42147 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753863AbXDDOPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 10:15:54 -0400
-Date: Wed, 4 Apr 2007 16:15:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [sched] redundant reschedule when set_user_nice() boosts a prio of a task from the "expired" array
-Message-ID: <20070404141546.GA862@elte.hu>
-References: <b647ffbd0704040704k2e4b3abcyfadc7662dff37f5b@mail.gmail.com>
+	Wed, 4 Apr 2007 10:17:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59337 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753870AbXDDORR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 10:17:17 -0400
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <17939.19585.475192.767243@cargo.ozlabs.ibm.com>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	 <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	 <1175642916.10567.24.camel@shinybook.infradead.org>
+	 <17939.19585.475192.767243@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 10:16:41 -0400
+Message-Id: <1175696202.2774.20.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b647ffbd0704040704k2e4b3abcyfadc7662dff37f5b@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-04-04 at 16:58 +1000, Paul Mackerras wrote:
+> David Woodhouse writes:
+> 
+> > A GUI PPP dialer should be
+> > listing the available serial ports in the system whatever their names
+> > are.
+> 
+> How do you propose they do that?  Neither kppp nor gnome-ppp seem to
+> be able to do that currently.  Gnome-ppp offers just /dev/modem and
+> /dev/ttyS[0123].  Kppp offers those plus a whole pile of others, but
+> neither found the /dev/ttyPZ[01] that I get with your patch applied.
+> Gnome-ppp at least let me type in /dev/ttyPZ0, but kppp didn't seem to
+> have that facility.
 
-* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+shinybook /shiny/git/olpc-2.6 $ ls /dev/tty[a-zA-Z]* 
+/dev/ttyPZ0  /dev/ttyPZ1  /dev/ttyS0  /dev/ttyS1  /dev/ttyS2  /dev/ttyS3
 
-> Hello,
-> 
-> Scenario:
-> 
-> Currently running [task1] boosts a priority (lowers a static_prio) of 
-> [task2] via { setpriority -> set_user_nice } and [task2] happens to be 
-> in the "expired" array at the moment.
-> 
-> According to the set_user_nice(), "delta" is negative (the prio is 
-> boosted) and, hence, resched_task(rq->curr) is called.
-> 
-> As the [task2] is in the "expired" array and there are still tasks (at 
-> least [task1]) in the "active" one, the triggered reschedule is just 
-> useless (e.g. gets control back to [task1]).
-> 
-> Am I missing something?
-> 
-> The same is applicable to rt_mutex_setprio().
-> 
-> Of course, not a big deal, but it's easily avoidable, e.g. (delta < 0 
-> && array == rq->active).
+If you have dialler programs which can't manage to show you the existing
+serial ports, file bugs. Especially if they don't let you type device
+nodes into them. Sounds like kppp wouldn't let you use USB serial ports
+either -- or phones connected directly via USB.
 
-i think you are right and a micro-optimization could be done here. Would 
-you like to do a patch for this?
+-- 
+dwmw2
 
-	Ingo
