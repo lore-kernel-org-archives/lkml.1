@@ -1,101 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993000AbXDDQgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992994AbXDDQiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993000AbXDDQgy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992998AbXDDQgy
+	id S2992994AbXDDQiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992986AbXDDQiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:36:54 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:31404 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992994AbXDDQgu (ORCPT
+	Wed, 4 Apr 2007 12:38:09 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42784 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992994AbXDDQiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 12:36:50 -0400
-Subject: [S390] page_mkclean data corruption.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: torvalds@linux-foundation.org, gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-mm@kvack.org
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 04 Apr 2007 18:37:04 +0200
-Message-Id: <1175704624.31111.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Apr 2007 12:38:07 -0400
+Date: Wed, 4 Apr 2007 18:38:07 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Rene Herman <rene.herman@gmail.com>, Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+Message-ID: <20070404163807.GO27660@stusta.de>
+References: <46138B4C.2050409@gmail.com> <20070404123311.GA18552@infradead.org> <4613A1F1.2080007@gmail.com> <20070404145726.GD27660@stusta.de> <4613D342.3040501@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4613D342.3040501@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, Greg,
-the attached patch fixes a data corruption problem that has been
-introduced with the page_mkclean/clear_page_dirty_for_io change
-(the "Yes, Virginia, this is indeed insane." problem :-/)
+On Wed, Apr 04, 2007 at 06:33:06PM +0200, Stefan Richter wrote:
+> Adrian Bunk wrote:
+> > On Wed, Apr 04, 2007 at 03:02:41PM +0200, Rene Herman wrote:
+> >> Given modules with multiple authors, current and non-current, I believe 
+> >> having "modinfo -m" tell the user whom to contact is an avantage.
+> > 
+> > Much bigger problems are:
+> > - Who will maintain this information properly?
+> > - What about modules that are maintained implicitely by the subsystem
+> >   maintainer?
+> > 
+> > And often a user can't be expected to locate the source of a problem, or 
+> > it might not be in a driver but in a subsystem.
+> > 
+> > For vendor kernels, the user should contact the vendor.
+> > For ftp.kernel.org kernels, I don't see any better solution than telling 
+> > people to report problems to linux-kernel or the kernel Bugzilla and 
+> > routing them further from here.
+> 
+> Generelly it has to be kept in mind that there are different contacts
+> for different purposes:
+>   - usage problems --> get in touch with the _support_
+>   - bug reports --> get in touch with _maintainers_
 
-In essence the fact that clear_page_dirty_for_io is called for
-not-uptodate pages causes data corruption for architectures that use
-page_test_and_clear_dirty (which is s390 only).
+- bug reports against vendor kernels -> get in touch with the _vendor_
+  (the vendor might ship a heavily patched driver in an ancient kernel)
 
-This should go into 2.6.21-rc and 2.6.20-stable.
-Please pull message from git390 will follow.
+>   - development --> get in touch with maintainers/ kernel hackers/
+>     copyright holders...
+> 
+> The Amiga keyboard had a [Help] key, but this is not how it works.
 
-blue skies,
-  Martin.
+> Stefan Richter
 
---
-Subject: [S390] page_mkclean data corruption.
+cu
+Adrian
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+-- 
 
-The git commit c2fda5fed81eea077363b285b66eafce20dfd45a which
-added the page_test_and_clear_dirty call to page_mkclean and the
-git commit 7658cc289288b8ae7dd2c2224549a048431222b3 which fixes
-the "nasty and subtle race in shared mmap'ed page writeback"
-problem in clear_page_dirty_for_io cause data corruption on s390.
-
-The effect of the two changes is that for every call to
-clear_page_dirty_for_io a page_test_and_clear_dirty is done. If
-the per page dirty bit is set set_page_dirty is called. Strangly
-clear_page_dirty_for_io is called for not-uptodate pages, e.g.
-over this call-chain:
-
- [<000000000007c0f2>] clear_page_dirty_for_io+0x12a/0x130
- [<000000000007c494>] generic_writepages+0x258/0x3e0 
- [<000000000007c692>] do_writepages+0x76/0x7c 
- [<00000000000c7a26>] __writeback_single_inode+0xba/0x3e4
- [<00000000000c831a>] sync_sb_inodes+0x23e/0x398 
- [<00000000000c8802>] writeback_inodes+0x12e/0x140 
- [<000000000007b9ee>] wb_kupdate+0xd2/0x178 
- [<000000000007cca2>] pdflush+0x162/0x23c 
-
-The bad news now is that page_test_and_clear_dirty might claim
-that a not-uptodate page is dirty since SetPageUptodate which
-resets the per page dirty bit has not yet been called. The page
-writeback that follows clobbers the data on disk.
-
-The simplest solution to this problem is to move the call to
-page_test_and_clear_dirty under the "if (page_mapped(page))".
-If a file backed page is mapped it is uptodate.
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- mm/rmap.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff -urpN linux-2.6/mm/rmap.c linux-2.6-patched/mm/rmap.c
---- linux-2.6/mm/rmap.c	2007-04-04 14:23:22.000000000 +0200
-+++ linux-2.6-patched/mm/rmap.c	2007-04-04 14:23:35.000000000 +0200
-@@ -498,9 +498,9 @@ int page_mkclean(struct page *page)
- 		struct address_space *mapping = page_mapping(page);
- 		if (mapping)
- 			ret = page_mkclean_file(mapping, page);
-+		if (page_test_and_clear_dirty(page))
-+			ret = 1;
- 	}
--	if (page_test_and_clear_dirty(page))
--		ret = 1;
- 
- 	return ret;
- }
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
