@@ -1,49 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992949AbXDDP1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992924AbXDDPaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992949AbXDDP1z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992954AbXDDP1s
+	id S2992924AbXDDPaN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992933AbXDDPaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:27:48 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47833 "EHLO mx2.suse.de"
+	Wed, 4 Apr 2007 11:30:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57663 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992933AbXDDP1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:27:31 -0400
-Date: Wed, 4 Apr 2007 17:27:17 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-ID: <20070404152717.GG19587@v2.random>
-References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random> <20070404135530.GA29026@localdomain> <20070404141457.GF19587@v2.random> <20070404144421.GA13762@localdomain>
+	id S2992924AbXDDPaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 11:30:11 -0400
+To: Adrian Bunk <bunk@stusta.de>
+Cc: linux-kernel@vger.kernel.org, discuss@x86-64.org
+Subject: Re: [2.6 patch] i386/x86_64: make __reserve_evntsel_nmi() static
+References: <20070404152542.GL27660@stusta.de>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 04 Apr 2007 18:28:44 +0200
+In-Reply-To: <20070404152542.GL27660@stusta.de>
+Message-ID: <p73slbgxfwj.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070404144421.GA13762@localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 05:44:21PM +0300, Dan Aloni wrote:
-> To refine that example, you could replace the file with a large anonymous 
-> memory pool and a lot of swap space committed to it. In that case - with 
-> no ZERO_PAGE, would the kernel needlessly swap-out the zeroed pages? 
+Adrian Bunk <bunk@stusta.de> writes:
 
-Swapout or ram is the same in this context. The point is that it will
-take 4k either in ram or swap, let's talk about virtual memory without
-differentiating between ram or swap.
+> __reserve_evntsel_nmi() can become static.
 
-> Perhaps it's an example too far-fetched to worth considering...
+It's going to die in .22 anyways, just a temporary .21 kludge.
 
-Even if you would read the sparsed file to a malloced space (more
-commonly that would be tmpfs) using the read syscall, those anon (or
-tmpfs) pages would be _written_ first, which isn't the case we're
-discussing here.
-
-You don't know what is on disk, so reading from disk (regardless of
-what you read, holes, zeros or anything) provides useful information,
-but you know what is in ram after an anon mmap: just zeros, reading
-them can't provide useful information to any software.
+-Andi
