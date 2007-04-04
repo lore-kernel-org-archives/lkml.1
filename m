@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992696AbXDDGXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbXDDG1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992696AbXDDGXP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 02:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992697AbXDDGXO
+	id S1753504AbXDDG1w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 02:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992695AbXDDG1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 02:23:14 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:59072 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992696AbXDDGXO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 02:23:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=ltEnMirNGwj99c7XCQMEIbzejfSJdr9Ao2+tTyH8JiX5hhKZ++PkA4kGT+N0vxu5R
-	EFFsEdI3A+1mmWbgXPP5A==
-Date: Tue, 3 Apr 2007 23:22:26 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/13] maps: Make /proc/pid/clear_refs option under
- CONFIG_EMBEDDED
-In-Reply-To: <12.486631555@selenic.com>
-Message-ID: <Pine.LNX.4.64.0704032321360.27164@chino.kir.corp.google.com>
-References: <12.486631555@selenic.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Apr 2007 02:27:52 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:59379 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753493AbXDDG1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 02:27:51 -0400
+Date: Tue, 3 Apr 2007 23:26:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patches] threaded vma patches (was Re: missing madvise
+ functionality)
+Message-Id: <20070403232624.11935e80.akpm@linux-foundation.org>
+In-Reply-To: <46134124.2040705@yahoo.com.au>
+References: <46128051.9000609@redhat.com>
+	<p73648dz5oa.fsf@bingen.suse.de>
+	<46128CC2.9090809@redhat.com>
+	<20070403172841.GB23689@one.firstfloor.org>
+	<20070403125903.3e8577f4.akpm@linux-foundation.org>
+	<4612B645.7030902@redhat.com>
+	<20070403202937.GE355@devserv.devel.redhat.com>
+	<20070403144948.fe8eede6.akpm@linux-foundation.org>
+	<4612DCC6.7000504@cosmosbay.com>
+	<46130BC8.9050905@yahoo.com.au>
+	<46133A8B.50203@cosmosbay.com>
+	<46134124.2040705@yahoo.com.au>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007, Matt Mackall wrote:
+On Wed, 04 Apr 2007 16:09:40 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> Make /proc/pid/clear_refs option under CONFIG_EMBEDDED
-> 
-> This interface is primarily useful for doing memory profiling and not
-> much use on deployed embedded boxes. Make it optional. Together with
-> /proc/pid/smaps, this save a few K.
-> 
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
+> Andrew, do you have any objections to putting Eric's fairly
+> important patch at least into -mm?
 
-Acked-by: David Rientjes <rientjes@google.com>
-
-Althought /proc/pid/clear_refs isn't actually useful without smaps as 
-well, so you could make it depend on CONFIG_PROC_SMAPS.
+you know what to do ;)
