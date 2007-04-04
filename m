@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992594AbXDDFSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992631AbXDDFUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992594AbXDDFSd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 01:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992631AbXDDFSd
+	id S2992631AbXDDFUl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 01:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992634AbXDDFUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 01:18:33 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:60614 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992594AbXDDFSc (ORCPT
+	Wed, 4 Apr 2007 01:20:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47418 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992631AbXDDFUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 01:18:32 -0400
-Message-ID: <461334B5.7070607@zytor.com>
-Date: Tue, 03 Apr 2007 22:16:37 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com> <Pine.LNX.4.64.0704031152370.23808@alien.or.mcafeemobile.com> <4612ABD7.3000201@redhat.com> <4612F1F0.5070209@zytor.com> <4612F2BF.7080704@goop.org> <4612F394.6040105@zytor.com> <4613330C.1020701@cosmosbay.com>
-In-Reply-To: <4613330C.1020701@cosmosbay.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 4 Apr 2007 01:20:40 -0400
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Brad Boyer <flar@allandria.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <17939.10130.687893.167511@cargo.ozlabs.ibm.com>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	 <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	 <1175642916.10567.24.camel@shinybook.infradead.org>
+	 <20070403212928.GA12951@cynthia.pants.nu>
+	 <20070404022544.59b022a6@the-village.bc.nu>
+	 <17939.10130.687893.167511@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 01:19:59 -0400
+Message-Id: <1175663999.2932.8.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> 
-> There is one thing that always worried me.
-> 
-> Intel & AMD manuals make clear that mixing data and program in the same 
-> page is bad for performance.
-> 
-> In particular, x86_64 vsyscall put jiffies and other 
-> vsyscall_gtod_data_t right in the midle of code. That is certainly not 
-> wise.
-> 
-> A probably sane implementation should use two pages, one for code, one 
-> for data.
-> 
+On Wed, 2007-04-04 at 14:20 +1000, Paul Mackerras wrote:
+> I never suggested *all* serial ports should be /dev/ttySn, I said that
+> the built-in ports on the motherboard should be /dev/ttySn. 
 
-Mutable data should be separated from code.  I think any current CPU 
-will do fine as long as they are in separate 128-byte chunks, but they 
-need at least that much separation.
+Why? What's so special about the name 'ttyS'?
+ 
+> The built-in ports can generally be enumerated early on boot in a
+> stable order, and they should be assigned the low ttySn numbers,
+> regardless of what chip is used to implement them. 
 
-Readonly data does not need to be separated from code.
+I don't see why that 'should' be the case. Certainly it _isn't_ the case
+on most supported platforms -- we have separate device numbers, and
+names, for most types of ports. There's only one or two drivers which
+abuse ttySn for anything other than 8250 ports.
 
-	-hpa
+-- 
+dwmw2
+
