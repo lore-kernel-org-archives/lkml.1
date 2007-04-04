@@ -1,125 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXDEAQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXDEAR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932081AbXDEAQo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 20:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXDEAQo
+	id S932247AbXDEAR0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 20:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932306AbXDEAR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:16:44 -0400
-Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36876 "EHLO
+	Wed, 4 Apr 2007 20:17:26 -0400
+Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36888 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932081AbXDEAQn (ORCPT
+	with ESMTP id S932267AbXDEARG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 20:16:43 -0400
-Message-Id: <20070404191205.617690202@goop.org>
-References: <20070404191151.009821039@goop.org>
+	Wed, 4 Apr 2007 20:17:06 -0400
+Message-Id: <20070404191151.009821039@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Apr 2007 12:12:00 -0700
+Date: Wed, 04 Apr 2007 12:11:51 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>
-Subject: [patch 09/20] rename struct paravirt_patch to paravirt_patch_site for clarity
-Content-Disposition: inline; filename=paravirt-patch-rename-paravirt_patch.patch
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [patch 00/20] paravirt_ops updates
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename struct paravirt_patch to paravirt_patch_site, so that it
-clearly refers to a callsite, and not the patch which may be applied
-to that callsite.
+Hi Andi,
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Zachary Amsden <zach@vmware.com>
+Here's a repost of the paravirt_ops update series I posted the other day.
+Since then, I found a few potential bugs with patching clobbering,
+cleaned up and documented paravirt.h and the patching machinery.
 
----
- arch/i386/kernel/alternative.c |    9 ++++-----
- arch/i386/kernel/vmi.c         |    4 ----
- include/asm-i386/alternative.h |    8 +++++---
- include/asm-i386/paravirt.h    |    5 ++++-
- 4 files changed, 13 insertions(+), 13 deletions(-)
+Overview:
 
-===================================================================
---- a/arch/i386/kernel/alternative.c
-+++ b/arch/i386/kernel/alternative.c
-@@ -335,9 +335,10 @@ void alternatives_smp_switch(int smp)
- #endif
- 
- #ifdef CONFIG_PARAVIRT
--void apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end)
--{
--	struct paravirt_patch *p;
-+void apply_paravirt(struct paravirt_patch_site *start,
-+		    struct paravirt_patch_site *end)
-+{
-+	struct paravirt_patch_site *p;
- 
- 	if (noreplace_paravirt)
- 		return;
-@@ -355,8 +356,6 @@ void apply_paravirt(struct paravirt_patc
- 	/* Sync to be conservative, in case we patched following instructions */
- 	sync_core();
- }
--extern struct paravirt_patch __parainstructions[],
--	__parainstructions_end[];
- #endif	/* CONFIG_PARAVIRT */
- 
- void __init alternative_instructions(void)
-===================================================================
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -70,10 +70,6 @@ static struct {
- 	void (*set_initial_ap_state)(int, int);
- 	void (*halt)(void);
- } vmi_ops;
--
--/* XXX move this to alternative.h */
--extern struct paravirt_patch __parainstructions[],
--	__parainstructions_end[];
- 
- /*
-  * VMI patching routines.
-===================================================================
---- a/include/asm-i386/alternative.h
-+++ b/include/asm-i386/alternative.h
-@@ -114,12 +114,14 @@ static inline void alternatives_smp_swit
- #define LOCK_PREFIX ""
- #endif
- 
--struct paravirt_patch;
-+struct paravirt_patch_site;
- #ifdef CONFIG_PARAVIRT
--void apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end);
-+void apply_paravirt(struct paravirt_patch_site *start,
-+		    struct paravirt_patch_site *end);
- #else
- static inline void
--apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end)
-+apply_paravirt(struct paravirt_patch_site *start,
-+	       struct paravirt_patch_site *end)
- {}
- #define __parainstructions	NULL
- #define __parainstructions_end	NULL
-===================================================================
---- a/include/asm-i386/paravirt.h
-+++ b/include/asm-i386/paravirt.h
-@@ -502,12 +502,15 @@ void _paravirt_nop(void);
- #define paravirt_nop	((void *)_paravirt_nop)
- 
- /* These all sit in the .parainstructions section to tell us what to patch. */
--struct paravirt_patch {
-+struct paravirt_patch_site {
- 	u8 *instr; 		/* original instructions */
- 	u8 instrtype;		/* type of this instruction */
- 	u8 len;			/* length of original instruction */
- 	u16 clobbers;		/* what registers you may clobber */
- };
-+
-+extern struct paravirt_patch_site __parainstructions[],
-+	__parainstructions_end[];
- 
- #define paravirt_alt(insn_string, typenum, clobber)	\
- 	"771:\n\t" insn_string "\n" "772:\n"		\
+add-MAINTAINERS.patch
+	obvious
+
+remove-CONFIG_DEBUG_PARAVIRT.patch
+	No longer meaningful or needed.
+
+paravirt-nop.patch
+	Clean up nop paravirt_ops functions, mainly to allow the patching
+	machinery to easily identify them.
+
+paravirt-pte-accessors.patch
+	Accessors to allow pv_ops to control the content of pagetable entries.
+
+paravirt-memory-init.patch
+	Hook into initial pagetable creation.
+
+paravirt-fixmap.patch
+	Create a fixmap for early paravirt_ops mappings.
+
+shared-kernel-pmd.patch
+	Make the choice of whether the kernel pmd is shared between
+	processes or not a runtime selectable flag.
+
+mm-lifetime-hooks.patch
+	Hooks to allow the creation, use and destruction of an mm_struct
+	to be followed.
+
+paravirt-patch-rename-paravirt_patch.patch
+	Rename a structure to make its use a bit more clear.
+
+paravirt-use-offset-site-ids.patch
+	Use the offsetof each function pointer in paravirt_ops as the
+	basis of its patching identifier.
+
+paravirt-fix-clobbers.patch
+	Fix up various register/use clobber problems.  This may be 2.6.21
+	material, but I don't think it will materially affect VMI.
+
+paravirt-patchable-call-wrappers.patch
+	Wrap each paravirt_ops call to allow the callsites to be runtime
+	patched.
+
+paravirt-document-paravirt_ops.patch
+	Document the paravirt_ops structure itself, the patching
+	mechanism, and other cleanups.
+
+paravirt-patch-machinery.patch
+	General patch machinery for use by pv_ops backends to implment
+	patching.
+
+paravirt-flush_tlb_others.patch
+	Add a hook for cross-cpu tlb flushing.
+
+revert-map_pt_hook.patch
+	Back out the map_pt_hook change.
+
+paravirt-kmap_atomic_pte.patch
+	Replace map_pt_hook with kmap_atomic_pte.
+
+cleanup-tsc-sched-clock.patch
+	Clean up the tsc-based sched_clock.  (I think you already
+	have this.)
+
+paravirt-sched-clock.patch
+	Add a hook for sched_clock, so that paravirt_ops backends can
+	report unstolen time for use as the scheduler clock.
+
+apply-to-page-range.patch
+	Apply a function to a range of pagetable entries.
+
+Thanks,
+	J
 
 -- 
 
