@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992933AbXDDQd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992989AbXDDQdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992933AbXDDQd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992989AbXDDQd0
+	id S2992989AbXDDQdi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992992AbXDDQdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:33:26 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:47832 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992933AbXDDQdZ (ORCPT
+	Wed, 4 Apr 2007 12:33:38 -0400
+Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:37088 "HELO
+	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2992989AbXDDQdg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 12:33:25 -0400
-Message-ID: <4613D342.3040501@s5r6.in-berlin.de>
-Date: Wed, 04 Apr 2007 18:33:06 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Wed, 4 Apr 2007 12:33:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=YFxlzx9AmiildxHj6Iv2UEuloz56bEhdvJhjNWGP1+rttxS0z2So38mMMADsYzDtojhc3kPFD9tkAVBJOCd+KfsZZEzxqJM8+Io7ylRHoTeTt71Y/1DrZ07S7Dd2S2qjrx8Qvx2D98q+4UDB8I/WicrNdcrB6KQEwReHJ4SSL7Y=  ;
+X-YMail-OSG: OBiEEFAVM1kRb3dlzS94dBBX7e3_t6_ls1y.i5TM1UKrBflxCcYyUeWPH4o3QmRkelg6D2G3Ow--
+From: David Brownell <david-b@pacbell.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
+Date: Wed, 4 Apr 2007 08:06:05 -0700
+User-Agent: KMail/1.7.1
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+References: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Rene Herman <rene.herman@gmail.com>, Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <46138B4C.2050409@gmail.com> <20070404123311.GA18552@infradead.org> <4613A1F1.2080007@gmail.com> <20070404145726.GD27660@stusta.de>
-In-Reply-To: <20070404145726.GD27660@stusta.de>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704040806.06367.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Apr 04, 2007 at 03:02:41PM +0200, Rene Herman wrote:
->> Given modules with multiple authors, current and non-current, I believe 
->> having "modinfo -m" tell the user whom to contact is an avantage.
-> 
-> Much bigger problems are:
-> - Who will maintain this information properly?
-> - What about modules that are maintained implicitely by the subsystem
->   maintainer?
-> 
-> And often a user can't be expected to locate the source of a problem, or 
-> it might not be in a driver but in a subsystem.
-> 
-> For vendor kernels, the user should contact the vendor.
-> For ftp.kernel.org kernels, I don't see any better solution than telling 
-> people to report problems to linux-kernel or the kernel Bugzilla and 
-> routing them further from here.
+On Monday 02 April 2007 1:04 pm, Alan Stern wrote:
+> On Mon, 2 Apr 2007, David Brownell wrote:
 
-Generelly it has to be kept in mind that there are different contacts
-for different purposes:
-  - usage problems --> get in touch with the _support_
-  - bug reports --> get in touch with _maintainers_
-  - development --> get in touch with maintainers/ kernel hackers/
-    copyright holders...
+> > This is the kind of thing that the pm_parent relationship was (AFAICT)
+> > originally supposed to handle.  Of course, it doesn't/can't, given the
+> > current implementation ... that relationship is never used.
+> 
+> Just so.  In fact, there almost certainly are other dependencies that 
+> nobody is aware of, simply because they have never had a chance to bite.
 
-The Amiga keyboard had a [Help] key, but this is not how it works.
--- 
-Stefan Richter
--=====-=-=== -=-- --=--
-http://arcgraph.de/sr/
+In any given system, yes there are bugs lurking.  But I was more concerned
+with a provably wrong assumption made by the current framework.  Such things
+cause cascading fragility.
+
+As Thomas mentioned, HPET isn't the only place where a "linear" model fails.
+
+
+> Such things can be rather difficult to pin down when they occur.  I would
+> be happy enough to leave matters as they are, with a strict LIFO approach.
+
+I wouldn't.  Much better to have a solid handle on the interdependencies
+than to need to cope, long term, with a framework that doesn't allow that.
+
+Remember also that a LIFO model assumes that there's only one sequence by
+which the hardware powers up/down ... i.e. that there's no runtime PM going
+on, whereby large chunks are regularly powered down/up based on usage.
+Better runtime PM becomes more important as system complexity rises.
+
+- Dave
