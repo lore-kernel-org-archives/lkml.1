@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbXDDW7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbXDDXAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbXDDW7x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 18:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXDDW7x
+	id S1752573AbXDDXAB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 19:00:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXDDXAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 18:59:53 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56331 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752549AbXDDW7w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 18:59:52 -0400
-Date: Wed, 4 Apr 2007 15:59:51 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Badari Pulavarty <pbadari@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 4 Apr 2007 19:00:00 -0400
+Received: from ozlabs.org ([203.10.76.45]:41771 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752573AbXDDW77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 18:59:59 -0400
+Subject: Re: [patch 04/17] Add pagetable accessors to pack and unpack
+	pagetable entries
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, virtualization@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc5-mm4 (SLUB)
-In-Reply-To: <1175727185.5019.8.camel@dyn9047017100.beaverton.ibm.com>
-Message-ID: <Pine.LNX.4.64.0704041556530.11769@schroedinger.engr.sgi.com>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> 
- <1175637332.6185.4.camel@dyn9047017100.beaverton.ibm.com> 
- <1175642398.6185.9.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com> 
- <1175643507.6185.12.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031638570.12109@schroedinger.engr.sgi.com> 
- <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031653060.12109@schroedinger.engr.sgi.com> 
- <1175698437.6185.21.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704040946370.24640@schroedinger.engr.sgi.com> 
- <1175709755.6185.34.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704041103060.26866@schroedinger.engr.sgi.com> 
- <Pine.LNX.4.64.0704041120250.793@schroedinger.engr.sgi.com>
- <1175727185.5019.8.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <200704041756.35016.ak@suse.de>
+References: <20070402055652.610711908@goop.org>
+	 <200704041347.42822.ak@suse.de> <4613C828.2030604@goop.org>
+	 <200704041756.35016.ak@suse.de>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 08:59:09 +1000
+Message-Id: <1175727549.12230.583.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Badari Pulavarty wrote:
+On Wed, 2007-04-04 at 17:56 +0200, Andi Kleen wrote:
+> On Wednesday 04 April 2007 17:45:44 Jeremy Fitzhardinge wrote:
+> > Andi Kleen wrote:
+> > > Why is there a difference for null syscall? I had assumed we patched all the 
+> > > fast path cases relevant there. Do you have an idea where it comes from?
+> > 
+> > Sure.  There's indirect calls for things like sti/cli/iret.  It goes
+> > back to native speed when you patch the real instructions inline.
+> 
+> I was talking about the patched case. It seemed to be a little slower
+> too, but in theory it shouldn't have been, no? 
 
-> Here is the slub_debug=FU output with the above patch.
+You'll still have the damage inflicted on gcc's optimizer, though.
 
-Hmmm... Looks like the object is actually free. Someone writes beyond the 
-end of the earlier object. Setting Z should check overwrites but it 
-switched off merging. So set
+Rusty.
 
-slub_debug = FZ
-
-Analoguos to the last patch you would need to take out redzoning from 
-the flags that stop merging. Then rerun. Maybe we can track it down this 
-way.
-
-Hmmm... Maybe remove all the debug flags from those that avoid merging and 
-then run with full debug. That should theoretically flush it out.
- 
