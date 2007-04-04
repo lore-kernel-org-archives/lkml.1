@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966323AbXDDGxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966321AbXDDGzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966323AbXDDGxz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 02:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966321AbXDDGxz
+	id S966321AbXDDGzS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 02:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966324AbXDDGzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 02:53:55 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:34814 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966323AbXDDGxy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 02:53:54 -0400
-X-IronPort-AV: i="4.14,367,1170651600"; 
-   d="scan'208"; a="26307328:sNHT29117396"
-Subject: Re: [PATCH] Blackfin arch: add asm-blackfin socket header files
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: bryan.wu@analog.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <1175668088.10608.37.camel@roc-desktop>
-References: <1175668088.10608.37.camel@roc-desktop>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Wed, 04 Apr 2007 14:55:30 +0800
-Message-Id: <1175669730.10608.43.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 4 Apr 2007 02:55:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42173 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966321AbXDDGzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 02:55:16 -0400
+Message-ID: <46134BB2.2000005@redhat.com>
+Date: Tue, 03 Apr 2007 23:54:42 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [patches] threaded vma patches (was Re: missing madvise functionality)
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com> <20070403144948.fe8eede6.akpm@linux-foundation.org> <4612DCC6.7000504@cosmosbay.com> <46130BC8.9050905@yahoo.com.au> <46133A8B.50203@cosmosbay.com> <46134124.2040705@yahoo.com.au> <461348CD.9000200@redhat.com> <46134AA9.4080804@cosmosbay.com>
+In-Reply-To: <46134AA9.4080804@cosmosbay.com>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC63CAC0B15FEF360C1F98F38"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 14:28 +0800, Wu, Bryan wrote:
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> ---
->  include/asm-blackfin/socket.h  |   55 ++++++++++++++++++++++++++++++++++++++++
->  include/asm-blackfin/sockios.h |   13 +++++++++
->  2 files changed, 68 insertions(+), 0 deletions(-)
->  create mode 100644 include/asm-blackfin/socket.h
->  create mode 100644 include/asm-blackfin/sockios.h
-> 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC63CAC0B15FEF360C1F98F38
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Maybe we can add generic header files such as
-include/asm-generic/socket.h and include/asm-generic/sockios.h.
+Eric Dumazet wrote:
+> You were CC on this one, you can find an archive here :
 
-Cheers,
--Bryan
+You cc:ed my gmail account.  I don't pick out mails sent to me there.
+If you want me to look at something you have to send it to my
+@redhat.com address.
+
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
+
+
+--------------enigC63CAC0B15FEF360C1F98F38
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGE0uy2ijCOnn/RHQRAoXbAJ46I9NFoYxv0TaqPR0AY3xQgcm0zACglY8m
+VmD6b8KQQJTueL7Vw3DyATk=
+=mB6W
+-----END PGP SIGNATURE-----
+
+--------------enigC63CAC0B15FEF360C1F98F38--
