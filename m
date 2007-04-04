@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752413AbXDDWMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751003AbXDDWb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752413AbXDDWMd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 18:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbXDDWMd
+	id S1751003AbXDDWb0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 18:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbXDDWb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 18:12:33 -0400
-Received: from waste.org ([66.93.16.53]:44851 "EHLO waste.org"
+	Wed, 4 Apr 2007 18:31:26 -0400
+Received: from the.earth.li ([193.201.200.66]:58677 "EHLO the.earth.li"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752404AbXDDWMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 18:12:32 -0400
-Date: Wed, 4 Apr 2007 16:59:32 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Nikita Danilov <nikita@clusterfs.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/13] maps: Add /proc/pid/pagemap interface
-Message-ID: <20070404215932.GB4892@waste.org>
-References: <1.486631555@selenic.com> <13.486631555@selenic.com> <17939.35217.938339.677599@gargle.gargle.HOWL> <20070404163232.GV4892@waste.org> <17939.59480.445304.429384@gargle.gargle.HOWL>
+	id S1751003AbXDDWbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 18:31:25 -0400
+X-Greylist: delayed 1527 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 18:31:25 EDT
+Date: Wed, 4 Apr 2007 23:05:56 +0100
+From: Jonathan McDowell <noodles@earth.li>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/90] ARM: OMAP: Add support for Amstrad Delta keypad
+Message-ID: <20070404220556.GG5188@earth.li>
+References: <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <d120d5000704041357r1dd813c6k33676dfdc44b86c5@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <17939.59480.445304.429384@gargle.gargle.HOWL>
+In-Reply-To: <d120d5000704041357r1dd813c6k33676dfdc44b86c5@mail.gmail.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 10:03:04PM +0400, Nikita Danilov wrote:
-> Matt Mackall writes:
+On Wed, Apr 04, 2007 at 04:57:57PM -0400, Dmitry Torokhov wrote:
+> On 4/4/07, Tony Lindgren <tony@atomide.com> wrote:
 > 
-> [...]
+> >+       KEY(0, 7, KEY_LEFTSHIFT),       /* Vol up       */
 > 
->  > 
->  > Now I could adjust these to only export u64s in some preferred
->  > endianness. But given I already need details like the page size to
->  > make any sense of it, it seems unnecessary. Also, the PFNs are fairly
->  > opaque unless you're attempting to correlate them with /proc/kpagemap.
+> KEY_VOLUMEUP?
 > 
-> Alternatively, you can export some meta-data at the beginning of that
-> file like /proc/profile does.
+> >+       KEY(3, 7, KEY_LEFTCTRL),        /* Vol down  */
+> 
+> KEY_VOLUMEDOWN?
 
-That seems reasonable. We need page size, entry size (4 or 8 bytes), and
-an endian marker. I'll see what I can come up with.
+In terms of making the keypad on top of the E3 usable left shift and
+left ctrl make more sense (there are no other keys with this function
+and they are to the left of the qwerty layout), but the keys are in fact
+labelled vol up/down, hence the comments.
+
+J.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Revd. Jonathan McDowell, ULC | noodles is good in nagahama
