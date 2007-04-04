@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750755AbXDDUcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750827AbXDDUho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750755AbXDDUcy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 16:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbXDDUcy
+	id S1750827AbXDDUho (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 16:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbXDDUho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 16:32:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:47365 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbXDDUcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 16:32:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=NvUJeJzccRhQBEF6ZpYtAgstImx4GqXMNgFHaFDrz5EltPQ1Fenhel0Exm91qLptijdShxIsPotvzzXcsCyB8Yppu/+qlRDi6pKVYtTI+tRbIgE8RQu0zM2tLMnnELkG43unNksvzdg30AcpsHvpqG9I0ThB+ddw5z+J0nZwxVs=
-Date: Thu, 5 Apr 2007 00:33:09 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] i386: sched.h inclusion from module.h is baack
-Message-ID: <20070404203309.GA6316@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
+	Wed, 4 Apr 2007 16:37:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33338 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750827AbXDDUhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 16:37:43 -0400
+Date: Wed, 4 Apr 2007 22:36:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       johnstul@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+       heiko.carstens@de.ibm.com
+Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm tree
+Message-ID: <20070404203647.GA12563@elte.hu>
+References: <200704010523.l315NXJP004063@shell0.pdx.osdl.net> <1175417035.28263.42.camel@localhost.localdomain> <1175704712.15973.35.camel@imap.mvista.com> <20070404125853.1cf9b7b7.akpm@linux-foundation.org> <1175717425.15973.61.camel@imap.mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1175717425.15973.61.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux/module.h
-linux/elf.h
-asm-i386/elf.h
-linux/utsname.h
-linux/sched.h
 
-Noticeably cut the number of files which are rebuild upon touching
-sched.h and cut down pulled junk from every module.h inclusion.
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+> The struct clocksource .list field is now required to be initialized 
+> before calling clocksource_register().
+> 
+> This is a prerequisite for simplifying the clocksource registration 
+> process.
 
- drivers/char/i8k.c     |    1 +
- fs/binfmt_elf.c        |    1 +
- include/asm-i386/elf.h |    2 --
- 3 files changed, 2 insertions(+), 2 deletions(-)
+why? This patch only pushes some unnecessary code into the clocksource 
+drivers:
 
---- a/drivers/char/i8k.c
-+++ b/drivers/char/i8k.c
-@@ -22,6 +22,7 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/dmi.h>
-+#include <linux/capability.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
- 
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -39,6 +39,7 @@
- #include <linux/syscalls.h>
- #include <linux/random.h>
- #include <linux/elf.h>
-+#include <linux/utsname.h>
- #include <asm/uaccess.h>
- #include <asm/param.h>
- #include <asm/page.h>
---- a/include/asm-i386/elf.h
-+++ b/include/asm-i386/elf.h
-@@ -9,8 +9,6 @@
- #include <asm/user.h>
- #include <asm/auxvec.h>
- 
--#include <linux/utsname.h>
--
- #define R_386_NONE	0
- #define R_386_32	1
- #define R_386_PC32	2
++       .list           = LIST_HEAD_INIT(clocksource_avr32.list),
 
+NACK unless you can give an explanation of why this is unavoidable. A 
+NULL initializer is just as good as an initialized list entry. (in fact 
+it's slightly better because it's in the kernel's BSS)
+
+	Ingo
