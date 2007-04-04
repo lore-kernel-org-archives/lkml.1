@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752820AbXDDXWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbXDDXXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752820AbXDDXWE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 19:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbXDDXWD
+	id S1752844AbXDDXXa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 19:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXDDXXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 19:22:03 -0400
-Received: from mail.tmr.com ([64.65.253.246]:57579 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752817AbXDDXWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 19:22:00 -0400
-Message-ID: <46143338.3020808@tmr.com>
-Date: Wed, 04 Apr 2007 19:22:32 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Tejun Heo <teheo@suse.de>
-CC: linux@horizon.com, dan.j.williams@intel.com, linux-ide@vger.kernel.org,
-       neilb@suse.de, cebbert@redhat.com, jens.axboe@oracle.com,
-       linux-kernel@dale.us, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
-References: <20070323174630.31051.qmail@science.horizon.com> <4611EADC.3000306@suse.de>
-In-Reply-To: <4611EADC.3000306@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 4 Apr 2007 19:23:30 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:37186 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752822AbXDDXX2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 19:23:28 -0400
+Date: Wed, 4 Apr 2007 16:16:50 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Keith Owens <kaos@ocs.com.au>,
+       Len Brown <lenb@kernel.org>, Adam Belay <ambx1@neo.rr.com>,
+       Matthieu CASTET <castet.matthieu@free.fr>,
+       Jean Tourrilhes <jt@hpl.hp.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Ville Syrjala <syrjala@sci.fi>,
+       Russell King <rmk+serial@arm.linux.org.uk>,
+       linux-serial@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/5] smsc-ircc2: add PNP support
+Message-Id: <20070404161650.e05049e4.randy.dunlap@oracle.com>
+In-Reply-To: <20070404224609.042716000@ldl.fc.hp.com>
+References: <20070404224536.337573000@ldl.fc.hp.com>
+	<20070404224609.042716000@ldl.fc.hp.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> [resending.  my mail service was down for more than a week and this
-> message didn't get delivered.]
->
-> linux@horizon.com wrote:
->   
->>> Anyway, what's annoying is that I can't figure out how to bring the
->>> drive back on line without resetting the box.  It's in a hot-swap
->>>       
-> enclosure,
->   
->>> but power cycling the drive doesn't seem to help.  I thought libata
->>>       
-> hotplug
->   
->>> was working?  (SiI3132 card, using the sil24 driver.)
->>>       
->
-> Yeah, it's working but failing resets are considered highly dangerous
-> (in that the controller status is unknown and may cause something
-> dangerous like screaming interrupts) and port is muted after that.  The
-> plan is to handle this with polling hotplug such that libata tries to
-> revive the port if PHY status change is detected by polling.  Patches
-> are available but they need other things to resolved to get integrated.
->  I think it'll happen before the summer.
->
-> Anyways, you can tell libata to retry the port by manually telling it to
-> rescan the port (echo - - - > /sys/class/scsi_host/hostX/scan).
->   
-I won't say that's voodoo, but if I ever did it I'd wipe down my 
-keyboard with holy water afterward. ;-)
+On Wed, 04 Apr 2007 16:45:40 -0600 Bjorn Helgaas wrote:
 
-Well, I did save the message in my tricks file, but it sounds like a 
-last ditch effort after something get very wrong.
+> Index: w/drivers/net/irda/smsc-ircc2.c
+> ===================================================================
+> --- w.orig/drivers/net/irda/smsc-ircc2.c	2007-04-04 13:45:18.000000000 -0600
+> +++ w/drivers/net/irda/smsc-ircc2.c	2007-04-04 13:47:00.000000000 -0600
+> @@ -79,6 +79,10 @@
+>  MODULE_DESCRIPTION("SMC IrCC SIR/FIR controller driver");
+>  MODULE_LICENSE("GPL");
+>  
+> +static int smsc_nopnp;
+> +module_param_named(nopnp, smsc_nopnp, bool, 0);
+> +MODULE_PARM_DESC(nopnp, "Do not use PNP to detect controller settings");
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+Document this parameter (like you did "legacy_serial.force" in the
+other patch -- thanks).
 
+>  #define DMA_INVAL 255
+>  static int ircc_dma = DMA_INVAL;
+>  module_param(ircc_dma, int, 0);
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
