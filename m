@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992942AbXDDP6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992976AbXDDP7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992942AbXDDP6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992976AbXDDP6p
+	id S2992976AbXDDP7l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992977AbXDDP7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:58:45 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28293 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992942AbXDDP6o (ORCPT
+	Wed, 4 Apr 2007 11:59:40 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33678 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992976AbXDDP7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:58:44 -0400
-Subject: Re: real time hang w/ latency tracing
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070404154249.GA31171@elte.hu>
-References: <1175626625.10738.21.camel@imap.mvista.com>
-	 <1175650887.3722.2.camel@dwalker1> <20070404085133.GC2521@elte.hu>
-	 <1175701013.15973.8.camel@imap.mvista.com> <20070404154249.GA31171@elte.hu>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 08:57:57 -0700
-Message-Id: <1175702277.15973.17.camel@imap.mvista.com>
+	Wed, 4 Apr 2007 11:59:40 -0400
+Date: Wed, 4 Apr 2007 17:00:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Marcel Holtmann <marcel@holtmann.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+Message-ID: <20070404170016.453d26f1@the-village.bc.nu>
+In-Reply-To: <4613C963.6070409@gmail.com>
+References: <46138B4C.2050409@gmail.com>
+	<20070404123311.GA18552@infradead.org>
+	<1175698135.5815.447.camel@violet>
+	<20070404150231.GE27660@stusta.de>
+	<4613C963.6070409@gmail.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 17:42 +0200, Ingo Molnar wrote:
+> Given that people seem to agree that authorship information has no place 
+> in the binary, that might actually be best.
 
-> i mean non-printk related breakages to the normal serial driver - which 
-> is now surprised by this raw lock in an -rt kernel.
-> 
-> this is a hard issue and there's no easy solution i can see. neither 
-> having it as a raw lock is a good solution, nor having it as a 
-> preemptible lock is a good solution.
+Authorship information is very useful in the binary, especially when you
+have to get lawyers involved in explaining things to people. Company
+business and management people understand
 
-The machine that I'm using is relatively fast, but on slower machine
-it's possible to reproduce this same hang just by running,
+"load it into a binary editor, search for Alan Cox, now call your lawyer"
 
-echo 0 > /proc/sys/kernel/preempt_max_latency
+trying to prove a given source is a given binary is much much harder.
 
-then pressing enter a few times .. Which would be a fairly common
-happening with people using latency tracing an a serial port I would
-imagine..
+> So, MODULE_AUTHOR be gone?
 
-The other fix I test was using the hack for sysrq,
+Not if I have anything to do with it. Putting maintainer in is not a bad
+idea but that assumes it gets maintained, the beauty of _AUTHOR is that
+it's generally right and stays that way or approximately so.
 
-        if (up->port.sysrq || oops_in_progress)
-
-in serial8250_console_write to then also check "irqs_disabled()" , but
-I'm sure mass usage of the serial port would cause some issues with
-that.. Although both fixes I tested resulted in the serial port becoming
-garbled after about 10 min. with the preempt_thresh at 1 .
-
-Daniel
-
+Alan
