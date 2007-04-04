@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992750AbXDDIpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992758AbXDDIrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992750AbXDDIpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 04:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992752AbXDDIpx
+	id S2992758AbXDDIrZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 04:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992759AbXDDIrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 04:45:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51843 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992750AbXDDIpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 04:45:51 -0400
-Date: Wed, 4 Apr 2007 10:45:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Dillow <dave@thedillows.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       ray-gmail@madrabbit.org, amanda-hackers@amanda.org,
-       amanda-users@amanda.org
-Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
-Message-ID: <20070404084530.GB1556@elte.hu>
-References: <200704010100.19016.gene.heskett@verizon.net> <2c0942db0704010033r61f967c3y7d05e3ec0a9f6931@mail.gmail.com> <200704011141.53105.gene.heskett@verizon.net> <200704020021.02393.gene.heskett@gmail.com> <1175488272.3161.28.camel@obelisk.thedillows.org> <1175661256.31439.23.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1175661256.31439.23.camel@obelisk.thedillows.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 4 Apr 2007 04:47:25 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:34737 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2992758AbXDDIrY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 04:47:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=j0N+2gjBtvs/ItpSp+zJrVJr2INTnZx3dHcgPt0OOuJ/OQfgUlTmR1nQ6+1hD4R+XqHUy5uyDqGzYLR8kOuSdlhv/gO0HCJcxFTNOgli4Q8m5uwA23lajySsLQrVMDvH61k9ixjDZW/QofUUoSJzWuauD2IeXf4+AC8jYimx/HY=  ;
+X-YMail-OSG: Xe9jbgsVM1mbVaQMD4fyt.nj8FPbXLEJPp4mq3MSyBYI.jAK2Dhwl7NSRHqikPs8vVW4pSFRNg--
+Message-ID: <4613660C.5010108@yahoo.com.au>
+Date: Wed, 04 Apr 2007 18:47:08 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Jakub Jelinek <jakub@redhat.com>
+CC: Ulrich Drepper <drepper@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com> <461357C4.4010403@yahoo.com.au> <20070404082015.GG355@devserv.devel.redhat.com>
+In-Reply-To: <20070404082015.GG355@devserv.devel.redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Dave Dillow <dave@thedillows.org> wrote:
-
-> > Then it is a matter of figuring out why the device number changed -- 
-> > I'm thinking it is device-mapper, but will look closer tomorrow.
+Jakub Jelinek wrote:
+> On Wed, Apr 04, 2007 at 05:46:12PM +1000, Nick Piggin wrote:
 > 
-> This commit is the one that changed it:
+>>Does mmap(PROT_NONE) actually free the memory?
 > 
-> commit fdf892be32d84a1745fa0aee5fc60517421b8038
-> Author: Andrew Morton <akpm@osdl.org>
-> Date:   Mon Feb 12 00:51:44 2007 -0800
 > 
->     [PATCH] register_blkdev(): don't hand out the LOCAL/EXPERIMENTAL majors
->     
->     As pointed out in http://bugzilla.kernel.org/show_bug.cgi?id=7922, 
->     dynamic blockdev major allocation can hand out majors which LANANA 
->     has defined as being for local/experimental use.
+> Yes.
+>         /* Clear old maps */
+>         error = -ENOMEM;
+> munmap_back:
+>         vma = find_vma_prepare(mm, addr, &prev, &rb_link, &rb_parent);
+>         if (vma && vma->vm_start < addr + len) {
+>                 if (do_munmap(mm, addr, len))
+>                         return -ENOMEM;
+>                 goto munmap_back;
+>         }
 
-i dont think we should break backwards compatibility with a system that 
-has not changed any hardware. Andrew, should we revert this?
+Thanks, I overlooked the mmap vs mprotect detail. So how are the subsequent
+access faults avoided?
 
-	Ingo
+
+>>In the case of pages being unused then almost immediately reused, why is
+>>it a bad solution to avoid freeing? Is it that you want to avoid
+>>heuristics because in some cases they could fail and end up using memory?
+> 
+> 
+> free(3) doesn't know if the memory will be reused soon, late or never.
+> So avoiding trimming could substantially increase memory consumption with
+> certain malloc/free patterns, especially in threaded programs that use
+> multiple arenas.  Implementing some sort of deferred memory trimming
+> in malloc is "solving" the problem in a wrong place, each app really has no
+> idea (and should not have) what the current system memory pressure is.
+
+Thanks for the clarification.
+
+
+>>Secondly, why is MADV_DONTNEED bad? How much more expensive is a pagefault
+>>than a syscall? (including the cost of the TLB fill for the memory access
+>>after the syscall, of course).
+> 
+> 
+> That's page fault per page rather than a syscall for the whole chunk,
+> furthermore zeroing is expensive.
+
+Ah, for big allocations. OK, we could make a MADV_POPULATE to prefault
+pages (like mmap's MAP_POPULATE, but without the down_write(mmap_sem)).
+
+If you're just about to use the pages anyway, how much of a win would
+it be to avoid zeroing? We allocate cache hot pages for these guys...
+
+-- 
+SUSE Labs, Novell Inc.
