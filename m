@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750940AbXDDUnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751044AbXDDUpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750940AbXDDUnq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 16:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbXDDUnq
+	id S1751044AbXDDUpi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 16:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbXDDUpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 16:43:46 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55822 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbXDDUno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 16:43:44 -0400
-Date: Wed, 4 Apr 2007 13:43:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@muc.de>
-Subject: Re: [PATCH -mm] fix jiffies clocksource inittime
-Message-Id: <20070404134310.12ad3ab8.akpm@linux-foundation.org>
-In-Reply-To: <1175716216.17711.59.camel@localhost>
-References: <1175716216.17711.59.camel@localhost>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Wed, 4 Apr 2007 16:45:38 -0400
+Received: from homer.mvista.com ([63.81.120.158]:14373 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbXDDUpi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 16:45:38 -0400
+Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm
+	tree
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       johnstul@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+       heiko.carstens@de.ibm.com
+In-Reply-To: <20070404203647.GA12563@elte.hu>
+References: <200704010523.l315NXJP004063@shell0.pdx.osdl.net>
+	 <1175417035.28263.42.camel@localhost.localdomain>
+	 <1175704712.15973.35.camel@imap.mvista.com>
+	 <20070404125853.1cf9b7b7.akpm@linux-foundation.org>
+	 <1175717425.15973.61.camel@imap.mvista.com>
+	 <20070404203647.GA12563@elte.hu>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 13:44:49 -0700
+Message-Id: <1175719489.15973.66.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Apr 2007 12:50:15 -0700
-john stultz <johnstul@us.ibm.com> wrote:
-
-> 	In debugging a problem w/ the -rt tree, I noticed that on systems that
-> mark the tsc as unstable before it is registered, the TSC would still be
-> selected and used for a short period of time. Digging in it looks to be
-> a result of the mix of the clocksource list changes and my clocksource
-> initialization changes.
+On Wed, 2007-04-04 at 22:36 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
 > 
-> With the -rt tree, using a bad TSC, even for a short period of time can
-> results in a hang at boot. I was not able to reproduce this hang w/
-> mainline, but I'm not completely certain that someone won't trip on it.
+> > The struct clocksource .list field is now required to be initialized 
+> > before calling clocksource_register().
+> > 
+> > This is a prerequisite for simplifying the clocksource registration 
+> > process.
 > 
-> This patch resolves the issue by initializing the jiffies clocksource
-> earlier so a bad TSC won't get selected just because nothing else is yet
-> registered.
+> why? This patch only pushes some unnecessary code into the clocksource 
+> drivers:
 > 
-> thanks
-> -john
+> +       .list           = LIST_HEAD_INIT(clocksource_avr32.list),
 > 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> 
-> diff --git a/kernel/time/jiffies.c b/kernel/time/jiffies.c
-> index 3be8da8..4c256fd 100644
-> --- a/kernel/time/jiffies.c
-> +++ b/kernel/time/jiffies.c
-> @@ -69,4 +69,4 @@ static int __init init_jiffies_clocksour
->  	return clocksource_register(&clocksource_jiffies);
->  }
->  
-> -module_init(init_jiffies_clocksource);
-> +core_initcall(init_jiffies_clocksource);
+> NACK unless you can give an explanation of why this is unavoidable. A 
+> NULL initializer is just as good as an initialized list entry. (in fact 
+> it's slightly better because it's in the kernel's BSS)
 
-Do you think this is needed in 2.6.21?
+This is only 1 of 9 patches . The 9th patch requires the .list value to
+be initialized .. The description change above was suppose to make that
+clearer .. By forcing the .list value to be initialized we can simplify
+the clocksource registration .
 
-If so: worrisome.  Startup ordering issues are fragile and tricky.  Time
-management is fragile and tricky.  The combination of the two doesn't get
-any better ;)
-
-An option would be to test it in 2.6.22-rcX for a while, then backport to
-2.6.21.x.
-
+Daniel
 
