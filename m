@@ -1,183 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbXDDXAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbXDDXCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752604AbXDDXAm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 19:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbXDDXAl
+	id S1752609AbXDDXCf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 19:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbXDDXCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 19:00:41 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:58879 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752604AbXDDXAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 19:00:36 -0400
-Date: Wed, 4 Apr 2007 16:00:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
-Subject: preemption and rwsems (was: Re: missing madvise functionality)
-Message-Id: <20070404160006.8d81a533.akpm@linux-foundation.org>
-In-Reply-To: <20070403202937.GE355@devserv.devel.redhat.com>
-References: <46128051.9000609@redhat.com>
-	<p73648dz5oa.fsf@bingen.suse.de>
-	<46128CC2.9090809@redhat.com>
-	<20070403172841.GB23689@one.firstfloor.org>
-	<20070403125903.3e8577f4.akpm@linux-foundation.org>
-	<4612B645.7030902@redhat.com>
-	<20070403202937.GE355@devserv.devel.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Apr 2007 19:02:35 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:54653 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752609AbXDDXCd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 19:02:33 -0400
+Message-ID: <02f801c7770d$3eafb050$84163e05@kroptech.com>
+From: "Adam Kropelin" <akropel1@rochester.rr.com>
+To: "Jiri Kosina" <jkosina@suse.cz>, "Li Yu" <raise.sail@gmail.com>
+Cc: <yanghong@ccoss.com.cn>,
+       "linux-usb-devel" <linux-usb-devel@lists.sourceforge.net>,
+       <hongzhiyi@ccoss.com.cn>, "Marcel Holtmann" <marcel@holtmann.org>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com> <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn> <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz> <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com> <1175516515.5815.347.camel@violet> <Pine.LNX.4.64.0704021429420.3808@jikos.suse.cz> <1175532439.5815.375.camel@violet> <4611AAC1.8050303@gmail.com> <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+Date: Wed, 4 Apr 2007 19:01:57 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3028
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007 16:29:37 -0400
-Jakub Jelinek <jakub@redhat.com> wrote:
+Jiri Kosina wrote:
+> On Tue, 3 Apr 2007, Li Yu wrote:
+>
+>> What's the position of hidraw? It only is used when all other driver
+>> is not usable on some report? or, it should be stick every working
+>> device.
+>
+> Current implementation (as you can see it in -mm or in my hid.git
+> tree) is creating hidraw interface for just every HID
+> device/interface. But this will get changed before merge.
+>
+> Passing just everything to hidraw is not a good option, as this could
+> lead to confusion and duplicating of input events (i.e. in-kernel hid
+> driver processes the report and generates input_event(), and also
+> userland driver obtains data from hidraw and generates input event
+> through uinput ... not good).
 
-> #include <pthread.h>
-> #include <stdlib.h>
-> #include <sys/mman.h>
-> #include <unistd.h>
-> 
-> void *
-> tf (void *arg)
-> {
->   (void) arg;
->   size_t ps = sysconf (_SC_PAGE_SIZE);
->   void *p = mmap (NULL, 128 * ps, PROT_READ | PROT_WRITE,
->                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
->   if (p == MAP_FAILED)
->     exit (1);
->   int i;
->   for (i = 0; i < 100000; i++)
->     {
->       /* Pretend to use the buffer.  */
->       char *q, *r = (char *) p + 128 * ps;
->       size_t s;
->       for (q = (char *) p; q < r; q += ps)
->         *q = 1;
->       for (s = 0, q = (char *) p; q < r; q += ps)
->         s += *q;
->       /* Free it.  Replace this mmap with
->          madvise (p, 128 * ps, MADV_THROWAWAY) when implemented.  */
->       if (mmap (p, 128 * ps, PROT_NONE,
->                 MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) != p)
->         exit (2);
->       /* And immediately malloc again.  This would then be deleted.  */
->       if (mprotect (p, 128 * ps, PROT_READ | PROT_WRITE))
->         exit (3);
->     }
->   return NULL;
-> }
-> 
-> int
-> main (void)
-> {
->   pthread_t th[32];
->   int i;
->   for (i = 0; i < 32; i++)
->     if (pthread_create (&th[i], NULL, tf, NULL))
->       exit (4);
->   for (i = 0; i < 32; i++)
->     pthread_join (th[i], NULL);
->   return 0;
-> }
+I apologize for picking up this thread late and asking what may be a 
+question with an obvious answer...
 
-This little test app is fun.
+Will hiddev still exist after hidraw and the HID bus redesign work is 
+done? I have a widely-deployed userspace app that relies on hiddev, and 
+I'm looking for reassurance that it will still work as it always has...
 
-I run it all on a single CPU under `taskset -c 0' on the 8-way and it still
-causes 160,000 context switches per second and takes 9.5 seconds (after
-s/100000/1000).
-
-The kernel has
-
-# CONFIG_PREEMPT_NONE is not set
-CONFIG_PREEMPT_VOLUNTARY=y
-# CONFIG_PREEMPT is not set
-# CONFIG_PREEMPT_BKL is not set
-
-and when I switch that to
-
-CONFIG_PREEMPT_NONE=y
-# CONFIG_PREEMPT_VOLUNTARY is not set
-# CONFIG_PREEMPT is not set
-# CONFIG_PREEMPT_BKL is not set
-
-the context switch rate falls to zilch and total runtime falls to 6.4
-seconds.
-
-Presumably the same problem will occur with CONFIG_PREEMPT_VOLUNTARY on
-uniprocessor kernels.
-
-<thinks>
-
-What we effectively have is 32 threads on a single CPU all doing
-
-	for (ever) {
-		down_write()
-		up_write()
-		down_read()
-		up_read();
-	}
-
-and rwsems are "fair".  So
-
-  thread A                                     thread B
-
-  down_write();
-
-  cond_resched()
-  ->schedule()
-
-                                               down_read() -> blocks
-
-  up_write()
-
-  down_read()
-
-  up_read()
-
-  down_write() -> there's a reader: block
-
-                                               down_read() -> succeeds
-
-                                               up_read()
-
-                                               down_write() -> there's another down_writer: block
-
-  down_write() -> succeeds
-
-  up_write()
-
-  down_read() -> there's a down_writer: block
-
-                                               down_write() succeeds
-
-                                               up_write()
-
-                                               down_read() -> succeeds
-
-                                               up_read()
-
-                                               down_write() -> there's a down_reader: block
-
-  down_read() succeeds
-
-
-ad nauseum.
-
-
-If that cond_resched() was not there, none of this would ever happen - each
-thread merrily chugs away doing its ups and downs until it expires its
-timeslice.  Interesting, in a sad sort of way.
-
-
-
-Setting CONFIG_PREEMPT_NONE doesn't appear to make any difference to
-context switch rate or runtime when all eight CPUs are used, so this
-phenomenon is unlikely to be involved in the mysql problem.
-
-I wonder why a similar thing doesn't happen when more than one CPU is used.
+--Adam
 
