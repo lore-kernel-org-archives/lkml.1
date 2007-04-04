@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbXDDRgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbXDDRi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752103AbXDDRgl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbXDDRgl
+	id S1752033AbXDDRi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbXDDRi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:36:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:52357 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbXDDRgj (ORCPT
+	Wed, 4 Apr 2007 13:38:59 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:55752 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbXDDRi6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:36:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=jkUmsP/IvVqGr8gcA1iWFBR/CtdYqw2l9SjjljC6him86MIvjauVZbfsmgcNjdAt7hrfoVvhaioKblAr40A++6duS9JVcWXxuVZ9thQUGKjokplCBFwV3o9m8zM3A/6zV5M4pp6dee/5v4xscy3MLBQGfPUZB4kEQAgo9hajJnc=
-Date: Wed, 4 Apr 2007 23:07:40 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: kernel-janitors@lists.osdl.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [KJ][PATCH]ROUND_UP macro cleanup in drivers/char/lp.c
-Message-ID: <20070404173739.GB9830@arun.site>
-Mime-Version: 1.0
+	Wed, 4 Apr 2007 13:38:58 -0400
+Date: Wed, 4 Apr 2007 12:38:56 -0500
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Brad Boyer <flar@allandria.com>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404173856.GU4922@austin.ibm.com>
+References: <1175610345.2665.15.camel@shinybook.infradead.org> <17938.57292.870224.132415@cargo.ozlabs.ibm.com> <1175642916.10567.24.camel@shinybook.infradead.org> <20070403212928.GA12951@cynthia.pants.nu> <1175644642.10567.31.camel@shinybook.infradead.org> <20070403221002.GA13210@cynthia.pants.nu> <1175648051.10567.61.camel@shinybook.infradead.org> <20070403230908.GA13471@cynthia.pants.nu> <20070404162234.GS4922@austin.ibm.com> <1175704494.2774.33.camel@shinybook.infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <1175704494.2774.33.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ROUND_UP macro cleanup use DIV_ROUND_UP
+On Wed, Apr 04, 2007 at 12:34:53PM -0400, David Woodhouse wrote:
+> On Wed, 2007-04-04 at 11:22 -0500, Linas Vepstas wrote:
+> > The biggest problem would seem to be that the assignment would
+> > depend on the detection order; there don't seem to be unique 
+> > id's that would help udev consistently assign device names in 
+> > consistent order. 
+> 
+> Of course there are. The different types of ports have different device
+> numbers. As long as we don't do anything silly like putting all the
+> serial drivers on the same major number, we can tell them apart
+> relatively well.
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Sure, but if two different pci serial cards are moved around  
+to different pci slots, they'll be detected in a different order. 
+Similarly if one has some usb-to-serial converter that might get
+plugged in after boot, or maybe some serial port that shows up
+only when a laptop is docked into a docking station.
 
----
- lp.c |    5 +----
- 1 files changed, 1 insertion(+), 4 deletions(-)
-
-
-diff --git a/drivers/char/lp.c b/drivers/char/lp.c
-index b51d08b..c086910 100644
---- a/drivers/char/lp.c
-+++ b/drivers/char/lp.c
-@@ -139,9 +139,6 @@
- /* if you have more than 8 printers, remember to increase LP_NO */
- #define LP_NO 8
- 
--/* ROUND_UP macro from fs/select.c */
--#define ROUND_UP(x,y) (((x)+(y)-1)/(y))
--
- static struct lp_struct lp_table[LP_NO];
- 
- static unsigned int lp_count = 0;
-@@ -652,7 +649,7 @@ static int lp_ioctl(struct inode *inode, struct file *file,
- 			    (par_timeout.tv_usec < 0)) {
- 				return -EINVAL;
- 			}
--			to_jiffies = ROUND_UP(par_timeout.tv_usec, 1000000/HZ);
-+			to_jiffies = DIV_ROUND_UP(par_timeout.tv_usec, 1000000/HZ);
- 			to_jiffies += par_timeout.tv_sec * (long) HZ;
- 			if (to_jiffies <= 0) {
- 				return -EINVAL;
-
--- 
-Milind Arun Choudhary
+--linas
