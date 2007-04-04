@@ -1,136 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbXDEASO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbXDEASO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932129AbXDEASO (ORCPT <rfc822;w@1wt.eu>);
+	id S932152AbXDEASO (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 4 Apr 2007 20:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbXDEAR5
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932129AbXDEAR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:17:57 -0400
-Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36878 "EHLO
+	Wed, 4 Apr 2007 20:17:59 -0400
+Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36889 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932129AbXDEAQr (ORCPT
+	with ESMTP id S932152AbXDEAQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 20:16:47 -0400
-Message-Id: <20070404191206.476822257@goop.org>
+	Wed, 4 Apr 2007 20:16:53 -0400
+Message-Id: <20070404191206.021209233@goop.org>
 References: <20070404191151.009821039@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Apr 2007 12:12:09 -0700
+Date: Wed, 04 Apr 2007 12:12:04 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 18/20] clean up tsc-based sched_clock
-Content-Disposition: inline; filename=cleanup-tsc-sched-clock.patch
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 13/20] Document asm-i386/paravirt.h
+Content-Disposition: inline; filename=paravirt-document-paravirt_ops.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Three cleanups:
- - change "instable" -> "unstable"
- - its better to use get_cpu_var for getting this cpu's variables
- - change cycles_2_ns to do the full computation rather than just the
-   tsc->ns scaling.  Its a simpler interface, and it makes the function
-   more generally useful.
+Clean things up, and broadly document:
+ - the paravirt_ops functions themselves
+ - the patching mechanism
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+ 
 ---
- arch/i386/kernel/sched-clock.c |   35 +++++++++++++++++++++--------------
- 1 file changed, 21 insertions(+), 14 deletions(-)
+ include/asm-i386/paravirt.h |  140 +++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 123 insertions(+), 17 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/sched-clock.c
-+++ b/arch/i386/kernel/sched-clock.c
-@@ -39,17 +39,23 @@
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -21,6 +21,14 @@ struct tss_struct;
+ struct tss_struct;
+ struct mm_struct;
+ struct desc_struct;
++
++/* Lazy mode for batching updates / context switch */
++enum paravirt_lazy_mode {
++	PARAVIRT_LAZY_NONE = 0,
++	PARAVIRT_LAZY_MMU = 1,
++	PARAVIRT_LAZY_CPU = 2,
++};
++
+ struct paravirt_ops
+ {
+ 	unsigned int kernel_rpl;
+@@ -37,22 +45,33 @@ struct paravirt_ops
+ 	 */
+ 	unsigned (*patch)(u8 type, u16 clobber, void *firstinsn, unsigned len);
  
- struct sc_data {
- 	unsigned int cyc2ns_scale;
--	unsigned char instable;
-+	unsigned char unstable;
- 	unsigned long long last_tsc;
- 	unsigned long long ns_base;
++	/* Basic arch-specific setup */
+ 	void (*arch_setup)(void);
+ 	char *(*memory_setup)(void);
+ 	void (*init_IRQ)(void);
+-
++	void (*time_init)(void);
++
++	/*
++	 * Called before/after init_mm pagetable setup. setup_start
++	 * may reset %cr3, and may pre-install parts of the pagetable;
++	 * pagetable setup is expected to preserve any existing
++	 * mapping.
++	 */
+ 	void (*pagetable_setup_start)(pgd_t *pgd_base);
+ 	void (*pagetable_setup_done)(pgd_t *pgd_base);
+ 
++	/* Print a banner to identify the environment */
+ 	void (*banner)(void);
+ 
++	/* Set and set time of day */
+ 	unsigned long (*get_wallclock)(void);
+ 	int (*set_wallclock)(unsigned long);
+-	void (*time_init)(void);
+-
++
++	/* cpuid emulation, mostly so that caps bits can be disabled */
+ 	void (*cpuid)(unsigned int *eax, unsigned int *ebx,
+ 		      unsigned int *ecx, unsigned int *edx);
+ 
++	/* hooks for various privileged instructions */
+ 	unsigned long (*get_debugreg)(int regno);
+ 	void (*set_debugreg)(int regno, unsigned long value);
+ 
+@@ -71,15 +90,23 @@ struct paravirt_ops
+ 	unsigned long (*read_cr4)(void);
+ 	void (*write_cr4)(unsigned long);
+ 
++	/*
++	 * Get/set interrupt state.  save_fl and restore_fl are only
++	 * expected to use X86_EFLAGS_IF; all other bits
++	 * returned from save_fl are undefined, and may be ignored by
++	 * restore_fl.
++	 */
+ 	unsigned long (*save_fl)(void);
+ 	void (*restore_fl)(unsigned long);
+ 	void (*irq_disable)(void);
+ 	void (*irq_enable)(void);
+ 	void (*safe_halt)(void);
+ 	void (*halt)(void);
++
+ 	void (*wbinvd)(void);
+ 
+-	/* err = 0/-EFAULT.  wrmsr returns 0/-EFAULT. */
++	/* MSR, PMC and TSR operations.
++	   err = 0/-EFAULT.  wrmsr returns 0/-EFAULT. */
+ 	u64 (*read_msr)(unsigned int msr, int *err);
+ 	int (*write_msr)(unsigned int msr, u64 val);
+ 
+@@ -88,6 +115,7 @@ struct paravirt_ops
+  	u64 (*get_scheduled_cycles)(void);
+ 	unsigned long (*get_cpu_khz)(void);
+ 
++	/* Segment descriptor handling */
+ 	void (*load_tr_desc)(void);
+ 	void (*load_gdt)(const struct Xgt_desc_struct *);
+ 	void (*load_idt)(const struct Xgt_desc_struct *);
+@@ -105,9 +133,12 @@ struct paravirt_ops
+ 	void (*load_esp0)(struct tss_struct *tss, struct thread_struct *t);
+ 
+ 	void (*set_iopl_mask)(unsigned mask);
+-
+ 	void (*io_delay)(void);
+ 
++	/*
++	 * Hooks for intercepting the creation/use/destruction of an
++	 * mm_struct.
++	 */
+ 	void (*activate_mm)(struct mm_struct *prev,
+ 			    struct mm_struct *next);
+ 	void (*dup_mmap)(struct mm_struct *oldmm,
+@@ -115,30 +146,43 @@ struct paravirt_ops
+ 	void (*exit_mmap)(struct mm_struct *mm);
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
++	/*
++	 * Direct APIC operations, principally for VMI.  Ideally
++	 * these shouldn't be in this interface.
++	 */
+ 	void (*apic_write)(unsigned long reg, unsigned long v);
+ 	void (*apic_write_atomic)(unsigned long reg, unsigned long v);
+ 	unsigned long (*apic_read)(unsigned long reg);
+ 	void (*setup_boot_clock)(void);
+ 	void (*setup_secondary_clock)(void);
++
++	void (*startup_ipi_hook)(int phys_apicid,
++				 unsigned long start_eip,
++				 unsigned long start_esp);
+ #endif
+ 
++	/* TLB operations */
+ 	void (*flush_tlb_user)(void);
+ 	void (*flush_tlb_kernel)(void);
+ 	void (*flush_tlb_single)(unsigned long addr);
+ 
+ 	void (*map_pt_hook)(int type, pte_t *va, u32 pfn);
+ 
++	/* Hooks for allocating/releasing pagetable pages */
+ 	void (*alloc_pt)(u32 pfn);
+ 	void (*alloc_pd)(u32 pfn);
+ 	void (*alloc_pd_clone)(u32 pfn, u32 clonepfn, u32 start, u32 count);
+ 	void (*release_pt)(u32 pfn);
+ 	void (*release_pd)(u32 pfn);
+ 
++	/* Pagetable manipulation functions */
+ 	void (*set_pte)(pte_t *ptep, pte_t pteval);
+-	void (*set_pte_at)(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pteval);
++	void (*set_pte_at)(struct mm_struct *mm, unsigned long addr,
++			   pte_t *ptep, pte_t pteval);
+ 	void (*set_pmd)(pmd_t *pmdp, pmd_t pmdval);
+ 	void (*pte_update)(struct mm_struct *mm, unsigned long addr, pte_t *ptep);
+-	void (*pte_update_defer)(struct mm_struct *mm, unsigned long addr, pte_t *ptep);
++	void (*pte_update_defer)(struct mm_struct *mm,
++				 unsigned long addr, pte_t *ptep);
+ 
+  	pte_t (*ptep_get_and_clear)(pte_t *ptep);
+ 
+@@ -164,13 +208,12 @@ struct paravirt_ops
+ 	pgd_t (*make_pgd)(unsigned long pgd);
+ #endif
+ 
+-	void (*set_lazy_mode)(int mode);
++	/* Set deferred update mode, used for batching operations. */
++	void (*set_lazy_mode)(enum paravirt_lazy_mode mode);
+ 
+ 	/* These two are jmp to, not actually called. */
+ 	void (*irq_enable_sysexit)(void);
+ 	void (*iret)(void);
+-
+-	void (*startup_ipi_hook)(int phys_apicid, unsigned long start_eip, unsigned long start_esp);
  };
  
- static DEFINE_PER_CPU(struct sc_data, sc_data);
+ /* Mark a paravirt probe function. */
+@@ -188,8 +231,10 @@ extern struct paravirt_ops paravirt_ops;
+ #define paravirt_clobber(clobber)		\
+ 	[paravirt_clobber] "i" (clobber)
  
--static inline unsigned long long cycles_2_ns(int cpu, unsigned long long cyc)
-+static inline unsigned long long cycles_2_ns(unsigned long long cyc)
- {
--	struct sc_data *sc = &per_cpu(sc_data, cpu);
--	return (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
-+	const struct sc_data *sc = &__get_cpu_var(sc_data);
-+	unsigned long long ns;
+-#define PARAVIRT_CALL	"call *(paravirt_ops+%c[paravirt_typenum]*4);"
+-
++/*
++ * Generate some code, and mark it as patchable by the
++ * apply_paravirt() alternate instruction patcher.
++ */
+ #define _paravirt_alt(insn_string, type, clobber)	\
+ 	"771:\n\t" insn_string "\n" "772:\n"		\
+ 	".pushsection .parainstructions,\"a\"\n"	\
+@@ -199,9 +244,74 @@ extern struct paravirt_ops paravirt_ops;
+ 	"  .short " clobber "\n"			\
+ 	".popsection\n"
+ 
++/* Generate patchable code, with the default asm parameters. */
+ #define paravirt_alt(insn_string)					\
+ 	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
+ 
++/*
++ * This generates an indirect call based on the operation type number.
++ * The type number, computed in PARAVIRT_PATCH, is derived from the
++ * offset into the paravirt_ops structure, and can therefore be freely
++ * converted back into a structure offset.
++ */
++#define PARAVIRT_CALL	"call *(paravirt_ops+%c[paravirt_typenum]*4);"
 +
-+	cyc -= sc->last_tsc;
-+	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
-+	ns += sc->ns_base;
-+
-+	return ns;
++/*
++ * These macros are intended to wrap calls into a paravirt_ops
++ * operation, so that they can be later identified and patched at
++ * runtime.
++ *
++ * Normally, a call to a pv_op function is a simple indirect call:
++ * (paravirt_ops.operations)(args...).
++ *
++ * Unfortunately, this is a relatively slow operation for modern CPUs,
++ * because it cannot necessarily determine what the destination
++ * address is.  In this case, the address is a runtime constant, so at
++ * the very least we can patch the call to e a simple direct call, or
++ * ideally, patch an inline implementation into the callsite.  (Direct
++ * calls are essentially free, because the call and return addresses
++ * are completely predictable.)
++ *
++ * These macros rely on the standard gcc "regparm(3)" calling
++ * convention, in which the first three arguments are placed in %eax,
++ * %edx, %ecx (in that order), and the remaining arguments are placed
++ * on the stack.  All caller-save registers (eax,edx,ecx) are expected
++ * to be modified (either clobbered or used for return values).
++ *
++ * The call instruction itself is marked by placing its start address
++ * and size into the .parainstructions section, so that
++ * apply_paravirt() in arch/i386/kernel/alternative.c can do the
++ * appropriate patching under the control of the backend paravirt_ops
++ * implementation.
++ *
++ * Unfortunately there's no way to get gcc to generate the args setup
++ * for the call, and then allow the call itself to be generated by an
++ * inline asm.  Because of this, we must do the complete arg setup and
++ * return value handling from within these macros.  This is fairly
++ * cumbersome.
++ *
++ * There are 5 sets of PVOP_* macros for dealing with 0-4 arguments.
++ * It could be extended to more arguments, but there would be little
++ * to be gained from that.  For each number of arguments, there are
++ * the two VCALL and CALL variants for void and non-void functions.
++ *
++ * When there is a return value, the invoker of the macro must specify
++ * the return type.  The macro then uses sizeof() on that type to
++ * determine whether its a 32 or 64 bit value, and places the return
++ * in the right register(s) (just %eax for 32-bit, and %edx:%eax for
++ * 64-bit).
++ *
++ * 64-bit arguments are passed as a pair of adjacent 32-bit arguments
++ * in low,high order.
++ *
++ * Small structures are passed and returned in registers.  The macro
++ * calling convention can't directly deal with this, so the wrapper
++ * functions must do this.
++ *
++ * These PVOP_* macros are only defined within this header.  This
++ * means that all uses must be wrapped in inline functions.  This also
++ * makes sure the incoming and outgoing types are always correct.
++ */
+ #define PVOP_CALL0(__rettype, __op)					\
+ 	({								\
+ 		__rettype __ret;					\
+@@ -897,11 +1007,6 @@ static inline pte_t raw_ptep_get_and_cle
  }
+ #endif	/* CONFIG_X86_PAE */
  
- /*
-@@ -62,18 +68,19 @@ static inline unsigned long long cycles_
-  */
- unsigned long long sched_clock(void)
+-/* Lazy mode for batching updates / context switch */
+-#define PARAVIRT_LAZY_NONE 0
+-#define PARAVIRT_LAZY_MMU  1
+-#define PARAVIRT_LAZY_CPU  2
+-
+ #define  __HAVE_ARCH_ENTER_LAZY_CPU_MODE
+ static inline void arch_enter_lazy_cpu_mode(void)
  {
--	int cpu = get_cpu();
--	struct sc_data *sc = &per_cpu(sc_data, cpu);
- 	unsigned long long r;
-+	const struct sc_data *sc = &get_cpu_var(sc_data);
+@@ -1012,6 +1117,7 @@ static inline unsigned long __raw_local_
+ 	[paravirt_sti_type] "i" (PARAVIRT_PATCH(irq_enable)),		\
+ 	paravirt_clobber(CLBR_EAX)
  
--	if (sc->instable) {
-+	if (sc->unstable) {
- 		/* TBD find a cheaper fallback timer than this */
- 		r = ktime_to_ns(ktime_get());
- 	} else {
- 		get_scheduled_cycles(r);
--		r = ((u64)sc->ns_base) + cycles_2_ns(cpu, r - sc->last_tsc);
-+		r = cycles_2_ns(r);
- 	}
--	put_cpu();
-+
-+	put_cpu_var(sc_data);
-+
- 	return r;
- }
- 
-@@ -81,7 +88,7 @@ static void resync_sc_freq(struct sc_dat
- static void resync_sc_freq(struct sc_data *sc, unsigned int newfreq)
- {
- 	if (!cpu_has_tsc) {
--		sc->instable = 1;
-+		sc->unstable = 1;
- 		return;
- 	}
- 	/* RED-PEN protect with seqlock? I hope that's not needed
-@@ -90,7 +97,7 @@ static void resync_sc_freq(struct sc_dat
- 	sc->ns_base = ktime_to_ns(ktime_get());
- 	get_scheduled_cycles(sc->last_tsc);
- 	sc->cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR) / newfreq;
--	sc->instable = 0;
-+	sc->unstable = 0;
- }
- 
- static void call_r_s_f(void *arg)
-@@ -119,9 +126,9 @@ static int sc_freq_event(struct notifier
- 	switch (event) {
- 	case CPUFREQ_RESUMECHANGE:  /* needed? */
- 	case CPUFREQ_PRECHANGE:
--		/* Mark TSC as instable until cpu frequency change is done
-+		/* Mark TSC as unstable until cpu frequency change is done
- 		   because we don't know when exactly it will change */
--		sc->instable = 1;
-+		sc->unstable = 1;
- 		break;
- 	case CPUFREQ_SUSPENDCHANGE:
- 	case CPUFREQ_POSTCHANGE:
-@@ -163,7 +170,7 @@ static __init int init_sched_clock(void)
- 	int i;
- 	struct cpufreq_freqs f = { .cpu = get_cpu(), .new = 0 };
- 	for_each_possible_cpu (i)
--		per_cpu(sc_data, i).instable = 1;
-+		per_cpu(sc_data, i).unstable = 1;
- 	WARN_ON(num_online_cpus() > 1);
- 	call_r_s_f(&f);
- 	put_cpu();
++/* Make sure as little as possible of this mess escapes. */
+ #undef PARAVIRT_CALL
+ #undef PVOP_VCALL0
+ #undef PVOP_CALL0
 
 -- 
 
