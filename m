@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992862AbXDDLca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992864AbXDDLjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992862AbXDDLca (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 07:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992866AbXDDLca
+	id S2992864AbXDDLjc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 07:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992866AbXDDLjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 07:32:30 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:57558 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992862AbXDDLc3 (ORCPT
+	Wed, 4 Apr 2007 07:39:32 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:44618 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992864AbXDDLjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 07:32:29 -0400
-From: Nikita Danilov <nikita@clusterfs.com>
+	Wed, 4 Apr 2007 07:39:31 -0400
+Date: Wed, 4 Apr 2007 07:39:17 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: gregkh@suse.de
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] lib/kobject_uevent.c: Collapse unnecessary loop nesting
+ (top_kobj)
+Message-ID: <alpine.DEB.0.83.0704040730530.25382@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17939.35217.938339.677599@gargle.gargle.HOWL>
-Date: Wed, 4 Apr 2007 15:18:41 +0400
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/13] maps: Add /proc/pid/pagemap interface
-Newsgroups: gmane.linux.kernel
-In-Reply-To: <13.486631555@selenic.com>
-References: <1.486631555@selenic.com>
-	<13.486631555@selenic.com>
-X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
-X-SystemSpamProbe: GOOD 0.0000471 d3b1ff82328ab48c9bf8bb45937d3d3c
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall writes:
- > Add /proc/pid/pagemap interface
- > 
- > This interface provides a mapping for each page in an address space to
- > its physical page frame number, allowing precise determination of what
- > pages are mapped and what pages are shared between processes.
+From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-[...]
+Collapses a do..while() loop within an if() to a simple while() loop for 
+simplicity and readability.
 
- >  
- > +#ifdef CONFIG_PROC_PAGEMAP
- > +struct pagemapread {
- > +	struct mm_struct *mm;
- > +	unsigned long next;
- > +	unsigned long *buf;
- > +	unsigned long pos;
- > +	size_t count;
- > +	int index;
- > +	char __user *out;
- > +};
- > +
- > +static int flush_pagemap(struct pagemapread *pm)
- > +{
- > +	int n = min(pm->count, pm->index * sizeof(unsigned long));
- > +	if (copy_to_user(pm->out, pm->buf, n))
- > +		return -EFAULT;
+Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-This pushes binary data to the user space. Wasn't /proc supposed to be
-ascii-based to avoid compatibility problems (e.g., size of unsigned long
-changing, endianness, etc.)?
+---
 
-Nikita.
+I'm sure GCC is able to handle this optimization decently, but there's no 
+reason at all for the additional nesting level for the loop.
 
+--- linux-2.6.20.4/lib/kobject_uevent.c.orig	2007-04-04 07:25:08.000000000 -0400
++++ linux-2.6.20.4/lib/kobject_uevent.c	2007-04-04 07:27:28.000000000 -0400
+@@ -95,10 +95,8 @@ int kobject_uevent_env(struct kobject *k
+ 
+ 	/* search the kset we belong to */
+ 	top_kobj = kobj;
+-	if (!top_kobj->kset && top_kobj->parent) {
+-		do {
+-			top_kobj = top_kobj->parent;
+-		} while (!top_kobj->kset && top_kobj->parent);
++	while (!top_kobj->kset && top_kobj->parent) {
++		top_kobj = top_kobj->parent;
+ 	}
+ 	if (!top_kobj->kset) {
+ 		pr_debug("kobject attempted to send uevent without kset!\n");
