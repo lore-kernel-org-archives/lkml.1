@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766910AbXDDTyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766915AbXDDT6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766910AbXDDTyq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 15:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766911AbXDDTyq
+	id S1766915AbXDDT6J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 15:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766916AbXDDT6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 15:54:46 -0400
-Received: from mga02.intel.com ([134.134.136.20]:3861 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766910AbXDDTyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 15:54:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,372,1170662400"; 
-   d="scan'208"; a="221960947:sNHT20210505"
-Message-ID: <46140276.1050905@intel.com>
-Date: Wed, 04 Apr 2007 12:54:30 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.10 (X11/20070311)
-MIME-Version: 1.0
-To: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>
-CC: Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Latest e1000 7.3.20 driver busted with 2.6.20.4
-References: <4613E230.6080608@wolfmountaingroup.com> <4613FD2C.101@intel.com> <461400A1.7080907@wolfmountaingroup.com>
-In-Reply-To: <461400A1.7080907@wolfmountaingroup.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 4 Apr 2007 15:58:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41464
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1766915AbXDDT6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 15:58:04 -0400
+Date: Wed, 04 Apr 2007 12:58:03 -0700 (PDT)
+Message-Id: <20070404.125803.35507943.davem@davemloft.net>
+To: rmk+lkml@arm.linux.org.uk
+Cc: dwmw2@infradead.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
+       flar@allandria.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070404090016.GC13134@flint.arm.linux.org.uk>
+References: <20070404083803.GA13134@flint.arm.linux.org.uk>
+	<20070404.014330.91315500.davem@davemloft.net>
+	<20070404090016.GC13134@flint.arm.linux.org.uk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff V. Merkey wrote:
-> Kok, Auke wrote:
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Date: Wed, 4 Apr 2007 10:00:16 +0100
+
+> On Wed, Apr 04, 2007 at 01:43:30AM -0700, David Miller wrote:
+> > Well the "bad hack" we use on sparc gives usable serial ports,
+> > properly ordered and using /dev/ttyS0, with a proper matching
+> > console selection.
 > 
->> Jeff V. Merkey wrote:
->>
->>> CC [M]  drivers/net/chelsio/mv88x201x.o
->>>   CC [M]  drivers/net/chelsio/my3126.o
->>>   LD [M]  drivers/net/chelsio/cxgb.o
->>>   CC      drivers/net/e1000/e1000_main.o
->>> drivers/net/e1000/e1000_main.c:1185:45: error: macro "INIT_WORK" 
->>> passed 3 arguments, but takes just 2
->>> ared (first use in this function)
->>> drivers/net/e1000/e1000_main.c:1184: error: (Each undeclared 
->>> identifier is reported only once
->>> drivers/net/e1000/e1000_main.c:1184: error: for each function it 
->>> appears in.)
->>> make[3]: *** [drivers/net/e1000/e1000_main.o] Error 1
->>> make[2]: *** [drivers/net/e1000] Error 2
->>> make[1]: *** [drivers/net] Error 2
->>> make: *** [drivers] Error 2
->>
->> this is hardly a thread for lkml as you're posting about out 
->> out-of-tree driver.  This issue has also been fixed in 7.4.35 which 
->> was released last week on e1000.sf.net. In the future, please post 
->> this stuff to e1000-devel@lists.sourceforge.net where we discuss the 
->> out-of-tree driver.
->>
->> Cheers,
->>
->> Auke
->>
-> Thanks.  I'll download Intel's latest driver and test it.   I wasn't 
-> discussing the out of tree driver (why do you have a broken Linux out of 
-> tree driver, BTW?   If its for Linux, shouldn't it be updated here 
-> first) but the driver in 2.6.20.4 (which is missing support four 
-> additional chipsets). 
+> Well yes, but it seems to have code in the architecture's early
+> command line parsing to parse the "console=" argument to set this
+> magical "serial_console" variable.
+> 
+> Is this an approach you recommend for all architectures?
 
-Our hardware release schedule is not aligned with kernel releases, and customers 
-need to have a working (and tested) driver once the hardware is released. We try 
-to get the updates into the kernel as fast as we can, but often meet resistance, 
-as the two parties involved just have different interests.
+The platform should use whatever is appropriate, and matches
+firmware/bios/whatever conventions, to determine this stuff.
 
-Are you saying that the in-kernel driver in 2.6.20.4 is broken? That is bizarre, 
-and should never happen. It compiles fine for me here...
+On Sparc you get an openfirmware environment variable called
+"output-device" that can point to a framebuffer or serial
+console device.
 
-Auke
+The user can override this on the kernel command line, of course, and
+what they ask for will get translated properly.
