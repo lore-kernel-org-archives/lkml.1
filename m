@@ -1,227 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934070AbXDDSfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbXDDSgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934070AbXDDSfG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXDDSee
+	id S1753927AbXDDSgF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:36:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbXDDSgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:34:34 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:37066 "EHLO
-	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753933AbXDDSIp (ORCPT
+	Wed, 4 Apr 2007 14:36:04 -0400
+Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:7199 "EHLO
+	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753933AbXDDSfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:08:45 -0400
-X-ORBL: [67.117.73.34]
-From: Tony Lindgren <tony@atomide.com>
-To: linux-kernel@vger.kernel.org
-Cc: Syed Mohammed Khasim <x0khasim@ti.com>, Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 31/90] ARM: OMAP: plat-omap changes for 2430 SDP
-Date: Wed,  4 Apr 2007 14:05:10 -0400
-Message-Id: <11757100491583-git-send-email-tony@atomide.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <117571004562-git-send-email-tony@atomide.com>
-References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!
- 57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <117571004562-git-send-email-tony@atomide.com>
+	Wed, 4 Apr 2007 14:35:36 -0400
+Date: Wed, 4 Apr 2007 11:37:08 -0700
+From: "Ed Lin" <ed.lin@promise.com>
+To: "james.Bottomley" <james.Bottomley@SteelEye.com>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-scsi" <linux-scsi@vger.kernel.org>, "jeff" <jeff@garzik.org>,
+       "promise_linux" <promise_linux@promise.com>
+Subject: RE: [PATCH 1/4] [SCSI]stex: fix id mapping issue
+X-mailer: Foxmail 5.0 [en]
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <NONAMEBqfT7eEmP9CDB00000710@nonameb.ptu.promise.com>
+X-OriginalArrivalTime: 04 Apr 2007 18:37:15.0203 (UTC) FILETIME=[4432F930:01C776E8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Syed Mohammed Khasim <x0khasim@ti.com>
 
-This patch adds minimal OMAP2430 support to plat-omap files to
-get the kernel booting on 2430SDP.
 
-Signed-off-by: Syed Mohammed Khasim <x0khasim@ti.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
+> -----Original Message-----
+> From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
+> Sent: Wednesday, April 04, 2007 10:36 AM
+> To: Ed Lin
+> Cc: linux-scsi; linux-kernel; jeff; Promise_Linux
+> Subject: RE: [PATCH 1/4] [SCSI]stex: fix id mapping issue
+> 
+> 
+> On Wed, 2007-04-04 at 10:31 -0700, Ed Lin wrote:
+> 
+> > Sorry. It seems the mail server has problem. The patch is 
+> here in plain
+> > text. I hope this time it does not mess up. I have problem with
+> > linux-scsi
+> > mail list, if you have comment please cc me. Thanks.
+> > --Ed Lin
+> 
+> The lines are still broken, I'm afraid ... you can just resend as an
+> attachement git-applypatch copes fine with that ... inline is 
+> just good
+> for quoting and replying.
+> > +	if (hba->cardtype == st_shasta) {
+> > +		host->max_channel = 7;
+> > +		host->max_id = 16 + 1;
+> > +	} else if (hba->cardtype == st_yosemite) {
+> > +		host->max_channel = 127;
+> > +		host->max_id = 1 + 1;
+> > +	} else {
+> > +		/* st_vsc and st_vsc1 */
+> > +		host->max_channel = 0;
+> > +		host->max_id = 128 + 1;
+> 
+> This is OK.  The use of ->channel is still a bit strange ... could we
+> not simply use lun instead of channel (i.e. map the adapter id/lun to
+> the mid-layer id/lun instead of using id/channel)?
+> 
+
+This is because there is a CONFIG_SCSI_MULTI_LUN option.
+If this option is not selected, max_scsi_luns will be set to 1 and
+the RAID arrays with lun>0 will disappear(because they are not
+scanned). That is unacceptable from a user's view point.  I have
+also explained this in the code comment:
+
+	/*
+	 * firmware uses id/lun pair for a logical drive, but lun would be
+	 * always 0 if CONFIG_SCSI_MULTI_LUN not configured, so we use
+	 * channel to map lun here
+	 */
+
+If it is not allowed to map channel to lun, then maybe I have to
+report 128 targets and do the mapping in queuecommand...
+After all there must be a mapping somewhere so I don't see
+much difference here...
+
+I paste the patch again, is the format ok?
+
+
+
+The internal id/lun mapping of st_vsc and st_vsc1 controllers is different
+from st_shasta. The original driver code can only  map first 16 'entities'
+for st_vsc and st_vsc1 while there are actually 128 available.
+
+The correct mapping should be:
+channel:0~7, id:0~15 (st_shasta, console is channel:0, id:16, lun:0)
+channel:0~127, id:0 (st_yosemite, console is channel:0, id:1, lun:0)
+channel:0, id:0~127 (st_vsc and st_vsc1, console is channel:0, id:128, lun:0)
+
+Signed-off-by: Ed Lin <ed.lin@promise.com>
 ---
- arch/arm/plat-omap/devices.c |    6 +++-
- arch/arm/plat-omap/dmtimer.c |    2 +
- arch/arm/plat-omap/gpio.c    |   76 ++++++++++++++++++++++++++++++++++-------
- arch/arm/plat-omap/mcbsp.c   |   15 +++++---
- 4 files changed, 80 insertions(+), 19 deletions(-)
-
-diff --git a/arch/arm/plat-omap/devices.c b/arch/arm/plat-omap/devices.c
-index dbc3f44..eeb33fe 100644
---- a/arch/arm/plat-omap/devices.c
-+++ b/arch/arm/plat-omap/devices.c
-@@ -429,6 +429,10 @@ static inline void omap_init_rng(void) {}
-  */
- static int __init omap_init_devices(void)
- {
-+/*
-+ * Need to enable relevant once for 2430 SDP
-+ */
-+#ifndef CONFIG_MACH_OMAP_2430SDP
- 	/* please keep these calls, and their implementations above,
- 	 * in alphabetical order so they're easier to sort through.
- 	 */
-@@ -438,7 +442,7 @@ static int __init omap_init_devices(void)
- 	omap_init_uwire();
- 	omap_init_wdt();
- 	omap_init_rng();
+diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
+index 69be132..29a7b61 100644
+--- a/drivers/scsi/stex.c
++++ b/drivers/scsi/stex.c
+@@ -113,10 +113,6 @@ enum {
+ 	SG_CF_64B				= 0x40,	/* 64 bit item */
+ 	SG_CF_HOST				= 0x20,	/* sg in host memory */
+ 
+-	ST_MAX_ARRAY_SUPPORTED			= 16,
+-	ST_MAX_TARGET_NUM			= (ST_MAX_ARRAY_SUPPORTED+1),
+-	ST_MAX_LUN_PER_TARGET			= 16,
 -
-+#endif
- 	return 0;
- }
- arch_initcall(omap_init_devices);
-diff --git a/arch/arm/plat-omap/dmtimer.c b/arch/arm/plat-omap/dmtimer.c
-index 45f0439..659619f 100644
---- a/arch/arm/plat-omap/dmtimer.c
-+++ b/arch/arm/plat-omap/dmtimer.c
-@@ -506,6 +506,8 @@ int omap_dm_timer_init(void)
- 		BUG_ON(dm_source_clocks[i] == NULL);
+ 	st_shasta				= 0,
+ 	st_vsc					= 1,
+ 	st_vsc1					= 2,
+@@ -606,7 +602,7 @@ stex_queuecommand(struct scsi_cmnd *cmd,
+ 		return 0;
  	}
- #endif
-+	if (cpu_is_omap243x())
-+		dm_timers[0].phys_base = 0x49018000;
+ 	case INQUIRY:
+-		if (id != ST_MAX_ARRAY_SUPPORTED)
++		if (id != host->max_id - 1)
+ 			break;
+ 		if (lun == 0 && (cmd->cmnd[1] & INQUIRY_EVPD) == 0) {
+ 			stex_direct_copy(cmd, console_inq_page,
+@@ -624,7 +620,7 @@ stex_queuecommand(struct scsi_cmnd *cmd,
+ 			ver.oem = ST_OEM;
+ 			ver.build = ST_BUILD_VER;
+ 			ver.signature[0] = PASSTHRU_SIGNATURE;
+-			ver.console_id = ST_MAX_ARRAY_SUPPORTED;
++			ver.console_id = host->max_id - 1;
+ 			ver.host_no = hba->host->host_no;
+ 			cmd->result = stex_direct_copy(cmd, &ver, sizeof(ver)) ?
+ 				DID_OK << 16 | COMMAND_COMPLETE << 8 :
+@@ -645,13 +641,8 @@ stex_queuecommand(struct scsi_cmnd *cmd,
  
- 	for (i = 0; i < dm_timer_count; i++) {
- #ifdef CONFIG_ARCH_OMAP2
-diff --git a/arch/arm/plat-omap/gpio.c b/arch/arm/plat-omap/gpio.c
-index 61567ef..eb9245b 100644
---- a/arch/arm/plat-omap/gpio.c
-+++ b/arch/arm/plat-omap/gpio.c
-@@ -85,10 +85,17 @@
- /*
-  * omap24xx specific GPIO registers
-  */
--#define OMAP24XX_GPIO1_BASE		(void __iomem *)0x48018000
--#define OMAP24XX_GPIO2_BASE		(void __iomem *)0x4801a000
--#define OMAP24XX_GPIO3_BASE		(void __iomem *)0x4801c000
--#define OMAP24XX_GPIO4_BASE		(void __iomem *)0x4801e000
-+#define OMAP242X_GPIO1_BASE		(void __iomem *)0x48018000
-+#define OMAP242X_GPIO2_BASE		(void __iomem *)0x4801a000
-+#define OMAP242X_GPIO3_BASE		(void __iomem *)0x4801c000
-+#define OMAP242X_GPIO4_BASE		(void __iomem *)0x4801e000
-+
-+#define OMAP243X_GPIO1_BASE		(void __iomem *)0x4900C000
-+#define OMAP243X_GPIO2_BASE		(void __iomem *)0x4900E000
-+#define OMAP243X_GPIO3_BASE		(void __iomem *)0x49010000
-+#define OMAP243X_GPIO4_BASE		(void __iomem *)0x49012000
-+#define OMAP243X_GPIO5_BASE		(void __iomem *)0x480B6000
-+
- #define OMAP24XX_GPIO_REVISION		0x0000
- #define OMAP24XX_GPIO_SYSCONFIG		0x0010
- #define OMAP24XX_GPIO_SYSSTATUS		0x0014
-@@ -168,12 +175,22 @@ static struct gpio_bank gpio_bank_730[7] = {
- #endif
+ 	req = stex_alloc_req(hba);
  
- #ifdef CONFIG_ARCH_OMAP24XX
--static struct gpio_bank gpio_bank_24xx[4] = {
--	{ OMAP24XX_GPIO1_BASE, INT_24XX_GPIO_BANK1, IH_GPIO_BASE,	METHOD_GPIO_24XX },
--	{ OMAP24XX_GPIO2_BASE, INT_24XX_GPIO_BANK2, IH_GPIO_BASE + 32,	METHOD_GPIO_24XX },
--	{ OMAP24XX_GPIO3_BASE, INT_24XX_GPIO_BANK3, IH_GPIO_BASE + 64,	METHOD_GPIO_24XX },
--	{ OMAP24XX_GPIO4_BASE, INT_24XX_GPIO_BANK4, IH_GPIO_BASE + 96,	METHOD_GPIO_24XX },
-+
-+static struct gpio_bank gpio_bank_242x[4] = {
-+	{ OMAP242X_GPIO1_BASE, INT_24XX_GPIO_BANK1, IH_GPIO_BASE,	METHOD_GPIO_24XX },
-+	{ OMAP242X_GPIO2_BASE, INT_24XX_GPIO_BANK2, IH_GPIO_BASE + 32,	METHOD_GPIO_24XX },
-+	{ OMAP242X_GPIO3_BASE, INT_24XX_GPIO_BANK3, IH_GPIO_BASE + 64,	METHOD_GPIO_24XX },
-+	{ OMAP242X_GPIO4_BASE, INT_24XX_GPIO_BANK4, IH_GPIO_BASE + 96,	METHOD_GPIO_24XX },
- };
-+
-+static struct gpio_bank gpio_bank_243x[5] = {
-+	{ OMAP243X_GPIO1_BASE, INT_24XX_GPIO_BANK1, IH_GPIO_BASE,	METHOD_GPIO_24XX },
-+	{ OMAP243X_GPIO2_BASE, INT_24XX_GPIO_BANK2, IH_GPIO_BASE + 32,	METHOD_GPIO_24XX },
-+	{ OMAP243X_GPIO3_BASE, INT_24XX_GPIO_BANK3, IH_GPIO_BASE + 64,	METHOD_GPIO_24XX },
-+	{ OMAP243X_GPIO4_BASE, INT_24XX_GPIO_BANK4, IH_GPIO_BASE + 96,	METHOD_GPIO_24XX },
-+	{ OMAP243X_GPIO5_BASE, INT_24XX_GPIO_BANK5, IH_GPIO_BASE + 128, METHOD_GPIO_24XX },
-+};
-+
- #endif
- 
- static struct gpio_bank *gpio_bank;
-@@ -1113,6 +1130,11 @@ static int initialized;
- static struct clk * gpio_ick;
- static struct clk * gpio_fck;
- 
-+#ifdef CONFIG_ARCH_OMAP2430
-+static struct clk * gpio5_ick;
-+static struct clk * gpio5_fck;
-+#endif
-+
- static int __init _omap_gpio_init(void)
- {
- 	int i;
-@@ -1138,7 +1160,25 @@ static int __init _omap_gpio_init(void)
- 			printk("Could not get gpios_fck\n");
- 		else
- 			clk_enable(gpio_fck);
+-	if (hba->cardtype == st_yosemite) {
+-		req->lun = lun * (ST_MAX_TARGET_NUM - 1) + id;
+-		req->target = 0;
+-	} else {
+-		req->lun = lun;
+-		req->target = id;
 -	}
-+
-+		/*
-+		 * On 2430 GPIO 5 uses CORE L4 ICLK
-+		 */
-+#ifdef CONFIG_ARCH_OMAP2430
-+		if (cpu_is_omap2430()) {
-+			gpio5_ick = clk_get(NULL, "gpio5_ick");
-+			if (IS_ERR(gpio5_ick))
-+				printk("Could not get gpio5_ick\n");
-+			else
-+				clk_enable(gpio5_ick);
-+			gpio5_fck = clk_get(NULL, "gpio5_fck");
-+			if (IS_ERR(gpio5_fck))
-+				printk("Could not get gpio5_fck\n");
-+			else
-+				clk_enable(gpio5_fck);
-+		}
-+#endif
-+}
++	req->lun = lun;
++	req->target = id;
  
- #ifdef CONFIG_ARCH_OMAP15XX
- 	if (cpu_is_omap15xx()) {
-@@ -1165,14 +1205,24 @@ static int __init _omap_gpio_init(void)
- 		gpio_bank = gpio_bank_730;
- 	}
- #endif
-+
- #ifdef CONFIG_ARCH_OMAP24XX
--	if (cpu_is_omap24xx()) {
-+	if (cpu_is_omap242x()) {
- 		int rev;
+ 	/* cdb */
+ 	memcpy(req->cdb, cmd->cmnd, STEX_CDB_LENGTH);
+@@ -1229,11 +1220,22 @@ stex_probe(struct pci_dev *pdev, const s
+ 	hba->copy_buffer = hba->dma_mem + MU_BUFFER_SIZE;
+ 	hba->mu_status = MU_STATE_STARTING;
  
- 		gpio_bank_count = 4;
--		gpio_bank = gpio_bank_24xx;
-+		gpio_bank = gpio_bank_242x;
-+		rev = omap_readl(gpio_bank[0].base + OMAP24XX_GPIO_REVISION);
-+		printk(KERN_INFO "OMAP242x GPIO hardware version %d.%d\n",
-+			(rev >> 4) & 0x0f, rev & 0x0f);
-+	}
-+	if (cpu_is_omap243x()) {
-+		int rev;
-+
-+		gpio_bank_count = 5;
-+		gpio_bank = gpio_bank_243x;
- 		rev = omap_readl(gpio_bank[0].base + OMAP24XX_GPIO_REVISION);
--		printk(KERN_INFO "OMAP24xx GPIO hardware version %d.%d\n",
-+		printk(KERN_INFO "OMAP243x GPIO hardware version %d.%d\n",
- 			(rev >> 4) & 0x0f, rev & 0x0f);
- 	}
- #endif
-diff --git a/arch/arm/plat-omap/mcbsp.c b/arch/arm/plat-omap/mcbsp.c
-index b8d6f17..f7b9ccd 100644
---- a/arch/arm/plat-omap/mcbsp.c
-+++ b/arch/arm/plat-omap/mcbsp.c
-@@ -225,11 +225,16 @@ static void omap_mcbsp_dsp_free(void)
- #ifdef CONFIG_ARCH_OMAP2
- static void omap2_mcbsp2_mux_setup(void)
- {
--	omap_cfg_reg(Y15_24XX_MCBSP2_CLKX);
--	omap_cfg_reg(R14_24XX_MCBSP2_FSX);
--	omap_cfg_reg(W15_24XX_MCBSP2_DR);
--	omap_cfg_reg(V15_24XX_MCBSP2_DX);
--	omap_cfg_reg(V14_24XX_GPIO117);
-+	if (cpu_is_omap2420()) {
-+		omap_cfg_reg(Y15_24XX_MCBSP2_CLKX);
-+		omap_cfg_reg(R14_24XX_MCBSP2_FSX);
-+		omap_cfg_reg(W15_24XX_MCBSP2_DR);
-+		omap_cfg_reg(V15_24XX_MCBSP2_DX);
-+		omap_cfg_reg(V14_24XX_GPIO117);
-+	}
+-	/* firmware uses id/lun pair for a logical drive, but lun would be
+-	   always 0 if CONFIG_SCSI_MULTI_LUN not configured, so we use
+-	   channel to map lun here */
+-	host->max_channel = ST_MAX_LUN_PER_TARGET - 1;
+-	host->max_id = ST_MAX_TARGET_NUM;
 +	/*
-+	 * Need to add MUX settings for OMAP 2430 SDP
++	 * firmware uses id/lun pair for a logical drive, but lun would be
++	 * always 0 if CONFIG_SCSI_MULTI_LUN not configured, so we use
++	 * channel to map lun here
 +	 */
- }
- #endif
- 
--- 
-1.4.4.2
++	if (hba->cardtype == st_shasta) {
++		host->max_channel = 7;
++		host->max_id = 16 + 1;
++	} else if (hba->cardtype == st_yosemite) {
++		host->max_channel = 127;
++		host->max_id = 1 + 1;
++	} else {
++		/* st_vsc and st_vsc1 */
++		host->max_channel = 0;
++		host->max_id = 128 + 1;
++	}
+ 	host->max_lun = 1;
+ 	host->unique_id = host->host_no;
+ 	host->max_cmd_len = STEX_CDB_LENGTH;
+
+
 
