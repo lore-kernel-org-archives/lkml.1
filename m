@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966195AbXDDGoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbXDDGrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966195AbXDDGoh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 02:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbXDDGoh
+	id S1753773AbXDDGrj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 02:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbXDDGri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 02:44:37 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:26258 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753761AbXDDGog (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 02:44:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=gmzjEG8vmVg+9zHTtnEv/cEYY5225RWt9dKFumDtLLIreDRJOdUSV787OwXhePgAgu/4PWfIYCArS7dyO3Hk7paamx7pjHCuYsshtvQCwBMF12FJl119U7YTWfDCtWsdqUbA/ZLrPXXJuknos0JmUvibioe2w12WtW5eglBwG1s=  ;
-X-YMail-OSG: IahO760VM1nfAYLgCh22JWUkZcYwW_YwIe.zulBf0m4A4v2_VFPbm21tqyXY3eTeh2UEpIEBVg--
-Message-ID: <4613494D.6080401@yahoo.com.au>
-Date: Wed, 04 Apr 2007 16:44:29 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patches] threaded vma patches (was Re: missing madvise functionality)
-References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com> <20070403144948.fe8eede6.akpm@linux-foundation.org> <4612DCC6.7000504@cosmosbay.com> <46130BC8.9050905@yahoo.com.au> <46133A8B.50203@cosmosbay.com> <46134124.2040705@yahoo.com.au> <461348CD.9000200@redhat.com>
-In-Reply-To: <461348CD.9000200@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Apr 2007 02:47:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39444 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753771AbXDDGri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 02:47:38 -0400
+Date: Wed, 4 Apr 2007 02:47:32 -0400
+From: Jakub Jelinek <jakub@redhat.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, drepper@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: getting processor numbers
+Message-ID: <20070404064732.GF355@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <461286D6.2040407@redhat.com> <20070403131623.c6831607.akpm@linux-foundation.org> <20070403190458.18165884.pj@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070403190458.18165884.pj@sgi.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> Nick Piggin wrote:
+On Tue, Apr 03, 2007 at 07:04:58PM -0700, Paul Jackson wrote:
+> Andrew wrote:
+> > I'd have thought that in general an application should be querying its
+> > present affinity mask - something like sched_getaffinity()?  That fixes the
+> > CPU hotplug issues too, of course.
 > 
->>Sad. Although Ulrich did seem interested at one point I think? Ulrich,
->>do you agree at least with the interface that Eric is proposing?
+> The sched_getaffinity call is quick, too, and it nicely reflects any
+> cpuset constraints, while still working on kernels which don't have
+> CPUSETs configured.
 > 
+> There are really at least four "number of CPUs" answers here, and we
+> should be aware of which we are providing.  There are, in order of
+> decreasing size:
+>  1) the size of the kernels cpumask_t (NR_CPUS),
+>  2) the maximum number of CPUs that might ever be hotplugged into a
+>     booted system,
+>  3) the current number of CPUs online in that system, and
+>  4) the number of CPUs that the current task is allowed to use.
 > 
-> I have no idea what you're talking about.
+> I would suggest that (4) is what we should typically return.
+> Certainly it would seem that the use that Ulrich is concerned with,
+> by OpenMP, wants (4).
 > 
+> Currently, the sysconf(_SC_NPROCESSORS_CONF) returns (3), by counting
+> the CPUs in /proc/stat, which is rather bogus on cpuset, or even
+> sched_setaffinity, constrained systems.
 
-Private futexes.
+OpenMP wants (4) and I'll change it that way.
 
--- 
-SUSE Labs, Novell Inc.
+sysconf(_SC_NPROCESSORS_ONLN) must return (3) (this currently scans /proc/stat)
+and
+sysconf(_SC_NPROCESSORS_CONF) should IMHO return (2) (this currently
+scans /proc/cpuinfo on alpha and sparc{,64} for ((ncpus|CPUs) probed|cpus detected)
+and for the rest just returns sysconf(_SC_NPROCESSORS_ONLN)).
+Neither of the sysconf returned values should be affected by affinity.
+
+	Jakub
