@@ -1,130 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXDEATi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbXDEATi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932224AbXDEATi (ORCPT <rfc822;w@1wt.eu>);
+	id S932212AbXDEATi (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 4 Apr 2007 20:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932238AbXDEARu
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932224AbXDEARw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:17:50 -0400
-Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36894 "EHLO
+	Wed, 4 Apr 2007 20:17:52 -0400
+Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36895 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932227AbXDEARC (ORCPT
+	with ESMTP id S932212AbXDEARC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Apr 2007 20:17:02 -0400
-Message-Id: <20070404191206.319836661@goop.org>
+Message-Id: <20070404191204.943212070@goop.org>
 References: <20070404191151.009821039@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Apr 2007 12:12:07 -0700
+Date: Wed, 04 Apr 2007 12:11:54 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>
-Subject: [patch 16/20] revert map_pt_hook.
-Content-Disposition: inline; filename=revert-map_pt_hook.patch
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 03/20] use paravirt_nop to consistently mark no-op operations
+Content-Disposition: inline; filename=paravirt-nop.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Back out the map_pt_hook to clear the way for kmap_atomic_pte.
+Add a _paravirt_nop function for use as a stub for no-op operations,
+and paravirt_nop #defined void * version to make using it easier
+(since all its uses are as a void *).
+
+This is useful to allow the patcher to automatically identify noop
+operations so it can simply nop out the callsite.
+
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Zachary Amsden <zach@vmware.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+[mingo] but only as a cleanup of the current open-coded (void *) casts.
+My problem with this is that it loses the types. Not that there is much
+to check for, but still, this adds some assumptions about how function
+calls look like
 
 ---
- arch/i386/kernel/paravirt.c |    2 --
- arch/i386/kernel/vmi.c      |    2 ++
- include/asm-i386/paravirt.h |    7 -------
- include/asm-i386/pgtable.h  |   23 ++++-------------------
- 4 files changed, 6 insertions(+), 28 deletions(-)
+ arch/i386/kernel/paravirt.c |   26 +++++++++++++-------------
+ include/asm-i386/paravirt.h |    3 +++
+ 2 files changed, 16 insertions(+), 13 deletions(-)
 
 ===================================================================
 --- a/arch/i386/kernel/paravirt.c
 +++ b/arch/i386/kernel/paravirt.c
-@@ -303,8 +303,6 @@ struct paravirt_ops paravirt_ops = {
+@@ -35,7 +35,7 @@
+ #include <asm/timer.h>
+ 
+ /* nop stub */
+-static void native_nop(void)
++void _paravirt_nop(void)
+ {
+ }
+ 
+@@ -490,7 +490,7 @@ struct paravirt_ops paravirt_ops = {
+ 
+  	.patch = native_patch,
+ 	.banner = default_banner,
+-	.arch_setup = native_nop,
++	.arch_setup = paravirt_nop,
+ 	.memory_setup = machine_specific_memory_setup,
+ 	.get_wallclock = native_get_wallclock,
+ 	.set_wallclock = native_set_wallclock,
+@@ -546,25 +546,25 @@ struct paravirt_ops paravirt_ops = {
+ 	.setup_boot_clock = setup_boot_APIC_clock,
+ 	.setup_secondary_clock = setup_secondary_APIC_clock,
+ #endif
+-	.set_lazy_mode = (void *)native_nop,
++	.set_lazy_mode = paravirt_nop,
+ 
+ 	.flush_tlb_user = native_flush_tlb,
+ 	.flush_tlb_kernel = native_flush_tlb_global,
  	.flush_tlb_single = native_flush_tlb_single,
- 	.flush_tlb_others = native_flush_tlb_others,
  
--	.map_pt_hook = paravirt_nop,
+-	.map_pt_hook = (void *)native_nop,
 -
- 	.alloc_pt = paravirt_nop,
- 	.alloc_pd = paravirt_nop,
- 	.alloc_pd_clone = paravirt_nop,
-===================================================================
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -819,8 +819,10 @@ static inline int __init activate_vmi(vo
- 		paravirt_ops.release_pt = vmi_release_pt;
- 		paravirt_ops.release_pd = vmi_release_pd;
- 	}
-+#if 0
- 	para_wrap(map_pt_hook, vmi_map_pt_hook, set_linear_mapping,
- 		  SetLinearMapping);
-+#endif
+-	.alloc_pt = (void *)native_nop,
+-	.alloc_pd = (void *)native_nop,
+-	.alloc_pd_clone = (void *)native_nop,
+-	.release_pt = (void *)native_nop,
+-	.release_pd = (void *)native_nop,
++	.map_pt_hook = paravirt_nop,
++
++	.alloc_pt = paravirt_nop,
++	.alloc_pd = paravirt_nop,
++	.alloc_pd_clone = paravirt_nop,
++	.release_pt = paravirt_nop,
++	.release_pd = paravirt_nop,
  
- 	/*
- 	 * These MUST always be patched.  Don't support indirect jumps
+ 	.set_pte = native_set_pte,
+ 	.set_pte_at = native_set_pte_at,
+ 	.set_pmd = native_set_pmd,
+-	.pte_update = (void *)native_nop,
+-	.pte_update_defer = (void *)native_nop,
++	.pte_update = paravirt_nop,
++	.pte_update_defer = paravirt_nop,
+ #ifdef CONFIG_X86_PAE
+ 	.set_pte_atomic = native_set_pte_atomic,
+ 	.set_pte_present = native_set_pte_present,
+@@ -576,7 +576,7 @@ struct paravirt_ops paravirt_ops = {
+ 	.irq_enable_sysexit = native_irq_enable_sysexit,
+ 	.iret = native_iret,
+ 
+-	.startup_ipi_hook = (void *)native_nop,
++	.startup_ipi_hook = paravirt_nop,
+ };
+ 
+ /*
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -128,8 +128,6 @@ struct paravirt_ops
- 	void (*flush_tlb_single)(unsigned long addr);
- 	void (*flush_tlb_others)(const cpumask_t *cpus, struct mm_struct *mm,
- 				 unsigned long va);
--
--	void (*map_pt_hook)(int type, pte_t *va, u32 pfn);
+@@ -430,6 +430,9 @@ static inline void pmd_clear(pmd_t *pmdp
+ #define arch_enter_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_MMU)
+ #define arch_leave_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
  
- 	void (*alloc_pt)(u32 pfn);
- 	void (*alloc_pd)(u32 pfn);
-@@ -740,11 +738,6 @@ static inline void flush_tlb_others(cpum
- 	PVOP_VCALL3(flush_tlb_others, &cpumask, mm, va);
- }
- 
--static inline void paravirt_map_pt_hook(int type, pte_t *va, u32 pfn)
--{
--	PVOP_VCALL3(map_pt_hook, type, va, pfn);
--}
--
- static inline void paravirt_alloc_pt(unsigned pfn)
- {
- 	PVOP_VCALL1(alloc_pt, pfn);
-===================================================================
---- a/include/asm-i386/pgtable.h
-+++ b/include/asm-i386/pgtable.h
-@@ -272,7 +272,6 @@ static inline void vmalloc_sync_all(void
-  */
- #define pte_update(mm, addr, ptep)		do { } while (0)
- #define pte_update_defer(mm, addr, ptep)	do { } while (0)
--#define paravirt_map_pt_hook(slot, va, pfn)	do { } while (0)
- 
- #define raw_ptep_get_and_clear(xp)     native_ptep_get_and_clear(xp)
- #endif
-@@ -481,24 +480,10 @@ extern pte_t *lookup_address(unsigned lo
- #endif
- 
- #if defined(CONFIG_HIGHPTE)
--#define pte_offset_map(dir, address)				\
--({								\
--	pte_t *__ptep;						\
--	unsigned pfn = pmd_val(*(dir)) >> PAGE_SHIFT;	   	\
--	__ptep = (pte_t *)kmap_atomic(pfn_to_page(pfn),KM_PTE0);\
--	paravirt_map_pt_hook(KM_PTE0,__ptep, pfn);		\
--	__ptep = __ptep + pte_index(address);			\
--	__ptep;							\
--})
--#define pte_offset_map_nested(dir, address)			\
--({								\
--	pte_t *__ptep;						\
--	unsigned pfn = pmd_val(*(dir)) >> PAGE_SHIFT;	   	\
--	__ptep = (pte_t *)kmap_atomic(pfn_to_page(pfn),KM_PTE1);\
--	paravirt_map_pt_hook(KM_PTE1,__ptep, pfn);		\
--	__ptep = __ptep + pte_index(address);			\
--	__ptep;							\
--})
-+#define pte_offset_map(dir, address) \
-+	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
-+#define pte_offset_map_nested(dir, address) \
-+	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
- #define pte_unmap(pte) kunmap_atomic(pte, KM_PTE0)
- #define pte_unmap_nested(pte) kunmap_atomic(pte, KM_PTE1)
- #else
++void _paravirt_nop(void);
++#define paravirt_nop	((void *)_paravirt_nop)
++
+ /* These all sit in the .parainstructions section to tell us what to patch. */
+ struct paravirt_patch {
+ 	u8 *instr; 		/* original instructions */
 
 -- 
 
