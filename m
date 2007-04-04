@@ -1,157 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXDDVq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbXDDVrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbXDDVq7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 17:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXDDVqd
+	id S1752159AbXDDVrR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 17:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbXDDVrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 17:46:33 -0400
-Received: from mx0.karneval.cz ([81.27.192.15]:58560 "EHLO av6.karneval.cz"
+	Wed, 4 Apr 2007 17:47:17 -0400
+Received: from www.osadl.org ([213.239.205.134]:36119 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752142AbXDDVqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 17:46:30 -0400
-Message-id: <25307199761334218148@karneval.cz>
-In-reply-to: <16309194841640222796@karneval.cz>
-Subject: [PATCH 4/5] Char: cyclades, remove volatiles
-From: Jiri Slaby <jirislaby@gmail.com>
+	id S1752159AbXDDVrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 17:47:14 -0400
+Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm
+	tree
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Wed,  4 Apr 2007 23:45:38 +0200 (CEST)
+Cc: Ingo Molnar <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
+       johnstul@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+       heiko.carstens@de.ibm.com
+In-Reply-To: <20070404134812.0c23c5af.akpm@linux-foundation.org>
+References: <200704010523.l315NXJP004063@shell0.pdx.osdl.net>
+	 <1175417035.28263.42.camel@localhost.localdomain>
+	 <1175704712.15973.35.camel@imap.mvista.com>
+	 <20070404125853.1cf9b7b7.akpm@linux-foundation.org>
+	 <1175717425.15973.61.camel@imap.mvista.com>
+	 <20070404203647.GA12563@elte.hu>
+	 <20070404134812.0c23c5af.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 23:47:31 +0200
+Message-Id: <1175723252.28263.359.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, remove volatiles
+On Wed, 2007-04-04 at 13:48 -0700, Andrew Morton wrote:
+> On Wed, 4 Apr 2007 22:36:47 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Daniel Walker <dwalker@mvista.com> wrote:
+> > 
+> > > The struct clocksource .list field is now required to be initialized 
+> > > before calling clocksource_register().
+> > > 
+> > > This is a prerequisite for simplifying the clocksource registration 
+> > > process.
+> > 
+> > why?
+> 
+> It's all enablement for
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/broken-out/clocksource-refactor-duplicate-registration-checking.patch,
+> on which I have no opinion.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+I have. Just noticed that my original comment got stuck in mail jam:
 
----
-commit fc6aa32bd302fb7dbd1dcc7c5829b0cb27a79ce6
-tree a958d622a33f0dd499f072f44bcdd121b771b921
-parent d4e20e52c6084cff971d5b696c6eeac5ca2f9f48
-author Jiri Slaby <jirislaby@gmail.com> Mon, 26 Mar 2007 18:03:30 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Tue, 27 Mar 2007 14:45:40 +0200
+> Refactors the duplicate registration checking. This makes it based on the
+> clocksource structure list state. I was able to drop some if statements
+> making the registration code path slightly smaller and faster, and remove
+> some looping which was endemic of the first version of this check.
 
- drivers/char/cyclades.c |   52 +++++++++++++++++++++++------------------------
- 1 files changed, 25 insertions(+), 27 deletions(-)
+What does the slightly smaller and faster buy us ? 
 
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index 0e530cb..70d5a39 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -967,7 +967,7 @@ do_softint(struct work_struct *work)
-  */
- static int cyy_issue_cmd(void __iomem * base_addr, u_char cmd, int index)
- {
--	volatile int i;
-+	unsigned int i;
- 
- 	/* Check to see that the previous command has completed */
- 	for (i = 0; i < 100; i++) {
-@@ -1043,7 +1043,7 @@ static void cyy_intr_chip(struct cyclades_card *cinfo, int chip,
- {
- 	struct cyclades_port *info;
- 	struct tty_struct *tty;
--	volatile int char_count;
-+	int char_count;
- 	int i, j, len, mdm_change, mdm_status, outch;
- 	int save_xir, channel, save_car;
- 	char data;
-@@ -1551,20 +1551,19 @@ cyz_issue_cmd(struct cyclades_card *cinfo,
- }				/* cyz_issue_cmd */
- 
- static void
--cyz_handle_rx(struct cyclades_port *info,
--		volatile struct CH_CTRL __iomem * ch_ctrl,
--		volatile struct BUF_CTRL __iomem * buf_ctrl)
-+cyz_handle_rx(struct cyclades_port *info, struct CH_CTRL __iomem *ch_ctrl,
-+		struct BUF_CTRL __iomem *buf_ctrl)
- {
- 	struct cyclades_card *cinfo = &cy_card[info->card];
- 	struct tty_struct *tty = info->tty;
--	volatile int char_count;
-+	int char_count;
- 	int len;
- #ifdef BLOCKMOVE
- 	int small_count;
- #else
- 	char data;
- #endif
--	volatile __u32 rx_put, rx_get, new_rx_get, rx_bufsize, rx_bufaddr;
-+	__u32 rx_put, rx_get, new_rx_get, rx_bufsize, rx_bufaddr;
- 
- 	rx_get = new_rx_get = readl(&buf_ctrl->rx_get);
- 	rx_put = readl(&buf_ctrl->rx_put);
-@@ -1648,18 +1647,17 @@ cyz_handle_rx(struct cyclades_port *info,
- }
- 
- static void
--cyz_handle_tx(struct cyclades_port *info,
--		volatile struct CH_CTRL __iomem * ch_ctrl,
--		volatile struct BUF_CTRL __iomem * buf_ctrl)
-+cyz_handle_tx(struct cyclades_port *info, struct CH_CTRL __iomem *ch_ctrl,
-+		struct BUF_CTRL __iomem *buf_ctrl)
- {
- 	struct cyclades_card *cinfo = &cy_card[info->card];
- 	struct tty_struct *tty = info->tty;
- 	char data;
--	volatile int char_count;
-+	int char_count;
- #ifdef BLOCKMOVE
- 	int small_count;
- #endif
--	volatile __u32 tx_put, tx_get, tx_bufsize, tx_bufaddr;
-+	__u32 tx_put, tx_get, tx_bufsize, tx_bufaddr;
- 
- 	if (info->xmit_cnt <= 0)	/* Nothing to transmit */
- 		return;
-@@ -1739,11 +1737,11 @@ static void cyz_handle_cmd(struct cyclades_card *cinfo)
- {
- 	struct tty_struct *tty;
- 	struct cyclades_port *info;
--	static volatile struct FIRM_ID __iomem *firm_id;
--	static volatile struct ZFW_CTRL __iomem *zfw_ctrl;
--	static volatile struct BOARD_CTRL __iomem *board_ctrl;
--	static volatile struct CH_CTRL __iomem *ch_ctrl;
--	static volatile struct BUF_CTRL __iomem *buf_ctrl;
-+	static struct FIRM_ID __iomem *firm_id;
-+	static struct ZFW_CTRL __iomem *zfw_ctrl;
-+	static struct BOARD_CTRL __iomem *board_ctrl;
-+	static struct CH_CTRL __iomem *ch_ctrl;
-+	static struct BUF_CTRL __iomem *buf_ctrl;
- 	__u32 channel;
- 	__u8 cmd;
- 	__u32 param;
-@@ -1900,11 +1898,11 @@ static void cyz_poll(unsigned long arg)
- 	struct cyclades_card *cinfo;
- 	struct cyclades_port *info;
- 	struct tty_struct *tty;
--	static volatile struct FIRM_ID *firm_id;
--	static volatile struct ZFW_CTRL *zfw_ctrl;
--	static volatile struct BOARD_CTRL *board_ctrl;
--	static volatile struct CH_CTRL *ch_ctrl;
--	static volatile struct BUF_CTRL *buf_ctrl;
-+	static struct FIRM_ID *firm_id;
-+	static struct ZFW_CTRL *zfw_ctrl;
-+	static struct BOARD_CTRL *board_ctrl;
-+	static struct CH_CTRL *ch_ctrl;
-+	static struct BUF_CTRL *buf_ctrl;
- 	unsigned long expires = jiffies + HZ;
- 	int card, port;
- 
-@@ -3003,12 +3001,12 @@ static int cy_chars_in_buffer(struct tty_struct *tty)
- 		return info->xmit_cnt;
- #ifdef Z_EXT_CHARS_IN_BUFFER
- 	} else {
--		static volatile struct FIRM_ID *firm_id;
--		static volatile struct ZFW_CTRL *zfw_ctrl;
--		static volatile struct CH_CTRL *ch_ctrl;
--		static volatile struct BUF_CTRL *buf_ctrl;
-+		static struct FIRM_ID *firm_id;
-+		static struct ZFW_CTRL *zfw_ctrl;
-+		static struct CH_CTRL *ch_ctrl;
-+		static struct BUF_CTRL *buf_ctrl;
- 		int char_count;
--		volatile __u32 tx_put, tx_get, tx_bufsize;
-+		__u32 tx_put, tx_get, tx_bufsize;
- 
- 		firm_id = cy_card[card].base_addr + ID_ADDRESS;
- 		zfw_ctrl = cy_card[card].base_addr +
+Which looping has been removed ? If you want to optimize this code then
+you need to break out of the loop, once the rating check has found the
+place to stick it in.
+
+But I still do not see any advantage in this. Registration is a one time
+operation and not near any fast path. 
+
+	tglx
+
+
