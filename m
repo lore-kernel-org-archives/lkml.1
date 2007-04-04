@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbXDDRsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752235AbXDDRtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752222AbXDDRsg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXDDRsf
+	id S1752235AbXDDRtA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXDDRtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:48:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:10681 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbXDDRsf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:48:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=bdvKPD+gG04uddNW9FNJSqCZqjDJKZVQc3hRZ1XWUcjeXKxvinmALQoK6orp/kcku7Wwt+9puHuqnSACExL82hQO5b66NDLlJWRs180dc9fbhG3f3j4QxJ3c9feAGVLaUUAhcQGI4+6WKcY9CxqGEWmSi4Qx2nL7qwZDDn+9Szk=
-Date: Wed, 4 Apr 2007 23:19:44 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: kernel-janitors@lists.osdl.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-ppp@vger.kernel.org, paulus@samba.org
-Subject: [KJ][PATCH]ROUND_UP macro cleanup in drivers/net/ppp_generic.c
-Message-ID: <20070404174944.GC9830@arun.site>
+	Wed, 4 Apr 2007 13:49:00 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:42280 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752235AbXDDRsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 13:48:42 -0400
+Date: Wed, 4 Apr 2007 19:48:29 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: per-thread rusage
+Message-Id: <20070404194829.1a93d8fd.dada1@cosmosbay.com>
+In-Reply-To: <20070404172931.GM2986@holomorphy.com>
+References: <20070404172931.GM2986@holomorphy.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ROUND_UP macro cleanup use DIV_ROUND_UP
+On Wed, 4 Apr 2007 10:29:31 -0700
+William Lee Irwin III <wli@holomorphy.com> wrote:
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+> It is not now possible for a thread to retrieve its own rusage in
+> isolation. Its rusage is nowhere exposed without being intermixed with
+> that of its sibling threads. This patch adds support for an
+> RUSAGE_THREAD who argument that returns rusage for only the desired
+> thread.
+> 
 
----
- ppp_generic.c |    4 +---
- 1 files changed, 1 insertion(+), 3 deletions(-)
+Please check mm, because we now return ru_inblock and ru_oublock as well.
 
-diff --git a/drivers/net/ppp_generic.c b/drivers/net/ppp_generic.c
-index ef58e41..4b302f3 100644
---- a/drivers/net/ppp_generic.c
-+++ b/drivers/net/ppp_generic.c
-@@ -88,8 +88,6 @@ struct ppp_file {
- #define PF_TO_PPP(pf)		PF_TO_X(pf, struct ppp)
- #define PF_TO_CHANNEL(pf)	PF_TO_X(pf, struct channel)
- 
--#define ROUNDUP(n, x)		(((n) + (x) - 1) / (x))
--
- /*
-  * Data structure describing one ppp unit.
-  * A ppp unit corresponds to a ppp network interface device
-@@ -1297,7 +1295,7 @@ static int ppp_mp_explode(struct ppp *ppp, struct sk_buff *skb)
- 	 */
- 	fragsize = len;
- 	if (nfree > 1)
--		fragsize = ROUNDUP(fragsize, nfree);
-+		fragsize = DIV_ROUND_UP(fragsize, nfree);
- 	/* nbigger channels get fragsize bytes, the rest get fragsize-1,
- 	   except if nbigger==0, then they all get fragsize. */
- 	nbigger = len % nfree;
----
-Milind Arun Choudhary
+r->ru_inblock = task_io_get_inblock(p);
+r->ru_oublock = task_io_get_oublock(p);
+
