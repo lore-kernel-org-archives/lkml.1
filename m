@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992885AbXDDND5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992895AbXDDNGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992885AbXDDND5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 09:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992894AbXDDND5
+	id S2992895AbXDDNGQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 09:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992896AbXDDNGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 09:03:57 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:58363 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992885AbXDDND4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 09:03:56 -0400
-Message-ID: <4613A1F1.2080007@gmail.com>
-Date: Wed, 04 Apr 2007 15:02:41 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 4 Apr 2007 09:06:16 -0400
+Received: from ns1.suse.de ([195.135.220.2]:48064 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992895AbXDDNGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 09:06:15 -0400
+Date: Wed, 4 Apr 2007 15:05:59 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070404130559.GD19587@v2.random>
+References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <Pine.LNX.4.64.0704041338450.7416@blonde.wat.veritas.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <46138B4C.2050409@gmail.com> <20070404123311.GA18552@infradead.org>
-In-Reply-To: <20070404123311.GA18552@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704041338450.7416@blonde.wat.veritas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/04/2007 02:33 PM, Christoph Hellwig wrote:
+On Wed, Apr 04, 2007 at 01:45:06PM +0100, Hugh Dickins wrote:
+> I'm confused.  CONFIG_ZERO_PAGE off is where we'd like to end up: how
+> would turning CONFIG_ZERO_PAGE on in -rc kernels help us to get there?
 
-> On Wed, Apr 04, 2007 at 01:26:04PM +0200, Rene Herman wrote:
+He most certainly meant on by default.
 
->> Can we have a MODULE_MAINTAINER to complement MODULE_AUTHOR?
-> 
-> #define MODULE_MAINTAINER(x) MODULE_AUTHOR(x), please.
-> MODULE_AUTHOR really has meant maintainer in practice for ages, and it's
-> the only actually relevant for users information we should store.
-
-Given modules with multiple authors, current and non-current, I believe 
-having "modinfo -m" tell the user whom to contact is an avantage.
-
-Rene.
+I think if we do this, we also need a zeropage counter in the vm stats
+so that we'll get a measure of the waste and it'll be possible to
+identify apps to optimize/fix.
