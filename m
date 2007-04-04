@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966254AbXDDBxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966275AbXDDCAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966254AbXDDBxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 21:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966269AbXDDBxp
+	id S966275AbXDDCAx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 22:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966276AbXDDCAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 21:53:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:31368 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966254AbXDDBxo (ORCPT
+	Tue, 3 Apr 2007 22:00:53 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:52140 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S966275AbXDDCAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 21:53:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mUKg9XFsBT9ymBrfeyZOgVNHjifodU28Ox4JzAqD4RY3dr3ejCgJwD7VEGVjGKQ3FYgs3pB+d/PqqTP5nfVDi5r8AGJFvElpmaN8aJ0kh8t/sNJvLaRUiade2OJqi+05uKUNEgIyukKWieDZ42PM7InUXfHMWmzxqY/r4uL/kjk=
-Message-ID: <a8e1da0704031853q3f36570ey864cf18126c90f4@mail.gmail.com>
-Date: Wed, 4 Apr 2007 01:53:42 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Tom Strader" <tom.strader@xilinx.com>
-Subject: Re: Warning: unable to open an initial console.
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070403183532.0EE676CC6F2@mail138-cpk.bigfish.com>
+	Tue, 3 Apr 2007 22:00:53 -0400
+Date: Tue, 3 Apr 2007 18:32:21 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: David Miller <davem@davemloft.net>, dwmw2@infradead.org,
+       flar@allandria.com, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+Message-ID: <Pine.LNX.4.63.0704031826000.21680@qynat.qvtvafvgr.pbz>
+References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210
+ 02.GA13210@cynthia.pants.nu><1175648051.10567.61.camel@shinybook.infradead.
+ org><20070403.181645.68159458.davem@davemloft.net><20070404022828.5c9b97f3@
+ the-village.bc.nu><Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz>
+ <20070404024400.56d016e1@the-village.bc.nu> <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070402190458.0EDD039005F@mail42-fra.bigfish.com>
-	 <20070402224923.GA11208@tuatara.stupidest.org>
-	 <20070402232012.6716E64781D@mail78-cpk.bigfish.com>
-	 <a8e1da0704021834q7911fb56oa0f3f23651ee6be2@mail.gmail.com>
-	 <20070403183532.0EE676CC6F2@mail138-cpk.bigfish.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
-The errno "-6" is defined as:
-#define ENXIO            6      /* No such device or address*/
+On Tue, 3 Apr 2007, David Lang wrote:
 
-You can try to retrieve the rootfs and add the necessary device file
-to it, then reflash the rootfs.
+> so leave all the ports numbered 0-49, but let people who need to know run a 
+> tool (even if it's dmesg -s 200000 |grep ttyS) to learn the details of what 
+> hardware is used to run what port.
 
-I'm Sorry, I  have no embedded environment to test.
+and by the way, this is exactly what I do on machines with different types of 
+ethernet cards to figure out what ethX name the different types of cards get. 
+after I've figured that out I learn which order the cards of that type are by 
+plugging things into a port to see what shows up (knowing the MAC address 
+doesn't do you any good if you don't know what hole to plug the wire into)
 
-Regards
-dave
+and yes, the nameing does get messed up when you plugin a new card, or enable a 
+driver that you didn't have before, but as painful as that is it's pain that 
+only I have to deal with when reconfiguring the hardware, all the other 
+sysadmins who use the systems just know what port is what, they don't need to 
+know that box A has tulip based quad cards while box B has starfire based quad 
+cards, they just know 'eth0 is the one labled 0, eth18 is the one labled 18'
 
+keep it simple for as many people as possible, don't spread the pain. those who 
+will feel the pain are already dealing with it and the change to hardware-based 
+named doesn't help them anyway.
 
-2007/4/3, Tom Strader <tom.strader@xilinx.com>:
-> Hi Dave,
-> I'm not sure if I follow.  How do I use mknod with no console to use it
-> from?  Can this be done in the init scripts or from u-boot?  Still
-> learning so any help would be appreciated.
->
-> I was able to trace the console opening to __dentry_open() in fs/open.c
-> It does open(inode, f) but returns error -6 if this is any help.  I will
-> try to trace it further to see what is wrong.
->
-> Thanks,
-> Tom
->
->
->
->
->
+David Lang
