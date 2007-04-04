@@ -1,130 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXDDNZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbXDDNcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbXDDNZi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 09:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXDDNZi
+	id S1753786AbXDDNcL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 09:32:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbXDDNcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 09:25:38 -0400
-Received: from mail35.syd.optusnet.com.au ([211.29.133.51]:32876 "EHLO
-	mail35.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753797AbXDDNZh convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 09:25:37 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       ck list <ck@vds.kolivas.org>
-Subject: [PATCH] sched: implement staircase deadline cpu scheduler improvements fix
-Date: Wed, 4 Apr 2007 23:22:05 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> <200704040831.35225.kernel@kolivas.org> <4612E3C3.6020806@googlemail.com>
-In-Reply-To: <4612E3C3.6020806@googlemail.com>
+	Wed, 4 Apr 2007 09:32:11 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:57155 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786AbXDDNcJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 09:32:09 -0400
+X-AuditID: d80ac287-976cabb000000c42-2d-4613a8d8ecdd 
+Date: Wed, 4 Apr 2007 14:32:03 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrea Arcangeli <andrea@suse.de>
+cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+In-Reply-To: <20070404130559.GD19587@v2.random>
+Message-ID: <Pine.LNX.4.64.0704041426080.10683@blonde.wat.veritas.com>
+References: <20070329075805.GA6852@wotan.suse.de>
+ <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com>
+ <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de>
+ <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com>
+ <20070404102407.GA529@wotan.suse.de> <Pine.LNX.4.64.0704041338450.7416@blonde.wat.veritas.com>
+ <20070404130559.GD19587@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200704042322.06085.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 04 Apr 2007 13:32:08.0374 (UTC) FILETIME=[A47A8D60:01C776BD]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 April 2007 09:31, Michal Piotrowski wrote:
-> Con Kolivas napisał(a):
-> > On Wednesday 04 April 2007 08:20, Michal Piotrowski wrote:
-> >> Michal Piotrowski napisał(a):
-> >>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm4
-> >>>/m m-oops
-> >>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm4
-> >>>/m m-config
+On Wed, 4 Apr 2007, Andrea Arcangeli wrote:
+> On Wed, Apr 04, 2007 at 01:45:06PM +0100, Hugh Dickins wrote:
+> > I'm confused.  CONFIG_ZERO_PAGE off is where we'd like to end up: how
+> > would turning CONFIG_ZERO_PAGE on in -rc kernels help us to get there?
+> 
+> He most certainly meant on by default.
 
-> >> Con, I think that your
-> >> sched-implement-staircase-deadline-cpu-scheduler-staircase-improvements.
-> >>pat ch is causing this oops.
-> >
-> > Thanks for heads up!
+Okay, I thought it more diplomatic to label myself as the confused one ;)
 
-Confirmed offline with Michal that the following patch fixes it. Thanks!
+> 
+> I think if we do this, we also need a zeropage counter in the vm stats
+> so that we'll get a measure of the waste and it'll be possible to
+> identify apps to optimize/fix.
 
-This should also make nice work better in the way the previous patch intended
-it to.
+That's a little unfortunate, since we'd then have to lose the win from
+this change, that we issue a writable zeroed page (when VM_WRITE) in
+do_anonymous_page, even when it's a read fault, saving subsequent fault.
 
----
-Use of memset was bogus. Fix it.
+Wouldn't we?  Or am I confused ;?
 
-Fix exiting recalc_task_prio without p->array being updated.
-
-Microoptimisation courtesy of Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
-Signed-off-by: Con Kolivas <kernel@kolivas.org>
-
----
- kernel/sched.c |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
-
-Index: linux-2.6.21-rc5-mm4/kernel/sched.c
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/kernel/sched.c	2007-04-04 12:14:29.000000000 +1000
-+++ linux-2.6.21-rc5-mm4/kernel/sched.c	2007-04-04 12:49:39.000000000 +1000
-@@ -683,11 +683,13 @@ static void dequeue_task(struct task_str
-  * The task is being queued on a fresh array so it has its entitlement
-  * bitmap cleared.
-  */
--static inline void task_new_array(struct task_struct *p, struct rq *rq)
-+static void task_new_array(struct task_struct *p, struct rq *rq,
-+			   struct prio_array *array)
- {
- 	bitmap_zero(p->bitmap, PRIO_RANGE);
- 	p->rotation = rq->prio_rotation;
- 	p->time_slice = p->quota;
-+	p->array = array;
- }
- 
- /* Find the first slot from the relevant prio_matrix entry */
-@@ -709,6 +711,8 @@ static inline int next_entitled_slot(str
- 	DECLARE_BITMAP(tmp, PRIO_RANGE);
- 	int search_prio, uprio = USER_PRIO(p->static_prio);
- 
-+	if (!rq->prio_level[uprio])
-+		rq->prio_level[uprio] = MAX_RT_PRIO;
- 	/*
- 	 * Only priorities equal to the prio_level and above for their
- 	 * static_prio are acceptable, and only if it's not better than
-@@ -736,11 +740,8 @@ static inline int next_entitled_slot(str
- 
- static void queue_expired(struct task_struct *p, struct rq *rq)
- {
--	p->array = rq->expired;
--	task_new_array(p, rq);
-+	task_new_array(p, rq, rq->expired);
- 	p->prio = p->normal_prio = first_prio_slot(p);
--	p->time_slice = p->quota;
--	p->rotation = rq->prio_rotation;
- }
- 
- #ifdef CONFIG_SMP
-@@ -800,9 +801,9 @@ static void recalc_task_prio(struct task
- 			queue_expired(p, rq);
- 			return;
- 		} else
--			task_new_array(p, rq);
-+			task_new_array(p, rq, array);
- 	} else
--		task_new_array(p, rq);
-+		task_new_array(p, rq, array);
- 
- 	queue_prio = next_entitled_slot(p, rq);
- 	if (queue_prio >= MAX_PRIO) {
-@@ -3445,7 +3446,7 @@ EXPORT_SYMBOL(sub_preempt_count);
- 
- static inline void reset_prio_levels(struct rq *rq)
- {
--	memset(rq->prio_level, MAX_RT_PRIO, ARRAY_SIZE(rq->prio_level));
-+	memset(rq->prio_level, 0, sizeof(int) * PRIO_RANGE);
- }
- 
- /*
-
--- 
--ck
+Hugh
