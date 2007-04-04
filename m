@@ -1,107 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751149AbXDDVvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751357AbXDDVvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751149AbXDDVvF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 17:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXDDVvF
+	id S1751357AbXDDVvU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 17:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXDDVvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 17:51:05 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38733 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbXDDVvD (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 17:51:03 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Maxim Uvarov <muvarov@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Performance Stats: Kernel patch
-In-Reply-To: Your message of "Wed, 04 Apr 2007 17:15:43 +0400."
-             <4613A4FF.9030202@ru.mvista.com>
-From: Valdis.Kletnieks@vt.edu
-References: <46124E93.2000408@ru.mvista.com> <16797.1175641303@turing-police.cc.vt.edu>
-            <4613A4FF.9030202@ru.mvista.com>
+	Wed, 4 Apr 2007 17:51:20 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:54473 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751357AbXDDVvS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 17:51:18 -0400
+Date: Wed, 4 Apr 2007 14:51:26 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-kernel@vger.kernel.org, Kai Svahn <kai.svahn@nokia.com>
+Subject: Re: [PATCH 63/90] ARM: OMAP: Merge PM code from N800 tree
+Message-Id: <20070404145126.e7dc3f94.randy.dunlap@oracle.com>
+In-Reply-To: <11757101391215-git-send-email-tony@atomide.com>
+References: <11757099691323-git-send-email-tony@atomide.com>
+	<11757100713004-git-send-email-tony@atomide.com>
+	<11757100752021-git-send-email-tony@atomide.com>
+	<11757100781275-git-send-email-tony@atomide.com>
+	<11757100811771-git-send-email-tony@atomide.com>
+	<11757100821353-git-send-email-tony@atomide.com>
+	<11757100853841-git-send-email-tony@atomide.com>
+	<1175710087578-git-send-email-tony@atomide.com>
+	<11757100911247-git-send-email-tony@atomide.com>
+	<1175710093864-git-send-email-tony@atomide.com>
+	<11757100952384-git-send-email-tony@atomide.com>
+	<11757100982726-g!
+ it-send-email-tony@atomide.com>
+	<11757101012787-git-send-email-tony@atomide.com>
+	<1175710103340-git-send-email-tony@atomide.com>
+	<11757101072553-git-send-email-tony@atomide.com>
+	<11757101101180-git-send-email-tony@atomide.com>
+	<11757101123620-git-send-email-tony@atomide.com>
+	<11757101141643-git-send-email-tony@atomide.com>
+	<11757101391215-git-send-email-tony@atomide.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175723450_4061P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Wed, 04 Apr 2007 17:50:50 -0400
-Message-ID: <6099.1175723450@turing-police.cc.vt.edu>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175723450_4061P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <6093.1175723450.1@turing-police.cc.vt.edu>
+On Wed,  4 Apr 2007 14:05:42 -0400 Tony Lindgren wrote:
 
-On Wed, 04 Apr 2007 17:15:43 +0400, Maxim Uvarov said:
-
-> New version of this patch. Please flay it.
+> From: Kai Svahn <kai.svahn@nokia.com>
 > 
+> This patch merges omap2 PM code from N800 tree.
 > 
-> Signed-off-by: Max Uvarov <muvarov@ru.mvista.com>
-
-> Index: linux-2.6.18/fs/proc/array.c
-> ===================================================================
-> --- linux-2.6.18.orig/fs/proc/array.c
-> +++ linux-2.6.18/fs/proc/array.c
-> @@ -295,6 +295,20 @@ static inline char *task_cap(struct task
->                             cap_t(p->cap_effective));
->  }
+> Patch adds support for sleep while idle for omap2
+> and handy serial console debbugging code. It also
+> moves code from pm-domain.c to pm.c.
 > 
-> +#ifdef CONFIG_THREAD_PERF_STAT
-> +static inline char *task_perf(struct task_struct *p, char *buffer)
-> +{
-> +#ifdef THREAD_PERF_STAT_SYSC
+> This code can be used as a base for developing
+> power management for all omap24xx boards.
+> 
+> ---
+>  arch/arm/mach-omap2/Makefile    |    2 +-
+>  arch/arm/mach-omap2/pm-domain.c |  299 ------------
+>  arch/arm/mach-omap2/pm.c        |  969 ++++++++++++++++++++++++++++-----------
+>  arch/arm/mach-omap2/sleep.S     |   23 +-
+>  include/asm-arm/arch-omap/pm.h  |   66 +---
+>  5 files changed, 719 insertions(+), 640 deletions(-)
 
-Missed the CONFIG_ here.
+> diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
+> index d7eee99..1034eb9 100644
+> --- a/arch/arm/mach-omap2/pm.c
+> +++ b/arch/arm/mach-omap2/pm.c
+> @@ -6,6 +6,16 @@
+>   * Copyright (C) 2006 Nokia Corporation
+>   * Tony Lindgren <tony@atomide.com>
+>   *
+> + * Fixed suspend-resume/dynamic-idle to get OMAP to retention
+> + * Amit Kucheria <amit.kucheria@nokia.com>
+> + * Igor Stoppa <igor.stoppa@nokia.com>
+> + *
+> + * Fixed MPU sleep to get ARM idle
+> + * Igor Stoppa <igor.stoppa@nokia.com>
+> + *
+> + * Fixed MPU sleep some more
+> + * Juha Yrjola
+> + *
 
-> +       return buffer + sprintf(buffer, "Nvcsw:\t%lu\n"
-> +                           "Nivcsw:\t%lu\n",
-> +                           cap_t(p->nvcsw),
-> +                           cap_t(p->nivcsw));
+Changelog goes in the SCM metadata, not source files.
 
-cap_t()??!?  That's from include/linux/capability.h, and looks something like:
 
-#ifdef STRICT_CAP_T_TYPECHECKS
-#define cap_t(x) (x).cap
-#else
-#define cap_t(x) (x)
-#endif
+> +extern void omap2_gpio_prepare_for_retention(void);
+> +extern void omap2_gpio_resume_after_retention(void);
 
-and you're probably picking up the second part, making it a no-op.  And if you
-ever hit the first part of that ifdef, you'll throw a compile error.
+externs in header files, please.
 
-Somebody else can comment on the use of #ifdef - we tend to frown on it inside
-open C code, but I'm not seeing a really brilliant way to avoid them entirely
-(the 'static inline task_perf' can probably move to a .h, but it's hard to
-find a clean way to avoid the ifdefs given that we have Kconfig variables
-to select it. array.c already has a CONFIG_S390 in it, anyhow. :)
-
-There's a mostly-hypothetical race between inc_syscall() and the places that
-increment the context switch counters, and where we read the values - but at
-worst, we'll output a stale off-by-one-ish value.  Certainly not worth
-grabbing a lock on the task struct for *this* usage, but the sort of thing you
-want to keep in mind as you write other code.
-
-Other random comments:
-
-1) You probably want to rebase against something more recent (2.6.21-rc<mumble>
-or the final .21 when it's released).
-
-2) It arrived here with some line-wrapping damage, most likely to the fact
-that you posted it with Thunderbird.  There's a mystic Thunderbird incantation
-to make it not do that, but I have no idea what it is - it's in the list
-archives someplace.
-
---==_Exmh_1175723450_4061P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGFB26cC3lWbTT17ARApq2AKCIFVxygpQBkRF5dzBA9q56u1wArwCglOUs
-Zn6OWAd4vM6fEcZwJ+2Uorw=
-=yTX6
------END PGP SIGNATURE-----
-
---==_Exmh_1175723450_4061P--
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
