@@ -1,84 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbXDDSoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751229AbXDDSpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbXDDSoI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXDDSoI
+	id S1751229AbXDDSpX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXDDSpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:44:08 -0400
-Received: from iasrv1.idleaire.net ([63.78.244.180]:32833 "EHLO
-	iasrv1.idleaire.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907AbXDDSoF (ORCPT
+	Wed, 4 Apr 2007 14:45:22 -0400
+Received: from nlpi043.sbcis.sbc.com ([207.115.36.72]:50874 "EHLO
+	nlpi043.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbXDDSpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:44:05 -0400
-X-Greylist: delayed 1542 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 14:44:05 EDT
-Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
-From: Dave Dillow <dave@thedillows.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Gene Heskett <gene.heskett@gmail.com>,
-       linux-kernel@vger.kernel.org, ray-gmail@madrabbit.org,
-       amanda-hackers@amanda.org, amanda-users@amanda.org
-In-Reply-To: <20070404104219.40e25b6a.akpm@linux-foundation.org>
-References: <200704010100.19016.gene.heskett@verizon.net>
-	 <2c0942db0704010033r61f967c3y7d05e3ec0a9f6931@mail.gmail.com>
-	 <200704011141.53105.gene.heskett@verizon.net>
-	 <200704020021.02393.gene.heskett@gmail.com>
-	 <1175488272.3161.28.camel@obelisk.thedillows.org>
-	 <1175661256.31439.23.camel@obelisk.thedillows.org>
-	 <20070404084530.GB1556@elte.hu>
-	 <20070404104219.40e25b6a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 14:17:13 -0400
-Message-Id: <1175710634.27756.40.camel@dillow.idleaire.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Apr 2007 18:16:38.0788 (UTC) FILETIME=[633D0440:01C776E5]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1345-3.6.1039-14858.000
-X-TM-AS-Result: No--11.931800-8.000000-2
+	Wed, 4 Apr 2007 14:45:19 -0400
+X-ORBL: [67.117.73.34]
+Date: Wed, 4 Apr 2007 14:44:57 -0400
+From: Tony Lindgren <tony@atomide.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/90] Post 2.6.21 OMAP update
+Message-ID: <20070404184455.GL29129@atomide.com>
+References: <11757088774110-git-send-email-tony@atomide.com> <20070404182728.GK29129@atomide.com> <20070404113925.da221efc.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404113925.da221efc.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 10:42 -0700, Andrew Morton wrote:
-> On Wed, 4 Apr 2007 10:45:30 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+* Randy Dunlap <randy.dunlap@oracle.com> [070404 14:37]:
+> On Wed, 4 Apr 2007 14:27:30 -0400 Tony Lindgren wrote:
 > 
-> > 
-> > * Dave Dillow <dave@thedillows.org> wrote:
-> > 
-> > > > Then it is a matter of figuring out why the device number changed -- 
-> > > > I'm thinking it is device-mapper, but will look closer tomorrow.
+> > * Tony Lindgren <tony@atomide.com> [070404 14:02]:
+> > > Hi all,
 > > > 
-> > > This commit is the one that changed it:
+> > > Attached is a rather large OMAP update for post 2.6.21.
 > > > 
-> > > commit fdf892be32d84a1745fa0aee5fc60517421b8038
-> > > Author: Andrew Morton <akpm@osdl.org>
-> > > Date:   Mon Feb 12 00:51:44 2007 -0800
+> > > OMAP is a series of ARM processors from Texas Instruments
+> > > used in various cell phones and PDAs.
 > > > 
-> > >     [PATCH] register_blkdev(): don't hand out the LOCAL/EXPERIMENTAL majors
-> > >     
-> > >     As pointed out in http://bugzilla.kernel.org/show_bug.cgi?id=7922, 
-> > >     dynamic blockdev major allocation can hand out majors which LANANA 
-> > >     has defined as being for local/experimental use.
+> > > The patch series is based on code that has been brewing
+> > > in the linux-omap tree since last fall.
+> > > 
+> > > We'd like to switch the linux-omap tree to use the mainline
+> > > tree for core omap stuff, and this series attemps to do it
+> > > for most part. 
+> > > 
+> > > As the patch series is big, Andrew Morton asked me to post
+> > > it to LKML instead of linux-arm-kernel list for a wider review,
+> > > so please comment on the patches if you have a chance!
+> > > 
+> > > The patches touch only omap specific code at:
+> > > 
+> > > arch/arm/Kconfig
+> > > arch/arm/plat-omap
+> > > arch/arm/mach-omap1
+> > > arch/arm/mach-omap2
+> > > include/asm-arm/arch-omap
 > > 
-> > i dont think we should break backwards compatibility with a system that 
-> > has not changed any hardware. Andrew, should we revert this?
+> > Looks like using git-send-email --chain-reply-to with this many
+> > messages is not a good idea... The threading gets nested too wide :)
 > 
-> Well that's an odd thing for a backup program to be doing - there are any
-> number of things which could cause a dynamically-allocated major to change.
-> 
-> ho hum, yes, I guess it needs to go.
+> That's only a problem when there are <too many> patches to be
+> reviewed.  Hence, do more frequent postings of fewer patches per series.
+> That will likely also get you more reviewers.
 
-The thing is, it's been broken for a long time -- this change just
-highlighted it. This isn't the first time that device-mapper has moved
--- the introduction of mdp (before git, so haven't tracked down
-timeframe) also moved it around. The dynamic major is not stable, so
-should we be concerned if it moves for 2.6.21?
+Yeah, I agree.. We've already missed two merge windows because of the
+large patch set :( The problem is that patch set just keeps growing.
 
-I don't like the effect it has on the backups, but I don't think we
-should hand out LOCAL/EXP majors to dynamic devices, either. There is a
-module option to make the device-mapper and mdp majors stable, so
-perhaps a compromise is possible? Revert for 2.6.21, and schedule the
-patch for later addition, which gives distros time to use the DM major
-option?
--- 
-Dave Dillow <dave@thedillows.org>
+Things should be to normal small patch sets once this pile is dealt
+with.
 
+Regards,
+
+Tony
