@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966229AbXDDBV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966233AbXDDBWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966229AbXDDBV0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 21:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966233AbXDDBV0
+	id S966233AbXDDBWA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 21:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966236AbXDDBWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 21:21:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43253
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S966229AbXDDBVZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 21:21:25 -0400
-Date: Tue, 03 Apr 2007 18:21:25 -0700 (PDT)
-Message-Id: <20070403.182125.77058566.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: paulus@samba.org, dwmw2@infradead.org, linuxppc-dev@ozlabs.org,
-       benh@kernel.crashing.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070404021924.71e87580@the-village.bc.nu>
-References: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<20070403.165518.55726194.davem@davemloft.net>
-	<20070404021924.71e87580@the-village.bc.nu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 3 Apr 2007 21:22:00 -0400
+Received: from [202.78.101.198] ([202.78.101.198]:35551 "EHLO mail.hq.astra.ph"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S966233AbXDDBV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 21:21:59 -0400
+Message-ID: <4612FD8F.6080103@gmail.com>
+Date: Wed, 04 Apr 2007 09:21:19 +0800
+From: Carlo Florendo <subscribermail@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: kernel source dependency
+References: <46120EBE.8080705@gmail.com> <20070403081853.6590ef84.randy.dunlap@oracle.com> <Pine.LNX.4.61.0704031846330.10155@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0704031846330.10155@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Wed, 4 Apr 2007 02:19:24 +0100
-
-> > I totally agree with Paul, the onboard serial device should get
-> > ttyS0 regardless of what hardare is used to drive it.
+Jan Engelhardt wrote:
+> On Apr 3 2007 08:18, Randy Dunlap wrote:
+>> Hi,
+>> Without ncurses installed, you should see these messages:
+>>
+>> 	echo " *** Unable to find the ncurses libraries."
+>> 	echo " *** make menuconfig require the ncurses libraries"
+>> 	echo " *** "
+>> 	echo " *** Install ncurses (ncurses-devel) and try again"
+>> 	echo " *** "
+>>
+>> Do you not see them?  or do you need something different?
 > 
-> Thats between you and udev.
+> Perhaps libreadline-devel? Though ncurses-devel will *most likely* have a
+> dependency on that, more even than the kernel does on ncurses-devel ;-)
 
-That might be true when udev exists, but it doesn't for the console
-specification on the kernel command line.
+That is not so :)  The kernel-source's 'menuconfig' target does not need 
+libreadline-devel.  Besides, there is no readline functionality that is 
+evident at menuconfig.  Menu navigation is entirely done by ncurses calls.
 
-I don't care about ordering, but the name matters just like "eth%d"
-is the default name for all ethernet devices.
+Thank you very much.
 
-Using different majors for different instances of the exact same kind
-of device is really not smart.  It's a serial port, and if you try
-to dress it up to be something else you run into all kinds of problems.
+Best Regards,
 
-Not the least of which is the user has to scratch his head figuring
-out what kind of chip drives his serial console, he just wants the
-first serial port and he should have a way to say just that even
-on the kernel command line.
+Carlo
 
+-- 
+Carlo Florendo
+Softare Engineer/Network Co-Administrator
+Astra Philippines Inc.
+UP-Ayala Technopark, Diliman 1101, Quezon City
+Philippines
+http://www.astra.ph
+
+--
+The Astra Group of Companies
+5-3-11 Sekido, Tama City
+Tokyo 206-0011, Japan
+http://www.astra.co.jp
