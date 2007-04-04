@@ -1,108 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbXDDSHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbXDDSHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbXDDSHD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbXDDSHC
+	id S1753911AbXDDSHW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXDDSHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:07:02 -0400
-Received: from mail.somanetworks.com ([216.126.67.42]:47951 "EHLO
-	mail.somanetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753872AbXDDSG7 (ORCPT
+	Wed, 4 Apr 2007 14:07:06 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36188 "EHLO
+	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753867AbXDDSHB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:06:59 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 14:06:58 EDT
-Date: Wed, 4 Apr 2007 13:59:37 -0400 (EDT)
-From: Scott Murray <scottm@somanetworks.com>
-X-X-Sender: scottm@rancor.yyz.somanetworks.com
-To: Milind Arun Choudhary <milindchoudhary@gmail.com>
-cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [KJ][PATCH] ROUND_UP macro cleanup in drivers/pci
-In-Reply-To: <20070401111400.GA9758@arun.site>
-Message-ID: <Pine.LNX.4.64.0704041346250.10014@rancor.yyz.somanetworks.com>
-References: <20070401111400.GA9758@arun.site>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Apr 2007 14:07:01 -0400
+X-ORBL: [67.117.73.34]
+From: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Kyungmin Park <kyungmin.park@samsung.com>,
+       Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 12/90] ARM: OMAP: Fix apollon boot
+Date: Wed,  4 Apr 2007 14:04:51 -0400
+Message-Id: <1175709988265-git-send-email-tony@atomide.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <1175709977545-git-send-email-tony@atomide.com>
+References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Apr 2007, Milind Arun Choudhary wrote:
+From: Kyungmin Park <kyungmin.park@samsung.com>
 
->
-> ROUND_UP macro cleanup, use ALIGN where ever appropriate
->
-> Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+In previous GPMC patch, there was a typo. Fix typo and add header files for
+set_irq_type() warnings.
 
-Ack for the hotplug/cpci_hotplug_pci.c change, looks like I missed
-removing that define back when I originally reworked things for 2.6.
-The setup-bus.c change looks okay to me as well, but probably needs
-sign-off from Greg.
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-apollon.c |   99 +++++++++++++++++++++++++++++++---
+ 1 files changed, 90 insertions(+), 9 deletions(-)
 
-Signed-off-by: Scott Murray <scottm@somanetworks.com>
-
-> ---
->  hotplug/cpci_hotplug_pci.c |    2 --
->  setup-bus.c                |    8 +++-----
->  2 files changed, 3 insertions(+), 7 deletions(-)
->
->
-> diff --git a/drivers/pci/hotplug/cpci_hotplug_pci.c b/drivers/pci/hotplug/cpci_hotplug_pci.c
-> index 7b1beaa..5e9be44 100644
-> --- a/drivers/pci/hotplug/cpci_hotplug_pci.c
-> +++ b/drivers/pci/hotplug/cpci_hotplug_pci.c
-> @@ -45,8 +45,6 @@ extern int cpci_debug;
->  #define info(format, arg...) printk(KERN_INFO "%s: " format "\n", MY_NAME , ## arg)
->  #define warn(format, arg...) printk(KERN_WARNING "%s: " format "\n", MY_NAME , ## arg)
->
-> -#define ROUND_UP(x, a)		(((x) + (a) - 1) & ~((a) - 1))
-> -
->
->  u8 cpci_get_attention_status(struct slot* slot)
->  {
-> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-> index 3554f39..e02766f 100644
-> --- a/drivers/pci/setup-bus.c
-> +++ b/drivers/pci/setup-bus.c
-> @@ -34,8 +34,6 @@
->  #define DBG(x...)
->  #endif
->
-> -#define ROUND_UP(x, a)		(((x) + (a) - 1) & ~((a) - 1))
-> -
->  static void __devinit
->  pbus_assign_resources_sorted(struct pci_bus *bus)
->  {
-> @@ -314,7 +312,7 @@ pbus_size_io(struct pci_bus *bus)
->  #if defined(CONFIG_ISA) || defined(CONFIG_EISA)
->  	size = (size & 0xff) + ((size & ~0xffUL) << 2);
->  #endif
-> -	size = ROUND_UP(size + size1, 4096);
-> +	size = ALIGN(size + size1, 4096);
->  	if (!size) {
->  		b_res->flags = 0;
->  		return;
-> @@ -383,11 +381,11 @@ pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long type)
->
->  		if (!align)
->  			min_align = align1;
-> -		else if (ROUND_UP(align + min_align, min_align) < align1)
-> +		else if (ALIGN(align + min_align, min_align) < align1)
->  			min_align = align1 >> 1;
->  		align += aligns[order];
->  	}
-> -	size = ROUND_UP(size, min_align);
-> +	size = ALIGN(size, min_align);
->  	if (!size) {
->  		b_res->flags = 0;
->  		return 1;
->
-> --
-> Milind Arun Choudhary
->
-
+diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apollon.c
+index 878ff91..3bb49c1 100644
+--- a/arch/arm/mach-omap2/board-apollon.c
++++ b/arch/arm/mach-omap2/board-apollon.c
+@@ -25,6 +25,8 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
++#include <linux/leds.h>
++#include <linux/irq.h>
+ 
+ #include <asm/hardware.h>
+ #include <asm/mach-types.h>
+@@ -32,10 +34,12 @@
+ #include <asm/mach/flash.h>
+ 
+ #include <asm/arch/gpio.h>
++#include <asm/arch/led.h>
+ #include <asm/arch/mux.h>
+ #include <asm/arch/usb.h>
+ #include <asm/arch/board.h>
+ #include <asm/arch/common.h>
++#include <asm/arch/gpmc.h>
+ #include "prcm-regs.h"
+ 
+ /* LED & Switch macros */
+@@ -46,6 +50,9 @@
+ #define SW_UP_GPIO17		17
+ #define SW_DOWN_GPIO58		58
+ 
++#define APOLLON_FLASH_CS	0
++#define APOLLON_ETH_CS		1
++
+ static struct mtd_partition apollon_partitions[] = {
+ 	{
+ 		.name		= "X-Loader + U-Boot",
+@@ -85,10 +92,10 @@ static struct flash_platform_data apollon_flash_data = {
+ 	.nr_parts	= ARRAY_SIZE(apollon_partitions),
+ };
+ 
+-static struct resource apollon_flash_resource = {
+-	.start		= APOLLON_CS0_BASE,
+-	.end		= APOLLON_CS0_BASE + SZ_128K,
+-	.flags		= IORESOURCE_MEM,
++static struct resource apollon_flash_resource[] = {
++	[0] = {
++		.flags		= IORESOURCE_MEM,
++	},
+ };
+ 
+ static struct platform_device apollon_onenand_device = {
+@@ -97,14 +104,24 @@ static struct platform_device apollon_onenand_device = {
+ 	.dev		= {
+ 		.platform_data	= &apollon_flash_data,
+ 	},
+-	.num_resources	= ARRAY_SIZE(&apollon_flash_resource),
+-	.resource	= &apollon_flash_resource,
++	.num_resources	= ARRAY_SIZE(apollon_flash_resource),
++	.resource	= apollon_flash_resource,
+ };
+ 
++static void __init apollon_flash_init(void)
++{
++	unsigned long base;
++
++	if (gpmc_cs_request(APOLLON_FLASH_CS, SZ_128K, &base) < 0) {
++		printk(KERN_ERR "Cannot request OneNAND GPMC CS\n");
++		return;
++	}
++	apollon_flash_resource[0].start = base;
++	apollon_flash_resource[0].end   = base + SZ_128K - 1;
++}
++
+ static struct resource apollon_smc91x_resources[] = {
+ 	[0] = {
+-		.start	= APOLLON_ETHR_START,		/* Physical */
+-		.end	= APOLLON_ETHR_START + 0xf,
+ 		.flags  = IORESOURCE_MEM,
+ 	},
+ 	[1] = {
+@@ -126,14 +143,51 @@ static struct platform_device apollon_lcd_device = {
+ 	.id		= -1,
+ };
+ 
++static struct omap_led_config apollon_led_config[] = {
++	{
++		.cdev	= {
++			.name	= "apollon:led0",
++		},
++		.gpio	= LED0_GPIO13,
++	},
++	{
++		.cdev	= {
++			.name	= "apollon:led1",
++		},
++		.gpio	= LED1_GPIO14,
++	},
++	{
++		.cdev	= {
++			.name	= "apollon:led2",
++		},
++		.gpio	= LED2_GPIO15,
++	},
++};
++
++static struct omap_led_platform_data apollon_led_data = {
++	.nr_leds	= ARRAY_SIZE(apollon_led_config),
++	.leds		= apollon_led_config,
++};
++
++static struct platform_device apollon_led_device = {
++	.name		= "omap-led",
++	.id		= -1,
++	.dev		= {
++		.platform_data	= &apollon_led_data,
++	},
++};
++
+ static struct platform_device *apollon_devices[] __initdata = {
+ 	&apollon_onenand_device,
+ 	&apollon_smc91x_device,
+ 	&apollon_lcd_device,
++	&apollon_led_device,
+ };
+ 
+ static inline void __init apollon_init_smc91x(void)
+ {
++	unsigned long base;
++
+ 	/* Make sure CS1 timings are correct */
+ 	GPMC_CONFIG1_1 = 0x00011203;
+ 	GPMC_CONFIG2_1 = 0x001f1f01;
+@@ -141,13 +195,20 @@ static inline void __init apollon_init_smc91x(void)
+ 	GPMC_CONFIG4_1 = 0x1c091c09;
+ 	GPMC_CONFIG5_1 = 0x041f1f1f;
+ 	GPMC_CONFIG6_1 = 0x000004c4;
+-	GPMC_CONFIG7_1 = 0x00000f40 | (APOLLON_CS1_BASE >> 24);
++
++	if (gpmc_cs_request(APOLLON_ETH_CS, SZ_16M, &base) < 0) {
++		printk(KERN_ERR "Failed to request GPMC CS for smc91x\n");
++		return;
++	}
++	apollon_smc91x_resources[0].start = base + 0x300;
++	apollon_smc91x_resources[0].end   = base + 0x30f;
+ 	udelay(100);
+ 
+ 	omap_cfg_reg(W4__24XX_GPIO74);
+ 	if (omap_request_gpio(APOLLON_ETHR_GPIO_IRQ) < 0) {
+ 		printk(KERN_ERR "Failed to request GPIO%d for smc91x IRQ\n",
+ 			APOLLON_ETHR_GPIO_IRQ);
++		gpmc_cs_free(APOLLON_ETH_CS);
+ 		return;
+ 	}
+ 	omap_set_gpio_direction(APOLLON_ETHR_GPIO_IRQ, 1);
+@@ -175,6 +236,13 @@ static struct omap_mmc_config apollon_mmc_config __initdata = {
+ 	},
+ };
+ 
++static struct omap_usb_config apollon_usb_config __initdata = {
++	.register_dev	= 1,
++	.hmc_mode	= 0x14,	/* 0:dev 1:host1 2:disable */
++
++	.pins[0]	= 6,
++};
++
+ static struct omap_lcd_config apollon_lcd_config __initdata = {
+ 	.ctrl_name	= "internal",
+ };
+@@ -182,6 +250,7 @@ static struct omap_lcd_config apollon_lcd_config __initdata = {
+ static struct omap_board_config_kernel apollon_config[] = {
+ 	{ OMAP_TAG_UART,	&apollon_uart_config },
+ 	{ OMAP_TAG_MMC,		&apollon_mmc_config },
++	{ OMAP_TAG_USB,		&apollon_usb_config },
+ 	{ OMAP_TAG_LCD,		&apollon_lcd_config },
+ };
+ 
+@@ -250,10 +319,22 @@ static void __init apollon_sw_init(void)
+ 		return;
+ }
+ 
++static void __init apollon_usb_init(void)
++{
++	/* USB device */
++	/* DEVICE_SUSPEND */
++	omap_cfg_reg(P21_242X_GPIO12);
++	omap_request_gpio(12);
++	omap_set_gpio_direction(12, 0);		/* OUT */
++	omap_set_gpio_dataout(12, 0);
++}
++
+ static void __init omap_apollon_init(void)
+ {
+ 	apollon_led_init();
+ 	apollon_sw_init();
++	apollon_flash_init();
++	apollon_usb_init();
+ 
+ 	/* REVISIT: where's the correct place */
+ 	omap_cfg_reg(W19_24XX_SYS_NIRQ);
 -- 
-Scott Murray
-SOMA Networks, Inc.
-Toronto, Ontario
-e-mail: scottm@somanetworks.com
+1.4.4.2
+
