@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992864AbXDDLjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992848AbXDDLmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992864AbXDDLjc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 07:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992866AbXDDLjc
+	id S2992848AbXDDLmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 07:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992866AbXDDLmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 07:39:32 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:44618 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992864AbXDDLjb (ORCPT
+	Wed, 4 Apr 2007 07:42:00 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:2480 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992848AbXDDLl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 07:39:31 -0400
-Date: Wed, 4 Apr 2007 07:39:17 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: gregkh@suse.de
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] lib/kobject_uevent.c: Collapse unnecessary loop nesting
- (top_kobj)
-Message-ID: <alpine.DEB.0.83.0704040730530.25382@sigma.j-a-k-j.com>
+	Wed, 4 Apr 2007 07:41:59 -0400
+Date: Wed, 4 Apr 2007 12:41:55 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: [PATCH] Fixed build error on zs serial driver
+In-Reply-To: <20070404162934.2635ef95.yoichi_yuasa@tripeaks.co.jp>
+Message-ID: <Pine.LNX.4.64N.0704041240410.19559@blysk.ds.pg.gda.pl>
+References: <20070404162934.2635ef95.yoichi_yuasa@tripeaks.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
+On Wed, 4 Apr 2007, Yoichi Yuasa wrote:
 
-Collapses a do..while() loop within an if() to a simple while() loop for 
-simplicity and readability.
+> This patch has fixed build error on zs serial driver.
+> 
+> drivers/tc/zs.c:73:24: error: asm/dec/tc.h: No such file or directory
+> make[2]: *** [drivers/tc/zs.o] Error 1
+> 
+> Yoichi
+> 
+> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
-Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
+Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
 
----
+ The driver is on its way out though.
 
-I'm sure GCC is able to handle this optimization decently, but there's no 
-reason at all for the additional nesting level for the loop.
-
---- linux-2.6.20.4/lib/kobject_uevent.c.orig	2007-04-04 07:25:08.000000000 -0400
-+++ linux-2.6.20.4/lib/kobject_uevent.c	2007-04-04 07:27:28.000000000 -0400
-@@ -95,10 +95,8 @@ int kobject_uevent_env(struct kobject *k
- 
- 	/* search the kset we belong to */
- 	top_kobj = kobj;
--	if (!top_kobj->kset && top_kobj->parent) {
--		do {
--			top_kobj = top_kobj->parent;
--		} while (!top_kobj->kset && top_kobj->parent);
-+	while (!top_kobj->kset && top_kobj->parent) {
-+		top_kobj = top_kobj->parent;
- 	}
- 	if (!top_kobj->kset) {
- 		pr_debug("kobject attempted to send uevent without kset!\n");
+  Maciej
