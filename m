@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992859AbXDDL1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbXDDLbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992859AbXDDL1X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 07:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992861AbXDDL1X
+	id S1752274AbXDDLbP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 07:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbXDDLbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 07:27:23 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:56435 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992859AbXDDL1W (ORCPT
+	Wed, 4 Apr 2007 07:31:15 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:48581 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbXDDLbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 07:27:22 -0400
-Message-ID: <46138B4C.2050409@gmail.com>
-Date: Wed, 04 Apr 2007 13:26:04 +0200
+	Wed, 4 Apr 2007 07:31:15 -0400
+Message-ID: <46138C36.2070907@gmail.com>
+Date: Wed, 04 Apr 2007 13:29:58 +0200
 From: Rene Herman <rene.herman@gmail.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
 To: Rusty Russell <rusty@rustcorp.com.au>
 CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: MODULE_MAINTAINER
+Subject: Re: MODULE_MAINTAINER
+References: <46138B4C.2050409@gmail.com>
+In-Reply-To: <46138B4C.2050409@gmail.com>
 Content-Type: multipart/mixed;
- boundary="------------070305020103070403050608"
+ boundary="------------020604030504090605040106"
 X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
 X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------070305020103070403050608
+--------------020604030504090605040106
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Hi Rusty.
+On 04/04/2007 01:26 PM, Rene Herman wrote:
 
-Can we have a MODULE_MAINTAINER to complement MODULE_AUTHOR?
+> Can we have a MODULE_MAINTAINER to complement MODULE_AUTHOR?
 
-Often a module grows multiple authors over time, but initial authors 
-aren't around (or too interested) anymore. And sometimes, if someone 
-maintaining a driver is just doing minor peripheral updates to keep it 
-compiling, the maintainer might not even _be_ an author really...
+And here's the accompanying patch to the module-init-tools-3.3-pre1 as 
+found on http://kernel.org/pub/linux/utils/kernel/module-init-tools/
 
 Rene.
 
-
-
---------------070305020103070403050608
+--------------020604030504090605040106
 Content-Type: text/plain;
- name="module_maintainer.diff"
+ name="modinfo_maintainer.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="module_maintainer.diff"
+ filename="modinfo_maintainer.diff"
 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 10f771a..c06f76c 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -128,6 +128,9 @@ #define MODULE_LICENSE(_license) MODULE_
- /* Author, ideally of form NAME <EMAIL>[, NAME <EMAIL>]*[ and NAME <EMAIL>] */
- #define MODULE_AUTHOR(_author) MODULE_INFO(author, _author)
-   
-+/* Maintainer, ideally of form NAME <EMAIL> */
-+#define MODULE_MAINTAINER(_maintainer) MODULE_INFO(maintainer, _maintainer)
-+
- /* What your module does. */
- #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
+--- module-init-tools-3.3-pre1/modinfo.c.orig	2007-04-04 12:54:19.000000000 +0200
++++ module-init-tools-3.3-pre1/modinfo.c	2007-04-04 12:59:42.000000000 +0200
+@@ -213,6 +213,7 @@
+ static struct option options[] =
+ {
+ 	{"author", 0, 0, 'a'},
++	{"maintainer", 0, 0, 'm'},
+ 	{"description", 0, 0, 'd'},
+ 	{"license", 0, 0, 'l'},
+ 	{"parameters", 0, 0, 'p'},
+@@ -347,9 +348,10 @@
+ 	else
+ 		abort();
  
+-	while ((opt = getopt_long(argc,argv,"adlpVhn0F:",options,NULL)) >= 0){
++	while ((opt = getopt_long(argc,argv,"amdlpVhn0F:",options,NULL)) >= 0){
+ 		switch (opt) {
+ 		case 'a': field = "author"; break;
++		case 'm': field = "maintainer"; break;	  
+ 		case 'd': field = "description"; break;
+ 		case 'l': field = "license"; break;
+ 		case 'p': field = "parm"; break;
 
---------------070305020103070403050608--
+--------------020604030504090605040106--
