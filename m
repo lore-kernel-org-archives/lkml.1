@@ -1,76 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992971AbXDDPxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992972AbXDDP4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992971AbXDDPxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992975AbXDDPxc
+	id S2992972AbXDDP4m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992977AbXDDP4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:53:32 -0400
-Received: from usermail.globalproof.net ([194.146.153.18]:49648 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992972AbXDDPxb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:53:31 -0400
-X-Greylist: delayed 4659 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 11:53:28 EDT
-From: "Denys" <denys@visp.net.lb>
-To: Jarek Poplawski <jarkao2@o2.pl>, Christian Kujau <christian@g-house.de>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
-Date: Wed, 4 Apr 2007 16:53:59 +0300
-Message-Id: <20070404135259.M91581@visp.net.lb>
-In-Reply-To: <20070404112100.GA1979@ff.dom.local>
-References: <20070403065810.GA1832@ff.dom.local> <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de> <20070404112100.GA1979@ff.dom.local>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 195.69.208.253 (denys@visp.net.lb)
+	Wed, 4 Apr 2007 11:56:41 -0400
+Received: from mail.suse.de ([195.135.220.2]:59619 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992972AbXDDP4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 11:56:41 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch 04/17] Add pagetable accessors to pack and unpack pagetable entries
+Date: Wed, 4 Apr 2007 17:56:34 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <20070402055652.610711908@goop.org> <200704041347.42822.ak@suse.de> <4613C828.2030604@goop.org>
+In-Reply-To: <4613C828.2030604@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=koi8-r
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704041756.35016.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IMHO it can be hardware issue also, i had something very similar with faulty 
-hardware combinations.
+On Wednesday 04 April 2007 17:45:44 Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> > Why is there a difference for null syscall? I had assumed we patched all the 
+> > fast path cases relevant there. Do you have an idea where it comes from?
+> 
+> Sure.  There's indirect calls for things like sti/cli/iret.  It goes
+> back to native speed when you patch the real instructions inline.
 
-On Wed, 4 Apr 2007 13:21:00 +0200, Jarek Poplawski wrote
-> On Tue, Apr 03, 2007 at 04:19:46PM +0100, Christian Kujau wrote:
-> > On Tue, 3 Apr 2007, Jarek Poplawski wrote:
-> > >Did you try with 8139cp instead of 8139too?
-> > 
-> > Tried that, 8139cp could not be loaded :(
-> 
-> Sorry for misleading!
-> 
-> > >(Maybe even try some other card to narrow the problem?)
-> > >You could also try to test without ehci, if it's possible.
-> > 
-> > USB has been disabled completely. After booting with 'acpi=off lapic' 
-> > the box survived ~30min then locked up again and rebooted.
-> 
-> So, it's a lot sooner than before. (BTW, isn't there anything
-> in debug log?) I see both CPUs did interrupt handling again.
-> Maybe it's a real locking problem. Here are some more
-> suggestions for testing (if you don't find anything better):
-> - try without SMP, so: 'acpi=off lapic nosmp'
-> - lock debugging turned on as much as possible
-> plus maybe for curiosity:
-> - different CONFIG_HZ
-> - 8139TOO_PIO = y
-> 
-> ....
-> > IRQ-problems with the Un-Interruptible-Power-Supply
-> 
-> I wouldn't be surprised...
-> 
-> Cheers,
-> Jarek P.
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I was talking about the patched case. It seemed to be a little slower
+too, but in theory it shouldn't have been, no? 
 
-
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+-Andi
 
