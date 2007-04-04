@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992939AbXDDPw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934048AbXDDPxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992939AbXDDPw0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbXDDPw0
+	id S934048AbXDDPxJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbXDDPxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:52:26 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:53074 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934048AbXDDPwZ (ORCPT
+	Wed, 4 Apr 2007 11:53:09 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:4844 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934048AbXDDPxH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:52:25 -0400
-Message-ID: <4613C963.6070409@gmail.com>
-Date: Wed, 04 Apr 2007 17:50:59 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 4 Apr 2007 11:53:07 -0400
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <46138B4C.2050409@gmail.com> <20070404123311.GA18552@infradead.org> <1175698135.5815.447.camel@violet> <20070404150231.GE27660@stusta.de>
-In-Reply-To: <20070404150231.GE27660@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 04 Apr 2007 15:53:03.0908 (UTC) FILETIME=[545EA640:01C776D1]
+Content-class: urn:content-classes:message
+Subject: Re: set up new kernel with grub
+Date: Wed, 4 Apr 2007 11:53:03 -0400
+Message-ID: <Pine.LNX.4.61.0704041246010.5035@chaos.analogic.com>
+In-Reply-To: <BAY113-DAV124C8565330DC6C51B2B09B9660@phx.gbl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: set up new kernel with grub
+thread-index: Acd20VSCo0HFyTxeQra12cFSHbw5dQ==
+References: <BAY113-DAV124C8565330DC6C51B2B09B9660@phx.gbl>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Michael" <gonwg@hotmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/04/2007 05:02 PM, Adrian Bunk wrote:
 
->>> #define MODULE_MAINTAINER(x) MODULE_AUTHOR(x), please. 
->>> MODULE_AUTHOR really has meant maintainer in practice for ages,
->>> and it's the only actually relevant for users information we
->>> should store.
->> 
->> I agree. The actual author information belong into the files
->> copyright header. The MODULE_AUTHOR should only show the current
->> maintainer and its email address. However this might need some
->> cleanup. Maybe it is time that we sync the MAINTAINERS file with
->> the MODULE_AUTHOR tag.
-> 
-> Or even remove the MODULE_AUTHOR tag?
-> 
-> Even if you would spend the time for syncing the > 1600 MODULE_AUTHOR
-> tags today, I don't see this happen on an ongoing basis in the
-> future.
+On Wed, 4 Apr 2007, Michael wrote:
 
-Given that people seem to agree that authorship information has no place 
-in the binary, that might actually be best.
+> Hi,
+>
+> I compiled a new kernel: 2.6.20.3, and hope to test it without removing
+> my old kernel.
 
-The problem I'm trying to solve is letting people know whom to contact. 
-Having multiple authors in the MODULES_AUTHOR tag and maintainers who 
-might not be authors are two reasons the current tag doesn't work.
+You don't need to remove your old kernel. Log in as root.
 
-Keeping copyright holders in a copyright header and maintainers in the 
-MAINTAINERS file would at least avoid the confusing message the tag 
-sends. As you say in a previous message, users should mostly in fact be 
-contacting their vendor if using distro kernels or, if they're using 
-kermel.org kernels, linux-kernel and can then find the information in 
-the MAINTAINERS file.
+# cd /usr/src/linux-2.6.20.3
+If your current kernel is 2.6.20.3, edit the Makefile to
+add some character after "EXTRAVERSION" as EXTRAVERSION= 3x
+# cp .config ..
+# make distclean
+# cp ../.config .
+# make oldconfig
+# make
+# make modules_install
+# make install
 
-So, MODULE_AUTHOR be gone?
+The result will put the new kernel in the GRUB menu so you can
+always go back to the old one if the new one doesn't work.
 
-Rene.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.65 BogoMips).
+New book: http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
