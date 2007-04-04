@@ -1,254 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992753AbXDDSkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993023AbXDDSlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992753AbXDDSkW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932330AbXDDSkW
+	id S2993023AbXDDSlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992996AbXDDSjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:40:22 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:20927 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993023AbXDDSkE (ORCPT
+	Wed, 4 Apr 2007 14:39:45 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36410 "EHLO
+	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753899AbXDDSH1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:40:04 -0400
-Date: Wed, 4 Apr 2007 11:41:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
-Subject: Re: [PATCH 12/90] ARM: OMAP: Fix apollon boot
-Message-Id: <20070404114147.29bd3872.randy.dunlap@oracle.com>
-In-Reply-To: <1175709988265-git-send-email-tony@atomide.com>
-References: <11757099691323-git-send-email-tony@atomide.com>
-	<11757099743984-git-send-email-tony@atomide.com>
-	<1175709977545-git-send-email-tony@atomide.com>
-	<1175709988265-git-send-email-tony@atomide.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 4 Apr 2007 14:07:27 -0400
+X-ORBL: [67.117.73.34]
+From: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 19/90] ARM: OMAP: Register tsc2102 on Palm Tungsten E
+Date: Wed,  4 Apr 2007 14:04:58 -0400
+Message-Id: <11757100143517-git-send-email-tony@atomide.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11757100112473-git-send-email-tony@atomide.com>
+References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  4 Apr 2007 14:04:51 -0400 Tony Lindgren wrote:
+From: Andrzej Zaborowski <balrog@zabor.org>
 
-> From: Kyungmin Park <kyungmin.park@samsung.com>
-> 
-> In previous GPMC patch, there was a typo. Fix typo and add header files for
-> set_irq_type() warnings.
+Add palmte board config bits for TSC2102 controlled devices. This will
+enable touchscreen, audio and APM code to report battery level.
 
-It looks like there's more to this patch than in the description above...
+If there are other boards at some point that use a TSC2102, similar
+code can be used.
 
-
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  arch/arm/mach-omap2/board-apollon.c |   99 +++++++++++++++++++++++++++++++---
->  1 files changed, 90 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apollon.c
-> index 878ff91..3bb49c1 100644
-> --- a/arch/arm/mach-omap2/board-apollon.c
-> +++ b/arch/arm/mach-omap2/board-apollon.c
-> @@ -25,6 +25,8 @@
->  #include <linux/irq.h>
->  #include <linux/interrupt.h>
->  #include <linux/delay.h>
-> +#include <linux/leds.h>
-> +#include <linux/irq.h>
->  
->  #include <asm/hardware.h>
->  #include <asm/mach-types.h>
-> @@ -32,10 +34,12 @@
->  #include <asm/mach/flash.h>
->  
->  #include <asm/arch/gpio.h>
-> +#include <asm/arch/led.h>
->  #include <asm/arch/mux.h>
->  #include <asm/arch/usb.h>
->  #include <asm/arch/board.h>
->  #include <asm/arch/common.h>
-> +#include <asm/arch/gpmc.h>
->  #include "prcm-regs.h"
->  
->  /* LED & Switch macros */
-> @@ -46,6 +50,9 @@
->  #define SW_UP_GPIO17		17
->  #define SW_DOWN_GPIO58		58
->  
-> +#define APOLLON_FLASH_CS	0
-> +#define APOLLON_ETH_CS		1
-> +
->  static struct mtd_partition apollon_partitions[] = {
->  	{
->  		.name		= "X-Loader + U-Boot",
-> @@ -85,10 +92,10 @@ static struct flash_platform_data apollon_flash_data = {
->  	.nr_parts	= ARRAY_SIZE(apollon_partitions),
->  };
->  
-> -static struct resource apollon_flash_resource = {
-> -	.start		= APOLLON_CS0_BASE,
-> -	.end		= APOLLON_CS0_BASE + SZ_128K,
-> -	.flags		= IORESOURCE_MEM,
-> +static struct resource apollon_flash_resource[] = {
-> +	[0] = {
-> +		.flags		= IORESOURCE_MEM,
-> +	},
->  };
->  
->  static struct platform_device apollon_onenand_device = {
-> @@ -97,14 +104,24 @@ static struct platform_device apollon_onenand_device = {
->  	.dev		= {
->  		.platform_data	= &apollon_flash_data,
->  	},
-> -	.num_resources	= ARRAY_SIZE(&apollon_flash_resource),
-> -	.resource	= &apollon_flash_resource,
-> +	.num_resources	= ARRAY_SIZE(apollon_flash_resource),
-> +	.resource	= apollon_flash_resource,
->  };
->  
-> +static void __init apollon_flash_init(void)
-> +{
-> +	unsigned long base;
-> +
-> +	if (gpmc_cs_request(APOLLON_FLASH_CS, SZ_128K, &base) < 0) {
-> +		printk(KERN_ERR "Cannot request OneNAND GPMC CS\n");
-> +		return;
-> +	}
-> +	apollon_flash_resource[0].start = base;
-> +	apollon_flash_resource[0].end   = base + SZ_128K - 1;
-> +}
-> +
->  static struct resource apollon_smc91x_resources[] = {
->  	[0] = {
-> -		.start	= APOLLON_ETHR_START,		/* Physical */
-> -		.end	= APOLLON_ETHR_START + 0xf,
->  		.flags  = IORESOURCE_MEM,
->  	},
->  	[1] = {
-> @@ -126,14 +143,51 @@ static struct platform_device apollon_lcd_device = {
->  	.id		= -1,
->  };
->  
-> +static struct omap_led_config apollon_led_config[] = {
-> +	{
-> +		.cdev	= {
-> +			.name	= "apollon:led0",
-> +		},
-> +		.gpio	= LED0_GPIO13,
-> +	},
-> +	{
-> +		.cdev	= {
-> +			.name	= "apollon:led1",
-> +		},
-> +		.gpio	= LED1_GPIO14,
-> +	},
-> +	{
-> +		.cdev	= {
-> +			.name	= "apollon:led2",
-> +		},
-> +		.gpio	= LED2_GPIO15,
-> +	},
-> +};
-> +
-> +static struct omap_led_platform_data apollon_led_data = {
-> +	.nr_leds	= ARRAY_SIZE(apollon_led_config),
-> +	.leds		= apollon_led_config,
-> +};
-> +
-> +static struct platform_device apollon_led_device = {
-> +	.name		= "omap-led",
-> +	.id		= -1,
-> +	.dev		= {
-> +		.platform_data	= &apollon_led_data,
-> +	},
-> +};
-> +
->  static struct platform_device *apollon_devices[] __initdata = {
->  	&apollon_onenand_device,
->  	&apollon_smc91x_device,
->  	&apollon_lcd_device,
-> +	&apollon_led_device,
->  };
->  
->  static inline void __init apollon_init_smc91x(void)
->  {
-> +	unsigned long base;
-> +
->  	/* Make sure CS1 timings are correct */
->  	GPMC_CONFIG1_1 = 0x00011203;
->  	GPMC_CONFIG2_1 = 0x001f1f01;
-> @@ -141,13 +195,20 @@ static inline void __init apollon_init_smc91x(void)
->  	GPMC_CONFIG4_1 = 0x1c091c09;
->  	GPMC_CONFIG5_1 = 0x041f1f1f;
->  	GPMC_CONFIG6_1 = 0x000004c4;
-> -	GPMC_CONFIG7_1 = 0x00000f40 | (APOLLON_CS1_BASE >> 24);
-> +
-> +	if (gpmc_cs_request(APOLLON_ETH_CS, SZ_16M, &base) < 0) {
-> +		printk(KERN_ERR "Failed to request GPMC CS for smc91x\n");
-> +		return;
-> +	}
-> +	apollon_smc91x_resources[0].start = base + 0x300;
-> +	apollon_smc91x_resources[0].end   = base + 0x30f;
->  	udelay(100);
->  
->  	omap_cfg_reg(W4__24XX_GPIO74);
->  	if (omap_request_gpio(APOLLON_ETHR_GPIO_IRQ) < 0) {
->  		printk(KERN_ERR "Failed to request GPIO%d for smc91x IRQ\n",
->  			APOLLON_ETHR_GPIO_IRQ);
-> +		gpmc_cs_free(APOLLON_ETH_CS);
->  		return;
->  	}
->  	omap_set_gpio_direction(APOLLON_ETHR_GPIO_IRQ, 1);
-> @@ -175,6 +236,13 @@ static struct omap_mmc_config apollon_mmc_config __initdata = {
->  	},
->  };
->  
-> +static struct omap_usb_config apollon_usb_config __initdata = {
-> +	.register_dev	= 1,
-> +	.hmc_mode	= 0x14,	/* 0:dev 1:host1 2:disable */
-> +
-> +	.pins[0]	= 6,
-> +};
-> +
->  static struct omap_lcd_config apollon_lcd_config __initdata = {
->  	.ctrl_name	= "internal",
->  };
-> @@ -182,6 +250,7 @@ static struct omap_lcd_config apollon_lcd_config __initdata = {
->  static struct omap_board_config_kernel apollon_config[] = {
->  	{ OMAP_TAG_UART,	&apollon_uart_config },
->  	{ OMAP_TAG_MMC,		&apollon_mmc_config },
-> +	{ OMAP_TAG_USB,		&apollon_usb_config },
->  	{ OMAP_TAG_LCD,		&apollon_lcd_config },
->  };
->  
-> @@ -250,10 +319,22 @@ static void __init apollon_sw_init(void)
->  		return;
->  }
->  
-> +static void __init apollon_usb_init(void)
-> +{
-> +	/* USB device */
-> +	/* DEVICE_SUSPEND */
-> +	omap_cfg_reg(P21_242X_GPIO12);
-> +	omap_request_gpio(12);
-> +	omap_set_gpio_direction(12, 0);		/* OUT */
-> +	omap_set_gpio_dataout(12, 0);
-> +}
-> +
->  static void __init omap_apollon_init(void)
->  {
->  	apollon_led_init();
->  	apollon_sw_init();
-> +	apollon_flash_init();
-> +	apollon_usb_init();
->  
->  	/* REVISIT: where's the correct place */
->  	omap_cfg_reg(W19_24XX_SYS_NIRQ);
-> -- 
-
+Signed-off-by: Andrzej Zaborowski <balrog@zabor.org>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ arch/arm/mach-omap1/board-palmte.c |  123 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 123 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap1/board-palmte.c b/arch/arm/mach-omap1/board-palmte.c
+index c23e8b6..4c5b443 100644
+--- a/arch/arm/mach-omap1/board-palmte.c
++++ b/arch/arm/mach-omap1/board-palmte.c
+@@ -321,6 +321,116 @@ static struct tsc2102_config palmte_tsc2102_config = {
+ 	.alsa_config	= &palmte_alsa_config,
+ };
+ 
++static struct omap_mcbsp_reg_cfg palmte_mcbsp1_regs = {
++	.spcr2	= FRST | GRST | XRST | XINTM(3),
++	.xcr2	= XDATDLY(1) | XFIG,
++	.xcr1	= XWDLEN1(OMAP_MCBSP_WORD_32),
++	.pcr0	= SCLKME | FSXP | CLKXP,
++};
++
++static struct omap_alsa_codec_config palmte_alsa_config = {
++	.name			= "TSC2102 audio",
++	.mcbsp_regs_alsa	= &palmte_mcbsp1_regs,
++	.codec_configure_dev	= NULL,	/* tsc2102_configure, */
++	.codec_set_samplerate	= NULL,	/* tsc2102_set_samplerate, */
++	.codec_clock_setup	= NULL,	/* tsc2102_clock_setup, */
++	.codec_clock_on		= NULL,	/* tsc2102_clock_on, */
++	.codec_clock_off	= NULL,	/* tsc2102_clock_off, */
++	.get_default_samplerate	= NULL,	/* tsc2102_get_default_samplerate, */
++};
++
++#ifdef CONFIG_APM
++/*
++ * Values measured in 10 minute intervals averaged over 10 samples.
++ * May differ slightly from device to device but should be accurate
++ * enough to give basic idea of battery life left and trigger
++ * potential alerts.
++ */
++static const int palmte_battery_sample[] = {
++	2194, 2157, 2138, 2120,
++	2104, 2089, 2075, 2061,
++	2048, 2038, 2026, 2016,
++	2008, 1998, 1989, 1980,
++	1970, 1958, 1945, 1928,
++	1910, 1888, 1860, 1827,
++	1791, 1751, 1709, 1656,
++};
++
++#define INTERVAL		10
++#define BATTERY_HIGH_TRESHOLD	66
++#define BATTERY_LOW_TRESHOLD	33
++
++static void palmte_get_power_status(struct apm_power_info *info, int *battery)
++{
++	int charging, batt, hi, lo, mid;
++
++	charging = !omap_get_gpio_datain(PALMTE_DC_GPIO);
++	batt = battery[0];
++	if (charging)
++		batt -= 60;
++
++	hi = ARRAY_SIZE(palmte_battery_sample);
++	lo = 0;
++
++	info->battery_flag = 0;
++	info->units = APM_UNITS_MINS;
++
++	if (batt > palmte_battery_sample[lo]) {
++		info->battery_life = 100;
++		info->time = INTERVAL * ARRAY_SIZE(palmte_battery_sample);
++	} else if (batt <= palmte_battery_sample[hi - 1]) {
++		info->battery_life = 0;
++		info->time = 0;
++	} else {
++		while (hi > lo + 1) {
++			mid = (hi + lo) >> 2;
++			if (batt <= palmte_battery_sample[mid])
++				lo = mid;
++			else
++				hi = mid;
++		}
++
++		mid = palmte_battery_sample[lo] - palmte_battery_sample[hi];
++		hi = palmte_battery_sample[lo] - batt;
++		info->battery_life = 100 - (100 * lo + 100 * hi / mid) /
++			ARRAY_SIZE(palmte_battery_sample);
++		info->time = INTERVAL * (ARRAY_SIZE(palmte_battery_sample) -
++				lo) - INTERVAL * hi / mid;
++	}
++
++	if (charging) {
++		info->ac_line_status = APM_AC_ONLINE;
++		info->battery_status = APM_BATTERY_STATUS_CHARGING;
++		info->battery_flag |= APM_BATTERY_FLAG_CHARGING;
++	} else {
++		info->ac_line_status = APM_AC_OFFLINE;
++		if (info->battery_life > BATTERY_HIGH_TRESHOLD)
++			info->battery_status = APM_BATTERY_STATUS_HIGH;
++		else if (info->battery_life > BATTERY_LOW_TRESHOLD)
++			info->battery_status = APM_BATTERY_STATUS_LOW;
++		else
++			info->battery_status = APM_BATTERY_STATUS_CRITICAL;
++	}
++
++	if (info->battery_life > BATTERY_HIGH_TRESHOLD)
++		info->battery_flag |= APM_BATTERY_FLAG_HIGH;
++	else if (info->battery_life > BATTERY_LOW_TRESHOLD)
++		info->battery_flag |= APM_BATTERY_FLAG_LOW;
++	else
++		info->battery_flag |= APM_BATTERY_FLAG_CRITICAL;
++}
++#else
++#define palmte_get_power_status	NULL
++#endif
++
++static struct tsc2102_config palmte_tsc2102_config = {
++	.use_internal	= 0,
++	.monitor	= TSC_BAT1 | TSC_AUX | TSC_TEMP,
++	.temp_at25c	= { 2200, 2615 },
++	.apm_report	= palmte_get_power_status,
++	.alsa_config	= &palmte_alsa_config,
++};
++
+ static struct omap_board_config_kernel palmte_config[] = {
+ 	{ OMAP_TAG_USB,		&palmte_usb_config },
+ 	{ OMAP_TAG_MMC,		&palmte_mmc_config },
+@@ -339,6 +449,17 @@ static struct spi_board_info palmte_spi_info[] __initdata = {
+ 	},
+ };
+ 
++static struct spi_board_info palmte_spi_info[] __initdata = {
++	{
++		.modalias	= "tsc2102",
++		.bus_num	= 2,	/* uWire (officially) */
++		.chip_select	= 0,	/* As opposed to 3 */
++		.irq		= OMAP_GPIO_IRQ(PALMTE_PINTDAV_GPIO),
++		.platform_data	= &palmte_tsc2102_config,
++		.max_speed_hz	= 8000000,
++	},
++};
++
+ /* Periodically check for changes on important input pins */
+ struct timer_list palmte_pin_timer;
+ int prev_power, prev_headphones;
+@@ -418,6 +539,8 @@ static void __init omap_palmte_init(void)
+ 
+ 	spi_register_board_info(palmte_spi_info, ARRAY_SIZE(palmte_spi_info));
+ 
++	spi_register_board_info(palmte_spi_info, ARRAY_SIZE(palmte_spi_info));
++
+ 	omap_serial_init();
+ 	palmte_gpio_setup();
+ }
+-- 
+1.4.4.2
+
