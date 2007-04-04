@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992962AbXDDPgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992960AbXDDPhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992962AbXDDPgy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXDDPgy
+	id S2992960AbXDDPhm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXDDPhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:36:54 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:3894 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992962AbXDDPgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:36:53 -0400
-Message-ID: <4613C612.5040600@rtr.ca>
-Date: Wed, 04 Apr 2007 11:36:50 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Phillip Susi <psusi@cfl.rr.com>
-Cc: Chris Snook <csnook@redhat.com>, Paa Paa <paapaa125@hotmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Lower HD transfer rate with NCQ enabled?
-References: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl> <46128175.2090506@redhat.com> <4612852C.2030801@rtr.ca> <4612A854.1070702@cfl.rr.com>
-In-Reply-To: <4612A854.1070702@cfl.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 4 Apr 2007 11:37:42 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:21839 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992960AbXDDPhl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 11:37:41 -0400
+Subject: Re: real time hang w/ latency tracing
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070404085133.GC2521@elte.hu>
+References: <1175626625.10738.21.camel@imap.mvista.com>
+	 <1175650887.3722.2.camel@dwalker1>  <20070404085133.GC2521@elte.hu>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 08:36:53 -0700
+Message-Id: <1175701013.15973.8.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Susi wrote:
-> Mark Lord wrote:
->> But WD drives, in particular the Raptor series, have a firmware "feature"
->> that disables "drive readahead" whenever NCQ is in use.
+On Wed, 2007-04-04 at 10:51 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
 > 
-> Why is this an issue?  Shouldn't the kernel be sending down its own 
-> readahead requests to keep the disk busy?
+> > Index: linux-2.6.20/include/linux/serial_core.h
+> > ===================================================================
+> > --- linux-2.6.20.orig/include/linux/serial_core.h
+> > +++ linux-2.6.20/include/linux/serial_core.h
+> > @@ -213,7 +213,11 @@ struct uart_icount {
+> >  typedef unsigned int __bitwise__ upf_t;
+> >  
+> >  struct uart_port {
+> > +#ifdef CONFIG_LATENCY_TIMING
+> > +	raw_spinlock_t		lock;			/* port lock */
+> > +#else
+> >  	spinlock_t		lock;			/* port lock */
+> > +#endif
+> 
+> ugh - this will only cause other problems if anyone else is trying to 
+> use the serial code. This needs a cleaner fix - such as not doing that 
+> printk from atomic context.
 
-The drive firmware readahead is inherently *way* more effective than
-other forms, and without it, sequential read performance really suffers.
-Regardless of how software tries to compensate.
+I assumed this fix wasn't totally right .. Interrupts could be enabled
+just before printing , after any critical stuff has happened then
+disabled again after printing .. Or are you thinking of something more
+complex?
 
-This is mostly a problem with the WD Raptor drive, and some other WD drives.
-I have not yet encountered/noticed the problem with other brands.
+Daniel
 
--ml
