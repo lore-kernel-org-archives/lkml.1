@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992972AbXDDP4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992942AbXDDP6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992972AbXDDP4m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992977AbXDDP4l
+	id S2992942AbXDDP6p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992976AbXDDP6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:56:41 -0400
-Received: from mail.suse.de ([195.135.220.2]:59619 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992972AbXDDP4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:56:41 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch 04/17] Add pagetable accessors to pack and unpack pagetable entries
-Date: Wed, 4 Apr 2007 17:56:34 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <20070402055652.610711908@goop.org> <200704041347.42822.ak@suse.de> <4613C828.2030604@goop.org>
-In-Reply-To: <4613C828.2030604@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 4 Apr 2007 11:58:45 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:28293 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992942AbXDDP6o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 11:58:44 -0400
+Subject: Re: real time hang w/ latency tracing
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070404154249.GA31171@elte.hu>
+References: <1175626625.10738.21.camel@imap.mvista.com>
+	 <1175650887.3722.2.camel@dwalker1> <20070404085133.GC2521@elte.hu>
+	 <1175701013.15973.8.camel@imap.mvista.com> <20070404154249.GA31171@elte.hu>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 08:57:57 -0700
+Message-Id: <1175702277.15973.17.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704041756.35016.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 April 2007 17:45:44 Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> > Why is there a difference for null syscall? I had assumed we patched all the 
-> > fast path cases relevant there. Do you have an idea where it comes from?
+On Wed, 2007-04-04 at 17:42 +0200, Ingo Molnar wrote:
+
+> i mean non-printk related breakages to the normal serial driver - which 
+> is now surprised by this raw lock in an -rt kernel.
 > 
-> Sure.  There's indirect calls for things like sti/cli/iret.  It goes
-> back to native speed when you patch the real instructions inline.
+> this is a hard issue and there's no easy solution i can see. neither 
+> having it as a raw lock is a good solution, nor having it as a 
+> preemptible lock is a good solution.
 
-I was talking about the patched case. It seemed to be a little slower
-too, but in theory it shouldn't have been, no? 
+The machine that I'm using is relatively fast, but on slower machine
+it's possible to reproduce this same hang just by running,
 
--Andi
+echo 0 > /proc/sys/kernel/preempt_max_latency
+
+then pressing enter a few times .. Which would be a fairly common
+happening with people using latency tracing an a serial port I would
+imagine..
+
+The other fix I test was using the hack for sysrq,
+
+        if (up->port.sysrq || oops_in_progress)
+
+in serial8250_console_write to then also check "irqs_disabled()" , but
+I'm sure mass usage of the serial port would cause some issues with
+that.. Although both fixes I tested resulted in the serial port becoming
+garbled after about 10 min. with the preempt_thresh at 1 .
+
+Daniel
 
