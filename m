@@ -1,148 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945931AbXDDDhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030383AbXDDDoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945931AbXDDDhf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 23:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030383AbXDDDhe
+	id S1030383AbXDDDoH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 23:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030384AbXDDDoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 23:37:34 -0400
-Received: from mx2.suse.de ([195.135.220.15]:42366 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030380AbXDDDhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 23:37:33 -0400
-Date: Wed, 4 Apr 2007 05:37:26 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [rfc] no ZERO_PAGE?
-Message-ID: <20070404033726.GE18507@wotan.suse.de>
-References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de>
+	Tue, 3 Apr 2007 23:44:07 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52632 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030383AbXDDDoF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 23:44:05 -0400
+Date: Tue, 3 Apr 2007 20:44:02 -0700
+From: Paul Jackson <pj@sgi.com>
+To: vatsa@in.ibm.com
+Cc: menage@google.com, sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, containers@lists.osdl.org,
+       ebiederm@xmission.com, mbligh@google.com, winget@google.com,
+       rohitseth@google.com, serue@us.ibm.com, dev@sw.ru, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to
+ nsproxy subsystem
+Message-Id: <20070403204402.ec6a5085.pj@sgi.com>
+In-Reply-To: <20070404030756.GA9008@in.ibm.com>
+References: <20070403153220.GA24946@sergelap.austin.ibm.com>
+	<6599ad830704030845p654cf8dh65ccdc46c92d3688@mail.gmail.com>
+	<20070403164615.GJ2456@in.ibm.com>
+	<6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com>
+	<20070403171155.GK2456@in.ibm.com>
+	<6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com>
+	<20070403173048.GL2456@in.ibm.com>
+	<6599ad830704031030n2311bcd7hca9f34e64c66337f@mail.gmail.com>
+	<20070403175101.GN2456@in.ibm.com>
+	<6599ad830704031049v7fad0a83q3c24211cf44d71d6@mail.gmail.com>
+	<20070404030756.GA9008@in.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070330024048.GG19407@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 30, 2007 at 04:40:48AM +0200, Nick Piggin wrote:
-> 
-> Well it would make life easier if we got rid of ZERO_PAGE completely,
-> which I definitely wouldn't complain about ;)
+vatsa wrote:
+> User space queries like "what is the cpuset to which this task belongs",
+> where the answer needs to be something of the form "/dev/cpuset/C1"?
 
-So, what bad things (apart from my bugs in untested code) happen
-if we do this? We can actually go further, and probably remove the
-ZERO_PAGE completely (just need an extra get_user_pages flag or
-something for the core dumping issue).
+I think that answer should be of the form "/C1", and not include the
+cpuset file system mount point ... though for the purposes of the
+present thread, this is probably not an interesting detail.
 
-Shall I do a more complete patchset and ask Andrew to give it a
-run in -mm?
-
---
-
-ZERO_PAGE for anonymous pages seems to only be designed to help stupid
-programs, so remove it. This solves issues with ZERO_PAGE refcounting
-and NUMA un-awareness.
-
-(Actually, not quite. We should also remove all the zeromap stuff that
-also seems to not do much except help stupid programs).
-
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -1613,16 +1613,10 @@ gotten:
- 
- 	if (unlikely(anon_vma_prepare(vma)))
- 		goto oom;
--	if (old_page == ZERO_PAGE(address)) {
--		new_page = alloc_zeroed_user_highpage(vma, address);
--		if (!new_page)
--			goto oom;
--	} else {
--		new_page = alloc_page_vma(GFP_HIGHUSER, vma, address);
--		if (!new_page)
--			goto oom;
--		cow_user_page(new_page, old_page, address, vma);
--	}
-+	new_page = alloc_page_vma(GFP_HIGHUSER, vma, address);
-+	if (!new_page)
-+		goto oom;
-+	cow_user_page(new_page, old_page, address, vma);
- 
- 	/*
- 	 * Re-check the pte - we dropped the lock
-@@ -2130,52 +2124,33 @@ static int do_anonymous_page(struct mm_s
- 	spinlock_t *ptl;
- 	pte_t entry;
- 
--	if (write_access) {
--		/* Allocate our own private page. */
--		pte_unmap(page_table);
-+	/* Allocate our own private page. */
-+	pte_unmap(page_table);
- 
--		if (unlikely(anon_vma_prepare(vma)))
--			goto oom;
--		page = alloc_zeroed_user_highpage(vma, address);
--		if (!page)
--			goto oom;
-+	if (unlikely(anon_vma_prepare(vma)))
-+		return VM_FAULT_OOM;
-+	page = alloc_zeroed_user_highpage(vma, address);
-+	if (!page)
-+		return VM_FAULT_OOM;
- 
--		entry = mk_pte(page, vma->vm_page_prot);
--		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-+	entry = mk_pte(page, vma->vm_page_prot);
-+	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 
--		page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
--		if (!pte_none(*page_table))
--			goto release;
-+	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
-+	if (likely(!pte_none(*page_table))) {
- 		inc_mm_counter(mm, anon_rss);
- 		lru_cache_add_active(page);
- 		page_add_new_anon_rmap(page, vma, address);
--	} else {
--		/* Map the ZERO_PAGE - vm_page_prot is readonly */
--		page = ZERO_PAGE(address);
--		page_cache_get(page);
--		entry = mk_pte(page, vma->vm_page_prot);
--
--		ptl = pte_lockptr(mm, pmd);
--		spin_lock(ptl);
--		if (!pte_none(*page_table))
--			goto release;
--		inc_mm_counter(mm, file_rss);
--		page_add_file_rmap(page);
--	}
--
--	set_pte_at(mm, address, page_table, entry);
-+		set_pte_at(mm, address, page_table, entry);
- 
--	/* No need to invalidate - it was non-present before */
--	update_mmu_cache(vma, address, entry);
--	lazy_mmu_prot_update(entry);
--unlock:
-+		/* No need to invalidate - it was non-present before */
-+		update_mmu_cache(vma, address, entry);
-+		lazy_mmu_prot_update(entry);
-+	} else
-+		page_cache_release(page);
- 	pte_unmap_unlock(page_table, ptl);
-+
- 	return VM_FAULT_MINOR;
--release:
--	page_cache_release(page);
--	goto unlock;
--oom:
--	return VM_FAULT_OOM;
- }
- 
- /*
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
