@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992680AbXDDGIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992686AbXDDGJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992680AbXDDGIv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 02:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992683AbXDDGIv
+	id S2992686AbXDDGJt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 02:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992678AbXDDGJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 02:08:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41631 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992680AbXDDGIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 02:08:50 -0400
-Message-ID: <461340E5.2070901@garzik.org>
-Date: Wed, 04 Apr 2007 02:08:37 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 4 Apr 2007 02:09:48 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:39567 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2992686AbXDDGJs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 02:09:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=Y0p+Ig+34Q27A3XW9p0H4FPp1SgjZLez56GrxWs6Mtaeenkk6kpwNtTPTyV/tPkahEqMiZD/dD3szojTooft8A9IOlRxo6alDfy6QiNcwTGqCZgLqNkBGggQiwF68645r71BJHU4F+WpRQlj1W6SazU+dCfMGP1cILCuqtrDM+Y=  ;
+X-YMail-OSG: dBKHgzQVM1kjav_SJXDZPK7GoeFqdnq7GC_b0oozNx9fAAlDtOHry.GFgfZxWNl0Fci6eAtvng--
+Message-ID: <46134124.2040705@yahoo.com.au>
+Date: Wed, 04 Apr 2007 16:09:40 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Mark Lord <mlord@pobox.com>
-CC: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <htejun@gmail.com>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: libata bugfix: preserve LBA bit for HDIO_DRIVE_TASK
-References: <20070330205938.984247529@mini.kroah.org> <20070330210659.GK29450@kroah.com> <460D8510.1050102@pobox.com>
-In-Reply-To: <460D8510.1050102@pobox.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: [patches] threaded vma patches (was Re: missing madvise functionality)
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com> <20070403144948.fe8eede6.akpm@linux-foundation.org> <4612DCC6.7000504@cosmosbay.com> <46130BC8.9050905@yahoo.com.au> <46133A8B.50203@cosmosbay.com>
+In-Reply-To: <46133A8B.50203@cosmosbay.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Ideally, this would go into linux-2.6.21.
+Eric Dumazet wrote:
+> Nick Piggin a écrit :
 > 
-> Preserve the LBA bit in the DevSel/Head register for HDIO_DRIVE_TASK.
+>> Eric Dumazet wrote:
+>>
+>>>
+>>> I do think such workloads might benefit from a vma_cache not shared 
+>>> by all threads but private to each thread. A sequence could 
+>>> invalidate the cache(s).
+>>>
+>>> ie instead of a mm->mmap_cache, having a mm->sequence, and each 
+>>> thread having a current->mmap_cache and current->mm_sequence
+>>
+>>
+>> I have a patchset to do exactly this, btw.
 > 
-> Signed-off-by:  Mark Lord <mlord@pobox.com>
-> ---
-> --- linux/drivers/ata/libata-scsi.c.orig    2007-03-21 
-> 13:35:02.000000000 -0400
-> +++ linux/drivers/ata/libata-scsi.c    2007-03-30 17:40:58.000000000 -0400
-> @@ -333,7 +333,7 @@
->     scsi_cmd[8]  = args[3];
->     scsi_cmd[10] = args[4];
->     scsi_cmd[12] = args[5];
-> -    scsi_cmd[13] = args[6] & 0x0f;
-> +    scsi_cmd[13] = args[6] & 0x4f;
->     scsi_cmd[14] = args[0];
+> 
+> Could you repost it please ?
 
-applied
+Sure. I'll send you them privately because they're against an older
+kernel.
 
+>> Anyway what is the status of the private futex work. I don't think that
+>> is very intrusive or complicated, so it should get merged ASAP (so then
+>> at least we have the interface there).
+>>
+> 
+> It seems nobody but you and me cared.
 
+Sad. Although Ulrich did seem interested at one point I think? Ulrich,
+do you agree at least with the interface that Eric is proposing? If
+yes, then Andrew, do you have any objections to putting Eric's fairly
+important patch at least into -mm?
+
+-- 
+SUSE Labs, Novell Inc.
