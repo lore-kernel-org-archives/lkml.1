@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964974AbXDDF3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966301AbXDDFdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964974AbXDDF3X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 01:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966301AbXDDF3X
+	id S966301AbXDDFdk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 01:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966304AbXDDFdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 01:29:23 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:33897 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964974AbXDDF3W (ORCPT
+	Wed, 4 Apr 2007 01:33:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:42340 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966301AbXDDFdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 01:29:22 -0400
-Message-ID: <4613379D.1000503@cosmosbay.com>
-Date: Wed, 04 Apr 2007 07:29:01 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 4 Apr 2007 01:33:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=olAxxBVMFQdhVRbfoMnBdROi0Q/7lLGeozvehGSk9KEuG0rq8X+mK0nKq5a4DiQj8GSFPncb5PlETQfbrkmUfEDPrQy3ixk49pZlKHCxOaJRe0T4vj+qqGegtC4M07edGrrviYTnAFCepsl6SxfIWsaiYNDBI5/UUcH49zwTyfQ=
+Message-ID: <a44ae5cd0704032233sa893351le119152668557e72@mail.gmail.com>
+Date: Wed, 4 Apr 2007 00:33:36 -0500
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org
+Subject: 2.6.21-rc5-mm4 -- laptop lid button only triggers suspend on HP dv1240us every other time.
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com> <Pine.LNX.4.64.0704031152370.23808@alien.or.mcafeemobile.com> <4612ABD7.3000201@redhat.com> <4612F1F0.5070209@zytor.com> <4612F2BF.7080704@goop.org> <4612F394.6040105@zytor.com> <4613330C.1020701@cosmosbay.com> <461334B5.7070607@zytor.com>
-In-Reply-To: <461334B5.7070607@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 04 Apr 2007 07:29:09 +0200 (CEST)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin a écrit :
-> Eric Dumazet wrote:
->>
->> There is one thing that always worried me.
->>
->> Intel & AMD manuals make clear that mixing data and program in the 
->> same page is bad for performance.
->>
->> In particular, x86_64 vsyscall put jiffies and other 
->> vsyscall_gtod_data_t right in the midle of code. That is certainly not 
->> wise.
->>
->> A probably sane implementation should use two pages, one for code, one 
->> for data.
->>
-> 
-> Mutable data should be separated from code.  I think any current CPU 
-> will do fine as long as they are in separate 128-byte chunks, but they 
-> need at least that much separation.
-> 
-> Readonly data does not need to be separated from code.
-> 
+This is an old bug.  It has been happening forever, but I'd love to
+know how I can help get this tracked down and fixed.
 
-Yes... jiffies & vsyscall_gtod_data_t is writen HZ times per second.
-
-Not really readonly I'm afraid.
-
-
+00:00.0 Host bridge: Intel Corporation 82852/82855 GM/GME/PM/GMV
+Processor to I/O Controller (rev 02)
+00:00.1 System peripheral: Intel Corporation 82852/82855 GM/GME/PM/GMV
+Processor to I/O Controller (rev 02)
+00:00.3 System peripheral: Intel Corporation 82852/82855 GM/GME/PM/GMV
+Processor to I/O Controller (rev 02)
+00:02.0 VGA compatible controller: Intel Corporation 82852/855GM
+Integrated Graphics Device (rev 02)
+00:02.1 Display controller: Intel Corporation 82852/855GM Integrated
+Graphics Device (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 03)
+00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #2 (rev 03)
+00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 03)
+00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M)
+USB2 EHCI Controller (rev 03)
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev 83)
+00:1f.0 ISA bridge: Intel Corporation 82801DBM (ICH4-M) LPC Interface
+Bridge (rev 03)
+00:1f.1 IDE interface: Intel Corporation 82801DBM (ICH4-M) IDE
+Controller (rev 03)
+00:1f.3 SMBus: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M)
+SMBus Controller (rev 03)
+00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 03)
+00:1f.6 Modem: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M)
+AC'97 Modem Controller (rev 03)
+01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+RTL-8139/8139C/8139C+ (rev 10)
+01:06.0 Network controller: Intel Corporation PRO/Wireless 2200BG
+Network Connection (rev 05)
+01:09.0 CardBus bridge: Texas Instruments PCIxx21/x515 Cardbus Controller
+01:09.2 FireWire (IEEE 1394): Texas Instruments OHCI Compliant IEEE
+1394 Host Controller
+01:09.3 Mass storage controller: Texas Instruments PCIxx21 Integrated
+FlashMedia Controller
+01:09.4 Generic system peripheral [0805]: Texas Instruments
+PCI6411/6421/6611/6621/7411/7421/7611/7621 Secure Digital Controller
