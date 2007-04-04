@@ -1,66 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbXDDR4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbXDDR4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbXDDR4m (ORCPT <rfc822;w@1wt.eu>);
+	id S1753514AbXDDR4m (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 4 Apr 2007 13:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXDDR4N
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXDDR4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:56:13 -0400
-Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:37034 "EHLO
+	Wed, 4 Apr 2007 13:56:11 -0400
+Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:37032 "EHLO
 	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753520AbXDDR4F (ORCPT
+	with ESMTP id S1753515AbXDDR4F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Apr 2007 13:56:05 -0400
 X-ORBL: [67.117.73.34]
 From: Tony Lindgren <tony@atomide.com>
 To: linux-kernel@vger.kernel.org
 Cc: Juha Yrjola <juha.yrjola@solidboot.com>, Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 4/90] ARM: OMAP: Enable 24xx GPIO autoidling
-Date: Wed,  4 Apr 2007 13:46:31 -0400
-Message-Id: <1175708886798-git-send-email-tony@atomide.com>
+Subject: [PATCH 1/90] ARM: OMAP: Place SMS and SDRC into smart idle mode
+Date: Wed,  4 Apr 2007 13:46:28 -0400
+Message-Id: <11757088791107-git-send-email-tony@atomide.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757088844012-git-send-email-tony@atomide.com>
-References: omap-2007-04-04-133556 <11757088774110-git-send-email-tony@atomide.com> <11757088791107-git-send-email-tony@atomide.com> <11757088822930-git-send-email-tony@atomide.com> <11757088844012-git-send-email-tony@atomide.com>
+In-Reply-To: <11757088774110-git-send-email-tony@atomide.com>
+References: omap-2007-04-04-133556 <11757088774110-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Juha Yrjola <juha.yrjola@solidboot.com>
 
-Enable 24xx GPIO autoidling
+Place SMS and SDRC into smart idle mode
 
 Signed-off-by: Juha Yrjola <juha.yrjola@solidboot.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/plat-omap/gpio.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ arch/arm/mach-omap2/io.c     |    2 +
+ arch/arm/mach-omap2/memory.c |   48 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/plat-omap/gpio.c b/arch/arm/plat-omap/gpio.c
-index b8c01de..e2547a7 100644
---- a/arch/arm/plat-omap/gpio.c
-+++ b/arch/arm/plat-omap/gpio.c
-@@ -1083,6 +1083,10 @@ static int __init _omap_gpio_init(void)
- 		if (bank->method == METHOD_GPIO_24XX) {
- 			__raw_writel(0x00000000, bank->base + OMAP24XX_GPIO_IRQENABLE1);
- 			__raw_writel(0xffffffff, bank->base + OMAP24XX_GPIO_IRQSTATUS1);
-+			__raw_writew(0x0015, bank->base + OMAP24XX_GPIO_SYSCONFIG);
-+
-+			/* Initialize interface clock ungated, module enabled */
-+			__raw_writel(0, bank->base + OMAP24XX_GPIO_CTRL);
+diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
+index a0728c3..748920f 100644
+--- a/arch/arm/mach-omap2/io.c
++++ b/arch/arm/mach-omap2/io.c
+@@ -26,6 +26,7 @@
+ extern void omap_sram_init(void);
+ extern int omap2_clk_init(void);
+ extern void omap2_check_revision(void);
++extern void omap2_init_memory(void);
+ extern void gpmc_init(void);
  
- 			gpio_count = 32;
- 		}
-@@ -1105,6 +1109,12 @@ static int __init _omap_gpio_init(void)
- 	if (cpu_is_omap16xx())
- 		omap_writel(omap_readl(ULPD_CAM_CLK_CTRL) | 0x04, ULPD_CAM_CLK_CTRL);
- 
-+#ifdef CONFIG_ARCH_OMAP24XX
-+	/* Enable autoidle for the OCP interface */
-+	if (cpu_is_omap24xx())
-+		omap_writel(1 << 0, 0x48019010);
-+#endif
-+
- 	return 0;
+ /*
+@@ -67,5 +68,6 @@ void __init omap2_init_common_hw(void)
+ {
+ 	omap2_mux_init();
+ 	omap2_clk_init();
++	omap2_init_memory();
+ 	gpmc_init();
  }
+diff --git a/arch/arm/mach-omap2/memory.c b/arch/arm/mach-omap2/memory.c
+index 85cbc2a..f173aa8 100644
+--- a/arch/arm/mach-omap2/memory.c
++++ b/arch/arm/mach-omap2/memory.c
+@@ -30,6 +30,38 @@
+ #include "prcm-regs.h"
+ #include "memory.h"
  
++#define SMS_BASE		0x68008000
++#define SMS_SYSCONFIG		0x010
++
++#define SDRC_BASE		0x68009000
++#define SDRC_SYSCONFIG		0x010
++#define SDRC_SYSSTATUS		0x014
++
++static const u32 sms_base = IO_ADDRESS(SMS_BASE);
++static const u32 sdrc_base = IO_ADDRESS(SDRC_BASE);
++
++
++static inline void sms_write_reg(int idx, u32 val)
++{
++	__raw_writel(val, sms_base + idx);
++}
++
++static inline u32 sms_read_reg(int idx)
++{
++	return __raw_readl(sms_base + idx);
++}
++
++static inline void sdrc_write_reg(int idx, u32 val)
++{
++	__raw_writel(val, sdrc_base + idx);
++}
++
++static inline u32 sdrc_read_reg(int idx)
++{
++	return __raw_readl(sdrc_base + idx);
++}
++
++
+ static struct memory_timings mem_timings;
+ 
+ u32 omap2_memory_get_slow_dll_ctrl(void)
+@@ -99,3 +131,19 @@ void omap2_init_memory_params(u32 force_lock_to_unlock_mode)
+ 	/* 90 degree phase for anything below 133Mhz + disable DLL filter */
+ 	mem_timings.slow_dll_ctrl |= ((1 << 1) | (3 << 8));
+ }
++
++void __init omap2_init_memory(void)
++{
++	u32 l;
++
++	l = sms_read_reg(SMS_SYSCONFIG);
++	l &= ~(0x3 << 3);
++	l |= (0x2 << 3);
++	sms_write_reg(SMS_SYSCONFIG, l);
++
++	l = sdrc_read_reg(SDRC_SYSCONFIG);
++	l &= ~(0x3 << 3);
++	l |= (0x2 << 3);
++	sdrc_write_reg(SDRC_SYSCONFIG, l);
++
++}
 -- 
 1.4.4.2
 
