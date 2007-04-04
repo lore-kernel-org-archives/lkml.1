@@ -1,57 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992713AbXDDHdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992717AbXDDHlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992713AbXDDHdn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 03:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992714AbXDDHdn
+	id S2992717AbXDDHlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 03:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992716AbXDDHlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 03:33:43 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:54259 "EHLO pfx2.jmh.fr"
+	Wed, 4 Apr 2007 03:41:18 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:43650 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992713AbXDDHdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 03:33:42 -0400
-Date: Wed, 4 Apr 2007 09:33:37 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [patches] threaded vma patches (was Re: missing madvise
- functionality)
-Message-Id: <20070404093337.b68e3e65.dada1@cosmosbay.com>
-In-Reply-To: <46134BB2.2000005@redhat.com>
-References: <46128051.9000609@redhat.com>
-	<p73648dz5oa.fsf@bingen.suse.de>
-	<46128CC2.9090809@redhat.com>
-	<20070403172841.GB23689@one.firstfloor.org>
-	<20070403125903.3e8577f4.akpm@linux-foundation.org>
-	<4612B645.7030902@redhat.com>
-	<20070403202937.GE355@devserv.devel.redhat.com>
-	<20070403144948.fe8eede6.akpm@linux-foundation.org>
-	<4612DCC6.7000504@cosmosbay.com>
-	<46130BC8.9050905@yahoo.com.au>
-	<46133A8B.50203@cosmosbay.com>
-	<46134124.2040705@yahoo.com.au>
-	<461348CD.9000200@redhat.com>
-	<46134AA9.4080804@cosmosbay.com>
-	<46134BB2.2000005@redhat.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
+	id S2992711AbXDDHlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 03:41:17 -0400
+Date: Wed, 4 Apr 2007 11:48:24 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Miklos Szeredi <mszeredi@suse.cz>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Recursive ->i_mutex lockdep complaint
+Message-ID: <20070404074824.GA1635@localhost.sw.ru>
+References: <200703270735.l2R7Zg9t010611@shell0.pdx.osdl.net> <20070403142143.GA6535@localhost.sw.ru> <1175612720.9736.7.camel@tucsk.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1175612720.9736.7.camel@tucsk.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Apr 2007 23:54:42 -0700
-Ulrich Drepper <drepper@redhat.com> wrote:
+On Tue, Apr 03, 2007 at 05:05:20PM +0200, Miklos Szeredi wrote:
+> On Tue, 2007-04-03 at 18:21 +0400, Alexey Dobriyan wrote:
+> > On Mon, Mar 26, 2007 at 11:35:42PM -0800, akpm@linux-foundation.org wrote:
+> > > The patch titled
+> > >      add file position info to proc
+> > > has been added to the -mm tree.  Its filename is
+> > >      add-file-position-info-to-proc.patch
+> >
+> > I tried to stress-test it with the following program and script and
+> > lockdep barfs on me reasonably quickly:
+>
+> Ugh.  As I see it, this is independent from the above patch, as the same
+> can happen with /proc/PID/fd.  Or did I miss something?
 
-> Eric Dumazet wrote:
-> > You were CC on this one, you can find an archive here :
-> 
-> You cc:ed my gmail account.  I don't pick out mails sent to me there.
-> If you want me to look at something you have to send it to my
-> @redhat.com address.
+Yeah, it's independent from /proc/*/fdinfo stuff.
 
-What I meant is : You got the mails and even replied to one of them :)
+> And it seems quite benign, one of the mutexes is for the proc inode, the
+> other is for the pipe inode, and hopefully they haven't got anything
+> else to do with each other.
+>
+> > It seems that lockdep is unhappy about ->i_mutex taken in
+> > ->release/pipe_read_release()/pipe_read_fasync()
+> > which is triggered from put_files_struct() in proc_readfd_common()
+> >
+> > Now checking if giving pipe's i_mutex its own lockdep class with fix
+> > things.
+>
+> Should help.  Although I'm wondering if it's worth bothering with, as it
+> doesn't seem to happen in real life for lockdep users.
 
-http://lkml.org/lkml/2007/3/15/303
+The following patch makes lockdep happy but I wonder if it's correct
+way.
 
-I will try to remember your email address, thanks.
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -908,6 +908,8 @@ static struct dentry_operations pipefs_d
+ 	.d_dname	= pipefs_dname,
+ };
+ 
++static struct lock_class_key pipe_inode_imutex_key;
++
+ static struct inode * get_pipe_inode(void)
+ {
+ 	struct inode *inode = new_inode(pipe_mnt->mnt_sb);
+@@ -936,6 +938,8 @@ static struct inode * get_pipe_inode(voi
+ 	inode->i_gid = current->fsgid;
+ 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+ 
++	lockdep_set_class(&inode->i_mutex, &pipe_inode_imutex_key);
++
+ 	return inode;
+ 
+ fail_iput:
+
