@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992793AbXDDJsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992797AbXDDJwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992793AbXDDJsQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 05:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992794AbXDDJsQ
+	id S2992797AbXDDJwd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 05:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992800AbXDDJwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 05:48:16 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:34560 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992793AbXDDJsP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 05:48:15 -0400
-Date: Wed, 4 Apr 2007 11:48:11 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Brad Boyer <flar@allandria.com>, Paul Mackerras <paulus@samba.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <20070404085159.GB13134@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0704041146290.30582@anakin>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
- <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
- <1175642916.10567.24.camel@shinybook.infradead.org> <20070403212928.GA12951@cynthia.pants.nu>
- <1175644642.10567.31.camel@shinybook.infradead.org> <20070403221002.GA13210@cynthia.pants.nu>
- <1175648051.10567.61.camel@shinybook.infradead.org> <20070403230908.GA13471@cynthia.pants.nu>
- <20070404085159.GB13134@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Apr 2007 05:52:33 -0400
+Received: from mail.screens.ru ([213.234.233.54]:49832 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992797AbXDDJwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 05:52:32 -0400
+Date: Wed, 4 Apr 2007 12:57:00 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Paul Jackson <pj@sgi.com>
+Subject: Re: getting processor numbers
+Message-ID: <20070404085700.GA170@tv-sign.ru>
+References: <461286D6.2040407@redhat.com> <20070403131623.c6831607.akpm@linux-foundation.org> <4612BB89.8040102@redhat.com> <20070403141348.9bcdb13e.akpm@linux-foundation.org> <4612D175.30604@redhat.com> <20070403154831.37bde672.akpm@linux-foundation.org> <4612DCA2.2090400@redhat.com> <20070403162349.583adf84.akpm@linux-foundation.org> <20070404083927.GA100@tv-sign.ru> <20070404093948.GA14521@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404093948.GA14521@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Russell King wrote:
-> On Tue, Apr 03, 2007 at 04:09:08PM -0700, Brad Boyer wrote:
-> > The availability of the specific chip in question is a red herring in
-> > my opinion. I do understand that 8250 compatible chips are very common
-> > and are the most likely serial chips to be used with Linux. However, I
-> > will point out that the define is TTY_MAJOR, not 8250_MAJOR. It seems
-> > to me that whoever named it was thinking in more generic terms.
+On 04/04, Ingo Molnar wrote:
 > 
-> You're reading too much into the name.  It's historical, and the reason
-> can still be seen in LANANA:
+> * Oleg Nesterov <oleg@tv-sign.ru> wrote:
 > 
->   4 char        TTY devices
->                   0 = /dev/tty0         Current virtual console
+> > But we don't need tasklist_lock at all, we can use 
+> > rcu_read_lock/unlock. Q: don't we need task_rq_lock() to read 
+> > ->cpus_allowed "atomically" ?
 > 
->                   1 = /dev/tty1         First virtual console
->                     ...
->                  63 = /dev/tty63        63rd virtual console
->                  64 = /dev/ttyS0        First UART serial port
->                     ...
->                 255 = /dev/ttyS191      192nd UART serial port
-> 
->                 UART serial ports refer to 8250/16450/16550 series devices.
-> 
-> When the drivers/char/serial.c driver was written, it was in the very
-> early days of Linux.  I'd guess that the major/minor numbers were similar
-> to Minix, thereby allowing a minixfs to be used as the initial filesystem
-> type.
-> 
-> Anyway, as you can see, defining chardev major 4 to be "8250_MAJOR" would
-> also be a misnomer because it's used for the virtual consoles, and it's
-> _that_ use for which it (probably) was called TTY_MAJOR.
-> 
-> (Note that in the very early days, this major also got used for PTY
-> devices.  Since then they've moved to major 2/3 and then we got Unix98
-> PTY support.)
+> right now ->cpus_allowed is protected by tasklist_lock. We cannot do RCU 
+> here because ->cpus_allowed modifications are not RCUified.
 
-Oh, and I always thought PTYs were moved to free up more minors for our
-zillions of serial ports...
+Is it so? that was my question. Afaics, set_cpus_allowed() does
+p->cpus_allowed = new_mask under rq->lock, so I don't understand
+how tasklist_lock can help.
 
-Gr{oetje,eeting}s,
+Could you clarify?
 
-						Geert
+Oleg.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
