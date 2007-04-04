@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbXDDVip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751911AbXDDVjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751970AbXDDVip (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 17:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbXDDVip
+	id S1751911AbXDDVjX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 17:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXDDVjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 17:38:45 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:54027 "EHLO e5.ny.us.ibm.com"
+	Wed, 4 Apr 2007 17:39:22 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:57192 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751970AbXDDVio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 17:38:44 -0400
-Subject: Re: [PATCH 2.6.21-rc5] kernel/time.c: add missing symbol exports
-From: john stultz <johnstul@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Bittermann <t.bittermann@online.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20070404143052.b1572cc9.akpm@linux-foundation.org>
-References: <461408A6.5010005@online.de>
-	 <20070404140007.15aa1893.akpm@linux-foundation.org>
-	 <461414E7.6080302@online.de>
-	 <20070404143052.b1572cc9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 14:38:30 -0700
-Message-Id: <1175722710.17711.70.camel@localhost>
+	id S1751911AbXDDVjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 17:39:21 -0400
+Date: Wed, 4 Apr 2007 14:32:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@muc.de>
+Subject: Re: [PATCH -mm] fix jiffies clocksource inittime
+Message-Id: <20070404143233.b97eed8f.akpm@linux-foundation.org>
+In-Reply-To: <20070404212324.GA19899@elte.hu>
+References: <1175716216.17711.59.camel@localhost>
+	<20070404134310.12ad3ab8.akpm@linux-foundation.org>
+	<20070404212324.GA19899@elte.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 14:30 -0700, Andrew Morton wrote:
-> On Wed, 04 Apr 2007 23:13:11 +0200
-> Thomas Bittermann <t.bittermann@online.de> wrote:
+On Wed, 4 Apr 2007 23:23:24 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> > Andrew Morton schrieb:
-> > > On Wed, 04 Apr 2007 22:20:54 +0200
-> > > Thomas Bittermann <t.bittermann@online.de> wrote:
-> > > 
-> > >> This patch adds 2 missing symbol exports:
-> > >>
-> > >> jiffies_to_timeval
-> > >> timeval_to_jiffies
-> > > 
-> > > I don't see any in-tree code which needs these symbols?
-> > > 
-> > > The exports might make sense from a consistency POV, but I'd be interested
-> > > in knowing what motivated this change?
-> > I'm working on a Fedora 7 LiveCD which integrates dm-raid4-5
-> > (http://people.redhat.com/~heinzm/sw/dm/dm-raid45/readme). dm-raid4-5.c uses
-> > jiffies_to_timeval() ...
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > If so: worrisome.  Startup ordering issues are fragile and tricky.  
+> > Time management is fragile and tricky.  The combination of the two 
+> > doesn't get any better ;)
 > > 
+> > An option would be to test it in 2.6.22-rcX for a while, then backport 
+> > to 2.6.21.x.
 > 
-> Fair enough.
+> is the v2.6.21 release so close?
+
+It's the closest it's ever been!
+
+> From all i can see Adrian Bunk still 
+> has a very sizable regressions list, which necessiate a couple of weeks 
+> to track down. And the delta since -rc5 is pretty large too, 
+> necessiating an -rc6.
 > 
-> John/Ingo/Thomas: have you any problems with exporting the above to modules
-> (with EXPORT_SYMBOL)?
 
-As long as jiffies and HZ is exported, I don't see why not.
-
-thanks
--john
-
-
-
+yeah, I wouldn't be surprised to see an rc7.
