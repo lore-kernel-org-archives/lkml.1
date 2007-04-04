@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966213AbXDDAxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966202AbXDDAyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966213AbXDDAxO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 20:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966214AbXDDAxN
+	id S966202AbXDDAyv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 20:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966214AbXDDAyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 20:53:13 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:36449 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966213AbXDDAxN (ORCPT
+	Tue, 3 Apr 2007 20:54:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47420 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966202AbXDDAyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 20:53:13 -0400
-Message-ID: <4612F6E9.7040003@zytor.com>
-Date: Tue, 03 Apr 2007 17:52:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mathiasen@gmail.com, virtualization@lists.linux-foundation.org
-Subject: Re: A set of "standard" virtual devices?
-References: <4611652F.700@zytor.com> <200704032351.17823.arnd@arndb.de>	<4612D0CA.3070209@zytor.com> <200704040049.13118.arnd@arndb.de>
-In-Reply-To: <200704040049.13118.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 3 Apr 2007 20:54:50 -0400
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Brad Boyer <flar@allandria.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070403221002.GA13210@cynthia.pants.nu>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	 <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	 <1175642916.10567.24.camel@shinybook.infradead.org>
+	 <20070403212928.GA12951@cynthia.pants.nu>
+	 <1175644642.10567.31.camel@shinybook.infradead.org>
+	 <20070403221002.GA13210@cynthia.pants.nu>
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 20:54:10 -0400
+Message-Id: <1175648051.10567.61.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Wednesday 04 April 2007, H. Peter Anvin wrote:
->> Note that at least for PIO-based devices, there is nothing that says you 
->> can't implement PCI over another transport, if you wish.  It's really 
->> just a very simple RPC protocol.
-> 
-> The PIO aspect of PCI is simple, yes, except on architectures that don't
-> have the concept of PIO or even uncached memory, but even that can
-> be done by defining readl/writel/inl/outl/... as hcalls.
-> 
-> The tricky part about PCI is the device probing, everything about config
-> space accesses, interrupt swizzling, bus/device/function numbers and
-> base address registers becomes a pointless excercise when the other side
-> is just faking it.
+On Tue, 2007-04-03 at 15:10 -0700, Brad Boyer wrote:
+> I suppose my opinion on this shows that I didn't come from the x86
+> side of Linux.
 
-Configuration space access is platform-dependent.  It's only defined to 
-work in a specific way on x86 platforms.
+Perhaps, yes -- if you were just an x86 user you'd be unlikely to care
+about the issue at all -- mostly because it's never been a problem
+there. Not for the reason you imply, but just because the additional
+types of serial port you encounter on an x86 machine have always got it
+_right_, and had separate names and device numbers rather than abusing
+major 64 and 'ttyS%d'.
 
-"Interrupt swizzling" is really totally independent of PCI.  ALL PCI 
-really provides is up to four interrupts per device (not counting 
-MSI/MSI-X) and an 8-bit writable field which the platform can choose to 
-use to hold interrupt information.  That's all.  The rest is all 
-platform information.
+>  The breakdown on this argument seems to have always
+> been that the x86 people wanted 8250 to own ttyS* and most others
+> wanted it shared.
 
-PCI enumeration is hardly complex.  Most of the stuff that doesn't apply 
-to you you can generally ignore, as is done by other busses like 
-HyperTransport when they emulate PCI.
+But why? There's nothing special and magical about the number 64 and the
+letters 't' 't' 'y' and 'S'. And if you have broken software which only
+works with ttyS[0123] then you can still create device nodes or symlinks
+to work around that.
 
-That being said, on platforms which are PCI-centric, such as x86, this 
-of course makes it a lot easier to produce virtual devices which work 
-across hypervisors, since the device model, of *any* operating system is 
-set up to handle them.
+If you're on a platform where 8250 serial ports _cannot_ exist, then
+abusing the 8250 driver's numbers would perhaps be workable, if a little
+strange -- but 8250 ports are ubiquitous. You can attach them to just
+about anything, of any architecture, that Linux runs on. Except perhaps
+S390.
 
-	-hpa
+Yes, it would be theoretically possible to come up with a way to share
+minor numbers so we can use 'ttyS0' for the first serial port regardless
+of what type of port it is. We could take the arch-specific hack that
+SPARC has and try to move it to generic code. But what's the point?
+
+-- 
+dwmw2
+
