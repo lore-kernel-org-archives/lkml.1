@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992524AbXDDCoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946050AbXDDCpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992524AbXDDCoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 22:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992442AbXDDCnr
+	id S1946050AbXDDCpR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 22:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966308AbXDDCnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 22:43:47 -0400
-Received: from waste.org ([66.93.16.53]:54632 "EHLO cinder.waste.org"
+	Tue, 3 Apr 2007 22:43:13 -0400
+Received: from waste.org ([66.93.16.53]:54654 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S966303AbXDDCmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 22:42:21 -0400
+	id S966310AbXDDCm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 22:42:29 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 X-PatchBomber: http://selenic.com/scripts/mailpatches
 Cc: linux-kernel@vger.kernel.org
 In-Reply-To: <1.486631555@selenic.com>
-Message-Id: <4.486631555@selenic.com>
-Subject: [PATCH 3/13] maps: Remove vma from args in the page walker
-Date: Tue, 03 Apr 2007 21:43:33 -0500
+Message-Id: <11.486631555@selenic.com>
+Subject: [PATCH 10/13] maps: Make /proc/pid/smaps optional under CONFIG_EMBEDDED
+Date: Tue, 03 Apr 2007 21:43:41 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove vma from args in the page walker
+Make /proc/pid/smaps optional under CONFIG_EMBEDDED
 
-This makes the walker more generic.
+This interface is primarily useful for doing memory profiling and not
+much use on deployed embedded boxes. Make it optional. Together with
+/proc/pid/clear_refs, this save a few K.
 
 Signed-off-by: Matt Mackall <mpm@selenic.com>
 
+Index: mm/fs/proc/base.c
+===================================================================
+--- mm.orig/fs/proc/base.c	2007-03-29 13:01:49.000000000 -0500
++++ mm/fs/proc/base.c	2007-03-29 13:05:21.000000000 -0500
+@@ -1907,8 +1907,10 @@ static const struct pid_entry tgid_base_
+ 	REG("mountstats", S_IRUSR, mountstats),
+ #ifdef CONFIG_MMU
+ 	REG("clear_refs", S_IWUSR, clear_refs),
++#ifdef CONFIG_PROC_SMAPS
+ 	REG("smaps",      S_IRUGO, smaps),
+ #endif
++#endif
+ #ifdef CONFIG_SECURITY
+ 	DIR("attr",       S_IRUGO|S_IXUGO, attr_dir),
+ #endif
+@@ -2189,8 +2191,10 @@ static const struct pid_entry tid_base_s
+ 	REG("mounts",    S_IRUGO, mounts),
+ #ifdef CONFIG_MMU
+ 	REG("clear_refs", S_IWUSR, clear_refs),
++#ifdef CONFIG_PROC_SMAPS
+ 	REG("smaps",     S_IRUGO, smaps),
+ #endif
++#endif
+ #ifdef CONFIG_SECURITY
+ 	DIR("attr",      S_IRUGO|S_IXUGO, attr_dir),
+ #endif
 Index: mm/fs/proc/task_mmu.c
 ===================================================================
---- mm.orig/fs/proc/task_mmu.c	2007-03-24 21:33:50.000000000 -0500
-+++ mm/fs/proc/task_mmu.c	2007-03-24 21:33:52.000000000 -0500
-@@ -313,25 +313,26 @@ static void walk_pud_range(pgd_t *pgd, u
- }
+--- mm.orig/fs/proc/task_mmu.c	2007-03-29 13:01:52.000000000 -0500
++++ mm/fs/proc/task_mmu.c	2007-03-29 13:05:21.000000000 -0500
+@@ -314,6 +314,7 @@ const struct file_operations proc_maps_o
+ 	.release	= seq_release_private,
+ };
  
- /*
-- * walk_page_range - walk the page tables of a VMA with a callback
-- * @vma - VMA to walk
-+ * walk_page_range - walk a memory map's page tables with a callback
-+ * @mm - memory map to walk
-+ * @addr - starting address
-+ * @end - ending address
-  * @action - callback invoked for every bottom-level (PTE) page table
-  * @private - private data passed to the callback function
-  *
-  * Recursively walk the page table for the memory area in a VMA, calling
-  * a callback for every bottom-level (PTE) page table.
-  */
--static void walk_page_range(struct vm_area_struct *vma,
-+static void walk_page_range(struct mm_struct *mm,
-+			    unsigned long addr, unsigned long end,
- 			    void (*action)(pmd_t *, unsigned long,
- 					   unsigned long, void *),
- 			    void *private)
++#ifdef CONFIG_PROC_SMAPS
+ struct mem_size_stats
  {
--	unsigned long addr = vma->vm_start;
--	unsigned long end = vma->vm_end;
- 	pgd_t *pgd;
- 	unsigned long next;
+ 	struct vm_area_struct *vma;
+@@ -421,6 +422,7 @@ const struct file_operations proc_smaps_
+ 	.llseek		= seq_lseek,
+ 	.release	= seq_release_private,
+ };
++#endif
  
--	for (pgd = pgd_offset(vma->vm_mm, addr); addr != end;
-+	for (pgd = pgd_offset(mm, addr); addr != end;
- 	     pgd++, addr = next) {
- 		next = pgd_addr_end(addr, end);
- 		if (pgd_none_or_clear_bad(pgd))
-@@ -348,7 +349,8 @@ static int show_smap(struct seq_file *m,
- 	memset(&mss, 0, sizeof mss);
- 	mss.vma = vma;
- 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
--		walk_page_range(vma, smaps_pte_range, &mss);
-+		walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
-+				smaps_pte_range, &mss);
- 	return show_map_internal(m, v, &mss);
- }
+ static int clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
+ 				unsigned long end, void *private)
+Index: mm/init/Kconfig
+===================================================================
+--- mm.orig/init/Kconfig	2007-03-29 13:00:36.000000000 -0500
++++ mm/init/Kconfig	2007-03-29 13:05:21.000000000 -0500
+@@ -514,6 +514,14 @@ config VM_EVENT_COUNTERS
+ 	  on EMBEDDED systems.  /proc/vmstat will only show page counts
+ 	  if VM event counters are disabled.
  
-@@ -359,7 +361,8 @@ void clear_refs_smap(struct mm_struct *m
- 	down_read(&mm->mmap_sem);
- 	for (vma = mm->mmap; vma; vma = vma->vm_next)
- 		if (vma->vm_mm && !is_vm_hugetlb_page(vma))
--			walk_page_range(vma, clear_refs_pte_range, vma);
-+			walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
-+					clear_refs_pte_range, vma);
- 	flush_tlb_mm(mm);
- 	up_read(&mm->mmap_sem);
- }
++config PROC_SMAPS
++	default y
++	bool "Enable /proc/pid/smaps support" if EMBEDDED && PROC_FS && MMU
++	help
++	  The /proc/pid/smaps interface reports a process's private and
++          shared memory per mapping. Disabling this interface will reduce
++          the size of the kernel for small machines.
++
+ endmenu		# General setup
+ 
+ config RT_MUTEXES
