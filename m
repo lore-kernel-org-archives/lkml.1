@@ -1,270 +1,493 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXDEASN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXDEASO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbXDEASN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 20:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbXDEASB
+	id S932244AbXDEASO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 20:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227AbXDEAR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:18:01 -0400
-Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36888 "EHLO
+	Wed, 4 Apr 2007 20:17:56 -0400
+Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36873 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932140AbXDEAQx (ORCPT
+	with ESMTP id S932078AbXDEAQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 20:16:53 -0400
-Message-Id: <20070404191206.581107728@goop.org>
+	Wed, 4 Apr 2007 20:16:48 -0400
+X-Greylist: delayed 2146 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 20:16:41 EDT
+Message-Id: <20070404191205.485040611@goop.org>
 References: <20070404191151.009821039@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Apr 2007 12:12:10 -0700
+Date: Wed, 04 Apr 2007 12:11:59 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>,
-       Dan Hecht <dhecht@vmware.com>, john stultz <johnstul@us.ibm.com>
-Subject: [patch 19/20] Add a sched_clock paravirt_op
-Content-Disposition: inline; filename=paravirt-sched-clock.patch
+       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 08/20] add hooks to intercept mm creation and destruction
+Content-Disposition: inline; filename=mm-lifetime-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The tsc-based get_scheduled_cycles interface is not a good match for
-Xen's runstate accounting, which reports everything in nanoseconds.
+Add hooks to allow a paravirt implementation to track the lifetime of
+an mm.  Paravirtualization requires three hooks, but only two are
+needed in common code.  They are:
 
-This patch replaces this interface with a sched_clock interface, which
-matches both Xen and VMI's requirements.
+arch_dup_mmap, which is called when a new mmap is created at fork
 
-In order to do this, we:
-   1. replace get_scheduled_cycles with sched_clock
-   2. hoist cycles_2_ns into a common header
-   3. update vmi accordingly
+arch_exit_mmap, which is called when the last process reference to an
+  mm is dropped, which typically happens on exit and exec.
 
-One thing to note: because sched_clock is implemented as a weak
-function in kernel/sched.c, we must define a real function in order to
-override this weak binding.  This means the usual paravirt_ops
-technique of using an inline function won't work in this case.
-
+The third hook is activate_mm, which is called from the arch-specific
+activate_mm() macro/function, and so doesn't need stub versions for
+other architectures.  It's called when an mm is first used.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Zachary Amsden <zach@vmware.com>
-Cc: Dan Hecht <dhecht@vmware.com>
-Cc: john stultz <johnstul@us.ibm.com>
+Cc: linux-arch@vger.kernel.org
+Cc: James Bottomley <James.Bottomley@SteelEye.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
 ---
- arch/i386/kernel/paravirt.c    |    2 -
- arch/i386/kernel/sched-clock.c |   39 ++++++++++++++--------------------
- arch/i386/kernel/vmi.c         |    2 -
- arch/i386/kernel/vmitime.c     |    6 ++---
- include/asm-i386/paravirt.h    |    7 ++++--
- include/asm-i386/timer.h       |   45 +++++++++++++++++++++++++++++++++++++++-
- include/asm-i386/vmi_time.h    |    2 -
- 7 files changed, 71 insertions(+), 32 deletions(-)
+ arch/i386/kernel/paravirt.c         |    4 ++++
+ include/asm-alpha/mmu_context.h     |    1 +
+ include/asm-arm/mmu_context.h       |    1 +
+ include/asm-arm26/mmu_context.h     |    2 ++
+ include/asm-avr32/mmu_context.h     |    1 +
+ include/asm-cris/mmu_context.h      |    2 ++
+ include/asm-frv/mmu_context.h       |    1 +
+ include/asm-generic/mm_hooks.h      |   18 ++++++++++++++++++
+ include/asm-h8300/mmu_context.h     |    1 +
+ include/asm-i386/mmu_context.h      |   17 +++++++++++++++--
+ include/asm-i386/paravirt.h         |   23 +++++++++++++++++++++++
+ include/asm-ia64/mmu_context.h      |    1 +
+ include/asm-m32r/mmu_context.h      |    1 +
+ include/asm-m68k/mmu_context.h      |    1 +
+ include/asm-m68knommu/mmu_context.h |    1 +
+ include/asm-mips/mmu_context.h      |    1 +
+ include/asm-parisc/mmu_context.h    |    1 +
+ include/asm-powerpc/mmu_context.h   |    1 +
+ include/asm-ppc/mmu_context.h       |    1 +
+ include/asm-s390/mmu_context.h      |    2 ++
+ include/asm-sh/mmu_context.h        |    1 +
+ include/asm-sh64/mmu_context.h      |    2 +-
+ include/asm-sparc/mmu_context.h     |    2 ++
+ include/asm-sparc64/mmu_context.h   |    1 +
+ include/asm-um/mmu_context.h        |    2 ++
+ include/asm-v850/mmu_context.h      |    2 ++
+ include/asm-x86_64/mmu_context.h    |    1 +
+ include/asm-xtensa/mmu_context.h    |    1 +
+ kernel/fork.c                       |    2 ++
+ mm/mmap.c                           |    4 ++++
+ 30 files changed, 96 insertions(+), 3 deletions(-)
 
 ===================================================================
 --- a/arch/i386/kernel/paravirt.c
 +++ b/arch/i386/kernel/paravirt.c
-@@ -269,7 +269,7 @@ struct paravirt_ops paravirt_ops = {
- 	.write_msr = native_write_msr_safe,
- 	.read_tsc = native_read_tsc,
- 	.read_pmc = native_read_pmc,
--	.get_scheduled_cycles = native_read_tsc,
-+	.sched_clock = native_sched_clock,
- 	.get_cpu_khz = native_calculate_cpu_khz,
- 	.load_tr_desc = native_load_tr_desc,
- 	.set_ldt = native_set_ldt,
+@@ -520,6 +520,10 @@ struct paravirt_ops paravirt_ops = {
+ 	.irq_enable_sysexit = native_irq_enable_sysexit,
+ 	.iret = native_iret,
+ 
++	.dup_mmap = paravirt_nop,
++	.exit_mmap = paravirt_nop,
++	.activate_mm = paravirt_nop,
++
+ 	.startup_ipi_hook = paravirt_nop,
+ };
+ 
 ===================================================================
---- a/arch/i386/kernel/sched-clock.c
-+++ b/arch/i386/kernel/sched-clock.c
-@@ -37,26 +37,7 @@
- 
- #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
- 
--struct sc_data {
--	unsigned int cyc2ns_scale;
--	unsigned char unstable;
--	unsigned long long last_tsc;
--	unsigned long long ns_base;
--};
--
--static DEFINE_PER_CPU(struct sc_data, sc_data);
--
--static inline unsigned long long cycles_2_ns(unsigned long long cyc)
--{
--	const struct sc_data *sc = &__get_cpu_var(sc_data);
--	unsigned long long ns;
--
--	cyc -= sc->last_tsc;
--	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
--	ns += sc->ns_base;
--
--	return ns;
--}
-+DEFINE_PER_CPU(struct sc_data, sc_data);
+--- a/include/asm-alpha/mmu_context.h
++++ b/include/asm-alpha/mmu_context.h
+@@ -10,6 +10,7 @@
+ #include <asm/system.h>
+ #include <asm/machvec.h>
+ #include <asm/compiler.h>
++#include <asm-generic/mm_hooks.h>
  
  /*
-  * Scheduler clock - returns current time in nanosec units.
-@@ -66,7 +47,7 @@ static inline unsigned long long cycles_
-  * [1] no attempt to stop CPU instruction reordering, which can hit
-  * in a 100 instruction window or so.
+  * Force a context reload. This is needed when we change the page
+===================================================================
+--- a/include/asm-arm/mmu_context.h
++++ b/include/asm-arm/mmu_context.h
+@@ -16,6 +16,7 @@
+ #include <linux/compiler.h>
+ #include <asm/cacheflush.h>
+ #include <asm/proc-fns.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ void __check_kvm_seq(struct mm_struct *mm);
+ 
+===================================================================
+--- a/include/asm-arm26/mmu_context.h
++++ b/include/asm-arm26/mmu_context.h
+@@ -12,6 +12,8 @@
   */
--unsigned long long sched_clock(void)
-+unsigned long long native_sched_clock(void)
- {
- 	unsigned long long r;
- 	const struct sc_data *sc = &get_cpu_var(sc_data);
-@@ -75,7 +56,7 @@ unsigned long long sched_clock(void)
- 		/* TBD find a cheaper fallback timer than this */
- 		r = ktime_to_ns(ktime_get());
- 	} else {
--		get_scheduled_cycles(r);
-+		rdtscll(r);
- 		r = cycles_2_ns(r);
- 	}
- 
-@@ -83,6 +64,18 @@ unsigned long long sched_clock(void)
- 
- 	return r;
- }
+ #ifndef __ASM_ARM_MMU_CONTEXT_H
+ #define __ASM_ARM_MMU_CONTEXT_H
 +
-+/* We need to define a real function for sched_clock, to override the
-+   weak default version */
-+#ifdef CONFIG_PARAVIRT
-+unsigned long long sched_clock(void)
++#include <asm-generic/mm_hooks.h>
+ 
+ #define init_new_context(tsk,mm)	0
+ #define destroy_context(mm)		do { } while(0)
+===================================================================
+--- a/include/asm-avr32/mmu_context.h
++++ b/include/asm-avr32/mmu_context.h
+@@ -15,6 +15,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/pgalloc.h>
+ #include <asm/sysreg.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ /*
+  * The MMU "context" consists of two things:
+===================================================================
+--- a/include/asm-cris/mmu_context.h
++++ b/include/asm-cris/mmu_context.h
+@@ -1,5 +1,7 @@
+ #ifndef __CRIS_MMU_CONTEXT_H
+ #define __CRIS_MMU_CONTEXT_H
++
++#include <asm-generic/mm_hooks.h>
+ 
+ extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
+ extern void get_mmu_context(struct mm_struct *mm);
+===================================================================
+--- a/include/asm-frv/mmu_context.h
++++ b/include/asm-frv/mmu_context.h
+@@ -15,6 +15,7 @@
+ #include <asm/setup.h>
+ #include <asm/page.h>
+ #include <asm/pgalloc.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+===================================================================
+--- /dev/null
++++ b/include/asm-generic/mm_hooks.h
+@@ -0,0 +1,18 @@
++/*
++ * Define generic no-op hooks for arch_dup_mmap and arch_exit_mmap, to
++ * be included in asm-FOO/mmu_context.h for any arch FOO which doesn't
++ * need to hook these.
++ */
++#ifndef _ASM_GENERIC_MM_HOOKS_H
++#define _ASM_GENERIC_MM_HOOKS_H
++
++static inline void arch_dup_mmap(struct mm_struct *oldmm,
++				 struct mm_struct *mm)
 +{
-+	return paravirt_sched_clock();
 +}
-+#else
-+unsigned long long sched_clock(void)
-+	__attribute__((alias("native_sched_clock")));
-+#endif
- 
- /* Resync with new CPU frequency */
- static void resync_sc_freq(struct sc_data *sc, unsigned int newfreq)
-@@ -95,7 +88,7 @@ static void resync_sc_freq(struct sc_dat
- 	   because sched_clock callers should be able to tolerate small
- 	   errors. */
- 	sc->ns_base = ktime_to_ns(ktime_get());
--	get_scheduled_cycles(sc->last_tsc);
-+	rdtscll(sc->last_tsc);
- 	sc->cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR) / newfreq;
- 	sc->unstable = 0;
- }
-===================================================================
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -866,7 +866,7 @@ static inline int __init activate_vmi(vo
- 		paravirt_ops.setup_boot_clock = vmi_timer_setup_boot_alarm;
- 		paravirt_ops.setup_secondary_clock = vmi_timer_setup_secondary_alarm;
- #endif
--		paravirt_ops.get_scheduled_cycles = vmi_get_sched_cycles;
-+		paravirt_ops.sched_clock = vmi_sched_clock;
-  		paravirt_ops.get_cpu_khz = vmi_cpu_khz;
- 
- 		/* We have true wallclock functions; disable CMOS clock sync */
-===================================================================
---- a/arch/i386/kernel/vmitime.c
-+++ b/arch/i386/kernel/vmitime.c
-@@ -163,9 +163,9 @@ int vmi_set_wallclock(unsigned long now)
- 	return -1;
- }
- 
--unsigned long long vmi_get_sched_cycles(void)
--{
--	return read_available_cycles();
-+unsigned long long vmi_sched_clock(void)
++
++static inline void arch_exit_mmap(struct mm_struct *mm)
 +{
-+	return cycles_2_ns(read_available_cycles());
- }
++}
++
++#endif	/* _ASM_GENERIC_MM_HOOKS_H */
+===================================================================
+--- a/include/asm-h8300/mmu_context.h
++++ b/include/asm-h8300/mmu_context.h
+@@ -4,6 +4,7 @@
+ #include <asm/setup.h>
+ #include <asm/page.h>
+ #include <asm/pgalloc.h>
++#include <asm-generic/mm_hooks.h>
  
- unsigned long vmi_cpu_khz(void)
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+===================================================================
+--- a/include/asm-i386/mmu_context.h
++++ b/include/asm-i386/mmu_context.h
+@@ -5,6 +5,16 @@
+ #include <asm/atomic.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
++#include <asm/paravirt.h>
++#ifndef CONFIG_PARAVIRT
++#include <asm-generic/mm_hooks.h>
++
++static inline void paravirt_activate_mm(struct mm_struct *prev,
++					struct mm_struct *next)
++{
++}
++#endif	/* !CONFIG_PARAVIRT */
++
+ 
+ /*
+  * Used for LDT copy/destruction.
+@@ -65,7 +75,10 @@ static inline void switch_mm(struct mm_s
+ #define deactivate_mm(tsk, mm)			\
+ 	asm("movl %0,%%gs": :"r" (0));
+ 
+-#define activate_mm(prev, next) \
+-	switch_mm((prev),(next),NULL)
++#define activate_mm(prev, next)				\
++	do {						\
++		paravirt_activate_mm(prev, next);	\
++		switch_mm((prev),(next),NULL);		\
++	} while(0);
+ 
+ #endif
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -88,7 +88,7 @@ struct paravirt_ops
+@@ -119,6 +119,12 @@ struct paravirt_ops
  
- 	u64 (*read_tsc)(void);
- 	u64 (*read_pmc)(void);
-- 	u64 (*get_scheduled_cycles)(void);
-+ 	unsigned long long (*sched_clock)(void);
- 	unsigned long (*get_cpu_khz)(void);
+ 	void (*io_delay)(void);
  
- 	void (*load_tr_desc)(void);
-@@ -529,7 +529,10 @@ static inline void halt(void)
- 
- #define rdtscll(val) (val = PVOP_CALL0(u64, read_tsc))
- 
--#define get_scheduled_cycles(val) (val = paravirt_ops.get_scheduled_cycles())
-+static inline unsigned long long paravirt_sched_clock(void)
-+{
-+	return PVOP_CALL0(unsigned long long, sched_clock);
-+}
- #define calculate_cpu_khz() (paravirt_ops.get_cpu_khz())
- 
- #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
-===================================================================
---- a/include/asm-i386/timer.h
-+++ b/include/asm-i386/timer.h
-@@ -15,8 +15,51 @@ extern int recalibrate_cpu_khz(void);
- extern int recalibrate_cpu_khz(void);
- 
- #ifndef CONFIG_PARAVIRT
--#define get_scheduled_cycles(val) rdtscll(val)
- #define calculate_cpu_khz() native_calculate_cpu_khz()
- #endif
- 
-+/* Accellerators for sched_clock()
-+ * convert from cycles(64bits) => nanoseconds (64bits)
-+ *  basic equation:
-+ *		ns = cycles / (freq / ns_per_sec)
-+ *		ns = cycles * (ns_per_sec / freq)
-+ *		ns = cycles * (10^9 / (cpu_khz * 10^3))
-+ *		ns = cycles * (10^6 / cpu_khz)
-+ *
-+ *	Then we use scaling math (suggested by george@mvista.com) to get:
-+ *		ns = cycles * (10^6 * SC / cpu_khz) / SC
-+ *		ns = cycles * cyc2ns_scale / SC
-+ *
-+ *	And since SC is a constant power of two, we can convert the div
-+ *  into a shift.
-+ *
-+ *  We can use khz divisor instead of mhz to keep a better percision, since
-+ *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
-+ *  (mathieu.desnoyers@polymtl.ca)
-+ *
-+ *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
-+ */
-+struct sc_data {
-+	unsigned int cyc2ns_scale;
-+	unsigned char unstable;
-+	unsigned long long last_tsc;
-+	unsigned long long ns_base;
-+};
++	void (*activate_mm)(struct mm_struct *prev,
++			    struct mm_struct *next);
++	void (*dup_mmap)(struct mm_struct *oldmm,
++			 struct mm_struct *mm);
++	void (*exit_mmap)(struct mm_struct *mm);
 +
-+DECLARE_PER_CPU(struct sc_data, sc_data);
-+
-+#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
-+
-+static inline unsigned long long cycles_2_ns(unsigned long long cyc)
-+{
-+	const struct sc_data *sc = &__get_cpu_var(sc_data);
-+	unsigned long long ns;
-+
-+	cyc -= sc->last_tsc;
-+	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
-+	ns += sc->ns_base;
-+
-+	return ns;
-+}
-+
- #endif
-===================================================================
---- a/include/asm-i386/vmi_time.h
-+++ b/include/asm-i386/vmi_time.h
-@@ -49,7 +49,7 @@ extern void __init vmi_time_init(void);
- extern void __init vmi_time_init(void);
- extern unsigned long vmi_get_wallclock(void);
- extern int vmi_set_wallclock(unsigned long now);
--extern unsigned long long vmi_get_sched_cycles(void);
-+extern unsigned long long vmi_sched_clock(void);
- extern unsigned long vmi_cpu_khz(void);
- 
  #ifdef CONFIG_X86_LOCAL_APIC
+ 	void (*apic_write)(unsigned long reg, unsigned long v);
+ 	void (*apic_write_atomic)(unsigned long reg, unsigned long v);
+@@ -394,6 +400,23 @@ static inline void startup_ipi_hook(int 
+ }
+ #endif
+ 
++static inline void paravirt_activate_mm(struct mm_struct *prev,
++					struct mm_struct *next)
++{
++	paravirt_ops.activate_mm(prev, next);
++}
++
++static inline void arch_dup_mmap(struct mm_struct *oldmm,
++				 struct mm_struct *mm)
++{
++	paravirt_ops.dup_mmap(oldmm, mm);
++}
++
++static inline void arch_exit_mmap(struct mm_struct *mm)
++{
++	paravirt_ops.exit_mmap(mm);
++}
++
+ #define __flush_tlb() paravirt_ops.flush_tlb_user()
+ #define __flush_tlb_global() paravirt_ops.flush_tlb_kernel()
+ #define __flush_tlb_single(addr) paravirt_ops.flush_tlb_single(addr)
+===================================================================
+--- a/include/asm-ia64/mmu_context.h
++++ b/include/asm-ia64/mmu_context.h
+@@ -29,6 +29,7 @@
+ #include <linux/spinlock.h>
+ 
+ #include <asm/processor.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ struct ia64_ctx {
+ 	spinlock_t lock;
+===================================================================
+--- a/include/asm-m32r/mmu_context.h
++++ b/include/asm-m32r/mmu_context.h
+@@ -15,6 +15,7 @@
+ #include <asm/pgalloc.h>
+ #include <asm/mmu.h>
+ #include <asm/tlbflush.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ /*
+  * Cache of MMU context last used.
+===================================================================
+--- a/include/asm-m68k/mmu_context.h
++++ b/include/asm-m68k/mmu_context.h
+@@ -1,6 +1,7 @@
+ #ifndef __M68K_MMU_CONTEXT_H
+ #define __M68K_MMU_CONTEXT_H
+ 
++#include <asm-generic/mm_hooks.h>
+ 
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+===================================================================
+--- a/include/asm-m68knommu/mmu_context.h
++++ b/include/asm-m68knommu/mmu_context.h
+@@ -4,6 +4,7 @@
+ #include <asm/setup.h>
+ #include <asm/page.h>
+ #include <asm/pgalloc.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+===================================================================
+--- a/include/asm-mips/mmu_context.h
++++ b/include/asm-mips/mmu_context.h
+@@ -20,6 +20,7 @@
+ #include <asm/mipsmtregs.h>
+ #include <asm/smtc.h>
+ #endif /* SMTC */
++#include <asm-generic/mm_hooks.h>
+ 
+ /*
+  * For the fast tlb miss handlers, we keep a per cpu array of pointers
+===================================================================
+--- a/include/asm-parisc/mmu_context.h
++++ b/include/asm-parisc/mmu_context.h
+@@ -5,6 +5,7 @@
+ #include <asm/atomic.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+===================================================================
+--- a/include/asm-powerpc/mmu_context.h
++++ b/include/asm-powerpc/mmu_context.h
+@@ -10,6 +10,7 @@
+ #include <linux/mm.h>	
+ #include <asm/mmu.h>	
+ #include <asm/cputable.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ /*
+  * Copyright (C) 2001 PPC 64 Team, IBM Corp
+===================================================================
+--- a/include/asm-ppc/mmu_context.h
++++ b/include/asm-ppc/mmu_context.h
+@@ -6,6 +6,7 @@
+ #include <asm/bitops.h>
+ #include <asm/mmu.h>
+ #include <asm/cputable.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ /*
+  * On 32-bit PowerPC 6xx/7xx/7xxx CPUs, we use a set of 16 VSIDs
+===================================================================
+--- a/include/asm-s390/mmu_context.h
++++ b/include/asm-s390/mmu_context.h
+@@ -10,6 +10,8 @@
+ #define __S390_MMU_CONTEXT_H
+ 
+ #include <asm/pgalloc.h>
++#include <asm-generic/mm_hooks.h>
++
+ /*
+  * get a new mmu context.. S390 don't know about contexts.
+  */
+===================================================================
+--- a/include/asm-sh/mmu_context.h
++++ b/include/asm-sh/mmu_context.h
+@@ -12,6 +12,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ /*
+  * The MMU "context" consists of two things:
+===================================================================
+--- a/include/asm-sh64/mmu_context.h
++++ b/include/asm-sh64/mmu_context.h
+@@ -27,7 +27,7 @@ extern unsigned long mmu_context_cache;
+ extern unsigned long mmu_context_cache;
+ 
+ #include <asm/page.h>
+-
++#include <asm-generic/mm_hooks.h>
+ 
+ /* Current mm's pgd */
+ extern pgd_t *mmu_pdtp_cache;
+===================================================================
+--- a/include/asm-sparc/mmu_context.h
++++ b/include/asm-sparc/mmu_context.h
+@@ -4,6 +4,8 @@
+ #include <asm/btfixup.h>
+ 
+ #ifndef __ASSEMBLY__
++
++#include <asm-generic/mm_hooks.h>
+ 
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+===================================================================
+--- a/include/asm-sparc64/mmu_context.h
++++ b/include/asm-sparc64/mmu_context.h
+@@ -9,6 +9,7 @@
+ #include <linux/spinlock.h>
+ #include <asm/system.h>
+ #include <asm/spitfire.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ {
+===================================================================
+--- a/include/asm-um/mmu_context.h
++++ b/include/asm-um/mmu_context.h
+@@ -5,6 +5,8 @@
+ 
+ #ifndef __UM_MMU_CONTEXT_H
+ #define __UM_MMU_CONTEXT_H
++
++#include <asm-generic/mm_hooks.h>
+ 
+ #include "linux/sched.h"
+ #include "choose-mode.h"
+===================================================================
+--- a/include/asm-v850/mmu_context.h
++++ b/include/asm-v850/mmu_context.h
+@@ -1,5 +1,7 @@
+ #ifndef __V850_MMU_CONTEXT_H__
+ #define __V850_MMU_CONTEXT_H__
++
++#include <asm-generic/mm_hooks.h>
+ 
+ #define destroy_context(mm)		((void)0)
+ #define init_new_context(tsk,mm)	0
+===================================================================
+--- a/include/asm-x86_64/mmu_context.h
++++ b/include/asm-x86_64/mmu_context.h
+@@ -7,6 +7,7 @@
+ #include <asm/pda.h>
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ /*
+  * possibly do the LDT unload here?
+===================================================================
+--- a/include/asm-xtensa/mmu_context.h
++++ b/include/asm-xtensa/mmu_context.h
+@@ -18,6 +18,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
++#include <asm-generic/mm_hooks.h>
+ 
+ #define XCHAL_MMU_ASID_BITS	8
+ 
+===================================================================
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -286,6 +286,8 @@ static inline int dup_mmap(struct mm_str
+ 		if (retval)
+ 			goto out;
+ 	}
++	/* a new mm has just been created */
++	arch_dup_mmap(oldmm, mm);
+ 	retval = 0;
+ out:
+ 	up_write(&mm->mmap_sem);
+===================================================================
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -29,6 +29,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/cacheflush.h>
+ #include <asm/tlb.h>
++#include <asm/mmu_context.h>
+ 
+ #ifndef arch_mmap_check
+ #define arch_mmap_check(addr, len, flags)	(0)
+@@ -1976,6 +1977,9 @@ void exit_mmap(struct mm_struct *mm)
+ 	struct vm_area_struct *vma = mm->mmap;
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
++
++	/* mm's last user has gone, and its about to be pulled down */
++	arch_exit_mmap(mm);
+ 
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
 
 -- 
 
