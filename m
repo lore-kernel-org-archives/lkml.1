@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752017AbXDDQJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXDDQJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752017AbXDDQJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXDDQJ3
+	id S1751998AbXDDQJj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXDDQJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:09:29 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:37327 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752017AbXDDQJ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 12:09:28 -0400
-Message-ID: <4613CD34.8080509@zytor.com>
-Date: Wed, 04 Apr 2007 09:07:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 4 Apr 2007 12:09:39 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:46212 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751998AbXDDQJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 12:09:37 -0400
+Date: Wed, 4 Apr 2007 09:09:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrea Arcangeli <andrea@suse.de>
+cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+In-Reply-To: <20070404154839.GI19587@v2.random>
+Message-ID: <Pine.LNX.4.64.0704040906340.6730@woody.linux-foundation.org>
+References: <20070329075805.GA6852@wotan.suse.de>
+ <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com>
+ <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de>
+ <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+ <20070404154839.GI19587@v2.random>
 MIME-Version: 1.0
-To: David Lang <david.lang@digitalinsight.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
-       dwmw2@infradead.org, flar@allandria.com, paulus@samba.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210 02.GA13210@cynthia.pants.nu><1175648051.10567.61.camel@shinybook.infradead. org><20070403.181645.68159458.davem@davemloft.net><20070404022828.5c9b97f3@ the-village.bc.nu><Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz> <20070404024400.56d016e1@the-village.bc.nu> <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
-In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Lang wrote:
-> On Wed, 4 Apr 2007, Alan Cox wrote:
-> 
->>>> You don't get machines with 64 ethernet ports on add-in cards. There 
->>>> are
->>>> good reasons for the naming schemes in use.
->>>
->>> I've seen machines offering up to 48, what's the magic number that 
->>> makes you
->>> need to chagne nameing schemes?
->>
->> Have you tried working with 48 ports when they are not numbered 0-47 or
->> in some logical fashion ?
-> 
-> no, but that's what we're wanting with serial ports as well. a system 
-> with 50 serial ports should have them numbered 0-49, not typea0-5, 
-> typeb0-39, typec0-5
-> 
 
-I would actually disagree.  I have systems with multiport serial cards 
-installed, and I much prefer those to be named differently.  Not only do 
-I not have to worry about the same problem I *constantly* have with 
-onboard Ethernet cards -- whoops I just installed an expansion card and 
-suddenly my onboard NIC is eth2! -- but the expansion serial ports tend 
-to be *different.*
 
-For example, on my serial server, the Cyclades ports (ttyC*) use RJ-45 
-connections from an external expansion module, whereas of course the 
-builtin ones (ttyS*) use DB-9s.
+On Wed, 4 Apr 2007, Andrea Arcangeli wrote:
+> 
+> Ok, those cases wanting the same zero page, could be fairly easily
+> converted to an mmap over /dev/zero (without having to run 4k large
+> mmap syscalls or nonlinear).
 
-	-hpa
+You're missing the point. What if it's something like oracle that has been 
+tuned for Linux using this? Or even an open-source app that is just used 
+by big places and they see performace problems but it's not obvious *why*.
+
+We "know" why, because we're discussing this point. But two months from 
+now, when some random company complains to SuSE/RH/whatever that their app 
+runs 5% slower or uses 200% more swap, who is going to realize what caused 
+it?
+
+THAT is the problem with patches like this. I'm not against it, but you 
+can't just dismiss it with "we can fix the app". We *cannot* fix the app 
+if we don't even realize what caused the problem..
+
+		Linus
