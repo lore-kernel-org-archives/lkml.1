@@ -1,120 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992754AbXDDI5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992770AbXDDJA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992754AbXDDI5g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 04:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992770AbXDDI5g
+	id S2992770AbXDDJA1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 05:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992774AbXDDJA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 04:57:36 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:51093 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992754AbXDDI5f (ORCPT
+	Wed, 4 Apr 2007 05:00:27 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2211 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992770AbXDDJA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 04:57:35 -0400
-Subject: [PATCH 2/4] Use the APIC to determine the hardware processor id -
-	i386
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, ebiederm@xmission.com,
-       horms@verge.net.au, tony.luck@intel.com, vgoyal@in.ibm.com
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Wed, 04 Apr 2007 17:57:34 +0900
-Message-Id: <1175677054.26920.137.camel@sebastian.intellilink.co.jp>
+	Wed, 4 Apr 2007 05:00:26 -0400
+Date: Wed, 4 Apr 2007 10:00:16 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: dwmw2@infradead.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
+       flar@allandria.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404090016.GC13134@flint.arm.linux.org.uk>
+Mail-Followup-To: David Miller <davem@davemloft.net>, dwmw2@infradead.org,
+	paulus@samba.org, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <1175666635.2932.17.camel@shinybook.infradead.org> <20070404.011208.120446173.davem@davemloft.net> <20070404083803.GA13134@flint.arm.linux.org.uk> <20070404.014330.91315500.davem@davemloft.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404.014330.91315500.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hard_smp_processor_id used to be just a macro that hard-coded
-hard_smp_processor_id to 0 in the non SMP case.  When booting non SMP
-kernels on hardware where the boot ioapic id is not 0 this turns out to
-be a problem.  This is happens frequently in the case of kdump and once
-in a great while in the case of real hardware.
+On Wed, Apr 04, 2007 at 01:43:30AM -0700, David Miller wrote:
+> From: Russell King <rmk+lkml@arm.linux.org.uk>
+> Date: Wed, 4 Apr 2007 09:38:03 +0100
+> 
+> > However, despite people pressing for it, there's yet to be a *sane*
+> > *technical* *solution* to the problem.  All I've seen so far is one
+> > bad hack.
+> 
+> Well the "bad hack" we use on sparc gives usable serial ports,
+> properly ordered and using /dev/ttyS0, with a proper matching
+> console selection.
 
-Use the APIC to determine the hardware processor id in both UP and SMP
-kernels to fix this issue.
+Well yes, but it seems to have code in the architecture's early
+command line parsing to parse the "console=" argument to set this
+magical "serial_console" variable.
 
-Notice that hard_smp_processor_id is only used by SMP code or by code
-that works with apics so we do not need to handle the case when apics
-are not present and hard_smp_processor_id should never be called there.
+Is this an approach you recommend for all architectures?
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
-
-diff -urNp linux-2.6.21-rc5-orig/arch/i386/mach-generic/probe.c linux-2.6.21-rc5/arch/i386/mach-generic/probe.c
---- linux-2.6.21-rc5-orig/arch/i386/mach-generic/probe.c	2007-02-05 03:44:54.000000000 +0900
-+++ linux-2.6.21-rc5/arch/i386/mach-generic/probe.c	2007-04-04 16:19:53.000000000 +0900
-@@ -119,9 +119,7 @@ int __init acpi_madt_oem_check(char *oem
- 	return 0;	
- }
- 
--#ifdef CONFIG_SMP
- int hard_smp_processor_id(void)
- {
- 	return genapic->get_apic_id(*(unsigned long *)(APIC_BASE+APIC_ID));
- }
--#endif
-diff -urNp linux-2.6.21-rc5-orig/include/asm-i386/smp.h linux-2.6.21-rc5/include/asm-i386/smp.h
---- linux-2.6.21-rc5-orig/include/asm-i386/smp.h	2007-04-04 15:57:31.000000000 +0900
-+++ linux-2.6.21-rc5/include/asm-i386/smp.h	2007-04-04 16:14:54.000000000 +0900
-@@ -74,20 +74,6 @@ static inline int num_booting_cpus(void)
- 	return cpus_weight(cpu_callout_map);
- }
- 
--#ifdef CONFIG_X86_LOCAL_APIC
--
--#ifdef APIC_DEFINITION
--extern int hard_smp_processor_id(void);
--#else
--#include <mach_apicdef.h>
--static inline int hard_smp_processor_id(void)
--{
--	/* we don't want to mark this access volatile - bad code generation */
--	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
--}
--#endif
--#endif
--
- extern int safe_smp_processor_id(void);
- extern int __cpu_disable(void);
- extern void __cpu_die(unsigned int cpu);
-@@ -97,7 +83,6 @@ extern unsigned int num_processors;
- 
- #else /* CONFIG_SMP */
- 
--#define hard_smp_processor_id()		0
- #define safe_smp_processor_id()		0
- #define cpu_physical_id(cpu)		boot_cpu_physical_apicid
- 
-@@ -107,6 +92,27 @@ extern unsigned int num_processors;
- 
- #ifndef __ASSEMBLY__
- 
-+#ifdef CONFIG_X86_LOCAL_APIC
-+
-+#ifdef APIC_DEFINITION
-+extern int hard_smp_processor_id(void);
-+#else
-+#include <mach_apicdef.h>
-+static inline int hard_smp_processor_id(void)
-+{
-+	/* we don't want to mark this access volatile - bad code generation */
-+	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
-+}
-+#endif /* APIC_DEFINITION */
-+
-+#else /* CONFIG_X86_LOCAL_APIC */
-+
-+#ifndef CONFIG_SMP
-+#define hard_smp_processor_id()		0
-+#endif
-+
-+#endif /* CONFIG_X86_LOCAL_APIC */
-+
- extern u8 apicid_2_node[];
- 
- #ifdef CONFIG_X86_LOCAL_APIC
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
