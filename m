@@ -1,89 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966250AbXDDBga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966246AbXDDBhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966250AbXDDBga (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 21:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966249AbXDDBf5
+	id S966246AbXDDBhM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 21:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966264AbXDDBhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 21:35:57 -0400
-Received: from 250.sub-75-209-50.myvzw.com ([75.209.50.250]:34557 "EHLO
-	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966250AbXDDBfc (ORCPT
+	Tue, 3 Apr 2007 21:37:00 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:63996 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S966246AbXDDBgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 21:35:32 -0400
-Message-Id: <20070404011453.879668615@goop.org>
-References: <20070404010655.400913479@goop.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 03 Apr 2007 18:07:01 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [patch 6/6] Allow boot-time disable of paravirt_ops patching
-Content-Disposition: inline; filename=disable-paravirt-patching.patch
+	Tue, 3 Apr 2007 21:36:36 -0400
+Date: Tue, 3 Apr 2007 18:07:06 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: David Miller <davem@davemloft.net>, dwmw2@infradead.org,
+       flar@allandria.com, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+In-Reply-To: <20070404022828.5c9b97f3@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz>
+References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210
+ 02.GA13210@cynthia.pants.nu><1175648051.10567.61.camel@shinybook.infradead.
+ org><20070403.181645.68159458.davem@davemloft.net> <20070404022828.5c9b97f3@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add "noreplace-paravirt" to disable paravirt_ops patching.
+On Wed, 4 Apr 2007, Alan Cox wrote:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
+>> I don't need to know anything about the inanrds of my computer to
+>> bring up the ethernet interface, me caveman me bringup eth0, me on
+>> network, caveman happy.  The same should be true for serial ports.
+>
+> You don't get machines with 64 ethernet ports on add-in cards. There are
+> good reasons for the naming schemes in use.
 
----
- Documentation/kernel-parameters.txt |    3 +++
- arch/i386/kernel/alternative.c      |   13 +++++++++++++
- 2 files changed, 16 insertions(+)
+I've seen machines offering up to 48, what's the magic number that makes you 
+need to chagne nameing schemes?
 
-===================================================================
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -64,6 +64,7 @@ parameter is applicable:
- 	GENERIC_TIME The generic timeofday code is enabled.
- 	NFS	Appropriate NFS support is enabled.
- 	OSS	OSS sound support is enabled.
-+	PV_OPS	A paravirtualized kernel
- 	PARIDE	The ParIDE subsystem is enabled.
- 	PARISC	The PA-RISC architecture is enabled.
- 	PCI	PCI bus support is enabled.
-@@ -1134,6 +1135,8 @@ and is between 256 and 4096 characters. 
- 	nomca		[IA-64] Disable machine check abort handling
- 
- 	nomce		[IA-32] Machine Check Exception
-+
-+	noreplace-paravirt	[IA-32,PV_OPS] Don't patch paravirt_ops
- 
- 	noreplace-smp	[IA-32,SMP] Don't replace SMP instructions
- 			with UP alternatives
-===================================================================
---- a/arch/i386/kernel/alternative.c
-+++ b/arch/i386/kernel/alternative.c
-@@ -30,6 +30,16 @@ static int __init setup_noreplace_smp(ch
- }
- __setup("noreplace-smp", setup_noreplace_smp);
- 
-+#ifdef CONFIG_PARAVIRT
-+static int noreplace_paravirt = 0;
-+
-+static int __init setup_noreplace_paravirt(char *str)
-+{
-+	noreplace_paravirt = 1;
-+	return 1;
-+}
-+__setup("noreplace-paravirt", setup_noreplace_paravirt);
-+#endif
- 
- #define DPRINTK(fmt, args...) if (debug_alternative) \
- 	printk(KERN_DEBUG fmt, args)
-@@ -329,6 +339,9 @@ void apply_paravirt(struct paravirt_patc
- {
- 	struct paravirt_patch *p;
- 
-+	if (noreplace_paravirt)
-+		return;
-+
- 	for (p = start; p < end; p++) {
- 		unsigned int used;
- 
+I also know of systems with 50 serial ports on them. the fact that some of the 
+serial ports on the front panel were named differently then other serial ports 
+on the front panel sure didn't make my life easier in dealing with them.
 
--- 
-
+David Lang
