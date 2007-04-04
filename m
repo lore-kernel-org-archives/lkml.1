@@ -1,112 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422722AbXDDSYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993015AbXDDSYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422722AbXDDSYG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992753AbXDDSXk
+	id S2993015AbXDDSYH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934060AbXDDSML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:23:40 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51264 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422746AbXDDSW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:22:59 -0400
-Date: Wed, 4 Apr 2007 11:19:30 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Rob Sims <lkml-z@robsims.com>
-Cc: Thomas Glanzmann <thomas@glanzmann.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andreas =?UTF-8?B?QWxsZ8O2d2Vy?= <andreas.allgoewer@web.de>,
-       Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>
-Subject: Re: sky2 PHY setup
-Message-ID: <20070404111930.46321146@freekitty>
-In-Reply-To: <20070327032406.GA25659@robsims.com>
-References: <20070202102705.3cf028a6@freekitty>
-	<20070202210934.GM1693@cip.informatik.uni-erlangen.de>
-	<20070202151601.677ec5d9@freekitty>
-	<20070203073012.GO1693@cip.informatik.uni-erlangen.de>
-	<20070205090429.31d7bd32@freekitty>
-	<20070222193611.GR20035@cip.informatik.uni-erlangen.de>
-	<20070316002912.GB17594@cip.informatik.uni-erlangen.de>
-	<20070316095932.5e920222@freekitty>
-	<20070316203645.GA24699@robsims.com>
-	<20070316141648.15d7ff75@freekitty>
-	<20070327032406.GA25659@robsims.com>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Apr 2007 14:12:11 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:38675 "EHLO
+	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932167AbXDDSLu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 14:11:50 -0400
+X-ORBL: [67.117.73.34]
+From: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 58/90] ARM: OMAP: musb_hdrc: tusb dma patch, minor
+Date: Wed,  4 Apr 2007 14:05:37 -0400
+Message-Id: <11757101252580-git-send-email-tony@atomide.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11757101233966-git-send-email-tony@atomide.com>
+References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!
+ 57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <117571004562-git-send-email-tony@atomide.com> <11757100491583-git-send-email-tony@atomide.com> <11757100511172-git-send-email-tony@atomide.com> <1175710059333-git-send-email-tony@atomide.com> <11757100623383-git-send-email-tony@atomide.com> <11757100641006-git-send-email-tony@atomide.com> <11757100661228-git-send-email-tony@atomide.com> <11757100691131-git-send-email-tony@atomide.com> <11757100713004-git-send-email-tony@atomide.com> <11757100752021-git-send-email-tony@atomide.com> <11757100781275-git-send-email-tony@atomide.com> <11757100811771-git-send-email-tony@atomide.com> <11757100821353-git-send-email-tony@atomide.com> <11757100853841-git-send-email-tony@atomide.com> <1175710087578-git-send-email-tony@atomide.com> <11757100911247-git-send-email-tony@atomide.com> <1175710093864-git-send-email-tony@atomide.com> <11757100952384-git-send-email-tony@atomide.com> <11757100982726-g!
+ it-send-email-tony@atomide.com> <11757101012787-git-send-email-tony@atomide.com> <1175710103340-git-send-email-tony@atomide.com> <11757101072553-git-send-email-tony@atomide.com> <11757101101180-git-send-email-tony@atomide.com> <11757101123620-git-send-email-tony@atomide.com> <11757101141643-git-send-email-tony@atomide.com> <
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Mar 2007 21:24:06 -0600
-Rob Sims <lkml-z@robsims.com> wrote:
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-> On Fri, Mar 16, 2007 at 02:16:48PM -0700, Stephen Hemminger wrote:
-> > On Fri, 16 Mar 2007 14:36:45 -0600
-> > Rob Sims <lkml-z@robsims.com> wrote:
-> 
-> > > Are there some debug hooks that can be activated?  My sky2 stops
-> > > responding (very light load) about twice a day.  The netdev watchdog
-> > > notices after a while and is able to reactivate the interface:
-> 
-> > > Mar 15 13:28:12 btd kernel: NETDEV WATCHDOG: eth0: transmit timed out
-> > > Mar 15 13:28:12 btd kernel: sky2 eth0: tx timeout
-> > > Mar 15 13:28:12 btd kernel: sky2 eth0: transmit ring 458 .. 435 report=458 done=458
-> > > Mar 15 13:28:12 btd kernel: sky2 eth0: disabling interface
-> > > Mar 15 13:28:12 btd kernel: sky2 eth0: enabling interface
-> > > Mar 15 13:28:12 btd kernel: sky2 eth0: ram buffer 48K
-> > > Mar 15 13:28:15 btd kernel: sky2 eth0: Link is up at 1000 Mbps, full duplex, flow control both
-> > 
-> > Use ethtool -S to if there are any pause frames, etc. See if frames are
-> > still making it into PHY statistics but not being received.
-> > 
-> > Use ethtool -d to dump registers. Need current version of ethtool with decode logic.
-> > 
-> > Then look for things like is Ram buffer read/write pointer changing?
-> > 
-> > Is GMAC stuck in pause:
-> > 
-> > Normal is:
-> > 	GMAC 1
-> > 	Status                       0x5010  (see GM_GPSR_XXX in sky2.h)
-> > 	Control                      0x1800
-> > 
-> > Stuck is
-> > 	GMAC 1
-> > 	Status			     0x5810 (or 0x5A10)
-> 
-> First, here's the described hang in action, on the Core2 Duo on a 1Gb
-> hub:
-> GMAC 1 Status/Control remains at 0x5010/0x1800 until module is removed.
-> Read/write buffer pointers are changing.  Full ethtool output in
-> http://www.robsims.com/sky2.netmon.log.gz
-> 
-> This machine was also having major throughput problems - 17 kB/s.
-> Rebooting brought it to ~ 20 MB/s.  Booting into a kernel with the
-> proprietary sk98lin kernel module showed ~ 80MB/s.  Finally, returning
-> to sky2 gave 117 MB/s.  Tests run using netcat, dd, /dev/zero, and
-> /dev/null, transmitting from the problem box to an e1000 via a Netgear
-> GS108.  No hangs were observed during the "load test."
+Move all DMAREQ for TUSB6010 into its chip setup; it shouldn't be in
+either the board-specific code, or the tusb6010 glue.  (Note, we still
+aren't passing the "which channels" info to the driver...)
 
-The vendor driver does not do hardware flow control correctly. It ignores
-Tx pause frames.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-h4.c     |    5 +++--
+ arch/arm/mach-omap2/usb-tusb6010.c |   16 ++++++++++++++++
+ 2 files changed, 19 insertions(+), 2 deletions(-)
 
-Were you using Jumbo MTU?
-
-> I also had a hang on a Pentium 4 w/sky2, 100Mb/s hub.  I neglected to
-> try removing and re-inserting the module before rebooting.
-> GMAC 1
-> Status                       0xF004
-This is [100mbit] [Full duplex] [Tx flow control disabled] [link up] 
-	[Rx flow control disabled]
-
-> Control                      0x1800
-	[TX enabled] [Rx enabled]
-
-You might have over run the hub and it wedged.  Try doing:
-	ethtool -r eth0
-that forces a down/up
-
-
+diff --git a/arch/arm/mach-omap2/board-h4.c b/arch/arm/mach-omap2/board-h4.c
+index 100aea4..e85bbeb 100644
+--- a/arch/arm/mach-omap2/board-h4.c
++++ b/arch/arm/mach-omap2/board-h4.c
+@@ -476,9 +476,10 @@ static void __init tusb_evm_setup(void)
+ 		 */
+ 		omap_cfg_reg(J15_24XX_GPIO99);
+ 		irq = 99;
+-		omap_cfg_reg(AA10_242X_DMAREQ0);
+-		omap_cfg_reg(AA6_242X_DMAREQ1);
+ 		dmachan = (1 << 1) | (1 << 0);
++#if !(defined(CONFIG_MTD_OMAP_NOR) || defined(CONFIG_MTD_OMAP_NOR_MODULE))
++		dmachan |= (1 << 5) | (1 << 4) (1 << 3) | (1 << 2);
++#endif
+ 		break;
+ 	}
+ 
+diff --git a/arch/arm/mach-omap2/usb-tusb6010.c b/arch/arm/mach-omap2/usb-tusb6010.c
+index 5f276c5..497f733 100644
+--- a/arch/arm/mach-omap2/usb-tusb6010.c
++++ b/arch/arm/mach-omap2/usb-tusb6010.c
+@@ -17,6 +17,7 @@
+ 
+ #include <asm/arch/gpmc.h>
+ #include <asm/arch/gpio.h>
++#include <asm/arch/mux.h>
+ 
+ 
+ static u8		async_cs, sync_cs;
+@@ -322,6 +323,21 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+ 	/* REVISIT let the driver know what DMA channels work */
+ 	if (!dmachan)
+ 		tusb_device.dev.dma_mask = NULL;
++	else {
++		/* assume OMAP 2420 ES2.0 and later */
++		if (dmachan & (1 << 0))
++			omap_cfg_reg(AA10_242X_DMAREQ0);
++		if (dmachan & (1 << 1))
++			omap_cfg_reg(AA6_242X_DMAREQ1);
++		if (dmachan & (1 << 2))
++			omap_cfg_reg(E4_242X_DMAREQ2);
++		if (dmachan & (1 << 3))
++			omap_cfg_reg(G4_242X_DMAREQ3);
++		if (dmachan & (1 << 4))
++			omap_cfg_reg(D3_242X_DMAREQ4);
++		if (dmachan & (1 << 5))
++			omap_cfg_reg(E3_242X_DMAREQ5);
++	}
+ 
+ 	/* so far so good ... register the device */
+ 	status = platform_device_register(&tusb_device);
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+1.4.4.2
+
