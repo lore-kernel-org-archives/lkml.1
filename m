@@ -1,113 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992529AbXDDCqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992530AbXDDCqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992529AbXDDCqR (ORCPT <rfc822;w@1wt.eu>);
+	id S2992530AbXDDCqR (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 3 Apr 2007 22:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966306AbXDDCnG
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966321AbXDDCnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 22:43:06 -0400
-Received: from waste.org ([66.93.16.53]:5462 "EHLO cinder.waste.org"
+	Tue, 3 Apr 2007 22:43:04 -0400
+Received: from waste.org ([66.93.16.53]:5461 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S966307AbXDDCm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 22:42:26 -0400
+	id S966306AbXDDCmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 22:42:25 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 X-PatchBomber: http://selenic.com/scripts/mailpatches
 Cc: linux-kernel@vger.kernel.org
 In-Reply-To: <1.486631555@selenic.com>
-Message-Id: <8.486631555@selenic.com>
-Subject: [PATCH 7/13] maps: Simplify interdependence of /proc/pid/maps and smaps
-Date: Tue, 03 Apr 2007 21:43:37 -0500
+Message-Id: <7.486631555@selenic.com>
+Subject: [PATCH 6/13] maps: Move the page walker code to lib/
+Date: Tue, 03 Apr 2007 21:43:36 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simplify interdependence of /proc/pid/maps and smaps
+Move the page walker code to lib/
 
-This pulls the shared map display code out of show_map and puts it in
-show_smap where it belongs.
+This lets it get shared outside of proc/ and linked in only when
+needed.
 
 Signed-off-by: Matt Mackall <mpm@selenic.com>
 
 Index: mm/fs/proc/task_mmu.c
 ===================================================================
---- mm.orig/fs/proc/task_mmu.c	2007-03-27 23:06:18.000000000 -0500
-+++ mm/fs/proc/task_mmu.c	2007-03-29 13:01:44.000000000 -0500
-@@ -125,7 +125,7 @@ struct mem_size_stats
- 	unsigned long referenced;
- };
- 
--static int show_map_internal(struct seq_file *m, void *v, struct mem_size_stats *mss)
-+static int show_map(struct seq_file *m, void *v)
- {
- 	struct proc_maps_private *priv = m->private;
- 	struct task_struct *task = priv->task;
-@@ -185,33 +185,11 @@ static int show_map_internal(struct seq_
- 	}
- 	seq_putc(m, '\n');
- 
--	if (mss)
--		seq_printf(m,
--			   "Size:           %8lu kB\n"
--			   "Rss:            %8lu kB\n"
--			   "Shared_Clean:   %8lu kB\n"
--			   "Shared_Dirty:   %8lu kB\n"
--			   "Private_Clean:  %8lu kB\n"
--			   "Private_Dirty:  %8lu kB\n"
--			   "Referenced:     %8lu kB\n",
--			   (vma->vm_end - vma->vm_start) >> 10,
--			   mss->resident >> 10,
--			   mss->shared_clean  >> 10,
--			   mss->shared_dirty  >> 10,
--			   mss->private_clean >> 10,
--			   mss->private_dirty >> 10,
--			   mss->referenced >> 10);
--
- 	if (m->count < m->size)  /* vma is copied successfully */
- 		m->version = (vma != get_gate_vma(task))? vma->vm_start: 0;
+--- mm.orig/fs/proc/task_mmu.c	2007-03-27 22:13:43.000000000 -0500
++++ mm/fs/proc/task_mmu.c	2007-03-27 22:13:51.000000000 -0500
+@@ -280,123 +280,6 @@ static int clear_refs_pte_range(pmd_t *p
  	return 0;
  }
  
--static int show_map(struct seq_file *m, void *v)
+-struct mm_walk {
+-	int (*pgd_entry)(pgd_t *, unsigned long, unsigned long, void *);
+-	int (*pud_entry)(pud_t *, unsigned long, unsigned long, void *);
+-	int (*pmd_entry)(pmd_t *, unsigned long, unsigned long, void *);
+-	int (*pte_entry)(pte_t *, unsigned long, unsigned long, void *);
+-};
+-
+-static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+-			  struct mm_walk *walk, void *private)
 -{
--	return show_map_internal(m, v, NULL);
+-	pte_t *pte;
+-	int err;
+-
+-	for (pte = pte_offset_map(pmd, addr); addr != end;
+-	     addr += PAGE_SIZE, pte++) {
+-		if (pte_none(*pte))
+-			continue;
+-		err = walk->pte_entry(pte, addr, addr, private);
+-		if (err) {
+-			pte_unmap(pte);
+-			return err;
+-		}
+-	}
+-	pte_unmap(pte);
+-	return 0;
 -}
 -
- static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- 			   void *private)
- {
-@@ -286,13 +264,35 @@ static int show_smap(struct seq_file *m,
- {
- 	struct vm_area_struct *vma = v;
- 	struct mem_size_stats mss;
-+	int ret;
+-static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
+-			  struct mm_walk *walk, void *private)
+-{
+-	pmd_t *pmd;
+-	unsigned long next;
+-	int err;
+-
+-	for (pmd = pmd_offset(pud, addr); addr != end;
+-	     pmd++, addr = next) {
+-		next = pmd_addr_end(addr, end);
+-		if (pmd_none_or_clear_bad(pmd))
+-			continue;
+-		if (walk->pmd_entry) {
+-			err = walk->pmd_entry(pmd, addr, next, private);
+-			if (err)
+-				return err;
+-		}
+-		if (walk->pte_entry) {
+-			err = walk_pte_range(pmd, addr, next, walk, private);
+-			if (err)
+-				return err;
+-		}
+-	}
+-	return 0;
+-}
+-
+-static int walk_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end,
+-			  struct mm_walk *walk, void *private)
+-{
+-	pud_t *pud;
+-	unsigned long next;
+-	int err;
+-
+-	for (pud = pud_offset(pgd, addr); addr != end;
+-	     pud++, addr = next) {
+-		next = pud_addr_end(addr, end);
+-		if (pud_none_or_clear_bad(pud))
+-			continue;
+-		if (walk->pud_entry) {
+-			err = walk->pud_entry(pud, addr, next, private);
+-			if (err)
+-				return err;
+-		}
+-		if (walk->pmd_entry || walk->pte_entry) {
+-			err = walk_pmd_range(pud, addr, next, walk, private);
+-			if (err)
+-				return err;
+-		}
+-	}
+-	return 0;
+-}
+-
+-/*
+- * walk_page_range - walk a memory map's page tables with a callback
+- * @mm - memory map to walk
+- * @addr - starting address
+- * @end - ending address
+- * @action - callback invoked for every bottom-level (PTE) page table
+- * @private - private data passed to the callback function
+- *
+- * Recursively walk the page table for the memory area in a VMA, calling
+- * a callback for every bottom-level (PTE) page table.
+- */
+-static int walk_page_range(struct mm_struct *mm,
+-			   unsigned long addr, unsigned long end,
+-			   struct mm_walk *walk, void *private)
+-{
+-	pgd_t *pgd;
+-	unsigned long next;
+-	int err;
+-
+-	for (pgd = pgd_offset(mm, addr); addr != end;
+-	     pgd++, addr = next) {
+-		next = pgd_addr_end(addr, end);
+-		if (pgd_none_or_clear_bad(pgd))
+-			continue;
+-		if (walk->pgd_entry) {
+-			err = walk->pgd_entry(pgd, addr, next, private);
+-			if (err)
+-				return err;
+-		}
+-		if (walk->pud_entry || walk->pmd_entry || walk->pte_entry) {
+-			err = walk_pud_range(pgd, addr, next, walk, private);
+-			if (err)
+-				return err;
+-		}
+-	}
+-	return 0;
+-}
+-
+ static struct mm_walk smaps_walk = { .pmd_entry = smaps_pte_range };
  
- 	memset(&mss, 0, sizeof mss);
- 	mss.vma = vma;
- 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
- 		walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
- 				&smaps_walk, &mss);
--	return show_map_internal(m, v, &mss);
+ static int show_smap(struct seq_file *m, void *v)
+Index: mm/include/linux/mm.h
+===================================================================
+--- mm.orig/include/linux/mm.h	2007-03-27 22:13:42.000000000 -0500
++++ mm/include/linux/mm.h	2007-03-27 22:13:51.000000000 -0500
+@@ -747,6 +747,16 @@ unsigned long unmap_vmas(struct mmu_gath
+ 		struct vm_area_struct *start_vma, unsigned long start_addr,
+ 		unsigned long end_addr, unsigned long *nr_accounted,
+ 		struct zap_details *);
 +
-+	ret = show_map(m, v);
-+	if (ret)
-+		return ret;
++struct mm_walk {
++	int (*pgd_entry)(pgd_t *, unsigned long, unsigned long, void *);
++	int (*pud_entry)(pud_t *, unsigned long, unsigned long, void *);
++	int (*pmd_entry)(pmd_t *, unsigned long, unsigned long, void *);
++	int (*pte_entry)(pte_t *, unsigned long, unsigned long, void *);
++};
 +
-+	seq_printf(m,
-+		   "Size:           %8lu kB\n"
-+		   "Rss:            %8lu kB\n"
-+		   "Shared_Clean:   %8lu kB\n"
-+		   "Shared_Dirty:   %8lu kB\n"
-+		   "Private_Clean:  %8lu kB\n"
-+		   "Private_Dirty:  %8lu kB\n"
-+		   "Referenced:     %8lu kB\n",
-+		   (vma->vm_end - vma->vm_start) >> 10,
-+		   mss.resident >> 10,
-+		   mss.shared_clean  >> 10,
-+		   mss.shared_dirty  >> 10,
-+		   mss.private_clean >> 10,
-+		   mss.private_dirty >> 10,
-+		   mss.referenced >> 10);
-+
-+	return ret;
- }
++int walk_page_range(struct mm_struct *, unsigned long addr, unsigned long end,
++		    struct mm_walk *walk, void *private);
+ void free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+ 		unsigned long end, unsigned long floor, unsigned long ceiling);
+ void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *start_vma,
+Index: mm/lib/Makefile
+===================================================================
+--- mm.orig/lib/Makefile	2007-03-27 22:14:09.000000000 -0500
++++ mm/lib/Makefile	2007-03-27 22:16:49.000000000 -0500
+@@ -7,7 +7,7 @@ lib-y := ctype.o string.o vsprintf.o cmd
+ 	 idr.o div64.o int_sqrt.o bitmap.o extable.o prio_tree.o \
+ 	 sha1.o irq_regs.o reciprocal_div.o
  
- static struct mm_walk clear_refs_walk = { .pmd_entry = clear_refs_pte_range };
+-lib-$(CONFIG_MMU) += ioremap.o
++lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
+ lib-$(CONFIG_SMP) += cpumask.o
+ 
+ lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
+Index: mm/lib/pagewalk.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mm/lib/pagewalk.c	2007-03-27 22:18:37.000000000 -0500
+@@ -0,0 +1,111 @@
++#include <linux/mm.h>
++
++static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
++			  struct mm_walk *walk, void *private)
++{
++	pte_t *pte;
++	int err;
++
++	for (pte = pte_offset_map(pmd, addr); addr != end;
++	     addr += PAGE_SIZE, pte++) {
++		if (pte_none(*pte))
++			continue;
++		err = walk->pte_entry(pte, addr, addr, private);
++		if (err) {
++			pte_unmap(pte);
++			return err;
++		}
++	}
++	pte_unmap(pte);
++	return 0;
++}
++
++static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
++			  struct mm_walk *walk, void *private)
++{
++	pmd_t *pmd;
++	unsigned long next;
++	int err;
++
++	for (pmd = pmd_offset(pud, addr); addr != end;
++	     pmd++, addr = next) {
++		next = pmd_addr_end(addr, end);
++		if (pmd_none_or_clear_bad(pmd))
++			continue;
++		if (walk->pmd_entry) {
++			err = walk->pmd_entry(pmd, addr, next, private);
++			if (err)
++				return err;
++		}
++		if (walk->pte_entry) {
++			err = walk_pte_range(pmd, addr, next, walk, private);
++			if (err)
++				return err;
++		}
++	}
++	return 0;
++}
++
++static int walk_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end,
++			  struct mm_walk *walk, void *private)
++{
++	pud_t *pud;
++	unsigned long next;
++	int err;
++
++	for (pud = pud_offset(pgd, addr); addr != end;
++	     pud++, addr = next) {
++		next = pud_addr_end(addr, end);
++		if (pud_none_or_clear_bad(pud))
++			continue;
++		if (walk->pud_entry) {
++			err = walk->pud_entry(pud, addr, next, private);
++			if (err)
++				return err;
++		}
++		if (walk->pmd_entry || walk->pte_entry) {
++			err = walk_pmd_range(pud, addr, next, walk, private);
++			if (err)
++				return err;
++		}
++	}
++	return 0;
++}
++
++/*
++ * walk_page_range - walk a memory map's page tables with a callback
++ * @mm - memory map to walk
++ * @addr - starting address
++ * @end - ending address
++ * @walk - set of callbacks to invoke for each level of the tree
++ * @private - private data passed to the callback function
++ *
++ * Recursively walk the page table for the memory area in a VMA, calling
++ * a callback for every bottom-level (PTE) page table.
++ */
++int walk_page_range(struct mm_struct *mm,
++		    unsigned long addr, unsigned long end,
++		    struct mm_walk *walk, void *private)
++{
++	pgd_t *pgd;
++	unsigned long next;
++	int err;
++
++	for (pgd = pgd_offset(mm, addr); addr != end;
++	     pgd++, addr = next) {
++		next = pgd_addr_end(addr, end);
++		if (pgd_none_or_clear_bad(pgd))
++			continue;
++		if (walk->pgd_entry) {
++			err = walk->pgd_entry(pgd, addr, next, private);
++			if (err)
++				return err;
++		}
++		if (walk->pud_entry || walk->pmd_entry || walk->pte_entry) {
++			err = walk_pud_range(pgd, addr, next, walk, private);
++			if (err)
++				return err;
++		}
++	}
++	return 0;
++}
