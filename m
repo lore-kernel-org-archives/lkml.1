@@ -1,132 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbXDDSec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbXDDSH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbXDDSec (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXDDSIo
+	id S1753883AbXDDSH4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbXDDSHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:08:44 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36929 "EHLO
+	Wed, 4 Apr 2007 14:07:33 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36299 "EHLO
 	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753938AbXDDSIa (ORCPT
+	with ESMTP id S1753879AbXDDSHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:08:30 -0400
+	Wed, 4 Apr 2007 14:07:15 -0400
 X-ORBL: [67.117.73.34]
 From: Tony Lindgren <tony@atomide.com>
 To: linux-kernel@vger.kernel.org
-Cc: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>,
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 30/90] ARM: OMAP: Palm Zire71 minor fixes
-Date: Wed,  4 Apr 2007 14:05:09 -0400
-Message-Id: <117571004562-git-send-email-tony@atomide.com>
+Subject: [PATCH 13/90] ARM: OMAP: /sys/kernel/debug/omap_gpio
+Date: Wed,  4 Apr 2007 14:04:52 -0400
+Message-Id: <11757099942493-git-send-email-tony@atomide.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757100423982-git-send-email-tony@atomide.com>
-References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!
- 57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1175709988265-git-send-email-tony@atomide.com>
+References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from quoted-printable to 8bit by alpha.home.local id l34IZRZJ025658
 
-From: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-This patch makes minor changes in palmz71 board file (formating changes) and
-renames one GPIO (PALMZ71_PINTDAV_GPIO to PALMZ71_PENIRQ_GPIO) in
-board-palmz71.h and board-palmz71.c .
+Add some GPIO debug support:  /sys/kernel/debug/omap_gpio dumps the state
+of all GPIOs that have been claimed, including basic IRQ info if relevant.
+Tested on 24xx, 16xx.
 
-Signed-off-by: Marek Vašut <marek.vasut@gmail.com>
+Includes minor bugfixes:  recording IRQ trigger mode (this should probably
+be a genirq patch), adding missing space to non-wakeup warning
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap1/board-palmz71.c       |   29 ++++++++++++++---------------
- include/asm-arm/arch-omap/board-palmz71.h |    2 +-
- 2 files changed, 15 insertions(+), 16 deletions(-)
+ arch/arm/plat-omap/gpio.c |  130 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 129 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/board-palmz71.c b/arch/arm/mach-omap1/board-palmz71.c
-index 5d73e8c..786142b 100644
---- a/arch/arm/mach-omap1/board-palmz71.c
-+++ b/arch/arm/mach-omap1/board-palmz71.c
-@@ -192,8 +192,7 @@ static struct omap_mcbsp_reg_cfg mcbsp_regs = {
- 	.xcr1	= XFRLEN1(OMAP_MCBSP_WORD_8) | XWDLEN1(OMAP_MCBSP_WORD_16),
- 	.srgr1	= FWID(DEFAULT_BITPERSAMPLE - 1),
- 	.srgr2	= GSYNC | CLKSP | FSGM | FPER(DEFAULT_BITPERSAMPLE * 2 - 1),
--	/*.pcr0	= FSXM | FSRM | CLKXM | CLKRM | CLKXP | CLKRP, *//* mcbsp: master */
--	.pcr0 = CLKXP | CLKRP,	/* mcbsp: slave */
-+	.pcr0	= CLKXP | CLKRP,	/* mcbsp: slave */
- };
- 
- static struct omap_alsa_codec_config alsa_config = {
-@@ -240,7 +239,7 @@ static struct platform_device *devices[] __initdata = {
- static int
- palmz71_get_pendown_state(void)
- {
--	return !omap_get_gpio_datain(6);
-+	return !omap_get_gpio_datain(PALMZ71_PENIRQ_GPIO);
- }
- 
- static const struct ads7846_platform_data palmz71_ts_info = {
-@@ -251,16 +250,16 @@ static const struct ads7846_platform_data palmz71_ts_info = {
- 	.get_pendown_state	= palmz71_get_pendown_state,
- };
- 
--static struct spi_board_info __initdata palmz71_boardinfo[] = {
--{
-+static struct spi_board_info __initdata palmz71_boardinfo[] = { {
- 	/* MicroWire (bus 2) CS0 has an ads7846e */
- 	.modalias	= "ads7846",
- 	.platform_data	= &palmz71_ts_info,
--	.irq		= OMAP_GPIO_IRQ(6),
--	.max_speed_hz	= 120000 /* max sample rate at 3V */
--				* 26 /* command + data + overhead */,
-+	.irq		= OMAP_GPIO_IRQ(PALMZ71_PENIRQ_GPIO),
-+	.max_speed_hz	= 120000	/* max sample rate at 3V */
-+				* 26	/* command + data + overhead */,
- 	.bus_num	= 2,
- 	.chip_select	= 0,
+diff --git a/arch/arm/plat-omap/gpio.c b/arch/arm/plat-omap/gpio.c
+index c6cded5..78ba1d3 100644
+--- a/arch/arm/plat-omap/gpio.c
++++ b/arch/arm/plat-omap/gpio.c
+@@ -536,6 +536,10 @@ static int gpio_irq_type(unsigned irq, unsigned type)
+ 	bank = get_gpio_bank(gpio);
+ 	spin_lock(&bank->lock);
+ 	retval = _set_gpio_triggering(bank, get_gpio_index(gpio), type);
++	if (retval == 0) {
++		irq_desc[irq].status &= ~IRQ_TYPE_SENSE_MASK;
++		irq_desc[irq].status |= type;
 +	}
- } };
+ 	spin_unlock(&bank->lock);
+ 	return retval;
+ }
+@@ -702,7 +706,7 @@ static int _set_gpio_wakeup(struct gpio_bank *bank, int gpio, int enable)
+ 		spin_lock(&bank->lock);
+ 		if (enable) {
+ 			if (bank->non_wakeup_gpios & (1 << gpio)) {
+-				printk(KERN_ERR "Unable to enable wakeup on"
++				printk(KERN_ERR "Unable to enable wakeup on "
+ 						"non-wakeup GPIO%d\n",
+ 						(bank - gpio_bank) * 32 + gpio);
+ 				spin_unlock(&bank->lock);
+@@ -1360,3 +1364,127 @@ EXPORT_SYMBOL(omap_set_gpio_dataout);
+ EXPORT_SYMBOL(omap_get_gpio_datain);
  
- static struct omap_usb_config palmz71_usb_config __initdata = {
-@@ -288,10 +287,10 @@ static struct omap_uart_config palmz71_uart_config __initdata = {
- };
- 
- static struct omap_board_config_kernel palmz71_config[] = {
--	{OMAP_TAG_USB, &palmz71_usb_config},
--	{OMAP_TAG_MMC, &palmz71_mmc_config},
--	{OMAP_TAG_LCD, &palmz71_lcd_config},
--	{OMAP_TAG_UART, &palmz71_uart_config},
-+	{OMAP_TAG_USB,	&palmz71_usb_config},
-+	{OMAP_TAG_MMC,	&palmz71_mmc_config},
-+	{OMAP_TAG_LCD,	&palmz71_lcd_config},
-+	{OMAP_TAG_UART,	&palmz71_uart_config},
- };
- 
- static irqreturn_t
-@@ -343,9 +342,9 @@ palmz71_gpio_setup(int early)
- 		}
- 		omap_set_gpio_direction(PALMZ71_USBDETECT_GPIO, 1);
- 		if (request_irq(OMAP_GPIO_IRQ(PALMZ71_USBDETECT_GPIO),
--			palmz71_powercable, SA_SAMPLE_RANDOM,
--			"palmz71-cable", 0))
--				printk(KERN_ERR
-+				palmz71_powercable, SA_SAMPLE_RANDOM,
-+				"palmz71-cable", 0))
-+			printk(KERN_ERR
- 					"IRQ request for power cable failed!\n");
- 		palmz71_powercable(OMAP_GPIO_IRQ(PALMZ71_USBDETECT_GPIO), 0, 0);
- 	}
-diff --git a/include/asm-arm/arch-omap/board-palmz71.h b/include/asm-arm/arch-omap/board-palmz71.h
-index 6aff149..1252a85 100644
---- a/include/asm-arm/arch-omap/board-palmz71.h
-+++ b/include/asm-arm/arch-omap/board-palmz71.h
-@@ -14,7 +14,7 @@
- #define __OMAP_BOARD_PALMZ71_H
- 
- #define PALMZ71_USBDETECT_GPIO	0
--#define PALMZ71_PINTDAV_GPIO	6
-+#define PALMZ71_PENIRQ_GPIO	6
- #define PALMZ71_MMC_WP_GPIO	8
- #define PALMZ71_HDQ_GPIO 	11
- 
+ arch_initcall(omap_gpio_sysinit);
++
++
++#ifdef	CONFIG_DEBUG_FS
++
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
++
++static int gpio_is_input(struct gpio_bank *bank, int mask)
++{
++	void __iomem *reg = bank->base;
++
++	switch (bank->method) {
++	case METHOD_MPUIO:
++		reg += OMAP_MPUIO_IO_CNTL;
++		break;
++	case METHOD_GPIO_1510:
++		reg += OMAP1510_GPIO_DIR_CONTROL;
++		break;
++	case METHOD_GPIO_1610:
++		reg += OMAP1610_GPIO_DIRECTION;
++		break;
++	case METHOD_GPIO_730:
++		reg += OMAP730_GPIO_DIR_CONTROL;
++		break;
++	case METHOD_GPIO_24XX:
++		reg += OMAP24XX_GPIO_OE;
++		break;
++	}
++	return __raw_readl(reg) & mask;
++}
++
++
++static int dbg_gpio_show(struct seq_file *s, void *unused)
++{
++	unsigned	i, j, gpio;
++
++	for (i = 0, gpio = 0; i < gpio_bank_count; i++) {
++		struct gpio_bank	*bank = gpio_bank + i;
++		unsigned		bankwidth = 16;
++		u32			mask = 1;
++
++		if (!cpu_is_omap24xx() && bank->method == METHOD_MPUIO)
++			gpio = OMAP_MPUIO(0);
++		else if (cpu_is_omap24xx() || cpu_is_omap730())
++			bankwidth = 32;
++
++		for (j = 0; j < bankwidth; j++, gpio++, mask <<= 1) {
++			unsigned	irq, value, is_in, irqstat;
++
++			if (!(bank->reserved_map & mask))
++				continue;
++
++			irq = bank->virtual_irq_start + j;
++			value = omap_get_gpio_datain(gpio);
++			is_in = gpio_is_input(bank, mask);
++
++			if (!cpu_is_omap24xx() && bank->method == METHOD_MPUIO)
++				seq_printf(s, "MPUIO %2d: ", j);
++			else
++				seq_printf(s, "GPIO %3d: ", gpio);
++			seq_printf(s, "%s %s",
++					is_in ? "in " : "out",
++					value ? "hi"  : "lo");
++
++			irqstat = irq_desc[irq].status;
++			if (is_in && ((bank->suspend_wakeup & mask)
++					|| irqstat & IRQ_TYPE_SENSE_MASK)) {
++				char	*trigger = NULL;
++
++				switch (irqstat & IRQ_TYPE_SENSE_MASK) {
++				case IRQ_TYPE_EDGE_FALLING:
++					trigger = "falling";
++					break;
++				case IRQ_TYPE_EDGE_RISING:
++					trigger = "rising";
++					break;
++				case IRQ_TYPE_EDGE_BOTH:
++					trigger = "bothedge";
++					break;
++				case IRQ_TYPE_LEVEL_LOW:
++					trigger = "low";
++					break;
++				case IRQ_TYPE_LEVEL_HIGH:
++					trigger = "high";
++					break;
++				case IRQ_TYPE_NONE:
++					trigger = "(unspecified)";
++					break;
++				}
++				seq_printf(s, ", irq-%d %s%s",
++						irq, trigger,
++						(bank->suspend_wakeup & mask)
++							? " wakeup" : "");
++			}
++			seq_printf(s, "\n");
++		}
++
++		if (!cpu_is_omap24xx() && bank->method == METHOD_MPUIO) {
++			seq_printf(s, "\n");
++			gpio = 0;
++		}
++	}
++	return 0;
++}
++
++static int dbg_gpio_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, dbg_gpio_show, inode->u.generic_ip/*i_private*/);
++}
++
++static const struct file_operations debug_fops = {
++	.open		= dbg_gpio_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int __init omap_gpio_debuginit(void)
++{
++	(void) debugfs_create_file("omap_gpio", S_IRUGO, NULL, NULL, &debug_fops);
++	return 0;
++}
++late_initcall(omap_gpio_debuginit);
++#endif
 -- 
 1.4.4.2
 
