@@ -1,79 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992557AbXDDEeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992586AbXDDFCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992557AbXDDEeZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 00:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992569AbXDDEeZ
+	id S2992586AbXDDFCZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 01:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992589AbXDDFCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 00:34:25 -0400
-Received: from smtp.knology.net ([24.214.63.101]:49906 "EHLO smtp.knology.net"
+	Wed, 4 Apr 2007 01:02:25 -0400
+Received: from colo.lackof.org ([198.49.126.79]:48525 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992557AbXDDEeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 00:34:24 -0400
-Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
-From: Dave Dillow <dave@thedillows.org>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, ray-gmail@madrabbit.org,
-       Ingo Molnar <mingo@elte.hu>, amanda-hackers@amanda.org,
-       amanda-users@amanda.org
-In-Reply-To: <1175488272.3161.28.camel@obelisk.thedillows.org>
-References: <200704010100.19016.gene.heskett@verizon.net>
-	 <2c0942db0704010033r61f967c3y7d05e3ec0a9f6931@mail.gmail.com>
-	 <200704011141.53105.gene.heskett@verizon.net>
-	 <200704020021.02393.gene.heskett@gmail.com>
-	 <1175488272.3161.28.camel@obelisk.thedillows.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 04 Apr 2007 00:34:16 -0400
-Message-Id: <1175661256.31439.23.camel@obelisk.thedillows.org>
+	id S2992586AbXDDFCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 01:02:24 -0400
+Date: Tue, 3 Apr 2007 23:02:04 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Cc: kernel-janitors@lists.osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org
+Subject: Re: [parisc-linux] [KJ][PATCH] ROUND_?UP macro cleanup in drivers/parisc
+Message-ID: <20070404050204.GC9446@colo.lackof.org>
+References: <20070331105746.GA14572@arun.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070331105746.GA14572@arun.site>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-02 at 00:31 -0400, Dave Dillow wrote:
-> On Mon, 2007-04-02 at 00:20 -0400, Gene Heskett wrote:
-[snipped for brevity]
-> > [root@coyote music]# stat .
-> > Device: fd00h/64768d    Inode: 10354963    Links: 39
+On Sat, Mar 31, 2007 at 04:27:46PM +0530, Milind Arun Choudhary wrote:
+> Clean up ROUND_?UP, Use ALIGN where ever appropriate.
+> 
+> Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-> > Now rebooted to 2.6.21-rc5:
-> > Device: ee00h/60928d    Inode: 10354963    Links: 39
+Milind,
+Looks good to me.
 
-> For those playing along at home, I believe the issue is that GNU tar
-> sees a different device number for the directories than what is listed
-> in the listed-incremental snapshot file, and thinks all of the
-> directories are new. I've asked Gene to make a few back-to-back runs of
-> the tar command under the same kernel to see if the subsequent runs
-> figure out that there's nothing to do, as expected.
+Signed-off-by: Grant Grundler <grundler@parisc-linux.org>
 
-Gene has confirmed that GNU tar figures it out as expected.
+Kyle,
+can you remind me how these patches should be pushed into your tree?
+Or do you want to directly apply them yourself?
 
-> Then it is a matter of figuring out why the device number changed -- I'm
-> thinking it is device-mapper, but will look closer tomorrow.
+I have the impression git.parisc-linux.org tree is stale and I should
+be using something different. I just don't know what.
 
-This commit is the one that changed it:
+thanks,
+grant
 
-commit fdf892be32d84a1745fa0aee5fc60517421b8038
-Author: Andrew Morton <akpm@osdl.org>
-Date:   Mon Feb 12 00:51:44 2007 -0800
-
-    [PATCH] register_blkdev(): don't hand out the LOCAL/EXPERIMENTAL majors
-    
-    As pointed out in http://bugzilla.kernel.org/show_bug.cgi?id=7922, dynamic
-    blockdev major allocation can hand out majors which LANANA has defined as
-    being for local/experimental use.
-
-
-I'm not sure I could argue for that to be reverted, so here's a possible
-workaround for Fedora -- completely untested.
-
-Add the following to /etc/modprobe.conf:
-options dm_mod major=253
-
-And make a new initrd for the problematic kernel. This assumes that
-you're using device mapper as a module.
-
-If you're building it in, then either dm.major=253 or dm_mod.major=253
-should work on the kernel command line, but I'm not sure which it is.
-
-Dave
+> 
+> ---
+>  ccio-dma.c      |    8 ++++----
+>  iommu-helpers.h |    4 ++--
+>  sba_iommu.c     |    6 ++----
+>  3 files changed, 8 insertions(+), 10 deletions(-)
+> 
+> 
+> 
+> diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
+> index 894fdb9..1459ca8 100644
+> --- a/drivers/parisc/ccio-dma.c
+> +++ b/drivers/parisc/ccio-dma.c
+> @@ -32,6 +32,7 @@
+>  */
+>  
+>  #include <linux/types.h>
+> +#include <linux/kernel.h>
+>  #include <linux/init.h>
+>  #include <linux/mm.h>
+>  #include <linux/spinlock.h>
+> @@ -292,7 +293,6 @@ static int ioc_count;
+>  #define PDIR_INDEX(iovp)    ((iovp)>>IOVP_SHIFT)
+>  #define MKIOVP(pdir_idx)    ((long)(pdir_idx) << IOVP_SHIFT)
+>  #define MKIOVA(iovp,offset) (dma_addr_t)((long)iovp | (long)offset)
+> -#define ROUNDUP(x,y) ((x + ((y)-1)) & ~((y)-1))
+>  
+>  /*
+>  ** Don't worry about the 150% average search length on a miss.
+> @@ -668,7 +668,7 @@ ccio_mark_invalid(struct ioc *ioc, dma_addr_t iova, size_t byte_cnt)
+>  	size_t saved_byte_cnt;
+>  
+>  	/* round up to nearest page size */
+> -	saved_byte_cnt = byte_cnt = ROUNDUP(byte_cnt, IOVP_SIZE);
+> +	saved_byte_cnt = byte_cnt = ALIGN(byte_cnt, IOVP_SIZE);
+>  
+>  	while(byte_cnt > 0) {
+>  		/* invalidate one page at a time */
+> @@ -751,7 +751,7 @@ ccio_map_single(struct device *dev, void *addr, size_t size,
+>  	offset = ((unsigned long) addr) & ~IOVP_MASK;
+>  
+>  	/* round up to nearest IOVP_SIZE */
+> -	size = ROUNDUP(size + offset, IOVP_SIZE);
+> +	size = ALIGN(size + offset, IOVP_SIZE);
+>  	spin_lock_irqsave(&ioc->res_lock, flags);
+>  
+>  #ifdef CCIO_MAP_STATS
+> @@ -814,7 +814,7 @@ ccio_unmap_single(struct device *dev, dma_addr_t iova, size_t size,
+>  
+>  	iova ^= offset;        /* clear offset bits */
+>  	size += offset;
+> -	size = ROUNDUP(size, IOVP_SIZE);
+> +	size = ALIGN(size, IOVP_SIZE);
+>  
+>  	spin_lock_irqsave(&ioc->res_lock, flags);
+>  
+> diff --git a/drivers/parisc/iommu-helpers.h b/drivers/parisc/iommu-helpers.h
+> index 38d9e1a..0a1f99a 100644
+> --- a/drivers/parisc/iommu-helpers.h
+> +++ b/drivers/parisc/iommu-helpers.h
+> @@ -138,7 +138,7 @@ iommu_coalesce_chunks(struct ioc *ioc, struct scatterlist *startsg, int nents,
+>  			** exceed DMA_CHUNK_SIZE if we coalesce the
+>  			** next entry.
+>  			*/   
+> -			if(unlikely(ROUNDUP(dma_len + dma_offset + startsg->length,
+> +			if(unlikely(ALIGN(dma_len + dma_offset + startsg->length,
+>  					    IOVP_SIZE) > DMA_CHUNK_SIZE))
+>  				break;
+>  
+> @@ -158,7 +158,7 @@ iommu_coalesce_chunks(struct ioc *ioc, struct scatterlist *startsg, int nents,
+>  		** Allocate space for DMA stream.
+>  		*/
+>  		sg_dma_len(contig_sg) = dma_len;
+> -		dma_len = ROUNDUP(dma_len + dma_offset, IOVP_SIZE);
+> +		dma_len = ALIGN(dma_len + dma_offset, IOVP_SIZE);
+>  		sg_dma_address(contig_sg) =
+>  			PIDE_FLAG 
+>  			| (iommu_alloc_range(ioc, dma_len) << IOVP_SHIFT)
+> diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
+> index 76a29da..7d83d9f 100644
+> --- a/drivers/parisc/sba_iommu.c
+> +++ b/drivers/parisc/sba_iommu.c
+> @@ -113,8 +113,6 @@ module_param(sba_reserve_agpgart, int, 1);
+>  MODULE_PARM_DESC(sba_reserve_agpgart, "Reserve half of IO pdir as AGPGART");
+>  #endif
+>  
+> -#define ROUNDUP(x,y) ((x + ((y)-1)) & ~((y)-1))
+> -
+>  
+>  /************************************
+>  ** SBA register read and write support
+> @@ -352,7 +350,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted)
+>  		** SBA HW features in the unmap path.
+>  		*/
+>  		unsigned long o = 1 << get_order(bits_wanted << PAGE_SHIFT);
+> -		uint bitshiftcnt = ROUNDUP(ioc->res_bitshift, o);
+> +		uint bitshiftcnt = ALIGN(ioc->res_bitshift, o);
+>  		unsigned long mask;
+>  
+>  		if (bitshiftcnt >= BITS_PER_LONG) {
+> @@ -779,7 +777,7 @@ sba_unmap_single(struct device *dev, dma_addr_t iova, size_t size,
+>  	offset = iova & ~IOVP_MASK;
+>  	iova ^= offset;        /* clear offset bits */
+>  	size += offset;
+> -	size = ROUNDUP(size, IOVP_SIZE);
+> +	size = ALIGN(size, IOVP_SIZE);
+>  
+>  	spin_lock_irqsave(&ioc->res_lock, flags);
+>  
+> 
+> -- 
+> Milind Arun Choudhary
+> _______________________________________________
+> parisc-linux mailing list
+> parisc-linux@lists.parisc-linux.org
+> http://lists.parisc-linux.org/mailman/listinfo/parisc-linux
