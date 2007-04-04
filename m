@@ -1,111 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992825AbXDDKX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992830AbXDDKY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992825AbXDDKX4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 06:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992828AbXDDKXz
+	id S2992830AbXDDKY3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 06:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992831AbXDDKY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 06:23:55 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:16930 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992825AbXDDKXz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 06:23:55 -0400
-X-IronPort-AV: i="4.14,371,1170651600"; 
-   d="scan'208"; a="26319952:sNHT25598804"
-Subject: [PATCH] blackfin arch: define a new cacheline_aligned attribute to
-	put it in L1 data memory with linkscript update
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Wed, 04 Apr 2007 18:25:31 +0800
-Message-Id: <1175682332.10608.56.camel@roc-desktop>
+	Wed, 4 Apr 2007 06:24:29 -0400
+Received: from ns2.suse.de ([195.135.220.15]:59627 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992830AbXDDKYR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 06:24:17 -0400
+Date: Wed, 4 Apr 2007 12:24:07 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070404102407.GA529@wotan.suse.de>
+References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 04, 2007 at 10:45:39AM +0100, Hugh Dickins wrote:
+> On Wed, 4 Apr 2007, Nick Piggin wrote:
+> > On Fri, Mar 30, 2007 at 04:40:48AM +0200, Nick Piggin wrote:
+> > > 
+> > > Well it would make life easier if we got rid of ZERO_PAGE completely,
+> > > which I definitely wouldn't complain about ;)
+> 
+> Yes, I love this approach too.
+> 
+> > 
+> > So, what bad things (apart from my bugs in untested code) happen
+> > if we do this? We can actually go further, and probably remove the
+> > ZERO_PAGE completely (just need an extra get_user_pages flag or
+> > something for the core dumping issue).
+> 
+> Some things will go faster (no longer needing a separate COW fault
+> on the read-protected ZERO_PAGE), some things will go slower and use
+> more memory.  The open question is whether anyone will notice those
+> regressions: I'm hoping they won't, I'm afraid they will.  And though
+> we'll see each as a program doing "something stupid", as in the Altix
+> case Robin showed to drive us here, we cannot just ignore it.
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- arch/blackfin/Kconfig              |    8 ++++++++
- arch/blackfin/kernel/vmlinux.lds.S |    8 ++++++++
- include/asm-blackfin/cache.h       |   11 +++++++----
- 3 files changed, 23 insertions(+), 4 deletions(-)
+Sure. Agreed.
 
-diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index 9ae0223..88e831a 100644
---- a/arch/blackfin/Kconfig
-+++ b/arch/blackfin/Kconfig
-@@ -513,6 +513,14 @@ config IP_CHECKSUM_L1
- 	  If enabled IP Checksum function is linked
- 	  into L1 instruction memory.(less latency)
- 
-+config CACHELINE_ALIGNED_L1
-+	bool "Locate cacheline_aligned data to L1 Data Memory"
-+	default y
-+	depends on !BF531
-+	help
-+	  If enabled cacheline_anligned data is linked
-+	  into L1 data memory.(less latency)
-+
- config SYSCALL_TAB_L1
- 	bool "Locate Syscall Table L1 Data Memory"
- 	default n
-diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
-index fb01ca2..53c6a23 100644
---- a/arch/blackfin/kernel/vmlinux.lds.S
-+++ b/arch/blackfin/kernel/vmlinux.lds.S
-@@ -173,6 +173,9 @@ SECTIONS
- 		 __sbss_l1 = .;
- 		*(.l1.bss)
- 
-+		. = ALIGN(32);
-+		*(.data_l1.cacheline_aligned)
-+
- 		. = ALIGN(4);
- 		 __ebss_l1 = .;
- 	} > l1_data_a AT > ram
-@@ -197,6 +200,11 @@ SECTIONS
- 		. = ALIGN(0x2000);
- 		*(.data.init_task)
- 		*(.data)
-+
-+		. = ALIGN(32);
-+		*(.data.cacheline_aligned)
-+
-+		. = ALIGN(0x2000);
- 		__edata = .;
- 	} > ram
- 
-diff --git a/include/asm-blackfin/cache.h b/include/asm-blackfin/cache.h
-index 560e390..023d721 100644
---- a/include/asm-blackfin/cache.h
-+++ b/include/asm-blackfin/cache.h
-@@ -10,13 +10,16 @@
-  */
- #define L1_CACHE_SHIFT	5
- #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
-+#define SMP_CACHE_BYTES	L1_CACHE_BYTES
- 
- /*
-- * Don't make __cacheline_aligned and
-- * ____cacheline_aligned defined in include/linux/cache.h
-+ * Put cacheline_aliged data to L1 data memory
-  */
--#define __cacheline_aligned
--#define ____cacheline_aligned
-+#ifdef CONFIG_CACHELINE_ALIGNED_L1
-+#define __cacheline_aligned				\
-+	  __attribute__((__aligned__(L1_CACHE_BYTES),	\
-+		__section__(".data_l1.cacheline_aligned")))
-+#endif
- 
- /*
-  * largest L1 which this arch supports
--- 
-1.5.0.5
+> > Shall I do a more complete patchset and ask Andrew to give it a
+> > run in -mm?
+> 
+> I'd like you to: I didn't study the fragment below, it's really all
+> uses of the ZERO_PAGE that I'd like to see go, then we see who shouts.
 
+Yeah, they are basically pretty trivial to remove. I'll do a more
+complete patch now that I know you like the approach.
+
+> It's quite likely that the patch would have to be reverted: don't
+> bother to remove the allocations of ZERO_PAGE in each architecture
+> at this stage, too much nuisance going back and forth on those.
+
+OK.
+
+> Leave ZERO_PAGE as configurable, default off for testing, buried
+> somewhere like under EMBEDDED?  It's much more attractive just to
+> remove the old code, and reintroduce it if there's a demand; but
+> leaving it under config would make it easy to restore, and if
+> there's trouble with removing ZERO_PAGE, we might later choose
+> to disable it at the high end but enable it at the low.  What
+> would you prefer?
+
+Ooh, the one with more '-' signs in the diff ;)
+
+No, you have a point, but if we have to ask people to recompile 
+with CONFIG_ZERO_PAGE, then it isn't much harder to ask them to
+apply a patch first.
+
+But for a potential mainline merge, maybe starting with a CONFIG
+option is a good idea -- defaulting to off, and we could start by
+turning it on just in -rc kernels for a few releases, to get a bit
+more confidence?
