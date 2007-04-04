@@ -1,70 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030371AbXDDDha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945931AbXDDDhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030371AbXDDDha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 23:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030380AbXDDDha
+	id S1945931AbXDDDhf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 23:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030383AbXDDDhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 23:37:30 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:12795 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030371AbXDDDh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 23:37:29 -0400
-Message-ID: <46131D86.4070607@oracle.com>
-Date: Tue, 03 Apr 2007 20:37:42 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm4
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> <24083.1175650554@turing-police.cc.vt.edu>            <20070403192004.986b44ec.randy.dunlap@oracle.com> <4963.1175654767@turing-police.cc.vt.edu>
-In-Reply-To: <4963.1175654767@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 3 Apr 2007 23:37:34 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42366 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030380AbXDDDhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 23:37:33 -0400
+Date: Wed, 4 Apr 2007 05:37:26 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [rfc] no ZERO_PAGE?
+Message-ID: <20070404033726.GE18507@wotan.suse.de>
+References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070330024048.GG19407@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 03 Apr 2007 19:20:04 PDT, Randy Dunlap said:
->> On Tue, 03 Apr 2007 21:35:54 -0400 Valdis.Kletnieks@vt.edu wrote:
->>> I do a '/ACPI_SLEEP' inside that, and I get this output:
->>>
->>> x Symbol: ACPI_SLEEP [=n]                                                 x
->>>   x   Depends on: !X86_NUMAQ && !X86_VISWS && !IA64_HP_SIM && (IA64 || X86)
+On Fri, Mar 30, 2007 at 04:40:48AM +0200, Nick Piggin wrote:
 > 
->>> Only problem is that drivers/acpi/Kconfig:49 says:
->>>
->>> config ACPI_SLEEP
->>>         bool "Sleep States"
->>>         depends on X86 && (!SMP || SUSPEND_SMP)
->>>         depends on PM
->>>         default y
->>>
->>> Can somebody explain why I'm seeing the different Depends on in the two places?
->> Due to the top of drivers/acpi/Kconfig:
->>
->> menu "ACPI (Advanced Configuration and Power Interface) Support"
->> 	depends on !X86_NUMAQ
->> 	depends on !X86_VISWS
->> 	depends on !IA64_HP_SIM
->> 	depends on IA64 || X86
->> 	depends on PM
-> 
-> Ah. Further investigation shows that the "&& (!SMP || SUSPEND_SMP)" part
-> failed to show up because the line was too long - running 'make menuconfig'
-> in an 140-col or so xterm made them show up.
-> 
-> Anybody ambitious enough to add a "line too long" indicator of some sort? :)
-> 
+> Well it would make life easier if we got rid of ZERO_PAGE completely,
+> which I definitely wouldn't complain about ;)
 
-Good luck.  But the symbols are there.  Just use left/right arrow keys
-to scroll the display left/right and you can see them.  Now if you just
-had that indicator to tell you that you Need to scroll to see more text...
+So, what bad things (apart from my bugs in untested code) happen
+if we do this? We can actually go further, and probably remove the
+ZERO_PAGE completely (just need an extra get_user_pages flag or
+something for the core dumping issue).
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Shall I do a more complete patchset and ask Andrew to give it a
+run in -mm?
+
+--
+
+ZERO_PAGE for anonymous pages seems to only be designed to help stupid
+programs, so remove it. This solves issues with ZERO_PAGE refcounting
+and NUMA un-awareness.
+
+(Actually, not quite. We should also remove all the zeromap stuff that
+also seems to not do much except help stupid programs).
+
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c
++++ linux-2.6/mm/memory.c
+@@ -1613,16 +1613,10 @@ gotten:
+ 
+ 	if (unlikely(anon_vma_prepare(vma)))
+ 		goto oom;
+-	if (old_page == ZERO_PAGE(address)) {
+-		new_page = alloc_zeroed_user_highpage(vma, address);
+-		if (!new_page)
+-			goto oom;
+-	} else {
+-		new_page = alloc_page_vma(GFP_HIGHUSER, vma, address);
+-		if (!new_page)
+-			goto oom;
+-		cow_user_page(new_page, old_page, address, vma);
+-	}
++	new_page = alloc_page_vma(GFP_HIGHUSER, vma, address);
++	if (!new_page)
++		goto oom;
++	cow_user_page(new_page, old_page, address, vma);
+ 
+ 	/*
+ 	 * Re-check the pte - we dropped the lock
+@@ -2130,52 +2124,33 @@ static int do_anonymous_page(struct mm_s
+ 	spinlock_t *ptl;
+ 	pte_t entry;
+ 
+-	if (write_access) {
+-		/* Allocate our own private page. */
+-		pte_unmap(page_table);
++	/* Allocate our own private page. */
++	pte_unmap(page_table);
+ 
+-		if (unlikely(anon_vma_prepare(vma)))
+-			goto oom;
+-		page = alloc_zeroed_user_highpage(vma, address);
+-		if (!page)
+-			goto oom;
++	if (unlikely(anon_vma_prepare(vma)))
++		return VM_FAULT_OOM;
++	page = alloc_zeroed_user_highpage(vma, address);
++	if (!page)
++		return VM_FAULT_OOM;
+ 
+-		entry = mk_pte(page, vma->vm_page_prot);
+-		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
++	entry = mk_pte(page, vma->vm_page_prot);
++	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+ 
+-		page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+-		if (!pte_none(*page_table))
+-			goto release;
++	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
++	if (likely(!pte_none(*page_table))) {
+ 		inc_mm_counter(mm, anon_rss);
+ 		lru_cache_add_active(page);
+ 		page_add_new_anon_rmap(page, vma, address);
+-	} else {
+-		/* Map the ZERO_PAGE - vm_page_prot is readonly */
+-		page = ZERO_PAGE(address);
+-		page_cache_get(page);
+-		entry = mk_pte(page, vma->vm_page_prot);
+-
+-		ptl = pte_lockptr(mm, pmd);
+-		spin_lock(ptl);
+-		if (!pte_none(*page_table))
+-			goto release;
+-		inc_mm_counter(mm, file_rss);
+-		page_add_file_rmap(page);
+-	}
+-
+-	set_pte_at(mm, address, page_table, entry);
++		set_pte_at(mm, address, page_table, entry);
+ 
+-	/* No need to invalidate - it was non-present before */
+-	update_mmu_cache(vma, address, entry);
+-	lazy_mmu_prot_update(entry);
+-unlock:
++		/* No need to invalidate - it was non-present before */
++		update_mmu_cache(vma, address, entry);
++		lazy_mmu_prot_update(entry);
++	} else
++		page_cache_release(page);
+ 	pte_unmap_unlock(page_table, ptl);
++
+ 	return VM_FAULT_MINOR;
+-release:
+-	page_cache_release(page);
+-	goto unlock;
+-oom:
+-	return VM_FAULT_OOM;
+ }
+ 
+ /*
