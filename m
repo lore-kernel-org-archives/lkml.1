@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992689AbXDDGTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992696AbXDDGXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992689AbXDDGTT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 02:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992692AbXDDGTS
+	id S2992696AbXDDGXP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 02:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992697AbXDDGXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 02:19:18 -0400
-Received: from brick.kernel.dk ([62.242.22.158]:24756 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992689AbXDDGTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 02:19:04 -0400
-Date: Wed, 4 Apr 2007 08:19:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: mcdx -- do_request(): non-read command to cd!!
-Message-ID: <20070404061906.GY15273@kernel.dk>
-References: <Pine.LNX.4.64.0704021152280.27165@sbz-30.cs.Helsinki.FI> <46111ED7.20201@gmail.com> <Pine.LNX.4.64.0704021837480.6518@sbz-30.cs.Helsinki.FI> <46112650.8080208@gmail.com> <Pine.LNX.4.64.0704021906040.7500@sbz-30.cs.Helsinki.FI> <461165FD.2010508@gmail.com> <Pine.LNX.4.64.0704030908420.20080@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0704030956330.20741@sbz-30.cs.Helsinki.FI> <461256C1.4020906@gmail.com> <Pine.LNX.4.64.0704031723580.3355@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704031723580.3355@sbz-30.cs.Helsinki.FI>
+	Wed, 4 Apr 2007 02:23:14 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:59072 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992696AbXDDGXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 02:23:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=ltEnMirNGwj99c7XCQMEIbzejfSJdr9Ao2+tTyH8JiX5hhKZ++PkA4kGT+N0vxu5R
+	EFFsEdI3A+1mmWbgXPP5A==
+Date: Tue, 3 Apr 2007 23:22:26 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/13] maps: Make /proc/pid/clear_refs option under
+ CONFIG_EMBEDDED
+In-Reply-To: <12.486631555@selenic.com>
+Message-ID: <Pine.LNX.4.64.0704032321360.27164@chino.kir.corp.google.com>
+References: <12.486631555@selenic.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03 2007, Pekka J Enberg wrote:
-> > mcdx:: close()
+On Tue, 3 Apr 2007, Matt Mackall wrote:
+
+> Make /proc/pid/clear_refs option under CONFIG_EMBEDDED
 > 
-> However, we never hit do_mcdx_request(). Jens, do we need to do 
-> set_capacity() somewhere? I don't see other cdrom drivers doing it but 
-> they could be broken too...
+> This interface is primarily useful for doing memory profiling and not
+> much use on deployed embedded boxes. Make it optional. Together with
+> /proc/pid/smaps, this save a few K.
+> 
+> Signed-off-by: Matt Mackall <mpm@selenic.com>
 
-Yeah, that would be appropriate.
+Acked-by: David Rientjes <rientjes@google.com>
 
--- 
-Jens Axboe
-
+Althought /proc/pid/clear_refs isn't actually useful without smaps as 
+well, so you could make it depend on CONFIG_PROC_SMAPS.
