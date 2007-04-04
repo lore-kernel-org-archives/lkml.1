@@ -1,391 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbXDEASM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXDEASN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932266AbXDEASM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 20:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932244AbXDEASE
+	id S932117AbXDEASN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 20:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbXDEASB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:18:04 -0400
-Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36874 "EHLO
+	Wed, 4 Apr 2007 20:18:01 -0400
+Received: from 230.sub-75-208-113.myvzw.com ([75.208.113.230]:36888 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932117AbXDEAQt (ORCPT
+	with ESMTP id S932140AbXDEAQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 20:16:49 -0400
-Message-Id: <20070404191205.392155702@goop.org>
+	Wed, 4 Apr 2007 20:16:53 -0400
+Message-Id: <20070404191206.581107728@goop.org>
 References: <20070404191151.009821039@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Apr 2007 12:11:58 -0700
+Date: Wed, 04 Apr 2007 12:12:10 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Zachary Amsden <zach@vmware.com>, Christoph Lameter <clameter@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 07/20] Allow paravirt backend to choose kernel PMD sharing
-Content-Disposition: inline; filename=shared-kernel-pmd.patch
+       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>,
+       Dan Hecht <dhecht@vmware.com>, john stultz <johnstul@us.ibm.com>
+Subject: [patch 19/20] Add a sched_clock paravirt_op
+Content-Disposition: inline; filename=paravirt-sched-clock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Normally when running in PAE mode, the 4th PMD maps the kernel address
-space, which can be shared among all processes (since they all need
-the same kernel mappings).
+The tsc-based get_scheduled_cycles interface is not a good match for
+Xen's runstate accounting, which reports everything in nanoseconds.
 
-Xen, however, does not allow guests to have the kernel pmd shared
-between page tables, so parameterize pgtable.c to allow both modes of
-operation.
+This patch replaces this interface with a sched_clock interface, which
+matches both Xen and VMI's requirements.
 
-There are several side-effects of this.  One is that vmalloc will
-update the kernel address space mappings, and those updates need to be
-propagated into all processes if the kernel mappings are not
-intrinsically shared.  In the non-PAE case, this is done by
-maintaining a pgd_list of all processes; this list is used when all
-process pagetables must be updated.  pgd_list is threaded via
-otherwise unused entries in the page structure for the pgd, which
-means that the pgd must be page-sized for this to work.
+In order to do this, we:
+   1. replace get_scheduled_cycles with sched_clock
+   2. hoist cycles_2_ns into a common header
+   3. update vmi accordingly
 
-Normally the PAE pgd is only 4x64 byte entries large, but Xen requires
-the PAE pgd to page aligned anyway, so this patch forces the pgd to be
-page aligned+sized when the kernel pmd is unshared, to accomodate both
-these requirements.
+One thing to note: because sched_clock is implemented as a weak
+function in kernel/sched.c, we must define a real function in order to
+override this weak binding.  This means the usual paravirt_ops
+technique of using an inline function won't work in this case.
 
-Also, since there may be several distinct kernel pmds (if the
-user/kernel split is below 3G), there's no point in allocating them
-from a slab cache; they're just allocated with get_free_page and
-initialized appropriately.  (Of course the could be cached if there is
-just a single kernel pmd - which is the default with a 3G user/kernel
-split - but it doesn't seem worthwhile to add yet another case into
-this code).
-
-[ Many thanks to wli for review comments. ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: William Lee Irwin III <wli@holomorphy.com>
 Cc: Zachary Amsden <zach@vmware.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Dan Hecht <dhecht@vmware.com>
+Cc: john stultz <johnstul@us.ibm.com>
+
 ---
- arch/i386/kernel/paravirt.c            |    1 
- arch/i386/mm/fault.c                   |    6 +-
- arch/i386/mm/init.c                    |   18 +++++-
- arch/i386/mm/pageattr.c                |    2 
- arch/i386/mm/pgtable.c                 |   84 ++++++++++++++++++++++++++------
- include/asm-i386/paravirt.h            |    1 
- include/asm-i386/pgtable-2level-defs.h |    2 
- include/asm-i386/pgtable-2level.h      |    2 
- include/asm-i386/pgtable-3level-defs.h |    6 ++
- include/asm-i386/pgtable-3level.h      |    2 
- include/asm-i386/pgtable.h             |    7 ++
- 11 files changed, 105 insertions(+), 26 deletions(-)
+ arch/i386/kernel/paravirt.c    |    2 -
+ arch/i386/kernel/sched-clock.c |   39 ++++++++++++++--------------------
+ arch/i386/kernel/vmi.c         |    2 -
+ arch/i386/kernel/vmitime.c     |    6 ++---
+ include/asm-i386/paravirt.h    |    7 ++++--
+ include/asm-i386/timer.h       |   45 +++++++++++++++++++++++++++++++++++++++-
+ include/asm-i386/vmi_time.h    |    2 -
+ 7 files changed, 71 insertions(+), 32 deletions(-)
 
 ===================================================================
 --- a/arch/i386/kernel/paravirt.c
 +++ b/arch/i386/kernel/paravirt.c
-@@ -604,6 +604,7 @@ struct paravirt_ops paravirt_ops = {
- 	.name = "bare hardware",
- 	.paravirt_enabled = 0,
- 	.kernel_rpl = 0,
-+	.shared_kernel_pmd = 1,	/* Only used when CONFIG_X86_PAE is set */
- 
-  	.patch = native_patch,
- 	.banner = default_banner,
+@@ -269,7 +269,7 @@ struct paravirt_ops paravirt_ops = {
+ 	.write_msr = native_write_msr_safe,
+ 	.read_tsc = native_read_tsc,
+ 	.read_pmc = native_read_pmc,
+-	.get_scheduled_cycles = native_read_tsc,
++	.sched_clock = native_sched_clock,
+ 	.get_cpu_khz = native_calculate_cpu_khz,
+ 	.load_tr_desc = native_load_tr_desc,
+ 	.set_ldt = native_set_ldt,
 ===================================================================
---- a/arch/i386/mm/fault.c
-+++ b/arch/i386/mm/fault.c
-@@ -588,8 +588,7 @@ do_sigbus:
- 	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
- }
+--- a/arch/i386/kernel/sched-clock.c
++++ b/arch/i386/kernel/sched-clock.c
+@@ -37,26 +37,7 @@
  
--#ifndef CONFIG_X86_PAE
--void vmalloc_sync_all(void)
-+void _vmalloc_sync_all(void)
- {
- 	/*
- 	 * Note that races in the updates of insync and start aren't
-@@ -600,6 +599,8 @@ void vmalloc_sync_all(void)
- 	static DECLARE_BITMAP(insync, PTRS_PER_PGD);
- 	static unsigned long start = TASK_SIZE;
- 	unsigned long address;
-+
-+	BUG_ON(SHARED_KERNEL_PMD);
+ #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
  
- 	BUILD_BUG_ON(TASK_SIZE & ~PGDIR_MASK);
- 	for (address = start; address >= TASK_SIZE; address += PGDIR_SIZE) {
-@@ -623,4 +624,3 @@ void vmalloc_sync_all(void)
- 			start = address + PGDIR_SIZE;
- 	}
- }
--#endif
-===================================================================
---- a/arch/i386/mm/init.c
-+++ b/arch/i386/mm/init.c
-@@ -715,6 +715,8 @@ struct kmem_cache *pmd_cache;
- 
- void __init pgtable_cache_init(void)
- {
-+	size_t pgd_size = PTRS_PER_PGD*sizeof(pgd_t);
-+
- 	if (PTRS_PER_PMD > 1) {
- 		pmd_cache = kmem_cache_create("pmd",
- 					PTRS_PER_PMD*sizeof(pmd_t),
-@@ -724,13 +726,23 @@ void __init pgtable_cache_init(void)
- 					NULL);
- 		if (!pmd_cache)
- 			panic("pgtable_cache_init(): cannot create pmd cache");
-+
-+		if (!SHARED_KERNEL_PMD) {
-+			/* If we're in PAE mode and have a non-shared
-+			   kernel pmd, then the pgd size must be a
-+			   page size.  This is because the pgd_list
-+			   links through the page structure, so there
-+			   can only be one pgd per page for this to
-+			   work. */
-+			pgd_size = PAGE_SIZE;
-+		}
- 	}
- 	pgd_cache = kmem_cache_create("pgd",
--				PTRS_PER_PGD*sizeof(pgd_t),
--				PTRS_PER_PGD*sizeof(pgd_t),
-+				pgd_size,
-+				pgd_size,
- 				0,
- 				pgd_ctor,
--				PTRS_PER_PMD == 1 ? pgd_dtor : NULL);
-+				(!SHARED_KERNEL_PMD) ? pgd_dtor : NULL);
- 	if (!pgd_cache)
- 		panic("pgtable_cache_init(): Cannot create pgd cache");
- }
-===================================================================
---- a/arch/i386/mm/pageattr.c
-+++ b/arch/i386/mm/pageattr.c
-@@ -91,7 +91,7 @@ static void set_pmd_pte(pte_t *kpte, uns
- 	unsigned long flags;
- 
- 	set_pte_atomic(kpte, pte); 	/* change init_mm */
--	if (PTRS_PER_PMD > 1)
-+	if (SHARED_KERNEL_PMD)
- 		return;
- 
- 	spin_lock_irqsave(&pgd_lock, flags);
-===================================================================
---- a/arch/i386/mm/pgtable.c
-+++ b/arch/i386/mm/pgtable.c
-@@ -238,35 +238,56 @@ static inline void pgd_list_del(pgd_t *p
- 		set_page_private(next, (unsigned long)pprev);
- }
- 
-+#if (PTRS_PER_PMD == 1)
-+/* Non-PAE pgd constructor */
- void pgd_ctor(void *pgd, struct kmem_cache *cache, unsigned long unused)
- {
- 	unsigned long flags;
- 
--	if (PTRS_PER_PMD == 1) {
--		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
--		spin_lock_irqsave(&pgd_lock, flags);
--	}
-+	/* !PAE, no pagetable sharing */
-+	memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
- 
- 	clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
- 			swapper_pg_dir + USER_PTRS_PER_PGD,
- 			KERNEL_PGD_PTRS);
- 
--	if (PTRS_PER_PMD > 1)
--		return;
-+	spin_lock_irqsave(&pgd_lock, flags);
- 
- 	/* must happen under lock */
- 	paravirt_alloc_pd_clone(__pa(pgd) >> PAGE_SHIFT,
--			__pa(swapper_pg_dir) >> PAGE_SHIFT,
--			USER_PTRS_PER_PGD, PTRS_PER_PGD - USER_PTRS_PER_PGD);
-+				__pa(swapper_pg_dir) >> PAGE_SHIFT,
-+				USER_PTRS_PER_PGD,
-+				KERNEL_PGD_PTRS);
- 
- 	pgd_list_add(pgd);
- 	spin_unlock_irqrestore(&pgd_lock, flags);
- }
+-struct sc_data {
+-	unsigned int cyc2ns_scale;
+-	unsigned char unstable;
+-	unsigned long long last_tsc;
+-	unsigned long long ns_base;
+-};
 -
--/* never called when PTRS_PER_PMD > 1 */
-+#else  /* PTRS_PER_PMD > 1 */
-+/* PAE pgd constructor */
-+void pgd_ctor(void *pgd, struct kmem_cache *cache, unsigned long unused)
-+{
-+	/* PAE, kernel PMD may be shared */
-+
-+	if (SHARED_KERNEL_PMD) {
-+		clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
-+				swapper_pg_dir + USER_PTRS_PER_PGD,
-+				KERNEL_PGD_PTRS);
-+	} else {
-+		unsigned long flags;
-+
-+		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
-+		spin_lock_irqsave(&pgd_lock, flags);
-+		pgd_list_add(pgd);
-+		spin_unlock_irqrestore(&pgd_lock, flags);
-+	}
-+}
-+#endif	/* PTRS_PER_PMD */
-+
- void pgd_dtor(void *pgd, struct kmem_cache *cache, unsigned long unused)
- {
- 	unsigned long flags; /* can be called from interrupt context */
-+
-+	BUG_ON(SHARED_KERNEL_PMD);
+-static DEFINE_PER_CPU(struct sc_data, sc_data);
+-
+-static inline unsigned long long cycles_2_ns(unsigned long long cyc)
+-{
+-	const struct sc_data *sc = &__get_cpu_var(sc_data);
+-	unsigned long long ns;
+-
+-	cyc -= sc->last_tsc;
+-	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
+-	ns += sc->ns_base;
+-
+-	return ns;
+-}
++DEFINE_PER_CPU(struct sc_data, sc_data);
  
- 	paravirt_release_pd(__pa(pgd) >> PAGE_SHIFT);
- 	spin_lock_irqsave(&pgd_lock, flags);
-@@ -274,6 +295,37 @@ void pgd_dtor(void *pgd, struct kmem_cac
- 	spin_unlock_irqrestore(&pgd_lock, flags);
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+@@ -66,7 +47,7 @@ static inline unsigned long long cycles_
+  * [1] no attempt to stop CPU instruction reordering, which can hit
+  * in a 100 instruction window or so.
+  */
+-unsigned long long sched_clock(void)
++unsigned long long native_sched_clock(void)
+ {
+ 	unsigned long long r;
+ 	const struct sc_data *sc = &get_cpu_var(sc_data);
+@@ -75,7 +56,7 @@ unsigned long long sched_clock(void)
+ 		/* TBD find a cheaper fallback timer than this */
+ 		r = ktime_to_ns(ktime_get());
+ 	} else {
+-		get_scheduled_cycles(r);
++		rdtscll(r);
+ 		r = cycles_2_ns(r);
+ 	}
+ 
+@@ -83,6 +64,18 @@ unsigned long long sched_clock(void)
+ 
+ 	return r;
+ }
++
++/* We need to define a real function for sched_clock, to override the
++   weak default version */
++#ifdef CONFIG_PARAVIRT
++unsigned long long sched_clock(void)
++{
++	return paravirt_sched_clock();
++}
++#else
++unsigned long long sched_clock(void)
++	__attribute__((alias("native_sched_clock")));
++#endif
+ 
+ /* Resync with new CPU frequency */
+ static void resync_sc_freq(struct sc_data *sc, unsigned int newfreq)
+@@ -95,7 +88,7 @@ static void resync_sc_freq(struct sc_dat
+ 	   because sched_clock callers should be able to tolerate small
+ 	   errors. */
+ 	sc->ns_base = ktime_to_ns(ktime_get());
+-	get_scheduled_cycles(sc->last_tsc);
++	rdtscll(sc->last_tsc);
+ 	sc->cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR) / newfreq;
+ 	sc->unstable = 0;
+ }
+===================================================================
+--- a/arch/i386/kernel/vmi.c
++++ b/arch/i386/kernel/vmi.c
+@@ -866,7 +866,7 @@ static inline int __init activate_vmi(vo
+ 		paravirt_ops.setup_boot_clock = vmi_timer_setup_boot_alarm;
+ 		paravirt_ops.setup_secondary_clock = vmi_timer_setup_secondary_alarm;
+ #endif
+-		paravirt_ops.get_scheduled_cycles = vmi_get_sched_cycles;
++		paravirt_ops.sched_clock = vmi_sched_clock;
+  		paravirt_ops.get_cpu_khz = vmi_cpu_khz;
+ 
+ 		/* We have true wallclock functions; disable CMOS clock sync */
+===================================================================
+--- a/arch/i386/kernel/vmitime.c
++++ b/arch/i386/kernel/vmitime.c
+@@ -163,9 +163,9 @@ int vmi_set_wallclock(unsigned long now)
+ 	return -1;
  }
  
-+#define UNSHARED_PTRS_PER_PGD				\
-+	(SHARED_KERNEL_PMD ? USER_PTRS_PER_PGD : PTRS_PER_PGD)
-+
-+/* If we allocate a pmd for part of the kernel address space, then
-+   make sure its initialized with the appropriate kernel mappings.
-+   Otherwise use a cached zeroed pmd.  */
-+static pmd_t *pmd_cache_alloc(int idx)
+-unsigned long long vmi_get_sched_cycles(void)
+-{
+-	return read_available_cycles();
++unsigned long long vmi_sched_clock(void)
 +{
-+	pmd_t *pmd;
-+
-+	if (idx >= USER_PTRS_PER_PGD) {
-+		pmd = (pmd_t *)__get_free_page(GFP_KERNEL);
-+
-+		if (pmd)
-+			memcpy(pmd,
-+			       (void *)pgd_page_vaddr(swapper_pg_dir[idx]),
-+			       sizeof(pmd_t) * PTRS_PER_PMD);
-+	} else
-+		pmd = kmem_cache_alloc(pmd_cache, GFP_KERNEL);
-+
-+	return pmd;
-+}
-+
-+static void pmd_cache_free(pmd_t *pmd, int idx)
-+{
-+	if (idx >= USER_PTRS_PER_PGD)
-+		free_page((unsigned long)pmd);
-+	else
-+		kmem_cache_free(pmd_cache, pmd);
-+}
-+
- pgd_t *pgd_alloc(struct mm_struct *mm)
- {
- 	int i;
-@@ -282,10 +334,12 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
- 	if (PTRS_PER_PMD == 1 || !pgd)
- 		return pgd;
++	return cycles_2_ns(read_available_cycles());
+ }
  
--	for (i = 0; i < USER_PTRS_PER_PGD; ++i) {
--		pmd_t *pmd = kmem_cache_alloc(pmd_cache, GFP_KERNEL);
-+ 	for (i = 0; i < UNSHARED_PTRS_PER_PGD; ++i) {
-+		pmd_t *pmd = pmd_cache_alloc(i);
-+
- 		if (!pmd)
- 			goto out_oom;
-+
- 		paravirt_alloc_pd(__pa(pmd) >> PAGE_SHIFT);
- 		set_pgd(&pgd[i], __pgd(1 + __pa(pmd)));
- 	}
-@@ -296,7 +350,7 @@ out_oom:
- 		pgd_t pgdent = pgd[i];
- 		void* pmd = (void *)__va(pgd_val(pgdent)-1);
- 		paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
--		kmem_cache_free(pmd_cache, pmd);
-+		pmd_cache_free(pmd, i);
- 	}
- 	kmem_cache_free(pgd_cache, pgd);
- 	return NULL;
-@@ -308,11 +362,11 @@ void pgd_free(pgd_t *pgd)
- 
- 	/* in the PAE case user pgd entries are overwritten before usage */
- 	if (PTRS_PER_PMD > 1)
--		for (i = 0; i < USER_PTRS_PER_PGD; ++i) {
-+		for (i = 0; i < UNSHARED_PTRS_PER_PGD; ++i) {
- 			pgd_t pgdent = pgd[i];
- 			void* pmd = (void *)__va(pgd_val(pgdent)-1);
- 			paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
--			kmem_cache_free(pmd_cache, pmd);
-+			pmd_cache_free(pmd, i);
- 		}
- 	/* in the non-PAE case, free_pgtables() clears user pgd entries */
- 	kmem_cache_free(pgd_cache, pgd);
+ unsigned long vmi_cpu_khz(void)
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -34,6 +34,7 @@ struct paravirt_ops
- struct paravirt_ops
- {
- 	unsigned int kernel_rpl;
-+	int shared_kernel_pmd;
-  	int paravirt_enabled;
- 	const char *name;
+@@ -88,7 +88,7 @@ struct paravirt_ops
  
-===================================================================
---- a/include/asm-i386/pgtable-2level-defs.h
-+++ b/include/asm-i386/pgtable-2level-defs.h
-@@ -1,5 +1,7 @@
- #ifndef _I386_PGTABLE_2LEVEL_DEFS_H
- #define _I386_PGTABLE_2LEVEL_DEFS_H
-+
-+#define SHARED_KERNEL_PMD	0
+ 	u64 (*read_tsc)(void);
+ 	u64 (*read_pmc)(void);
+- 	u64 (*get_scheduled_cycles)(void);
++ 	unsigned long long (*sched_clock)(void);
+ 	unsigned long (*get_cpu_khz)(void);
  
- /*
-  * traditional i386 two-level paging structure:
-===================================================================
---- a/include/asm-i386/pgtable-2level.h
-+++ b/include/asm-i386/pgtable-2level.h
-@@ -65,6 +65,4 @@ static inline int pte_exec_kernel(pte_t 
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { (pte).pte_low })
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val })
+ 	void (*load_tr_desc)(void);
+@@ -529,7 +529,10 @@ static inline void halt(void)
  
--void vmalloc_sync_all(void);
--
- #endif /* _I386_PGTABLE_2LEVEL_H */
-===================================================================
---- a/include/asm-i386/pgtable-3level-defs.h
-+++ b/include/asm-i386/pgtable-3level-defs.h
-@@ -1,5 +1,11 @@
- #ifndef _I386_PGTABLE_3LEVEL_DEFS_H
- #define _I386_PGTABLE_3LEVEL_DEFS_H
-+
-+#ifdef CONFIG_PARAVIRT
-+#define SHARED_KERNEL_PMD	(paravirt_ops.shared_kernel_pmd)
-+#else
-+#define SHARED_KERNEL_PMD	1
-+#endif
+ #define rdtscll(val) (val = PVOP_CALL0(u64, read_tsc))
  
- /*
-  * PGDIR_SHIFT determines what a top-level page table entry can map
-===================================================================
---- a/include/asm-i386/pgtable-3level.h
-+++ b/include/asm-i386/pgtable-3level.h
-@@ -180,6 +180,4 @@ static inline pmd_t pfn_pmd(unsigned lon
- 
- #define __pmd_free_tlb(tlb, x)		do { } while (0)
- 
--#define vmalloc_sync_all() ((void)0)
--
- #endif /* _I386_PGTABLE_3LEVEL_H */
-===================================================================
---- a/include/asm-i386/pgtable.h
-+++ b/include/asm-i386/pgtable.h
-@@ -244,6 +244,13 @@ static inline pte_t pte_mkwrite(pte_t pt
- static inline pte_t pte_mkwrite(pte_t pte)	{ (pte).pte_low |= _PAGE_RW; return pte; }
- static inline pte_t pte_mkhuge(pte_t pte)	{ (pte).pte_low |= _PAGE_PSE; return pte; }
- 
-+extern void _vmalloc_sync_all(void);
-+static inline void vmalloc_sync_all(void)
+-#define get_scheduled_cycles(val) (val = paravirt_ops.get_scheduled_cycles())
++static inline unsigned long long paravirt_sched_clock(void)
 +{
-+	if (!SHARED_KERNEL_PMD)
-+		_vmalloc_sync_all();
++	return PVOP_CALL0(unsigned long long, sched_clock);
++}
+ #define calculate_cpu_khz() (paravirt_ops.get_cpu_khz())
+ 
+ #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
+===================================================================
+--- a/include/asm-i386/timer.h
++++ b/include/asm-i386/timer.h
+@@ -15,8 +15,51 @@ extern int recalibrate_cpu_khz(void);
+ extern int recalibrate_cpu_khz(void);
+ 
+ #ifndef CONFIG_PARAVIRT
+-#define get_scheduled_cycles(val) rdtscll(val)
+ #define calculate_cpu_khz() native_calculate_cpu_khz()
+ #endif
+ 
++/* Accellerators for sched_clock()
++ * convert from cycles(64bits) => nanoseconds (64bits)
++ *  basic equation:
++ *		ns = cycles / (freq / ns_per_sec)
++ *		ns = cycles * (ns_per_sec / freq)
++ *		ns = cycles * (10^9 / (cpu_khz * 10^3))
++ *		ns = cycles * (10^6 / cpu_khz)
++ *
++ *	Then we use scaling math (suggested by george@mvista.com) to get:
++ *		ns = cycles * (10^6 * SC / cpu_khz) / SC
++ *		ns = cycles * cyc2ns_scale / SC
++ *
++ *	And since SC is a constant power of two, we can convert the div
++ *  into a shift.
++ *
++ *  We can use khz divisor instead of mhz to keep a better percision, since
++ *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
++ *  (mathieu.desnoyers@polymtl.ca)
++ *
++ *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
++ */
++struct sc_data {
++	unsigned int cyc2ns_scale;
++	unsigned char unstable;
++	unsigned long long last_tsc;
++	unsigned long long ns_base;
++};
++
++DECLARE_PER_CPU(struct sc_data, sc_data);
++
++#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
++
++static inline unsigned long long cycles_2_ns(unsigned long long cyc)
++{
++	const struct sc_data *sc = &__get_cpu_var(sc_data);
++	unsigned long long ns;
++
++	cyc -= sc->last_tsc;
++	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
++	ns += sc->ns_base;
++
++	return ns;
 +}
 +
- #ifdef CONFIG_X86_PAE
- # include <asm/pgtable-3level.h>
- #else
+ #endif
+===================================================================
+--- a/include/asm-i386/vmi_time.h
++++ b/include/asm-i386/vmi_time.h
+@@ -49,7 +49,7 @@ extern void __init vmi_time_init(void);
+ extern void __init vmi_time_init(void);
+ extern unsigned long vmi_get_wallclock(void);
+ extern int vmi_set_wallclock(unsigned long now);
+-extern unsigned long long vmi_get_sched_cycles(void);
++extern unsigned long long vmi_sched_clock(void);
+ extern unsigned long vmi_cpu_khz(void);
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
 
 -- 
 
