@@ -1,38 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966326AbXDDMcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966327AbXDDMdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966326AbXDDMcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 08:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966327AbXDDMcw
+	id S966327AbXDDMdQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 08:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966325AbXDDMdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 08:32:52 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:56584 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966326AbXDDMcw (ORCPT
+	Wed, 4 Apr 2007 08:33:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48703 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992896AbXDDMdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 08:32:52 -0400
-To: a.p.zijlstra@chello.nl
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com
-In-reply-to: <1175688356.6483.81.camel@twins> (message from Peter Zijlstra on
-	Wed, 04 Apr 2007 14:05:56 +0200)
-Subject: Re: [PATCH 6/6] mm: per device dirty threshold
-References: <20070403144047.073283598@taijtu.programming.kicks-ass.net>
-	 <20070403144224.709586192@taijtu.programming.kicks-ass.net>
-	 <E1HZ1so-0005q8-00@dorka.pomaz.szeredi.hu> <1175681794.6483.43.camel@twins>
-	 <E1HZ2kU-0005xx-00@dorka.pomaz.szeredi.hu> <1175684461.6483.64.camel@twins>
-	 <E1HZ3Q9-00062G-00@dorka.pomaz.szeredi.hu> <1175688356.6483.81.camel@twins>
-Message-Id: <E1HZ4ep-00069u-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 04 Apr 2007 14:32:11 +0200
+	Wed, 4 Apr 2007 08:33:14 -0400
+Date: Wed, 4 Apr 2007 13:33:11 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+Message-ID: <20070404123311.GA18552@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Rene Herman <rene.herman@gmail.com>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <46138B4C.2050409@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46138B4C.2050409@gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Preferably you'd want to be able to 'flush' the per cpu diffs or
-> something like that in cases where thresh ~< NR_CPUS * stat_diff.
+On Wed, Apr 04, 2007 at 01:26:04PM +0200, Rene Herman wrote:
+> Hi Rusty.
 > 
-> How about something like this:
+> Can we have a MODULE_MAINTAINER to complement MODULE_AUTHOR?
 
-Yes, maybe underscores and EXPORT_SYMBOLs are a bit excessive.
-
-Miklos
+#define MODULE_MAINTAINER(x) MODULE_AUTHOR(x), please.
+MODULE_AUTHOR really has meant maintainer in practice for ages, and it's
+the only actually relevant for users information we should store.
