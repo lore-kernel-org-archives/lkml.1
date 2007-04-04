@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966214AbXDDA5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbXDDBOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966214AbXDDA5A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 20:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966215AbXDDA5A
+	id S1753733AbXDDBOQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 21:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966220AbXDDBOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 20:57:00 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:2059 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966214AbXDDA47 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 20:56:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=m9IVfuzNsmxC1mYA6iLQBIbaCDofFJocdET3Jado+bnCXtb8ttwBVxB3je6NbPumXbp0vVovhnshqzDs+VSM8EhhEEKNFfxlVJn7Q2nqGb1bUKcBqdzFcqCyjJXZl2kS8JJRTazL2T2UkOWHrqyJKPnuP6vpk3Y8wDN7CCcYpZI=
-Message-ID: <4612F78E.5080303@gmail.com>
-Date: Wed, 04 Apr 2007 08:55:42 +0800
-From: Li Yu <raise.sail@gmail.com>
-User-Agent: Thunderbird 1.5 (X11/20051201)
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Marcel Holtmann <marcel@holtmann.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, yanghong@ccoss.com.cn,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       hongzhiyi@ccoss.com.cn, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
-References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com>  <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn>  <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>  <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>  <1175516515.5815.347.camel@violet>  <Pine.LNX.4.64.0704021429420.3808@jikos.suse.cz> <1175532439.5815.375.camel@violet> <4611AAC1.8050303@gmail.com> <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Apr 2007 21:14:16 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42645 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753732AbXDDBOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 21:14:15 -0400
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Miller <davem@davemloft.net>, flar@allandria.com, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1175645568.10567.42.camel@shinybook.infradead.org>
+References: <1175642916.10567.24.camel@shinybook.infradead.org>
+	 <20070403212928.GA12951@cynthia.pants.nu>
+	 <1175644642.10567.31.camel@shinybook.infradead.org>
+	 <20070403.170212.02298297.davem@davemloft.net>
+	 <1175645568.10567.42.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 11:13:12 +1000
+Message-Id: <1175649192.30879.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> Current implementation (as you can see it in -mm or in my hid.git tree) is 
-> creating hidraw interface for just every HID device/interface. But this 
-> will get changed before merge.
->
-> Passing just everything to hidraw is not a good option, as this could lead 
-> to confusion and duplicating of input events (i.e. in-kernel hid driver 
-> processes the report and generates input_event(), and also userland driver 
-> obtains data from hidraw and generates input event through uinput ... not 
-> good).
->
->   
-After hearing your words, I change my implementation use hidraw as an
-event filter, IOW, the HID core will handle these events which hidraw
-can or need not handle. The modification is easy.
+On Tue, 2007-04-03 at 20:12 -0400, David Woodhouse wrote:
+> On Tue, 2007-04-03 at 17:02 -0700, David Miller wrote:
+> > Sparc does the same thing, it's a common convention and you really
+> > should not break it.
+> 
+> I thought that argument was lost many years ago. It _used_ to be a
+> common convention; we got better.
+> 
+> > Every powerpc and sparc system out that is using ttyS0 with dynamic
+> > minor numbers being allocated.  I really think this should be
+> > generalized instead of breaking serial on every powerpc machine out
+> > there.
+> 
+> Nobody's breaking anything. The patch _fixes_ serial, and allows powerpc
+> machines to use both z8530 and 8250 ports at the same time; something
+> which has been broken for a long time.
 
-> BTW as soon as you have some presentable code, could you please send it so 
-> that we could see what aproach you have taken? Debating over code is 
-> usualy more efficient than just ranting random ideas :)
->
-> Thanks,
->
->   
+It worked before the new serial core, we had a "tweak" in the old 8250
+driver to be able to share minors, but that got busted when Russell
+rewrote the whole thing. I remember asking him back when he still was
+the serial maintainer, and he refused to bring back some sharing of
+minors.
 
-Of course, It's no problem. but it must be tomorrow, two reasons:
+Ben.
 
-1. The development PC is at my home, I am not SOHO.
-2. After change from "flip-flopping", the patch need some cleaning.
-
-Good luck.
-
-- Li Yu
 
