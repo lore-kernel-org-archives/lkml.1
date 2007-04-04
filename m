@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbXDDR6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbXDDR7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752350AbXDDR6s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbXDDR6s
+	id S1753535AbXDDR7J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXDDR7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:58:48 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:58154 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbXDDR6q (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:58:46 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm4
-In-Reply-To: Your message of "Tue, 03 Apr 2007 20:37:42 PDT."
-             <46131D86.4070607@oracle.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> <24083.1175650554@turing-police.cc.vt.edu> <20070403192004.986b44ec.randy.dunlap@oracle.com> <4963.1175654767@turing-police.cc.vt.edu>
-            <46131D86.4070607@oracle.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175709308_9478P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 04 Apr 2007 13:55:08 -0400
-Message-ID: <10023.1175709308@turing-police.cc.vt.edu>
+	Wed, 4 Apr 2007 13:59:08 -0400
+Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:39696 "EHLO
+	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752679AbXDDR7G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 13:59:06 -0400
+X-ORBL: [67.117.73.34]
+From: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Juha Yrjola <juha.yrjola@solidboot.com>, Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 6/90] ARM: OMAP: Enable serial idling and wakeup features
+Date: Wed,  4 Apr 2007 13:46:33 -0400
+Message-Id: <11757088904153-git-send-email-tony@atomide.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11757088883638-git-send-email-tony@atomide.com>
+References: omap-2007-04-04-133556 <11757088774110-git-send-email-tony@atomide.com> <11757088791107-git-send-email-tony@atomide.com> <11757088822930-git-send-email-tony@atomide.com> <11757088844012-git-send-email-tony@atomide.com> <1175708886798-git-send-email-tony@atomide.com> <11757088883638-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175709308_9478P
-Content-Type: text/plain; charset=us-ascii
+From: Juha Yrjola <juha.yrjola@solidboot.com>
 
-On Tue, 03 Apr 2007 20:37:42 PDT, Randy Dunlap said:
->
-> Good luck.  But the symbols are there.  Just use left/right arrow keys
-> to scroll the display left/right and you can see them.  Now if you just
-> had that indicator to tell you that you Need to scroll to see more text...
+Enable serial idling and wakeup features
 
-Exactly. :)  I had the incredible bad luck that the line got cut off at the
-end of a CONFIG_ symbol that made sense - if it had showed up *half* a symbol,
-I'd have gone investigating. ;) (Even a '>' or '<' saying data offscreen to
-right or left would be sufficient, if somebody wants a small but productive
-kernel (config system actually) task to hack on.)
+Signed-off-by: Juha Yrjola <juha.yrjola@solidboot.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/serial.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I'd code it myself, but I have an SL8500 to install, and need to figure out
-how my laptop made it into the bag this morning still up and running (I hit
-the power button, it seemed to power down - blank screen, power light off,
-but syslog msgs prove it was up and running for another 4 hours before it
-shut down on a thermal check...)
+diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+index aaa5589..e9c367f 100644
+--- a/arch/arm/mach-omap2/serial.c
++++ b/arch/arm/mach-omap2/serial.c
+@@ -84,7 +84,7 @@ static inline void __init omap_serial_reset(struct plat_serial8250_port *p)
+ 	serial_write_reg(p, UART_OMAP_MDR1, 0x07);
+ 	serial_write_reg(p, UART_OMAP_SCR, 0x08);
+ 	serial_write_reg(p, UART_OMAP_MDR1, 0x00);
+-	serial_write_reg(p, UART_OMAP_SYSC, 0x01);
++	serial_write_reg(p, UART_OMAP_SYSC, (0x02 << 3) | (1 << 2) | (1 << 0));
+ }
+ 
+ void __init omap_serial_init()
+-- 
+1.4.4.2
 
-
---==_Exmh_1175709308_9478P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGE+Z8cC3lWbTT17ARAq7OAKCRq4uNygvLZIj9CpB4qK+Hqds2ugCg31NG
-5DMUwX/eK66qHlI5yFi2chw=
-=uWM7
------END PGP SIGNATURE-----
-
---==_Exmh_1175709308_9478P--
