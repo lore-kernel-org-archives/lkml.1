@@ -1,39 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966279AbXDDCL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966271AbXDDCPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966279AbXDDCL7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 22:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966288AbXDDCL6
+	id S966271AbXDDCPx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 22:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966278AbXDDCPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 22:11:58 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:37524 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966279AbXDDCL6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 22:11:58 -0400
-Message-ID: <46130921.7040306@gmail.com>
-Date: Wed, 04 Apr 2007 04:10:41 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-CC: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: mcdx -- do_request(): non-read command to cd!!
-References: <460D7F70.3090702@gmail.com> <20070331064711.GF6246@kernel.dk> <460EA727.8070306@gmail.com> <84144f020704010306q600f58ddge1d42753362cf4e2@mail.gmail.com> <4610481D.8000102@gmail.com> <46104954.50608@gmail.com> <Pine.LNX.4.64.0704020949160.23099@sbz-30.cs.Helsinki.FI> <20070402071018.GE11996@kernel.dk> <Pine.LNX.4.64.0704021152280.27165@sbz-30.cs.Helsinki.FI> <46111ED7.20201@gmail.com> <Pine.LNX.4.64.0704021837480.6518@sbz-30.cs.Helsinki.FI> <46112650.8080208@gmail.com> <Pine.LNX.4.64.0704021906040.7500@sbz-30.cs.Helsinki.FI> <461165FD.2010508@gmail.com> <Pine.LNX.4.64.0704030908420.20080@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0704030956330.20741@sbz-30.cs.Helsinki.FI> <461256C1.4020906@gmail.com> <Pine.LNX.4.64.0704031723580.3355@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0704032030470.8078@sbz-30.cs.Helsinki.FI> <46129968.9000304@gmail.com> <Pine.LNX.4.64.0704032124591.8078@sbz-30.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0704032124591.8078@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Tue, 3 Apr 2007 22:15:52 -0400
+Received: from bee.hiwaay.net ([216.180.54.11]:29601 "EHLO bee.hiwaay.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966271AbXDDCPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 22:15:52 -0400
+X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Apr 2007 22:15:52 EDT
+Date: Tue, 3 Apr 2007 21:05:51 -0500
+From: Chris Adams <cmadams@hiwaay.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404020551.GA1287122@hiwaay.net>
+References: <fa.RNOVtHsCnerNJiCxv9p57P7pZcA@ifi.uio.no> <fa.dSkcKtgkzrihvFnFz6eHJ4FfEqo@ifi.uio.no> <fa.QUe06itDHMey7lWZGdbZCBEo+KI@ifi.uio.no> <fa.Hc/xBcsQlAMlaXgROFi/tmfDmUc@ifi.uio.no> <fa.lmdJmRWPjSVEElYwPlXT98ZHiMc@ifi.uio.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070403230908.GA13471@cynthia.pants.nu>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/2007 08:32 PM, Pekka J Enberg wrote:
+Once upon a time, Brad Boyer  <flar@allandria.com> said:
+>The point is that people are used to having "ttyS0" mean the first
+>onboard serial port.
 
-> Please enable CONFIG_DEBUG_SLAB now and reproduce. It should tell us 
-> what's going wrong there.
-
-Taking forever to reproduce in as far as getting the oops. The thing is 
-now just locking hard each time. Will keep on trying...
-
-Rene.
-
+My first serial port is a USB dongle and is ttyUSB0.  If the argument is
+that all serials should be ttyS[0-9]+, are you going to change USB
+adapters as well?
