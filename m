@@ -1,68 +1,405 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966288AbXDDCZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966176AbXDDC3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966288AbXDDCZz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 22:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966289AbXDDCZy
+	id S966176AbXDDC3X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 22:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966187AbXDDC3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 22:25:54 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:42612 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S966288AbXDDCZy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 22:25:54 -0400
-Date: Tue, 3 Apr 2007 18:57:22 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Valdis.Kletnieks@vt.edu
-cc: Brad Boyer <flar@allandria.com>, David Woodhouse <dwmw2@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <7641.1175652638@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.63.0704031853020.21680@qynat.qvtvafvgr.pbz>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
- <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
- <1175642916.10567.24.camel@shinybook.infradead.org> <20070403212928.GA12951@cynthia.pants.nu>
- <1175644642.10567.31.camel@shinybook.infradead.org> <20070403221002.GA13210@cynthia.pants.nu>
- <1175648051.10567.61.camel@shinybook.infradead.org>           
- <20070403230908.GA13471@cynthia.pants.nu> <7641.1175652638@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 3 Apr 2007 22:29:22 -0400
+Received: from ozlabs.org ([203.10.76.45]:56576 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966176AbXDDC3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 22:29:21 -0400
+Subject: [PATCH] Expose range-checking functions from arch-specific
+	uaccess.h
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 12:28:38 +1000
+Message-Id: <1175653718.12230.566.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007, Valdis.Kletnieks@vt.edu wrote:
+lguest wants range checking, but unless there are other users I'm not
+sure this is worth the pain.  Putting it out there in case it's useful.
 
-> On Tue, 03 Apr 2007 16:09:08 PDT, Brad Boyer said:
->
->> an abstraction of "serial port" as far as the user is concerned. On
->> Solaris, I can say "/dev/term/a" and know that I will get the first
->> serial port if it is available without needing to care if it is the
->> zs, se or asy driver talking to the hardware.
->
-> This is fine if you're trying to boot and find your system console.
->
-> It blows complete chunks if the port you're trying to find is the
-> first port on the special serial card that supports speeds above 115kbaud
-> because we have a real-time constraint, and even at 115k you fall short
-> on the timing budget (actual real-life issue we hit on an SGI running IRIX
-> a number of years ago. Blowing the budget often resulted in a 3,000 pound
-> motion base to turn into a 3,000 pound jackhammer:
-> http://www.sv.vt.edu/future/cave/resprj/crane/crane_thor/2001FebReport.html
-> http://www.moog.com/Media/1/6D2000E500-395_1102.pdf
->
+Cheers,
+Rusty.
+==
+There are some places where we want to check if a value + length is
+within a range.  This can be tricky, so it's nice to have a single
+routine.
 
-but when you are looking for this port, you would lookup which port it is, make 
-something active on that port (if only a getty), and then confirm the port by 
-plugging into it and testing it.
+Also, this can be done more efficiently (with arch-dependent) carry
+bits, as shown by the __range_ok() implementation on several archs.
 
-in other words, if you have a special constraint you will have to pay attention 
-to the hardware to make sure it meets those requriements.
+This patch exposes arch-specific "val_outside(val, len, limit)" and a
+generic "range_within(start, len, base, limit)" function.  As a
+side-effect, it fixes the comment in i386/uaccess.h: __range_ok
+doesn't test "(u33)addr + (u33)size >= (u33)current->addr_limit.seg",
+it tests "(u33)addr + (u33)size > (u33)current->addr_limit.seg".
 
-this is no different then the fact that many motherboards contain a 100Mb 
-ethernet port as well as a pair of 1Gb ethernet ports. if you need speeds above 
-100Mb you better make sure your useing the right port, but we don't name network 
-ports based on the type of card.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-David Lang
+diff -r 4272a6d4f27c include/asm-generic/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-generic/range.h	Wed Apr 04 12:18:15 2007 +1000
+@@ -0,0 +1,20 @@
++#ifndef _ASM_GENERIC_RANGE_H
++#define _ASM_GENERIC_RANGE_H
++
++/**
++ * val_outside - is a value and length past a limit?
++ * @val: the start value
++ * @len: the length from the start
++ * @limit: the first invalid value
++ *
++ * Like val + len > limit, except with overflow checking.
++ */
++static inline bool val_outside(unsigned long val, unsigned long len,
++			       unsigned long limit)
++			       
++{
++	return val + len > limit || val + len < val;
++}
++
++#endif	/* _ASM_GENERIC_RANGE_H */
++
+diff -r 4272a6d4f27c include/asm-i386/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-i386/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,14 @@
++#ifndef __ASM_RANGE_H
++#define __ASM_RANGE_H
++
++/* Is val + size > limit? This needs 33-bit arithmetic. We have a carry... */
++static inline bool val_outside(unsigned long val, unsigned long len,
++			       unsigned long limit)
++{
++	unsigned long flag, roksum;
++	asm("addl %3,%1 ; sbbl %0,%0; cmpl %1,%4; sbbl $0,%0"
++		:"=&r" (flag), "=r" (roksum)
++		:"1" (val), "g" (len), "rm" (limit));
++	return flag;
++}
++#endif	/* __ASM_RANGE_H */
+diff -r 4272a6d4f27c include/asm-i386/uaccess.h
+--- a/include/asm-i386/uaccess.h	Wed Apr 04 12:05:49 2007 +1000
++++ b/include/asm-i386/uaccess.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -49,17 +49,12 @@ extern struct movsl_mask {
+  * Returns 0 if the range is valid, nonzero otherwise.
+  *
+  * This is equivalent to the following test:
+- * (u33)addr + (u33)size >= (u33)current->addr_limit.seg
+- *
+- * This needs 33-bit arithmetic. We have a carry...
+- */
+-#define __range_ok(addr,size) ({ \
+-	unsigned long flag,roksum; \
+-	__chk_user_ptr(addr); \
+-	asm("addl %3,%1 ; sbbl %0,%0; cmpl %1,%4; sbbl $0,%0" \
+-		:"=&r" (flag), "=r" (roksum) \
+-		:"1" (addr),"g" ((int)(size)),"rm" (current_thread_info()->addr_limit.seg)); \
+-	flag; })
++ * (u33)addr + (u33)size > (u33)current->addr_limit.seg
++ */
++#define __range_ok(addr,size) ({					      \
++	__chk_user_ptr(addr);						      \
++	val_outside((int)(addr),(size),current_thread_info()->addr_limit.seg); \
++})
+ 
+ /**
+  * access_ok: - Checks if a user space pointer is valid
+diff -r 4272a6d4f27c include/linux/kernel.h
+--- a/include/linux/kernel.h	Wed Apr 04 12:05:49 2007 +1000
++++ b/include/linux/kernel.h	Wed Apr 04 12:22:52 2007 +1000
+@@ -16,6 +16,7 @@
+ #include <linux/log2.h>
+ #include <asm/byteorder.h>
+ #include <asm/bug.h>
++#include <asm/range.h>
+ 
+ extern const char linux_banner[];
+ extern const char linux_proc_banner[];
+@@ -311,6 +312,26 @@ static inline int __attribute__ ((format
+ 	(void)__tmp; \
+ })
+ 
++/**
++ * range_within - is one range within another?
++ * @start: the start value
++ * @len: the length from the start
++ * @base: the first valid value
++ * @limit: the first invalid value
++ *
++ * This is usually used for memory range testing.  The common cases of
++ * constant 0 start and constant 0 len cases are optimized out.
++ */
++static inline bool range_within(unsigned long start, unsigned long len,
++				unsigned long base, unsigned long limit)
++{
++	if (start < base)
++		return false;
++	if (__builtin_constant_p(len) && len == 0)
++		return start - base <= limit - base;
++	return !val_outside(limit, start, len);
++}
++
+ struct sysinfo;
+ extern int do_sysinfo(struct sysinfo *info);
+ 
+diff -r 4272a6d4f27c include/asm-alpha/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-alpha/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-arm/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-arm/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-arm26/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-arm26/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-avr32/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-avr32/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-blackfin/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-blackfin/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-cris/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-cris/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-frv/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-frv/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-h8300/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-h8300/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-ia64/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-ia64/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-m32r/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-m32r/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-m68k/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-m68k/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-m68knommu/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-m68knommu/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-mips/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-mips/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-parisc/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-parisc/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-powerpc/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-powerpc/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-ppc/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-ppc/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-s390/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-s390/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-sh/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-sh/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-sh64/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-sh64/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-sparc/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-sparc/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-sparc64/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-sparc64/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-um/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-um/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-v850/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-v850/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-x86_64/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-x86_64/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+diff -r 4272a6d4f27c include/asm-xtensa/range.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/include/asm-xtensa/range.h	Wed Apr 04 12:14:45 2007 +1000
+@@ -0,0 +1,6 @@
++#ifndef __ALPHA_RANGE_H
++#define __ALPHA_RANGE_H
++
++#include <asm-generic/range.h>
++
++#endif /* __ALPHA_RANGE_H */
+
 
