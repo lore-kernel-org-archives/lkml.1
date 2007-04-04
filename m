@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992659AbXDDFvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992668AbXDDFx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992659AbXDDFvE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 01:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992665AbXDDFvE
+	id S2992668AbXDDFx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 01:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992669AbXDDFx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 01:51:04 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:35126 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S2992659AbXDDFvB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 01:51:01 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=iSiOha7Aib50Oev0nV4lLAZJr0nS8o1ppLBkBZOyVIRMOoMWDensfe/iTKYnsGMc5qUyJv3FZ/ZkKz0731fEXQFFH1hIHgfz4FSAZScRLOa3V/pGAbgn4uMFuEXivHYrNtdSit2StvsBzUneJoWWtek26dDe8BKhbtbvLoaLVS8=  ;
-X-YMail-OSG: ocZkKRIVM1kxlAq4C7.l5e7D6gujI6oH23cuJL2oY9LY7h27DtXAyNG7fZndbnHTTNjyCUvi3Sw8K6SBKHs2Te9KOnefkWCXKHGcrn9MX1AIaHVTuhHSSoF3UuzQEJFh9RdZJaD1RT2czPE-
-Message-ID: <46133CC0.505@yahoo.com.au>
-Date: Wed, 04 Apr 2007 15:50:56 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 4 Apr 2007 01:53:57 -0400
+Received: from ozlabs.org ([203.10.76.45]:41072 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992668AbXDDFx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 01:53:56 -0400
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/13] maps: Move the page walker code to lib/
-References: <7.486631555@selenic.com> <461320C9.5030601@yahoo.com.au> <20070404050857.GU4892@waste.org>
-In-Reply-To: <20070404050857.GU4892@waste.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17939.15726.114059.679277@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Apr 2007 15:53:50 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Brad Boyer <flar@allandria.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+In-Reply-To: <1175663999.2932.8.camel@shinybook.infradead.org>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403212928.GA12951@cynthia.pants.nu>
+	<20070404022544.59b022a6@the-village.bc.nu>
+	<17939.10130.687893.167511@cargo.ozlabs.ibm.com>
+	<1175663999.2932.8.camel@shinybook.infradead.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Wed, Apr 04, 2007 at 01:51:37PM +1000, Nick Piggin wrote:
+David Woodhouse writes:
+
+> Why? What's so special about the name 'ttyS'?
+
+It's the name that users of Linux expect built-in serial ports to have.
+
+> > The built-in ports can generally be enumerated early on boot in a
+> > stable order, and they should be assigned the low ttySn numbers,
+> > regardless of what chip is used to implement them. 
 > 
->>Matt Mackall wrote:
->>
->>>Move the page walker code to lib/
->>>
->>>This lets it get shared outside of proc/ and linked in only when
->>>needed.
->>
->>I think it would be better in mm/.
-> 
-> 
-> I originally was looking at putting it in mm/memory.c and possibly
+> I don't see why that 'should' be the case. Certainly it _isn't_ the case
+> on most supported platforms -- we have separate device numbers, and
+> names, for most types of ports. There's only one or two drivers which
+> abuse ttySn for anything other than 8250 ports.
 
-Just put it in its own file in mm/ rather than its own file in lib.
-lib should be for almost-standalone stuff, IMO (ie. only using basic
-kernel functionality).
+It 'should' be the case because that is what is easiest for users and
+makes most sense from a user's point of view.
 
-Yes, I think ioremap.c should be in mm/ as well.
+You still haven't given any reason why a user should have to know or
+care whether the built-in serial ports on his/her computer are
+implemented with a 16C550 chip or a Z85C30 chip or something else.
 
-> converting some users there. But I decided it ought to be
-> conditionally linked until it had some core users and I wasn't quite
-> ready to tackle the tricky mm/ bits.
+Now, *maybe* the naming can be fixed up with udev.  I haven't invested
+the week of my life that it would take to investigate the twisty maze
+of shell scripts that udev seems to involve.
 
-Apart from these users outside mm/, I don't see much point in converting
-things over. The page table walking API we have now is neat and simple.
-It takes a few lines of code, but is it a big problem?
+In any case your patch is a user-visible incompatible API change and
+will break existing working setups, so it should only be put in after
+suitable warning has been given.  Maybe we need a module parameter to
+select between the old and new behaviour to ease the transition.
 
--- 
-SUSE Labs, Novell Inc.
+Paul.
