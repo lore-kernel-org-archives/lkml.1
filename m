@@ -1,42 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966308AbXDDFlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966311AbXDDFmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966308AbXDDFlw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 01:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966313AbXDDFlw
+	id S966311AbXDDFmc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 01:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966314AbXDDFmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 01:41:52 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:55911 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966308AbXDDFlv (ORCPT
+	Wed, 4 Apr 2007 01:42:32 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:50324 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966312AbXDDFmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 01:41:51 -0400
-Message-ID: <46133A5F.5000100@zytor.com>
-Date: Tue, 03 Apr 2007 22:40:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 4 Apr 2007 01:42:31 -0400
+Message-ID: <46133A8B.50203@cosmosbay.com>
+Date: Wed, 04 Apr 2007 07:41:31 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: getting processor numbers
-References: <461286D6.2040407@redhat.com> <Pine.LNX.4.64.0704031152370.23808@alien.or.mcafeemobile.com> <4612ABD7.3000201@redhat.com> <4612F1F0.5070209@zytor.com> <4612F2BF.7080704@goop.org> <4612F394.6040105@zytor.com> <4613330C.1020701@cosmosbay.com> <461334B5.7070607@zytor.com> <46133609.9060402@goop.org>
-In-Reply-To: <46133609.9060402@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com> <20070403144948.fe8eede6.akpm@linux-foundation.org> <4612DCC6.7000504@cosmosbay.com> <46130BC8.9050905@yahoo.com.au>
+In-Reply-To: <46130BC8.9050905@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 04 Apr 2007 07:41:40 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> Mutable data should be separated from code.  I think any current CPU
->> will do fine as long as they are in separate 128-byte chunks, but they
->> need at least that much separation.
-> P4 manual says that if one processor modifies data within 2k of another
-> processor executing code, it will trash the entire trace cache.
+Nick Piggin a écrit :
+> Eric Dumazet wrote:
+>>
+>> I do think such workloads might benefit from a vma_cache not shared by 
+>> all threads but private to each thread. A sequence could invalidate 
+>> the cache(s).
+>>
+>> ie instead of a mm->mmap_cache, having a mm->sequence, and each thread 
+>> having a current->mmap_cache and current->mm_sequence
+> 
+> I have a patchset to do exactly this, btw.
 
-Yuck.  Didn't realize the P4 was that sensitive.  OK, so at the least we 
-need a half-page of separation.
+Could you repost it please ?
 
-	-hpa
+I guess a seqlock could avoid some cache line bouncing on mmap_sem for some 
+kind of operations. I wonder if it could speed up do_page_fault() ???
+
+> 
+> Anyway what is the status of the private futex work. I don't think that
+> is very intrusive or complicated, so it should get merged ASAP (so then
+> at least we have the interface there).
+> 
+
+It seems nobody but you and me cared.
+
+BTW I am surprised of Ulrich bugging linux on MADV_KERNEL_CAN_DROP, while 
+glibc still does :
+
+FILE *F = fopen("/etc/passwd", "r");
+fget(line, sizeof(line), F);
+fclose(F);
+
+->
+
+open("/etc/passwd", O_RDONLY)           = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=1505, ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 
+0x2b67097f0000
+read(3, "root:x:0:0:root:/root:/bin/bash\n"..., 4096) = 1505
+close(3)                                = 0
+munmap(0x2b67097f0000, 4096)            = 0
+
+
+using mmap()/munmap() to allocate one 4096 bytes area is certainly overkill. 
+mmap_sem is apparently the thing we must hit forever.
+
+Maybe nobody but me still uses fopen()/fclose() after all ?
+
