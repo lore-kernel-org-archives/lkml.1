@@ -1,59 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992782AbXDDJ0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992783AbXDDJex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992782AbXDDJ0N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 05:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992785AbXDDJ0N
+	id S2992783AbXDDJex (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 05:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992786AbXDDJex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 05:26:13 -0400
-Received: from gw.goop.org ([64.81.55.164]:55846 "EHLO mail.goop.org"
+	Wed, 4 Apr 2007 05:34:53 -0400
+Received: from mail.screens.ru ([213.234.233.54]:47007 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992782AbXDDJ0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 05:26:11 -0400
-Message-ID: <46136F25.7030907@goop.org>
-Date: Wed, 04 Apr 2007 02:25:57 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 04/17] Add pagetable accessors to pack and unpack pagetable
- entries
-References: <20070402055652.610711908@goop.org> <20070402055704.278590661@goop.org> <200704020812.18320.ak@suse.de>
-In-Reply-To: <200704020812.18320.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	id S2992783AbXDDJew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 05:34:52 -0400
+Date: Wed, 4 Apr 2007 12:39:27 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: getting processor numbers
+Message-ID: <20070404083927.GA100@tv-sign.ru>
+References: <461286D6.2040407@redhat.com> <20070403131623.c6831607.akpm@linux-foundation.org> <4612BB89.8040102@redhat.com> <20070403141348.9bcdb13e.akpm@linux-foundation.org> <4612D175.30604@redhat.com> <20070403154831.37bde672.akpm@linux-foundation.org> <4612DCA2.2090400@redhat.com> <20070403162349.583adf84.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070403162349.583adf84.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> What do the benchmarks say with CONFIG_PARAVIRT on native hardware
-> compared to !CONFIG_PARAVIRT. e.g. does lmbench suffer? 
+On 04/03, Andrew Morton wrote:
+>
+> On Tue, 03 Apr 2007 16:00:50 -0700
+> Ulrich Drepper <drepper@redhat.com> wrote:
+> 
+> > If there is possibility to treat this case special and make it faster,
+> > please do so.  It would be best to allow pid==0 as a special case so
+> > that callers don't have to find out the TID (which they shouldn't have
+> > to know).
+> > 
+> 
+> OK.
+> 
+> Does anyone see a reason why we cannot do this?
+> 
+> --- a/kernel/sched.c~sched_getaffinity-speedup
+> +++ a/kernel/sched.c
+> @@ -4381,8 +4381,12 @@ long sched_getaffinity(pid_t pid, cpumas
+>  	struct task_struct *p;
+>  	int retval;
+>  
+> -	lock_cpu_hotplug();
+> -	read_lock(&tasklist_lock);
+> +	if (pid) {
+> +		lock_cpu_hotplug();
+> +		read_lock(&tasklist_lock);
+> +	} else {
+> +		preempt_disable();	/* Prevent CPU hotplugging */
+> +	}
 
-Barely.  There's a slight hit for not using patching, and patching is
-almost identical to native performance.  The most noticeable difference
-is in the null syscall microbenchmark, but once you get to complex
-things the difference is in the noise.
+But we don't need tasklist_lock at all, we can use rcu_read_lock/unlock.
 
-Processor, Processes - times in microseconds - smaller is better
-------------------------------------------------------------------------------
-Host                 OS  Mhz null null      open slct sig  sig  fork exec sh  
-                             call  I/O stat clos TCP  inst hndl proc proc proc
---------- ------------- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-non-paravirt
-ezr       Linux 2.6.21- 1000 0.25 0.52 31.6 34.7 10.3 1.03 5.31 726. 1565 4520
-ezr       Linux 2.6.21- 1000 0.25 0.52 31.8 34.7 12.6 1.03 5.41 725. 1564 4585
-ezr       Linux 2.6.21- 1000 0.25 0.55 31.7 34.5 11.8 1.02 5.47 720. 1595 4518
+Q: don't we need task_rq_lock() to read ->cpus_allowed "atomically" ?
 
-paravirt, no patching
-ezr       Linux 2.6.21- 1000 0.28 0.55 31.3 34.3 10.0 1.05 5.56 747. 1621 4675
-ezr       Linux 2.6.21- 1000 0.28 0.56 31.5 34.3 12.9 1.05 5.66 755. 1629 4684
-ezr       Linux 2.6.21- 1000 0.28 0.55 31.8 34.5 12.5 1.05 5.45 747. 1622 4695
+UNTESTED.
 
-paravirt, patching
-ezr       Linux 2.6.21- 1000 0.25 0.53 31.8 34.4 10.1 1.04 5.44 730. 1583 4600
-ezr       Linux 2.6.21- 1000 0.26 0.55 32.1 35.2 13.3 1.03 5.48 748. 1589 4606
-ezr       Linux 2.6.21- 1000 0.26 0.54 32.0 34.9 14.1 1.04 5.43 752. 1606 4647
+--- OLD/kernel/sched.c~	2007-04-03 13:05:02.000000000 +0400
++++ OLD/kernel/sched.c	2007-04-04 12:29:04.000000000 +0400
+@@ -4433,22 +4433,17 @@ long sched_setaffinity(pid_t pid, cpumas
+ 	int retval;
+ 
+ 	mutex_lock(&sched_hotcpu_mutex);
+-	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 
+ 	p = find_process_by_pid(pid);
+ 	if (!p) {
+-		read_unlock(&tasklist_lock);
++		rcu_read_unlock();
+ 		mutex_unlock(&sched_hotcpu_mutex);
+ 		return -ESRCH;
+ 	}
+ 
+-	/*
+-	 * It is not safe to call set_cpus_allowed with the
+-	 * tasklist_lock held.  We will bump the task_struct's
+-	 * usage count and then drop tasklist_lock.
+-	 */
+ 	get_task_struct(p);
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ 
+ 	retval = -EPERM;
+ 	if ((current->euid != p->euid) && (current->euid != p->uid) &&
+@@ -4523,7 +4518,7 @@ long sched_getaffinity(pid_t pid, cpumas
+ 	int retval;
+ 
+ 	mutex_lock(&sched_hotcpu_mutex);
+-	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 
+ 	retval = -ESRCH;
+ 	p = find_process_by_pid(pid);
+@@ -4537,7 +4532,7 @@ long sched_getaffinity(pid_t pid, cpumas
+ 	cpus_and(*mask, p->cpus_allowed, cpu_online_map);
+ 
+ out_unlock:
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ 	mutex_unlock(&sched_hotcpu_mutex);
+ 	if (retval)
+ 		return retval;
 
-
-    J
