@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbXDDXXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXDDXfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbXDDXXa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 19:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXDDXXa
+	id S1752826AbXDDXfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 19:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXDDXfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 19:23:30 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:37186 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbXDDXX2 (ORCPT
+	Wed, 4 Apr 2007 19:35:00 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:45618 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbXDDXe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 19:23:28 -0400
-Date: Wed, 4 Apr 2007 16:16:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Keith Owens <kaos@ocs.com.au>,
-       Len Brown <lenb@kernel.org>, Adam Belay <ambx1@neo.rr.com>,
-       Matthieu CASTET <castet.matthieu@free.fr>,
-       Jean Tourrilhes <jt@hpl.hp.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Ville Syrjala <syrjala@sci.fi>,
-       Russell King <rmk+serial@arm.linux.org.uk>,
-       linux-serial@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/5] smsc-ircc2: add PNP support
-Message-Id: <20070404161650.e05049e4.randy.dunlap@oracle.com>
-In-Reply-To: <20070404224609.042716000@ldl.fc.hp.com>
-References: <20070404224536.337573000@ldl.fc.hp.com>
-	<20070404224609.042716000@ldl.fc.hp.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Apr 2007 19:34:59 -0400
+Message-ID: <036401c77711$cee286d0$84163e05@kroptech.com>
+From: "Adam Kropelin" <akropel1@rochester.rr.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Cc: "Li Yu" <raise.sail@gmail.com>, <yanghong@ccoss.com.cn>,
+       "linux-usb-devel" <linux-usb-devel@lists.sourceforge.net>,
+       <hongzhiyi@ccoss.com.cn>, "Marcel Holtmann" <marcel@holtmann.org>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com> <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn> <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz> <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com> <1175516515.5815.347.camel@violet> <Pine.LNX.4.64.0704021429420.3808@jikos.suse.cz> <1175532439.5815.375.camel@violet> <4611AAC1.8050303@gmail.com> <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz> <02f801c7770d$3eafb050$84163e05@kroptech.com> <Pine.LNX.4.64.0704050109500.4173@jikos.suse.cz>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+Date: Wed, 4 Apr 2007 19:34:37 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3028
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Apr 2007 16:45:40 -0600 Bjorn Helgaas wrote:
+Jiri Kosina wrote:
+> On Wed, 4 Apr 2007, Adam Kropelin wrote:
+>
+>> I apologize for picking up this thread late and asking what may be a
+>> question with an obvious answer... Will hiddev still exist after
+>> hidraw and the HID bus redesign work is done? I have a
+>> widely-deployed userspace app that relies on hiddev, and I'm looking
+>> for reassurance that it will still work as it always has...
+>
+> Hi Adam,
+>
+> hiddev will have to stay for quite some time, exactly because of
+> backward compatibility with userspace applications/drivers that use
+> it (I am not aware of many of them though, but apparently there are
+> some).
 
-> Index: w/drivers/net/irda/smsc-ircc2.c
-> ===================================================================
-> --- w.orig/drivers/net/irda/smsc-ircc2.c	2007-04-04 13:45:18.000000000 -0600
-> +++ w/drivers/net/irda/smsc-ircc2.c	2007-04-04 13:47:00.000000000 -0600
-> @@ -79,6 +79,10 @@
->  MODULE_DESCRIPTION("SMC IrCC SIR/FIR controller driver");
->  MODULE_LICENSE("GPL");
->  
-> +static int smsc_nopnp;
-> +module_param_named(nopnp, smsc_nopnp, bool, 0);
-> +MODULE_PARM_DESC(nopnp, "Do not use PNP to detect controller settings");
+Apcupsd is the one on my mind, but I believe there are others.
 
-Document this parameter (like you did "legacy_serial.force" in the
-other patch -- thanks).
+> I won't allow it to vanish, don't worry.
 
->  #define DMA_INVAL 255
->  static int ircc_dma = DMA_INVAL;
->  module_param(ircc_dma, int, 0);
+Thanks!
 
+> We just have to make sure that new users will use hidraw instead, as
+> it provides more flexibility for the user, is not dependent on the
+> underlying transport protocol, etc.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+On Apcupsd we've recently introduced a libusb-based driver that does all 
+HID parsing in userspace. Not only does that free us from hiddev, it 
+also frees us from the umpteen other proprietary HID interfaces across 
+various platforms. Although the hiddev-based driver is still the default 
+for Linux platforms, I plan to change that in the next major release and 
+thus begin migrating folks off of hiddev.
+
+I appreciate your pledge to keep hiddev functioning in the mean time :)
+
+--Adam
+
