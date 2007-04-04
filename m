@@ -1,63 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992691AbXDDGKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992689AbXDDGTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992691AbXDDGKG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 02:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992690AbXDDGKF
+	id S2992689AbXDDGTT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 02:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992692AbXDDGTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 02:10:05 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41657 "EHLO mail.dvmed.net"
+	Wed, 4 Apr 2007 02:19:18 -0400
+Received: from brick.kernel.dk ([62.242.22.158]:24756 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992683AbXDDGKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 02:10:02 -0400
-Message-ID: <46134137.2010102@pobox.com>
-Date: Wed, 04 Apr 2007 02:09:59 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image
- Windows driver (v2)
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org> <20070331181940.GV14134@stusta.de> <4611D289.5090209@shaw.ca>
-In-Reply-To: <4611D289.5090209@shaw.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S2992689AbXDDGTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 02:19:04 -0400
+Date: Wed, 4 Apr 2007 08:19:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: mcdx -- do_request(): non-read command to cd!!
+Message-ID: <20070404061906.GY15273@kernel.dk>
+References: <Pine.LNX.4.64.0704021152280.27165@sbz-30.cs.Helsinki.FI> <46111ED7.20201@gmail.com> <Pine.LNX.4.64.0704021837480.6518@sbz-30.cs.Helsinki.FI> <46112650.8080208@gmail.com> <Pine.LNX.4.64.0704021906040.7500@sbz-30.cs.Helsinki.FI> <461165FD.2010508@gmail.com> <Pine.LNX.4.64.0704030908420.20080@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0704030956330.20741@sbz-30.cs.Helsinki.FI> <461256C1.4020906@gmail.com> <Pine.LNX.4.64.0704031723580.3355@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704031723580.3355@sbz-30.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> This adds some NCQ blacklist entries taken from the Silicon Image 3124/3132
-> Windows driver .inf files. There are some confirming reports of problems
-> with these drives under Linux (for example 
-> http://lkml.org/lkml/2007/3/4/178)
-> so let's disable NCQ on these drives.
+On Tue, Apr 03 2007, Pekka J Enberg wrote:
+> > mcdx:: close()
 > 
-> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
-> 
-> --- linux-2.6.21-rc5-git9/drivers/ata/libata-core.c    2007-04-02 
-> 21:03:29.000000000 -0600
-> +++ linux-2.6.21-rc5-git9edit/drivers/ata/libata-core.c    2007-04-02 
-> 21:26:23.000000000 -0600
-> @@ -3363,6 +3363,11 @@ static const struct ata_blacklist_entry     { 
-> "Maxtor 6L250S0",     "BANC1G10",     ATA_HORKAGE_NONCQ },
->     /* NCQ hard hangs device under heavier load, needs hard power cycle */
->     { "Maxtor 6B250S0",    "BANC1B70",    ATA_HORKAGE_NONCQ },
-> +    /* Blacklist entries taken from Silicon Image 3124/3132
-> +       Windows driver .inf file - also several Linux problem reports */
-> +    { "HTS541060G9SA00",    "MB3OC60D",     ATA_HORKAGE_NONCQ, },
-> +    { "HTS541080G9SA00",    "MB4OC60D",     ATA_HORKAGE_NONCQ, },
-> +    { "HTS541010G9SA00",    "MBZOC60D",     ATA_HORKAGE_NONCQ, },
+> However, we never hit do_mcdx_request(). Jens, do we need to do 
+> set_capacity() somewhere? I don't see other cdrom drivers doing it but 
+> they could be broken too...
 
-The thread you link to seems like an irq problem, especially because it 
-worked in 2.6.20 and prior?
+Yeah, that would be appropriate.
 
-	Jeff
-
-
+-- 
+Jens Axboe
 
