@@ -1,452 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992442AbXDDCpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992529AbXDDCqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992442AbXDDCpS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 22:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966305AbXDDCnL
+	id S2992529AbXDDCqR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 22:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966306AbXDDCnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 22:43:11 -0400
-Received: from waste.org ([66.93.16.53]:5463 "EHLO cinder.waste.org"
+	Tue, 3 Apr 2007 22:43:06 -0400
+Received: from waste.org ([66.93.16.53]:5462 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S966309AbXDDCm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 22:42:28 -0400
+	id S966307AbXDDCm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 22:42:26 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 X-PatchBomber: http://selenic.com/scripts/mailpatches
 Cc: linux-kernel@vger.kernel.org
 In-Reply-To: <1.486631555@selenic.com>
-Message-Id: <10.486631555@selenic.com>
-Subject: [PATCH 9/13] maps: Regroup task_mmu by interface
-Date: Tue, 03 Apr 2007 21:43:40 -0500
+Message-Id: <8.486631555@selenic.com>
+Subject: [PATCH 7/13] maps: Simplify interdependence of /proc/pid/maps and smaps
+Date: Tue, 03 Apr 2007 21:43:37 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regroup task_mmu by interface
+Simplify interdependence of /proc/pid/maps and smaps
 
-Reorder source so that all the code and data for each interface is
-together.
+This pulls the shared map display code out of show_map and puts it in
+show_smap where it belongs.
 
 Signed-off-by: Matt Mackall <mpm@selenic.com>
 
 Index: mm/fs/proc/task_mmu.c
 ===================================================================
---- mm.orig/fs/proc/task_mmu.c	2007-03-28 00:08:05.000000000 -0500
-+++ mm/fs/proc/task_mmu.c	2007-03-28 00:21:48.000000000 -0500
-@@ -114,16 +114,121 @@ static void pad_len_spaces(struct seq_fi
- 	seq_printf(m, "%*c", len, ' ');
- }
+--- mm.orig/fs/proc/task_mmu.c	2007-03-27 23:06:18.000000000 -0500
++++ mm/fs/proc/task_mmu.c	2007-03-29 13:01:44.000000000 -0500
+@@ -125,7 +125,7 @@ struct mem_size_stats
+ 	unsigned long referenced;
+ };
  
--struct mem_size_stats
-+static void vma_stop(struct proc_maps_private *priv, struct vm_area_struct *vma)
+-static int show_map_internal(struct seq_file *m, void *v, struct mem_size_stats *mss)
++static int show_map(struct seq_file *m, void *v)
  {
--	struct vm_area_struct *vma;
--	unsigned long resident;
--	unsigned long shared_clean;
--	unsigned long shared_dirty;
--	unsigned long private_clean;
--	unsigned long private_dirty;
--	unsigned long referenced;
--};
-+	if (vma && vma != priv->tail_vma) {
-+		struct mm_struct *mm = vma->vm_mm;
-+		up_read(&mm->mmap_sem);
-+		mmput(mm);
-+	}
-+}
-+
-+static void *m_start(struct seq_file *m, loff_t *pos)
-+{
-+	struct proc_maps_private *priv = m->private;
-+	unsigned long last_addr = m->version;
-+	struct mm_struct *mm;
-+	struct vm_area_struct *vma, *tail_vma = NULL;
-+	loff_t l = *pos;
-+
-+	/* Clear the per syscall fields in priv */
-+	priv->task = NULL;
-+	priv->tail_vma = NULL;
-+
-+	/*
-+	 * We remember last_addr rather than next_addr to hit with
-+	 * mmap_cache most of the time. We have zero last_addr at
-+	 * the beginning and also after lseek. We will have -1 last_addr
-+	 * after the end of the vmas.
-+	 */
-+
-+	if (last_addr == -1UL)
-+		return NULL;
-+
-+	priv->task = get_pid_task(priv->pid, PIDTYPE_PID);
-+	if (!priv->task)
-+		return NULL;
-+
-+	mm = get_task_mm(priv->task);
-+	if (!mm)
-+		return NULL;
-+
-+	priv->tail_vma = tail_vma = get_gate_vma(priv->task);
-+	down_read(&mm->mmap_sem);
-+
-+	/* Start with last addr hint */
-+	if (last_addr && (vma = find_vma(mm, last_addr))) {
-+		vma = vma->vm_next;
-+		goto out;
-+	}
-+
-+	/*
-+	 * Check the vma index is within the range and do
-+	 * sequential scan until m_index.
-+	 */
-+	vma = NULL;
-+	if ((unsigned long)l < mm->map_count) {
-+		vma = mm->mmap;
-+		while (l-- && vma)
-+			vma = vma->vm_next;
-+		goto out;
-+	}
-+
-+	if (l != mm->map_count)
-+		tail_vma = NULL; /* After gate vma */
-+
-+out:
-+	if (vma)
-+		return vma;
-+
-+	/* End of vmas has been reached */
-+	m->version = (tail_vma != NULL)? 0: -1UL;
-+	up_read(&mm->mmap_sem);
-+	mmput(mm);
-+	return tail_vma;
-+}
-+
-+static void *m_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	struct proc_maps_private *priv = m->private;
-+	struct vm_area_struct *vma = v;
-+	struct vm_area_struct *tail_vma = priv->tail_vma;
-+
-+	(*pos)++;
-+	if (vma && (vma != tail_vma) && vma->vm_next)
-+		return vma->vm_next;
-+	vma_stop(priv, vma);
-+	return (vma != tail_vma)? tail_vma: NULL;
-+}
-+
-+static void m_stop(struct seq_file *m, void *v)
-+{
-+	struct proc_maps_private *priv = m->private;
-+	struct vm_area_struct *vma = v;
-+
-+	vma_stop(priv, vma);
-+	if (priv->task)
-+		put_task_struct(priv->task);
-+}
-+
-+static int do_maps_open(struct inode *inode, struct file *file,
-+			struct seq_operations *ops)
-+{
-+	struct proc_maps_private *priv;
-+	int ret = -ENOMEM;
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (priv) {
-+		priv->pid = proc_pid(inode);
-+		ret = seq_open(file, ops);
-+		if (!ret) {
-+			struct seq_file *m = file->private_data;
-+			m->private = priv;
-+		} else {
-+			kfree(priv);
-+		}
-+	}
-+	return ret;
-+}
+ 	struct proc_maps_private *priv = m->private;
+ 	struct task_struct *task = priv->task;
+@@ -185,33 +185,11 @@ static int show_map_internal(struct seq_
+ 	}
+ 	seq_putc(m, '\n');
  
- static int show_map(struct seq_file *m, void *v)
- {
-@@ -190,6 +295,36 @@ static int show_map(struct seq_file *m, 
+-	if (mss)
+-		seq_printf(m,
+-			   "Size:           %8lu kB\n"
+-			   "Rss:            %8lu kB\n"
+-			   "Shared_Clean:   %8lu kB\n"
+-			   "Shared_Dirty:   %8lu kB\n"
+-			   "Private_Clean:  %8lu kB\n"
+-			   "Private_Dirty:  %8lu kB\n"
+-			   "Referenced:     %8lu kB\n",
+-			   (vma->vm_end - vma->vm_start) >> 10,
+-			   mss->resident >> 10,
+-			   mss->shared_clean  >> 10,
+-			   mss->shared_dirty  >> 10,
+-			   mss->private_clean >> 10,
+-			   mss->private_dirty >> 10,
+-			   mss->referenced >> 10);
+-
+ 	if (m->count < m->size)  /* vma is copied successfully */
+ 		m->version = (vma != get_gate_vma(task))? vma->vm_start: 0;
  	return 0;
  }
  
-+static struct seq_operations proc_pid_maps_op = {
-+	.start	= m_start,
-+	.next	= m_next,
-+	.stop	= m_stop,
-+	.show	= show_map
-+};
-+
-+static int maps_open(struct inode *inode, struct file *file)
-+{
-+	return do_maps_open(inode, file, &proc_pid_maps_op);
-+}
-+
-+const struct file_operations proc_maps_operations = {
-+	.open		= maps_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= seq_release_private,
-+};
-+
-+struct mem_size_stats
-+{
-+	struct vm_area_struct *vma;
-+	unsigned long resident;
-+	unsigned long shared_clean;
-+	unsigned long shared_dirty;
-+	unsigned long private_clean;
-+	unsigned long private_dirty;
-+	unsigned long referenced;
-+};
-+
+-static int show_map(struct seq_file *m, void *v)
+-{
+-	return show_map_internal(m, v, NULL);
+-}
+-
  static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
  			   void *private)
  {
-@@ -231,33 +366,6 @@ static int smaps_pte_range(pmd_t *pmd, u
- 	return 0;
+@@ -286,13 +264,35 @@ static int show_smap(struct seq_file *m,
+ {
+ 	struct vm_area_struct *vma = v;
+ 	struct mem_size_stats mss;
++	int ret;
+ 
+ 	memset(&mss, 0, sizeof mss);
+ 	mss.vma = vma;
+ 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
+ 		walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
+ 				&smaps_walk, &mss);
+-	return show_map_internal(m, v, &mss);
++
++	ret = show_map(m, v);
++	if (ret)
++		return ret;
++
++	seq_printf(m,
++		   "Size:           %8lu kB\n"
++		   "Rss:            %8lu kB\n"
++		   "Shared_Clean:   %8lu kB\n"
++		   "Shared_Dirty:   %8lu kB\n"
++		   "Private_Clean:  %8lu kB\n"
++		   "Private_Dirty:  %8lu kB\n"
++		   "Referenced:     %8lu kB\n",
++		   (vma->vm_end - vma->vm_start) >> 10,
++		   mss.resident >> 10,
++		   mss.shared_clean  >> 10,
++		   mss.shared_dirty  >> 10,
++		   mss.private_clean >> 10,
++		   mss.private_dirty >> 10,
++		   mss.referenced >> 10);
++
++	return ret;
  }
  
--static int clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
--				unsigned long end, void *private)
--{
--	struct vm_area_struct *vma = private;
--	pte_t *pte, ptent;
--	spinlock_t *ptl;
--	struct page *page;
--
--	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
--	for (; addr != end; pte++, addr += PAGE_SIZE) {
--		ptent = *pte;
--		if (!pte_present(ptent))
--			continue;
--
--		page = vm_normal_page(vma, addr, ptent);
--		if (!page)
--			continue;
--
--		/* Clear accessed and referenced bits. */
--		ptep_test_and_clear_young(vma, addr, pte);
--		ClearPageReferenced(page);
--	}
--	pte_unmap_unlock(pte - 1, ptl);
--	cond_resched();
--	return 0;
--}
--
- static struct mm_walk smaps_walk = { .pmd_entry = smaps_pte_range };
- 
- static int show_smap(struct seq_file *m, void *v)
-@@ -293,6 +401,52 @@ static int show_smap(struct seq_file *m,
- 	return ret;
- }
- 
-+static struct seq_operations proc_pid_smaps_op = {
-+	.start	= m_start,
-+	.next	= m_next,
-+	.stop	= m_stop,
-+	.show	= show_smap
-+};
-+
-+static int smaps_open(struct inode *inode, struct file *file)
-+{
-+	return do_maps_open(inode, file, &proc_pid_smaps_op);
-+}
-+
-+const struct file_operations proc_smaps_operations = {
-+	.open		= smaps_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= seq_release_private,
-+};
-+
-+static int clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
-+				unsigned long end, void *private)
-+{
-+	struct vm_area_struct *vma = private;
-+	pte_t *pte, ptent;
-+	spinlock_t *ptl;
-+	struct page *page;
-+
-+	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
-+	for (; addr != end; pte++, addr += PAGE_SIZE) {
-+		ptent = *pte;
-+		if (!pte_present(ptent))
-+			continue;
-+
-+		page = vm_normal_page(vma, addr, ptent);
-+		if (!page)
-+			continue;
-+
-+		/* Clear accessed and referenced bits. */
-+		ptep_test_and_clear_young(vma, addr, pte);
-+		ClearPageReferenced(page);
-+	}
-+	pte_unmap_unlock(pte - 1, ptl);
-+	cond_resched();
-+	return 0;
-+}
-+
  static struct mm_walk clear_refs_walk = { .pmd_entry = clear_refs_pte_range };
- 
- static ssize_t clear_refs_write(struct file *file, const char __user *buf,
-@@ -336,148 +490,6 @@ const struct file_operations proc_clear_
- 	.write		= clear_refs_write,
- };
- 
--static void *m_start(struct seq_file *m, loff_t *pos)
--{
--	struct proc_maps_private *priv = m->private;
--	unsigned long last_addr = m->version;
--	struct mm_struct *mm;
--	struct vm_area_struct *vma, *tail_vma = NULL;
--	loff_t l = *pos;
--
--	/* Clear the per syscall fields in priv */
--	priv->task = NULL;
--	priv->tail_vma = NULL;
--
--	/*
--	 * We remember last_addr rather than next_addr to hit with
--	 * mmap_cache most of the time. We have zero last_addr at
--	 * the beginning and also after lseek. We will have -1 last_addr
--	 * after the end of the vmas.
--	 */
--
--	if (last_addr == -1UL)
--		return NULL;
--
--	priv->task = get_pid_task(priv->pid, PIDTYPE_PID);
--	if (!priv->task)
--		return NULL;
--
--	mm = get_task_mm(priv->task);
--	if (!mm)
--		return NULL;
--
--	priv->tail_vma = tail_vma = get_gate_vma(priv->task);
--	down_read(&mm->mmap_sem);
--
--	/* Start with last addr hint */
--	if (last_addr && (vma = find_vma(mm, last_addr))) {
--		vma = vma->vm_next;
--		goto out;
--	}
--
--	/*
--	 * Check the vma index is within the range and do
--	 * sequential scan until m_index.
--	 */
--	vma = NULL;
--	if ((unsigned long)l < mm->map_count) {
--		vma = mm->mmap;
--		while (l-- && vma)
--			vma = vma->vm_next;
--		goto out;
--	}
--
--	if (l != mm->map_count)
--		tail_vma = NULL; /* After gate vma */
--
--out:
--	if (vma)
--		return vma;
--
--	/* End of vmas has been reached */
--	m->version = (tail_vma != NULL)? 0: -1UL;
--	up_read(&mm->mmap_sem);
--	mmput(mm);
--	return tail_vma;
--}
--
--static void vma_stop(struct proc_maps_private *priv, struct vm_area_struct *vma)
--{
--	if (vma && vma != priv->tail_vma) {
--		struct mm_struct *mm = vma->vm_mm;
--		up_read(&mm->mmap_sem);
--		mmput(mm);
--	}
--}
--
--static void *m_next(struct seq_file *m, void *v, loff_t *pos)
--{
--	struct proc_maps_private *priv = m->private;
--	struct vm_area_struct *vma = v;
--	struct vm_area_struct *tail_vma = priv->tail_vma;
--
--	(*pos)++;
--	if (vma && (vma != tail_vma) && vma->vm_next)
--		return vma->vm_next;
--	vma_stop(priv, vma);
--	return (vma != tail_vma)? tail_vma: NULL;
--}
--
--static void m_stop(struct seq_file *m, void *v)
--{
--	struct proc_maps_private *priv = m->private;
--	struct vm_area_struct *vma = v;
--
--	vma_stop(priv, vma);
--	if (priv->task)
--		put_task_struct(priv->task);
--}
--
--static struct seq_operations proc_pid_maps_op = {
--	.start	= m_start,
--	.next	= m_next,
--	.stop	= m_stop,
--	.show	= show_map
--};
--
--static struct seq_operations proc_pid_smaps_op = {
--	.start	= m_start,
--	.next	= m_next,
--	.stop	= m_stop,
--	.show	= show_smap
--};
--
--static int do_maps_open(struct inode *inode, struct file *file,
--			struct seq_operations *ops)
--{
--	struct proc_maps_private *priv;
--	int ret = -ENOMEM;
--	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
--	if (priv) {
--		priv->pid = proc_pid(inode);
--		ret = seq_open(file, ops);
--		if (!ret) {
--			struct seq_file *m = file->private_data;
--			m->private = priv;
--		} else {
--			kfree(priv);
--		}
--	}
--	return ret;
--}
--
--static int maps_open(struct inode *inode, struct file *file)
--{
--	return do_maps_open(inode, file, &proc_pid_maps_op);
--}
--
--const struct file_operations proc_maps_operations = {
--	.open		= maps_open,
--	.read		= seq_read,
--	.llseek		= seq_lseek,
--	.release	= seq_release_private,
--};
--
- #ifdef CONFIG_NUMA
- extern int show_numa_map(struct seq_file *m, void *v);
- 
-@@ -512,14 +524,3 @@ const struct file_operations proc_numa_m
- };
- #endif
- 
--static int smaps_open(struct inode *inode, struct file *file)
--{
--	return do_maps_open(inode, file, &proc_pid_smaps_op);
--}
--
--const struct file_operations proc_smaps_operations = {
--	.open		= smaps_open,
--	.read		= seq_read,
--	.llseek		= seq_lseek,
--	.release	= seq_release_private,
--};
