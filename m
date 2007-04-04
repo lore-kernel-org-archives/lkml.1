@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992705AbXDDHCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992715AbXDDHEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992705AbXDDHCJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 03:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992709AbXDDHCJ
+	id S2992715AbXDDHEo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 03:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992714AbXDDHEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 03:02:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35865 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992705AbXDDHCI (ORCPT
+	Wed, 4 Apr 2007 03:04:44 -0400
+Received: from adicia.telenet-ops.be ([195.130.132.56]:48103 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992715AbXDDHEn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 03:02:08 -0400
-Date: Wed, 4 Apr 2007 00:02:05 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: akpm@linux-foundation.org, drepper@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: getting processor numbers
-Message-Id: <20070404000205.ade06a73.pj@sgi.com>
-In-Reply-To: <20070404064732.GF355@devserv.devel.redhat.com>
-References: <461286D6.2040407@redhat.com>
-	<20070403131623.c6831607.akpm@linux-foundation.org>
-	<20070403190458.18165884.pj@sgi.com>
-	<20070404064732.GF355@devserv.devel.redhat.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Apr 2007 03:04:43 -0400
+Date: Wed, 4 Apr 2007 09:04:42 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: David Miller <davem@davemloft.net>
+Cc: dwmw2@infradead.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+In-Reply-To: <20070403.225006.119275067.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0704040903470.20803@anakin>
+References: <20070404022544.59b022a6@the-village.bc.nu>
+ <17939.10130.687893.167511@cargo.ozlabs.ibm.com> <1175663999.2932.8.camel@shinybook.infradead.org>
+ <20070403.225006.119275067.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jakub wrote:
-> OpenMP wants (4) and I'll change it that way.
+On Tue, 3 Apr 2007, David Miller wrote:
+> From: David Woodhouse <dwmw2@infradead.org>
+> Date: Wed, 04 Apr 2007 01:19:59 -0400
+> 
+> > I don't see why that 'should' be the case. Certainly it _isn't_ the case
+> > on most supported platforms -- we have separate device numbers, and
+> > names, for most types of ports. There's only one or two drivers which
+> > abuse ttySn for anything other than 8250 ports.
+> 
+> sunsu, sunzilog, pmac_zilog, sunsab, etc.
 
-Good.  Are you referring to a change in glibc or in OpenMP?
+amiserial.
 
-> sysconf(_SC_NPROCESSORS_ONLN) must return (3) (this currently scans /proc/stat)
+> The list is longer than you think.  In fact the convention is
+> very well established.
 
-Ok
+And I guess the recently revived Atari serial driver, too.
 
-> sysconf(_SC_NPROCESSORS_CONF) should IMHO return (2) (this currently
-> scans /proc/cpuinfo on alpha and sparc{,64} for ((ncpus|CPUs) probed|cpus detected)
-> and for the rest just returns sysconf(_SC_NPROCESSORS_ONLN)).
+Gr{oetje,eeting}s,
 
-Not quite what I would have guessed, but seems ok.
+						Geert
 
-Thanks for spelling this out.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
