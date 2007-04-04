@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992929AbXDDPYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992932AbXDDPZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992929AbXDDPYI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992932AbXDDPYH
+	id S2992932AbXDDPZY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992936AbXDDPZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:24:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:43965 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992929AbXDDPYF (ORCPT
+	Wed, 4 Apr 2007 11:25:24 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42718 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992932AbXDDPZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:24:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nknBBJDMK//zTkjAWCIRgQVUq4nRtoCCuJeskc01S7h1bu43b/E+AUQ2GqOxtQ4ywpW9tVTcDqk/+bJKGoBp+Oa6ftigDIO8WbE+GWOYUDAz5mpUksl6td3xwHs0dQjmdx4dwmKVQFtT8xqUU+xVw4GdhKTpTeDtfAbztuzKmgQ=
-Message-ID: <b647ffbd0704040823g51da1cb1ka59ad52a92231498@mail.gmail.com>
-Date: Wed, 4 Apr 2007 17:23:59 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [sched] redundant reschedule when set_user_nice() boosts a prio of a task from the "expired" array
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070404141546.GA862@elte.hu>
+	Wed, 4 Apr 2007 11:25:23 -0400
+Date: Wed, 4 Apr 2007 17:25:23 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] kernel/rtmutex-debug.c: cleanups
+Message-ID: <20070404152523.GF27660@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <b647ffbd0704040704k2e4b3abcyfadc7662dff37f5b@mail.gmail.com>
-	 <20070404141546.GA862@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/04/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-> > [...]
-> >
-> > The same is applicable to rt_mutex_setprio().
-> >
-> > Of course, not a big deal, but it's easily avoidable, e.g. (delta < 0
-> > && array == rq->active).
->
-> i think you are right and a micro-optimization could be done here. Would
-> you like to do a patch for this?
+This patch contains the following cleanups:
+- make the needlessly global variable rt_trace_on static
+- remove the unused global function deadlock_trace_off()
 
-Yes, I'll do it.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-in fact, "delta < 0 && array == rq->active" is also sub-optimal.
+--- linux-2.6.21-rc5-mm3/kernel/rtmutex-debug.c.old	2007-04-03 01:29:12.000000000 +0200
++++ linux-2.6.21-rc5-mm3/kernel/rtmutex-debug.c	2007-04-03 01:29:59.000000000 +0200
+@@ -88,12 +88,7 @@
+  * into the tracing code when doing error printk or
+  * executing a BUG():
+  */
+-int rt_trace_on = 1;
+-
+-void deadlock_trace_off(void)
+-{
+-	rt_trace_on = 0;
+-}
++static int rt_trace_on = 1;
+ 
+ static void printk_task(struct task_struct *p)
+ {
 
-"TASK_PREEMPTS_CURR(p, rq) && array == rq->active" seems to be ok.. or
-maybe even TASK_PREEMPTS_CURR() should internally check for "p->array
-== rq->active"...
-
-will come with some solution.
-
-Thanks.
-
->
->         Ingo
->
-
--- 
-Best regards,
-Dmitry Adamushko
