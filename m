@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966239AbXDDBdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966245AbXDDBfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966239AbXDDBdu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 21:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966242AbXDDBdu
+	id S966245AbXDDBfM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 21:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966247AbXDDBfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 21:33:50 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58026 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966239AbXDDBdt (ORCPT
+	Tue, 3 Apr 2007 21:35:12 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51375 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966245AbXDDBfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 21:33:49 -0400
-Date: Wed, 4 Apr 2007 02:36:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: paulus@samba.org, dwmw2@infradead.org, linuxppc-dev@ozlabs.org,
-       benh@kernel.crashing.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404023637.65c56227@the-village.bc.nu>
-In-Reply-To: <20070403.182125.77058566.davem@davemloft.net>
-References: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<20070403.165518.55726194.davem@davemloft.net>
-	<20070404021924.71e87580@the-village.bc.nu>
-	<20070403.182125.77058566.davem@davemloft.net>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Apr 2007 21:35:08 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 03 Apr 2007 18:35:06 -0700
+Subject: [patch 2/3] epoll cleanups - epoll no module ...
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.19972.1175650506.2>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Using different majors for different instances of the exact same kind
-> of device is really not smart.  It's a serial port, and if you try
-> to dress it up to be something else you run into all kinds of problems.
+Epoll is either compiled it, or not (if EMBEDDED). Remove the module code
+and use fs_initcall().
 
-Disagree. There are lots of good reasons you need to know which
-port/which card/which slot/which multiplexor.
 
-There is a world of a difference between a serious serial port
-application and "wtf has my console gone"
 
-> Not the least of which is the user has to scratch his head figuring
-> out what kind of chip drives his serial console, he just wants the
-> first serial port and he should have a way to say just that even
-> on the kernel command line.
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-Define "first". First by I/O order, by PCI scan order (and which type),
-does ACPI come before or after ISA etc...
 
-At the moment we sort of magic this for the PC by having hardcoded probe
-order hacks by address, on the sparc by having other driver magic, on the
-PPC by hardcoding some rules etc then hack the result to be ttyS0.
+- Davide
 
-I've no fundamental problem with S0->console port 1, S1 -> console port 2
-etc, but the general notion that type and positional information doesn't
-matter is complete and utter bollocks when you try and apply it to any
-serious serial setup.
 
-Alan
+
+Index: linux-2.6.21-rc5.mm4/fs/eventpoll.c
+===================================================================
+--- linux-2.6.21-rc5.mm4.orig/fs/eventpoll.c	2007-04-03 18:33:30.000000000 -0700
++++ linux-2.6.21-rc5.mm4/fs/eventpoll.c	2007-04-03 18:33:40.000000000 -0700
+@@ -11,7 +11,6 @@
+  *
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+@@ -1462,16 +1461,5 @@
+ 
+ 	return 0;
+ }
++fs_initcall(eventpoll_init);
+ 
+-
+-static void __exit eventpoll_exit(void)
+-{
+-	/* Undo all operations done inside eventpoll_init() */
+-	kmem_cache_destroy(pwq_cache);
+-	kmem_cache_destroy(epi_cache);
+-}
+-
+-module_init(eventpoll_init);
+-module_exit(eventpoll_exit);
+-
+-MODULE_LICENSE("GPL");
+
