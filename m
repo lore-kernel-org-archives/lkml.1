@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992952AbXDDP1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992949AbXDDP1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992952AbXDDP1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXDDP1W
+	id S2992949AbXDDP1z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992954AbXDDP1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:27:22 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:42734 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992958AbXDDPZr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:25:47 -0400
-Date: Wed, 4 Apr 2007 17:25:48 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       John Feeney <jfeeney@redhat.com>, gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: [-mm patch] unexport pci_proc_attach_device
-Message-ID: <20070404152548.GN27660@stusta.de>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+	Wed, 4 Apr 2007 11:27:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47833 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992933AbXDDP1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 11:27:31 -0400
+Date: Wed, 4 Apr 2007 17:27:17 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070404152717.GG19587@v2.random>
+References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random> <20070404135530.GA29026@localdomain> <20070404141457.GF19587@v2.random> <20070404144421.GA13762@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070402224745.71a25af7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070404144421.GA13762@localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 10:47:45PM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.21-rc5-mm3:
->...
-> +fix-82875-pci-setup.patch
->...
->  Misc
->...
+On Wed, Apr 04, 2007 at 05:44:21PM +0300, Dan Aloni wrote:
+> To refine that example, you could replace the file with a large anonymous 
+> memory pool and a lot of swap space committed to it. In that case - with 
+> no ZERO_PAGE, would the kernel needlessly swap-out the zeroed pages? 
 
+Swapout or ram is the same in this context. The point is that it will
+take 4k either in ram or swap, let's talk about virtual memory without
+differentiating between ram or swap.
 
-pci_proc_attach_device() no longer has any modular user.
+> Perhaps it's an example too far-fetched to worth considering...
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Even if you would read the sparsed file to a malloced space (more
+commonly that would be tmpfs) using the read syscall, those anon (or
+tmpfs) pages would be _written_ first, which isn't the case we're
+discussing here.
 
----
---- linux-2.6.21-rc5-mm4/drivers/pci/proc.c.old	2007-04-04 17:06:04.000000000 +0200
-+++ linux-2.6.21-rc5-mm4/drivers/pci/proc.c	2007-04-04 17:08:35.000000000 +0200
-@@ -480,7 +480,6 @@
- __initcall(pci_proc_init);
- 
- #ifdef CONFIG_HOTPLUG
--EXPORT_SYMBOL(pci_proc_attach_device);
- EXPORT_SYMBOL(pci_proc_detach_bus);
- #endif
- 
-
+You don't know what is on disk, so reading from disk (regardless of
+what you read, holes, zeros or anything) provides useful information,
+but you know what is in ram after an anon mmap: just zeros, reading
+them can't provide useful information to any software.
