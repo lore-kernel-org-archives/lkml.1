@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbXDDSh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750961AbXDDSi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbXDDSh5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbXDDShg
+	id S1750961AbXDDSi1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbXDDSh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:37:36 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36660 "EHLO
-	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753905AbXDDSH6 (ORCPT
+	Wed, 4 Apr 2007 14:37:58 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:44902 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753917AbXDDShl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:07:58 -0400
-X-ORBL: [67.117.73.34]
-From: Tony Lindgren <tony@atomide.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 24/90] ARM: OMAP: Fix typo in gpio
-Date: Wed,  4 Apr 2007 14:05:03 -0400
-Message-Id: <1175710026446-git-send-email-tony@atomide.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757100242980-git-send-email-tony@atomide.com>
-References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com>
+	Wed, 4 Apr 2007 14:37:41 -0400
+Date: Wed, 4 Apr 2007 11:39:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/90] Post 2.6.21 OMAP update
+Message-Id: <20070404113925.da221efc.randy.dunlap@oracle.com>
+In-Reply-To: <20070404182728.GK29129@atomide.com>
+References: <11757088774110-git-send-email-tony@atomide.com>
+	<20070404182728.GK29129@atomide.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix typo in gpio
+On Wed, 4 Apr 2007 14:27:30 -0400 Tony Lindgren wrote:
 
-Signed-off-by: Tony Lindgren <tony@atomide.com>
+> * Tony Lindgren <tony@atomide.com> [070404 14:02]:
+> > Hi all,
+> > 
+> > Attached is a rather large OMAP update for post 2.6.21.
+> > 
+> > OMAP is a series of ARM processors from Texas Instruments
+> > used in various cell phones and PDAs.
+> > 
+> > The patch series is based on code that has been brewing
+> > in the linux-omap tree since last fall.
+> > 
+> > We'd like to switch the linux-omap tree to use the mainline
+> > tree for core omap stuff, and this series attemps to do it
+> > for most part. 
+> > 
+> > As the patch series is big, Andrew Morton asked me to post
+> > it to LKML instead of linux-arm-kernel list for a wider review,
+> > so please comment on the patches if you have a chance!
+> > 
+> > The patches touch only omap specific code at:
+> > 
+> > arch/arm/Kconfig
+> > arch/arm/plat-omap
+> > arch/arm/mach-omap1
+> > arch/arm/mach-omap2
+> > include/asm-arm/arch-omap
+> 
+> Looks like using git-send-email --chain-reply-to with this many
+> messages is not a good idea... The threading gets nested too wide :)
+
+That's only a problem when there are <too many> patches to be
+reviewed.  Hence, do more frequent postings of fewer patches per series.
+That will likely also get you more reviewers.
+
 ---
- arch/arm/plat-omap/gpio.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/plat-omap/gpio.c b/arch/arm/plat-omap/gpio.c
-index 948185e..61567ef 100644
---- a/arch/arm/plat-omap/gpio.c
-+++ b/arch/arm/plat-omap/gpio.c
-@@ -1092,7 +1092,7 @@ static struct irq_chip mpuio_irq_chip = {
- 	.name		= "MPUIO",
- 	.ack		= mpuio_ack_irq,
- 	.mask		= mpuio_mask_irq,
--	.unmask		= mpuio_unmask_irq
-+	.unmask		= mpuio_unmask_irq,
- 	.set_type	= gpio_irq_type,
- };
- 
--- 
-1.4.4.2
-
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
