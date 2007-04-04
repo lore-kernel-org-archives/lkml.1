@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992821AbXDDKHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992820AbXDDKNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992821AbXDDKHH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 06:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992820AbXDDKHG
+	id S2992820AbXDDKNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 06:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992822AbXDDKNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 06:07:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48943 "EHLO mx3.mail.elte.hu"
+	Wed, 4 Apr 2007 06:13:34 -0400
+Received: from ns.suse.de ([195.135.220.2]:39216 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992817AbXDDKHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 06:07:04 -0400
-Date: Wed, 4 Apr 2007 12:06:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ego@in.ibm.com, paulmck@us.ibm.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com,
-       dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: utrace merge
-Message-ID: <20070404100644.GC19120@elte.hu>
-References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu> <20070403120104.GB29308@in.ibm.com> <200704032134.29720.rjw@sisk.pl> <20070403132427.88308b59.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S2992820AbXDDKNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 06:13:33 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Yinghai Lu" <yinghai.lu@amd.com>
+Subject: Re: [PATCH] x86_64/acpi: make kernel to be compiled when CONFIG_ACPI_NUMA is set and power management with acpi is not enabled
+Date: Wed, 4 Apr 2007 12:13:27 +0200
+User-Agent: KMail/1.9.6
+References: <86802c440704032055q43691a64v9eefb2a625c095ed@mail.gmail.com>
+In-Reply-To: <86802c440704032055q43691a64v9eefb2a625c095ed@mail.gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
+       "Len Brown" <lenb@kernel.org>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070403132427.88308b59.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200704041213.27637.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 04 April 2007 05:55:04 you wrote:
+> please check the patch
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+config X86_64_ACPI_NUMA
+       bool "ACPI NUMA detection"
+       depends on NUMA
+       select ACPI 
+        select PCI
+       select ACPI_NUMA
+       default y
+       help
+         Enable ACPI SRAT based node topology detection.
 
-> urgh, I screwed up, sorry.
-> 
-> utrace-prep-2 reverts a bit of the underlying tree so that the utrace 
-> patches (which are against mainline) don't throw a tremendous reject 
-> which has to be fixed each time I pull Roland's tree.  I'm supposed to 
-> reapply that change after the utrace patches but forgot.
 
-btw., how about pushing utrace to v2.6.22, is anything big holding that 
-up? (other than Roland's modesty, which we should gently but firmly 
-ignore in this case =B-)
+How did you manage to unset ACPI with that? Can you send your config?
 
-	Ingo
+-Andi
+
+
