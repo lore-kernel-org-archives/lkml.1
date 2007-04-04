@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbXDDXUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752820AbXDDXWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752808AbXDDXUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 19:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbXDDXUp
+	id S1752820AbXDDXWE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 19:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbXDDXWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 19:20:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37500 "EHLO gate.crashing.org"
+	Wed, 4 Apr 2007 19:22:03 -0400
+Received: from mail.tmr.com ([64.65.253.246]:57579 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752770AbXDDXUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 19:20:44 -0400
-Subject: Re: [PATCH 0/14] Pass MAP_FIXED down to get_unmapped_area
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       Linux Memory Management <linux-mm@kvack.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <23370.1175682715@redhat.com>
-References: <1175659331.690672.592289266160.qpush@grosgo>
-	 <23370.1175682715@redhat.com>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 09:20:33 +1000
-Message-Id: <1175728833.30879.89.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+	id S1752817AbXDDXWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 19:22:00 -0400
+Message-ID: <46143338.3020808@tmr.com>
+Date: Wed, 04 Apr 2007 19:22:32 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Tejun Heo <teheo@suse.de>
+CC: linux@horizon.com, dan.j.williams@intel.com, linux-ide@vger.kernel.org,
+       neilb@suse.de, cebbert@redhat.com, jens.axboe@oracle.com,
+       linux-kernel@dale.us, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: 2.6.20.3 AMD64 oops in CFQ code
+References: <20070323174630.31051.qmail@science.horizon.com> <4611EADC.3000306@suse.de>
+In-Reply-To: <4611EADC.3000306@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 11:31 +0100, David Howells wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > This serie of patches moves the logic to handle MAP_FIXED down to the
-> > various arch/driver get_unmapped_area() implementations, and then changes
-> > the generic code to always call them. The hugetlbfs hacks then disappear
-> > from the generic code.
-> 
-> This sounds like get_unmapped_area() is now doing more than it says on the
-> tin.  As I understand it, it's to be called to locate an unmapped area when
-> one wasn't specified by MAP_FIXED, and so shouldn't be called if MAP_FIXED is
-> set.
+Tejun Heo wrote:
+> [resending.  my mail service was down for more than a week and this
+> message didn't get delivered.]
+>
+> linux@horizon.com wrote:
+>   
+>>> Anyway, what's annoying is that I can't figure out how to bring the
+>>> drive back on line without resetting the box.  It's in a hot-swap
+>>>       
+> enclosure,
+>   
+>>> but power cycling the drive doesn't seem to help.  I thought libata
+>>>       
+> hotplug
+>   
+>>> was working?  (SiI3132 card, using the sil24 driver.)
+>>>       
+>
+> Yeah, it's working but failing resets are considered highly dangerous
+> (in that the controller status is unknown and may cause something
+> dangerous like screaming interrupts) and port is muted after that.  The
+> plan is to handle this with polling hotplug such that libata tries to
+> revive the port if PHY status change is detected by polling.  Patches
+> are available but they need other things to resolved to get integrated.
+>  I think it'll happen before the summer.
+>
+> Anyways, you can tell libata to retry the port by manually telling it to
+> rescan the port (echo - - - > /sys/class/scsi_host/hostX/scan).
+>   
+I won't say that's voodoo, but if I ever did it I'd wipe down my 
+keyboard with holy water afterward. ;-)
 
-Well... that was the initial implementation. But that doesn't quite deal
-well with various issues like page size constraints like the segment
-constraints on powerpc or other hugetlbfs realted issues, and the
-aliasing problems on architectures with virtually caches...
+Well, I did save the message in my tricks file, but it sounds like a 
+last ditch effort after something get very wrong.
 
-Just look at how many architectures already have special case for
-MAP_FIXED in their arch_get_unmapped_area ! It was never called so far
-though, my patch makes it being called.
-
-I agree it's probably not the best interface, but I'm still trying to
-figure out something that would be nicer as a "second step", as I don't
-want to do too much in one set of patches. This serie allows me to hook
-in my SPE 64K page thingy, to cleanup & improve a bit my hugetlb
-handling, and possibly fixes some of those aliasing issues on
-architectures with virtual caches...
-
-> Admittedly, on NOMMU, it's also used to find the location of quasi-memory
-> devices such as framebuffers and ramfs files, but that's not a great deviation
-> from the original intent.
-> 
-> Perhaps a change of name is in order for the function?
-
-I'm not sure. "get" can mean "obtain" :-) The way it's currently
-implemented for me on powerpc works fine that way, I don't need an
-"unget".
-
-> > Since I need to do some special 64K pages mappings for SPEs on cell, I need
-> > to work around the first problem at least. I have further patches thus
-> > implementing a "slices" layer that handles multiple page sizes through
-> > slices of the address space for use by hugetlbfs, the SPE code, and possibly
-> > others, but it requires that serie of patches first/
-> 
-> That makes it sound like there should be an "unget" too for when an error
-> occurs between ->get_unmapped_area() being called and ->mmap() returning
-> successfully.
-
-I don't need it because I can flip the page size of the segment back if
-it has no VMA in it on the next get_unmapped_area(). Again, I'd like to
-come up with a better interface, and I might post something in that
-direction next week, but I beleive those patches (+/- bug fixes) are a
-good first step in the right direction. I also need to find a proper way
-to solve the mremap problem as it's bogus as it is already with things
-like hugetlbfs on powerpc at least. 
-
-Ben.
-
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
