@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbXDDGhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbXDDGiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753750AbXDDGhh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 02:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXDDGhh
+	id S1753757AbXDDGiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 02:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbXDDGiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 02:37:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35677 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753748AbXDDGhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 02:37:36 -0400
-Date: Wed, 4 Apr 2007 02:37:01 -0400
-From: Dave Jones <davej@redhat.com>
-To: Bernhard Kaindl <bk@suse.de>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Andi Kleen <ak@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 0/4] Fix MTRR suspend support for specific machines (some AMD64, maybe others also)
-Message-ID: <20070404063701.GA5539@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Bernhard Kaindl <bk@suse.de>, linux-kernel@vger.kernel.org,
-	Pavel Machek <pavel@ucw.cz>, Andi Kleen <ak@suse.de>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Jan Beulich <jbeulich@novell.com>
-References: <Pine.LNX.4.64.0703211730140.2519@jbgna.fhfr.qr> <200703272213.51947.ak@suse.de> <Pine.LNX.4.64.0703281155490.17746@jbgna.fhfr.qr> <200703291525.59116.ak@suse.de> <Pine.LNX.4.64.0703301702320.21293@jbgna.fhfr.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703301702320.21293@jbgna.fhfr.qr>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 4 Apr 2007 02:38:19 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:36092 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753736AbXDDGiS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 02:38:18 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=jSV9AxlyuTq+kCeZ3eEJrLwYg7lD7dp5Y5un9rbYkkuc5nze/zNftf8yMl2Jf4vpr52Ynohd2y9RkUapOIUNUXdM1rd6TdNWgIZ3CRFMo5HEZsef8eLGCRiuN/yKuwapQ+/0cLAatieeCBbNfzobLWUZcSH2dLugnDoYU+J9vck=  ;
+X-YMail-OSG: hvYIF8IVM1m6ICyqciP3d6kTVrUW9lagwkbPf4GTViKzMYURz6ZxTKbxsAx6JCDRksR_l.6jhN0RLECrUK0cBF3gncOILsDZenO.RwEWM2m3XcDgMzPVzoogi9ljGMW9amYndV935xYyark-
+Message-ID: <461347D1.6000508@yahoo.com.au>
+Date: Wed, 04 Apr 2007 16:38:09 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patches] threaded vma patches (was Re: missing madvise functionality)
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com>	<20070403144948.fe8eede6.akpm@linux-foundation.org>	<4612DCC6.7000504@cosmosbay.com>	<46130BC8.9050905@yahoo.com.au>	<46133A8B.50203@cosmosbay.com>	<46134124.2040705@yahoo.com.au> <20070403232624.11935e80.akpm@linux-foundation.org>
+In-Reply-To: <20070403232624.11935e80.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 03:55:32PM +0200, Bernhard Kaindl wrote:
+(sorry to change the subjet, I was initially going to send the
+threaded vma cache patches on list, but then decided they didn't
+have enough changelog!)
 
- > PS: I attached a program which uses msr.ko (CONFIG_X86_MSR) from
- >  Processor type and features
- >      -> [M/*] /dev/cpu/*/msr - Model-specific register support
- > to dump the contents of the fixed-range MTTRs to stdout.
- > 
- > On a two-CPU system, the output format looks like this:
- > 
- > MSR 0x250: 1e1e1e1e1e1e1e1e | 0606060606060606 |
- > MSR 0x258: 1e1e1e1e1e1e1e1e | 0606060606060606 |
- > MSR 0x259: 0000000000000000 | 0000000000000000 |
- > MSR 0x268: 1515151515151515 | 0505050505050505 |
- > MSR 0x269: 1515151515151515 | 0505050505050505 |
- > MSR 0x26a: 0000000000000000 | 0000000000000000 |
- > MSR 0x26b: 0000000000000000 | 0000000000000000 |
- > MSR 0x26c: 1515151500000000 | 0505050500000000 |
- > MSR 0x26d: 1515151515151515 | 0505050505050505 |
- > MSR 0x26e: 1515151515151515 | 0505050505050505 |
- > MSR 0x26f: 1515151515151515 | 0505050505050505 |
+Andrew Morton wrote:
+> On Wed, 04 Apr 2007 16:09:40 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> 
+> 
+>>Andrew, do you have any objections to putting Eric's fairly
+>>important patch at least into -mm?
+> 
+> 
+> you know what to do ;)
+> 
 
-FWIW, x86info --mtrr would have done this for you :)
-
- > To have a sane MTRR setup the MTRRs of the CPUs should always
- > match, but this has so far not lead to problems, it seems. However,
- > Intel and AMD manuals tell us to keep MTRRs in sync for good reasons.
-
-Indeed.  From a quick lookover, I don't see anything obviously
-wrong in your patches, though Jan and Andi probably remember more
-gory details about that code than I'll admit to.
-
-	Dave
+Well I did review them when he last posted, but simply didn't have
+much to say (that happened in a much older discussion about the
+private futex problem, and I ended up agreeing with this approach).
+Anyway I'll have another look when they get posted again.
 
 -- 
-http://www.codemonkey.org.uk
+SUSE Labs, Novell Inc.
