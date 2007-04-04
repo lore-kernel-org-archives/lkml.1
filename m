@@ -1,86 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXDDRxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXDDRzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314AbXDDRxf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXDDRxe
+	id S1752342AbXDDRzI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXDDRzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:53:34 -0400
-Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:34933 "EHLO
+	Wed, 4 Apr 2007 13:55:08 -0400
+Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:36057 "EHLO
 	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752312AbXDDRxd (ORCPT
+	with ESMTP id S1752342AbXDDRzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:53:33 -0400
-X-Greylist: delayed 315 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 13:53:33 EDT
+	Wed, 4 Apr 2007 13:55:06 -0400
 X-ORBL: [67.117.73.34]
 From: Tony Lindgren <tony@atomide.com>
 To: linux-kernel@vger.kernel.org
-Cc: Imre Deak <imre.deak@solidboot.com>,
-       Juha Yrjola <juha.yrjola@solidboot.com>,
-       Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 8/90] ARM: OMAP: FB: add controller platform data
-Date: Wed,  4 Apr 2007 13:46:35 -0400
-Message-Id: <11757088953851-git-send-email-tony@atomide.com>
+Cc: Juha Yrjola <juha.yrjola@solidboot.com>, Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 7/90] ARM: OMAP: Optimize INTC register accesses and enable autoidling
+Date: Wed,  4 Apr 2007 13:46:34 -0400
+Message-Id: <11757088932135-git-send-email-tony@atomide.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757088932135-git-send-email-tony@atomide.com>
-References: omap-2007-04-04-133556 <11757088774110-git-send-email-tony@atomide.com> <11757088791107-git-send-email-tony@atomide.com> <11757088822930-git-send-email-tony@atomide.com> <11757088844012-git-send-email-tony@atomide.com> <1175708886798-git-send-email-tony@atomide.com> <11757088883638-git-send-email-tony@atomide.com> <11757088904153-git-send-email-tony@atomide.com> <11757088932135-git-send-email-tony@atomide.com>
+In-Reply-To: <11757088904153-git-send-email-tony@atomide.com>
+References: omap-2007-04-04-133556 <11757088774110-git-send-email-tony@atomide.com> <11757088791107-git-send-email-tony@atomide.com> <11757088822930-git-send-email-tony@atomide.com> <11757088844012-git-send-email-tony@atomide.com> <1175708886798-git-send-email-tony@atomide.com> <11757088883638-git-send-email-tony@atomide.com> <11757088904153-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Imre Deak <imre.deak@solidboot.com>
+From: Juha Yrjola <juha.yrjola@solidboot.com>
 
-Add controller platform data
+Use virtual addresses directly instead of physical addresses to
+avoid having to recalculate the virtual address with every
+register access.
 
-Signed-off-by: Imre Deak <imre.deak@solidboot.com>
 Signed-off-by: Juha Yrjola <juha.yrjola@solidboot.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/plat-omap/fb.c            |    5 +++++
- include/asm-arm/arch-omap/omapfb.h |    8 +++++---
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ arch/arm/mach-omap2/irq.c |   19 +++++++++++--------
+ 1 files changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
-index 56acb87..91ebdaf 100644
---- a/arch/arm/plat-omap/fb.c
-+++ b/arch/arm/plat-omap/fb.c
-@@ -55,6 +55,11 @@ void omapfb_reserve_mem(void)
- 	}
+diff --git a/arch/arm/mach-omap2/irq.c b/arch/arm/mach-omap2/irq.c
+index a39d306..f064f72 100644
+--- a/arch/arm/mach-omap2/irq.c
++++ b/arch/arm/mach-omap2/irq.c
+@@ -37,7 +37,7 @@ static struct omap_irq_bank {
+ } __attribute__ ((aligned(4))) irq_banks[] = {
+ 	{
+ 		/* MPU INTC */
+-		.base_reg	= OMAP24XX_IC_BASE,
++		.base_reg	= IO_ADDRESS(OMAP24XX_IC_BASE),
+ 		.nr_irqs	= 96,
+ 	}, {
+ 		/* XXX: DSP INTC */
+@@ -47,7 +47,7 @@ static struct omap_irq_bank {
+ /* XXX: FIQ and additional INTC support (only MPU at the moment) */
+ static void omap_ack_irq(unsigned int irq)
+ {
+-	omap_writel(0x1, irq_banks[0].base_reg + INTC_CONTROL);
++	__raw_writel(0x1, irq_banks[0].base_reg + INTC_CONTROL);
  }
  
-+void omapfb_set_ctrl_platform_data(void *data)
-+{
-+	omapfb_config.ctrl_platform_data = data;
-+}
-+
- static inline int omap_init_fb(void)
+ static void omap_mask_irq(unsigned int irq)
+@@ -60,7 +60,7 @@ static void omap_mask_irq(unsigned int irq)
+ 		irq %= 32;
+ 	}
+ 
+-	omap_writel(1 << irq, irq_banks[0].base_reg + INTC_MIR_SET0 + offset);
++	__raw_writel(1 << irq, irq_banks[0].base_reg + INTC_MIR_SET0 + offset);
+ }
+ 
+ static void omap_unmask_irq(unsigned int irq)
+@@ -73,7 +73,7 @@ static void omap_unmask_irq(unsigned int irq)
+ 		irq %= 32;
+ 	}
+ 
+-	omap_writel(1 << irq, irq_banks[0].base_reg + INTC_MIR_CLEAR0 + offset);
++	__raw_writel(1 << irq, irq_banks[0].base_reg + INTC_MIR_CLEAR0 + offset);
+ }
+ 
+ static void omap_mask_ack_irq(unsigned int irq)
+@@ -93,17 +93,20 @@ static void __init omap_irq_bank_init_one(struct omap_irq_bank *bank)
  {
- 	const struct omap_lcd_config *conf;
-diff --git a/include/asm-arm/arch-omap/omapfb.h b/include/asm-arm/arch-omap/omapfb.h
-index fccdb3d..ce80a71 100644
---- a/include/asm-arm/arch-omap/omapfb.h
-+++ b/include/asm-arm/arch-omap/omapfb.h
-@@ -292,8 +292,9 @@ struct omapfb_device {
- };
+ 	unsigned long tmp;
  
- struct omapfb_platform_data {
--	struct omap_lcd_config   lcd;
--	struct omap_fbmem_config fbmem;
-+	struct omap_lcd_config	lcd;
-+	struct omapfb_mem_desc	mem_desc;
-+	void			*ctrl_platform_data;
- };
+-	tmp = omap_readl(bank->base_reg + INTC_REVISION) & 0xff;
++	tmp = __raw_readl(bank->base_reg + INTC_REVISION) & 0xff;
+ 	printk(KERN_INFO "IRQ: Found an INTC at 0x%08lx "
+ 			 "(revision %ld.%ld) with %d interrupts\n",
+ 			 bank->base_reg, tmp >> 4, tmp & 0xf, bank->nr_irqs);
  
- #define OMAPFB_EVENT_READY	1
-@@ -317,8 +318,9 @@ extern int  omapfb_update_window_async(struct omapfb_update_window *win,
- 					void (*callback)(void *),
- 					void *callback_data);
+-	tmp = omap_readl(bank->base_reg + INTC_SYSCONFIG);
++	tmp = __raw_readl(bank->base_reg + INTC_SYSCONFIG);
+ 	tmp |= 1 << 1;	/* soft reset */
+-	omap_writel(tmp, bank->base_reg + INTC_SYSCONFIG);
++	__raw_writel(tmp, bank->base_reg + INTC_SYSCONFIG);
  
--/* in arch/arm/plat-omap/devices.c */
-+/* in arch/arm/plat-omap/fb.c */
- extern void omapfb_reserve_mem(void);
-+extern void omapfb_set_ctrl_platform_data(void *pdata);
+-	while (!(omap_readl(bank->base_reg + INTC_SYSSTATUS) & 0x1))
++	while (!(__raw_readl(bank->base_reg + INTC_SYSSTATUS) & 0x1))
+ 		/* Wait for reset to complete */;
++
++	/* Enable autoidle */
++	__raw_writel(1 << 0, bank->base_reg + INTC_SYSCONFIG);
+ }
  
- #endif /* __KERNEL__ */
- 
+ void __init omap_init_irq(void)
 -- 
 1.4.4.2
 
