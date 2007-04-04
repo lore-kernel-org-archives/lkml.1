@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992853AbXDDLQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992859AbXDDL1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992853AbXDDLQA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 07:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992855AbXDDLQA
+	id S2992859AbXDDL1X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 07:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992861AbXDDL1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 07:16:00 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:38026 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992853AbXDDLP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 07:15:59 -0400
-Date: Wed, 4 Apr 2007 13:21:00 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Christian Kujau <christian@g-house.de>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
-Message-ID: <20070404112100.GA1979@ff.dom.local>
-References: <20070403065810.GA1832@ff.dom.local> <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 4 Apr 2007 07:27:23 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:56435 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992859AbXDDL1W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 07:27:22 -0400
+Message-ID: <46138B4C.2050409@gmail.com>
+Date: Wed, 04 Apr 2007 13:26:04 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: MODULE_MAINTAINER
+Content-Type: multipart/mixed;
+ boundary="------------070305020103070403050608"
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 04:19:46PM +0100, Christian Kujau wrote:
-> On Tue, 3 Apr 2007, Jarek Poplawski wrote:
-> >Did you try with 8139cp instead of 8139too?
-> 
-> Tried that, 8139cp could not be loaded :(
+This is a multi-part message in MIME format.
+--------------070305020103070403050608
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Sorry for misleading!
+Hi Rusty.
 
-> >(Maybe even try some other card to narrow the problem?)
-> >You could also try to test without ehci, if it's possible.
-> 
-> USB has been disabled completely. After booting with 'acpi=off lapic' 
-> the box survived ~30min then locked up again and rebooted.
+Can we have a MODULE_MAINTAINER to complement MODULE_AUTHOR?
 
-So, it's a lot sooner than before. (BTW, isn't there anything
-in debug log?) I see both CPUs did interrupt handling again.
-Maybe it's a real locking problem. Here are some more
-suggestions for testing (if you don't find anything better):
-- try without SMP, so: 'acpi=off lapic nosmp'
-- lock debugging turned on as much as possible
-plus maybe for curiosity:
-- different CONFIG_HZ
-- 8139TOO_PIO = y
+Often a module grows multiple authors over time, but initial authors 
+aren't around (or too interested) anymore. And sometimes, if someone 
+maintaining a driver is just doing minor peripheral updates to keep it 
+compiling, the maintainer might not even _be_ an author really...
 
-...
-> IRQ-problems with the Un-Interruptible-Power-Supply
+Rene.
 
-I wouldn't be surprised... 
 
-Cheers,
-Jarek P.
+
+--------------070305020103070403050608
+Content-Type: text/plain;
+ name="module_maintainer.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="module_maintainer.diff"
+
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 10f771a..c06f76c 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -128,6 +128,9 @@ #define MODULE_LICENSE(_license) MODULE_
+ /* Author, ideally of form NAME <EMAIL>[, NAME <EMAIL>]*[ and NAME <EMAIL>] */
+ #define MODULE_AUTHOR(_author) MODULE_INFO(author, _author)
+   
++/* Maintainer, ideally of form NAME <EMAIL> */
++#define MODULE_MAINTAINER(_maintainer) MODULE_INFO(maintainer, _maintainer)
++
+ /* What your module does. */
+ #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
+ 
+
+--------------070305020103070403050608--
