@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946036AbXDDAEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946040AbXDDAJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946036AbXDDAEM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 20:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992500AbXDDAEM
+	id S1946040AbXDDAJQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 20:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946043AbXDDAJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 20:04:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36090 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946036AbXDDAEL (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 20:04:11 -0400
-Date: Wed, 4 Apr 2007 10:03:54 +1000
-From: David Chinner <dgc@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, reiserfs-dev@namesys.com
-Subject: Re: [xfs-masters] Re: [PATCH] Cleanup and kernelify shrinker registration (rc5-mm2)
-Message-ID: <20070404000354.GA32597093@melbourne.sgi.com>
-References: <1175571885.12230.473.camel@localhost.localdomain> <20070402205825.12190e52.akpm@linux-foundation.org> <1175575503.12230.484.camel@localhost.localdomain> <20070402215702.6e3782a9.akpm@linux-foundation.org> <1175579225.12230.504.camel@localhost.localdomain> <20070402230954.27840721.akpm@linux-foundation.org> <1175584705.12230.513.camel@localhost.localdomain> <20070403123706.GX32597093@melbourne.sgi.com> <20070403103627.de831e3e.akpm@linux-foundation.org>
+	Tue, 3 Apr 2007 20:09:16 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:49635 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946040AbXDDAJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 20:09:15 -0400
+Date: Tue, 3 Apr 2007 17:08:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: rusty@rustcorp.com.au, pmarques@grupopie.com, linux-kernel@vger.kernel.org,
+       devel@openvz.org
+Subject: Re: [PATCH 5/5] Fix race between cat /proc/slab_allocators and
+ rmmod
+Message-Id: <20070403170827.a32f97f1.akpm@linux-foundation.org>
+In-Reply-To: <20070402150316.GE6735@localhost.sw.ru>
+References: <20070402150316.GE6735@localhost.sw.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070403103627.de831e3e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 10:36:27AM -0700, Andrew Morton wrote:
-> On Tue, 3 Apr 2007 22:37:06 +1000 David Chinner <dgc@sgi.com> wrote:
-> 
-> > On Tue, Apr 03, 2007 at 05:18:25PM +1000, Rusty Russell wrote:
-> > > On Mon, 2007-04-02 at 23:09 -0700, Andrew Morton wrote:
-> > > This is not about efficiency.  When have I *ever* posted optimization
-> > > patches?
-> > > 
-> > > This is about clarity.  We have a standard convention for
-> > > register/unregister.  And they can't fail.  Either of these would be
-> > > sufficient to justify a change.
-> > > 
-> > > Too many people doing cool new things in the kernel, not enough
-> > > polishing of the crap that's already there 8(
-> > > 
-> > > > But I think we need to weed that crappiness out of XFS first.
-> > 
-> > Can anyone else see the contradiction in these statements?
-> > 
-> > XFS's "crappiness" is a register/unregister interface.  The only
-> > reason it's being removed is because it's getting replaced with a
-> > nearly identical register/unregister interface.
-> 
-> Nope.  XFS is introducing two new typedefs, one of which is identical to
-> one which we already have and it has wrapper functions which do little more
-> than add new names for existing stuff.
+On Mon, 2 Apr 2007 19:03:16 +0400
+Alexey Dobriyan <adobriyan@sw.ru> wrote:
 
-And the problem with that is? You haven't noticed this in the five
-years it's been there providing XFS with a consistent shrinker
-interface.....
+> +int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size,
+> +			unsigned long *offset, char *modname, char *name)
+> +{
+> +	struct module *mod;
+> +
+> +	mutex_lock(&module_mutex);
+> +	list_for_each_entry(mod, &modules, list) {
+> +		if (within(addr, mod->module_init, mod->init_size) ||
+> +		    within(addr, mod->module_core, mod->core_size)) {
+> +			const char *sym;
+> +
+> +			sym = get_ksymbol(mod, addr, size, offset);
+> +			if (!sym)
+> +				goto out;
+> +			if (modname)
+> +				strlcpy(modname, mod->name, MODULE_NAME_LEN + 1);
+> +			if (name)
+> +				strlcpy(name, sym, KSYM_NAME_LEN + 1);
+> +			mutex_unlock(&module_mutex);
+> +			return 0;
+> +		}
+> +	}
+> +out:
+> +	mutex_unlock(&module_mutex);
+> +	return -ERANGE;
+> +}
+> +
 
-FWIW, digging back into history, Rusty's first patch basically
-brings use back to the same interface we had in 2.4. Here's
-the 2.4 version of that function:
+The functions lookup_symbol_name() and lookup_symbol_attrs() are quite
+general and are likely to be used for other applications in the future.
 
-kmem_shaker_t
-kmem_shake_register(kmem_shake_func_t sfunc)
-{
-        kmem_shaker_t shaker = kmalloc(sizeof(*shaker), GFP_KERNEL);
+Could we please pick better names for them?  The names you've chosen are
+far too general-sounding - we have a lot of different types of "symbol" in
+the kernel!  Perhaps module_lookup_symbol_attrs() and
+kallsyms_lookup_symbol() and kallsyms_lookup_attrs() or something.  But
+something prefixed with kallsyms_ and module_.
 
-        if (!shaker)
-                return NULL;
-        memset(shaker, 0, sizeof(*shaker));
-        shaker->shrink = sfunc;
-        register_cache(shaker);
-        return shaker;
-}
+Also, as these general-use functions are exported to all of vmlinux, a little
+bit of documentation for them would be good.
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
