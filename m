@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbXDDNqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbXDDNzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbXDDNqf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 09:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbXDDNqf
+	id S1753844AbXDDNzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 09:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXDDNzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 09:46:35 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:34947 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753825AbXDDNqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 09:46:34 -0400
-Date: Wed, 4 Apr 2007 15:46:24 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Maxim Uvarov <muvarov@ru.mvista.com>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
-Subject: Re: Performance Stats: Kernel patch
-Message-Id: <20070404154624.826578b1.dada1@cosmosbay.com>
-In-Reply-To: <4613A4FF.9030202@ru.mvista.com>
-References: <46124E93.2000408@ru.mvista.com>
-	<16797.1175641303@turing-police.cc.vt.edu>
-	<4613A4FF.9030202@ru.mvista.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Apr 2007 09:55:35 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:45613 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753844AbXDDNze (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 09:55:34 -0400
+Date: Wed, 4 Apr 2007 16:55:32 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070404135530.GA29026@localdomain>
+References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404122701.GB19587@v2.random>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Apr 2007 17:15:43 +0400
-Maxim Uvarov <muvarov@ru.mvista.com> wrote:
+On Wed, Apr 04, 2007 at 02:27:01PM +0200, Andrea Arcangeli wrote:
+> On Wed, Apr 04, 2007 at 12:24:07PM +0200, Nick Piggin wrote:
+> > But for a potential mainline merge, maybe starting with a CONFIG
+> > option is a good idea -- defaulting to off, and we could start by
+> > turning it on just in -rc kernels for a few releases, to get a bit
+> > more confidence?
+> 
+> The only reason to do that is if there are many stupid apps pretending
+> to get meaningful information from pages that cannot contain any
+> information. The zero page in the anon page fault has been there
+> forever so...
 
->
-> --- linux-2.6.18.orig/arch/i386/kernel/entry.S
-> +++ linux-2.6.18/arch/i386/kernel/entry.S
-> @@ -394,6 +394,9 @@ syscall_exit:
->         cli                             # make sure we don't miss an 
-> interrupt
->                                         # setting need_resched or sigpending
->                                         # between sampling and the iret
-> +#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-> +       call inc_syscallcnt             # Increment syscalls counter 
-> current->sysc_cnt
-> +#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+There might be a lot of applications like that, and I'm not sure that 
+_all_ of them can be considered 'stupid' as you say.
 
-Please dont call a function to do one increment !
+How about applications that perform mmap() and R/W random-access on 
+large *sparse* files? (e.g. a scientific app that uses a large sparse 
+file as a big database look-up table). As I see it, these apps would
+need to keep track of what's sparse and what's not...
 
-You are touching one of the most critical part of the kernel...
-
-Also, dont do this while interrupts are masked, this is not necessary.
-
-Maybe better to place sysc_cnt in 'struct thread_info' because %ebp point to it.
-
-Also you missed the fact that syscalls on i386 can use sysenter (around line 343)
-
->         TRACE_IRQS_OFF
->         movl TI_flags(%ebp), %ecx
->         testw $_TIF_ALLWORK_MASK, %cx   # current->work
->
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
