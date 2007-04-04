@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750945AbXDDQpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750943AbXDDQpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750945AbXDDQpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXDDQpj
+	id S1750943AbXDDQpn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbXDDQpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:45:39 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:47874 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbXDDQpi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 12:45:38 -0400
-Message-ID: <4613D620.4040701@s5r6.in-berlin.de>
-Date: Wed, 04 Apr 2007 18:45:20 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Rene Herman <rene.herman@gmail.com>, Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <46138B4C.2050409@gmail.com> <20070404123311.GA18552@infradead.org> <4613A1F1.2080007@gmail.com> <20070404145726.GD27660@stusta.de> <4613D342.3040501@s5r6.in-berlin.de> <20070404163807.GO27660@stusta.de>
-In-Reply-To: <20070404163807.GO27660@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Apr 2007 12:45:42 -0400
+Received: from waste.org ([66.93.16.53]:42072 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750943AbXDDQpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 12:45:41 -0400
+Date: Wed, 4 Apr 2007 11:32:32 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Nikita Danilov <nikita@clusterfs.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/13] maps: Add /proc/pid/pagemap interface
+Message-ID: <20070404163232.GV4892@waste.org>
+References: <1.486631555@selenic.com> <13.486631555@selenic.com> <17939.35217.938339.677599@gargle.gargle.HOWL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17939.35217.938339.677599@gargle.gargle.HOWL>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Apr 04, 2007 at 06:33:06PM +0200, Stefan Richter wrote:
->>   - usage problems --> get in touch with the _support_
->>   - bug reports --> get in touch with _maintainers_
-> 
-> - bug reports against vendor kernels -> get in touch with the _vendor_
->   (the vendor might ship a heavily patched driver in an ancient kernel)
+On Wed, Apr 04, 2007 at 03:18:41PM +0400, Nikita Danilov wrote:
+> This pushes binary data to the user space. Wasn't /proc supposed to be
+> ascii-based to avoid compatibility problems (e.g., size of unsigned long
+> changing, endianness, etc.)?
 
-Yes, of course. I implicitly meant the maintainer of the program as
-distributed, which in case of distro kernels are the distributor's
-kernel maintainers... :-)
+Most of what's in /proc is ASCII, true. But there are notable
+exceptions - kcore, auxv, mem. This is just another window into memory
+like kcore and mem. It's also a fairly big window. To examine a 1G
+mapping, you need to read 1M of data.
 
-Also, "get in touch" almost never means "send personal e-mail", but
-rather to use bugzillas, mailing lists, discussion forums etc.
--- 
-Stefan Richter
--=====-=-=== -=-- --=--
-http://arcgraph.de/sr/
+ASCII would be rather ugly here. It's important that the interface be
+seekable so that you can skip over wide ranges of data with no maps.
+So all the elements would have to be nice fixed sizes. That'd mean 16
+hex digits plus a space/newline. So to figure out what's at b7f81000,
+I'd have to divide by 4096 (I already have to know the page size),
+then multiply by 17, getting c37791. And then I'd have to copy more
+than 2x the data in byte-wide chunks due to alignment concerns.
+
+With the extra translation on both ends, the expanded data size, and
+the alignment issues, this probably just got 10x-20x slower. Which
+means taking a snapshot of a typical system and doing any sort of live
+display just got a hell of a lot more impractical.
+
+Now I could adjust these to only export u64s in some preferred
+endianness. But given I already need details like the page size to
+make any sense of it, it seems unnecessary. Also, the PFNs are fairly
+opaque unless you're attempting to correlate them with /proc/kpagemap.
+
+--
+Mathematics is the supreme nostalgia of our time.
