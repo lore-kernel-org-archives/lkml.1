@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbXDDRgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbXDDRgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752068AbXDDRgG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXDDRft
+	id S1752103AbXDDRgl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbXDDRgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:35:49 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38422 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752042AbXDDRfc (ORCPT
+	Wed, 4 Apr 2007 13:36:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:52357 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbXDDRgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:35:32 -0400
-Date: Wed, 4 Apr 2007 10:35:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Badari Pulavarty <pbadari@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc5-mm4 (SLUB powerpc)
-In-Reply-To: <1175708002.6185.29.camel@dyn9047017100.beaverton.ibm.com>
-Message-ID: <Pine.LNX.4.64.0704041034270.26866@schroedinger.engr.sgi.com>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> 
- <1175632311.6185.1.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031339080.11001@schroedinger.engr.sgi.com> 
- <1175640812.6185.6.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031814430.7645@schroedinger.engr.sgi.com> 
- <1175699559.6185.24.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704041003170.24640@schroedinger.engr.sgi.com>
- <1175708002.6185.29.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Apr 2007 13:36:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=jkUmsP/IvVqGr8gcA1iWFBR/CtdYqw2l9SjjljC6him86MIvjauVZbfsmgcNjdAt7hrfoVvhaioKblAr40A++6duS9JVcWXxuVZ9thQUGKjokplCBFwV3o9m8zM3A/6zV5M4pp6dee/5v4xscy3MLBQGfPUZB4kEQAgo9hajJnc=
+Date: Wed, 4 Apr 2007 23:07:40 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [KJ][PATCH]ROUND_UP macro cleanup in drivers/char/lp.c
+Message-ID: <20070404173739.GB9830@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Badari Pulavarty wrote:
+ROUND_UP macro cleanup use DIV_ROUND_UP
 
-> Next issue ? Sorry.
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-No problem. Could have a look at the hvsi driver and figure out what is 
-failing there? What is the hvsi driver?
+---
+ lp.c |    5 +----
+ 1 files changed, 1 insertion(+), 4 deletions(-)
 
-> Console: switching to colour frame buffer device 80x30
-> fb0: MATROX frame buffer device
-> matroxfb_crtc2: secondary head of fb0 was registered as fb1
-> Kernel panic - not syncing: Couldn't register hvsi console driver
 
-Framebuffer allocation failure????
+diff --git a/drivers/char/lp.c b/drivers/char/lp.c
+index b51d08b..c086910 100644
+--- a/drivers/char/lp.c
++++ b/drivers/char/lp.c
+@@ -139,9 +139,6 @@
+ /* if you have more than 8 printers, remember to increase LP_NO */
+ #define LP_NO 8
+ 
+-/* ROUND_UP macro from fs/select.c */
+-#define ROUND_UP(x,y) (((x)+(y)-1)/(y))
+-
+ static struct lp_struct lp_table[LP_NO];
+ 
+ static unsigned int lp_count = 0;
+@@ -652,7 +649,7 @@ static int lp_ioctl(struct inode *inode, struct file *file,
+ 			    (par_timeout.tv_usec < 0)) {
+ 				return -EINVAL;
+ 			}
+-			to_jiffies = ROUND_UP(par_timeout.tv_usec, 1000000/HZ);
++			to_jiffies = DIV_ROUND_UP(par_timeout.tv_usec, 1000000/HZ);
+ 			to_jiffies += par_timeout.tv_sec * (long) HZ;
+ 			if (to_jiffies <= 0) {
+ 				return -EINVAL;
 
+-- 
+Milind Arun Choudhary
