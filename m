@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966227AbXDDBQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966225AbXDDBQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966227AbXDDBQq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 21:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966230AbXDDBQq
+	id S966225AbXDDBQu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 21:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966229AbXDDBQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 21:16:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47088
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S966227AbXDDBQp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 21:16:45 -0400
-Date: Tue, 03 Apr 2007 18:16:45 -0700 (PDT)
-Message-Id: <20070403.181645.68159458.davem@davemloft.net>
-To: dwmw2@infradead.org
-Cc: flar@allandria.com, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1175648051.10567.61.camel@shinybook.infradead.org>
-References: <1175644642.10567.31.camel@shinybook.infradead.org>
-	<20070403221002.GA13210@cynthia.pants.nu>
-	<1175648051.10567.61.camel@shinybook.infradead.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 3 Apr 2007 21:16:50 -0400
+Received: from [202.78.101.198] ([202.78.101.198]:35548 "EHLO mail.hq.astra.ph"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S966225AbXDDBQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 21:16:48 -0400
+Message-ID: <4612FC57.2060207@gmail.com>
+Date: Wed, 04 Apr 2007 09:16:07 +0800
+From: Carlo Florendo <subscribermail@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel source dependency
+References: <46120EBE.8080705@gmail.com> <20070403081853.6590ef84.randy.dunlap@oracle.com>
+In-Reply-To: <20070403081853.6590ef84.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Tue, 03 Apr 2007 20:54:10 -0400
+Randy Dunlap wrote:
+> On Tue, 03 Apr 2007 16:22:22 +0800 Carlo Florendo wrote:
+> 
+>> Hello,
+>>
+>> I'm not sure whether a fix is necessary for the following scenario.
+>>
+>> The kernel configure target "make menuconfig" requires ncurses.   FWIW, it
+>> could probably be better if the error message would indicate that that
+>> ncurses is necessary for "make menuconfig" to run and that the user could
+>> be prompted to install the package.
+> 
+> Hi,
+> Without ncurses installed, you should see these messages:
+> 
+> 	echo " *** Unable to find the ncurses libraries."
+> 	echo " *** make menuconfig require the ncurses libraries"
+> 	echo " *** "
+> 	echo " *** Install ncurses (ncurses-devel) and try again"
+> 	echo " *** "
+> 
+> Do you not see them?  or do you need something different?
 
-> Yes, it would be theoretically possible to come up with a way to share
-> minor numbers so we can use 'ttyS0' for the first serial port regardless
-> of what type of port it is. We could take the arch-specific hack that
-> SPARC has and try to move it to generic code. But what's the point?
+Thanks. It seems I just made noise.   I saw exactly the same thing you 
+posted, now that I've rested and it's 9:30AM.  I didn't see it the other 
+day at 2:30AM.  Maybe I need more sleep :)
 
-The point is that it will work and the user will not be bothered
-with what kind of serial port they happen to have.  A major number
-per serial chip type is incredibly stupid.
+Thank you very much.
 
-I don't need to know anything about the inanrds of my computer to
-bring up the ethernet interface, me caveman me bringup eth0, me on
-network, caveman happy.  The same should be true for serial ports.
+Best Regards,
 
-It's a serial port dammit, don't make it something else!
+Carlo
 
-In the case of multiple instances, ordering is a sperate issue from
-naming.  You keep bringing up the ordering issue but it distracts away
-from the more important part which is the user having to know what
-kind of serial port they have.
 
-It's a serial port, and like a scsi disk or and ethernet interface, we
-should give it a consistent name.
+
+-- 
+Carlo Florendo
+Softare Engineer/Network Co-Administrator
+Astra Philippines Inc.
+UP-Ayala Technopark, Diliman 1101, Quezon City
+Philippines
+http://www.astra.ph
+
+--
+The Astra Group of Companies
+5-3-11 Sekido, Tama City
+Tokyo 206-0011, Japan
+http://www.astra.co.jp
