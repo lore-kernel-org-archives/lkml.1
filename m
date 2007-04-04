@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbXDDWBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752361AbXDDWBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752254AbXDDWBA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 18:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXDDWBA
+	id S1752361AbXDDWBn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 18:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXDDWBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 18:01:00 -0400
-Received: from waste.org ([66.93.16.53]:48048 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752228AbXDDWA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 18:00:59 -0400
-Date: Wed, 4 Apr 2007 16:48:29 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/13] maps: Move the page walker code to lib/
-Message-ID: <20070404214828.GA4892@waste.org>
-References: <7.486631555@selenic.com> <461320C9.5030601@yahoo.com.au> <20070404050857.GU4892@waste.org> <46133CC0.505@yahoo.com.au>
+	Wed, 4 Apr 2007 18:01:43 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:13211 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752277AbXDDWBm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 18:01:42 -0400
+Date: Wed, 4 Apr 2007 15:03:27 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Maxim Uvarov <muvarov@ru.mvista.com>, linux-kernel@vger.kernel.org
+Subject: Re: Performance Stats: Kernel patch
+Message-Id: <20070404150327.476d8ba8.randy.dunlap@oracle.com>
+In-Reply-To: <6099.1175723450@turing-police.cc.vt.edu>
+References: <46124E93.2000408@ru.mvista.com>
+	<16797.1175641303@turing-police.cc.vt.edu>
+	<4613A4FF.9030202@ru.mvista.com>
+	<6099.1175723450@turing-police.cc.vt.edu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46133CC0.505@yahoo.com.au>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 03:50:56PM +1000, Nick Piggin wrote:
-> Matt Mackall wrote:
-> >On Wed, Apr 04, 2007 at 01:51:37PM +1000, Nick Piggin wrote:
-> >
-> >>Matt Mackall wrote:
-> >>
-> >>>Move the page walker code to lib/
-> >>>
-> >>>This lets it get shared outside of proc/ and linked in only when
-> >>>needed.
-> >>
-> >>I think it would be better in mm/.
-> >
-> >
-> >I originally was looking at putting it in mm/memory.c and possibly
+On Wed, 04 Apr 2007 17:50:50 -0400 Valdis.Kletnieks@vt.edu wrote:
+
+> Other random comments:
 > 
-> Just put it in its own file in mm/ rather than its own file in lib.
-> lib should be for almost-standalone stuff, IMO (ie. only using basic
-> kernel functionality).
+> 1) You probably want to rebase against something more recent (2.6.21-rc<mumble>
+> or the final .21 when it's released).
+> 
+> 2) It arrived here with some line-wrapping damage, most likely to the fact
+> that you posted it with Thunderbird.  There's a mystic Thunderbird incantation
+> to make it not do that, but I have no idea what it is - it's in the list
+> archives someplace.
 
-Arguably that's what lib/ should be for, but it's currently largely
-used to avoid linking in unused code without adding more hair to
-Kconfig. Which is what I'm trying to do here.
+This may help (or not):
+  http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
 
-> Apart from these users outside mm/, I don't see much point in converting
-> things over. The page table walking API we have now is neat and simple.
-> It takes a few lines of code, but is it a big problem?
-
-I don't think it really qualifies as either neat or simple. It may be
-about as neat as walking a heterogenous tree with an inconsistent
-naming scheme can be, but it's still a headache. A maze of twisty
-little passages, all slightly different.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
