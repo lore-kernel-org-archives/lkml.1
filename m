@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992737AbXDDIZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992742AbXDDI0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992737AbXDDIZx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 04:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992741AbXDDIZw
+	id S2992742AbXDDI0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 04:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992743AbXDDI0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 04:25:52 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:21400 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2992737AbXDDIZv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 04:25:51 -0400
-Subject: Re: missing madvise functionality
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <46130BC8.9050905@yahoo.com.au>
-References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>
-	 <46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>
-	 <20070403125903.3e8577f4.akpm@linux-foundation.org>
-	 <4612B645.7030902@redhat.com>
-	 <20070403202937.GE355@devserv.devel.redhat.com>
-	 <20070403144948.fe8eede6.akpm@linux-foundation.org>
-	 <4612DCC6.7000504@cosmosbay.com>  <46130BC8.9050905@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 10:25:46 +0200
-Message-Id: <1175675146.6483.26.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Apr 2007 04:26:25 -0400
+Received: from cel.leonerd.org.uk ([62.49.94.186]:2118 "EHLO cel.leo"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992742AbXDDI0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 04:26:12 -0400
+Date: Wed, 4 Apr 2007 09:26:09 +0100
+From: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Martin Mares <mj@ucw.cz>,
+       Paul LeoNerd Evans <leonerd@leonerd.org.uk>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] vt: Do not clear UTF when resetting console
+Message-ID: <20070404082609.GP26707@cel.leo>
+References: <46110F88.5040905@gmail.com> <mj+md-20070403.114037.27180.nikam@ucw.cz> <20070403145151.GN26707@cel.leo> <mj+md-20070403.153720.5293.nikam@ucw.cz> <1175665364.4519.10.camel@daplas> <Pine.LNX.4.61.0704041011520.10155@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BXr400anF0jyguTS"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0704041011520.10155@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 12:22 +1000, Nick Piggin wrote:
-> Eric Dumazet wrote:
 
-> > I do think such workloads might benefit from a vma_cache not shared by 
-> > all threads but private to each thread. A sequence could invalidate the 
-> > cache(s).
-> > 
-> > ie instead of a mm->mmap_cache, having a mm->sequence, and each thread 
-> > having a current->mmap_cache and current->mm_sequence
-> 
-> I have a patchset to do exactly this, btw.
+--BXr400anF0jyguTS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-/me too
+On Wed, Apr 04, 2007 at 10:12:06AM +0200, Jan Engelhardt wrote:
+>=20
+> On Apr 4 2007 13:42, Antonino A. Daplas wrote:
+> >Please note that I have dropped this patch in favor of this one:
+> >
+> >http://lkml.org/lkml/2007/4/2/422
+>=20
+> ^^ Which is ok by me.
 
-However, I decided against pushing it because when it does happen that a
-task is not involved with a vma lookup for longer than it takes the seq
-count to wrap we have a stale pointer...
+I agree - Does The Right Thing as far as I'm concerned.
 
-We could go and walk the tasks once in a while to reset the pointer, but
-it all got a tad involved.
+--=20
+Paul "LeoNerd" Evans
 
+leonerd@leonerd.org.uk
+ICQ# 4135350       |  Registered Linux# 179460
+http://www.leonerd.org.uk/
+
+--BXr400anF0jyguTS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGE2Eh7eTlovtaLtYRAhEuAKCtHyt77zFh8xQntb0+j7tRd3Z7XQCeOszA
+CL02xmYbQwq1Anpynf2sjCc=
+=0hgH
+-----END PGP SIGNATURE-----
+
+--BXr400anF0jyguTS--
