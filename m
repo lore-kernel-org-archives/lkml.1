@@ -1,125 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946051AbXDDBiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966249AbXDDBjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946051AbXDDBiE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 21:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966247AbXDDBfx
+	id S966249AbXDDBjG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 21:39:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966257AbXDDBfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 21:35:53 -0400
-Received: from 250.sub-75-209-50.myvzw.com ([75.209.50.250]:34559 "EHLO
+	Tue, 3 Apr 2007 21:35:50 -0400
+Received: from 250.sub-75-209-50.myvzw.com ([75.209.50.250]:34562 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966251AbXDDBfe (ORCPT
+	with ESMTP id S966253AbXDDBff (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 21:35:34 -0400
-Message-Id: <20070404011453.344346341@goop.org>
+	Tue, 3 Apr 2007 21:35:35 -0400
+Message-Id: <20070404011453.469210646@goop.org>
 References: <20070404010655.400913479@goop.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 03 Apr 2007 18:06:57 -0700
+Date: Tue, 03 Apr 2007 18:06:58 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 2/6] Remove noreplacement option
-Content-Disposition: inline; filename=remove-noreplacement.patch
+Subject: [patch 3/6] Remove smp_alt_instructions
+Content-Disposition: inline; filename=remove-smp_alt_instructions.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-noreplacement is dangerous on modern systems because it will not replace the
-context switch FNSAVE with SSE aware FXSAVE. But other places in the kernel still assume
-SSE and do FXSAVE and the CPU will then access FXSAVE information with
-FNSAVE and cause corruption.
+The .smp_altinstructions section and its corresponding symbols are
+completely unused, so remove them.
 
-Easiest way to avoid this is to remove the option. It was mostly for paranoia
-reasons anyways and alternative()s have been stable for some time.
+Also, remove stray #ifdef __KENREL__ in asm-i386/alternative.h
 
-Thanks to Jeremy F. for reporting and helping debug it.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Andi Kleen <ak@suse.de>
 
 ---
- Documentation/x86_64/boot-options.txt |    4 ----
- arch/i386/kernel/alternative.c        |   21 ++-------------------
- 2 files changed, 2 insertions(+), 23 deletions(-)
+ arch/i386/kernel/alternative.c |   38 ++------------------------------------
+ arch/i386/kernel/vmlinux.lds.S |   11 -----------
+ include/asm-i386/alternative.h |    6 +-----
+ 3 files changed, 3 insertions(+), 52 deletions(-)
 
-===================================================================
---- a/Documentation/x86_64/boot-options.txt
-+++ b/Documentation/x86_64/boot-options.txt
-@@ -305,7 +305,3 @@ Debugging
- 			stuck (default)
- 
- Miscellaneous
--
--  noreplacement  Don't replace instructions with more appropriate ones
--		 for the CPU. This may be useful on asymmetric MP systems
--		 where some CPUs have less capabilities than others.
 ===================================================================
 --- a/arch/i386/kernel/alternative.c
 +++ b/arch/i386/kernel/alternative.c
-@@ -5,15 +5,9 @@
- #include <asm/alternative.h>
- #include <asm/sections.h>
- 
--static int no_replacement    = 0;
- static int smp_alt_once      = 0;
- static int debug_alternative = 0;
- 
--static int __init noreplacement_setup(char *s)
--{
--	no_replacement = 1;
--	return 1;
--}
- static int __init bootonly(char *str)
- {
- 	smp_alt_once = 1;
-@@ -25,7 +19,6 @@ static int __init debug_alt(char *str)
- 	return 1;
+@@ -132,10 +132,7 @@ static void nop_out(void *insns, unsigne
  }
  
--__setup("noreplacement", noreplacement_setup);
- __setup("smp-alt-boot", bootonly);
- __setup("debug-alternative", debug_alt);
- 
-@@ -252,9 +245,6 @@ void alternatives_smp_module_add(struct 
- 	struct smp_alt_module *smp;
- 	unsigned long flags;
- 
--	if (no_replacement)
--		return;
+ extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
+-extern struct alt_instr __smp_alt_instructions[], __smp_alt_instructions_end[];
+ extern u8 *__smp_locks[], *__smp_locks_end[];
 -
- 	if (smp_alt_once) {
- 		if (boot_cpu_has(X86_FEATURE_UP))
- 			alternatives_smp_unlock(locks, locks_end,
-@@ -289,7 +279,7 @@ void alternatives_smp_module_del(struct 
- 	struct smp_alt_module *item;
- 	unsigned long flags;
+-extern u8 __smp_alt_begin[], __smp_alt_end[];
  
--	if (no_replacement || smp_alt_once)
-+	if (smp_alt_once)
- 		return;
+ /* Replace instructions with better alternatives for this CPU type.
+    This runs before SMP is initialized to avoid SMP problems with
+@@ -170,29 +167,6 @@ void apply_alternatives(struct alt_instr
+ }
  
- 	spin_lock_irqsave(&smp_alt, flags);
-@@ -320,7 +310,7 @@ void alternatives_smp_switch(int smp)
- 	return;
- #endif
+ #ifdef CONFIG_SMP
+-
+-static void alternatives_smp_save(struct alt_instr *start, struct alt_instr *end)
+-{
+-	struct alt_instr *a;
+-
+-	DPRINTK("%s: alt table %p-%p\n", __FUNCTION__, start, end);
+-	for (a = start; a < end; a++) {
+-		memcpy(a->replacement + a->replacementlen,
+-		       a->instr,
+-		       a->instrlen);
+-	}
+-}
+-
+-static void alternatives_smp_apply(struct alt_instr *start, struct alt_instr *end)
+-{
+-	struct alt_instr *a;
+-
+-	for (a = start; a < end; a++) {
+-		memcpy(a->instr,
+-		       a->replacement + a->replacementlen,
+-		       a->instrlen);
+-	}
+-}
  
--	if (no_replacement || smp_alt_once)
-+	if (smp_alt_once)
- 		return;
- 	BUG_ON(!smp && (num_online_cpus() > 1));
- 
-@@ -374,13 +364,6 @@ void __init alternative_instructions(voi
- void __init alternative_instructions(void)
+ static void alternatives_smp_lock(u8 **start, u8 **end, u8 *text, u8 *text_end)
  {
- 	unsigned long flags;
--	if (no_replacement) {
--		printk(KERN_INFO "(SMP-)alternatives turned off\n");
--		free_init_pages("SMP alternatives",
+@@ -319,8 +293,6 @@ void alternatives_smp_switch(int smp)
+ 		printk(KERN_INFO "SMP alternatives: switching to SMP code\n");
+ 		clear_bit(X86_FEATURE_UP, boot_cpu_data.x86_capability);
+ 		clear_bit(X86_FEATURE_UP, cpu_data[0].x86_capability);
+-		alternatives_smp_apply(__smp_alt_instructions,
+-				       __smp_alt_instructions_end);
+ 		list_for_each_entry(mod, &smp_alt_modules, next)
+ 			alternatives_smp_lock(mod->locks, mod->locks_end,
+ 					      mod->text, mod->text_end);
+@@ -328,8 +300,6 @@ void alternatives_smp_switch(int smp)
+ 		printk(KERN_INFO "SMP alternatives: switching to UP code\n");
+ 		set_bit(X86_FEATURE_UP, boot_cpu_data.x86_capability);
+ 		set_bit(X86_FEATURE_UP, cpu_data[0].x86_capability);
+-		apply_alternatives(__smp_alt_instructions,
+-				   __smp_alt_instructions_end);
+ 		list_for_each_entry(mod, &smp_alt_modules, next)
+ 			alternatives_smp_unlock(mod->locks, mod->locks_end,
+ 						mod->text, mod->text_end);
+@@ -384,17 +354,13 @@ void __init alternative_instructions(voi
+ 			printk(KERN_INFO "SMP alternatives: switching to UP code\n");
+ 			set_bit(X86_FEATURE_UP, boot_cpu_data.x86_capability);
+ 			set_bit(X86_FEATURE_UP, cpu_data[0].x86_capability);
+-			apply_alternatives(__smp_alt_instructions,
+-					   __smp_alt_instructions_end);
+ 			alternatives_smp_unlock(__smp_locks, __smp_locks_end,
+ 						_text, _etext);
+ 		}
+ 		free_init_pages("SMP alternatives",
 -				__pa_symbol(&__smp_alt_begin),
 -				__pa_symbol(&__smp_alt_end));
--		return;
--	}
++				__pa_symbol(&__smp_locks),
++				__pa_symbol(&__smp_locks_end));
+ 	} else {
+-		alternatives_smp_save(__smp_alt_instructions,
+-				      __smp_alt_instructions_end);
+ 		alternatives_smp_module_add(NULL, "core kernel",
+ 					    __smp_locks, __smp_locks_end,
+ 					    _text, _etext);
+===================================================================
+--- a/arch/i386/kernel/vmlinux.lds.S
++++ b/arch/i386/kernel/vmlinux.lds.S
+@@ -116,21 +116,10 @@ SECTIONS
  
- 	local_irq_save(flags);
- 	apply_alternatives(__alt_instructions, __alt_instructions_end);
+   /* might get freed after init */
+   . = ALIGN(4096);
+-  .smp_altinstructions : AT(ADDR(.smp_altinstructions) - LOAD_OFFSET) {
+-	__smp_alt_begin = .;
+-	__smp_alt_instructions = .;
+-	*(.smp_altinstructions)
+-	__smp_alt_instructions_end = .;
+-  }
+-  . = ALIGN(4);
+   .smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
+   	__smp_locks = .;
+ 	*(.smp_locks)
+ 	__smp_locks_end = .;
+-  }
+-  .smp_altinstr_replacement : AT(ADDR(.smp_altinstr_replacement) - LOAD_OFFSET) {
+-	*(.smp_altinstr_replacement)
+-  	__smp_alt_end = .;
+   }
+   /* will be freed after init
+    * Following ALIGN() is required to make sure no other data falls on the
+===================================================================
+--- a/include/asm-i386/alternative.h
++++ b/include/asm-i386/alternative.h
+@@ -1,7 +1,5 @@
+ #ifndef _I386_ALTERNATIVE_H
+ #define _I386_ALTERNATIVE_H
+-
+-#ifdef __KERNEL__
+ 
+ #include <asm/types.h>
+ #include <linux/stddef.h>
+@@ -31,9 +29,7 @@ static inline void alternatives_smp_modu
+ 					void *text, void *text_end) {}
+ static inline void alternatives_smp_module_del(struct module *mod) {}
+ static inline void alternatives_smp_switch(int smp) {}
+-#endif
+-
+-#endif
++#endif	/* CONFIG_SMP */
+ 
+ /*
+  * Alternative instructions for different CPU types or capabilities.
 
 -- 
 
