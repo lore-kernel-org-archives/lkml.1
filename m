@@ -1,179 +1,448 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbXDDSgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbXDDSgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753927AbXDDSgF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbXDDSgE
+	id S1753928AbXDDSgJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbXDDSgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:36:04 -0400
-Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:7199 "EHLO
-	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753933AbXDDSfg (ORCPT
+	Wed, 4 Apr 2007 14:36:07 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36759 "EHLO
+	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753928AbXDDSIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:35:36 -0400
-Date: Wed, 4 Apr 2007 11:37:08 -0700
-From: "Ed Lin" <ed.lin@promise.com>
-To: "james.Bottomley" <james.Bottomley@SteelEye.com>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-scsi" <linux-scsi@vger.kernel.org>, "jeff" <jeff@garzik.org>,
-       "promise_linux" <promise_linux@promise.com>
-Subject: RE: [PATCH 1/4] [SCSI]stex: fix id mapping issue
-X-mailer: Foxmail 5.0 [en]
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <NONAMEBqfT7eEmP9CDB00000710@nonameb.ptu.promise.com>
-X-OriginalArrivalTime: 04 Apr 2007 18:37:15.0203 (UTC) FILETIME=[4432F930:01C776E8]
+	Wed, 4 Apr 2007 14:08:12 -0400
+X-ORBL: [67.117.73.34]
+From: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 25/90] ARM: OMAP: h4 must have blinky leds!!
+Date: Wed,  4 Apr 2007 14:05:04 -0400
+Message-Id: <11757100281957-git-send-email-tony@atomide.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <1175710026446-git-send-email-tony@atomide.com>
+References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Brownell <dbrownell@users.sourceforge.net>
 
+This adds generic support for the "debug board" LEDs used by most of
+TI's OMAP reference boards, and board-specific support for the H4.
 
-> -----Original Message-----
-> From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
-> Sent: Wednesday, April 04, 2007 10:36 AM
-> To: Ed Lin
-> Cc: linux-scsi; linux-kernel; jeff; Promise_Linux
-> Subject: RE: [PATCH 1/4] [SCSI]stex: fix id mapping issue
-> 
-> 
-> On Wed, 2007-04-04 at 10:31 -0700, Ed Lin wrote:
-> 
-> > Sorry. It seems the mail server has problem. The patch is 
-> here in plain
-> > text. I hope this time it does not mess up. I have problem with
-> > linux-scsi
-> > mail list, if you have comment please cc me. Thanks.
-> > --Ed Lin
-> 
-> The lines are still broken, I'm afraid ... you can just resend as an
-> attachement git-applypatch copes fine with that ... inline is 
-> just good
-> for quoting and replying.
-> > +	if (hba->cardtype == st_shasta) {
-> > +		host->max_channel = 7;
-> > +		host->max_id = 16 + 1;
-> > +	} else if (hba->cardtype == st_yosemite) {
-> > +		host->max_channel = 127;
-> > +		host->max_id = 1 + 1;
-> > +	} else {
-> > +		/* st_vsc and st_vsc1 */
-> > +		host->max_channel = 0;
-> > +		host->max_id = 128 + 1;
-> 
-> This is OK.  The use of ->channel is still a bit strange ... could we
-> not simply use lun instead of channel (i.e. map the adapter id/lun to
-> the mid-layer id/lun instead of using id/channel)?
-> 
+It's derived from the not-as-generic stuff used by OMAP1 H2/H3/P2.
+Those should be able to switch easily to this version, and clean up
+some of the omap1-specific code.
 
-This is because there is a CONFIG_SCSI_MULTI_LUN option.
-If this option is not selected, max_scsi_luns will be set to 1 and
-the RAID arrays with lun>0 will disappear(because they are not
-scanned). That is unacceptable from a user's view point.  I have
-also explained this in the code comment:
+In addition to H4 support, one key improvement is supporting not just
+the "old" ARM debug LED API (with timer and idle LEDs, plus four that
+can be handy for kernel debugging), but it also supports the "new"
+generic LED API (most useful for usermode stuff IMO).  Either or both
+APIs can be enabled.
 
-	/*
-	 * firmware uses id/lun pair for a logical drive, but lun would be
-	 * always 0 if CONFIG_SCSI_MULTI_LUN not configured, so we use
-	 * channel to map lun here
-	 */
-
-If it is not allowed to map channel to lun, then maybe I have to
-report 128 targets and do the mapping in queuecommand...
-After all there must be a mapping somewhere so I don't see
-much difference here...
-
-I paste the patch again, is the format ok?
-
-
-
-The internal id/lun mapping of st_vsc and st_vsc1 controllers is different
-from st_shasta. The original driver code can only  map first 16 'entities'
-for st_vsc and st_vsc1 while there are actually 128 available.
-
-The correct mapping should be:
-channel:0~7, id:0~15 (st_shasta, console is channel:0, id:16, lun:0)
-channel:0~127, id:0 (st_yosemite, console is channel:0, id:1, lun:0)
-channel:0, id:0~127 (st_vsc and st_vsc1, console is channel:0, id:128, lun:0)
-
-Signed-off-by: Ed Lin <ed.lin@promise.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
-diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
-index 69be132..29a7b61 100644
---- a/drivers/scsi/stex.c
-+++ b/drivers/scsi/stex.c
-@@ -113,10 +113,6 @@ enum {
- 	SG_CF_64B				= 0x40,	/* 64 bit item */
- 	SG_CF_HOST				= 0x20,	/* sg in host memory */
+ arch/arm/mach-omap2/Kconfig     |    1 +
+ arch/arm/mach-omap2/board-h4.c  |   14 ++
+ arch/arm/plat-omap/Kconfig      |    5 +
+ arch/arm/plat-omap/Makefile     |    2 +-
+ arch/arm/plat-omap/debug-leds.c |  319 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 340 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index aab97cc..2a1aca7 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -20,6 +20,7 @@ config MACH_OMAP_GENERIC
+ config MACH_OMAP_H4
+ 	bool "OMAP 2420 H4 board"
+ 	depends on ARCH_OMAP2 && ARCH_OMAP24XX
++	select OMAP_DEBUG_LEDS if LEDS || LEDS_OMAP_DEBUG
  
--	ST_MAX_ARRAY_SUPPORTED			= 16,
--	ST_MAX_TARGET_NUM			= (ST_MAX_ARRAY_SUPPORTED+1),
--	ST_MAX_LUN_PER_TARGET			= 16,
+ config MACH_OMAP_APOLLON
+ 	bool "OMAP 2420 Apollon board"
+diff --git a/arch/arm/mach-omap2/board-h4.c b/arch/arm/mach-omap2/board-h4.c
+index 1e7ed6d..452193f 100644
+--- a/arch/arm/mach-omap2/board-h4.c
++++ b/arch/arm/mach-omap2/board-h4.c
+@@ -266,12 +266,26 @@ static struct platform_device h4_lcd_device = {
+ 	.id		= -1,
+ };
+ 
++static struct resource h4_led_resources[] = {
++	[0] = {
++		.flags	= IORESOURCE_MEM,
++	},
++};
++
++static struct platform_device h4_led_device = {
++	.name		= "omap_dbg_led",
++	.id		= -1,
++	.num_resources	= ARRAY_SIZE(h4_led_resources),
++	.resource	= h4_led_resources,
++};
++
+ static struct platform_device *h4_devices[] __initdata = {
+ 	&h4_smc91x_device,
+ 	&h4_flash_device,
+ 	&h4_irda_device,
+ 	&h4_kp_device,
+ 	&h4_lcd_device,
++	&h4_led_device,
+ };
+ 
+ static inline void __init h4_init_smc91x(void)
+diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
+index f2dc363..ce8bc33 100644
+--- a/arch/arm/plat-omap/Kconfig
++++ b/arch/arm/plat-omap/Kconfig
+@@ -19,6 +19,11 @@ endchoice
+ 
+ comment "OMAP Feature Selections"
+ 
++config OMAP_DEBUG_LEDS
++	bool
++	help
++	  For debug card leds on TI reference boards.
++
+ config OMAP_RESET_CLOCKS
+ 	bool "Reset unused clocks during boot"
+ 	depends on ARCH_OMAP
+diff --git a/arch/arm/plat-omap/Makefile b/arch/arm/plat-omap/Makefile
+index 2896b45..4ce277d 100644
+--- a/arch/arm/plat-omap/Makefile
++++ b/arch/arm/plat-omap/Makefile
+@@ -16,4 +16,4 @@ obj-$(CONFIG_ARCH_OMAP16XX) += ocpi.o
+ 
+ obj-$(CONFIG_CPU_FREQ) += cpu-omap.o
+ obj-$(CONFIG_OMAP_DM_TIMER) += dmtimer.o
 -
- 	st_shasta				= 0,
- 	st_vsc					= 1,
- 	st_vsc1					= 2,
-@@ -606,7 +602,7 @@ stex_queuecommand(struct scsi_cmnd *cmd,
- 		return 0;
- 	}
- 	case INQUIRY:
--		if (id != ST_MAX_ARRAY_SUPPORTED)
-+		if (id != host->max_id - 1)
- 			break;
- 		if (lun == 0 && (cmd->cmnd[1] & INQUIRY_EVPD) == 0) {
- 			stex_direct_copy(cmd, console_inq_page,
-@@ -624,7 +620,7 @@ stex_queuecommand(struct scsi_cmnd *cmd,
- 			ver.oem = ST_OEM;
- 			ver.build = ST_BUILD_VER;
- 			ver.signature[0] = PASSTHRU_SIGNATURE;
--			ver.console_id = ST_MAX_ARRAY_SUPPORTED;
-+			ver.console_id = host->max_id - 1;
- 			ver.host_no = hba->host->host_no;
- 			cmd->result = stex_direct_copy(cmd, &ver, sizeof(ver)) ?
- 				DID_OK << 16 | COMMAND_COMPLETE << 8 :
-@@ -645,13 +641,8 @@ stex_queuecommand(struct scsi_cmnd *cmd,
- 
- 	req = stex_alloc_req(hba);
- 
--	if (hba->cardtype == st_yosemite) {
--		req->lun = lun * (ST_MAX_TARGET_NUM - 1) + id;
--		req->target = 0;
--	} else {
--		req->lun = lun;
--		req->target = id;
--	}
-+	req->lun = lun;
-+	req->target = id;
- 
- 	/* cdb */
- 	memcpy(req->cdb, cmd->cmnd, STEX_CDB_LENGTH);
-@@ -1229,11 +1220,22 @@ stex_probe(struct pci_dev *pdev, const s
- 	hba->copy_buffer = hba->dma_mem + MU_BUFFER_SIZE;
- 	hba->mu_status = MU_STATE_STARTING;
- 
--	/* firmware uses id/lun pair for a logical drive, but lun would be
--	   always 0 if CONFIG_SCSI_MULTI_LUN not configured, so we use
--	   channel to map lun here */
--	host->max_channel = ST_MAX_LUN_PER_TARGET - 1;
--	host->max_id = ST_MAX_TARGET_NUM;
-+	/*
-+	 * firmware uses id/lun pair for a logical drive, but lun would be
-+	 * always 0 if CONFIG_SCSI_MULTI_LUN not configured, so we use
-+	 * channel to map lun here
-+	 */
-+	if (hba->cardtype == st_shasta) {
-+		host->max_channel = 7;
-+		host->max_id = 16 + 1;
-+	} else if (hba->cardtype == st_yosemite) {
-+		host->max_channel = 127;
-+		host->max_id = 1 + 1;
-+	} else {
-+		/* st_vsc and st_vsc1 */
-+		host->max_channel = 0;
-+		host->max_id = 128 + 1;
++obj-$(CONFIG_OMAP_DEBUG_LEDS) += debug-leds.o
+diff --git a/arch/arm/plat-omap/debug-leds.c b/arch/arm/plat-omap/debug-leds.c
+new file mode 100644
+index 0000000..511d6a5
+--- /dev/null
++++ b/arch/arm/plat-omap/debug-leds.c
+@@ -0,0 +1,319 @@
++/*
++ * linux/arch/arm/plat-omap/debug-leds.c
++ *
++ * Copyright 2003 by Texas Instruments Incorporated
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/leds.h>
++
++#include <asm/io.h>
++#include <asm/hardware.h>
++#include <asm/leds.h>
++#include <asm/system.h>
++#include <asm/mach-types.h>
++
++#include <asm/arch/fpga.h>
++#include <asm/arch/gpio.h>
++
++
++/* Many OMAP development platforms reuse the same "debug board"; these
++ * platforms include H2, H3, H4, and Perseus2.  There are 16 LEDs on the
++ * debug board (all green), accessed through FPGA registers.
++ *
++ * The "surfer" expansion board and H2 sample board also have two-color
++ * green+red LEDs (in parallel), used here for timer and idle indicators
++ * in preference to the ones on the debug board, for a "Disco LED" effect.
++ *
++ * This driver exports either the original ARM LED API, the new generic
++ * one, or both.
++ */
++
++static spinlock_t			lock;
++static struct h2p2_dbg_fpga __iomem	*fpga;
++static u16				led_state, hw_led_state;
++
++
++#ifdef	CONFIG_LEDS
++#define old_led_api()	1
++#else
++#define old_led_api()	0
++#endif
++
++#ifdef	CONFIG_LEDS_OMAP_DEBUG
++#define new_led_api()	1
++#else
++#define new_led_api()	0
++#endif
++
++
++/*-------------------------------------------------------------------------*/
++
++/* original ARM debug LED API:
++ *  - timer and idle leds (some boards use non-FPGA leds here);
++ *  - up to 4 generic leds, easily accessed in-kernel (any context)
++ */
++
++#define GPIO_LED_RED		3
++#define GPIO_LED_GREEN		OMAP_MPUIO(4)
++
++#define LED_STATE_ENABLED	0x01
++#define LED_STATE_CLAIMED	0x02
++#define LED_TIMER_ON		0x04
++
++#define GPIO_IDLE		GPIO_LED_GREEN
++#define GPIO_TIMER		GPIO_LED_RED
++
++static void h2p2_dbg_leds_event(led_event_t evt)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&lock, flags);
++
++	if (!(led_state & LED_STATE_ENABLED) && evt != led_start)
++		goto done;
++
++	switch (evt) {
++	case led_start:
++		if (fpga)
++			led_state |= LED_STATE_ENABLED;
++		break;
++
++	case led_stop:
++	case led_halted:
++		/* all leds off during suspend or shutdown */
++
++		if (!(machine_is_omap_perseus2() || machine_is_omap_h4())) {
++			omap_set_gpio_dataout(GPIO_TIMER, 0);
++			omap_set_gpio_dataout(GPIO_IDLE, 0);
++		}
++
++		__raw_writew(~0, &fpga->leds);
++		led_state &= ~LED_STATE_ENABLED;
++		goto done;
++
++	case led_claim:
++		led_state |= LED_STATE_CLAIMED;
++		hw_led_state = 0;
++		break;
++
++	case led_release:
++		led_state &= ~LED_STATE_CLAIMED;
++		break;
++
++#ifdef CONFIG_LEDS_TIMER
++	case led_timer:
++		led_state ^= LED_TIMER_ON;
++
++		if (machine_is_omap_perseus2() || machine_is_omap_h4())
++			hw_led_state ^= H2P2_DBG_FPGA_P2_LED_TIMER;
++		else {
++			omap_set_gpio_dataout(GPIO_TIMER,
++					led_state & LED_TIMER_ON);
++			goto done;
++		}
++
++		break;
++#endif
++
++#ifdef CONFIG_LEDS_CPU
++	/* LED lit iff busy */
++	case led_idle_start:
++		if (machine_is_omap_perseus2() || machine_is_omap_h4())
++			hw_led_state &= ~H2P2_DBG_FPGA_P2_LED_IDLE;
++		else {
++			omap_set_gpio_dataout(GPIO_IDLE, 1);
++			goto done;
++		}
++
++		break;
++
++	case led_idle_end:
++		if (machine_is_omap_perseus2() || machine_is_omap_h4())
++			hw_led_state |= H2P2_DBG_FPGA_P2_LED_IDLE;
++		else {
++			omap_set_gpio_dataout(GPIO_IDLE, 0);
++			goto done;
++		}
++
++		break;
++#endif
++
++	case led_green_on:
++		hw_led_state |= H2P2_DBG_FPGA_LED_GREEN;
++		break;
++	case led_green_off:
++		hw_led_state &= ~H2P2_DBG_FPGA_LED_GREEN;
++		break;
++
++	case led_amber_on:
++		hw_led_state |= H2P2_DBG_FPGA_LED_AMBER;
++		break;
++	case led_amber_off:
++		hw_led_state &= ~H2P2_DBG_FPGA_LED_AMBER;
++		break;
++
++	case led_red_on:
++		hw_led_state |= H2P2_DBG_FPGA_LED_RED;
++		break;
++	case led_red_off:
++		hw_led_state &= ~H2P2_DBG_FPGA_LED_RED;
++		break;
++
++	case led_blue_on:
++		hw_led_state |= H2P2_DBG_FPGA_LED_BLUE;
++		break;
++	case led_blue_off:
++		hw_led_state &= ~H2P2_DBG_FPGA_LED_BLUE;
++		break;
++
++	default:
++		break;
 +	}
- 	host->max_lun = 1;
- 	host->unique_id = host->host_no;
- 	host->max_cmd_len = STEX_CDB_LENGTH;
-
-
++
++
++	/*
++	 *  Actually burn the LEDs
++	 */
++	if (led_state & LED_STATE_ENABLED)
++		__raw_writew(~hw_led_state, &fpga->leds);
++
++done:
++	spin_unlock_irqrestore(&lock, flags);
++}
++
++/*-------------------------------------------------------------------------*/
++
++/* "new" LED API
++ *  - with syfs access and generic triggering
++ *  - not readily accessible to in-kernel drivers
++ */
++
++struct dbg_led {
++	struct led_classdev	cdev;
++	u16			mask;
++};
++
++static struct dbg_led dbg_leds[] = {
++	/* REVISIT at least H2 uses different timer & cpu leds... */
++#ifndef CONFIG_LEDS_TIMER
++	{ .mask = 1 << 0,  .cdev.name =  "d4:green", },		/* timer */
++#endif
++#ifndef CONFIG_LEDS_CPU
++	{ .mask = 1 << 1,  .cdev.name =  "d5:green", },		/* !idle */
++#endif
++	{ .mask = 1 << 2,  .cdev.name =  "d6:green", },
++	{ .mask = 1 << 3,  .cdev.name =  "d7:green", },
++
++	{ .mask = 1 << 4,  .cdev.name =  "d8:green", },
++	{ .mask = 1 << 5,  .cdev.name =  "d9:green", },
++	{ .mask = 1 << 6,  .cdev.name = "d10:green", },
++	{ .mask = 1 << 7,  .cdev.name = "d11:green", },
++
++	{ .mask = 1 << 8,  .cdev.name = "d12:green", },
++	{ .mask = 1 << 9,  .cdev.name = "d13:green", },
++	{ .mask = 1 << 10, .cdev.name = "d14:green", },
++	{ .mask = 1 << 11, .cdev.name = "d15:green", },
++
++#ifndef	CONFIG_LEDS
++	{ .mask = 1 << 12, .cdev.name = "d16:green", },
++	{ .mask = 1 << 13, .cdev.name = "d17:green", },
++	{ .mask = 1 << 14, .cdev.name = "d18:green", },
++	{ .mask = 1 << 15, .cdev.name = "d19:green", },
++#endif
++};
++
++static void
++fpga_led_set(struct led_classdev *cdev, enum led_brightness value)
++{
++	struct dbg_led	*led = container_of(cdev, struct dbg_led, cdev);
++	unsigned long	flags;
++
++	spin_lock_irqsave(&lock, flags);
++	if (value == LED_OFF)
++		hw_led_state &= ~led->mask;
++	else
++		hw_led_state |= led->mask;
++	__raw_writew(~hw_led_state, &fpga->leds);
++	spin_unlock_irqrestore(&lock, flags);
++}
++
++static void __init newled_init(struct device *dev)
++{
++	unsigned	i;
++	struct dbg_led	*led;
++	int		status;
++
++	for (i = 0, led = dbg_leds; i < ARRAY_SIZE(dbg_leds); i++, led++) {
++		led->cdev.brightness_set = fpga_led_set;
++		status = led_classdev_register(dev, &led->cdev);
++		if (status < 0)
++			break;
++	}
++	return;
++}
++
++
++/*-------------------------------------------------------------------------*/
++
++static int /* __init */ fpga_probe(struct platform_device *pdev)
++{
++	struct resource	*iomem;
++
++	spin_lock_init(&lock);
++
++	iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!iomem)
++		return -ENODEV;
++
++	fpga = ioremap(iomem->start, H2P2_DBG_FPGA_SIZE);
++	__raw_writew(~0, &fpga->leds);
++
++	if (old_led_api()) {
++		leds_event = h2p2_dbg_leds_event;
++		leds_event(led_start);
++	}
++
++	if (new_led_api()) {
++		newled_init(&pdev->dev);
++	}
++
++	return 0;
++}
++
++static int fpga_suspend_late(struct platform_device *pdev, pm_message_t mesg)
++{
++	__raw_writew(~0, &fpga->leds);
++	return 0;
++}
++
++static int fpga_resume_early(struct platform_device *pdev)
++{
++	__raw_writew(~hw_led_state, &fpga->leds);
++	return 0;
++}
++
++
++static struct platform_driver led_driver = {
++	.driver.name	= "omap_dbg_led",
++	.probe		= fpga_probe,
++	.suspend_late	= fpga_suspend_late,
++	.resume_early	= fpga_resume_early,
++};
++
++static int __init fpga_init(void)
++{
++	if (machine_is_omap_h4()
++			|| machine_is_omap_h3()
++			|| machine_is_omap_h2()
++			|| machine_is_omap_perseus2()
++			)
++		return platform_driver_register(&led_driver);
++	return 0;
++}
++fs_initcall(fpga_init);
+-- 
+1.4.4.2
 
