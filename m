@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbXDDWew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751951AbXDDWgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751467AbXDDWew (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 18:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbXDDWew
+	id S1751951AbXDDWgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 18:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXDDWgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 18:34:52 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59969 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbXDDWeu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 18:34:50 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       reiserfs-dev@namesys.com, Oliver Pinter <oliver.pntr@gmail.com>
-Subject: Re: 2.6.21-rc5 possible regression: KDE processes die silently
-References: <4601B3D0.3060600@imap.cc> <460FCDE2.1080503@imap.cc>
-	<20070402225006.GI14134@stusta.de> <46140B98.1080004@imap.cc>
-Date: Wed, 04 Apr 2007 16:30:03 -0600
-In-Reply-To: <46140B98.1080004@imap.cc> (Tilman Schmidt's message of "Wed, 04
-	Apr 2007 22:33:28 +0200")
-Message-ID: <m1mz1n22ok.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 4 Apr 2007 18:36:50 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:38720 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXDDWgt (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 18:36:49 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: per-thread rusage
+In-Reply-To: Your message of "Wed, 04 Apr 2007 10:29:31 PDT."
+             <20070404172931.GM2986@holomorphy.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070404172931.GM2986@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1175726207_4061P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 04 Apr 2007 18:36:47 -0400
+Message-ID: <7653.1175726207@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt <tilman@imap.cc> writes:
+--==_Exmh_1175726207_4061P
+Content-Type: text/plain; charset=us-ascii
 
->> We also have another report of crashes under KDE:
->> 
->> Subject    : crashes in KDE
->> References : http://bugzilla.kernel.org/show_bug.cgi?id=8157
->> Submitter  : Oliver Pinter <oliver.pntr@gmail.com>
->
-> Could be the same. The report is not detailed enough to say.
-> Oliver provokes his crash with amarok which would fit in with
-> the sound hypothesis.
+On Wed, 04 Apr 2007 10:29:31 PDT, William Lee Irwin III said:
 
-Oliver reports the problem not recurring after updating to 2.6.21-rc5-git7.
+> Index: anon/include/linux/resource.h
+> ===================================================================
+> --- anon.orig/include/linux/resource.h	2007-04-04 09:57:41.239118534 -
+0700
+> +++ anon/include/linux/resource.h	2007-04-04 09:57:59.840178548 -0700
+> @@ -18,7 +18,8 @@
+>   */
+>  #define	RUSAGE_SELF	0
+>  #define	RUSAGE_CHILDREN	(-1)
+> -#define RUSAGE_BOTH	(-2)		/* sys_wait4() uses this */
+> +#define RUSAGE_THREAD	(-2)
+> +#define RUSAGE_BOTH	(-3)		/* sys_wait4() uses this */
 
->> We also have one bug kwin ran into that got fixed after -rc5:
->> 
->> Subject    : kwin dies silently
-> [...]
->> Fixed-By   : Eric W. Biederman <ebiederm@xmission.com>
->> Commit     : 14e9d5730adfca26452b3a2838a80af6950556f5
->
-> Looks promising. Building -rc5-git12 now. Will test that until
-> -rc6 arrives.
+Umm.. I'm having a high-idiot-quotient day today, but don't you want to
+leave _BOTH at -2 and put _THREAD at -3, to avoid an ABI breakage?
 
-Thanks.
+--==_Exmh_1175726207_4061P
+Content-Type: application/pgp-signature
 
-Eric
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGFCh/cC3lWbTT17ARAre1AKD5Z6TOf6D9soCDdZr77xd9CQPesgCdEGVa
+81UZJ9a42A6o5Oj1xxlGg5s=
+=/ZeH
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1175726207_4061P--
