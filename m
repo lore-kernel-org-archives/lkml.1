@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992954AbXDDPfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992962AbXDDPgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992954AbXDDPfo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992966AbXDDPfn
+	id S2992962AbXDDPgy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXDDPgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:35:43 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:44553 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992954AbXDDPfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:35:42 -0400
-Date: Wed, 4 Apr 2007 08:35:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-In-Reply-To: <20070404033726.GE18507@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
-References: <20070329075805.GA6852@wotan.suse.de>
- <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com>
- <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de>
+	Wed, 4 Apr 2007 11:36:54 -0400
+Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:3894 "EHLO
+	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992962AbXDDPgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 11:36:53 -0400
+Message-ID: <4613C612.5040600@rtr.ca>
+Date: Wed, 04 Apr 2007 11:36:50 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Phillip Susi <psusi@cfl.rr.com>
+Cc: Chris Snook <csnook@redhat.com>, Paa Paa <paapaa125@hotmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Lower HD transfer rate with NCQ enabled?
+References: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl> <46128175.2090506@redhat.com> <4612852C.2030801@rtr.ca> <4612A854.1070702@cfl.rr.com>
+In-Reply-To: <4612A854.1070702@cfl.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 4 Apr 2007, Nick Piggin wrote:
+Phillip Susi wrote:
+> Mark Lord wrote:
+>> But WD drives, in particular the Raptor series, have a firmware "feature"
+>> that disables "drive readahead" whenever NCQ is in use.
 > 
-> Shall I do a more complete patchset and ask Andrew to give it a
-> run in -mm?
+> Why is this an issue?  Shouldn't the kernel be sending down its own 
+> readahead requests to keep the disk busy?
 
-Do this trivial one first. See how it fares.
+The drive firmware readahead is inherently *way* more effective than
+other forms, and without it, sequential read performance really suffers.
+Regardless of how software tries to compensate.
 
-Although I don't know how much -mm will do for it. There is certainly not 
-going to be any correctness problems, afaik, just *performance* problems. 
-Does anybody do any performance testing on -mm?
+This is mostly a problem with the WD Raptor drive, and some other WD drives.
+I have not yet encountered/noticed the problem with other brands.
 
-That said, talking about correctness/performance problems:
-
-> +	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
-> +	if (likely(!pte_none(*page_table))) {
->  		inc_mm_counter(mm, anon_rss);
->  		lru_cache_add_active(page);
->  		page_add_new_anon_rmap(page, vma, address);
-
-Isn't that test the wrong way around?
-
-Shouldn't it be
-
-	if (likely(pte_none(*page_table))) {
-
-without any logical negation? Was this patch tested?
-
-Anyway, I'm not against this, but I can see somebody actually *wanting* 
-the ZERO page in some cases. I've used the fact for TLB testing, for 
-example, by just doing a big malloc(), and knowing that the kernel will 
-re-use the ZERO_PAGE so that I don't get any cache effects (well, at least 
-not any *physical* cache effects. Virtually indexed cached will still show 
-effects of it, of course, but I haven't cared).
-
-That's an example of an app that actually cares about the page allocation 
-(or, in this case, the lack there-of). Not an important one, but maybe 
-there are important ones that care?
-
-			Linus
+-ml
