@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993031AbXDDSl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbXDDSmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993031AbXDDSl6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993029AbXDDSlV
+	id S1753895AbXDDSmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXDDSmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:41:21 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:11043 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993018AbXDDSjp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:39:45 -0400
-X-AuditID: d80ac21c-95f9ebb000007de4-90-4613f0f1e9e9 
-Date: Wed, 4 Apr 2007 19:39:07 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: missing madvise functionality
-In-Reply-To: <20070404110406.c79b850d.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704041917280.14635@blonde.wat.veritas.com>
-References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de>
- <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org>
- <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com>
- <20070403202937.GE355@devserv.devel.redhat.com> <20070403144948.fe8eede6.akpm@linux-foundation.org>
- <20070403160231.33aa862d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704040949050.17341@blonde.wat.veritas.com>
- <20070404110406.c79b850d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 04 Apr 2007 18:39:11.0243 (UTC) FILETIME=[895D45B0:01C776E8]
-X-Brightmail-Tracker: AAAAAA==
+	Wed, 4 Apr 2007 14:42:49 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:51892 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750714AbXDDSmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 14:42:47 -0400
+Date: Wed, 4 Apr 2007 11:41:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       ego@in.ibm.com, paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com, Roland McGrath <roland@redhat.com>
+Subject: Re: utrace merge
+Message-Id: <20070404114132.4d563267.akpm@linux-foundation.org>
+In-Reply-To: <20070404103624.GA509@infradead.org>
+References: <20070402053457.GA9076@in.ibm.com>
+	<20070402061612.GA7072@elte.hu>
+	<20070403120104.GB29308@in.ibm.com>
+	<200704032134.29720.rjw@sisk.pl>
+	<20070403132427.88308b59.akpm@linux-foundation.org>
+	<20070404100644.GC19120@elte.hu>
+	<20070404103624.GA509@infradead.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Andrew Morton wrote:
+On Wed, 4 Apr 2007 11:36:24 +0100 Christoph Hellwig <hch@infradead.org> wrote:
+
+> On Wed, Apr 04, 2007 at 12:06:44PM +0200, Ingo Molnar wrote:
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > urgh, I screwed up, sorry.
+> > > 
+> > > utrace-prep-2 reverts a bit of the underlying tree so that the utrace 
+> > > patches (which are against mainline) don't throw a tremendous reject 
+> > > which has to be fixed each time I pull Roland's tree.  I'm supposed to 
+> > > reapply that change after the utrace patches but forgot.
+> > 
+> > btw., how about pushing utrace to v2.6.22, is anything big holding that 
+> > up? (other than Roland's modesty, which we should gently but firmly 
+> > ignore in this case =B-)
 > 
-> The treatment is identical to clean swapcache pages, with the sole
-> exception that they don't actually consume any swap space - hence the fake
-> swapcache entry thing.
+> a) lots of architecture support
+> b) lots of overengineered and obsfucated code
+> c) missing public information
+> 
+> I've also not gotten any feedback to my ages old review and the issues
+> don't seem to be addressed either.
+> 
 
-I see, sneaking through try_to_unmap's anon PageSwapCache assumptions
-as simply as possible - thanks.
-
-(Coincidentally, Andrea pointed to precisely the same issue in the
-no PAGE_ZERO thread, when we were toying with writable but clean.)
-
-> One thing which we haven't sorted out with all this stuff: once the
-> application has marked an address range (and some pages) as
-> whatever-were-going-call-this-feature, how does the application undo
-> that change?
-
-By re-referencing the pages.  (Hmm, so an incorrect app which accesses
-"free"d areas, will undo it: well, okay, nothing terrible about that.)
-
-> What effect will things like mremap, madvise and mlock have upon
-> these pages?
-
-mlock will undo the state in its make_pages_present: I guess that
-should happen in or near follow_page's mark_page_accessed.
-
-mremap?  Other madvises?  Nothing much at all: mremap can move
-them around, and the madvises do whatever they do - I don't notice
-any problem in that direction, but it'll be easier when we have an
-implementation to poke at.
-
-Hugh
+And rmk had showstopper problems with ARM support which I never
+saw resolved.
