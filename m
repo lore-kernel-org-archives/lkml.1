@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422720AbXDDSWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422717AbXDDSWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422720AbXDDSWW (ORCPT <rfc822;w@1wt.eu>);
+	id S1422717AbXDDSWW (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 4 Apr 2007 14:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934087AbXDDSNE
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934073AbXDDSM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:13:04 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:38960 "EHLO
+	Wed, 4 Apr 2007 14:12:57 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:39070 "EHLO
 	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934070AbXDDSMX (ORCPT
+	with ESMTP id S934084AbXDDSMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:12:23 -0400
+	Wed, 4 Apr 2007 14:12:35 -0400
 X-ORBL: [67.117.73.34]
 From: Tony Lindgren <tony@atomide.com>
 To: linux-kernel@vger.kernel.org
 Cc: Kai Svahn <kai.svahn@nokia.com>, Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 62/90] ARM: OMAP: Merge board specific files from N800 tree
-Date: Wed,  4 Apr 2007 14:05:41 -0400
-Message-Id: <11757101352361-git-send-email-tony@atomide.com>
+Subject: [PATCH 63/90] ARM: OMAP: Merge PM code from N800 tree
+Date: Wed,  4 Apr 2007 14:05:42 -0400
+Message-Id: <11757101391215-git-send-email-tony@atomide.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757101333782-git-send-email-tony@atomide.com>
+In-Reply-To: <11757101352361-git-send-email-tony@atomide.com>
 References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!
  57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <117571004562-git-send-email-tony@atomide.com> <11757100491583-git-send-email-tony@atomide.com> <11757100511172-git-send-email-tony@atomide.com> <1175710059333-git-send-email-tony@atomide.com> <11757100623383-git-send-email-tony@atomide.com> <11757100641006-git-send-email-tony@atomide.com> <11757100661228-git-send-email-tony@atomide.com> <11757100691131-git-send-email-tony@atomide.com> <11757100713004-git-send-email-tony@atomide.com> <11757100752021-git-send-email-tony@atomide.com> <11757100781275-git-send-email-tony@atomide.com> <11757100811771-git-send-email-tony@atomide.com> <11757100821353-git-send-email-tony@atomide.com> <11757100853841-git-send-email-tony@atomide.com> <1175710087578-git-send-email-tony@atomide.com> <11757100911247-git-send-email-tony@atomide.com> <1175710093864-git-send-email-tony@atomide.com> <11757100952384-git-send-email-tony@atomide.com> <11757100982726-g!
  it-send-email-tony@atomide.com> <11757101012787-git-send-email-tony@atomide.com> <1175710103340-git-send-email-tony@atomide.com> <11757101072553-git-send-email-tony@atomide.com> <11757101101180-git-send-email-tony@atomide.com> <11757101123620-git-send-email-tony@atomide.com> <11757101141643-git-send-email-tony@atomide.com> <
@@ -27,1757 +27,1583 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kai Svahn <kai.svahn@nokia.com>
 
-This patch merges board specific files from N800 tree.
-Nokia has published the files at:
+This patch merges omap2 PM code from N800 tree.
 
-http://repository.maemo.org/pool/maemo3.0/free/source/
-kernel-source-rx-34_2.6.18.orig.tar.gz
-kernel-source-rx-34_2.6.18-osso29.diff.gz
+Patch adds support for sleep while idle for omap2
+and handy serial console debbugging code. It also
+moves code from pm-domain.c to pm.c.
+
+This code can be used as a base for developing
+power management for all omap24xx boards.
 
 Signed-off-by: Kai Svahn <kai.svahn@nokia.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/Kconfig            |    5 +
- arch/arm/mach-omap2/Makefile           |    4 +
- arch/arm/mach-omap2/board-n800-audio.c |  357 ++++++++++++++++++++++
- arch/arm/mach-omap2/board-n800-bt.c    |   42 +++
- arch/arm/mach-omap2/board-n800-dsp.c   |  158 ++++++++++
- arch/arm/mach-omap2/board-n800-flash.c |   61 ++++
- arch/arm/mach-omap2/board-n800-mmc.c   |  279 +++++++++++++++++
- arch/arm/mach-omap2/board-n800-pm.c    |   77 +++++
- arch/arm/mach-omap2/board-n800-usb.c   |  102 ++++++
- arch/arm/mach-omap2/board-n800.c       |  525 ++++++++++++++++++++++++++++++++
- include/asm-arm/arch-omap/board.h      |   24 ++-
- 11 files changed, 1632 insertions(+), 2 deletions(-)
+ arch/arm/mach-omap2/Makefile    |    2 +-
+ arch/arm/mach-omap2/pm-domain.c |  299 ------------
+ arch/arm/mach-omap2/pm.c        |  969 ++++++++++++++++++++++++++++-----------
+ arch/arm/mach-omap2/sleep.S     |   23 +-
+ include/asm-arm/arch-omap/pm.h  |   66 +---
+ 5 files changed, 719 insertions(+), 640 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-index 83608e4..845daa6 100644
---- a/arch/arm/mach-omap2/Kconfig
-+++ b/arch/arm/mach-omap2/Kconfig
-@@ -22,9 +22,14 @@ config MACH_OMAP_GENERIC
- 	bool "Generic OMAP board"
- 	depends on ARCH_OMAP2 && ARCH_OMAP24XX
- 
-+config MACH_NOKIA_N800
-+	bool "Nokia N800"
-+	depends on ARCH_OMAP24XX
-+
- config MACH_OMAP2_TUSB6010
- 	bool
- 	depends on ARCH_OMAP2 && ARCH_OMAP2420
-+	default y if MACH_NOKIA_N800
- 
- config MACH_OMAP_H4
- 	bool "OMAP 2420 H4 board"
 diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
-index 626d9b8..5eee94f 100644
+index 5eee94f..60373f5 100644
 --- a/arch/arm/mach-omap2/Makefile
 +++ b/arch/arm/mach-omap2/Makefile
-@@ -20,6 +20,10 @@ obj-$(CONFIG_MACH_OMAP_GENERIC)		+= board-generic.o
- obj-$(CONFIG_MACH_OMAP_H4)		+= board-h4.o
- obj-$(CONFIG_MACH_OMAP_2430SDP)		+= board-2430sdp.o
- obj-$(CONFIG_MACH_OMAP_APOLLON)		+= board-apollon.o
-+obj-$(CONFIG_MACH_NOKIA_N800)		+= board-n800.o board-n800-flash.o \
-+					   board-n800-mmc.o board-n800-bt.o \
-+					   board-n800-audio.o board-n800-usb.o \
-+					   board-n800-dsp.o board-n800-pm.o
+@@ -9,7 +9,7 @@ obj-y := irq.o id.o io.o sram-fn.o memory.o prcm.o clock.o mux.o devices.o \
+ obj-$(CONFIG_OMAP_MPU_TIMER)		+= timer-gp.o
  
- # TUSB 6010 chips
- obj-$(CONFIG_MACH_OMAP2_TUSB6010)	+= usb-tusb6010.o
-diff --git a/arch/arm/mach-omap2/board-n800-audio.c b/arch/arm/mach-omap2/board-n800-audio.c
-new file mode 100644
-index 0000000..1608d3d
---- /dev/null
-+++ b/arch/arm/mach-omap2/board-n800-audio.c
-@@ -0,0 +1,357 @@
-+/*
-+ * linux/arch/arm/mach-omap/omap2/board-n800-audio.c
+ # Power Management
+-obj-$(CONFIG_PM) += pm.o pm-domain.o sleep.o
++obj-$(CONFIG_PM) += pm.o sleep.o
+ 
+ # DSP
+ obj-$(CONFIG_OMAP_DSP)	+= mailbox_mach.o
+diff --git a/arch/arm/mach-omap2/pm-domain.c b/arch/arm/mach-omap2/pm-domain.c
+deleted file mode 100644
+index 2494091..0000000
+--- a/arch/arm/mach-omap2/pm-domain.c
++++ /dev/null
+@@ -1,299 +0,0 @@
+-/*
+- * linux/arch/arm/mach-omap2/pm-domain.c
+- *
+- * Power domain functions for OMAP2
+- *
+- * Copyright (C) 2006 Nokia Corporation
+- * Tony Lindgren <tony@atomide.com>
+- *
+- * Some code based on earlier OMAP2 sample PM code
+- * Copyright (C) 2005 Texas Instruments, Inc.
+- * Richard Woodruff <r-woodruff2@ti.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/clk.h>
+-
+-#include <asm/io.h>
+-
+-#include "prcm-regs.h"
+-
+-/* Power domain offsets */
+-#define PM_MPU_OFFSET			0x100
+-#define PM_CORE_OFFSET			0x200
+-#define PM_GFX_OFFSET			0x300
+-#define PM_WKUP_OFFSET			0x400		/* Autoidle only */
+-#define PM_PLL_OFFSET			0x500		/* Autoidle only */
+-#define PM_DSP_OFFSET			0x800
+-#define PM_MDM_OFFSET			0xc00
+-
+-/* Power domain wake-up dependency control register */
+-#define PM_WKDEP_OFFSET			0xc8
+-#define		EN_MDM			(1 << 5)
+-#define		EN_WKUP			(1 << 4)
+-#define		EN_GFX			(1 << 3)
+-#define		EN_DSP			(1 << 2)
+-#define		EN_MPU			(1 << 1)
+-#define		EN_CORE			(1 << 0)
+-
+-/* Core power domain state transition control register */
+-#define PM_PWSTCTRL_OFFSET		0xe0
+-#define		FORCESTATE		(1 << 18)	/* Only for DSP & GFX */
+-#define		MEM4RETSTATE		(1 << 6)
+-#define		MEM3RETSTATE		(1 << 5)
+-#define		MEM2RETSTATE		(1 << 4)
+-#define		MEM1RETSTATE		(1 << 3)
+-#define		LOGICRETSTATE		(1 << 2)	/* Logic is retained */
+-#define		POWERSTATE_OFF		0x3
+-#define		POWERSTATE_RETENTION	0x1
+-#define		POWERSTATE_ON		0x0
+-
+-/* Power domain state register */
+-#define PM_PWSTST_OFFSET		0xe4
+-
+-/* Hardware supervised state transition control register */
+-#define CM_CLKSTCTRL_OFFSET		0x48
+-#define		AUTOSTAT_MPU		(1 << 0)	/* MPU */
+-#define		AUTOSTAT_DSS		(1 << 2)	/* Core */
+-#define		AUTOSTAT_L4		(1 << 1)	/* Core */
+-#define		AUTOSTAT_L3		(1 << 0)	/* Core */
+-#define		AUTOSTAT_GFX		(1 << 0)	/* GFX */
+-#define		AUTOSTAT_IVA		(1 << 8)	/* 2420 IVA in DSP domain */
+-#define		AUTOSTAT_DSP		(1 << 0)	/* DSP */
+-#define		AUTOSTAT_MDM		(1 << 0)	/* MDM */
+-
+-/* Automatic control of interface clock idling */
+-#define CM_AUTOIDLE1_OFFSET		0x30
+-#define CM_AUTOIDLE2_OFFSET		0x34		/* Core only */
+-#define CM_AUTOIDLE3_OFFSET		0x38		/* Core only */
+-#define CM_AUTOIDLE4_OFFSET		0x3c		/* Core only */
+-#define		AUTO_54M(x)		(((x) & 0x3) << 6)
+-#define		AUTO_96M(x)		(((x) & 0x3) << 2)
+-#define		AUTO_DPLL(x)		(((x) & 0x3) << 0)
+-#define		AUTO_STOPPED		0x3
+-#define		AUTO_BYPASS_FAST	0x2		/* DPLL only */
+-#define		AUTO_BYPASS_LOW_POWER	0x1		/* DPLL only */
+-#define		AUTO_DISABLED		0x0
+-
+-/* Voltage control PRCM_VOLTCTRL bits */
+-#define		AUTO_EXTVOLT		(1 << 15)
+-#define		FORCE_EXTVOLT		(1 << 14)
+-#define		SETOFF_LEVEL(x)		(((x) & 0x3) << 12)
+-#define		MEMRETCTRL		(1 << 8)
+-#define		SETRET_LEVEL(x)		(((x) & 0x3) << 6)
+-#define		VOLT_LEVEL(x)		(((x) & 0x3) << 0)
+-
+-#define OMAP24XX_PRCM_VBASE	IO_ADDRESS(OMAP24XX_PRCM_BASE)
+-#define prcm_readl(r)		__raw_readl(OMAP24XX_PRCM_VBASE + (r))
+-#define prcm_writel(v, r)	__raw_writel((v), OMAP24XX_PRCM_VBASE + (r))
+-
+-static u32 pmdomain_get_wakeup_dependencies(int domain_offset)
+-{
+-	return prcm_readl(domain_offset + PM_WKDEP_OFFSET);
+-}
+-
+-static void pmdomain_set_wakeup_dependencies(u32 state, int domain_offset)
+-{
+-	prcm_writel(state, domain_offset + PM_WKDEP_OFFSET);
+-}
+-
+-static u32 pmdomain_get_powerstate(int domain_offset)
+-{
+-	return prcm_readl(domain_offset + PM_PWSTCTRL_OFFSET);
+-}
+-
+-static void pmdomain_set_powerstate(u32 state, int domain_offset)
+-{
+-	prcm_writel(state, domain_offset + PM_PWSTCTRL_OFFSET);
+-}
+-
+-static u32 pmdomain_get_clock_autocontrol(int domain_offset)
+-{
+-	return prcm_readl(domain_offset + CM_CLKSTCTRL_OFFSET);
+-}
+-
+-static void pmdomain_set_clock_autocontrol(u32 state, int domain_offset)
+-{
+-	prcm_writel(state, domain_offset + CM_CLKSTCTRL_OFFSET);
+-}
+-
+-static u32 pmdomain_get_clock_autoidle1(int domain_offset)
+-{
+-	return prcm_readl(domain_offset + CM_AUTOIDLE1_OFFSET);
+-}
+-
+-/* Core domain only */
+-static u32 pmdomain_get_clock_autoidle2(int domain_offset)
+-{
+-	return prcm_readl(domain_offset + CM_AUTOIDLE2_OFFSET);
+-}
+-
+-/* Core domain only */
+-static u32 pmdomain_get_clock_autoidle3(int domain_offset)
+-{
+-	return prcm_readl(domain_offset + CM_AUTOIDLE3_OFFSET);
+-}
+-
+-/* Core domain only */
+-static u32 pmdomain_get_clock_autoidle4(int domain_offset)
+-{
+-	return prcm_readl(domain_offset + CM_AUTOIDLE4_OFFSET);
+-}
+-
+-static void pmdomain_set_clock_autoidle1(u32 state, int domain_offset)
+-{
+-	prcm_writel(state, CM_AUTOIDLE1_OFFSET + domain_offset);
+-}
+-
+-/* Core domain only */
+-static void pmdomain_set_clock_autoidle2(u32 state, int domain_offset)
+-{
+-	prcm_writel(state, CM_AUTOIDLE2_OFFSET + domain_offset);
+-}
+-
+-/* Core domain only */
+-static void pmdomain_set_clock_autoidle3(u32 state, int domain_offset)
+-{
+-	prcm_writel(state, CM_AUTOIDLE3_OFFSET + domain_offset);
+-}
+-
+-/* Core domain only */
+-static void pmdomain_set_clock_autoidle4(u32 state, int domain_offset)
+-{
+-	prcm_writel(state, CM_AUTOIDLE4_OFFSET + domain_offset);
+-}
+-
+-/*
+- * Configures power management domains to idle clocks automatically.
+- */
+-void pmdomain_set_autoidle(void)
+-{
+-	u32 val;
+-
+-	/* Set PLL auto stop for 54M, 96M & DPLL */
+-	pmdomain_set_clock_autoidle1(AUTO_54M(AUTO_STOPPED) |
+-				     AUTO_96M(AUTO_STOPPED) |
+-				     AUTO_DPLL(AUTO_STOPPED), PM_PLL_OFFSET);
+-
+-	/* External clock input control
+-	 * REVISIT: Should this be in clock framework?
+-	 */
+-	PRCM_CLKSRC_CTRL |= (0x3 << 3);
+-
+-	/* Configure number of 32KHz clock cycles for sys_clk */
+-	PRCM_CLKSSETUP = 0x00ff;
+-
+-	/* Configure automatic voltage transition */
+-	PRCM_VOLTSETUP = 0;
+-	val = PRCM_VOLTCTRL;
+-	val &= ~(SETOFF_LEVEL(0x3) | VOLT_LEVEL(0x3));
+-	val |= SETOFF_LEVEL(1) | VOLT_LEVEL(1) | AUTO_EXTVOLT;
+-	PRCM_VOLTCTRL = val;
+-
+-	/* Disable emulation tools functional clock */
+-	PRCM_CLKEMUL_CTRL = 0x0;
+-
+-	/* Set core memory retention state */
+-	val = pmdomain_get_powerstate(PM_CORE_OFFSET);
+-	if (cpu_is_omap2420()) {
+-		val &= ~(0x7 << 3);
+-		val |= (MEM3RETSTATE | MEM2RETSTATE | MEM1RETSTATE);
+-	} else {
+-		val &= ~(0xf << 3);
+-		val |= (MEM4RETSTATE | MEM3RETSTATE | MEM2RETSTATE |
+-			MEM1RETSTATE);
+-	}
+-	pmdomain_set_powerstate(val, PM_CORE_OFFSET);
+-
+-	/* OCP interface smart idle. REVISIT: Enable autoidle bit0 ? */
+-	val = SMS_SYSCONFIG;
+-	val &= ~(0x3 << 3);
+-	val |= (0x2 << 3) | (1 << 0);
+-	SMS_SYSCONFIG |= val;
+-
+-	val = SDRC_SYSCONFIG;
+-	val &= ~(0x3 << 3);
+-	val |= (0x2 << 3);
+-	SDRC_SYSCONFIG = val;
+-
+-	/* Configure L3 interface for smart idle.
+-	 * REVISIT: Enable autoidle bit0 ?
+-	 */
+-	val = GPMC_SYSCONFIG;
+-	val &= ~(0x3 << 3);
+-	val |= (0x2 << 3) | (1 << 0);
+-	GPMC_SYSCONFIG = val;
+-
+-	pmdomain_set_powerstate(LOGICRETSTATE | POWERSTATE_RETENTION,
+-				PM_MPU_OFFSET);
+-	pmdomain_set_powerstate(POWERSTATE_RETENTION, PM_CORE_OFFSET);
+-	if (!cpu_is_omap2420())
+-		pmdomain_set_powerstate(POWERSTATE_RETENTION, PM_MDM_OFFSET);
+-
+-	/* Assume suspend function has saved the state for DSP and GFX */
+-	pmdomain_set_powerstate(FORCESTATE | POWERSTATE_OFF, PM_DSP_OFFSET);
+-	pmdomain_set_powerstate(FORCESTATE | POWERSTATE_OFF, PM_GFX_OFFSET);
+-
+-#if 0
+-	/* REVISIT: Internal USB needs special handling */
+-	force_standby_usb();
+-	if (cpu_is_omap2430())
+-		force_hsmmc();
+-	sdram_self_refresh_on_idle_req(1);
+-#endif
+-
+-	/* Enable clock auto control for all domains.
+-	 * Note that CORE domain includes also DSS, L4 & L3.
+-	 */
+-	pmdomain_set_clock_autocontrol(AUTOSTAT_MPU, PM_MPU_OFFSET);
+-	pmdomain_set_clock_autocontrol(AUTOSTAT_GFX, PM_GFX_OFFSET);
+-	pmdomain_set_clock_autocontrol(AUTOSTAT_DSS | AUTOSTAT_L4 | AUTOSTAT_L3,
+-				       PM_CORE_OFFSET);
+-	if (cpu_is_omap2420())
+-		pmdomain_set_clock_autocontrol(AUTOSTAT_IVA | AUTOSTAT_DSP,
+-					       PM_DSP_OFFSET);
+-	else {
+-		pmdomain_set_clock_autocontrol(AUTOSTAT_DSP, PM_DSP_OFFSET);
+-		pmdomain_set_clock_autocontrol(AUTOSTAT_MDM, PM_MDM_OFFSET);
+-	}
+-
+-	/* Enable clock autoidle for all domains */
+-	pmdomain_set_clock_autoidle1(0x2, PM_DSP_OFFSET);
+-	if (cpu_is_omap2420()) {
+-		pmdomain_set_clock_autoidle1(0xfffffff9, PM_CORE_OFFSET);
+-		pmdomain_set_clock_autoidle2(0x7, PM_CORE_OFFSET);
+-		pmdomain_set_clock_autoidle1(0x3f, PM_WKUP_OFFSET);
+-	} else {
+-		pmdomain_set_clock_autoidle1(0xeafffff1, PM_CORE_OFFSET);
+-		pmdomain_set_clock_autoidle2(0xfff, PM_CORE_OFFSET);
+-		pmdomain_set_clock_autoidle1(0x7f, PM_WKUP_OFFSET);
+-		pmdomain_set_clock_autoidle1(0x3, PM_MDM_OFFSET);
+-	}
+-	pmdomain_set_clock_autoidle3(0x7, PM_CORE_OFFSET);
+-	pmdomain_set_clock_autoidle4(0x1f, PM_CORE_OFFSET);
+-}
+-
+-/*
+- * Initializes power domains by removing wake-up dependencies and powering
+- * down DSP and GFX. Gets called from PM init. Note that DSP and IVA code
+- * must re-enable DSP and GFX when used.
+- */
+-void __init pmdomain_init(void)
+-{
+-	/* Remove all domain wakeup dependencies */
+-	pmdomain_set_wakeup_dependencies(EN_WKUP | EN_CORE, PM_MPU_OFFSET);
+-	pmdomain_set_wakeup_dependencies(0, PM_DSP_OFFSET);
+-	pmdomain_set_wakeup_dependencies(0, PM_GFX_OFFSET);
+-	pmdomain_set_wakeup_dependencies(EN_WKUP | EN_MPU, PM_CORE_OFFSET);
+-	if (cpu_is_omap2430())
+-		pmdomain_set_wakeup_dependencies(0, PM_MDM_OFFSET);
+-
+-	/* Power down DSP and GFX */
+-	pmdomain_set_powerstate(POWERSTATE_OFF | FORCESTATE, PM_DSP_OFFSET);
+-	pmdomain_set_powerstate(POWERSTATE_OFF | FORCESTATE, PM_GFX_OFFSET);
+-}
+diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
+index d7eee99..1034eb9 100644
+--- a/arch/arm/mach-omap2/pm.c
++++ b/arch/arm/mach-omap2/pm.c
+@@ -6,6 +6,16 @@
+  * Copyright (C) 2006 Nokia Corporation
+  * Tony Lindgren <tony@atomide.com>
+  *
++ * Fixed suspend-resume/dynamic-idle to get OMAP to retention
++ * Amit Kucheria <amit.kucheria@nokia.com>
++ * Igor Stoppa <igor.stoppa@nokia.com>
 + *
-+ * Copyright (C) 2006 Nokia Corporation
-+ * Contact: Juha Yrj?l?
-+ *          Jarkko Nikula <jarkko.nikula@nokia.com>
++ * Fixed MPU sleep to get ARM idle
++ * Igor Stoppa <igor.stoppa@nokia.com>
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
++ * Fixed MPU sleep some more
++ * Juha Yrjola
 + *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-+ * 02110-1301 USA
-+ *
-+ */
-+
-+#include <linux/err.h>
+  * Copyright (C) 2005 Texas Instruments, Inc.
+  * Richard Woodruff <r-woodruff2@ti.com>
+  *
+@@ -24,6 +34,7 @@
+ #include <linux/sysfs.h>
+ #include <linux/module.h>
+ #include <linux/delay.h>
 +#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/platform_device.h>
-+#include <linux/spi/tsc2301.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -36,309 +47,667 @@
+ #include <asm/arch/clock.h>
+ #include <asm/arch/sram.h>
+ #include <asm/arch/pm.h>
++#include <asm/arch/mux.h>
++#include <asm/arch/dma.h>
++#include <asm/arch/board.h>
 +
-+#include <asm/io.h>
-+#include <asm/arch/eac.h>
++#define PRCM_BASE		0x48008000
++#define PRCM_REVISION		0x000
++#define PRCM_SYSCONFIG		0x010
++#define PRCM_IRQSTATUS_MPU	0x018
++#define PRCM_IRQENABLE_MPU	0x01c
++#define PRCM_VOLTCTRL		0x050
++#define		AUTO_EXTVOLT	(1 << 15)
++#define		FORCE_EXTVOLT	(1 << 14)
++#define		SETOFF_LEVEL(x)	(((x) & 0x3) << 12)
++#define		MEMRETCTRL	(1 << 8)
++#define		SETRET_LEVEL(x)	(((x) & 0x3) << 6)
++#define		VOLT_LEVEL(x)	(((x) & 0x3) << 0)
++#define PRCM_CLKSRC_CTRL	0x060
++#define PRCM_CLKOUT_CTRL	0x070
++#define PRCM_CLKEMUL_CTRL	0x078
++#define PRCM_CLKCFG_CTRL	0x080
++#define PRCM_VOLTSETUP		0x090
++#define PRCM_CLKSSETUP		0x094
 +
-+#include "../plat-omap/dsp/dsp_common.h"
 +
-+#if defined(CONFIG_SPI_TSC2301_AUDIO) && defined(CONFIG_SND_OMAP24XX_EAC)
-+#define AUDIO_ENABLED
++#define CM_CLKSEL_MPU		0x140
++#define CM_CLKSTCTRL_MPU	0x148
++#define		AUTOSTAT_MPU	(1 << 0)
++#define PM_WKDEP_MPU		0x1c8
++#define 	EN_WKUP		(1 << 4)
++#define 	EN_GFX		(1 << 3)
++#define 	EN_DSP		(1 << 2)
++#define 	EN_MPU		(1 << 1)
++#define 	EN_CORE		(1 << 0)
++#define PM_PWSTCTRL_MPU		0x1e0
++#define PM_PWSTST_MPU		0x1e4
 +
-+static struct clk *sys_clkout2;
-+static struct clk *func96m_clk;
-+static struct device *eac_device;
-+static struct device *tsc2301_device;
 +
-+static int enable_audio;
-+static int audio_ok;
-+static spinlock_t audio_lock;
++#define CM_FCLKEN1_CORE		0x200
++#define CM_FCLKEN2_CORE		0x204
++#define CM_ICLKEN1_CORE		0x210
++#define CM_ICLKEN2_CORE		0x214
++#define CM_ICLKEN4_CORE		0x21c
++#define CM_IDLEST1_CORE		0x220
++#define CM_IDLEST2_CORE		0x224
++#define CM_AUTOIDLE1_CORE	0x230
++#define CM_AUTOIDLE2_CORE	0x234
++#define CM_AUTOIDLE3_CORE	0x238
++#define CM_AUTOIDLE4_CORE	0x23c
++#define CM_CLKSEL1_CORE		0x240
++#define CM_CLKSEL2_CORE		0x244
++#define CM_CLKSTCTRL_CORE	0x248
++#define		AUTOSTAT_DSS	(1 << 2)
++#define		AUTOSTAT_L4	(1 << 1)
++#define		AUTOSTAT_L3	(1 << 0)
++#define PM_WKEN1_CORE		0x2a0
++#define PM_WKEN2_CORE		0x2a4
++#define PM_WKST1_CORE		0x2b0
++#define PM_WKST2_CORE		0x2b4
++#define PM_WKDEP_CORE		0x2c8
++#define PM_PWSTCTRL_CORE	0x2e0
++#define PM_PWSTST_CORE		0x2e4
 +
 +
-+/*
-+ * Leaving EAC pins multiplexed to EAC functionality results
-+ * in about 2 mA extra current leaked. The workaround is to
-+ * multiplex the EAC pins to protected mode (with pull-ups enabled)
-+ * whenever audio is not being used.
-+ */
-+static int mux_disabled;
-+static u32 saved_mux[2];
++#define CM_CLKSTCTRL_GFX	0x348
++#define		AUTOSTAT_GFX	(1 << 0)
++#define PM_WKDEP_GFX    	0x3c8
++#define PM_PWSTCTRL_GFX		0x3e0
 +
-+static void n800_enable_eac_mux(void)
++
++#define CM_FCLKEN_WKUP		0x400
++#define CM_ICLKEN_WKUP		0x410
++#define CM_AUTOIDLE_WKUP	0x430
++#define PM_WKEN_WKUP		0x4a0
++#define 	EN_GPIOS	(1 << 2)
++#define 	EN_GPT1		(1 << 0)
++#define PM_WKST_WKUP		0x4b0
++
++
++#define CM_CLKEN_PLL		0x500
++#define CM_IDLEST_CKGEN		0x520
++#define CM_AUTOIDLE_PLL		0x530
++#define CM_CLKSEL1_PLL		0x540
++#define CM_CLKSEL2_PLL		0x544
++
++
++#define CM_FCLKEN_DSP		0x800
++#define CM_ICLKEN_DSP		0x810
++#define CM_IDLEST_DSP		0x820
++#define CM_AUTOIDLE_DSP		0x830
++#define CM_CLKSEL_DSP		0x840
++#define CM_CLKSTCTRL_DSP	0x848
++#define		AUTOSTAT_IVA	(1 << 8)
++#define		AUTOSTAT_DSP	(1 << 0)
++#define RM_RSTCTRL_DSP		0x850
++#define RM_RSTST_DSP		0x858
++#define PM_WKDEP_DSP		0x8c8
++#define PM_PWSTCTRL_DSP		0x8e0
++#define PM_PWSTST_DSP		0x8e4
+ 
+-#include "prcm-regs.h"
+-
+-static struct clk *vclk;
+ static void (*omap2_sram_idle)(void);
+-static void (*omap2_sram_suspend)(int dllctrl, int cpu_rev);
++static void (*omap2_sram_suspend)(int dllctrl);
+ static void (*saved_idle)(void);
+ 
+-extern void __init pmdomain_init(void);
+-extern void pmdomain_set_autoidle(void);
++static u32 prcm_base = IO_ADDRESS(PRCM_BASE);
+ 
+-static unsigned int omap24xx_sleep_save[OMAP24XX_SLEEP_SAVE_SIZE];
++static inline void prcm_write_reg(int idx, u32 val)
 +{
-+	if (!mux_disabled)
++	__raw_writel(val, prcm_base + idx);
++}
+ 
+-void omap2_pm_idle(void)
++static inline u32 prcm_read_reg(int idx)
+ {
+-	local_irq_disable();
+-	local_fiq_disable();
+-	if (need_resched()) {
+-		local_fiq_enable();
+-		local_irq_enable();
+-		return;
+-	}
++	return __raw_readl(prcm_base + idx);
++}
+ 
+-	/*
+-	 * Since an interrupt may set up a timer, we don't want to
+-	 * reprogram the hardware timer with interrupts enabled.
+-	 * Re-enable interrupts only after returning from idle.
+-	 */
+-	timer_dyn_reprogram();
++static u32 omap2_read_32k_sync_counter(void)
++{
++        return omap_readl(0x48004010);
++}
+ 
+-	omap2_sram_idle();
+-	local_fiq_enable();
+-	local_irq_enable();
++#ifdef CONFIG_PM_DEBUG
++int omap2_pm_debug = 0;
++
++static int serial_console_clock_disabled;
++static int serial_console_uart;
++static unsigned int serial_console_next_disable;
++
++static struct clk *console_iclk, *console_fclk;
++
++static void serial_console_kick(void)
++{
++	serial_console_next_disable = omap2_read_32k_sync_counter();
++	/* Keep the clocks on for 4 secs */
++	serial_console_next_disable += 4 * 32768;
+ }
+ 
+-static int omap2_pm_prepare(suspend_state_t state)
++static void serial_wait_tx(void)
+ {
+-	int error = 0;
++	static const unsigned long uart_bases[3] = {
++		0x4806a000, 0x4806c000, 0x4806e000
++	};
++	unsigned long lsr_reg;
++	int looped = 0;
++
++	/* Wait for TX FIFO and THR to get empty */
++	lsr_reg = IO_ADDRESS(uart_bases[serial_console_uart - 1] + (5 << 2));
++	while ((__raw_readb(lsr_reg) & 0x60) != 0x60)
++		looped = 1;
++	if (looped)
++		serial_console_kick();
++}
+ 
+-	/* We cannot sleep in idle until we have resumed */
+-	saved_idle = pm_idle;
+-	pm_idle = NULL;
++static void serial_console_fclk_mask(u32 *f1, u32 *f2)
++{
++	switch (serial_console_uart)  {
++	case 1:
++		*f1 &= ~(1 << 21);
++		break;
++	case 2:
++		*f1 &= ~(1 << 22);
++		break;
++	case 3:
++		*f2 &= ~(1 << 2);
++		break;
++	}
++}
+ 
+-	switch (state)
+-	{
+-	case PM_SUSPEND_STANDBY:
+-	case PM_SUSPEND_MEM:
++static void serial_console_sleep(int enable)
++{
++	if (console_iclk == NULL || console_fclk == NULL)
 +		return;
-+	__raw_writel(saved_mux[0], IO_ADDRESS(0x480000e8));
-+	__raw_writel(saved_mux[1], IO_ADDRESS(0x48000124));
-+	mux_disabled = 0;
++
++	if (enable) {
++		BUG_ON(serial_console_clock_disabled);
++		if (clk_get_usecount(console_fclk) == 0)
++			return;
++		if ((int) serial_console_next_disable - (int) omap2_read_32k_sync_counter() >= 0)
++			return;
++		serial_wait_tx();
++		clk_disable(console_iclk);
++		clk_disable(console_fclk);
++		serial_console_clock_disabled = 1;
++	} else {
++		int serial_wakeup = 0;
++		u32 l;
++
++		switch (serial_console_uart)  {
++		case 1:
++			l = prcm_read_reg(PM_WKST1_CORE);
++			if (l & (1 << 21))
++				serial_wakeup = 1;
++			break;
++		case 2:
++			l = prcm_read_reg(PM_WKST1_CORE);
++			if (l & (1 << 22))
++				serial_wakeup = 1;
++			break;
++		case 3:
++			l = prcm_read_reg(PM_WKST2_CORE);
++			if (l & (1 << 2))
++				serial_wakeup = 1;
++			break;
++		}
++		if (serial_wakeup)
++			serial_console_kick();
++		if (!serial_console_clock_disabled)
++			return;
++		clk_enable(console_iclk);
++		clk_enable(console_fclk);
++		serial_console_clock_disabled = 0;
++	}
 +}
 +
-+static void n800_disable_eac_mux(void)
++static void pm_init_serial_console(void)
++{
++	const struct omap_serial_console_config *conf;
++	char name[16];
++	u32 l;
++
++	conf = omap_get_config(OMAP_TAG_SERIAL_CONSOLE,
++			       struct omap_serial_console_config);
++	if (conf == NULL)
++		return;
++	if (conf->console_uart > 3 || conf->console_uart < 1)
++		return;
++	serial_console_uart = conf->console_uart;
++	sprintf(name, "uart%d_fck", conf->console_uart);
++	console_fclk = clk_get(NULL, name);
++	if (IS_ERR(console_fclk))
++		console_fclk = NULL;
++	name[6] = 'i';
++	console_iclk = clk_get(NULL, name);
++	if (IS_ERR(console_fclk))
++		console_iclk = NULL;
++	if (console_fclk == NULL || console_iclk == NULL) {
++		serial_console_uart = 0;
++		return;
++	}
++	switch (serial_console_uart) {
++	case 1:
++		l = prcm_read_reg(PM_WKEN1_CORE);
++		l |= 1 << 21;
++		prcm_write_reg(PM_WKEN1_CORE, l);
++		break;
++	case 2:
++		l = prcm_read_reg(PM_WKEN1_CORE);
++		l |= 1 << 22;
++		prcm_write_reg(PM_WKEN1_CORE, l);
++		break;
++	case 3:
++		l = prcm_read_reg(PM_WKEN2_CORE);
++		l |= 1 << 2;
++		prcm_write_reg(PM_WKEN2_CORE, l);
+ 		break;
++	}
++}
+ 
+-	case PM_SUSPEND_DISK:
+-		return -ENOTSUPP;
++#define DUMP_REG(reg) \
++	regs[reg_count].name = #reg; \
++	regs[reg_count++].val = prcm_read_reg(reg)
++#define DUMP_INTC_REG(reg, off) \
++	regs[reg_count].name = #reg; \
++	regs[reg_count++].val = __raw_readl(IO_ADDRESS(0x480fe000 + (off)))
+ 
+-	default:
+-		return -EINVAL;
++static void omap2_pm_dump(int mode, int resume, unsigned int us)
++{
++	struct reg {
++		const char *name;
++		u32 val;
++	} regs[32];
++	int reg_count = 0, i;
++	const char *s1 = NULL, *s2 = NULL;
++
++	if (!resume) {
++#if 0
++		/* MPU */
++		DUMP_REG(PRCM_IRQENABLE_MPU);
++		DUMP_REG(CM_CLKSTCTRL_MPU);
++		DUMP_REG(PM_PWSTCTRL_MPU);
++		DUMP_REG(PM_PWSTST_MPU);
++		DUMP_REG(PM_WKDEP_MPU);
++#endif
++#if 0
++		/* INTC */
++		DUMP_INTC_REG(INTC_MIR0, 0x0084);
++		DUMP_INTC_REG(INTC_MIR1, 0x00a4);
++		DUMP_INTC_REG(INTC_MIR2, 0x00c4);
++#endif
++#if 0
++		DUMP_REG(CM_FCLKEN1_CORE);
++		DUMP_REG(CM_FCLKEN2_CORE);
++		DUMP_REG(CM_FCLKEN_WKUP);
++		DUMP_REG(CM_ICLKEN1_CORE);
++		DUMP_REG(CM_ICLKEN2_CORE);
++		DUMP_REG(CM_ICLKEN_WKUP);
++		DUMP_REG(CM_CLKEN_PLL);
++		DUMP_REG(PRCM_CLKEMUL_CTRL);
++		DUMP_REG(CM_AUTOIDLE_PLL);
++		DUMP_REG(PM_PWSTST_CORE);
++		DUMP_REG(PRCM_CLKSRC_CTRL);
++#endif
++#if 0
++		/* DSP */
++		DUMP_REG(CM_FCLKEN_DSP);
++		DUMP_REG(CM_ICLKEN_DSP);
++		DUMP_REG(CM_IDLEST_DSP);
++		DUMP_REG(CM_AUTOIDLE_DSP);
++		DUMP_REG(CM_CLKSEL_DSP);
++		DUMP_REG(CM_CLKSTCTRL_DSP);
++		DUMP_REG(RM_RSTCTRL_DSP);
++		DUMP_REG(RM_RSTST_DSP);
++		DUMP_REG(PM_PWSTCTRL_DSP);
++		DUMP_REG(PM_PWSTST_DSP);
++#endif
++	} else {
++		DUMP_REG(PM_WKST1_CORE);
++		DUMP_REG(PM_WKST2_CORE);
++		DUMP_REG(PM_WKST_WKUP);
++		DUMP_REG(PRCM_IRQSTATUS_MPU);
++#if 1
++		DUMP_INTC_REG(INTC_PENDING_IRQ0, 0x0098);
++		DUMP_INTC_REG(INTC_PENDING_IRQ1, 0x00b8);
++		DUMP_INTC_REG(INTC_PENDING_IRQ2, 0x00d8);
++#endif
+ 	}
+ 
+-	return error;
++	switch (mode) {
++	case 0:
++		s1 = "full";
++		s2 = "retention";
++		break;
++	case 1:
++		s1 = "MPU";
++		s2 = "retention";
++		break;
++	case 2:
++		s1 = "MPU";
++		s2 = "idle";
++		break;
++	}
++
++	if (!resume)
++		printk("--- Going to %s %s (next timer after %u ms)\n", s1, s2,
++		       jiffies_to_msecs(next_timer_interrupt() - jiffies));
++	else
++		printk("--- Woke up (slept for %u.%03u ms)\n", us / 1000, us % 1000);
++	for (i = 0; i < reg_count; i++)
++		printk("%-20s: 0x%08x\n", regs[i].name, regs[i].val);
+ }
+ 
+-#define INT0_WAKE_MASK	(OMAP_IRQ_BIT(INT_24XX_GPIO_BANK1) |	\
+-			OMAP_IRQ_BIT(INT_24XX_GPIO_BANK2) |	\
+-			OMAP_IRQ_BIT(INT_24XX_GPIO_BANK3))
++#else
++static inline void serial_console_sleep(int enable) {}
++static inline void pm_init_serial_console(void) {}
++static inline void omap2_pm_dump(int mode, int resume, unsigned int us) {}
++static inline void serial_console_fclk_mask(u32 *f1, u32 *f2) {}
+ 
+-#define INT1_WAKE_MASK	(OMAP_IRQ_BIT(INT_24XX_GPIO_BANK4))
++#define omap2_pm_debug 0
+ 
+-#define INT2_WAKE_MASK	(OMAP_IRQ_BIT(INT_24XX_UART1_IRQ) |	\
+-			OMAP_IRQ_BIT(INT_24XX_UART2_IRQ) |	\
+-			OMAP_IRQ_BIT(INT_24XX_UART3_IRQ))
++#endif
+ 
+-#define preg(reg)	printk("%s\t(0x%p):\t0x%08x\n", #reg, &reg, reg);
++static unsigned short enable_dyn_sleep = 0; /* disabled till drivers are fixed */
+ 
+-static void omap2_pm_debug(char * desc)
++static ssize_t omap_pm_sleep_while_idle_show(struct subsystem * subsys, char *buf)
+ {
+-	printk("%s:\n", desc);
+-
+-	preg(CM_CLKSTCTRL_MPU);
+-	preg(CM_CLKSTCTRL_CORE);
+-	preg(CM_CLKSTCTRL_GFX);
+-	preg(CM_CLKSTCTRL_DSP);
+-	preg(CM_CLKSTCTRL_MDM);
+-
+-	preg(PM_PWSTCTRL_MPU);
+-	preg(PM_PWSTCTRL_CORE);
+-	preg(PM_PWSTCTRL_GFX);
+-	preg(PM_PWSTCTRL_DSP);
+-	preg(PM_PWSTCTRL_MDM);
+-
+-	preg(PM_PWSTST_MPU);
+-	preg(PM_PWSTST_CORE);
+-	preg(PM_PWSTST_GFX);
+-	preg(PM_PWSTST_DSP);
+-	preg(PM_PWSTST_MDM);
+-
+-	preg(CM_AUTOIDLE1_CORE);
+-	preg(CM_AUTOIDLE2_CORE);
+-	preg(CM_AUTOIDLE3_CORE);
+-	preg(CM_AUTOIDLE4_CORE);
+-	preg(CM_AUTOIDLE_WKUP);
+-	preg(CM_AUTOIDLE_PLL);
+-	preg(CM_AUTOIDLE_DSP);
+-	preg(CM_AUTOIDLE_MDM);
+-
+-	preg(CM_ICLKEN1_CORE);
+-	preg(CM_ICLKEN2_CORE);
+-	preg(CM_ICLKEN3_CORE);
+-	preg(CM_ICLKEN4_CORE);
+-	preg(CM_ICLKEN_GFX);
+-	preg(CM_ICLKEN_WKUP);
+-	preg(CM_ICLKEN_DSP);
+-	preg(CM_ICLKEN_MDM);
+-
+-	preg(CM_IDLEST1_CORE);
+-	preg(CM_IDLEST2_CORE);
+-	preg(CM_IDLEST3_CORE);
+-	preg(CM_IDLEST4_CORE);
+-	preg(CM_IDLEST_GFX);
+-	preg(CM_IDLEST_WKUP);
+-	preg(CM_IDLEST_CKGEN);
+-	preg(CM_IDLEST_DSP);
+-	preg(CM_IDLEST_MDM);
+-
+-	preg(RM_RSTST_MPU);
+-	preg(RM_RSTST_GFX);
+-	preg(RM_RSTST_WKUP);
+-	preg(RM_RSTST_DSP);
+-	preg(RM_RSTST_MDM);
+-
+-	preg(PM_WKDEP_MPU);
+-	preg(PM_WKDEP_CORE);
+-	preg(PM_WKDEP_GFX);
+-	preg(PM_WKDEP_DSP);
+-	preg(PM_WKDEP_MDM);
+-
+-	preg(CM_FCLKEN_WKUP);
+-	preg(CM_ICLKEN_WKUP);
+-	preg(CM_IDLEST_WKUP);
+-	preg(CM_AUTOIDLE_WKUP);
+-	preg(CM_CLKSEL_WKUP);
+-
+-	preg(PM_WKEN_WKUP);
+-	preg(PM_WKST_WKUP);
++	return sprintf(buf, "%hu\n", enable_dyn_sleep);
+ }
+ 
+-static inline void omap2_pm_save_registers(void)
++static ssize_t omap_pm_sleep_while_idle_store(struct subsystem * subsys,
++					      const char * buf,
++					      size_t n)
+ {
+-	/* Save interrupt registers */
+-	OMAP24XX_SAVE(INTC_MIR0);
+-	OMAP24XX_SAVE(INTC_MIR1);
+-	OMAP24XX_SAVE(INTC_MIR2);
+-
+-	/* Save power control registers */
+-	OMAP24XX_SAVE(CM_CLKSTCTRL_MPU);
+-	OMAP24XX_SAVE(CM_CLKSTCTRL_CORE);
+-	OMAP24XX_SAVE(CM_CLKSTCTRL_GFX);
+-	OMAP24XX_SAVE(CM_CLKSTCTRL_DSP);
+-	OMAP24XX_SAVE(CM_CLKSTCTRL_MDM);
+-
+-	/* Save power state registers */
+-	OMAP24XX_SAVE(PM_PWSTCTRL_MPU);
+-	OMAP24XX_SAVE(PM_PWSTCTRL_CORE);
+-	OMAP24XX_SAVE(PM_PWSTCTRL_GFX);
+-	OMAP24XX_SAVE(PM_PWSTCTRL_DSP);
+-	OMAP24XX_SAVE(PM_PWSTCTRL_MDM);
+-
+-	/* Save autoidle registers */
+-	OMAP24XX_SAVE(CM_AUTOIDLE1_CORE);
+-	OMAP24XX_SAVE(CM_AUTOIDLE2_CORE);
+-	OMAP24XX_SAVE(CM_AUTOIDLE3_CORE);
+-	OMAP24XX_SAVE(CM_AUTOIDLE4_CORE);
+-	OMAP24XX_SAVE(CM_AUTOIDLE_WKUP);
+-	OMAP24XX_SAVE(CM_AUTOIDLE_PLL);
+-	OMAP24XX_SAVE(CM_AUTOIDLE_DSP);
+-	OMAP24XX_SAVE(CM_AUTOIDLE_MDM);
+-
+-	/* Save idle state registers */
+-	OMAP24XX_SAVE(CM_IDLEST1_CORE);
+-	OMAP24XX_SAVE(CM_IDLEST2_CORE);
+-	OMAP24XX_SAVE(CM_IDLEST3_CORE);
+-	OMAP24XX_SAVE(CM_IDLEST4_CORE);
+-	OMAP24XX_SAVE(CM_IDLEST_GFX);
+-	OMAP24XX_SAVE(CM_IDLEST_WKUP);
+-	OMAP24XX_SAVE(CM_IDLEST_CKGEN);
+-	OMAP24XX_SAVE(CM_IDLEST_DSP);
+-	OMAP24XX_SAVE(CM_IDLEST_MDM);
+-
+-	/* Save clock registers */
+-	OMAP24XX_SAVE(CM_FCLKEN1_CORE);
+-	OMAP24XX_SAVE(CM_FCLKEN2_CORE);
+-	OMAP24XX_SAVE(CM_ICLKEN1_CORE);
+-	OMAP24XX_SAVE(CM_ICLKEN2_CORE);
+-	OMAP24XX_SAVE(CM_ICLKEN3_CORE);
+-	OMAP24XX_SAVE(CM_ICLKEN4_CORE);
++	unsigned short value;
++	if (sscanf(buf, "%hu", &value) != 1 ||
++	    (value != 0 && value != 1)) {
++		printk(KERN_ERR "idle_sleep_store: Invalid value\n");
++		return -EINVAL;
++	}
++	enable_dyn_sleep = value;
++	return n;
+ }
+ 
+-static inline void omap2_pm_restore_registers(void)
++static struct subsys_attribute sleep_while_idle_attr = {
++	.attr   = {
++		.name = __stringify(sleep_while_idle),
++		.mode = 0644,
++	},
++	.show   = omap_pm_sleep_while_idle_show,
++	.store  = omap_pm_sleep_while_idle_store,
++};
++
++extern struct subsystem power_subsys;
++
++static struct clk *osc_ck, *emul_ck;
++
++#define CONTROL_DEVCONF		__REG32(0x48000274)
++#define SDRC_DLLA_CTRL		__REG32(0x68009060)
++
++static int omap2_fclks_active(void)
+ {
+-	/* Restore clock state registers */
+-	OMAP24XX_RESTORE(CM_CLKSTCTRL_MPU);
+-	OMAP24XX_RESTORE(CM_CLKSTCTRL_CORE);
+-	OMAP24XX_RESTORE(CM_CLKSTCTRL_GFX);
+-	OMAP24XX_RESTORE(CM_CLKSTCTRL_DSP);
+-	OMAP24XX_RESTORE(CM_CLKSTCTRL_MDM);
+-
+-	/* Restore power state registers */
+-	OMAP24XX_RESTORE(PM_PWSTCTRL_MPU);
+-	OMAP24XX_RESTORE(PM_PWSTCTRL_CORE);
+-	OMAP24XX_RESTORE(PM_PWSTCTRL_GFX);
+-	OMAP24XX_RESTORE(PM_PWSTCTRL_DSP);
+-	OMAP24XX_RESTORE(PM_PWSTCTRL_MDM);
+-
+-	/* Restore idle state registers */
+-	OMAP24XX_RESTORE(CM_IDLEST1_CORE);
+-	OMAP24XX_RESTORE(CM_IDLEST2_CORE);
+-	OMAP24XX_RESTORE(CM_IDLEST3_CORE);
+-	OMAP24XX_RESTORE(CM_IDLEST4_CORE);
+-	OMAP24XX_RESTORE(CM_IDLEST_GFX);
+-	OMAP24XX_RESTORE(CM_IDLEST_WKUP);
+-	OMAP24XX_RESTORE(CM_IDLEST_CKGEN);
+-	OMAP24XX_RESTORE(CM_IDLEST_DSP);
+-	OMAP24XX_RESTORE(CM_IDLEST_MDM);
+-
+-	/* Restore autoidle registers */
+-	OMAP24XX_RESTORE(CM_AUTOIDLE1_CORE);
+-	OMAP24XX_RESTORE(CM_AUTOIDLE2_CORE);
+-	OMAP24XX_RESTORE(CM_AUTOIDLE3_CORE);
+-	OMAP24XX_RESTORE(CM_AUTOIDLE4_CORE);
+-	OMAP24XX_RESTORE(CM_AUTOIDLE_WKUP);
+-	OMAP24XX_RESTORE(CM_AUTOIDLE_PLL);
+-	OMAP24XX_RESTORE(CM_AUTOIDLE_DSP);
+-	OMAP24XX_RESTORE(CM_AUTOIDLE_MDM);
+-
+-	/* Restore clock registers */
+-	OMAP24XX_RESTORE(CM_FCLKEN1_CORE);
+-	OMAP24XX_RESTORE(CM_FCLKEN2_CORE);
+-	OMAP24XX_RESTORE(CM_ICLKEN1_CORE);
+-	OMAP24XX_RESTORE(CM_ICLKEN2_CORE);
+-	OMAP24XX_RESTORE(CM_ICLKEN3_CORE);
+-	OMAP24XX_RESTORE(CM_ICLKEN4_CORE);
+-
+-	/* REVISIT: Clear interrupts here */
+-
+-	/* Restore interrupt registers */
+-	OMAP24XX_RESTORE(INTC_MIR0);
+-	OMAP24XX_RESTORE(INTC_MIR1);
+-	OMAP24XX_RESTORE(INTC_MIR2);
++	u32 f1, f2;
++
++	f1 = prcm_read_reg(CM_FCLKEN1_CORE);
++	f2 = prcm_read_reg(CM_FCLKEN2_CORE);
++	serial_console_fclk_mask(&f1, &f2);
++	if (f1 | f2)
++		return 1;
++	return 0;
+ }
+ 
+-static int omap2_pm_suspend(void)
++static int omap2_irq_pending(void)
+ {
+-	int processor_type = 0;
++	u32 pending_reg = IO_ADDRESS(0x480fe098);
++	int i;
+ 
+-	/* REVISIT: 0x21 or 0x26? */
+-	if (cpu_is_omap2420())
+-		processor_type = 0x21;
++	for (i = 0; i < 4; i++) {
++		if (__raw_readl(pending_reg))
++			return 1;
++		pending_reg += 0x20;
++	}
++	return 0;
++}
+ 
+-	if (!processor_type)
+-		return -ENOTSUPP;
++static atomic_t sleep_block = ATOMIC_INIT(0);
+ 
+-	local_irq_disable();
+-	local_fiq_disable();
++void omap2_block_sleep(void)
++{
++	atomic_inc(&sleep_block);
++}
++
++void omap2_allow_sleep(void)
++{
++	int i;
+ 
+-	omap2_pm_save_registers();
++	i = atomic_dec_return(&sleep_block);
++	BUG_ON(i < 0);
++}
++
++extern void omap2_gpio_prepare_for_retention(void);
++extern void omap2_gpio_resume_after_retention(void);
+ 
+-	/* Disable interrupts except for the wake events */
+-	INTC_MIR_SET0 = 0xffffffff & ~INT0_WAKE_MASK;
+-	INTC_MIR_SET1 = 0xffffffff & ~INT1_WAKE_MASK;
+-	INTC_MIR_SET2 = 0xffffffff & ~INT2_WAKE_MASK;
++static void omap2_enter_full_retention(void)
++{
++	u32 sleep_time = 0;
+ 
+-	pmdomain_set_autoidle();
++	/* There is 1 reference hold for all children of the oscillator
++	 * clock, the following will remove it. If no one else uses the
++	 * oscillator itself it will be disabled if/when we enter retention
++	 * mode.
++	 */
++	clk_disable(osc_ck);
+ 
+ 	/* Clear old wake-up events */
+-	PM_WKST1_CORE = 0;
+-	PM_WKST2_CORE = 0;
+-	PM_WKST_WKUP = 0;
++	prcm_write_reg(PM_WKST1_CORE, 0xffffffff);
++	prcm_write_reg(PM_WKST2_CORE, 0xffffffff);
++	prcm_write_reg(PM_WKST_WKUP, 0xffffffff);
+ 
+-	/* Enable wake-up events */
+-	PM_WKEN1_CORE = (1 << 22) | (1 << 21);	/* UART1 & 2 */
+-	PM_WKEN2_CORE = (1 << 2);		/* UART3 */
+-	PM_WKEN_WKUP = (1 << 2) | (1 << 0);	/* GPIO & GPT1 */
++	/* Try to enter retention */
++	prcm_write_reg(PM_PWSTCTRL_MPU, (0x01 << 0) | (1 << 2));
++
++	/* Workaround to kill USB */
++	CONTROL_DEVCONF |= 0x00008000;
++
++	omap2_gpio_prepare_for_retention();
++
++	if (omap2_pm_debug) {
++		omap2_pm_dump(0, 0, 0);
++		sleep_time = omap2_read_32k_sync_counter();
++	}
+ 
+-	/* Disable clocks except for CM_ICLKEN2_CORE. It gets disabled
+-	 * in the SRAM suspend code */
+-	CM_FCLKEN1_CORE = 0;
+-	CM_FCLKEN2_CORE = 0;
+-	CM_ICLKEN1_CORE = 0;
+-	CM_ICLKEN3_CORE = 0;
+-	CM_ICLKEN4_CORE = 0;
++	/* One last check for pending IRQs to avoid extra latency due
++	 * to sleeping unnecessarily. */
++	if (omap2_irq_pending())
++		goto no_sleep;
++
++	serial_console_sleep(1);
++	/* Jump to SRAM suspend code */
++	omap2_sram_suspend(SDRC_DLLA_CTRL);
++no_sleep:
++	serial_console_sleep(0);
++
++	if (omap2_pm_debug) {
++		unsigned long long tmp;
++		u32 resume_time;
++
++		resume_time = omap2_read_32k_sync_counter();
++		tmp = resume_time - sleep_time;
++		tmp *= 1000000;
++		omap2_pm_dump(0, 1, tmp / 32768);
++	}
++	omap2_gpio_resume_after_retention();
++
++	clk_enable(osc_ck);
++
++}
+ 
+-	omap2_pm_debug("Status before suspend");
++static int omap2_i2c_active(void)
 +{
 +	u32 l;
 +
-+	if (mux_disabled) {
-+		WARN_ON(mux_disabled);
++	l = prcm_read_reg(CM_FCLKEN1_CORE);
++	return l & ((1 << 19) | (1 << 20));
++}
+ 
+-	/* Must wait for serial buffers to clear */
+-	mdelay(200);
++static int sti_console_enabled;
++
++static int omap2_allow_mpu_retention(void)
++{
++	u32 l;
++
++	if (atomic_read(&sleep_block))
++		return 0;
++
++	/* Check for UART2, UART1, McSPI2, McSPI1 and DSS1. */
++	l = prcm_read_reg(CM_FCLKEN1_CORE);
++	if (l & 0x04660001)
++		return 0;
++	/* Check for UART3. */
++	l = prcm_read_reg(CM_FCLKEN2_CORE);
++	if (l & (1 << 2))
++		return 0;
++	if (sti_console_enabled)
++		return 0;
++
++	/* FIXME: Enable soon */
++	return 0;
++}
++
++static void omap2_enter_mpu_retention(void)
++{
++	u32 sleep_time = 0;
++	int only_idle = 0;
++
++	/* Putting MPU into the WFI state while a transfer is active
++	 * seems to cause the I2C block to timeout. Why? Good question. */
++	if (omap2_i2c_active())
 +		return;
-+	}
-+	saved_mux[0] = __raw_readl(IO_ADDRESS(0x480000e8));
-+	saved_mux[1] = __raw_readl(IO_ADDRESS(0x48000124));
-+	l = saved_mux[0] & ~0xff;
-+	l |= 0x1f;
-+	__raw_writel(l, IO_ADDRESS(0x480000e8));
-+	__raw_writel(0x1f1f1f1f, IO_ADDRESS(0x48000124));
-+	mux_disabled = 1;
-+}
 +
-+static int n800_eac_enable_ext_clocks(struct device *dev)
-+{
-+	BUG_ON(tsc2301_device == NULL);
-+	n800_enable_eac_mux();
-+	tsc2301_enable_mclk(tsc2301_device);
-+
-+	return 0;
-+}
-+
-+static void n800_eac_disable_ext_clocks(struct device *dev)
-+{
-+	BUG_ON(tsc2301_device == NULL);
-+	n800_disable_eac_mux();
-+	tsc2301_disable_mclk(tsc2301_device);
-+}
-+
-+static int n800_audio_set_power(void *pdata, int dac, int adc)
-+{
-+	BUG_ON(pdata != tsc2301_device);
-+	tsc2301_mixer_set_power(tsc2301_device, dac, adc);
-+
-+	return 0;
-+}
-+
-+static int n800_audio_register_controls(void *pdata, struct snd_card *card)
-+{
-+	BUG_ON(pdata != tsc2301_device);
-+	return tsc2301_mixer_register_controls(tsc2301_device, card);
-+}
-+
-+static struct eac_codec n800_eac_codec = {
-+	.mclk_src = EAC_MCLK_EXT_2x12288000,
-+	.codec_mode = EAC_CODEC_I2S,
-+	.codec_conf.i2s.polarity_changed_mode = 0,
-+	.codec_conf.i2s.sync_delay_enable = 0,
-+	.default_rate = 48000,
-+	.set_power = n800_audio_set_power,
-+	.register_controls = n800_audio_register_controls,
-+	.short_name = "TSC2301",
-+};
-+
-+static int n800_register_codec(void)
-+{
-+	int r, do_enable = 0;
-+	unsigned long flags;
-+
-+	n800_eac_codec.private_data = tsc2301_device;
-+	r = eac_register_codec(eac_device, &n800_eac_codec);
-+	if (r < 0)
-+		return r;
-+	spin_lock_irqsave(&audio_lock, flags);
-+	audio_ok = 1;
-+	if (enable_audio)
-+		do_enable = 1;
-+	spin_unlock_irqrestore(&audio_lock, flags);
-+	if (do_enable)
-+		eac_set_mode(eac_device, 1, 1);
-+	return 0;
-+}
-+
-+static void n800_unregister_codec(void)
-+{
-+	audio_ok = 0;
-+	eac_unregister_codec(eac_device);
-+	eac_set_mode(eac_device, 0, 0);
-+}
-+
-+static int n800_eac_init(struct device *dev)
-+{
-+	int r;
-+
-+	BUG_ON(eac_device != NULL);
-+	eac_device = dev;
-+	if (tsc2301_device != NULL) {
-+		r = n800_register_codec();
-+		if (r < 0)
-+			return r;
-+	}
-+
-+	return 0;
-+}
-+
-+static void n800_eac_cleanup(struct device *dev)
-+{
-+	eac_device = NULL;
-+	if (tsc2301_device != NULL)
-+		n800_unregister_codec();
-+}
-+
-+static int n800_codec_get_clocks(struct device *dev)
-+{
-+	sys_clkout2 = clk_get(dev, "sys_clkout2");
-+	if (IS_ERR(sys_clkout2)) {
-+		printk(KERN_ERR "Could not get sys_clkout2\n");
-+		return -ENODEV;
-+	}
-+	/* configure 12 MHz output on SYS_CLKOUT2. Therefore we must use
-+	 * 96 MHz as its parent in order to get 12 MHz */
-+	func96m_clk = clk_get(dev, "func_96m_ck");
-+	if (IS_ERR(func96m_clk)) {
-+		printk(KERN_ERR "could not get func 96M clock\n");
-+		clk_put(sys_clkout2);
-+		return -ENODEV;
-+	}
-+
-+	clk_set_parent(sys_clkout2, func96m_clk);
-+	clk_set_rate(sys_clkout2, 12000000);
-+
-+	return 0;
-+}
-+
-+static void n800_codec_put_clocks(struct device *dev)
-+{
-+	clk_put(func96m_clk);
-+	clk_put(sys_clkout2);
-+}
-+
-+static int n800_codec_enable_clock(struct device *dev)
-+{
-+	int err;
-+
-+	err = clk_enable(sys_clkout2);
-+	if (err)
-+		return err;
-+	/* TODO: 'educated' guess for audio codec's PLL startup delay */
-+	mdelay(1);
-+
-+	return 0;
-+}
-+
-+static void n800_codec_disable_clock(struct device *dev)
-+{
-+	clk_disable(sys_clkout2);
-+}
-+
-+static int n800_codec_init(struct device *dev)
-+{
-+	int r;
-+
-+	BUG_ON(tsc2301_device != NULL);
-+	tsc2301_device = dev;
-+	if ((r = n800_codec_get_clocks(dev)) < 0)
-+		return r;
-+	if (eac_device != NULL) {
-+		r = n800_register_codec();
-+		if (r < 0) {
-+			n800_codec_put_clocks(dev);
-+			return r;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static void n800_codec_cleanup(struct device *dev)
-+{
-+	tsc2301_device = NULL;
-+	if (eac_device != NULL)
-+		n800_unregister_codec();
-+	n800_codec_put_clocks(dev);
-+}
-+
-+static struct eac_platform_data n800_eac_data = {
-+	.init = n800_eac_init,
-+	.cleanup = n800_eac_cleanup,
-+	.enable_ext_clocks = n800_eac_enable_ext_clocks,
-+	.disable_ext_clocks = n800_eac_disable_ext_clocks,
-+};
-+
-+static const struct tsc2301_mixer_gpio n800_mixer_gpios[] = {
-+	{
-+		.name			= "Headset Amplifier",
-+		.gpio			= 1,
-+		.deactivate_on_pd	= 1,
-+	}, {
-+		.name			= "Speaker Amplifier",
-+		.gpio			= 2,
-+		.def_enable		= 1,
-+		.deactivate_on_pd	= 1,
-+	}, {
-+		.name			= "Headset Mic Select",
-+		.gpio			= 3,
-+	}
-+};
-+
-+static struct platform_device retu_headset_device = {
-+	.name		= "retu-headset",
-+	.id		= -1,
-+	.dev		= {
-+		.release	= NULL,
-+	},
-+};
-+
-+void __init n800_audio_init(struct tsc2301_platform_data *tc)
-+{
-+	spin_lock_init(&audio_lock);
-+
-+	if (platform_device_register(&retu_headset_device) < 0)
-+		return;
-+	omap_init_eac(&n800_eac_data);
-+
-+	tc->pll_pdc = 7;
-+	tc->pll_a = 7;
-+	tc->pll_n = 9;
-+	tc->pll_output = 1;
-+	tc->mclk_ratio = TSC2301_MCLK_256xFS;
-+	tc->i2s_sample_rate = TSC2301_I2S_SR_48000;
-+	tc->i2s_format = TSC2301_I2S_FORMAT0;
-+	tc->power_down_blocks = TSC2301_REG_PD_MISC_MOPD;
-+	tc->mixer_gpios = n800_mixer_gpios;
-+	tc->n_mixer_gpios = ARRAY_SIZE(n800_mixer_gpios);
-+	tc->codec_init = n800_codec_init;
-+	tc->codec_cleanup = n800_codec_cleanup;
-+	tc->enable_clock = n800_codec_enable_clock;
-+	tc->disable_clock = n800_codec_disable_clock;
-+}
-+
-+#else
-+
-+void __init n800_audio_init(void)
-+{
-+}
-+
-+#endif
-+
-+#ifdef CONFIG_OMAP_DSP
-+
-+int n800_audio_enable(struct dsp_kfunc_device *kdev, int stage)
-+{
-+#ifdef AUDIO_ENABLED
-+	unsigned long flags;
-+	int do_enable = 0;
-+
-+	spin_lock_irqsave(&audio_lock, flags);
-+
-+	pr_debug("DSP power up request (audio codec %sinitialized)\n",
-+		 audio_ok ? "" : "not ");
-+
-+	if (enable_audio)
-+		goto out;
-+	enable_audio = 1;
-+	if (audio_ok)
-+		do_enable = 1;
-+out:
-+	spin_unlock_irqrestore(&audio_lock, flags);
-+	if (do_enable)
-+		eac_set_mode(eac_device, 1, 1);
-+#endif
-+	return 0;
-+}
-+
-+int n800_audio_disable(struct dsp_kfunc_device *kdev, int stage)
-+{
-+#ifdef AUDIO_ENABLED
-+	unsigned long flags;
-+	int do_disable = 0;
-+
-+	spin_lock_irqsave(&audio_lock, flags);
-+
-+	pr_debug("DSP power down request (audio codec %sinitialized)\n",
-+		audio_ok ? "" : "not ");
-+
-+	if (!enable_audio)
-+		goto out;
-+	enable_audio = 0;
-+	if (audio_ok)
-+		do_disable = 1;
-+out:
-+	spin_unlock_irqrestore(&audio_lock, flags);
-+	if (do_disable)
-+		eac_set_mode(eac_device, 0, 0);
-+#endif
-+	return 0;
-+}
-+
-+#endif /* CONFIG_OMAP_DSP */
-diff --git a/arch/arm/mach-omap2/board-n800-bt.c b/arch/arm/mach-omap2/board-n800-bt.c
-new file mode 100644
-index 0000000..4ea19cc
---- /dev/null
-+++ b/arch/arm/mach-omap2/board-n800-bt.c
-@@ -0,0 +1,42 @@
-+/*
-+ * Nokia N800 platform-specific data for Bluetooth
-+ *
-+ * Copyright (C) 2005, 2006 Nokia Corporation
-+ * Contact: Ville Tervo <ville.tervo@nokia.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-+ * 02110-1301 USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <asm/arch/board.h>
-+
-+static struct platform_device n800_bt_device = {
-+	.name           = "hci_h4p",
-+	.id             = -1,
-+	.num_resources  = 0,
-+};
-+
-+void __init n800_bt_init(void)
-+{
-+	const struct omap_bluetooth_config *bt_config;
-+
-+	bt_config = (void *) omap_get_config(OMAP_TAG_NOKIA_BT,
-+					     struct omap_bluetooth_config);
-+	n800_bt_device.dev.platform_data = (void *) bt_config;
-+	if (platform_device_register(&n800_bt_device) < 0)
-+		BUG();
-+}
-+
-diff --git a/arch/arm/mach-omap2/board-n800-dsp.c b/arch/arm/mach-omap2/board-n800-dsp.c
-new file mode 100644
-index 0000000..cb01363
---- /dev/null
-+++ b/arch/arm/mach-omap2/board-n800-dsp.c
-@@ -0,0 +1,158 @@
-+/*
-+ * linux/arch/arm/mach-omap2/board-n800-dsp.c
-+ *
-+ * Copyright (C) 2006 Nokia Corporation.
-+ *
-+ * Contact: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-+ * 02110-1301 USA
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/list.h>
-+#include <linux/err.h>
-+#include <linux/clk.h>
-+
-+#include <asm/io.h>
-+#include <asm/arch/clock.h>
-+
-+#include "../plat-omap/dsp/dsp_common.h"
-+
-+extern int n800_audio_enable(struct dsp_kfunc_device *kdev, int stage);
-+extern int n800_audio_disable(struct dsp_kfunc_device *kdev, int stage);
-+
-+#if	defined(CONFIG_OMAP_DSP)
-+
-+/*
-+ * dsp peripheral device: AUDIO
-+ */
-+static struct dsp_kfunc_device n800_audio_device = {
-+	.name	 = "audio",
-+	.type	 = DSP_KFUNC_DEV_TYPE_AUDIO,
-+	.enable	 = n800_audio_enable,
-+	.disable = n800_audio_disable,
-+};
-+
-+/*
-+ * dsp peripheral device: TIMER
-+ */
-+static int dsp_timer_probe(struct dsp_kfunc_device *kdev)
-+{
-+	char clockname[20];
-+
-+	strcpy(clockname, kdev->name);
-+	strcat(clockname, "_fck");
-+
-+	kdev->fck = clk_get(NULL, clockname);
-+	if (IS_ERR(kdev->fck)) {
-+		printk(KERN_ERR "couldn't acquire %s\n", clockname);
-+		return PTR_ERR(kdev->fck);
-+	}
-+	pr_debug("%s probed successfully\n", clockname);
-+
-+	strcpy(clockname, kdev->name);
-+	strcat(clockname, "_ick");
-+	kdev->ick = clk_get(NULL, clockname);
-+	if (IS_ERR(kdev->ick)) {
-+		printk(KERN_ERR "couldn't acquire %s\n", clockname);
-+		goto fail;
-+	}
-+	pr_debug("%s probed successfully\n", clockname);
-+
-+	return 0;
-+ fail:
-+	clk_put(kdev->fck);
-+
-+	return PTR_ERR(kdev->ick);
-+}
-+
-+static int dsp_timer_remove(struct dsp_kfunc_device *kdev)
-+{
-+	clk_put(kdev->ick);
-+	clk_put(kdev->fck);
-+	pr_debug("%s removed successfully\n", kdev->name);
-+	return 0;
-+}
-+
-+static int dsp_timer_enable(struct dsp_kfunc_device *kdev, int stage)
-+{
-+	pr_debug("%s enabled(%d)\n", kdev->name, stage);
-+
-+	mutex_lock(&kdev->lock);
-+
-+	if (kdev->enabled)
-+		goto out;
-+	kdev->enabled = 1;
-+
-+	clk_enable(kdev->fck);
-+	clk_enable(kdev->ick);
-+ out:
-+	mutex_unlock(&kdev->lock);
-+
-+	return 0;
-+}
-+
-+static int dsp_timer_disable(struct dsp_kfunc_device *kdev, int stage)
-+{
-+	pr_debug("%s disabled(%d)\n", kdev->name, stage);
-+
-+	mutex_lock(&kdev->lock);
-+
-+	if (kdev->enabled == 0)
-+		goto out;
-+	kdev->enabled = 0;
-+
-+	clk_disable(kdev->ick);
-+	clk_disable(kdev->fck);
-+ out:
-+	mutex_unlock(&kdev->lock);
-+
-+	return 0;
-+}
-+
-+static struct dsp_kfunc_device n800_timer_device = {
-+	.name	 = "gpt5",
-+	.type	 = DSP_KFUNC_DEV_TYPE_COMMON,
-+	.probe	 = dsp_timer_probe,
-+	.remove	 = dsp_timer_remove,
-+	.enable	 = dsp_timer_enable,
-+	.disable = dsp_timer_disable,
-+};
-+
-+static struct dsp_kfunc_device *n800_kfunc_dev[] = {
-+	&n800_audio_device,
-+	&n800_timer_device,
-+};
-+
-+void __init n800_dsp_init(void)
-+{
-+	int i, ret;
-+	struct dsp_kfunc_device **p = n800_kfunc_dev;
-+
-+	for (i = 0; i < ARRAY_SIZE(n800_kfunc_dev); i++) {
-+		ret = dsp_kfunc_device_register(p[i]);
-+		if (ret) {
-+			printk(KERN_ERR
-+			       "KFUNC device registration failed: %s\n",
-+			       p[i]->name);
-+		}
-+	}
-+}
-+
-+#else
-+void __init n800_dsp_init(void) { }
-+#endif	/* CONFIG_OMAP_DSP */
-diff --git a/arch/arm/mach-omap2/board-n800-flash.c b/arch/arm/mach-omap2/board-n800-flash.c
-new file mode 100644
-index 0000000..3a4c52a
---- /dev/null
-+++ b/arch/arm/mach-omap2/board-n800-flash.c
-@@ -0,0 +1,61 @@
-+/*
-+ * linux/arch/arm/mach-omap/omap2/board-n800-flash.c
-+ *
-+ * Copyright (C) 2006 Nokia Corporation
-+ * Author: Juha Yrjola
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <asm/mach/flash.h>
-+#include <asm/arch/onenand.h>
-+#include <asm/arch/board.h>
-+
-+static struct mtd_partition n800_partitions[8];
-+
-+static struct omap_onenand_platform_data n800_onenand_data = {
-+	.cs = 0,
-+	.gpio_irq = 26,
-+	.parts = n800_partitions,
-+	.nr_parts = 0 /* filled later */
-+};
-+
-+static struct platform_device n800_onenand_device = {
-+	.name		= "omap2-onenand",
-+	.id		= -1,
-+	.dev = {
-+		.platform_data = &n800_onenand_data,
-+	},
-+};
-+
-+
-+void __init n800_flash_init(void)
-+{
-+	const struct omap_partition_config *part;
-+	int i = 0;
-+
-+	while ((part = omap_get_nr_config(OMAP_TAG_PARTITION,
-+					  struct omap_partition_config, i)) != NULL) {
-+		struct mtd_partition *mpart;
-+
-+		mpart = n800_partitions + i;
-+		mpart->name = (char *) part->name;
-+		mpart->size = part->size;
-+		mpart->offset = part->offset;
-+		mpart->mask_flags = part->mask_flags;
-+		i++;
-+		if (i == ARRAY_SIZE(n800_partitions)) {
-+			printk(KERN_ERR "Too many partitions supplied\n");
-+			return;
-+		}
-+	}
-+	n800_onenand_data.nr_parts = i;
-+	if (platform_device_register(&n800_onenand_device) < 0) {
-+		printk(KERN_ERR "Unable to register OneNAND device\n");
-+		return;
-+	}
-+}
-diff --git a/arch/arm/mach-omap2/board-n800-mmc.c b/arch/arm/mach-omap2/board-n800-mmc.c
-new file mode 100644
-index 0000000..b20f1ad
---- /dev/null
-+++ b/arch/arm/mach-omap2/board-n800-mmc.c
-@@ -0,0 +1,279 @@
-+/*
-+ * linux/arch/arm/mach-omap2/board-n800-mmc.c
-+ *
-+ * Copyright (C) 2006 Nokia Corporation
-+ * Author: Juha Yrj?l?
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <asm/arch/mmc.h>
-+#include <asm/arch/menelaus.h>
-+#include <asm/arch/gpio.h>
-+
-+#ifdef CONFIG_MMC_OMAP
-+
-+static const int slot_switch_gpio = 96;
-+static const int slot1_wp_gpio = 23;
-+static const int slot2_wp_gpio = 8;
-+static int slot1_cover_closed;
-+static int slot2_cover_closed;
-+static struct device *mmc_device;
-+
-+/*
-+ * VMMC --> slot 1
-+ * VDCDC3_APE, VMCS2_APE --> slot 2
-+ * GPIO96 --> Menelaus GPIO2
-+ */
-+
-+static int n800_mmc_switch_slot(struct device *dev, int slot)
-+{
-+#ifdef CONFIG_MMC_DEBUG
-+	printk("Choose slot %d\n", slot + 1);
-+#endif
-+	if (slot == 0)
-+		omap_set_gpio_dataout(slot_switch_gpio, 0);
-+	else
-+		omap_set_gpio_dataout(slot_switch_gpio, 1);
-+	return 0;
-+}
-+
-+static int n800_mmc_set_power(struct device *dev, int slot, int power_on, int vdd)
-+{
-+	int mV;
-+
-+#ifdef CONFIG_MMC_DEBUG
-+	printk("Set slot %d power: %s (vdd %d)\n", slot + 1,
-+	       power_on ? "on" : "off", vdd);
-+#endif
-+	if (slot == 0) {
-+		if (!power_on)
-+			return menelaus_set_vmmc(0);
-+		switch (1 << vdd) {
-+		case MMC_VDD_33_34:
-+		case MMC_VDD_32_33:
-+		case MMC_VDD_31_32:
-+			mV = 3100;
-+			break;
-+		case MMC_VDD_30_31:
-+			mV = 3000;
-+			break;
-+		case MMC_VDD_28_29:
-+			mV = 2800;
-+			break;
-+		case MMC_VDD_18_19:
-+			mV = 1850;
-+			break;
-+		default:
-+			BUG();
-+		}
-+		return menelaus_set_vmmc(mV);
++	/* The peripherals seem not to be able to wake up the MPU when
++	 * it is in retention mode. */
++	if (omap2_allow_mpu_retention()) {
++		prcm_write_reg(PM_WKST1_CORE, 0xffffffff);
++		prcm_write_reg(PM_WKST2_CORE, 0xffffffff);
++		prcm_write_reg(PM_WKST_WKUP, 0xffffffff);
++
++		/* Try to enter MPU retention */
++		prcm_write_reg(PM_PWSTCTRL_MPU, (0x01 << 0) | (1 << 2));
 +	} else {
-+		if (!power_on)
-+			return menelaus_set_vdcdc(3, 0);
-+		switch (1 << vdd) {
-+		case MMC_VDD_33_34:
-+		case MMC_VDD_32_33:
-+			mV = 3300;
-+			break;
-+		case MMC_VDD_30_31:
-+		case MMC_VDD_29_30:
-+			mV = 3000;
-+			break;
-+		case MMC_VDD_28_29:
-+		case MMC_VDD_27_28:
-+			mV = 2800;
-+			break;
-+		case MMC_VDD_24_25:
-+		case MMC_VDD_23_24:
-+			mV = 2400;
-+			break;
-+		case MMC_VDD_22_23:
-+		case MMC_VDD_21_22:
-+			mV = 2200;
-+			break;
-+		case MMC_VDD_20_21:
-+		case MMC_VDD_19_20:
-+			mV = 2000;
-+			break;
-+		case MMC_VDD_18_19:
-+		case MMC_VDD_17_18:
-+			mV = 1800;
-+			break;
-+		case MMC_VDD_150_155:
-+		case MMC_VDD_145_150:
-+			mV = 1500;
-+			break;
-+		default:
-+			BUG();
-+		}
-+		return menelaus_set_vdcdc(3, mV);
++		/* Block MPU retention */
++		prcm_write_reg(PM_PWSTCTRL_MPU, 1 << 2);
++		only_idle = 1;
 +	}
-+	return 0;
++
++	if (omap2_pm_debug) {
++		omap2_pm_dump(only_idle ? 2 : 1, 0, 0);
++		sleep_time = omap2_read_32k_sync_counter();
++	}
++
++	omap2_sram_idle();
++
++	if (omap2_pm_debug) {
++		unsigned long long tmp;
++		u32 resume_time;
++
++		resume_time = omap2_read_32k_sync_counter();
++		tmp = resume_time - sleep_time;
++		tmp *= 1000000;
++		omap2_pm_dump(only_idle ? 2 : 1, 1, tmp / 32768);
++	}
++}
+ 
+-	/* Jump to SRAM suspend code
+-	 * REVISIT: When is this SDRC_DLLB_CTRL?
++static int omap2_can_sleep(void)
++{
++	if (!enable_dyn_sleep)
++		return 0;
++	if (omap2_fclks_active())
++		return 0;
++	if (atomic_read(&sleep_block) > 0)
++		return 0;
++	if (clk_get_usecount(osc_ck) > 1)
++		return 0;
++	if (omap_dma_running())
++		return 0;
++
++	return 1;
 +}
 +
-+static int n800_mmc_set_bus_mode(struct device *dev, int slot, int bus_mode)
++static void omap2_pm_idle(void)
 +{
-+	int r;
++	local_irq_disable();
++	local_fiq_disable();
 +
-+#ifdef CONFIG_MMC_DEBUG
-+	printk("Set slot %d bus mode %s\n", slot + 1,
-+	       bus_mode == MMC_BUSMODE_OPENDRAIN ? "open-drain" : "push-pull");
-+#endif
-+	BUG_ON(slot != 0 && slot != 1);
-+	slot++;
-+	switch (bus_mode) {
-+	case MMC_BUSMODE_OPENDRAIN:
-+		r = menelaus_set_mmc_opendrain(slot, 1);
++	if (!omap2_can_sleep()) {
++		/* timer_dyn_reprogram() takes about 100-200 us to complete.
++		 * In some contexts (e.g. when waiting for a GPMC-SDRAM DMA
++		 * transfer to complete), the increased latency is too much.
++		 *
++		 * omap2_block_sleep() and omap2_allow_sleep() can be used
++		 * to indicate this.
++		 */
++		if (atomic_read(&sleep_block) == 0) {
++			timer_dyn_reprogram();
++			if (omap2_irq_pending())
++				goto out;
++		}
++		omap2_enter_mpu_retention();
++		goto out;
++	}
++
++	/*
++	 * Since an interrupt may set up a timer, we don't want to
++	 * reprogram the hardware timer with interrupts enabled.
++	 * Re-enable interrupts only after returning from idle.
+ 	 */
+-	omap2_sram_suspend(SDRC_DLLA_CTRL, processor_type);
++	timer_dyn_reprogram();
++
++	if (omap2_irq_pending())
++		goto out;
+ 
+-	/* Back from sleep */
+-	omap2_pm_restore_registers();
++	omap2_enter_full_retention();
+ 
++out:
+ 	local_fiq_enable();
+ 	local_irq_enable();
++}
++
++static int omap2_pm_prepare(suspend_state_t state)
++{
++	int error = 0;
++
++	/* We cannot sleep in idle until we have resumed */
++	saved_idle = pm_idle;
++	pm_idle = NULL;
++
++	switch (state) {
++	case PM_SUSPEND_STANDBY:
++	case PM_SUSPEND_MEM:
 +		break;
-+	case MMC_BUSMODE_PUSHPULL:
-+		r = menelaus_set_mmc_opendrain(slot, 0);
-+		break;
++	case PM_SUSPEND_DISK:
++		return -ENOTSUPP;
 +	default:
-+		BUG();
-+	}
-+	if (r != 0 && printk_ratelimit())
-+		printk(KERN_ERR "MMC: unable to set bus mode for slot %d\n", slot);
-+	return r;
-+}
-+
-+#if 0
-+static int n800_mmc_get_ro(struct device *dev, int slot)
-+{
-+	int ro;
-+
-+	slot++;
-+	if (slot == 1)
-+		ro = omap_get_gpio_datain(slot1_wp_gpio);
-+	else
-+		ro = omap_get_gpio_datain(slot2_wp_gpio);
-+#ifdef CONFIG_MMC_DEBUG
-+	printk("Get RO slot %d: %s\n", slot, ro ? "read-only" : "read-write");
-+#endif
-+	return ro;
-+}
-+#endif
-+
-+static int n800_mmc_get_cover_state(struct device *dev, int slot)
-+{
-+	slot++;
-+	BUG_ON(slot != 1 && slot != 2);
-+	if (slot == 1)
-+		return slot1_cover_closed;
-+	else
-+		return slot2_cover_closed;
-+}
-+
-+static void n800_mmc_callback(void *data, u8 card_mask)
-+{
-+	if (card_mask & (1 << 1))
-+		slot2_cover_closed = 0;
-+	else
-+		slot2_cover_closed = 1;
-+        omap_mmc_notify_cover_event(mmc_device, 1, slot2_cover_closed);
-+}
-+
-+void n800_mmc_slot1_cover_handler(void *arg, int state)
-+{
-+	if (mmc_device == NULL)
-+		return;
-+
-+	slot1_cover_closed = state;
-+	omap_mmc_notify_cover_event(mmc_device, 0, state);
-+}
-+
-+static int n800_mmc_late_init(struct device *dev)
-+{
-+	int r;
-+
-+	mmc_device = dev;
-+
-+	r = menelaus_set_slot_sel(1);
-+	if (r < 0)
-+		return r;
-+
-+	r = menelaus_set_mmc_slot(1, 1, 0, 1);
-+	if (r < 0)
-+		return r;
-+	r = menelaus_set_mmc_slot(2, 1, 0, 1);
-+	if (r < 0)
-+		return r;
-+
-+	r = menelaus_get_slot_pin_states();
-+	if (r < 0)
-+		return r;
-+
-+	if (r & (1 << 1))
-+		slot2_cover_closed = 1;
-+	else
-+		slot2_cover_closed = 0;
-+
-+	r = menelaus_register_mmc_callback(n800_mmc_callback, NULL);
-+
-+	return r;
-+}
-+
-+static void n800_mmc_cleanup(struct device *dev)
-+{
-+	menelaus_unregister_mmc_callback();
-+}
-+
-+static struct omap_mmc_platform_data n800_mmc_data = {
-+	.enabled		= 1,
-+	.nr_slots		= 2,
-+	.wire4			= 1,
-+	.switch_slot		= n800_mmc_switch_slot,
-+	.init			= n800_mmc_late_init,
-+	.cleanup		= n800_mmc_cleanup,
-+	.slots[0] = {
-+		.set_power	= n800_mmc_set_power,
-+		.set_bus_mode	= n800_mmc_set_bus_mode,
-+		.get_ro		= NULL,
-+		.get_cover_state= n800_mmc_get_cover_state,
-+		.ocr_mask	= MMC_VDD_18_19 | MMC_VDD_28_29 | MMC_VDD_30_31 |
-+				  MMC_VDD_32_33 | MMC_VDD_33_34,
-+		.name		= "internal",
-+	},
-+	.slots[1] = {
-+		.set_power	= n800_mmc_set_power,
-+		.set_bus_mode	= n800_mmc_set_bus_mode,
-+		.get_ro		= NULL,
-+		.get_cover_state= n800_mmc_get_cover_state,
-+		.ocr_mask	= MMC_VDD_150_155 | MMC_VDD_145_150 | MMC_VDD_17_18 |
-+				  MMC_VDD_18_19 | MMC_VDD_19_20 | MMC_VDD_20_21 |
-+				  MMC_VDD_21_22 | MMC_VDD_22_23 | MMC_VDD_23_24 |
-+				  MMC_VDD_24_25 | MMC_VDD_27_28 | MMC_VDD_28_29 |
-+				  MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_32_33 |
-+				  MMC_VDD_33_34,
-+		.name		= "external",
-+	},
-+};
-+
-+void __init n800_mmc_init(void)
-+{
-+	omap_set_mmc_info(1, &n800_mmc_data);
-+	if (omap_request_gpio(slot_switch_gpio) < 0)
-+		BUG();
-+	omap_set_gpio_dataout(slot_switch_gpio, 0);
-+	omap_set_gpio_direction(slot_switch_gpio, 0);
-+	if (omap_request_gpio(slot1_wp_gpio) < 0)
-+		BUG();
-+	if (omap_request_gpio(slot2_wp_gpio) < 0)
-+		BUG();
-+	omap_set_gpio_direction(slot1_wp_gpio, 1);
-+	omap_set_gpio_direction(slot2_wp_gpio, 1);
-+}
-+
-+#else
-+
-+void __init n800_mmc_init(void)
-+{
-+}
-+
-+void n800_mmc_slot1_cover_handler(void *arg, int state)
-+{
-+}
-+
-+#endif
-diff --git a/arch/arm/mach-omap2/board-n800-pm.c b/arch/arm/mach-omap2/board-n800-pm.c
-new file mode 100644
-index 0000000..fb2873e
---- /dev/null
-+++ b/arch/arm/mach-omap2/board-n800-pm.c
-@@ -0,0 +1,77 @@
-+/*
-+ * Nokia N800 PM code
-+ *
-+ * Copyright (C) 2006 Nokia Corporation
-+ * Author: Amit Kucheria <amit.kucheria@nokia.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <asm/arch/menelaus.h>
-+
-+#ifdef CONFIG_MENELAUS
-+
-+static int n800_auto_sleep_regulators(void)
-+{
-+	u32 val;
-+	int ret;
-+
-+	val = EN_VPLL_SLEEP | EN_VMMC_SLEEP    \
-+		| EN_VAUX_SLEEP | EN_VIO_SLEEP \
-+		| EN_VMEM_SLEEP | EN_DC3_SLEEP \
-+		| EN_VC_SLEEP | EN_DC2_SLEEP;
-+
-+	ret = menelaus_set_regulator_sleep(1, val);
-+	if (ret < 0) {
-+		printk(KERN_ERR "Could not set regulators to sleep on menelaus: %u\n", ret);
-+		return ret;
-+	}
-+	return 0;
-+}
-+
-+static int n800_auto_voltage_scale(void)
-+{
-+	int ret;
-+
-+	ret = menelaus_set_vcore_hw(1400, 1050);
-+	if (ret < 0) {
-+		printk(KERN_ERR "Could not set VCORE voltage on menelaus: %u\n", ret);
-+		return ret;
-+	}
-+	return 0;
-+}
-+
-+static int n800_menelaus_init(struct device *dev)
-+{
-+	int ret;
-+
-+	ret = n800_auto_voltage_scale();
-+	if (ret < 0)
-+		return ret;
-+	ret = n800_auto_sleep_regulators();
-+	if (ret < 0)
-+		return ret;
-+	return 0;
-+}
-+
-+static struct menelaus_platform_data n800_menelaus_platform_data = {
-+	.late_init = n800_menelaus_init,
-+};
-+
-+void __init n800_pm_init(void)
-+{
-+	menelaus_set_platform_data(&n800_menelaus_platform_data);
-+}
-+
-+#else
-+
-+void __init n800_pm_init(void)
-+{
-+}
-+
-+#endif
-+
-diff --git a/arch/arm/mach-omap2/board-n800-usb.c b/arch/arm/mach-omap2/board-n800-usb.c
-new file mode 100644
-index 0000000..75243ac
---- /dev/null
-+++ b/arch/arm/mach-omap2/board-n800-usb.c
-@@ -0,0 +1,102 @@
-+/*
-+ * linux/arch/arm/mach-omap/omap2/board-n800-usb.c
-+ *
-+ * Copyright (C) 2006 Nokia Corporation
-+ * Author: Juha Yrj?l?
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/delay.h>
-+#include <linux/platform_device.h>
-+#include <linux/usb/musb.h>
-+#include <asm/arch/gpmc.h>
-+#include <asm/arch/gpio.h>
-+
-+#define TUSB_ASYNC_CS		1
-+#define TUSB_SYNC_CS		4
-+#define GPIO_TUSB_INT		58
-+#define GPIO_TUSB_ENABLE	0
-+
-+static int tusb_set_power(int state);
-+
-+#if	defined(CONFIG_USB_MUSB_OTG)
-+#	define BOARD_MODE	MUSB_OTG
-+#elif	defined(CONFIG_USB_MUSB_PERIPHERAL)
-+#	define BOARD_MODE	MUSB_PERIPHERAL
-+#else	/* defined(CONFIG_USB_MUSB_HOST) */
-+#	define BOARD_MODE	MUSB_HOST
-+#endif
-+
-+static struct musb_hdrc_platform_data tusb_data = {
-+	.mode		= BOARD_MODE,
-+	.multipoint	= 1,
-+	.set_power	= tusb_set_power,
-+	.min_power	= 25,	/* x2 = 50 mA drawn from VBUS as peripheral */
-+};
-+
-+/*
-+ * Enable or disable power to TUSB6010. When enabling, turn on 3.3 V and
-+ * 1.5 V voltage regulators of PM companion chip. Companion chip will then
-+ * provide then PGOOD signal to TUSB6010 which will release it from reset.
-+ */
-+static int tusb_set_power(int state)
-+{
-+	int i, retval = 0;
-+
-+	if (state) {
-+		omap_set_gpio_dataout(GPIO_TUSB_ENABLE, 1);
-+		msleep(1);
-+
-+		/* Wait until TUSB6010 pulls INT pin down */
-+		i = 100;
-+		while (i && omap_get_gpio_datain(GPIO_TUSB_INT)) {
-+			msleep(1);
-+			i--;
-+		}
-+
-+		if (!i) {
-+			printk(KERN_ERR "tusb: powerup failed\n");
-+			retval = -ENODEV;
-+		}
-+	} else {
-+		omap_set_gpio_dataout(GPIO_TUSB_ENABLE, 0);
-+		msleep(10);
++		return -EINVAL;
 +	}
 +
-+	return retval;
++	return error;
 +}
 +
-+void __init n800_usb_init(void)
++static int omap2_pm_suspend(void)
 +{
-+	int ret = 0;
-+	static char	announce[] __initdata = KERN_INFO "TUSB 6010\n";
++	u32 wken_wkup, mir1;
 +
-+	/* PM companion chip power control pin */
-+	ret = omap_request_gpio(GPIO_TUSB_ENABLE);
-+	if (ret != 0) {
-+		printk(KERN_ERR "Could not get TUSB power GPIO%i\n",
-+		       GPIO_TUSB_ENABLE);
-+		return;
-+	}
-+	omap_set_gpio_direction(GPIO_TUSB_ENABLE, 0);
++	wken_wkup = prcm_read_reg(PM_WKEN_WKUP);
++	prcm_write_reg(PM_WKEN_WKUP, wken_wkup & ~EN_GPT1);
 +
-+	tusb_set_power(0);
++	/* Mask GPT1 */
++	mir1 = omap_readl(0x480fe0a4);
++	omap_writel(1 << 5, 0x480fe0ac);
 +
-+	ret = tusb6010_setup_interface(&tusb_data, TUSB6010_REFCLK_19, 2,
-+					TUSB_ASYNC_CS, TUSB_SYNC_CS,
-+					GPIO_TUSB_INT, 0x3f);
-+	if (ret != 0)
-+		goto err;
++	omap2_enter_full_retention();
 +
-+	printk(announce);
-+
-+	return;
-+
-+err:
-+	omap_free_gpio(GPIO_TUSB_ENABLE);
-+}
-diff --git a/arch/arm/mach-omap2/board-n800.c b/arch/arm/mach-omap2/board-n800.c
-new file mode 100644
-index 0000000..2188294
---- /dev/null
-+++ b/arch/arm/mach-omap2/board-n800.c
-@@ -0,0 +1,525 @@
-+/*
-+ * linux/arch/arm/mach-omap/omap2/board-n800.c
-+ *
-+ * Copyright (C) 2005 Nokia Corporation
-+ * Author: Juha Yrj?l? <juha.yrjola@nokia.com>
-+ *
-+ * Modified from mach-omap2/board-generic.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/clk.h>
-+#include <linux/device.h>
-+#include <linux/platform_device.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/tsc2301.h>
-+#include <linux/input.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <asm/hardware.h>
-+#include <asm/mach-types.h>
-+#include <asm/mach/arch.h>
-+#include <asm/mach/map.h>
-+#include <asm/arch/gpio.h>
-+#include <asm/arch/usb.h>
-+#include <asm/arch/board.h>
-+#include <asm/arch/common.h>
-+#include <asm/arch/mcspi.h>
-+#include <asm/arch/menelaus.h>
-+#include <asm/arch/lcd_mipid.h>
-+#include <asm/arch/clock.h>
-+#include <asm/arch/gpio-switch.h>
-+#include <asm/arch/omapfb.h>
-+#include <asm/arch/blizzard.h>
-+
-+#include <../drivers/cbus/tahvo.h>
-+
-+#define N800_BLIZZARD_POWERDOWN_GPIO 15
-+#define N800_STI_GPIO		62
-+#define N800_CAM_SENSOR_RESET_GPIO	53
-+#define N800_KEYB_IRQ_GPIO		109
-+
-+static void __init nokia_n800_init_irq(void)
++	omap_writel(mir1, 0x480fe0a4);
++	prcm_write_reg(PM_WKEN_WKUP, wken_wkup);
+ 
+ 	return 0;
+ }
+@@ -347,8 +716,7 @@ static int omap2_pm_enter(suspend_state_t state)
+ {
+ 	int ret = 0;
+ 
+-	switch (state)
+-	{
++	switch (state) {
+ 	case PM_SUSPEND_STANDBY:
+ 	case PM_SUSPEND_MEM:
+ 		ret = omap2_pm_suspend();
+@@ -376,16 +744,100 @@ static struct pm_ops omap_pm_ops = {
+ 	.finish		= omap2_pm_finish,
+ };
+ 
++static void __init prcm_setup_regs(void)
 +{
-+	omap2_init_common_hw();
-+	omap_init_irq();
-+	omap_gpio_init();
++	u32 l;
 +
-+#ifdef CONFIG_OMAP_STI
-+	if (omap_request_gpio(N800_STI_GPIO) < 0) {
-+		printk(KERN_ERR "Failed to request GPIO %d for STI\n",
-+		       N800_STI_GPIO);
-+		return;
-+	}
++	/* Enable autoidle */
++	prcm_write_reg(PRCM_SYSCONFIG, 1 << 0);
 +
-+	omap_set_gpio_direction(N800_STI_GPIO, 0);
-+	omap_set_gpio_dataout(N800_STI_GPIO, 0);
-+#endif
++	/* Set all domain wakeup dependencies */
++	prcm_write_reg(PM_WKDEP_MPU, EN_WKUP);
++	prcm_write_reg(PM_WKDEP_DSP, 0);
++	prcm_write_reg(PM_WKDEP_GFX, 0);
++
++	l = prcm_read_reg(PM_PWSTCTRL_CORE);
++	/* Enable retention for all memory blocks */
++	l |= (1 << 3) | (1 << 4) | (1 << 5);
++	/* Set power state to RETENTION */
++	l &= ~0x03;
++	l |= 0x01 << 0;
++	prcm_write_reg(PM_PWSTCTRL_CORE, l);
++
++	prcm_write_reg(PM_PWSTCTRL_MPU, (0x01 << 0) | (1 << 2));
++
++	/* Power down DSP and GFX */
++	prcm_write_reg(PM_PWSTCTRL_DSP, (1 << 18) | 0x03);
++	prcm_write_reg(PM_PWSTCTRL_GFX, (1 << 18) | 0x03);
++
++	/* Enable clock auto control for all domains */
++	prcm_write_reg(CM_CLKSTCTRL_MPU, AUTOSTAT_MPU);
++	prcm_write_reg(CM_CLKSTCTRL_CORE, AUTOSTAT_DSS | AUTOSTAT_L4 | AUTOSTAT_L3);
++	prcm_write_reg(CM_CLKSTCTRL_GFX, AUTOSTAT_GFX);
++	prcm_write_reg(CM_CLKSTCTRL_DSP, AUTOSTAT_IVA | AUTOSTAT_DSP);
++
++	/* Enable clock autoidle for all domains */
++	prcm_write_reg(CM_AUTOIDLE1_CORE, 0xfffffff9);
++	prcm_write_reg(CM_AUTOIDLE2_CORE, 0x07);
++	prcm_write_reg(CM_AUTOIDLE3_CORE, 0x07);
++	prcm_write_reg(CM_AUTOIDLE4_CORE, 0x1f);
++
++	prcm_write_reg(CM_AUTOIDLE_DSP, 0x02);
++
++	/* Put DPLL and both APLLs into autoidle mode */
++	prcm_write_reg(CM_AUTOIDLE_PLL, (0x03 << 0) | (0x03 << 2) | (0x03 << 6));
++
++	prcm_write_reg(CM_AUTOIDLE_WKUP, 0x3f);
++
++	/* REVISIT: Configure number of 32 kHz clock cycles for sys_clk
++	 * stabilisation */
++	prcm_write_reg(PRCM_CLKSSETUP, 15);
++
++	/* Configure automatic voltage transition */
++	prcm_write_reg(PRCM_VOLTSETUP, 2);
++	l = AUTO_EXTVOLT | SETOFF_LEVEL(1) | MEMRETCTRL | \
++		SETRET_LEVEL(1) | VOLT_LEVEL(0);
++	prcm_write_reg(PRCM_VOLTCTRL, l);
++
++	/* Enable wake-up events */
++	prcm_write_reg(PM_WKEN_WKUP, EN_GPIOS | EN_GPT1);
 +}
 +
-+#if defined(CONFIG_MENELAUS) && defined(CONFIG_SENSORS_TMP105)
+ int __init omap2_pm_init(void)
+ {
+-	printk("Power Management for TI OMAP.\n");
++	u32 l;
 +
-+static int n800_tmp105_set_power(int enable)
-+{
-+	return menelaus_set_vaux(enable ? 2800 : 0);
-+}
++	printk(KERN_INFO "Power Management for OMAP2 initializing\n");
++	l = prcm_read_reg(PRCM_REVISION);
++	printk(KERN_INFO "PRCM revision %d.%d\n", (l >> 4) & 0x0f, l & 0x0f);
 +
-+#else
-+
-+#define n800_tmp105_set_power NULL
-+
-+#endif
-+
-+static struct omap_uart_config n800_uart_config __initdata = {
-+	.enabled_uarts = (1 << 0) | (1 << 2),
-+};
-+
-+#include "../../../drivers/cbus/retu.h"
-+
-+static struct omap_fbmem_config n800_fbmem0_config __initdata = {
-+	.size = 752 * 1024,
-+};
-+
-+static struct omap_fbmem_config n800_fbmem1_config __initdata = {
-+	.size = 752 * 1024,
-+};
-+
-+static struct omap_fbmem_config n800_fbmem2_config __initdata = {
-+	.size = 752 * 1024,
-+};
-+
-+static struct omap_tmp105_config n800_tmp105_config __initdata = {
-+	.tmp105_irq_pin = 125,
-+	.set_power = n800_tmp105_set_power,
-+};
-+
-+static void mipid_shutdown(struct mipid_platform_data *pdata)
-+{
-+	if (pdata->nreset_gpio != -1) {
-+		pr_info("shutdown LCD\n");
-+		omap_set_gpio_dataout(pdata->nreset_gpio, 0);
-+		msleep(120);
-+	}
-+}
-+
-+static struct mipid_platform_data n800_mipid_platform_data = {
-+	.shutdown = mipid_shutdown,
-+};
-+
-+static void __init mipid_dev_init(void)
-+{
-+	const struct omap_lcd_config *conf;
-+
-+	conf = omap_get_config(OMAP_TAG_LCD, struct omap_lcd_config);
-+	if (conf != NULL) {
-+		n800_mipid_platform_data.nreset_gpio = conf->nreset_gpio;
-+		n800_mipid_platform_data.data_lines = conf->data_lines;
-+	}
-+}
-+
-+static struct {
-+	struct clk *sys_ck;
-+} blizzard;
-+
-+static int blizzard_get_clocks(void)
-+{
-+	blizzard.sys_ck = clk_get(0, "osc_ck");
-+	if (IS_ERR(blizzard.sys_ck)) {
-+		printk(KERN_ERR "can't get Blizzard clock\n");
-+		return PTR_ERR(blizzard.sys_ck);
-+	}
-+	return 0;
-+}
-+
-+static unsigned long blizzard_get_clock_rate(struct device *dev)
-+{
-+	return clk_get_rate(blizzard.sys_ck);
-+}
-+
-+static void blizzard_enable_clocks(int enable)
-+{
-+	if (enable)
-+		clk_enable(blizzard.sys_ck);
-+	else
-+		clk_disable(blizzard.sys_ck);
-+}
-+
-+static void blizzard_power_up(struct device *dev)
-+{
-+	/* Vcore to 1.475V */
-+	tahvo_set_clear_reg_bits(0x07, 0, 0xf);
-+	msleep(10);
-+
-+	blizzard_enable_clocks(1);
-+	omap_set_gpio_dataout(N800_BLIZZARD_POWERDOWN_GPIO, 1);
-+}
-+
-+static void blizzard_power_down(struct device *dev)
-+{
-+	omap_set_gpio_dataout(N800_BLIZZARD_POWERDOWN_GPIO, 0);
-+	blizzard_enable_clocks(0);
-+
-+	/* Vcore to 1.005V */
-+	tahvo_set_clear_reg_bits(0x07, 0xf, 0);
-+}
-+
-+static struct blizzard_platform_data n800_blizzard_data = {
-+	.power_up	= blizzard_power_up,
-+	.power_down	= blizzard_power_down,
-+	.get_clock_rate	= blizzard_get_clock_rate,
-+	.te_connected	= 1,
-+};
-+
-+static void __init blizzard_dev_init(void)
-+{
-+	int r;
-+
-+	r = omap_request_gpio(N800_BLIZZARD_POWERDOWN_GPIO);
-+	if (r < 0)
-+		return;
-+	omap_set_gpio_direction(N800_BLIZZARD_POWERDOWN_GPIO, 0);
-+	omap_set_gpio_dataout(N800_BLIZZARD_POWERDOWN_GPIO, 1);
-+
-+	blizzard_get_clocks();
-+	omapfb_set_ctrl_platform_data(&n800_blizzard_data);
-+}
-+
-+#if defined(CONFIG_CBUS_RETU) && defined(CONFIG_VIDEO_CAMERA_SENSOR_TCM825X) && \
-+	defined(CONFIG_MENELAUS)
-+#define SUPPORT_SENSOR
-+#endif
-+
-+#ifdef SUPPORT_SENSOR
-+
-+static int sensor_okay;
-+
-+/*
-+ * VSIM1	--> CAM_IOVDD	--> IOVDD (1.8 V)
-+ */
-+static int tcm825x_sensor_power_on(void *data)
-+{
-+	int ret;
-+
-+	if (!sensor_okay)
++	osc_ck = clk_get(NULL, "osc_ck");
++	if (IS_ERR(osc_ck)) {
++		printk(KERN_ERR "could not get osc_ck\n");
 +		return -ENODEV;
-+
-+	/* Set VMEM to 1.5V and VIO to 2.5V */
-+	ret = menelaus_set_vmem(1500);
-+	if (ret < 0) {
-+		/* Try once more, it seems the sensor power up causes
-+		 * some problems on the I2C bus. */
-+		ret = menelaus_set_vmem(1500);
-+		if (ret < 0)
-+			return ret;
 +	}
-+	msleep(1);
+ 
+-	vclk = clk_get(NULL, "virt_prcm_set");
+-	if (IS_ERR(vclk)) {
+-		printk(KERN_ERR "Could not get PM vclk\n");
++	emul_ck = clk_get(NULL, "emul_ck");
++	if (IS_ERR(emul_ck)) {
++		printk(KERN_ERR "could not get emul_ck\n");
++		clk_put(osc_ck);
+ 		return -ENODEV;
+ 	}
+ 
++	prcm_setup_regs();
 +
-+	ret = menelaus_set_vio(2500);
-+	if (ret < 0)
-+		return ret;
++	pm_init_serial_console();
 +
-+	/* Set VSim1 on */
-+	retu_write_reg(RETU_REG_CTRL_SET, 0x0080);
-+	msleep(100);
-+
-+	omap_set_gpio_dataout(N800_CAM_SENSOR_RESET_GPIO, 1);
-+	msleep(1);
-+
-+	return 0;
-+}
-+
-+static int tcm825x_sensor_power_off(void * data)
-+{
-+	int ret;
-+
-+	omap_set_gpio_dataout(N800_CAM_SENSOR_RESET_GPIO, 0);
-+	msleep(1);
-+
-+	/* Set VSim1 off */
-+	retu_write_reg(RETU_REG_CTRL_CLR, 0x0080);
-+	msleep(1);
-+
-+	/* Set VIO_MODE to off */
-+	ret = menelaus_set_vio(0);
-+	if (ret < 0)
-+		return ret;
-+	msleep(1);
-+
-+	/* Set VMEM_MODE to off */
-+	ret = menelaus_set_vmem(0);
-+	if (ret < 0)
-+		return ret;
-+	msleep(1);
-+
-+	return 0;
-+}
-+
-+static struct omap_camera_sensor_config n800_sensor_config = {
-+	.power_on   = tcm825x_sensor_power_on,
-+	.power_off  = tcm825x_sensor_power_off,
-+};
-+
-+static void __init n800_cam_init(void)
-+{
-+	int r;
-+
-+	r = omap_request_gpio(N800_CAM_SENSOR_RESET_GPIO);
-+	if (r < 0)
-+		return;
-+
-+	omap_set_gpio_dataout(N800_CAM_SENSOR_RESET_GPIO, 0);
-+	omap_set_gpio_direction(N800_CAM_SENSOR_RESET_GPIO, 0);
-+
-+	sensor_okay = 1;
-+}
-+
-+#else
-+
-+static inline void n800_cam_init(void) {}
-+
-+#endif
-+
-+static struct omap_board_config_kernel n800_config[] = {
-+	{ OMAP_TAG_UART,	                &n800_uart_config },
-+#ifdef SUPPORT_SENSOR
-+	{ OMAP_TAG_CAMERA_SENSOR,		&n800_sensor_config },
-+#endif
-+	{ OMAP_TAG_FBMEM,			&n800_fbmem0_config },
-+	{ OMAP_TAG_FBMEM,			&n800_fbmem1_config },
-+	{ OMAP_TAG_FBMEM,			&n800_fbmem2_config },
-+	{ OMAP_TAG_TMP105,			&n800_tmp105_config },
-+};
-+
-+
-+static int n800_get_keyb_irq_state(struct device *dev)
-+{
-+	return !omap_get_gpio_datain(N800_KEYB_IRQ_GPIO);
-+}
-+
-+static struct tsc2301_platform_data tsc2301_config = {
-+	.reset_gpio	= 118,
-+	.dav_gpio	= 103,
-+	.pen_int_gpio	= 106,
-+	.keymap = {
-+		-1,		/* Event for bit 0 */
-+		KEY_UP,		/* Event for bit 1 (up) */
-+		KEY_F5,		/* Event for bit 2 (home) */
-+		-1,		/* Event for bit 3 */
-+		KEY_LEFT,	/* Event for bit 4 (left) */
-+		KEY_ENTER,	/* Event for bit 5 (enter) */
-+		KEY_RIGHT,	/* Event for bit 6 (right) */
-+		-1,		/* Event for bit 7 */
-+		KEY_ESC,	/* Event for bit 8 (cycle) */
-+		KEY_DOWN,	/* Event for bit 9 (down) */
-+		KEY_F4,		/* Event for bit 10 (menu) */
-+		-1,		/* Event for bit 11 */
-+		KEY_F8,		/* Event for bit 12 (Zoom-) */
-+		KEY_F6,		/* Event for bit 13 (FS) */
-+		KEY_F7,		/* Event for bit 14 (Zoom+) */
-+		-1,		/* Event for bit 15 */
-+	},
-+	.kp_rep 	= 0,
-+	.get_keyb_irq_state = n800_get_keyb_irq_state,
-+};
-+
-+static void tsc2301_dev_init(void)
-+{
-+	int gpio = N800_KEYB_IRQ_GPIO;
-+
-+	if (omap_request_gpio(gpio) < 0) {
-+		printk("can't get KBIRQ GPIO\n");
-+		return;
-+	}
-+	omap_set_gpio_direction(gpio, 1);
-+	tsc2301_config.keyb_int = OMAP_GPIO_IRQ(gpio);
-+}
-+
-+static struct omap2_mcspi_device_config tsc2301_mcspi_config = {
-+	.turbo_mode	= 0,
-+	.single_channel = 1,
-+};
-+
-+static struct omap2_mcspi_device_config mipid_mcspi_config = {
-+	.turbo_mode	= 0,
-+	.single_channel	= 1,
-+};
-+
-+static struct omap2_mcspi_device_config cx3110x_mcspi_config = {
-+	.turbo_mode	= 0,
-+	.single_channel = 1,
-+};
-+
-+static struct spi_board_info n800_spi_board_info[] __initdata = {
-+	[0] = {
-+		.modalias	= "lcd_mipid",
-+		.bus_num	= 1,
-+		.chip_select	= 1,
-+		.max_speed_hz	= 4000000,
-+		.controller_data= &mipid_mcspi_config,
-+		.platform_data	= &n800_mipid_platform_data,
-+	}, [1] = {
-+		.modalias	= "cx3110x",
-+		.bus_num	= 2,
-+		.chip_select	= 0,
-+		.max_speed_hz   = 48000000,
-+		.controller_data= &cx3110x_mcspi_config,
-+	}, [2] = {
-+		.modalias	= "tsc2301",
-+		.bus_num	= 1,
-+		.chip_select	= 0,
-+		.max_speed_hz   = 6000000,
-+		.controller_data= &tsc2301_mcspi_config,
-+		.platform_data  = &tsc2301_config,
-+	},
-+};
-+
-+#if defined(CONFIG_CBUS_RETU) && defined(CONFIG_LEDS_OMAP_PWM)
-+
-+void retu_keypad_led_set_power(struct omap_pwm_led_platform_data *self,
-+			       int on_off)
-+{
-+	if (on_off) {
-+		retu_write_reg(RETU_REG_CTRL_SET, 1 << 6);
-+		msleep(2);
-+		retu_write_reg(RETU_REG_CTRL_SET, 1 << 3);
-+	} else {
-+		retu_write_reg(RETU_REG_CTRL_CLR, (1 << 6) | (1 << 3));
-+	}
-+}
-+
-+static struct omap_pwm_led_platform_data n800_keypad_led_data = {
-+	.name = "keypad",
-+	.intensity_timer = 10,
-+	.blink_timer = 9,
-+	.set_power = retu_keypad_led_set_power,
-+};
-+
-+static struct platform_device n800_keypad_led_device = {
-+	.name		= "omap_pwm_led",
-+	.id		= -1,
-+	.dev		= {
-+		.platform_data = &n800_keypad_led_data,
-+	},
-+};
-+#endif
-+
-+#if defined(CONFIG_SPI_TSC2301_TOUCHSCREEN)
-+static void __init n800_ts_set_config(void)
-+{
-+	const struct omap_lcd_config *conf;
-+
-+	conf = omap_get_config(OMAP_TAG_LCD, struct omap_lcd_config);
-+	if (conf != NULL) {
-+		if (strcmp(conf->panel_name, "lph8923") == 0) {
-+			tsc2301_config.ts_x_plate_ohm	= 180;
-+			tsc2301_config.ts_hw_avg	= 4;
-+			tsc2301_config.ts_ignore_last	= 1;
-+			tsc2301_config.ts_max_pressure	= 255;
-+			tsc2301_config.ts_stab_time	= 100;
-+		} else if (strcmp(conf->panel_name, "ls041y3") == 0) {
-+			tsc2301_config.ts_x_plate_ohm	= 280;
-+			tsc2301_config.ts_hw_avg	= 16;
-+			tsc2301_config.ts_touch_pressure= 215;
-+			tsc2301_config.ts_max_pressure	= 255;
-+			tsc2301_config.ts_ignore_last	= 1;
-+		} else {
-+			printk(KERN_ERR "Unknown panel type, set default "
-+			       "touchscreen configuration\n");
-+			tsc2301_config.ts_x_plate_ohm	= 200;
-+			tsc2301_config.ts_stab_time	= 100;
-+		}
-+	}
-+}
-+#else
-+static inline void n800_ts_set_config(void)
-+{
-+}
-+#endif
-+
-+extern void n800_mmc_slot1_cover_handler(void *arg, int state);
-+
-+static struct omap_gpio_switch n800_gpio_switches[] __initdata = {
++	/* Hack to prevent MPU retention when STI console is enabled. */
 +	{
-+		.name			= "bat_cover",
-+		.gpio			= -1,
-+		.debounce_rising	= 100,
-+		.debounce_falling	= 0,
-+		.notify			= n800_mmc_slot1_cover_handler,
-+		.notify_data		= NULL,
-+	}, {
-+		.name			= "headphone",
-+		.gpio			= -1,
-+		.debounce_rising	= 200,
-+		.debounce_falling	= 200,
-+	}, {
-+		.name			= "cam_act",
-+		.gpio			= -1,
-+		.debounce_rising	= 200,
-+		.debounce_falling	= 200,
-+	}, {
-+		.name			= "cam_turn",
-+		.gpio			= -1,
-+		.debounce_rising	= 100,
-+		.debounce_falling	= 100,
-+	},
-+};
++		const struct omap_sti_console_config *sti;
 +
-+static struct platform_device *n800_devices[] __initdata = {
-+#if defined(CONFIG_CBUS_RETU) && defined(CONFIG_LEDS_OMAP_PWM)
-+	&n800_keypad_led_device,
-+#endif
-+};
++		sti = omap_get_config(OMAP_TAG_STI_CONSOLE,
++				      struct omap_sti_console_config);
++		if (sti != NULL && sti->enable)
++			sti_console_enabled = 1;
++	}
 +
-+extern void __init n800_flash_init(void);
-+extern void __init n800_mmc_init(void);
-+extern void __init n800_bt_init(void);
-+extern void __init n800_audio_init(struct tsc2301_platform_data *);
-+extern void __init n800_dsp_init(void);
-+extern void __init n800_usb_init(void);
-+extern void __init n800_pm_init(void);
-+
-+static void __init nokia_n800_init(void)
-+{
-+	platform_add_devices(n800_devices, ARRAY_SIZE(n800_devices));
-+	n800_flash_init();
-+	n800_mmc_init();
-+	n800_bt_init();
-+	n800_audio_init(&tsc2301_config);
-+	n800_dsp_init();
-+	n800_usb_init();
-+	n800_cam_init();
-+	n800_ts_set_config();
-+	spi_register_board_info(n800_spi_board_info,
-+				ARRAY_SIZE(n800_spi_board_info));
-+	omap_serial_init();
-+	mipid_dev_init();
-+	blizzard_dev_init();
-+	tsc2301_dev_init();
-+	omap_register_gpio_switches(n800_gpio_switches,
-+				    ARRAY_SIZE(n800_gpio_switches));
-+	n800_pm_init();
-+}
-+
-+static void __init nokia_n800_map_io(void)
-+{
-+	omap_board_config = n800_config;
-+	omap_board_config_size = ARRAY_SIZE(n800_config);
-+
-+	omap2_map_common_io();
-+}
-+
-+MACHINE_START(NOKIA_N800, "Nokia N800")
-+	.phys_io	= 0x48000000,
-+	.io_pg_offst	= ((0xd8000000) >> 18) & 0xfffc,
-+	.boot_params	= 0x80000100,
-+	.map_io		= nokia_n800_map_io,
-+	.init_irq	= nokia_n800_init_irq,
-+	.init_machine	= nokia_n800_init,
-+	.timer		= &omap_timer,
-+MACHINE_END
-diff --git a/include/asm-arm/arch-omap/board.h b/include/asm-arm/arch-omap/board.h
-index 18442f8..bbadf08 100644
---- a/include/asm-arm/arch-omap/board.h
-+++ b/include/asm-arm/arch-omap/board.h
-@@ -25,9 +25,12 @@
- #define OMAP_TAG_FBMEM		0x4f08
- #define OMAP_TAG_STI_CONSOLE	0x4f09
- #define OMAP_TAG_CAMERA_SENSOR	0x4f0a
-+#define OMAP_TAG_PARTITION      0x4f0b
-+#define OMAP_TAG_TEA5761	0x4f10
-+#define OMAP_TAG_TMP105		0x4f11
+ 	/*
+ 	 * We copy the assembler sleep/wakeup routines to SRAM.
+ 	 * These routines need to be in SRAM as that's the only
+@@ -393,16 +845,15 @@ int __init omap2_pm_init(void)
+ 	 */
+ 	omap2_sram_idle = omap_sram_push(omap24xx_idle_loop_suspend,
+ 					 omap24xx_idle_loop_suspend_sz);
+-
+ 	omap2_sram_suspend = omap_sram_push(omap24xx_cpu_suspend,
+ 					    omap24xx_cpu_suspend_sz);
  
- #define OMAP_TAG_BOOT_REASON    0x4f80
--#define OMAP_TAG_FLASH_PART	0x4f81
-+#define OMAP_TAG_FLASH_PART_STR	0x4f81
- #define OMAP_TAG_VERSION_STR	0x4f82
+ 	pm_set_ops(&omap_pm_ops);
+ 	pm_idle = omap2_pm_idle;
  
- struct omap_clock_config {
-@@ -139,8 +142,25 @@ struct omap_uart_config {
- 	unsigned int enabled_uarts;
+-	pmdomain_init();
++	subsys_create_file(&power_subsys, &sleep_while_idle_attr);
+ 
+ 	return 0;
+ }
+ 
+-__initcall(omap2_pm_init);
++late_initcall(omap2_pm_init);
+diff --git a/arch/arm/mach-omap2/sleep.S b/arch/arm/mach-omap2/sleep.S
+index 16247d5..a67bc18 100644
+--- a/arch/arm/mach-omap2/sleep.S
++++ b/arch/arm/mach-omap2/sleep.S
+@@ -5,6 +5,10 @@
+  * Texas Instruments, <www.ti.com>
+  * Richard Woodruff <r-woodruff2@ti.com>
+  *
++ * (C) Copyright 2006 Nokia Corporation
++ * Fixed idle loop sleep
++ * Igor Stoppa <igor.stoppa@nokia.com>
++ *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License as
+  * published by the Free Software Foundation; either version 2 of
+@@ -26,14 +30,6 @@
+ #include <asm/arch/io.h>
+ #include <asm/arch/pm.h>
+ 
+-#define A_32KSYNC_CR_V		IO_ADDRESS(OMAP_TIMER32K_BASE+0x10)
+-#define A_PRCM_VOLTCTRL_V	IO_ADDRESS(OMAP24XX_PRCM_BASE+0x50)
+-#define A_PRCM_CLKCFG_CTRL_V	IO_ADDRESS(OMAP24XX_PRCM_BASE+0x80)
+-#define A_CM_CLKEN_PLL_V	IO_ADDRESS(OMAP24XX_PRCM_BASE+0x500)
+-#define A_CM_IDLEST_CKGEN_V	IO_ADDRESS(OMAP24XX_PRCM_BASE+0x520)
+-#define A_CM_CLKSEL1_PLL_V	IO_ADDRESS(OMAP24XX_PRCM_BASE+0x540)
+-#define A_CM_CLKSEL2_PLL_V	IO_ADDRESS(OMAP24XX_PRCM_BASE+0x544)
+-
+ #define A_SDRC_DLLA_CTRL_V	IO_ADDRESS(OMAP24XX_SDRC_BASE+0x60)
+ #define	A_SDRC_POWER_V		IO_ADDRESS(OMAP24XX_SDRC_BASE+0x70)
+ #define A_SDRC_RFR_CTRL_V	IO_ADDRESS(OMAP24XX_SDRC_BASE+0xA4)
+@@ -53,7 +49,7 @@
+  */
+ ENTRY(omap24xx_idle_loop_suspend)
+ 	stmfd	sp!, {r0, lr}		@ save registers on stack
+-	mov	r0, #0			@ clear for mcr setup
++	mov	r0, #0x0		@ clear for mrc call
+ 	mcr	p15, 0, r0, c7, c0, 4	@ wait for interrupt
+ 	ldmfd	sp!, {r0, pc}		@ restore regs and return
+ 
+@@ -67,9 +63,6 @@ ENTRY(omap24xx_idle_loop_suspend_sz)
+  *
+  * Input:
+  * R0 :	DLL ctrl value pre-Sleep
+- * R1 : Processor+Revision
+- *	2420: 0x21 = 242xES1, 0x26 = 242xES2.2
+- *	2430: 0x31 = 2430ES1, 0x32 = 2430ES2
+  *
+  * The if the DPLL is going to AutoIdle. It seems like the DPLL may be back on
+  * when we get called, but the DLL probably isn't.  We will wait a bit more in
+@@ -129,14 +122,8 @@ A_SDRC_POWER:
+ 	.word A_SDRC_POWER_V
+ A_SDRC0:
+ 	.word A_SDRC0_V
+-A_CM_CLKSEL2_PLL_S:
+-	.word A_CM_CLKSEL2_PLL_V
+-A_CM_CLKEN_PLL:
+-	.word A_CM_CLKEN_PLL_V
+ A_SDRC_DLLA_CTRL_S:
+ 	.word A_SDRC_DLLA_CTRL_V
+-A_SDRC_MANUAL_S:
+-	.word A_SDRC_MANUAL_V
+ 
+ ENTRY(omap24xx_cpu_suspend_sz)
+ 	.word	. - omap24xx_cpu_suspend
+diff --git a/include/asm-arm/arch-omap/pm.h b/include/asm-arm/arch-omap/pm.h
+index 1458805..0b75e33 100644
+--- a/include/asm-arm/arch-omap/pm.h
++++ b/include/asm-arm/arch-omap/pm.h
+@@ -1,5 +1,5 @@
+ /*
+- * linux/include/asm-arm/arch-omap/pm.h
++ * linux/include/asm/arch-omap/pm.h
+  *
+  * Header file for OMAP Power Management Routines
+  *
+@@ -132,6 +132,8 @@ void clk_deny_idle(struct clk *clk);
+ 
+ extern void omap_pm_idle(void);
+ extern void omap_pm_suspend(void);
++extern void omap2_block_sleep(void);
++extern void omap2_allow_sleep(void);
+ extern void omap730_cpu_suspend(unsigned short, unsigned short);
+ extern void omap1510_cpu_suspend(unsigned short, unsigned short);
+ extern void omap1610_cpu_suspend(unsigned short, unsigned short);
+@@ -181,10 +183,6 @@ extern void omap_serial_wake_trigger(int enable);
+ #define MPUI1610_RESTORE(x) omap_writel((mpui1610_sleep_save[MPUI1610_SLEEP_SAVE_##x]), (x))
+ #define MPUI1610_SHOW(x) mpui1610_sleep_save[MPUI1610_SLEEP_SAVE_##x]
+ 
+-#define OMAP24XX_SAVE(x) omap24xx_sleep_save[OMAP24XX_SLEEP_SAVE_##x] = x
+-#define OMAP24XX_RESTORE(x) x = omap24xx_sleep_save[OMAP24XX_SLEEP_SAVE_##x]
+-#define OMAP24XX_SHOW(x) omap24xx_sleep_save[OMAP24XX_SLEEP_SAVE_##x]
+-
+ /*
+  * List of global OMAP registers to preserve.
+  * More ones like CP and general purpose register values are preserved
+@@ -294,63 +292,5 @@ enum mpui1610_save_state {
+ #endif
  };
  
-+struct omap_tea5761_config {
-+	u16 enable_gpio;
-+};
-+
-+/* This cannot be passed from the bootloader */
-+struct omap_tmp105_config {
-+	u16 tmp105_irq_pin;
-+	int (* set_power)(int enable);
-+};
-+
-+struct omap_partition_config {
-+	char name[16];
-+	unsigned int size;
-+	unsigned int offset;
-+	/* same as in include/linux/mtd/partitions.h */
-+	unsigned int mask_flags;
-+};
- 
--struct omap_flash_part_config {
-+struct omap_flash_part_str_config {
- 	char part_table[0];
- };
- 
+-enum omap24xx_save_state {
+-	OMAP24XX_SLEEP_SAVE_START = 0,
+-	OMAP24XX_SLEEP_SAVE_INTC_MIR0,
+-	OMAP24XX_SLEEP_SAVE_INTC_MIR1,
+-	OMAP24XX_SLEEP_SAVE_INTC_MIR2,
+-
+-	OMAP24XX_SLEEP_SAVE_CM_CLKSTCTRL_MPU,
+-	OMAP24XX_SLEEP_SAVE_CM_CLKSTCTRL_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_CLKSTCTRL_GFX,
+-	OMAP24XX_SLEEP_SAVE_CM_CLKSTCTRL_DSP,
+-	OMAP24XX_SLEEP_SAVE_CM_CLKSTCTRL_MDM,
+-
+-	OMAP24XX_SLEEP_SAVE_PM_PWSTCTRL_MPU,
+-	OMAP24XX_SLEEP_SAVE_PM_PWSTCTRL_CORE,
+-	OMAP24XX_SLEEP_SAVE_PM_PWSTCTRL_GFX,
+-	OMAP24XX_SLEEP_SAVE_PM_PWSTCTRL_DSP,
+-	OMAP24XX_SLEEP_SAVE_PM_PWSTCTRL_MDM,
+-
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST1_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST2_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST3_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST4_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST_GFX,
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST_WKUP,
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST_CKGEN,
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST_DSP,
+-	OMAP24XX_SLEEP_SAVE_CM_IDLEST_MDM,
+-
+-	OMAP24XX_SLEEP_SAVE_CM_AUTOIDLE1_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_AUTOIDLE2_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_AUTOIDLE3_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_AUTOIDLE4_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_AUTOIDLE_WKUP,
+-	OMAP24XX_SLEEP_SAVE_CM_AUTOIDLE_PLL,
+-	OMAP24XX_SLEEP_SAVE_CM_AUTOIDLE_DSP,
+-	OMAP24XX_SLEEP_SAVE_CM_AUTOIDLE_MDM,
+-
+-	OMAP24XX_SLEEP_SAVE_CM_FCLKEN1_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_FCLKEN2_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_ICLKEN1_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_ICLKEN2_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_ICLKEN3_CORE,
+-	OMAP24XX_SLEEP_SAVE_CM_ICLKEN4_CORE,
+-	OMAP24XX_SLEEP_SAVE_GPIO1_IRQENABLE1,
+-	OMAP24XX_SLEEP_SAVE_GPIO2_IRQENABLE1,
+-	OMAP24XX_SLEEP_SAVE_GPIO3_IRQENABLE1,
+-	OMAP24XX_SLEEP_SAVE_GPIO4_IRQENABLE1,
+-	OMAP24XX_SLEEP_SAVE_GPIO3_OE,
+-	OMAP24XX_SLEEP_SAVE_GPIO4_OE,
+-	OMAP24XX_SLEEP_SAVE_GPIO3_RISINGDETECT,
+-	OMAP24XX_SLEEP_SAVE_GPIO3_FALLINGDETECT,
+-	OMAP24XX_SLEEP_SAVE_CONTROL_PADCONF_SPI1_NCS2,
+-	OMAP24XX_SLEEP_SAVE_CONTROL_PADCONF_MCBSP1_DX,
+-	OMAP24XX_SLEEP_SAVE_CONTROL_PADCONF_SSI1_FLAG_TX,
+-	OMAP24XX_SLEEP_SAVE_CONTROL_PADCONF_SYS_NIRQW0,
+-	OMAP24XX_SLEEP_SAVE_SIZE
+-};
+-
+ #endif /* ASSEMBLER */
+ #endif /* __ASM_ARCH_OMAP_PM_H */
 -- 
 1.4.4.2
 
